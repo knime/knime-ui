@@ -11,7 +11,6 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
-import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -248,9 +247,6 @@ export const useApplicationStore = defineStore("application", {
 
       if (applicationState.openProjects) {
         this.setOpenProjects(applicationState.openProjects);
-        useSpaceCachingStore().syncPathWithOpenProjects({
-          openProjects: applicationState.openProjects,
-        });
       }
 
       // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set

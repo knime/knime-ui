@@ -10,6 +10,7 @@ import { SpaceItem } from "@/api/gateway-api/generated-api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
@@ -49,17 +50,21 @@ const $emit = defineEmits<{
   "update:selectedItemIds": [selectedItemIds: string[]];
 }>();
 
+const spaceOperationsStore = useSpaceOperationsStore();
 const {
-  isLoadingContent,
+  isLoadingContent: isLoadingCurrentSpaceContents,
   activeRenamedItemId,
   getOpenedWorkflowItems,
   getOpenedFolderItems,
-} = storeToRefs(useSpaceOperationsStore());
+} = storeToRefs(spaceOperationsStore);
+
 const { fetchWorkflowGroupContent, openProject, renameItem } =
-  useSpaceOperationsStore();
+  spaceOperationsStore;
+
 const { getWorkflowGroupContent, projectPath } = storeToRefs(
   useSpaceCachingStore(),
 );
+const { loadingProviderSpacesData } = storeToRefs(useSpaceProvidersStore());
 const $router = useRouter();
 const { toastPresets } = getToastPresets();
 
@@ -195,6 +200,14 @@ const setShowLoader = createStaggeredLoader({
   resetCallback: () => {
     showLoader.value = false;
   },
+});
+
+const isLoadingContent = computed(() => {
+  const currentPathInfo = projectPath.value[props.projectId];
+  return (
+    isLoadingCurrentSpaceContents.value ||
+    loadingProviderSpacesData.value[currentPathInfo?.spaceProviderId]
+  );
 });
 
 watch(isLoadingContent, () => {

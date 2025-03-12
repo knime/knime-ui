@@ -392,6 +392,15 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
 });
 
 const selectedText = computed(() => {
+  const showFallbackText = () => {
+    const isLoadingAnyItem =
+      Boolean(isConnectingToProvider.value) ||
+      Object.values(loadingProviderSpacesData.value).some(Boolean) ||
+      !hasLoadedProviders.value;
+
+    return isLoadingAnyItem ? "Loading…" : "";
+  };
+
   const selectedRootItem = spacesDropdownData.value.find((item) =>
     item.metadata && isSpaceGroupItem(item.metadata)
       ? item.metadata.active
@@ -399,7 +408,7 @@ const selectedText = computed(() => {
   );
 
   if (!selectedRootItem) {
-    return "";
+    return showFallbackText();
   }
 
   if (!selectedRootItem.children) {
@@ -415,7 +424,7 @@ const selectedText = computed(() => {
     !isClickableItem(selectedChildItem.metadata!) ||
     isSignInItem(selectedChildItem.metadata!)
   ) {
-    return "";
+    return showFallbackText();
   }
 
   if (
@@ -424,7 +433,7 @@ const selectedText = computed(() => {
   ) {
     return `${selectedChildItem.metadata.space.owner} – ${selectedChildItem.metadata.space.name}`;
   }
-  return "";
+  return showFallbackText();
 });
 
 const spaceIcon = computed(() => {

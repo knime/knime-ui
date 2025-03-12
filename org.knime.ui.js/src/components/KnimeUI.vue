@@ -25,8 +25,10 @@ import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { getToastPresets } from "@/toastPresets";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
@@ -118,9 +120,6 @@ const setup = async () => {
 
     // render the application
     loaded.value = true;
-
-    // fetch provider space groups
-    lifecycleStore.fetchSpaceGroupsForProviders();
   } catch (_error) {
     if (_error instanceof Error) {
       error.value = { message: _error.message, stack: _error.stack };
@@ -128,6 +127,22 @@ const setup = async () => {
       error.value = { message: "Unknown application error" };
       consola.fatal("Initialization failed", { error: _error });
     }
+    return;
+  }
+
+  // fetch provider space groups
+  const spaceProvidersStore = useSpaceProvidersStore();
+  const spaceProviders = Object.values(
+    spaceProvidersStore.spaceProviders ?? {},
+  );
+  const { failedProviderNames } =
+    await spaceProvidersStore.fetchSpaceGroupsForProviders(spaceProviders);
+
+  if (failedProviderNames.length > 0) {
+    const { toastPresets } = getToastPresets();
+    toastPresets.spaces.crud.fetchProviderSpaceGroupsFailed({
+      failedProviderNames,
+    });
   }
 };
 

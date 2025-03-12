@@ -1,17 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, shallowMount } from "@vue/test-utils";
-import { createTestingPinia } from "@pinia/testing";
 import { mockUserAgent } from "jest-useragent-mock";
 import { useRoute } from "vue-router";
 
 import { $bus } from "@/plugins/event-bus";
-import { useApplicationStore } from "@/store/application/application";
-import { useLifecycleStore } from "@/store/application/lifecycle";
-import { useApplicationSettingsStore } from "@/store/application/settings";
-import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { useWorkflowStore } from "@/store/workflow/workflow";
+import { createSpaceProvider } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
+import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import ErrorOverlay from "../application/ErrorOverlay.vue";
 
 vi.mock("vue-router", async (importOriginal) => {
@@ -38,7 +35,7 @@ const { setEnvironment } = useMockEnvironment(mockEnvironment);
 
 describe("KnimeUI.vue", () => {
   const doShallowMount = async ({
-    initializeApplication = vi.fn().mockResolvedValue({}) as any,
+    initializeApplication = vi.fn().mockResolvedValue({}),
     uiControlsOverrides = {},
   } = {}) => {
     // @ts-ignore: assign read-only property
@@ -46,21 +43,13 @@ describe("KnimeUI.vue", () => {
       load: vi.fn(() => Promise.resolve("dummy")),
     };
 
-    const testingPinia = createTestingPinia({
-      stubActions: true,
-      createSpy: vi.fn,
-    });
-    const uiControlsStore = useUIControlsStore(testingPinia);
-    const lifecycleStore = useLifecycleStore(testingPinia);
-    const applicationStore = useApplicationStore(testingPinia);
-    const applicationSettingsStore = useApplicationSettingsStore(testingPinia);
-    const workflowStore = useWorkflowStore(testingPinia);
+    const mockedStores = mockStores();
 
-    vi.mocked(lifecycleStore.initializeApplication).mockImplementation(
-      initializeApplication,
-    );
+    vi.mocked(
+      mockedStores.lifecycleStore.initializeApplication,
+    ).mockImplementation(initializeApplication);
 
-    applicationStore.availableUpdates = {
+    mockedStores.applicationStore.availableUpdates = {
       newReleases: [
         {
           isUpdatePossible: true,
@@ -71,13 +60,13 @@ describe("KnimeUI.vue", () => {
       bugfixes: ["Update1", "Update2"],
     };
 
-    uiControlsStore.$patch(uiControlsOverrides);
+    mockedStores.uiControlsStore.$patch(uiControlsOverrides);
 
     const KnimeUI = (await import("../KnimeUI.vue")).default;
 
     const wrapper = shallowMount(KnimeUI, {
       global: {
-        plugins: [testingPinia],
+        plugins: [mockedStores.testingPinia],
         mocks: { $bus },
         stubs: {
           RouterView: true,
@@ -90,11 +79,7 @@ describe("KnimeUI.vue", () => {
 
     return {
       wrapper,
-      uiControlsStore,
-      lifecycleStore,
-      applicationStore,
-      applicationSettingsStore,
-      workflowStore,
+      mockedStores,
       initializeApplication,
     };
   };
@@ -109,11 +94,11 @@ describe("KnimeUI.vue", () => {
       meta: { showUpdateBanner: true },
     });
 
-    const { wrapper, applicationStore } = await doShallowMount();
+    const { wrapper, mockedStores } = await doShallowMount();
 
     expect(wrapper.find("update-banner-stub").exists()).toBe(true);
 
-    applicationStore.dismissedUpdateBanner = true;
+    mockedStores.applicationStore.dismissedUpdateBanner = true;
     await nextTick();
 
     expect(wrapper.find("update-banner-stub").exists()).toBe(false);
@@ -162,19 +147,43 @@ describe("KnimeUI.vue", () => {
     expect(document.fonts.load).toHaveBeenCalledWith("400 1em Roboto Mono");
   });
 
+  it("loads the provider space groups after the initializeApplication action has completed", async () => {
+    // promise to resolve the initializeApplication action manually
+    const { promise, resolve } = createUnwrappedPromise<void>();
+    const { mockedStores } = await doShallowMount({
+      initializeApplication: vi.fn(() => promise),
+    });
+
+    mockedStores.spaceProvidersStore.spaceProviders = {
+      provider1: createSpaceProvider({ id: "provider1" }),
+    };
+
+    await flushPromises();
+
+    expect(
+      mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
+    ).not.toHaveBeenCalled();
+
+    resolve();
+    await flushPromises();
+    expect(
+      mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
+    ).toHaveBeenCalledOnce();
+  });
+
   it("destroys application", async () => {
-    const { wrapper, lifecycleStore } = await doShallowMount();
+    const { wrapper, mockedStores } = await doShallowMount();
     wrapper.unmount();
 
-    expect(lifecycleStore.destroyApplication).toHaveBeenCalled();
+    expect(mockedStores.lifecycleStore.destroyApplication).toHaveBeenCalled();
   });
 
   it("shows download banner when required", async () => {
-    const { wrapper, uiControlsStore } = await doShallowMount();
+    const { wrapper, mockedStores } = await doShallowMount();
 
     expect(wrapper.findComponent(".download-banner").exists()).toBe(false);
 
-    uiControlsStore.shouldDisplayDownloadAPButton = true;
+    mockedStores.uiControlsStore.shouldDisplayDownloadAPButton = true;
     await nextTick();
 
     expect(wrapper.findComponent(".download-banner").exists()).toBe(true);
@@ -232,9 +241,9 @@ describe("KnimeUI.vue", () => {
       async (state, expectedValue) => {
         Object.assign(navigator, { permissions: { query: () => ({ state }) } });
         vi.spyOn(navigator.permissions, "query");
-        const { applicationSettingsStore } = await doShallowMount();
+        const { mockedStores } = await doShallowMount();
         expect(
-          applicationSettingsStore.setHasClipboardSupport,
+          mockedStores.applicationSettingsStore.setHasClipboardSupport,
         ).toHaveBeenCalledWith(expectedValue);
       },
     );
@@ -250,9 +259,9 @@ describe("KnimeUI.vue", () => {
 
       vi.spyOn(navigator.permissions, "query");
       Object.assign(navigator, { clipboard: {} });
-      const { applicationSettingsStore } = await doShallowMount();
+      const { mockedStores } = await doShallowMount();
       expect(
-        applicationSettingsStore.setHasClipboardSupport,
+        mockedStores.applicationSettingsStore.setHasClipboardSupport,
       ).toHaveBeenCalledWith(false);
     });
 
@@ -268,9 +277,9 @@ describe("KnimeUI.vue", () => {
       Object.assign(navigator, { clipboard: { readText: () => "{}" } });
       vi.spyOn(navigator.clipboard, "readText");
 
-      const { applicationSettingsStore } = await doShallowMount();
+      const { mockedStores } = await doShallowMount();
       expect(
-        applicationSettingsStore.setHasClipboardSupport,
+        mockedStores.applicationSettingsStore.setHasClipboardSupport,
       ).toHaveBeenCalledWith(true);
     });
   });

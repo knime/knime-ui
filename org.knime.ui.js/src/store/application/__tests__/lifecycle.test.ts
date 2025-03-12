@@ -1,19 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 import { createRouter, createWebHistory } from "vue-router";
 
 import { setupHints } from "@knime/components";
 
 import { runInEnvironment } from "@/environment";
-import { getToastsProvider } from "@/plugins/toasts.ts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router, routes } from "@/router/router";
-import {
-  createSpaceGroup,
-  createSpaceProvider,
-  createWorkflow,
-} from "@/test/factories";
+import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { lifecycleBus } from "../lifecycle-events";
 
@@ -108,56 +102,6 @@ describe("application::lifecycle", () => {
         $router: router,
       });
       expect(setupHints).toHaveBeenCalled();
-    });
-
-    describe("setAllProviderSpaceGroups", () => {
-      it("sets space groups without awaiting promise", async () => {
-        const { lifecycleStore, spaceProvidersStore } = loadStore();
-        const spaceProvider = createSpaceProvider({}, false);
-        spaceProvidersStore.spaceProviders = {
-          local: spaceProvider,
-        };
-        const mockGroup = createSpaceGroup();
-        mockedAPI.space.getSpaceGroups.mockResolvedValueOnce([mockGroup]);
-
-        lifecycleStore.fetchSpaceGroupsForProviders();
-
-        expect(
-          spaceProvidersStore.spaceProviders[spaceProvider.id].spaceGroups,
-        ).toEqual([]);
-        await flushPromises();
-        expect(
-          spaceProvidersStore.spaceProviders[spaceProvider.id].spaceGroups,
-        ).toEqual([mockGroup]);
-
-        expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledExactlyOnceWith({
-          spaceProviderId: spaceProvider.id,
-        });
-      });
-
-      it("shows an error toast if a provider's space groups can't be loaded", async () => {
-        const { lifecycleStore, spaceProvidersStore } = loadStore();
-        const spaceProvider = createSpaceProvider({}, false);
-        spaceProvidersStore.spaceProviders = {
-          local: spaceProvider,
-        };
-        mockedAPI.space.getSpaceGroups.mockRejectedValueOnce(
-          new Error("something went wrong"),
-        );
-
-        lifecycleStore.fetchSpaceGroupsForProviders();
-        await flushPromises();
-
-        expect(getToastsProvider().show).toHaveBeenCalledWith({
-          headline: "Error fetching provider space groups",
-          message: "Could not load spaces for:\n- Local Space",
-          type: "error",
-        });
-
-        expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledExactlyOnceWith({
-          spaceProviderId: spaceProvider.id,
-        });
-      });
     });
 
     it("destroy application", () => {

@@ -105,9 +105,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
       consola.trace(
         "action::fetchSpaceGroupsForProviders -> Fetching provider space groups",
-        {
-          connectedProviderIds,
-        },
+        { connectedProviderIds },
       );
 
       const failedProviderNames: string[] = [];
@@ -120,6 +118,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
       for (const id of connectedProviderIds) {
         const currentSpaceProvider = spaceProvidersById[id];
+        this.setLoadingProviderData({ id, loading: true });
         const spaceGroupsPromise = this.fetchProviderSpaces({ id })
           .then((spaceGroups) => {
             this.updateSpaceProvider({
@@ -148,6 +147,9 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
               id,
               value: { ...currentSpaceProvider, connected: false },
             });
+          })
+          .finally(() => {
+            this.setLoadingProviderData({ id, loading: false });
           });
 
         spaceGroupsQueue.push(spaceGroupsPromise);
@@ -155,6 +157,8 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
       Promise.allSettled(spaceGroupsQueue).then(() => {
         this.setHasLoadedProviders(true);
+        const { openProjects } = useApplicationStore();
+        useSpaceCachingStore().syncPathWithOpenProjects({ openProjects });
         resolve({ failedProviderNames });
       });
 

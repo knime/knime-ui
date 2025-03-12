@@ -20,7 +20,7 @@ describe("spaces::providers", () => {
     vi.clearAllMocks();
   });
 
-  describe("setAllSpaceProviders", () => {
+  describe("providers data lifecyle", () => {
     const spaceProviders: SpaceProvider[] = [
       {
         id: "hub1",
@@ -50,9 +50,9 @@ describe("spaces::providers", () => {
       spaces: [createSpace({ id: "space-1" })],
     });
 
-    const { spaceProvidersStore } = loadStore();
-
     it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
+      const { spaceProvidersStore } = loadStore();
+
       mockedAPI.space.getSpaceGroups.mockImplementation(() =>
         Promise.resolve([mockGroup]),
       );
@@ -105,6 +105,7 @@ describe("spaces::providers", () => {
           }
         },
       );
+      const { spaceProvidersStore } = loadStore();
 
       spaceProvidersStore.setAllSpaceProviders(spaceProviders);
       const promise =
@@ -141,6 +142,22 @@ describe("spaces::providers", () => {
       });
       expect(mockedAPI.space.getSpaceGroups).not.toHaveBeenCalledWith({
         spaceProviderId: "hub3",
+      });
+    });
+
+    it("should sync the open project path after loading space groups for providers", async () => {
+      const { spaceCachingStore, spaceProvidersStore, applicationStore } =
+        loadStore();
+      mockedAPI.space.getSpaceGroups.mockImplementation(() =>
+        Promise.resolve([mockGroup]),
+      );
+
+      spaceProvidersStore.setAllSpaceProviders(spaceProviders);
+      await spaceProvidersStore.fetchSpaceGroupsForProviders(spaceProviders);
+
+      const { openProjects } = applicationStore;
+      expect(spaceCachingStore.syncPathWithOpenProjects).toHaveBeenCalledWith({
+        openProjects,
       });
     });
   });
