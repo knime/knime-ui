@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { type Ref, ref } from "vue";
+import { describe, expect, it, vi } from "vitest";
+import { type Ref, nextTick, ref } from "vue";
 
 import { PortType, type XY } from "@/api/gateway-api/generated-api";
 import type { PortPositions } from "@/components/workflowEditor/common/usePortPositions";
+import { $bus } from "@/plugins/event-bus";
 import {
   PORT_TYPE_IDS,
   createAvailablePortTypes,
@@ -13,7 +14,11 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
-import type { FloatingConnector } from "../types";
+import type {
+  FloatingConnector,
+  SnappedPlaceholderPort,
+  SnappedPort,
+} from "../types";
 import { usePortSnapping } from "../usePortSnapping";
 
 import { createMockFloatingConnector } from "./utils";
@@ -189,5 +194,64 @@ describe("floatingConnector:usePortSnapping", () => {
     });
 
     expect(isInsideSnapRegion.value).toBe(false);
+  });
+
+  it("communicates snap state via bus", async () => {
+    const floatingConnector = createMockFloatingConnector(sourceNode, 1);
+
+    const busEmitSpy = vi.spyOn($bus, "emit");
+
+    const { getComposableResult } = doMount({
+      floatingConnector,
+      pointerMoveAbsoluteCoords: mockCursorPosition,
+    });
+
+    const { snapTarget } = getComposableResult();
+
+    const snapPortValue = {
+      ...createPort({ index: 3 }),
+      parentNodeId: "root:1",
+      side: "in",
+    } satisfies SnappedPort;
+
+    snapTarget.value = snapPortValue;
+    await nextTick();
+
+    expect(busEmitSpy).toHaveBeenCalledWith(
+      "connector-snap-active_root:1__in__3",
+      { snapTarget: snapPortValue },
+    );
+
+    snapTarget.value = undefined;
+    await nextTick();
+
+    expect(busEmitSpy).toHaveBeenCalledWith(
+      "connector-snap-inactive_root:1__in__3",
+      { snapTarget: snapPortValue },
+    );
+
+    const snapPlaceholderPortValue = {
+      isPlaceHolderPort: true,
+      typeId: PORT_TYPE_IDS.BufferedDataTable,
+      validPortGroups: null,
+      parentNodeId: "root:1",
+      side: "in",
+    } satisfies SnappedPlaceholderPort;
+
+    snapTarget.value = snapPlaceholderPortValue;
+    await nextTick();
+
+    expect(busEmitSpy).toHaveBeenCalledWith(
+      "connector-snap-active-placeholder_root:1__in",
+      { snapTarget: snapPlaceholderPortValue },
+    );
+
+    snapTarget.value = undefined;
+    await nextTick();
+
+    expect(busEmitSpy).toHaveBeenCalledWith(
+      "connector-snap-inactive-placeholder_root:1__in",
+      { snapTarget: snapPlaceholderPortValue },
+    );
   });
 });

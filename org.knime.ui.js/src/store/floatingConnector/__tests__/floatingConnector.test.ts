@@ -309,6 +309,18 @@ describe("floatingConnector store", () => {
     ).toBeUndefined();
   });
 
+  it("resets state and aborts connection when pressing 'Esc'", () => {
+    const { mockedStores, canvas } = setupStore();
+
+    startDrag(mockedStores);
+    pointerMove(canvas);
+
+    expect(mockedStores.floatingConnectorStore.floatingConnector).toBeTruthy();
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(mockedStores.floatingConnectorStore.floatingConnector).toBeFalsy();
+  });
+
   it("creates a floatingConnector manually based on a provided context", () => {
     const { mockedStores } = setupStore();
 

@@ -187,8 +187,11 @@ export const useFloatingConnectorStore = defineStore(
       const canvas = pixiApplication!.app.canvas;
       canvas.setPointerCapture(pointerDownEvent.pointerId);
 
+      // Because this event originates from a port, we stop propagation s.t it
+      // doesn't go up to the Node component
       pointerDownEvent.stopPropagation();
       pointerDownEvent.originalEvent.stopPropagation();
+      // prevent default makes it so that the SelectionRectangle logic is not fired
       pointerDownEvent.originalEvent.preventDefault();
 
       pointerDown.value = true;
