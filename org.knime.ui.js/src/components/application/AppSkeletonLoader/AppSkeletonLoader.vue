@@ -9,6 +9,7 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { TABS, type TabValues, usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
 import AppKanvasSkeleton from "./AppKanvasSkeleton.vue";
@@ -23,11 +24,16 @@ const { isLoadingApp, isLoadingWorkflow, isChangingProject } = storeToRefs(
 );
 const { settings } = storeToRefs(useSettingsStore());
 const { error: workflowError } = storeToRefs(useWorkflowStore());
+const { isSidepanelOpen: isVersionsSidepanelOpen } = storeToRefs(
+  useWorkflowVersionsStore(),
+);
+
+const splitterWidthPx = 1;
 
 const bottomPanelHeight = computed(() => settings.value.nodeOutputSize);
 const topPanelHeight = computed(() => 100 - bottomPanelHeight.value);
-const rightPanelWidth = computed(() =>
-  isBrowser ? settings.value.nodeDialogSize : 0,
+const rightPanelWidth = computed(
+  () => settings.value.nodeDialogSize + splitterWidthPx,
 );
 
 const isLoading = computed(() => isLoadingApp.value || isLoadingWorkflow.value);
@@ -111,17 +117,19 @@ watch(isLoading, (value) => {
     <div class="workflow-skeleton">
       <div class="top-panel-skeleton">
         <AppKanvasSkeleton
+          class="kanvas-skeleton"
           :is-logo-shown="isLogoShown"
           :workflow-error="workflowError"
         />
 
         <AppRightPanelSkeleton
-          v-if="isBrowser"
+          v-if="isBrowser || isVersionsSidepanelOpen"
+          :transparent="isVersionsSidepanelOpen"
           :width="rightPanelWidth"
           with-border
         />
       </div>
-
+      <div class="splitter-skeleton" />
       <div class="bottom-panel-skeleton">
         <SkeletonItem width="50%" height="16px" />
         <SkeletonItem width="50%" height="16px" />
@@ -162,26 +170,36 @@ watch(isLoading, (value) => {
 
   & .workflow-skeleton {
     grid-area: workflow;
-    background: var(--knime-white);
+    height: calc(var(--app-main-content-height) - var(--app-toolbar-height));
 
     & .top-panel-skeleton {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: calc(50% - var(--app-toolbar-height));
-      height: calc(v-bind("`${topPanelHeight}%`") - var(--app-toolbar-height));
+      height: calc(
+        v-bind("`${topPanelHeight}%`") - v-bind("`${splitterWidthPx}px`")
+      );
+
+      & .kanvas-skeleton {
+        height: 100%;
+        align-items: center;
+        background: var(--knime-white);
+      }
+    }
+
+    & .splitter-skeleton {
+      border-top: v-bind("`${splitterWidthPx}px`") solid
+        var(--knime-silver-sand);
     }
 
     & .bottom-panel-skeleton {
-      height: calc(
-        v-bind("`${bottomPanelHeight}%`") - var(--app-toolbar-height)
-      );
-      border-top: 3px solid var(--knime-silver-sand);
+      height: calc(v-bind("`${bottomPanelHeight}%`"));
       display: flex;
       flex-direction: column;
       gap: 4px;
       justify-content: center;
       align-items: center;
+      background: var(--knime-white);
     }
   }
 

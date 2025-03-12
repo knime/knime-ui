@@ -4,24 +4,30 @@ import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 type Props = {
   width: number;
   withBorder?: boolean;
+  transparent?: boolean;
 };
 
 withDefaults(defineProps<Props>(), { withBorder: false });
 </script>
 
 <template>
-  <div :class="['right-panel-skeleton', { 'with-border': withBorder }]">
-    <SkeletonItem height="32px" />
-
-    <div class="form-skeleton">
-      <SkeletonItem width="50%" />
-      <SkeletonItem width="50%" />
-    </div>
-
-    <div class="buttons-skeleton">
-      <SkeletonItem width="100px" type="button" />
-      <SkeletonItem width="100px" type="button" />
-    </div>
+  <div
+    :class="[
+      'right-panel-skeleton',
+      { 'with-border': withBorder, transparent },
+    ]"
+  >
+    <template v-if="!transparent">
+      <SkeletonItem height="32px" />
+      <div class="form-skeleton">
+        <SkeletonItem width="50%" />
+        <SkeletonItem width="50%" />
+      </div>
+      <div class="buttons-skeleton">
+        <SkeletonItem width="100px" type="button" />
+        <SkeletonItem width="100px" type="button" />
+      </div>
+    </template>
   </div>
 </template>
 
@@ -38,6 +44,10 @@ withDefaults(defineProps<Props>(), { withBorder: false });
 
   &.with-border {
     border-left: 1px solid var(--knime-silver-sand);
+  }
+
+  &.transparent {
+    background: transparent;
   }
 
   & .form-skeleton {

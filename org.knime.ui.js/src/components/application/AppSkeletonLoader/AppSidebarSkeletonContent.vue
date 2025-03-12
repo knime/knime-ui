@@ -25,7 +25,7 @@ defineProps<Props>();
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 370px;
+  width: 371px;
   padding: 20px;
   border-right: 1px solid var(--knime-silver-sand);
   background: var(--sidebar-background-color);
