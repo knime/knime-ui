@@ -39,8 +39,7 @@ const htmlContent = computed(() => renderMarkdown(props.markdown));
     font-size: 1em;
   }
 
-  & pre,
-  & p:has(> code:only-child) {
+  & pre {
     border: 1px solid var(--knime-silver-sand);
     padding: var(--space-4);
   }
