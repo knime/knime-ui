@@ -2,6 +2,8 @@ options:
   max-time: 20
 
 definitions:
+  caches:
+    pnpm: $BITBUCKET_CLONE_DIR/.pnpm-store
   steps:
     - step: &lint-test-build
         name: Lint, tests and build
@@ -9,24 +11,29 @@ definitions:
         image: node:22.11.0
         caches:
           - node
-        size: 2x # more memory needed for unit tests
+          - pnpm
+        size: 4x # more memory needed for unit tests
         script:
           - cd org.knime.ui.js
-          - npm ci
-          - npm run ci:lint-format
-          - npm run coverage
-          - npm run build
-          - npm run audit
+          - npm install -g corepack
+          - corepack enable
+          - pnpm install
+          - pnpm run ci:lint-format
+          - pnpm run coverage
+          - pnpm run build
+          - pnpm run audit
         artifacts:
           - org.knime.ui.js/dist/**
     - step: &e2e-tests
         name: "End to end / performance tests"
         size: 4x # memory for browsers
-        image: mcr.microsoft.com/playwright:v1.50.1-noble
+        image: mcr.microsoft.com/playwright:v1.51.1-noble
         script:
           - cd org.knime.ui.js
-          - npm ci
-          - npm run test:e2e
+          - npm install -g corepack
+          - corepack enable
+          - pnpm install
+          - pnpm run test:e2e
 
 
 pipelines:

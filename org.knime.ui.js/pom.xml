@@ -21,7 +21,7 @@
         <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths>
         <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths>
         <node.version>v22.11.0</node.version>
-        <npm.version>10.9.1</npm.version>
+        <pnpm.version>10.7.0</pnpm.version>
 		<revision>5.5.0</revision>
         <cyclonedx.skip>true</cyclonedx.skip>
     </properties>
@@ -37,9 +37,12 @@
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.15.1</version>
+
                 <configuration>
                     <installDirectory>${project.build.directory}</installDirectory>
                 </configuration>
+
                 <executions>
                     <execution>
                         <id>install node and npm</id>
@@ -49,26 +52,34 @@
                         </goals>
                         <configuration>
                             <nodeVersion>${node.version}</nodeVersion>
-                            <npmVersion>${npm.version}</npmVersion>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>npm ci</id>
+                        <id>install node and pnpm</id>
                         <phase>initialize</phase>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>install-node-and-pnpm</goal>
                         </goals>
                         <configuration>
-                            <arguments>ci</arguments>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <pnpmVersion>${pnpm.version}</pnpmVersion>
                         </configuration>
                     </execution>
 
+                     <execution>
+                        <id>pnpm install</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>pnpm</goal>
+                        </goals>
+                    </execution>
+
                     <execution>
-                        <id>npm run build</id>
+                        <id>pnpm build</id>
                         <phase>compile</phase>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>pnpm</goal>
                         </goals>
                         <configuration>
                             <arguments>run build</arguments>
@@ -76,10 +87,10 @@
                     </execution>
 
                     <execution>
-                        <id>npm run sbom</id>
-                        <phase>compile</phase>
+                        <id>generate sbom</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>pnpm</goal>
                         </goals>
                         <configuration>
                             <arguments>run sbom</arguments>
@@ -87,10 +98,10 @@
                     </execution>
 
                     <execution>
-                        <id>npm run coverage</id>
+                        <id>pnpm coverage</id>
                         <phase>test</phase>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>pnpm</goal>
                         </goals>
                         <configuration>
                             <arguments>run coverage</arguments>
@@ -98,10 +109,10 @@
                     </execution>
 
                     <execution>
-                        <id>npm run jenkins:audit</id>
+                        <id>pnpm jenkins:audit</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>pnpm</goal>
                         </goals>
                         <configuration>
                             <arguments>run jenkins:audit</arguments>
@@ -109,10 +120,10 @@
                     </execution>
 
                     <execution>
-                        <id>npm run jenkins:lint</id>
+                        <id>pnpm jenkins:lint</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>pnpm</goal>
                         </goals>
                         <configuration>
                             <arguments>run jenkins:lint</arguments>

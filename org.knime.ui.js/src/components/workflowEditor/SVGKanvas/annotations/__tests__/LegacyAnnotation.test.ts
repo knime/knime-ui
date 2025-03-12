@@ -94,7 +94,7 @@ describe("LegacyAnnotation.vue", () => {
       .attributes("style");
 
     expect(legacyAnnotationStyles).toMatch("font-size: 15.9996px");
-    expect(legacyAnnotationStyles).toMatch("border: 4px solid #000;");
+    expect(legacyAnnotationStyles).toMatch("border: 4px solid rgb(0, 0, 0);");
     expect(legacyAnnotationStyles).toMatch("background: rgb(0, 0, 0);");
     expect(legacyAnnotationStyles).toMatch("width: 100%;");
     expect(legacyAnnotationStyles).toMatch("height: 100%;");

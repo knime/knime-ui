@@ -7,8 +7,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run type-check && vite build",
     "build:only": "vite build",
+    "build": "pnpm type-check && vite build",
     "serve": "vite preview",
     "lint": "run-p 'lint:* -- --fix'",
     "lint:js": "eslint --cache . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
@@ -16,8 +16,7 @@
     "format": "prettier --cache --write .",
     "format:check": "prettier --cache --check .",
     "ci:lint-format": "run-p lint:* format:check -c",
-    "audit": "check-audit --omit dev",
-    "audit:resolve": "resolve-audit --omit dev",
+    "audit": "pnpm audit --prod",
     "test:unit": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots",
@@ -62,7 +61,6 @@
     "mitt": "^3.0.1",
     "motion": "^12.4.7",
     "pinia": "^2.3.0",
-    "pixi-filters": "^6.0.4",
     "pixi.js": "^8.8.0",
     "raf-throttle": "2.0.6",
     "vue": "3.5.13",
@@ -92,7 +90,6 @@
     "jsdom": "^24.1.0",
     "lint-staged": "^13.2.0",
     "modern-normalize": "1.1.0",
-    "npm-audit-resolver": "3.0.0-RC.0",
     "npm-run-all": "4.1.5",
     "postcss-mixins": "^9.0.4",
     "postcss-preset-env": "8.0.0",
@@ -118,5 +115,6 @@
       "esbuild",
       "libxmljs2"
     ]
-  }
+  },
+  "packageManager": "pnpm@10.7.0"
 }
