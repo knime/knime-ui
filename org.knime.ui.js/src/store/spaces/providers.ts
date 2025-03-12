@@ -118,7 +118,6 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
       for (const id of connectedProviderIds) {
         const currentSpaceProvider = spaceProvidersById[id];
-        this.setLoadingProviderData({ id, loading: true });
         const spaceGroupsPromise = this.fetchProviderSpaces({ id })
           .then((spaceGroups) => {
             this.updateSpaceProvider({
@@ -147,9 +146,6 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
               id,
               value: { ...currentSpaceProvider, connected: false },
             });
-          })
-          .finally(() => {
-            this.setLoadingProviderData({ id, loading: false });
           });
 
         spaceGroupsQueue.push(spaceGroupsPromise);
