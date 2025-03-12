@@ -1,7 +1,7 @@
 <script>
 import { mapActions, mapState } from "pinia";
 
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
@@ -84,7 +84,7 @@ export default {
       "openLabelEditor",
       "closeLabelEditor",
     ]),
-    ...mapActions(useCanvasStore, { focusCanvas: "focus" }),
+    ...mapActions(useSVGCanvasStore, { focusCanvas: "focus" }),
     onRequestEdit() {
       this.openLabelEditor(this.nodeId);
     },

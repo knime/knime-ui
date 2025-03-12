@@ -5,7 +5,7 @@ import throttle from "raf-throttle";
 import { navigatorUtils } from "@knime/utils";
 
 import { useApplicationSettingsStore } from "@/store/application/settings";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 type UseZoomOptions = {
@@ -14,7 +14,7 @@ type UseZoomOptions = {
 
 export const useMouseWheelZooming = (options: UseZoomOptions) => {
   const { scrollToZoomEnabled } = storeToRefs(useApplicationSettingsStore());
-  const canvasStore = useCanvasStore();
+  const canvasStore = useSVGCanvasStore();
   const { interactionsEnabled } = storeToRefs(canvasStore);
   const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 

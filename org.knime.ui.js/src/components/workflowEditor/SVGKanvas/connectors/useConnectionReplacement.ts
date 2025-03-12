@@ -6,7 +6,7 @@ import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
 import { KNIME_MIME } from "@/composables/useDropNode";
 import { useApplicationStore } from "@/store/application/application";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -51,7 +51,7 @@ export const useConnectionReplacement = (
     useNodeTemplatesStore(),
   );
   const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
-  const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+  const { screenToCanvasCoordinates } = storeToRefs(useSVGCanvasStore());
   const { availablePortTypes } = storeToRefs(useApplicationStore());
   const nodeInteractionsStore = useNodeInteractionsStore();
 

@@ -5,14 +5,14 @@ import { storeToRefs } from "pinia";
 import { useDropNode } from "@/composables/useDropNode";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
 const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
-const { fillScreen, screenToCanvasCoordinates } = useCanvasStore();
+const { fillScreen, screenToCanvasCoordinates } = useSVGCanvasStore();
 const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const { isDraggingNodeTemplate } = storeToRefs(useNodeTemplatesStore());
 

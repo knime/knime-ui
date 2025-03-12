@@ -37,7 +37,7 @@ const defaults: SettingsState["settings"] = {
   shouldShowExampleWorkflows: true,
 };
 
-const loadItem = <T>(key: string, defaultValue: T | null = null): T => {
+const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {
   const item = window?.localStorage?.getItem(key);
   return item === null ? defaultValue : JSON.parse(item);
 };
@@ -63,7 +63,7 @@ export const useSettingsStore = defineStore("settings", {
       try {
         const settings = await runInEnvironment({
           DESKTOP: () => API.desktop.getUserProfilePart({ key: SETTINGS_KEY }),
-          BROWSER: () => loadItem(SETTINGS_KEY),
+          BROWSER: () => Promise.resolve(loadItem(SETTINGS_KEY)),
         });
 
         this.updateAllSettings({ ...defaults, ...(settings ?? {}) });

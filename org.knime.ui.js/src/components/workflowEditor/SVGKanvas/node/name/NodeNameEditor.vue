@@ -6,7 +6,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
 import ActionBar from "@/components/workflowEditor/SVGKanvas/common/ActionBar.vue";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 
 import NodeNameTextarea from "./NodeNameTextarea.vue";
 
@@ -68,7 +68,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState(useCanvasStore, ["viewBox"]),
+    ...mapState(useSVGCanvasStore, ["viewBox"]),
     overlayStyles() {
       const { left, top } = this.viewBox;
       return {

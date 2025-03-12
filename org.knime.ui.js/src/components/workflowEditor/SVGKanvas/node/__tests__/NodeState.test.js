@@ -214,7 +214,7 @@ describe("NodeState.vue", () => {
         },
         hoverable: true,
         gap: 10,
-        issue: null,
+        issue: undefined,
         resolutions: [],
       });
 
@@ -275,7 +275,7 @@ describe("NodeState.vue", () => {
         },
         hoverable: true,
         gap: 10,
-        issue: null,
+        issue: undefined,
         resolutions: [],
       });
     });

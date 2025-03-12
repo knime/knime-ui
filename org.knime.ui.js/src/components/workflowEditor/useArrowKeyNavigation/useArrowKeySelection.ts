@@ -6,7 +6,7 @@ import { capitalize } from "@knime/utils";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { useCanvasStore as useSVGCanvasStore } from "@/store/canvas/canvas-svg";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";

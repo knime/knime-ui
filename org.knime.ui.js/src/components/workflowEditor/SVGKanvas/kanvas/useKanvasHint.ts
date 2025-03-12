@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import { useHint } from "@knime/components";
 
 import { HINTS } from "@/hints/hints.config";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 
@@ -30,7 +30,7 @@ export const useKanvasHint = () => {
       y: position.y,
     }));
 
-    const center = useCanvasStore().getCenterOfScrollContainer();
+    const center = useSVGCanvasStore().getCenterOfScrollContainer();
 
     const nearestObject = await workflowNavigationService.nearestObject({
       objects: nodeObjects,

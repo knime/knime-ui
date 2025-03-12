@@ -2,9 +2,10 @@
 import { computed, inject } from "vue";
 
 import type { NodeState, XY } from "@/api/gateway-api/generated-api";
-import { type TooltipDefinition, useTooltip } from "@/composables/useTooltip";
+import { useTooltip } from "@/components/workflowEditor/SVGKanvas/common/useTooltip";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import type { TooltipDefinition } from "../../common/types";
 
 const anchorPoint = inject<XY>("anchorPoint");
 
@@ -91,7 +92,8 @@ const tooltip = computed<TooltipDefinition | null>(() => {
     gap: 10,
     hoverable: true,
     text: "",
-    issue: props.issue,
+    // eslint-disable-next-line no-undefined
+    issue: props.issue ?? undefined,
     resolutions: props.resolutions,
   } satisfies TooltipDefinition;
 

@@ -5,7 +5,7 @@ import throttle from "raf-throttle";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { $bus } from "@/plugins/event-bus";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as shapes from "@/style/shapes";
 import {
@@ -58,7 +58,7 @@ const isSignificantMove = (startPosition: XY, newPosition: XY) => {
 };
 
 export const usePortDragging = (params: Params) => {
-  const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+  const { screenToCanvasCoordinates } = storeToRefs(useSVGCanvasStore());
   const { isWritable: isWorkflowWritable, activeWorkflow } = storeToRefs(
     useWorkflowStore(),
   );

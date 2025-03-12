@@ -2,7 +2,7 @@ import { API } from "@api";
 
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useCanvasStore } from "@/store/canvas";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -90,7 +90,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         const position =
           positionFromContextMenu ??
           geometry.findFreeSpaceAroundCenterWithFallback({
-            visibleFrame: useCanvasStore().getVisibleFrame,
+            visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
             nodes: useWorkflowStore().activeWorkflow!.nodes,
           });
 
@@ -141,7 +141,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
 
         return geometry.findFreeSpaceAroundPointWithFallback({
           startPoint,
-          visibleFrame: useCanvasStore().getVisibleFrame,
+          visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
           nodes: useWorkflowStore().activeWorkflow!.nodes,
         });
       };

@@ -157,7 +157,7 @@ useNodeHoveredStateListener({
 });
 
 const openMenu = (event: FederatedPointerEvent) => {
-  const [x, y] = webGLCanvasStore.globalToWorldCoordinates([
+  const [x, y] = webGLCanvasStore.toCanvasCoordinates([
     event.global.x,
     event.global.y,
   ]);

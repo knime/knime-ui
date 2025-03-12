@@ -12,12 +12,12 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
 import { useApplicationStore } from "@/store/application/application";
 import { lifecycleBus } from "@/store/application/lifecycle-events";
-import { useCanvasStore } from "@/store/canvas";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
+import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 export interface WorkflowMonitorState {
@@ -167,7 +167,7 @@ export const useWorkflowMonitorStore = defineStore("workflowMonitor", {
         // small wait period for the canvas to get settled
         // eslint-disable-next-line no-magic-numbers
         await sleep(300);
-        useCanvasStore().moveObjectIntoView(workflowObject);
+        useCurrentCanvasStore().value.moveObjectIntoView(workflowObject);
       };
 
       if (message.workflowId === activeWorkflowId) {

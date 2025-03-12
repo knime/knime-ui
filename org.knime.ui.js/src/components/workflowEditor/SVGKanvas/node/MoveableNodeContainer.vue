@@ -3,8 +3,8 @@ import { computed, ref, toRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useMoveObject } from "@/components/workflowEditor/SVGKanvas/common/useMoveObject";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { useMoveObject } from "@/composables/useMoveObject";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";

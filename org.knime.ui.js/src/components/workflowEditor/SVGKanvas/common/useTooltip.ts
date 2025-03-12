@@ -1,25 +1,10 @@
 import { type ComputedRef, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
+import type { TooltipDefinition } from "@/components/workflowEditor/common/types";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 export const entryDelay = 750;
-
-export interface TooltipDefinition {
-  position: {
-    x: number;
-    y: number;
-  };
-  gap: number;
-  anchorPoint: { x: number; y: number };
-  text: string;
-  title?: string;
-  issue?: string | null;
-  resolutions?: string[];
-  type?: "error" | "warning" | "default";
-  orientation?: "top" | "bottom";
-  hoverable?: boolean;
-}
 
 export const useTooltip = (params: {
   tooltip: ComputedRef<TooltipDefinition | null>;

@@ -5,14 +5,14 @@ import throttle from "raf-throttle";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 
 const startPosition = reactive({ x: 0, y: 0 });
 const endPosition = reactive({ x: 0, y: 0 });
 const pointerId = ref<number | null>(null);
 
 const $shortcuts = useShortcuts();
-const { screenToCanvasCoordinates } = useCanvasStore();
+const { screenToCanvasCoordinates } = useSVGCanvasStore();
 const { switchCanvasMode } = useCanvasModesStore();
 
 const selectionBounds = computed(() => {

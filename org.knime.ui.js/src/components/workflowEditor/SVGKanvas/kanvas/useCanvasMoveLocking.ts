@@ -4,13 +4,13 @@ import { storeToRefs } from "pinia";
 import { navigatorUtils } from "@knime/utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useMovingStore } from "@/store/workflow/moving";
 import { isInputElement } from "@/util/isInputElement";
 
 export const useCanvasMoveLocking = () => {
   const { isDragging } = storeToRefs(useMovingStore());
-  const { setIsMoveLocked } = useCanvasStore();
+  const { setIsMoveLocked } = useSVGCanvasStore();
 
   const onDownShiftOrControl = (event: KeyboardEvent) => {
     if (isInputElement(event.target as HTMLElement) || isUIExtensionFocused()) {

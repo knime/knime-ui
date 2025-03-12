@@ -4,7 +4,7 @@ import {
   AddNodeCommand,
   type NodeFactoryKey,
 } from "@/api/gateway-api/generated-api";
-import { useCanvasStore } from "@/store/canvas";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -24,7 +24,7 @@ export const useAddNodeToWorkflow = () => {
     }
 
     const { singleSelectedNode } = storeToRefs(useSelectionStore());
-    const { getVisibleFrame } = storeToRefs(useCanvasStore());
+    const canvasStore = useCurrentCanvasStore();
 
     const position = singleSelectedNode.value
       ? {
@@ -33,7 +33,7 @@ export const useAddNodeToWorkflow = () => {
           y: singleSelectedNode.value.position.y,
         }
       : geometry.findFreeSpaceAroundCenterWithFallback({
-          visibleFrame: getVisibleFrame.value,
+          visibleFrame: canvasStore.value.getVisibleFrame,
           nodes: activeWorkflow.value!.nodes,
         });
     // eslint-disable-next-line no-undefined

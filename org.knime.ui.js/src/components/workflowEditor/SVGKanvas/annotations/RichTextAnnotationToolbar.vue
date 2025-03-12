@@ -11,7 +11,7 @@ import MoreActionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import { type HotkeysNS, hotkeys } from "@knime/utils";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import * as $shapes from "@/style/shapes";
 import FloatingMenu from "../FloatingMenu/FloatingMenu.vue";
 
@@ -102,7 +102,7 @@ const selectedHeadingText = computed(
   () => headingPresets.value.find((heading) => heading.selected)?.text,
 );
 
-const { zoomFactor } = storeToRefs(useCanvasStore());
+const { zoomFactor } = storeToRefs(useSVGCanvasStore());
 
 const toolbarItemPadding = 8;
 const toolbarItemGap = 4;

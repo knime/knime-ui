@@ -182,8 +182,7 @@ export const useFloatingConnectorStore = defineStore(
         params,
       });
 
-      const { pixiApplication, globalToWorldCoordinates } =
-        useWebGLCanvasStore();
+      const { pixiApplication, toCanvasCoordinates } = useWebGLCanvasStore();
       const canvas = pixiApplication!.app.canvas;
       canvas.setPointerCapture(pointerDownEvent.pointerId);
 
@@ -213,7 +212,7 @@ export const useFloatingConnectorStore = defineStore(
 
         isDragging.value = true;
 
-        const [absoluteX, absoluteY] = globalToWorldCoordinates([
+        const [absoluteX, absoluteY] = toCanvasCoordinates([
           pointerMoveEvent.offsetX,
           pointerMoveEvent.offsetY,
         ]);

@@ -5,7 +5,7 @@ import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { findObjectsForSelection } from "@/components/workflowEditor/util/findObjectsForSelection";
-import { useCanvasStore } from "@/store/canvas/canvas-svg";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -57,7 +57,7 @@ export default defineComponent({
   }),
   computed: {
     ...mapState(useWorkflowStore, ["activeWorkflow"]),
-    ...mapState(useCanvasStore, ["screenToCanvasCoordinates"]),
+    ...mapState(useSVGCanvasStore, ["screenToCanvasCoordinates"]),
     ...mapState(useSelectionStore, [
       "selectedNodeIds",
       "selectedAnnotationIds",

@@ -9,7 +9,7 @@ import { navigatorUtils } from "@knime/utils";
 
 import { $bus } from "@/plugins/event-bus";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -25,7 +25,7 @@ import { usePanning } from "./usePanning";
 
 const emit = defineEmits(["containerSizeChanged"]);
 
-const canvasStore = useCanvasStore();
+const canvasStore = useSVGCanvasStore();
 const { contentBounds, canvasSize, viewBox, interactionsEnabled } =
   storeToRefs(canvasStore);
 

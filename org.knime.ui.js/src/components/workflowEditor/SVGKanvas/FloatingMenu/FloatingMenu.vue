@@ -5,7 +5,7 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import {
   type FloatingContainerProperties,
@@ -66,7 +66,7 @@ const emit = defineEmits(["menuClose"]);
 
 const absolutePosition = ref({ left: 0, top: 0 });
 
-const canvasStore = useCanvasStore();
+const canvasStore = useSVGCanvasStore();
 
 const { zoomFactor } = storeToRefs(canvasStore);
 

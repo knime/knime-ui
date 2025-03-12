@@ -8,7 +8,7 @@ import type { FileExplorerItem } from "@knime/components";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
-import { useCanvasStore } from "@/store/canvas";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -32,7 +32,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
 
   const { isWritable } = storeToRefs(useWorkflowStore());
   const { projectPath } = storeToRefs(useSpaceCachingStore());
-  const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+  const canvasStore = useCurrentCanvasStore();
   const { fileExtensionToNodeTemplateId } = storeToRefs(useApplicationStore());
   const { getSingleNodeTemplate } = useNodeTemplatesStore();
   const { addNode } = useNodeInteractionsStore();
@@ -150,7 +150,10 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     }
 
     try {
-      const [x, y] = screenToCanvasCoordinates.value([screenX, screenY]);
+      const [x, y] = canvasStore.value.screenToCanvasCoordinates([
+        screenX,
+        screenY,
+      ]);
       const position = { x, y };
       const spaceItemReference = {
         providerId: activeSpacePath.value.spaceProviderId,

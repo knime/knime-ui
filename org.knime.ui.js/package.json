@@ -42,6 +42,8 @@
     "@knime/utils": "^1.3.0",
     "@knime/virtual-tree": "^1.3.24",
     "@open-rpc/client-js": "^1.8.1",
+    "@tiptap/extension-heading": "^2.11.5",
+    "@tiptap/vue-3": "^2.11.5",
     "@types/kd-tree-javascript": "^1.0.3",
     "@vueuse/core": "^10.9.0",
     "@vueuse/integrations": "^10.11.0",

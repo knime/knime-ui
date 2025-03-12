@@ -5,7 +5,8 @@ import { storeToRefs } from "pinia";
 
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
-import { type TooltipDefinition, useTooltip } from "@/composables/useTooltip";
+import { useTooltip } from "@/components/workflowEditor/SVGKanvas/common/useTooltip";
+import type { TooltipDefinition } from "@/components/workflowEditor/common/types";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";

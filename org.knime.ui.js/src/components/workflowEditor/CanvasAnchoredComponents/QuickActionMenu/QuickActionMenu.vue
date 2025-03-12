@@ -11,7 +11,7 @@ import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
 import { type QuickBuildMenuState } from "@/components/kai/KaiQuickBuild.vue";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useApplicationStore } from "@/store/application/application";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import * as $shapes from "@/style/shapes";
 // TODO: refactor structure and implement fix for dynamically resolved NodePortActiveConnector
@@ -48,7 +48,7 @@ defineEmits(["menuClose"]);
 
 const { quickActionMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
 const { availablePortTypes } = storeToRefs(useApplicationStore());
-const { zoomFactor } = storeToRefs(useCanvasStore());
+const { zoomFactor } = storeToRefs(useSVGCanvasStore());
 
 const hasConnector = computed(() => quickActionMenu.value.hasConnector);
 

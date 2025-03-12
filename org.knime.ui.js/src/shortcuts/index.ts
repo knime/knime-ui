@@ -1,4 +1,4 @@
-import { useCanvasStore } from "@/store/canvas";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -52,13 +52,13 @@ const shortcuts: ShortcutsRegistry = {
         executionShortcuts,
       ),
       ...conditionGroup(
-        () => Boolean(useCanvasStore().interactionsEnabled),
+        () => Boolean(useCurrentCanvasStore().value.interactionsEnabled),
         selectionShortcuts,
       ),
       ...conditionGroup(
         () =>
           Boolean(
-            useCanvasStore().interactionsEnabled &&
+            useCurrentCanvasStore().value.interactionsEnabled &&
               !useWorkflowStore().isWorkflowEmpty,
           ),
         canvasShortcuts,

@@ -4,7 +4,7 @@ import { createTestingPinia } from "@pinia/testing";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
@@ -33,7 +33,7 @@ export const loadStore = () => {
   const clipboardInteractionsStore =
     useClipboardInteractionsStore(testingPinia);
 
-  const canvasStore = useCanvasStore(testingPinia);
+  const canvasStore = useSVGCanvasStore(testingPinia);
   const kanvas = document.createElement("div");
   kanvas.setAttribute("id", "kanvas");
   kanvas.scrollTo = vi.fn();

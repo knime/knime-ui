@@ -1,6 +1,6 @@
 import { storeToRefs } from "pinia";
 
-import { useCanvasStore } from "@/store/canvas";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
@@ -12,7 +12,8 @@ export const useDropNode = () => {
     event.dataTransfer?.types.includes(KNIME_MIME);
 
   const { isWritable } = storeToRefs(useWorkflowStore());
-  const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+
+  const canvasStore = useCurrentCanvasStore();
   const { addNode } = useNodeInteractionsStore();
 
   const onDrop = async (event: DragEvent) => {
@@ -24,7 +25,8 @@ export const useDropNode = () => {
       }
 
       const nodeFactory = JSON.parse(data);
-      const [x, y] = screenToCanvasCoordinates.value([
+
+      const [x, y] = canvasStore.value.screenToCanvasCoordinates([
         event.clientX - $shapes.nodeSize / 2,
         event.clientY - $shapes.nodeSize / 2,
       ]);

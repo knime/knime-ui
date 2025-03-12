@@ -3,7 +3,7 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -29,7 +29,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
   const movingStore = useMovingStore();
   const { hasAbortedDrag, isDragging } = storeToRefs(movingStore);
   const { isMoveLocked, screenToCanvasCoordinates, zoomFactor } = storeToRefs(
-    useCanvasStore(),
+    useSVGCanvasStore(),
   );
   const { isWritable } = storeToRefs(useWorkflowStore());
   const selectionStore = useSelectionStore();

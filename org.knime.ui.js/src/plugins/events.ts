@@ -12,7 +12,7 @@ import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjects
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
-import { useCanvasStore } from "@/store/canvas";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
@@ -287,10 +287,8 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
       const kanvas = getKanvasDomElement();
 
       if (kanvas?.contains(el)) {
-        const [canvasX, canvasY] = useCanvasStore().screenToCanvasCoordinates([
-          x,
-          y,
-        ]);
+        const [canvasX, canvasY] =
+          useCurrentCanvasStore().value.screenToCanvasCoordinates([x, y]);
 
         const workflow = useWorkflowStore().activeWorkflow;
 

@@ -5,8 +5,8 @@ import { storeToRefs } from "pinia";
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useMoveObject } from "@/composables/useMoveObject";
-import { useCanvasStore } from "@/store/canvas";
+import { useMoveObject } from "@/components/workflowEditor/SVGKanvas/common/useMoveObject";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
@@ -42,7 +42,7 @@ const {
   getSelectedConnections: selectedConnections,
 } = storeToRefs(selectionStore);
 const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
-const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+const { screenToCanvasCoordinates } = storeToRefs(useSVGCanvasStore());
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const { addVirtualBendpoint, addBendpoint } = useConnectionInteractionsStore();
 

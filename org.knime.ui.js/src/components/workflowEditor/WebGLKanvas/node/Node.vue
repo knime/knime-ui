@@ -51,12 +51,8 @@ const props = withDefaults(defineProps<Props>(), {
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
 const canvasStore = useWebGLCanvasStore();
-const {
-  isDebugModeEnabled,
-  visibleArea,
-  globalToWorldCoordinates,
-  canvasLayers,
-} = storeToRefs(canvasStore);
+const { isDebugModeEnabled, visibleArea, toCanvasCoordinates, canvasLayers } =
+  storeToRefs(canvasStore);
 
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
@@ -250,10 +246,7 @@ const actionBarPosition = computed(() => {
 });
 
 const onRightClick = (event: PIXI.FederatedPointerEvent) => {
-  const [x, y] = globalToWorldCoordinates.value([
-    event.global.x,
-    event.global.y,
-  ]);
+  const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({
     isOpen: true,

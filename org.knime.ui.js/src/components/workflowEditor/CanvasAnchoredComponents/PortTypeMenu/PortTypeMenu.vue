@@ -9,7 +9,7 @@ import type { NodePortGroups } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import portIcon from "@/components/common/PortIconRenderer";
 import { useApplicationStore } from "@/store/application/application";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import type { PortTypeMenuState } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import * as $shapes from "@/style/shapes";
 import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
@@ -45,7 +45,7 @@ const selectedPortGroup = ref<string | null>(null);
 // eslint-disable-next-line no-undefined
 const ariaActiveDescendant = ref<string | undefined>(undefined);
 
-const { zoomFactor } = storeToRefs(useCanvasStore());
+const { zoomFactor } = storeToRefs(useSVGCanvasStore());
 const { availablePortTypes, suggestedPortTypes } = storeToRefs(
   useApplicationStore(),
 );

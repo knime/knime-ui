@@ -3,7 +3,7 @@ import { type PropType, defineComponent } from "vue";
 import { mapState } from "pinia";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useMovingStore } from "@/store/workflow/moving";
 
 import {
@@ -53,7 +53,7 @@ export default defineComponent({
   },
 
   computed: {
-    ...mapState(useCanvasStore, ["zoomFactor", "screenToCanvasCoordinates"]),
+    ...mapState(useSVGCanvasStore, ["zoomFactor", "screenToCanvasCoordinates"]),
     ...mapState(useMovingStore, ["movePreviewDelta"]),
 
     focusPlaneOffset() {

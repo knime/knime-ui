@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { computed } from "vue";
 import { mount } from "@vue/test-utils";
 
 import type { Workflow } from "@/api/custom-types";
@@ -21,6 +22,14 @@ vi.mock("@/environment", async (importOriginal) => {
   Object.assign(mockEnvironment, await importOriginal());
   return mockEnvironment;
 });
+
+vi.mock("@/store/canvas/useCurrentCanvasStore", () => {
+  return {
+    useCurrentCanvasStore: () =>
+      computed(() => ({ containerSize: { width: 100 } })),
+  };
+});
+
 const { setEnvironment } = useMockEnvironment(mockEnvironment);
 
 describe("WorkflowInfoBar.vue", () => {

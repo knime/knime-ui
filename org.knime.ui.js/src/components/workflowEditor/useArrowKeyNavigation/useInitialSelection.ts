@@ -2,7 +2,7 @@ import { storeToRefs } from "pinia";
 
 import { capitalize } from "@knime/utils";
 
-import { useCanvasStore as useSVGCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";

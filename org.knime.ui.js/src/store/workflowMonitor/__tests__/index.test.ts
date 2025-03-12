@@ -6,7 +6,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
 import { useApplicationStore } from "@/store/application/application";
 import { lifecycleBus } from "@/store/application/lifecycle-events";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createWorkflow, createWorkflowMonitorMessage } from "@/test/factories";
@@ -30,7 +30,7 @@ describe("workflowMonitor", () => {
     });
 
     const workflow = createWorkflow();
-    const canvasStore = useCanvasStore(testingPinia);
+    const canvasStore = useSVGCanvasStore(testingPinia);
     const moveObjectIntoView = vi.spyOn(canvasStore, "moveObjectIntoView");
     const kanvas = document.createElement("div");
     kanvas.setAttribute("id", "kanvas");

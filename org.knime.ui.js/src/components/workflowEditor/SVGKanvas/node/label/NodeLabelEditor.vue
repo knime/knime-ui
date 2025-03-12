@@ -4,7 +4,7 @@ import { mapState } from "pinia";
 import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
 import ActionBar from "@/components/workflowEditor/SVGKanvas/common/ActionBar.vue";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 
 import NodeLabelTextArea from "./NodeLabelTextArea.vue";
 
@@ -45,7 +45,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(useCanvasStore, ["viewBox"]),
+    ...mapState(useSVGCanvasStore, ["viewBox"]),
     overlayStyles() {
       const { left, top } = this.viewBox;
       return {

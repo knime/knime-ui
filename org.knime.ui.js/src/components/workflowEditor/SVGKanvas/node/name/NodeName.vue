@@ -1,7 +1,7 @@
 <script>
 import { mapActions, mapState } from "pinia";
 
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 import NodeNameEditor from "./NodeNameEditor.vue";
@@ -67,7 +67,7 @@ export default {
       "renameContainerNode",
       "closeNameEditor",
     ]),
-    ...mapActions(useCanvasStore, { focusCanvas: "focus" }),
+    ...mapActions(useSVGCanvasStore, { focusCanvas: "focus" }),
     onRequestEdit() {
       this.openNameEditor(this.nodeId);
     },

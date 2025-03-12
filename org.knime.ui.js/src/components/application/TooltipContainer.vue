@@ -1,7 +1,9 @@
-<script>
-import { mapActions, mapState } from "pinia";
+<script setup lang="ts">
+import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
-import { useCanvasStore } from "@/store/canvas";
+import type { XY } from "@/api/gateway-api/generated-api";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
@@ -14,76 +16,75 @@ import Tooltip from "./Tooltip.vue";
  * Closes tooltip when mouse leaves
  * Prevents native browser zooming by catching Ctrl-Wheel events
  */
-export default {
-  components: {
-    Tooltip,
-  },
-  data: () => ({
-    position: null,
-  }),
-  computed: {
-    ...mapState(useWorkflowStore, ["tooltip"]),
-    ...mapState(useCanvasStore, ["zoomFactor", "screenFromCanvasCoordinates"]),
-    /*
-      The gap has to grow with the zoomFactor.
-      Using the square root gives a more appropriate visual impression for larger factors
-    */
-    zoomedGap() {
-      return Math.sqrt(this.zoomFactor) * (this.tooltip.gap || 0);
-    },
-  },
-  watch: {
-    tooltip(newTooltip, oldTooltip) {
-      if (!oldTooltip) {
-        this.setPosition();
-        this.openTooltip();
-      } else if (!newTooltip) {
-        this.closeTooltip();
-      }
-    },
-  },
-  beforeUnmount() {
-    // clean up event listeners
-    this.closeTooltip();
-  },
-  methods: {
-    ...mapActions(useWorkflowStore, ["setTooltip"]),
-    setPosition() {
-      if (!this.tooltip) {
-        this.position = null;
-        return;
-      }
+const position = ref<XY>();
 
-      // get coordinates relative to kanvas' bounds
-      let { anchorPoint = { x: 0, y: 0 }, position } = this.tooltip;
-      this.position = this.screenFromCanvasCoordinates({
-        x: anchorPoint.x + position.x,
-        y: anchorPoint.y + position.y,
-      });
-    },
-    openTooltip() {
-      consola.trace("add kanvas scroll listener for tooltips");
+const canvasStore = useCurrentCanvasStore();
+const workflowStore = useWorkflowStore();
+const { tooltip } = storeToRefs(workflowStore);
 
-      let kanvas = getKanvasDomElement();
-      kanvas?.addEventListener("scroll", this.onCanvasScroll);
-    },
-    closeTooltip() {
-      consola.trace("remove kanvas scroll listener for tooltips");
+/*
+ * The gap has to grow with the zoomFactor.
+ * Using the square root gives a more appropriate visual impression for larger factors
+ */
+const zoomedGap = computed(() => {
+  return Math.sqrt(canvasStore.value.zoomFactor) * (tooltip.value?.gap ?? 0);
+});
+const setPosition = () => {
+  if (!tooltip.value) {
+    // eslint-disable-next-line no-undefined
+    position.value = undefined;
+    return;
+  }
 
-      let kanvas = getKanvasDomElement();
-      // if kanvas currently exists (workflow is open) remove scroll event listener
-      kanvas?.removeEventListener("scroll", this.onCanvasScroll);
-    },
-    onMouseLeave() {
-      // trigger closing tooltip
-      this.setTooltip(null);
-    },
-    onCanvasScroll() {
-      consola.trace("scrolling canvas while tooltip is open");
-      this.setPosition();
-    },
-  },
+  // get coordinates relative to kanvas' bounds
+  let { anchorPoint = { x: 0, y: 0 }, position: currentPosition } =
+    tooltip.value;
+  position.value = canvasStore.value.screenFromCanvasCoordinates({
+    x: anchorPoint.x + currentPosition.x,
+    y: anchorPoint.y + currentPosition.y,
+  });
 };
+
+// TODO NXT-3411 verify if this can even happen
+const onCanvasScroll = () => {
+  consola.trace("scrolling canvas while tooltip is open");
+  setPosition();
+};
+
+const openTooltip = () => {
+  consola.trace("add kanvas scroll listener for tooltips");
+
+  let kanvas = getKanvasDomElement();
+  kanvas?.addEventListener("scroll", onCanvasScroll);
+};
+
+const closeTooltip = () => {
+  consola.trace("remove kanvas scroll listener for tooltips");
+
+  let kanvas = getKanvasDomElement();
+  // if kanvas currently exists (workflow is open) remove scroll event listener
+  kanvas?.removeEventListener("scroll", onCanvasScroll);
+};
+
+// TODO NXT-3411 verify if this can even happen
+const onMouseLeave = () => {
+  // trigger closing tooltip
+  workflowStore.setTooltip(null);
+};
+
+watch(tooltip, (newTooltip, oldTooltip) => {
+  if (!oldTooltip) {
+    setPosition();
+    openTooltip();
+  } else if (!newTooltip) {
+    closeTooltip();
+  }
+});
+
+onBeforeUnmount(() => {
+  // clean up event listeners
+  closeTooltip();
+});
 </script>
 
 <template>
@@ -91,8 +92,8 @@ export default {
     <transition name="tooltip">
       <Tooltip
         v-if="tooltip"
-        :x="position.x"
-        :y="position.y"
+        :x="position?.x"
+        :y="position?.y"
         :gap="zoomedGap"
         :text="tooltip.text"
         :title="tooltip.title"

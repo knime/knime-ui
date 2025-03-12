@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 
 import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
-import { useCanvasStore } from "@/store/canvas";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import RemoteWorkflowInfo from "./RemoteWorkflowInfo.vue";
@@ -19,13 +19,13 @@ const {
   activeWorkflow,
 } = storeToRefs(useWorkflowStore());
 const { activeProjectOrigin: origin } = storeToRefs(useApplicationStore());
-const width = computed(() => useCanvasStore().containerSize.width);
+const width = computed(() => useCurrentCanvasStore().value.containerSize.width);
 
 const containerType = computed(() => activeWorkflow.value!.info.containerType);
 </script>
 
 <template>
-  <div class="stack">
+  <div v-if="width > 0" class="stack">
     <div
       v-if="isLinked || isInsideLinked || origin?.version"
       class="workflow-info"

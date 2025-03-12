@@ -8,10 +8,10 @@ import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { createAbortablePromise } from "@/api/utils";
 import { getToastsProvider } from "@/plugins/toasts";
-import { useCanvasStore } from "@/store/canvas";
 import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
+import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 
 import { useWorkflowStore } from "./workflow";
 
@@ -232,7 +232,7 @@ export const useClipboardInteractionsStore = defineStore(
           return;
         }
 
-        const canvasStore = useCanvasStore();
+        const canvasStore = useCurrentCanvasStore();
         const workflowStore = useWorkflowStore();
         const selectionStore = useSelectionStore();
 
@@ -267,7 +267,7 @@ export const useClipboardInteractionsStore = defineStore(
               clipboardText,
               workflowStore.activeWorkflow!,
               customPosition ?? { x: 0, y: 0 },
-              canvasStore.getVisibleFrame,
+              canvasStore.value.getVisibleFrame,
             )
           ) {
             consola.info("Could not parse json or URI from clipboard.");
@@ -281,7 +281,7 @@ export const useClipboardInteractionsStore = defineStore(
         const { position, fillScreenAfterPaste } = customPosition
           ? { position: customPosition, fillScreenAfterPaste: false }
           : pastePartsAt({
-              visibleFrame: canvasStore.getVisibleFrame,
+              visibleFrame: canvasStore.value.getVisibleFrame,
               clipboardContent,
               isWorkflowEmpty: workflowStore.isWorkflowEmpty,
             });
@@ -307,7 +307,7 @@ export const useClipboardInteractionsStore = defineStore(
 
         // 4. Execute hook and select pasted content
         if (fillScreenAfterPaste) {
-          canvasStore.fillScreen();
+          canvasStore.value.fillScreen();
         }
 
         selectionStore.deselectAllObjects();

@@ -3,9 +3,9 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
+import { useMoveObject } from "@/components/workflowEditor/SVGKanvas/common/useMoveObject";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { useMoveObject } from "@/composables/useMoveObject";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 
@@ -17,7 +17,7 @@ const props = defineProps<Props>();
 
 const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
-const { isMoveLocked } = storeToRefs(useCanvasStore());
+const { isMoveLocked } = storeToRefs(useSVGCanvasStore());
 const selectionStore = useSelectionStore();
 const { isAnnotationSelected } = storeToRefs(selectionStore);
 

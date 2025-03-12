@@ -3,7 +3,7 @@ import { type MaybeElementRef } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import type { useCanvasStore } from "@/store/canvas/canvas-svg";
+import type { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -34,7 +34,9 @@ type UseCanvasFloatingContainerOptions = {
   closeMenu: () => void;
   disableInteractions?: boolean;
   closeOnEscape?: boolean;
-  canvasStore?: ReturnType<typeof useCanvasStore | typeof useWebGLCanvasStore>;
+  canvasStore?: ReturnType<
+    typeof useSVGCanvasStore | typeof useWebGLCanvasStore
+  >;
 };
 
 export const useCanvasFloatingContainer = (

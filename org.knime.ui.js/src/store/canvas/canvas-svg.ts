@@ -42,7 +42,7 @@ type Scroll = {
   smooth?: boolean;
 };
 
-export const useCanvasStore = defineStore("canvasSVG", {
+export const useSVGCanvasStore = defineStore("canvasSVG", {
   state: (): CanvasState => ({
     zoomFactor: defaultZoomFactor,
     containerSize: { width: 0, height: 0 },
@@ -546,6 +546,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
         const offsetX = origX - offsetLeft + scrollLeft;
         const offsetY = origY - offsetTop + scrollTop;
 
+        // TODO NXT-3439 change return type in both stores!
         return this.toCanvasCoordinates([offsetX, offsetY]);
       };
     },

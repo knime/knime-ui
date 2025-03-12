@@ -7,7 +7,7 @@ import { navigatorUtils } from "@knime/utils";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { runInEnvironment } from "@/environment";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -20,7 +20,7 @@ type UsePanningWithSpaceOptions = {
 
 const usePanningWithSpace = (options: UsePanningWithSpaceOptions) => {
   const isHoldingDownSpace = ref(false);
-  const { setIsMoveLocked } = useCanvasStore();
+  const { setIsMoveLocked } = useSVGCanvasStore();
   const { resetCanvasMode } = useCanvasModesStore();
 
   const onPressSpace = (event: KeyboardEvent) => {
@@ -104,7 +104,7 @@ export const usePanning = (options: UsePanningOptions) => {
   let elemScroll: [number, number] = [0, 0];
 
   const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
-  const canvasStore = useCanvasStore();
+  const canvasStore = useSVGCanvasStore();
   const { interactionsEnabled } = storeToRefs(canvasStore);
   const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
   const { settings } = storeToRefs(useSettingsStore());

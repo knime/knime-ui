@@ -6,7 +6,6 @@ import {
   type ShallowRef,
   type UnwrapRef,
   computed,
-  nextTick,
   ref,
   shallowRef,
 } from "vue";
@@ -36,14 +35,6 @@ const clampZoomFactor = (newFactor: number) =>
  * Canvas Store manages positioning, zooming, scrolling and
  * coordinate transformations for the Kanvas component.
  */
-
-type Scroll = {
-  canvasX: number | string;
-  toScreenX?: number | string;
-  canvasY: number | string;
-  toScreenY?: number | string;
-  smooth?: boolean;
-};
 
 export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const zoomFactor = ref(defaultZoomFactor);
@@ -126,27 +117,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasAnchor.value.anchor = { x: 0, y: 0 };
   };
 
-  const isOutsideKanvasView = (
-    kanvas: HTMLElement,
-    referenceObjectCoords: XY,
-  ) => {
-    const DISTANCE_THRESHOLD = 25;
-
-    const isNearLeft =
-      referenceObjectCoords.x - kanvas.offsetLeft <= DISTANCE_THRESHOLD;
-
-    const isNearTop =
-      referenceObjectCoords.y - kanvas.offsetTop <= DISTANCE_THRESHOLD;
-
-    const isNearRight =
-      kanvas.offsetWidth - (referenceObjectCoords.x - kanvas.offsetLeft) <=
-      DISTANCE_THRESHOLD;
-
-    const isNearBottom =
-      kanvas.offsetHeight - (referenceObjectCoords.y - kanvas.offsetTop) <=
-      DISTANCE_THRESHOLD;
-
-    return isNearLeft || isNearTop || isNearRight || isNearBottom;
+  const isOutsideKanvasView = (_params: any) => {
+    consola.warn("canvas-webgl: isOutsideKanvasView will be removed");
   };
 
   const focus = () => {
@@ -202,20 +174,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
-  const contentBoundsChanged = ([newBounds, oldBounds]: [
-    { left: number; top: number },
-    { left: number; top: number },
-  ]) => {
-    const [deltaX, deltaY] = [
-      newBounds.left - oldBounds.left,
-      newBounds.top - oldBounds.top,
-    ];
-
-    const kanvas = getKanvasDomElement();
-    if (kanvas) {
-      kanvas.scrollLeft -= deltaX * zoomFactor.value;
-      kanvas.scrollTop -= deltaY * zoomFactor.value;
-    }
+  const contentBoundsChanged = (_params: any) => {
+    consola.warn("canvas-webgl: contentBoundsChanged will be removed");
   };
 
   const contentPadding = computed(() => {
@@ -252,63 +212,61 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
-  const viewBox = computed(() => {
-    const { left, top, width, height } = paddedBounds.value;
-
-    return {
-      left,
-      top,
-      width,
-      height,
-      string: `${left} ${top} ${width} ${height}`,
+  /**
+   * Converts browser coordinates whose origin is 0,0 (top, left) of the <canvas> element (NOT the screen/viewport)
+   * into to a PIXI world coordinate.
+   */
+  const toCanvasCoordinates = computed(() => {
+    return ([offsetX, offsetY]: [number, number]): [number, number] => {
+      return [
+        (offsetX - canvasOffset.value.x) / zoomFactor.value,
+        (offsetY - canvasOffset.value.y) / zoomFactor.value,
+      ];
     };
   });
 
-  // returns the true offset from the upper-left corner of the Kanvas for a given point on the workflow
+  /**
+   * Converts a PIXI world coordinate to a browser coordinates whose origin is 0,0 (top, left)
+   * of the <canvas> element (NOT the screen/viewport).
+   */
   const fromCanvasCoordinates = computed(() => {
-    return ({ x: origX, y: origY }: XY) => ({
-      x: (origX - viewBox.value.left) * zoomFactor.value,
-      y: (origY - viewBox.value.top) * zoomFactor.value,
-    });
+    return ([worldX, worldY]: [number, number]): [number, number] => {
+      return [
+        worldX * zoomFactor.value + canvasOffset.value.x,
+        worldY * zoomFactor.value + canvasOffset.value.x,
+      ];
+    };
   });
 
-  // returns the position of a given point on the workflow relative to the window
+  /**
+   * Converts canvas (PIXI world) coordinates to coordinates relative to the browser viewport of the window.
+   */
   const screenFromCanvasCoordinates = computed(() => {
     return ({ x, y }: XY) => {
-      const scrollContainerElement = getKanvasDomElement()!;
-      const { x: offsetLeft, y: offsetTop } =
-        scrollContainerElement.getBoundingClientRect();
-      const { scrollLeft, scrollTop } = scrollContainerElement;
+      const kanvas = getKanvasDomElement()!;
+      const { x: offsetLeft, y: offsetTop } = kanvas.getBoundingClientRect();
 
-      const screenCoordinates = fromCanvasCoordinates.value({ x, y });
-      screenCoordinates.x = screenCoordinates.x - scrollLeft + offsetLeft;
-      screenCoordinates.y = screenCoordinates.y - scrollTop + offsetTop;
+      const [globalX, globalY] = fromCanvasCoordinates.value([x, y]);
+      const screenX = globalX + offsetLeft;
+      const screenY = globalY + offsetTop;
 
-      return screenCoordinates;
+      return { x: screenX, y: screenY };
     };
   });
 
-  // find point in workflow, based on absolute coordinate on canvas
-  const toCanvasCoordinates = computed(() => {
-    return ([origX, origY]: [number, number]): [number, number] => [
-      origX / zoomFactor.value + viewBox.value.left,
-      origY / zoomFactor.value + viewBox.value.top,
-    ];
-  });
-
-  // returns the position of a given point on the workflow relative to the window
+  /**
+   * Converts coordinates relative to the browser viewport of the window to canvas (PIXI world) coordinates.
+   */
   const screenToCanvasCoordinates = computed(() => {
-    return ([origX, origY]: [number, number]) => {
-      const scrollContainerElement = getKanvasDomElement()!;
+    return ([clientX, clientY]: [x: number, y: number]) => {
+      const kanvas = getKanvasDomElement()!;
+      const { x: offsetLeft, y: offsetTop } = kanvas.getBoundingClientRect();
 
-      const { x: offsetLeft, y: offsetTop } =
-        scrollContainerElement.getBoundingClientRect();
-      const { scrollLeft, scrollTop } = scrollContainerElement;
+      const elementX = clientX - offsetLeft;
+      const elementY = clientY - offsetTop;
 
-      const offsetX = origX - offsetLeft + scrollLeft;
-      const offsetY = origY - offsetTop + scrollTop;
-
-      return toCanvasCoordinates.value([offsetX, offsetY]);
+      // TODO NXT-3439 align types to XY type
+      return toCanvasCoordinates.value([elementX, elementY]);
     };
   });
 
@@ -336,6 +294,18 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     return calculateVisibleArea(OFFSET_BUFFER);
   });
 
+  const getVisibleFrame = computed(() => {
+    const { x, y, width, height } = visibleArea.value;
+    return {
+      top: y,
+      left: x,
+      width,
+      height,
+      bottom: y + height,
+      right: x + width,
+    };
+  });
+
   /**
    * Helper to get one of this 5 points in canvas coordinates. Default is center.
    * |-----x-----|
@@ -350,91 +320,38 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     return (
       anchor: "center" | "left" | "top" | "right" | "bottom" = "center",
     ) => {
-      const kanvas = getKanvasDomElement()!;
-
-      let screenX = kanvas.offsetLeft;
-      let screenY = kanvas.offsetTop;
+      const { width, height } = containerSize.value;
+      let posX = 0;
+      let posY = 0;
 
       switch (anchor) {
         case "center":
-          screenX += kanvas.clientWidth / 2;
-          screenY += kanvas.clientHeight / 2;
+          posX += width / 2;
+          posY += height / 2;
           break;
         case "left":
-          screenY += kanvas.clientHeight / 2;
+          posY += height / 2;
           break;
         case "right":
-          screenX += kanvas.clientWidth;
-          screenY += kanvas.clientHeight / 2;
+          posX += width;
+          posY += height / 2;
           break;
         case "top":
-          screenX += kanvas.clientWidth / 2;
+          posX += width / 2;
           break;
         case "bottom":
-          screenX += kanvas.clientWidth / 2;
-          screenY += kanvas.clientHeight;
+          posX += width / 2;
+          posY += height;
           break;
       }
 
-      const [x, y] = screenToCanvasCoordinates.value([screenX, screenY]);
-
+      const [x, y] = toCanvasCoordinates.value([posX, posY]);
       return { x, y };
     };
   });
 
-  const globalToWorldCoordinates = computed(() => {
-    return ([globalX, globalY]: [number, number]): [number, number] => {
-      return [
-        (globalX - canvasOffset.value.x) / zoomFactor.value,
-        (globalY - canvasOffset.value.y) / zoomFactor.value,
-      ];
-    };
-  });
-
-  const scroll = ({
-    canvasX = 0,
-    canvasY = 0,
-    toScreenX = 0,
-    toScreenY = 0,
-    smooth = false,
-  }: Scroll) => {
-    const kanvas = getKanvasDomElement()!;
-
-    if (canvasX === "center") {
-      canvasX = contentBounds.value.centerX;
-    }
-    if (canvasY === "center") {
-      canvasY = contentBounds.value.centerY;
-    }
-    if (toScreenX === "center") {
-      toScreenX = kanvas.clientWidth / 2;
-    }
-    if (toScreenY === "center") {
-      toScreenY = kanvas.clientHeight / 2;
-    }
-
-    if (
-      typeof canvasX !== "number" ||
-      typeof canvasY !== "number" ||
-      typeof toScreenX !== "number" ||
-      typeof toScreenY !== "number"
-    ) {
-      return;
-    }
-
-    const screenCoordinates = fromCanvasCoordinates.value({
-      x: canvasX,
-      y: canvasY,
-    });
-
-    screenCoordinates.x -= toScreenX;
-    screenCoordinates.y -= toScreenY;
-
-    kanvas.scrollTo({
-      top: screenCoordinates.y,
-      left: screenCoordinates.x,
-      behavior: smooth ? "smooth" : "auto",
-    });
+  const scroll = (_params: any) => {
+    consola.warn("canvas-webgl: scroll will be removed");
   };
 
   const moveObjectIntoView = (
@@ -575,13 +492,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     });
   };
 
-  const updateContainerSize = async () => {
+  const updateContainerSize = () => {
     const kanvas = getKanvasDomElement()!;
-
-    // find origin in screen coordinates, relative to upper left corner of canvas
-    let { x, y } = fromCanvasCoordinates.value({ x: 0, y: 0 });
-    y -= kanvas.scrollTop;
-    x -= kanvas.scrollLeft;
 
     // update content depending on new container size
     setContainerSize({
@@ -589,19 +501,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       height: kanvas.clientHeight,
     });
 
-    // wait for canvas to update padding, size and scroll
-    await nextTick();
-
-    // find new origin in screen coordinates, relative to upper left corner of canvas
-    let { x: newX, y: newY } = fromCanvasCoordinates.value({ x: 0, y: 0 });
-    newX -= kanvas.scrollLeft;
-    newY -= kanvas.scrollTop;
-
-    // scroll by the difference to prevent content from moving
-    const [deltaX, deltaY] = [newX - x, newY - y];
-
-    kanvas.scrollLeft += deltaX;
-    kanvas.scrollTop += deltaY;
+    // keep API compatible
+    return Promise.resolve();
   };
 
   const restoreScrollState = async (
@@ -632,41 +533,46 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     containerSize,
     interactionsEnabled,
     isMoveLocked,
-    canvasOffset,
+    fitToScreenZoomFactor,
+    contentBounds,
+    canvasSize,
+    getCanvasScrollState,
+    getVisibleFrame,
+    getCenterOfScrollContainer, // TODO NXT-3439 rename to something more fitting: getPositionOnCanvas and remove default
+    fromCanvasCoordinates,
+    toCanvasCoordinates,
+    screenFromCanvasCoordinates,
+    screenToCanvasCoordinates,
+    setFactor,
+    setContainerSize,
+    setInteractionsEnabled,
+    setIsMoveLocked,
+    focus,
+    initScrollContainerElement, // TODO NXT-3439 rename to initKanvasElement or remove it and use updateContainerSize on init
+    fitToScreen,
+    fillScreen,
+    zoomCentered,
+    zoomAroundPointer,
+    updateContainerSize,
+    restoreScrollState, // TODO NXT-3439 rename to restoreCanvasViewportPosition
+    moveObjectIntoView,
+
+    // svg only (legacy can be removed later) kept to have a compatible interface for now
+    scroll,
+    isOutsideKanvasView,
+    contentBoundsChanged,
+
+    // webgl only
     canvasAnchor,
     pixiApplication,
     canvasLayers,
     stage,
     isDebugModeEnabled,
-    fromCanvasCoordinates,
-    fitToScreenZoomFactor,
-    contentBounds,
-    canvasSize,
-    getCanvasScrollState,
+    canvasOffset,
     visibleArea,
-    getCenterOfScrollContainer,
-    globalToWorldCoordinates,
-    screenFromCanvasCoordinates,
-    screenToCanvasCoordinates,
     removeLayers,
-    setFactor,
-    setContainerSize,
-    setInteractionsEnabled,
-    setIsMoveLocked,
     setCanvasOffset,
     setCanvasAnchor,
     clearCanvasAnchor,
-    isOutsideKanvasView,
-    focus,
-    initScrollContainerElement,
-    fitToScreen,
-    fillScreen,
-    zoomCentered,
-    zoomAroundPointer,
-    scroll,
-    contentBoundsChanged,
-    updateContainerSize,
-    restoreScrollState,
-    moveObjectIntoView,
   };
 });

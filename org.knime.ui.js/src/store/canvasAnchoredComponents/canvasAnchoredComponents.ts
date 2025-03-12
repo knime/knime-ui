@@ -5,7 +5,7 @@ import type { WorkflowObject } from "@/api/custom-types";
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuProps } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import * as $shapes from "@/style/shapes";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { useCanvasModesStore } from "../application/canvasModes";
@@ -70,7 +70,7 @@ const getContextMenuPositionOnSVGCanvas = async (event: MouseEvent) => {
     }
 
     const screenToCanvasCoordinates =
-      useCanvasStore().screenToCanvasCoordinates;
+      useSVGCanvasStore().screenToCanvasCoordinates;
 
     const [x, y] = screenToCanvasCoordinates([clientX, clientY]);
 
@@ -83,7 +83,7 @@ const getContextMenuPositionOnSVGCanvas = async (event: MouseEvent) => {
     y: y + $shapes.nodeSize / 2,
   });
 
-  const centerOfVisibleArea = useCanvasStore().getCenterOfScrollContainer;
+  const centerOfVisibleArea = useSVGCanvasStore().getCenterOfScrollContainer;
 
   // fallback position for keyboard shortcut to open context menu
   const selectionBasedPosition = async () => {
@@ -211,7 +211,7 @@ export const useCanvasAnchoredComponentsStore = defineStore(
           props: null,
           events: {},
         });
-        useCanvasStore().focus();
+        useSVGCanvasStore().focus();
       },
 
       openQuickActionMenu({
@@ -273,7 +273,7 @@ export const useCanvasAnchoredComponentsStore = defineStore(
 
         // Wait for quick action menu to unmount, it's auto-focus would take over otherwise
         nextTick(() => {
-          useCanvasStore().focus();
+          useSVGCanvasStore().focus();
         });
       },
 
@@ -368,7 +368,7 @@ export const useCanvasAnchoredComponentsStore = defineStore(
           // when closing an active menu, we could optionally receive a native event
           // e.g. the menu is getting closed by right-clicking again
           event.preventDefault();
-          useCanvasStore().focus();
+          useSVGCanvasStore().focus();
         }
 
         if (canvasRendererUtils.isWebGLRenderer()) {

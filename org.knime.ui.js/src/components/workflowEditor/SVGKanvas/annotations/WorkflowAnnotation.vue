@@ -18,7 +18,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { TypedText } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
@@ -62,7 +62,7 @@ const {
   getFocusedObject,
   isAnnotationSelected,
 } = storeToRefs(selectionStore);
-const { focus: focusCanvas } = useCanvasStore();
+const { focus: focusCanvas } = useSVGCanvasStore();
 
 const isSelected = computed(() => {
   return isAnnotationSelected.value(props.annotation.id);

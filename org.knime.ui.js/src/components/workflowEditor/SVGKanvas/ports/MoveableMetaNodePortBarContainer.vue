@@ -2,10 +2,10 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
+import { useMoveObject } from "@/components/workflowEditor/SVGKanvas/common/useMoveObject";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { useMoveObject } from "@/composables/useMoveObject";
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -20,7 +20,7 @@ const bounds = computed(() => getBounds(props.type === "out"));
 
 const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
-const { isMoveLocked } = storeToRefs(useCanvasStore());
+const { isMoveLocked } = storeToRefs(useSVGCanvasStore());
 
 const workflowStore = useWorkflowStore();
 const { activeWorkflow: workflow } = storeToRefs(workflowStore);

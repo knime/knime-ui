@@ -3,7 +3,6 @@ import { mapActions, mapState } from "pinia";
 
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import { KNIME_MIME } from "@/composables/useDropNode";
-import { useCanvasStore } from "@/store/canvas";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { usePanelStore } from "@/store/panel";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -59,7 +58,6 @@ export default {
       workflow: "activeWorkflow",
       isWritable: "isWritable",
     }),
-    ...mapState(useCanvasStore, ["getVisibleFrame"]),
     ...mapState(useSelectionEvents, { selectedNodes: "getSelectedNodes" }),
   },
   methods: {
