@@ -94,8 +94,7 @@ final class ComponentAPI {
     static boolean openLinkComponentDialog(final String projectId, final String rootWorkflowId, final String nodeId)
         throws OperationNotAllowedException {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
-        final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
-        return ManipulateComponents.openLinkComponentDialog(component, wfKey);
+        return ManipulateComponents.openLinkComponentDialog(component);
     }
 
     /**

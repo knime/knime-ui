@@ -86,8 +86,6 @@ import org.knime.core.util.urlresolve.KnimeUrlResolver.IdAndPath;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
 import org.knime.core.util.urlresolve.URLResolverUtil;
 import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.WorkflowKey;
@@ -122,8 +120,7 @@ final class ManipulateComponents {
         // Stateless
     }
 
-    static boolean openLinkComponentDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException {
+    static boolean openLinkComponentDialog(final SubNodeContainer component) throws OperationNotAllowedException {
         assertLinkedComponent(component, false);
 
         final var validMountPoints = getAllValidMountPoint(ExplorerMountTable.getMountedContent());
@@ -140,7 +137,7 @@ final class ManipulateComponents {
     }
 
     static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException, ServiceCallException {
+        throws OperationNotAllowedException, ServiceCallException {
         assertLinkedComponent(component, true);
 
         final var templateInfo = component.getTemplateInformation();
@@ -204,7 +201,7 @@ final class ManipulateComponents {
      * This will not be callable from the FE until NXT-2038 is solved.
      */
     static void openChangeComponentHubItemVersionDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException, ServiceCallException {
+        throws OperationNotAllowedException, ServiceCallException {
         assertLinkedComponent(component, true);
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
