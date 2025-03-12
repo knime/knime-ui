@@ -165,7 +165,7 @@ public final class DesktopAPUtil {
             return null;
         }
         monitor.done();
-        final var workflowContext = createWorkflowContext(space, origin.itemId(), path);
+        final var workflowContext = createWorkflowContext(space, origin.itemId(), path, version);
         return loadWorkflow(monitor, path, workflowContext);
     }
 
@@ -243,9 +243,9 @@ public final class DesktopAPUtil {
         return wfm;
     }
 
-    private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path) {
+    private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path, final VersionId version) {
         final var mountId = space.toKnimeUrl(itemId).getAuthority();
-        final var location = space.getLocationInfo(itemId);
+        final var location = space.getLocationInfo(itemId, version);
         // TODO A local space root makes no sense for temp-copy mode, remove this workaround when AP-22097 is closed.
         final var localSpaceRoot = getLocalRoot(space, location, path);
         return WorkflowContextV2.builder() //
