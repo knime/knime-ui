@@ -43,7 +43,7 @@ interface ProjectAndWorkflowIds {
 
 export interface StatusUpdate {
   message: string;
-  type?: "INFO" | "WORKFLOW_BUILDING";
+  type?: "INFO" | "WORKFLOW_BUILDING" | "NODE_ADDED";
 }
 
 interface ConversationState {

@@ -291,6 +291,13 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         };
       },
 
+      hideQuickActionMenuConnector() {
+        this.quickActionMenu = {
+          ...this.quickActionMenu,
+          hasConnector: false,
+        };
+      },
+
       enableDetachedMode() {
         const DETACHED_MODE_OFFSET = 125;
 

@@ -17,8 +17,13 @@ export const useQuickBuild = ({
   nodeId: Ref<string | null>;
   startPosition: Ref<XY>;
 }) => {
-  const { enableDetachedMode, lockQuickActionMenu, unlockQuickActionMenu } =
-    useCanvasAnchoredComponentsStore();
+  const {
+    enableDetachedMode,
+    lockQuickActionMenu,
+    unlockQuickActionMenu,
+    hideQuickActionMenuConnector,
+  } = useCanvasAnchoredComponentsStore();
+
   const { makeAiRequest } = useAIAssistantStore();
 
   const { isAuthError, disconnectHub } = useHubAuth();
@@ -86,6 +91,10 @@ export const useQuickBuild = ({
     (value) => {
       if (value === "WORKFLOW_BUILDING") {
         enableDetachedModeFn();
+      }
+
+      if (value === "NODE_ADDED") {
+        hideQuickActionMenuConnector();
       }
     },
   );
