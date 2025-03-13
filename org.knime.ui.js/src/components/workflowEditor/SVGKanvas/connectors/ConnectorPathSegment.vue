@@ -3,8 +3,8 @@ import { computed, ref, toRef, watch } from "vue";
 import { animate } from "motion";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import connectorPath from "@/util/connectorPath";
 import { geometry } from "@/util/geometry";
+import { getBezierPathString } from "../../util/connectorPath";
 
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import type { PathSegment } from "./types";
@@ -45,7 +45,14 @@ const path = computed(() => {
   const shotldOffsetStart = props.index !== 0;
   const shouldOffsetEnd = !props.isLastSegment;
 
-  return connectorPath(x1, y1, x2, y2, shotldOffsetStart, shouldOffsetEnd);
+  return getBezierPathString(
+    x1,
+    y1,
+    x2,
+    y2,
+    shotldOffsetStart,
+    shouldOffsetEnd,
+  );
 });
 
 const centerPoint = computed(() =>
@@ -71,7 +78,7 @@ watch(toRef(props, "suggestDelete"), (newValue, oldValue) => {
 
   const newPath =
     newValue && !oldValue
-      ? connectorPath(x1, y1, x2 + shiftX, y2 + shiftY)
+      ? getBezierPathString(x1, y1, x2 + shiftX, y2 + shiftY)
       : path.value;
 
   animate(

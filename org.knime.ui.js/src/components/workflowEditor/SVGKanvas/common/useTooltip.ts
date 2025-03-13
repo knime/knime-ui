@@ -1,7 +1,7 @@
 import { type ComputedRef, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { TooltipDefinition } from "@/components/workflowEditor/common/types";
+import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 export const entryDelay = 750;

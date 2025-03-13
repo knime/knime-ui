@@ -2,13 +2,13 @@
 import { computed } from "vue";
 import type { GraphicsContext } from "pixi.js";
 
-import type { Action } from "@/components/workflowEditor/common/types";
+import type { ActionButtonConfig } from "@/components/workflowEditor/types";
 import * as $shapes from "@/style/shapes";
 
 import ActionButton from "./ActionButton.vue";
 
 type Props = {
-  actions: Array<Action>;
+  actions: Array<ActionButtonConfig>;
 };
 
 const props = defineProps<Props>();
@@ -26,7 +26,7 @@ const positions = computed(() => {
   );
 });
 
-const getTitle = (action: Action) => {
+const getTitle = (action: ActionButtonConfig) => {
   const { title } = action;
   if (!title) {
     return null;
