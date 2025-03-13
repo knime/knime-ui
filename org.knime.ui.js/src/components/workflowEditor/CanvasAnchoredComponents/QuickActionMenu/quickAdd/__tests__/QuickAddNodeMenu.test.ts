@@ -99,6 +99,8 @@ describe("QuickAddNodeMenu.vue", () => {
       Promise.resolve(createSearchNodesResponse()),
     );
 
+    mockedAPI.workflowCommand.AddNode.mockReturnValue({});
+
     const mockedStores = mockStores();
     mockedStores.workflowStore.isWritable = isWriteableMock;
     mockedStores.workflowStore.workflowBounds = {};
