@@ -3,29 +3,13 @@ import { computed, ref, toRef, watch } from "vue";
 import { animate } from "motion";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import connectorPath from "@/util/connectorPath";
 import { geometry } from "@/util/geometry";
+import type { ConnectorPathSegmentProps } from "../../types";
+import { getBezierPathString } from "../../util/connectorPath";
 
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
-import type { PathSegment } from "./types";
 
-interface Props {
-  connectionId: string;
-  segment: PathSegment;
-  isFlowvariableConnection: boolean;
-  isHighlighted: boolean;
-  isDraggedOver: boolean;
-  suggestDelete: boolean;
-  isConnectionHovered: boolean;
-  index: number;
-  isLastSegment: boolean;
-  isReadonly?: boolean;
-  isSelected?: boolean;
-  interactive?: boolean;
-  streaming?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<ConnectorPathSegmentProps>(), {
   interactive: true,
   isReadonly: false,
   isSelected: false,
@@ -42,10 +26,17 @@ const path = computed(() => {
   const x2 = props.segment.end.x;
   const y2 = props.segment.end.y;
 
-  const shotldOffsetStart = props.index !== 0;
+  const shouldOffsetStart = props.index !== 0;
   const shouldOffsetEnd = !props.isLastSegment;
 
-  return connectorPath(x1, y1, x2, y2, shotldOffsetStart, shouldOffsetEnd);
+  return getBezierPathString(
+    x1,
+    y1,
+    x2,
+    y2,
+    shouldOffsetStart,
+    shouldOffsetEnd,
+  );
 });
 
 const centerPoint = computed(() =>
@@ -71,7 +62,7 @@ watch(toRef(props, "suggestDelete"), (newValue, oldValue) => {
 
   const newPath =
     newValue && !oldValue
-      ? connectorPath(x1, y1, x2 + shiftX, y2 + shiftY)
+      ? getBezierPathString(x1, y1, x2 + shiftX, y2 + shiftY)
       : path.value;
 
   animate(

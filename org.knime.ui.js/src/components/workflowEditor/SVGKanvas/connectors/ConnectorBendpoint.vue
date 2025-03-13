@@ -1,26 +1,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { ConnectorBendpointProps } from "../../types";
 
-interface Props {
-  position: XY;
-  connectionId: string;
-  index: number;
-  isFlowVariableConnection: boolean;
-  isSelected: boolean;
-  isDragging: boolean;
-  interactive?: boolean;
-  virtual?: boolean;
-  isVisible?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<ConnectorBendpointProps>(), {
   interactive: true,
   virtual: false,
   isVisible: false,
 });
 
+// eslint-disable-next-line no-magic-numbers
 const bendpointSize = computed(() => (props.virtual ? 4 : 6));
 
 const translateX = computed(() => props.position.x - bendpointSize.value / 2);

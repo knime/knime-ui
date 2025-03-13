@@ -15,7 +15,7 @@ import {
   UpdateComponentMetadataCommand,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
-import type { TooltipDefinition } from "@/components/workflowEditor/common/types";
+import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useAIAssistantStore } from "@/store/aiAssistant";
 import { useSelectionStore } from "@/store/selection";

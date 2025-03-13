@@ -1,6 +1,6 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, toRef, unref } from "vue";
+import { computed, ref, unref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -23,6 +23,7 @@ import { geometry } from "@/util/geometry";
 import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
+import { useObjectInteractions } from "../common/useObjectInteractions";
 import NodePorts from "../ports/NodePorts.vue";
 import { nodeNameText } from "../util/textStyles";
 
@@ -31,7 +32,6 @@ import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeDoubleClick } from "./useNodeDoubleClick";
-import { useNodeDragging } from "./useNodeDragging";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
@@ -86,10 +86,11 @@ const isEditable = computed(() => {
 
 const { onNodeLeftDoubleClick } = useNodeDoubleClick({ node: props.node });
 
-const { startDrag: handleDragSelectionAndDoubleClick } = useNodeDragging({
-  nodeId: props.node.id,
+const { handlePointerInteraction } = useObjectInteractions({
+  isObjectSelected: () => isNodeSelected.value(props.node.id),
+  selectObject: () => selectionStore.selectNode(props.node.id),
+  deselectObject: () => selectionStore.deselectNode(props.node.id),
   onDoubleClick: onNodeLeftDoubleClick,
-  position: toRef(props, "position"),
 });
 
 const { isSelectionPreviewShown } = useSelectionPreview({
@@ -292,7 +293,7 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
     @pointerenter="onNodeHoverAreaPointerEnter"
     @pointermove="onNodeHoverAreaPointerMove"
     @pointerleave.self="onNodeHoverAreaPointerLeave"
-    @pointerdown.prevent="handleDragSelectionAndDoubleClick"
+    @pointerdown.prevent="handlePointerInteraction"
   >
     <Graphics
       label="NodeHoverArea"

@@ -2,7 +2,7 @@ import { type FunctionalComponent, type Ref, computed } from "vue";
 import type { GraphicsContext } from "pixi.js";
 
 import type { Node } from "@/api/gateway-api/generated-api";
-import type { Action } from "@/components/workflowEditor/common/types";
+import type { ActionButtonConfig } from "@/components/workflowEditor/types";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts/types";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -54,7 +54,7 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
   };
 
   // all possible actions
-  const actions = computed<Record<string, Action>>(() => {
+  const actions = computed<Record<string, ActionButtonConfig>>(() => {
     return {
       configureNode: {
         title: () =>
@@ -124,7 +124,7 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
   const uiControls = useUIControlsStore();
 
   type Actions = typeof actions.value;
-  type NamedAction = Action & { name: string };
+  type NamedAction = ActionButtonConfig & { name: string };
 
   const visibleActions = computed<NamedAction[]>(() => {
     if (!uiControls.canEditWorkflow) {

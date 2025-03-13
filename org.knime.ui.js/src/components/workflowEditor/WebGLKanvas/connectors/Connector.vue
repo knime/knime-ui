@@ -1,13 +1,8 @@
-<!-- eslint-disable no-undefined -->
-<!-- eslint-disable no-magic-numbers -->
-<!-- eslint-disable func-style -->
 <script setup lang="ts">
-import { computed, ref, toRefs, watch } from "vue";
-import { type AnimationPlaybackControls, animate } from "motion";
+import { computed, ref, toRefs } from "vue";
 import { storeToRefs } from "pinia";
+import type { FederatedPointerEvent } from "pixi.js";
 
-import type { XY } from "@/api/gateway-api/generated-api";
-import { useConnectorPosition } from "@/composables/useConnectorPosition";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import {
@@ -16,54 +11,68 @@ import {
 } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
-import * as $colors from "@/style/colors";
-import { portSize } from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import type { GraphicsInst } from "@/vue3-pixi";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { getBendpointId } from "@/util/connectorUtil";
+import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
+import type { AbsolutePointXY, ConnectorProps } from "../../types";
+import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 
-import type { BezierPoints, ConnectorProps } from "./types";
+import ConnectorBendpoint from "./ConnectorBendpoint.vue";
+import ConnectorPathSegment from "./ConnectorPathSegment.vue";
+import { useBendpointActions } from "./useBendpointActions";
+import { useConnectorCulling } from "./useConnectorCulling";
 
-const deltaX1 = portSize / 2 - 0.5;
-const deltaX2 = portSize / 2 - 0.5;
-
-const getBezier = (
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-): BezierPoints => {
-  x1 += deltaX1;
-  x2 -= deltaX2;
-  const width = Math.abs(x1 - x2);
-  const height = Math.abs(y1 - y2);
-  const widthHalf = width / 2;
-  const heightThird = height / 3;
-
-  return {
-    start: { x: x1, y: y1 },
-    control1: { x: x1 + widthHalf + heightThird, y: y1 },
-    control2: { x: x2 - widthHalf - heightThird, y: y2 },
-    end: { x: x2, y: y2 },
-  };
-};
-
-const props = withDefaults(defineProps<ConnectorProps>(), {
+const props = withDefaults(defineProps<ConnectorProps<AbsolutePointXY>>(), {
   sourceNode: null,
   sourcePort: null,
   destNode: null,
   destPort: null,
   absolutePoint: null,
   interactive: true,
+  bendpoints: () => [],
 });
 
-const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
-const { isNodeSelected } = storeToRefs(useSelectionStore());
-const { visibleArea, isDebugModeEnabled } = storeToRefs(useWebGLCanvasStore());
+const { isDragging } = storeToRefs(useMovingStore());
+const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
+const canvasStore = useWebGLCanvasStore();
+const { isDebugModeEnabled } = storeToRefs(canvasStore);
 
-const { sourceNode, sourcePort, destNode, destPort, id, absolutePoint } =
-  toRefs(props);
+const selectionStore = useSelectionStore();
+const {
+  isNodeSelected,
+  isConnectionSelected,
+  isBendpointSelected,
+  singleSelectedNode,
+  getSelectedConnections: selectedConnections,
+} = storeToRefs(selectionStore);
 
-const { start, end } = useConnectorPosition({
+const { floatingConnector, snapTarget } = storeToRefs(
+  useFloatingConnectorStore(),
+);
+
+const {
+  sourceNode,
+  sourcePort,
+  destNode,
+  destPort,
+  id,
+  absolutePoint,
+  bendpoints,
+} = toRefs(props);
+
+const { pathSegments } = useConnectorPathSegments({
+  id: props.id,
+  sourceNode,
+  destNode,
+  sourcePort,
+  destPort,
+  absolutePoint: computed(() =>
+    props.absolutePoint ? [props.absolutePoint.x, props.absolutePoint.y] : null,
+  ),
+  bendpoints,
+});
+
+const { renderable } = useConnectorCulling({
   sourceNode,
   destNode,
   sourcePort,
@@ -73,64 +82,30 @@ const { start, end } = useConnectorPosition({
   ),
 });
 
-const moveDeltas = computed(() => {
-  let x1 = 0;
-  let y1 = 0;
-  let x2 = 0;
-  let y2 = 0;
+const isConnectionHovered = ref(false);
+const hoveredPathSegment = ref<number>();
 
-  if (isDragging.value) {
-    if (props.sourceNode && isNodeSelected.value(props.sourceNode)) {
-      x1 += movePreviewDelta.value.x;
-      y1 += movePreviewDelta.value.y;
-    }
-    if (props.destNode && isNodeSelected.value(props.destNode)) {
-      x2 += movePreviewDelta.value.x;
-      y2 += movePreviewDelta.value.y;
-    }
+const onPathSegmentHovered = (
+  nextState: boolean,
+  index: number | undefined,
+) => {
+  if (floatingConnector.value || isDragging.value) {
+    return;
   }
 
-  return [x1, y1, x2, y2];
-});
-
-const startEndWithMoveDeltas = computed<[number, number, number, number]>(
-  () => {
-    const x1 = start.value.x;
-    const y1 = start.value.y;
-    const x2 = end.value.x;
-    const y2 = end.value.y;
-
-    const [mx1, my1, mx2, my2] = moveDeltas.value;
-
-    return [x1 + mx1, y1 + my1, x2 + mx2, y2 + my2];
-  },
-);
-
-const renderFn = (graphics: GraphicsInst, points: BezierPoints) => {
-  const color = props.flowVariableConnection ? $colors.Coral : $colors.Masala;
-  graphics
-    .clear()
-    .moveTo(
-      startEndWithMoveDeltas.value.at(0)!,
-      startEndWithMoveDeltas.value.at(1)!,
-    )
-    .bezierCurveTo(
-      points.control1.x,
-      points.control1.y,
-      points.control2.x,
-      points.control2.y,
-      points.end.x,
-      points.end.y,
-    )
-    .stroke({
-      width: 1,
-      color: props.absolutePoint && isDebugModeEnabled.value ? "blue" : color,
-    });
+  isConnectionHovered.value = nextState;
+  hoveredPathSegment.value = index;
 };
 
-const { floatingConnector, snapTarget } = storeToRefs(
-  useFloatingConnectorStore(),
-);
+const isHighlighted = computed(() => {
+  // if only one node and no connections are selected, highlight the connections from and to that node
+  return (
+    Boolean(singleSelectedNode.value) &&
+    selectedConnections.value.length === 0 &&
+    (isNodeSelected.value(props.sourceNode ?? "") ||
+      isNodeSelected.value(props.destNode ?? ""))
+  );
+});
 
 const isTargetForReplacement = computed(() => {
   // is the global drag connector itself
@@ -162,88 +137,78 @@ const isTargetForReplacement = computed(() => {
   return false;
 });
 
-const connectorPath = ref<GraphicsInst>();
-
-const suggestShiftX = -12;
-const suggestShiftY = -6;
-let replacementAnimation: AnimationPlaybackControls | undefined;
-watch(isTargetForReplacement, (shouldAnimate) => {
-  const [x1, y1, x2, y2] = startEndWithMoveDeltas.value;
-  const normalBezier = getBezier(x1, y1, x2, y2);
-  const animatedBezier = getBezier(
-    x1,
-    y1,
-    x2 + suggestShiftX,
-    y2 + suggestShiftY,
-  );
-
-  if (shouldAnimate) {
-    replacementAnimation = animate(
-      normalBezier.end,
-      { x: animatedBezier.end.x, y: animatedBezier.end.y },
-      {
-        duration: 0.2,
-        ease: "easeOut",
-        onUpdate: () => {
-          if (replacementAnimation && !connectorPath.value) {
-            replacementAnimation.stop();
-            return;
-          }
-
-          renderFn(connectorPath.value!, normalBezier);
-        },
-      },
-    );
-  } else {
-    replacementAnimation?.stop();
-    replacementAnimation = undefined;
-    renderFn(connectorPath.value!, normalBezier);
+const onConnectionClick = (event: FederatedPointerEvent) => {
+  if (!isMultiselectEvent(event)) {
+    selectionStore.deselectAllObjects();
   }
-});
 
-function getBoundingBox(start: XY, ctrl1: XY, ctrl2: XY, end: XY) {
-  const minX = Math.min(start.x, ctrl1.x, ctrl2.x, end.x);
-  const maxX = Math.max(start.x, ctrl1.x, ctrl2.x, end.x);
-  const minY = Math.min(start.y, ctrl1.y, ctrl2.y, end.y);
-  const maxY = Math.max(start.y, ctrl1.y, ctrl2.y, end.y);
+  const action = isConnectionSelected.value(props.id)
+    ? selectionStore.deselectConnection
+    : selectionStore.selectConnection;
 
-  return {
-    left: minX,
-    top: minY,
-    width: maxX - minX,
-    // make sure height is at least 1, otherwise it'd be 0 for straight lines
-    height: Math.max(maxY - minY, 1),
-  };
-}
+  action(props.id);
+};
 
-const boundingBox = computed(() => {
-  const bezier = getBezier(...startEndWithMoveDeltas.value);
-  return getBoundingBox(
-    bezier.start,
-    bezier.control1,
-    bezier.control2,
-    bezier.end,
-  );
-});
-
-const renderable = computed(() => {
-  const intersect = geometry.utils.rectangleIntersection(boundingBox.value, {
-    left: visibleArea.value.x,
-    top: visibleArea.value.y,
-    width: visibleArea.value.width,
-    height: visibleArea.value.height,
-  });
-
-  return Boolean(intersect);
+const {
+  hoveredBendpoint,
+  isBendpointVisible,
+  onBendpointClick,
+  onBendpointRightClick,
+  setHoveredBendpoint,
+  onVirtualBendpointClick,
+} = useBendpointActions({
+  connectionId: props.id,
+  isConnectionHighlighted: isHighlighted,
+  isConnectionHovered,
 });
 </script>
 
 <template>
-  <Graphics
-    ref="connectorPath"
-    :renderable="renderable"
-    :visible="renderable"
-    :label="`Connector__${id}`"
-    @render="renderFn($event, getBezier(...startEndWithMoveDeltas))"
-  />
+  <Container :renderable="renderable" :visible="renderable">
+    <template v-for="(segment, index) of pathSegments" :key="index">
+      <ConnectorPathSegment
+        :connection-id="id"
+        :segment="segment"
+        :index="index"
+        :is-flowvariable-connection="Boolean(flowVariableConnection)"
+        :is-highlighted="isHighlighted"
+        :is-dragged-over="false"
+        :is-readonly="!isWorkflowWritable"
+        :is-last-segment="index === pathSegments.length - 1"
+        :is-selected="isConnectionSelected(id) && !isDragging"
+        :interactive="interactive"
+        :streaming="streaming"
+        :suggest-delete="Boolean(segment.isEnd && isTargetForReplacement)"
+        :is-connection-hovered="isConnectionHovered"
+        :is-segment-hovered="hoveredPathSegment === index"
+        :is-debug-mode-enabled="isDebugModeEnabled"
+        :is-floating-connector="Boolean(absolutePoint)"
+        @pointerdown.stop.prevent="onConnectionClick"
+        @pointerenter="onPathSegmentHovered(true, index)"
+        @pointerleave="onPathSegmentHovered(false, undefined)"
+        @hover-virtual-bendpoint="
+          (hovered) =>
+            onPathSegmentHovered(hovered, hovered ? index : undefined)
+        "
+        @add-virtual-bendpoint="onVirtualBendpointClick({ ...$event, index })"
+      />
+
+      <ConnectorBendpoint
+        v-if="index !== 0"
+        :is-selected="isBendpointSelected(getBendpointId(id, index - 1))"
+        :is-dragging="isDragging"
+        :is-flow-variable-connection="Boolean(flowVariableConnection)"
+        :position="pathSegments[index].start"
+        :index="index - 1"
+        :connection-id="id"
+        :interactive="interactive && isWorkflowWritable"
+        :is-visible="isBendpointVisible || hoveredBendpoint === index - 1"
+        :is-debug-mode-enabled="isDebugModeEnabled"
+        @pointerdown.stop.prevent="onBendpointClick($event, index)"
+        @pointerenter="setHoveredBendpoint(true, index - 1)"
+        @pointerleave="setHoveredBendpoint(false, index - 1)"
+        @rightclick="onBendpointRightClick($event, index - 1)"
+      />
+    </template>
+  </Container>
 </template>

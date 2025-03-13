@@ -30,12 +30,12 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import * as connectorPath from "@/util/connectorPath";
 import * as portShift from "@/util/portShift";
+import type { AbsolutePointTuple, ConnectorProps } from "../../../types";
+import * as connectorPath from "../../../util/connectorPath";
 import Connector from "../Connector.vue";
 import ConnectorBendpoint from "../ConnectorBendpoint.vue";
 import ConnectorPathSegment from "../ConnectorPathSegment.vue";
-import type { ConnectorProps } from "../types";
 
 vi.mock("motion", () => ({
   animate: vi.fn(),
@@ -44,7 +44,7 @@ const mockedAPI = deepMocked(API);
 
 describe("Connector.vue", () => {
   const portShiftMock = vi.spyOn(portShift, "default");
-  const connectorPathSpy = vi.spyOn(connectorPath, "default");
+  const connectorPathSpy = vi.spyOn(connectorPath, "getBezierPathString");
 
   beforeAll(() => {
     window.alert = vi.fn();
@@ -127,7 +127,7 @@ describe("Connector.vue", () => {
     props,
     customStores,
   }: {
-    props?: Partial<ConnectorProps>;
+    props?: Partial<ConnectorProps<AbsolutePointTuple>>;
     customStores?: ReturnType<typeof mockStores>;
   } = {}) => {
     const { mockedStores: _mockedStores, connection } = createStore();
@@ -135,7 +135,7 @@ describe("Connector.vue", () => {
     const mockedStores = customStores || _mockedStores;
 
     const wrapper = mount(Connector, {
-      props: { ...connection, ...props } as ConnectorProps,
+      props: { ...connection, ...props } as ConnectorProps<AbsolutePointTuple>,
       global: {
         plugins: [mockedStores.testingPinia],
         mocks: { $colors, $shapes, $bus },
@@ -432,7 +432,7 @@ describe("Connector.vue", () => {
 
   describe("follows pointer", () => {
     it("draw connector forward", () => {
-      const props: ConnectorProps = {
+      const props: ConnectorProps<AbsolutePointTuple> = {
         sourceNode: "root:1",
         sourcePort: 1,
         destNode: null,
@@ -459,7 +459,7 @@ describe("Connector.vue", () => {
     });
 
     it("draw connector backwards", () => {
-      const props: ConnectorProps = {
+      const props: ConnectorProps<AbsolutePointTuple> = {
         sourceNode: null,
         sourcePort: null,
         destNode: "root:2",

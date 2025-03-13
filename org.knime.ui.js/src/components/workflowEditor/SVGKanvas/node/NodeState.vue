@@ -5,7 +5,7 @@ import type { NodeState, XY } from "@/api/gateway-api/generated-api";
 import { useTooltip } from "@/components/workflowEditor/SVGKanvas/common/useTooltip";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import type { TooltipDefinition } from "../../common/types";
+import type { TooltipDefinition } from "../../types";
 
 const anchorPoint = inject<XY>("anchorPoint");
 

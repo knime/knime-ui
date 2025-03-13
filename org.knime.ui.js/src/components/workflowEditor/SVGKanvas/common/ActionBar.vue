@@ -3,13 +3,13 @@ import { computed } from "vue";
 
 import ActionButton from "@/components/workflowEditor/SVGKanvas/common/ActionButton.vue";
 import * as $shapes from "@/style/shapes";
-import type { Action } from "../../common/types";
+import type { ActionButtonConfig } from "../../types";
 /**
  * SVG based action bar
  */
 
 type Props = {
-  actions: Array<Action>;
+  actions: Array<ActionButtonConfig>;
 };
 
 const props = defineProps<Props>();
@@ -27,7 +27,7 @@ const positions = computed(() => {
   );
 });
 
-const getTitle = (action: Action) => {
+const getTitle = (action: ActionButtonConfig) => {
   const { title } = action;
   if (!title) {
     return null;
