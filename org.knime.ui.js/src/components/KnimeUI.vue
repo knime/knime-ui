@@ -11,6 +11,7 @@ import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
 import { HintProvider, ToastStack, useBeforeUnload } from "@knime/components";
+import { getMetaOrCtrlKey } from "@knime/utils";
 
 import BlockUi from "@/components/application/BlockUi.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
@@ -30,6 +31,7 @@ import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { getToastPresets } from "@/toastPresets";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
+import { KANVAS_ID } from "@/util/getKanvasDomElement";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
@@ -183,11 +185,16 @@ onBeforeMount(async () => {
 });
 
 const preventBrowserZooming = (event: WheelEvent) => {
-  if (event.target instanceof HTMLCanvasElement) {
+  // only handle wheel with ctrl otherwise its a scroll not a zoom
+  if (!event[getMetaOrCtrlKey()]) {
     return;
   }
 
-  event.stopPropagation();
+  // do nothing if we are working with the Kanvas
+  if ((event.target as Element).id === KANVAS_ID) {
+    return;
+  }
+
   event.preventDefault();
 };
 
