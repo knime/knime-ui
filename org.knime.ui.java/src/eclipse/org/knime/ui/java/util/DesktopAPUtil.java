@@ -94,8 +94,10 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.api.util.VersionId;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.LoadMetaNodeTemplateRunnable;
@@ -134,34 +136,28 @@ public final class DesktopAPUtil {
     }
 
     /**
-     * @param space The space the item is located in
-     * @param itemId The ID of the item to load
-     * @param monitor to report loading progress
-     * @see this#fetchAndLoadWorkflowWithTask(Space, String, IProgressMonitor, VersionId)
-     * @return The loaded workflow maanager
-     */
-    public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
-        final IProgressMonitor monitor) {
-        return fetchAndLoadWorkflowWithTask(space, itemId, monitor, VersionId.currentState());
-    }
-
-    /**
-     * Loads the workflow for the given item-id from the given space while reporting progress to the given monitor.
+     * Loads the workflow for the given origin and version from the given space while
+     * reporting progress to the given monitor.
      *
-     * @param space the space
-     * @param itemId the item ID of the workflow
+     * @param spaceProviders -
+     * @param origin -
      * @param monitor progress monitor
-     * @param version
+     * @param version -
      * @return the loaded workflow or {@code null} if it couldn't be loaded
      */
-    public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
-        final IProgressMonitor monitor, final VersionId version) {
+    public static WorkflowManager fetchAndLoadWorkflowWithTask(
+            final SpaceProviders spaceProviders, //
+            final Origin origin, //
+            final IProgressMonitor monitor,//
+            final VersionId version
+        ) {
         monitor.beginTask(LOADING_WORKFLOW_PROGRESS_MSG, IProgressMonitor.UNKNOWN);
         final var exec = DesktopAPUtil.toExecutionMonitor(monitor);
+        var space = spaceProviders.getSpace(origin.providerId(), origin.spaceId());
         // For some Space implementations, this might download the workflow from a remote server.
         Path path;
         try {
-            path = space.toLocalAbsolutePath(exec, itemId, version).orElse(null);
+            path = space.toLocalAbsolutePath(exec, origin.itemId(), version).orElse(null);
         } catch (CanceledExecutionException e) {
             return null;
         }
@@ -169,7 +165,7 @@ public final class DesktopAPUtil {
             return null;
         }
         monitor.done();
-        final var workflowContext = createWorkflowContext(space, itemId, path);
+        final var workflowContext = createWorkflowContext(space, origin.itemId(), path);
         return loadWorkflow(monitor, path, workflowContext);
     }
 
@@ -251,7 +247,7 @@ public final class DesktopAPUtil {
         final var mountId = space.toKnimeUrl(itemId).getAuthority();
         final var location = space.getLocationInfo(itemId);
         // TODO A local space root makes no sense for temp-copy mode, remove this workaround when AP-22097 is closed.
-        final var localSpaceRoot = getLocalRoot(space, location, path) ;
+        final var localSpaceRoot = getLocalRoot(space, location, path);
         return WorkflowContextV2.builder() //
             .withAnalyticsPlatformExecutor(builder -> builder //
                 .withCurrentUserAsUserId() //
@@ -300,6 +296,7 @@ public final class DesktopAPUtil {
 
     /**
      * Shows a question dialog.
+     *
      * @param title dialog title
      * @param message question
      * @return {@code true} if the user accepted the question, {@code false} otherwise
@@ -475,18 +472,20 @@ public final class DesktopAPUtil {
     private static <R> Optional<R> composedRunWithProgress(final String name, final NodeLogger logger,
         final FailableFunction<IProgressMonitor, R, InvocationTargetException> task,
         final Consumer<Throwable> errorHandler) {
-        try {
-            final var result = new AtomicReference<R>();
-            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> result.set(task.apply(monitor)));
-            return Optional.ofNullable(result.get());
-        } catch (InvocationTargetException e) {
-            // `InvocationTargetException` doesn't have value itself (and often no message), report its cause instead
-            errorHandler.accept(Optional.ofNullable(e.getCause()).orElse(e));
-        } catch (InterruptedException e) {
-            logger.warn(name + " interrupted");
-            Thread.currentThread().interrupt();
-        }
-        return Optional.empty();
+        final var result = new AtomicReference<R>();
+        Display.getDefault().syncExec(() -> {
+            try {
+                PlatformUI.getWorkbench().getProgressService()
+                    .busyCursorWhile(monitor -> result.set(task.apply(monitor)));
+            } catch (InvocationTargetException e) {
+                // `InvocationTargetException` doesn't have value itself (and often no message), report cause instead
+                errorHandler.accept(Optional.ofNullable(e.getCause()).orElse(e));
+            } catch (InterruptedException e) {
+                logger.warn(name + " interrupted");
+                Thread.currentThread().interrupt();
+            }
+        });
+        return Optional.ofNullable(result.get());
     }
 
     /**

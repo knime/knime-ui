@@ -56,7 +56,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
@@ -73,6 +72,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.LocalSpaceUtilTest;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.ProgressReporter;
 
 /**
  * Tests methods in {@link OpenProject}.
@@ -104,14 +104,14 @@ class OpenProjectTest {
         DesktopAPI.injectDependency(eventConsumer);
         DesktopAPI.injectDependency(mruProjects);
         DesktopAPI.injectDependency(localSpace);
+        DesktopAPI.injectDependency(new ProgressReporter.NullProgressReporter());
 
         var itemId = localSpace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 
-        var monitor = new NullProgressMonitor();
-        assertThatThrownBy(() -> OpenProject.openProjectWithProgress("local", "local", "does-not-exist", monitor))
+        assertThatThrownBy(() -> OpenProject.openProject("local", "local", "does-not-exist"))
             .isInstanceOf(OpenProject.OpenProjectException.class);
 
-        OpenProject.openProjectWithProgress("local", "local", itemId, monitor);
+        OpenProject.openProject("local", "local", itemId);
 
         var projectIds = pm.getProjectIds();
         assertThat(projectIds).hasSize(1);

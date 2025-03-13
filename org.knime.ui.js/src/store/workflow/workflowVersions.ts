@@ -2,6 +2,7 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable func-style */
 import { computed, markRaw, ref } from "vue";
+import { API } from "@api";
 import { merge } from "lodash-es";
 import { defineStore } from "pinia";
 import { useRouter } from "vue-router";
@@ -140,7 +141,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     });
 
     const newVersion = await hubApi.createVersion({
-      projectItemId: activeProjectOrigin!.itemId,
+      itemId: activeProjectOrigin!.itemId,
       title: name,
       description,
     });
@@ -168,10 +169,12 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   }
 
   async function deleteVersion(version: NamedItemVersion["version"]) {
+    const { activeProjectId } = useApplicationStore();
     const { activeProjectProvider } = useSpaceProvidersStore();
-    if (!activeProjectProvider) {
+    if (!activeProjectId || !activeProjectProvider) {
       consola.error(
         "WorkflowVersionsStore::deleteVersion -> Prerequisite failed",
+        { activeProjectId, activeProjectProvider },
       );
       return;
     }
@@ -206,28 +209,44 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       baseUrl: getHubBaseUrl(activeProjectProvider),
     });
     await hubApi?.deleteVersion({
-      projectItemId: useApplicationStore().activeProjectOrigin!.itemId,
+      itemId: useApplicationStore().activeProjectOrigin!.itemId,
       version,
     });
-
+    await API.workflow.disposeVersion({
+      projectId: activeProjectId,
+      version: version.toString(),
+    });
     if (version === activeProjectCurrentVersion.value) {
       switchVersion(CURRENT_STATE_VERSION);
     }
-
     await refreshData();
   }
 
-  function restoreVersion(version: NamedItemVersion["version"]) {
-    getToastsProvider().show({
-      type: "error",
-      deduplicationKey:
-        "workflowVersions.ts::restoreVersion::NotYetImplemented",
-      headline: "Error restoring version",
-      message: "Operation is not implemented yet.",
-      meta: {
-        version, // so the param isn't unused while this placeholder is in place.
-      },
+  async function restoreVersion(version: NamedItemVersion["version"]) {
+    const { activeProjectId, activeProjectOrigin } = useApplicationStore();
+    const { activeProjectProvider } = useSpaceProvidersStore();
+    if (!activeProjectId || !activeProjectProvider || !activeProjectOrigin) {
+      consola.error(
+        "WorkflowVersionsStore::restoreVersion -> Prerequisite failed",
+        { activeProjectId, activeProjectProvider, activeProjectOrigin },
+      );
+      return;
+    }
+    const hubApi = useVersionsApi({
+      baseUrl: getHubBaseUrl(activeProjectProvider),
     });
+    await hubApi?.restoreVersion({
+      itemId: activeProjectOrigin.itemId,
+      version,
+    });
+
+    await Promise.all([
+      API.workflow.disposeVersion({
+        projectId: activeProjectId,
+        version: CURRENT_STATE_VERSION,
+      }),
+      refreshData(),
+    ]);
   }
 
   // TODO: NXT-3458 this workaround to persist the selected version in the frontend
@@ -302,15 +321,16 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   async function refreshData(
     { loadAll }: { loadAll: boolean } = { loadAll: false },
   ) {
-    const projectItemId = useApplicationStore().activeProjectOrigin?.itemId;
+    const itemId = useApplicationStore().activeProjectOrigin?.itemId;
     const hubApiBaseUrl = getHubBaseUrl(
       useSpaceProvidersStore().activeProjectProvider,
     );
     const { activeProjectId } = useApplicationStore();
 
-    if (!(projectItemId && hubApiBaseUrl && activeProjectId)) {
+    if (!itemId || !hubApiBaseUrl || !activeProjectId) {
       consola.error(
         "WorkflowVersionsStore::refreshData -> Prerequisite failed",
+        { itemId, hubApiBaseUrl, activeProjectId },
       );
       return;
     }
@@ -325,11 +345,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         createInitialProjectVersionsModeInfo();
 
       newData.permissions = await hubApi.fetchPermissions({
-        itemId: projectItemId,
+        itemId,
       });
 
       const itemSavepointsInfo = await hubApi.fetchItemSavepoints({
-        itemId: projectItemId,
+        itemId,
         limit: loadAll ? -1 : undefined,
       });
 

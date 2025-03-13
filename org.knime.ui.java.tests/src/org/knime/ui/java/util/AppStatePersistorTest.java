@@ -174,7 +174,7 @@ public class AppStatePersistorTest {
 
         pm.getProjectIds().forEach(pm::removeProject);
 
-        AppStatePersistor.loadAppState(pm, mruProjects, m_space);
+        AppStatePersistor.loadAppState(m_space);
         var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
         assertThat(appStateStringNew).as("Assert the valid app state was saved and loaded").isEqualTo(appStateString);
     }
@@ -186,7 +186,7 @@ public class AppStatePersistorTest {
 
         var pm = ProjectManager.getInstance();
         var mruProjcts = new MostRecentlyUsedProjects();
-        AppStatePersistor.loadAppState(pm, mruProjcts, m_space);
+        AppStatePersistor.loadAppState(m_space);
         var appStateString = AppStatePersistor.serializeAppState(pm, mruProjcts, m_space);
         assertThat(appStateString).as("Assert the invalid app state wasn't loaded")
             .isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
@@ -199,7 +199,7 @@ public class AppStatePersistorTest {
 
         var pm = ProjectManager.getInstance();
         var mruProjects = new MostRecentlyUsedProjects();
-        AppStatePersistor.loadAppState(pm, mruProjects, m_space);
+        AppStatePersistor.loadAppState(m_space);
         var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
         assertThat(appStateString).as("Assert the invalid app state wasn't loaded")
             .isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
@@ -221,7 +221,7 @@ public class AppStatePersistorTest {
 
         var loadedMRUProjects = new MostRecentlyUsedProjects();
         var localSpace = m_space;
-        AppStatePersistor.loadAppState(pm, loadedMRUProjects, localSpace);
+        AppStatePersistor.loadAppState(localSpace);
         assertThat(loadedMRUProjects.get()).hasSize(2);
         var loadedProj1 = loadedMRUProjects.get().get(0);
         assertThat(loadedProj1.name()).isEqualTo("name1");
@@ -256,7 +256,7 @@ public class AppStatePersistorTest {
         var spaceId = isLocal ? LocalSpace.LOCAL_SPACE_ID : "other space id";
         var origin = new Origin(providerId, spaceId, itemId);
 
-        var project = Project.builder().setWfmLoader(() -> null).setName("Test Project").setId("test_id")
+        var project = Project.builder().setWfmLoaderProvidingOnlyCurrentState(() -> null).setName("Test Project").setId("test_id")
             .setOrigin(origin).build();
         pm.addProject(project);
     }

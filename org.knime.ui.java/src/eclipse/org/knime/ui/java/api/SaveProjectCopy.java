@@ -73,6 +73,7 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
@@ -81,7 +82,9 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
+import org.knime.ui.java.util.CreateProject;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.ProgressReporter;
 
 /**
  * Helper class to save a copy of a project, for instance
@@ -105,38 +108,40 @@ final class SaveProjectCopy {
     /**
      * Save a copy of the provided project. Prompts the user for the save destination.
      *
-     * @param projectId The ID identifying the project to save
+     * @param sourceProjectId The ID identifying the project to save
      * @param projectSVG The project SVG
      */
-    static void saveCopyOf(final String projectId, final String projectSVG) {
-        final var project = ProjectManager.getInstance()//
-            .getProject(projectId) //
+    static void saveCopyOf(final String sourceProjectId, final String projectSVG) {
+        final var project = DesktopAPI.getDeps(ProjectManager.class)//
+            .getProject(sourceProjectId) //
             .orElseThrow(() -> {
-                final var message = String.format("No local workflow path found for <%s>", projectId);
+                final var message = String.format("Project <%s> does not exist", sourceProjectId);
                 return new NoSuchElementException(message);
             });
-        final var wfm = project.getWorkflowManagerIfLoaded() //
+        final var sourceWfm = project.getWorkflowManagerIfLoaded() //
             .orElseThrow(() -> new NoSuchElementException("Project is not loaded"));
-        final var oldContext = CheckUtils.checkArgumentNotNull(wfm.getContextV2());
+        final var oldContext = CheckUtils.checkArgumentNotNull(sourceWfm.getContextV2());
         try {
             final var newContext = pickDestinationAndGetNewContext(oldContext);
-
             if (newContext == null) {
                 LOGGER.error("No valid destination could be picked");
                 return;
             }
-
             if (newContext.equals(oldContext)) { // Simply overwrite the old project
-                SaveProject.saveProject(projectId, projectSVG, false);
+                SaveProject.saveProject(sourceProjectId, projectSVG, false);
                 return;
             }
 
-            var localSpace = DesktopAPI.getDeps(LocalSpace.class);
-            if (wfm.isComponentProjectWFM()) {
-                saveAndReplaceComponentProject(oldContext, newContext, wfm, projectId, localSpace);
-            } else {
-                saveAndReplaceWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG, localSpace);
-            }
+            var savedWfm = withCleanup(oldContext, newContext, monitor -> {
+                if (sourceWfm.isComponentProjectWFM()) {
+                    return saveComponentCopy(monitor, sourceWfm, newContext);
+                } else {
+                    return saveWorkflowCopy(newContext, monitor, sourceWfm, projectSVG);
+                }
+            });
+            var projectForCopy = createProjectForCopiedWfm(savedWfm, newContext, sourceProjectId);
+            // Provider type can only be Local here
+            OpenProject.registerProjectAndSetActive(projectForCopy, SpaceProviderEnt.TypeEnum.LOCAL);
         } catch (Exception ex) {
             LOGGER.error(ex);
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Save Error",
@@ -145,7 +150,7 @@ final class SaveProjectCopy {
     }
 
     /**
-     * @return The new workflow context, identical with the old context if if simply overwrites the old location.
+     * @return The new workflow context, identical with the old context if it simply overwrites the old location.
      *         {@code null} if something went wrong with the destination selection.
      *
      */
@@ -232,24 +237,8 @@ final class SaveProjectCopy {
         }
     }
 
-    private static void saveAndReplaceWorkflowProject(final WorkflowContextV2 oldContext,
-        final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId, final String projectSVG,
-        final LocalSpace localSpace) {
-        final var projectOfCopy = Project.of(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
-        saveAndReplaceProject(oldContext, newContext, projectOfCopy,
-            monitor -> saveWorkflowCopy(newContext, monitor, wfm, projectSVG));
-    }
-
-    private static void saveAndReplaceComponentProject(final WorkflowContextV2 oldContext,
-        final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
-        final LocalSpace localSpace) {
-        final var projectOfCopy = Project.of(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
-        saveAndReplaceProject(oldContext, newContext, projectOfCopy,
-            monitor -> saveComponentCopy(monitor, wfm, newContext));
-    }
-
     /**
-     * Save regular workflow as
+     * Save regular workflow as copy
      *
      * @param context The context with the information about the new workflow
      * @param monitor The monitor to show the progress of this operation
@@ -276,7 +265,7 @@ final class SaveProjectCopy {
     }
 
     /**
-     * Save component template as
+     * Save component template as copy
      *
      * @param newContext The context with the information about the new component
      * @param monitor The monitor to show the progress of this operation
@@ -304,17 +293,15 @@ final class SaveProjectCopy {
         return wfm;
     }
 
-    private static void saveAndReplaceProject(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
-        final Project project,
-        final FailableFunction<IProgressMonitor, WorkflowManager, InvocationTargetException> saveLogic) {
+    private static WorkflowManager withCleanup(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
+        final FailableFunction<IProgressMonitor, WorkflowManager, InvocationTargetException> saveLogic)
+        throws NoSuchElementException {
         final Consumer<WorkflowManager> successHandler = wfm -> {
             if (oldContext.isTemporyWorkflowCopyMode()) { // If saved from a yellow bar editor
                 final var execInfo = oldContext.getExecutorInfo();
                 final var srcPath = execInfo.getLocalWorkflowPath();
                 FileUtil.deleteRecursively(srcPath.toFile());
             }
-            // Provider type can only be Local here
-            OpenProject.registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.LOCAL);
         };
 
         final Runnable errorHandler = () -> {
@@ -322,6 +309,19 @@ final class SaveProjectCopy {
             FileUtil.deleteRecursively(newPath.toFile());
         };
 
-        DesktopAPUtil.runWithProgress("Saving as", LOGGER, saveLogic).ifPresentOrElse(successHandler, errorHandler);
+        var savedWfm = DesktopAPUtil.runWithProgress("Saving as", LOGGER, saveLogic);
+        savedWfm.ifPresentOrElse(successHandler, errorHandler);
+        return savedWfm.orElseThrow();
+    }
+
+    private static Project createProjectForCopiedWfm(final WorkflowManager wfm, final WorkflowContextV2 context,
+        final String projectId) {
+        final var type = wfm.isComponentProjectWFM() ? ProjectTypeEnum.COMPONENT : ProjectTypeEnum.WORKFLOW;
+        final var itemId =
+            DesktopAPI.getDeps(LocalSpace.class).getItemId(context.getExecutorInfo().getLocalWorkflowPath());
+        final var origin = new Origin(SpaceProvider.LOCAL_SPACE_PROVIDER_ID, LocalSpace.LOCAL_SPACE_ID, itemId, type);
+        final var projectName = context.getExecutorInfo().getLocalWorkflowPath().toFile().getName();
+        return CreateProject.createProjectFromOrigin(projectId, projectName, origin,
+                DesktopAPI.getDeps(ProgressReporter.class), DesktopAPI.getSpaceProviders());
     }
 }

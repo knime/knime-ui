@@ -58,6 +58,7 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
@@ -69,20 +70,14 @@ import org.knime.ui.java.util.MostRecentlyUsedProjects;
 public interface LifeCycleStateInternal extends LifeCycleState {
 
     @SuppressWarnings({"MissingJavadoc", "javadoc"})
-    static LifeCycleStateInternal of(final ProjectManager projectManager,
-        final MostRecentlyUsedProjects mostRecentlyUsedProjects, final LocalSpace localSpace,
-        final WelcomeAPEndpoint welcomeAPEndpoint, final UserProfile userProfile) {
+    static LifeCycleStateInternal of(final AppStatePersistor.LoadedApplicationState loadedApplicationState,
+        final LocalSpace localSpace, final WelcomeAPEndpoint welcomeAPEndpoint, final UserProfile userProfile) {
 
         return new LifeCycleStateInternal() { // NOSONAR
 
             @Override
-            public ProjectManager getProjectManager() {
-                return projectManager;
-            }
-
-            @Override
-            public MostRecentlyUsedProjects getMostRecentlyUsedProjects() {
-                return mostRecentlyUsedProjects;
+            public AppStatePersistor.LoadedApplicationState loadedApplicationState() {
+                return loadedApplicationState;
             }
 
             @Override
@@ -96,9 +91,20 @@ public interface LifeCycleStateInternal extends LifeCycleState {
             }
 
             @Override
+            public ProjectManager getProjectManager() {
+                return null;
+            }
+
+            @Override
+            public MostRecentlyUsedProjects mostRecentlyUsedProjects() {
+                return null;
+            }
+
+            @Override
             public UserProfile getUserProfile() {
                 return userProfile;
             }
+
         };
     }
 
@@ -130,14 +136,21 @@ public interface LifeCycleStateInternal extends LifeCycleState {
     WelcomeAPEndpoint getWelcomeApEndpoint();
 
     /**
-     * @return project manager instance to be passed between life cycle phases
+     * @return project manager instance to be passed between life cycle phases.
+     * May be {@code null} if not yet initialised.
      */
     ProjectManager getProjectManager();
 
     /**
-     * @return most recently used projects to be passed between life cycle phases
+     * @return most recently used projects to be passed between life cycle phases.
+     * May be {@code null} if not yet initialised.
      */
-    MostRecentlyUsedProjects getMostRecentlyUsedProjects();
+    MostRecentlyUsedProjects mostRecentlyUsedProjects();
+
+    /**
+     * @return May be {@code null} if not needed for the successor states.
+     */
+    AppStatePersistor.LoadedApplicationState loadedApplicationState();
 
     /**
      * @return the local space instance to be passed between life cycle phases
@@ -148,4 +161,5 @@ public interface LifeCycleStateInternal extends LifeCycleState {
      * @return the user profile instance to be passed between life cycle phases
      */
     UserProfile getUserProfile();
+
 }

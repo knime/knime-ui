@@ -42,47 +42,75 @@
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
- *
  */
+
 package org.knime.ui.java.util;
 
-import java.nio.file.Path;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 
-import org.knime.gateway.impl.project.Origin;
-import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.apache.commons.lang3.function.FailableFunction;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.knime.core.node.NodeLogger;
 
 /**
- * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * The task needs to be executed inside the reporter (i.e. given as lambda) s.t. the reporter is able to catch
+ * exceptions and notify accordingly.
+ * <p>
+ * Can be moved to knime-gateway and become a ProgressService at some point. To extend for proper error handling, see
+ * {@link DesktopAPUtil#runWithProgress(String, NodeLogger, FailableFunction)}.
+ *
  */
-public final class LocalSpaceUtil {
-
-    private LocalSpaceUtil() {
-        // Utility class
-    }
+public interface ProgressReporter {
 
     /**
-     * Obtain the {@link Origin} of a workflow project on the local file system
+     * Implementations are to provide a {@link IProgressMonitor} to the {@code task} to which it will report its
+     * progress.
      *
-     * @param absolutePath The path of the workflow project
-     * @param localSpace the local space instance
-     * @return The {@link Origin} of the workflow project.
+     * @param name -
+     * @param logger -
+     * @param task -
+     * @return The result of the computation, if successful.
+     * @param <R> The result type
      */
-    public static Origin getLocalOrigin(final Path absolutePath, final LocalSpace localSpace) {
-        var itemId = localSpace.getItemId(absolutePath);
-        return new Origin(SpaceProvider.LOCAL_SPACE_PROVIDER_ID, LocalSpace.LOCAL_SPACE_ID, itemId,
-            localSpace.getProjectType(itemId).orElse(null));
+    <R> Optional<R> getWithProgress(String name, NodeLogger logger,
+        FailableFunction<IProgressMonitor, R, InvocationTargetException> task);
+
+    /**
+     * Implementation of {@link ProgressReporter} for the Eclipse Workbench environment. Delegates progress reporting to
+     * {@link DesktopAPUtil#runWithProgress} for executing tasks with progress monitoring.
+     *
+     */
+    class WorkbenchProgressReporter implements ProgressReporter {
+
+        @Override
+        public <R> Optional<R> getWithProgress( //
+            final String name, //
+            final NodeLogger logger, //
+            final FailableFunction<IProgressMonitor, R, InvocationTargetException> task //
+        ) {
+            return DesktopAPUtil.runWithProgress(name, logger, task);
+        }
     }
 
     /**
-     * @param spaceProviderId
-     * @param spaceId
-     * @return Returns {@code true} if both parameters indicate we work within the {@link LocalSpace}, {@code false}
-     *         otherwise.
+     * No-Op implementation
      */
-    public static boolean isLocalSpace(final String spaceProviderId, final String spaceId) {
-        return spaceProviderId.equals(SpaceProvider.LOCAL_SPACE_PROVIDER_ID)
-            && spaceId.equals(LocalSpace.LOCAL_SPACE_ID);
+    class NullProgressReporter implements ProgressReporter {
+
+        @Override
+        public <R> Optional<R> getWithProgress( //
+            final String name, //
+            final NodeLogger logger, //
+            final FailableFunction<IProgressMonitor, R, InvocationTargetException> task //
+        ) {
+            try {
+                return Optional.ofNullable(task.apply(new NullProgressMonitor()));
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 }

@@ -116,7 +116,7 @@ public final class TestingUtil {
         final List<String> projectIds, final String activeProjectId) {
         projectIds.forEach(projectId -> projectManager.addProject( //
             Project.builder() //
-                .setWfmLoader(() -> loadWorkflowForTesting(projectId)) //
+                .setWfmLoaderProvidingOnlyCurrentState(() -> loadWorkflowForTesting(projectId)) //
                 .setName(projectId) //
                 .setId(projectId) //
                 .setOrigin(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpace)) //

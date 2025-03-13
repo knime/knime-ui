@@ -46,27 +46,33 @@
  */
 package org.knime.ui.java.api;
 
+import static org.knime.gateway.api.entity.EntityBuilderManager.builder;
+
 import java.io.IOException;
+import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.core.util.Pair;
 import org.knime.core.util.hub.NamedItemVersion;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.api.webui.entity.SpaceItemVersionEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.ui.java.util.CreateProject;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.ProgressReporter;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
@@ -82,28 +88,58 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 @SuppressWarnings("java:S1602") // braces on one-expression lambda
 final class OpenProject {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenProject.class);
-
     private OpenProject() {
         // utility
     }
 
     /**
-     * Open a project from a mounted space
+     * Fetch, load, and open the project in the Modern/Web UI. Those projects won't be available in the classic UI when
+     * switching to it.
      *
-     * @param spaceId The ID of the space the item is in
-     * @param itemId The item ID of the workflow to open
-     * @param spaceProviderId The ID of the space provider of the space
-     * @throws IOException If something goes wrong opening the project
+     * @implNote Needs to be stand-alone (not wrapped in progress manager) to be testable.
+     * @param spaceId The ID of the space the item is located in
+     * @param itemId The ID of the item to open
+     * @param spaceProviderId The ID of the space provider
+     * @throws OpenProjectException Specific exception thrown when a project failed to open
      */
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
         throws IOException {
+        var spaceProviders = DesktopAPI.getSpaceProviders();
+
+        final Space space;
         try {
-            DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
-                monitor -> openProjectWithProgress(spaceProviderId, spaceId, itemId, monitor));
-        } catch (Exception e) { // NOSONAR
-            LOGGER.error("Failed to open project", e);
-            throw new IOException(e.getMessage(), e);
+            space = spaceProviders.getSpace(spaceProviderId, spaceId);
+        } catch (NoSuchElementException e) {
+            throw new OpenProjectException("The space could not be accessed.", e);
+        }
+
+        final ProjectTypeEnum projectType;
+        try {
+            projectType = space.getProjectType(itemId).orElseThrow(
+                () -> new OpenProjectException("The item is not a valid project.", new IllegalArgumentException(
+                    "The item for id " + itemId + " is neither a workflow- nor a component-project")));
+        } catch (NoSuchElementException e) {
+            throw new OpenProjectException("The project could not be found.", e);
+        }
+
+        var projectManager = DesktopAPI.getDeps(ProjectManager.class);
+        var project = projectManager //
+            .getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType) //
+            .orElseGet(() -> {
+                final var origin = new Origin(spaceProviderId, spaceId, itemId, projectType);
+                return CreateProject.createProjectFromOrigin( //
+                    origin, //
+                    DesktopAPI.getDeps(ProgressReporter.class), //
+                    DesktopAPI.getSpaceProviders() //
+                );
+            });
+        // already trigger loading of wfm here because we want to abort and not register the project if this fails
+        var loadedWfm = project.getFromCacheOrLoadWorkflowManager(VersionId.currentState());
+        if (loadedWfm.isEmpty()) {
+            throw new OpenProjectException("Could not load workflow");
+        } else {
+            final var providerType = spaceProviders.getProviderTypes().get(spaceProviderId);
+            registerProjectAndSetActive(project, providerType);
         }
     }
 
@@ -129,7 +165,7 @@ final class OpenProject {
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion) {
-        final var wfm = fetchAndLoadProjectWithProgress(repoObjectImport);
+        final var wfm = loadWorkflowWithProgress(repoObjectImport);
         if (wfm == null) {
             return false;
         }
@@ -138,7 +174,7 @@ final class OpenProject {
             .filter(HubSpaceLocationInfo.class::isInstance)//
             .map(HubSpaceLocationInfo.class::cast)//
             .orElse(null);
-        final var origin = Origin.of(locationInfo, wfm, selectedVersion).orElse(null);
+        final var origin = findOrigin(locationInfo, wfm, selectedVersion).orElse(null);
         final var project = Project.builder().setWfm(wfm).setOrigin(origin).build();
         // Provider type can only be Hub here
         registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.HUB);
@@ -147,48 +183,49 @@ final class OpenProject {
     }
 
     /**
-     * Fetch, load, and open the project in the Modern/Web UI. Those projects won't be available in the classic UI when
-     * switching to it.
+     * Creates an {@link Origin} from a Hub Space and a WorkflowManager
      *
-     * @implNote Needs to be stand-alone (not wrapped in progress manager) to be testable.
-     * @param spaceId The ID of the space the item is located in
-     * @param itemId The ID of the item to open
-     * @param spaceProviderId The ID of the space provider
-     * @param monitor To report progress
-     * @throws OpenProjectException Specific exception thrown when a project failed to open
+     * @param hubLocation location information of the item
+     * @param wfm the WorkflowManager that contains the project
+     * @param selectedVersion the version information of the item, can be empty
+     * @return The newly created Origin, or empty if hubLocation or workflow manager are missing
      */
-    static void openProjectWithProgress(final String spaceProviderId, final String spaceId, final String itemId,
-        final IProgressMonitor monitor) throws OpenProjectException {
-        var spaceProviders = DesktopAPI.getSpaceProviders();
-
-        final Space space;
-        try {
-            space = spaceProviders.getSpace(spaceProviderId, spaceId);
-        } catch (NoSuchElementException e) {
-            throw new OpenProjectException("The space could not be accessed.", e);
+    @SuppressWarnings({"java:S1188"})
+    private static Optional<Origin> findOrigin(final HubSpaceLocationInfo hubLocation, final WorkflowManager wfm,
+        final NamedItemVersion selectedVersion) {
+        if (hubLocation == null || wfm == null) {
+            return Optional.empty();
         }
 
-        final ProjectTypeEnum projectType;
-        try {
-            projectType = space.getProjectType(itemId).orElseThrow(
-                () -> new OpenProjectException("The item is not a valid project.", new IllegalArgumentException(
-                    "The item for id " + itemId + " is neither a workflow- nor a component-project")));
-        } catch (NoSuchElementException e) {
-            throw new OpenProjectException("The project could not be found.", e);
-        }
+        final var context = wfm.getContextV2();
+        final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
 
-        var project = DesktopAPI.getDeps(ProjectManager.class) //
-            .getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType) //
-            .or(() -> loadWorkflowAndCreateProjectWithVersions(space, spaceProviderId, spaceId, itemId, projectType,
-                monitor)) //
-            .orElseThrow(() -> new OpenProjectException("The project could not be loaded."));
+        final var providerId = apExecInfo.getMountpoint().map(Pair::getFirst).map(URI::getAuthority).orElse(null);
+        final var spaceId = hubLocation.getSpaceItemId();
+        final var itemId = hubLocation.getWorkflowItemId();
+        final var projectType = wfm.isComponentProjectWFM() ? //
+            Optional.of(ProjectTypeEnum.COMPONENT) : //
+            Optional.of(ProjectTypeEnum.WORKFLOW);
+        final Optional<SpaceItemVersionEnt> itemVersion = selectedVersion == null ? //
+            Optional.empty() : //
+            Optional.of(buildVersionInfo(selectedVersion));
 
-        final var providerType = spaceProviders.getProviderTypes().get(spaceProviderId);
-        registerProjectAndSetActive(project, providerType);
+        return Optional.of(new Origin(providerId, spaceId, itemId, projectType, itemVersion));
+    }
+
+    private static SpaceItemVersionEnt buildVersionInfo(final NamedItemVersion selectedVersion) {
+        return builder(SpaceItemVersionEnt.SpaceItemVersionEntBuilder.class) //
+            .setVersion(selectedVersion.version()) //
+            .setTitle(selectedVersion.title()) //
+            .setDescription(selectedVersion.description()) //
+            .setAuthor(selectedVersion.author()) //
+            .setAuthorAccountId(selectedVersion.authorAccountId()) //
+            .setCreatedOn(selectedVersion.createdOn()) //
+            .build();
     }
 
     @SuppressWarnings("serial")
-    static final class OpenProjectException extends Exception {
+    static final class OpenProjectException extends IOException {
 
         private OpenProjectException(final String message, final Throwable cause) {
             super(message, cause);
@@ -215,30 +252,13 @@ final class OpenProject {
 
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
 
-        // Instrumentation
         project.getWorkflowManagerIfLoaded().ifPresent(wfm -> {
             var wfType = providerType == SpaceProviderEnt.TypeEnum.LOCAL ? WorkflowType.LOCAL : WorkflowType.REMOTE;
             NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, wfType);
         });
     }
 
-    private static Optional<Project> loadWorkflowAndCreateProjectWithVersions(final Space space,
-        final String spaceProviderId, final String spaceId, final String itemId, final ProjectTypeEnum projectType,
-        final IProgressMonitor monitor) {
-        var loadedWorkflow = Optional
-            .ofNullable(DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, VersionId.currentState()));
-        return loadedWorkflow.map(wfm -> { //
-            return Project.builder() //
-                .setWfm(wfm) //
-                .setOrigin(new Origin(spaceProviderId, spaceId, itemId, projectType)) //
-                .setVersionWfmLoader(
-                    // this configures how to load a specific version of the project
-                    version -> DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, version)) //
-                .build();
-        });
-    }
-
-    private static WorkflowManager fetchAndLoadProjectWithProgress(final RepoObjectImport repoObjectImport) {
+    private static WorkflowManager loadWorkflowWithProgress(final RepoObjectImport repoObjectImport) {
         final var fileStore =
             (RemoteExplorerFileStore)ExplorerMountTable.getFileSystem().getStore(repoObjectImport.getKnimeURI());
         var locationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();

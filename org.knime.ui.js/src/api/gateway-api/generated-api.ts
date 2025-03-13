@@ -1,6 +1,6 @@
-import type { Configuration } from './configuration';
-import type { RPCClient } from './rpc-client';
-import { mapToExceptionClass } from './generated-exceptions';
+import type { Configuration } from "./configuration";
+import type { RPCClient } from "./rpc-client";
+import { mapToExceptionClass } from "./generated-exceptions";
 
 /**
  *
@@ -5084,11 +5084,11 @@ export interface WorkflowSnapshot {
      */
     workflow: Workflow;
     /**
-     * A unique identifier for the snapshot.
+     * A unique identifier of this snapshot, used for listening for workflow changes. Not given if listening for changes is not applicable to this workflow.
      * @type {string}
      * @memberof WorkflowSnapshot
      */
-    snapshotId: string;
+    snapshotId?: string;
 
 }
 
@@ -5996,6 +5996,22 @@ const space = function(rpcClient: RPCClient) {
  */
 const workflow = function(rpcClient: RPCClient) {
     return {
+        /**
+         * Dispose the workflow (manager) corresponding to the given project and version.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.version The version identifier. &#x60;null&#x60; corresponds to the current-state (working area).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async disposeVersion(
+        	params: { projectId: string,  version: string  }
+        ): Promise<Response> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('WorkflowService.disposeVersion', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
         /**
          * Executed a command on the referenced workflow. Every request with the same operation is idempotent.
          * @param {string} params.projectId ID of the workflow-project.

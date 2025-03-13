@@ -74,6 +74,7 @@ const mockedVersionsApi: Mocked<ReturnType<typeof useVersionsApi>> = vi.hoisted(
   () => ({
     createVersion: vi.fn(),
     deleteVersion: vi.fn(),
+    restoreVersion: vi.fn(),
     fetchItemSavepoints: vi.fn((_) =>
       Promise.resolve({
         totalCount: mockSavepoints.length,
@@ -395,7 +396,7 @@ describe("workflow store: versions", () => {
       });
 
       expect(mockedVersionsApi.createVersion).toHaveBeenCalledWith({
-        projectItemId: "mockItemId",
+        itemId: "mockItemId",
         title: name,
         description,
       });
@@ -410,7 +411,7 @@ describe("workflow store: versions", () => {
       await workflowVersionsStore.deleteVersion(1);
 
       expect(mockedVersionsApi.deleteVersion).toHaveBeenCalledWith({
-        projectItemId: "mockItemId",
+        itemId: "mockItemId",
         version: 1,
       });
     });

@@ -65,7 +65,7 @@ export const useWorkflowStore = defineStore("workflow", {
       this.activeWorkflow = workflow;
     },
 
-    setActiveSnapshotId(id: string) {
+    setActiveSnapshotId(id: string | null) {
       this.activeSnapshotId = id;
     },
 

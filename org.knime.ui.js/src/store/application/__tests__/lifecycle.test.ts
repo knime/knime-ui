@@ -313,12 +313,7 @@ describe("application::lifecycle", () => {
       );
 
       expect(workflowStore.activeWorkflow).toStrictEqual(loadedWF);
-
-      expect(mockedAPI.event.subscribeEvent).toHaveBeenCalledWith({
-        typeId: "WorkflowChangedEventType",
-        projectId: "wf2",
-        workflowId: "root",
-      });
+      expect(mockedAPI.event.subscribeEvent).not.toHaveBeenCalled();
     });
 
     it("unloads workflow when another one is loaded", async () => {

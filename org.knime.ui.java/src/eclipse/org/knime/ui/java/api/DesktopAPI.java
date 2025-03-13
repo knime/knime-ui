@@ -77,6 +77,7 @@ import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.ProgressReporter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -182,7 +183,7 @@ public final class DesktopAPI {
                     try {
                         var res = invokeMethod(method, args);
                         event.set("result", MAPPER.valueToTree(res));
-                    } catch (Throwable e) {  // NOSONAR
+                    } catch (Throwable e) { // NOSONAR
                         LOGGER.debug("Desktop API function call failed for '" + name + "'", e);
                         event.put("error", e.getMessage());
                     }
@@ -236,16 +237,17 @@ public final class DesktopAPI {
      * @param welcomeAPEndpoint
      * @param exampleProjects
      * @param userProfile
+     * @param progressReporter
      * @throws IllegalStateException if the dependencies have been already injected
      */
-    @SuppressWarnings({"java:S107"}) // parameter count
+    @SuppressWarnings({"java:S107", "JavadocDeclaration", "javadoc"}) // parameter count
     public static void injectDependencies(final ProjectManager workflowProjectManager,
         final AppStateUpdater appStateUpdater, final SpaceProvidersManager spaceProvidersManager,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
         final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
         final MostRecentlyUsedProjects mruProjects, final LocalSpace localSpace,
-        final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects,
-        final UserProfile userProfile) {
+        final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects, final UserProfile userProfile,
+        final ProgressReporter progressReporter) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -264,6 +266,7 @@ public final class DesktopAPI {
         DEPENDENCIES.put(WelcomeAPEndpoint.class, welcomeAPEndpoint);
         injectDependency(exampleProjects);
         injectDependency(userProfile);
+        injectDependency(progressReporter);
     }
 
     static void injectDependency(final UserProfile userProfile) {
@@ -331,6 +334,10 @@ public final class DesktopAPI {
      */
     static void injectDependency(final ExampleProjects exampleProjects) {
         DEPENDENCIES.put(ExampleProjects.class, exampleProjects);
+    }
+
+    static void injectDependency(final ProgressReporter progressReporter) {
+        DEPENDENCIES.put(ProgressReporter.class, progressReporter);
     }
 
     /**

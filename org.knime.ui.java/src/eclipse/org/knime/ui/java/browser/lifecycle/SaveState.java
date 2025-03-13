@@ -71,17 +71,23 @@ final class SaveState {
         var serializedAppState = new AtomicReference<String>();
         try {
             // NOSONAR: Serialize app state before closing all workflows
-            serializedAppState.set(AppStatePersistor.serializeAppState(state.getProjectManager(),
-                state.getMostRecentlyUsedProjects(), state.getLocalSpace()));
-        } catch (RuntimeException e) {
-            // do not abort shutdown
+            serializedAppState.set(AppStatePersistor.serializeAppState( //
+                state.getProjectManager(), //
+                state.mostRecentlyUsedProjects(), //
+                state.getLocalSpace()) //
+            );
+        } catch (RuntimeException e) { // do not abort shutdown
             NodeLogger.getLogger(SaveState.class).error("Could not save application state", e);
         }
 
         final var saveProjectsFunction = state.getSaveAndCloseAllProjectsFunction();
-        final var saveProjectsResult = saveProjectsFunction.get();
-        if (saveProjectsResult == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
-            throw new StateTransitionAbortedException();
+        try {
+            final var saveProjectsResult = saveProjectsFunction.get();
+            if (saveProjectsResult == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
+                throw new StateTransitionAbortedException();
+            }
+        } catch (RuntimeException e) { // do not abort shutdown
+            NodeLogger.getLogger(SaveState.class).error("Could not save projects", e);
         }
 
         return new LifeCycleStateInternalAdapter(state) {

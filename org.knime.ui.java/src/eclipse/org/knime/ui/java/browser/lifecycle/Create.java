@@ -63,7 +63,6 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
@@ -74,7 +73,6 @@ import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.persistence.UserProfilePersistor;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.profile.UserProfile;
-import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.UserDirectory;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
@@ -121,16 +119,20 @@ final class Create {
 
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
 
-        var projectManager = ProjectManager.getInstance();
-        var localSpace = createLocalSpace();
-        var mostRecentlyUsedProjects = new MostRecentlyUsedProjects(localSpace);
         ProjectWorkflowMap.isActive = false;
-        AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localSpace);
+
+        var localSpace = createLocalSpace();
+        var loadedApplicationState = AppStatePersistor.loadAppState(localSpace);
+
         var userProfile = loadUserProfile();
         userProfile.internalUsage().trackUiCreated();
 
-        return LifeCycleStateInternal.of(projectManager, mostRecentlyUsedProjects, localSpace,
-            WelcomeAPEndpoint.getInstance(), userProfile);
+        return LifeCycleStateInternal.of( //
+            loadedApplicationState, //
+            localSpace, //
+            WelcomeAPEndpoint.getInstance(), //
+            userProfile //
+        );
     }
 
     private static UserProfile loadUserProfile() {

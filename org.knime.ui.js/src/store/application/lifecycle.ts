@@ -342,7 +342,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
         useApplicationStore()?.activeProjectId === activeProject.projectId;
 
       if (isSameActiveProject) {
-        // don't set navigate to project/workflow if already on it. e.g another tab was closed
+        // don't set navigate to project/workflow if already on it. e.g. another tab was closed
         // and we receive an update for `openProjects`
         return;
       }
@@ -509,12 +509,13 @@ export const useLifecycleStore = defineStore("lifecycle", {
         throw new ProjectDataLoadError(error);
       }
 
-      this.beforeSetActivateWorkflow({ workflow: project.workflow });
+      const { workflow, snapshotId } = project;
+      this.beforeSetActivateWorkflow({ workflow });
 
       this.setWorkflow({
         projectId,
-        workflow: project.workflow,
-        snapshotId: project.snapshotId,
+        workflow,
+        snapshotId,
       });
 
       this.setIsLoadingApp(false);
@@ -541,7 +542,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
     }: {
       workflow: Workflow;
       projectId: string;
-      snapshotId: string;
+      snapshotId?: string;
     }) {
       useApplicationStore().setActiveProjectId(projectId);
       useWorkflowStore().setActiveWorkflow({
@@ -549,10 +550,10 @@ export const useLifecycleStore = defineStore("lifecycle", {
         projectId,
       });
 
-      useWorkflowStore().setActiveSnapshotId(snapshotId);
+      useWorkflowStore().setActiveSnapshotId(snapshotId ?? null);
       const workflowId = workflow.info.containerId;
 
-      if (!workflow.info.version) {
+      if (snapshotId) {
         API.event.subscribeEvent({
           typeId: "WorkflowChangedEventType",
           projectId,
@@ -597,18 +598,21 @@ export const useLifecycleStore = defineStore("lifecycle", {
         useWorkflowStore().setActiveWorkflow(null);
       }
 
-      try {
-        await API.event.unsubscribeEventListener({
-          typeId: "WorkflowChangedEventType",
-          projectId,
-          workflowId,
-          snapshotId: snapshotId!,
-        });
-      } catch (error) {
-        consola.error(
-          "lifecycle::unloadActiveWorkflow failed to unsubscribe to WorkflowChangedEvent",
-          { error },
-        );
+      if (snapshotId) {
+        // only unsubscribe if previously subscribed
+        try {
+          await API.event.unsubscribeEventListener({
+            typeId: "WorkflowChangedEventType",
+            projectId,
+            workflowId,
+            snapshotId,
+          });
+        } catch (error) {
+          consola.error(
+            "lifecycle::unloadActiveWorkflow failed to unsubscribe to WorkflowChangedEvent",
+            { error, projectId, workflowId, snapshotId },
+          );
+        }
       }
     },
 

@@ -54,14 +54,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Origin;
@@ -214,75 +214,86 @@ public final class AppStatePersistor {
     }
 
     /**
+     * A representation of an open project which needs to be restored
+     *
+     * @param origin the project's origin
+     * @param isActive indicates if the project is the currently active one
+     */
+    public record RestoredOpenProject(Origin origin, boolean isActive) {
+
+    }
+
+    /**
+     * A representation of the loaded application state with recently used and open projects.
+     *
+     * @param recentlyUsedProjects projects which were recently used
+     * @param openProjectsToRestore projects which were open and need to be restored
+     */
+    public record LoadedApplicationState(List<RecentlyUsedProject> recentlyUsedProjects,
+            List<RestoredOpenProject> openProjectsToRestore) {
+
+        /**
+         * clears the record
+         *
+         * @return an empty instance
+         */
+        public static LoadedApplicationState empty() {
+            return new LoadedApplicationState(List.of(), List.of());
+        }
+
+    }
+
+    /**
      * Loads the app state from a file and registers the opened workflow projects with the {@link ProjectManager}.
      *
-     * @param pm the project manager instance
-     * @param mruProjects the most recently used projects
      * @param localSpace the local space instance
+     * @return -
      */
-    public static void loadAppState(final ProjectManager pm, final MostRecentlyUsedProjects mruProjects,
-        final LocalSpace localSpace) {
+    public static LoadedApplicationState loadAppState(final LocalSpace localSpace) {
         if (!Files.exists(APP_STATE_FILE)) {
-            return;
+            return LoadedApplicationState.empty();
         }
         JsonNode appStateJson;
         try {
             appStateJson = MAPPER.readTree(APP_STATE_FILE.toFile());
         } catch (IOException e) {
             LOGGER.error("Failed to load the app state", e);
-            return;
+            return LoadedApplicationState.empty();
         }
-        if (pm != null) {
-            deserializeProjects(appStateJson, pm, localSpace);
-        }
-        if (mruProjects != null) {
-            deserializeMRUProjects(appStateJson, mruProjects, localSpace);
-        }
+        //
+        return new LoadedApplicationState( //
+            deserializeMRUProjects(appStateJson, localSpace), //
+            deserializeProjects(appStateJson, localSpace) //
+        );
     }
 
-    private static void deserializeProjects(final JsonNode appStateJson, final ProjectManager pm,
+    private static List<RestoredOpenProject> deserializeProjects(final JsonNode appStateJson,
         final LocalSpace localSpace) {
         var projectsJson = (ArrayNode)appStateJson.get(PROJECTS);
+        var restoredOpenProjects = new ArrayList<RestoredOpenProject>();
         for (var projectJson : projectsJson) {
             if (!hasOriginAndRelativePath(projectJson)) {
-                continue; // Skips the project if no origin or relative path were persisted
+                continue;
             }
-            var project = deserializeProject(projectJson, localSpace);
-            pm.addProject(project);
-            if (projectJson.get(ACTIVE).asBoolean()) {
-                pm.setProjectActive(project.getID());
-            }
+            restoredOpenProjects.add(deserializeLocalProject(projectJson, localSpace));
         }
+        return restoredOpenProjects;
     }
 
-    private static Project deserializeProject(final JsonNode projectJson, final LocalSpace localSpace) {
-        var name = projectJson.get(NAME).asText();
+    private static RestoredOpenProject deserializeLocalProject(final JsonNode projectJson,
+        final LocalSpace localSpace) {
         var originAndRelativePath = deserializeOrigin(projectJson.get(ORIGIN), localSpace);
         var absolutePath = localSpace.getRootPath().resolve(originAndRelativePath.getSecond().orElseThrow());
+        if (!Files.exists(absolutePath)) {
+            DesktopAPUtil.showWarning("No workflow project found", "No workflow project found at " + absolutePath);
+            return null;
+        }
+
         var origin = originAndRelativePath.getFirst();
-
-        Supplier<WorkflowManager> getWfm = () -> {
-            if (!Files.exists(absolutePath)) {
-                DesktopAPUtil.showWarning("No workflow project found", "No workflow project found at " + absolutePath);
-                return null;
-            }
-            return DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
-                var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, origin.itemId(), monitor);
-                if (wfm == null) {
-                    DesktopAPUtil.showWarning("Failed to load workflow",
-                        "The workflow at '" + absolutePath + "' couldn't be loaded.");
-                }
-                return wfm;
-            }).orElse(null);
-        };
-
-        var projectId = LocalSpaceUtil.getUniqueProjectId(name);
-        return Project.builder() //
-            .setWfmLoader(getWfm) //
-            .setName(name) //
-            .setId(projectId) //
-            .setOrigin(origin) //
-            .build();
+        return new RestoredOpenProject( //
+            origin, //
+            projectJson.get(ACTIVE).asBoolean() //
+        );
     }
 
     private static boolean hasOriginAndRelativePath(final JsonNode projectJson) {
@@ -292,15 +303,17 @@ public final class AppStatePersistor {
         return projectJson.get(ORIGIN).has(RELATIVE_PATH);
     }
 
-    private static void deserializeMRUProjects(final JsonNode appStateJson, final MostRecentlyUsedProjects mruProjects,
+    private static List<RecentlyUsedProject> deserializeMRUProjects(final JsonNode appStateJson,
         final LocalSpace localSpace) {
         var projectsJson = (ArrayNode)appStateJson.get(MRU_PROJECTS);
         if (projectsJson == null) {
-            return;
+            return List.of();
         }
+        var recentlyUsedProjects = new ArrayList<RecentlyUsedProject>();
         for (var projectJson : projectsJson) {
-            mruProjects.add(deserializeMRUProject(projectJson, localSpace));
+            recentlyUsedProjects.add(deserializeMRUProject(projectJson, localSpace));
         }
+        return recentlyUsedProjects;
     }
 
     private static RecentlyUsedProject deserializeMRUProject(final JsonNode projectJson, final LocalSpace localSpace) {

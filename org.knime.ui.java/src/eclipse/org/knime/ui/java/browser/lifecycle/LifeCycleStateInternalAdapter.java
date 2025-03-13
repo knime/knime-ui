@@ -55,6 +55,7 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
@@ -93,8 +94,13 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     }
 
     @Override
-    public MostRecentlyUsedProjects getMostRecentlyUsedProjects() {
-        return m_lifeCycleStateInternal.getMostRecentlyUsedProjects();
+    public MostRecentlyUsedProjects mostRecentlyUsedProjects() {
+        return m_lifeCycleStateInternal.mostRecentlyUsedProjects();
+    }
+
+    @Override
+    public AppStatePersistor.LoadedApplicationState loadedApplicationState() {
+        return m_lifeCycleStateInternal.loadedApplicationState();
     }
 
     @Override

@@ -63,7 +63,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collector;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -100,7 +99,7 @@ final class ProjectAPI {
     }
 
     /**
-     * @see OpenProject#openProjectWithProgress(String, String, String, IProgressMonitor)
+     * @see #openProject(String, String, String) (String, String, String)
      */
     @API
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)

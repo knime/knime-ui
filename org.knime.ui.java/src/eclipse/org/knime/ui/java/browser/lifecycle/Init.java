@@ -69,6 +69,7 @@ import org.knime.core.util.auth.CouldNotAuthorizeException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.PreferencesProvider;
@@ -100,10 +101,14 @@ import org.knime.js.cef.wizardnodeview.CEFWizardNodeView;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.browser.KnimeBrowserView;
+import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
+import org.knime.ui.java.util.CreateProject;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.ExampleProjects;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.NodeCollectionUtil;
+import org.knime.ui.java.util.ProgressReporter;
 
 import com.equo.middleware.api.handler.IRequestFilter;
 import com.equo.middleware.api.resource.MutableRequest;
@@ -124,11 +129,29 @@ final class Init {
     }
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean checkForUpdates) {
-        var projectManager = state.getProjectManager();
+        var progressReporter = new ProgressReporter.WorkbenchProgressReporter();
         var localSpace = state.getLocalSpace();
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);
         var spaceProvidersManager = createSpaceProvidersManager(localSpace, toastService);
+
+        ProjectManager projectManager;
+        if (state.getProjectManager() != null) {
+            projectManager = state.getProjectManager();
+        } else {
+            // NOSONAR TODO NXT-3607: explicitly create new instance of ProjectManager here
+            projectManager = ProjectManager.getInstance();
+            state.loadedApplicationState().openProjectsToRestore().forEach(projectToRestore -> {
+                var project = CreateProject.createProjectFromOrigin(projectToRestore.origin(), progressReporter, //
+                        spaceProvidersManager.getSpaceProviders(SpaceProvidersManager.Key.defaultKey()) //
+                );
+                projectManager.addProject(project);
+                if (projectToRestore.isActive()) {
+                    projectManager.setProjectActive(project.getID());
+                }
+            });
+        }
+
         var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProvidersManager);
         var appStateUpdater = new AppStateUpdater();
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
@@ -137,22 +160,43 @@ final class Init {
         var codeKaiHandler = createCodeKaiHandler(kaiAuthTokenProvider);
         var preferenceProvider = createPreferencesProvider();
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
-        var nodeRepo = createNodeRepository(nodeCollections);
+        var nodeRepository = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
         NodeCategoryExtensions nodeCategoryExtensions =
             () -> NodeSpecCollectionProvider.getInstance().getCategoryExtensions();
 
+        MostRecentlyUsedProjects mostRecentlyUsedProjects;
+        if (state.mostRecentlyUsedProjects() != null) {
+            mostRecentlyUsedProjects = state.mostRecentlyUsedProjects();
+        } else {
+            mostRecentlyUsedProjects = new MostRecentlyUsedProjects(localSpace);
+            state.loadedApplicationState().recentlyUsedProjects().forEach(mostRecentlyUsedProjects::add);
+        }
+
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
-            eventConsumer, spaceProvidersManager, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
-            kaiHandler, codeKaiHandler, nodeCollections, nodeRepo, nodeCategoryExtensions, selectionEventBus);
-        DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProvidersManager, updateStateProvider,
-            eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(), localSpace,
-            state.getWelcomeApEndpoint(), createExampleProjects(), state.getUserProfile());
-
+                eventConsumer, spaceProvidersManager, updateStateProvider, preferenceProvider,
+                createNodeFactoryProvider(), kaiHandler, codeKaiHandler, nodeCollections, nodeRepository,
+                nodeCategoryExtensions, selectionEventBus);
+        DesktopAPI.injectDependencies( //
+            projectManager, //
+            appStateUpdater, //
+            spaceProvidersManager, //
+            updateStateProvider, //
+            eventConsumer, //
+            workflowMiddleware, //
+            toastService, //
+                nodeRepository, //
+            mostRecentlyUsedProjects, //
+            state.getLocalSpace(), //
+            state.getWelcomeApEndpoint(), //
+            createExampleProjects(), //
+            state.getUserProfile(), //
+            progressReporter //
+        );
         // Register listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
-        registerPreferenceListeners(appStateUpdater, spaceProvidersManager, nodeCollections, nodeRepo);
+        registerPreferenceListeners(appStateUpdater, spaceProvidersManager, nodeCollections, nodeRepository);
 
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
 
@@ -169,6 +213,20 @@ final class Init {
                 return softwareUpdateProgressListener;
             }
 
+            @Override
+            public ProjectManager getProjectManager() {
+                return projectManager;
+            }
+
+            @Override
+            public MostRecentlyUsedProjects mostRecentlyUsedProjects() {
+                return mostRecentlyUsedProjects;
+            }
+
+            @Override
+            public AppStatePersistor.LoadedApplicationState loadedApplicationState() {
+                return AppStatePersistor.LoadedApplicationState.empty();
+            }
         };
 
     }
