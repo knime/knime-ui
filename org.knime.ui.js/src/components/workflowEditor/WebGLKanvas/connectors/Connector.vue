@@ -5,6 +5,9 @@
 import { computed, ref, toRefs, watch } from "vue";
 import { type AnimationPlaybackControls, animate } from "motion";
 import { storeToRefs } from "pinia";
+import type { FederatedPointerEvent } from "pixi.js";
+
+import { getMetaOrCtrlKey } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
@@ -14,35 +17,13 @@ import { isPlaceholderPort } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import * as $colors from "@/style/colors";
-import { portSize } from "@/style/shapes";
+import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import type { GraphicsInst } from "@/vue3-pixi";
+import { type BezierPoints, getBezier } from "../../util/connectorPath";
+import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
-import type { BezierPoints, ConnectorProps } from "./types";
-
-const deltaX1 = portSize / 2 - 0.5;
-const deltaX2 = portSize / 2 - 0.5;
-
-const getBezier = (
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-): BezierPoints => {
-  x1 += deltaX1;
-  x2 -= deltaX2;
-  const width = Math.abs(x1 - x2);
-  const height = Math.abs(y1 - y2);
-  const widthHalf = width / 2;
-  const heightThird = height / 3;
-
-  return {
-    start: { x: x1, y: y1 },
-    control1: { x: x1 + widthHalf + heightThird, y: y1 },
-    control2: { x: x2 - widthHalf - heightThird, y: y2 },
-    end: { x: x2, y: y2 },
-  };
-};
+import type { ConnectorProps } from "./types";
 
 const props = withDefaults(defineProps<ConnectorProps>(), {
   sourceNode: null,
@@ -54,7 +35,8 @@ const props = withDefaults(defineProps<ConnectorProps>(), {
 });
 
 const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
-const { isNodeSelected } = storeToRefs(useSelectionStore());
+const selectionStore = useSelectionStore();
+const { isNodeSelected, isConnectionSelected } = storeToRefs(selectionStore);
 const { visibleArea, isDebugModeEnabled } = storeToRefs(useWebGLCanvasStore());
 
 const { sourceNode, sourcePort, destNode, destPort, id, absolutePoint } =
@@ -103,8 +85,39 @@ const startEndWithMoveDeltas = computed<[number, number, number, number]>(
   },
 );
 
-const renderFn = (graphics: GraphicsInst, points: BezierPoints) => {
-  const color = props.flowVariableConnection ? $colors.Coral : $colors.Masala;
+const isSelected = computed(
+  () => isConnectionSelected.value(props.id) && !isDragging.value,
+);
+const isHovered = ref(false);
+
+const getConnectorColor = (isHoverArea: boolean) => {
+  if (isHoverArea) {
+    return isDebugModeEnabled.value ? "green" : "white";
+  }
+
+  if (isSelected.value) {
+    return $colors.Cornflower;
+  }
+
+  const connectorColor = props.flowVariableConnection
+    ? $colors.Coral
+    : $colors.StoneGray;
+
+  return props.absolutePoint && isDebugModeEnabled.value
+    ? "blue"
+    : connectorColor;
+};
+
+const connectorPath = ref<GraphicsInst>();
+
+const renderFn = (
+  graphics: GraphicsInst,
+  points: BezierPoints,
+  strokeWidth = $shapes.connectorWidth,
+  isHoverArea = false,
+) => {
+  const color = getConnectorColor(isHoverArea);
+
   graphics
     .clear()
     .moveTo(
@@ -120,10 +133,29 @@ const renderFn = (graphics: GraphicsInst, points: BezierPoints) => {
       points.end.y,
     )
     .stroke({
-      width: 1,
-      color: props.absolutePoint && isDebugModeEnabled.value ? "blue" : color,
+      width: isHoverArea ? 5 : strokeWidth,
+      color,
+      alpha: isHoverArea ? 0 : 1,
     });
 };
+
+useAnimatePixiContainer({
+  targetDisplayObject: connectorPath,
+  changeTracker: computed(() => isHovered.value),
+  initialValue: $shapes.connectorWidth,
+  targetValue: $shapes.selectedConnectorWidth,
+  animationParams: { duration: 0.1, ease: "easeIn" },
+  onUpdate: (value) => {
+    if (!isSelected.value) {
+      renderFn(
+        connectorPath.value!,
+        getBezier(...startEndWithMoveDeltas.value),
+        value,
+      );
+    }
+  },
+  animateOut: true,
+});
 
 const { floatingConnector, snapTarget } = storeToRefs(
   useFloatingConnectorStore(),
@@ -157,8 +189,6 @@ const isTargetForReplacement = computed(() => {
 
   return false;
 });
-
-const connectorPath = ref<GraphicsInst>();
 
 const suggestShiftX = -12;
 const suggestShiftY = -6;
@@ -232,14 +262,54 @@ const renderable = computed(() => {
 
   return Boolean(intersect);
 });
+
+const isMultiselect = (event: FederatedPointerEvent) =>
+  event.shiftKey || event[getMetaOrCtrlKey()];
+
+const onConnectionClick = (event: FederatedPointerEvent) => {
+  if (!isMultiselect(event)) {
+    selectionStore.deselectAllObjects();
+  }
+
+  const action = isConnectionSelected.value(props.id)
+    ? selectionStore.deselectConnection
+    : selectionStore.selectConnection;
+
+  action(props.id);
+};
 </script>
 
 <template>
+  <Graphics
+    event-mode="static"
+    :renderable="renderable"
+    :visible="renderable"
+    :label="`ConnectorHoverArea__${id}`"
+    cursor="pointer"
+    @render="
+      renderFn(
+        $event,
+        getBezier(...startEndWithMoveDeltas),
+        $shapes.selectedConnectorWidth,
+        true,
+      )
+    "
+    @pointerdown.stop.prevent="onConnectionClick"
+    @pointerenter="isHovered = true"
+    @pointerleave="isHovered = false"
+  />
+
   <Graphics
     ref="connectorPath"
     :renderable="renderable"
     :visible="renderable"
     :label="`Connector__${id}`"
-    @render="renderFn($event, getBezier(...startEndWithMoveDeltas))"
+    @render="
+      renderFn(
+        $event,
+        getBezier(...startEndWithMoveDeltas),
+        isSelected ? $shapes.selectedConnectorWidth : $shapes.connectorWidth,
+      )
+    "
   />
 </template>
