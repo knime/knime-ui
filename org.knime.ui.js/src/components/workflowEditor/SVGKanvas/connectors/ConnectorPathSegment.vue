@@ -42,7 +42,7 @@ const path = computed(() => {
   const x2 = props.segment.end.x;
   const y2 = props.segment.end.y;
 
-  const shotldOffsetStart = props.index !== 0;
+  const shouldOffsetStart = props.index !== 0;
   const shouldOffsetEnd = !props.isLastSegment;
 
   return getBezierPathString(
@@ -50,7 +50,7 @@ const path = computed(() => {
     y1,
     x2,
     y2,
-    shotldOffsetStart,
+    shouldOffsetStart,
     shouldOffsetEnd,
   );
 });
