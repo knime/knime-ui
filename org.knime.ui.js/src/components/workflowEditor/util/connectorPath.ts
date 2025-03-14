@@ -12,7 +12,6 @@ export type BezierPoints = {
 
 // These deltas are carefully chosen so that the connector line is hidden behind the flow variable line,
 // especially for optional ports, even when hovering the port or the connector line.
-// (Optional output ports are useless, but are technically possible and do exist out in the wild)
 const deltaX1 = portSize / 2 - 0.5;
 const deltaX2 = portSize / 2 - 0.5;
 
