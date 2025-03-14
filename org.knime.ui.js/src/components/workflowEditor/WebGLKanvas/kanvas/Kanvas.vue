@@ -11,9 +11,6 @@ import {
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
-import throttle from "raf-throttle";
-
-import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { $bus } from "@/plugins/event-bus";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
@@ -25,6 +22,7 @@ import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
 import { clearIconCache } from "../common/iconCache";
 
+import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
 
 const pixiApp = ref<ApplicationInst>();
@@ -139,23 +137,7 @@ const { mousePan, scrollPan } = useCanvasPanning({
   pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
 });
 
-const zoom = throttle(function (event: WheelEvent) {
-  canvasStore.zoomAroundPointer({
-    cursorX: event.offsetX,
-    cursorY: event.offsetY,
-    delta: Math.sign(-event.deltaY) as -1 | 0 | 1,
-  });
-});
-
-const onWheelEvent = (event: WheelEvent) => {
-  const shouldZoom = event[getMetaOrCtrlKey()];
-  if (shouldZoom) {
-    zoom(event);
-    return;
-  }
-
-  scrollPan(event);
-};
+const { onMouseWheel } = useMouseWheel({ scrollPan });
 </script>
 
 <template>
@@ -170,7 +152,7 @@ const onWheelEvent = (event: WheelEvent) => {
       :auto-density="true"
       :antialias="true"
       :resize-to="() => getKanvasDomElement()!"
-      @wheel.prevent="onWheelEvent"
+      @wheel.prevent="onMouseWheel"
       @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
       @pointermove="$bus.emit('selection-pointermove', $event)"
       @pointerup="$bus.emit('selection-pointerup', $event)"
