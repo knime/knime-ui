@@ -1,5 +1,8 @@
 import { SpaceProviderNS, type WorkflowOrigin } from "@/api/custom-types";
 import type { Project } from "@/api/gateway-api/generated-api";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+
+const { KNIME_HUB_HOME_HOSTNAME, KNIME_HUB_DEV_HOSTNAME } = knimeExternalUrls;
 
 export const findSpaceById = (
   spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
@@ -46,3 +49,22 @@ export const isProjectOpen = (
     isLocalProvider(spaceProvider)
   );
 };
+
+export const formatSpaceProviderName = (
+  spaceProvider: SpaceProviderNS.SpaceProvider,
+) => {
+  if (
+    isHubProvider(spaceProvider) &&
+    spaceProvider.hostname?.includes(KNIME_HUB_DEV_HOSTNAME)
+  ) {
+    return `${spaceProvider.name} (DEV)`;
+  }
+
+  return spaceProvider.name;
+};
+
+export const isCommunityHubProvider = (
+  provider: SpaceProviderNS.SpaceProvider,
+) =>
+  provider.connected &&
+  (provider.hostname?.includes(KNIME_HUB_HOME_HOSTNAME) ?? false);

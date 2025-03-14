@@ -11,6 +11,7 @@ import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { formatSpaceProviderName } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 import { matchesQuery } from "@/util/matchesQuery";
 
@@ -18,7 +19,6 @@ import SpaceCard from "./SpaceCard.vue";
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 import SpacePageHeader from "./SpacePageHeader.vue";
 import SpacePageLayout from "./SpacePageLayout.vue";
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";

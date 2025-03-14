@@ -16,10 +16,14 @@ import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
+import {
+  formatSpaceProviderName,
+  isCommunityHubProvider,
+  isLocalProvider,
+  isServerProvider,
+} from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useSpaceIcons } from "./useSpaceIcons";
 
 interface Props {
@@ -39,6 +43,7 @@ const {
   hasLoadedProviders,
   getProviderInfoFromProjectPath,
   getSpaceInfo,
+  getCommunityHubInfo,
 } = storeToRefs(useSpaceProvidersStore());
 
 const { getSpaceIcon, getSpaceProviderIcon, getSpaceGroupIcon } =
@@ -307,7 +312,10 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
   const shouldShowCreateTeamOption = (
     provider: SpaceProviderNS.SpaceProvider,
   ) => {
-    if (provider.type !== SpaceProviderNS.TypeEnum.HUB || !provider.connected) {
+    if (
+      !isCommunityHubProvider(provider) ||
+      !getCommunityHubInfo.value.isOnlyCommunityHubMounted
+    ) {
       return false;
     }
     return (provider.spaceGroups ?? []).every(
@@ -357,10 +365,7 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
       );
 
       // If this is a Hub provider and the user has NO team, add a “Create team” item
-      if (
-        provider.type === SpaceProviderNS.TypeEnum.HUB &&
-        shouldShowCreateTeamOption(provider)
-      ) {
+      if (shouldShowCreateTeamOption(provider)) {
         const createTeamItem: MenuItem<ExternalLinkMetadata> = {
           text: "Create Team",
           icon: LinkExternalIcon,

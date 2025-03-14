@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import {
@@ -7,13 +7,17 @@ import {
   type MenuItem,
   SubMenu,
   ValueSwitch,
+  useHint,
 } from "@knime/components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
+import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
+import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { isDesktop } from "@/environment";
+import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
@@ -24,6 +28,9 @@ import {
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpacesStore } from "@/store/spaces/spaces";
+import { isLocalProvider } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
@@ -36,10 +43,10 @@ import ZoomMenu from "./ZoomMenu.vue";
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
  */
-
+const { createHint } = useHint();
 const $shortcuts = useShortcuts();
 const uiControls = useUIControlsStore();
-const { activeProjectId, isUnknownProject } = storeToRefs(
+const { activeProjectId, isUnknownProject, openProjects } = storeToRefs(
   useApplicationStore(),
 );
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
@@ -47,8 +54,19 @@ const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
 const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
+const { copyBetweenSpaces } = useSpacesStore();
+const { getProviderInfoFromProjectPath, getCommunityHubInfo } = storeToRefs(
+  useSpaceProvidersStore(),
+);
 
 const webglCanvasStore = useWebGLCanvasStore();
+
+const providerInfo = computed(() =>
+  getProviderInfoFromProjectPath.value(activeProjectId.value!),
+);
+const isLocal = computed(() =>
+  Boolean(providerInfo.value && isLocalProvider(providerInfo.value)),
+);
 
 const canvasModes = computed<Array<MenuItem>>(() => {
   const canvasModeShortcuts: Array<{
@@ -163,8 +181,36 @@ const onCanvasModeUpdate = (
 // toggle renderer svg/webgl
 const { devMode } = storeToRefs(useApplicationSettingsStore());
 
+const itemId = computed(
+  () =>
+    openProjects.value.find(
+      ({ projectId }) => projectId === activeProjectId.value,
+    )?.origin?.itemId,
+);
+
 const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
   useCanvasRendererUtils();
+
+const onUploadButtonClick = () => {
+  if (!itemId.value) {
+    consola.warn("Item id not found for active project");
+    return;
+  }
+
+  copyBetweenSpaces({
+    projectId: activeProjectId.value!,
+    itemIds: [itemId.value],
+  });
+};
+
+const uploadButton = ref<InstanceType<typeof ToolbarButton>>();
+
+onMounted(() => {
+  createHint({
+    hintId: HINTS.UPLOAD_BUTTON,
+    referenceElement: uploadButton,
+  });
+});
 </script>
 
 <template>
@@ -209,7 +255,7 @@ const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
           <ChartDotsIcon />
         </FunctionButton>
         <ValueSwitch
-          style="margin-right: var(--space-32)"
+          style="margin-right: var(--space-16)"
           compact
           :model-value="currentCanvasRenderer"
           :possible-values="[
@@ -219,6 +265,18 @@ const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
           @update:model-value="toggleCanvasRenderer()"
         />
       </template>
+
+      <ToolbarButton
+        v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocal"
+        ref="uploadButton"
+        class="toolbar-button"
+        :with-text="true"
+        title="Upload"
+        @click="onUploadButtonClick"
+      >
+        <Component :is="CloudUploadIcon" />
+        Upload
+      </ToolbarButton>
 
       <SubMenu
         class="control"

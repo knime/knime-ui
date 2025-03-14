@@ -17,18 +17,21 @@ import {
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { isHubProvider } from "@/store/spaces/util";
+import {
+  formatSpaceProviderName,
+  isCommunityHubProvider,
+  isHubProvider,
+} from "@/store/spaces/util";
 
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useSpaceIcons } from "./useSpaceIcons";
 import { useSpaceProviderAuth } from "./useSpaceProviderAuth";
 
-const { spaceProviders, hasLoadedProviders } = storeToRefs(
-  useSpaceProvidersStore(),
-);
 const $router = useRouter();
 const $route = useRoute();
 
+const { spaceProviders, hasLoadedProviders, getCommunityHubInfo } = storeToRefs(
+  useSpaceProvidersStore(),
+);
 const {
   isConnectingToProvider,
   shouldShowLoading,
@@ -38,22 +41,16 @@ const {
   logout,
 } = useSpaceProviderAuth();
 
-const { KNIME_HUB_HOME_HOSTNAME, TEAM_PLAN_URL } = knimeExternalUrls;
-const isCommunityHubProvider = (
-  provider: SpaceProviderNS.SpaceProvider,
-): boolean => {
-  return (
-    isHubProvider(provider) &&
-    provider.connected &&
-    (provider.hostname?.includes(KNIME_HUB_HOME_HOSTNAME) ?? false)
-  );
-};
+const { TEAM_PLAN_URL } = knimeExternalUrls;
 
 const shouldShowCreateTeamOption = (
   provider: SpaceProviderNS.SpaceProvider,
 ): boolean => {
   // Only show if it's the Community Hub (not Business Hub)
-  if (!isCommunityHubProvider(provider)) {
+  if (
+    !isCommunityHubProvider(provider) ||
+    !getCommunityHubInfo.value.isOnlyCommunityHubMounted
+  ) {
     return false;
   }
   // Then check if the user has no team
@@ -170,10 +167,6 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
     return item;
   }),
 );
-
-const openCreateTeamPage = () => {
-  window.open(TEAM_PLAN_URL, "_blank");
-};
 </script>
 
 <template>
@@ -241,7 +234,7 @@ const openCreateTeamPage = () => {
           text="Create Team"
           :with-indicator="false"
           target="_blank"
-          @click="openCreateTeamPage"
+          :href="TEAM_PLAN_URL"
         >
           <template #prepend>
             <LinkExternalIcon />

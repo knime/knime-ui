@@ -20,7 +20,9 @@ const { setDeploymentsModalConfig } = useSpacesStore();
 const isDeploymentModalOpen = computed(
   () => deploymentsModalConfig.value.isOpen,
 );
-const selectedItemName = `Schedules and jobs of “${deploymentsModalConfig.value.name}”`;
+const selectedItemName = computed(
+  () => `Schedules and jobs of “${deploymentsModalConfig.value.name}”`,
+);
 
 const closeModal = () => {
   setDeploymentsModalConfig({

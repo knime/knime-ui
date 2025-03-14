@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from "vue";
 import { API } from "@api";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 import type { MenuItem } from "@knime/components";
@@ -22,6 +23,7 @@ import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useSettingsStore } from "@/store/settings";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 
 const OpenSourceCreditsModal = defineAsyncComponent(
   () => import("./OpenSourceCreditsModal.vue"),
@@ -33,6 +35,7 @@ const buildExternalUrl = (url: string) => {
 
 const applicationStore = useApplicationStore();
 const settingsStore = useSettingsStore();
+const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const $router = useRouter();
 
 const {
@@ -112,12 +115,15 @@ const helpMenuItem = computed<MenuItem>(() => ({
       icon: HubIcon,
       href: buildExternalUrl(KNIME_HUB_HOME_URL),
     },
-    {
-      text: "Learn more about the KNIME Team Plan",
-      separator: true,
-      icon: TeamPlan,
-      href: buildExternalUrl(TEAM_PLAN_URL),
-    },
+    ...addConditionalMenuEntry(
+      getCommunityHubInfo.value.isOnlyCommunityHubMounted,
+      {
+        text: "Learn more about the KNIME Team Plan",
+        separator: true,
+        icon: TeamPlan,
+        href: buildExternalUrl(TEAM_PLAN_URL),
+      },
+    ),
 
     // Add custom help menu entries if present
     ...customHelpMenuEntries.value,

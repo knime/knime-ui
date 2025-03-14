@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { shallowMount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
 
 import type { Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import { router } from "@/router/router";
 import {
@@ -28,12 +29,35 @@ vi.mock("@knime/components", async (importOriginal) => {
     // @ts-ignore
     ...actual,
     useToasts: vi.fn(),
+    useHint: () => ({ createHint: vi.fn(), isCompleted: vi.fn(() => true) }),
   };
 });
 
 describe("WorkflowToolbar.vue", () => {
-  const doMount = () => {
+  const doMount = ({
+    getCommunityHubInfo = {
+      isOnlyCommunityHubMounted: true,
+    },
+  } = {}) => {
     const mockedStores = mockStores();
+
+    // @ts-expect-error
+    mockedStores.spaceProvidersStore.getCommunityHubInfo = getCommunityHubInfo;
+
+    const projectId = "project1";
+    mockedStores.applicationStore.setActiveProjectId(projectId);
+
+    const local = createSpaceProvider();
+    mockedStores.spaceProvidersStore.setSpaceProviders({
+      [local.id]: local,
+    });
+    mockedStores.spaceCachingStore.projectPath = {
+      [projectId]: {
+        spaceId: "local",
+        spaceProviderId: "local",
+        itemId: "root",
+      },
+    };
 
     const $shortcuts = createShortcutsService({
       $router: router,
@@ -41,7 +65,7 @@ describe("WorkflowToolbar.vue", () => {
       $toast: {},
     });
 
-    const wrapper = mount(WorkflowToolbar, {
+    const wrapper = shallowMount(WorkflowToolbar, {
       global: {
         plugins: [mockedStores.testingPinia, router],
         mocks: {
@@ -331,6 +355,28 @@ describe("WorkflowToolbar.vue", () => {
         .vm.$emit("item-click", {}, { metadata: { id: "annotation" } });
 
       expect(canvasModesStore.canvasMode).toBe("annotation");
+    });
+  });
+
+  describe("upload button", () => {
+    it("doesnt show any button if not only Community Hub is mounted", () => {
+      const { wrapper } = doMount({
+        getCommunityHubInfo: {
+          isOnlyCommunityHubMounted: false,
+        },
+      });
+
+      expect(wrapper.findComponent(ToolbarButton).exists()).toBe(false);
+    });
+
+    it("should show upload button if only Community Hub is mounted and workflow is local", () => {
+      const { wrapper } = doMount();
+
+      expect(wrapper.findComponent(ToolbarButton).exists()).toBe(true);
+      expect(wrapper.findComponent(ToolbarButton).attributes("title")).toBe(
+        "Upload",
+      );
+      expect(wrapper.findComponent(ToolbarButton).text()).toBe("Upload");
     });
   });
 });

@@ -21,9 +21,12 @@ import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
+import {
+  formatSpaceProviderName,
+  isLocalProvider,
+  isServerProvider,
+} from "@/store/spaces/util";
 
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useSpaceIcons } from "./useSpaceIcons";
 
 type SpaceTreeItem = FullSpacePath & {

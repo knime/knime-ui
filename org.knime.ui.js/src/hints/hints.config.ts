@@ -6,6 +6,7 @@ export const HINTS = Object.freeze({
   HELP: "help",
   K_AI: "k-ai",
   NODE_MONITOR: "node-monitor",
+  UPLOAD_BUTTON: "upload-button",
 });
 
 type HintKeys = keyof typeof HINTS;
@@ -78,6 +79,14 @@ export const getHintConfiguration = (
         "Get quick access to resources like our self-paced courses, forum, cheat sheets, documentation, keyboard shortcuts and lots of examples on our Hub.",
       dependsOn: [HINTS.K_AI],
       hideButtons: true,
+    },
+    [HINTS.UPLOAD_BUTTON]: {
+      title: "KNIME Community Hub - Versioning",
+      description:
+        "Upload your workflow to unlock versioning — track changes, revert anytime, and keep your work organized effortlessly. Stay in control with seamless updates.",
+      dependsOn: [HINTS.HELP],
+      hideButtons: true,
+      image: "/images/Versioning-history-illustration-product-hint.png",
     },
   };
 };

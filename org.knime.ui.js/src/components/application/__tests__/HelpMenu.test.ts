@@ -7,16 +7,23 @@ import { SubMenu } from "@knime/components";
 import { mockStores } from "@/test/utils/mockStores";
 import HelpMenu from "../HelpMenu.vue";
 
-const doMount = (customHelpMenuEntries = {}) => {
+const doMount = ({
+  customHelpMenuEntries = {},
+  getCommunityHubInfo = {
+    isOnlyCommunityHubMounted: false,
+  },
+} = {}) => {
   const mockedStores = mockStores();
   mockedStores.applicationStore.customHelpMenuEntries = customHelpMenuEntries;
+  // @ts-expect-error
+  mockedStores.spaceProvidersStore.getCommunityHubInfo = getCommunityHubInfo;
   const wrapper = mount(HelpMenu, {
     global: { plugins: [mockedStores.testingPinia] },
   });
   return { wrapper, mockedStores };
 };
 
-const numberOfDefaultHelpMenuEntries = 10;
+const numberOfDefaultHelpMenuEntries = 9;
 
 describe("HelpMenu.vue", () => {
   it("doesn't show custom help menu entries if non present in the application store", () => {
@@ -26,9 +33,31 @@ describe("HelpMenu.vue", () => {
   });
 
   it("shows custom help menu entries if they are present in the application store", () => {
-    const { wrapper } = doMount({ foo: "link1", bar: "link2" });
+    const { wrapper } = doMount({
+      customHelpMenuEntries: { foo: "link1", bar: "link2" },
+    });
     const props = wrapper.findComponent(SubMenu).props();
     expect(props.items).toHaveLength(numberOfDefaultHelpMenuEntries + 2);
+  });
+
+  it("should show info about team plan if only Community Hub is mounted", () => {
+    const { wrapper } = doMount({
+      getCommunityHubInfo: {
+        isOnlyCommunityHubMounted: true,
+      },
+    });
+
+    const teamPlanItemText = "Learn more about the KNIME Team Plan";
+
+    const hasEntry = () =>
+      wrapper
+        .findComponent(SubMenu)
+        .props("items")
+        .some((item) => item.text === teamPlanItemText);
+
+    expect(hasEntry()).toBe(true);
+    const props = wrapper.findComponent(SubMenu).props();
+    expect(props.items).toHaveLength(numberOfDefaultHelpMenuEntries + 1);
   });
 
   it("should show entry to bring back examples", async () => {

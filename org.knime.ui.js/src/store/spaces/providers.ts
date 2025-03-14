@@ -3,11 +3,14 @@ import { defineStore } from "pinia";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceProvider } from "@/api/gateway-api/generated-api";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
-import { findSpaceById } from "@/store/spaces/util";
+import { findSpaceById, isLocalProvider } from "@/store/spaces/util";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import { useSpaceCachingStore } from "./caching";
+
+const { KNIME_HUB_HOME_HOSTNAME } = knimeExternalUrls;
 
 export interface ProvidersState {
   /**
@@ -277,6 +280,33 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
         );
 
         return space ?? null;
+      };
+    },
+
+    getCommunityHubInfo(state) {
+      const communityHubProvider = Object.values(
+        state.spaceProviders ?? {},
+      ).find(
+        (provider) => provider.hostname?.includes(KNIME_HUB_HOME_HOSTNAME),
+      );
+      const isCommunityHubMounted = Boolean(communityHubProvider);
+      const isCommunityHubConnected = communityHubProvider?.connected ?? false;
+      const areAllGroupsUsers = (communityHubProvider?.spaceGroups ?? []).every(
+        (group) => group.type === SpaceProviderNS.UserTypeEnum.USER,
+      );
+
+      return {
+        isOnlyCommunityHubMounted:
+          isCommunityHubMounted &&
+          // filter out Hub and Server providers
+          Boolean(
+            Object.values(state.spaceProviders ?? {}).filter(
+              (provider) => !isLocalProvider(provider),
+            ).length === 1,
+          ),
+        isCommunityHubConnected,
+        communityHubProvider,
+        areAllGroupsUsers,
       };
     },
   },

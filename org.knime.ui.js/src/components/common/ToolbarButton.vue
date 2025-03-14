@@ -1,17 +1,14 @@
 <!-- A native button for use inside a toolbar. This is just used for styling. -->
-<script>
-export default {
-  props: {
-    withText: {
-      type: Boolean,
-      default: false,
-    },
-    primary: {
-      type: Boolean,
-      default: false,
-    },
-  },
-};
+<script setup lang="ts">
+interface Props {
+  withText?: boolean;
+  primary?: boolean;
+}
+
+withDefaults(defineProps<Props>(), {
+  withText: false,
+  primary: false,
+});
 </script>
 
 <template>

@@ -4,6 +4,7 @@ import { API } from "@api";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider } from "@/api/gateway-api/generated-api";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import {
   createSpace,
   createSpaceGroup,
@@ -14,6 +15,8 @@ import { deepMocked } from "@/test/utils";
 import { loadStore } from "./loadStore";
 
 const mockedAPI = deepMocked(API);
+
+const { KNIME_HUB_HOME_HOSTNAME, KNIME_HUB_DEV_HOSTNAME } = knimeExternalUrls;
 
 describe("spaces::providers", () => {
   afterEach(() => {
@@ -424,6 +427,95 @@ describe("spaces::providers", () => {
       expect(spaceProvidersStore.spaceProviders[provider.id]).toEqual({
         ...provider,
         spaceGroups: newSpaceGroups,
+      });
+    });
+  });
+
+  describe("getCommunityHubInfo", () => {
+    it("should return the correct value", () => {
+      const { spaceProvidersStore } = loadStore();
+
+      const provider = createSpaceProvider({
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        id: "project1",
+        name: "community-hub",
+        hostname: KNIME_HUB_HOME_HOSTNAME,
+        spaceGroups: [
+          {
+            id: "space-group1",
+            name: "user-name",
+            type: SpaceProviderNS.UserTypeEnum.USER,
+            spaces: [],
+          },
+        ],
+      });
+
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      expect(spaceProvidersStore.getCommunityHubInfo).toEqual({
+        isOnlyCommunityHubMounted: true,
+        isCommunityHubConnected: true,
+        communityHubProvider: provider,
+        areAllGroupsUsers: true,
+      });
+    });
+
+    it("should return the correct value for multiple providers", () => {
+      const { spaceProvidersStore } = loadStore();
+
+      const provider = createSpaceProvider({
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        id: "project1",
+        name: "community-hub",
+        hostname: KNIME_HUB_HOME_HOSTNAME,
+        spaceGroups: [
+          {
+            id: "space-group1",
+            name: "user-name",
+            type: SpaceProviderNS.UserTypeEnum.USER,
+            spaces: [],
+          },
+          {
+            id: "space-group2",
+            name: "user-name",
+            type: SpaceProviderNS.UserTypeEnum.TEAM,
+            spaces: [],
+          },
+        ],
+      });
+
+      const provider2 = createSpaceProvider({
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        id: "project2",
+        name: "community-hub-dev",
+        hostname: KNIME_HUB_DEV_HOSTNAME,
+        spaceGroups: [],
+      });
+
+      const provider3 = createSpaceProvider({
+        type: SpaceProviderNS.TypeEnum.SERVER,
+        connected: true,
+        id: "project3",
+        name: "server",
+        spaceGroups: [],
+      });
+
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+        [provider2.id]: provider2,
+        [provider3.id]: provider3,
+      };
+
+      expect(spaceProvidersStore.getCommunityHubInfo).toEqual({
+        isOnlyCommunityHubMounted: false,
+        isCommunityHubConnected: true,
+        communityHubProvider: provider,
+        areAllGroupsUsers: false,
       });
     });
   });

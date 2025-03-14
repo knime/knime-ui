@@ -9,57 +9,25 @@ import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
 
 const applicationStore = useApplicationStore();
 const { dismissedHubLoginBanner } = storeToRefs(applicationStore);
-const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
-
-const externalProviders = computed(() =>
-  Object.values(spaceProviders.value ?? {}).filter(
-    (provider) => !isLocalProvider(provider),
-  ),
-);
-
-const hasOneProviderConnected = computed(
-  () =>
-    externalProviders.value.filter((provider) => provider.connected).length ===
-    1,
-);
-
-const isCommunityHub = computed(() => {
-  if (externalProviders.value.length !== 1) {
-    return false;
-  }
-  const [provider] = externalProviders.value;
-  return (
-    isHubProvider(provider) &&
-    provider.hostname?.includes(knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME)
-  );
-});
-
-const showBanner = computed(() => {
-  if (dismissedHubLoginBanner.value) {
-    return false;
-  }
-  return (
-    (hasOneProviderConnected.value && isCommunityHub.value) ||
-    isCommunityHub.value
-  );
-});
+const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 
 const bannerTitle = computed(() =>
-  hasOneProviderConnected.value
+  getCommunityHubInfo.value.isCommunityHubConnected
     ? "Automate Workflows with KNIME Team Plan"
     : "Store your workflows in your free private cloud space",
 );
 
 const buttonText = computed(() =>
-  hasOneProviderConnected.value ? "Try for free" : "Sign up to KNIME Hub",
+  getCommunityHubInfo.value.isCommunityHubConnected
+    ? "Try for free"
+    : "Sign up to KNIME Hub",
 );
 
 const buttonLink = computed(() =>
-  hasOneProviderConnected.value
+  getCommunityHubInfo.value.isCommunityHubConnected
     ? knimeExternalUrls.TEAM_PLAN_URL
     : knimeExternalUrls.COMMUNITY_HUB_URL,
 );
@@ -67,10 +35,28 @@ const buttonLink = computed(() =>
 const dismissBanner = () => {
   applicationStore.dismissedHubLoginBanner = true;
 };
+
+const shouldShowBanner = computed(() => {
+  if (
+    dismissedHubLoginBanner.value ||
+    !getCommunityHubInfo.value.isOnlyCommunityHubMounted
+  ) {
+    return false;
+  }
+
+  return (
+    // show banner if its mounted but not connected
+    (getCommunityHubInfo.value.isOnlyCommunityHubMounted &&
+      !getCommunityHubInfo.value.isCommunityHubConnected) ||
+    // show banner if its connected and space groups are only users
+    (getCommunityHubInfo.value.isCommunityHubConnected &&
+      getCommunityHubInfo.value.areAllGroupsUsers)
+  );
+});
 </script>
 
 <template>
-  <div v-if="showBanner" class="hub-login-banner">
+  <div v-if="shouldShowBanner" class="hub-login-banner">
     <FunctionButton class="close" compact @click="dismissBanner">
       <CloseIcon />
     </FunctionButton>

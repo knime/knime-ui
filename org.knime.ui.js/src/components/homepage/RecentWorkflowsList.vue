@@ -23,9 +23,8 @@ import { cachedLocalSpaceProjectId } from "@/store/spaces/common";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
-import { isLocalProvider } from "@/store/spaces/util";
+import { formatSpaceProviderName, isLocalProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
-import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
 
 import PageTitle from "./PageTitle.vue";
 import RecentWorkflowContextMenu from "./RecentWorkflowContextMenu.vue";

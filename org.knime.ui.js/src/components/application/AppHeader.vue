@@ -27,6 +27,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { AppHeaderContextMenu } from "./AppHeaderContextMenu";
 import AppHeaderTab from "./AppHeaderTab.vue";
 import AppMenu from "./AppMenu.vue";
+import CommunityHubSignButton from "./CommunityHubSignButton.vue";
 import HelpMenu from "./HelpMenu.vue";
 
 /**
@@ -310,6 +311,8 @@ const onMouseDown = (e: MouseEvent) => {
         </FunctionButton>
 
         <AppMenu data-test-id="app-header-app-menu" />
+
+        <CommunityHubSignButton />
       </div>
     </div>
   </header>

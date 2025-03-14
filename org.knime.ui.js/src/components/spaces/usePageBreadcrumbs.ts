@@ -2,9 +2,8 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
-import { isHubProvider } from "@/store/spaces/util";
+import { formatSpaceProviderName, isHubProvider } from "@/store/spaces/util";
 
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { useSpaceIcons } from "./useSpaceIcons";
 
