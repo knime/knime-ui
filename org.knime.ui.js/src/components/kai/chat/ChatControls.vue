@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
-import { useTextareaAutosize } from "@vueuse/core";
+import { computed, onMounted, ref, watch } from "vue";
+import { useSpeechRecognition, useTextareaAutosize } from "@vueuse/core";
 
-import { FunctionButton } from "@knime/components";
+import { FunctionButton, SkeletonItem } from "@knime/components";
 import AbortIcon from "@knime/styles/img/icons/close.svg";
+import MicrophoneIcon from "@knime/styles/img/icons/microphone.svg";
 import SendIcon from "@knime/styles/img/icons/paper-flier.svg";
+
+import { useAudioRecorder } from "@/components/kai/chat/useAudioRecord.ts";
 
 const emit = defineEmits(["sendMessage", "abort"]);
 
@@ -28,6 +31,9 @@ const props = defineProps({
 });
 
 const { textarea, input } = useTextareaAutosize();
+
+const { startRecording, stopRecording, isRecording, busy } =
+  useAudioRecorder(input);
 
 watch(
   () => props.text,
@@ -81,35 +87,72 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
 </script>
 
 <template>
-  <div class="chat-controls" @click="handleClick">
-    <textarea
-      ref="textarea"
-      v-model="input"
-      class="textarea"
-      aria-label="Type your message"
-      :maxlength="$characterLimits.kai"
-      :placeholder="placeholder"
-      @keydown="handleKeyDown"
-    />
-    <FunctionButton
-      class="send-button"
-      primary
-      :disabled="disabled"
-      @click="handleSendButtonClick"
-    >
-      <AbortIcon
-        v-if="isProcessing"
-        class="abort-icon"
-        aria-hidden="true"
-        focusable="false"
+  <div
+    class="chat-controls"
+    :class="{
+      busy,
+    }"
+    @click="handleClick"
+  >
+
+    <div class="input-container">
+      <textarea
+        ref="textarea"
+        v-model="input"
+        class="textarea"
+        aria-label="Type your message"
+        :maxlength="$characterLimits.kai"
+        :placeholder="placeholder"
+        :disabled="busy"
+        style="position: relative;"
+        @keydown="handleKeyDown"
       />
-      <SendIcon v-else class="send-icon" aria-hidden="true" focusable="false" />
-    </FunctionButton>
+    </div>
+
+
+    <div class="button-group">
+      <FunctionButton
+        class="microphone-button"
+        :class="{ recording: isRecording, processing: isProcessing }"
+        @click="isRecording === true ? stopRecording() : startRecording()"
+      >
+        <MicrophoneIcon
+          class="send-icon"
+          aria-hidden="true"
+          focusable="false"
+        />
+      </FunctionButton>
+      <FunctionButton
+        class="send-button"
+        primary
+        :disabled="disabled"
+        @click="handleSendButtonClick"
+      >
+        <AbortIcon
+          v-if="isProcessing"
+          class="abort-icon"
+          aria-hidden="true"
+          focusable="false"
+        />
+        <SendIcon
+          v-else
+          class="send-icon"
+          aria-hidden="true"
+          focusable="false"
+        />
+      </FunctionButton>
+    </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+.input-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 
 .chat-controls {
   display: flex;
@@ -120,6 +163,12 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   border: 1px solid var(--knime-stone-gray);
   overflow: hidden;
   cursor: text;
+
+  &.busy {
+
+      background-color: var(--knime-gray-ultra-light);
+
+  }
 
   & .textarea {
     font-size: 13px;
@@ -136,18 +185,33 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
     }
   }
 
-  & .send-button {
-    align-self: flex-end;
-    margin-right: 8px;
-    margin-bottom: 8px;
+  .button-group {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    padding: 0 8px 8px;
+    justify-content: end;
+  }
+
+  & .send-button,
+  & .microphone-button {
+    margin: 0;
 
     & svg {
       stroke: var(--knime-dove-gray);
-
-      &.send-icon {
-        margin-left: -1px;
-      }
     }
+  }
+
+  .recording {
+    background-color: #ff4444;
+
+    & svg {
+      stroke: white;
+    }
+  }
+
+  .processing {
+    display: none;
   }
 }
 </style>
