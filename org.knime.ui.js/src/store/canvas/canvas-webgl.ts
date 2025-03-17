@@ -22,7 +22,7 @@ import type { CanvasPosition } from "../application/canvasStateTracking";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
-export const minZoomFactor = 0.01; // 1%
+export const minZoomFactor = 0.05; // 5%
 export const maxZoomFactor = 5; // 500%
 
 export const padding = 20; // 20 canvas units
@@ -548,7 +548,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     setInteractionsEnabled,
     setIsMoveLocked,
     focus,
-    initScrollContainerElement, // TODO NXT-3439 rename to initKanvasElement or remove it and use updateContainerSize on init
+    initScrollContainerElement, // TODO NXT-3439 rename to initKanvasWrapper or remove it and use updateContainerSize on init
     fitToScreen,
     fillScreen,
     zoomCentered,
