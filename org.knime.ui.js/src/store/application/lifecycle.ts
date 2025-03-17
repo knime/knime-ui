@@ -400,14 +400,21 @@ export const useLifecycleStore = defineStore("lifecycle", {
       // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
       await API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
 
-      let project: WorkflowSnapshot;
-      try {
-        project = await API.workflow.getWorkflow({
+      // the generated API.workflow.getWorkflow() can't receive null (due to its generated signature)
+      // nor an *explicit* undefined (as this won't be overridden by the defaultParams) for version
+      const getWorkflowParams: Parameters<typeof API.workflow.getWorkflow>[0] =
+        {
           projectId,
           workflowId,
           includeInteractionInfo: true,
-          version,
-        });
+        };
+      if (version !== null) {
+        getWorkflowParams.version = version;
+      }
+
+      let project: WorkflowSnapshot;
+      try {
+        project = await API.workflow.getWorkflow(getWorkflowParams);
       } catch (error) {
         consola.error("lifecycle::loadWorkflow failed to load workflow", {
           error,
