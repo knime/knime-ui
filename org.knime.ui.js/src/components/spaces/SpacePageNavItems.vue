@@ -29,9 +29,8 @@ import { useSpaceProviderAuth } from "./useSpaceProviderAuth";
 const $router = useRouter();
 const $route = useRoute();
 
-const { spaceProviders, hasLoadedProviders, getCommunityHubInfo } = storeToRefs(
-  useSpaceProvidersStore(),
-);
+const { spaceProviders, getCommunityHubInfo, loadingProviderSpacesData } =
+  storeToRefs(useSpaceProvidersStore());
 const {
   isConnectingToProvider,
   shouldShowLoading,
@@ -62,7 +61,7 @@ const shouldShowCreateTeamOption = (
 const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
   if (
     isConnectingToProvider.value === spaceProvider.id ||
-    !hasLoadedProviders.value
+    loadingProviderSpacesData.value[spaceProvider.id]
   ) {
     return;
   }
@@ -195,9 +194,7 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
       </span>
 
       <LoadingIcon
-        v-if="
-          shouldShowLoading(item.metadata.spaceProvider) || !hasLoadedProviders
-        "
+        v-if="shouldShowLoading(item.metadata.spaceProvider)"
         class="loading-indicator"
       />
 

@@ -18,17 +18,9 @@ export interface ProvidersState {
    */
   spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> | null;
   /**
-   * Loading state used when fetching all the providers' basic info (without their data)
-   */
-  isLoadingProviders: boolean;
-  /**
    * Loading state used when authenticating to a provider
    */
   isConnectingToProvider: string | null;
-  /**
-   * Indicates whether the initial provider fetch has been successful
-   */
-  hasLoadedProviders: boolean;
   /**
    * Record of loading state which indicates which provider is currently loading
    * its spaces data
@@ -40,26 +32,16 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
   state: (): ProvidersState => ({
     // metadata of all available space providers and their spaces (including local)
     spaceProviders: null,
-    isLoadingProviders: false,
     isConnectingToProvider: null,
-    hasLoadedProviders: false,
     loadingProviderSpacesData: {},
   }),
   actions: {
-    setIsLoadingProviders(isLoadingProviders: boolean) {
-      this.isLoadingProviders = isLoadingProviders;
-    },
-
     setLoadingProviderData({ id, loading }: { id: string; loading: boolean }) {
       this.loadingProviderSpacesData[id] = loading;
     },
 
     setIsConnectingToProvider(isConnectingToProvider: string | null) {
       this.isConnectingToProvider = isConnectingToProvider;
-    },
-
-    setHasLoadedProviders(hasLoadedProviders: boolean) {
-      this.hasLoadedProviders = hasLoadedProviders;
     },
 
     updateSpaceProvider({
@@ -83,14 +65,12 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
     setAllSpaceProviders(spaceProviders: SpaceProvider[]) {
       consola.trace("action::setAllSpaceProviders -> Setting provider spaces");
-      this.setHasLoadedProviders(false);
       const spaceProvidersById = Object.fromEntries(
         spaceProviders.map((sp) => [sp.id, { ...sp, spaceGroups: [] }]),
       );
 
       // add the providers without data to make them visible
       this.setSpaceProviders(spaceProvidersById);
-      this.setIsLoadingProviders(false);
     },
 
     fetchSpaceGroupsForProviders(
@@ -155,7 +135,6 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       }
 
       Promise.allSettled(spaceGroupsQueue).then(() => {
-        this.setHasLoadedProviders(true);
         const { openProjects } = useApplicationStore();
         useSpaceCachingStore().syncPathWithOpenProjects({ openProjects });
         resolve({ failedProviderNames });

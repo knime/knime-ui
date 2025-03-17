@@ -9,12 +9,8 @@ import { isHubProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 
 export const useSpaceProviderAuth = () => {
-  const {
-    loadingProviderSpacesData,
-    isConnectingToProvider,
-    hasLoadedProviders,
-    spaceProviders,
-  } = storeToRefs(useSpaceProvidersStore());
+  const { loadingProviderSpacesData, isConnectingToProvider, spaceProviders } =
+    storeToRefs(useSpaceProvidersStore());
   const { connectProvider, disconnectProvider } = useSpaceAuthStore();
   const $router = useRouter();
   const $route = useRoute();
@@ -30,7 +26,6 @@ export const useSpaceProviderAuth = () => {
   const shouldShowLogout = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
     spaceProvider.connectionMode === "AUTHENTICATED" &&
     spaceProvider.connected &&
-    hasLoadedProviders.value &&
     !isProviderLoadingData(spaceProvider);
 
   const shouldShowLoginIndicator = (

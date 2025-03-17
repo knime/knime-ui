@@ -26,7 +26,7 @@ export const useRevealInSpaceExplorer = () => {
   const { isLoadingContent } = storeToRefs(useSpaceOperationsStore());
   const { setCurrentSelectedItemIds } = useSpaceOperationsStore();
   const { activeProjectId } = storeToRefs(useApplicationStore());
-  const { spaceProviders, hasLoadedProviders } = storeToRefs(
+  const { spaceProviders, loadingProviderSpacesData } = storeToRefs(
     useSpaceProvidersStore(),
   );
   const { activeTab } = storeToRefs(usePanelStore());
@@ -42,7 +42,7 @@ export const useRevealInSpaceExplorer = () => {
   const canRevealItem = (origin: SpaceItemReference): boolean => {
     const provider = spaceProviders.value?.[origin.providerId];
 
-    if (!provider || !hasLoadedProviders.value) {
+    if (!provider || loadingProviderSpacesData.value[provider.id]) {
       return false; // Cannot check if Server project without provider or if space groups have not yet been initialized
     }
 

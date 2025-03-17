@@ -13,6 +13,7 @@ import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
@@ -111,9 +112,16 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
     async AppStateChangedEvent({ appState }) {
       consola.info("events::AppStateChangedEvent", { appState });
 
+      // TODO: NXT-3464 - remove this check when ticket is done
+      if (Object.keys(appState).length === 0) {
+        return;
+      }
+
       const spaceProviders = appState.spaceProviders;
       // needs to happen before 'replaceApplicationState'
       if (spaceProviders) {
+        // TODO: NXT-3464 - remove async call for `fetchSpaceGroupsForProviders`
+        // when ticket is done.
         try {
           useSpaceProvidersStore().setAllSpaceProviders(spaceProviders);
 
@@ -135,10 +143,15 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
         }
       }
 
-      useApplicationStore().replaceApplicationState(appState);
+      const applicationStore = useApplicationStore();
+      applicationStore.replaceApplicationState(appState);
       if (appState.openProjects) {
         useLifecycleStore().setActiveProject({ $router });
       }
+
+      useSpaceCachingStore().syncPathWithOpenProjects({
+        openProjects: applicationStore.openProjects,
+      });
 
       // In case a `SaveAndCloseProjectsEvent` was received before, which might've triggered
       // an `AppStateChangedEvent` later, then we make sure to clean up the busy state here

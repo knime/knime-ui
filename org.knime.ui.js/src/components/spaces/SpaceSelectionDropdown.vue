@@ -17,8 +17,10 @@ import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import {
+  findSpaceById,
   formatSpaceProviderName,
   isCommunityHubProvider,
+  isHubProvider,
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
@@ -40,7 +42,6 @@ const {
   spaceProviders,
   isConnectingToProvider,
   loadingProviderSpacesData,
-  hasLoadedProviders,
   getProviderInfoFromProjectPath,
   getSpaceInfo,
   getCommunityHubInfo,
@@ -90,18 +91,6 @@ type ClickableItemsMetadata =
 
 const isSignInItem = (metadata: AllMetadata): metadata is SignInMetadata => {
   return metadata.type === "sign-in";
-};
-
-const isSpaceGroupItem = (
-  metadata: AllMetadata,
-): metadata is SpaceGroupMetadata => {
-  return metadata.type === "space-group";
-};
-
-const isClickableItem = (
-  metadata: AllMetadata,
-): metadata is ClickableItemsMetadata => {
-  return ["space", "sign-in", "single-space-provider"].includes(metadata.type);
 };
 
 const setProjectPathFn = (
@@ -344,8 +333,7 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
   ): MenuItem[] => {
     const isLoading =
       isConnectingToProvider.value === provider.id ||
-      loadingProviderSpacesData.value[provider.id] ||
-      !hasLoadedProviders.value;
+      loadingProviderSpacesData.value[provider.id];
 
     if (isLoading) {
       return [
@@ -397,48 +385,29 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
 });
 
 const selectedText = computed(() => {
-  const showFallbackText = () => {
-    const isLoadingAnyItem =
-      Boolean(isConnectingToProvider.value) ||
-      Object.values(loadingProviderSpacesData.value).some(Boolean) ||
-      !hasLoadedProviders.value;
+  const isLoadingAnyItem =
+    Boolean(isConnectingToProvider.value) ||
+    Object.values(loadingProviderSpacesData.value).some(Boolean);
 
-    return isLoadingAnyItem ? "Loading…" : "";
-  };
-
-  const selectedRootItem = spacesDropdownData.value.find((item) =>
-    item.metadata && isSpaceGroupItem(item.metadata)
-      ? item.metadata.active
-      : item.selected,
-  );
-
-  if (!selectedRootItem) {
-    return showFallbackText();
+  if (isLoadingAnyItem) {
+    return "Loading…";
   }
 
-  if (!selectedRootItem.children) {
-    return selectedRootItem.text;
+  const { spaceProviderId, spaceId } = activeSpacePath.value;
+  const provider = (spaceProviders.value ?? {})[spaceProviderId];
+
+  if (!provider || !spaceProviders.value) {
+    consola.warn("Invalid state for SpaceSelectionDropdown");
+    return "";
   }
 
-  const selectedChildItem = (selectedRootItem.children ?? []).find(
-    (item) => item.selected,
-  );
+  if (isHubProvider(provider)) {
+    const space = findSpaceById(spaceProviders.value, spaceId)!;
 
-  if (
-    !selectedChildItem ||
-    !isClickableItem(selectedChildItem.metadata!) ||
-    isSignInItem(selectedChildItem.metadata!)
-  ) {
-    return showFallbackText();
+    return `${space.owner} – ${space.name}`;
   }
 
-  if (
-    selectedChildItem.metadata.type === "space" ||
-    selectedChildItem.metadata.type === "single-space-provider"
-  ) {
-    return `${selectedChildItem.metadata.space.owner} – ${selectedChildItem.metadata.space.name}`;
-  }
-  return showFallbackText();
+  return provider.name;
 });
 
 const spaceIcon = computed(() => {
