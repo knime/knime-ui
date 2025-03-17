@@ -1,27 +1,36 @@
-import { ref, watch } from "vue";
-import type { Ref } from "vue";
+import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
-import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
+import * as $shapes from "@/style/shapes";
+import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 import { usePointerDownDoubleClick } from "../common/usePointerDownDoubleClick";
 
-const MIN_MOVE_THRESHOLD = 5;
+const MIN_MOVE_THRESHOLD = $shapes.gridSize.x;
 
-type UseNodeDraggingOptions = {
-  nodeId: string;
-  onDoubleClick: (event: PointerEvent) => void;
-  position: Ref<XY>;
+type UseMoveOrSelectObjectOptions = {
+  isObjectSelected: () => boolean;
+  selectObject: () => void;
+  deselectObject: () => void;
+  onMoveEnd?: () => Promise<boolean>;
+  onDoubleClick?: (event: PointerEvent) => void;
 };
 
-export const useNodeDragging = (options: UseNodeDraggingOptions) => {
+export const useMoveOrSelectObject = (
+  options: UseMoveOrSelectObjectOptions,
+) => {
+  const {
+    isObjectSelected,
+    selectObject,
+    deselectObject,
+    onMoveEnd = () => Promise.resolve(true),
+  } = options;
+
   const selectionStore = useSelectionStore();
-  const { isNodeSelected } = storeToRefs(selectionStore);
   const movingStore = useMovingStore();
-  const { isDragging } = storeToRefs(movingStore);
 
   const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
@@ -29,24 +38,13 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
 
   const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // reset the drag state on position updates (this is what the backend patches via workflow updates)
-  watch(
-    options.position,
-    () => {
-      if (isDragging.value) {
-        movingStore.resetDragState();
-      }
-    },
-    { deep: true },
-  );
-
   const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
     if (pointerDownEvent.button !== 0) {
       return;
     }
 
     // check for double clicks
-    if (isPointerDownDoubleClick(pointerDownEvent)) {
+    if (options.onDoubleClick && isPointerDownDoubleClick(pointerDownEvent)) {
       options.onDoubleClick(pointerDownEvent);
       return;
     }
@@ -59,20 +57,18 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
       y: pointerDownEvent.global.y,
     };
 
-    const isMultiselect =
-      pointerDownEvent.shiftKey ||
-      pointerDownEvent.ctrlKey ||
-      pointerDownEvent.metaKey;
+    const isMultiselect = isMultiselectEvent(pointerDownEvent);
 
-    if (!isNodeSelected.value(options.nodeId) && !isMultiselect) {
+    if (!isObjectSelected() && !isMultiselect) {
       selectionStore.deselectAllObjects();
-      selectionStore.selectNode(options.nodeId);
+      selectObject();
     }
+
     if (isMultiselect) {
-      if (isNodeSelected.value(options.nodeId)) {
-        selectionStore.deselectNode(options.nodeId);
+      if (isObjectSelected()) {
+        deselectObject();
       } else {
-        selectionStore.selectNode(options.nodeId);
+        selectObject();
       }
       // forbid move on multi select
       return;
@@ -99,13 +95,17 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
 
     const onUp = () => {
       if (!didDrag) {
-        if (!isMultiselect && isNodeSelected.value(options.nodeId)) {
+        if (!isMultiselect && isObjectSelected()) {
           selectionStore.deselectAllObjects();
         }
-        selectionStore.selectNode(options.nodeId);
+        selectObject();
       }
 
-      movingStore.moveObjects();
+      onMoveEnd().then((shouldMove) => {
+        if (shouldMove) {
+          movingStore.moveObjects();
+        }
+      });
       canvas.releasePointerCapture(pointerDownEvent.pointerId);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
@@ -115,5 +115,5 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
     canvas.addEventListener("pointerup", onUp);
   };
 
-  return { startDrag: onPointerDown };
+  return { moveOrSelect: onPointerDown };
 };
