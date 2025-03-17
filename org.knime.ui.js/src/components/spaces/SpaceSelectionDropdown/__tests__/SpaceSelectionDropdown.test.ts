@@ -18,7 +18,10 @@ import SpaceSelectionDropdown from "../SpaceSelectionDropdown.vue";
 
 const mockedAPI = deepMocked(API);
 
-const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
+const startSpaceProviders: Record<
+  "local" | "hub1" | "server",
+  SpaceProviderNS.SpaceProvider
+> = {
   local: createSpaceProvider({
     id: "local",
     connected: true,
@@ -50,7 +53,13 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
         id: "team1",
         name: "Team 1",
         type: SpaceProviderNS.UserTypeEnum.TEAM,
-        spaces: [createSpace({ id: "team1space1", name: "Space of Team 1" })],
+        spaces: [
+          createSpace({
+            id: "team1space1",
+            owner: "j.doe",
+            name: "Space of Team 1",
+          }),
+        ],
       }),
       createSpaceGroup({
         id: "jdoe",
@@ -70,6 +79,21 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
             private: true,
           },
         ],
+      }),
+    ],
+  }),
+  server: createSpaceProvider({
+    id: "server",
+    connected: true,
+    connectionMode: "AUTOMATIC",
+    name: "Server",
+    type: SpaceProviderNS.TypeEnum.SERVER,
+    spaceGroups: [
+      createSpaceGroup({
+        id: "server-group",
+        name: "server-group",
+        type: SpaceProviderNS.UserTypeEnum.USER,
+        spaces: [createSpace({ id: "server-space", name: "Server space" })],
       }),
     ],
   }),
@@ -98,7 +122,6 @@ describe("SpaceSelectionDropdown.vue", () => {
     mockedStores.spaceProvidersStore.setSpaceProviders(
       spaceProviders || startSpaceProviders,
     );
-    mockedStores.spaceProvidersStore.hasLoadedProviders = true;
 
     const mockRouter = { push: vi.fn() };
 
@@ -120,10 +143,57 @@ describe("SpaceSelectionDropdown.vue", () => {
     vi.clearAllMocks();
   });
 
-  it("shows text of active space on button", () => {
-    const { wrapper } = doMount();
+  it("shows text of active space on button", async () => {
+    const { wrapper, mockedStores } = doMount();
 
+    mockedStores.spaceCachingStore.setProjectPath({
+      projectId: "localProject",
+      value: {
+        spaceProviderId: startSpaceProviders.local.id,
+        spaceId: startSpaceProviders.local.spaceGroups.at(0)!.spaces.at(0)!.id,
+        itemId: "root",
+      },
+    });
+    mockedStores.spaceCachingStore.setProjectPath({
+      projectId: "hubProjectGroup1Space1",
+      value: {
+        spaceProviderId: startSpaceProviders.hub1.id,
+        spaceId: startSpaceProviders.hub1.spaceGroups.at(0)!.spaces.at(0)!.id,
+        itemId: "root",
+      },
+    });
+    mockedStores.spaceCachingStore.setProjectPath({
+      projectId: "hubProjectGroup2Space2",
+      value: {
+        spaceProviderId: startSpaceProviders.hub1.id,
+        spaceId: startSpaceProviders.hub1.spaceGroups.at(1)!.spaces.at(1)!.id,
+        itemId: "root",
+      },
+    });
+    mockedStores.spaceCachingStore.setProjectPath({
+      projectId: "serverProject",
+      value: {
+        spaceProviderId: startSpaceProviders.server.id,
+        spaceId: startSpaceProviders.server.spaceGroups.at(0)!.spaces.at(0)!.id,
+        itemId: "root",
+      },
+    });
+
+    await wrapper.setProps({ projectId: "localProject" });
     expect(wrapper.find(".selected-text").text()).toBe("Local Space");
+
+    await wrapper.setProps({ projectId: "hubProjectGroup1Space1" });
+    expect(wrapper.find(".selected-text").text()).toBe(
+      "j.doe – Space of Team 1",
+    );
+
+    await wrapper.setProps({ projectId: "hubProjectGroup2Space2" });
+    expect(wrapper.find(".selected-text").text()).toBe(
+      "someUser – Private space of someUser shared with John",
+    );
+
+    await wrapper.setProps({ projectId: "serverProject" });
+    expect(wrapper.find(".selected-text").text()).toBe("Server");
   });
 
   it("hides text if showText is false", () => {
@@ -141,7 +211,8 @@ describe("SpaceSelectionDropdown.vue", () => {
     // + team group
     // + user group
     // + user group
-    expect(menuItems.length).toBe(5);
+    // + server group
+    expect(menuItems.length).toBe(6);
 
     expect(menuItems[0]).toStrictEqual(
       expect.objectContaining({
@@ -330,28 +401,6 @@ describe("SpaceSelectionDropdown.vue", () => {
       "Local Space",
       "Loading…",
     ]);
-  });
-
-  it("renders loading state during initialization before space groups have been fetched", async () => {
-    const { wrapper, mockedStores } = doMount({
-      spaceProviders: {
-        local: startSpaceProviders.local,
-        hub2: createSpaceProvider({
-          id: "hub2",
-          connected: true,
-          connectionMode: "AUTHENTICATED",
-          name: "Hub 2",
-        }),
-      },
-    });
-
-    mockedStores.spaceProvidersStore.hasLoadedProviders = false;
-    await nextTick();
-
-    const menuItems = wrapper.findComponent(SubMenu).props("items");
-    expect(menuItems.map(({ text }) => text)).toEqual(
-      Array(2).fill("Loading…"),
-    );
   });
 
   it("handles external link clicks", async () => {

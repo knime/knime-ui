@@ -5,7 +5,7 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceProvider } from "@/api/gateway-api/generated-api";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
-import { findSpaceById, isLocalProvider } from "@/store/spaces/util";
+import { isLocalProvider } from "@/store/spaces/util";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import { useSpaceCachingStore } from "./caching";
@@ -236,30 +236,6 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       const activeProjectProvider = providers[activeProjectOrigin.providerId];
 
       return activeProjectProvider ?? null;
-    },
-
-    getSpaceInfo(state) {
-      return (projectId: string): SpaceProviderNS.Space | null => {
-        // spaces data has not been cached or providers are not yet loaded
-        if (
-          !useSpaceCachingStore().projectPath.hasOwnProperty(projectId) ||
-          !state.spaceProviders
-        ) {
-          return null;
-        }
-
-        const { spaceId } = useSpaceCachingStore().projectPath[projectId];
-        const spaceProvider = this.getProviderInfoFromProjectPath(
-          projectId,
-        ) as SpaceProviderNS.SpaceProvider;
-
-        const space = findSpaceById(
-          { [spaceProvider.id]: spaceProvider },
-          spaceId,
-        );
-
-        return space ?? null;
-      };
     },
 
     getCommunityHubInfo(state) {

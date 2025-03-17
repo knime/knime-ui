@@ -115,12 +115,7 @@ export const useSpaceCachingStore = defineStore("space.caching", {
 
         const isKnownSpace =
           origin &&
-          Boolean(
-            findSpaceById(
-              useSpaceProvidersStore().spaceProviders ?? {},
-              origin.spaceId,
-            ),
-          );
+          Boolean(findSpaceById(currentSpaceProviders, origin.spaceId));
 
         const projectPath = isKnownSpace
           ? {

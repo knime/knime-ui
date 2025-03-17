@@ -188,7 +188,6 @@ describe("AppHeaderContextMenu.vue", () => {
     mockedStores.applicationStore.setOpenProjects(Object.values(openProjects));
     mockedStores.applicationStore.setActiveProjectId(props.projectId ?? null);
     mockedStores.spaceProvidersStore.spaceProviders = PROVIDERS;
-    mockedStores.spaceProvidersStore.hasLoadedProviders = true;
 
     const wrapper = mount(AppHeaderContextMenu, {
       props: { ...defaultProps, ...props },
@@ -355,13 +354,15 @@ describe("AppHeaderContextMenu.vue", () => {
       );
     });
 
-    it("should not display option if space groups have not yet been initialized during startup", async () => {
+    it("should not display option if space groups are loading", async () => {
       const projectId = openProjects.hubProject.projectId;
 
       const { wrapper, mockedStores } = await doMount({
         props: { projectId },
       });
-      mockedStores.spaceProvidersStore.hasLoadedProviders = false;
+      mockedStores.spaceProvidersStore.loadingProviderSpacesData[
+        openProjects.hubProject.origin!.providerId
+      ] = true;
       await nextTick();
 
       expect(wrapper.findComponent(MenuItems).props("items").length).toBe(1);

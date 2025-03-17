@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
-import { createTestingPinia } from "@pinia/testing";
 
 import { MenuItems } from "@knime/components";
 
@@ -13,23 +12,21 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import RecentWorkflowContextMenu from "../RecentWorkflowContextMenu.vue";
 
 const routerPush = vi.fn();
 
-vi.mock("@knime/components", async (importOriginal) => {
+vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
     // @ts-ignore
     ...actual,
-    useToasts: vi.fn(),
+    useRouter: vi.fn(() => ({ push: routerPush })),
+    useRoute: vi.fn(() => ({})),
   };
 });
-vi.mock("vue-router", () => ({
-  useRouter: vi.fn(() => ({ push: routerPush })),
-  useRoute: vi.fn(() => ({})),
-}));
 
 const mockedAPI = deepMocked(API);
 
@@ -210,25 +207,20 @@ describe("RecentWorkflowContextMenu.vue", () => {
       recentWorkflow: defaultRecentWorkflow,
     },
   ) => {
+    const mockedStores = mockStores();
+
+    mockedStores.spaceProvidersStore.spaceProviders = PROVIDERS;
+
     const wrapper = mount(RecentWorkflowContextMenu, {
       props: { ...defaultProps(recentWorkflow) },
       global: {
-        plugins: [
-          createTestingPinia({
-            stubActions: false,
-            createSpy: vi.fn,
-            initialState: {
-              "space.providers": { spaceProviders: PROVIDERS },
-            },
-          }),
-        ],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    useSpaceProvidersStore().$state.hasLoadedProviders = true;
     await nextTick();
 
-    return { wrapper };
+    return { wrapper, mockedStores };
   };
 
   it("should render properly", async () => {
@@ -275,12 +267,14 @@ describe("RecentWorkflowContextMenu.vue", () => {
       expect(wrapper.findComponent(MenuItems).props("items").length).toBe(0);
     });
 
-    it("should not display option if space groups have not yet been initialized during startup", async () => {
-      const { wrapper } = await doMount({
-        recentWorkflow: recentWorkflows.serverProject,
+    it("should not display option if space groups are loading", async () => {
+      const { wrapper, mockedStores } = await doMount({
+        recentWorkflow: recentWorkflows.hubProject,
       });
 
-      useSpaceProvidersStore().$state.hasLoadedProviders = true;
+      mockedStores.spaceProvidersStore.loadingProviderSpacesData[
+        recentWorkflows.hubProject.origin.providerId
+      ] = true;
       await nextTick();
 
       expect(wrapper.findComponent(MenuItems).props("items").length).toBe(0);

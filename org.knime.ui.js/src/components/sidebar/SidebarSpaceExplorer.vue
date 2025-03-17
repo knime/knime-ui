@@ -5,7 +5,7 @@ import { storeToRefs } from "pinia";
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import SpaceExplorer from "@/components/spaces/SpaceExplorer.vue";
 import SpaceExplorerActions from "@/components/spaces/SpaceExplorerActions.vue";
-import SpaceSelectionDropdown from "@/components/spaces/SpaceSelectionDropdown.vue";
+import SpaceSelectionDropdown from "@/components/spaces/SpaceSelectionDropdown/SpaceSelectionDropdown.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 

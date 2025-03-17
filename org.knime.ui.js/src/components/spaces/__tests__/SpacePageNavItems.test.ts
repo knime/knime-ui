@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
@@ -90,7 +90,6 @@ describe("SpacePageNavItems.vue", () => {
       [hubProvider2.id]: { ...hubProvider2 },
       [serverProvider.id]: { ...serverProvider },
     });
-    mockedStores.spaceProvidersStore.hasLoadedProviders = true;
 
     const wrapper = mount(SpacePageNavItems, {
       global: {
@@ -110,14 +109,11 @@ describe("SpacePageNavItems.vue", () => {
       .findComponent(NavMenuItem);
   };
 
-  let wrapper: VueWrapper, mockedStores: any;
-
-  beforeEach(() => {
+  afterEach(() => {
     vi.clearAllMocks();
-    ({ wrapper, mockedStores } = doMount());
   });
 
-  const getMenuItemsByDataTestIds = () => {
+  const getMenuItemsByDataTestIds = (wrapper: VueWrapper) => {
     const localProviderItem = getMenuItemByDataTestId(
       wrapper,
       localProvider.id,
@@ -140,6 +136,7 @@ describe("SpacePageNavItems.vue", () => {
   };
 
   it("should render items", () => {
+    const { wrapper } = doMount();
     expect(wrapper.findAllComponents(NavMenuItem).length).toBe(5);
 
     const firstItem = getMenuItemByDataTestId(
@@ -198,6 +195,7 @@ describe("SpacePageNavItems.vue", () => {
 
   describe("item", () => {
     it("should navigate to local space when clicking and space groups are loaded", () => {
+      const { wrapper } = doMount();
       getMenuItemByDataTestId(wrapper, localProvider.id).vm.$emit("click");
 
       expect(routerPush).toHaveBeenCalledWith({
@@ -212,6 +210,8 @@ describe("SpacePageNavItems.vue", () => {
     });
 
     it("should connect to provider and then navigate to it if space groups are loaded", async () => {
+      const { wrapper, mockedStores } = doMount();
+
       vi.mocked(
         mockedStores.spaceAuthStore.connectProvider,
       ).mockResolvedValueOnce({
@@ -240,6 +240,8 @@ describe("SpacePageNavItems.vue", () => {
     });
 
     it("should connect to server provider and navigate directly to its space if space groups are loaded", async () => {
+      const { wrapper, mockedStores } = doMount();
+
       vi.mocked(
         mockedStores.spaceAuthStore.connectProvider,
       ).mockResolvedValueOnce({
@@ -265,13 +267,14 @@ describe("SpacePageNavItems.vue", () => {
       });
     });
 
-    it("should do nothing if space groups are not loaded", async () => {
-      mockedStores.spaceProvidersStore.hasLoadedProviders = false;
+    it("should do nothing if provider is loading its space groups", async () => {
+      const { wrapper, mockedStores } = doMount();
+      mockedStores.spaceProvidersStore.loadingProviderSpacesData[
+        hubProvider2.id
+      ] = true;
       await nextTick();
 
-      getMenuItemByDataTestId(wrapper, localProvider.id).vm.$emit("click");
       getMenuItemByDataTestId(wrapper, hubProvider2.id).vm.$emit("click");
-      getMenuItemByDataTestId(wrapper, serverProvider.id).vm.$emit("click");
 
       expect(routerPush).not.toHaveBeenCalled();
       expect(
@@ -281,12 +284,13 @@ describe("SpacePageNavItems.vue", () => {
 
     describe("logout button", () => {
       it("should show for correct providers", async () => {
+        const { wrapper, mockedStores } = doMount();
         const {
           localProviderItem,
           hubProvider1Item,
           spaceGroup1Items,
           hubProvider2Item,
-        } = getMenuItemsByDataTestIds();
+        } = getMenuItemsByDataTestIds(wrapper);
 
         expect(localProviderItem.findComponent(FunctionButton).exists()).toBe(
           false,
@@ -311,7 +315,8 @@ describe("SpacePageNavItems.vue", () => {
       });
 
       it("should hide logout button when provider data is loading", async () => {
-        const { hubProvider1Item } = getMenuItemsByDataTestIds();
+        const { wrapper, mockedStores } = doMount();
+        const { hubProvider1Item } = getMenuItemsByDataTestIds(wrapper);
 
         mockedStores.spaceProvidersStore.loadingProviderSpacesData[
           hubProvider1.id
@@ -325,12 +330,13 @@ describe("SpacePageNavItems.vue", () => {
 
     describe("loading state", () => {
       it("should show when provider data is loading", async () => {
+        const { wrapper, mockedStores } = doMount();
         const {
           localProviderItem,
           hubProvider1Item,
           spaceGroup1Items,
           hubProvider2Item,
-        } = getMenuItemsByDataTestIds();
+        } = getMenuItemsByDataTestIds(wrapper);
 
         mockedStores.spaceProvidersStore.loadingProviderSpacesData[
           hubProvider1.id
@@ -368,12 +374,13 @@ describe("SpacePageNavItems.vue", () => {
       });
 
       it("should show when provider is connecting", async () => {
+        const { wrapper, mockedStores } = doMount();
         const {
           localProviderItem,
           hubProvider1Item,
           spaceGroup1Items,
           hubProvider2Item,
-        } = getMenuItemsByDataTestIds();
+        } = getMenuItemsByDataTestIds(wrapper);
 
         mockedStores.spaceProvidersStore.isConnectingToProvider =
           hubProvider1.id;
@@ -398,24 +405,29 @@ describe("SpacePageNavItems.vue", () => {
         );
       });
 
-      it("should show when space groups are not yet initialized at startup", async () => {
+      it("should show when spaces are being loaded for provider", async () => {
+        const { wrapper, mockedStores } = doMount();
         const {
           localProviderItem,
           hubProvider1Item,
           hubProvider2Item,
           serverProviderItem,
-        } = getMenuItemsByDataTestIds();
+        } = getMenuItemsByDataTestIds(wrapper);
 
-        mockedStores.spaceProvidersStore.hasLoadedProviders = false;
+        mockedStores.spaceProvidersStore.loadingProviderSpacesData[
+          hubProvider1.id
+        ] = true;
         await nextTick();
 
         expect(localProviderItem.find(".loading-indicator").exists()).toBe(
-          true,
+          false,
         );
         expect(hubProvider1Item.find(".loading-indicator").exists()).toBe(true);
-        expect(hubProvider2Item.find(".loading-indicator").exists()).toBe(true);
+        expect(hubProvider2Item.find(".loading-indicator").exists()).toBe(
+          false,
+        );
         expect(serverProviderItem.find(".loading-indicator").exists()).toBe(
-          true,
+          false,
         );
       });
     });

@@ -6,6 +6,7 @@ import {
   type SpaceItemReference,
 } from "@/api/gateway-api/generated-api";
 import {
+  createProject,
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
@@ -15,9 +16,30 @@ import { loadStore } from "./loadStore";
 
 describe("spaces::caching", () => {
   describe("actions", () => {
-    it("should sync state of projectPaths with openProjects", async () => {
+    it("should sync state of projectPaths with openProjects", () => {
       const { spaceCachingStore, spaceProvidersStore } = loadStore();
 
+      const hub1 = createSpaceProvider({ id: "hub1" });
+
+      // pre-existing path
+      spaceCachingStore.setProjectPath({
+        projectId: "myProject1",
+        value: {
+          spaceProviderId: "hub1",
+          spaceId: "mockSpaceId",
+          itemId: "bar",
+        },
+      });
+
+      const hub2 = createSpaceProvider({
+        id: "hub2",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        spaceGroups: [
+          createSpaceGroup({
+            spaces: [createSpace({ id: "space3" })],
+          }),
+        ],
+      });
       const hub4 = createSpaceProvider({
         id: "hub4",
         type: SpaceProviderNS.TypeEnum.HUB,
@@ -29,6 +51,8 @@ describe("spaces::caching", () => {
       });
 
       spaceProvidersStore.setSpaceProviders({
+        [hub1.id]: hub1,
+        [hub2.id]: hub2,
         [hub4.id]: hub4,
       });
 
@@ -74,7 +98,7 @@ describe("spaces::caching", () => {
         },
       ];
 
-      await spaceCachingStore.syncPathWithOpenProjects({
+      spaceCachingStore.syncPathWithOpenProjects({
         // @ts-ignore
         openProjects,
       });
@@ -97,13 +121,13 @@ describe("spaces::caching", () => {
 
       // does NOT update values of already open project (keep user surf state)
       expect(spaceCachingStore.projectPath.myProject1).toStrictEqual({
-        spaceProviderId: "mockProviderId",
+        spaceProviderId: "hub1",
         spaceId: "mockSpaceId",
         itemId: "bar",
       });
     });
 
-    it('should use fallback to "root" when ancestorItemIds is missing', async () => {
+    it('should use fallback to "root" when ancestorItemIds is missing', () => {
       const { spaceCachingStore, spaceProvidersStore } = loadStore();
 
       const hub1 = createSpaceProvider({
@@ -129,7 +153,7 @@ describe("spaces::caching", () => {
         },
       ];
 
-      await spaceCachingStore.syncPathWithOpenProjects({
+      spaceCachingStore.syncPathWithOpenProjects({
         // @ts-ignore
         openProjects,
       });
@@ -141,7 +165,7 @@ describe("spaces::caching", () => {
       });
     });
 
-    it("should fallback to local when open project refers to an unknown space", async () => {
+    it("should fallback to local when open project refers to an unknown space", () => {
       const { spaceCachingStore, spaceProvidersStore } = loadStore();
 
       const hub1 = createSpaceProvider({
@@ -174,7 +198,7 @@ describe("spaces::caching", () => {
         },
       ];
 
-      await spaceCachingStore.syncPathWithOpenProjects({
+      spaceCachingStore.syncPathWithOpenProjects({
         // @ts-ignore
         openProjects,
       });
@@ -186,10 +210,23 @@ describe("spaces::caching", () => {
       });
     });
 
-    it("should take the local root for default with a workflow without origin", async () => {
-      const { spaceCachingStore } = loadStore();
+    it("should take the local root for default with a workflow without origin", () => {
+      const { spaceCachingStore, spaceProvidersStore } = loadStore();
 
-      await spaceCachingStore.syncPathWithOpenProjects({
+      spaceProvidersStore.setSpaceProviders({
+        mockProviderId: createSpaceProvider({ id: "mockProviderId" }),
+      });
+
+      spaceCachingStore.setProjectPath({
+        projectId: "myProject1",
+        value: {
+          spaceProviderId: "mockProviderId",
+          spaceId: "mockSpaceId",
+          itemId: "bar",
+        },
+      });
+
+      spaceCachingStore.syncPathWithOpenProjects({
         // @ts-ignore
         openProjects: [{ projectId: "myProject1" }],
       });
@@ -200,13 +237,50 @@ describe("spaces::caching", () => {
         itemId: "bar",
       });
     });
+
+    it("should default to local space for workflows with unknown providers", () => {
+      const { spaceCachingStore, spaceProvidersStore } = loadStore();
+
+      spaceProvidersStore.setSpaceProviders({
+        mockProviderId: createSpaceProvider({ id: "mockProviderId" }),
+      });
+
+      spaceCachingStore.setProjectPath({
+        projectId: "myProject1",
+        value: {
+          spaceProviderId: "someProviderThatIsNotKnown",
+          spaceId: "mockSpaceId",
+          itemId: "bar",
+        },
+      });
+
+      spaceCachingStore.syncPathWithOpenProjects({
+        // @ts-ignore
+        openProjects: [
+          createProject({
+            projectId: "myProject1",
+            origin: {
+              spaceId: "mockSpaceId",
+              providerId: "someProviderThatIsNotKnown",
+              itemId: "foo",
+            },
+          }),
+        ],
+      });
+
+      expect(spaceCachingStore.projectPath.myProject1).toStrictEqual({
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "root",
+      });
+    });
   });
 
   describe("getters", () => {
-    it("should getWorkflowGroupContent by projectId", async () => {
+    it("should getWorkflowGroupContent by projectId", () => {
       const { spaceCachingStore } = loadStore();
 
-      await spaceCachingStore.syncPathWithOpenProjects({
+      spaceCachingStore.syncPathWithOpenProjects({
         // @ts-ignore
         openProjects: [{ projectId: "myProject1" }],
       });
