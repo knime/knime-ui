@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+import { useRouter } from "vue-router";
 
 import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
 import LinkedMetanodeIcon from "@knime/styles/img/icons/linked-metanode.svg";
@@ -13,10 +14,23 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { createWorkflow } from "@/test/factories";
 import ComponentBreadcrumb from "../ComponentBreadcrumb.vue";
 
+const routerPush = vi.hoisted(() => vi.fn());
+
+vi.mock("vue-router", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useRouter: vi.fn(() => ({ push: routerPush })),
+    useRoute: vi.fn(() => ({ meta: {} })),
+  };
+});
+
 describe("ComponentBreadcrumb.vue", () => {
   type MountOpts = { workflow: Workflow };
   const doMount = ({ workflow }: MountOpts) => {
-    const $router = { push: vi.fn() };
+    const $router = { push: routerPush };
 
     const wrapper = shallowMount(ComponentBreadcrumb, {
       props: { workflow },
@@ -39,7 +53,8 @@ describe("ComponentBreadcrumb.vue", () => {
       wrapper.findComponent(ActionBreadcrumb).props("items"),
     ).toStrictEqual([
       {
-        icon: null,
+        icon: undefined,
+        id: "root",
         text: "this is a dummy workflow",
       },
     ]);
@@ -88,7 +103,7 @@ describe("ComponentBreadcrumb.vue", () => {
     ).toStrictEqual([
       {
         id: "root",
-        icon: null,
+        icon: undefined,
         text: "foo",
       },
       {
@@ -112,7 +127,8 @@ describe("ComponentBreadcrumb.vue", () => {
         text: "Latter Node",
       },
       {
-        icon: null,
+        icon: undefined,
+        id: "root",
         text: "this is a dummy workflow",
       },
     ]);
@@ -137,7 +153,7 @@ describe("ComponentBreadcrumb.vue", () => {
         id: "root:0:123",
       };
       wrapper.vm.onClick(event);
-      expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
+      expect(useRouter().push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: {
           workflowId: "root:0:123",

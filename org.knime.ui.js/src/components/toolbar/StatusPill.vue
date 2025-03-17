@@ -1,26 +1,19 @@
 <script setup lang="ts">
-import { type FunctionalComponent, computed } from "vue";
+import { computed } from "vue";
 
-import HubIcon from "@knime/styles/img/icons/cloud-knime.svg";
-import LocalSpaceIcon from "@knime/styles/img/icons/local-space.svg";
-import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
-
+import type { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider } from "@/api/gateway-api/generated-api";
+import { useSpaceIcons } from "../spaces/useSpaceIcons";
+
+const { getSpaceProviderIcon } = useSpaceIcons();
 
 interface Props {
-  providerType: SpaceProvider.TypeEnum;
+  provider: SpaceProviderNS.SpaceProvider;
 }
 
 const props = defineProps<Props>();
 
-const getIcon = computed(() => {
-  const mapper: Record<SpaceProvider.TypeEnum, FunctionalComponent> = {
-    [SpaceProvider.TypeEnum.LOCAL]: LocalSpaceIcon,
-    [SpaceProvider.TypeEnum.HUB]: HubIcon,
-    [SpaceProvider.TypeEnum.SERVER]: ServerIcon,
-  };
-  return mapper[props.providerType];
-});
+const icon = computed(() => getSpaceProviderIcon(props.provider));
 
 const providerText = computed(() => {
   const mapper: Record<SpaceProvider.TypeEnum, string> = {
@@ -28,13 +21,13 @@ const providerText = computed(() => {
     [SpaceProvider.TypeEnum.HUB]: "Hub",
     [SpaceProvider.TypeEnum.SERVER]: "Server",
   };
-  return mapper[props.providerType];
+  return mapper[props.provider.type];
 });
 </script>
 
 <template>
   <div class="status-pill-container">
-    <Component :is="getIcon" class="status-pill" />
+    <Component :is="icon" class="status-pill" />
     <span>{{ providerText }}</span>
   </div>
 </template>

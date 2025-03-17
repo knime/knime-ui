@@ -8,12 +8,12 @@ import CloseIcon from "@knime/styles/img/icons/close.svg";
 import HistoryIcon from "@knime/styles/img/icons/history.svg";
 import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 
-import { type Workflow } from "@/api/custom-types";
-import { SpaceProvider } from "@/api/gateway-api/generated-api";
+import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 
 import ComponentBreadcrumb from "./ComponentBreadcrumb.vue";
 import StatusPill from "./StatusPill.vue";
@@ -27,24 +27,20 @@ const { revealInSpaceExplorer } = useRevealInSpaceExplorer();
 const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
   useApplicationStore(),
 );
-const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
 
-const providerType = computed(() => {
-  const provider =
-    spaceProviders.value?.[activeProjectOrigin.value?.providerId!];
-  return provider!.type;
+const activeSpaceProvider = computed(() => {
+  return useSpaceProvidersStore().activeProjectProvider;
 });
 
 const dropdownItems = computed(() => {
   const items: Array<MenuItem> = [];
-  if (providerType.value !== SpaceProvider.TypeEnum.SERVER) {
+  if (activeSpaceProvider.value?.type !== SpaceProviderNS.TypeEnum.SERVER) {
     items.push({
       text: "Version history",
       icon: HistoryIcon,
       metadata: {
         handler: () => {
-          // TODO figure this out later
-          console.log("Version History clicked");
+          useWorkflowVersionsStore().activateVersionsMode();
         },
       },
     });
@@ -85,8 +81,8 @@ const isInSublevel = computed(() => {
 
 <template>
   <div class="breadcrumb-wrapper">
-    <StatusPill :provider-type="providerType" />
-    <ComponentBreadcrumb v-if="isInSublevel" :workflow="workflow" />
+    <StatusPill v-if="activeSpaceProvider" :provider="activeSpaceProvider" />
+    <ComponentBreadcrumb v-if="isInSublevel" :workflow />
     <div v-else class="breadcrumb-root">
       <span>{{ workflow.info.name }}</span>
       <div class="space-selection-dropdown">

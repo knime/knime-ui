@@ -7,6 +7,7 @@ import { SubMenu } from "@knime/components";
 import type { Workflow } from "@/api/custom-types";
 import { SpaceProvider, WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import {
   createProject,
   createSpaceProvider,
@@ -95,21 +96,22 @@ describe("WorkflowBreadcrumb.vue", () => {
     expect(wrapper.findComponent(ComponentBreadcrumb).exists()).toBe(true);
   });
 
-  it.skip('handles "Version history" dropdown item click', () => {
+  it('handles "Version history" dropdown item click', () => {
     const { wrapper } = doMount({
       workflow: createWorkflow({
         info: { name: "dummy workflow" },
       }),
     });
+    const versionsStore = useWorkflowVersionsStore();
+    vi.mocked(versionsStore.activateVersionsMode).mockImplementation(vi.fn());
 
-    const revealInSpaceExplorerItem = wrapper
+    wrapper
       .findComponent(SubMenu)
-      .props("items");
-    revealInSpaceExplorerItem
+      .props("items")
       .find((item) => item.text === "Version history")
       ?.metadata.handler();
 
-    // expect(enterVersionsMode().closeProject).toHaveBeenCalled();
+    expect(versionsStore.activateVersionsMode).toHaveBeenCalled();
   });
 
   it('handles "Reveal in space explorer" dropdown item click', () => {
