@@ -67,6 +67,9 @@ export const useConnectorCulling = (options: UseConnectorCullingOptions) => {
     );
   });
 
+  // the connector will be culled based on a simple intersection check between
+  // the visible area of the WF and an AABB that was created based on the points of the
+  // bezier curve that describe the connector
   const renderable = computed(() => {
     const intersect = geometry.utils.rectangleIntersection(boundingBox.value, {
       left: visibleArea.value.x,

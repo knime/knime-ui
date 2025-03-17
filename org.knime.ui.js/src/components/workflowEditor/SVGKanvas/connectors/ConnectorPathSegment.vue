@@ -4,28 +4,12 @@ import { animate } from "motion";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/util/geometry";
+import type { ConnectorPathSegmentProps } from "../../types";
 import { getBezierPathString } from "../../util/connectorPath";
 
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
-import type { PathSegment } from "./types";
 
-interface Props {
-  connectionId: string;
-  segment: PathSegment;
-  isFlowvariableConnection: boolean;
-  isHighlighted: boolean;
-  isDraggedOver: boolean;
-  suggestDelete: boolean;
-  isConnectionHovered: boolean;
-  index: number;
-  isLastSegment: boolean;
-  isReadonly?: boolean;
-  isSelected?: boolean;
-  interactive?: boolean;
-  streaming?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<ConnectorPathSegmentProps>(), {
   interactive: true,
   isReadonly: false,
   isSelected: false,

@@ -8,8 +8,7 @@ import { useConnectionInteractionsStore } from "@/store/workflow/connectionInter
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId } from "@/util/connectorUtil";
-
-import type { PathSegment } from "./types";
+import type { PathSegment } from "../types";
 
 type UseConnectorPathSegmentsOptions = {
   id: string;

@@ -7,31 +7,23 @@ import type { FederatedPointerEvent } from "pixi.js";
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import { geometry } from "@/util/geometry";
 import type { GraphicsInst } from "@/vue3-pixi";
+import type { ConnectorPathSegmentProps } from "../../types";
 import { type BezierPoints, getBezier } from "../../util/connectorPath";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
-import type { PathSegment } from "./types";
+import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 
 const HOVER_AREA_SIZE = 5;
 
-type Props = {
-  connectionId: string;
-  segment: PathSegment;
-  isFlowvariableConnection: boolean;
-  isHighlighted: boolean;
-  isDraggedOver: boolean;
-  suggestDelete: boolean;
-  isConnectionHovered: boolean;
-  index: number;
-  isLastSegment: boolean;
-  isReadonly?: boolean;
-  isSelected?: boolean;
-  interactive?: boolean;
-  streaming?: boolean;
+type Props = ConnectorPathSegmentProps & {
+  isSegmentHovered: boolean;
   isDebugModeEnabled?: boolean;
   isFloatingConnector?: boolean;
 };
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<Props>(), {
   interactive: true,
@@ -45,9 +37,8 @@ const props = withDefaults(defineProps<Props>(), {
 const { isDebugModeEnabled, suggestDelete } = toRefs(props);
 
 const emit = defineEmits<{
-  pointerdown: [event: FederatedPointerEvent];
-  hovered: [value: boolean];
   addVirtualBendpoint: [{ position: XY; event: FederatedPointerEvent }];
+  hoverVirtualBendpoint: [value: boolean];
 }>();
 
 const bezier = computed(() => {
@@ -61,6 +52,10 @@ const bezier = computed(() => {
 
   return getBezier(x1, y1, x2, y2, shouldOffsetStart, shouldOffsetEnd);
 });
+
+const centerPoint = computed(() =>
+  geometry.utils.getCenterPoint(props.segment.start, props.segment.end),
+);
 
 const color = computed(() => {
   if (props.isSelected) {
@@ -194,20 +189,17 @@ watch(suggestDelete, (shouldAnimate) => {
 </script>
 
 <template>
-  <Container>
+  <Container label="ConnectorPathSegment">
     <Graphics
+      v-bind="$attrs"
       :event-mode="interactive ? 'static' : 'none'"
-      label="HoverArea"
       cursor="pointer"
       @render="renderHoverArea"
-      @pointerdown.stop.prevent="emit('pointerdown', $event)"
-      @pointerenter="emit('hovered', true)"
-      @pointerleave="emit('hovered', false)"
     />
 
     <Graphics
       ref="pathSegment"
-      label="PathSegment"
+      event-mode="none"
       @render="
         renderConnector(
           $event,
@@ -215,6 +207,24 @@ watch(suggestDelete, (shouldAnimate) => {
           isSelected ? $shapes.selectedConnectorWidth : $shapes.connectorWidth,
         )
       "
+    />
+
+    <ConnectorBendpoint
+      v-if="!isReadonly"
+      :connection-id="connectionId"
+      :is-visible="isSegmentHovered"
+      :is-flow-variable-connection="false"
+      :is-selected="false"
+      :is-dragging="false"
+      :index="-1"
+      :position="centerPoint"
+      virtual
+      :is-debug-mode-enabled="isDebugModeEnabled"
+      @pointerdown.left.prevent="
+        emit('addVirtualBendpoint', { position: centerPoint, event: $event })
+      "
+      @pointerenter="emit('hoverVirtualBendpoint', true)"
+      @pointerleave="emit('hoverVirtualBendpoint', false)"
     />
   </Container>
 </template>

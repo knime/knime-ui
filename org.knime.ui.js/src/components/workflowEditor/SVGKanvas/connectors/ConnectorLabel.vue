@@ -6,16 +6,15 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { geometry } from "@/util/geometry";
-
-import type { ConnectorProps } from "./types";
-import { useConnectorPathSegments } from "./useConnectorPathSegments";
+import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
+import type { AbsolutePointTuple, ConnectorProps } from "../../types";
 
 type ConnectorLabelProps = {
   label?: string;
 };
 
 const props = withDefaults(
-  defineProps<ConnectorProps & ConnectorLabelProps>(),
+  defineProps<ConnectorProps<AbsolutePointTuple> & ConnectorLabelProps>(),
   {
     label: "",
     bendpoints: () => [],

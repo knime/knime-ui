@@ -1,6 +1,6 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, toRef, unref } from "vue";
+import { computed, ref, unref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -22,6 +22,7 @@ import { geometry } from "@/util/geometry";
 import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
+import { useMoveOrSelectObject } from "../common/useMoveOrSelectObject";
 import NodePorts from "../ports/NodePorts.vue";
 import { nodeNameText } from "../util/textStyles";
 
@@ -29,7 +30,6 @@ import NodeActionBar from "./NodeActionBar.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
-import { useNodeDragging } from "./useNodeDragging";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
@@ -82,9 +82,10 @@ const isEditable = computed(() => {
   return isNodeComponent(props.node) ? !props.node.link : true;
 });
 
-const { startDrag } = useNodeDragging({
-  nodeId: props.node.id,
-  position: toRef(props, "position"),
+const { moveOrSelect } = useMoveOrSelectObject({
+  isObjectSelected: () => isNodeSelected.value(props.node.id),
+  selectObject: () => selectionStore.selectNode(props.node.id),
+  deselectObject: () => selectionStore.deselectNode(props.node.id),
 });
 
 const { isSelectionPreviewShown } = useSelectionPreview({
@@ -283,7 +284,7 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
     @pointerenter="onNodeHoverAreaPointerEnter"
     @pointermove="onNodeHoverAreaPointerMove"
     @pointerleave.self="onNodeHoverAreaPointerLeave"
-    @pointerdown.prevent="startDrag"
+    @pointerdown.prevent="moveOrSelect"
   >
     <Graphics
       label="NodeHoverArea"

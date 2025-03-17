@@ -3,21 +3,23 @@ import { computed, ref, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
-import { getMetaOrCtrlKey } from "@knime/utils";
-
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { isPlaceholderPort } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { useConnectorPathSegments } from "../../SVGKanvas/connectors/useConnectorPathSegments";
+import { getBendpointId } from "@/util/connectorUtil";
+import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
+import type { AbsolutePointXY, ConnectorProps } from "../../types";
+import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 
+import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import ConnectorPathSegment from "./ConnectorPathSegment.vue";
-import type { ConnectorProps } from "./types";
+import { useBendpointActions } from "./useBendpointActions";
 import { useConnectorCulling } from "./useConnectorCulling";
 
-const props = withDefaults(defineProps<ConnectorProps>(), {
+const props = withDefaults(defineProps<ConnectorProps<AbsolutePointXY>>(), {
   sourceNode: null,
   sourcePort: null,
   destNode: null,
@@ -29,12 +31,14 @@ const props = withDefaults(defineProps<ConnectorProps>(), {
 
 const { isDragging } = storeToRefs(useMovingStore());
 const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
-const { isDebugModeEnabled } = storeToRefs(useWebGLCanvasStore());
+const canvasStore = useWebGLCanvasStore();
+const { isDebugModeEnabled } = storeToRefs(canvasStore);
 
 const selectionStore = useSelectionStore();
 const {
   isNodeSelected,
   isConnectionSelected,
+  isBendpointSelected,
   singleSelectedNode,
   getSelectedConnections: selectedConnections,
 } = storeToRefs(selectionStore);
@@ -75,13 +79,19 @@ const { renderable } = useConnectorCulling({
   ),
 });
 
-const isHovered = ref(false);
+const isConnectionHovered = ref(false);
+const hoveredPathSegment = ref<number>();
 
-const onPathSegmentHovered = (nextState: boolean) => {
-  if (floatingConnector.value) {
+const onPathSegmentHovered = (
+  nextState: boolean,
+  index: number | undefined,
+) => {
+  if (floatingConnector.value || isDragging.value) {
     return;
   }
-  isHovered.value = nextState;
+
+  isConnectionHovered.value = nextState;
+  hoveredPathSegment.value = index;
 };
 
 const isHighlighted = computed(() => {
@@ -123,9 +133,6 @@ const isTargetForReplacement = computed(() => {
   return false;
 });
 
-const isMultiselectEvent = (event: FederatedPointerEvent) =>
-  event.shiftKey || event[getMetaOrCtrlKey()];
-
 const onConnectionClick = (event: FederatedPointerEvent) => {
   if (!isMultiselectEvent(event)) {
     selectionStore.deselectAllObjects();
@@ -137,30 +144,67 @@ const onConnectionClick = (event: FederatedPointerEvent) => {
 
   action(props.id);
 };
+
+const {
+  hoveredBendpoint,
+  isBendpointVisible,
+  onBendpointClick,
+  onBendpointRightClick,
+  setHoveredBendpoint,
+  onVirtualBendpointClick,
+} = useBendpointActions({
+  connectionId: props.id,
+  isConnectionHighlighted: isHighlighted,
+  isConnectionHovered,
+});
 </script>
 
 <template>
   <Container :renderable="renderable" :visible="renderable">
-    <ConnectorPathSegment
-      v-for="(segment, index) of pathSegments"
-      :key="index"
-      :connection-id="id"
-      :segment="segment"
-      :index="index"
-      :is-flowvariable-connection="Boolean(flowVariableConnection)"
-      :is-highlighted="isHighlighted"
-      :is-dragged-over="false"
-      :is-readonly="!isWorkflowWritable"
-      :is-last-segment="index === pathSegments.length - 1"
-      :is-selected="isConnectionSelected(id) && !isDragging"
-      :interactive="interactive"
-      :streaming="streaming"
-      :suggest-delete="Boolean(segment.isEnd && isTargetForReplacement)"
-      :is-connection-hovered="isHovered"
-      :is-debug-mode-enabled="isDebugModeEnabled"
-      :is-floating-connector="Boolean(absolutePoint)"
-      @pointerdown="onConnectionClick"
-      @hovered="onPathSegmentHovered"
-    />
+    <template v-for="(segment, index) of pathSegments" :key="index">
+      <ConnectorPathSegment
+        :connection-id="id"
+        :segment="segment"
+        :index="index"
+        :is-flowvariable-connection="Boolean(flowVariableConnection)"
+        :is-highlighted="isHighlighted"
+        :is-dragged-over="false"
+        :is-readonly="!isWorkflowWritable"
+        :is-last-segment="index === pathSegments.length - 1"
+        :is-selected="isConnectionSelected(id) && !isDragging"
+        :interactive="interactive"
+        :streaming="streaming"
+        :suggest-delete="Boolean(segment.isEnd && isTargetForReplacement)"
+        :is-connection-hovered="isConnectionHovered"
+        :is-segment-hovered="hoveredPathSegment === index"
+        :is-debug-mode-enabled="isDebugModeEnabled"
+        :is-floating-connector="Boolean(absolutePoint)"
+        @pointerdown.stop.prevent="onConnectionClick"
+        @pointerenter="onPathSegmentHovered(true, index)"
+        @pointerleave="onPathSegmentHovered(false, undefined)"
+        @hover-virtual-bendpoint="
+          (hovered) =>
+            onPathSegmentHovered(hovered, hovered ? index : undefined)
+        "
+        @add-virtual-bendpoint="onVirtualBendpointClick({ ...$event, index })"
+      />
+
+      <ConnectorBendpoint
+        v-if="index !== 0"
+        :is-selected="isBendpointSelected(getBendpointId(id, index - 1))"
+        :is-dragging="isDragging"
+        :is-flow-variable-connection="Boolean(flowVariableConnection)"
+        :position="pathSegments[index].start"
+        :index="index - 1"
+        :connection-id="id"
+        :interactive="interactive && isWorkflowWritable"
+        :is-visible="isBendpointVisible || hoveredBendpoint === index - 1"
+        :is-debug-mode-enabled="isDebugModeEnabled"
+        @pointerdown.stop.prevent="onBendpointClick($event, index)"
+        @pointerenter="setHoveredBendpoint(true, index - 1)"
+        @pointerleave="setHoveredBendpoint(false, index - 1)"
+        @rightclick="onBendpointRightClick"
+      />
+    </template>
   </Container>
 </template>

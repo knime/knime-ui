@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, toRefs, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
+import { navigatorUtils } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useMoveObject } from "@/components/workflowEditor/SVGKanvas/common/useMoveObject";
@@ -13,16 +13,17 @@ import { useConnectionInteractionsStore } from "@/store/workflow/connectionInter
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId } from "@/util/connectorUtil";
+import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
+import type { AbsolutePointTuple, ConnectorProps } from "../../types";
+import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import ConnectorPathSegment from "./ConnectorPathSegment.vue";
-import type { ConnectorProps } from "./types";
 import { useConnectionReplacement } from "./useConnectionReplacement";
-import { useConnectorPathSegments } from "./useConnectorPathSegments";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<ConnectorProps>(), {
+const props = withDefaults(defineProps<ConnectorProps<AbsolutePointTuple>>(), {
   sourceNode: null,
   sourcePort: null,
   destNode: null,
@@ -114,11 +115,8 @@ const {
   allowedActions: props.allowedActions,
 });
 
-const isMultiselect = (event: MouseEvent | PointerEvent) =>
-  event.shiftKey || event[getMetaOrCtrlKey()];
-
 const onConnectionSegmentClick = (event: MouseEvent) => {
-  if (!isMultiselect(event)) {
+  if (!isMultiselectEvent(event)) {
     selectionStore.deselectAllObjects();
   }
 
@@ -206,7 +204,7 @@ const onBendpointPointerdown = (
   index: number,
   position: XY,
 ) => {
-  if (isMultiselect(event)) {
+  if (isMultiselectEvent(event)) {
     return;
   }
 
@@ -227,7 +225,7 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
 
   const bendpointId = getBendpointId(props.id, index - 1);
 
-  if (isMultiselect(event)) {
+  if (isMultiselectEvent(event)) {
     const action = isBendpointSelected.value(bendpointId)
       ? selectionStore.deselectBendpoint
       : selectionStore.selectBendpoint;
