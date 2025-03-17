@@ -14,6 +14,7 @@ import {
   type SnappedPlaceholderPort,
   isPlaceholderPort,
 } from "@/store/floatingConnector/types";
+import { useSelectionStore } from "@/store/selection";
 import type { ContainerInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useNodeHoveredStateListener } from "../node/useNodeHoveredState";
@@ -130,6 +131,11 @@ useAnimatePixiContainer<number>({
   },
 });
 
+const { singleSelectedNode } = storeToRefs(useSelectionStore());
+const isNodeSingleSelected = computed(
+  () => singleSelectedNode.value?.id === props.nodeId,
+);
+
 // node hover area enter animation -> port appears
 const isNodeHovered = ref(false);
 useAnimatePixiContainer<number>({
@@ -137,7 +143,10 @@ useAnimatePixiContainer<number>({
   targetValue: 1,
   targetDisplayObject: container,
   changeTracker: computed(
-    () => isMenuOpenOnParentNode.value || isNodeHovered.value,
+    () =>
+      isMenuOpenOnParentNode.value ||
+      isNodeHovered.value ||
+      isNodeSingleSelected.value,
   ),
   animationParams: { duration: 0.5 },
   onUpdate: (value) => {
@@ -199,8 +208,8 @@ const onClick = (event: FederatedPointerEvent) => {
         typeId,
         portGroup: Object.keys(validPortGroups.value!)[0],
       });
+      return;
     }
-    return;
   }
 
   openMenu(event);
