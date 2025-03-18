@@ -1,11 +1,11 @@
 import { consola } from "consola";
 
 import { API } from "@/api";
-import type { ExtensionConfig } from "@/components/uiExtensions/common/types.ts";
+import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
-import { useApplicationStore } from "@/store/application/application.ts";
-import { useSelectionStore } from "@/store/selection.ts";
+import { useApplicationStore } from "@/store/application/application";
+import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 

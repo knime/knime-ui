@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 
-import { NodeState } from "@/api/gateway-api/generated-api.ts";
+import { NodeState } from "@/api/gateway-api/generated-api";
 import type { UIExtensionLoadingState } from "@/components/uiExtensions/common/types";
-import { usePageBuilder } from "@/composables/usePageBuilder/usePageBuilder.ts";
+import { usePageBuilder } from "@/composables/usePageBuilder/usePageBuilder";
 
 const props = defineProps<{
   projectId: string;

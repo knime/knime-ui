@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-import { useApplicationStore } from "@/store/application/application.ts";
+import { useApplicationStore } from "@/store/application/application";
 
 type DirtyProjectsTrackingState = {
   /**

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { loadStore } from "@/store/application/__tests__/loadStore.ts";
+import { loadStore } from "@/store/application/__tests__/loadStore";
 
 describe("dirty projects tracking", () => {
   it("dirty tracking map is updated", () => {

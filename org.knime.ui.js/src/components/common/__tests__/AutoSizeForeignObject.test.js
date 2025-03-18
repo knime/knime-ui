@@ -19,6 +19,7 @@ describe("AutoSizeForeignObject.vue", () => {
   const defaultProps = {
     parentWidth: $shapes.nodeSize,
     resizeKey: "",
+    yOffset: 0,
   };
 
   const doShallowMount = ({ props = {} } = {}) => {

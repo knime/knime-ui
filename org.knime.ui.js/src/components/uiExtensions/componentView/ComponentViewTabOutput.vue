@@ -7,8 +7,8 @@ import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg"
 import type { AvailablePortTypes } from "@/api/custom-types";
 import type { ComponentNode } from "@/api/gateway-api/generated-api";
 import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
-import { useUIControlsStore } from "@/store/uiControls/uiControls.ts";
-import { useExecutionStore } from "@/store/workflow/execution.ts";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useExecutionStore } from "@/store/workflow/execution";
 import {
   buildMiddleware,
   validateNodeConfigurationState,

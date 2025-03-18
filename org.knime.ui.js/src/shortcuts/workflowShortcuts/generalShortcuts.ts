@@ -9,7 +9,7 @@ import type { Connection } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useApplicationStore } from "@/store/application/application";
-import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking.ts";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";

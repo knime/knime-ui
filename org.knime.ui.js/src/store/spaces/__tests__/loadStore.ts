@@ -8,7 +8,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
-import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions.ts";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { createJob, createSchedule } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { useSpaceAuthStore } from "../auth";

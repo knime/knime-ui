@@ -1,7 +1,7 @@
-import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation.ts";
+import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { isDesktop } from "@/environment";
 
-import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore.ts";
+import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
 
 export type PageBuilderControl = {
   mountShadowApp: (shadowRoot: ShadowRoot) => void;

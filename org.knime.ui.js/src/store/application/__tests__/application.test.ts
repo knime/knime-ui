@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 
-import type { Project } from "@/api/gateway-api/generated-api.ts";
+import type { Project } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
 import {

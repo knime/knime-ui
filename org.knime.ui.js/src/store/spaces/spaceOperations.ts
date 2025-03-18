@@ -16,7 +16,7 @@ import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { isProjectOpen } from "@/store/spaces/util";
-import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions.ts";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 
 import { useSpaceAuthStore } from "./auth";

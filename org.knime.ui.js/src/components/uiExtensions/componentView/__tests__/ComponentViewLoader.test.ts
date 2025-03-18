@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { NodeState } from "@/api/gateway-api/generated-api.ts";
+import { NodeState } from "@/api/gateway-api/generated-api";
 import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
 
 const pageBuilderMountMock = vi.hoisted(() => vi.fn());

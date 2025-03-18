@@ -18,7 +18,7 @@ import type { Project } from "@/api/gateway-api/generated-api";
 import CloseIcon from "@/assets/cancel.svg";
 import CloseButton from "@/components/common/CloseButton.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { useApplicationStore } from "@/store/application/application.ts";
+import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";

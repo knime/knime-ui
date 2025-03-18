@@ -64,7 +64,7 @@ describe("ErrorOverlay.vue", () => {
   });
 
   it("reload app", () => {
-    const wrapper = mount(ErrorOverlay);
+    const { wrapper } = doMount();
 
     // @ts-ignore
     delete window.location;

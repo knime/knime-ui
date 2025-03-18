@@ -1,7 +1,7 @@
 import type { Ref } from "vue";
 
-import type { Project } from "@/api/gateway-api/generated-api.ts";
-import { useApplicationStore } from "@/store/application/application.ts";
+import type { Project } from "@/api/gateway-api/generated-api";
+import { useApplicationStore } from "@/store/application/application";
 
 let draggedTabIndex = -1;
 let originalOpenProjects: Project[]; // so we can restore original order whe drag is aborted

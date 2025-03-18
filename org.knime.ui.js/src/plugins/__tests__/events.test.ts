@@ -9,7 +9,7 @@ import {
   ShowToastEvent,
   SpaceProvider,
 } from "@/api/gateway-api/generated-api";
-import { getToastsProvider } from "@/plugins/toasts.ts";
+import { getToastsProvider } from "@/plugins/toasts";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import { notifyPatch } from "@/util/event-syncer";
