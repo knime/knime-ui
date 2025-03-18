@@ -19,7 +19,6 @@ import { KANVAS_ID, getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 import Debug from "../Debug.vue";
-import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
 import { clearIconCache } from "../common/iconCache";
 
 import { useMouseWheel } from "./useMouseWheel";
@@ -142,7 +141,6 @@ const { onMouseWheel } = useMouseWheel({ scrollPan });
 
 <template>
   <div :id="KANVAS_ID" ref="rootEl" tabindex="0" class="scroll-container">
-    <FloatingMenuPortalTarget v-if="isPixiAppInitialized" />
     <Application
       ref="pixiApp"
       :background-color="0xffffff"
@@ -171,7 +169,6 @@ const { onMouseWheel } = useMouseWheel({ scrollPan });
 
 <style lang="postcss" scoped>
 .scroll-container {
-  position: relative;
   overflow: hidden;
   height: 100%;
   width: 100%;

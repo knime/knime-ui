@@ -17,33 +17,18 @@ import { CANVAS_ANCHOR_WRAPPER_ID } from "../../CanvasAnchoredComponents";
  * component hierarchy, leading to incorrect positioning calculations.
  */
 
-const { zoomFactor, canvasAnchor, canvasOffset } = storeToRefs(
-  useWebGLCanvasStore(),
-);
+const canvasStore = useWebGLCanvasStore();
+const { canvasAnchor } = storeToRefs(canvasStore);
 
-/**
- * Transform the position of the container based on factors such as:
- * - The known anchor position (X,Y), e.g: where the user interacted with a canvas object,
- *   which are canvas world coordinates.
- * - The canvas (X,Y) offset
- * - The zoom factor
- */
-const position = computed(() => {
-  return {
-    x:
-      (canvasAnchor.value.anchor.x + canvasOffset.value.x / zoomFactor.value) *
-      zoomFactor.value,
-    y:
-      (canvasAnchor.value.anchor.y + canvasOffset.value.y / zoomFactor.value) *
-      zoomFactor.value,
-  };
-});
+const screenPosition = computed(() =>
+  canvasStore.screenFromCanvasCoordinates(canvasAnchor.value.anchor),
+);
 
 const style = computed(() => {
   const { placement = "top-left" } = canvasAnchor.value;
   const baseStyles = {
-    left: `${position.value.x}px`,
-    top: `${position.value.y}px`,
+    left: `${screenPosition.value.x}px`,
+    top: `${screenPosition.value.y}px`,
   };
 
   return placement === "top-left"
@@ -56,7 +41,7 @@ const style = computed(() => {
   <div
     v-if="canvasAnchor.isOpen"
     :id="CANVAS_ANCHOR_WRAPPER_ID"
-    class="wrapper"
+    class="floating-menu-portal"
     :style="style"
   >
     <PortalTarget tag="div" name="canvas-anchored-container" />
@@ -64,7 +49,8 @@ const style = computed(() => {
 </template>
 
 <style lang="postcss" scoped>
-.wrapper {
+.floating-menu-portal {
   position: absolute;
+  z-index: v-bind("$zIndices.webGlCanvasFloatingMenus");
 }
 </style>

@@ -108,3 +108,5 @@ export const webGlCanvasNodeSelectionPlane = 10;
 export const webGlCanvasSelectedNode = 20;
 
 export const webGlCanvasConnections = 30;
+
+export const webGlCanvasFloatingMenus = layerExpandedMenus;

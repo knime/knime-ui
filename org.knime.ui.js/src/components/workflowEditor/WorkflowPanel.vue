@@ -19,6 +19,7 @@ import ContextMenu from "./CanvasAnchoredComponents/ContextMenu/ContextMenu.vue"
 import PortTypeMenu from "./CanvasAnchoredComponents/PortTypeMenu/PortTypeMenu.vue";
 import QuickActionMenu from "./CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import ManageVersionsWrapper from "./ManageVersionsWrapper.vue";
+import FloatingMenuPortalTarget from "./WebGLKanvas/FloatingMenu/FloatingMenuPortalTarget.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 import { useCanvasRendererUtils } from "./util/canvasRenderer";
 
@@ -108,6 +109,9 @@ const closeContextMenu = (event?: MouseEvent) => {
     />
 
     <PortalTarget name="annotation-editor-toolbar" tag="div" />
+
+    <!-- webgl only -->
+    <FloatingMenuPortalTarget />
 
     <WorkflowInfoBar />
 

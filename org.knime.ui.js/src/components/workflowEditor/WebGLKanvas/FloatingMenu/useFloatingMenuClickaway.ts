@@ -45,7 +45,7 @@ export const useFloatingMenuClickaway = (options: UseFloatingMenuClickaway) => {
         deactivateFocusTrap();
         options.onClickaway();
       },
-      { capture: false, ignore: [kanvas] },
+      { capture: true, ignore: [kanvas] },
     );
 
     if (focusTrap.value) {
