@@ -342,7 +342,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     const provider = useSpaceProvidersStore().activeProjectProvider;
 
     if (!(provider && isHubProvider(provider))) {
-      // TODO: NXT-3362 this.setVersionsModeStatus(activeProjectId, "promoteHub");
+      setVersionsModeStatus(activeProjectId, "promoteHub");
       return;
     }
 

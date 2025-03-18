@@ -8,11 +8,21 @@ import {
   type NamedItemVersion,
 } from "@knime/hub-features/versions";
 
+import { useApplicationStore } from "@/store/application/application";
+import { useSpacesStore } from "@/store/spaces/spaces";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
+
+import VersionPanelPromoteHub from "./VersionPanelPromoteHub.vue";
 
 const versionsStore = useWorkflowVersionsStore();
 const { activeProjectVersionsModeInfo, activeProjectVersionsModeStatus } =
   storeToRefs(versionsStore);
+
+const { activeProjectOrigin, activeProjectId } = storeToRefs(
+  useApplicationStore(),
+);
+
+const { copyBetweenSpaces } = useSpacesStore();
 
 // TODO: source these permissions
 const hasAdminRights = ref(true);
@@ -47,12 +57,19 @@ const onCreate = ({ name, description }) => {
   });
   isCreatingVersion.value = false;
 };
+
+const onUpload = () => {
+  copyBetweenSpaces({
+    projectId: activeProjectId.value!,
+    itemIds: [activeProjectOrigin.value!.itemId],
+  });
+};
 </script>
 
 <template>
   <div class="manage-versions-wrapper">
     <div v-if="activeProjectVersionsModeStatus === 'promoteHub'">
-      Upload to the hub to use versions.
+      <VersionPanelPromoteHub @close="onClose" @upload="onUpload" />
     </div>
 
     <Transition name="slide">
