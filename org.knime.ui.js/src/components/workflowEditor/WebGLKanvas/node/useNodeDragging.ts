@@ -7,11 +7,13 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
+import { usePointerDownDoubleClick } from "../common/usePointerDownDoubleClick";
 
 const MIN_MOVE_THRESHOLD = 5;
 
 type UseNodeDraggingOptions = {
   nodeId: string;
+  onDoubleClick: (event: PointerEvent) => void;
   position: Ref<XY>;
 };
 
@@ -21,10 +23,15 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
   const movingStore = useMovingStore();
   const { isDragging } = storeToRefs(movingStore);
 
+  const { pointerDownDoubleClick } = usePointerDownDoubleClick({
+    handler: options.onDoubleClick,
+  });
+
   const { zoomFactor, pixiApplication } = storeToRefs(useWebGLCanvasStore());
 
   const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 
+  // reset the drag state on position updates (this is what the backend patches via workflow updates)
   watch(
     options.position,
     () => {
@@ -37,6 +44,11 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
 
   const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
     if (pointerDownEvent.button !== 0) {
+      return;
+    }
+
+    // check for double clicks
+    if (pointerDownDoubleClick(pointerDownEvent)) {
       return;
     }
 
@@ -63,6 +75,8 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
       } else {
         selectionStore.selectNode(options.nodeId);
       }
+      // forbid move on multi select
+      return;
     }
 
     let didDrag = false;

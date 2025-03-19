@@ -74,7 +74,7 @@ const nodeRelation = computed<NodeRelation | undefined>(() => {
 <template>
   <Container
     v-if="floatingConnector && floatingConnectorPort"
-    label="FloatingfloatingConnector"
+    label="FloatingConnector"
   >
     <Connector
       :id="floatingConnector.id"

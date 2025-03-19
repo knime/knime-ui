@@ -29,6 +29,7 @@ import NodeActionBar from "./NodeActionBar.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
+import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeDragging } from "./useNodeDragging";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
@@ -82,8 +83,11 @@ const isEditable = computed(() => {
   return isNodeComponent(props.node) ? !props.node.link : true;
 });
 
-const { startDrag } = useNodeDragging({
+const { onNodeLeftDoubleClick } = useNodeDoubleClick({ node: props.node });
+
+const { startDrag: handleDragSelectionAndDoubleClick } = useNodeDragging({
   nodeId: props.node.id,
+  onDoubleClick: onNodeLeftDoubleClick,
   position: toRef(props, "position"),
 });
 
@@ -283,7 +287,7 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
     @pointerenter="onNodeHoverAreaPointerEnter"
     @pointermove="onNodeHoverAreaPointerMove"
     @pointerleave.self="onNodeHoverAreaPointerLeave"
-    @pointerdown.prevent="startDrag"
+    @pointerdown.prevent="handleDragSelectionAndDoubleClick"
   >
     <Graphics
       label="NodeHoverArea"

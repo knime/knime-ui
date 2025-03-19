@@ -7,22 +7,13 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import Workflow from "./Workflow.vue";
+import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import Kanvas from "./kanvas/Kanvas.vue";
 
 const { onDrop, onDragOver } = useDropNode();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 
-let lastClick = 0;
 const openQuickActionMenu = (event: PointerEvent) => {
-  if (event.defaultPrevented) {
-    return;
-  }
-  // two clicks in 200ms thats what pixi also does
-  if (performance.now() - lastClick > 200) {
-    lastClick = performance.now();
-    return;
-  }
-
   const [x, y] = useWebGLCanvasStore().screenToCanvasCoordinates([
     event.clientX,
     event.clientY,
@@ -32,6 +23,11 @@ const openQuickActionMenu = (event: PointerEvent) => {
     props: { position: { x, y } },
   });
 };
+
+const { pointerDownDoubleClick } = usePointerDownDoubleClick({
+  handler: openQuickActionMenu,
+  checkForPreventDefault: true,
+});
 </script>
 
 <template>
@@ -39,7 +35,7 @@ const openQuickActionMenu = (event: PointerEvent) => {
     v-if="activeWorkflow"
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
-    @pointerdown.left="openQuickActionMenu"
+    @pointerdown="pointerDownDoubleClick"
   >
     <Workflow v-if="!isWorkflowEmpty" />
   </Kanvas>
