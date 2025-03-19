@@ -4,6 +4,7 @@ import { defineStore } from "pinia";
 
 import type { KnimeNode, Workflow, WorkflowObject } from "@/api/custom-types";
 import {
+  AlignNodesCommand,
   type Bounds,
   CollapseCommand,
   type Connection,
@@ -25,6 +26,8 @@ import { getPortContext } from "@/util/portSelection";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";
+
+import DirectionEnum = AlignNodesCommand.DirectionEnum;
 
 const { show: showConfirmDialog } = useConfirmDialog();
 
@@ -410,6 +413,18 @@ export const useWorkflowStore = defineStore("workflow", {
         description,
         tags,
         links,
+      });
+    },
+    async alignSelectedNodes(direction: DirectionEnum) {
+      const selectionStore = useSelectionStore();
+      const { projectId, workflowId } = this.getProjectAndWorkflowIds;
+      const selectedNodes: KnimeNode[] = selectionStore.getSelectedNodes;
+
+      await API.workflowCommand.AlignNodes({
+        projectId,
+        workflowId,
+        direction,
+        nodeIds: selectedNodes.map((sn) => sn.id),
       });
     },
   },

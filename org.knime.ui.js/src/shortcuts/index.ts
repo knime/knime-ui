@@ -12,6 +12,7 @@ import {
   sidePanelShortcuts,
   uiScaleShortcuts,
 } from "./miscShortcuts";
+import nodeAlignShortcuts from "./nodeAlignShortcuts";
 import workflowShortcuts from "./workflowShortcuts";
 
 // This interface will be enhanced and extended by the
@@ -45,6 +46,7 @@ const shortcuts: ShortcutsRegistry = {
     () => Boolean(useWorkflowStore().activeWorkflow),
     {
       ...workflowShortcuts,
+      ...nodeAlignShortcuts,
       ...annotationShortcuts,
       ...componentOrMetanodeShortcuts,
       ...conditionGroup(

@@ -1,12 +1,18 @@
 /* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import {
+  AlignNodesCommand,
+  AllowedNodeActions,
+  CollapseCommand,
+  Node,
+} from "@/api/gateway-api/generated-api";
+import {
   createConnection,
   createMetanode,
+  createNativeNode,
   createWorkflow,
   createWorkflowAnnotation,
 } from "@/test/factories";
@@ -86,9 +92,7 @@ describe("workflow::index", () => {
         }),
       );
 
-      await nextTick();
-
-      workflowStore.deleteSelectedObjects();
+      await workflowStore.deleteSelectedObjects();
       expect(mockedAPI.workflowCommand.Delete).toHaveBeenNthCalledWith(1, {
         projectId: "foo",
         workflowId: "test",
@@ -134,26 +138,22 @@ describe("workflow::index", () => {
       };
 
       it("nodes", async () => {
-        const { selectionStore, workflowStore } =
-          await setupStoreWithWorkflow();
+        const { selectionStore, workflowStore } = setupStoreWithWorkflow();
 
         selectionStore.selectNode(nodesArray[nodeName].id);
 
-        await nextTick();
-        workflowStore.deleteSelectedObjects();
+        await workflowStore.deleteSelectedObjects();
         expect(window.alert).toHaveBeenCalledWith(
           "The following nodes can’t be deleted: [node-1]",
         );
       });
 
       it("connections", async () => {
-        const { selectionStore, workflowStore } =
-          await setupStoreWithWorkflow();
+        const { selectionStore, workflowStore } = setupStoreWithWorkflow();
 
         selectionStore.selectConnection(connectionsArray[connectorName].id);
 
-        await nextTick();
-        workflowStore.deleteSelectedObjects();
+        await workflowStore.deleteSelectedObjects();
 
         expect(window.alert).toHaveBeenCalledWith(
           "The following connections can’t be deleted: [connection-1]",
@@ -161,14 +161,12 @@ describe("workflow::index", () => {
       });
 
       it("nodes and connections", async () => {
-        const { workflowStore, selectionStore } =
-          await setupStoreWithWorkflow();
+        const { workflowStore, selectionStore } = setupStoreWithWorkflow();
 
         selectionStore.selectNode(nodesArray[nodeName].id);
         selectionStore.selectConnection(connectionsArray[connectorName].id);
 
-        await nextTick();
-        workflowStore.deleteSelectedObjects();
+        await workflowStore.deleteSelectedObjects();
 
         expect(window.alert).toHaveBeenCalledWith(
           "The following nodes can’t be deleted: [node-1] \n" +
@@ -231,23 +229,15 @@ describe("workflow::index", () => {
             foo: {
               id: "foo",
               allowedActions: {
-                canCancel: false,
-                canCollapse: "true",
-                canDelete: true,
+                canCollapse: AllowedNodeActions.CanCollapseEnum.True,
                 canExecute: true,
-                canOpenDialog: true,
-                canReset: false,
               },
             },
             bar: {
               id: "bar",
               allowedActions: {
-                canCancel: false,
-                canCollapse: "true",
-                canDelete: true,
+                canCollapse: AllowedNodeActions.CanCollapseEnum.True,
                 canExecute: true,
-                canOpenDialog: true,
-                canReset: false,
               },
             },
           },
@@ -292,7 +282,7 @@ describe("workflow::index", () => {
       ]);
 
       await workflowStore.collapseToContainer({
-        containerType: "metanode",
+        containerType: CollapseCommand.ContainerTypeEnum.Metanode,
       });
 
       expect(mockedAPI.workflowCommand.Collapse).toHaveBeenCalledWith({
@@ -319,7 +309,7 @@ describe("workflow::index", () => {
       selectionStore.selectAllObjects();
 
       await workflowStore.collapseToContainer({
-        containerType: "metanode",
+        containerType: CollapseCommand.ContainerTypeEnum.Metanode,
       });
 
       expect(selectionStore.selectedNodes).toEqual({
@@ -338,7 +328,7 @@ describe("workflow::index", () => {
       selectionStore.selectAllObjects();
 
       const commandCall = workflowStore.collapseToContainer({
-        containerType: "metanode",
+        containerType: CollapseCommand.ContainerTypeEnum.Metanode,
       });
 
       selectionStore.selectNode("foo");
@@ -364,26 +354,18 @@ describe("workflow::index", () => {
           nodes: {
             foo: {
               id: "foo",
-              kind: "metanode",
+              kind: Node.KindEnum.Metanode,
               allowedActions: {
-                canCancel: false,
-                canCollapse: "true",
-                canDelete: true,
+                canCollapse: AllowedNodeActions.CanCollapseEnum.True,
                 canExecute: true,
-                canOpenDialog: true,
-                canReset: false,
-                canExpand: "true",
+                canExpand: AllowedNodeActions.CanExpandEnum.True,
               },
             },
             barbaz: {
               id: "barbaz",
               allowedActions: {
-                canCancel: false,
-                canCollapse: "true",
-                canDelete: true,
+                canCollapse: AllowedNodeActions.CanCollapseEnum.True,
                 canExecute: true,
-                canOpenDialog: true,
-                canReset: false,
               },
             },
           },
@@ -454,6 +436,46 @@ describe("workflow::index", () => {
     });
   });
 
+  describe("alignSelectedNodes", () => {
+    it("calls workflow command API with correct arguments", () => {
+      const { workflowStore, selectionStore } = loadStore();
+      const direction = AlignNodesCommand.DirectionEnum.Horizontal;
+      const projectId = "projectId";
+      const workflowId = "workflowId";
+      const nodeId1 = "root:1";
+      const nodeId2 = "root:2";
+      const nodeId3 = "root:3";
+
+      const node1 = createNativeNode({ id: nodeId1 });
+      const node2 = createNativeNode({ id: nodeId2 });
+      const node3 = createNativeNode({ id: nodeId3 });
+
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId,
+          info: {
+            containerId: workflowId,
+          },
+          nodes: {
+            "root:1": node1,
+            "root:2": node2,
+            "root:3": node3,
+          },
+        }),
+      );
+      selectionStore.getSelectedNodes = [node1, node3];
+
+      workflowStore.alignSelectedNodes(direction);
+
+      expect(mockedAPI.workflowCommand.AlignNodes).toHaveBeenCalledWith({
+        direction,
+        nodeIds: [nodeId1, nodeId3],
+        projectId,
+        workflowId,
+      });
+    });
+  });
+
   describe("getters", () => {
     it("isLinked", () => {
       const { workflowStore } = loadStore();
@@ -486,7 +508,7 @@ describe("workflow::index", () => {
         createWorkflow({
           parents: [
             {
-              containerType: "component",
+              containerType: CollapseCommand.ContainerTypeEnum.Component,
               linked: false,
             },
           ],
@@ -501,7 +523,7 @@ describe("workflow::index", () => {
         createWorkflow({
           parents: [
             {
-              containerType: "metanode",
+              containerType: CollapseCommand.ContainerTypeEnum.Metanode,
               linked: true,
             },
           ],
@@ -516,7 +538,7 @@ describe("workflow::index", () => {
         createWorkflow({
           parents: [
             {
-              containerType: "metanode",
+              containerType: CollapseCommand.ContainerTypeEnum.Metanode,
               linked: true,
             },
           ],
@@ -536,11 +558,13 @@ describe("workflow::index", () => {
       );
       expect(workflowStore.isWorkflowEmpty).toBe(true);
 
-      workflowStore.setActiveWorkflow({
-        projectId: "foo",
-        nodes: [{ node: { id: 1 } }],
-        workflowAnnotations: [],
-      });
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          nodes: { "1": createNativeNode({ id: "1" }) },
+          workflowAnnotations: [],
+        }),
+      );
 
       workflowStore.setActiveWorkflow(
         createWorkflow({

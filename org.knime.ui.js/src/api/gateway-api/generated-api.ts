@@ -296,6 +296,43 @@ export interface AddWorkflowAnnotationCommand extends WorkflowCommand {
 export namespace AddWorkflowAnnotationCommand {
 }
 /**
+ * Aligns workflow nodes.
+ * @export
+ * @interface AlignNodesCommand
+ */
+export interface AlignNodesCommand extends WorkflowCommand {
+
+    /**
+     * The ids of the nodes to be aligned.
+     * @type {Array<string>}
+     * @memberof AlignNodesCommand
+     */
+    nodeIds: Array<string>;
+    /**
+     * The direction in which the nodes are to be aligned
+     * @type {string}
+     * @memberof AlignNodesCommand
+     */
+    direction: AlignNodesCommand.DirectionEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace AlignNodesCommand
+ */
+export namespace AlignNodesCommand {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum DirectionEnum {
+        Horizontal = 'horizontal',
+        Vertical = 'vertical'
+    }
+}
+/**
  * Mainly provides information on what actions are allowed on a node or an entire workflow.
  * @export
  * @interface AllowedActions
@@ -4763,7 +4800,8 @@ export namespace WorkflowCommand {
         AddBendpoint = 'add_bendpoint',
         UpdateComponentLinkInformation = 'update_component_link_information',
         TransformMetanodePortsBar = 'transform_metanode_ports_bar',
-        UpdateLinkedComponents = 'update_linked_components'
+        UpdateLinkedComponents = 'update_linked_components',
+        AlignNodes = 'align_nodes'
     }
 }
 /**
@@ -6429,6 +6467,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateLinkedComponents }
 		}) as Promise<UpdateLinkedComponentsResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Aligns workflow nodes.
+     */
+	AlignNodes(
+		params: { projectId: string, workflowId: string } & Omit<AlignNodesCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AlignNodes }
+		});
 		return postProcessCommandResponse(commandResponse);
 	},	
 

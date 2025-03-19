@@ -100,7 +100,7 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
         workflowStore.deleteSelectedObjects();
       }
     },
-    condition() {
+    condition: () => {
       const workflowStore = useWorkflowStore();
       const selectionStore = useSelectionStore();
 

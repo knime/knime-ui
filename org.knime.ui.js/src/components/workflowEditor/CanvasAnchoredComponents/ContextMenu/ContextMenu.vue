@@ -8,7 +8,7 @@ import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
 import type { ExtendedPortType, KnimeNode } from "@/api/custom-types";
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import portIcon from "@/components/common/PortIconRenderer";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
@@ -38,12 +38,12 @@ const { FloatingMenu } = getFloatingMenuComponent();
 const menuGroups = function () {
   let currItems: Array<MenuItem> = [];
 
-  const onlyEnabled = (item: MenuItem) => !item.disabled;
+  const isEnabled = (item: MenuItem) => !item.disabled;
 
   const removeInvalidItems = (items: Array<MenuItem>): Array<MenuItem> => {
     return (
       items
-        .filter(onlyEnabled)
+        .filter(isEnabled)
         .map((item) =>
           item.children
             ? { ...item, children: removeInvalidItems(item.children) }
@@ -149,7 +149,7 @@ const portViews = (): MenuItem[] => {
   }
 
   const nodeId = node.id;
-  const allOutPorts = node.outPorts.map((port) =>
+  const allOutPorts = node.outPorts.map((port: NodePort) =>
     toExtendedPortObject(availablePortTypes.value)(port),
   );
 
@@ -337,6 +337,13 @@ const setMenuItems = () => {
     ]),
   ];
 
+  const nodeAlignmentGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      { name: "alignHorizontally", isVisible: !isSelectionEmpty.value },
+      { name: "alignVertically", isVisible: !isSelectionEmpty.value },
+    ]),
+  ];
+
   const annotationsGroup: Array<MenuItem> = [
     ...mapToShortcut({
       name: "addWorkflowAnnotation",
@@ -439,6 +446,7 @@ const setMenuItems = () => {
     .append(clipboardOperationsGroup)
     .append(quickNodeAnnotationGroup)
     .append(annotationsGroup.concat(nodeConnectionsGroup))
+    .append(nodeAlignmentGroup)
     .append(metanodeAndComponentGroup)
     .value();
 };
