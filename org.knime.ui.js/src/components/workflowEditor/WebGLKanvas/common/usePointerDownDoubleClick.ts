@@ -28,7 +28,7 @@ export const usePointerDownDoubleClick = (
   const pointerDownDoubleClick = (pointerDownEvent: PointerEvent) => {
     // only left clicks
     if (pointerDownEvent.button !== 0) {
-      return;
+      return false;
     }
 
     // do nothing on default prevent this way we can communicate from the pixi events that they has handled

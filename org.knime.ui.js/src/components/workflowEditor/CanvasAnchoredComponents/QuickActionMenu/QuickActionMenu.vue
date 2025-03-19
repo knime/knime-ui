@@ -15,7 +15,6 @@ import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import * as $shapes from "@/style/shapes";
-// TODO: refactor structure and implement fix for dynamically resolved NodePortActiveConnector
 import type { DragConnector } from "../../SVGKanvas/ports/NodePort/types";
 import NodePortActiveConnector from "../../SVGKanvas/ports/NodePortActiveConnector.vue";
 import { useCanvasRendererUtils } from "../../util/canvasRenderer";
@@ -49,7 +48,6 @@ defineEmits(["menuClose"]);
 
 const { quickActionMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
 const { availablePortTypes } = storeToRefs(useApplicationStore());
-const { zoomFactor } = storeToRefs(useSVGCanvasStore());
 
 const hasConnector = computed(() => quickActionMenu.value.hasConnector);
 
@@ -111,21 +109,20 @@ const fakePortConnector = computed<DragConnector>(() => {
   };
 });
 
-const { isSVGRenderer } = useCanvasRendererUtils();
+const { isSVGRenderer, isWebGLRenderer } = useCanvasRendererUtils();
 
+// create floating connector to the given port
 watch(
   port,
   () => {
-    // webgl only
-    if (isSVGRenderer.value) {
+    // webgl only see <NodePortActiveConnector> for svg
+    if (!isWebGLRenderer.value) {
       return;
     }
 
     if (!hasConnector.value) {
       return;
     }
-
-    useFloatingConnectorStore().removeActiveConnector();
 
     if (!props.nodeId || !props.port || !props.nodeRelation) {
       return;
@@ -142,13 +139,17 @@ watch(
 );
 
 const marginTop = computed(() => {
-  const ghostSizeZoomed = $shapes.addNodeGhostSize * zoomFactor.value;
+  if (isWebGLRenderer.value) {
+    return 4; // --space-4 not yet defined in js
+  }
+  const ghostSizeZoomed =
+    $shapes.addNodeGhostSize * useSVGCanvasStore().zoomFactor;
   // eslint-disable-next-line no-magic-numbers
   const extraMargin = Math.log(ghostSizeZoomed) / 1.1;
   // eslint-disable-next-line no-magic-numbers
   const marginTop = ghostSizeZoomed / 2 + extraMargin + 3;
 
-  return `${marginTop}px`;
+  return marginTop;
 });
 
 const floatingMenuAnchor = computed(() => {
@@ -192,7 +193,6 @@ watch(
 
 <template>
   <FloatingMenu
-    class="quick-add-node"
     :canvas-position="canvasPosition"
     aria-label="Quick add node"
     :anchor="floatingMenuAnchor"
@@ -211,7 +211,10 @@ watch(
 
     <div
       :class="['quick-action-content', menuMode]"
-      :style="{ width: `${$shapes.quickActionMenuWidth}px` }"
+      :style="{
+        width: `${$shapes.quickActionMenuWidth}px`,
+        'margin-top': `${marginTop}px`,
+      }"
     >
       <template v-if="menuMode == 'quick-add'">
         <QuickAddNodeMenu
@@ -242,10 +245,6 @@ watch(
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
-
-.quick-add-node {
-  margin-top: v-bind("marginTop");
-}
 
 .quick-action-content {
   box-shadow: var(--shadow-elevation-1);

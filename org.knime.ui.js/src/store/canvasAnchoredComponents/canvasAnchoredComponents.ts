@@ -231,6 +231,8 @@ export const useCanvasAnchoredComponentsStore = defineStore(
 
           canvasStore.setCanvasAnchor({
             isOpen: true,
+            placement:
+              props.nodeRelation === "PREDECESSORS" ? "top-right" : "top-left",
             anchor: {
               x: props.position.x + offsets.x,
               y: props.position.y + offsets.y,
