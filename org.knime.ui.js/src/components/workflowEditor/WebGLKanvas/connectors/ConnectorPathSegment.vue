@@ -132,7 +132,6 @@ useAnimatePixiContainer({
   animateOut: true,
 });
 
-// TODO: maybe do w/o animating
 useAnimatePixiContainer({
   targetDisplayObject: pathSegment,
   changeTracker: computed(() => props.isHighlighted),
@@ -153,10 +152,10 @@ watch(suggestDelete, (shouldAnimate) => {
   const normalBezier = structuredClone(bezier.value);
 
   const animatedBezier = getBezier(
-    normalBezier.start.x,
-    normalBezier.start.y,
-    normalBezier.end.x + suggestShiftX,
-    normalBezier.end.x + suggestShiftY,
+    props.segment.start.x,
+    props.segment.start.y,
+    props.segment.end.x + suggestShiftX,
+    props.segment.end.y + suggestShiftY,
   );
 
   const currentWidth = props.isSelected
