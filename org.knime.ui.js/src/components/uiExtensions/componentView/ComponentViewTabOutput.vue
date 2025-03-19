@@ -118,10 +118,8 @@ const openInNewWindow = () => {
   display: flex;
   width: max-content;
   height: min-content;
-  position: absolute;
-  inset: 10px 0 0;
+  padding: var(--space-8);
   margin: 0 auto;
-  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
 
   & .detach-view {
     height: 20px;
