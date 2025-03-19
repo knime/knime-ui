@@ -279,6 +279,19 @@ export const useFloatingConnectorStore = defineStore(
       setupAbortListener();
     };
 
+    const createDecorationOnly = (position: XY) => {
+      floatingConnector.value = {
+        id: "quick-add-ghost-only",
+        decoratorOnly: true,
+        flowVariableConnection: false,
+        absolutePoint: position,
+        allowedActions: { canDelete: false },
+        context: {
+          origin: "out",
+        },
+      };
+    };
+
     const createConnectorFromContext = (
       parentNodeId: string,
       port: NodePort,
@@ -327,6 +340,7 @@ export const useFloatingConnectorStore = defineStore(
       isInsideSnapRegion,
       createConnectorFromPointerEvent,
       createConnectorFromContext,
+      createDecorationOnly,
       removeActiveConnector,
       onMoveOverConnectionSnapCandidate,
       onLeaveConnectionSnapCandidate: (

@@ -21,7 +21,7 @@ const { floatingConnector, isInsideSnapRegion, snapTarget } = storeToRefs(
 const { getNodeById } = storeToRefs(useNodeInteractionsStore());
 
 const floatingConnectorPort = computed(() => {
-  if (!floatingConnector.value) {
+  if (!floatingConnector.value || floatingConnector.value.decoratorOnly) {
     // eslint-disable-next-line no-undefined
     return undefined;
   }
@@ -85,40 +85,38 @@ const nodeRelation = computed<NodeRelation | undefined>(() => {
 </script>
 
 <template>
-  <Container
-    v-if="floatingConnector && floatingConnectorPort"
-    label="FloatingConnector"
-  >
-    <Connector
-      :id="floatingConnector.id"
-      :absolute-point="floatingConnector.absolutePoint"
-      :source-node="floatingConnector.sourceNode"
-      :dest-node="floatingConnector.destNode"
-      :source-port="floatingConnector.sourcePort"
-      :dest-port="floatingConnector.destPort"
-      :interactive="floatingConnector.interactive"
-      :flow-variable-connection="floatingConnector.flowVariableConnection"
-      :allowed-actions="floatingConnector.allowedActions"
-    />
+  <Container v-if="floatingConnector" label="FloatingConnector">
+    <Container v-if="floatingConnectorPort">
+      <Connector
+        :id="floatingConnector.id"
+        :absolute-point="floatingConnector.absolutePoint"
+        :source-node="floatingConnector.sourceNode"
+        :dest-node="floatingConnector.destNode"
+        :source-port="floatingConnector.sourcePort"
+        :dest-port="floatingConnector.destPort"
+        :interactive="floatingConnector.interactive"
+        :flow-variable-connection="floatingConnector.flowVariableConnection"
+        :allowed-actions="floatingConnector.allowedActions"
+      />
 
-    <Container
-      v-if="isDefaultFlowVariableConnection"
-      label="DefaultFlowVariablePlaceholder"
-      :position="defaultFlowVariablePortPosition"
-      :pivot="{ x: -$shapes.portSize / 2, y: -$shapes.portSize / 2 }"
-      event-mode="none"
-    >
-      <Port event-mode="none" :port="floatingConnectorPort" />
+      <Container
+        v-if="isDefaultFlowVariableConnection"
+        label="DefaultFlowVariablePlaceholder"
+        :position="defaultFlowVariablePortPosition"
+        :pivot="{ x: -$shapes.portSize / 2, y: -$shapes.portSize / 2 }"
+        event-mode="none"
+      >
+        <Port event-mode="none" :port="floatingConnectorPort" />
+      </Container>
+
+      <Container
+        label="DraggedPort"
+        :position="floatingConnector.absolutePoint"
+        event-mode="none"
+      >
+        <Port :port="floatingConnectorPort" :targeted="Boolean(snapTarget)" />
+      </Container>
     </Container>
-
-    <Container
-      label="DraggedPort"
-      :position="floatingConnector.absolutePoint"
-      event-mode="none"
-    >
-      <Port :port="floatingConnectorPort" :targeted="Boolean(snapTarget)" />
-    </Container>
-
     <FloatingConnectorDecoration
       v-if="!isInsideSnapRegion"
       :position="floatingConnector.absolutePoint"

@@ -5,12 +5,13 @@ import type { Direction } from "@/util/compatibleConnections";
 export type FloatingConnector = {
   id: string;
   flowVariableConnection: boolean;
+  decoratorOnly?: boolean;
   absolutePoint: XY;
   allowedActions: { canDelete: boolean };
   context: {
     origin: "in" | "out";
-    parentNodeId: string;
-    portInstance: NodePort;
+    parentNodeId?: string;
+    portInstance?: NodePort;
   };
   interactive?: boolean;
   sourceNode?: string;

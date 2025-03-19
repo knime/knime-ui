@@ -125,6 +125,7 @@ watch(
     }
 
     if (!props.nodeId || !props.port || !props.nodeRelation) {
+      useFloatingConnectorStore().createDecorationOnly(props.position);
       return;
     }
 
