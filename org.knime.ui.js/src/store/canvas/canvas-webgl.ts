@@ -232,7 +232,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const fromCanvasCoordinates = computed(() => {
     return ([worldX, worldY]: [number, number]): [number, number] => {
       return [
-        // (worldX + canvasOffset.value.x / zoomFactor.value) * zoomFactor.value,
         worldX * zoomFactor.value + canvasOffset.value.x,
         worldY * zoomFactor.value + canvasOffset.value.y,
       ];

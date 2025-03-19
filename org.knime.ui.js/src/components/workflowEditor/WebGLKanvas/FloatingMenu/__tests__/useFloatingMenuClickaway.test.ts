@@ -73,7 +73,7 @@ describe("useFloatingMenuClickaway", () => {
     expect(vi.mocked(onClickOutside)).toHaveBeenCalledWith(
       mockRootEl,
       expect.any(Function),
-      { ignore: [kanvas], capture: false },
+      { ignore: [kanvas], capture: true },
     );
     expect(onClickawayCallback).not.toHaveBeenCalled();
 

@@ -123,10 +123,6 @@ describe("floatingConnector store", () => {
         origin: "out",
         parentNodeId: "root:1",
         portInstance: draggedPort,
-        portPosition: {
-          x: 10,
-          y: 10,
-        },
       },
       flowVariableConnection: false,
       id: "global-floating-connector",
@@ -344,7 +340,6 @@ describe("floatingConnector store", () => {
         origin: "in",
         parentNodeId: "root:1",
         portInstance: referencePort,
-        portPosition: { x: 100, y: 100 },
       },
       destNode: "root:1",
       destPort: 0,
