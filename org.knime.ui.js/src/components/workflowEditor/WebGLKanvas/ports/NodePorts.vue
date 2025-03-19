@@ -74,7 +74,7 @@ const isDefaultFlowVariable = (index: number) => {
 const getPortContainerLabel = (index: number, type: "in" | "out") => {
   const typeName = type === "in" ? "In" : "Out";
   return isDefaultFlowVariable(index)
-    ? `Port__defaulFlowVar${typeName}`
+    ? `Port__defaultFlowVar${typeName}`
     : `Port__${typeName}-${index}`;
 };
 

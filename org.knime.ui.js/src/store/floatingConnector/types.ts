@@ -11,7 +11,6 @@ export type FloatingConnector = {
     origin: "in" | "out";
     parentNodeId: string;
     portInstance: NodePort;
-    portPosition: XY;
   };
   interactive?: boolean;
   sourceNode?: string;

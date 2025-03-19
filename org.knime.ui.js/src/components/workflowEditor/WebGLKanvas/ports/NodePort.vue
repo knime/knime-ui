@@ -92,7 +92,6 @@ const onPointerDown = (event: FederatedPointerEvent) => {
     isFlowVariable: isFlowVariable.value,
     nodeId: props.nodeId,
     port: props.port,
-    portPosition: props.position,
     onCanvasDrop: () => {
       // ignore drop if quick add menu is disabled (e.g for metanode port bars)
       if (props.disableQuickNodeAdd) {

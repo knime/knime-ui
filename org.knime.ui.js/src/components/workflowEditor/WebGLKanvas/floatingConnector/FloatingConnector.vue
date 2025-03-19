@@ -6,7 +6,9 @@ import { storeToRefs } from "pinia";
 import type { NodeRelation } from "@/api/custom-types";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import * as $shapes from "@/style/shapes";
 import { isNodeMetaNode } from "@/util/nodeUtil";
+import * as portPositionUtils from "@/util/portShift";
 import Connector from "../connectors/Connector.vue";
 import Port from "../ports/Port.vue";
 
@@ -50,13 +52,24 @@ const defaultFlowVariablePortPosition = computed(() => {
     return undefined;
   }
 
+  // this does not rely on portPositions of the context as they might be not there for
+  // non-drag connectors (e.g. quick add with CTRL+Space)
+  const flowVariablePosition = portPositionUtils
+    .portPositions({
+      portCount: 1,
+      isOutports: floatingConnector.value!.context.origin === "out",
+    })
+    .at(0)!;
+
   return {
     x:
       referenceNode.value!.position.x +
-      floatingConnector.value!.context.portPosition.x,
+      flowVariablePosition[0] -
+      $shapes.portSize / 2,
     y:
       referenceNode.value!.position.y +
-      floatingConnector.value!.context.portPosition.y,
+      flowVariablePosition[1] -
+      $shapes.portSize / 2,
   };
 });
 

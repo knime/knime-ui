@@ -22,7 +22,6 @@ import { useConnectAction } from "./useConnectAction";
 import { usePortSnapping } from "./usePortSnapping";
 
 type Params = {
-  portPosition: XY;
   direction: Direction;
   nodeId: string;
   port: NodePort;
@@ -46,7 +45,6 @@ const createConnectorFromEvent = (
       origin: params.direction,
       portInstance: params.port,
       parentNodeId: params.nodeId,
-      portPosition: params.portPosition,
     },
     flowVariableConnection: params.isFlowVariable,
     absolutePoint,
@@ -315,7 +313,6 @@ export const useFloatingConnectorStore = defineStore(
           origin,
           portInstance: port,
           parentNodeId,
-          portPosition: position,
         },
       };
     };

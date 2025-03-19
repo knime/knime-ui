@@ -13,6 +13,7 @@ import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useApplicationStore } from "@/store/application/application";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import * as $shapes from "@/style/shapes";
 // TODO: refactor structure and implement fix for dynamically resolved NodePortActiveConnector
 import type { DragConnector } from "../../SVGKanvas/ports/NodePort/types";
@@ -110,6 +111,36 @@ const fakePortConnector = computed<DragConnector>(() => {
   };
 });
 
+const { isSVGRenderer } = useCanvasRendererUtils();
+
+watch(
+  port,
+  () => {
+    // webgl only
+    if (isSVGRenderer.value) {
+      return;
+    }
+
+    if (!hasConnector.value) {
+      return;
+    }
+
+    useFloatingConnectorStore().removeActiveConnector();
+
+    if (!props.nodeId || !props.port || !props.nodeRelation) {
+      return;
+    }
+
+    useFloatingConnectorStore().createConnectorFromContext(
+      props.nodeId,
+      props.port,
+      props.position,
+      props.nodeRelation,
+    );
+  },
+  { immediate: true },
+);
+
 const marginTop = computed(() => {
   const ghostSizeZoomed = $shapes.addNodeGhostSize * zoomFactor.value;
   // eslint-disable-next-line no-magic-numbers
@@ -157,8 +188,6 @@ watch(
     immediate: true, // do an initial check when the component is mounted
   },
 );
-
-const { isSVGRenderer } = useCanvasRendererUtils();
 </script>
 
 <template>
