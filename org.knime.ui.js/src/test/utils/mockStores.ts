@@ -39,6 +39,7 @@ import { useExecutionStore } from "@/store/workflow/execution";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 
 export const mockStores = ({ stubActions = false } = {}) => {
@@ -85,6 +86,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const nodeInteractionsStore = useNodeInteractionsStore(testingPinia);
   const workflowStore = useWorkflowStore(testingPinia);
   const workflowMonitorStore = useWorkflowMonitorStore(testingPinia);
+  const workflowVersionsStore = useWorkflowVersionsStore(testingPinia);
   const aiAssistantStore = useAIAssistantStore(testingPinia);
   const canvasStore = useSVGCanvasStore(testingPinia);
   const webglCanvasStore = useWebGLCanvasStore(testingPinia);
@@ -137,6 +139,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     nodeInteractionsStore,
     workflowStore,
     workflowMonitorStore,
+    workflowVersionsStore,
     aiAssistantStore,
     canvasStore,
     nodeRepositoryStore,

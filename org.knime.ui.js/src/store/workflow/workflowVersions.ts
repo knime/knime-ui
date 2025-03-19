@@ -33,7 +33,7 @@ import { isHubProvider } from "../spaces/util";
 import { useDesktopInteractionsStore } from "./desktopInteractions";
 import { useWorkflowStore } from "./workflow";
 
-type VersionsModeStatus = "active" | "inactive" | "promoteHub";
+export type VersionsModeStatus = "active" | "inactive" | "promoteHub";
 
 const getHubBaseUrl = (provider?: SpaceProviderNS.SpaceProvider | null) => {
   if (isBrowser) {
@@ -166,16 +166,13 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       `WorkflowVersionsStore::createVersion -> New project version '${newVersion.version}' created`,
     );
 
-    activeProjectVersionsModeInfo.value.loadedVersions = [
-      {
-        ...newVersion,
-        labels: [],
-        avatar: await hubApi.getAvatar({
-          accountName: newVersion.author,
-        }),
-      },
-      ...activeProjectVersionsModeInfo.value.loadedVersions,
-    ];
+    activeProjectVersionsModeInfo.value.loadedVersions.unshift({
+      ...newVersion,
+      labels: [],
+      avatar: await hubApi.getAvatar({
+        accountName: newVersion.author,
+      }),
+    });
 
     activeProjectVersionsModeInfo.value.unversionedSavepoint = null;
   }
@@ -223,7 +220,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       version,
     });
 
-    refreshData();
+    if (version === activeProjectCurrentVersion.value) {
+      switchVersion(CURRENT_STATE_VERSION);
+    }
+
+    await refreshData();
   }
 
   function restoreVersion(version: NamedItemVersion["version"]) {
