@@ -75,22 +75,36 @@ const color = computed(() => {
     : connectorColor;
 });
 
+// Due to the way Pixi treats strokes we must adjust the size
+// of the bezier curves so that they get capped on the ends instead
+// of creating an extra "padding" that affects the interactible/hoverable area
+const getStrokeBasedBezierOffsets = (strokeWidth: number) => {
+  return {
+    offsetStart: strokeWidth / 2,
+    offsetEnd: ((strokeWidth + 1) / 2) * -1,
+  };
+};
+
 const renderHoverArea = (graphics: GraphicsInst) => {
+  const { offsetStart, offsetEnd } =
+    getStrokeBasedBezierOffsets(HOVER_AREA_SIZE);
+
   graphics
     .clear()
-    .moveTo(bezier.value.start.x, bezier.value.start.y)
+    .moveTo(bezier.value.start.x + offsetStart, bezier.value.start.y)
     .bezierCurveTo(
       bezier.value.control1.x,
       bezier.value.control1.y,
       bezier.value.control2.x,
       bezier.value.control2.y,
-      bezier.value.end.x,
+      bezier.value.end.x + offsetEnd,
       bezier.value.end.y,
     )
     .stroke({
       width: HOVER_AREA_SIZE,
       color: isDebugModeEnabled.value ? $colors.MeadowLight : "white",
       alpha: isDebugModeEnabled.value ? 1 : 0,
+      cap: "square",
     });
 };
 
@@ -99,20 +113,23 @@ const renderConnector = (
   points: BezierPoints,
   strokeWidth = $shapes.connectorWidth,
 ) => {
+  const { offsetStart, offsetEnd } = getStrokeBasedBezierOffsets(strokeWidth);
+
   graphics
     .clear()
-    .moveTo(points.start.x, points.start.y)
+    .moveTo(points.start.x + offsetStart, points.start.y)
     .bezierCurveTo(
       points.control1.x,
       points.control1.y,
       points.control2.x,
       points.control2.y,
-      points.end.x,
+      points.end.x + offsetEnd,
       points.end.y,
     )
     .stroke({
       width: strokeWidth,
       color: color.value,
+      cap: "square",
     });
 };
 

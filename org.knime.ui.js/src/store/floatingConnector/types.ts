@@ -13,7 +13,6 @@ export type FloatingDecoratorOnly = {
 export type FullFloatingConnector = {
   id: "full-floating-connector";
   flowVariableConnection: boolean;
-  decoratorOnly?: boolean;
   absolutePoint: XY;
   allowedActions: { canDelete: boolean };
   context: {
