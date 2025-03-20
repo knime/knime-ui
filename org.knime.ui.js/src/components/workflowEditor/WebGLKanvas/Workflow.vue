@@ -12,6 +12,7 @@ import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import Connector from "./connectors/Connector.vue";
 import FloatingConnector from "./floatingConnector/FloatingConnector.vue";
 import Node from "./node/Node.vue";
+import MetanodePortBars from "./portbars/MetanodePortBars.vue";
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
@@ -38,6 +39,8 @@ onMounted(() => {
 </script>
 
 <template>
+  <MetanodePortBars v-if="activeWorkflow!.info.containerType === 'metanode'" />
+
   <Node
     v-for="node in activeWorkflow!.nodes"
     :key="node.id"

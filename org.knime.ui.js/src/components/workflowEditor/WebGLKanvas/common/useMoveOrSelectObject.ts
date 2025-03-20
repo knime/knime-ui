@@ -29,10 +29,31 @@ export const useMoveOrSelectObject = (
 
   const selectionStore = useSelectionStore();
   const movingStore = useMovingStore();
+  const { isDragging, hasAbortedDrag } = storeToRefs(movingStore);
 
   const { zoomFactor, pixiApplication } = storeToRefs(useWebGLCanvasStore());
 
   const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const registerDragAbort = () => {
+    const abort = (event: KeyboardEvent) => {
+      if (isDragging.value && event.key === "Escape") {
+        movingStore.abortDrag();
+      }
+    };
+
+    const teardown = () => {
+      if (hasAbortedDrag.value) {
+        movingStore.resetAbortDrag();
+      }
+
+      window.removeEventListener("keydown", abort);
+    };
+
+    window.addEventListener("keydown", abort);
+
+    return teardown;
+  };
 
   const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
     if (pointerDownEvent.button !== 0) {
@@ -41,6 +62,8 @@ export const useMoveOrSelectObject = (
 
     const canvas = pixiApplication.value!.canvas;
     canvas.setPointerCapture(pointerDownEvent.pointerId);
+
+    const removeDragAbortListener = registerDragAbort();
 
     startPos.value = {
       x: pointerDownEvent.global.x,
@@ -77,6 +100,10 @@ export const useMoveOrSelectObject = (
         didDrag = true;
       }
 
+      if (hasAbortedDrag.value) {
+        return;
+      }
+
       movingStore.setIsDragging(true);
       movingStore.setMovePreview({ deltaX, deltaY });
     };
@@ -94,6 +121,7 @@ export const useMoveOrSelectObject = (
           movingStore.moveObjects();
         }
       });
+      removeDragAbortListener();
       canvas.releasePointerCapture(pointerDownEvent.pointerId);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
