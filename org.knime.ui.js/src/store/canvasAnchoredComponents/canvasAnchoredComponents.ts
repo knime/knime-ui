@@ -224,6 +224,18 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         if (canvasRendererUtils.isWebGLRenderer()) {
           const canvasStore = useWebGLCanvasStore();
 
+          // add floating connector / decorator
+          if (!props.nodeId || !props.port || !props.nodeRelation) {
+            useFloatingConnectorStore().createDecorationOnly(props.position);
+          } else {
+            useFloatingConnectorStore().createConnectorFromContext(
+              props.nodeId,
+              props.port,
+              props.position,
+              props.nodeRelation,
+            );
+          }
+
           const offsets = {
             x: $shapes.portSize / 2,
             y: $shapes.addNodeGhostSize / 2 + 2,

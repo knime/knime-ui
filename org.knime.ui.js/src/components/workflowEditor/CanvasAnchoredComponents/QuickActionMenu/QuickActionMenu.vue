@@ -13,7 +13,6 @@ import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useApplicationStore } from "@/store/application/application";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
-import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import * as $shapes from "@/style/shapes";
 import type { DragConnector } from "../../SVGKanvas/ports/NodePort/types";
 import NodePortActiveConnector from "../../SVGKanvas/ports/NodePortActiveConnector.vue";
@@ -110,34 +109,6 @@ const fakePortConnector = computed<DragConnector>(() => {
 });
 
 const { isSVGRenderer, isWebGLRenderer } = useCanvasRendererUtils();
-
-// create floating connector to the given port
-watch(
-  port,
-  () => {
-    // webgl only see <NodePortActiveConnector> for svg
-    if (!isWebGLRenderer.value) {
-      return;
-    }
-
-    if (!hasConnector.value) {
-      return;
-    }
-
-    if (!props.nodeId || !props.port || !props.nodeRelation) {
-      useFloatingConnectorStore().createDecorationOnly(props.position);
-      return;
-    }
-
-    useFloatingConnectorStore().createConnectorFromContext(
-      props.nodeId,
-      props.port,
-      props.position,
-      props.nodeRelation,
-    );
-  },
-  { immediate: true },
-);
 
 const marginTop = computed(() => {
   if (isWebGLRenderer.value) {
