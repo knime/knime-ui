@@ -1,5 +1,4 @@
 type PreventableDoubleClickOptions = {
-  handler?: (event: PointerEvent) => void;
   checkForPreventDefault?: boolean;
 };
 
@@ -25,7 +24,7 @@ export const usePointerDownDoubleClick = (
    * The event handler for the pointerdown event
    * @returns true if it was double click otherwise false
    */
-  const pointerDownDoubleClick = (pointerDownEvent: PointerEvent) => {
+  const isPointerDownDoubleClick = (pointerDownEvent: PointerEvent) => {
     // only left clicks
     if (pointerDownEvent.button !== 0) {
       return false;
@@ -53,10 +52,8 @@ export const usePointerDownDoubleClick = (
     ) {
       return false;
     }
-
-    options.handler?.(pointerDownEvent);
     return true;
   };
 
-  return { pointerDownDoubleClick };
+  return { isPointerDownDoubleClick };
 };

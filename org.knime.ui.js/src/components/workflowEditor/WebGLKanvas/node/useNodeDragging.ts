@@ -23,9 +23,7 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
   const movingStore = useMovingStore();
   const { isDragging } = storeToRefs(movingStore);
 
-  const { pointerDownDoubleClick } = usePointerDownDoubleClick({
-    handler: options.onDoubleClick,
-  });
+  const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
   const { zoomFactor, pixiApplication } = storeToRefs(useWebGLCanvasStore());
 
@@ -48,7 +46,8 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
     }
 
     // check for double clicks
-    if (pointerDownDoubleClick(pointerDownEvent)) {
+    if (isPointerDownDoubleClick(pointerDownEvent)) {
+      options.onDoubleClick(pointerDownEvent);
       return;
     }
 

@@ -24,10 +24,15 @@ const openQuickActionMenu = (event: PointerEvent) => {
   });
 };
 
-const { pointerDownDoubleClick } = usePointerDownDoubleClick({
-  handler: openQuickActionMenu,
+const { isPointerDownDoubleClick } = usePointerDownDoubleClick({
   checkForPreventDefault: true,
 });
+
+const onPointerDown = (event: PointerEvent) => {
+  if (isPointerDownDoubleClick(event)) {
+    openQuickActionMenu(event);
+  }
+};
 </script>
 
 <template>
@@ -35,7 +40,7 @@ const { pointerDownDoubleClick } = usePointerDownDoubleClick({
     v-if="activeWorkflow"
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
-    @pointerdown="pointerDownDoubleClick"
+    @pointerdown="onPointerDown"
   >
     <Workflow v-if="!isWorkflowEmpty" />
   </Kanvas>
