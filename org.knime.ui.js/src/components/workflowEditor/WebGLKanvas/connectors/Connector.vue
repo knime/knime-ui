@@ -10,7 +10,10 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
-import { isPlaceholderPort } from "@/store/floatingConnector/types";
+import {
+  isFullFloatingConnector,
+  isPlaceholderPort,
+} from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import * as $colors from "@/style/colors";
@@ -148,6 +151,7 @@ const isTargetForReplacement = computed(() => {
 
   // targetting the output port that is already connected
   if (
+    isFullFloatingConnector(floatingConnector.value) &&
     props.destNode === floatingConnector.value.context.parentNodeId &&
     props.destPort === floatingConnector.value.context.portInstance.index &&
     floatingConnector.value.context.origin === "in"

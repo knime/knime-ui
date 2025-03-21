@@ -223,12 +223,13 @@ export const useCanvasAnchoredComponentsStore = defineStore(
       }) {
         if (canvasRendererUtils.isWebGLRenderer()) {
           const canvasStore = useWebGLCanvasStore();
+          const floatingConnectorStore = useFloatingConnectorStore();
 
           // add floating connector / decorator
           if (!props.nodeId || !props.port || !props.nodeRelation) {
-            useFloatingConnectorStore().createDecorationOnly(props.position);
+            floatingConnectorStore.createDecorationOnly(props.position);
           } else {
-            useFloatingConnectorStore().createConnectorFromContext(
+            floatingConnectorStore.createConnectorFromContext(
               props.nodeId,
               props.port,
               props.position,

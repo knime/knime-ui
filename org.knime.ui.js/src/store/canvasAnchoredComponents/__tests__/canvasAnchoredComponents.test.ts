@@ -1,9 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import type { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
 import {
   createNativeNode,
+  createPort,
   createWorkflow,
   createWorkflowAnnotation,
 } from "@/test/factories";
@@ -41,6 +43,94 @@ describe("canvasAnchoredComponents", () => {
         canvasAnchoredComponentsStore.quickActionMenu.events,
       ).toMatchObject({
         menuClose: expect.anything(),
+      });
+    });
+
+    describe("on WebGCanvas", () => {
+      beforeAll(() => {
+        canvasRendererUtils.toggleCanvasRenderer();
+      });
+
+      afterAll(() => {
+        canvasRendererUtils.toggleCanvasRenderer();
+      });
+
+      it("intializes the canvas anchor", () => {
+        const { canvasAnchoredComponentsStore, webglCanvasStore } =
+          mockStores();
+
+        expect(canvasAnchoredComponentsStore.quickActionMenu.isOpen).toBe(
+          false,
+        );
+
+        canvasAnchoredComponentsStore.openQuickActionMenu({
+          props: { position: { x: 10, y: 20 }, nodeRelation: "PREDECESSORS" },
+          events: { menuClose: () => {} },
+        });
+
+        expect(webglCanvasStore.setCanvasAnchor).toHaveBeenCalledWith({
+          isOpen: true,
+          placement: "top-right",
+          anchor: {
+            x: 14.5,
+            y: 32,
+          },
+        });
+      });
+
+      it("initializes the floating connector", () => {
+        const { canvasAnchoredComponentsStore, floatingConnectorStore } =
+          mockStores();
+
+        expect(canvasAnchoredComponentsStore.quickActionMenu.isOpen).toBe(
+          false,
+        );
+
+        const port = createPort();
+        canvasAnchoredComponentsStore.openQuickActionMenu({
+          props: {
+            position: { x: 10, y: 20 },
+            nodeRelation: "PREDECESSORS",
+            nodeId: "root:1",
+            port,
+          },
+          events: { menuClose: () => {} },
+        });
+
+        expect(
+          floatingConnectorStore.createDecorationOnly,
+        ).not.toHaveBeenCalled();
+        expect(
+          floatingConnectorStore.createConnectorFromContext,
+        ).toHaveBeenCalledWith(
+          "root:1",
+          port,
+          { x: 10, y: 20 },
+          "PREDECESSORS",
+        );
+      });
+
+      it("initializes the floating connector decorator only", () => {
+        const { canvasAnchoredComponentsStore, floatingConnectorStore } =
+          mockStores();
+
+        expect(canvasAnchoredComponentsStore.quickActionMenu.isOpen).toBe(
+          false,
+        );
+
+        canvasAnchoredComponentsStore.openQuickActionMenu({
+          props: {
+            position: { x: 10, y: 20 },
+          },
+          events: { menuClose: () => {} },
+        });
+
+        expect(
+          floatingConnectorStore.createDecorationOnly,
+        ).toHaveBeenCalledWith({ x: 10, y: 20 });
+        expect(
+          floatingConnectorStore.createConnectorFromContext,
+        ).not.toHaveBeenCalled();
       });
     });
 

@@ -10,14 +10,14 @@ import { useNodeConfigurationStore } from "../nodeConfiguration/nodeConfiguratio
 import { useNodeInteractionsStore } from "../workflow/nodeInteractions";
 
 import {
-  type FloatingConnector,
+  type FullFloatingConnector,
   type SnapTarget,
   type SnappedPlaceholderPort,
   isPlaceholderPort,
 } from "./types";
 
 type UseConnectActionOptions = {
-  floatingConnector: Ref<FloatingConnector | undefined>;
+  floatingConnector: Ref<FullFloatingConnector | undefined>;
   snapTarget: Ref<SnapTarget | undefined>;
   activeSnapPosition: Ref<XY | undefined>;
 };

@@ -5,6 +5,10 @@ import { storeToRefs } from "pinia";
 
 import type { NodeRelation } from "@/api/custom-types";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
+import {
+  isDecoratorOnly,
+  isFullFloatingConnector,
+} from "@/store/floatingConnector/types";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $shapes from "@/style/shapes";
 import { isNodeMetaNode } from "@/util/nodeUtil";
@@ -21,7 +25,7 @@ const { floatingConnector, isInsideSnapRegion, snapTarget } = storeToRefs(
 const { getNodeById } = storeToRefs(useNodeInteractionsStore());
 
 const floatingConnectorPort = computed(() => {
-  if (!floatingConnector.value || floatingConnector.value.decoratorOnly) {
+  if (!floatingConnector.value || isDecoratorOnly(floatingConnector.value)) {
     // eslint-disable-next-line no-undefined
     return undefined;
   }
@@ -30,7 +34,7 @@ const floatingConnectorPort = computed(() => {
 });
 
 const referenceNode = computed(() => {
-  if (!floatingConnector.value) {
+  if (!floatingConnector.value || isDecoratorOnly(floatingConnector.value)) {
     return undefined;
   }
 
@@ -40,6 +44,7 @@ const referenceNode = computed(() => {
 const isDefaultFlowVariableConnection = computed(() => {
   return (
     floatingConnector.value &&
+    isFullFloatingConnector(floatingConnector.value) &&
     floatingConnector.value.flowVariableConnection &&
     floatingConnectorPort.value?.index === 0 &&
     referenceNode.value &&
@@ -86,7 +91,9 @@ const nodeRelation = computed<NodeRelation | undefined>(() => {
 
 <template>
   <Container v-if="floatingConnector" label="FloatingConnector">
-    <Container v-if="floatingConnectorPort">
+    <Container
+      v-if="floatingConnectorPort && isFullFloatingConnector(floatingConnector)"
+    >
       <Connector
         :id="floatingConnector.id"
         :absolute-point="floatingConnector.absolutePoint"

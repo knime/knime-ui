@@ -18,7 +18,7 @@ import {
 import { isNativeNode } from "@/util/nodeUtil";
 
 import {
-  type FloatingConnector,
+  type FullFloatingConnector,
   type SnapTarget,
   type SnappedPlaceholderPort,
 } from "./types";
@@ -72,7 +72,7 @@ export const usePortSnapping = (options: {
   /**
    * Reference to the current state of the floating drag connector; if any
    */
-  floatingConnector: Ref<FloatingConnector | undefined>;
+  floatingConnector: Ref<FullFloatingConnector | undefined>;
   /**
    * Absolute coordinates of the mouse cursor as the connector is dragged.
    *

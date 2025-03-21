@@ -125,7 +125,7 @@ describe("floatingConnector store", () => {
         portInstance: draggedPort,
       },
       flowVariableConnection: false,
-      id: "global-floating-connector",
+      id: "full-floating-connector",
       sourceNode: "root:1",
       sourcePort: 0,
     });
@@ -344,8 +344,28 @@ describe("floatingConnector store", () => {
       destNode: "root:1",
       destPort: 0,
       flowVariableConnection: false,
-      id: "quick-add-root:1-0",
+      id: "full-floating-connector",
       interactive: false,
+    });
+  });
+
+  it("creates a floatingConnector that will show just the decorator", () => {
+    const { mockedStores } = setupStore();
+
+    expect(
+      mockedStores.floatingConnectorStore.floatingConnector,
+    ).toBeUndefined();
+    mockedStores.floatingConnectorStore.createDecorationOnly({
+      x: 100,
+      y: 100,
+    });
+
+    expect(mockedStores.floatingConnectorStore.floatingConnector).toEqual({
+      absolutePoint: { x: 100, y: 100 },
+      context: {
+        origin: "out",
+      },
+      id: "floating-decorator-only",
     });
   });
 });

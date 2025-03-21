@@ -14,6 +14,7 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
+import { isFullFloatingConnector } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -182,7 +183,9 @@ const isConnectionForbidden = computed(
   () =>
     activeConnectionValidTargets.value &&
     !activeConnectionValidTargets.value.has(props.node.id) &&
-    floatingConnector.value?.context.parentNodeId !== props.node.id,
+    floatingConnector.value &&
+    isFullFloatingConnector(floatingConnector.value) &&
+    floatingConnector.value.context.parentNodeId !== props.node.id,
 );
 
 const onNodeHoverAreaPointerEnter = () => {
@@ -192,7 +195,9 @@ const onNodeHoverAreaPointerEnter = () => {
 const onNodeHoverAreaPointerMove = () => {
   if (
     // ignore self-hover
-    floatingConnector.value?.context.parentNodeId === props.node.id ||
+    (floatingConnector.value &&
+      isFullFloatingConnector(floatingConnector.value) &&
+      floatingConnector.value.context.parentNodeId === props.node.id) ||
     !isDraggingFloatingConnector.value ||
     isConnectionForbidden.value
   ) {

@@ -1,6 +1,6 @@
 /* eslint-disable func-style */
 /* eslint-disable no-undefined */
-import { computed, ref } from "vue";
+import { type Ref, computed, ref } from "vue";
 import { defineStore, storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 import throttle from "raf-throttle";
@@ -17,7 +17,11 @@ import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "../workflow/workflow";
 
-import { type FloatingConnector, isPlaceholderPort } from "./types";
+import {
+  type FloatingConnector,
+  type FullFloatingConnector,
+  isPlaceholderPort,
+} from "./types";
 import { useConnectAction } from "./useConnectAction";
 import { usePortSnapping } from "./usePortSnapping";
 
@@ -39,7 +43,7 @@ const createConnectorFromEvent = (
   const relatedPort = params.direction === "out" ? "sourcePort" : "destPort";
 
   return {
-    id: "global-floating-connector",
+    id: "full-floating-connector",
     allowedActions: { canDelete: false },
     context: {
       origin: params.direction,
@@ -97,7 +101,7 @@ export const useFloatingConnectorStore = defineStore(
       onLeaveConnectionSnapCandidate,
       resetSnappingState,
     } = usePortSnapping({
-      floatingConnector,
+      floatingConnector: floatingConnector as Ref<FullFloatingConnector>,
       pointerMoveAbsoluteCoords,
     });
 
@@ -143,7 +147,7 @@ export const useFloatingConnectorStore = defineStore(
     };
 
     const { finishConnection, waitingForPortSelection } = useConnectAction({
-      floatingConnector,
+      floatingConnector: floatingConnector as Ref<FullFloatingConnector>,
       snapTarget,
       activeSnapPosition,
     });
@@ -281,11 +285,8 @@ export const useFloatingConnectorStore = defineStore(
 
     const createDecorationOnly = (position: XY) => {
       floatingConnector.value = {
-        id: "quick-add-ghost-only",
-        decoratorOnly: true,
-        flowVariableConnection: false,
+        id: "floating-decorator-only",
         absolutePoint: position,
-        allowedActions: { canDelete: false },
         context: {
           origin: "out",
         },
@@ -313,7 +314,7 @@ export const useFloatingConnectorStore = defineStore(
         nodeRelation === "SUCCESSORS" ? "sourcePort" : "destPort";
 
       floatingConnector.value = {
-        id: `quick-add-${parentNodeId}-${portIndex}`,
+        id: "full-floating-connector",
         flowVariableConnection,
         absolutePoint: position,
         allowedActions: { canDelete: false },
