@@ -31,7 +31,7 @@ export const usePointerDownDoubleClick = (
       return false;
     }
 
-    // do nothing on default prevent this way we can communicate from the pixi events that they has handled
+    // do nothing on default prevent this way we can communicate from the pixi events that they have been handled
     // and should now be ignored. Outer listeners (to the <canvas>/<div> wrapper elements) are interpreted as the
     // "default" action.
     if (options.checkForPreventDefault && pointerDownEvent.defaultPrevented) {

@@ -16,11 +16,11 @@ import { useComponentInteractionsStore } from "@/store/workflow/componentInterac
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 
-type UseNodeExpandOptions = {
+type UseNodeDoubleClickOptions = {
   node: KnimeNode;
 };
 
-export const useNodeDoubleClick = (options: UseNodeExpandOptions) => {
+export const useNodeDoubleClick = (options: UseNodeDoubleClickOptions) => {
   const $router = useRouter();
   const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
   const nodeConfigurationStore = useNodeConfigurationStore();
