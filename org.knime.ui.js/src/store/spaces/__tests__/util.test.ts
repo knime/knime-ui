@@ -11,7 +11,6 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import {
-  checkOpenWorkflowsBeforeMove,
   findSpaceById,
   findSpaceGroupFromSpaceId,
   formatSpaceProviderName,
@@ -212,15 +211,30 @@ describe("spaces::util", () => {
   });
 
   describe("checkOpenWorkflowsBeforeMove", () => {
-    const setUp = ({
+    const setUp = async ({
       openProjects = [],
       itemIds = ["id1", "id2"],
       isCopy = false,
+      isBrowser = false,
     }: {
       openProjects?: Project[];
       itemIds?: string[];
       isCopy?: boolean;
+      isBrowser?: boolean;
     } = {}) => {
+      vi.resetModules();
+      vi.doMock("@/environment", async (importOriginal) => {
+        const actual = await importOriginal<typeof import("@/environment")>();
+
+        return {
+          ...actual,
+          isBrowser,
+        };
+      });
+
+      const checkOpenWorkflowsBeforeMove = (await import("../util.ts"))
+        .checkOpenWorkflowsBeforeMove;
+
       const { applicationStore } = mockStores();
       applicationStore.openProjects = openProjects;
 
@@ -243,31 +257,35 @@ describe("spaces::util", () => {
       };
     };
 
-    it("returns false for no open projects and displays no toast", () => {
-      const { warningToastMock, run } = setUp();
+    it("returns false for no open projects and displays no toast", async () => {
+      const { warningToastMock, run } = await setUp();
       const result = run();
       expect(result).toBe(false);
       expect(warningToastMock).not.toHaveBeenCalled();
     });
 
-    it("returns false if no open projects referencing one of the moved ids exist", () => {
+    it("returns false if no open projects referencing one of the moved ids exist", async () => {
       const openProject = {
         projectId: "project1",
         name: "Cold Harbor",
       };
-      const { warningToastMock, run } = setUp({ openProjects: [openProject] });
+      const { warningToastMock, run } = await setUp({
+        openProjects: [openProject],
+      });
       const result = run();
       expect(result).toBe(false);
       expect(warningToastMock).not.toHaveBeenCalled();
     });
 
-    it("returns true and displays toast if open workflow is moved", () => {
+    it("returns true and displays toast if open workflow is moved", async () => {
       const openProject = {
         projectId: "project1",
         name: "Cold Harbor",
         origin: { itemId: "id1", providerId: "Knime-Hub", spaceId: "spaceId1" },
       };
-      const { warningToastMock, run } = setUp({ openProjects: [openProject] });
+      const { warningToastMock, run } = await setUp({
+        openProjects: [openProject],
+      });
       const result = run();
       expect(result).toBe(true);
       expect(warningToastMock).toHaveBeenCalledWith({
@@ -281,7 +299,7 @@ describe("spaces::util", () => {
       });
     });
 
-    it("returns true and displays toast if ancestor of open project is moved", () => {
+    it("returns true and displays toast if ancestor of open project is moved", async () => {
       const openProject = {
         projectId: "project1",
         name: "Cold Harbor",
@@ -292,7 +310,9 @@ describe("spaces::util", () => {
           ancestorItemIds: ["id2"],
         },
       };
-      const { warningToastMock, run } = setUp({ openProjects: [openProject] });
+      const { warningToastMock, run } = await setUp({
+        openProjects: [openProject],
+      });
       const result = run();
       expect(result).toBe(true);
       expect(warningToastMock).toHaveBeenCalledWith({
@@ -304,6 +324,26 @@ describe("spaces::util", () => {
           },
         }),
       });
+    });
+
+    it("returns false if in browser", async () => {
+      const openProject = {
+        projectId: "project1",
+        name: "Cold Harbor",
+        origin: {
+          itemId: "other-id",
+          providerId: "Knime-Hub",
+          spaceId: "spaceId1",
+          ancestorItemIds: ["id2"],
+        },
+      };
+      const { warningToastMock, run } = await setUp({
+        openProjects: [openProject],
+        isBrowser: true,
+      });
+      const result = run();
+      expect(result).toBe(false);
+      expect(warningToastMock).not.toHaveBeenCalled();
     });
   });
 

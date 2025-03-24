@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import { SpaceProviderNS, type WorkflowOrigin } from "@/api/custom-types";
 import type { Project } from "@/api/gateway-api/generated-api";
 import MovingItemsTemplate from "@/components/spaces/useMovingItems/MovingItemsTemplate.vue";
+import { isBrowser } from "@/environment";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { getToastPresets } from "@/toastPresets";
 import { useApplicationStore } from "../application/application";
@@ -69,6 +70,9 @@ export const checkOpenWorkflowsBeforeMove = ({
   itemIds: string[];
   isCopy: boolean;
 }) => {
+  if (isBrowser) {
+    return false;
+  }
   const { openProjects } = storeToRefs(useApplicationStore());
 
   const openedWorkflows = openProjects.value.filter((project) =>
