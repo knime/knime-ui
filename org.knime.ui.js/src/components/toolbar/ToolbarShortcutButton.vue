@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { kebabCase } from "lodash-es";
 
 import { SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
@@ -66,7 +67,10 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 </script>
 
 <template>
-  <div :class="{ 'split-button': hasSubmenuItems }">
+  <div
+    :class="{ 'split-button': hasSubmenuItems }"
+    :data-test-id="kebabCase(name)"
+  >
     <ToolbarButton
       class="toolbar-button"
       :with-text="withText && Boolean(shortcut.text)"

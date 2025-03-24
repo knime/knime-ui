@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
+import { kebabCase } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
@@ -72,6 +73,7 @@ const filteredActions = (hideItems: string[]) =>
         <SearchButton
           :model-value="filterQuery"
           placeholder="Filter current level"
+          data-test-id="space-filter-btn"
           @update:model-value="emit('update:filterQuery', $event)"
         />
         <OptionalSubMenuActionButton
@@ -80,6 +82,7 @@ const filteredActions = (hideItems: string[]) =>
           :key="action.id"
           :disabled="isLoadingContent"
           :item="action"
+          :data-test-id="`space-${kebabCase(action.id)}-btn`"
           @click="(item) => (item as ActionMenuItem).execute?.()"
         />
 
@@ -96,9 +99,14 @@ const filteredActions = (hideItems: string[]) =>
         <SearchButton
           :model-value="filterQuery"
           placeholder="Filter current level"
+          data-test-id="space-filter-btn"
           @update:model-value="emit('update:filterQuery', $event)"
         />
-        <FunctionButton class="reload-button" @click="reload">
+        <FunctionButton
+          class="reload-button"
+          data-test-id="space-reload-btn"
+          @click="reload"
+        >
           <ReloadIcon />
         </FunctionButton>
         <SubMenu
@@ -106,6 +114,7 @@ const filteredActions = (hideItems: string[]) =>
           :disabled="isLoadingContent"
           :teleport-to-body="false"
           class="more-actions"
+          data-test-id="space-more-actions"
           button-title="More actions"
           @toggle.stop
           @item-click="

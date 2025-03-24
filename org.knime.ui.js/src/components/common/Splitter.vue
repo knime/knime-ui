@@ -194,7 +194,7 @@ const onSplitterPointerDown = (e: PointerEvent) => {
     <div
       ref="splitter"
       class="splitter"
-      :data-test-splitter-id="splitterId"
+      :data-test-id="splitterId"
       :class="{ active: isActive }"
       :title="splitterTitle"
       @pointerdown="onSplitterPointerDown"

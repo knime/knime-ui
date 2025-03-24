@@ -29,6 +29,7 @@ withDefaults(defineProps<Props>(), {
     <FunctionButton
       v-if="!isEditing && canOpenWorkflowConfiguration"
       title="Open workflow configuration"
+      data-test-id="open-workflow-configuration"
       @click="$emit('openWorkflowConfiguration')"
     >
       <CogIcon />

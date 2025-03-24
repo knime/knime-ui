@@ -10,10 +10,13 @@ import { getMetaOrCtrlKey } from "@knime/utils";
 type Props = {
   modelValue: string;
   placeholder?: string;
+  dataTestId?: string;
 };
 
 withDefaults(defineProps<Props>(), {
   placeholder: "Search",
+  // eslint-disable-next-line no-undefined
+  dataTestId: undefined,
 });
 
 const emit = defineEmits<{
@@ -68,6 +71,7 @@ onUnmounted(() => {
   />
   <FunctionButton
     class="search-button"
+    :data-test-id="dataTestId"
     :active="isInputFieldShown"
     @click="toggleInput"
   >

@@ -201,6 +201,7 @@ const onMouseDown = (e: MouseEvent) => {
     <FunctionButton
       class="home-button"
       title="Home"
+      data-test-id="Home"
       :active="isHomeButtonActive"
       @click="setGetStartedPageTab()"
     >
@@ -273,6 +274,7 @@ const onMouseDown = (e: MouseEvent) => {
       <div v-if="hasOpenProjects" class="create-workflow-container">
         <button
           class="create-workflow-btn"
+          data-test-id="create-workflow-btn"
           :title="createWorkflowTitle"
           @click="$shortcuts.dispatch('createWorkflow')"
         >

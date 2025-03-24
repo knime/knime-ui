@@ -63,7 +63,10 @@ defineExpose({
 </script>
 
 <template>
-  <div :class="['grouped-by-tags', `display-${displayMode}`]">
+  <div
+    :data-test-id="tag"
+    :class="['grouped-by-tags', `display-${displayMode}`]"
+  >
     <div class="tag-header-line">
       <Tag class="tag" clickable @click="$emit('selectTag', tag)">{{
         tag

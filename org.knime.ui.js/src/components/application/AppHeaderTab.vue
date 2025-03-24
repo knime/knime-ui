@@ -88,6 +88,7 @@ const activateTab = () => {
     class="tab-item"
     :class="{ active: isActive }"
     :title="shouldTruncateName ? name : undefined"
+    :data-test-id="name"
     tabindex="0"
     :aria-disabled="disabled"
     @click.stop="activateTab"

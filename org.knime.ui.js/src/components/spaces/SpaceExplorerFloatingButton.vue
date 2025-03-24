@@ -13,7 +13,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="floating-btn">
+  <div data-test-id="floating-space-create-btn" class="floating-btn">
     <PlusButton :title="title ?? undefined" primary :disabled="disabled" />
   </div>
 </template>

@@ -127,7 +127,11 @@ const preserveWhitespaceBeforeEdit = () => {
 </script>
 
 <template>
-  <SidebarPanelLayout ref="wrapper" class="project-metadata">
+  <SidebarPanelLayout
+    ref="wrapper"
+    class="project-metadata"
+    data-test-id="project-metadata"
+  >
     <template #header>
       <MetadataLastEdit :last-edit="lastEdit" />
       <MetadataHeaderButtons

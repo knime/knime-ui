@@ -277,6 +277,7 @@ onMounted(() => {
       <SubMenu
         class="control"
         :items="canvasModes"
+        data-test-id="canvas-modes-selector"
         orientation="left"
         @item-click="onCanvasModeUpdate"
       >
@@ -285,7 +286,11 @@ onMounted(() => {
         <ArrowMoveIcon v-else-if="hasPanModeEnabled" />
       </SubMenu>
 
-      <ZoomMenu v-if="activeWorkflow" :disabled="isWorkflowEmpty" />
+      <ZoomMenu
+        v-if="activeWorkflow"
+        data-test-id="zoom-menu"
+        :disabled="isWorkflowEmpty"
+      />
     </div>
   </div>
 </template>

@@ -196,7 +196,7 @@ const spaceIcon = computed(() => {
 </script>
 
 <template>
-  <div class="space-selection-dropdown">
+  <div class="space-selection-dropdown" data-test-id="space-selection-dropdown">
     <SubMenu
       :teleport-to-body="false"
       :items="spaceSelectionItems"

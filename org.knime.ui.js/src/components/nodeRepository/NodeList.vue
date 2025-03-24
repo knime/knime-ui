@@ -272,6 +272,7 @@ defineExpose({ focusFirst, focusLast });
           compact
           without-border
           class="show-more"
+          data-test-id="show-more-btn"
           @click="$emit('showMore')"
         >
           <slot name="more-button" /><br />

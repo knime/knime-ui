@@ -194,7 +194,7 @@ const preserveWhitespaceBeforeEdit = () => {
 </script>
 
 <template>
-  <SidebarPanelLayout ref="wrapper">
+  <SidebarPanelLayout ref="wrapper" data-test-id="component-metadata">
     <template #header>
       <div class="header">
         <h2 class="component-name">

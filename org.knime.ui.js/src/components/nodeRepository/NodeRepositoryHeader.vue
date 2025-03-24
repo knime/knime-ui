@@ -117,6 +117,7 @@ defineExpose({ focusSearchInput });
             :items="displayModeSubMenuItems"
             :teleport-to-body="false"
             class="display-modes-sub-menu"
+            data-test-id="node-repository-display-mode-btn"
             button-title="Change display mode"
             @toggle.stop
             @item-click="

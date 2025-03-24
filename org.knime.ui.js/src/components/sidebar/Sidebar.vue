@@ -163,6 +163,7 @@ const hasSection = (name: TabValues) => {
           v-for="section in sidebarSections"
           :key="section.title"
           :title="section.title"
+          :data-test-id="section.title"
           :class="[
             ...(section.classes ?? []),
             { active: section.isActive, expanded: section.isExpanded },
