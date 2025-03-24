@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<ConnectorProps<AbsolutePointXY>>(), {
 const { isDragging } = storeToRefs(useMovingStore());
 const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
-const { isDebugModeEnabled } = storeToRefs(canvasStore);
+const { isDebugModeEnabled, zoomFactor } = storeToRefs(canvasStore);
 
 const selectionStore = useSelectionStore();
 const {
@@ -176,7 +176,7 @@ const {
         :is-readonly="!isWorkflowWritable"
         :is-last-segment="index === pathSegments.length - 1"
         :is-selected="isConnectionSelected(id) && !isDragging"
-        :interactive="interactive"
+        :interactive="interactive && zoomFactor >= 0.15"
         :streaming="streaming"
         :suggest-delete="Boolean(segment.isEnd && isTargetForReplacement)"
         :is-connection-hovered="isConnectionHovered"

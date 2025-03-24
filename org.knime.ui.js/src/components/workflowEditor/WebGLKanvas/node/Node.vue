@@ -53,8 +53,13 @@ const props = withDefaults(defineProps<Props>(), {
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
 const canvasStore = useWebGLCanvasStore();
-const { isDebugModeEnabled, visibleArea, toCanvasCoordinates, canvasLayers } =
-  storeToRefs(canvasStore);
+const {
+  isDebugModeEnabled,
+  visibleArea,
+  toCanvasCoordinates,
+  canvasLayers,
+  zoomFactor,
+} = storeToRefs(canvasStore);
 
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
@@ -303,7 +308,7 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
     />
 
     <NodeActionBar
-      v-if="isHovering && !isDragging"
+      v-if="isHovering && !isDragging && zoomFactor >= 0.25"
       v-bind="allAllowedActions"
       :position="actionBarPosition"
       :node-id="node.id"
@@ -312,6 +317,7 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
     />
 
     <Text
+      v-if="zoomFactor >= 0.25"
       label="NodeName"
       :position="nodeNamePosition"
       :resolution="1.2"
@@ -336,13 +342,17 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
             ? (node.state?.executionState as MetaNodeState.ExecutionStateEnum)
             : undefined
         "
+        :render-details="zoomFactor >= 0.15"
       />
 
-      <NodeState v-if="!isMetanode && renderable" v-bind="node.state" />
+      <NodeState
+        v-if="!isMetanode && renderable && zoomFactor >= 0.15"
+        v-bind="node.state"
+      />
     </Container>
 
     <NodePorts
-      v-if="renderable"
+      v-if="renderable && zoomFactor >= 0.25"
       :node-id="node.id"
       :node-kind="node.kind"
       :anchor="translatedPosition"

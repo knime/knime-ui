@@ -22,6 +22,7 @@ type Props = {
   kind: Node.KindEnum;
   icon: string | null;
   type: NativeNodeInvariants.TypeEnum | null;
+  renderDetails: boolean;
   executionState?: MetaNodeState.ExecutionStateEnum;
   isHovered?: boolean;
 };
@@ -54,6 +55,7 @@ const renderTorso = (graphics: GraphicsInst) => {
 <template>
   <Container event-mode="none">
     <Graphics
+      v-if="renderDetails"
       label="torsoShadow"
       event-mode="none"
       :renderable="isHovered"
@@ -77,6 +79,7 @@ const renderTorso = (graphics: GraphicsInst) => {
       :type="type"
       :kind="kind"
       :icon="icon"
+      :render-details="renderDetails"
     />
 
     <NodeTorsoUnknown v-else />
