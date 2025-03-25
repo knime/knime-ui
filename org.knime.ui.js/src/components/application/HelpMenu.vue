@@ -19,7 +19,7 @@ import TeamPlan from "@knime/styles/img/icons/team-group.svg";
 
 import InfoIcon from "@/assets/info.svg";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
-import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useSettingsStore } from "@/store/settings";
@@ -30,7 +30,7 @@ const OpenSourceCreditsModal = defineAsyncComponent(
 );
 
 const buildExternalUrl = (url: string) => {
-  return `${url}?src=knimeappmodernui`;
+  return `${url}${modernUISource}`;
 };
 
 const applicationStore = useApplicationStore();
@@ -121,7 +121,7 @@ const helpMenuItem = computed<MenuItem>(() => ({
         text: "Learn more about the KNIME Team Plan",
         separator: true,
         icon: TeamPlan,
-        href: buildExternalUrl(TEAM_PLAN_URL),
+        href: `${TEAM_PLAN_URL}&alt=helpmenubutton`,
       },
     ),
 

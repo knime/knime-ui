@@ -1,5 +1,7 @@
 import type { PluginInitFunction } from "./types";
 
+export const modernUISource = "?src=knimeappmodernui";
+
 export const knimeExternalUrls = {
   IMPRINT_URL: "https://www.knime.com/imprint",
   LEGAL_URL: "https://www.knime.com/legal",
@@ -10,13 +12,11 @@ export const knimeExternalUrls = {
   DOCUMENTATION_URL: "https://docs.knime.com/",
   COMMUNITY_FORUM_URL: "https://forum.knime.com/",
   KNIME_HUB_HOME_URL: "https://hub.knime.com/",
-  COMMUNITY_HUB_URL: "https://www.knime.com/knime-community-hub",
-  TEAM_PLAN_URL: "https://knime.com/team-plan",
-  MODERN_UI_HUB_HOME_URL:
-    "https://knime.com/modern-ui-hub-home-link?src=knimeappmodernui",
-  KNIME_DOWNLOADS_URL: "https://www.knime.com/downloads?src=knimeappmodernui",
-  KNIME_HUB_SEARCH_URL:
-    "https://hub.knime.com/search?q=%s&type=all&src=knimeappmodernui",
+  COMMUNITY_HUB_URL: `https://www.knime.com/knime-community-hub${modernUISource}`,
+  TEAM_PLAN_URL: `https://knime.com/team-plan${modernUISource}`,
+  MODERN_UI_HUB_HOME_URL: `https://knime.com/modern-ui-hub-home-link${modernUISource}`,
+  KNIME_DOWNLOADS_URL: `https://www.knime.com/downloads${modernUISource}`,
+  KNIME_HUB_SEARCH_URL: `https://hub.knime.com/search?q=%s&type=all&${modernUISource}`,
   KNIME_HUB_HOME_HOSTNAME: "hub.knime.com",
   KNIME_HUB_DEV_HOSTNAME: "hubdev.knime.com",
 };

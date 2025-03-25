@@ -21,6 +21,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -53,6 +54,7 @@ const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { openProjects, activeProjectId } = storeToRefs(useApplicationStore());
 const { dirtyProjectsMap } = storeToRefs(useDirtyProjectsTrackingStore());
 const { devMode } = storeToRefs(useApplicationSettingsStore());
+const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 
 const hasWorkflowLoadingError = computed(() =>
   Boolean(useWorkflowStore().error),
@@ -317,7 +319,9 @@ const onMouseDown = (e: MouseEvent) => {
 
         <AppMenu data-test-id="app-header-app-menu" />
 
-        <CommunityHubSignButton />
+        <CommunityHubSignButton
+          v-if="getCommunityHubInfo.isOnlyCommunityHubMounted"
+        />
       </div>
     </div>
   </header>

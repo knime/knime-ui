@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { FunctionButton, type MenuItem } from "@knime/components";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
@@ -9,16 +9,18 @@ import LeaveIcon from "@knime/styles/img/icons/leave.svg";
 import UserIcon from "@knime/styles/img/icons/user.svg";
 
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
-import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceProviderAuth } from "../spaces/useSpaceProviderAuth";
 
-const { KNIME_HUB_HOME_URL } = knimeExternalUrls;
 const $router = useRouter();
+const $route = useRoute();
 
 const { connectAndNavigate, logout } = useSpaceProviderAuth();
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
+const { connectProvider } = useSpaceAuthStore();
 
 const userName = computed(
   () =>
@@ -27,7 +29,10 @@ const userName = computed(
 );
 
 const openUserHubProfile = () =>
-  window.open(`${KNIME_HUB_HOME_URL}${userName.value}`, "_blank");
+  window.open(
+    `${knimeExternalUrls.KNIME_HUB_HOME_URL}${userName.value}${modernUISource}`,
+    "_blank",
+  );
 
 const redirectToCommunityHubSpaces = () =>
   $router.push({
@@ -69,36 +74,38 @@ const signMenuItem = computed<MenuItem>(() => {
   };
 });
 
+const onSignInButtonClick = () => {
+  if ($route.name === APP_ROUTES.WorkflowPage) {
+    return connectProvider({
+      spaceProviderId: getCommunityHubInfo.value.communityHubProvider!.id,
+    });
+  }
+
+  connectAndNavigate(getCommunityHubInfo.value.communityHubProvider!);
+};
+
 const onItemClick = (_: MouseEvent, item: MenuItem) =>
   item.metadata?.handler?.();
 </script>
 
 <template>
+  <OptionalSubMenuActionButton
+    v-if="getCommunityHubInfo.isCommunityHubConnected"
+    class="sign-menu"
+    hide-dropdown
+    :item="signMenuItem"
+    @item-click="onItemClick"
+  />
+
   <FunctionButton
-    v-if="
-      getCommunityHubInfo.isOnlyCommunityHubMounted &&
-      !getCommunityHubInfo.isCommunityHubConnected
-    "
+    v-else
     class="header-button"
     title="Sign in"
-    @click="connectAndNavigate(getCommunityHubInfo.communityHubProvider!)"
+    @click="onSignInButtonClick"
   >
     <UserIcon />
     Sign in
   </FunctionButton>
-
-  <div>
-    <OptionalSubMenuActionButton
-      v-if="
-        getCommunityHubInfo.isOnlyCommunityHubMounted &&
-        getCommunityHubInfo.isCommunityHubConnected
-      "
-      class="sign-menu"
-      hide-dropdown
-      :item="signMenuItem"
-      @item-click="onItemClick"
-    />
-  </div>
 </template>
 
 <style lang="postcss" scoped>

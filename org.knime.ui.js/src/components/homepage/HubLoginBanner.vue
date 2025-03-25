@@ -26,11 +26,13 @@ const buttonText = computed(() =>
     : "Sign up to KNIME Hub",
 );
 
-const buttonLink = computed(() =>
-  getCommunityHubInfo.value.isCommunityHubConnected
+const buttonLink = computed(() => {
+  const baseUrl = getCommunityHubInfo.value.isCommunityHubConnected
     ? knimeExternalUrls.TEAM_PLAN_URL
-    : knimeExternalUrls.COMMUNITY_HUB_URL,
-);
+    : knimeExternalUrls.COMMUNITY_HUB_URL;
+
+  return `${baseUrl}&alt=bannerButton`;
+});
 
 const dismissBanner = () => {
   applicationStore.dismissedHubLoginBanner = true;
