@@ -7,7 +7,7 @@ interface Props {
   items: FileExplorerItem[];
   itemIconRenderer: (
     item: FileExplorerItem,
-  ) => FunctionalComponent<SVGAttributes, {}, any>;
+  ) => FunctionalComponent<SVGAttributes>;
 }
 
 defineProps<Props>();

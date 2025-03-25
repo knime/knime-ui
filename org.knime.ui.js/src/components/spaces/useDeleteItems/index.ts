@@ -5,6 +5,7 @@ import type { FileExplorerItem } from "@knime/components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { isBrowser } from "@/environment";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 
@@ -53,9 +54,12 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
   };
 
   const onDeleteItems = async (items: FileExplorerItem[]) => {
-    const { confirmed } = await askConfirmation(items);
+    // TODO NXT-3468 when Desktop and Browser are in sync confirmation should no longer be needed
+    // as there won't be any hard deletes
+    const isBrowserOrConfirmed =
+      isBrowser || (await askConfirmation(items)).confirmed;
 
-    if (confirmed) {
+    if (isBrowserOrConfirmed) {
       const itemIds = items.map(({ id }) => id);
 
       try {

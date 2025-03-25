@@ -202,7 +202,7 @@ export const useSpaceExplorerActions = (
     // https://bitbucket.org/KNIME/webapps-common/src/07664ef06d6ad0c800c9ab9f992daf410e4c1745/packages/components/src/components/FileExplorer/components/FileExplorerContextMenu.vue?at=master#lines-106
     // should be adapted to reflect the new default text
     if (isBrowser) {
-      customProps.text = "Move to bin";
+      customProps.text = "Move to recycle bin";
     }
 
     return options.createDeleteOption(options.anchorItem, customProps);
