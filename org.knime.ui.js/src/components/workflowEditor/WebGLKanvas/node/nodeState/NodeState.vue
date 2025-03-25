@@ -33,7 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
  * @example [true, false, false] means [red: on, yellow: off, green: off]
  * @example 'undefined' means no traffic light should be shown
  */
-const trafficLight = computed<[boolean, boolean, boolean] | null>(() => {
+const trafficLight = computed<[boolean, boolean, boolean] | undefined>(() => {
   const defaultValue: [boolean, boolean, boolean] = [false, false, false];
   const stateMapper: Partial<
     Record<NodeState.ExecutionStateEnum, [boolean, boolean, boolean]>
@@ -48,12 +48,12 @@ const trafficLight = computed<[boolean, boolean, boolean] | null>(() => {
     return stateMapper[props.executionState]!;
   }
 
-  return props.executionState === null ? defaultValue : null;
+  return props.executionState === undefined ? defaultValue : undefined;
 });
 
 const fillColors = computed(() => {
   if (!trafficLight.value) {
-    return null;
+    return undefined;
   }
 
   const colorNames = ["red", "yellow", "green"] as const;
@@ -66,7 +66,7 @@ const fillColors = computed(() => {
 
 const strokeColors = computed(() => {
   if (!trafficLight.value) {
-    return null;
+    return undefined;
   }
 
   const strokeColorNames = [
