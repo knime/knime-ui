@@ -89,11 +89,7 @@ export const useQuickBuild = ({
   watch(
     () => statusUpdate.value?.type,
     (value) => {
-      if (value === "WORKFLOW_BUILDING") {
-        enableDetachedModeFn();
-      }
-
-      if (value === "NODE_ADDED") {
+      if (value === "WORKFLOW_BUILDING" || value === "NODE_ADDED") {
         hideQuickActionMenuConnector();
       }
     },
