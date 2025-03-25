@@ -44,7 +44,8 @@ defineEmits<{
 
 .quick-build-input {
   & .prompt {
-    margin-bottom: -33px;
+    margin-top: 20px;
+    margin-bottom: -15px;
   }
 
   & .error {
