@@ -96,7 +96,7 @@ export const useContextualSpaceExplorerActions = (
 
   const spaceExplorerActionsItems = computed(() => {
     return [
-      createWorkflow.value,
+      ...valueOrEmpty(isDesktop, createWorkflow.value),
       createFolderAction.value,
       ...valueOrEmpty(isBrowser, uploadAction.value),
       ...valueOrEmpty(isDesktop, importWorkflow.value),
@@ -123,11 +123,13 @@ export const useContextualSpaceExplorerActions = (
       ...valueOrEmpty(isLocal.value || isHub.value, copyToSpace.value),
       ...valueOrEmpty(isLocal.value, uploadToHub.value),
       ...valueOrEmpty(
-        isHub.value || (isServer.value && doesSelectionContainWorkflow),
+        (isHub.value || (isServer.value && doesSelectionContainWorkflow)) &&
+          isDesktop,
         downloadToLocalSpace.value,
       ),
       ...valueOrEmpty(
-        (isHub.value && !doesSelectionContainFile) || isServer.value,
+        ((isHub.value && !doesSelectionContainFile) || isServer.value) &&
+          isDesktop,
         openInBrowserAction.value,
       ),
       ...valueOrEmpty(

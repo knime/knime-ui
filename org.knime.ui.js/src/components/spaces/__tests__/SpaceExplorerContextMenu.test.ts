@@ -255,3 +255,75 @@ describe("SpaceExplorerContextMenu.vue", () => {
     expect(closeContextMenu).toHaveBeenCalled();
   });
 });
+
+describe("SpaceExplorerContextMenu.vue - isBrowser checks", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  const doMountWithIsBrowser = async (isBrowserValue: boolean) => {
+    vi.doMock("@/environment", async (originalImport) => {
+      const original = await originalImport<typeof import("@/environment")>();
+      return {
+        ...original,
+        isBrowser: isBrowserValue,
+      };
+    });
+
+    const { default: SpaceExplorerContextMenuBrowser } = await import(
+      "../SpaceExplorerContextMenu.vue"
+    );
+
+    const mockedStores = mockStores();
+
+    const wrapper = mount(SpaceExplorerContextMenuBrowser, {
+      props: {
+        projectId: "myProject",
+        selectedItemIds: ["abc123"],
+        isMultipleSelectionActive: false,
+        createRenameOption: vi
+          .fn()
+          .mockReturnValue({ id: "rename", text: "rename" }),
+        createDeleteOption: vi
+          .fn()
+          .mockReturnValue({ id: "delete", text: "delete" }),
+        createDuplicateOption: vi
+          .fn()
+          .mockReturnValue({ id: "duplicate", text: "duplicate" }),
+        anchor: {
+          // @ts-ignore
+          item: {
+            name: "server-item",
+            isOpen: false,
+            meta: { type: "workflows" },
+          },
+          index: 0,
+          element: document.createElement("div"),
+        },
+        closeContextMenu: vi.fn(),
+        onItemClick: vi.fn(),
+      },
+      global: {
+        plugins: [mockedStores.testingPinia],
+      },
+    });
+
+    await flushPromises();
+    return { wrapper, mockedStores };
+  };
+
+  it("hides 'Download to local space' and 'Open in Browser' if isBrowser = true", async () => {
+    const { wrapper } = await doMountWithIsBrowser(true);
+    const menuItems = wrapper.findComponent(MenuItems).props("items");
+    const texts = menuItems.map((item) => item.text);
+    expect(texts).not.toContain("Download to local space");
+    expect(texts).not.toContain("Open in Browser");
+  });
+
+  it("hides 'Create Workflow' if isBrowser = true", async () => {
+    const { wrapper } = await doMountWithIsBrowser(true);
+    const menuItems = wrapper.findComponent(MenuItems).props("items");
+    const texts = menuItems.map((item) => item.text);
+    expect(texts).not.toContain("Create new workflow");
+  });
+});
