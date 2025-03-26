@@ -223,85 +223,97 @@ This is a placeholder for future architectural requirements.
 
 ## V3.1 Fundamental Session Management Security
 
-|     #     | Description                                                            | Last Checked | N/A |
-| :-------: | :--------------------------------------------------------------------- | :----------: | :-: |
-| **3.1.1** | Verify the application never reveals session tokens in URL parameters. |              |     |
+|     #     | Description                                                            | Last Checked |   N/A   |
+| :-------: | :--------------------------------------------------------------------- | :----------: | :-----: |
+| **3.1.1** | Verify the application never reveals session tokens in URL parameters. |  2025-03-26  | ✓[^3.1] |
 
 ## V3.2 Session Binding
 
-|     #     | Description                                                                                                                                                              | Last Checked | N/A |
-| :-------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-: |
-| **3.2.1** | Verify the application generates a new session token on user authentication. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                     |              |     |
-| **3.2.2** | Verify that session tokens possess at least 64 bits of entropy. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                  |              |     |
-| **3.2.3** | Verify the application only stores session tokens in the browser using secure methods such as appropriately secured cookies (see section 3.4) or HTML 5 session storage. |              |     |
-| **3.2.4** | Verify that session tokens are generated using approved cryptographic algorithms. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                |              |     |
+|     #     | Description                                                                                                                                                              | Last Checked |   N/A   |
+| :-------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-----: |
+| **3.2.1** | Verify the application generates a new session token on user authentication. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                     |  2025-03-26  | ✓[^3.2] |
+| **3.2.2** | Verify that session tokens possess at least 64 bits of entropy. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                  |  2025-03-26  | ✓[^3.2] |
+| **3.2.3** | Verify the application only stores session tokens in the browser using secure methods such as appropriately secured cookies (see section 3.4) or HTML 5 session storage. |  2025-03-26  | ✓[^3.1] |
+| **3.2.4** | Verify that session tokens are generated using approved cryptographic algorithms. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                |  2025-03-26  | ✓[^3.2] |
+
+[^3.1]: This service does not hold session tokens. <br/>
+[^3.2]: This service does not generate session tokens. <br/>
 
 ## V3.3 Session Termination
 
-|     #     | Description                                                                                                                                                                                                                                                                      | Last Checked | N/A |
-| :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-: |
-| **3.3.1** | Verify that logout and expiration invalidate the session token, such that the back button or a downstream relying party does not resume an authenticated session, including across relying parties. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))      |              |     |
-| **3.3.2** | If authenticators permit users to remain logged in, verify that re-authentication occurs periodically both when actively used or after an idle period. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                   |              |     |
-| **3.3.3** | Verify that the application gives the option to terminate all other active sessions after a successful password change (including change via password reset/recovery), and that this is effective across the application, federated login (if present), and any relying parties. |              |     |
-| **3.3.4** | Verify that users are able to view and (having re-entered login credentials) log out of any or all currently active sessions and devices.                                                                                                                                        |              |     |
+|     #     | Description                                                                                                                                                                                                                                                                      |    Last Checked    |   N/A   |
+| :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------: | :-----: |
+| **3.3.1** | Verify that logout and expiration invalidate the session token, such that the back button or a downstream relying party does not resume an authenticated session, including across relying parties. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))      |     2025-03-26     | ✓[^3.3] |
+| **3.3.2** | If authenticators permit users to remain logged in, verify that re-authentication occurs periodically both when actively used or after an idle period. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                   |     2025-03-26     | ✓[^3.3] |
+| **3.3.3** | Verify that the application gives the option to terminate all other active sessions after a successful password change (including change via password reset/recovery), and that this is effective across the application, federated login (if present), and any relying parties. |     2025-03-26     | ✓[^3.3] |
+| **3.3.4** | Verify that users are able to view and (having re-entered login credentials) log out of any or all currently active sessions and devices.                                                                                                                                        | 2025-03-26[^3.3.1] | ✓[^3.3] |
+
+[^3.3]: This service does not itself implement session authentication or management. <br/>
 
 ## V3.4 Cookie-based Session Management
 
 |     #     | Description                                                                                                                                                                                                                                                                                                                          | Last Checked | N/A |
 | :-------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-: |
-| **3.4.1** | Verify that cookie-based session tokens have the 'Secure' attribute set. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                                                                                                                                                     |              |     |
-| **3.4.2** | Verify that cookie-based session tokens have the 'HttpOnly' attribute set. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                                                                                                                                                   |              |     |
-| **3.4.3** | Verify that cookie-based session tokens utilize the 'SameSite' attribute to limit exposure to cross-site request forgery attacks. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                                                                                            |              |     |
+| **3.4.1** | Verify that cookie-based session tokens have the 'Secure' attribute set. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                                                                                                                                                     |  2025-03-26  |     |
+| **3.4.2** | Verify that cookie-based session tokens have the 'HttpOnly' attribute set. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                                                                                                                                                   |  2025-03-26  |     |
+| **3.4.3** | Verify that cookie-based session tokens utilize the 'SameSite' attribute to limit exposure to cross-site request forgery attacks. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                                                                                            |  2025-03-26  |     |
 | **3.4.4** | _(not applicable to KNIME)_                                                                                                                                                                                                                                                                                                          |              |  ✓  |
-| **3.4.5** | Verify that if the application is published under a domain name with other applications that set or use session cookies that might disclose the session cookies, set the path attribute in cookie-based session tokens using the most precise path possible. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering)) |              |     |
+| **3.4.5** | Verify that if the application is published under a domain name with other applications that set or use session cookies that might disclose the session cookies, set the path attribute in cookie-based session tokens using the most precise path possible. ([C6](https://owasp.org/www-project-proactive-controls/#div-numbering)) |  2025-03-26  |     |
 
 ## V3.5 Token-based Session Management
 
-|     #     | Description                                                                                                                                                                                     | Last Checked | N/A |
-| :-------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-: |
-| **3.5.1** | Verify the application allows users to revoke OAuth tokens that form trust relationships with linked applications.                                                                              |              |     |
-| **3.5.2** | Verify the application uses session tokens rather than static API secrets and keys, except with legacy implementations.                                                                         |              |     |
-| **3.5.3** | Verify that stateless session tokens use digital signatures, encryption, and other countermeasures to protect against tampering, enveloping, replay, null cipher, and key substitution attacks. |              |     |
+|     #     | Description                                                                                                                                                                                     |    Last Checked    | N/A |
+| :-------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------: | :-: |
+| **3.5.1** | Verify the application allows users to revoke OAuth tokens that form trust relationships with linked applications.                                                                              | 2025-03-26[^3.5.1] |     |
+| **3.5.2** | Verify the application uses session tokens rather than static API secrets and keys, except with legacy implementations.                                                                         |     2025-03-26     |     |
+| **3.5.3** | Verify that stateless session tokens use digital signatures, encryption, and other countermeasures to protect against tampering, enveloping, replay, null cipher, and key substitution attacks. |     2025-03-26     |     |
+
+[^3.5.1]: This service does neither control nor manage authentication directly. Therefore, it has no means to offer such feature. <br/>
 
 ## V3.6 Federated Re-authentication
 
 |     #     | Description                                                                                                                                                                                                | Last Checked | N/A |
 | :-------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-: |
-| **3.6.1** | Verify that Relying Parties (RPs) specify the maximum authentication time to Credential Service Providers (CSPs) and that CSPs re-authenticate the user if they haven't used a session within that period. |              |     |
+| **3.6.1** | Verify that Relying Parties (RPs) specify the maximum authentication time to Credential Service Providers (CSPs) and that CSPs re-authenticate the user if they haven't used a session within that period. |  2025-03-26  |     |
 | **3.6.2** | _(not applicable to KNIME)_                                                                                                                                                                                |              |  ✓  |
 
 ## V3.7 Defenses Against Session Management Exploits
 
 |     #     | Description                                                                                                                                                                             | Last Checked | N/A |
 | :-------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-: |
-| **3.7.1** | Verify the application ensures a full, valid login session or requires re-authentication or secondary verification before allowing any sensitive transactions or account modifications. |              |     |
+| **3.7.1** | Verify the application ensures a full, valid login session or requires re-authentication or secondary verification before allowing any sensitive transactions or account modifications. |  2025-03-26  |     |
 
 # V4 Access Control
 
 ## V4.1 General Access Control Design
 
-|     #     | Description                                                                                                                                                                                                                                                                                                                                                    | Last Checked | N/A |
-| :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-: |
-| **4.1.1** | Verify that the application enforces access control rules on a trusted service layer, especially if client-side access control is present and could be bypassed.                                                                                                                                                                                               |              |     |
-| **4.1.2** | Verify that all user and data attributes and policy information used by access controls cannot be manipulated by end users unless specifically authorized.                                                                                                                                                                                                     |              |     |
-| **4.1.3** | Verify that the principle of least privilege exists - users should only be able to access functions, data files, URLs, controllers, services, and other resources, for which they possess specific authorization. This implies protection against spoofing and elevation of privilege. ([C7](https://owasp.org/www-project-proactive-controls/#div-numbering)) |              |     |
-| **4.1.4** | [DELETED, DUPLICATE OF 4.1.3]                                                                                                                                                                                                                                                                                                                                  |              |     |
-| **4.1.5** | Verify that access controls fail securely including when an exception occurs. ([C10](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                                                                                                                                                                         |              |     |
+|     #     | Description                                                                                                                                                                                                                                                                                                                                                    |    Last Checked    | N/A |
+| :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------: | :-: |
+| **4.1.1** | Verify that the application enforces access control rules on a trusted service layer, especially if client-side access control is present and could be bypassed.                                                                                                                                                                                               | 2025-03-26[^4.1.1] |  ✓  |
+| **4.1.2** | Verify that all user and data attributes and policy information used by access controls cannot be manipulated by end users unless specifically authorized.                                                                                                                                                                                                     | 2025-03-26[^4.1.2] |  ✓  |
+| **4.1.3** | Verify that the principle of least privilege exists - users should only be able to access functions, data files, URLs, controllers, services, and other resources, for which they possess specific authorization. This implies protection against spoofing and elevation of privilege. ([C7](https://owasp.org/www-project-proactive-controls/#div-numbering)) |     2025-03-26     |     |
+| **4.1.4** | [DELETED, DUPLICATE OF 4.1.3]                                                                                                                                                                                                                                                                                                                                  |                    |     |
+| **4.1.5** | Verify that access controls fail securely including when an exception occurs. ([C10](https://owasp.org/www-project-proactive-controls/#div-numbering))                                                                                                                                                                                                         |     2025-03-26     |     |
 
 ## V4.2 Operation Level Access Control
 
-|     #     | Description                                                                                                                                                                                                                                                                                                                           | Last Checked | N/A |
-| :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------: | :-: |
-| **4.2.1** | Verify that sensitive data and APIs are protected against Insecure Direct Object Reference (IDOR) attacks targeting creation, reading, updating and deletion of records, such as creating or updating someone else's record, viewing everyone's records, or deleting all records.                                                     |              |     |
-| **4.2.2** | Verify that the application or framework enforces a strong anti-CSRF mechanism to protect authenticated functionality, and effective anti-automation or anti-CSRF protects unauthenticated functionality.<br>_This only applies to web pages that our application control. For web pages created by data apps we cannot ensure this._ |              |     |
+|     #     | Description                                                                                                                                                                                                                                                                                                                           |    Last Checked    | N/A |
+| :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------: | :-: |
+| **4.2.1** | Verify that sensitive data and APIs are protected against Insecure Direct Object Reference (IDOR) attacks targeting creation, reading, updating and deletion of records, such as creating or updating someone else's record, viewing everyone's records, or deleting all records.                                                     |     2025-03-26     |     |
+| **4.2.2** | Verify that the application or framework enforces a strong anti-CSRF mechanism to protect authenticated functionality, and effective anti-automation or anti-CSRF protects unauthenticated functionality.<br>_This only applies to web pages that our application control. For web pages created by data apps we cannot ensure this._ | 2025-03-26[^4.2.2] |  ✓  |
 
 ## V4.3 Other Access Control Considerations
 
-|     #     | Description                                                                                                                                                                                                                    | Last Checked | N/A |
-| :-------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------: | :-: |
-| **4.3.1** | Verify administrative interfaces use appropriate multi-factor authentication to prevent unauthorized use.                                                                                                                      |              |     |
-| **4.3.2** | Verify that directory browsing is disabled unless deliberately desired. Additionally, applications should not allow discovery or disclosure of file or directory metadata, such as Thumbs.db, .DS_Store, .git or .svn folders. |              |     |
-| **4.3.3** | _(not applicable to KNIME)_                                                                                                                                                                                                    |              |  ✓  |
+|     #     | Description                                                                                                                                                                                                                    |    Last Checked    | N/A |
+| :-------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------: | :-: |
+| **4.3.1** | Verify administrative interfaces use appropriate multi-factor authentication to prevent unauthorized use.                                                                                                                      | 2025-03-26[^4.3.1] |  ✓  |
+| **4.3.2** | Verify that directory browsing is disabled unless deliberately desired. Additionally, applications should not allow discovery or disclosure of file or directory metadata, such as Thumbs.db, .DS_Store, .git or .svn folders. |     2025-03-26     |     |
+| **4.3.3** | _(not applicable to KNIME)_                                                                                                                                                                                                    |                    |  ✓  |
+
+[^4.1.1]: Not applicable for this service. <br/>
+[^4.1.2]: Not applicable for this service. <br/>
+[^4.2.2]: Not applicable for this service. <br/>
+[^4.3.1]: Not applicable for this service. <br/>
 
 # V5 Validation, Sanitization and Encoding
 
