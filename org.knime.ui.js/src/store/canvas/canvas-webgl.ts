@@ -9,6 +9,7 @@ import {
   ref,
   shallowRef,
 } from "vue";
+import { isNumber } from "lodash-es";
 import { animate } from "motion";
 import { defineStore } from "pinia";
 import { type IRenderLayer } from "pixi.js";
@@ -519,7 +520,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     // it could be the case that there's no stored canvas state for the parent workflow. So if we change to a
     // non-existent state then we default back to the `fillScreen` behavior.
     // NOTE: this logic can probably be deleted once the perspective switch / classic AP are phased out
-    const hasValidPreviousState = zoomFactor && offsetX && offsetY;
+    const hasValidPreviousState =
+      isNumber(zoomFactor) && isNumber(offsetX) && isNumber(offsetY);
 
     if (!hasValidPreviousState) {
       fillScreen();

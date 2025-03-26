@@ -4,6 +4,7 @@
  * coordinate transformations for the Kanvas component.
  */
 import { nextTick } from "vue";
+import { isNumber } from "lodash-es";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
@@ -333,7 +334,12 @@ export const useSVGCanvasStore = defineStore("canvasSVG", {
       // non-existent state then we default back to the `fillScreen` behavior.
       // NOTE: this logic can probably be deleted once the perspective switch / classic AP are phased out
       const hasValidPreviousState =
-        zoomFactor && scrollLeft && scrollTop && scrollWidth && scrollHeight;
+        isNumber(zoomFactor) &&
+        isNumber(scrollLeft) &&
+        isNumber(scrollTop) &&
+        isNumber(scrollWidth) &&
+        isNumber(scrollHeight);
+
       if (!hasValidPreviousState) {
         this.fillScreen();
         return;
