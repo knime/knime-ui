@@ -61,6 +61,7 @@ const isBrowserWebKit = computed(
         strike: true,
         link: true,
       }"
+      :character-limit="$characterLimits.workflowAnnotations"
       @update:model-value="emit('change', $event)"
       @dblclick="!editable && emit('editStart')"
       @blur="emit('blur')"

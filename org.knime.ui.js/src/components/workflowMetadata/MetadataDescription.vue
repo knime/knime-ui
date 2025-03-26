@@ -45,6 +45,7 @@ const emit = defineEmits<{
         }"
         :autofocus="editable"
         :with-border="editable"
+        :character-limit="$characterLimits.metadata.description"
         @update:model-value="editable && emit('update:modelValue', $event)"
       />
 

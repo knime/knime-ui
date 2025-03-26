@@ -65,7 +65,7 @@ onUnmounted(() => {
     :placeholder="placeholder"
     class="search-button-input"
     spellcheck="false"
-    :maxlength="300"
+    :maxlength="$characterLimits.searchFields"
     @keydown.esc="toggleInput"
     @update:model-value="$emit('update:modelValue', $event)"
   />

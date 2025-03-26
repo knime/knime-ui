@@ -86,7 +86,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       ref="textarea"
       v-model="input"
       class="textarea"
-      maxlength="300"
+      :maxlength="$characterLimits.kai"
       :placeholder="placeholder"
       @keydown="handleKeyDown"
     />

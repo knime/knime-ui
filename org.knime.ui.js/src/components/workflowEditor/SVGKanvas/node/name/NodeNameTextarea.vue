@@ -121,6 +121,7 @@ export default {
       rows="1"
       class="name-textarea native-context-menu"
       :value="modelValue"
+      :maxlength="$characterLimits.nodeName"
       @pointerdown.stop
       @input="onInput"
       @keydown="onKeyDown"

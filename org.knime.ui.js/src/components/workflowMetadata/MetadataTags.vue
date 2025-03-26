@@ -52,6 +52,7 @@ const onTagsChange = (tags: Array<string | number | symbol>) => {
         :possible-values="currentTags"
         :model-value="selectedIds"
         :size-visible-options="3"
+        :max-characters-per-item="$characterLimits.metadata.tags"
         allow-new-values
         class="tag-editor"
         @update:model-value="onTagsChange"

@@ -77,6 +77,7 @@ export default {
       rows="1"
       class="label-textarea native-context-menu"
       :value="modelValue"
+      :maxlength="$characterLimits.nodeLabel"
       @pointerdown.stop
       @input="onInput"
       @keydown.enter="onSave"

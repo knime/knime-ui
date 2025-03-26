@@ -7,14 +7,12 @@ import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
-import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
 const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
 const { fillScreen, screenToCanvasCoordinates } = useSVGCanvasStore();
 const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
-const { isDraggingNodeTemplate } = storeToRefs(useNodeTemplatesStore());
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import Workflow from "./Workflow.vue";
@@ -92,9 +90,6 @@ const openQuickActionMenu = (event: MouseEvent) => {
 <template>
   <Kanvas
     ref="kanvas"
-    :class="{
-      'indicate-node-drag': isWorkflowEmpty && isDraggingNodeTemplate,
-    }"
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
@@ -117,15 +112,3 @@ const openQuickActionMenu = (event: MouseEvent) => {
     />
   </Kanvas>
 </template>
-
-<style scoped>
-#kanvas :deep(svg) {
-  color: var(--knime-masala);
-  background-color: white;
-  transition: background-color 150ms;
-}
-
-#kanvas.indicate-node-drag :deep(svg) {
-  background-color: var(--knime-gray-ultra-light);
-}
-</style>

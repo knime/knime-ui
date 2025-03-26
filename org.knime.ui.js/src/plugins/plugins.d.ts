@@ -2,6 +2,7 @@ import { RouteLocation, Router } from "vue-router";
 
 import type { ToastService } from "@knime/components";
 
+import { characterLimits } from "@/plugins/constants";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { ShortcutsService } from "@/shortcuts/types";
 import * as colors from "@/style/colors";
@@ -17,6 +18,7 @@ interface _ComponentCustomProperties {
   $colors: typeof colors;
   $knimeExternalUrls: typeof knimeExternalUrls;
   $zIndices: typeof zIndices;
+  $characterLimits: typeof characterLimits;
   $features: Features;
   $shortcuts: ShortcutsService;
   $router: Router;

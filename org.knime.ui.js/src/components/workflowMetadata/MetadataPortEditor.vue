@@ -44,6 +44,7 @@ const updateField = <K extends keyof PortEditorData, V = PortEditorData[K]>(
           :model-value="port.name"
           type="text"
           title="Port name"
+          :maxlength="$characterLimits.metadata.component.portName"
           @update:model-value="updateField('name', $event, index)"
         />
       </div>
@@ -54,6 +55,7 @@ const updateField = <K extends keyof PortEditorData, V = PortEditorData[K]>(
           :model-value="port.description"
           class="port-description-editor"
           title="Port description"
+          :maxlength="$characterLimits.metadata.component.portDescription"
           @update:model-value="updateField('description', $event, index)"
         />
       </div>

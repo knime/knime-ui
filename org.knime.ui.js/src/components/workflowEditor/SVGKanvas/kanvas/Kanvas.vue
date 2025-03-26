@@ -11,6 +11,7 @@ import { $bus } from "@/plugins/event-bus";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
@@ -35,6 +36,7 @@ watch(contentBounds, (next, prev) => {
 const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
 
 const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+const { isDraggingNodeTemplate } = storeToRefs(useNodeTemplatesStore());
 
 const rootEl = ref<HTMLDivElement | null>(null);
 let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
@@ -128,6 +130,7 @@ const onLeftControlClick = (event: PointerEvent) => {
         panning: shouldShowMoveCursor || hasPanModeEnabled,
         empty: isWorkflowEmpty,
         disabled: !interactionsEnabled,
+        'indicate-node-drag': isWorkflowEmpty && isDraggingNodeTemplate,
       },
     ]"
     @wheel="onMouseWheel"
@@ -161,11 +164,17 @@ const onLeftControlClick = (event: PointerEvent) => {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-svg {
+.scroll-container > svg {
   position: relative;
+  color: var(--knime-masala);
+  background-color: white;
 
   /* needed for z-index to have effect */
   display: block;
+}
+
+.indicate-node-drag > svg {
+  background-color: var(--knime-gray-ultra-light);
 }
 
 .panning {

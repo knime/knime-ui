@@ -2,6 +2,7 @@
 import { vi } from "vitest";
 import { config } from "@vue/test-utils";
 
+import { characterLimits } from "@/plugins/constants";
 import { setupLogger } from "@/plugins/logger";
 
 import { lodashMockFactory } from "./utils";
@@ -11,6 +12,7 @@ config.global.stubs = {
   Portal: true,
   PortalTarget: true,
 };
+config.global.mocks.$characterLimits = characterLimits;
 
 setupLogger();
 

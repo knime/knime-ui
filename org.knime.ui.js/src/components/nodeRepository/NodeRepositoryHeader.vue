@@ -138,7 +138,7 @@ defineExpose({ focusSearchInput });
         :model-value="query"
         spellcheck="false"
         compact
-        :maxlength="300"
+        :maxlength="$characterLimits.searchFields"
         :disabled="!nodeRepositoryLoaded"
         :placeholder="
           hasNodeCollectionActive

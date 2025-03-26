@@ -99,6 +99,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
                 :model-value="modelValue[index].text"
                 type="text"
                 title="Text"
+                :maxlength="$characterLimits.metadata.url.text"
                 @update:model-value="updateField('text', $event, index)"
               />
               <div v-if="!modelValue[index].text" class="item-error">
@@ -115,6 +116,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
                 :model-value="modelValue[index].url"
                 type="text"
                 title="URL"
+                :maxlength="$characterLimits.metadata.url.href"
                 @update:model-value="updateField('url', $event, index)"
               />
               <div v-if="!isValidUrl(modelValue[index].url)" class="item-error">
