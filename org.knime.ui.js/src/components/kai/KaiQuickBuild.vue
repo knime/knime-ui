@@ -112,6 +112,7 @@ watch(menuState, (menuState) => {
         <QuickBuildInput
           v-if="menuState === 'INPUT'"
           :prompt="result?.message"
+          :interaction-id="result?.interactionId"
           :last-user-message="lastUserMessage"
           :error-message="errorMessage"
           @send-message="sendMessage"

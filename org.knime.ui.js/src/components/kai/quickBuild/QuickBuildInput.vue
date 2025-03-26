@@ -7,6 +7,7 @@ import Message from "../chat/message/Message.vue";
 
 type Props = {
   prompt?: string;
+  interactionId?: string;
   lastUserMessage: string;
   errorMessage: string;
 };
@@ -20,9 +21,10 @@ defineEmits<{
 <template>
   <div class="quick-build-input">
     <Message
-      v-if="prompt"
+      v-if="prompt && interactionId"
       class="prompt"
       :role="KaiMessage.RoleEnum.Assistant"
+      :interaction-id="interactionId"
       :content="prompt"
     />
     <ChatControls
@@ -33,7 +35,7 @@ defineEmits<{
       @send-message="$emit('sendMessage', $event)"
     />
     <div v-if="errorMessage" class="error">
-      <ErrorIcon />
+      <ErrorIcon class="error-icon" />
       <div>{{ errorMessage }}</div>
     </div>
   </div>
@@ -45,7 +47,7 @@ defineEmits<{
 .quick-build-input {
   & .prompt {
     margin-top: 20px;
-    margin-bottom: -15px;
+    padding-bottom: 5px;
   }
 
   & .error {
@@ -54,7 +56,7 @@ defineEmits<{
     font-size: 12px;
     display: flex;
 
-    & svg {
+    & .error-icon {
       @mixin svg-icon-size 15;
 
       margin-top: -2px;
