@@ -54,6 +54,7 @@ defineEmits(["close", "upload"]);
       font-weight: 500;
       font-size: 16px;
       line-height: 28px;
+      color: var(--knime-masala);
     }
   }
 
@@ -86,6 +87,7 @@ defineEmits(["close", "upload"]);
     vertical-align: middle;
     margin-top: var(--space-16);
     margin-bottom: var(--space-24);
+    color: var(--knime-masala);
   }
 }
 </style>

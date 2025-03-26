@@ -9,6 +9,7 @@ import type { UIExtensionPushEvents } from "@knime/ui-extension-renderer/api";
 
 import ManageVersionsWrapper from "@/components/workflowEditor/ManageVersionsWrapper.vue";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { EMBEDDED_CONTENT_PANEL_ID__RIGHT } from "../common/utils";
@@ -22,6 +23,8 @@ const { activeNode, activeExtensionConfig } = storeToRefs(
 );
 const { getNodeName } = storeToRefs(useNodeInteractionsStore());
 const versionsStore = useWorkflowVersionsStore();
+
+const { singleSelectedNode } = storeToRefs(useSelectionStore());
 
 const canBeEnlarged = computed(
   () => activeExtensionConfig.value?.canBeEnlarged,
@@ -94,7 +97,9 @@ useEventListener(panel, "click", (event) => {
       @expand="onExpandConfig"
     >
       <template #inactive>
-        <ManageVersionsWrapper v-if="versionsStore.isSidepanelOpen" />
+        <ManageVersionsWrapper
+          v-if="versionsStore.isSidepanelOpen && !singleSelectedNode"
+        />
         <IncompatibleNodeConfigPlaceholder v-else />
       </template>
     </NodeConfigWrapper>
