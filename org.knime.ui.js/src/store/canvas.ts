@@ -3,6 +3,7 @@
  * coordinate transformations for the Kanvas component.
  */
 import { nextTick } from "vue";
+import { isNumber } from "lodash-es";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { WorkflowObject } from "@/api/custom-types";
@@ -312,7 +313,12 @@ export const actions: ActionTree<CanvasState, RootStoreState> = {
     // non-existant state then we default back to the `fillScreen` behavior.
     // NOTE: this logic can probably be deleted once the perspective switch / classic AP are phased out
     const hasValidPreviousState =
-      zoomFactor && scrollLeft && scrollTop && scrollWidth && scrollHeight;
+      isNumber(zoomFactor) &&
+      isNumber(scrollLeft) &&
+      isNumber(scrollTop) &&
+      isNumber(scrollWidth) &&
+      isNumber(scrollHeight);
+
     if (!hasValidPreviousState) {
       await dispatch("fillScreen");
       return;

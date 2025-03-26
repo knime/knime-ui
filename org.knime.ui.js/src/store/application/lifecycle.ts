@@ -415,8 +415,8 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     );
   },
 
-  async setWorkflow(
-    { commit, dispatch },
+  setWorkflow(
+    { commit },
     {
       workflow,
       projectId,
@@ -441,9 +441,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       workflowId,
       snapshotId,
     });
-
-    // restore scroll and zoom if saved before
-    await dispatch("restoreCanvasState");
   },
 
   afterSetActivateWorkflow({ dispatch }) {

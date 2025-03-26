@@ -81,62 +81,6 @@ describe("application::canvasStateTracking", () => {
     ).toBeTruthy();
   });
 
-  it("restores canvas state", () => {
-    const { store, mockedActions } = loadStoreWithWorkflow();
-    store.commit("application/setSavedCanvasStates", {
-      zoomFactor: 1,
-      scrollTop: 100,
-      scrollLeft: 100,
-      scrollHeight: 1000,
-      scrollWidth: 1000,
-      workflow: "root",
-      project: "project1",
-    });
-
-    store.dispatch("application/restoreCanvasState");
-    expect(mockedActions.canvas.restoreScrollState).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({
-        zoomFactor: 1,
-        scrollTop: 100,
-        scrollLeft: 100,
-        scrollHeight: 1000,
-        scrollWidth: 1000,
-      }),
-    );
-  });
-
-  it("restores canvas state of a child", () => {
-    const { store, mockedActions } = loadStoreWithWorkflow();
-    store.state.workflow.activeWorkflow = {
-      // @ts-expect-error
-      info: { containerId: "root:214" },
-      projectId: "project1",
-    };
-
-    store.commit("application/setSavedCanvasStates", {
-      zoomFactor: 1,
-      scrollTop: 80,
-      scrollLeft: 80,
-      scrollHeight: 800,
-      scrollWidth: 800,
-      workflow: "root:214",
-      project: "project1",
-    });
-
-    store.dispatch("application/restoreCanvasState");
-    expect(mockedActions.canvas.restoreScrollState).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({
-        zoomFactor: 1,
-        scrollTop: 80,
-        scrollLeft: 80,
-        scrollHeight: 800,
-        scrollWidth: 800,
-      }),
-    );
-  });
-
   it("removes canvas state", () => {
     const { store } = loadStoreWithWorkflow();
     store.dispatch("application/saveCanvasState");

@@ -291,10 +291,6 @@ describe("application::lifecycle", () => {
         workflowId: "root",
       });
       expect(store.state.application.activeProjectId).toBe("1");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/restoreCanvasState",
-        undefined,
-      );
     });
   });
 

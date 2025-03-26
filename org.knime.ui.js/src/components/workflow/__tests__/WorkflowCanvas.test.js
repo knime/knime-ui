@@ -30,6 +30,7 @@ describe("WorkflowCanvas", () => {
         },
         actions: {
           fillScreen: vi.fn(),
+          restoreScrollState: vi.fn(),
         },
       },
       selection: {
@@ -110,18 +111,6 @@ describe("WorkflowCanvas", () => {
       ).toHaveBeenCalledWith("args");
     });
 
-    it("does not fill the screen if workflow is not empty", async () => {
-      doShallowMount();
-      await nextTick();
-      expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
-      const kanvas = wrapper.findComponent(Kanvas);
-      kanvas.vm.$emit("container-size-changed");
-
-      await nextTick();
-      await nextTick();
-      expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
-    });
-
     it("switch from empty workflow", async () => {
       doShallowMount();
       await nextTick();
@@ -169,11 +158,11 @@ describe("WorkflowCanvas", () => {
     });
   });
 
-  it("zooms to fit after mounting", async () => {
+  it("restores canvas state after mounting", async () => {
     doShallowMount();
     await nextTick();
 
-    expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
+    expect(storeConfig.canvas.actions.restoreScrollState).toHaveBeenCalled();
   });
 
   it("dispatches 'workflow/openQuickActionMenu' with correct coordinates on double click inside <svg>", () => {

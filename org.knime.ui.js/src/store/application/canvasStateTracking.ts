@@ -87,15 +87,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     });
   },
 
-  async restoreCanvasState({ dispatch, getters }) {
-    const { workflowCanvasState } = getters;
-    if (workflowCanvasState) {
-      await dispatch("canvas/restoreScrollState", workflowCanvasState, {
-        root: true,
-      });
-    }
-  },
-
   removeCanvasState({ state }, projectId) {
     const stateKey = getCanvasStateKey(`${projectId}--root`);
     delete state.savedCanvasStates[stateKey];

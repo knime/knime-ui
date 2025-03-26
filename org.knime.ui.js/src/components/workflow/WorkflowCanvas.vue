@@ -42,14 +42,19 @@ watch(
   { immediate: true },
 );
 
-onMounted(() => {
-  nextTick(() => {
-    // put canvas into fillScreen view after loading the workflow
-    // if there isn't a saved canvas state for it
-    if (!workflowCanvasState.value) {
-      store.dispatch("canvas/fillScreen");
-    }
-  });
+const canShow = ref(false);
+
+onMounted(async () => {
+  if (isWorkflowEmpty.value) {
+    canShow.value = true;
+    return;
+  }
+
+  await nextTick();
+  await store.dispatch("canvas/restoreScrollState", workflowCanvasState.value);
+  // add a small wait time so that the scroll state gets settled and rendered properly by the browser
+  await new Promise((r) => setTimeout(r, 100));
+  canShow.value = true;
 });
 
 const workflow = ref<InstanceType<typeof Workflow>>();
@@ -99,6 +104,7 @@ const openQuickActionMenu = (event: MouseEvent) => {
     :class="{
       'indicate-node-drag': isWorkflowEmpty && isDraggingNodeTemplate,
     }"
+    :style="{ opacity: canShow ? 1 : 0 }"
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"

@@ -297,6 +297,11 @@ watch(isLoadingContent, () => {
 
 .space-explorer {
   width: 100%;
+
+  & :deep(thead) {
+    width: unset;
+    left: -10000px;
+  }
 }
 
 .breadcrumb-container {
