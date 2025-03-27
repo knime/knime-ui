@@ -36,7 +36,7 @@ export const getHintConfiguration = (
       title: "Ask KNIME’s AI assistant (K-AI) for guidance",
       description:
         "K-AI can help you in building workflows and support your work by answering questions. Try the build mode to let K-AI add new nodes to your workflow based on your text input.",
-      dependsOn: [HINTS.NEW_WORKFLOW],
+      dependsOn: [],
       referenceSelector: ".k-ai-tab",
       video: [
         {
