@@ -242,10 +242,12 @@ export const useCanvasAnchoredComponentsStore = defineStore(
             y: $shapes.addNodeGhostSize / 2 + 2,
           };
 
+          const isPredecessor = props.nodeRelation === "PREDECESSORS";
+
           canvasStore.setCanvasAnchor({
             isOpen: true,
-            placement:
-              props.nodeRelation === "PREDECESSORS" ? "top-right" : "top-left",
+            placement: isPredecessor ? "top-right" : "top-left",
+            offset: isPredecessor ? $shapes.portSize * -1 : 0,
             anchor: {
               x: props.position.x + offsets.x,
               y: props.position.y + offsets.y,

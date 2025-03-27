@@ -46,10 +46,12 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const canvasAnchor = ref<{
     isOpen: boolean;
     anchor: { x: number; y: number };
+    offset?: number;
     placement?: "top-left" | "top-right";
   }>({
     isOpen: false,
     anchor: { x: 0, y: 0 },
+    offset: 0,
   });
   const pixiApplication = shallowRef<ApplicationInst | null>(null);
 
@@ -110,11 +112,14 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasAnchor.value.isOpen = anchor.isOpen;
     canvasAnchor.value.anchor = anchor.anchor;
     canvasAnchor.value.placement = anchor.placement ?? "top-left";
+    canvasAnchor.value.offset = anchor.offset ?? 0;
   };
 
   const clearCanvasAnchor = () => {
     canvasAnchor.value.isOpen = false;
     canvasAnchor.value.anchor = { x: 0, y: 0 };
+    canvasAnchor.value.placement = "top-left";
+    canvasAnchor.value.offset = 0;
   };
 
   const isOutsideKanvasView = (_params: any) => {

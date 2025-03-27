@@ -76,4 +76,85 @@ describe("FloatingMenuPortalTarget", () => {
       "left: 80px; top: 70px;",
     );
   });
+
+  it("honors offsets", async () => {
+    const mockedStores = mockStores();
+    const wrapper = mount(FloatingMenuPortalTarget, {
+      global: {
+        plugins: [mockedStores.testingPinia],
+      },
+    });
+
+    expect(wrapper.find("div.floating-menu-portal").exists()).toBe(false);
+
+    mockedStores.webglCanvasStore.zoomFactor = 2;
+    mockedStores.webglCanvasStore.canvasOffset = { x: 20, y: 40 };
+    mockedStores.webglCanvasStore.canvasAnchor = {
+      isOpen: true,
+      placement: "top-right",
+      anchor: {
+        x: 100,
+        y: 100,
+      },
+    };
+    await nextTick();
+
+    expect(wrapper.find("div.floating-menu-portal").exists()).toBe(true);
+    expect(wrapper.find("div.floating-menu-portal").attributes("style")).toBe(
+      "left: 220px; top: 240px; transform: translateX(-100%);",
+    );
+
+    mockedStores.webglCanvasStore.zoomFactor = 2;
+    mockedStores.webglCanvasStore.canvasOffset = { x: 21, y: 41 };
+    mockedStores.webglCanvasStore.canvasAnchor = {
+      isOpen: true,
+      placement: "top-right",
+      offset: 9,
+      anchor: {
+        x: 100,
+        y: 100,
+      },
+    };
+    await nextTick();
+
+    expect(wrapper.find("div.floating-menu-portal").exists()).toBe(true);
+    expect(wrapper.find("div.floating-menu-portal").attributes("style")).toBe(
+      "left: 221px; top: 241px; transform: translateX(calc(-100% + 18px));",
+    );
+
+    mockedStores.webglCanvasStore.zoomFactor = 2;
+    mockedStores.webglCanvasStore.canvasOffset = { x: 20, y: 40 };
+    mockedStores.webglCanvasStore.canvasAnchor = {
+      isOpen: true,
+      placement: "top-left",
+      anchor: {
+        x: 100,
+        y: 100,
+      },
+    };
+    await nextTick();
+
+    expect(wrapper.find("div.floating-menu-portal").exists()).toBe(true);
+    expect(wrapper.find("div.floating-menu-portal").attributes("style")).toBe(
+      "left: 220px; top: 240px;",
+    );
+
+    mockedStores.webglCanvasStore.zoomFactor = 3;
+    mockedStores.webglCanvasStore.canvasOffset = { x: 21, y: 41 };
+    mockedStores.webglCanvasStore.canvasAnchor = {
+      isOpen: true,
+      placement: "top-left",
+      offset: -9,
+      anchor: {
+        x: 100,
+        y: 100,
+      },
+    };
+    await nextTick();
+
+    expect(wrapper.find("div.floating-menu-portal").exists()).toBe(true);
+    expect(wrapper.find("div.floating-menu-portal").attributes("style")).toBe(
+      "left: 321px; top: 341px; transform: translateX(-27px);",
+    );
+  });
 });

@@ -18,22 +18,40 @@ import { CANVAS_ANCHOR_WRAPPER_ID } from "../../CanvasAnchoredComponents";
  */
 
 const canvasStore = useWebGLCanvasStore();
-const { canvasAnchor } = storeToRefs(canvasStore);
+const { canvasAnchor, zoomFactor } = storeToRefs(canvasStore);
 
 const screenPosition = computed(() =>
   canvasStore.screenFromCanvasCoordinates(canvasAnchor.value.anchor),
 );
 
+const translateStyle = (
+  placement: "top-left" | "top-right",
+  offset: number,
+) => {
+  if (placement === "top-left") {
+    return offset === 0
+      ? {}
+      : {
+          transform: `translateX(${offset * zoomFactor.value}px)`,
+        };
+  }
+  // top-right
+  return {
+    transform:
+      offset === 0
+        ? "translateX(-100%)"
+        : `translateX(calc(-100% + ${offset * zoomFactor.value}px))`,
+  };
+};
+
 const style = computed(() => {
-  const { placement = "top-left" } = canvasAnchor.value;
-  const baseStyles = {
+  const { placement = "top-left", offset = 0 } = canvasAnchor.value;
+
+  return {
     left: `${screenPosition.value.x}px`,
     top: `${screenPosition.value.y}px`,
+    ...translateStyle(placement, offset),
   };
-
-  return placement === "top-left"
-    ? baseStyles
-    : { ...baseStyles, transform: "translateX(-100%)" };
 });
 </script>
 

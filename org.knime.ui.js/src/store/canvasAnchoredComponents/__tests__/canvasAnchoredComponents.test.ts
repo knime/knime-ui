@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import type { useWorkflowStore } from "@/store/workflow/workflow";
-import { nodeSize } from "@/style/shapes";
+import { nodeSize, portSize } from "@/style/shapes";
 import {
   createNativeNode,
   createPort,
@@ -55,7 +55,7 @@ describe("canvasAnchoredComponents", () => {
         canvasRendererUtils.toggleCanvasRenderer();
       });
 
-      it("intializes the canvas anchor", () => {
+      it("initializes the canvas anchor", () => {
         const { canvasAnchoredComponentsStore, webglCanvasStore } =
           mockStores();
 
@@ -71,6 +71,7 @@ describe("canvasAnchoredComponents", () => {
         expect(webglCanvasStore.setCanvasAnchor).toHaveBeenCalledWith({
           isOpen: true,
           placement: "top-right",
+          offset: portSize * -1,
           anchor: {
             x: 14.5,
             y: 32,
