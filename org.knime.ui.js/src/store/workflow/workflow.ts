@@ -27,8 +27,6 @@ import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";
 
-import DirectionEnum = AlignNodesCommand.DirectionEnum;
-
 const { show: showConfirmDialog } = useConfirmDialog();
 
 /**
@@ -415,7 +413,7 @@ export const useWorkflowStore = defineStore("workflow", {
         links,
       });
     },
-    async alignSelectedNodes(direction: DirectionEnum) {
+    async alignSelectedNodes(direction: AlignNodesCommand.DirectionEnum) {
       const selectionStore = useSelectionStore();
       const { projectId, workflowId } = this.getProjectAndWorkflowIds;
       const selectedNodes: KnimeNode[] = selectionStore.getSelectedNodes;

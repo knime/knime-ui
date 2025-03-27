@@ -15,6 +15,7 @@ const nodeAlignShortcuts: NodeAlignShortcuts = {
   alignHorizontally: {
     title: "Align selected nodes horizontally",
     text: "Align horizontally",
+    hotkey: ["Shift", "H"],
     group: "general",
     execute: () => {
       useWorkflowStore().alignSelectedNodes(
@@ -28,6 +29,7 @@ const nodeAlignShortcuts: NodeAlignShortcuts = {
   alignVertically: {
     title: "Align selected nodes vertically",
     text: "Align vertically",
+    hotkey: ["Shift", "V"],
     group: "general",
     execute: () => {
       useWorkflowStore().alignSelectedNodes(
