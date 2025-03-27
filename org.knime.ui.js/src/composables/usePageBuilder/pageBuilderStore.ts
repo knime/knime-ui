@@ -2,6 +2,7 @@ import { sleep } from "@knime/utils";
 
 import { API } from "@/api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
+import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useNotifyUIExtensionAlert";
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { useApplicationStore } from "@/store/application/application";
@@ -235,13 +236,28 @@ const actions = {
       return obj;
     }, {});
 
-    let reexecutingPage = await API.component.triggerComponentReexecution({
-      projectId,
-      workflowId,
-      nodeId: componentNodeId,
-      resetNodeIdSuffix,
-      viewValues: { ...params },
-    });
+    let reexecutingPage;
+    try {
+      reexecutingPage = await API.component.triggerComponentReexecution({
+        projectId,
+        workflowId,
+        nodeId: componentNodeId,
+        resetNodeIdSuffix,
+        viewValues: { ...params },
+      });
+    } catch (error) {
+      const { notify } = useNotifyUIExtensionAlert();
+      notify(
+        {
+          message: `Failed to trigger re-execution: ${error}`,
+          type: "error",
+        },
+        {
+          nodeId: componentNodeId,
+        },
+      );
+      return;
+    }
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
