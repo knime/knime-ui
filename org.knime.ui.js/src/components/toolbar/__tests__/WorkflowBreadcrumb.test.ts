@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import { createTestingPinia } from "@pinia/testing";
 
 import { SubMenu } from "@knime/components";
+import HubIcon from "@knime/styles/img/icons/cloud-knime.svg";
+import LocalSpaceIcon from "@knime/styles/img/icons/local-space.svg";
+import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 
-import type { Workflow } from "@/api/custom-types";
 import { SpaceProvider, WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -13,6 +14,7 @@ import {
   createSpaceProvider,
   createWorkflow,
 } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import ComponentBreadcrumb from "../ComponentBreadcrumb.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 
@@ -24,61 +26,50 @@ vi.mock("@/components/spaces/useRevealInSpaceExplorer", () => ({
   }),
 }));
 
+const LOCAL_PROVIDER = createSpaceProvider({
+  type: SpaceProvider.TypeEnum.LOCAL,
+});
+const HUB_PROVIDER = createSpaceProvider({
+  type: SpaceProvider.TypeEnum.HUB,
+});
+const SERVER_PROVIDER = createSpaceProvider({
+  type: SpaceProvider.TypeEnum.SERVER,
+});
+
 describe("WorkflowBreadcrumb.vue", () => {
-  type MountOpts = {
-    workflow: Workflow;
-    providerType?: keyof typeof SpaceProvider.TypeEnum;
-    projectId?: string;
-  };
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   const doMount = ({
-    workflow,
-    providerType = SpaceProvider.TypeEnum.LOCAL,
-    projectId,
-  }: MountOpts) => {
+    workflow = createWorkflow({
+      info: { name: "dummy workflow" },
+    }),
+    provider = LOCAL_PROVIDER,
+  } = {}) => {
+    const mockedStores = mockStores();
+
     const activeProject = createProject({
-      origin: { providerId: providerType },
-      projectId,
-    });
-    const openProjects = [activeProject];
-
-    const LOCAL_PROVIDER = createSpaceProvider({
-      type: SpaceProvider.TypeEnum.LOCAL,
+      origin: { providerId: provider.id },
+      projectId: "123456578",
     });
 
-    const HUB_PROVIDER = createSpaceProvider({
-      type: SpaceProvider.TypeEnum.HUB,
-    });
-
-    const SERVER_PROVIDER = createSpaceProvider({
-      type: SpaceProvider.TypeEnum.SERVER,
-    });
-
-    const SPACE_PROVIDERS = {
-      [SpaceProvider.TypeEnum.LOCAL]: LOCAL_PROVIDER,
-      [SpaceProvider.TypeEnum.HUB]: HUB_PROVIDER,
-      [SpaceProvider.TypeEnum.SERVER]: SERVER_PROVIDER,
-    };
+    mockedStores.applicationStore.activeProjectId = activeProject.projectId;
+    mockedStores.applicationStore.openProjects = [activeProject];
+    // @ts-expect-error
+    mockedStores.spaceProvidersStore.activeProjectProvider = provider;
 
     const wrapper = shallowMount(WorkflowBreadcrumb, {
       props: { workflow },
       global: {
-        plugins: [
-          createTestingPinia({
-            stubActions: false,
-            createSpy: vi.fn,
-            initialState: {
-              application: {
-                activeProjectId: activeProject.projectId,
-                openProjects,
-              },
-              "space.providers": { spaceProviders: SPACE_PROVIDERS },
-            },
-          }),
-        ],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper };
+    return {
+      wrapper,
+      mockedStores,
+    };
   };
 
   it("renders ComponentBreadcrumb when in a Component or Metanode", () => {
@@ -97,11 +88,7 @@ describe("WorkflowBreadcrumb.vue", () => {
   });
 
   it('handles "Version history" dropdown item click', () => {
-    const { wrapper } = doMount({
-      workflow: createWorkflow({
-        info: { name: "dummy workflow" },
-      }),
-    });
+    const { wrapper } = doMount();
     const versionsStore = useWorkflowVersionsStore();
     vi.mocked(versionsStore.activateVersionsMode).mockImplementation(vi.fn());
 
@@ -115,11 +102,7 @@ describe("WorkflowBreadcrumb.vue", () => {
   });
 
   it('handles "Reveal in space explorer" dropdown item click', () => {
-    const { wrapper } = doMount({
-      workflow: createWorkflow({
-        info: { name: "dummy workflow" },
-      }),
-    });
+    const { wrapper } = doMount();
 
     const revealInSpaceExplorerItem = wrapper
       .findComponent(SubMenu)
@@ -132,12 +115,7 @@ describe("WorkflowBreadcrumb.vue", () => {
   });
 
   it('handles "Close project" dropdown item click', () => {
-    const { wrapper } = doMount({
-      workflow: createWorkflow({
-        info: { name: "dummy workflow" },
-      }),
-      projectId: "123456578",
-    });
+    const { wrapper } = doMount();
 
     const revealInSpaceExplorerItem = wrapper
       .findComponent(SubMenu)
@@ -149,5 +127,30 @@ describe("WorkflowBreadcrumb.vue", () => {
     expect(useDesktopInteractionsStore().closeProject).toHaveBeenCalledWith(
       "123456578",
     );
+  });
+
+  it("renders LocalSpace icon and text when providerType is LOCAL", () => {
+    const { wrapper } = doMount();
+
+    expect(wrapper.findComponent(LocalSpaceIcon).exists()).toBe(true);
+    expect(wrapper.text()).toContain("Local");
+  });
+
+  it("renders Hub icon and text when providerType is HUB", () => {
+    const { wrapper } = doMount({
+      provider: HUB_PROVIDER,
+    });
+
+    expect(wrapper.findComponent(HubIcon).exists()).toBe(true);
+    expect(wrapper.text()).toContain("Hub");
+  });
+
+  it("renders Server icon and text when providerType is SERVER", () => {
+    const { wrapper } = doMount({
+      provider: SERVER_PROVIDER,
+    });
+
+    expect(wrapper.findComponent(ServerIcon).exists()).toBe(true);
+    expect(wrapper.text()).toContain("Server");
   });
 });
