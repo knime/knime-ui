@@ -3,6 +3,7 @@ import { type Ref, onUnmounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
 
+import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
@@ -66,6 +67,8 @@ watch(
       import.meta.env.VITE_CANVAS_DEBUG === "true";
 
     emit("canvasReady");
+
+    performanceTracker.trackSingleRender(pixiApp.value!);
   },
   { once: true },
 );
@@ -97,6 +100,7 @@ const { onMouseWheel } = useMouseWheel({ scrollPan });
     :auto-density="true"
     :antialias="true"
     :resize-to="() => getKanvasDomElement()!"
+    :auto-start="!performanceTracker.isCanvasPerfMode()"
     @wheel.prevent="onMouseWheel"
     @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
     @pointermove="$bus.emit('selection-pointermove', $event)"

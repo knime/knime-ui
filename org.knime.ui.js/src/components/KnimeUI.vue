@@ -22,6 +22,7 @@ import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import ConfirmDialog from "@/composables/useConfirmDialog/ConfirmDialog.vue";
 import { DynamicEnvRenderer, isDesktop } from "@/environment";
+import { performanceTracker } from "@/performanceTracker";
 import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
@@ -50,6 +51,10 @@ const UploadProgressPanel = defineAsyncComponent(() =>
     ({ UploadProgressPanel }) => UploadProgressPanel,
   ),
 );
+
+if (performanceTracker.isCanvasPerfMode()) {
+  performance.mark("knime:app:start");
+}
 
 const loaded = ref(false);
 const error = ref<{ message: string; stack?: string } | null>(null);

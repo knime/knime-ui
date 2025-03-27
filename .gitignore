@@ -113,3 +113,9 @@ launch.json
 
 # SBOM
 bom.json
+
+# Playwright
+playwright-report/
+blob-report/
+playwright/.cache/
+

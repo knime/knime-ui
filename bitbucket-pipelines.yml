@@ -1,5 +1,3 @@
-image: node:22.11.0 # using 22.11.0 because the experimental feature for importing ESM (enabled by default starting with node 22.12.0) significantly slows test execution in the pipeline (https://github.com/vitest-dev/vitest/issues/7302)
-
 options:
   max-time: 20
 
@@ -7,6 +5,8 @@ definitions:
   steps:
     - step: &lint-test-build
         name: Lint, tests and build
+        # using 22.11.0 because the experimental feature for importing ESM (enabled by default starting with node 22.12.0) significantly slows test execution in the pipeline (https://github.com/vitest-dev/vitest/issues/7302)
+        image: node:22.11.0
         caches:
           - node
         size: 2x # more memory needed for unit tests
@@ -19,12 +19,22 @@ definitions:
           - npm run audit
         artifacts:
           - org.knime.ui.js/dist/**
+    - step: &e2e-tests
+        name: "End to end / performance tests"
+        size: 4x # memory for browsers
+        image: mcr.microsoft.com/playwright:v1.50.1-noble
+        script:
+          - cd org.knime.ui.js
+          - npm ci
+          - npm run test:e2e
 
 
 pipelines:
   pull-requests:
     '**':
       - step: *lint-test-build
+      - step: *e2e-tests
   branches:
     '{master,releases/*}':
       - step: *lint-test-build
+      - step: *e2e-tests
