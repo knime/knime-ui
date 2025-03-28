@@ -155,25 +155,28 @@ final class ProjectAPI {
      * Sets that project for the given id to active and ensures that the workflow is already loaded (in memory). And
      * loads it if not.
      *
-     * @param projectId
+     * @param projectId -
+     * @return whether the project is or has been loaded successfully
      */
     @API
-    static void setProjectActiveAndEnsureItsLoaded(final String projectId) {
+    static boolean setProjectActiveAndEnsureItsLoaded(final String projectId) {
         var projectManager = ProjectManager.getInstance();
-        projectManager.setProjectActive(projectId);
         var project = projectManager.getProject(projectId).orElseThrow();
         if (project.getWorkflowManagerIfLoaded().isPresent()) {
-            return;
+            projectManager.setProjectActive(projectId);
+            return true;
         }
         var wfm = project.getWorkflowManager();
         if (wfm == null) {
             projectManager.removeProject(projectId);
             NodeLogger.getLogger(ProjectAPI.class)
-                    .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
+                .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-            return;
+            return false;
         }
         NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
+        projectManager.setProjectActive(projectId);
+        return true;
     }
 
     /**
