@@ -82,7 +82,6 @@ import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.ExampleProjects;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.workbench.ui.wrapper.WrappedNodeDialog;
 
@@ -236,10 +235,9 @@ final class ProjectAPI {
      * @return json-serialized list of the recently used projects with the most recently used one at the bottom
      */
     @API
-    static String updateAndGetMostRecentlyUsedProjects() {
+    static String getMostRecentlyUsedProjects() {
         var mruProjects = DesktopAPI.getDeps(MostRecentlyUsedProjects.class);
         var localSpace = DesktopAPI.getDeps(LocalSpace.class);
-        mruProjects.removeIf(p -> wasRemovedFromLocalSpace(p.origin(), localSpace));
         return reverseList(mruProjects.get()).stream() //
             .map(p -> MAPPER.createObjectNode() //
                 .put("name", p.name()) //
@@ -271,14 +269,6 @@ final class ProjectAPI {
         var res = new ArrayList<>(list);
         Collections.reverse(res);
         return res;
-    }
-
-    private static boolean wasRemovedFromLocalSpace(final Origin origin, final LocalSpace localSpace) {
-        if (LocalSpaceUtil.isLocalSpace(origin.providerId(), origin.spaceId())) {
-            return localSpace.toLocalAbsolutePath(null, origin.itemId()).isEmpty();
-        } else {
-            return false;
-        }
     }
 
     /**

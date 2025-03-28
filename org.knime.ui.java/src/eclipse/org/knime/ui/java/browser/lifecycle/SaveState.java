@@ -48,8 +48,10 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.persistence.AppStatePersistor;
 
@@ -66,9 +68,15 @@ final class SaveState {
     }
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state) throws StateTransitionAbortedException {
-        final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects(),
-                state.getLocalSpace());
+        var serializedAppState = new AtomicReference<String>();
+        try {
+            // NOSONAR: Serialize app state before closing all workflows
+            serializedAppState.set(AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects(),
+                    state.getLocalSpace()));
+        } catch (RuntimeException e) {
+            // do not abort shutdown
+            NodeLogger.getLogger(SaveState.class).error("Could not save application state", e);
+        }
 
         final var saveProjectsFunction = state.getSaveAndCloseAllProjectsFunction();
         final var saveProjectsResult = saveProjectsFunction.get();
@@ -85,7 +93,7 @@ final class SaveState {
 
             @Override
             public String serializedAppState() {
-                return serializedAppState;
+                return serializedAppState.get();
             }
 
         };

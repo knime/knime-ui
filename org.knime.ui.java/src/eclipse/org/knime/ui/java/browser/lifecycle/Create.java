@@ -122,8 +122,8 @@ final class Create {
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
 
         var projectManager = ProjectManager.getInstance();
-        var mostRecentlyUsedProjects = new MostRecentlyUsedProjects();
         var localSpace = createLocalSpace();
+        var mostRecentlyUsedProjects = new MostRecentlyUsedProjects(localSpace);
         ProjectWorkflowMap.isActive = false;
         AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localSpace);
         var userProfile = loadUserProfile();

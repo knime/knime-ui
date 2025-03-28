@@ -43,7 +43,7 @@ const recentWorkflows: RecentWorkflow[] = [
   },
 ];
 
-mockedAPI.desktop.updateAndGetMostRecentlyUsedProjects.mockResolvedValue(
+mockedAPI.desktop.getMostRecentlyUsedProjects.mockResolvedValue(
   recentWorkflows,
 );
 
@@ -105,7 +105,7 @@ describe("RecentWorkflowsList.vue", () => {
     await flushPromises();
 
     expect(
-      mockedAPI.desktop.updateAndGetMostRecentlyUsedProjects,
+      mockedAPI.desktop.getMostRecentlyUsedProjects,
     ).toHaveBeenCalledOnce();
 
     // item 1
@@ -153,7 +153,7 @@ describe("RecentWorkflowsList.vue", () => {
 
     useSpaceProvidersStore().setSpaceProviders({});
 
-    mockedAPI.desktop.updateAndGetMostRecentlyUsedProjects.mockResolvedValueOnce(
+    mockedAPI.desktop.getMostRecentlyUsedProjects.mockResolvedValueOnce(
       [
         {
           name: "Workflow without provider",

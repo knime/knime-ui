@@ -115,7 +115,7 @@ class ProjectAPITest {
         DesktopAPI.injectDependency(mruProjects);
         DesktopAPI.injectDependency(localSpace);
 
-        var res = ProjectAPI.updateAndGetMostRecentlyUsedProjects();
+        var res = ProjectAPI.getMostRecentlyUsedProjects();
         assertThat(res).isEqualTo(String.format("""
                 [ {
                   "name" : "name3",

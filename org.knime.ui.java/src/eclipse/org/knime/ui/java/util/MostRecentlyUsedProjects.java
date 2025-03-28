@@ -79,6 +79,24 @@ public final class MostRecentlyUsedProjects {
     };
 
     /**
+     * Only for testing.
+     */
+    public MostRecentlyUsedProjects() {
+    }
+
+    /**
+     * -
+     * @param localSpace The local space instance to listen to
+     */
+    public MostRecentlyUsedProjects(final LocalSpace localSpace) {
+        localSpace.addItemRemovedListener(removedItemId -> this.removeIf(
+                recentlyUsedProject -> {
+                    return recentlyUsedProject.origin().isLocal() && recentlyUsedProject.origin().itemId().equals(removedItemId);
+                }
+        ));
+    }
+
+    /**
      * @param project the project to add, see also {@link #add(RecentlyUsedProject)}
      */
     public void add(final Project project) {
