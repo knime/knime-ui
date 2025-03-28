@@ -86,14 +86,13 @@ public final class MostRecentlyUsedProjects {
 
     /**
      * -
+     * 
      * @param localSpace The local space instance to listen to
      */
     public MostRecentlyUsedProjects(final LocalSpace localSpace) {
-        localSpace.addItemRemovedListener(removedItemId -> this.removeIf(
-                recentlyUsedProject -> {
-                    return recentlyUsedProject.origin().isLocal() && recentlyUsedProject.origin().itemId().equals(removedItemId);
-                }
-        ));
+        localSpace.addItemRemovedListener(
+            removedItemId -> this.removeIf(recentlyUsedProject -> recentlyUsedProject.origin().isLocal()
+                && recentlyUsedProject.origin().itemId().equals(removedItemId)));
     }
 
     /**
@@ -160,8 +159,9 @@ public final class MostRecentlyUsedProjects {
         if (project == null) {
             return;
         }
-        m_projects.put(projectKey, new RecentlyUsedProject(newName == null || newName.isEmpty() ? project.name() : newName,
-            newOrigin == null ? project.origin() : newOrigin, project.timeUsed()));
+        m_projects.put(projectKey,
+            new RecentlyUsedProject(newName == null || newName.isEmpty() ? project.name() : newName,
+                newOrigin == null ? project.origin() : newOrigin, project.timeUsed()));
     }
 
     private static String getKey(final Origin origin) {

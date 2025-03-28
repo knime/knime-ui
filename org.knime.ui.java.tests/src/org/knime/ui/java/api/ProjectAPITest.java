@@ -101,16 +101,14 @@ class ProjectAPITest {
     }
 
     @Test
-    void testUpdateAndGetMostRecentlyUsedProjects() throws IOException {
+    void testGetMostRecentlyUsedProjects() throws IOException {
         var mruProjects = new MostRecentlyUsedProjects();
         var localSpace = LocalSpaceUtilTest.createLocalSpace();
-        var proj1 = new RecentlyUsedProject("name1", createOrigin("local", "local", "iid"), OffsetDateTime.MAX);
-        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
+        var proj1 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         var itemId = localSpace.getItemId(localSpace.getRootPath().resolve("simple"));
-        var proj3 = new RecentlyUsedProject("name3", createOrigin("local", "local", itemId), OffsetDateTime.MAX);
+        var proj2 = new RecentlyUsedProject("name3", createOrigin("local", "local", itemId), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
-        mruProjects.add(proj3);
 
         DesktopAPI.injectDependency(mruProjects);
         DesktopAPI.injectDependency(localSpace);

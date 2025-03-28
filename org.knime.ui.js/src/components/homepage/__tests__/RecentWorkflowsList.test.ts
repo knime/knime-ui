@@ -153,19 +153,17 @@ describe("RecentWorkflowsList.vue", () => {
 
     useSpaceProvidersStore().setSpaceProviders({});
 
-    mockedAPI.desktop.getMostRecentlyUsedProjects.mockResolvedValueOnce(
-      [
-        {
-          name: "Workflow without provider",
-          origin: {
-            providerId: "nonExistentProvider",
-            spaceId: "space1",
-            itemId: "item1",
-          },
-          timeUsed: new Date("2024-09-05T09:00:00").toISOString(),
+    mockedAPI.desktop.getMostRecentlyUsedProjects.mockResolvedValueOnce([
+      {
+        name: "Workflow without provider",
+        origin: {
+          providerId: "nonExistentProvider",
+          spaceId: "space1",
+          itemId: "item1",
         },
-      ],
-    );
+        timeUsed: new Date("2024-09-05T09:00:00").toISOString(),
+      },
+    ]);
 
     await flushPromises();
 

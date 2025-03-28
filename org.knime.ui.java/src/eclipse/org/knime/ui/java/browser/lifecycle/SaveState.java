@@ -71,8 +71,8 @@ final class SaveState {
         var serializedAppState = new AtomicReference<String>();
         try {
             // NOSONAR: Serialize app state before closing all workflows
-            serializedAppState.set(AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects(),
-                    state.getLocalSpace()));
+            serializedAppState.set(AppStatePersistor.serializeAppState(state.getProjectManager(),
+                state.getMostRecentlyUsedProjects(), state.getLocalSpace()));
         } catch (RuntimeException e) {
             // do not abort shutdown
             NodeLogger.getLogger(SaveState.class).error("Could not save application state", e);
