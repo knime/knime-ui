@@ -67,6 +67,11 @@ const createMockEditor = (params: any) => {
     },
     view: { state: { selection: { from: 5 } } },
     params,
+    storage: {
+      characterCount: {
+        characters: () => 0,
+      },
+    },
   });
 };
 
