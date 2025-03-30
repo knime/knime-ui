@@ -96,6 +96,7 @@ export interface ApplicationState {
 
   dismissedUpdateBanner: boolean; // Property to track banner dismissal
   dismissedHomePageTile: boolean;
+  dismissedHubLoginBanner: boolean;
 }
 
 /*
@@ -134,6 +135,7 @@ export const state = (): ApplicationState => ({
   appMode: AppState.AppModeEnum.Default,
   dismissedUpdateBanner: false,
   dismissedHomePageTile: false,
+  dismissedHubLoginBanner: false,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -201,6 +203,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setDismissedHomePageTole(state, dismissed: boolean) {
     state.dismissedHomePageTile = dismissed;
+  },
+  setDismissedHubLoginBanner(state, dismissed: boolean) {
+    state.dismissedHubLoginBanner = dismissed;
   },
 };
 

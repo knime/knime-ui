@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import HomePageSidebar from "./HomePageSidebar.vue";
+import HubLoginBanner from "./HubLoginBanner.vue";
 </script>
 
 <template>
   <section class="main-content-wrapper">
     <div class="flex-container">
       <div class="sidebar">
-        <HomePageSidebar />
+        <div class="scroll-container">
+          <HomePageSidebar />
+        </div>
+        <HubLoginBanner class="hub-login-banner" />
       </div>
 
       <div class="main-content">
@@ -38,10 +42,19 @@ section.main-content-wrapper {
   }
 
   & .sidebar {
-    padding: 24px;
     width: var(--sidebar-width);
     max-height: calc(100vh - var(--app-header-height));
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    & .scroll-container {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    & .hub-login-banner {
+      margin-top: auto;
+    }
   }
 
   & .main-content {
