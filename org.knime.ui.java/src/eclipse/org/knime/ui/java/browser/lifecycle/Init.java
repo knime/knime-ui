@@ -76,6 +76,7 @@ import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
+import org.knime.gateway.impl.webui.kai.CodeKaiHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactory.AuthTokenProvider;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactoryRegistry;
@@ -131,7 +132,9 @@ final class Init {
         var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProvidersManager);
         var appStateUpdater = new AppStateUpdater();
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
-        var kaiHandler = createKaiHandler(eventConsumer, spaceProvidersManager, appStateUpdater);
+        var kaiAuthTokenProvider = createKaiAuthTokenProvider(spaceProvidersManager);
+        var kaiHandler = createKaiHandler(eventConsumer, kaiAuthTokenProvider, appStateUpdater);
+        var codeKaiHandler = createCodeKaiHandler(kaiAuthTokenProvider);
         var preferenceProvider = createPreferencesProvider();
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepo = createNodeRepository(nodeCollections);
@@ -142,7 +145,7 @@ final class Init {
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProvidersManager, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
-            kaiHandler, nodeCollections, nodeRepo, nodeCategoryExtensions, selectionEventBus);
+            kaiHandler, codeKaiHandler, nodeCollections, nodeRepo, nodeCategoryExtensions, selectionEventBus);
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProvidersManager, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(), localSpace,
             state.getWelcomeApEndpoint(), createExampleProjects(), state.getUserProfile());
@@ -333,23 +336,33 @@ final class Init {
         return listener;
     }
 
-    /**
-     * @return A new K-AI handler instance or {@code null} if K-AI is not installed
-     */
-    private static KaiHandler createKaiHandler(final EventConsumer eventConsumer,
-        final SpaceProvidersManager spaceProviders, final AppStateUpdater appStateUpdater) {
-        AuthTokenProvider authTokenProvider = (projectId, hubId) -> {
+    private static AuthTokenProvider createKaiAuthTokenProvider(final SpaceProvidersManager spaceProviders) {
+        return (projectId, hubId) -> {
             var spaceProvider = getSpaceProviderOrThrow(spaceProviders, hubId);
             var connection = spaceProvider.getConnection(false).orElseThrow(
                 () -> new CouldNotAuthorizeException("Could not authorize. Please log into %s.".formatted(hubId)));
             return connection.getAuthorization();
         };
+    }
+
+    /**
+     * @return A new K-AI handler instance or {@code null} if K-AI is not installed
+     */
+    private static KaiHandler createKaiHandler(final EventConsumer eventConsumer,
+        final AuthTokenProvider authTokenProvider, final AppStateUpdater appStateUpdater) {
         var kaiHandler = KaiHandlerFactoryRegistry.createKaiHandler(eventConsumer, authTokenProvider)//
             .orElse(null); // null if K-AI is not installed
         if (kaiHandler != null) {
             kaiHandler.addIsKaiEnabledStateChangeListener(state -> appStateUpdater.updateAppState());
         }
         return kaiHandler;
+    }
+
+    /**
+     * @return A new code generation K-AI handler instance or {@code null} if K-AI is not installed
+     */
+    private static CodeKaiHandler createCodeKaiHandler(final AuthTokenProvider authTokenProvider) {
+        return KaiHandlerFactoryRegistry.createCodeKaiHandler(authTokenProvider).orElse(null);
     }
 
     /**
