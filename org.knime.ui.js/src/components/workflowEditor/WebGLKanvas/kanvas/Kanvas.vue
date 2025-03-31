@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { type Ref, onUnmounted, ref, watch } from "vue";
+import { type Ref, computed, onUnmounted, ref, watch } from "vue";
+import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
 
@@ -15,9 +16,6 @@ import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
 
 const pixiApp = ref<ApplicationInst>();
-
-// TODO: How to use devicePixelRatio to improve resolution w/o affecting
-// offset calculations for events (panning, zooming, etc). Causes issues on Mac
 
 const emit = defineEmits<{
   canvasReady: [];
@@ -88,6 +86,12 @@ const { mousePan, scrollPan } = useCanvasPanning({
 });
 
 const { onMouseWheel } = useMouseWheel({ scrollPan });
+
+const { pixelRatio } = useDevicePixelRatio();
+const resolution = computed(() => {
+  // use lower and upper bounds to avoid too high resolution on high dpi screens (e.g. browser zoom) due to performance impact
+  return Math.min(Math.max(pixelRatio.value, 1.25), 2.5); // eslint-disable-line no-magic-numbers
+});
 </script>
 
 <template>
@@ -96,7 +100,7 @@ const { onMouseWheel } = useMouseWheel({ scrollPan });
     :background-color="0xffffff"
     :width="containerSize.width"
     :height="containerSize.height"
-    :resolution="1.25"
+    :resolution="resolution"
     :auto-density="true"
     :antialias="true"
     :resize-to="() => getKanvasDomElement()!"
