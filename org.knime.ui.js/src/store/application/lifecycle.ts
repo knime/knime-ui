@@ -1,9 +1,10 @@
 /* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";
-import type { Router } from "vue-router";
+import { type Router } from "vue-router";
 
 import { setupHints } from "@knime/components";
+import { sleep } from "@knime/utils";
 
 import {
   AppState,
@@ -12,7 +13,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
-import { runInEnvironment } from "@/environment";
+import { isDesktop, runInEnvironment } from "@/environment";
 import { getHintConfiguration } from "@/hints/hints.config";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
@@ -35,6 +36,15 @@ import { useApplicationSettingsStore } from "./settings";
 import { useWorkflowPreviewSnapshotsStore } from "./workflowPreviewSnapshots";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
+
+export class ProjectActivationError extends Error {}
+export class ProjectDataLoadError extends Error {
+  context: Error;
+  constructor(_context: Error) {
+    super(_context.message);
+    this.context = _context;
+  }
+}
 
 type LifecycleState = {
   /**
@@ -87,9 +97,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       // need to set this
       runInEnvironment({ BROWSER: () => this.setIsLoadingApp(true) });
 
-      await runInEnvironment({
-        DESKTOP: () => this.populateHelpMenuAndExamples(),
-      });
+      await this.populateHelpMenuAndExamples();
 
       // Subscribe to update available event
       await runInEnvironment({
@@ -131,17 +139,52 @@ export const useLifecycleStore = defineStore("lifecycle", {
           return;
         }
 
+        type WorkflowNavigationParams = {
+          projectId: string;
+          workflowId?: string;
+          version?: string | null;
+        };
+
         if (isEnteringWorkflow) {
           // when entering workflow, we must dispatch to the store and load
           // the relevant workflow state
-          const newWorkflow = { ...to.query, ...to.params } as {
-            projectId: string;
-            workflowId?: string;
-            version?: string | null;
-          };
-          await this.switchWorkflow({ newWorkflow });
-          next();
-          return;
+          const newWorkflow = {
+            ...to.query,
+            ...to.params,
+          } as WorkflowNavigationParams;
+          try {
+            await this.switchWorkflow({ newWorkflow });
+            next();
+            return;
+          } catch (error) {
+            // for this type of error, the navigation can continue
+            // since the error will be displayed on the workflow page
+            if (error instanceof ProjectDataLoadError) {
+              next();
+              return;
+            }
+
+            // for other errors simply navigate back to the previous page
+            const previousWorkflow =
+              "projectId" in from.params
+                ? ({
+                    ...from.query,
+                    ...from.params,
+                  } as WorkflowNavigationParams)
+                : null;
+
+            await this.switchWorkflow({ newWorkflow: previousWorkflow }).catch(
+              (error) => {
+                consola.error(
+                  "lifecycle::navigation - Unexpected error during navigation recovery",
+                  error,
+                );
+                next({ name: APP_ROUTES.Home.GetStarted });
+              },
+            );
+            next(from);
+            return;
+          }
         }
 
         next();
@@ -165,6 +208,51 @@ export const useLifecycleStore = defineStore("lifecycle", {
         kaiFetchUiStrings();
       }
 
+      this.initializeHints();
+    },
+
+    destroyApplication() {
+      consola.trace("lifecycle::destroyApplication");
+      API.event.unsubscribeEventListener({
+        typeId: "AppStateChangedEventType",
+      });
+      this.unloadActiveWorkflow({ clearWorkflow: true });
+    },
+
+    populateHelpMenuAndExamples() {
+      return runInEnvironment({
+        DESKTOP: () => {
+          // Get custom help menu entries
+          const populateCustomMenuEntries = API.desktop
+            .getCustomHelpMenuEntries()
+            .then((customHelpMenuEntries) =>
+              useApplicationStore().setCustomHelpMenuEntries(
+                customHelpMenuEntries ?? {},
+              ),
+            )
+            .catch((error) => {
+              consola.error(
+                "lifecycle::Error getting custom menu entries",
+                error,
+              );
+            });
+
+          const populateExampleProjects = API.desktop
+            .getExampleProjects()
+            .then((data) => useApplicationStore().setExampleProjects(data))
+            .catch((error) => {
+              consola.error("lifecycle::Error getting example projects", error);
+            });
+
+          return Promise.all([
+            populateCustomMenuEntries,
+            populateExampleProjects,
+          ]);
+        },
+      });
+    },
+
+    initializeHints() {
       runInEnvironment({
         // setup hints for desktop and use the url for videos unchanged
         DESKTOP: () => {
@@ -216,37 +304,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
           setupHints({ hints: getHintConfiguration(hintVideoResolver) });
         },
       });
-    },
-
-    destroyApplication() {
-      consola.trace("lifecycle::destroyApplication");
-      API.event.unsubscribeEventListener({
-        typeId: "AppStateChangedEventType",
-      });
-      this.unloadActiveWorkflow({ clearWorkflow: true });
-    },
-
-    async populateHelpMenuAndExamples() {
-      // Get custom help menu entries
-      const populateCustomMenuEntries = API.desktop
-        .getCustomHelpMenuEntries()
-        .then((customHelpMenuEntries) =>
-          useApplicationStore().setCustomHelpMenuEntries(
-            customHelpMenuEntries ?? {},
-          ),
-        )
-        .catch((error) => {
-          consola.error("lifecycle::Error getting custom menu entries", error);
-        });
-
-      const populateExampleProjects = API.desktop
-        .getExampleProjects()
-        .then((data) => useApplicationStore().setExampleProjects(data))
-        .catch((error) => {
-          consola.error("lifecycle::Error getting example projects", error);
-        });
-
-      await Promise.all([populateCustomMenuEntries, populateExampleProjects]);
     },
 
     async setActiveProject({ $router }: { $router: Router }) {
@@ -341,7 +398,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       // small wait time to improve visual feedback of app skeleton loader
       const RENDER_DELAY_MS = 100;
-      await new Promise((r) => setTimeout(r, RENDER_DELAY_MS));
+      await sleep(RENDER_DELAY_MS);
 
       if (useWorkflowStore()?.activeWorkflow) {
         consola.trace(
@@ -397,8 +454,26 @@ export const useLifecycleStore = defineStore("lifecycle", {
       workflowId?: string;
       version?: string | null;
     }) {
-      // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
-      await API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
+      const isLoadingRootWorkflow = workflowId === "root";
+
+      if (isLoadingRootWorkflow && isDesktop) {
+        // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
+        const projectActivationError = new ProjectActivationError(
+          `Failed to set active project ${projectId}`,
+        );
+        try {
+          const isProjectLoadedInAppState =
+            await API.desktop.setProjectActiveAndEnsureItsLoaded({
+              projectId,
+            });
+
+          if (!isProjectLoadedInAppState) {
+            throw projectActivationError;
+          }
+        } catch (error) {
+          throw projectActivationError;
+        }
+      }
 
       // the generated API.workflow.getWorkflow() can't receive null (due to its generated signature)
       // nor an *explicit* undefined (as this won't be overridden by the defaultParams) for version
@@ -408,11 +483,13 @@ export const useLifecycleStore = defineStore("lifecycle", {
           workflowId,
           includeInteractionInfo: true,
         };
+
       if (version !== null) {
         getWorkflowParams.version = version;
       }
 
       let project: WorkflowSnapshot;
+
       try {
         project = await API.workflow.getWorkflow(getWorkflowParams);
       } catch (error) {
@@ -421,8 +498,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
         });
 
         useWorkflowStore().setWorkflowLoadingError(error as Error);
-
-        throw error;
+        throw new ProjectDataLoadError(error as Error);
       }
 
       if (!project) {
@@ -431,8 +507,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
         );
 
         useWorkflowStore().setWorkflowLoadingError(error);
-
-        throw error;
+        throw new ProjectDataLoadError(error);
       }
 
       this.beforeSetActivateWorkflow({ workflow: project.workflow });

@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 import { createRouter, createWebHistory } from "vue-router";
 
@@ -9,6 +10,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { router, routes } from "@/router/router";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { ProjectActivationError, ProjectDataLoadError } from "../lifecycle";
 import { lifecycleBus } from "../lifecycle-events";
 
 import { applicationState, loadStore } from "./loadStore";
@@ -34,6 +36,12 @@ describe("application::lifecycle", () => {
       routes,
     });
   };
+
+  beforeEach(() => {
+    mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded.mockImplementation(
+      () => true,
+    );
+  });
 
   afterEach(() => {
     vi.clearAllMocks();
@@ -81,15 +89,13 @@ describe("application::lifecycle", () => {
 
       const { lifecycleStore, applicationStore, spaceProvidersStore } =
         loadStore();
-      await lifecycleStore.initializeApplication({
-        $router: router,
-      });
 
+      await lifecycleStore.initializeApplication({ $router: router });
       expect(lifecycleStore.setIsLoadingApp).toHaveBeenCalledWith(true);
-
       expect(mockedAPI.event.subscribeEvent).toHaveBeenCalled();
       expect(mockedAPI.application.getState).toHaveBeenCalled();
-      expect(lifecycleStore.populateHelpMenuAndExamples).not.toHaveBeenCalled();
+      expect(mockedAPI.desktop.getCustomHelpMenuEntries).not.toHaveBeenCalled();
+      expect(mockedAPI.desktop.getExampleProjects).not.toHaveBeenCalled();
       expect(spaceProvidersStore.setAllSpaceProviders).toHaveBeenCalledWith(
         applicationState.spaceProviders,
       );
@@ -118,7 +124,6 @@ describe("application::lifecycle", () => {
   describe("workflow Lifecycle", () => {
     it("loads root workflow successfully", async () => {
       const onWorkflowLoaded = vi.fn();
-
       lifecycleBus.once("onWorkflowLoaded", onWorkflowLoaded);
 
       const mockWorkflow = createWorkflow();
@@ -151,7 +156,7 @@ describe("application::lifecycle", () => {
       expect(lifecycleStore.afterSetActivateWorkflow).toHaveBeenCalled();
 
       expect(
-        deepMocked(API).desktop.setProjectActiveAndEnsureItsLoaded,
+        mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded,
       ).toHaveBeenCalledWith({ projectId: mockWorkflow.projectId });
       expect(workflowStore.activeWorkflow).toStrictEqual(mockWorkflow);
       expect(workflowStore.activeSnapshotId).toBe("snap");
@@ -161,6 +166,63 @@ describe("application::lifecycle", () => {
         workflowId: mockWorkflow.info.containerId,
         snapshotId: "snap",
       });
+    });
+
+    it("handles errors activating a root workflow", async () => {
+      const onWorkflowLoaded = vi.fn();
+      mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded.mockImplementation(
+        () => false,
+      );
+
+      lifecycleBus.once("onWorkflowLoaded", onWorkflowLoaded);
+
+      const mockWorkflow = createWorkflow();
+      const { lifecycleStore } = loadStore();
+
+      expect(onWorkflowLoaded).not.toHaveBeenCalled();
+
+      await expect(() =>
+        lifecycleStore.loadWorkflow({
+          projectId: mockWorkflow.projectId,
+        }),
+      ).rejects.toBeInstanceOf(ProjectActivationError);
+
+      expect(
+        mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded,
+      ).toHaveBeenCalledWith({ projectId: mockWorkflow.projectId });
+      expect(onWorkflowLoaded).not.toHaveBeenCalled();
+      expect(mockedAPI.workflow.getWorkflow).not.toHaveBeenCalled();
+
+      expect(lifecycleStore.afterSetActivateWorkflow).not.toHaveBeenCalled();
+    });
+
+    it("handles errors loading workflow data", async () => {
+      const onWorkflowLoaded = vi.fn();
+      mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded.mockImplementation(
+        () => true,
+      );
+
+      lifecycleBus.once("onWorkflowLoaded", onWorkflowLoaded);
+
+      const mockWorkflow = createWorkflow();
+      const { lifecycleStore, workflowStore } = loadStore();
+
+      const error = new Error("something wrong with the workflow data");
+      mockedAPI.workflow.getWorkflow.mockRejectedValue(error);
+      expect(onWorkflowLoaded).not.toHaveBeenCalled();
+
+      await expect(() =>
+        lifecycleStore.loadWorkflow({
+          projectId: mockWorkflow.projectId,
+        }),
+      ).rejects.toBeInstanceOf(ProjectDataLoadError);
+      expect(workflowStore.setWorkflowLoadingError).toHaveBeenCalledWith(error);
+
+      expect(
+        mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded,
+      ).toHaveBeenCalledWith({ projectId: mockWorkflow.projectId });
+      expect(onWorkflowLoaded).not.toHaveBeenCalled();
+      expect(lifecycleStore.afterSetActivateWorkflow).not.toHaveBeenCalled();
     });
 
     it("loads inner workflow successfully", async () => {
@@ -359,6 +421,80 @@ describe("application::lifecycle", () => {
       });
 
       expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
+    });
+
+    it("should navigate to previous page when a ProjectActivationError occurs", async () => {
+      await router.push({ name: APP_ROUTES.Home.GetStarted });
+      const { lifecycleStore } = loadStore();
+
+      await lifecycleStore.initializeApplication({ $router: router });
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "project1", workflowId: "root" },
+      });
+
+      await flushPromises();
+      expect(lifecycleStore.switchWorkflow).toHaveBeenCalledWith({
+        newWorkflow: { projectId: "project1", workflowId: "root" },
+      });
+
+      expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
+      expect(router.currentRoute.value.params).toEqual({
+        projectId: "project1",
+        workflowId: "root",
+      });
+
+      vi.mocked(lifecycleStore.switchWorkflow).mockRejectedValueOnce(
+        new ProjectActivationError("foo"),
+      );
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "project2", workflowId: "root:12" },
+      });
+
+      expect(router.currentRoute.value.params).toEqual({
+        projectId: "project1",
+        workflowId: "root",
+      });
+    });
+
+    it("should continue to workflow page when a ProjectDataLoadError occurs", async () => {
+      await router.push({ name: APP_ROUTES.Home.GetStarted });
+      const { lifecycleStore } = loadStore();
+
+      await lifecycleStore.initializeApplication({ $router: router });
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "project1", workflowId: "root" },
+      });
+
+      await flushPromises();
+      expect(lifecycleStore.switchWorkflow).toHaveBeenCalledWith({
+        newWorkflow: { projectId: "project1", workflowId: "root" },
+      });
+
+      expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
+      expect(router.currentRoute.value.params).toEqual({
+        projectId: "project1",
+        workflowId: "root",
+      });
+
+      vi.mocked(lifecycleStore.switchWorkflow).mockRejectedValueOnce(
+        new ProjectDataLoadError(new Error("activation error")),
+      );
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "project2", workflowId: "root:12" },
+      });
+
+      expect(router.currentRoute.value.params).toEqual({
+        projectId: "project2",
+        workflowId: "root:12",
+      });
     });
   });
 

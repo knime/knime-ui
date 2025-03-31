@@ -1,6 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
 import { createWorkflow } from "@/test/factories";
+import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
 
@@ -8,7 +10,15 @@ vi.mock("@/util/encodeString", () => ({
   encodeString: vi.fn((value) => value),
 }));
 
+const mockedAPI = deepMocked(API);
+
 describe("application::canvasStateTracking", () => {
+  beforeAll(() => {
+    mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded.mockImplementation(
+      () => true,
+    );
+  });
+
   it("sets saved states", () => {
     const { canvasStateTrackingStore } = loadStore();
     canvasStateTrackingStore.setSavedCanvasStates({

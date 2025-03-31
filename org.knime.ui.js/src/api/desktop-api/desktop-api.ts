@@ -45,7 +45,11 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
               "Desktop API:: Function did not expect a return value",
               { browserFunction, params, payload },
             );
-            reject(payload.result);
+            reject(
+              new Error(
+                `${browserFunction.name} Function did not expect a return value. Got: ${payload.result}`,
+              ),
+            );
             return; // To really stop execution here
           }
 
@@ -411,7 +415,7 @@ export const setProjectActiveAndEnsureItsLoaded = ({
     window.setProjectActiveAndEnsureItsLoaded,
     [projectId],
     "Failed to set project as active in the backend",
-    false,
+    true,
     { block: true },
   );
 };

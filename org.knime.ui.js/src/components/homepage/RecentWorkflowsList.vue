@@ -2,7 +2,6 @@
 import { onMounted, ref } from "vue";
 import { formatTimeAgo } from "@vueuse/core";
 import { API } from "@api";
-import { isEqual } from "lodash-es";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
@@ -109,23 +108,11 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   }
 
   try {
-    await openProject({
-      ...origin,
-      $router,
-    });
+    await openProject({ ...origin, $router });
   } catch (error) {
     consola.error("Could not open recent workflow:", error);
 
     toastPresets.app.openProjectFailed({ error });
-
-    items.value = items.value.filter(
-      (item) => !isEqual(item.meta?.recentWorkflow.origin, origin),
-    );
-
-    API.desktop.removeMostRecentlyUsedProject({
-      spaceProviderId: origin.providerId,
-      ...origin,
-    });
   }
 };
 

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
@@ -25,6 +25,12 @@ describe("workflow preview snapshot", () => {
   const getSnapshotKeys = (
     _store: ReturnType<typeof useWorkflowPreviewSnapshotsStore>,
   ) => Array.from(_store.rootWorkflowSnapshots.keys());
+
+  beforeAll(() => {
+    mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded.mockImplementation(
+      () => true,
+    );
+  });
 
   describe("getActiveWorkflowSnapshot", () => {
     it("should get the active workflow snapshot when on the root level", async () => {

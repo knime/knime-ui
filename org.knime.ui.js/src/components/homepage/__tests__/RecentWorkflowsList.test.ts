@@ -267,16 +267,5 @@ describe("RecentWorkflowsList.vue", () => {
         headline: "Could not open workflow",
       }),
     );
-
-    expect(
-      mockedAPI.desktop.removeMostRecentlyUsedProject,
-    ).toHaveBeenCalledWith({
-      spaceProviderId: recentWorkflows.at(1)?.origin.providerId,
-      ...recentWorkflows.at(1)?.origin,
-    });
-
-    await flushPromises();
-
-    expect(findAllByTestId(wrapper, "recent-workflow-name").length).toBe(2);
   });
 });
