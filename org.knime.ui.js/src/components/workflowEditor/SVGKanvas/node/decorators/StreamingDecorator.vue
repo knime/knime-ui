@@ -45,7 +45,7 @@ export default {
   <path
     v-if="streamable"
     class="streamable"
-    d="M0.5,5.5 h1 m2,0 h1 m2,0 h1 M5.80957 2.40625L8.90332 5.5L5.80957 8.59375"
+    d="M0.5,5.5 h1 m2,0 h1 m2,0 h1.2 M5.80957 2.40625L8.90332 5.5L5.80957 8.59375"
   />
   <g v-else>
     <!-- Colored Background. This makes sure the X is well visible even if it overlaps with the node icon -->

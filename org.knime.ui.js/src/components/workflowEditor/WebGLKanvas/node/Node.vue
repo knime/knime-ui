@@ -30,6 +30,7 @@ import { nodeNameText } from "../util/textStyles";
 
 import NodeActionBar from "./NodeActionBar.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
+import NodeDecorators from "./decorators/NodeDecorators.vue";
 import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeDoubleClick } from "./useNodeDoubleClick";
@@ -337,6 +338,8 @@ const { resolution } = useZoomAwareResolution();
             : undefined
         "
       />
+
+      <NodeDecorators v-if="renderable" :type="type" v-bind="node" />
 
       <NodeState
         v-if="!isMetanode && renderable"
