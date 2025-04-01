@@ -21,7 +21,7 @@ The frontend is based on the [Vue.js] JavaScript framework.
 ### Install dependencies
 
 ```sh
-npm install
+pnpm install
 ```
 
 ## Launch development server
@@ -30,7 +30,7 @@ Compiles all JavaScript sources, assets, … and starts a local web server for d
 code changes will be visible in the browser immediately.
 
 ```sh
-npm run dev
+pnpm run dev
 ```
 
 ## UI running in the browser
@@ -63,7 +63,7 @@ To configure a mode, set the following Java system property (i.e., add to `knime
 To set up hooks via [husky] on the repository (recommended for a frontend-focused development setup) you can run the following npm script:
 
 ```sh
-npm run add-husky
+pnpm run add-husky
 ```
 
 If working on a fullstack setup (backend & frontend) you might want to opt-out and instead fallback to using the global hooks approach (See [here](https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/3023077413/Git+Setup#Set-up-commit-message-template)). This is because husky will intervene with the global hooks and takeover, meaning that if you have other global hooks set up for the repo then those won't work.
@@ -81,16 +81,16 @@ This project contains unit tests written with [vitest].
 They are run with
 
 ```sh
-npm run test:unit
+pnpm run test:unit
 ```
 
-During development, you can use `npm run test:unit -- --watch` to have the unit tests run automatically whenever a
+During development, you can use `pnpm run test:unit -- --watch` to have the unit tests run automatically whenever a
 source file changes.
 
 You can generate a coverage report with
 
 ```sh
-npm run coverage
+pnpm run coverage
 ```
 
 The output can be found in the `test-results` folder. It contains a browseable html report as well as raw coverage data in
@@ -98,37 +98,19 @@ The output can be found in the `test-results` folder. It contains a browseable h
 
 ## Running security audit
 
-npm provides a check against known security issues of used dependencies. In most cases it is sufficient to only check
+pnpm provides a check against known security issues of used dependencies. In most cases it is sufficient to only check
 dependencies that are used in production. Run it by calling
 
 ```sh
-npm audit --production
+pnpm audit --prod
 ```
-
-In some cases security issues can not be addressed right away or do not pose a direct threat (e.g. build dependencies).
-To deal with these run
-
-```sh
-npx resolve-audit --production
-```
-
-The tool will present you with a few choices regarding every security issue, which you can choose from. Most of the
-time it is sufficient to ignore issues for a certain amount of time (e.g. press `i` to ignore and then `M` for one
-month). This will create a `audit-resolve.json` with the security exceptions that needs to be checked in. To test if
-there is going to be security audit problems on our build system, call
-
-```sh
-npm run audit
-```
-
-which takes the exceptions into account.
 
 ## Build production version
 
 Run the JS production build via:
 
 ```sh
-npm run build
+pnpm run build
 ```
 
 This will also run the `type-check` step to ensure there are no TypeScript errors in the codebase. The output build will be placed in a `/dist` folder in the root of the JS repository
