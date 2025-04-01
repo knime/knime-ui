@@ -21,6 +21,8 @@ import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 
+const MAX_PIXEL_RATIO = 2.5;
+
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
 export const minZoomFactor = 0.05; // 5%
@@ -41,6 +43,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const zoomFactor = ref(defaultZoomFactor);
   const containerSize = ref({ width: 0, height: 0 });
   const interactionsEnabled = ref(true);
+  const pixelRatio = ref(1);
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -79,6 +82,15 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       stage.value.scale.y = newFactor;
     }
   };
+
+  const setPixelRatio = (ratio: number) => {
+    pixelRatio.value = ratio;
+  };
+
+  const getPixelRatio = computed(() => {
+    // use upper bound to avoid too high resolution on high dpi screens (e.g. browser zoom) due to performance impact
+    return Math.min(pixelRatio.value, MAX_PIXEL_RATIO);
+  });
 
   const setContainerSize = ({
     width,
@@ -581,5 +593,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     setCanvasOffset,
     setCanvasAnchor,
     clearCanvasAnchor,
+    setPixelRatio,
+    pixelRatio: getPixelRatio,
   };
 });

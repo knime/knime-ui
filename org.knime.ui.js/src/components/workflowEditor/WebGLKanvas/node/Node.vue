@@ -24,6 +24,7 @@ import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import { useObjectInteractions } from "../common/useObjectInteractions";
+import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import NodePorts from "../ports/NodePorts.vue";
 import { nodeNameText } from "../util/textStyles";
 
@@ -127,8 +128,8 @@ const textYAnchor = computed(() =>
 );
 
 const nodeNameDimensions = ref({
-  width: nameMeasures.width * nodeNameText.downscalingFactor,
-  height: nameMeasures.height * nodeNameText.downscalingFactor,
+  width: nameMeasures.width,
+  height: nameMeasures.height,
 });
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
@@ -154,11 +155,10 @@ const renderable = computed(
 
 const nodeNamePosition = computed(() => {
   const { x, y } = translatedPosition.value;
-  const padding =
-    (nodeNameText.styles.padding ?? 0) * nodeNameText.downscalingFactor;
+  const padding = nodeNameText.styles.padding ?? 0;
   return {
     x: x + hoverSize.value.x + hoverSize.value.width / 2 + padding,
-    y: y - $shapes.nodeSize / 2 - $shapes.nodeNameMargin + padding,
+    y: y - nameMeasures.height - $shapes.nodeNameMargin + padding,
   };
 });
 
@@ -270,6 +270,8 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
 
   canvasAnchoredComponentsStore.toggleContextMenu();
 };
+
+const { resolution } = useZoomAwareResolution();
 </script>
 
 <template>
@@ -314,8 +316,7 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
     <Text
       label="NodeName"
       :position="nodeNamePosition"
-      :resolution="1.2"
-      :scale="nodeNameText.downscalingFactor"
+      :resolution="resolution"
       :style="nodeNameText.styles"
       :anchor="{ x: 0.5, y: textYAnchor }"
       :round-pixels="true"
@@ -338,7 +339,11 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
         "
       />
 
-      <NodeState v-if="!isMetanode && renderable" v-bind="node.state" />
+      <NodeState
+        v-if="!isMetanode && renderable"
+        v-bind="node.state"
+        :text-resolution="resolution"
+      />
     </Container>
 
     <NodePorts

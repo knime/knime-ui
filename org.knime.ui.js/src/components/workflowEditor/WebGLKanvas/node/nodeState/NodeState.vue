@@ -14,6 +14,7 @@ import NodeStateProgress from "./NodeStateProgress.vue";
 
 type Props = NodeState & {
   loopStatus?: string;
+  textResolution?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,6 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
   issue: undefined,
   resolutions: () => [],
   loopStatus: undefined,
+  textResolution: undefined,
 });
 
 /**
@@ -142,7 +144,7 @@ const strokeColors = computed(() => {
       :x="$shapes.nodeSize / 2"
       :anchor="{ x: 0.5, y: 0 }"
       :style="nodeStateText.styles"
-      :scale="nodeStateText.downscalingFactor"
+      :resolution="textResolution"
     >
       {{ loopStatus && loopStatus === "PAUSED" ? "paused" : "queued" }}
     </Text>
@@ -151,6 +153,7 @@ const strokeColors = computed(() => {
       <NodeStateProgress
         :progress="progress"
         :execution-state="executionState"
+        :text-resolution="textResolution"
       />
     </template>
 

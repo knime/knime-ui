@@ -11,6 +11,7 @@ import { nodeStateText } from "../../util/textStyles";
 type Props = {
   progress?: number;
   executionState?: NodeState.ExecutionStateEnum;
+  textResolution?: number;
 };
 
 const props = defineProps<Props>();
@@ -79,7 +80,7 @@ useAnimatePixiContainer<number>({
       :y="1"
       :anchor="{ x: 0.5, y: 0 }"
       :style="nodeStateText.styles"
-      :scale="nodeStateText.downscalingFactor"
+      :resolution="textResolution"
     >
       {{ progressDisplayPercentage }}%
     </Text>
@@ -127,7 +128,7 @@ useAnimatePixiContainer<number>({
         :y="1"
         :anchor="{ x: 0.5, y: 0 }"
         :style="{ ...nodeStateText.styles, fill: 'white' }"
-        :scale="nodeStateText.downscalingFactor"
+        :resolution="textResolution"
       >
         {{ progressDisplayPercentage }}%
       </Text>

@@ -5,6 +5,7 @@ import type { Node } from "@/api/gateway-api/generated-api";
 import { useNodeActionBar } from "../../common/useNodeActionBar";
 import ActionBar from "../common/ActionBar.vue";
 import { getIcons } from "../common/iconCache";
+import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import { nodeIdText } from "../util/textStyles";
 
 /**
@@ -63,6 +64,8 @@ const { visibleActions } = useNodeActionBar({
   canOpenView,
   icons: getIcons(),
 });
+
+const { resolution } = useZoomAwareResolution();
 </script>
 
 <template>
@@ -73,8 +76,7 @@ const { visibleActions } = useNodeActionBar({
       label="NodeId"
       :anchor-x="0.5"
       :position-y="-$shapes.nodeIdMargin - 8"
-      :resolution="2"
-      :scale="nodeIdText.downscalingFactor"
+      :resolution="resolution"
       :style="nodeIdText.styles"
       :round-pixels="true"
     >

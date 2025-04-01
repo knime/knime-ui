@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Ref, computed, onUnmounted, ref, watch } from "vue";
+import { type Ref, onUnmounted, ref, watch } from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
@@ -26,6 +26,7 @@ const {
   containerSize,
   isDebugModeEnabled: isCanvasDebugEnabled,
   canvasLayers,
+  pixelRatio,
 } = storeToRefs(canvasStore);
 
 const isPixiAppInitialized = ref(false);
@@ -87,11 +88,14 @@ const { mousePan, scrollPan } = useCanvasPanning({
 
 const { onMouseWheel } = useMouseWheel({ scrollPan });
 
-const { pixelRatio } = useDevicePixelRatio();
-const resolution = computed(() => {
-  // use lower and upper bounds to avoid too high resolution on high dpi screens (e.g. browser zoom) due to performance impact
-  return Math.min(Math.max(pixelRatio.value, 1.25), 2.5); // eslint-disable-line no-magic-numbers
-});
+const { pixelRatio: devicePixelRatio } = useDevicePixelRatio();
+watch(
+  devicePixelRatio,
+  (value) => {
+    canvasStore.setPixelRatio(value);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -100,7 +104,7 @@ const resolution = computed(() => {
     :background-color="0xffffff"
     :width="containerSize.width"
     :height="containerSize.height"
-    :resolution="resolution"
+    :resolution="pixelRatio"
     :auto-density="true"
     :antialias="true"
     :resize-to="() => getKanvasDomElement()!"
