@@ -24,6 +24,7 @@ type Props = {
   type: NativeNodeInvariants.TypeEnum | null;
   executionState?: MetaNodeState.ExecutionStateEnum;
   isHovered?: boolean;
+  renderDetails?: boolean;
 };
 
 const props = defineProps<Props>();
@@ -77,6 +78,7 @@ const renderTorso = (graphics: GraphicsInst) => {
       :type="type"
       :kind="kind"
       :icon="icon"
+      :render-details="renderDetails"
     />
 
     <NodeTorsoUnknown v-else />

@@ -20,6 +20,7 @@ type Props = {
   kind: Node.KindEnum;
   icon: string | null;
   type: NativeNodeInvariants.TypeEnum | null;
+  renderDetails?: boolean;
 };
 
 const props = defineProps<Props>();
@@ -109,7 +110,7 @@ onUnmounted(() => {
     />
 
     <Sprite
-      v-if="texture"
+      v-if="texture && renderDetails"
       event-mode="none"
       label="NodeIcon"
       :texture="texture as any"
