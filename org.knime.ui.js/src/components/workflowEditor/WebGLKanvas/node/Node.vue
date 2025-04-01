@@ -1,8 +1,10 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, unref } from "vue";
+import { computed, onMounted, ref, unref, useTemplateRef } from "vue";
+import { watchThrottled } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
+import type { Container } from "pixi.js";
 
 import type { KnimeNode } from "@/api/custom-types";
 import {
@@ -21,6 +23,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import type { ContainerInst } from "@/vue3-pixi";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import { useObjectInteractions } from "../common/useObjectInteractions";
@@ -270,6 +273,19 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
 
   canvasAnchoredComponentsStore.toggleContextMenu();
 };
+
+const { zoomFactor } = storeToRefs(useWebGLCanvasStore());
+const nodeContainer = useTemplateRef<ContainerInst>("nodeContainer");
+
+onMounted(() => {
+  watchThrottled(
+    [zoomFactor, () => isNodeSelected.value(props.node.id)],
+    ([factor, isSelected]) => {
+      nodeContainer.value!.cacheAsTexture(factor < 0.4 && !isSelected);
+    },
+    { immediate: true, throttle: 100 },
+  );
+});
 </script>
 
 <template>
@@ -283,6 +299,7 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
   />
 
   <Container
+    ref="nodeContainer"
     :label="`Node__${node.id}`"
     :renderable="renderable"
     :visible="renderable"

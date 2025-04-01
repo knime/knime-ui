@@ -1,10 +1,13 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, toRefs, useTemplateRef, watch } from "vue";
+import { computed, onMounted, toRefs, useTemplateRef, watch } from "vue";
+import { watchThrottled } from "@vueuse/core";
 import { type AnimationPlaybackControls, animate } from "motion";
+import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
@@ -202,6 +205,18 @@ watch(suggestDelete, (shouldAnimate) => {
     replacementAnimation = undefined;
     renderConnector(pathSegment.value!, normalBezier, currentWidth);
   }
+});
+
+const { zoomFactor } = storeToRefs(useWebGLCanvasStore());
+
+onMounted(() => {
+  watchThrottled(
+    [zoomFactor],
+    ([factor]) => {
+      pathSegment.value!.cacheAsTexture(factor < 0.4);
+    },
+    { immediate: true, throttle: 100 },
+  );
 });
 </script>
 
