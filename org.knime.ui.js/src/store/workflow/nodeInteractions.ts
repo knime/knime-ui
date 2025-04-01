@@ -278,12 +278,10 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       nodeId,
       side,
       index,
-      portGroup,
     }: {
       nodeId: string;
       side: "input" | "output";
       index: number;
-      portGroup: string;
     }) {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
@@ -293,7 +291,6 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         workflowId,
         nodeId,
         side: side as PortCommand.SideEnum,
-        portGroup,
         portIndex: index,
       });
     },

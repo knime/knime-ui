@@ -212,7 +212,6 @@ const removePort = async (
     nodeId: props.nodeId,
     side,
     index,
-    portGroup: portGroupId!,
   });
 
   clearSelection();

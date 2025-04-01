@@ -216,7 +216,6 @@ export const useWorkflowStore = defineStore("workflow", {
           nodeId,
           side: side as PortCommand.SideEnum,
           index,
-          portGroup: sidePorts[index].portGroupId!,
         })
         .then(() => {
           if (isLastSideport) {

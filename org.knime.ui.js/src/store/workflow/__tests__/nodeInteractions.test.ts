@@ -222,7 +222,6 @@ describe("workflow::nodeInteractions", () => {
         nodeId: "node x",
         side: "input" as const,
         index: 1,
-        portGroup: "group",
       };
       workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -235,7 +234,6 @@ describe("workflow::nodeInteractions", () => {
       expect(mockedAPI.workflowCommand.RemovePort).toHaveBeenCalledWith({
         nodeId: payload.nodeId,
         side: payload.side,
-        portGroup: payload.portGroup,
         portIndex: payload.index,
         projectId: "foo",
         workflowId: "root",
