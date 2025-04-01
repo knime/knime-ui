@@ -227,6 +227,12 @@ export interface AddPortCommand extends PortCommand {
      * @memberof AddPortCommand
      */
     portTypeId: string;
+    /**
+     * The identifier (name) of the modified port group. Required for native nodes, absent for container nodes.
+     * @type {string}
+     * @memberof AddPortCommand
+     */
+    portGroup?: string;
 
 }
 
@@ -3070,12 +3076,6 @@ export interface PortCommand extends WorkflowCommand {
      */
     side: PortCommand.SideEnum;
     /**
-     * The identifier (name) of the modified port group. Required for native nodes, absent for container nodes.
-     * @type {string}
-     * @memberof PortCommand
-     */
-    portGroup?: string;
-    /**
      *
      * @type {string}
      * @memberof PortCommand
@@ -3395,7 +3395,7 @@ export namespace ProjectMetadata {
 export interface RemovePortCommand extends PortCommand {
 
     /**
-     * The index of the port to be removed (out of all ports in this side). Only used for container nodes.
+     * The index of the port to be removed (out of all ports in this side, including implicit flow variable port).
      * @type {number}
      * @memberof RemovePortCommand
      */
