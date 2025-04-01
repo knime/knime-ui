@@ -175,9 +175,9 @@ final class ManipulateComponents {
             changeOptions);
         if (newUri.isPresent()) {
             final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
-            final var cmd = workflowMiddleware.getCommands();
+            final var cmd = workflowMiddleware.getCommands(wfKey);
             cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, sourceURI, newUri.get(), false));
-            cmd.execute(wfKey, null);
+            cmd.execute(null);
         }
     }
 
@@ -227,17 +227,17 @@ final class ManipulateComponents {
 
         final var newSrcUri = targetVersion.applyTo(srcUri);
         final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
-        final var cmd = workflowMiddleware.getCommands();
+        final var cmd = workflowMiddleware.getCommands(wfKey);
         cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, srcUri, newSrcUri, true));
-        cmd.execute(wfKey, null);
+        cmd.execute(null);
 
         // ChangeComponentHubVersionCommand does not check canExecute of the actual update command
         cmd.setCommandToExecute(getUpdateComponentCommand(component));
         try {
-            cmd.execute(wfKey, null);
+            cmd.execute(null);
         } catch (final ServiceCallException e) {
             // undo setLink if we could not update the component
-            cmd.undo(wfKey);
+            cmd.undo();
             throw e;
         }
     }

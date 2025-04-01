@@ -165,10 +165,11 @@ final class ImportAPI {
         }
 
         // execute pseudo-command to enable undo and redo
-        var commands = DesktopAPI.getDeps(WorkflowMiddleware.class).getCommands();
+        var commands =
+            DesktopAPI.getDeps(WorkflowMiddleware.class).getCommands(new WorkflowKey(projectId, workflowIdEnt));
         commands.setCommandToExecute(new AddComponentCommand(wfmSupplier, componentId, command));
         try {
-            commands.execute(new WorkflowKey(projectId, workflowIdEnt), null);
+            commands.execute(null);
         } catch (ServiceCallException e) { // NOSONAR
             // will never happen since the workflow has already been resolved above and the command-execute does nothing
         }
