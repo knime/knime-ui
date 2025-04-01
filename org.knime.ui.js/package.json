@@ -10,7 +10,7 @@
     "build:only": "vite build",
     "build": "pnpm type-check && vite build",
     "serve": "vite preview",
-    "lint": "run-p 'lint:* -- --fix'",
+    "lint": "run-p 'lint:* --fix'",
     "lint:js": "eslint --cache . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
     "lint:css": "stylelint --cache '**/*.{css,vue}'",
     "format": "prettier --cache --write .",
