@@ -62,7 +62,6 @@ const tablePortRenderFn = (graphics: GraphicsInst) => {
 const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics.circle(0, 0, portSize / 2 - 0.2);
-  graphics.stroke({ width: strokeWidth, color: portColor.value });
   graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
 };
 
