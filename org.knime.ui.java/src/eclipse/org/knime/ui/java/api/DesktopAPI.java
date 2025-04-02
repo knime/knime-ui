@@ -183,7 +183,7 @@ public final class DesktopAPI {
                         var res = invokeMethod(method, args);
                         event.set("result", MAPPER.valueToTree(res));
                     } catch (Throwable e) {  // NOSONAR
-                        LOGGER.debug("Desktop API function call failed for '" + name + "'", e);
+                        LOGGER.error("Desktop API function call failed for '" + name + "'", e);
                         event.put("error", e.getMessage());
                     }
                     var eventConsumer = getDeps(EventConsumer.class);
