@@ -104,31 +104,25 @@ export namespace AddComponentCommand {
 /**
  *
  * @export
- * @interface AddComponentResult
+ * @interface AddComponentPlaceholderResult
  */
-export interface AddComponentResult extends CommandResult {
+export interface AddComponentPlaceholderResult extends CommandResult {
 
     /**
-     * The id of the new componet added.
+     * The id of the placeholder added.
      * @type {string}
-     * @memberof AddComponentResult
+     * @memberof AddComponentPlaceholderResult
      */
-    newNodeId: string;
-    /**
-     *
-     * @type {ProblemMessage}
-     * @memberof AddComponentResult
-     */
-    problem?: ProblemMessage;
+    newPlaceholderId: string;
 
 }
 
 
 /**
  * @export
- * @namespace AddComponentResult
+ * @namespace AddComponentPlaceholderResult
  */
-export namespace AddComponentResult {
+export namespace AddComponentPlaceholderResult {
 }
 /**
  * Adds a new node to the workflow.
@@ -906,7 +900,8 @@ export namespace CommandResult {
         AddNodeResult = 'add_node_result',
         AddPortResult = 'add_port_result',
         AddAnnotationResult = 'add_annotation_result',
-        UpdateLinkedComponentsResult = 'update_linked_components_result'
+        UpdateLinkedComponentsResult = 'update_linked_components_result',
+        AddComponentPlaceholderResult = 'add_component_placeholder_result'
     }
 }
 /**
@@ -1008,6 +1003,75 @@ export interface ComponentNodeDescription extends EditableMetadata {
  * @namespace ComponentNodeDescription
  */
 export namespace ComponentNodeDescription {
+}
+/**
+ * Placeholder for a component why it&#39;s being loaded.
+ * @export
+ * @interface ComponentPlaceholder
+ */
+export interface ComponentPlaceholder {
+
+    /**
+     * Globally unique identifier for the placeholder.
+     * @type {string}
+     * @memberof ComponentPlaceholder
+     */
+    id: string;
+    /**
+     * The state of the placeholder.
+     * @type {string}
+     * @memberof ComponentPlaceholder
+     */
+    state: ComponentPlaceholder.StateEnum;
+    /**
+     * The id of the component this placeholder was finally replaced by. Only present in case of the &#39;success&#39; states since it&#39;s not known in advance while loading.
+     * @type {string}
+     * @memberof ComponentPlaceholder
+     */
+    componentId?: string;
+    /**
+     * Optional loading progress.
+     * @type {number}
+     * @memberof ComponentPlaceholder
+     */
+    progress?: number;
+    /**
+     * Loading-, error- or warning-message.
+     * @type {string}
+     * @memberof ComponentPlaceholder
+     */
+    message?: string;
+    /**
+     * Additional details for the loading-, error- or warning-message.
+     * @type {string}
+     * @memberof ComponentPlaceholder
+     */
+    details?: string;
+    /**
+     *
+     * @type {XY}
+     * @memberof ComponentPlaceholder
+     */
+    position: XY;
+
+}
+
+
+/**
+ * @export
+ * @namespace ComponentPlaceholder
+ */
+export namespace ComponentPlaceholder {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum StateEnum {
+        LOADING = 'LOADING',
+        ERROR = 'ERROR',
+        SUCCESSWITHWARNING = 'SUCCESS_WITH_WARNING',
+        SUCCESS = 'SUCCESS'
+    }
 }
 /**
  * The (user-editable) description of a component&#39;s port. Assumed to be Plaintext.
@@ -3209,49 +3273,6 @@ export interface PortViews {
 
 
 /**
- * Represents a problem message.
- * @export
- * @interface ProblemMessage
- */
-export interface ProblemMessage {
-
-    /**
-     *
-     * @type {string}
-     * @memberof ProblemMessage
-     */
-    type: ProblemMessage.TypeEnum;
-    /**
-     *
-     * @type {string}
-     * @memberof ProblemMessage
-     */
-    title: string;
-    /**
-     *
-     * @type {string}
-     * @memberof ProblemMessage
-     */
-    message: string;
-
-}
-
-
-/**
- * @export
- * @namespace ProblemMessage
- */
-export namespace ProblemMessage {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum TypeEnum {
-        Error = 'error',
-        Warning = 'warning'
-    }
-}
-/**
  * Represents an entire workflow project.
  * @export
  * @interface Project
@@ -4626,6 +4647,12 @@ export interface Workflow {
      * @memberof Workflow
      */
     dirty: boolean;
+    /**
+     * List of placeholders or absent if there are none.
+     * @type {Array<ComponentPlaceholder>}
+     * @memberof Workflow
+     */
+    componentPlaceholders?: Array<ComponentPlaceholder>;
 
 }
 
@@ -5154,20 +5181,20 @@ const component = function(rpcClient: RPCClient) {
         },
         /**
          * Query the current page while reexecuting
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {string} resetNodeIdSuffix The ID of the node that triggered the reexecution from within a component, i.e., there is no leading root.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {string} params.resetNodeIdSuffix The ID of the node that triggered the reexecution from within a component, i.e., there is no leading root.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        pollComponentReexecutionStatus(
+        async pollComponentReexecutionStatus(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  resetNodeIdSuffix: string  }
         ): Promise<any> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentService.pollComponentReexecutionStatus', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
@@ -5176,7 +5203,7 @@ const component = function(rpcClient: RPCClient) {
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {string} params.resetNodeIdSuffix The ID of the node that triggered the reexecution from within a component, i.e., there is no leading root.
-         * @param {{ [key: string]: string; }} params.viewValues
+         * @param {{ [key: string]: string; }} params.viewValues 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
@@ -5184,9 +5211,9 @@ const component = function(rpcClient: RPCClient) {
         async triggerComponentReexecution(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  resetNodeIdSuffix: string,  viewValues: { [key: string]: string; }  }
         ): Promise<any> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentService.triggerComponentReexecution', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
@@ -5200,7 +5227,7 @@ const event = function(rpcClient: RPCClient) {
     return {
         /**
          * Adds a new event listener for a certain type of event.
-         * @param {EventType} [params.eventType]
+         * @param {EventType} [params.eventType] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {InvalidRequestException} If the request is invalid for a reason.
@@ -5216,7 +5243,7 @@ const event = function(rpcClient: RPCClient) {
         },
         /**
          * Unregisters event listeners.
-         * @param {EventType} [params.eventType]
+         * @param {EventType} [params.eventType] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5268,7 +5295,7 @@ const kai = function(rpcClient: RPCClient) {
         /**
          * Sends a request to a chain.
          * @param {string} params.kaiChainId Id of a K-AI chain.
-         * @param {KaiRequest} params.kaiRequest
+         * @param {KaiRequest} params.kaiRequest 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5283,7 +5310,7 @@ const kai = function(rpcClient: RPCClient) {
         /**
          * Submits feedback for a chain.
          * @param {string} params.kaiFeedbackId Id of the K-AI feedback
-         * @param {KaiFeedback} params.kaiFeedback
+         * @param {KaiFeedback} params.kaiFeedback 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5310,8 +5337,8 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {'dialog' | 'view'} params.extensionType The node ui-extension-type, i.e. dialog or view.
-         * @param {'initial_data' | 'data' | 'apply_data'} params.serviceType
-         * @param {string} [params.dataServiceRequest]
+         * @param {'initial_data' | 'data' | 'apply_data'} params.serviceType 
+         * @param {string} [params.dataServiceRequest] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
@@ -5469,7 +5496,7 @@ const noderepository = function(rpcClient: RPCClient) {
     return {
         /**
          * Provides metadata and contents of node categories.
-         * @param {Array<string>} params.categoryPath
+         * @param {Array<string>} params.categoryPath 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NoSuchElementException} The requested element was not found.
@@ -5590,8 +5617,8 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} params.portIdx The port index to be used.
          * @param {number} params.viewIdx The index of the specific port view to obtain
-         * @param {'initial_data' | 'data'} params.serviceType
-         * @param {string} [params.dataServiceRequest]
+         * @param {'initial_data' | 'data'} params.serviceType 
+         * @param {string} [params.dataServiceRequest] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
@@ -6145,13 +6172,13 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
      */
 	AddComponent(
 		params: { projectId: string, workflowId: string } & Omit<AddComponentCommand, 'kind'>
-    ): Promise<AddComponentResult> {
+    ): Promise<AddComponentPlaceholderResult> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddComponent }
-		}) as Promise<AddComponentResult>;
+		}) as Promise<AddComponentPlaceholderResult>;
 		return postProcessCommandResponse(commandResponse);
 	},	
 

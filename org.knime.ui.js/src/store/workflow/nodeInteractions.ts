@@ -6,7 +6,6 @@ import type {
   Connection,
   NodeFactoryKey,
   PortCommand,
-  ProblemMessage,
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
@@ -135,7 +134,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         y: geometry.utils.snapToGrid(position.y),
       };
 
-      let newNodeId: string | null, loadProblem: ProblemMessage | undefined;
+      let newNodeId: string | null;
       if (isComponent && spaceItemReference) {
         if (isBrowser) {
           try {
@@ -150,11 +149,10 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
               spaceId: spaceItemReference.spaceId,
               itemId: spaceItemReference.itemId,
             });
-            newNodeId = result.newNodeId;
-            if (result.problem) {
-              loadProblem = result.problem;
-            }
+            // TODO re-visit with NXT-3471
+            newNodeId = result.newPlaceholderId;
           } catch (error) {
+            // TODO re-visit with NXT-3471
             return {
               problem: {
                 type: "error",
@@ -204,18 +202,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         }
       }
 
-      if (loadProblem) {
-        return {
-          newNodeId,
-          problem: {
-            type: loadProblem.type,
-            headline: loadProblem.title,
-            message: loadProblem.message,
-          },
-        };
-      } else {
-        return { newNodeId };
-      }
+      return { newNodeId };
     },
 
     replaceNode({
