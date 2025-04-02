@@ -54,6 +54,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.CoreException;
@@ -100,8 +101,9 @@ final class SaveProject {
      * @param projectId ID of the project
      * @param projectSVG SVG of the project, should not be {@code null}.
      * @param localOnly if {@code true}, the project is only saved locally even if it is a temporary copy from Hub
+     * @return A boolean indicating whether the project was saved.
      */
-    static void saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
+    static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
         if (projectSVG == null) {
             LOGGER.warn("Saving the project without a workflow preview. This is unexpected and should not happen.");
         }
@@ -110,10 +112,12 @@ final class SaveProject {
         if (isExecutionInProgress(projectWfm)) {
             // Show a warning otherwise
             DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
+            return false;
         } else {
-            saveProjectWithProgressBar(projectWfm, projectSVG, localOnly);
+            var wasSaveSuccessful = saveProjectWithProgressBar(projectWfm, projectSVG, localOnly);
             // Emit a ProjectDirtyStateEvent
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            return wasSaveSuccessful;
         }
     }
 
@@ -122,17 +126,19 @@ final class SaveProject {
         return state.isExecutionInProgress() || state.isExecutingRemotely();
     }
 
-    private static void saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
-            final boolean localOnly) {
+    private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
+                                                      final boolean localOnly) {
+        var wasSaveSuccessful = new AtomicBoolean();
         try {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(
-                monitor -> saveProject(monitor, wfm, svg, localOnly));
+                    monitor -> wasSaveSuccessful.set(saveProject(monitor, wfm, svg, localOnly)));
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted the saving process");
             Thread.currentThread().interrupt();
         }
+        return wasSaveSuccessful.get();
     }
 
     static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,

@@ -43,23 +43,6 @@ const getHubBaseUrl = (provider?: SpaceProviderNS.SpaceProvider | null) => {
   return provider?.hostname;
 };
 
-const confirmationButtons = [
-  {
-    type: "cancel" as const,
-    label: "Cancel",
-  },
-  {
-    type: "cancel" as const,
-    label: "No",
-    flushRight: true,
-  },
-  {
-    type: "confirm" as const,
-    label: "Yes",
-    flushRight: true,
-  },
-];
-
 export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   const $router = useRouter();
   const { show: showConfirmDialog } = useConfirmDialog();
@@ -150,7 +133,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     });
 
     const newVersion = await hubApi.createVersion({
-      projectItemId: activeProjectOrigin!.itemId!,
+      projectItemId: activeProjectOrigin!.itemId,
       title: name,
       description,
     });
@@ -247,29 +230,37 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
+    let canSetNewRoute: boolean | null = true;
+
     if (
       activeProjectCurrentVersion.value === CURRENT_STATE_VERSION &&
       useDirtyProjectsTrackingStore().dirtyProjectsMap[activeProjectId]
     ) {
-      const { confirmed } = await showConfirmDialog({
-        title: "Unsaved changes",
-        message: "This workflow has unsaved changes. Save to proceed?",
-        buttons: confirmationButtons,
-      });
-
-      if (!confirmed) {
-        return;
+      try {
+        canSetNewRoute = await useDesktopInteractionsStore().saveProject();
+      } catch (error) {
+        const errorMessage = typeof error === "string" ? error : "unknown"; // desktop-api.ts returns reject(DesktopAPIFunctionResultPayload.error)
+        canSetNewRoute = false;
+        getToastsProvider().show({
+          type: "warning",
+          deduplicationKey:
+            "workflowVersion.ts::saveVersion::ProjectWasNotSaved",
+          headline: "Could not save workflow",
+          message: `Saving project failed. Cause: ${errorMessage}`,
+          autoRemove: true,
+        });
       }
-
-      await useDesktopInteractionsStore().saveProject(); // TODO: NXT-3362 Check result?
     }
-    $router.push({
-      name: APP_ROUTES.WorkflowPage,
-      params: { projectId: activeProjectId },
-      query: {
-        version: version === CURRENT_STATE_VERSION ? null : String(version),
-      },
-    });
+
+    if (canSetNewRoute) {
+      await $router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: activeProjectId },
+        query: {
+          version: version === CURRENT_STATE_VERSION ? null : String(version),
+        },
+      });
+    }
   }
 
   async function refreshData(
@@ -327,7 +318,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
 
     if (!activeProjectId) {
       consola.error(
-        "WorkflowVersionsStore::activatesionsMode -> Prerequisite failed: activeProjectId",
+        "WorkflowVersionsStore::activateVersionsMode -> Prerequisite failed: activeProjectId",
       );
       return;
     }

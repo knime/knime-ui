@@ -1,6 +1,7 @@
+/* eslint-disable max-lines */
 import { type Mocked, beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
 import { flushPromises } from "@vue/test-utils";
+import { API } from "@api";
 import { useRouter } from "vue-router";
 
 import {
@@ -12,13 +13,16 @@ import {
 } from "@knime/hub-features/versions";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
   createWorkflow,
 } from "@/test/factories";
+import { deepMocked, mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import type { VersionsModeStatus } from "../workflowVersions";
@@ -111,6 +115,10 @@ vi.mock("vue-router", async (importOriginal) => ({
   useRouter: vi.fn(() => ({ push: routerPush })),
   useRoute: vi.fn(() => ({})),
 }));
+
+const mockedAPI = deepMocked(API);
+
+const version = 42;
 
 describe("workflow store: versions", () => {
   beforeEach(() => {
@@ -325,8 +333,8 @@ describe("workflow store: versions", () => {
       const { workflowVersionsStore } = await setupStore();
 
       expect(workflowVersionsStore.isSidepanelOpen).toBe(true);
-      workflowVersionsStore.deactivateVersionsMode();
-      await nextTick();
+      await workflowVersionsStore.deactivateVersionsMode();
+
       expect(workflowVersionsStore.isSidepanelOpen).toBe(false);
     });
 
@@ -335,10 +343,10 @@ describe("workflow store: versions", () => {
 
       workflowStore.activeWorkflow = createWorkflow({
         info: {
-          version: "42",
+          version: version.toString(),
         },
       });
-      expect(workflowVersionsStore.activeProjectCurrentVersion).toBe(42);
+      expect(workflowVersionsStore.activeProjectCurrentVersion).toBe(version);
 
       workflowStore.activeWorkflow.info.version = undefined;
       expect(workflowVersionsStore.activeProjectCurrentVersion).toBe(
@@ -370,7 +378,7 @@ describe("workflow store: versions", () => {
       const description = "Some mock description.";
 
       mockedVersionsApi.createVersion.mockResolvedValueOnce({
-        version: 42,
+        version,
         author: "",
         createdOn: "",
         title: "",
@@ -387,7 +395,7 @@ describe("workflow store: versions", () => {
       });
       expect(
         workflowVersionsStore.activeProjectVersionsModeInfo?.loadedVersions,
-      ).toContainEqual(expect.objectContaining({ version: 42 }));
+      ).toContainEqual(expect.objectContaining({ version }));
     });
 
     it("deleteVersion", async () => {
@@ -403,9 +411,9 @@ describe("workflow store: versions", () => {
 
     it("delete selected version", async () => {
       const { workflowVersionsStore, projectId } = await setupStore();
-      vi.mocked(workflowVersionsStore).activeProjectCurrentVersion = 42;
+      workflowVersionsStore.activeProjectCurrentVersion = version;
 
-      await workflowVersionsStore.deleteVersion(42);
+      await workflowVersionsStore.deleteVersion(version);
 
       expect(useRouter().push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
@@ -416,26 +424,92 @@ describe("workflow store: versions", () => {
       });
     });
 
-    it("switchVersion", async () => {
-      const { workflowVersionsStore, projectId } = await setupStore();
+    describe("switchVersion", () => {
+      it("in clean state sets new route and does not try to save project", async () => {
+        const { workflowVersionsStore, projectId } = await setupStore();
 
-      await workflowVersionsStore.switchVersion(42);
-      expect(useRouter().push).toHaveBeenLastCalledWith({
-        name: APP_ROUTES.WorkflowPage,
-        params: { projectId },
-        query: {
-          version: "42",
-        },
+        await workflowVersionsStore.switchVersion(version);
+        expect(useRouter().push).toHaveBeenLastCalledWith({
+          name: APP_ROUTES.WorkflowPage,
+          params: { projectId },
+          query: {
+            version: version.toString(),
+          },
+        });
+
+        await workflowVersionsStore.switchVersion(CURRENT_STATE_VERSION);
+        expect(useRouter().push).toHaveBeenLastCalledWith({
+          name: APP_ROUTES.WorkflowPage,
+          params: { projectId },
+          query: {
+            version: null,
+          },
+        });
+        expect(mockedAPI.desktop.saveProject).not.toHaveBeenCalled();
       });
 
-      await workflowVersionsStore.switchVersion(CURRENT_STATE_VERSION);
-      expect(useRouter().push).toHaveBeenLastCalledWith({
-        name: APP_ROUTES.WorkflowPage,
-        params: { projectId },
-        query: {
-          version: null,
-        },
+      it("in dirty state with successful saveProject sets new route but does not show error toast", async () => {
+        const {
+          workflowVersionsStore,
+          projectId,
+          workflowStore,
+          workflowPreviewSnapshotsStore,
+        } = await setupStore();
+        useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
+        vi.mocked(
+          workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+        ).mockResolvedValueOnce("svg img data");
+        workflowStore.activeWorkflow = createWorkflow({ projectId });
+        mockedAPI.desktop.saveProject.mockResolvedValueOnce(true);
+        const toast = mockedObject(getToastsProvider());
+
+        await workflowVersionsStore.switchVersion(version);
+
+        expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith({
+          projectId,
+          workflowPreviewSvg: "svg img data",
+        });
+        expect(useRouter().push).toHaveBeenCalled();
+        expect(toast.show).not.toHaveBeenCalled();
       });
+
+      it.each([
+        ["some error", "some error"],
+        [{}, "unknown"],
+      ])(
+        "in dirty state with unsuccessful saveProject does not set new route but shows error toast",
+        async (rejectedValue, expectedErrorCause) => {
+          const {
+            workflowVersionsStore,
+            projectId,
+            workflowStore,
+            workflowPreviewSnapshotsStore,
+          } = await setupStore();
+          useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
+          vi.mocked(
+            workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+          ).mockResolvedValueOnce("svg img data");
+          workflowStore.activeWorkflow = createWorkflow({ projectId });
+          mockedAPI.desktop.saveProject.mockRejectedValueOnce(rejectedValue);
+          const toast = mockedObject(getToastsProvider());
+
+          await workflowVersionsStore.switchVersion(version);
+
+          expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith({
+            projectId,
+            workflowPreviewSvg: "svg img data",
+          });
+          expect(useRouter().push).not.toHaveBeenCalled();
+          expect(toast.show).toHaveBeenCalledWith({
+            type: "warning",
+            deduplicationKey:
+              "workflowVersion.ts::saveVersion::ProjectWasNotSaved",
+            headline: "Could not save workflow",
+            message: `Saving project failed. Cause: ${expectedErrorCause}`,
+            autoRemove: true,
+          });
+        },
+      );
     });
 
     describe("refreshData", () => {

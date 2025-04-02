@@ -133,10 +133,14 @@ final class ProjectAPI {
 
     /**
      * Save the project workflow manager identified by a given project ID.
+     *
+     * @param projectId ID of the project
+     * @param projectSVG SVG of the project, should not be {@code null}.
+     * @return A boolean indicating whether the project was saved.
      */
     @API
-    static void saveProject(final String projectId, final String projectSVG) {
-        SaveProject.saveProject(projectId, projectSVG, false);
+    static boolean saveProject(final String projectId, final String projectSVG) {
+        return SaveProject.saveProject(projectId, projectSVG, false);
     }
 
     /**

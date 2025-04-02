@@ -126,6 +126,8 @@ describe("workflow store: desktop interactions", () => {
     });
 
     describe("save workflow", () => {
+      mockedAPI.desktop.saveProject.mockResolvedValue(true);
+
       it("saves the workflow via the API", async () => {
         const { workflowStore, desktopInteractionsStore } = mockStores();
 

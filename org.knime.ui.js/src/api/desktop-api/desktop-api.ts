@@ -357,7 +357,7 @@ export const saveProject = ({
     window.saveProject,
     [projectId, workflowPreviewSvg],
     "Could not save workflow",
-    false,
+    true,
     { block: true },
   );
 };

@@ -25,7 +25,7 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
         (await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()) ??
         "";
 
-      await API.desktop.saveProject({ projectId, workflowPreviewSvg });
+      return API.desktop.saveProject({ projectId, workflowPreviewSvg });
     },
 
     /* Tell the backend to unload this project from memory */

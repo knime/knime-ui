@@ -54,7 +54,7 @@ declare function openPortView(
 declare function saveProject(
   projectId: string,
   workflowPreviewSvg: string | null,
-): void;
+): boolean;
 
 declare function openProject(
   spaceId: string,
