@@ -16,9 +16,8 @@ import {
   createWorkflowAnnotation,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { pastePartsAt } from "@/util/pasteToWorkflow";
-
-import { loadStore } from "./loadStore";
 
 vi.mock("@/util/pasteToWorkflow");
 
@@ -73,7 +72,7 @@ describe("workflow::clipboardInteractions", () => {
 
       const clipboardMock = createClipboardMock();
       const { workflowStore, selectionStore, clipboardInteractionsStore } =
-        loadStore();
+        mockStores();
 
       workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -179,7 +178,7 @@ describe("workflow::clipboardInteractions", () => {
       });
 
     const { workflowStore, selectionStore, clipboardInteractionsStore } =
-      loadStore();
+      mockStores();
 
     workflowStore.setActiveWorkflow(
       createWorkflow({
@@ -269,7 +268,7 @@ describe("workflow::clipboardInteractions", () => {
         clipboardInteractionsStore,
         selectionStore,
         canvasStore,
-      } = loadStore();
+      } = mockStores();
 
       // @ts-ignore - mock pinia getter
       canvasStore.getVisibleFrame = {

@@ -8,6 +8,7 @@ import {
   AllowedNodeActions,
   CollapseCommand,
   Node,
+  WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 import {
   createConnection,
@@ -17,8 +18,7 @@ import {
   createWorkflowAnnotation,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-
-import { loadStore } from "./loadStore";
+import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
@@ -28,13 +28,13 @@ describe("workflow::index", () => {
   });
 
   it("allows setting the snapshot ID", () => {
-    const { workflowStore } = loadStore();
+    const { workflowStore } = mockStores();
     workflowStore.setActiveSnapshotId("myId");
     expect(workflowStore.activeSnapshotId).toBe("myId");
   });
 
   it("allows setting the tooltip", () => {
-    const { workflowStore } = loadStore();
+    const { workflowStore } = mockStores();
 
     // @ts-expect-error
     workflowStore.setTooltip({ dummy: true });
@@ -43,7 +43,7 @@ describe("workflow::index", () => {
 
   describe("delete objects", () => {
     it.each([[1], [20]])("deletes %s objects", async (amount) => {
-      const { workflowStore, selectionStore } = loadStore();
+      const { workflowStore, selectionStore } = mockStores();
       const nodesArray = {};
       const connectionsArray = {};
       const annotationsArray: Array<{ id: string }> = [];
@@ -121,7 +121,7 @@ describe("workflow::index", () => {
       const annotationsArray = [];
 
       const setupStoreWithWorkflow = () => {
-        const loadStoreResponse = loadStore();
+        const loadStoreResponse = mockStores();
         loadStoreResponse.workflowStore.setActiveWorkflow(
           createWorkflow({
             nodes: nodesArray,
@@ -179,7 +179,7 @@ describe("workflow::index", () => {
       const matchingNodeId = "matchingNodeId";
 
       const { workflowStore, selectionStore, nodeInteractionsStore } =
-        loadStore();
+        mockStores();
 
       workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -218,7 +218,7 @@ describe("workflow::index", () => {
 
   describe("collapse", () => {
     const loadStoreWithNodes = () => {
-      const result = loadStore();
+      const result = mockStores();
       result.workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "bar",
@@ -344,7 +344,7 @@ describe("workflow::index", () => {
 
   describe("expand", () => {
     const loadStoreWithNodes = () => {
-      const result = loadStore();
+      const result = mockStores();
       result.workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "bar",
@@ -438,7 +438,7 @@ describe("workflow::index", () => {
 
   describe("alignSelectedNodes", () => {
     it("calls workflow command API with correct arguments", () => {
-      const { workflowStore, selectionStore } = loadStore();
+      const { workflowStore, selectionStore } = mockStores();
       const direction = AlignNodesCommand.DirectionEnum.Horizontal;
       const projectId = "projectId";
       const workflowId = "workflowId";
@@ -463,6 +463,7 @@ describe("workflow::index", () => {
           },
         }),
       );
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [node1, node3];
 
       workflowStore.alignSelectedNodes(direction);
@@ -478,7 +479,7 @@ describe("workflow::index", () => {
 
   describe("getters", () => {
     it("isLinked", () => {
-      const { workflowStore } = loadStore();
+      const { workflowStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           info: {
@@ -490,7 +491,7 @@ describe("workflow::index", () => {
     });
 
     it("returns false for isWritable if linked", () => {
-      const { workflowStore } = loadStore();
+      const { workflowStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           info: {
@@ -503,12 +504,12 @@ describe("workflow::index", () => {
     });
 
     it("isInsideLinked defaults to false", () => {
-      const { workflowStore } = loadStore();
+      const { workflowStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           parents: [
             {
-              containerType: CollapseCommand.ContainerTypeEnum.Component,
+              containerType: WorkflowInfo.ContainerTypeEnum.Component,
               linked: false,
             },
           ],
@@ -518,12 +519,12 @@ describe("workflow::index", () => {
     });
 
     it("isInsideLinked", () => {
-      const { workflowStore } = loadStore();
+      const { workflowStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           parents: [
             {
-              containerType: CollapseCommand.ContainerTypeEnum.Metanode,
+              containerType: WorkflowInfo.ContainerTypeEnum.Metanode,
               linked: true,
             },
           ],
@@ -533,12 +534,12 @@ describe("workflow::index", () => {
     });
 
     it("insideLinkedType", () => {
-      const { workflowStore } = loadStore();
+      const { workflowStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           parents: [
             {
-              containerType: CollapseCommand.ContainerTypeEnum.Metanode,
+              containerType: WorkflowInfo.ContainerTypeEnum.Metanode,
               linked: true,
             },
           ],
@@ -548,7 +549,7 @@ describe("workflow::index", () => {
     });
 
     it("isWorkflowEmpty", () => {
-      const { workflowStore } = loadStore();
+      const { workflowStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
@@ -565,6 +566,7 @@ describe("workflow::index", () => {
           workflowAnnotations: [],
         }),
       );
+      expect(workflowStore.isWorkflowEmpty).toBe(false);
 
       workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -600,7 +602,7 @@ describe("workflow::index", () => {
     });
 
     it("totalNodes returns correct node count", () => {
-      const { workflowStore } = loadStore();
+      const { workflowStore } = mockStores();
 
       workflowStore.setActiveWorkflow(
         createWorkflow({

@@ -4,8 +4,7 @@ import { API } from "@api";
 
 import { createNativeNode, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-
-import { loadStore } from "./loadStore";
+import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
@@ -15,7 +14,7 @@ describe("workflow::moving", () => {
   });
 
   it("should set the movePreviewDelta", () => {
-    const { workflowStore, movingStore } = loadStore();
+    const { workflowStore, movingStore } = mockStores();
     workflowStore.setActiveWorkflow(
       createWorkflow({
         projectId: "bar",
@@ -36,7 +35,7 @@ describe("workflow::moving", () => {
   });
 
   it("should reset the position of the movePreviewDelta", () => {
-    const { workflowStore, movingStore } = loadStore();
+    const { workflowStore, movingStore } = mockStores();
     workflowStore.setActiveWorkflow(
       createWorkflow({
         projectId: "bar",
@@ -61,7 +60,7 @@ describe("workflow::moving", () => {
   it.each([[1], [20]])(
     "should save position after move end for %s nodes and annotations",
     async (amount) => {
-      const { workflowStore, movingStore, selectionStore } = loadStore();
+      const { workflowStore, movingStore, selectionStore } = mockStores();
       const nodesRecords: Record<string, { id: string; position: any }> = {};
       for (let i = 0; i < amount; i++) {
         const name = `node-${i}`;
@@ -154,7 +153,7 @@ describe("workflow::moving", () => {
   );
 
   it("should skip moving objects if translation is 0", async () => {
-    const { workflowStore, movingStore } = loadStore();
+    const { workflowStore, movingStore } = mockStores();
 
     movingStore.setIsDragging(true);
     movingStore.setMovePreview({ deltaX: 0, deltaY: 0 });

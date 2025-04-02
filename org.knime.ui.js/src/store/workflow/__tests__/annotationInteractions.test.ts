@@ -8,14 +8,13 @@ import {
 import * as $colors from "@/style/colors";
 import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-
-import { loadStore } from "./loadStore";
+import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
 describe("workflow::annotationInteractions", () => {
   it("should transform annotations", async () => {
-    const { workflowStore, annotationInteractionsStore } = loadStore();
+    const { workflowStore, annotationInteractionsStore } = mockStores();
     const annotationId = "mock-annotation-id";
 
     workflowStore.setActiveWorkflow(
@@ -57,7 +56,7 @@ describe("workflow::annotationInteractions", () => {
     });
 
     const { workflowStore, annotationInteractionsStore, selectionStore } =
-      loadStore();
+      mockStores();
 
     const mockAnnotation1 = createWorkflowAnnotation({
       id: "mock-annotation1",
@@ -100,7 +99,7 @@ describe("workflow::annotationInteractions", () => {
     [ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack],
   ])("reorders annotations (z-index)", async (action) => {
     const { workflowStore, selectionStore, annotationInteractionsStore } =
-      loadStore();
+      mockStores();
 
     const mockAnnotation1 = createWorkflowAnnotation({
       id: "mock-annotation1",
@@ -134,7 +133,7 @@ describe("workflow::annotationInteractions", () => {
 
   describe("update annotation", () => {
     it("should handle success", async () => {
-      const { workflowStore, annotationInteractionsStore } = loadStore();
+      const { workflowStore, annotationInteractionsStore } = mockStores();
 
       const annotationId = "mock-annotation-id";
       workflowStore.setActiveWorkflow(
@@ -183,7 +182,7 @@ describe("workflow::annotationInteractions", () => {
     });
 
     it("should handle failure", async () => {
-      const { workflowStore, annotationInteractionsStore } = loadStore();
+      const { workflowStore, annotationInteractionsStore } = mockStores();
       mockedAPI.workflowCommand.UpdateWorkflowAnnotation.mockRejectedValueOnce(
         new Error("random error"),
       );

@@ -19,10 +19,9 @@ import {
   createSpaceProvider,
   createWorkflow,
 } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import type { VersionsModeStatus } from "../workflowVersions";
-
-import { loadStore } from "./loadStore";
 
 const mockSavepoints: Array<ItemSavepoint & WithAvatar & WithLabels> =
   vi.hoisted(() => {
@@ -119,7 +118,7 @@ describe("workflow store: versions", () => {
   });
 
   const setupStore = async () => {
-    const stores = loadStore();
+    const stores = mockStores();
     const { workflowVersionsStore, applicationStore, spaceProvidersStore } =
       stores;
 

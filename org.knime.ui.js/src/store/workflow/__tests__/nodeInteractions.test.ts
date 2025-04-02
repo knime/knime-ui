@@ -7,14 +7,13 @@ import {
   createWorkflow,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-
-import { loadStore } from "./loadStore";
+import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
 describe("workflow::nodeInteractions", () => {
   it("connects nodes", async () => {
-    const { workflowStore, nodeInteractionsStore } = loadStore();
+    const { workflowStore, nodeInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(
       createWorkflow({
         projectId: "foo",
@@ -40,7 +39,7 @@ describe("workflow::nodeInteractions", () => {
   });
 
   it("opens and closes node label editor", () => {
-    const { nodeInteractionsStore } = loadStore();
+    const { nodeInteractionsStore } = mockStores();
 
     nodeInteractionsStore.openLabelEditor("root:1");
     expect(nodeInteractionsStore.labelEditorNodeId).toBe("root:1");
@@ -50,7 +49,7 @@ describe("workflow::nodeInteractions", () => {
   });
 
   it("returns if a node is connected", () => {
-    const { workflowStore, nodeInteractionsStore } = loadStore();
+    const { workflowStore, nodeInteractionsStore } = mockStores();
 
     workflowStore.setActiveWorkflow(
       createWorkflow({
@@ -71,7 +70,7 @@ describe("workflow::nodeInteractions", () => {
       mockedAPI.workflowCommand.AddNode.mockImplementation(() => ({
         newNodeId: "new-mock-node",
       }));
-      const loadStoreResponse = loadStore();
+      const loadStoreResponse = mockStores();
 
       loadStoreResponse.workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -190,7 +189,7 @@ describe("workflow::nodeInteractions", () => {
 
   describe("add ports", () => {
     it("can add Node Ports", async () => {
-      const { workflowStore, nodeInteractionsStore } = loadStore();
+      const { workflowStore, nodeInteractionsStore } = mockStores();
 
       workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -217,7 +216,7 @@ describe("workflow::nodeInteractions", () => {
     });
 
     it("can remove Node Ports", async () => {
-      const { workflowStore, nodeInteractionsStore } = loadStore();
+      const { workflowStore, nodeInteractionsStore } = mockStores();
 
       const payload = {
         nodeId: "node x",
@@ -246,7 +245,7 @@ describe("workflow::nodeInteractions", () => {
 
   describe("node getters", () => {
     const loadStoreWithWorkflow = () => {
-      const loadStoreResult = loadStore();
+      const loadStoreResult = mockStores();
 
       loadStoreResult.workflowStore.setActiveWorkflow(
         createWorkflow({

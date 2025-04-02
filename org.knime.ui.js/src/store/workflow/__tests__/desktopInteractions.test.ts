@@ -10,19 +10,12 @@ import { API } from "@api";
 
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
-
-import { loadStore } from "./loadStore";
 
 vi.mock("@/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({
   encodeString: (value: string) => value,
-}));
-
-// mock the router import (which is a dependency of the application store) to prevent the test runner
-// from creating a real router
-vi.mock("@/router/appRoutes", () => ({
-  APP_ROUTES: {},
 }));
 
 const mockedAPI = deepMocked(API);
@@ -38,7 +31,7 @@ describe("workflow store: desktop interactions", () => {
 
   describe("actions", () => {
     it("calls executeNodeAndOpenView from API", () => {
-      const { workflowStore, executionStore } = loadStore();
+      const { workflowStore, executionStore } = mockStores();
       workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
       executionStore.executeNodeAndOpenView("root:0");
 
@@ -49,7 +42,7 @@ describe("workflow store: desktop interactions", () => {
     });
 
     it("calls openNodeDialog from API", () => {
-      const { workflowStore, desktopInteractionsStore } = loadStore();
+      const { workflowStore, desktopInteractionsStore } = mockStores();
 
       workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
       desktopInteractionsStore.openNodeConfiguration("node x");
@@ -70,7 +63,7 @@ describe("workflow store: desktop interactions", () => {
         desktopInteractionsStore,
         nodeConfigurationStore,
         selectionStore,
-      } = loadStore();
+      } = mockStores();
 
       selectionStore.selectNode("root:1");
       workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
@@ -84,7 +77,7 @@ describe("workflow store: desktop interactions", () => {
     });
 
     it("calls openFlowVariableConfiguration from API", async () => {
-      const { workflowStore, desktopInteractionsStore } = await loadStore();
+      const { workflowStore, desktopInteractionsStore } = await mockStores();
 
       workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
       desktopInteractionsStore.openFlowVariableConfiguration("node x");
@@ -98,7 +91,7 @@ describe("workflow store: desktop interactions", () => {
     });
 
     it("calls openLayoutEditor from API", async () => {
-      const { workflowStore, desktopInteractionsStore } = await loadStore();
+      const { workflowStore, desktopInteractionsStore } = await mockStores();
 
       workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -115,7 +108,7 @@ describe("workflow store: desktop interactions", () => {
     });
 
     it("calls openLayoutEditor from API with nodeId", async () => {
-      const { workflowStore, desktopInteractionsStore } = await loadStore();
+      const { workflowStore, desktopInteractionsStore } = await mockStores();
       const nodeId = "nodeId1";
 
       workflowStore.setActiveWorkflow(
@@ -134,7 +127,7 @@ describe("workflow store: desktop interactions", () => {
 
     describe("save workflow", () => {
       it("saves the workflow via the API", async () => {
-        const { workflowStore, desktopInteractionsStore } = loadStore();
+        const { workflowStore, desktopInteractionsStore } = mockStores();
 
         workflowStore.setActiveWorkflow(
           createWorkflow({
@@ -151,7 +144,7 @@ describe("workflow store: desktop interactions", () => {
       });
 
       it("sends the correct workflow preview for a root workflow", async () => {
-        const { workflowStore, desktopInteractionsStore } = loadStore();
+        const { workflowStore, desktopInteractionsStore } = mockStores();
 
         mockedGenerateWorkflowPreview.mockResolvedValue("mock svg preview");
 
@@ -175,15 +168,15 @@ describe("workflow store: desktop interactions", () => {
         const {
           workflowStore,
           desktopInteractionsStore,
-          workflowSnapshotsStore,
-        } = loadStore();
+          workflowPreviewSnapshotsStore,
+        } = mockStores();
 
         const projectId = "project1";
         // 'root:1' to mimic being inside component/metanode
         const workflowId = "root:1";
         // set the snapshot on the store
         const dummyEl = document.createElement("div");
-        workflowSnapshotsStore.rootWorkflowSnapshots.set(
+        workflowPreviewSnapshotsStore.rootWorkflowSnapshots.set(
           `${projectId}--root`,
           dummyEl.outerHTML,
         );
@@ -223,10 +216,10 @@ describe("workflow store: desktop interactions", () => {
           workflowStore,
           applicationStore,
           desktopInteractionsStore,
-          workflowSnapshotsStore,
+          workflowPreviewSnapshotsStore,
           canvasStateTrackingStore,
           componentInteractionsStore,
-        } = loadStore();
+        } = mockStores();
         applicationStore.setOpenProjects(openProjects);
         applicationStore.setActiveProjectId(activeProjectId);
 
@@ -243,7 +236,7 @@ describe("workflow store: desktop interactions", () => {
           nextProjectId: null,
         });
         expect(
-          workflowSnapshotsStore.removeFromRootWorkflowSnapshots,
+          workflowPreviewSnapshotsStore.removeFromRootWorkflowSnapshots,
         ).toHaveBeenCalledWith({
           projectId: closingProjectId,
         });
@@ -274,7 +267,7 @@ describe("workflow store: desktop interactions", () => {
           nodeConfigurationStore,
           canvasStateTrackingStore,
           componentInteractionsStore,
-        } = loadStore();
+        } = mockStores();
 
         vi.mocked(nodeConfigurationStore.autoApplySettings).mockImplementation(
           () => Promise.resolve(false),
@@ -339,7 +332,7 @@ describe("workflow store: desktop interactions", () => {
             applicationStore,
             desktopInteractionsStore,
             canvasStateTrackingStore,
-          } = loadStore();
+          } = mockStores();
 
           applicationStore.setOpenProjects(openProjects);
           applicationStore.setActiveProjectId(activeProjectId);
@@ -364,7 +357,7 @@ describe("workflow store: desktop interactions", () => {
       it("does not remove canvasState nor workflowPreviewSnapshot if closeProject is cancelled", async () => {
         mockedAPI.desktop.closeProject.mockImplementation(() => false);
         const { canvasStateTrackingStore, desktopInteractionsStore } =
-          loadStore();
+          mockStores();
 
         await desktopInteractionsStore.closeProject("foo");
 
@@ -379,7 +372,7 @@ describe("workflow store: desktop interactions", () => {
     mockedAPI.desktop.forceCloseProjects.mockImplementation(() => null);
     const closingProjectIds = { projectIds: ["someProjectId"] };
 
-    await loadStore().desktopInteractionsStore.forceCloseProjects(
+    await mockStores().desktopInteractionsStore.forceCloseProjects(
       closingProjectIds,
     );
 
@@ -390,7 +383,7 @@ describe("workflow store: desktop interactions", () => {
 
   describe("save workflow locally", () => {
     it("saves the workflow locally via the API", async () => {
-      const { workflowStore, desktopInteractionsStore } = loadStore();
+      const { workflowStore, desktopInteractionsStore } = mockStores();
 
       workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -407,7 +400,7 @@ describe("workflow store: desktop interactions", () => {
     });
 
     it("sends the correct workflow preview for a root workflow when saved locally", async () => {
-      const { workflowStore, desktopInteractionsStore } = loadStore();
+      const { workflowStore, desktopInteractionsStore } = mockStores();
 
       mockedGenerateWorkflowPreview.mockResolvedValue("mock svg preview");
 

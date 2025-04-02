@@ -9,8 +9,7 @@ import {
 import { getToastsProvider } from "@/plugins/toasts";
 import { createComponentNode, createWorkflow } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
-
-import { loadStore } from "./loadStore";
+import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
@@ -23,7 +22,7 @@ describe("workflow::componentInteractions", () => {
 
   it("should link components", async () => {
     const { workflowStore, componentInteractionsStore, spaceOperationsStore } =
-      loadStore();
+      mockStores();
 
     const spy = vi.spyOn(spaceOperationsStore, "fetchWorkflowGroupContent");
 
@@ -56,7 +55,7 @@ describe("workflow::componentInteractions", () => {
 
   describe("check for component updates", () => {
     it("should not check for updates if workflow does not contain linked components", async () => {
-      const { workflowStore, componentInteractionsStore } = loadStore();
+      const { workflowStore, componentInteractionsStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({ info: { containsLinkedComponents: false } }),
       );
@@ -72,7 +71,7 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should not show any toasts if 'auto' is true and there are no updates", async () => {
-      const { workflowStore, componentInteractionsStore } = loadStore();
+      const { workflowStore, componentInteractionsStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({ info: { containsLinkedComponents: true } }),
       );
@@ -87,7 +86,7 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should show toast when there are no updates and auto is false", async () => {
-      const { workflowStore, componentInteractionsStore } = loadStore();
+      const { workflowStore, componentInteractionsStore } = mockStores();
 
       workflowStore.setActiveWorkflow(
         createWorkflow({ info: { containsLinkedComponents: true } }),
@@ -108,7 +107,7 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should show toast when there are updates", async () => {
-      const { workflowStore, componentInteractionsStore } = loadStore();
+      const { workflowStore, componentInteractionsStore } = mockStores();
       const workflow = createWorkflow({
         info: { containsLinkedComponents: true },
       });
@@ -167,7 +166,7 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should show toast when there are updates (executed components)", async () => {
-      const { workflowStore, componentInteractionsStore } = loadStore();
+      const { workflowStore, componentInteractionsStore } = mockStores();
       const workflow = createWorkflow({
         info: { containsLinkedComponents: true },
         nodes: {
@@ -213,7 +212,7 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should show toast when there are issues checking for updates", async () => {
-      const { workflowStore, componentInteractionsStore } = loadStore();
+      const { workflowStore, componentInteractionsStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({ info: { containsLinkedComponents: true } }),
       );
@@ -234,7 +233,7 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should not show the update check notification for the same project more than once", async () => {
-      const { workflowStore, componentInteractionsStore } = loadStore();
+      const { workflowStore, componentInteractionsStore } = mockStores();
       const workflow = createWorkflow({
         info: { containsLinkedComponents: true },
       });
@@ -294,7 +293,7 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should update components (success)", async () => {
-    const { workflowStore, componentInteractionsStore } = loadStore();
+    const { workflowStore, componentInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(createWorkflow());
 
     mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValue({
@@ -326,7 +325,7 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should update components (unchanged)", async () => {
-    const { workflowStore, componentInteractionsStore } = loadStore();
+    const { workflowStore, componentInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(createWorkflow());
 
     mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValueOnce({
@@ -358,7 +357,7 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should update components (error)", async () => {
-    const { workflowStore, componentInteractionsStore } = loadStore();
+    const { workflowStore, componentInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(createWorkflow());
 
     mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValueOnce({
@@ -390,7 +389,7 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should unlink component", () => {
-    const { workflowStore, componentInteractionsStore } = loadStore();
+    const { workflowStore, componentInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(createWorkflow());
 
     componentInteractionsStore.unlinkComponent({ nodeId: "root:2" });
@@ -404,7 +403,7 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should change hub item version", () => {
-    const { workflowStore, componentInteractionsStore } = loadStore();
+    const { workflowStore, componentInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(createWorkflow());
 
     componentInteractionsStore.changeHubItemVersion({ nodeId: "root:2" });
@@ -418,7 +417,7 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should change component link type", () => {
-    const { workflowStore, componentInteractionsStore } = loadStore();
+    const { workflowStore, componentInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(createWorkflow());
 
     componentInteractionsStore.changeComponentLinkType({ nodeId: "root:2" });

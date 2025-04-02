@@ -9,9 +9,8 @@ import {
   createWorkflow,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-
-import { loadStore } from "./loadStore";
 
 const mockedAPI = deepMocked(API);
 const variableMockData = vi.hoisted(() => ({
@@ -80,7 +79,7 @@ describe("workflow store: Execution", () => {
       ["cancelNodeExecution", "cancel"] as const,
       ["resetNodes", "reset"] as const,
     ])("passes %s to API", (fn, action) => {
-      const { workflowStore, executionStore } = loadStore();
+      const { workflowStore, executionStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
@@ -104,7 +103,7 @@ describe("workflow store: Execution", () => {
       ["resumeLoopExecution", "resume"] as const,
       ["stepLoopExecution", "step"] as const,
     ])("passes %s to API", (fn, action) => {
-      const { workflowStore, executionStore } = loadStore();
+      const { workflowStore, executionStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
@@ -123,7 +122,7 @@ describe("workflow store: Execution", () => {
     });
 
     it("overloaded changeNodeState", () => {
-      const { workflowStore, executionStore, selectionStore } = loadStore();
+      const { workflowStore, executionStore, selectionStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
@@ -169,7 +168,7 @@ describe("workflow store: Execution", () => {
     });
 
     it("executeNodeAndOpenView", () => {
-      const { workflowStore, executionStore } = loadStore();
+      const { workflowStore, executionStore } = mockStores();
 
       workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
       executionStore.executeNodeAndOpenView("root:0");
@@ -182,7 +181,7 @@ describe("workflow store: Execution", () => {
 
     describe("openPortView", () => {
       it("open views", () => {
-        const { workflowStore, executionStore } = loadStore();
+        const { workflowStore, executionStore } = mockStores();
         workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId: "MockProjectId",
@@ -198,7 +197,8 @@ describe("workflow store: Execution", () => {
       });
 
       it.each(["0", "1", "3"])('openPortView with port="%s"', async (port) => {
-        const { workflowStore, executionStore, applicationStore } = loadStore();
+        const { workflowStore, executionStore, applicationStore } =
+          mockStores();
 
         applicationStore.availablePortTypes = createAvailablePortTypes({
           // @ts-ignore
@@ -297,7 +297,7 @@ describe("workflow store: Execution", () => {
 
     describe("hasExecutedNativeNode", () => {
       it("returns false if activeWorkflow has no nodes", () => {
-        const { workflowStore, executionStore } = loadStore();
+        const { workflowStore, executionStore } = mockStores();
         workflowStore.setActiveWorkflow(
           createWorkflow({
             nodes: {},
@@ -308,7 +308,7 @@ describe("workflow store: Execution", () => {
       });
 
       it("returns false if all native nodes are not executed", () => {
-        const { workflowStore, executionStore } = loadStore();
+        const { workflowStore, executionStore } = mockStores();
         workflowStore.setActiveWorkflow(
           createWorkflow({
             nodes: {
@@ -330,7 +330,7 @@ describe("workflow store: Execution", () => {
       });
 
       it("returns true if at least one native node is executed", () => {
-        const { workflowStore, executionStore } = loadStore();
+        const { workflowStore, executionStore } = mockStores();
         workflowStore.setActiveWorkflow(
           createWorkflow({
             nodes: {
@@ -352,7 +352,7 @@ describe("workflow store: Execution", () => {
       });
 
       it("returns false if only non-native nodes are executed", () => {
-        const { workflowStore, executionStore } = loadStore();
+        const { workflowStore, executionStore } = mockStores();
         workflowStore.setActiveWorkflow(
           createWorkflow({
             nodes: {
@@ -370,7 +370,7 @@ describe("workflow store: Execution", () => {
       });
 
       it("handles null activeWorkflow gracefully", () => {
-        const { workflowStore, executionStore } = loadStore();
+        const { workflowStore, executionStore } = mockStores();
         workflowStore.setActiveWorkflow(null);
 
         expect(executionStore.hasExecutedNativeNode).toBe(false);

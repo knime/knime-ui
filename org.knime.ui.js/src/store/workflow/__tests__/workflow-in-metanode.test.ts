@@ -10,9 +10,8 @@ import {
   portSize,
 } from "@/style/shapes";
 import { type DeepPartial } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { geometry } from "@/util/geometry";
-
-import { loadStore } from "./loadStore";
 
 describe("workflow store", () => {
   const node = { id: "root:1", position: { x: 50, y: 21 } };
@@ -262,7 +261,7 @@ describe("workflow store", () => {
     it.each(Object.entries(fixtures))(
       "calculates dimensions %s",
       (_, { additionalProps, nodes, expected }) => {
-        const { workflowStore } = loadStore();
+        const { workflowStore } = mockStores();
         const workflow = {
           ...baseWorkflow,
           nodes,
