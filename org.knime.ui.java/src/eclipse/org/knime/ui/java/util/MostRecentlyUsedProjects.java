@@ -148,7 +148,7 @@ public final class MostRecentlyUsedProjects {
         Origin newOrigin = null;
         if (LocalSpaceUtil.isLocalSpace(providerId, spaceId)) {
             // update relative path in origin (in case the project has been renamed or moved
-            var absolutePath = localSpace.toLocalAbsolutePath(null, itemId).orElse(null);
+            var absolutePath = localSpace.toLocalAbsolutePath(itemId).orElse(null);
             if (absolutePath != null) {
                 newOrigin = LocalSpaceUtil.getLocalOrigin(absolutePath, localSpace);
             }

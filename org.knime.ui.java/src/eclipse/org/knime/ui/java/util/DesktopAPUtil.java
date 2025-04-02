@@ -159,7 +159,12 @@ public final class DesktopAPUtil {
         monitor.beginTask(LOADING_WORKFLOW_PROGRESS_MSG, IProgressMonitor.UNKNOWN);
         final var exec = DesktopAPUtil.toExecutionMonitor(monitor);
         // For some Space implementations, this might download the workflow from a remote server.
-        final var path = space.toLocalAbsolutePath(exec, itemId, version).orElse(null);
+        Path path;
+        try {
+            path = space.toLocalAbsolutePath(exec, itemId, version).orElse(null);
+        } catch (CanceledExecutionException e) {
+            return null;
+        }
         if (path == null) {
             return null;
         }

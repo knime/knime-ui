@@ -335,7 +335,7 @@ final class SpaceAPI {
                 .map(Project::getID) //
                 .map(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)).orElse(false);
             if (isDirty) {
-                final var localDir = space.toLocalAbsolutePath(null, itemId).orElseThrow();
+                final var localDir = space.toLocalAbsolutePath(itemId).orElseThrow();
                 final var relPath = spaceRoot.relativize(localDir);
                 dirtyAndOpen.add(FilenameUtils.separatorsToUnix(relPath.toString()));
             }
