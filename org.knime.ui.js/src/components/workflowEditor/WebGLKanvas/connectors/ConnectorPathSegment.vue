@@ -1,6 +1,6 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, onMounted, toRefs, useTemplateRef, watch } from "vue";
+import { computed, onMounted, ref, toRefs, useTemplateRef, watch } from "vue";
 import { watchThrottled } from "@vueuse/core";
 import { type AnimationPlaybackControls, animate } from "motion";
 import { storeToRefs } from "pinia";
@@ -208,12 +208,13 @@ watch(suggestDelete, (shouldAnimate) => {
 });
 
 const { zoomFactor } = storeToRefs(useWebGLCanvasStore());
+const cacheAsTexture = ref(true);
 
 onMounted(() => {
   watchThrottled(
     [zoomFactor],
     ([factor]) => {
-      pathSegment.value!.cacheAsTexture(factor < 0.4);
+      // pathSegment.value!.cacheAsTexture(factor < 0.4);
     },
     { immediate: true, throttle: 100 },
   );
@@ -221,7 +222,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <Container label="ConnectorPathSegment">
+  <Container label="ConnectorPathSegment" :cache-as-bitmap="cacheAsTexture">
     <Graphics
       v-bind="$attrs"
       :event-mode="interactive ? 'static' : 'none'"

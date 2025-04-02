@@ -276,12 +276,13 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
 
 const { zoomFactor } = storeToRefs(useWebGLCanvasStore());
 const nodeContainer = useTemplateRef<ContainerInst>("nodeContainer");
+const cacheAsTexture = ref(true);
 
 onMounted(() => {
   watchThrottled(
     [zoomFactor, () => isNodeSelected.value(props.node.id)],
     ([factor, isSelected]) => {
-      nodeContainer.value!.cacheAsTexture(factor < 0.4 && !isSelected);
+      // nodeContainer.value!.cacheAsTexture(factor < 0.4 && !isSelected);
     },
     { immediate: true, throttle: 100 },
   );
@@ -300,6 +301,7 @@ onMounted(() => {
 
   <Container
     ref="nodeContainer"
+    :cache-as-bitmap="cacheAsTexture"
     :label="`Node__${node.id}`"
     :renderable="renderable"
     :visible="renderable"
