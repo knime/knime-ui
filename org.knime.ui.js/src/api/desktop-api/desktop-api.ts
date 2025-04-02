@@ -21,7 +21,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   blockUi: { block: boolean; darkenBackground?: boolean },
   // eslint-disable-next-line max-params
 ): Promise<ReturnType<TFunction> | null> => {
-  if (isBrowser) {
+  if (isBrowser()) {
     return Promise.resolve(null);
   }
 

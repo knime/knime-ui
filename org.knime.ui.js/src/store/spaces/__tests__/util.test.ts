@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { Project } from "@/api/gateway-api/generated-api";
+import { isBrowser, isDesktop } from "@/environment";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import {
   createProject,
@@ -9,6 +10,7 @@ import {
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
+import { mockEnvironment } from "@/test/utils/mockEnvironment.ts";
 import { mockStores } from "@/test/utils/mockStores";
 import {
   findSpaceById,
@@ -27,6 +29,8 @@ const { getToastPresetsMock } = vi.hoisted(() => ({
 vi.mock("@/toastPresets", () => ({
   getToastPresets: getToastPresetsMock,
 }));
+
+vi.mock("@/environment");
 
 describe("spaces::util", () => {
   const createSpaces = (groupId: string) =>
@@ -211,25 +215,20 @@ describe("spaces::util", () => {
   });
 
   describe("checkOpenWorkflowsBeforeMove", () => {
-    const setUp = async ({
+    const setup = async ({
       openProjects = [],
       itemIds = ["id1", "id2"],
       isCopy = false,
-      isBrowser = false,
+      environment = "DESKTOP",
     }: {
       openProjects?: Project[];
       itemIds?: string[];
       isCopy?: boolean;
-      isBrowser?: boolean;
+      environment?: "BROWSER" | "DESKTOP";
     } = {}) => {
-      vi.resetModules();
-      vi.doMock("@/environment", async (importOriginal) => {
-        const actual = await importOriginal<typeof import("@/environment")>();
-
-        return {
-          ...actual,
-          isBrowser,
-        };
+      mockEnvironment(environment, {
+        isBrowser,
+        isDesktop,
       });
 
       const checkOpenWorkflowsBeforeMove = (await import("../util.ts"))
@@ -258,7 +257,7 @@ describe("spaces::util", () => {
     };
 
     it("returns false for no open projects and displays no toast", async () => {
-      const { warningToastMock, run } = await setUp();
+      const { warningToastMock, run } = await setup();
       const result = run();
       expect(result).toBe(false);
       expect(warningToastMock).not.toHaveBeenCalled();
@@ -269,7 +268,7 @@ describe("spaces::util", () => {
         projectId: "project1",
         name: "Cold Harbor",
       };
-      const { warningToastMock, run } = await setUp({
+      const { warningToastMock, run } = await setup({
         openProjects: [openProject],
       });
       const result = run();
@@ -283,7 +282,7 @@ describe("spaces::util", () => {
         name: "Cold Harbor",
         origin: { itemId: "id1", providerId: "Knime-Hub", spaceId: "spaceId1" },
       };
-      const { warningToastMock, run } = await setUp({
+      const { warningToastMock, run } = await setup({
         openProjects: [openProject],
       });
       const result = run();
@@ -310,7 +309,7 @@ describe("spaces::util", () => {
           ancestorItemIds: ["id2"],
         },
       };
-      const { warningToastMock, run } = await setUp({
+      const { warningToastMock, run } = await setup({
         openProjects: [openProject],
       });
       const result = run();
@@ -337,9 +336,9 @@ describe("spaces::util", () => {
           ancestorItemIds: ["id2"],
         },
       };
-      const { warningToastMock, run } = await setUp({
+      const { warningToastMock, run } = await setup({
         openProjects: [openProject],
-        isBrowser: true,
+        environment: "BROWSER",
       });
       const result = run();
       expect(result).toBe(false);

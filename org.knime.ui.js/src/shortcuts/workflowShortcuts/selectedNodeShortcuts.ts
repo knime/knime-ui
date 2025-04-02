@@ -105,7 +105,7 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     condition: () => {
       const { singleSelectedNode } = useSelectionStore();
       return Boolean(
-        isDesktop &&
+        isDesktop() &&
           singleSelectedNode &&
           singleSelectedNode.outPorts.length > 0,
       );
@@ -147,7 +147,7 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
         availablePortTypes[singleSelectedNode?.outPorts[0]?.typeId]?.kind ===
         "flowVariable";
 
-      return isDesktop && hasFlowVarPort;
+      return isDesktop() && hasFlowVarPort;
     },
   },
 
@@ -171,7 +171,7 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     condition: () => {
       const { singleSelectedNode, activePortTab } = useSelectionStore();
 
-      return Boolean(isDesktop && singleSelectedNode && activePortTab);
+      return Boolean(isDesktop() && singleSelectedNode && activePortTab);
     },
   },
   editNodeComment: {

@@ -135,25 +135,25 @@ export const useUIControlsStore = defineStore("uiControls", {
         canAccessSpaceExplorer: isDefault,
         canConfigureNodes: isDefault || isPlayground,
         canEditWorkflow: isDefault || isPlayground,
-        shouldDisplayRemoteWorkflowInfoBar: isDesktop,
+        shouldDisplayRemoteWorkflowInfoBar: isDesktop(),
         shouldDisplayDownloadAPButton:
-          isBrowser &&
+          isBrowser() &&
           isPlayground &&
           Boolean(useApplicationStore().analyticsPlatformDownloadURL),
-        isKAISupported: isDesktop || (isBrowser && isDefault),
+        isKAISupported: isDesktop() || (isBrowser() && isDefault),
 
         /**
          * The following properties reference features that are
          * (for the time being) only supported in desktop AP.
          */
-        canConfigureFlowVariables: isDesktop,
-        canDoComponentSharingOperations: isDesktop,
-        canDetachPortViews: isDesktop,
-        canDetachNodeViews: isDesktop,
-        isLocalSaveSupported: isDesktop,
-        canOpenLegacyPortViews: isDesktop,
-        canLockAndUnlockSubnodes: isDesktop,
-        canOpenComponentLayoutEditor: isDesktop,
+        canConfigureFlowVariables: isDesktop(),
+        canDoComponentSharingOperations: isDesktop(),
+        canDetachPortViews: isDesktop(),
+        canDetachNodeViews: isDesktop(),
+        isLocalSaveSupported: isDesktop(),
+        canOpenLegacyPortViews: isDesktop(),
+        canLockAndUnlockSubnodes: isDesktop(),
+        canOpenComponentLayoutEditor: isDesktop(),
       };
 
       this.updateControls(uiControls);

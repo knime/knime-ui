@@ -2,9 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type FunctionalComponent, ref } from "vue";
 
 import { useDeleteItems } from "@/components/spaces/useDeleteItems";
+import { isBrowser, isDesktop } from "@/environment";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
 
 const mockShow = vi.hoisted(() =>
   vi.fn().mockReturnValue({
@@ -18,14 +19,7 @@ vi.mock("@/composables/useConfirmDialog", () => ({
 }));
 await import("@/composables/useConfirmDialog");
 
-const mockEnvironment = vi.hoisted(
-  () => ({}),
-) as typeof import("@/environment");
-vi.mock("@/environment", async (importOriginal) => {
-  Object.assign(mockEnvironment, await importOriginal());
-  return mockEnvironment;
-});
-const { setEnvironment } = useMockEnvironment(mockEnvironment);
+vi.mock("@/environment");
 
 describe("useDeleteItems::index", () => {
   beforeEach(() => {
@@ -33,17 +27,13 @@ describe("useDeleteItems::index", () => {
   });
 
   it.each([
-    ["BROWSER", "and opens", 0],
-    ["DESKTOP", "but does not open", 1],
+    ["BROWSER" as const, "and opens", 0],
+    ["DESKTOP" as const, "but does not open", 1],
   ])(
     "for environment %s calls deleteItems from spaceOperationsStore %s confirmation dialog",
-    async (
-      environment: string,
-      _testDescriptionPart: string,
-      expectedCalls: number,
-    ) => {
+    async (environment, _testDescriptionPart, expectedCalls) => {
       const mockedStores = mockStores();
-      setEnvironment(environment as any);
+      mockEnvironment(environment, { isBrowser, isDesktop });
       const { onDeleteItems } = useDeleteItems({
         projectId: ref("projectId"),
         itemIconRenderer: vi.fn(() => ({}) as FunctionalComponent),

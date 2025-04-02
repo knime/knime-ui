@@ -135,8 +135,8 @@ const toolbarButtons = computed(() => {
   const hasNodesSelected = selectedNodes.value.length > 0;
 
   const visibleItems: Partial<Record<ShortcutName, boolean>> = {
-    save: !isUnknownProject.value(activeProjectId.value) && isDesktop,
-    saveAs: isUnknownProject.value(activeProjectId.value) && isDesktop,
+    save: !isUnknownProject.value(activeProjectId.value) && isDesktop(),
+    saveAs: isUnknownProject.value(activeProjectId.value) && isDesktop(),
 
     // Always visible
     undo: true,

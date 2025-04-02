@@ -472,7 +472,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
           spaceProviderId,
           spaceId,
           itemIds,
-          softDelete: isBrowser,
+          softDelete: isBrowser(),
         });
         await this.fetchWorkflowGroupContent({
           projectId: isDeletingActiveProject

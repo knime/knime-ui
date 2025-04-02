@@ -57,7 +57,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
     // TODO NXT-3468 when Desktop and Browser are in sync confirmation should no longer be needed
     // as there won't be any hard deletes
     const isBrowserOrConfirmed =
-      isBrowser || (await askConfirmation(items)).confirmed;
+      isBrowser() || (await askConfirmation(items)).confirmed;
 
     if (isBrowserOrConfirmed) {
       const itemIds = items.map(({ id }) => id);

@@ -28,7 +28,7 @@ const CONNECTION_FAIL_MESSAGE = "KNIME_UI__CONNECTION_FAIL";
 const apiURLResolver = () =>
   new Promise<ConnectionInfo | null>((resolve, reject) => {
     // immediately resolve for desktop environment
-    if (isDesktop) {
+    if (isDesktop()) {
       resolve(null);
       return;
     }

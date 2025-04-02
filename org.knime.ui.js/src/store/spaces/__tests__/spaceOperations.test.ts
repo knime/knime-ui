@@ -7,6 +7,7 @@ import {
   IOException,
   ServiceCallException,
 } from "@/api/gateway-api/generated-exceptions";
+import { isBrowser, isDesktop } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
@@ -16,7 +17,7 @@ import {
   createSpaceProvider,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 
 import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
 
@@ -24,15 +25,7 @@ const busEmitSpy = vi.spyOn($bus, "emit");
 const mockedAPI = deepMocked(API);
 
 // TODO NXT-3468 when Desktop and Browser are in sync, this environment mock won't be necessary any more
-const mockEnvironment = vi.hoisted(
-  () => ({}),
-) as typeof import("@/environment");
-
-vi.mock("@/environment", async (importOriginal) => {
-  Object.assign(mockEnvironment, await importOriginal());
-  return mockEnvironment;
-});
-const { setEnvironment } = useMockEnvironment(mockEnvironment);
+vi.mock("@/environment");
 
 const { usePromptCollisionStrategiesMock } = vi.hoisted(() => ({
   usePromptCollisionStrategiesMock: vi.fn(),
@@ -45,7 +38,7 @@ vi.mock("@/composables/useConfirmDialog/usePromptCollisionHandling", () => ({
 describe("spaces::spaceOperations", () => {
   afterEach(() => {
     vi.clearAllMocks();
-    setEnvironment("DESKTOP");
+    mockEnvironment("DESKTOP", { isDesktop, isBrowser });
   });
 
   describe("fetchWorkflowGroupContent", () => {
@@ -581,7 +574,7 @@ describe("spaces::spaceOperations", () => {
     });
 
     it("should call backend with softDelete = true if AP runs in browser", async () => {
-      setEnvironment("BROWSER");
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
       const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
         loadStore();
 

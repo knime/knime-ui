@@ -5,27 +5,20 @@ import { VueWrapper, mount } from "@vue/test-utils";
 import { FunctionButton } from "@knime/components";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { Node } from "@/api/gateway-api/generated-api";
+import { Node, WorkflowInfo } from "@/api/gateway-api/generated-api";
+import { isBrowser, isDesktop } from "@/environment";
 import {
   createMetanode,
   createNativeNode,
   createWorkflow,
 } from "@/test/factories";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
 import IncompatibleNodeConfigPlaceholder from "../IncompatibleNodeConfigPlaceholder.vue";
 import NodeConfig from "../NodeConfig.vue";
 import NodeConfigWrapper from "../NodeConfigWrapper.vue";
 
-const mockEnvironment = vi.hoisted(
-  () => ({}),
-) as typeof import("@/environment");
-
-vi.mock("@/environment", async (importOriginal) => {
-  Object.assign(mockEnvironment, await importOriginal());
-  return mockEnvironment;
-});
-const { setEnvironment } = useMockEnvironment(mockEnvironment);
+vi.mock("@/environment");
 
 describe("NodeConfig", () => {
   type MountOpts = {
@@ -34,6 +27,10 @@ describe("NodeConfig", () => {
     component?: typeof NodeConfig | null;
     isLargeMode?: boolean;
   };
+
+  beforeAll(() => {
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+  });
 
   const doMount = ({
     props = {},
@@ -46,7 +43,7 @@ describe("NodeConfig", () => {
       createWorkflow({
         info: {
           name: "fileName",
-          containerType: "project",
+          containerType: WorkflowInfo.ContainerTypeEnum.Project,
         },
       }),
     );
@@ -90,7 +87,7 @@ describe("NodeConfig", () => {
   });
 
   it("shows download AP link for legacy dialogs in browser when ui control set", async () => {
-    setEnvironment("BROWSER");
+    mockEnvironment("BROWSER", { isBrowser, isDesktop });
 
     const NodeConfig = (await import("../NodeConfig.vue")).default;
 
@@ -119,7 +116,7 @@ describe("NodeConfig", () => {
   });
 
   it("shows a message if selected node is a metanode in a browser", async () => {
-    setEnvironment("BROWSER");
+    mockEnvironment("BROWSER", { isBrowser, isDesktop });
     const NodeConfig = (await import("../NodeConfig.vue")).default;
 
     const { wrapper, mockedStores } = doMount({
@@ -176,6 +173,7 @@ describe("NodeConfig", () => {
       mockedStores.nodeConfigurationStore.setActiveNodeId("root:1");
       await nextTick();
 
+      // @ts-ignore
       mockedStores.nodeConfigurationStore.setActiveExtensionConfig({
         canBeEnlarged: true,
       });

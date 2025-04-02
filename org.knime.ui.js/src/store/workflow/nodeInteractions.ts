@@ -136,7 +136,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
 
       let newNodeId: string | null;
       if (isComponent && spaceItemReference) {
-        if (isBrowser) {
+        if (isBrowser()) {
           try {
             const result = await API.workflowCommand.AddComponent({
               projectId,

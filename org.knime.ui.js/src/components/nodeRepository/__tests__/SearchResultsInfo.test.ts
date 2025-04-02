@@ -7,22 +7,23 @@ import { createTestingPinia } from "@pinia/testing";
 import { Button } from "@knime/components";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 
+import { isBrowser, isDesktop } from "@/environment";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { deepMocked } from "@/test/utils";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import SearchResultsInfo from "../SearchResultsInfo.vue";
 
 const mockedAPI = deepMocked(API);
+
+vi.mock("@/environment");
 
 describe("SearchResultsInfo", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  const doMount = ({
-    propsOverrides = {},
-    component = SearchResultsInfo,
-  } = {}) => {
+  const doMount = ({ propsOverrides = {} } = {}) => {
     const props = {
       numFilteredOutNodes: 10,
       isNodeListEmpty: false,
@@ -42,7 +43,7 @@ describe("SearchResultsInfo", () => {
     uiControlsStore.shouldDisplayDownloadAPButton = false;
     vi.mocked(uiControlsStore.init).mockImplementation(() => {});
 
-    const wrapper = mount(component ?? SearchResultsInfo, {
+    const wrapper = mount(SearchResultsInfo, {
       props,
       global: {
         stubs: { DownloadAPButton: true },
@@ -56,6 +57,7 @@ describe("SearchResultsInfo", () => {
   describe("searchResultsInfo", () => {
     describe("has filtered out nodes", () => {
       it("shows placeholder for empty result if numFilteredOutNodes is a positive value", async () => {
+        mockEnvironment("DESKTOP", { isDesktop, isBrowser });
         const { wrapper } = doMount();
 
         expect(wrapper.text()).toMatch(
@@ -66,25 +68,12 @@ describe("SearchResultsInfo", () => {
       });
 
       it("shows download AP button and message for an empty search result", async () => {
-        vi.resetModules();
-        vi.doMock("@/environment", async (importOriginal) => {
-          const actual = await importOriginal<typeof import("@/environment")>();
-
-          return {
-            ...actual,
-            environment: "BROWSER",
-            isDesktop: false,
-            isBrowser: true,
-          };
-        });
-        const SearchResultsInfo = (await import("../SearchResultsInfo.vue"))
-          .default;
+        mockEnvironment("BROWSER", { isDesktop, isBrowser });
 
         const { wrapper, uiControlsStore } = doMount({
           propsOverrides: {
             showDownloadButton: true,
           },
-          component: SearchResultsInfo,
         });
 
         uiControlsStore.shouldDisplayDownloadAPButton = true;
@@ -99,6 +88,7 @@ describe("SearchResultsInfo", () => {
 
     describe("has empty result", () => {
       it("shows placeholder for empty result if numFilteredOutNodes is 0", () => {
+        mockEnvironment("DESKTOP", { isDesktop, isBrowser });
         const query = "xxx xxx";
         const encodedQuery = knimeExternalUrls.KNIME_HUB_SEARCH_URL.replace(
           "%s",

@@ -1,15 +1,24 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 import { createRouter, createWebHistory } from "vue-router";
 
 import { setupHints } from "@knime/components";
 
-import { runInEnvironment } from "@/environment";
+import { isBrowser, isDesktop, runInEnvironment } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router, routes } from "@/router/router";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { ProjectActivationError, ProjectDataLoadError } from "../lifecycle";
 import { lifecycleBus } from "../lifecycle-events";
 
@@ -122,6 +131,10 @@ describe("application::lifecycle", () => {
   });
 
   describe("workflow Lifecycle", () => {
+    beforeAll(() => {
+      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+    });
+
     it("loads root workflow successfully", async () => {
       const onWorkflowLoaded = vi.fn();
       lifecycleBus.once("onWorkflowLoaded", onWorkflowLoaded);

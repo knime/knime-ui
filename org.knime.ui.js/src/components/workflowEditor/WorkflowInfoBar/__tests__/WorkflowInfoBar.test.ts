@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { computed } from "vue";
 import { mount } from "@vue/test-utils";
 
@@ -7,21 +7,15 @@ import {
   SpaceItemReference,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
+import { isBrowser, isDesktop } from "@/environment";
 import { createWorkflow } from "@/test/factories";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
 import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
 import StreamingInfo from "../StreamingInfo.vue";
 import WorkflowInfoBar from "../WorkflowInfoBar.vue";
 
-const mockEnvironment = vi.hoisted(
-  () => ({}),
-) as typeof import("@/environment");
-
-vi.mock("@/environment", async (importOriginal) => {
-  Object.assign(mockEnvironment, await importOriginal());
-  return mockEnvironment;
-});
+vi.mock("@/environment");
 
 vi.mock("@/store/canvas/useCurrentCanvasStore", () => {
   return {
@@ -30,9 +24,11 @@ vi.mock("@/store/canvas/useCurrentCanvasStore", () => {
   };
 });
 
-const { setEnvironment } = useMockEnvironment(mockEnvironment);
-
 describe("WorkflowInfoBar.vue", () => {
+  beforeAll(() => {
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+  });
+
   const doMount = ({
     workflow,
     origin,
@@ -122,8 +118,6 @@ describe("WorkflowInfoBar.vue", () => {
   });
 
   it("should render info bar for versioned workflows not in their latest version", () => {
-    setEnvironment("DESKTOP");
-
     const workflow = createWorkflow({
       info: {
         providerType: WorkflowInfo.ProviderTypeEnum.HUB,

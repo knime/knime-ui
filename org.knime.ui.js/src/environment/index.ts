@@ -10,8 +10,8 @@ export const environment: Environment =
   // eslint-disable-next-line no-undefined
   window.EquoCommService === undefined ? "BROWSER" : "DESKTOP";
 
-export const isDesktop = environment === "DESKTOP";
-export const isBrowser = environment === "BROWSER";
+export const isDesktop = () => environment === "DESKTOP";
+export const isBrowser = () => environment === "BROWSER";
 
 export const initGlobalEnvProperty = (app: App) => {
   app.config.globalProperties.$environment = environment;

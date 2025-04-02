@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
@@ -24,8 +24,6 @@ import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue"
 import MetadataDescription from "../MetadataDescription.vue";
 import ProjectMetadata from "../ProjectMetadata.vue";
 import WorkflowMetadata from "../WorkflowMetadata.vue";
-
-vi.mock("@/environment");
 
 describe("WorkflowMetadata.vue", () => {
   const doMount = ({

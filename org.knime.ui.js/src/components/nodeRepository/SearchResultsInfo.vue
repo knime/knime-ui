@@ -30,7 +30,7 @@ const openKnimeUIPreferencePage = () => {
 <template>
   <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
     <div class="filtered-nodes-content">
-      <template v-if="isDesktop">
+      <template v-if="isDesktop()">
         <DummyNodesEmptyState
           :icon="FilterCheckIcon"
           button-text="Change filter settings"
@@ -64,7 +64,7 @@ const openKnimeUIPreferencePage = () => {
     class="filtered-nodes-wrapper"
     :class="{ mini }"
   >
-    <template v-if="isDesktop">
+    <template v-if="isDesktop()">
       <div class="filtered-nodes-content">
         <MoreNodesIllustration class="empty-img" />
 

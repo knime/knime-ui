@@ -1,15 +1,17 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { MenuItems } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { isBrowser, isDesktop } from "@/environment";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import SpaceExplorerContextMenu from "../SpaceExplorerContextMenu.vue";
 
@@ -54,7 +56,13 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
   }),
 };
 
+vi.mock("@/environment");
+
 describe("SpaceExplorerContextMenu.vue", () => {
+  beforeAll(() => {
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+  });
+
   type ComponentProps = InstanceType<typeof SpaceExplorerContextMenu>["$props"];
   const doMount = ({
     props = {},
@@ -254,76 +262,25 @@ describe("SpaceExplorerContextMenu.vue", () => {
     });
     expect(closeContextMenu).toHaveBeenCalled();
   });
-});
 
-describe("SpaceExplorerContextMenu.vue - isBrowser checks", () => {
-  beforeEach(() => {
-    vi.resetModules();
-  });
-
-  const doMountWithIsBrowser = async (isBrowserValue: boolean) => {
-    vi.doMock("@/environment", async (originalImport) => {
-      const original = await originalImport<typeof import("@/environment")>();
-      return {
-        ...original,
-        isBrowser: isBrowserValue,
-      };
+  describe("options for browser environment", () => {
+    beforeAll(() => {
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
     });
 
-    const { default: SpaceExplorerContextMenuBrowser } = await import(
-      "../SpaceExplorerContextMenu.vue"
-    );
-
-    const mockedStores = mockStores();
-
-    const wrapper = mount(SpaceExplorerContextMenuBrowser, {
-      props: {
-        projectId: "myProject",
-        selectedItemIds: ["abc123"],
-        isMultipleSelectionActive: false,
-        createRenameOption: vi
-          .fn()
-          .mockReturnValue({ id: "rename", text: "rename" }),
-        createDeleteOption: vi
-          .fn()
-          .mockReturnValue({ id: "delete", text: "delete" }),
-        createDuplicateOption: vi
-          .fn()
-          .mockReturnValue({ id: "duplicate", text: "duplicate" }),
-        anchor: {
-          // @ts-ignore
-          item: {
-            name: "server-item",
-            isOpen: false,
-            meta: { type: "workflows" },
-          },
-          index: 0,
-          element: document.createElement("div"),
-        },
-        closeContextMenu: vi.fn(),
-        onItemClick: vi.fn(),
-      },
-      global: {
-        plugins: [mockedStores.testingPinia],
-      },
+    it("hides 'Download to local space' and 'Open in Browser' if isBrowser = true", () => {
+      const { wrapper } = doMount();
+      const menuItems = wrapper.findComponent(MenuItems).props("items");
+      const texts = menuItems.map((item) => item.text);
+      expect(texts).not.toContain("Download to local space");
+      expect(texts).not.toContain("Open in Browser");
     });
 
-    await flushPromises();
-    return { wrapper, mockedStores };
-  };
-
-  it("hides 'Download to local space' and 'Open in Browser' if isBrowser = true", async () => {
-    const { wrapper } = await doMountWithIsBrowser(true);
-    const menuItems = wrapper.findComponent(MenuItems).props("items");
-    const texts = menuItems.map((item) => item.text);
-    expect(texts).not.toContain("Download to local space");
-    expect(texts).not.toContain("Open in Browser");
-  });
-
-  it("hides 'Create Workflow' if isBrowser = true", async () => {
-    const { wrapper } = await doMountWithIsBrowser(true);
-    const menuItems = wrapper.findComponent(MenuItems).props("items");
-    const texts = menuItems.map((item) => item.text);
-    expect(texts).not.toContain("Create new workflow");
+    it("hides 'Create Workflow' if isBrowser = true", () => {
+      const { wrapper } = doMount();
+      const menuItems = wrapper.findComponent(MenuItems).props("items");
+      const texts = menuItems.map((item) => item.text);
+      expect(texts).not.toContain("Create new workflow");
+    });
   });
 });

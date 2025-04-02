@@ -4,10 +4,11 @@ import { flushPromises, shallowMount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 import { useRoute } from "vue-router";
 
+import { isBrowser, isDesktop } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 import { createSpaceProvider } from "@/test/factories";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import ErrorOverlay from "../application/ErrorOverlay.vue";
 
@@ -21,17 +22,7 @@ vi.mock("vue-router", async (importOriginal) => {
     useRoute: vi.fn(() => ({ meta: {} })),
   };
 });
-
-const mockEnvironment = vi.hoisted(
-  () => ({}),
-) as typeof import("@/environment");
-
-vi.mock("@/environment", async (importOriginal) => {
-  Object.assign(mockEnvironment, await importOriginal());
-  return mockEnvironment;
-});
-
-const { setEnvironment } = useMockEnvironment(mockEnvironment);
+vi.mock("@/environment");
 
 describe("KnimeUI.vue", () => {
   const doShallowMount = async ({
@@ -190,7 +181,7 @@ describe("KnimeUI.vue", () => {
   });
 
   it("sets CSS variable --app-main-content-height in desktop correctly", async () => {
-    setEnvironment("DESKTOP");
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
     await doShallowMount();
 
     const style = getComputedStyle(document.documentElement);
@@ -202,7 +193,7 @@ describe("KnimeUI.vue", () => {
   });
 
   it("sets CSS variable --app-main-content-height in browser correctly", async () => {
-    setEnvironment("BROWSER");
+    mockEnvironment("BROWSER", { isBrowser, isDesktop });
     await doShallowMount();
 
     const style = getComputedStyle(document.documentElement);
@@ -214,7 +205,7 @@ describe("KnimeUI.vue", () => {
   });
 
   it("sets CSS variable --app-main-content-height with download banner correctly", async () => {
-    setEnvironment("BROWSER");
+    mockEnvironment("BROWSER", { isBrowser, isDesktop });
     await doShallowMount({
       uiControlsOverrides: { shouldDisplayDownloadAPButton: true },
     });
@@ -229,7 +220,7 @@ describe("KnimeUI.vue", () => {
 
   describe("clipboard support", () => {
     beforeEach(() => {
-      setEnvironment("BROWSER");
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
     });
 
     it.each([

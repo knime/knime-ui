@@ -1,17 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { AppState } from "@/api/gateway-api/generated-api";
-import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
+import { isBrowser, isDesktop } from "@/environment";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 
-const mockEnvironment = vi.hoisted(
-  () => ({}),
-) as typeof import("@/environment");
-
-vi.mock("@/environment", async (importOriginal) => {
-  Object.assign(mockEnvironment, await importOriginal());
-  return mockEnvironment;
-});
-const { setEnvironment } = useMockEnvironment(mockEnvironment);
+vi.mock("@/environment");
 
 describe("uiControls", () => {
   const loadStore = async (mode: AppState.AppModeEnum) => {
@@ -25,7 +18,7 @@ describe("uiControls", () => {
 
   describe("default mode", () => {
     it("desktop", async () => {
-      setEnvironment("DESKTOP");
+      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
 
       const { mockedStores } = await loadStore(AppState.AppModeEnum.Default);
 
@@ -50,7 +43,7 @@ describe("uiControls", () => {
     });
 
     it("browser", async () => {
-      setEnvironment("BROWSER");
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
 
       const { mockedStores } = await loadStore(AppState.AppModeEnum.Default);
 
@@ -77,7 +70,7 @@ describe("uiControls", () => {
 
   describe("playground mode", () => {
     it("browser", async () => {
-      setEnvironment("BROWSER");
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
 
       const { mockedStores } = await loadStore(AppState.AppModeEnum.Playground);
       mockedStores.applicationStore.analyticsPlatformDownloadURL =
@@ -108,7 +101,7 @@ describe("uiControls", () => {
 
   describe("jobviewer mode", () => {
     it("browser", async () => {
-      setEnvironment("BROWSER");
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
 
       const { mockedStores } = await loadStore(AppState.AppModeEnum.JobViewer);
 

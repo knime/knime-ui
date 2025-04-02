@@ -39,7 +39,7 @@ const containerType = computed(() => activeWorkflow.value!.info.containerType);
         This is a linked {{ containerType }} and therefore cannot be edited.
       </span>
 
-      <span v-else-if="isDesktop && origin?.version" class="linked">
+      <span v-else-if="isDesktop() && origin?.version" class="linked">
         You are currently viewing version "{{ origin?.version.title }}" of this
         workflow.
       </span>

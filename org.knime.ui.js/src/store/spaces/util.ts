@@ -70,7 +70,7 @@ export const checkOpenWorkflowsBeforeMove = ({
   itemIds: string[];
   isCopy: boolean;
 }) => {
-  if (isBrowser) {
+  if (isBrowser()) {
     return false;
   }
   const { openProjects } = storeToRefs(useApplicationStore());

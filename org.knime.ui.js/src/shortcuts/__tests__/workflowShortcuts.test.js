@@ -4,26 +4,24 @@ import { API } from "@api";
 
 import { Node } from "@/api/gateway-api/generated-api";
 import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
+import { isBrowser, isDesktop } from "@/environment";
 import { createNativeNode, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import { getNextSelectedPort } from "@/util/portSelection";
 import workflowShortcuts from "../workflowShortcuts";
 
+vi.mock("@/environment");
+
+vi.mock("@/util/portSelection", () => {
+  return {
+    getNextSelectedPort: vi.fn(),
+  };
+});
+
 describe("workflowShortcuts", () => {
   const mockedAPI = deepMocked(API);
-
-  let mockEnvironment = vi.hoisted(() => ({}));
-  vi.mock("@/environment", async (importOriginal) => {
-    Object.assign(mockEnvironment, await importOriginal());
-    return mockEnvironment;
-  });
-
-  vi.mock("@/util/portSelection", () => {
-    return {
-      getNextSelectedPort: vi.fn(),
-    };
-  });
 
   const createStore = () => {
     const {
@@ -490,7 +488,7 @@ describe("workflowShortcuts", () => {
       });
 
       it("checks condition", () => {
-        mockEnvironment.isDesktop = true;
+        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
         const { selectionStore } = createStore();
         selectionStore.singleSelectedNode = {
           id: "root:0",
@@ -500,11 +498,11 @@ describe("workflowShortcuts", () => {
         expect(workflowShortcuts.detachOutputPort.condition()).toBeTruthy();
 
         // detach only on desktop
-        mockEnvironment.isDesktop = false;
+        mockEnvironment("BROWSER", { isBrowser, isDesktop });
         expect(workflowShortcuts.detachOutputPort.condition()).toBeFalsy();
 
         // no selected node
-        mockEnvironment.isDesktop = true;
+        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
         selectionStore.singleSelectedNode = null;
         expect(workflowShortcuts.detachOutputPort.condition()).toBeFalsy();
 
@@ -550,7 +548,7 @@ describe("workflowShortcuts", () => {
           allowedActions: {},
           outPorts: [{ typeId: "mockTypeId" }],
         };
-        mockEnvironment.isDesktop = true;
+        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
         selectionStore.singleSelectedNode = node;
         applicationStore.availablePortTypes = {
           mockTypeId: {
@@ -560,11 +558,11 @@ describe("workflowShortcuts", () => {
         expect(workflowShortcuts.detachFlowVarPort.condition()).toBeTruthy();
 
         // detach only on desktop
-        mockEnvironment.isDesktop = false;
+        mockEnvironment("BROWSER", { isBrowser, isDesktop });
         expect(workflowShortcuts.detachFlowVarPort.condition()).toBeFalsy();
 
         // no selected node
-        mockEnvironment.isDesktop = true;
+        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
         selectionStore.singleSelectedNode = null;
         expect(workflowShortcuts.detachFlowVarPort.condition()).toBeFalsy();
 
@@ -604,12 +602,12 @@ describe("workflowShortcuts", () => {
           id: "root:0",
           allowedActions: {},
         };
-        mockEnvironment.isDesktop = false;
+        mockEnvironment("BROWSER", { isBrowser, isDesktop });
         expect(
           workflowShortcuts.detachActiveOutputPort.condition(),
         ).toBeFalsy();
 
-        mockEnvironment.isDesktop = true;
+        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
         expect(
           workflowShortcuts.detachActiveOutputPort.condition(),
         ).toBeFalsy();

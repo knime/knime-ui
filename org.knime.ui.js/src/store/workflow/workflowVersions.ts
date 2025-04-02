@@ -36,7 +36,7 @@ import { useWorkflowStore } from "./workflow";
 export type VersionsModeStatus = "active" | "inactive" | "promoteHub";
 
 const getHubBaseUrl = (provider?: SpaceProviderNS.SpaceProvider | null) => {
-  if (isBrowser) {
+  if (isBrowser()) {
     return "/_/api";
   }
 

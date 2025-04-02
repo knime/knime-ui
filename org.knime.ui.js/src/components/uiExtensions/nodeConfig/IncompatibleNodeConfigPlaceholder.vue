@@ -28,7 +28,7 @@ const isMetanode = computed(
 );
 
 const shouldDisplayOpenDialog = computed(
-  () => hasLegacyDialog.value && isDesktop && !isMetanode.value,
+  () => hasLegacyDialog.value && isDesktop() && !isMetanode.value,
 );
 
 const shouldDisplayDownload = computed(

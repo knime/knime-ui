@@ -97,7 +97,7 @@ const AppHeader = defineAsyncComponent({
 const setContentHeight = () => {
   let mainContentHeight = "100vh";
 
-  if (isDesktop) {
+  if (isDesktop()) {
     mainContentHeight = "calc(100vh - var(--app-header-height))";
   } else if (uiControls.shouldDisplayDownloadAPButton) {
     mainContentHeight = "calc(100vh - var(--app-download-banner-height))";
@@ -156,7 +156,7 @@ const setup = async () => {
 useGlobalErrorReporting();
 
 const checkClipboardSupport = async () => {
-  if (isDesktop) {
+  if (isDesktop()) {
     applicationSettingsStore.setHasClipboardSupport(true);
     return;
   }

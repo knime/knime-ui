@@ -456,7 +456,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
     }) {
       const isLoadingRootWorkflow = workflowId === "root";
 
-      if (isLoadingRootWorkflow && isDesktop) {
+      if (isLoadingRootWorkflow && isDesktop()) {
         // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
         const projectActivationError = new ProjectActivationError(
           `Failed to set active project ${projectId}`,

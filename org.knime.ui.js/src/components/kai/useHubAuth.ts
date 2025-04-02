@@ -26,10 +26,10 @@ const useHubAuth = () => {
     },
   });
 
-  const isHubConfigured = computed(() => Boolean(hubID.value) || isBrowser);
+  const isHubConfigured = computed(() => Boolean(hubID.value) || isBrowser());
 
   const isAuthenticated = computed(() => {
-    return spaceProviders.value?.[hubID.value ?? ""]?.connected || isBrowser;
+    return spaceProviders.value?.[hubID.value ?? ""]?.connected || isBrowser();
   });
 
   const userName = computed(() => {

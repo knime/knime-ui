@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { createTestingPinia } from "@pinia/testing";
 
-import { ApplyState, ViewState } from "@knime/ui-extension-renderer/api";
+import type { APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
@@ -110,9 +110,9 @@ describe("nodeConfiguration", () => {
 
   describe("autoApplySettings [DESKTOP]", () => {
     const dirtyState = {
-      apply: "configured" satisfies ApplyState,
-      view: "configured" satisfies ViewState,
-    };
+      apply: "configured",
+      view: "configured",
+    } satisfies APILayerDirtyState;
 
     beforeEach(() => {
       // @ts-ignore
@@ -198,9 +198,9 @@ describe("nodeConfiguration", () => {
 
   describe("autoApplySettings [BROWSER]", () => {
     const dirtyState = {
-      apply: "configured" satisfies ApplyState,
-      view: "configured" satisfies ViewState,
-    };
+      apply: "configured",
+      view: "configured",
+    } satisfies APILayerDirtyState;
 
     beforeEach(() => {
       // @ts-ignore

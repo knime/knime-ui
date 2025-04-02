@@ -39,7 +39,7 @@ export const usePageBuilder = async (
 ): Promise<PageBuilderControl> => {
   const pageBuilderBaseUrl =
     // eslint-disable-next-line no-undefined
-    isDesktop ? "https://org.knime.js.pagebuilder/" : undefined;
+    isDesktop() ? "https://org.knime.js.pagebuilder/" : undefined;
 
   if (PageBuilder === null) {
     // the pageBuilder module will access the NODE_ENV to determine if it is in development mode
@@ -60,7 +60,7 @@ export const usePageBuilder = async (
         ...pageBuilderApiVuexStoreConfig,
         state: {
           ...pageBuilderApiVuexStoreConfig.state,
-          disallowWebNodes: isBrowser,
+          disallowWebNodes: isBrowser(),
         },
       },
       resourceLocationResolver(projectId, "", pageBuilderBaseUrl),

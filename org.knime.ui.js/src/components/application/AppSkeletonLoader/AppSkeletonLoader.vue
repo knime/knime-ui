@@ -123,7 +123,7 @@ watch(isLoading, (value) => {
         />
 
         <AppRightPanelSkeleton
-          v-if="isBrowser || isVersionsSidepanelOpen"
+          v-if="isBrowser() || isVersionsSidepanelOpen"
           :transparent="isVersionsSidepanelOpen"
           :width="rightPanelWidth"
           with-border
