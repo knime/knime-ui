@@ -1,1 +1,3 @@
-cd org.knime.ui.js && pnpm knime-eslint-config-prepare-commit-msg "$@"
+#!/usr/bin/env bash
+
+source org.knime.ui.js/node_modules/@knime/eslint-config/scripts/prepare-commit-msg
