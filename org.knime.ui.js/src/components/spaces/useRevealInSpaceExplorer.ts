@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 
 import type { AncestorInfo } from "@/api/custom-types";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
+import { isBrowser } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { TABS, usePanelStore } from "@/store/panel";
@@ -42,8 +43,12 @@ export const useRevealInSpaceExplorer = () => {
   const canRevealItem = (origin: SpaceItemReference): boolean => {
     const provider = spaceProviders.value?.[origin.providerId];
 
-    if (!provider || loadingProviderSpacesData.value[provider.id]) {
-      return false; // Cannot check if Server project without provider or if space groups have not yet been initialized
+    if (
+      isBrowser() || // Ancestor information unavailable in browser
+      !provider || // Provider is not known
+      loadingProviderSpacesData.value[provider.id] // Space groups have not yet been initialized
+    ) {
+      return false;
     }
 
     // Only reveal projects that are not Server projects

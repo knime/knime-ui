@@ -7,6 +7,7 @@ import LocalSpaceIcon from "@knime/styles/img/icons/local-space.svg";
 import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 
 import { SpaceProvider, WorkflowInfo } from "@/api/gateway-api/generated-api";
+import { isBrowser, isDesktop } from "@/environment";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import {
@@ -14,17 +15,29 @@ import {
   createSpaceProvider,
   createWorkflow,
 } from "@/test/factories";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import ComponentBreadcrumb from "../ComponentBreadcrumb.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 
+vi.mock("@/environment");
+
 const revealInSpaceExplorerSpy = vi.fn();
 
-vi.mock("@/components/spaces/useRevealInSpaceExplorer", () => ({
-  useRevealInSpaceExplorer: () => ({
-    revealInSpaceExplorer: revealInSpaceExplorerSpy,
-  }),
-}));
+vi.mock(
+  "@/components/spaces/useRevealInSpaceExplorer",
+  async (importOriginal) => {
+    const original = await importOriginal<
+      typeof import("@/components/spaces/useRevealInSpaceExplorer")
+    >();
+    return {
+      useRevealInSpaceExplorer: () => ({
+        ...original.useRevealInSpaceExplorer(),
+        revealInSpaceExplorer: revealInSpaceExplorerSpy,
+      }),
+    };
+  },
+);
 
 const LOCAL_PROVIDER = createSpaceProvider({
   type: SpaceProvider.TypeEnum.LOCAL,
@@ -39,6 +52,7 @@ const SERVER_PROVIDER = createSpaceProvider({
 describe("WorkflowBreadcrumb.vue", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockEnvironment("DESKTOP", { isDesktop, isBrowser });
   });
 
   const doMount = ({
@@ -58,6 +72,9 @@ describe("WorkflowBreadcrumb.vue", () => {
     mockedStores.applicationStore.openProjects = [activeProject];
     // @ts-expect-error
     mockedStores.spaceProvidersStore.activeProjectProvider = provider;
+    mockedStores.spaceProvidersStore.setSpaceProviders({
+      [provider.id]: provider,
+    });
 
     const wrapper = shallowMount(WorkflowBreadcrumb, {
       props: { workflow },
@@ -85,6 +102,28 @@ describe("WorkflowBreadcrumb.vue", () => {
       }),
     });
     expect(wrapper.findComponent(ComponentBreadcrumb).exists()).toBe(true);
+  });
+
+  it("renders dropdown items in DESKTOP", () => {
+    const { wrapper } = doMount();
+    const menuItems = wrapper.findComponent(SubMenu).props("items");
+
+    expect(menuItems).toEqual([
+      expect.objectContaining({ text: "Version history" }),
+      expect.objectContaining({ text: "Reveal in space explorer" }),
+      expect.objectContaining({ text: "Close project" }),
+    ]);
+  });
+
+  it("renders dropdown items in BROWSER", () => {
+    mockEnvironment("BROWSER", { isDesktop, isBrowser });
+
+    const { wrapper } = doMount();
+    const menuItems = wrapper.findComponent(SubMenu).props("items");
+
+    expect(menuItems).toEqual([
+      expect.objectContaining({ text: "Version history" }),
+    ]);
   });
 
   it('handles "Version history" dropdown item click', () => {

@@ -12,6 +12,7 @@ import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
 import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useSpaceIcons } from "@/components/spaces/useSpaceIcons";
+import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
@@ -23,7 +24,7 @@ type Props = {
   workflow: Workflow;
 };
 const props = defineProps<Props>();
-const { revealInSpaceExplorer } = useRevealInSpaceExplorer();
+const { revealInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
 const { getSpaceProviderIcon } = useSpaceIcons();
 
 const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
@@ -45,8 +46,8 @@ const dropdownItems = computed(() => {
     });
   }
 
-  items.push(
-    {
+  if (activeProjectOrigin.value && canRevealItem(activeProjectOrigin.value)) {
+    items.push({
       text: "Reveal in space explorer",
       icon: ListIcon,
       metadata: {
@@ -58,8 +59,11 @@ const dropdownItems = computed(() => {
           await revealInSpaceExplorer(activeProjectOrigin.value!, projectName);
         },
       },
-    },
-    {
+    });
+  }
+
+  if (isDesktop()) {
+    items.push({
       text: "Close project",
       icon: CloseIcon,
       metadata: {
@@ -67,8 +71,8 @@ const dropdownItems = computed(() => {
           useDesktopInteractionsStore().closeProject(activeProjectId.value!);
         },
       },
-    },
-  );
+    });
+  }
 
   return items;
 });
