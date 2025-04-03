@@ -47,6 +47,7 @@ defineEmits(["close", "upload"]);
     align-items: center;
     width: 100%;
     padding-bottom: var(--space-4);
+    margin-bottom: var(--space-12);
     border-bottom: 1px solid var(--knime-silver-sand);
 
     & h6 {
@@ -85,7 +86,6 @@ defineEmits(["close", "upload"]);
     line-height: 150%;
     letter-spacing: 0%;
     vertical-align: middle;
-    margin-top: var(--space-16);
     margin-bottom: var(--space-24);
     color: var(--knime-masala);
   }
