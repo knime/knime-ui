@@ -1,26 +1,17 @@
 /* eslint-disable no-undefined */
-
-import fs from "node:fs";
 import path from "node:path";
 
 import dotenvx from "@dotenvx/dotenvx";
 import { defineConfig, devices } from "@playwright/test";
 
-const WEBSERVER_HOST = "127.0.0.1";
-const WEBSERVER_PORT = "3005";
-const WEBSERVER_URL = `http://${WEBSERVER_HOST}:${WEBSERVER_PORT}`;
-
-// use e2e env file if we don't have already one
-const envFilePath = path.resolve(import.meta.dirname, ".env");
-if (!fs.existsSync(envFilePath)) {
-  fs.copyFileSync(path.resolve(import.meta.dirname, ".env.e2e"), envFilePath);
-}
-
-// Read environment variables from file.
+// use e2e env file
+const envFilePath = path.resolve(import.meta.dirname, ".env.e2e");
 dotenvx.config({ path: envFilePath });
 
-process.env.PLAYWRIGHT_WEBSERVER_HOST = WEBSERVER_HOST;
-process.env.PLAYWRIGHT_WEBSERVER_PORT = WEBSERVER_HOST;
+const WEBSERVER_HOST = "127.0.0.1";
+const WEBSERVER_PORT = process.env.VITE_APP_PORT;
+const WEBSERVER_URL = `http://${WEBSERVER_HOST}:${WEBSERVER_PORT}`;
+
 process.env.PLAYWRIGHT_WEBSERVER_URL = WEBSERVER_URL;
 
 /**
@@ -74,7 +65,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `pnpm build:only && pnpm serve --host=${WEBSERVER_HOST} --port=${WEBSERVER_PORT}`,
+    command: `pnpm build:e2e && pnpm serve --host=${WEBSERVER_HOST} --port=${WEBSERVER_PORT}`,
     url: WEBSERVER_URL,
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",
