@@ -4,8 +4,8 @@
 import { expect, test } from "@playwright/test";
 
 /* eslint-disable no-process-env */
-import { getBrowserState } from "./utils/browser-state";
-import { mockWebsocket } from "./utils/mockWebsocket";
+import { getBrowserState } from "../utils/browser-state";
+import { mockWebsocket } from "../utils/mockWebsocket";
 
 test.use({
   storageState: getBrowserState({ perfMode: true, webGL: true }),

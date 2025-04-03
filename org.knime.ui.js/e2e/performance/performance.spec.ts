@@ -5,8 +5,8 @@ import { expect, test } from "@playwright/test";
 import playwright from "playwright";
 
 /* eslint-disable no-process-env */
-import { getBrowserState } from "./utils/browser-state";
-import { mockWebsocket } from "./utils/mockWebsocket";
+import { getBrowserState } from "../utils/browser-state";
+import { mockWebsocket } from "../utils/mockWebsocket";
 
 test.use({
   storageState: getBrowserState({ perfMode: true, webGL: true }),
@@ -49,7 +49,7 @@ const getMeasurements = async (page: playwright.Page) => {
   };
 };
 
-test.skip("test performance with small workflow", async ({ page }) => {
+test("test performance with small workflow", async ({ page }) => {
   await mockWebsocket(page, "getWorkflow.json");
   await page.goto("/");
 
@@ -67,7 +67,7 @@ test.skip("test performance with small workflow", async ({ page }) => {
   console.log("averageFps", averageFps.toFixed(2));
 });
 
-test.skip("test performance with buildings workflow", async ({ page }) => {
+test("test performance with buildings workflow", async ({ page }) => {
   await mockWebsocket(page, "getWorkflow-buildings.json");
   await page.goto("/");
 
