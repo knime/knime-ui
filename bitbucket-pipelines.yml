@@ -39,9 +39,11 @@ definitions:
 pipelines:
   pull-requests:
     '**':
-      - step: *lint-test-build
-      - step: *e2e-tests
+      - parallel:
+        - step: *lint-test-build
+        - step: *e2e-tests
   branches:
     '{master,releases/*}':
-      - step: *lint-test-build
-      - step: *e2e-tests
+      - parallel:
+        - step: *lint-test-build
+        - step: *e2e-tests

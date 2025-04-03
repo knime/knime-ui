@@ -7,7 +7,7 @@ import dotenvx from "@dotenvx/dotenvx";
 import { defineConfig, devices } from "@playwright/test";
 
 const WEBSERVER_HOST = "127.0.0.1";
-const WEBSERVER_PORT = "3000";
+const WEBSERVER_PORT = "3005";
 const WEBSERVER_URL = `http://${WEBSERVER_HOST}:${WEBSERVER_PORT}`;
 
 // use e2e env file if we don't have already one
@@ -74,7 +74,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `npm run build:only && npm run serve -- --host=${WEBSERVER_HOST} --port=${WEBSERVER_PORT}`,
+    command: `pnpm build:only && pnpm serve --host=${WEBSERVER_HOST} --port=${WEBSERVER_PORT}`,
     url: WEBSERVER_URL,
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",
