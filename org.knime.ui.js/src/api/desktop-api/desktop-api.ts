@@ -573,7 +573,7 @@ export const openInBrowser = ({
   spaceProviderId,
   spaceId,
   itemId,
-}: SpaceProviderId & SpaceId & { itemId: string }) => {
+}: FullSpacePath) => {
   return callBrowserFunction(
     window.openInBrowser,
     [spaceProviderId, spaceId, itemId],
@@ -587,7 +587,7 @@ export const openAPIDefinition = ({
   spaceProviderId,
   spaceId,
   itemId,
-}: SpaceProviderId & SpaceId & { itemId: string }) => {
+}: FullSpacePath) => {
   return callBrowserFunction(
     window.openAPIDefinition,
     [spaceProviderId, spaceId, itemId],
@@ -639,14 +639,12 @@ export const importComponent = ({
   workflowId,
   x,
   y,
-}: SpaceProviderId &
-  SpaceId &
-  SpaceItemId & {
-    projectId: string;
-    workflowId: string;
-    x: number;
-    y: number;
-  }) => {
+}: FullSpacePath & {
+  projectId: string;
+  workflowId: string;
+  x: number;
+  y: number;
+}) => {
   return callBrowserFunction(
     window.importComponent,
     [spaceProviderId, spaceId, itemId, projectId, workflowId, x, y],
@@ -708,7 +706,7 @@ export const openPermissionsDialog = ({
   spaceProviderId,
   spaceId,
   itemId,
-}: SpaceProviderId & SpaceId & SpaceItemId) => {
+}: FullSpacePath) => {
   return callBrowserFunction(
     window.openPermissionsDialog,
     [spaceProviderId, spaceId, itemId],
@@ -722,7 +720,7 @@ export const executeWorkflow = ({
   spaceProviderId,
   spaceId,
   itemId,
-}: SpaceProviderId & SpaceId & SpaceItemId) => {
+}: FullSpacePath) => {
   return callBrowserFunction(
     window.executeOnClassic,
     [spaceProviderId, spaceId, itemId],
@@ -738,9 +736,7 @@ export const saveJobAsWorkflow = ({
   itemId,
   jobId,
   jobName,
-}: SpaceProviderId &
-  SpaceId &
-  SpaceItemId & { jobId: string; jobName: string }) => {
+}: FullSpacePath & { jobId: string; jobName: string }) => {
   return callBrowserFunction(
     window.saveJobAsWorkflow,
     [spaceProviderId, spaceId, itemId, jobId, jobName],
@@ -755,7 +751,7 @@ export const editSchedule = ({
   spaceId,
   itemId,
   scheduleId,
-}: SpaceProviderId & SpaceId & SpaceItemId & { scheduleId: string }) => {
+}: FullSpacePath & { scheduleId: string }) => {
   return callBrowserFunction(
     window.editSchedule,
     [spaceProviderId, spaceId, itemId, scheduleId],
@@ -813,7 +809,7 @@ export const removeMostRecentlyUsedProject = ({
   spaceProviderId,
   spaceId,
   itemId,
-}: SpaceProviderId & SpaceId & SpaceItemId) => {
+}: FullSpacePath) => {
   return callBrowserFunction(
     window.removeMostRecentlyUsedProject,
     [spaceProviderId, spaceId, itemId],
@@ -828,7 +824,7 @@ export const updateMostRecentlyUsedProject = ({
   spaceId,
   itemId,
   newName,
-}: SpaceProviderId & SpaceId & SpaceItemId & { newName?: string }) => {
+}: FullSpacePath & { newName?: string }) => {
   return callBrowserFunction(
     window.updateMostRecentlyUsedProject,
     [spaceProviderId, spaceId, itemId, newName],
