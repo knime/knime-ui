@@ -3,8 +3,8 @@ import {
   type ComponentPublicInstance,
   type UnwrapRef,
   computed,
-  onMounted,
   ref,
+  toRef,
   watch,
 } from "vue";
 import { onClickOutside, useMagicKeys } from "@vueuse/core";
@@ -24,9 +24,8 @@ import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import * as $colors from "@/style/colors";
 import { gridSize } from "@/style/shapes";
-import { recreateLinebreaks } from "@/util/recreateLineBreaks";
+import { useAnnotationDataEditing } from "../../common/annotations/useAnnotationDataEditing";
 
 import LegacyAnnotation from "./LegacyAnnotation.vue";
 import RichTextAnnotation from "./RichTextAnnotation.vue";
@@ -41,11 +40,6 @@ type Props = {
 const props = defineProps<Props>();
 
 const selectionPreview = ref<"hide" | "show" | "clear" | null>(null);
-const hasEdited = ref(false);
-const newAnnotationData = ref({
-  richTextContent: "",
-  borderColor: "",
-});
 
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const annotationInteractionStore = useAnnotationInteractionsStore();
@@ -68,10 +62,19 @@ const isSelected = computed(() => {
   return isAnnotationSelected.value(props.annotation.id);
 });
 
-const isEditing = computed(() => {
-  return (
-    props.annotation.id === annotationInteractionStore.editableAnnotationId
-  );
+const {
+  isEditing,
+  hasEdited,
+  initialBorderColor,
+  initialRichTextAnnotationValue,
+  toggleEdit,
+  saveContent,
+  onBlur,
+  onAnnotationColorChange,
+  onAnnotationTextChange,
+} = useAnnotationDataEditing({
+  annotation: toRef(props, "annotation"),
+  focusCanvas,
 });
 
 const showSelectionPlane = computed(() => {
@@ -118,36 +121,6 @@ const isRichTextAnnotation = computed(() => {
   return props.annotation.text.contentType === TypedText.ContentTypeEnum.Html;
 });
 
-const initialRichTextAnnotationValue = computed(() => {
-  return isRichTextAnnotation.value
-    ? props.annotation.text.value
-    : recreateLinebreaks(props.annotation.text.value);
-});
-
-const initialBorderColor = computed(() => {
-  if (
-    hasEdited.value &&
-    newAnnotationData.value.borderColor !== props.annotation.borderColor
-  ) {
-    return newAnnotationData.value.borderColor;
-  }
-
-  return isRichTextAnnotation.value
-    ? props.annotation.borderColor
-    : $colors.defaultAnnotationBorderColor;
-});
-
-const initializeData = () => {
-  newAnnotationData.value = {
-    richTextContent: initialRichTextAnnotationValue.value,
-    borderColor: initialBorderColor.value,
-  };
-};
-
-onMounted(() => {
-  initializeData();
-});
-
 const onLeftClick = (event: PointerEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
@@ -182,44 +155,6 @@ const transformAnnotation = (bounds: Bounds) => {
     bounds,
     annotationId: props.annotation.id,
   });
-};
-
-const toggleEdit = () => {
-  if (!isWritable.value) {
-    return;
-  }
-
-  if (isEditing.value) {
-    focusCanvas();
-  }
-
-  annotationInteractionStore.setEditableAnnotationId(
-    isEditing.value ? null : props.annotation.id,
-  );
-};
-
-const updateAnnotation = () => {
-  return annotationInteractionStore.updateAnnotation({
-    annotationId: props.annotation.id,
-    text: newAnnotationData.value.richTextContent,
-    borderColor: newAnnotationData.value.borderColor,
-  });
-};
-
-const saveContent = async () => {
-  if (window.getSelection()?.toString() !== "" && isSelected.value) {
-    return;
-  }
-
-  if (!isEditing.value) {
-    return;
-  }
-
-  if (hasEdited.value) {
-    await updateAnnotation();
-  }
-
-  toggleEdit();
 };
 
 const transformControlsRef = ref<ComponentPublicInstance<
@@ -302,25 +237,6 @@ useEscapeStack({
     }
   },
 });
-
-// Blur happens on:
-// - When the annotation exits the edit mode
-// - Switching to another workflow (e.g clicking on another tab)
-const onBlur = () => {
-  if (hasEdited.value) {
-    updateAnnotation();
-  }
-};
-
-const onAnnotationChange = (content: string) => {
-  hasEdited.value = true;
-  newAnnotationData.value.richTextContent = content;
-};
-
-const setColor = (color: string) => {
-  hasEdited.value = true;
-  newAnnotationData.value.borderColor = color;
-};
 </script>
 
 <template>
@@ -358,8 +274,8 @@ const setColor = (color: string) => {
           :initial-border-color="initialBorderColor"
           :editable="isEditing"
           :annotation-bounds="transformedBounds"
-          @change="onAnnotationChange"
-          @change-border-color="setColor"
+          @change="onAnnotationTextChange"
+          @change-border-color="onAnnotationColorChange"
           @edit-start="toggleEdit"
           @blur="onBlur"
         />

@@ -129,7 +129,7 @@ describe("generateWorkflowPreview", () => {
     const output = await generateWorkflowPreview(svg, false);
 
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.getAttribute("viewBox")).toBe("10 20 100 200");
+    expect(outputEl!.getAttribute("viewBox")).toBe("10 20 100 200");
   });
 
   it('should remove all elements with the attribute "data-hide-in-workflow-preview"', async () => {
@@ -139,7 +139,7 @@ describe("generateWorkflowPreview", () => {
     const outputEl = createElementFromOutput(output);
 
     expect(
-      outputEl.querySelectorAll("[data-hide-in-workflow-preview]").length,
+      outputEl!.querySelectorAll("[data-hide-in-workflow-preview]").length,
     ).toBe(0);
   });
 
@@ -148,11 +148,11 @@ describe("generateWorkflowPreview", () => {
 
     const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
-    const emptyGTags = Array.from(outputEl.querySelectorAll("g")).filter(
+    const emptyGTags = Array.from(outputEl!.querySelectorAll("g")).filter(
       (el) => el.hasChildNodes,
     );
     expect(emptyGTags).toEqual([]);
-    expect(outputEl.querySelectorAll('[style*="display: none"]').length).toBe(
+    expect(outputEl!.querySelectorAll('[style*="display: none"]').length).toBe(
       0,
     );
   });
@@ -162,7 +162,7 @@ describe("generateWorkflowPreview", () => {
 
     const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
-    const connectorEl = outputEl.querySelector(
+    const connectorEl = outputEl!.querySelector(
       "[data-connector-id]",
     ) as HTMLElement;
     expect(connectorEl.style.stroke).toBe("rgb(123, 123, 123)");
@@ -173,7 +173,7 @@ describe("generateWorkflowPreview", () => {
 
     const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.querySelector("foreignObject").style.stroke).toBe(
+    expect(outputEl!.querySelector("foreignObject")!.style.stroke).toBe(
       "rgb(123, 123, 123)",
     );
   });
@@ -183,7 +183,7 @@ describe("generateWorkflowPreview", () => {
 
     const output = await generateWorkflowPreview(svg, false);
     const outputEl = createElementFromOutput(output);
-    const annotationEl = outputEl.querySelector(
+    const annotationEl = outputEl!.querySelector(
       ".annotation-editor",
     ) as HTMLElement;
     expect(annotationEl.style.border).toBe("rgb(123, 123, 123)");
@@ -191,27 +191,11 @@ describe("generateWorkflowPreview", () => {
     expect(annotationEl.style.overflowY).toBe("hidden");
   });
 
-  it("caches the fonts for continued usage", async () => {
-    localStorage.clear();
-    const { svg } = setup();
-    vi.spyOn(Storage.prototype, "setItem");
-    vi.spyOn(Storage.prototype, "getItem");
-
-    await generateWorkflowPreview(svg, false);
-
-    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
-
-    await generateWorkflowPreview(svg, false);
-
-    expect(localStorage.getItem).toHaveBeenCalled();
-    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
-  });
-
   it("should return empty svg when canvas is empty", async () => {
     const { svg } = setup();
 
     const output = await generateWorkflowPreview(svg, true);
     const outputEl = createElementFromOutput(output);
-    expect(outputEl.childNodes.length).toBe(0);
+    expect(outputEl!.childNodes.length).toBe(0);
   });
 });

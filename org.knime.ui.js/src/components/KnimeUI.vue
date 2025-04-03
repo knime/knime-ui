@@ -32,6 +32,7 @@ import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { getToastPresets } from "@/toastPresets";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
+import { loadFontsAsBase64 } from "@/util/font";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
@@ -121,6 +122,10 @@ const setup = async () => {
       document.fonts.load("400 1em Roboto Condensed"),
       document.fonts.load("700 1em Roboto Condensed"),
     ]);
+
+    // preload and cache the fonts as base64 so that they can be
+    // used for the workflow annotations when rendered in the webgl canvas
+    loadFontsAsBase64();
 
     // calculate content height based on running environment
     setContentHeight();

@@ -1,7 +1,8 @@
-import robotoCondensed from "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff";
 import { camelCase } from "lodash-es";
 
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+
+import { loadFontsAsBase64 } from "./font";
 
 const removeNonXMLChars = (xmlStr: string) => {
   // taken from https://www.w3.org/TR/REC-xml/#charsets
@@ -216,55 +217,19 @@ const useCSSfromComputedStyles =
   };
 
 /**
- * Returns the base64 encoded contents of the file that will be fetched from the given
- * filepath
- *
- * @param filepath
- * @returns
- */
-const fileToBase64 = async (filepath: string): Promise<string> => {
-  const dataUrlDeclarationHeaderRegex = /data:.+\/.+;base64,/g;
-
-  const blobContent = await fetch(filepath).then((response) => response.blob());
-
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-
-    // Read file content on file loaded event
-    reader.onload = function (event) {
-      resolve(
-        // remove data url preceding headers to be left only with the base64 encoded string
-        (event.target!.result as string).replace(
-          dataUrlDeclarationHeaderRegex,
-          "",
-        ),
-      );
-    };
-
-    // Convert data to base64
-    reader.readAsDataURL(blobContent);
-  });
-};
-
-/**
  * Gets base64 string of the fonts used by the SVG preview. It caches the string for
  * further use
  * @returns
  */
 const getFontData = async () => {
-  // TODO: NXT-1493 - This cache is never invalidated (updates to the font files) nor is it ever reset or deleted.
-  //       We should consider making the base64 encode a build step
-  const fontCacheKey = `workflow-preview-font-${robotoCondensed}`;
-  const cachedFont = localStorage.getItem(fontCacheKey);
+  const fonts = await loadFontsAsBase64();
 
-  if (cachedFont) {
-    return Promise.resolve(cachedFont);
-  }
-
-  const fontBase64 = await fileToBase64(robotoCondensed);
-  localStorage.setItem(fontCacheKey, fontBase64);
-
-  return fontBase64;
+  return (
+    fonts
+      .map(([size, font]) => ({ size, font }))
+      // eslint-disable-next-line no-magic-numbers
+      .find(({ size }) => size === 400)!.font
+  );
 };
 
 /**

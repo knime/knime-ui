@@ -19,6 +19,7 @@ import WorkflowEmpty from "../SVGKanvas/WorkflowEmpty.vue";
 import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 
 import Workflow from "./Workflow.vue";
+import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import Kanvas from "./kanvas/Kanvas.vue";
 
@@ -136,6 +137,8 @@ onUnmounted(() => {
     >
       <Workflow />
     </Kanvas>
+
+    <EditableWorkflowAnnotation />
 
     <svg
       v-if="activeWorkflow && isWorkflowEmpty"

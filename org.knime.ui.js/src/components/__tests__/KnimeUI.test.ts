@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, shallowMount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
@@ -22,9 +22,30 @@ vi.mock("vue-router", async (importOriginal) => {
     useRoute: vi.fn(() => ({ meta: {} })),
   };
 });
+
 vi.mock("@/environment");
 
+vi.mock(
+  "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff",
+  () => ({ default: "font data" }),
+);
+vi.mock(
+  "@fontsource/roboto-condensed/files/roboto-condensed-all-700-normal.woff",
+  () => ({ default: "font data" }),
+);
+
 describe("KnimeUI.vue", () => {
+  const mockFetch = vi.fn(() =>
+    Promise.resolve({
+      blob: () => new Blob(["mock"]),
+    }),
+  );
+
+  beforeAll(() => {
+    // @ts-ignore
+    window.fetch = mockFetch;
+  });
+
   const doShallowMount = async ({
     initializeApplication = vi.fn().mockResolvedValue({}),
     uiControlsOverrides = {},

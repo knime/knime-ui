@@ -12,6 +12,7 @@ interface Props {
   initialValue: string;
   annotationBounds: Bounds;
   initialBorderColor: string;
+  zoomFactor: number;
 }
 
 const props = defineProps<Props>();
@@ -19,10 +20,10 @@ const { initialValue } = toRefs(props);
 const previewBorderColor = ref<string | null>(null);
 
 const emit = defineEmits<{
-  (e: "editStart"): void;
-  (e: "change", content: string): void;
-  (e: "changeBorderColor", color: string): void;
-  (e: "blur"): void;
+  editStart: [];
+  change: [content: string];
+  changeBorderColor: [color: string];
+  blur: [];
 }>();
 
 const activeBorderColor = computed(
@@ -66,16 +67,15 @@ const isBrowserWebKit = computed(
       @blur="emit('blur')"
     >
       <template #customToolbar="{ editor, tools }">
-        <Portal v-if="editable && editor" to="annotation-editor-toolbar">
-          <RichTextAnnotationToolbar
-            :active-border-color="initialBorderColor"
-            :editor="editor"
-            :tools="tools"
-            :annotation-bounds="annotationBounds"
-            @change-border-color="emit('changeBorderColor', $event)"
-            @preview-border-color="previewBorderColor = $event"
-          />
-        </Portal>
+        <RichTextAnnotationToolbar
+          class="toolbar-wrapper"
+          :active-border-color="initialBorderColor"
+          :editor="editor"
+          :tools="tools"
+          :annotation-bounds="annotationBounds"
+          @change-border-color="emit('changeBorderColor', $event)"
+          @preview-border-color="previewBorderColor = $event"
+        />
       </template>
       <template #linkModal="{ linkTool }">
         <Portal v-if="editable && linkTool" to="annotation-editor-toolbar">
@@ -93,12 +93,15 @@ const isBrowserWebKit = computed(
 }
 
 .toolbar-wrapper {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: initial;
+  position: absolute;
+  top: -55px;
+  left: 50%;
+  translate: -50%;
+  z-index: v-bind("$zIndices.layerExpandedMenus");
+
+  /* undo the transform applied to the parent */
+  transform: scale(v-bind(1 / zoomFactor));
+  transform-origin: bottom center;
 }
 
 .annotation-editor {

@@ -15,10 +15,10 @@ import { CreateLinkModal } from "@knime/rich-text-editor";
 
 import * as $colors from "@/style/colors";
 import { mockStores } from "@/test/utils/mockStores";
-import ColorIcon from "../ColorIcon.vue";
-import ColorSelectionDialog from "../ColorSelectionDialog.vue";
+import ColorIcon from "../../../common/annotations/ColorIcon.vue";
+import ColorSelectionDialog from "../../../common/annotations/ColorSelectionDialog.vue";
+import RichTextAnnotationToolbar from "../../../common/annotations/RichTextAnnotationToolbar.vue";
 import RichTextAnnotation from "../RichTextAnnotation.vue";
-import RichTextAnnotationToolbar from "../RichTextAnnotationToolbar.vue";
 
 // mock for editor's isActive function. declared separately due to mock hoisting via vi.mock
 const isActive = vi.fn();

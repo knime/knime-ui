@@ -13,11 +13,16 @@ import { type HotkeysNS, hotkeys } from "@knime/utils";
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import * as $shapes from "@/style/shapes";
-import FloatingMenu from "../FloatingMenu/FloatingMenu.vue";
+import FloatingMenu from "../../SVGKanvas/FloatingMenu/FloatingMenu.vue";
+import { canvasRendererUtils } from "../../util/canvasRenderer";
 
 import ColorIcon from "./ColorIcon.vue";
 import ColorSelectionDialog from "./ColorSelectionDialog.vue";
 import RichTextAnnotationToolbarDialog from "./RichTextAnnotationToolbarDialog.vue";
+
+const WrapperComponent = computed(() => {
+  return canvasRendererUtils.isSVGRenderer() ? FloatingMenu : "div";
+});
 
 interface Props {
   editor: Editor;
@@ -154,7 +159,8 @@ const changeBorderColor = (color: string) => {
 </script>
 
 <template>
-  <FloatingMenu
+  <Component
+    :is="WrapperComponent"
     :canvas-position="adjustedPosition"
     aria-label="Annotation toolbar"
     :prevent-overflow="true"
@@ -216,7 +222,7 @@ const changeBorderColor = (color: string) => {
         </template>
       </RichTextAnnotationToolbarDialog>
     </div>
-  </FloatingMenu>
+  </Component>
 </template>
 
 <style lang="postcss" scoped>
