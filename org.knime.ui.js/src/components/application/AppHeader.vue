@@ -54,6 +54,7 @@ const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { openProjects, activeProjectId } = storeToRefs(useApplicationStore());
 const { dirtyProjectsMap } = storeToRefs(useDirtyProjectsTrackingStore());
 const { devMode } = storeToRefs(useApplicationSettingsStore());
+const devServer = import.meta.env.DEV;
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 
 const hasWorkflowLoadingError = computed(() =>
@@ -308,7 +309,7 @@ const onMouseDown = (e: MouseEvent) => {
         </FunctionButton>
 
         <FunctionButton
-          v-if="devMode"
+          v-if="devMode && devServer"
           class="header-button no-text"
           data-test-id="dev-mode-only"
           title="Reload App (DEV MODE ONLY)"
