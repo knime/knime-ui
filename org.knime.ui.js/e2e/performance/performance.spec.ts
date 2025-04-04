@@ -4,8 +4,18 @@
 import { expect, test } from "@playwright/test";
 import playwright from "playwright";
 
+import type { ApplicationInst } from "@/vue3-pixi";
 import { getBrowserState } from "../utils/browserState";
 import { mockWebsocket } from "../utils/mockWebsocket";
+
+type WindowWithPerf = typeof window & {
+  __PIXI_APP__?: ApplicationInst;
+  __PERF_FPS_MEASUREMENT__?: {
+    start: DOMHighResTimeStamp;
+    frameCount: number;
+    countFrames: () => void;
+  };
+};
 
 test.use({
   storageState: getBrowserState({ perfMode: true, webGL: true }),
@@ -48,38 +58,178 @@ const getMeasurements = async (page: playwright.Page) => {
   };
 };
 
-test("test performance with small workflow", async ({ page }) => {
-  await mockWebsocket(page, "getWorkflow.json");
-  await page.goto("/");
+const startFpsMeasurement = async (page: playwright.Page) => {
+  await page.evaluate(() => {
+    const win: WindowWithPerf = window;
+    const fpsMeasurement = (win.__PERF_FPS_MEASUREMENT__ = {
+      start: performance.now(),
+      frameCount: 0,
+      countFrames: () => {
+        fpsMeasurement.frameCount++;
+      },
+    });
+    const app = win.__PIXI_APP__;
+    app.ticker.add(fpsMeasurement.countFrames);
+  });
 
-  await page.waitForSelector('body[data-first-render="done"]');
+  const stop = async () => {
+    const averageFps = await page.evaluate(() => {
+      const win: WindowWithPerf = window;
+      const app = win.__PIXI_APP__;
+      const fpsMeasurement = win.__PERF_FPS_MEASUREMENT__!;
 
-  const { measurements, slowestFrame, averageFps } = await getMeasurements(
-    page,
-  );
+      const endTime = performance.now();
+      app.ticker.remove(fpsMeasurement.countFrames);
+      const elapsedTime = (endTime - fpsMeasurement.start) / 1000;
+      const averageFps = fpsMeasurement.frameCount / elapsedTime;
+      return averageFps.toFixed(2);
+    });
 
-  expect(slowestFrame.duration).toBeLessThan(150);
-  expect(averageFps).toBeGreaterThanOrEqual(50);
+    return { averageFps };
+  };
 
-  console.log("measurements", measurements);
-  console.log("slowest elapsedMs", slowestFrame);
-  console.log("averageFps", averageFps.toFixed(2));
+  return {
+    stop,
+  };
+};
+
+const testWorkflows = [
+  {
+    name: "nodes",
+    file: "performance/nodes.json",
+  },
+  {
+    name: "nodes with connections",
+    file: "performance/nodesConnections.json",
+  },
+  {
+    name: "annotations",
+    file: "performance/annotations.json",
+  },
+  {
+    name: "small workflow",
+    file: "getWorkflow.json",
+  },
+  {
+    name: "big workflow",
+    file: "getWorkflow-buildings.json",
+    expectedFps: 30,
+  },
+];
+
+test.describe("rendering performance", () => {
+  const doTest = async (page, workflow, expectedFps, expectedSlowestFrame) => {
+    await mockWebsocket(page, workflow);
+    await page.goto("/");
+    await page.waitForSelector('body[data-first-render="done"]');
+
+    const { measurements, slowestFrame, averageFps } = await getMeasurements(
+      page,
+    );
+
+    expect(averageFps).toBeGreaterThanOrEqual(expectedFps);
+    expect(slowestFrame.duration).toBeLessThan(expectedSlowestFrame);
+
+    console.log("averageFps", averageFps.toFixed(2));
+    console.log("slowest elapsedMs", slowestFrame);
+    console.log("measurements", measurements);
+  };
+
+  test("small workflow", async ({ page }) => {
+    await doTest(page, "getWorkflow.json", 50, 150);
+  });
+
+  test("big workflow", async ({ page }) => {
+    await doTest(page, "getWorkflow-buildings.json", 6, 2000);
+  });
 });
 
-test("test performance with buildings workflow", async ({ page }) => {
-  await mockWebsocket(page, "getWorkflow-buildings.json");
-  await page.goto("/");
+test.describe("pan performance", () => {
+  const doTest = async (page, workflow, expectedFps = 50) => {
+    await mockWebsocket(page, workflow);
+    await page.goto("/");
+    const kanvasBox = await page.locator("#kanvas").boundingBox();
+    await page.mouse.move(
+      kanvasBox!.x + kanvasBox!.width / 2 + 10,
+      kanvasBox!.y + kanvasBox!.height / 2 + 20,
+    );
 
-  await page.waitForSelector('body[data-first-render="done"]');
+    // zoom in
+    await page.keyboard.down("ControlOrMeta");
+    for (let i = 0; i < 10; i++) {
+      await page.mouse.wheel(0, -1);
+    }
+    await page.keyboard.up("ControlOrMeta");
 
-  const { measurements, slowestFrame, averageFps } = await getMeasurements(
-    page,
-  );
+    // pan
+    const { stop } = await startFpsMeasurement(page);
+    const panDistance = 100;
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.wheel(0, -4);
+    }
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.wheel(0, 4);
+    }
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.wheel(4, 0);
+    }
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.wheel(-4, 0);
+    }
 
-  expect(slowestFrame.duration).toBeLessThan(2000);
-  expect(averageFps).toBeGreaterThanOrEqual(6);
+    const { averageFps } = await stop();
+    console.log("averageFps", averageFps);
+    expect(Number(averageFps)).toBeGreaterThanOrEqual(expectedFps);
+  };
 
-  console.log("measurements", measurements);
-  console.log("slowest elapsedMs", slowestFrame);
-  console.log("averageFps", averageFps.toFixed(2));
+  testWorkflows.forEach(({ name, file, expectedFps }) => {
+    test(name, async ({ page }) => {
+      await doTest(page, file, expectedFps);
+    });
+  });
+});
+
+test.describe("zoom performance", () => {
+  const doTest = async (page, workflow, expectedFps = 50) => {
+    await mockWebsocket(page, workflow);
+    await page.goto("/");
+    const kanvasBox = await page.locator("#kanvas").boundingBox();
+    await page.mouse.move(
+      kanvasBox!.x + kanvasBox!.width / 2 + 10,
+      kanvasBox!.y + kanvasBox!.height / 2 + 20,
+    );
+
+    const { stop } = await startFpsMeasurement(page);
+
+    await page.keyboard.down("ControlOrMeta");
+    for (let i = 0; i < 30; i++) {
+      await page.mouse.wheel(0, -1);
+    }
+    for (let i = 0; i < 30; i++) {
+      await page.mouse.wheel(0, 1);
+    }
+    await page.keyboard.up("ControlOrMeta");
+
+    const { averageFps } = await stop();
+    console.log("averageFps", averageFps);
+    expect(Number(averageFps)).toBeGreaterThanOrEqual(expectedFps);
+  };
+
+  testWorkflows.forEach(({ name, file, expectedFps }) => {
+    test(name, async ({ page }) => {
+      await doTest(page, file, expectedFps);
+    });
+  });
+});
+
+test.describe.skip("open/close metanode", () => {
+  // TODO add test for opening metanode
+});
+
+test.describe.skip("drag node", () => {
+  // TODO add test for dragging a node
+});
+
+test.describe.skip("drag annotation", () => {
+  // TODO add test for dragging annotation
 });

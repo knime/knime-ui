@@ -64,13 +64,13 @@ Then you can run the nightly in a "headless" mode, which will simply keep it run
 On Linux / Window (WSL):
 
 ```
-./knime -nosplash -consoleLog -application com.knime.gateway.executor.GATEWAY_DEV_SERVER_APPLICATION -workflowDir=/path/to/a/workflow -port=7000 -workflowContextConfig="/path/to/workflowContext.yaml"
+./knime -nosplash -consoleLog -application com.knime.gateway.executor.GATEWAY_DEV_SERVER_APPLICATION -port=7000 -workflowContextConfig="/path/to/workflowContext.yaml" -workflowDir="/path/to/a/workflow"
 ```
 
 On Mac:
 
 ```
-"/Applications/KNIME 5.x.x....app/Contents/MacOS/knime" -nosplash -consoleLog -application com.knime.gateway.executor.GATEWAY_DEV_SERVER_APPLICATION -workflowDir="/Users/<USER>/path/to/workflow" -port=7001 -workflowContextConfig=/Users/<USER>/.../workflowContext.yaml
+"/Applications/KNIME 5.x.x....app/Contents/MacOS/knime" -nosplash -consoleLog -application com.knime.gateway.executor.GATEWAY_DEV_SERVER_APPLICATION -port=7001 -workflowContextConfig="/Users/<USER>/.../workflowContext.yaml" -workflowDir="/Users/<USER>/path/to/workflow"
 ```
 
 Note: using port 7001 as port 7000 is already used on Mac.

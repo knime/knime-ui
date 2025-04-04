@@ -1,0 +1,183 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "workflow": {
+      "dirty": false,
+      "nodes": {},
+      "metadata": {
+        "description": {
+          "value": "Simple Model Training for Classification\n\nTask. From adult data set (census data) predict income group from demographic attributes.",
+          "contentType": "text/plain"
+        },
+        "tags": ["model training", "classification", "training", "testing"],
+        "links": [
+          { "url": "http://www.knime.org/learning-hub", "text": "Learning Hub" }
+        ],
+        "lastEdit": "2025-04-11T09:42:21.011+02:00",
+        "metadataType": "project"
+      },
+      "workflowAnnotations": [
+        {
+          "bounds": { "y": 23, "width": 1021, "height": 141, "x": 40 },
+          "id": "root_0",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#6E6E6E",
+          "text": {
+            "value": "<p><strong>Simple Model Training for Classification</strong><br><br>This workflow demonstrates how a simple classifier is built and applied to new data. It also illustrates the use of KNIME's hiliting capabilities, which allow interactive views to be connected within the same workflow.<br><br>Task Predict the income group from demographic attributes of the adult data set (census data).<br><br>Find more information on KNIME's Learning Hub at http://www.knime.org/learning-hub (tutorials, videos, white papers, many more workflows)</p>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 200, "width": 181, "height": 301, "x": 40 },
+          "id": "root_1",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<p><strong>Data Reading</strong><br><br>Read the adult data set file. There is one row for each person, plus demographic info and the income group. The file is located in TheData/Basics/</p>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 200, "width": 161, "height": 301, "x": 220 },
+          "id": "root_2",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<p><strong>Graphical Properties</strong><br><br>Assign colors by income group.</p>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 200, "width": 161, "height": 301, "x": 380 },
+          "id": "root_3",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<p><strong>Data Partitioning</strong><br><br>Create two separate partitions from original data set: training set (80%) and test set (20%).</p><ul><li><p style=\"text-align: left\">dfdf</p></li><li><p style=\"text-align: left\">df</p></li><li><p style=\"text-align: left\">df</p></li><li><p style=\"text-align: left\">df</p></li><li><p style=\"text-align: left\"></p></li></ul>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 200, "width": 241, "height": 301, "x": 540 },
+          "id": "root_4",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<h1>Train a Model</h1><p>This node builds a decision tree. Other Learner nodes train other models. Most Learner nodes output a PMML model (blue square output port).</p>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 200, "width": 141, "height": 301, "x": 780 },
+          "id": "root_5",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<p><strong>Apply the Model</strong><br><br>Predictor nodes apply a specific model to a data set and append the model predictions.</p>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 200, "width": 141, "height": 301, "x": 920 },
+          "id": "root_6",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<p><strong>Score the Model</strong><br><br>Compute a confusion matrix between real and predicted class values and calculate the related accuracy measures.</p>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 520, "width": 181, "height": 200, "x": 880 },
+          "id": "root_7",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<p style=\"text-align: center\"><strong>Visualize</strong> <br><br>Create interactive scatter plot.</p>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 519, "width": 181, "height": 202, "x": 220 },
+          "id": "root_8",
+          "borderWidth": 4,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "styleRanges": [
+            {
+              "length": 31,
+              "color": "#000000",
+              "fontSize": 10,
+              "start": 0,
+              "bold": true
+            },
+            { "length": 66, "color": "#000000", "fontSize": 10, "start": 31 }
+          ],
+          "borderColor": "#6AB3FB",
+          "text": {
+            "value": "      Descriptive Statistics \r\n\r\nCalculate the statistical properties of the data set attributes.",
+            "contentType": "text/plain"
+          },
+          "textAlign": "left"
+        },
+        {
+          "bounds": { "y": 520, "width": 201, "height": 201, "x": 680 },
+          "id": "root_9",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<p style=\"text-align: center\"><strong>Interactive Table</strong></p><p style=\"text-align: center\"></p><p style=\"text-align: center\">Display table of the entire data<br></p>",
+            "contentType": "text/html"
+          }
+        },
+        {
+          "bounds": { "y": 520, "width": 241, "height": 201, "x": 420 },
+          "id": "root_10",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "defaultFontSize": 9,
+          "borderColor": "#C0C4C6",
+          "text": {
+            "value": "<p style=\"text-align: left\"><strong>Try this:</strong><br><br>KNIME's Interactive Visualizations: <br>1) Execute the workflow<br>2) Open the Scorer node view<br>3) Hilite a cell in the confusion matrix<br>4) Open the Interactive Table view<br>5) Select \"Hilite\"-&gt;\"Filter\"-&gt;<br>\"Show Hilited Only\"<br>This shows only the misclassified<br>data rows.</p>",
+            "contentType": "text/html"
+          }
+        }
+      ],
+      "info": {
+        "name": "PerfAnnotations",
+        "containerType": "project",
+        "providerType": "HUB",
+        "containerId": "root"
+      },
+      "connections": {},
+      "nodeTemplates": {},
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": false,
+        "canReset": false,
+        "canUndo": false,
+        "canRedo": false
+      }
+    },
+    "snapshotId": "0"
+  }
+}

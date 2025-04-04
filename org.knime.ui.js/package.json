@@ -21,7 +21,7 @@
     "test:e2e": "playwright test behavior/",
     "test:e2e:update": "playwright test behavior/ --update-snapshots",
     "test:e2e:ui": "playwright test --ui",
-    "test:performance": "playwright test performance/",
+    "test:performance": "playwright test performance/ --workers=1",
     "coverage": "vitest run --coverage",
     "license-check": "license-check -c",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json",
