@@ -45,6 +45,7 @@
  */
 package org.knime.ui.java.browser;
 
+import static org.knime.ui.java.browser.KnimeBrowserLocationListener.isDevToolsPage;
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.util.Optional;
@@ -179,17 +180,23 @@ public class KnimeBrowserView {
     }
 
     private static void cancelAndOpenInBrowser(final WindowEvent windowEvent) {
-        // cancels the navigation
-        windowEvent.required = true;
-        windowEvent.browser = null;
-
         if (windowEvent.data instanceof String location) {
+            if (isDevToolsPage(location)) {
+                // allow dev tools to be opened in a separate Equo Chromium window
+                return;
+            }
+            cancelNavigation(windowEvent);
             openBrowserWindow(location);
         } else {
+            cancelNavigation(windowEvent);
             LOGGER.warnWithFormat("Event payload %s is not a valid navigation target -- must be a string",
                 windowEvent.data);
         }
+    }
 
+    private static void cancelNavigation(final WindowEvent windowEvent) {
+        windowEvent.required = false;
+        windowEvent.browser = null;
     }
 
     /**
