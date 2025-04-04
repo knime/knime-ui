@@ -62,6 +62,7 @@ const mockVersionsModeInfo: ReturnType<
     lastEditedOn: mockDate,
     savepointNumber: 42,
   },
+  permissions: ["EDIT", "DELETE"],
 } as const;
 
 describe("ManageVersionsWrapper.vue", () => {

@@ -12,6 +12,7 @@ import {
   useVersionsApi,
 } from "@knime/hub-features/versions";
 import type {
+  ItemPermission,
   ItemSavepoint,
   NamedItemVersion,
   WithAvatar,
@@ -55,6 +56,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       {
         loadedVersions: Array<NamedItemVersion & WithAvatar & WithLabels>;
         unversionedSavepoint: (ItemSavepoint & WithAvatar & WithLabels) | null;
+        permissions: Array<ItemPermission>;
         hasLoadedAll: boolean;
       }
     >
@@ -285,6 +287,9 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       baseUrl: hubApiBaseUrl,
     });
 
+    activeProjectVersionsModeInfo.value.permissions =
+      await hubApi.fetchPermissions({ itemId: projectItemId });
+
     const itemSavepointsInfo = await hubApi.fetchItemSavepoints({
       itemId: projectItemId,
       limit: loadAll ? -1 : undefined,
@@ -327,6 +332,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     versionsModeInfo.value.set(activeProjectId, {
       loadedVersions: [],
       unversionedSavepoint: null,
+      permissions: [],
       hasLoadedAll: false,
     });
     useSelectionStore().deselectAllObjects();

@@ -84,6 +84,7 @@ const mockedVersionsApi: Mocked<ReturnType<typeof useVersionsApi>> = vi.hoisted(
     fetchVersions: vi.fn(),
     getAvatar: vi.fn(),
     loadSavepointMetadata: vi.fn(),
+    fetchPermissions: vi.fn(),
   }),
 );
 
@@ -557,6 +558,20 @@ describe("workflow store: versions", () => {
         expect(mockedVersionsApi.fetchItemSavepoints).toHaveBeenCalledWith(
           expect.objectContaining({ limit: -1 }),
         );
+      });
+
+      it("load permissions", async () => {
+        const { workflowVersionsStore } = await setupStore();
+        mockedVersionsApi.fetchPermissions.mockResolvedValueOnce(["COPY"]);
+
+        await workflowVersionsStore.refreshData({ loadAll: true });
+
+        expect(mockedVersionsApi.fetchPermissions).toHaveBeenCalledWith({
+          itemId: "mockItemId",
+        });
+        expect(
+          workflowVersionsStore.activeProjectVersionsModeInfo?.permissions,
+        ).toEqual(["COPY"]);
       });
     });
 

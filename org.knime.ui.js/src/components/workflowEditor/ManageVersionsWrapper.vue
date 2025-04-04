@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import {
@@ -24,9 +24,15 @@ const { activeProjectOrigin, activeProjectId } = storeToRefs(
 
 const { copyBetweenSpaces } = useSpacesStore();
 
-// TODO: source these permissions
-const hasAdminRights = ref(true);
-const hasEditCapability = ref(true);
+const hasAdminRights = computed(
+  () =>
+    activeProjectVersionsModeInfo.value?.permissions.includes("DELETE") ??
+    false,
+);
+const hasEditCapability = computed(
+  () =>
+    activeProjectVersionsModeInfo.value?.permissions.includes("EDIT") ?? false,
+);
 
 const isCreatingVersion = ref(false);
 
