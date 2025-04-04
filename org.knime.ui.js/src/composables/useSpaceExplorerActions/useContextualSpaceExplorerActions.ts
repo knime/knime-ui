@@ -102,7 +102,7 @@ export const useContextualSpaceExplorerActions = (
       ...valueOrEmpty(isDesktop(), importWorkflow.value),
       ...valueOrEmpty(isDesktop(), importFiles.value),
       ...valueOrEmpty(isLocal.value, uploadToHub.value),
-      ...valueOrEmpty(isHub.value, downloadToLocalSpace.value),
+      ...valueOrEmpty(isHub.value && isDesktop(), downloadToLocalSpace.value),
       ...valueOrEmpty(isHub.value, moveToSpace.value),
       ...valueOrEmpty(isHub.value, copyToSpace.value),
       ...valueOrEmpty(
