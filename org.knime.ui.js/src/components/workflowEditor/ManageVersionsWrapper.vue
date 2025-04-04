@@ -21,11 +21,11 @@ const versionsStore = useWorkflowVersionsStore();
 const { activeProjectVersionsModeInfo, activeProjectVersionsModeStatus } =
   storeToRefs(versionsStore);
 
-const { activeProjectOrigin, activeProjectId } = storeToRefs(
+const { activeProjectOrigin, openProjects } = storeToRefs(
   useApplicationStore(),
 );
 
-const { copyBetweenSpaces } = useSpacesStore();
+const { uploadToSpace } = useSpacesStore();
 
 const hasAdminRights = computed(
   () =>
@@ -122,9 +122,12 @@ const onCreate = async ({ name, description }) => {
 };
 
 const onUpload = () => {
-  copyBetweenSpaces({
-    projectId: activeProjectId.value!,
+  uploadToSpace({
     itemIds: [activeProjectOrigin.value!.itemId],
+    openAfterUpload: true,
+    name: openProjects.value.find(
+      (project) => project.origin?.itemId === activeProjectOrigin.value!.itemId,
+    )!.name,
   });
 };
 </script>

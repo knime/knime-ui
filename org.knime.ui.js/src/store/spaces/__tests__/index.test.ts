@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
 import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
-import { deepMocked } from "@/test/utils";
+import { getToastsProvider } from "@/plugins/toasts";
+import { deepMocked, mockedObject } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
 
@@ -64,6 +65,72 @@ describe("spaces::index", () => {
         destinationSpaceId: "mockDestinationSpaceId",
         destinationItemId: "mockDestinationItemId",
         excludeData: true,
+      });
+    });
+  });
+
+  describe("uploadToSpace", () => {
+    const mockToast = mockedObject(getToastsProvider());
+
+    it("should show a success toast after successful upload", async () => {
+      mockedAPI.desktop.copyBetweenSpaces.mockReturnValueOnce(true);
+      const itemIds = ["id1"];
+      const { spacesStore } = loadStore();
+
+      await spacesStore.uploadToSpace({
+        itemIds,
+        openAfterUpload: false,
+        name: "testWorkflow",
+      });
+
+      expect(mockToast.show).toHaveBeenCalledWith({
+        headline: "Upload complete",
+        type: "success",
+      });
+    });
+
+    it("should show an error toast if upload fails", async () => {
+      mockedAPI.desktop.copyBetweenSpaces.mockReturnValueOnce(false);
+      const itemIds = ["id1"];
+      const { spacesStore } = loadStore();
+
+      await spacesStore.uploadToSpace({
+        itemIds,
+        openAfterUpload: false,
+        name: "testWorkflow",
+      });
+
+      expect(mockToast.show).toHaveBeenCalledWith({
+        headline: "Upload Failed",
+        message: "Failed to upload, check logs for details.",
+        type: "error",
+      });
+    });
+
+    it("should open the uploaded workflow if openAfterUpload is true", async () => {
+      mockedAPI.desktop.copyBetweenSpaces.mockReturnValueOnce(true);
+      const itemIds = ["id1"];
+      const { spacesStore, spaceOperationsStore } = loadStore();
+      const mockOpenProject = vi.fn();
+      vi.mocked(spaceOperationsStore.openProject).mockImplementation(
+        mockOpenProject,
+      );
+
+      mockedAPI.space.listWorkflowGroup.mockResolvedValueOnce({
+        items: [{ name: "testWorkflow", id: "mockWorkflowId" }],
+      });
+
+      await spacesStore.uploadToSpace({
+        itemIds,
+        openAfterUpload: true,
+        name: "testWorkflow",
+      });
+
+      expect(mockOpenProject).toHaveBeenCalledWith({
+        providerId: "mockDestinationSpaceProviderId",
+        spaceId: "mockDestinationSpaceId",
+        itemId: "mockWorkflowId",
+        $router: undefined,
       });
     });
   });

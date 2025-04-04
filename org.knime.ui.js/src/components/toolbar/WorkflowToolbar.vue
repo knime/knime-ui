@@ -54,7 +54,7 @@ const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
 const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
-const { copyBetweenSpaces } = useSpacesStore();
+const { uploadToSpace } = useSpacesStore();
 const { getProviderInfoFromProjectPath, getCommunityHubInfo } = storeToRefs(
   useSpaceProvidersStore(),
 );
@@ -190,9 +190,9 @@ const onUploadButtonClick = () => {
     return;
   }
 
-  copyBetweenSpaces({
-    projectId: activeProjectId.value!,
+  uploadToSpace({
     itemIds: [itemId.value],
+    openAfterUpload: true,
   });
 };
 

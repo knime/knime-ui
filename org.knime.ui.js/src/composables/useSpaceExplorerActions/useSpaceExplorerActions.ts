@@ -330,6 +330,7 @@ export const useSpaceExplorerActions = (
       ? "Select at least one file to upload."
       : undefined,
     execute: () => {
+      console.log("uploadToHub", options?.providerInfo?.id);
       copyBetweenSpaces({
         projectId: projectId.value,
         itemIds: selectedItemIds.value,

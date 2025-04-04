@@ -258,13 +258,14 @@ describe("ManageVersionsWrapper.vue", () => {
           },
         ]);
         applicationStore.setActiveProjectId("mockProjectId");
-        vi.mocked(spacesStore).copyBetweenSpaces.mockImplementation(vi.fn());
+        vi.mocked(spacesStore).uploadToSpace.mockImplementation(vi.fn());
 
         wrapper.findComponent(VersionPanelPromoteHub).vm.$emit("upload");
 
-        expect(spacesStore.copyBetweenSpaces).toHaveBeenCalledWith({
-          projectId: "mockProjectId",
+        expect(spacesStore.uploadToSpace).toHaveBeenCalledWith({
           itemIds: ["mockItemId"],
+          openAfterUpload: true,
+          name: "mockProject",
         });
       });
     });

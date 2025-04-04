@@ -1,16 +1,23 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
+import { useRouter } from "vue-router";
 
 import {
   type DestinationPickerConfig,
   useDestinationPicker,
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
+import { getToastsProvider } from "@/plugins/toasts";
 import { checkOpenWorkflowsBeforeMove } from "@/store/spaces/util";
+import { useApplicationStore } from "../application/application";
+import { useDesktopInteractionsStore } from "../workflow/desktopInteractions";
 
 import { localRootProjectPath, useSpaceCachingStore } from "./caching";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
 const { promptDestination, presets } = useDestinationPicker();
+// const { fetchWorkflowGroupContentByIdTriplet } = useSpaceOperationsStore();
+
+const $router = useRouter();
 
 type CreateWorkflowModalConfig = {
   isOpen: boolean;
@@ -61,14 +68,23 @@ export const useSpacesStore = defineStore("spaces", {
       projectId: string;
       itemIds: string[];
     }) {
+      // Takes space context from space explorer
       const { spaceId: sourceSpaceId, spaceProviderId: sourceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
+      console.log("copyBetweenSpaces", {
+        projectId,
+        itemIds,
+        sourceSpaceId,
+        localRootProjectPath: localRootProjectPath.spaceProviderId,
+      });
 
       const pickerConfig =
         sourceProviderId === localRootProjectPath.spaceProviderId
           ? presets.UPLOAD_PICKERCONFIG
           : presets.DOWNLOAD_PICKERCONFIG;
       const destinationResult = await promptDestination(pickerConfig);
+
+      console.log(destinationResult);
 
       if (destinationResult?.type === "item") {
         const {
@@ -87,6 +103,88 @@ export const useSpacesStore = defineStore("spaces", {
           destinationItemId,
           excludeData: resetWorkflow,
         });
+      }
+    },
+
+    async uploadToSpace({
+      itemIds,
+      openAfterUpload = false,
+      name, // TODO delete me, should not be needed
+    }: {
+      itemIds: string[];
+      openAfterUpload?: boolean;
+      name?: string; // TODO delete me, should not be needed
+    }) {
+      const destinationResult = await promptDestination(
+        presets.UPLOAD_PICKERCONFIG,
+      );
+      console.log("uploadToSpace", {
+        itemIds,
+        openAfterUpload,
+        destinationResult,
+      });
+
+      if (destinationResult?.type === "item") {
+        const {
+          spaceProviderId: destinationProviderId,
+          spaceId: destinationSpaceId,
+          itemId: destinationItemId,
+          resetWorkflow,
+        } = destinationResult;
+
+        const isUploadSuccessful = await API.desktop.copyBetweenSpaces({
+          sourceProviderId: localRootProjectPath.spaceProviderId,
+          sourceSpaceId: localRootProjectPath.spaceId,
+          sourceItemIds: itemIds,
+          destinationProviderId,
+          destinationSpaceId,
+          destinationItemId,
+          excludeData: resetWorkflow,
+        });
+        console.log("openAfterUpload", { isUploadSuccessful });
+
+        const $toast = getToastsProvider();
+        if (!isUploadSuccessful) {
+          $toast.show({
+            headline: "Upload Failed",
+            message: "Failed to upload, check logs for details.",
+            type: "error",
+          });
+          return;
+        }
+
+        if (!openAfterUpload) {
+          $toast.show({
+            headline: "Upload complete",
+            type: "success",
+            // buttons: // Add a button to open the remote workflow, only when is a single one
+          });
+          return;
+        }
+
+        if (itemIds.length === 1) {
+          // TODO This is a workaround for the fact that the API does not return the new itemId
+          // this will fail in case of a name collision and if the user chooses to use another name
+          const workflowGroup = await API.space.listWorkflowGroup({
+            spaceProviderId: destinationProviderId,
+            spaceId: destinationSpaceId,
+            itemId: destinationItemId,
+          });
+          console.log("remoteContent", { workflowGroup });
+          const { activeProjectId } = useApplicationStore();
+          console.log("activeProjectId", { activeProjectId });
+          const { openProject } = useSpaceOperationsStore();
+          await openProject({
+            providerId: destinationProviderId,
+            spaceId: destinationSpaceId,
+            itemId: workflowGroup.items.find(
+              (remoteWorkflow) => remoteWorkflow.name === name,
+            )!.id,
+            $router,
+          });
+          console.log("activeProjectId", { activeProjectId });
+          useDesktopInteractionsStore().closeProject(activeProjectId!);
+        }
       }
     },
 
