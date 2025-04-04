@@ -1,5 +1,7 @@
 import { Entries } from "type-fest";
 
+import type { CustomPointerEventDataset } from "./components/workflowEditor/WebGLKanvas/util/interaction";
+
 declare global {
   interface Window {
     EquoCommService: {
@@ -18,5 +20,12 @@ declare global {
 
   interface ObjectConstructor {
     entries<T extends object>(o: T): Entries<T>;
+  }
+
+  interface UIEvent {
+    dataset?: CustomPointerEventDataset;
+  }
+  interface Touch {
+    dataset?: CustomPointerEventDataset;
   }
 }

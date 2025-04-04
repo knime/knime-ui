@@ -22,13 +22,12 @@ import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
-import { useMovingStore } from "@/store/workflow/moving";
-import { useWorkflowStore } from "@/store/workflow/workflow";
 import { gridSize } from "@/style/shapes";
+import RichTextAnnotation from "../../common/annotations/RichTextAnnotation.vue";
 import { useAnnotationDataEditing } from "../../common/annotations/useAnnotationDataEditing";
+import { useAnnotationSelection } from "../../common/annotations/useAnnotationSelection";
 
 import LegacyAnnotation from "./LegacyAnnotation.vue";
-import RichTextAnnotation from "./RichTextAnnotation.vue";
 import TransformControls from "./TransformControls.vue";
 
 defineOptions({ inheritAttrs: false });
@@ -39,24 +38,14 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const selectionPreview = ref<"hide" | "show" | "clear" | null>(null);
-
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const annotationInteractionStore = useAnnotationInteractionsStore();
-const { isDragging } = storeToRefs(useMovingStore());
-const { isWritable } = storeToRefs(useWorkflowStore());
 const selectionStore = useSelectionStore();
-const {
-  selectedNodeIds,
-  getSelectedConnections: selectedConnections,
-  selectedAnnotationIds,
-  singleSelectedAnnotation,
-  singleSelectedObject,
-  shouldHideSelection,
-  getFocusedObject,
-  isAnnotationSelected,
-} = storeToRefs(selectionStore);
-const { focus: focusCanvas } = useSVGCanvasStore();
+const { singleSelectedAnnotation, singleSelectedObject, isAnnotationSelected } =
+  storeToRefs(selectionStore);
+const canvasStore = useSVGCanvasStore();
+const { zoomFactor } = storeToRefs(canvasStore);
+const { focus: focusCanvas } = canvasStore;
 
 const isSelected = computed(() => {
   return isAnnotationSelected.value(props.annotation.id);
@@ -77,44 +66,13 @@ const {
   focusCanvas,
 });
 
-const showSelectionPlane = computed(() => {
-  if (shouldHideSelection.value) {
-    return false;
-  }
-
-  if (selectionPreview.value === null) {
-    return isSelected.value;
-  }
-
-  if (isSelected.value && selectionPreview.value === "hide") {
-    return false;
-  }
-
-  return selectionPreview.value === "show" || isSelected.value;
-});
-
-const showFocus = computed(() => {
-  return getFocusedObject.value?.id === props.annotation.id;
-});
-
-const showTransformControls = computed(() => {
-  if (isDragging.value || !isWritable.value) {
-    return false;
-  }
-
-  const isMoreThanOneAnnotationSelected =
-    selectedAnnotationIds.value.length > 1;
-  const isOneOrMoreNodesSelected = selectedNodeIds.value.length >= 1;
-  const isOneOrMoreConnectionsSelected = selectedConnections.value.length >= 1;
-
-  let isMoreThanOneItemSelected =
-    isMoreThanOneAnnotationSelected ||
-    isOneOrMoreNodesSelected ||
-    isOneOrMoreConnectionsSelected;
-
-  return (
-    isSelected.value && !isMoreThanOneItemSelected && showSelectionPlane.value
-  );
+const {
+  selectionPreview,
+  showSelectionPlane,
+  showTransformControls,
+  showFocus,
+} = useAnnotationSelection({
+  annotation: toRef(props, "annotation"),
 });
 
 const isRichTextAnnotation = computed(() => {
@@ -246,6 +204,7 @@ useEscapeStack({
     :show-selection="showSelectionPlane"
     :show-focus="showFocus"
     :initial-value="annotation.bounds"
+    :is-annotation-selected="isSelected"
     @transform-end="transformAnnotation($event.bounds)"
     @click="onLeftClick"
     @pointerdown.right.stop="onContextMenu"
@@ -274,6 +233,8 @@ useEscapeStack({
           :initial-border-color="initialBorderColor"
           :editable="isEditing"
           :annotation-bounds="transformedBounds"
+          :zoom-factor="zoomFactor"
+          canvas-renderer="SVG"
           @change="onAnnotationTextChange"
           @change-border-color="onAnnotationColorChange"
           @edit-start="toggleEdit"

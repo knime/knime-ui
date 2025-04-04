@@ -1,5 +1,5 @@
 type PreventableDoubleClickOptions = {
-  checkForPreventDefault?: boolean;
+  eventHandledChecker?: (event: PointerEvent) => boolean;
 };
 
 const TIME_BETWEEN_CLICKS_MS = 200;
@@ -10,9 +10,7 @@ const TIME_BETWEEN_CLICKS_MS = 200;
  * @param options
  */
 export const usePointerDownDoubleClick = (
-  options: PreventableDoubleClickOptions = {
-    checkForPreventDefault: false,
-  },
+  options: PreventableDoubleClickOptions = {},
 ) => {
   // keep track of the time when the last click happened
   const lastClick = {
@@ -30,10 +28,10 @@ export const usePointerDownDoubleClick = (
       return false;
     }
 
-    // do nothing on default prevent this way we can communicate from the pixi events that they have been handled
-    // and should now be ignored. Outer listeners (to the <canvas>/<div> wrapper elements) are interpreted as the
-    // "default" action.
-    if (options.checkForPreventDefault && pointerDownEvent.defaultPrevented) {
+    // do nothing when event is marked as "handled", this way we can communicate from the pixi events that an object
+    // in the canvas already used this interation, so that outer listeners (to the <canvas>/<div> wrapper elements)
+    // are ignored
+    if (options.eventHandledChecker?.(pointerDownEvent)) {
       return false;
     }
 

@@ -3,7 +3,7 @@ import { useLocalStorage } from "@vueuse/core";
 
 const STORAGE_KEY = "KNIME_KANVAS_RENDERER";
 
-type CanvasRendererType = "SVG" | "WebGL";
+export type CanvasRendererType = "SVG" | "WebGL";
 
 const getCurrentCanvasRenderer = (): CanvasRendererType => {
   return (

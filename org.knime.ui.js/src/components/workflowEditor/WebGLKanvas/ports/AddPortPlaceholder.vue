@@ -18,6 +18,7 @@ import { useSelectionStore } from "@/store/selection";
 import type { ContainerInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useNodeHoveredStateListener } from "../node/useNodeHoveredState";
+import { markEventAsHandled } from "../util/interaction";
 
 import Port from "./Port.vue";
 import PortPlaceholderIcon from "./PortPlaceholderIcon.vue";
@@ -191,7 +192,8 @@ const openMenu = (event: FederatedPointerEvent) => {
   });
 };
 
-const onClick = (event: FederatedPointerEvent) => {
+const onPointerdown = (event: FederatedPointerEvent) => {
+  markEventAsHandled(event, { initiator: "add-port-placeholder" });
   if (isMenuOpenOnThisPort.value) {
     canvasAnchoredComponentsStore.closePortTypeMenu();
     return;
@@ -225,7 +227,7 @@ const onClick = (event: FederatedPointerEvent) => {
     cursor="pointer"
     @pointerenter="isPlaceholderPortHovered = true"
     @pointerleave="isPlaceholderPortHovered = false"
-    @pointerdown.prevent.stop="onClick"
+    @pointerdown.stop="onPointerdown"
   >
     <Port
       v-if="previewPort && previewPort.typeId"

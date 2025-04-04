@@ -10,6 +10,7 @@ import {
 
 import * as $colors from "@/style/colors";
 import type { GraphicsInst } from "@/vue3-pixi";
+import { markEventAsHandled } from "../util/interaction";
 
 type Props = {
   x?: number;
@@ -33,6 +34,7 @@ const emit = defineEmits<{
 
 const onClick = (event: FederatedPointerEvent) => {
   if (!props.disabled) {
+    markEventAsHandled(event, { initiator: "action-button" });
     emit("click", event);
   }
 };
@@ -71,7 +73,7 @@ const rect = new Rectangle(-12.5, -10, 25, 20);
     :cursor="disabled ? 'default' : 'pointer'"
     :position-x="x"
     :hit-area="rect"
-    @pointerdown.left.stop.prevent="onClick"
+    @pointerdown.left.stop="onClick"
     @pointerenter="isHovered = true"
     @pointerleave="isHovered = false"
   >

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
 import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
@@ -16,6 +16,7 @@ import { getBendpointId } from "@/util/connectorUtil";
 import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
 import type { AbsolutePointXY, ConnectorProps } from "../../types";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
+import { markEventAsHandled } from "../util/interaction";
 
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import ConnectorPathSegment from "./ConnectorPathSegment.vue";
@@ -138,7 +139,8 @@ const isTargetForReplacement = computed(() => {
   return false;
 });
 
-const onConnectionClick = (event: FederatedPointerEvent) => {
+const onConnectionPointerdown = (event: FederatedPointerEvent) => {
+  markEventAsHandled(event, { initiator: "connection-select" });
   if (!isMultiselectEvent(event)) {
     selectionStore.deselectAllObjects();
   }
@@ -161,6 +163,25 @@ const {
   connectionId: props.id,
   isConnectionHighlighted: isHighlighted,
   isConnectionHovered,
+});
+
+const sourceAndDestinationSelected = computed(() => {
+  return (
+    isNodeSelected.value(sourceNode.value ?? "") &&
+    isNodeSelected.value(destNode.value ?? "")
+  );
+});
+
+watch(sourceAndDestinationSelected, (value) => {
+  if (value) {
+    const bendpoints = Array(pathSegments.value.length - 1)
+      .fill(null)
+      .map((_, i) => getBendpointId(props.id, i));
+
+    if (bendpoints.every((id) => !isBendpointSelected.value(id))) {
+      selectionStore.selectBendpoints(bendpoints);
+    }
+  }
 });
 </script>
 
@@ -186,7 +207,7 @@ const {
         :is-segment-hovered="hoveredPathSegment === index"
         :is-debug-mode-enabled="isDebugModeEnabled"
         :is-floating-connector="Boolean(absolutePoint)"
-        @pointerdown.stop.prevent="onConnectionClick"
+        @pointerdown.stop="onConnectionPointerdown"
         @pointerenter="onPathSegmentHovered(true, index)"
         @pointerleave="onPathSegmentHovered(false, undefined)"
         @hover-virtual-bendpoint="
@@ -210,7 +231,7 @@ const {
         :interactive="interactive && isWorkflowWritable"
         :is-visible="isBendpointVisible || hoveredBendpoint === index - 1"
         :is-debug-mode-enabled="isDebugModeEnabled"
-        @pointerdown.stop.prevent="onBendpointClick($event, index)"
+        @pointerdown.stop="onBendpointClick($event, index)"
         @pointerenter="setHoveredBendpoint(true, index - 1)"
         @pointerleave="setHoveredBendpoint(false, index - 1)"
         @rightclick="onBendpointRightClick($event, index - 1)"

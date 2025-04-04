@@ -27,18 +27,11 @@ export const useCanvasPanning = ({
   const { isDragging } = storeToRefs(useMovingStore());
 
   const mousePan = (pointerDownEvent: PointerEvent) => {
+    consola.debug("Kanvas::usePanning - startPan", { pointerDownEvent });
     const { canvas } = pixiApp.value;
 
     const isMouseLeftClick = pointerDownEvent.button === 0;
-    if (isMouseLeftClick) {
-      return;
-    }
-
-    if (isDragging.value) {
-      return;
-    }
-
-    if (pointerDownEvent.defaultPrevented) {
+    if (isMouseLeftClick || isDragging.value) {
       return;
     }
 
@@ -71,9 +64,12 @@ export const useCanvasPanning = ({
     });
 
     const stopPan = (pointerUpEvent: PointerEvent) => {
+      consola.debug("Kanvas::usePanning - stopPan", { pointerUpEvent });
+
+      const isUnhandledEvent = !pointerUpEvent.dataset;
       // show global context menu if we did not move
       // right click on other objects should prevent the event so its not getting here (see mousePan)
-      if (!hasMoved.value) {
+      if (!hasMoved.value && isUnhandledEvent) {
         const [x, y] = useWebGLCanvasStore().toCanvasCoordinates([
           pointerUpEvent.offsetX,
           pointerUpEvent.offsetY,

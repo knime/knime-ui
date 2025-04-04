@@ -7,6 +7,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import * as $shapes from "@/style/shapes";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
+import { markEventAsHandled } from "../util/interaction";
 
 import { usePointerDownDoubleClick } from "./usePointerDownDoubleClick";
 
@@ -63,9 +64,13 @@ export const useObjectInteractions = (
   const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
+    // shift acts as a way to lock interactions and only do global selection
     if (pointerDownEvent.button !== 0) {
       return;
     }
+
+    consola.debug("object interaction", { pointerDownEvent });
+    markEventAsHandled(pointerDownEvent, { initiator: "object-interaction" });
 
     // check for double clicks
     if (options.onDoubleClick && isPointerDownDoubleClick(pointerDownEvent)) {

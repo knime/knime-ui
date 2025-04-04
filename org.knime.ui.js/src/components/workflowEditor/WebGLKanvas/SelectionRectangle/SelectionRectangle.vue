@@ -27,25 +27,107 @@ const endPos = ref<XY>({ x: 0, y: 0 });
 
 const nodesInside = ref<string[]>([]);
 const nodesOutside = ref<string[]>([]);
+const annotationsInside = ref<string[]>([]);
+const annotationsOutside = ref<string[]>([]);
 
-const findNodesInsideSelection = () => {
-  const { nodesInside: _nodesInside, nodesOutside: _nodesOutside } =
-    findObjectsForSelection({
-      startPos: startPos.value,
-      endPos: endPos.value,
-      workflow: activeWorkflow.value!,
-    });
+const updateSelectionPreview = () => {
+  const {
+    nodesInside: _nodesInside,
+    nodesOutside: _nodesOutside,
+    annotationsInside: _annotationsInside,
+    annotationsOutside: _annotationsOutside,
+  } = findObjectsForSelection({
+    startPos: startPos.value,
+    endPos: endPos.value,
+    workflow: activeWorkflow.value!,
+  });
 
   nodesInside.value = _nodesInside;
   nodesOutside.value = _nodesOutside;
+  annotationsInside.value = _annotationsInside;
+  annotationsOutside.value = _annotationsOutside;
 
-  nodesInside.value.forEach((node) => {
-    $bus.emit(`node-selection-preview-${node}`, { id: node, preview: "show" });
+  nodesInside.value.forEach((id) => {
+    $bus.emit(`node-selection-preview-${id}`, {
+      id,
+      preview: "show",
+    });
   });
 
-  nodesOutside.value.forEach((node) => {
-    $bus.emit(`node-selection-preview-${node}`, { id: node, preview: "hide" });
+  nodesOutside.value.forEach((id) => {
+    $bus.emit(`node-selection-preview-${id}`, {
+      id,
+      preview: "hide",
+    });
   });
+
+  annotationsInside.value.forEach((id) => {
+    $bus.emit(`annotation-selection-preview-${id}`, {
+      id,
+      preview: "show",
+    });
+  });
+
+  annotationsOutside.value.forEach((id) => {
+    $bus.emit(`annotation-selection-preview-${id}`, {
+      id,
+      preview: "hide",
+    });
+  });
+};
+
+const doRealSelection = () => {
+  if (nodesInside.value.length) {
+    selectionStore.selectNodes(nodesInside.value);
+
+    nodesInside.value.forEach((id) => {
+      $bus.emit(`node-selection-preview-${id}`, {
+        id,
+        preview: null,
+      });
+    });
+
+    nodesInside.value = [];
+  }
+
+  if (nodesOutside.value.length) {
+    selectionStore.deselectNodes(nodesOutside.value);
+
+    nodesOutside.value.forEach((id) => {
+      $bus.emit(`node-selection-preview-${id}`, {
+        id,
+        preview: null,
+      });
+    });
+
+    nodesOutside.value = [];
+  }
+
+  if (annotationsInside.value.length) {
+    selectionStore.selectAnnotations(annotationsInside.value);
+
+    annotationsInside.value.forEach((id) => {
+      $bus.emit(`annotation-selection-preview-${id}`, {
+        id,
+        preview: null,
+      });
+    });
+
+    annotationsInside.value = [];
+  }
+
+  if (annotationsOutside.value.length) {
+    selectionStore.deselectAnnotations(annotationsOutside.value);
+
+    annotationsOutside.value.forEach((id) => {
+      $bus.emit(`annotation-selection-preview-${id}`, {
+        id,
+        preview: null,
+      });
+    });
+
+    annotationsOutside.value = [];
+  }
 };
 
 const selectionRectangle = computed(() =>
@@ -62,9 +144,10 @@ const selectionRectangle = computed(() =>
 let selectionPointerId: number | undefined;
 
 const onSelectionStart = (event: PointerEvent) => {
-  // preventing the default is being used as a signal on events that
-  // originate from within the WebGL canvas to hint that the event was handled already
-  if (isDragging.value || event.defaultPrevented) {
+  consola.debug("global rectangle selection:: start", { event });
+  // Interactions originated from canvas objects can signal that the
+  // global selection should be skipped.
+  if (event.dataset?.skipGlobalSelection || isDragging.value) {
     return;
   }
 
@@ -97,39 +180,16 @@ const onSelectionMove = (event: PointerEvent) => {
     y: (offsetY - canvasOffset.value.y) / zoomFactor.value,
   };
 
-  findNodesInsideSelection();
+  updateSelectionPreview();
 };
 
 const onSelectionEnd = (event: PointerEvent) => {
+  consola.debug("global rectangle selection:: end", { event });
   isSelectionVisible.value = false;
   startPos.value = { x: 0, y: 0 };
   endPos.value = { x: 0, y: 0 };
 
-  if (nodesInside.value.length) {
-    selectionStore.selectNodes(nodesInside.value);
-
-    nodesInside.value.forEach((node) => {
-      $bus.emit(`node-selection-preview-${node}`, {
-        id: node,
-        preview: null,
-      });
-    });
-
-    nodesInside.value = [];
-  }
-
-  if (nodesOutside.value.length) {
-    selectionStore.deselectNodes(nodesOutside.value);
-
-    nodesOutside.value.forEach((node) => {
-      $bus.emit(`node-selection-preview-${node}`, {
-        id: node,
-        preview: null,
-      });
-    });
-
-    nodesOutside.value = [];
-  }
+  doRealSelection();
 
   const target = event.target as HTMLElement;
   if (target.hasPointerCapture(selectionPointerId!)) {

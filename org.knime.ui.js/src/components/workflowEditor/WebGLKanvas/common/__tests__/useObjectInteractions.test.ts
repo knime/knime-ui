@@ -6,7 +6,10 @@ import type { FederatedPointerEvent } from "pixi.js";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
+import { markEventAsHandled } from "../../util/interaction";
 import { useObjectInteractions } from "../useObjectInteractions";
+
+vi.mock("../../util/interaction");
 
 describe("useObjectInteractions", () => {
   afterEach(() => {
@@ -34,6 +37,7 @@ describe("useObjectInteractions", () => {
       shiftKey: modifiers.shiftKey,
       // @ts-expect-error
       ctrlKey: modifiers.ctrlKey,
+      nativeEvent: new PointerEvent("pointerdown"),
     });
 
     canvas.dispatchEvent(
@@ -118,6 +122,8 @@ describe("useObjectInteractions", () => {
       };
 
       triggerInteraction(canvas, handlePointerInteraction, pointerPositions);
+
+      expect(markEventAsHandled).toHaveBeenCalled();
 
       expect(addEventSpy).toHaveBeenCalledWith(
         "pointermove",

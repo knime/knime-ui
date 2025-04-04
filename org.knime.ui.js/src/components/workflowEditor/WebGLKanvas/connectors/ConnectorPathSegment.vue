@@ -237,7 +237,7 @@ watch(suggestDelete, (shouldAnimate) => {
       :position="centerPoint"
       virtual
       :is-debug-mode-enabled="isDebugModeEnabled"
-      @pointerdown.left.prevent="
+      @pointerdown.left="
         emit('addVirtualBendpoint', { position: centerPoint, event: $event })
       "
       @pointerenter="emit('hoverVirtualBendpoint', true)"

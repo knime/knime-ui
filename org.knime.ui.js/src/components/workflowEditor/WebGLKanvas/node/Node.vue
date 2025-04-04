@@ -26,6 +26,7 @@ import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import NodePorts from "../ports/NodePorts.vue";
+import { markEventAsHandled } from "../util/interaction";
 import { nodeNameText } from "../util/textStyles";
 
 import NodeActionBar from "./NodeActionBar.vue";
@@ -256,6 +257,7 @@ const actionBarPosition = computed(() => {
 });
 
 const onRightClick = (event: PIXI.FederatedPointerEvent) => {
+  markEventAsHandled(event, { initiator: "node-ctx-menu" });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({
@@ -295,7 +297,7 @@ const { resolution } = useZoomAwareResolution();
     @pointerenter="onNodeHoverAreaPointerEnter"
     @pointermove="onNodeHoverAreaPointerMove"
     @pointerleave.self="onNodeHoverAreaPointerLeave"
-    @pointerdown.prevent="handlePointerInteraction"
+    @pointerdown="handlePointerInteraction"
   >
     <Graphics
       label="NodeHoverArea"

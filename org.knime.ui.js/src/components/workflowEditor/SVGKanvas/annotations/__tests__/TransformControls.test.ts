@@ -1,25 +1,24 @@
-import { describe, expect, it, vi } from "vitest";
+import { type Mock, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
-import type { Bounds } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { mockStores } from "@/test/utils/mockStores";
 import { createSlottedChildComponent } from "@/test/utils/slottedChildComponent";
-import TransformControls, {
-  TRANSFORM_RECT_OFFSET,
-} from "../TransformControls.vue";
 import {
   DIRECTIONS,
   type Directions,
   getGridAdjustedBounds,
   getTransformControlPosition,
   transformBounds,
-} from "../transform-control-utils";
+} from "../../../common/annotations/transform-control-utils";
+import TransformControls from "../TransformControls.vue";
 
-vi.mock("../transform-control-utils", async () => {
-  const actual: any = await vi.importActual("../transform-control-utils");
+vi.mock("../../../common/annotations/transform-control-utils", async () => {
+  const actual: any = await vi.importActual(
+    "../../../common/annotations/transform-control-utils",
+  );
   return {
     ...actual,
     transformBounds: vi.fn(),
@@ -29,11 +28,14 @@ vi.mock("../transform-control-utils", async () => {
 });
 
 describe("TransformControls.vue", () => {
-  const defaultProps: {
-    initialValue: Bounds;
-    showTransformControls: boolean;
-    showSelection: boolean;
-  } = {
+  type ComponentProps = InstanceType<typeof TransformControls>["$props"];
+
+  type MountOpts = {
+    props?: Partial<ComponentProps>;
+    screenToCanvasCoordinatesMock?: Mock;
+  };
+
+  const defaultProps = {
     initialValue: {
       x: 10,
       y: 10,
@@ -42,7 +44,8 @@ describe("TransformControls.vue", () => {
     },
     showTransformControls: false,
     showSelection: false,
-  };
+    isAnnotationSelected: false,
+  } satisfies ComponentProps;
 
   const mockedTransformBounds = vi.mocked(transformBounds).mockReturnValue({
     x: 40,
@@ -65,7 +68,7 @@ describe("TransformControls.vue", () => {
   const doMount = ({
     props = {},
     screenToCanvasCoordinatesMock = vi.fn(() => [5, 5]),
-  } = {}) => {
+  }: MountOpts = {}) => {
     const { renderSlot, getSlottedChildComponent } =
       createSlottedChildComponent({
         slottedComponentTemplate: `<foreignObject
@@ -103,34 +106,14 @@ describe("TransformControls.vue", () => {
     control.trigger("pointerdown");
   };
 
-  const stopDraggingControl = (
-    wrapper: VueWrapper<any>,
-    controlDirection: Directions,
-  ) => {
-    const control = wrapper.find(`.transform-control-${controlDirection}`);
-    control.element.releasePointerCapture = vi.fn();
-    return control.trigger("pointerup");
-  };
-
   it("should render the transform box", () => {
     const { wrapper } = doMount({ props: { showSelection: true } });
 
-    const offsetBounds = {
-      x: defaultProps.initialValue.x - TRANSFORM_RECT_OFFSET,
-      y: defaultProps.initialValue.y - TRANSFORM_RECT_OFFSET,
-      width: defaultProps.initialValue.width + TRANSFORM_RECT_OFFSET * 2,
-      height: defaultProps.initialValue.height + TRANSFORM_RECT_OFFSET * 2,
-    };
-
     const transformBox = wrapper.find("rect.transform-box");
-    expect(transformBox.attributes("x")).toBe(offsetBounds.x.toString());
-    expect(transformBox.attributes("y")).toBe(offsetBounds.y.toString());
-    expect(transformBox.attributes("width")).toBe(
-      offsetBounds.width.toString(),
-    );
-    expect(transformBox.attributes("height")).toBe(
-      offsetBounds.height.toString(),
-    );
+    expect(transformBox.attributes("x")).toBe("9");
+    expect(transformBox.attributes("y")).toBe("9");
+    expect(transformBox.attributes("width")).toBe("102");
+    expect(transformBox.attributes("height")).toBe("102");
   });
 
   it("should render the transform controls correctly", () => {
@@ -140,6 +123,8 @@ describe("TransformControls.vue", () => {
     expect(wrapper.findAll(".transform-control").length).toBe(
       DIRECTIONS.length,
     );
+
+    const TRANSFORM_RECT_OFFSET = 1;
 
     DIRECTIONS.forEach((direction) => {
       const transformControl = wrapper.find(`.transform-control-${direction}`);
@@ -203,7 +188,9 @@ describe("TransformControls.vue", () => {
 
     const { initialValue: bounds } = defaultProps;
 
-    stopDraggingControl(wrapper, "n");
+    startDraggingControl(wrapper, "n");
+    const mouseUp = new Event("mouseup");
+    window.dispatchEvent(mouseUp);
 
     expect(wrapper.emitted("transformEnd")![0][0]).toEqual({ bounds });
     expect(
@@ -248,7 +235,7 @@ describe("TransformControls.vue", () => {
 
   it("should add move deltas to the selection plane", async () => {
     const { wrapper, mockedStores } = doMount({
-      props: { showSelection: true },
+      props: { showSelection: true, isAnnotationSelected: true },
     });
 
     expect(wrapper.find("rect").attributes("x")).toBe("9");
@@ -264,19 +251,23 @@ describe("TransformControls.vue", () => {
 
   it("should add offset to the focus plane if the selection plane is visible", async () => {
     const { wrapper, mockedStores } = doMount({
-      props: { showFocus: true, showSelection: true },
+      props: {
+        showFocus: true,
+        showSelection: true,
+        isAnnotationSelected: true,
+      },
     });
 
-    expect(wrapper.find("rect").attributes("x")).toBe("5");
-    expect(wrapper.find("rect").attributes("y")).toBe("5");
-    expect(wrapper.find("rect").attributes("width")).toBe("110");
-    expect(wrapper.find("rect").attributes("height")).toBe("110");
+    expect(wrapper.find("rect").attributes("x")).toBe("6");
+    expect(wrapper.find("rect").attributes("y")).toBe("6");
+    expect(wrapper.find("rect").attributes("width")).toBe("108");
+    expect(wrapper.find("rect").attributes("height")).toBe("108");
 
     mockedStores.movingStore.movePreviewDelta = { x: 100, y: 100 };
 
     await nextTick();
 
-    expect(wrapper.find("rect").attributes("x")).toBe("105");
-    expect(wrapper.find("rect").attributes("y")).toBe("105");
+    expect(wrapper.find("rect").attributes("x")).toBe("106");
+    expect(wrapper.find("rect").attributes("y")).toBe("106");
   });
 });

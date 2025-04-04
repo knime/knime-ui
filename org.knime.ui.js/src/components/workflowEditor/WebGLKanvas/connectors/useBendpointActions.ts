@@ -10,6 +10,7 @@ import { useConnectionInteractionsStore } from "@/store/workflow/connectionInter
 import { useMovingStore } from "@/store/workflow/moving";
 import { getBendpointId } from "@/util/connectorUtil";
 import { useObjectInteractions } from "../common/useObjectInteractions";
+import { markEventAsHandled } from "../util/interaction";
 
 type UseBendpointActionsOptions = {
   connectionId: string;
@@ -81,6 +82,7 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     event: FederatedPointerEvent,
     index: number,
   ) => {
+    markEventAsHandled(event, { initiator: "bendpoint-ctx-menu" });
     const bendpointId = getBendpointId(connectionId, index);
     hoveredBendpoint.value = index;
     selectionStore.selectBendpoint(bendpointId);

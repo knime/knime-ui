@@ -38,7 +38,9 @@ const openQuickActionMenu = (event: PointerEvent) => {
 };
 
 const { isPointerDownDoubleClick } = usePointerDownDoubleClick({
-  checkForPreventDefault: true,
+  eventHandledChecker: (event) => {
+    return Boolean(event.dataset);
+  },
 });
 
 const onPointerDown = (event: PointerEvent) => {

@@ -4,6 +4,7 @@ import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { markEventAsHandled } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
 import { PORT_TYPE_IDS, createPort, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
@@ -14,6 +15,8 @@ const snapTarget = ref<SnapTarget>();
 const didDragToCompatibleTarget = ref(false);
 
 const mockedAPI = deepMocked(API);
+
+vi.mock("@/components/workflowEditor/WebGLKanvas/util/interaction");
 
 vi.mock("../usePortSnapping", () => {
   return {
@@ -55,8 +58,8 @@ describe("floatingConnector store", () => {
       stopPropagation: vi.fn(),
       originalEvent: {
         stopPropagation: vi.fn(),
-        preventDefault: vi.fn(),
       },
+      nativeEvent: new PointerEvent("pointerdown"),
       global: { x: 15, y: 15 },
     };
 
@@ -106,7 +109,7 @@ describe("floatingConnector store", () => {
       mockedStores.floatingConnectorStore.floatingConnector,
     ).toBeUndefined();
     expect(pointerDown.stopPropagation).toHaveBeenCalled();
-    expect(pointerDown.originalEvent.preventDefault).toHaveBeenCalled();
+    expect(markEventAsHandled).toHaveBeenCalled();
     expect(pointerDown.originalEvent.stopPropagation).toHaveBeenCalled();
 
     pointerMove(canvas);

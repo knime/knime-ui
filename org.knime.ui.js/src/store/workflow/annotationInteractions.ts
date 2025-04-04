@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";
 
@@ -14,6 +15,12 @@ import { useWorkflowStore } from "./workflow";
 
 export interface AnnotationInteractionsState {
   editableAnnotationId: string | null;
+  activeTransform:
+    | {
+        annotationId: string;
+        bounds: Bounds;
+      }
+    | undefined;
 }
 
 export const useAnnotationInteractionsStore = defineStore(
@@ -21,6 +28,7 @@ export const useAnnotationInteractionsStore = defineStore(
   {
     state: (): AnnotationInteractionsState => ({
       editableAnnotationId: null,
+      activeTransform: undefined,
     }),
     actions: {
       setAnnotation({

@@ -95,6 +95,9 @@ importers:
       motion:
         specifier: ^12.4.7
         version: 12.5.0
+      mouse-helper:
+        specifier: ^1.0.7
+        version: 1.0.7
       pinia:
         specifier: ^2.3.0
         version: 2.3.1(typescript@5.8.2)(vue@3.5.13(typescript@5.8.2))
@@ -3923,6 +3926,9 @@ packages:
         optional: true
       react-dom:
         optional: true
+
+  mouse-helper@1.0.7:
+    resolution: {integrity: sha512-fURkIXVXlzvpsZbNi/MHIJ9LNsSj9ILEGf1eWE2tpPW9Q9IHiHtYnBdRDwqsmBVWtJ455hqr0Tr1Z1XHaEHz7A==}
 
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
@@ -9897,6 +9903,8 @@ snapshots:
     dependencies:
       framer-motion: 12.5.0
       tslib: 2.8.1
+
+  mouse-helper@1.0.7: {}
 
   mrmime@2.0.1: {}
 

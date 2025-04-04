@@ -15,8 +15,8 @@ import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
+import RichTextAnnotation from "../../../common/annotations/RichTextAnnotation.vue";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
-import RichTextAnnotation from "../RichTextAnnotation.vue";
 import TransformControls from "../TransformControls.vue";
 import WorkflowAnnotationComp from "../WorkflowAnnotation.vue";
 

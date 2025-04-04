@@ -58,12 +58,12 @@ type DesktopAPIEvents = {
 export type PreviewMode = "show" | "hide" | "clear" | null;
 
 export type SelectionPreviewEvents = {
-  [key: `bendpoint-selection-preview-${string}__${string}`]: {
-    index: number;
+  [key: `node-selection-preview-${string}`]: {
+    id: string;
     preview: PreviewMode;
   };
 
-  [key: `node-selection-preview-${string}`]: {
+  [key: `annotation-selection-preview-${string}`]: {
     id: string;
     preview: PreviewMode;
   };

@@ -1,24 +1,43 @@
+<!-- eslint-disable no-undefined -->
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
-import { computed, onMounted, useTemplateRef, watch } from "vue";
+import {
+  computed,
+  onMounted,
+  shallowRef,
+  toRef,
+  unref,
+  useTemplateRef,
+  watch,
+} from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
 
-import type { WorkflowAnnotation as WorkflowAnnotationType } from "@/api/gateway-api/generated-api";
+import type {
+  Bounds,
+  WorkflowAnnotation,
+  WorkflowAnnotation as WorkflowAnnotationType,
+} from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
+import { geometry } from "@/util/geometry";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
+import { useAnnotationSelection } from "../../common/annotations/useAnnotationSelection";
+import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
+import { markEventAsHandled } from "../util/interaction";
 
+import TransformControls from "./TransformControls.vue";
 import { getAnnotationStyles } from "./annotationStyles";
+import { TRANSFORM_DELAY_MS } from "./constants";
 
-const ANNOTATION_STROKE_SIZE = 2;
+const ANNOTATION_STROKE_SIZE = 1.5;
 type Props = {
   annotation: WorkflowAnnotationType;
 };
@@ -34,14 +53,15 @@ const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const selectionStore = useSelectionStore();
 const { isAnnotationSelected } = storeToRefs(selectionStore);
 
-const isSelected = computed(() => {
-  return isAnnotationSelected.value(props.annotation.id);
-});
+const isSelected = computed(() =>
+  isAnnotationSelected.value(props.annotation.id),
+);
 
 const canvasStore = useWebGLCanvasStore();
-const { toCanvasCoordinates } = storeToRefs(canvasStore);
+const { toCanvasCoordinates, visibleArea } = storeToRefs(canvasStore);
 
 const onContextMenu = (event: PIXI.FederatedPointerEvent) => {
+  markEventAsHandled(event, { initiator: "annotation-ctx-menu" });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({
@@ -60,19 +80,13 @@ const onContextMenu = (event: PIXI.FederatedPointerEvent) => {
   toggleContextMenu({ event });
 };
 
-const { editableAnnotationId } = storeToRefs(useAnnotationInteractionsStore());
+const annotationInteractionStore = useAnnotationInteractionsStore();
+const { editableAnnotationId, activeTransform } = storeToRefs(
+  annotationInteractionStore,
+);
 
 const movingStore = useMovingStore();
 const { movePreviewDelta } = storeToRefs(movingStore);
-
-const positionWithDelta = computed(() => ({
-  x: props.annotation.bounds.x + movePreviewDelta.value.x,
-  y: props.annotation.bounds.y + movePreviewDelta.value.y,
-}));
-
-const translatedPosition = computed(() => {
-  return isSelected.value ? positionWithDelta.value : props.annotation.bounds;
-});
 
 const { handlePointerInteraction } = useObjectInteractions({
   isObjectSelected: () => isSelected.value,
@@ -83,20 +97,47 @@ const { handlePointerInteraction } = useObjectInteractions({
   },
 });
 
-const autoUpdateResolution = (textInstance: PIXI.HTMLText) => {
-  const { resolution } = useZoomAwareResolution();
+const translatedPosition = computed(() => {
+  const bounds =
+    activeTransform.value &&
+    activeTransform.value.annotationId === props.annotation.id
+      ? activeTransform.value.bounds
+      : props.annotation.bounds;
+
+  return isSelected.value
+    ? {
+        x: bounds.x + movePreviewDelta.value.x,
+        y: bounds.y + movePreviewDelta.value.y,
+      }
+    : {
+        x: bounds.x,
+        y: bounds.y,
+      };
+});
+
+const textRef = shallowRef<PIXI.HTMLText>();
+const { resolution } = useZoomAwareResolution();
+
+const autoUpdateResolution = () => {
   watch(
     resolution,
     () => {
-      textInstance.resolution = resolution.value;
+      if (textRef.value) {
+        textRef.value.resolution = resolution.value;
+      }
     },
     { immediate: true },
   );
 };
 
-onMounted(() => {
+const updateAnnotationText = (nextValue: WorkflowAnnotation) => {
+  if (textRef.value) {
+    annotationContainer.value!.removeChildAt(0);
+    textRef.value = undefined;
+  }
+
   const annotationTextWithStyles = getAnnotationStyles(
-    props.annotation,
+    nextValue,
     ANNOTATION_STROKE_SIZE,
   );
 
@@ -105,44 +146,118 @@ onMounted(() => {
     style: {
       fontFamily: "Roboto Condensed",
       wordWrap: true,
-      wordWrapWidth: props.annotation.bounds.width,
+      wordWrapWidth: nextValue.bounds.width,
     },
   });
 
   text.roundPixels = true;
-  autoUpdateResolution(text);
   annotationContainer.value!.addChild(text);
+  text.resolution = resolution.value;
+  textRef.value = text;
+};
+
+watch(
+  () => props.annotation.text.value,
+  (next, prev) => {
+    const isSameText = next === prev;
+    if (!isSameText) {
+      updateAnnotationText(props.annotation);
+    }
+  },
+);
+
+onMounted(() => {
+  updateAnnotationText(props.annotation);
+  autoUpdateResolution();
+});
+
+const isBorderVisible = computed(
+  () =>
+    activeTransform.value?.annotationId !== props.annotation.id &&
+    editableAnnotationId.value !== props.annotation.id,
+);
+
+const { showFocus, showSelectionPlane, showTransformControls } =
+  useAnnotationSelection({
+    annotation: toRef(props, "annotation"),
+  });
+
+const renderable = computed(() => {
+  const intersect = geometry.utils.rectangleIntersection(
+    {
+      left: props.annotation.bounds.x,
+      top: props.annotation.bounds.y,
+      width: props.annotation.bounds.width,
+      height: props.annotation.bounds.height,
+    },
+    {
+      left: visibleArea.value.x,
+      top: visibleArea.value.y,
+      width: visibleArea.value.width,
+      height: visibleArea.value.height,
+    },
+  );
+
+  return Boolean(intersect);
+});
+
+const onTransformChange = ({ bounds }: { bounds: Bounds }) => {
+  activeTransform.value = {
+    bounds,
+    annotationId: props.annotation.id,
+  };
+};
+
+const onTransformEnd = (bounds: Bounds) => {
+  annotationInteractionStore.transformWorkflowAnnotation({
+    bounds,
+    annotationId: props.annotation.id,
+  });
+  updateAnnotationText({
+    ...props.annotation,
+    bounds,
+  });
+
+  setTimeout(() => {
+    activeTransform.value = undefined;
+  }, TRANSFORM_DELAY_MS);
+};
+
+const { isSelectionPreviewShown } = useSelectionPreview({
+  objectId: props.annotation.id,
+  eventNameResolver: () =>
+    `annotation-selection-preview-${props.annotation.id}`,
+  isObjectSelected: unref(isAnnotationSelected),
 });
 </script>
 
 <template>
-  <Container :position="translatedPosition">
-    <Graphics
-      :renderable="isSelected"
-      @render="
-        (graphics: GraphicsInst) => {
-          graphics.clear();
-          graphics.rect(
-            -ANNOTATION_STROKE_SIZE,
-            -ANNOTATION_STROKE_SIZE,
-            annotation.bounds.width + ANNOTATION_STROKE_SIZE * 2,
-            annotation.bounds.height + ANNOTATION_STROKE_SIZE * 2,
-          );
-          graphics.stroke({
-            width: 1,
-            color: $colors.Cornflower,
-          });
-        }
-      "
+  <Container
+    :position="translatedPosition"
+    :visible="renderable"
+    :renderable="renderable"
+    event-mode="static"
+    @pointerdown="handlePointerInteraction"
+    @rightclick.stop="onContextMenu"
+  >
+    <TransformControls
+      :initial-value="annotation.bounds"
+      :show-transform-controls="showTransformControls"
+      :show-focus="showFocus"
+      :show-selection="showSelectionPlane || isSelectionPreviewShown"
+      @on-bounds-change="onTransformChange"
+      @transform-end="onTransformEnd($event.bounds)"
     />
 
     <Graphics
+      v-if="isBorderVisible"
+      label="AnnotationBorder"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
           graphics.rect(
-            ANNOTATION_STROKE_SIZE / 2,
-            ANNOTATION_STROKE_SIZE / 2,
+            0.5,
+            0.5,
             annotation.bounds.width - ANNOTATION_STROKE_SIZE,
             annotation.bounds.height - ANNOTATION_STROKE_SIZE,
           );
@@ -156,11 +271,10 @@ onMounted(() => {
 
     <Container
       ref="annotationContainer"
-      event-mode="static"
+      label="AnnotationContentWrapper"
+      :renderable="activeTransform?.annotationId !== annotation.id"
       :width="annotation.bounds.width"
       :height="annotation.bounds.height"
-      @pointerdown.stop.prevent="handlePointerInteraction"
-      @rightclick.stop.prevent="onContextMenu"
     />
   </Container>
 </template>

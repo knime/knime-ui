@@ -6,6 +6,7 @@ import throttle from "raf-throttle";
 
 import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { markEventAsHandled } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
 import * as shapes from "@/style/shapes";
 import {
   type Direction,
@@ -191,8 +192,7 @@ export const useFloatingConnectorStore = defineStore(
       // doesn't go up to the Node component
       pointerDownEvent.stopPropagation();
       pointerDownEvent.originalEvent.stopPropagation();
-      // prevent default makes it so that the SelectionRectangle logic is not fired
-      pointerDownEvent.originalEvent.preventDefault();
+      markEventAsHandled(pointerDownEvent, { initiator: "floating-connector" });
 
       pointerDown.value = true;
       startPosition = {

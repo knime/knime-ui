@@ -61,6 +61,7 @@
     "markdown-it": "^13.0.2",
     "mitt": "^3.0.1",
     "motion": "^12.4.7",
+    "mouse-helper": "^1.0.7",
     "pinia": "^2.3.0",
     "pixi.js": "^8.8.0",
     "raf-throttle": "2.0.6",

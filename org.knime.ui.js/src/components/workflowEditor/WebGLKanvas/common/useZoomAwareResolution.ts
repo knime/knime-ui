@@ -6,6 +6,9 @@ import { storeToRefs } from "pinia";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 
+const round = (value: number) =>
+  Math.round((value + Number.EPSILON) * 100) / 100;
+
 export const useZoomAwareResolution = () => {
   const { zoomFactor, pixelRatio } = storeToRefs(useWebGLCanvasStore());
   const resolution = throttledRef(
@@ -22,7 +25,8 @@ export const useZoomAwareResolution = () => {
       } else {
         resolution = 1;
       }
-      return resolution * pixelRatio.value;
+
+      return round(resolution * pixelRatio.value);
     }),
     100,
   );
