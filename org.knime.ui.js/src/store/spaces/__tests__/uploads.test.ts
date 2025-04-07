@@ -53,9 +53,19 @@ vi.mock("@knime/hub-features", async (importOriginal) => {
   };
 });
 
-const { useSubscribeToUploadEventsMock } = vi.hoisted(() => ({
-  useSubscribeToUploadEventsMock: vi.fn(),
-}));
+const { useSubscribeToUploadEventsMock, useAutoCloseOnCompletionMock } =
+  vi.hoisted(() => ({
+    useSubscribeToUploadEventsMock: vi.fn(),
+    useAutoCloseOnCompletionMock: vi.fn(),
+  }));
+
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = (await importOriginal()) as any;
+  return {
+    ...actual,
+    useAutoCloseOnCompletion: useAutoCloseOnCompletionMock,
+  };
+});
 
 vi.mock("~/composables/useSubscribeToUploadEvents", () => ({
   useSubscribeToUploadEvents: useSubscribeToUploadEventsMock,
@@ -244,6 +254,15 @@ describe("space::uploads", () => {
     expect(toastTemplateComponent.props).toEqual({
       headline: "There was a problem preparing your upload",
       ...mockError.data,
+    });
+  });
+
+  it("initializes auto-close", () => {
+    setupStore();
+    expect(useAutoCloseOnCompletionMock).toHaveBeenCalledWith({
+      close: expect.any(Function),
+      completedStatus: "complete",
+      items: useFileUploadFeatureMock.uploadItems,
     });
   });
 });

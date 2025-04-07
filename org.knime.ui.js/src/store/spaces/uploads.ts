@@ -1,8 +1,11 @@
-/* eslint-disable no-undefined */
 import { computed, ref } from "vue";
 import { useFileDialog } from "@vueuse/core";
 import { defineStore, storeToRefs } from "pinia";
 
+import {
+  type UploadItemStatus,
+  useAutoCloseOnCompletion,
+} from "@knime/components";
 import { rfcErrors, useFileUpload } from "@knime/hub-features";
 import { knimeFileFormats } from "@knime/utils";
 
@@ -11,27 +14,8 @@ import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { useApplicationStore } from "../application/application";
 
 import { useSpaceCachingStore } from "./caching";
+import { getCustomFetchOptions } from "./common";
 import { useSpaceOperationsStore } from "./spaceOperations";
-
-const getCustomFetchOptions = () => {
-  // not relevant for prod because the app will use the auth cookie set for the
-  // hub domain, when the AP is running in the browser
-  if (import.meta.env.PROD) {
-    return undefined;
-  }
-
-  // use application password to auth against the hub api; for development.
-  const url = import.meta.env.VITE_HUB_API_URL;
-  const user = import.meta.env.VITE_HUB_AUTH_USER;
-  const pass = import.meta.env.VITE_HUB_AUTH_PASS;
-
-  return {
-    headers: {
-      Authorization: `Basic ${btoa(`${user}:${pass}`)}`,
-    },
-    baseURL: url,
-  };
-};
 
 export const useSpaceUploadsStore = defineStore("space.uploads", () => {
   const hasActiveUpload = ref(false);
@@ -164,6 +148,12 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
     hasActiveUpload.value = false;
     resetState();
   };
+
+  useAutoCloseOnCompletion<UploadItemStatus>({
+    items: uploadItems,
+    completedStatus: "complete",
+    close: closeUploadsPanel,
+  });
 
   return {
     isPreparingUpload,

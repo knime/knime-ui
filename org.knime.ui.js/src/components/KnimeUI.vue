@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  computed,
   defineAsyncComponent,
   onBeforeMount,
   onBeforeUnmount,
@@ -10,7 +11,12 @@ import {
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
-import { HintProvider, ToastStack, useBeforeUnload } from "@knime/components";
+import {
+  DownloadProgressPanel,
+  HintProvider,
+  ToastStack,
+  useBeforeUnload,
+} from "@knime/components";
 import { getMetaOrCtrlKey } from "@knime/utils";
 
 import BlockUi from "@/components/application/BlockUi.vue";
@@ -27,6 +33,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -77,8 +84,19 @@ const {
   totalFilesBeingPrepared,
 } = storeToRefs(spaceUploadsStore);
 const isUploadPanelExpanded = ref(true);
+const spaceDownloadsStore = useSpaceDownloadsStore();
+const { hasActiveDownload, hasPendingDownloads, downloadItems } =
+  storeToRefs(spaceDownloadsStore);
+const isDownloadPanelExpanded = ref(true);
 
-useBeforeUnload({ hasUnsavedChanges: () => hasPendingUploads.value });
+const showUploadPanel = computed(
+  () => hasActiveUpload.value || isPreparingUpload.value,
+);
+const showDownloadPanel = computed(() => hasActiveDownload.value);
+
+useBeforeUnload({
+  hasUnsavedChanges: () => hasPendingUploads.value || hasPendingDownloads.value,
+});
 
 const AppHeader = defineAsyncComponent({
   loadingComponent: AppHeaderSkeleton,
@@ -280,19 +298,32 @@ const onCloseError = () => {
       @dismiss="onDismissUpdateBanner"
     />
 
-    <div
-      v-if="hasActiveUpload || isPreparingUpload"
-      class="floating-uploads-panel"
-    >
-      <UploadProgressPanel
-        v-model:expanded="isUploadPanelExpanded"
-        :placeholder-items="totalFilesBeingPrepared"
-        :items="uploadItems"
-        @remove="spaceUploadsStore.removeItem($event.id)"
-        @close="spaceUploadsStore.closeUploadsPanel()"
-        @cancel="spaceUploadsStore.cancelUpload($event.id)"
-      />
-    </div>
+    <Transition name="slide-to-bottom">
+      <div
+        v-if="showUploadPanel || showDownloadPanel"
+        class="floating-uploads-panel"
+      >
+        <DownloadProgressPanel
+          v-if="showDownloadPanel"
+          v-model:expanded="isDownloadPanelExpanded"
+          :class="{ 'additional-margin': showUploadPanel && showDownloadPanel }"
+          :items="downloadItems"
+          @cancel="spaceDownloadsStore.cancel($event.downloadId)"
+          @remove="spaceDownloadsStore.removeItem($event.downloadId)"
+          @close="spaceDownloadsStore.closeDownloadPanel()"
+          @download="spaceDownloadsStore.openDownload($event.downloadUrl)"
+        />
+        <UploadProgressPanel
+          v-if="showUploadPanel"
+          v-model:expanded="isUploadPanelExpanded"
+          :placeholder-items="totalFilesBeingPrepared"
+          :items="uploadItems"
+          @remove="spaceUploadsStore.removeItem($event.id)"
+          @close="spaceUploadsStore.closeUploadsPanel()"
+          @cancel="spaceUploadsStore.cancelUpload($event.id)"
+        />
+      </div>
+    </Transition>
 
     <ConfirmDialog />
 
@@ -349,5 +380,17 @@ const onCloseError = () => {
   position: fixed;
   bottom: var(--space-16);
   right: var(--space-16);
+}
+
+.additional-margin {
+  margin-bottom: var(--space-6);
+}
+
+.slide-to-bottom-leave-active {
+  transition: all 0.3s linear;
+}
+
+.slide-to-bottom-leave-to {
+  transform: translateY(100%);
 }
 </style>

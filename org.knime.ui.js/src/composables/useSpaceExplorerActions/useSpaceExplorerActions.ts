@@ -33,7 +33,9 @@ import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import PlusIcon from "@/assets/plus.svg";
 import { useMovingItems } from "@/components/spaces/useMovingItems";
 import { isBrowser } from "@/environment";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
+import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
@@ -71,8 +73,10 @@ export const useSpaceExplorerActions = (
     openInBrowser,
     openAPIDefinition,
   } = useSpacesStore();
+  const { getWorkflowGroupContent } = useSpaceCachingStore();
   const { displayDeployments, executeWorkflow } = useDeploymentsStore();
   const { startUpload } = useSpaceUploadsStore();
+  const { startDownload } = useSpaceDownloadsStore();
 
   const isSelectionMultiple = computed(() => selectedItemIds.value.length > 1);
   const isSelectionEmpty = computed(() => selectedItemIds.value.length === 0);
@@ -239,6 +243,34 @@ export const useSpaceExplorerActions = (
     },
   }));
 
+  const downloadInBrowser = computed(() => {
+    let tooltip = "Download to disk";
+    if (isSelectionEmpty.value) {
+      tooltip = "Select a file to download.";
+    } else if (isSelectionMultiple.value) {
+      tooltip =
+        "Multiple selection is not supported for downloads in the browser.";
+    }
+    return {
+      id: "downloadInBrowser",
+      text: "Download",
+      icon: CloudDownloadIcon,
+      disabled: isSelectionEmpty.value || isSelectionMultiple.value,
+      title: tooltip,
+      execute: () => {
+        const itemId = selectedItemIds.value[0];
+        const name =
+          getWorkflowGroupContent(projectId.value)?.items.find(
+            (item) => item.id === itemId,
+          )?.name ?? "Unknown";
+        startDownload({
+          itemId,
+          name,
+        });
+      },
+    };
+  });
+
   const moveToSpace = computed(() => ({
     id: "moveToSpace",
     text: "Move to...",
@@ -397,6 +429,7 @@ export const useSpaceExplorerActions = (
     deleteItem,
     createWorkflow,
     downloadToLocalSpace,
+    downloadInBrowser,
     moveToSpace,
     copyToSpace,
     uploadToHub,

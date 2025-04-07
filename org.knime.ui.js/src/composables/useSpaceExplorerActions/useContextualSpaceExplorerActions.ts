@@ -56,6 +56,7 @@ export const useContextualSpaceExplorerActions = (
     deleteItem,
     createWorkflow,
     downloadToLocalSpace,
+    downloadInBrowser,
     moveToSpace,
     copyToSpace,
     uploadToHub,
@@ -103,6 +104,7 @@ export const useContextualSpaceExplorerActions = (
       ...valueOrEmpty(isDesktop(), importFiles.value),
       ...valueOrEmpty(isLocal.value, uploadToHub.value),
       ...valueOrEmpty(isHub.value && isDesktop(), downloadToLocalSpace.value),
+      ...valueOrEmpty(isHub.value && isBrowser(), downloadInBrowser.value),
       ...valueOrEmpty(isHub.value, moveToSpace.value),
       ...valueOrEmpty(isHub.value, copyToSpace.value),
       ...valueOrEmpty(
@@ -126,6 +128,10 @@ export const useContextualSpaceExplorerActions = (
         (isHub.value || (isServer.value && doesSelectionContainWorkflow)) &&
           isDesktop(),
         downloadToLocalSpace.value,
+      ),
+      ...valueOrEmpty(
+        !options.isMultipleSelectionActive && isHub.value && isBrowser(),
+        downloadInBrowser.value,
       ),
       ...valueOrEmpty(
         ((isHub.value && !doesSelectionContainFile) || isServer.value) &&
