@@ -5146,6 +5146,24 @@ const application = function(rpcClient: RPCClient) {
 const component = function(rpcClient: RPCClient) {
     return {
         /**
+         * Cancels or re-runs a component loading job. 
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.placeholderId The id of the placeholder that represents the component load job.
+         * @param {'cancel' | 'retry'} params.action The action to be performed on the component load job.
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async cancelOrRetryComponentLoadJob(
+        	params: { projectId: string,  workflowId: string,  placeholderId: string,  action: 'cancel' | 'retry'  }
+        ): Promise<Response> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentService.cancelOrRetryComponentLoadJob', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
+        /**
          * Get a components description, will only work for component nodes.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
