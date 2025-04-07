@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu } from "@knime/components";
+import { rfcErrors } from "@knime/hub-features";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import HistoryIcon from "@knime/styles/img/icons/history.svg";
@@ -13,6 +14,7 @@ import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useSpaceIcons } from "@/components/spaces/useSpaceIcons";
 import { isDesktop } from "@/environment";
+import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
@@ -32,6 +34,11 @@ const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
 );
 const { activeProjectProvider } = storeToRefs(useSpaceProvidersStore());
 
+const getActiveProject = () =>
+  openProjects.value.find(
+    (project) => project.projectId === activeProjectId.value,
+  );
+
 const dropdownItems = computed(() => {
   const items: Array<MenuItem> = [];
   if (activeProjectProvider.value?.type !== SpaceProviderNS.TypeEnum.SERVER) {
@@ -39,8 +46,27 @@ const dropdownItems = computed(() => {
       text: "Version history",
       icon: HistoryIcon,
       metadata: {
-        handler: () => {
-          useWorkflowVersionsStore().activateVersionsMode();
+        handler: async () => {
+          try {
+            await useWorkflowVersionsStore().activateVersionsMode();
+          } catch (error) {
+            const $toast = getToastsProvider();
+            if (error instanceof rfcErrors.RFCError) {
+              $toast.show(
+                rfcErrors.toToast({
+                  headline: "Fetching version history failed",
+                  rfcError: error,
+                }),
+              );
+            } else {
+              $toast.show({
+                type: "error",
+                headline: "Showing version history failed",
+                message: `Error fetching version information for '${getActiveProject()
+                  ?.name}'.`,
+              });
+            }
+          }
         },
       },
     });
@@ -52,11 +78,10 @@ const dropdownItems = computed(() => {
       icon: ListIcon,
       metadata: {
         handler: async () => {
-          const projectName = openProjects.value.find(
-            (project) => project.projectId === activeProjectId.value,
-          )!.name;
-
-          await revealInSpaceExplorer(activeProjectOrigin.value!, projectName);
+          await revealInSpaceExplorer(
+            activeProjectOrigin.value!,
+            getActiveProject()!.name,
+          );
         },
       },
     });

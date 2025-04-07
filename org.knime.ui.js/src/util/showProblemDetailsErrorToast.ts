@@ -65,7 +65,7 @@ export const showProblemDetailsErrorToast = ({
                   error,
                 });
               },
-              text: "Copy error to clipboard",
+              text: "Copy error report to clipboard",
               icon: CopyIcon,
             },
           ],

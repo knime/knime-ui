@@ -2,15 +2,18 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
+import { rfcErrors } from "@knime/hub-features";
 import {
   CreateVersionForm,
   ManageVersions,
   type NamedItemVersion,
 } from "@knime/hub-features/versions";
 
+import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpacesStore } from "@/store/spaces/spaces";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
+import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
 
 import VersionPanelPromoteHub from "./VersionPanelPromoteHub.vue";
 
@@ -36,6 +39,32 @@ const hasEditCapability = computed(
 
 const isCreatingVersion = ref(false);
 
+const showErrorToast = ({
+  error,
+  headline,
+}: {
+  error: unknown;
+  headline: string;
+}) => {
+  if (error instanceof rfcErrors.RFCError) {
+    getToastsProvider().show(
+      rfcErrors.toToast({
+        headline,
+        rfcError: error,
+      }),
+    );
+  } else {
+    showProblemDetailsErrorToast({
+      headline,
+      problemDetails: {
+        title: "An unexpected error occured.",
+      },
+      error,
+      copyToClipboard: true,
+    });
+  }
+};
+
 const onClose = () => {
   versionsStore.deactivateVersionsMode();
 };
@@ -44,24 +73,45 @@ const onSelect = (version: NamedItemVersion["version"]) => {
   versionsStore.switchVersion(version);
 };
 
-const onLoadAll = () => {
-  versionsStore.refreshData({ loadAll: true });
+const onLoadAll = async () => {
+  try {
+    await versionsStore.refreshData({ loadAll: true });
+  } catch (error) {
+    showErrorToast({
+      error,
+      headline: "Loading all versions failed",
+    });
+  }
 };
 
-const onDelete = (version: NamedItemVersion["version"]) => {
-  versionsStore.deleteVersion(version);
+const onDelete = async (version: NamedItemVersion["version"]) => {
+  try {
+    await versionsStore.deleteVersion(version);
+  } catch (error) {
+    showErrorToast({
+      error,
+      headline: "Deletion of the version failed",
+    });
+  }
 };
 
 const onRestore = (version: NamedItemVersion["version"]) => {
   versionsStore.restoreVersion(version);
 };
 
-const onCreate = ({ name, description }) => {
-  versionsStore.createVersion({
-    name,
-    description,
-  });
-  isCreatingVersion.value = false;
+const onCreate = async ({ name, description }) => {
+  try {
+    await versionsStore.createVersion({
+      name,
+      description,
+    });
+    isCreatingVersion.value = false;
+  } catch (error) {
+    showErrorToast({
+      error,
+      headline: "Creation of the version failed",
+    });
+  }
 };
 
 const onUpload = () => {

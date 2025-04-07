@@ -6,6 +6,7 @@ import { merge } from "lodash-es";
 import { defineStore } from "pinia";
 import { useRouter } from "vue-router";
 
+import { rfcErrors } from "@knime/hub-features";
 import {
   CURRENT_STATE_VERSION,
   VERSION_DEFAULT_LIMIT,
@@ -19,6 +20,7 @@ import type {
   WithLabels,
 } from "@knime/hub-features/versions";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
+import { promise } from "@knime/utils";
 
 import type { SpaceProviderNS } from "@/api/custom-types";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
@@ -35,6 +37,12 @@ import { useDesktopInteractionsStore } from "./desktopInteractions";
 import { useWorkflowStore } from "./workflow";
 
 export type VersionsModeStatus = "active" | "inactive" | "promoteHub";
+type ProjectVersionsModeInfo = {
+  loadedVersions: Array<NamedItemVersion & WithAvatar & WithLabels>;
+  unversionedSavepoint: (ItemSavepoint & WithAvatar & WithLabels) | null;
+  permissions: Array<ItemPermission>;
+  hasLoadedAll: boolean;
+};
 
 const getHubBaseUrl = (provider?: SpaceProviderNS.SpaceProvider | null) => {
   if (isBrowser()) {
@@ -44,23 +52,20 @@ const getHubBaseUrl = (provider?: SpaceProviderNS.SpaceProvider | null) => {
   return provider?.hostname;
 };
 
+const createInitialProjectVersionsModeInfo = (): ProjectVersionsModeInfo => ({
+  loadedVersions: [],
+  unversionedSavepoint: null,
+  permissions: [],
+  hasLoadedAll: false,
+});
+
 export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   const $router = useRouter();
   const { show: showConfirmDialog } = useConfirmDialog();
 
   /** State: */
   const status = ref<Map<string, VersionsModeStatus>>(new Map());
-  const versionsModeInfo = ref<
-    Map<
-      string,
-      {
-        loadedVersions: Array<NamedItemVersion & WithAvatar & WithLabels>;
-        unversionedSavepoint: (ItemSavepoint & WithAvatar & WithLabels) | null;
-        permissions: Array<ItemPermission>;
-        hasLoadedAll: boolean;
-      }
-    >
-  >(new Map());
+  const versionsModeInfo = ref<Map<string, ProjectVersionsModeInfo>>(new Map());
   const loading = ref(false);
 
   /** Getters: */
@@ -272,10 +277,9 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     const hubApiBaseUrl = getHubBaseUrl(
       useSpaceProvidersStore().activeProjectProvider,
     );
+    const { activeProjectId } = useApplicationStore();
 
-    if (
-      !(projectItemId && hubApiBaseUrl && activeProjectVersionsModeInfo.value)
-    ) {
+    if (!(projectItemId && hubApiBaseUrl && activeProjectId)) {
       consola.error(
         "WorkflowVersionsStore::refreshData -> Prerequisite failed",
       );
@@ -287,35 +291,66 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       baseUrl: hubApiBaseUrl,
     });
 
-    activeProjectVersionsModeInfo.value.permissions =
-      await hubApi.fetchPermissions({ itemId: projectItemId });
+    const doLoadData = async () => {
+      const newData: ProjectVersionsModeInfo =
+        createInitialProjectVersionsModeInfo();
 
-    const itemSavepointsInfo = await hubApi.fetchItemSavepoints({
-      itemId: projectItemId,
-      limit: loadAll ? -1 : undefined,
-    });
+      newData.permissions = await hubApi.fetchPermissions({
+        itemId: projectItemId,
+      });
 
-    if (!itemSavepointsInfo.savepoints[0]?.version) {
-      const lastSavepoint = itemSavepointsInfo.savepoints[0];
+      const itemSavepointsInfo = await hubApi.fetchItemSavepoints({
+        itemId: projectItemId,
+        limit: loadAll ? -1 : undefined,
+      });
 
-      activeProjectVersionsModeInfo.value.unversionedSavepoint = merge(
-        {},
-        lastSavepoint,
-        await hubApi.loadSavepointMetadata(lastSavepoint),
+      if (!itemSavepointsInfo.savepoints[0]?.version) {
+        const lastSavepoint = itemSavepointsInfo.savepoints[0];
+
+        newData.unversionedSavepoint = merge(
+          {},
+          lastSavepoint,
+          await hubApi.loadSavepointMetadata(lastSavepoint),
+        );
+      }
+
+      newData.loadedVersions = await Promise.all(
+        itemSavepointsInfo.savepoints
+          .filter((savepoint) => savepoint.version)
+          .map(async (savepoint) => {
+            const savepointMetadata = await promise.retryPromise({
+              fn: () => hubApi.loadSavepointMetadata(savepoint),
+              retryCount: 1,
+            });
+
+            return { ...savepoint.version!, ...savepointMetadata };
+          }),
       );
-    }
-    activeProjectVersionsModeInfo.value.loadedVersions = await Promise.all(
-      itemSavepointsInfo.savepoints
-        .filter((savepoint) => savepoint.version)
-        .map(async (savepoint) => ({
-          ...savepoint.version!,
-          ...(await hubApi.loadSavepointMetadata(savepoint)),
-        })),
-    );
 
-    activeProjectVersionsModeInfo.value.hasLoadedAll =
-      loadAll || itemSavepointsInfo.totalCount < VERSION_DEFAULT_LIMIT;
-    loading.value = false;
+      newData.hasLoadedAll =
+        loadAll || itemSavepointsInfo.totalCount < VERSION_DEFAULT_LIMIT;
+
+      return newData;
+    };
+
+    try {
+      const newData = await promise.retryPromise({
+        fn: doLoadData,
+        retryCount: 1,
+      });
+
+      // Atomically apply new data
+      versionsModeInfo.value.set(activeProjectId, newData);
+    } catch (error) {
+      if (!(error instanceof rfcErrors.RFCError)) {
+        consola.error("refreshData:: Unexpected error", {
+          error,
+        });
+      }
+      throw error;
+    } finally {
+      loading.value = false;
+    }
   }
 
   async function activateVersionsMode() {
@@ -329,12 +364,10 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
 
     // Reset cached state
-    versionsModeInfo.value.set(activeProjectId, {
-      loadedVersions: [],
-      unversionedSavepoint: null,
-      permissions: [],
-      hasLoadedAll: false,
-    });
+    versionsModeInfo.value.set(
+      activeProjectId,
+      createInitialProjectVersionsModeInfo(),
+    );
     useSelectionStore().deselectAllObjects();
 
     const provider = useSpaceProvidersStore().activeProjectProvider;
@@ -356,7 +389,12 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
 
     setVersionsModeStatus(activeProjectId, "active");
-    await refreshData();
+    try {
+      await refreshData();
+    } catch (error) {
+      setVersionsModeStatus(activeProjectId, "inactive");
+      throw error;
+    }
   }
 
   async function deactivateVersionsMode() {
