@@ -75,8 +75,9 @@ class SaveProjectTest {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         WorkflowManagerUtil.createAndAddNode(m_wfm, new PortObjectInNodeFactory());
 
-        SaveProject.saveProject(new NullProgressMonitor(), m_wfm, "svg img data", true);
+        var result = SaveProject.saveProject(new NullProgressMonitor(), m_wfm, "svg img data", true);
         assertWorkflowSaved(m_wfm, "svg img data");
+        assertThat(result).as("true is returned if save was successful").isTrue();
     }
 
     @AfterEach
