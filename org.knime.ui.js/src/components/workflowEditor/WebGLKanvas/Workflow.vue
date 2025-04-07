@@ -41,35 +41,37 @@ onMounted(() => {
 </script>
 
 <template>
-  <template
-    v-for="annotation of activeWorkflow!.workflowAnnotations"
-    :key="annotation.id"
-  >
-    <StaticWorkflowAnnotation
-      v-if="editableAnnotationId !== annotation.id"
-      :annotation="annotation"
+  <template v-if="activeWorkflow">
+    <template
+      v-for="annotation of activeWorkflow!.workflowAnnotations"
+      :key="annotation.id"
+    >
+      <StaticWorkflowAnnotation
+        v-if="editableAnnotationId !== annotation.id"
+        :annotation="annotation"
+      />
+    </template>
+
+    <Node
+      v-for="node in activeWorkflow!.nodes"
+      :key="node.id"
+      :position="node.position"
+      :icon="getNodeIcon(node.id)"
+      :type="getNodeType(node.id)"
+      :name="getNodeName(node.id)"
+      :node="node"
     />
+
+    <Connector
+      v-for="connector of activeWorkflow.connections"
+      :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
+      v-bind="connector"
+    />
+
+    <Container ref="selectedNodesLayerContainer" />
+
+    <FloatingConnector />
+
+    <SelectionRectangle />
   </template>
-
-  <Node
-    v-for="node in activeWorkflow!.nodes"
-    :key="node.id"
-    :position="node.position"
-    :icon="getNodeIcon(node.id)"
-    :type="getNodeType(node.id)"
-    :name="getNodeName(node.id)"
-    :node="node"
-  />
-
-  <Connector
-    v-for="connector of activeWorkflow!.connections"
-    :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
-    v-bind="connector"
-  />
-
-  <Container ref="selectedNodesLayerContainer" />
-
-  <FloatingConnector />
-
-  <SelectionRectangle />
 </template>

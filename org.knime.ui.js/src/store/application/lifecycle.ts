@@ -381,10 +381,13 @@ export const useLifecycleStore = defineStore("lifecycle", {
         useWorkflowStore()?.activeWorkflow?.projectId !==
         newWorkflow?.projectId;
 
-      useWorkflowPreviewSnapshotsStore().updatePreviewSnapshot({
-        isChangingProject,
-        newWorkflow,
-      });
+      // no previews for the browser
+      if (isDesktop()) {
+        await useWorkflowPreviewSnapshotsStore().updatePreviewSnapshot({
+          isChangingProject,
+          newWorkflow,
+        });
+      }
 
       this.setIsChangingProject(isChangingProject);
 

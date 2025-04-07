@@ -8,12 +8,12 @@ import {
 } from "vitest";
 import { API } from "@api";
 
+import { generateWorkflowPreview } from "@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 
-vi.mock("@/util/generateWorkflowPreview");
+vi.mock("@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({
   encodeString: (value: string) => value,
 }));

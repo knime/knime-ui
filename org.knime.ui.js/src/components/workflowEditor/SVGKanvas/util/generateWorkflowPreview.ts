@@ -1,16 +1,7 @@
 import { camelCase } from "lodash-es";
 
-import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-
-import { loadFontsAsBase64 } from "./font";
-
-const removeNonXMLChars = (xmlStr: string) => {
-  // taken from https://www.w3.org/TR/REC-xml/#charsets
-  const nonXMLChars =
-    // eslint-disable-next-line no-control-regex
-    /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\uD800-\uDFFF]/gu;
-  return xmlStr.replaceAll(nonXMLChars, "");
-};
+import { loadFontsAsBase64 } from "@/util/font";
+import { generateSvgAsString } from "../../util/generateSvgAsString";
 
 const LICENSE = `<!--
 The embedded fonts are based on open source fonts
@@ -36,44 +27,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->`;
 
-/**
- * Outputs the given SVG Element as a string
- * @param svg
- * @param skipLicense whether to add the license for the fonts
- * @returns serialized svg element
- */
-const getSvgContent = (svg: SVGElement, skipLicense: boolean = false) => {
-  // Get svg source
-  const serializer = new XMLSerializer();
-  let source = removeNonXMLChars(serializer.serializeToString(svg));
-
-  // Add name spaces
-  if (
-    !source.match(
-      /^<svg[^>]*?\sxmlns=(['"`])https?:\/\/www\.w3\.org\/2000\/svg\1/,
-    )
-  ) {
-    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-  }
-  if (
-    !source.match(
-      /^<svg[^>]*?\sxmlns:xlink=(['"`])http:\/\/www\.w3\.org\/1999\/xlink\1/,
-    )
-  ) {
-    source = source.replace(
-      /^<svg/,
-      '<svg xmlns:xlink="http://www.w3.org/1999/xlink"',
-    );
-  }
-
-  // Add xml declaration
-  source = `<?xml version="1.0" standalone="no"?>${
-    skipLicense ? "" : `\r\n${LICENSE}`
-  }\r\n${source}`;
-
-  return source;
-};
-
 type PredicateFn = (el: HTMLElement) => boolean;
 /**
  * Removes all elements that fullfil the predicate function.
@@ -81,7 +34,6 @@ type PredicateFn = (el: HTMLElement) => boolean;
  *
  * @param elements
  * @param predicateFn
- * @returns {void}
  */
 const removeElements = (
   elements: ReturnType<typeof document.querySelectorAll>,
@@ -188,7 +140,7 @@ const inheritedCssProperties = [
  * (optional) `styleOverrides` parameter.
  * It will recursively also run the same behavior for all of the element's children
  *
- * @param [styleOverrides] Style overriders
+ * @param [styleOverrides] Style overrides
  * @returns
  */
 const useCSSfromComputedStyles =
@@ -280,14 +232,10 @@ export const generateWorkflowPreview = async (
     return null;
   }
 
-  if (canvasRendererUtils.isWebGLRenderer()) {
-    return "";
-  }
-
   if (isEmpty) {
     const svgNS = "http://www.w3.org/2000/svg";
     const emptySvg = document.createElementNS(svgNS, "svg");
-    return getSvgContent(emptySvg, true);
+    return generateSvgAsString(emptySvg);
   }
 
   // obtain size of the real workflow
@@ -300,7 +248,7 @@ export const generateWorkflowPreview = async (
   // inline custom fonts to the svg element clone
   await addFontStyles(svgClone);
 
-  // Set the viewbox to only the visible content
+  // Set the view box to only the visible content
   updateViewBox(svgClone, viewBox);
 
   // remove all portal-targets
@@ -341,7 +289,7 @@ export const generateWorkflowPreview = async (
     }),
   );
 
-  const output = getSvgContent(svgClone);
+  const output = generateSvgAsString(svgClone, LICENSE);
 
   // remove hidden preview container
   teardown();

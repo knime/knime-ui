@@ -81,7 +81,7 @@ const { renderable } = useConnectorCulling({
     absolutePoint.value ? [absolutePoint.value.x, absolutePoint.value.y] : null,
   ),
 });
-
+const { shouldHideSelection } = storeToRefs(useSelectionStore());
 const isConnectionHovered = ref(false);
 const hoveredPathSegment = ref<number>();
 
@@ -101,6 +101,7 @@ const isHighlighted = computed(() => {
   // if only one node and no connections are selected, highlight the connections from and to that node
   return (
     Boolean(singleSelectedNode.value) &&
+    !shouldHideSelection.value &&
     selectedConnections.value.length === 0 &&
     (isNodeSelected.value(props.sourceNode ?? "") ||
       isNodeSelected.value(props.destNode ?? ""))
@@ -113,7 +114,7 @@ const isTargetForReplacement = computed(() => {
     return false;
   }
 
-  // targetting the input port that is already connected
+  // targeting the input port that is already connected
   if (
     snapTarget.value &&
     !isPlaceholderPort(snapTarget.value) &&
@@ -124,7 +125,7 @@ const isTargetForReplacement = computed(() => {
     return true;
   }
 
-  // targetting the output port that is already connected
+  // targeting the output port that is already connected
   if (
     isFullFloatingConnector(floatingConnector.value) &&
     props.destNode === floatingConnector.value.context.parentNodeId &&
@@ -175,7 +176,9 @@ const {
         :is-dragged-over="false"
         :is-readonly="!isWorkflowWritable"
         :is-last-segment="index === pathSegments.length - 1"
-        :is-selected="isConnectionSelected(id) && !isDragging"
+        :is-selected="
+          isConnectionSelected(id) && !isDragging && !shouldHideSelection
+        "
         :interactive="interactive"
         :streaming="streaming"
         :suggest-delete="Boolean(segment.isEnd && isTargetForReplacement)"
@@ -195,7 +198,10 @@ const {
 
       <ConnectorBendpoint
         v-if="index !== 0"
-        :is-selected="isBendpointSelected(getBendpointId(id, index - 1))"
+        :is-selected="
+          isBendpointSelected(getBendpointId(id, index - 1)) &&
+          !shouldHideSelection
+        "
         :is-dragging="isDragging"
         :is-flow-variable-connection="Boolean(flowVariableConnection)"
         :position="pathSegments[index].start"

@@ -13,9 +13,12 @@ vi.mock("@/util/encodeString", () => ({
   encodeString: vi.fn((value) => value),
 }));
 
-vi.mock("@/util/generateWorkflowPreview", () => ({
-  generateWorkflowPreview: vi.fn((value) => value.outerHTML),
-}));
+vi.mock(
+  "@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview",
+  () => ({
+    generateWorkflowPreview: vi.fn((value) => value.outerHTML),
+  }),
+);
 
 vi.mock("@/util/getKanvasDomElement", { spy: true });
 

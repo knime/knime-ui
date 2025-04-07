@@ -1,8 +1,10 @@
 import { defineStore } from "pinia";
 
+import { generateWorkflowPreview as svgKanvasPreview } from "@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview";
+import { generateWorkflowPreview as wegGlKanvasPreview } from "@/components/workflowEditor/WebGLKanvas/util/generateWorkflowPreview";
+import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
-import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 import { useApplicationStore } from "./application";
@@ -12,6 +14,15 @@ type WorkflowPreviewSnapshotsState = {
   rootWorkflowSnapshots: Map<string, string | null>;
 };
 
+const { isSVGRenderer } = useCanvasRendererUtils();
+const generateWorkflowPreview = (
+  svgElement: SVGSVGElement,
+  isEmpty: boolean,
+) =>
+  isSVGRenderer.value
+    ? svgKanvasPreview(svgElement, isEmpty)
+    : wegGlKanvasPreview(isEmpty);
+
 export const useWorkflowPreviewSnapshotsStore = defineStore(
   "workflowPreviewSnapshots",
   {
@@ -19,7 +30,7 @@ export const useWorkflowPreviewSnapshotsStore = defineStore(
       rootWorkflowSnapshots: new Map(),
     }),
     actions: {
-      updatePreviewSnapshot({
+      async updatePreviewSnapshot({
         isChangingProject,
         newWorkflow,
       }: {
@@ -42,7 +53,7 @@ export const useWorkflowPreviewSnapshotsStore = defineStore(
             ?.firstChild as SVGSVGElement;
 
           // save a snapshot of the current state of the root workflow
-          this.addToRootWorkflowSnapshots({
+          await this.addToRootWorkflowSnapshots({
             projectId: activeProjectId!,
             element: canvasElement,
             isCanvasEmpty: useWorkflowStore().isWorkflowEmpty,

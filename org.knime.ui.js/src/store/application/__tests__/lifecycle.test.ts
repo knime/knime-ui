@@ -24,7 +24,7 @@ import { lifecycleBus } from "../lifecycle-events";
 
 import { applicationState, loadStore } from "./loadStore";
 
-vi.mock("@/util/generateWorkflowPreview");
+vi.mock("@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview");
 const mockedAPI = deepMocked(API);
 
 vi.mock("@/environment");

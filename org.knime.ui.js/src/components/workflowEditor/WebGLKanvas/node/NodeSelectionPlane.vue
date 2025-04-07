@@ -1,8 +1,10 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useSelectionStore } from "@/store/selection";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { DashLine } from "@/util/pixiDashedLine";
@@ -19,6 +21,8 @@ type Props = {
   showFocus: boolean;
   measures: XY & { width: number; height: number };
 };
+
+const { shouldHideSelection } = storeToRefs(useSelectionStore());
 
 const props = defineProps<Props>();
 
@@ -67,7 +71,9 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
   <Container
     label="NodeSelectionPlane"
     :renderable="renderable"
-    :visible="renderable && (showFocus || showSelection)"
+    :visible="
+      renderable && (showFocus || showSelection) && !shouldHideSelection
+    "
   >
     <Graphics
       v-if="showFocus"
