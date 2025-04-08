@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
@@ -17,9 +17,7 @@ export const useCanvasMoveLocking = () => {
       return;
     }
 
-    const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
-
-    if ((event.shiftKey || event[metaOrCtrlKey]) && !isDragging.value) {
+    if ((event.shiftKey || event[getMetaOrCtrlKey()]) && !isDragging.value) {
       setIsMoveLocked(true);
     }
   };

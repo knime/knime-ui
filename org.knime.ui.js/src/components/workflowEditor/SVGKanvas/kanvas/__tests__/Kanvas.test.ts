@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
 import { $bus } from "@/plugins/event-bus";
 import {
@@ -40,8 +40,8 @@ vi.mock("@knime/utils", async (importOriginal) => {
     ...actual,
     navigatorUtils: {
       isMac: vi.fn(() => false),
-      getMetaOrCtrlKey: vi.fn(() => "ctrlKey"),
     },
+    getMetaOrCtrlKey: vi.fn(() => "ctrlKey"),
   };
 });
 
@@ -144,7 +144,7 @@ describe("Kanvas", () => {
   };
 
   const mockGetMetaOrCtrlKey = (value: "metaKey" | "ctrlKey") => {
-    vi.mocked(navigatorUtils.getMetaOrCtrlKey).mockReturnValue(value);
+    vi.mocked(getMetaOrCtrlKey).mockReturnValue(value);
   };
   const mockIsMac = (value: boolean) => {
     vi.mocked(navigatorUtils.isMac).mockReturnValue(value);
@@ -152,7 +152,7 @@ describe("Kanvas", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-    vi.mocked(navigatorUtils.getMetaOrCtrlKey).mockReturnValue("ctrlKey");
+    mockGetMetaOrCtrlKey("ctrlKey");
     vi.mocked(navigatorUtils.isMac).mockReturnValue(false);
   });
 

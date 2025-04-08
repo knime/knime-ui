@@ -5,7 +5,7 @@ import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import { useKeyPressedUntilMouseClick } from "@knime/components";
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
 import { $bus } from "@/plugins/event-bus";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
@@ -98,7 +98,7 @@ const { doInitialSelection } = useArrowKeyNavigation({
 useKanvasContextMenu({ rootEl: rootEl as Ref<HTMLElement> });
 
 const startRectangleSelection = (event: PointerEvent) => {
-  const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
+  const metaOrCtrlKey = getMetaOrCtrlKey();
 
   if (event.shiftKey || event[metaOrCtrlKey]) {
     $bus.emit("selection-pointerdown", event);
