@@ -106,7 +106,10 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   },
   {
     name: "setProjectActiveAndEnsureItsLoaded",
-    params: [["projectId", "1"]],
+    params: [
+      ["projectId", "1"],
+      ["versionId", "current-state"],
+    ],
   },
   {
     name: "openLayoutEditor",

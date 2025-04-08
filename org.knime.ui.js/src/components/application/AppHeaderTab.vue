@@ -79,6 +79,7 @@ const activateTab = () => {
     return;
   }
 
+  // TODO: NXT-3540, Add version parameter?
   emit("switchWorkflow", props.projectId);
 };
 </script>

@@ -117,7 +117,7 @@ class OpenProjectTest {
         assertThat(projectIds).hasSize(1);
         var project = pm.getProject(projectIds.iterator().next()).get();
         assertThat(project.getName()).isEqualTo("simple");
-        m_wfm = project.getWorkflowManager();
+        m_wfm = project.getFromCacheOrLoadWorkflowManager().orElse(null);
         assertThat(m_wfm).isNotNull();
         assertThat(m_wfm.getName()).startsWith("simple");
         assertThat(mruProjects.get()).hasSize(1);

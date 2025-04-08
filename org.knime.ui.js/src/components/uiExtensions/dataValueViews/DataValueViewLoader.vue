@@ -5,6 +5,7 @@
 import { computed, ref, toRef, watch } from "vue";
 import { API } from "@api";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import {
   type Alert,
   USER_ERROR_CODE_BLOCKING,
@@ -19,6 +20,7 @@ import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import type { ExtensionConfig } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 
+// TODO: NXT-3540, Add a version property here?
 export interface Props {
   projectId: string;
   workflowId: string;
@@ -49,6 +51,7 @@ const loadExtensionConfig = async () => {
     extensionConfig.value = await API.port.getDataValueView({
       projectId: props.projectId,
       workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
       nodeId: props.nodeId,
       portIdx: props.selectedPortIndex,
       rowIdx: props.selectedRowIndex,

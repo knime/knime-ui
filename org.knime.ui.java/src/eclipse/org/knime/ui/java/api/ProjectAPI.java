@@ -73,6 +73,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
+import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
@@ -158,18 +159,21 @@ final class ProjectAPI {
      * Sets that project for the given id to active and ensures that the workflow is already loaded (in memory). And
      * loads it if not.
      *
-     * @param projectId -
+     * @param projectId
+     * @param versionId
      * @return whether the project is or has been loaded successfully
      */
     @API
-    static boolean setProjectActiveAndEnsureItsLoaded(final String projectId) {
-        var projectManager = ProjectManager.getInstance();
+    static boolean setProjectActiveAndEnsureItsLoaded(final String projectId, final String versionId) {
+        var projectManager = DesktopAPI.getDeps(ProjectManager.class);
         var project = projectManager.getProject(projectId).orElseThrow();
+        var version = VersionId.parse(versionId);
         if (project.getWorkflowManagerIfLoaded().isPresent()) {
-            projectManager.setProjectActive(projectId);
+            projectManager.setProjectActive(projectId, version);
             return true;
         }
-        var wfm = project.getWorkflowManager();
+
+        var wfm = project.getFromCacheOrLoadWorkflowManager(version).orElse(null);
         if (wfm == null) {
             projectManager.removeProject(projectId);
             NodeLogger.getLogger(ProjectAPI.class)
@@ -177,8 +181,9 @@ final class ProjectAPI {
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             return false;
         }
+
         NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
-        projectManager.setProjectActive(projectId);
+        projectManager.setProjectActive(projectId, version);
         return true;
     }
 

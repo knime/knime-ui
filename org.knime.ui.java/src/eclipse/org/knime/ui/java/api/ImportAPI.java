@@ -58,7 +58,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
-import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.commands.WorkflowCommand;
@@ -153,7 +153,7 @@ final class ImportAPI {
     static String importComponent(final String projectId, final String workflowId, final URI uri,
             final boolean isRemoteLocation, final double x, final double y) {
         var workflowIdEnt = new NodeIDEnt(workflowId);
-        Supplier<WorkflowManager> wfmSupplier = () -> DefaultServiceUtil.getWorkflowManager(projectId, workflowIdEnt);
+        Supplier<WorkflowManager> wfmSupplier = () -> WorkflowManagerResolver.load(projectId, workflowIdEnt); // TODO: Is 'load' the right thing to do here?
         Supplier<NodeID> command = () -> Display.getDefault().syncCall(() -> {
             var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfmSupplier.get(), uri, (int)x, (int)y,
                 isRemoteLocation, false);

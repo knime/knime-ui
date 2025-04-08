@@ -12,6 +12,7 @@ import { API } from "@api";
 import { createRouter, createWebHistory } from "vue-router";
 
 import { setupHints } from "@knime/components";
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
 import { isBrowser, isDesktop, runInEnvironment } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -151,6 +152,7 @@ describe("application::lifecycle", () => {
 
       await lifecycleStore.loadWorkflow({
         projectId: mockWorkflow.projectId,
+        versionId: CURRENT_STATE_VERSION,
       });
 
       expect(onWorkflowLoaded).toHaveBeenCalled();
@@ -170,7 +172,10 @@ describe("application::lifecycle", () => {
 
       expect(
         mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded,
-      ).toHaveBeenCalledWith({ projectId: mockWorkflow.projectId });
+      ).toHaveBeenCalledWith({
+        projectId: mockWorkflow.projectId,
+        versionId: CURRENT_STATE_VERSION,
+      });
       expect(workflowStore.activeWorkflow).toStrictEqual(mockWorkflow);
       expect(workflowStore.activeSnapshotId).toBe("snap");
       expect(mockedAPI.event.subscribeEvent).toHaveBeenCalledWith({
@@ -202,7 +207,10 @@ describe("application::lifecycle", () => {
 
       expect(
         mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded,
-      ).toHaveBeenCalledWith({ projectId: mockWorkflow.projectId });
+      ).toHaveBeenCalledWith({
+        projectId: mockWorkflow.projectId,
+        versionId: CURRENT_STATE_VERSION,
+      });
       expect(onWorkflowLoaded).not.toHaveBeenCalled();
       expect(mockedAPI.workflow.getWorkflow).not.toHaveBeenCalled();
 
@@ -233,7 +241,10 @@ describe("application::lifecycle", () => {
 
       expect(
         mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded,
-      ).toHaveBeenCalledWith({ projectId: mockWorkflow.projectId });
+      ).toHaveBeenCalledWith({
+        projectId: mockWorkflow.projectId,
+        versionId: CURRENT_STATE_VERSION,
+      });
       expect(onWorkflowLoaded).not.toHaveBeenCalled();
       expect(lifecycleStore.afterSetActivateWorkflow).not.toHaveBeenCalled();
     });

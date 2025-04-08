@@ -8,6 +8,7 @@ import {
 } from "@vue/test-utils";
 import { API } from "@api";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { type Alert } from "@knime/ui-extension-renderer/api";
 import {
   UIExtension,
@@ -123,6 +124,7 @@ describe("NodeConfigLoader.vue", () => {
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
       projectId: defaultProps.projectId,
       workflowId: defaultProps.workflowId,
+      versionId: CURRENT_STATE_VERSION,
       nodeId: defaultProps.selectedNode.id,
       extensionType: "dialog",
     });
@@ -204,6 +206,7 @@ describe("NodeConfigLoader.vue", () => {
         projectId: "project-id",
         serviceType: "data",
         workflowId: "workflow-id",
+        versionId: CURRENT_STATE_VERSION,
       });
     });
 

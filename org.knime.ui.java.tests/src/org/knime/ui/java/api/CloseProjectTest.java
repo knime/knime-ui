@@ -142,7 +142,7 @@ class CloseProjectTest {
         var wfm2 = m_wfms.get(1);
         wfm2.setDirty();
         assertThat(wfm2.isDirty()).isTrue();
-        ProjectManager.getInstance().getProject("projectId2").orElseThrow().getWorkflowManager();
+        ProjectManager.getInstance().getProject("projectId2").orElseThrow().getWorkflowManagerIfLoaded();
 
         CloseProject.forceCloseProjects(List.of("projectId1", "projectId2", "non-existing-id"));
 

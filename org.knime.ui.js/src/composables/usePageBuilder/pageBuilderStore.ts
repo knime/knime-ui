@@ -1,3 +1,4 @@
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { sleep } from "@knime/utils";
 
 import { API } from "@/api";
@@ -162,6 +163,7 @@ const actions = {
       requestParams,
     }: ServiceRequestParams,
   ): Promise<{ result: any }> {
+    // TODO: NXT-3540: Retrieve the 'versionId' from the extension config
     const { projectId, workflowId, nodeId, extensionType } = extensionConfig;
     let result: any;
 
@@ -171,6 +173,7 @@ const actions = {
       result = await API.node.callNodeDataService({
         projectId: realProjectId,
         workflowId,
+        versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
         nodeId,
         extensionType,
         serviceType: serviceRequest,
@@ -180,6 +183,7 @@ const actions = {
       result = await API.node.updateDataPointSelection({
         projectId: realProjectId,
         workflowId,
+        versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
         nodeId,
         mode: serviceRequest,
         selection: requestParams,
@@ -305,6 +309,7 @@ const actions = {
     const result = await API.component.getCompositeViewPage({
       projectId,
       workflowId,
+      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
       nodeId,
     });
 

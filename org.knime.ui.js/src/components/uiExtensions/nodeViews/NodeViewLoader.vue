@@ -3,6 +3,7 @@ import { computed, onUnmounted, ref, toRaw, toRefs, watch } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import type {
   Alert,
   UIExtensionPushEvents,
@@ -22,6 +23,7 @@ import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
 /**
  * Renders a node view
+ * TODO: NXT-3540, Add a version property here?
  */
 
 type Props = {
@@ -59,6 +61,7 @@ const loadExtensionConfig = async () => {
     const nodeView = await API.node.getNodeView({
       projectId: props.projectId,
       workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
       nodeId,
     });
 
@@ -67,6 +70,7 @@ const loadExtensionConfig = async () => {
         API.node.deactivateNodeDataServices({
           projectId: props.projectId,
           workflowId: props.workflowId,
+          versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
           nodeId,
           extensionType: "view",
         });
@@ -99,6 +103,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.node.callNodeDataService({
       projectId: props.projectId,
       workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
       nodeId: props.selectedNode.id,
       extensionType: "view",
       serviceType,
@@ -112,6 +117,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.node.updateDataPointSelection({
       projectId: props.projectId,
       workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
       nodeId: props.selectedNode.id,
       mode: mode as "add" | "remove" | "replace",
       selection,

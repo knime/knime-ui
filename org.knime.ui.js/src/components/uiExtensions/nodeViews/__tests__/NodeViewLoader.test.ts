@@ -3,6 +3,7 @@ import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import type {
   Alert,
   ApplyState,
@@ -77,6 +78,7 @@ describe("NodeViewLoader.vue", () => {
       expect.objectContaining({
         projectId: props.projectId,
         workflowId: props.workflowId,
+        versionId: CURRENT_STATE_VERSION,
         nodeId: props.selectedNode.id,
       }),
     );
@@ -113,6 +115,7 @@ describe("NodeViewLoader.vue", () => {
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
       projectId: props.projectId,
       workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION,
       nodeId: props.selectedNode.id,
       extensionType: "view",
     });
@@ -185,6 +188,7 @@ describe("NodeViewLoader.vue", () => {
         projectId: "project-id",
         serviceType: "data",
         workflowId: "workflow-id",
+        versionId: CURRENT_STATE_VERSION,
       });
     });
 

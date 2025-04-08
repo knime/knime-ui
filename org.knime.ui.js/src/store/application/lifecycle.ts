@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { type Router } from "vue-router";
 
 import { setupHints } from "@knime/components";
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { sleep } from "@knime/utils";
 
 import {
@@ -362,8 +363,11 @@ export const useLifecycleStore = defineStore("lifecycle", {
         force: true,
       });
     },
-    /*
-     *   W O R K F L O W   L I F E C Y C L E
+
+    /**
+     * W O R K F L O W   L I F E C Y C L E
+     *
+     * TODO: NXT-3540, Make sure this always yields the correct project version
      */
     async switchWorkflow({
       newWorkflow = null,
@@ -433,13 +437,13 @@ export const useLifecycleStore = defineStore("lifecycle", {
           await this.loadWorkflow({
             projectId,
             workflowId: newWorkflowId,
-            version: newWorkflow.version,
+            versionId: newWorkflow.version,
           });
         } else {
           await this.loadWorkflow({
             projectId,
             workflowId,
-            version: newWorkflow.version,
+            versionId: newWorkflow.version,
           });
         }
       }
@@ -450,11 +454,11 @@ export const useLifecycleStore = defineStore("lifecycle", {
     async loadWorkflow({
       projectId,
       workflowId = "root",
-      version = null,
+      versionId = null,
     }: {
       projectId: string;
       workflowId?: string;
-      version?: string | null;
+      versionId?: string | null;
     }) {
       const isLoadingRootWorkflow = workflowId === "root";
 
@@ -467,6 +471,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
           const isProjectLoadedInAppState =
             await API.desktop.setProjectActiveAndEnsureItsLoaded({
               projectId,
+              versionId: versionId ?? CURRENT_STATE_VERSION,
             });
 
           if (!isProjectLoadedInAppState) {
@@ -476,19 +481,13 @@ export const useLifecycleStore = defineStore("lifecycle", {
           throw projectActivationError;
         }
       }
-
-      // the generated API.workflow.getWorkflow() can't receive null (due to its generated signature)
-      // nor an *explicit* undefined (as this won't be overridden by the defaultParams) for version
       const getWorkflowParams: Parameters<typeof API.workflow.getWorkflow>[0] =
         {
           projectId,
           workflowId,
+          versionId: versionId ?? CURRENT_STATE_VERSION,
           includeInteractionInfo: true,
         };
-
-      if (version !== null) {
-        getWorkflowParams.version = version;
-      }
 
       let project: WorkflowSnapshot;
 

@@ -2,6 +2,7 @@
 import { onUnmounted, ref, toRefs, watch } from "vue";
 import { API } from "@api";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { type Alert } from "@knime/ui-extension-renderer/api";
 import {
   UIExtension,
@@ -18,6 +19,7 @@ import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
+ * TODO: NXT-3540, Add a version property here?
  */
 interface Props {
   projectId: string;
@@ -51,6 +53,7 @@ const loadExtensionConfig = async () => {
   const _extensionConfig = await API.node.getNodeDialog({
     projectId: projectId.value,
     workflowId: workflowId.value,
+    versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
     nodeId: selectedNode.value.id,
   });
 
@@ -61,6 +64,7 @@ const loadExtensionConfig = async () => {
       API.node.deactivateNodeDataServices({
         projectId: projectId.value,
         workflowId: workflowId.value,
+        versionId: CURRENT_STATE_VERSION,
         nodeId: selectedNode.value.id,
         extensionType: "dialog",
       });
@@ -92,6 +96,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.node.callNodeDataService({
       projectId: projectId.value,
       workflowId: workflowId.value,
+      versionId: CURRENT_STATE_VERSION,
       nodeId: selectedNode.value.id,
       extensionType: "dialog",
       serviceType,

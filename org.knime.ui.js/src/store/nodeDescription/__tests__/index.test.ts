@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 import { createTestingPinia } from "@pinia/testing";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
+
 import { PortType } from "@/api/gateway-api/generated-api";
 import {
   NODE_FACTORIES,
@@ -280,9 +282,10 @@ describe("nodeDescription", () => {
       ];
 
       expect(mockedAPI.component.getComponentDescription).toHaveBeenCalledWith({
-        nodeId: "root1:1",
         projectId: "mockProjectId1",
         workflowId: "mockWorkflow1",
+        versionId: CURRENT_STATE_VERSION,
+        nodeId: "root1:1",
       });
       expect(result).toEqual({
         ...result,

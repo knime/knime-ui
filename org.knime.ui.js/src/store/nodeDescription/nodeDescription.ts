@@ -1,6 +1,8 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
+
 import type { ComponentNodeDescription } from "@/api/custom-types";
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
@@ -81,9 +83,10 @@ export const useNodeDescriptionStore = defineStore("nodeDescription", {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
       const params = {
-        nodeId,
         projectId,
         workflowId,
+        versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+        nodeId,
       };
 
       try {

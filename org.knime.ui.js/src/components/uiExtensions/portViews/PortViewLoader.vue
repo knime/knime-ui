@@ -2,6 +2,7 @@
 import { onUnmounted, ref, toRef, watch } from "vue";
 import { API } from "@api";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import {
   UIExtension,
   type UIExtensionAPILayer,
@@ -17,8 +18,8 @@ import { useDataValueView } from "../dataValueViews/useDataValueView";
 
 /**
  * Dynamically loads a component that will render a Port's output view
+ * TODO: NXT-3540, Add a version property here?
  */
-
 type Props = {
   projectId: string;
   workflowId: string;
@@ -48,6 +49,7 @@ const loadExtensionConfig = async () => {
   const portView = await API.port.getPortView({
     projectId: props.projectId,
     workflowId: props.workflowId,
+    versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
     nodeId: props.selectedNode.id,
     portIdx: props.selectedPortIndex,
     viewIdx: props.selectedViewIndex,
@@ -58,6 +60,7 @@ const loadExtensionConfig = async () => {
       API.port.deactivatePortDataServices({
         projectId: props.projectId,
         workflowId: props.workflowId,
+        versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
         nodeId: props.selectedNode.id,
         portIdx: props.selectedPortIndex,
         viewIdx: props.selectedViewIndex,
@@ -94,9 +97,11 @@ const apiLayer: UIExtensionAPILayer = {
   closeDataValueView,
   callNodeDataService: async (params) => {
     const { serviceType, dataServiceRequest } = params;
+
     const result = await API.port.callPortDataService({
       projectId: props.projectId,
       workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
       nodeId: props.selectedNode.id,
       portIdx: props.selectedPortIndex,
       viewIdx: props.selectedViewIndex,
@@ -112,6 +117,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.port.updateDataPointSelection({
       projectId: props.projectId,
       workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
       nodeId: props.selectedNode.id,
       portIdx: props.selectedPortIndex,
       viewIdx: props.selectedViewIndex,

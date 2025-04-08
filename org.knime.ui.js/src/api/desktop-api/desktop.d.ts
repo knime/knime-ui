@@ -69,7 +69,10 @@ declare function closeProject(
 
 declare function forceCloseProjects(...args: string[]): boolean;
 
-declare function setProjectActiveAndEnsureItsLoaded(projectId: string): boolean;
+declare function setProjectActiveAndEnsureItsLoaded(
+  projectId: string,
+  versionId: string,
+): boolean;
 
 declare function openLayoutEditor(
   projectId: string,

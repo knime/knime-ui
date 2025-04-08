@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
@@ -90,6 +91,7 @@ describe("PortViewLoader.vue", () => {
       expect.objectContaining({
         projectId: props.projectId,
         workflowId: props.workflowId,
+        versionId: CURRENT_STATE_VERSION,
         nodeId: props.selectedNode.id,
         portIdx: props.selectedPortIndex,
       }),
@@ -112,6 +114,7 @@ describe("PortViewLoader.vue", () => {
     expect(mockedAPI.port.deactivatePortDataServices).toHaveBeenCalledWith({
       projectId: props.projectId,
       workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION,
       nodeId: props.selectedNode.id,
       portIdx: props.selectedPortIndex,
       viewIdx: 0,
@@ -236,6 +239,7 @@ describe("PortViewLoader.vue", () => {
         serviceType: "data",
         viewIdx: 0,
         workflowId: "workflow-id",
+        versionId: CURRENT_STATE_VERSION,
       });
     });
 

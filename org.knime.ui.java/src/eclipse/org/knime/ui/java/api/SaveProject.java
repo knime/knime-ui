@@ -72,7 +72,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
@@ -108,7 +108,7 @@ final class SaveProject {
             LOGGER.warn("Saving the project without a workflow preview. This is unexpected and should not happen.");
         }
 
-        var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
+        var projectWfm = WorkflowManagerResolver.get(projectId, NodeIDEnt.getRootID());
         if (isExecutionInProgress(projectWfm)) {
             // Show a warning otherwise
             DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
