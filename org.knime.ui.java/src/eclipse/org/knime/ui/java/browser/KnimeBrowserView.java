@@ -195,7 +195,7 @@ public class KnimeBrowserView {
     }
 
     private static void cancelNavigation(final WindowEvent windowEvent) {
-        windowEvent.required = false;
+        windowEvent.required = true;
         windowEvent.browser = null;
     }
 
