@@ -34,6 +34,9 @@ definitions:
           - corepack enable
           - pnpm install
           - pnpm run test:e2e
+        artifacts:
+          - org.knime.ui.js/playwright-report/**
+          - org.knime.ui.js/test-results/**
 
 
 pipelines:

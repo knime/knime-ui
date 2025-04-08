@@ -34,6 +34,10 @@ vi.mock(
   () => ({ default: "font data" }),
 );
 
+vi.mock("@/util/font", () => ({
+  preloadFontsAsBase64: () => Promise.resolve(),
+}));
+
 describe("KnimeUI.vue", () => {
   const mockFetch = vi.fn(() =>
     Promise.resolve({
@@ -123,6 +127,7 @@ describe("KnimeUI.vue", () => {
     });
 
     const { wrapper } = await doShallowMount();
+    await flushPromises();
 
     expect(wrapper.find("update-banner-stub").exists()).toBe(true);
     expect(wrapper.find(".main-content-with-banner").exists()).toBe(true);

@@ -94,15 +94,19 @@ const autoUpdateResolution = (textInstance: PIXI.HTMLText) => {
   );
 };
 
-onMounted(async () => {
-  const annotationTextWithStyles = await getAnnotationStyles(
+onMounted(() => {
+  const annotationTextWithStyles = getAnnotationStyles(
     props.annotation,
     ANNOTATION_STROKE_SIZE,
   );
 
   const text = new PIXI.HTMLText({
     text: annotationTextWithStyles,
-    style: { wordWrap: true, wordWrapWidth: props.annotation.bounds.width },
+    style: {
+      fontFamily: "Roboto Condensed",
+      wordWrap: true,
+      wordWrapWidth: props.annotation.bounds.width,
+    },
   });
 
   text.roundPixels = true;

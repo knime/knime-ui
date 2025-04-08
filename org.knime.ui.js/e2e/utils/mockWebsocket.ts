@@ -3,10 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import playwright from "playwright";
+import { type Page } from "playwright-core";
 
 export const mockWebsocket = async (
-  page: playwright.Page,
+  page: Page,
   workflowJsonFile: string = "getWorkflow.json",
 ) => {
   const websocketUrl =

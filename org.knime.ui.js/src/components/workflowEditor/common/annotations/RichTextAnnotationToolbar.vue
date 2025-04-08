@@ -163,6 +163,7 @@ const changeBorderColor = (color: string) => {
     :is="WrapperComponent"
     :canvas-position="adjustedPosition"
     aria-label="Annotation toolbar"
+    data-test-id="rich-text-annotation-toolbar"
     :prevent-overflow="true"
     :close-on-escape="false"
     v-bind="$attrs"

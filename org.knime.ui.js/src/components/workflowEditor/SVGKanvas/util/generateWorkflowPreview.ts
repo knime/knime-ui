@@ -1,6 +1,6 @@
 import { camelCase } from "lodash-es";
 
-import { loadFontsAsBase64 } from "@/util/font";
+import { getCachedFontsAsBase64 } from "@/util/font";
 import { generateSvgAsString } from "../../util/generateSvgAsString";
 
 const LICENSE = `<!--
@@ -173,15 +173,9 @@ const useCSSfromComputedStyles =
  * further use
  * @returns
  */
-const getFontData = async () => {
-  const fonts = await loadFontsAsBase64();
-
-  return (
-    fonts
-      .map(([size, font]) => ({ size, font }))
-      // eslint-disable-next-line no-magic-numbers
-      .find(({ size }) => size === 400)!.font
-  );
+const getFontData = () => {
+  const fonts = getCachedFontsAsBase64();
+  return fonts.get("roboto400Normal")!.fontData;
 };
 
 /**
@@ -189,12 +183,12 @@ const getFontData = async () => {
  * as a base64 data-url
  *
  * @param svgElement
- * @returns {void}
+ * @returns
  */
-const addFontStyles = async (svgElement: SVGElement) => {
+const addFontStyles = (svgElement: SVGElement) => {
   const styleTag = document.createElement("style");
 
-  const fontBase64 = await getFontData();
+  const fontBase64 = getFontData();
 
   styleTag.appendChild(
     document.createTextNode(`@font-face {
@@ -224,7 +218,7 @@ const addFontStyles = async (svgElement: SVGElement) => {
  * @returns  The contents of the root workflow as an SVG string or null when no element is provided
  * as a parameter
  */
-export const generateWorkflowPreview = async (
+export const generateWorkflowPreview = (
   svgElement: SVGSVGElement,
   isEmpty: boolean,
 ) => {
@@ -246,7 +240,7 @@ export const generateWorkflowPreview = async (
   const { svgClone, teardown } = getSVGElementClone(svgElement);
 
   // inline custom fonts to the svg element clone
-  await addFontStyles(svgClone);
+  addFontStyles(svgClone);
 
   // Set the view box to only the visible content
   updateViewBox(svgClone, viewBox);

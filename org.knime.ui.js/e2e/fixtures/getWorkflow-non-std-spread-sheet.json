@@ -1,0 +1,1316 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "0",
+    "workflow": {
+      "dirty": false,
+      "allowedActions": {
+        "canReset": false,
+        "canExecute": true,
+        "canCancel": false,
+        "canUndo": false,
+        "canRedo": false
+      },
+      "nodes": {
+        "root:1": {
+          "annotation": {
+            "text": {
+              "value": "Read the Athlete Bio \nfile (non-\nstandard format)",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:1",
+          "state": {
+            "executionState": "CONFIGURED"
+          },
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            }
+          },
+          "dialogType": "swing",
+          "kind": "node",
+          "position": {
+            "x": 75,
+            "y": 300
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -337043238,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "File Table",
+              "index": 1,
+              "connectedVia": ["root:8_1"],
+              "portContentVersion": 172806710,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:2": {
+          "annotation": {
+            "text": {
+              "value": "Split the table by \nthe separator row",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:2",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.table.splitter.TableSplitterNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 270,
+            "y": 300
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input Table",
+              "index": 1,
+              "connectedVia": ["root:2_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -337043238,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Top Output Table",
+              "index": 1,
+              "connectedVia": ["root:11_2", "root:4_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Bottom Output Table",
+              "index": 2,
+              "connectedVia": ["root:19_2"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:19": {
+          "annotation": {
+            "text": {
+              "value": "Concatenate the \r\ntransformed tables",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:19",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.append.row.AppendedRowsNodeFactory",
+          "portGroups": {
+            "input": {
+              "inputRange": [1, 2],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": ["org.knime.core.node.BufferedDataTable"]
+            }
+          },
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 705,
+            "y": 300
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "First table to concatenate",
+              "index": 1,
+              "connectedVia": ["root:19_1"],
+              "portGroupId": "input",
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Second table to concatenate",
+              "index": 2,
+              "connectedVia": ["root:19_2"],
+              "portGroupId": "input",
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Concatenated table",
+              "index": 1,
+              "connectedVia": ["root:20_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:4": {
+          "annotation": {
+            "text": {
+              "value": "Extract the \r\ndate from the \r\nmisplaced cell",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:4",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.table.cellextractor.CellExtractorNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 370,
+            "y": 130
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input table",
+              "index": 1,
+              "connectedVia": ["root:4_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Output flow variable",
+              "index": 1,
+              "connectedVia": ["root:11_1"],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Output table",
+              "index": 2,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:20": {
+          "annotation": {
+            "text": {
+              "value": "Crop the table to \r\nthe desired\r\nshape",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:20",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.table.cropper.TableCropperNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 810,
+            "y": 300
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input Table",
+              "index": 1,
+              "connectedVia": ["root:20_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Cropped Table",
+              "index": 1,
+              "connectedVia": ["root:13_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:21": {
+          "annotation": {
+            "text": {
+              "value": "Remove the row \nwith RowID \"Row5\"",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": []
+          },
+          "id": "root:21",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.filter.row3.RowFilterNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 580,
+            "y": 220
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input Table",
+              "index": 1,
+              "connectedVia": ["root:21_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Included Rows",
+              "index": 1,
+              "connectedVia": ["root:19_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:8": {
+          "annotation": {
+            "text": {
+              "value": "Set the second \nrow as\ncolumn header",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:8",
+          "state": {
+            "executionState": "CONFIGURED"
+          },
+          "inputContentVersion": 172806710,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.rowtocolumnheader.RowToColumnHeaderNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 175,
+            "y": 300
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input data",
+              "index": 1,
+              "connectedVia": ["root:8_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -337043238,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Renamed and type converted input data",
+              "index": 1,
+              "connectedVia": ["root:2_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Renaming information",
+              "index": 2,
+              "connectedVia": [],
+              "portContentVersion": 1906024263,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:13": {
+          "annotation": {
+            "text": {
+              "value": "Remove \r\nunnescessary \r\ncolumns",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:13",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 910,
+            "y": 300
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Table to be filtered",
+              "index": 1,
+              "connectedVia": ["root:13_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Filtered table",
+              "index": 1,
+              "connectedVia": ["root:15_1", "root:14_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:14": {
+          "annotation": {
+            "text": {
+              "value": "Count the number of \r\nmales and females",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:14",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.rowagg.RowAggregatorNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 1130,
+            "y": 375
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input Table",
+              "index": 1,
+              "connectedVia": ["root:14_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Aggregation results",
+              "index": 1,
+              "connectedVia": ["root:16_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Grand-total results",
+              "index": 2,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:11": {
+          "annotation": {
+            "text": {
+              "value": "Place the extracted \r\ncell content in \r\nthe correct place",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:11",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.table.cellupdater.CellUpdaterNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 475,
+            "y": 220
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input flow variable",
+              "index": 1,
+              "connectedVia": ["root:11_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input table",
+              "index": 2,
+              "connectedVia": ["root:11_2"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Output table",
+              "index": 1,
+              "connectedVia": ["root:21_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:17": {
+          "annotation": {
+            "text": {
+              "value": "Append the modified \r\ntable to a \r\nsaparate sheet",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:17",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            },
+            "Sheet Input Ports": {
+              "inputRange": [1, 1],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": ["org.knime.core.node.BufferedDataTable"]
+            }
+          },
+          "dialogType": "swing",
+          "kind": "node",
+          "position": {
+            "x": 1435,
+            "y": 310
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input table",
+              "index": 1,
+              "connectedVia": ["root:17_1"],
+              "portGroupId": "Sheet Input Ports",
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ]
+        },
+        "root:15": {
+          "annotation": {
+            "text": {
+              "value": "",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:15",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.columnappend2.ColumnAppender2NodeFactory",
+          "portGroups": {
+            "input": {
+              "inputRange": [1, 2],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": ["org.knime.core.node.BufferedDataTable"]
+            }
+          },
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 1310,
+            "y": 310
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Table 1",
+              "index": 1,
+              "connectedVia": ["root:15_1"],
+              "portGroupId": "input",
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Table 2",
+              "index": 2,
+              "connectedVia": ["root:15_2"],
+              "portGroupId": "input",
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Appended table",
+              "index": 1,
+              "connectedVia": ["root:17_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:16": {
+          "annotation": {
+            "text": {
+              "value": "",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:16",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.preproc.column.renamer.ColumnRenamerNodeFactory",
+          "dialogType": "web",
+          "kind": "node",
+          "position": {
+            "x": 1225,
+            "y": 375
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input Table",
+              "index": 1,
+              "connectedVia": ["root:16_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -169025987,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Output Table",
+              "index": 1,
+              "connectedVia": ["root:15_2"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        }
+      },
+      "workflowAnnotations": [
+        {
+          "bounds": {
+            "x": 30,
+            "width": 940,
+            "height": 145,
+            "y": -200
+          },
+          "id": "root_0",
+          "text": {
+            "value": "<p><strong>Non-standard format Spreadsheets</strong></p><p>This workflow reads data from en Excel sheet which contains information other than what is defined by column headers and rowIDs. It extracts, appends, and filters the data into a formatted table and performs aggregations on it. Finally, it writes the results into a new sheet in the same Excel file.</p><p></p><p>You can find more workflows and resources for spreadsheet users on the related <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://hub.knime.com/knime/collections/KNIME%20Analytics%20Platform%20Version%205%20Starter%20Perspective%20Collection~Y0m-e65xNWBFcR20\" title=\"Use &quot;⌘ click&quot; to follow link\">collection page </a>on the KNIME Community Hub.</p>",
+            "contentType": "text/html"
+          },
+          "backgroundColor": "#FFFFFF",
+          "borderWidth": 10,
+          "borderColor": "#FFD800"
+        },
+        {
+          "bounds": {
+            "x": 30,
+            "width": 780,
+            "height": 75,
+            "y": -40
+          },
+          "id": "root_1",
+          "text": {
+            "value": "<p><strong>Task</strong></p><p>Find the number of Olympic athletes born in 2000</p>",
+            "contentType": "text/html"
+          },
+          "backgroundColor": "#FFFFFF",
+          "borderWidth": 10,
+          "borderColor": "#C0C4C6"
+        },
+        {
+          "bounds": {
+            "x": 30,
+            "width": 635,
+            "height": 425,
+            "y": 50
+          },
+          "id": "root_2",
+          "text": {
+            "value": "<p><strong>Read and arrange parts of the Excel sheet</strong></p><ul><li><p>Extract column headers from other than the top row</p></li><li><p>Shift data entered into a wrong cell</p></li><li><p>Remove rows without information</p></li></ul>",
+            "contentType": "text/html"
+          },
+          "backgroundColor": "#FFFFFF",
+          "borderWidth": 10,
+          "borderColor": "#FF9632"
+        },
+        {
+          "bounds": {
+            "x": 670,
+            "width": 365,
+            "height": 425,
+            "y": 50
+          },
+          "id": "root_3",
+          "text": {
+            "value": "<p><strong>Combine and clean the extracted data</strong></p><ul><li><p>Concatenate rows after collecting and arranging it in the previous step</p></li><li><p>Define which columns and rows to keep in the table</p></li></ul>",
+            "contentType": "text/html"
+          },
+          "backgroundColor": "#FFFFFF",
+          "borderWidth": 10,
+          "borderColor": "#FFD800"
+        },
+        {
+          "bounds": {
+            "x": 1045,
+            "width": 495,
+            "height": 425,
+            "y": 50
+          },
+          "id": "root_4",
+          "text": {
+            "value": "<p><strong>Aggregate and export the data</strong></p><ul><li><p>Calculate summary statistics</p></li><li><p>Append the statistics to the formatted table</p></li><li><p>Write the formatted table into a new sheet in the original Excel file</p></li></ul>",
+            "contentType": "text/html"
+          },
+          "backgroundColor": "#FFFFFF",
+          "borderWidth": 10,
+          "borderColor": "#FF4B4B"
+        }
+      ],
+      "info": {
+        "name": "Non-standard format Spreadsheets",
+        "containerId": "root",
+        "providerType": "HUB",
+        "containerType": "project"
+      },
+      "metadata": {
+        "metadataType": "project",
+        "lastEdit": "2023-07-13T10:49:08.167+03:00",
+        "tags": ["spreadsheet", "aggregation", "data wrangling"],
+        "description": {
+          "value": "This workflow shows how to work with spreadsheets that come in a non-standard format using KNIME Analytics Platform. The aim is to clean up and rearrange a spreadsheet in a non-standard format and then apply a row aggregation. We demonstrate this by finding the number of male and female athletes born in January 2000 using the Olympic Athlete Bio file.",
+          "contentType": "text/plain"
+        },
+        "links": []
+      },
+      "connections": {
+        "root:11_1": {
+          "id": "root:11_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:11",
+          "sourceNode": "root:4",
+          "flowVariableConnection": true,
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:11_2": {
+          "id": "root:11_2",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:11",
+          "sourceNode": "root:2",
+          "destPort": 2,
+          "sourcePort": 1
+        },
+        "root:20_1": {
+          "id": "root:20_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:20",
+          "sourceNode": "root:19",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:21_1": {
+          "id": "root:21_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:21",
+          "sourceNode": "root:11",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:15_1": {
+          "id": "root:15_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:13",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:16_1": {
+          "id": "root:16_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:16",
+          "sourceNode": "root:14",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:15_2": {
+          "id": "root:15_2",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:16",
+          "destPort": 2,
+          "sourcePort": 1
+        },
+        "root:13_1": {
+          "id": "root:13_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:13",
+          "sourceNode": "root:20",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:14_1": {
+          "id": "root:14_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:14",
+          "sourceNode": "root:13",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:2_1": {
+          "id": "root:2_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:2",
+          "sourceNode": "root:8",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:4_1": {
+          "id": "root:4_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:4",
+          "sourceNode": "root:2",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:8_1": {
+          "id": "root:8_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:8",
+          "sourceNode": "root:1",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:19_1": {
+          "id": "root:19_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:19",
+          "sourceNode": "root:21",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:19_2": {
+          "id": "root:19_2",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:19",
+          "sourceNode": "root:2",
+          "destPort": 2,
+          "sourcePort": 2
+        },
+        "root:17_1": {
+          "id": "root:17_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:17",
+          "sourceNode": "root:15",
+          "destPort": 1,
+          "sourcePort": 1
+        }
+      },
+      "nodeTemplates": {
+        "org.knime.base.node.preproc.table.splitter.TableSplitterNodeFactory": {
+          "name": "Table Splitter",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADJSURBVHgBrVK7DcIwEL1DLujiCaKMkAIKggRiCkpWYIRsACtQMgZIhAIKRkCZICUdsSPZsU7+XJFX2NI7vSe/88NNtfoDwb15IkTg0wh9lIulJT7vF3BANTNgosjzUyGlDM2FcYwYjDGyrISu2/k0rGjftkVleAbE2nBUI4AJZXaMzZPRQvBGuz0aS2zX1XCrKHXIxFcP9q+lgKlC6l/Ty3bnwULOD3tL/C5X4IBqpi1k6hW2lE4hqSYZzeyHFpJqpi0kd8EuqKYHaNJYvbjqwJoAAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.table.splitter.TableSplitterNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.append.row.AppendedRowsNodeFactory": {
+          "name": "Concatenate",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QzRBNDVGN0E4NjNBMTFFNUE1MkU5NUMxRjMyOENFRTgiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QzRBNDVGNzk4NjNBMTFFNUE1MkU5NUMxRjMyOENFRTgiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowREYyMzc5QTE2OEQxMUU1QkQ5NUExQjU5MUVDNkZCQiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowREYyMzc5QjE2OEQxMUU1QkQ5NUExQjU5MUVDNkZCQiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PokpslcAAAFRSURBVHjaYvz//z8DJYCJgULAwsjISLRi74X784FUKxD/BeJZeh/utjGToDkPSE0E4s1A3A3EaS85hMRZgAyCgcAnp8Lw/98/BkYmprlAbt7WeMdvQAOFQQaB3P8fOSBBXkIP2C03nzLcf/eFYeft5y+A3BNAnAvEu4D4J85ABBny5ttPsPN4WFkY9t17CRIG2XoQash3IHZnwab55ptPDF2HroHZNvJiDGuvPmLgZGVm+P2XIQUoVAvEm4C4FOiVr4zoYSCqa8pgnNfM8O3VMwZeGcU2oFAVED8H4kCghpMY0QjyNrKzfRYdeAJkvgNqtgPSrkC8GogPA3E2EJ8kJiHxAvFVoG0fgBik+QwQTwLi01gTEhaxCiCeAoymX0CaA4jDgLjR9unJNVuxKGZED3lQNAI1pwG57VD5fMdX57aXlBa/weYCxgHPTBQbABBgAMjKdxgbj1UQAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.append.row.AppendedRowsNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.table.cellupdater.CellUpdaterNodeFactory": {
+          "name": "Cell Updater",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACrSURBVHgB1ZNBCsMgEEXHIrTLHqcxYLxFN4XSI/QGuUGPUArddNUzRIjJkeJqEl0FNZqQbPIXIzrM+wzOEM4yhIikakgsT02objqYLL5HSOkAK0XnOkUBVa2CySJnkNJGLcxwigL20wLPs5esm6cHON2vwYLu87OnEOKMWv8RQQxXH5CSLSa2GNzRp2OnKRHExxDfBuLthiFOyXXj7FK68EW/IFVbum+rB6kHbJNNAS45ymUAAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.table.cellupdater.CellUpdaterNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.filter.row3.RowFilterNodeFactory": {
+          "name": "Row Filter",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Rjk3QThFRUE0NDFDMTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Rjk3QThFRTk0NDFDMTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNmRiZTRmOC00Yzc3LTQyZGUtOGI5NC00ZGExNTM3Y2Q1M2YiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+JOw8vQAAAJVJREFUeNqkUgEKwCAI9KL/f9ll6BCntrGDkEhPu3MwM8WzwBrTuz+DCgDYRStShymJHYmElqBIMNK+/cJo3lBN5b81TZyQdGeoDpFMSNCK6BwwUkpIjiKeJOBBPyEa4EtBmBjzxZiUCW0uVS7sBbI33UpvBtI9kATvYLg/iqVB64JuJLpvpSIaaRg71aMUMSvOcAkwALIaZjL1MMxxAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.filter.row3.RowFilterNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.rowagg.RowAggregatorNodeFactory": {
+          "name": "Row Aggregator",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAA2klEQVQ4EZWTMQ7CMAxFKerAKSqOwFAGGLgGI0dpOAoj12CAAQaOgHoKNsi3+NGXhWnJEie1X/631WqzXr0mbp3Ol8pdhccaXxbtsiTcb1eL501j4Eff/4RNS6ULhgqZbgr4Ki//2UMLYyGhBQdI7lyOoyzkhna5JyhKfmqDFjgNgZSpoXehBRZyGnnfQwFk6AotsBDJvlinZoDZblugz8PRYlUg8hM+Mh+5oQUqIAiQXGsAQLhMAV/lpe4AASI2Os0PLThIaaD/0UILlP4BJQVqHFpgDzT5W/wG0QVpJhug6rwAAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.rowagg.RowAggregatorNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory": {
+          "name": "Column Filter",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDIyRjAxMjk0NDI1MTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDIyRjAxMjg0NDI1MTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNmRiZTRmOC00Yzc3LTQyZGUtOGI5NC00ZGExNTM3Y2Q1M2YiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+vcE10QAAAGFJREFUeNrcUkEKwCAMa4L//7LCwA3bVYPztJxKDUlaS3tQLaJO+hdoH/EDgeKW1Gsk/MDlCxkTw8Cle4CQeuBSdE6TlORQlB3cAlvOR79xGdP1sEqAEyNAFabolqZqAgwA4/EMMjThx3gAAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.table.cellextractor.CellExtractorNodeFactory": {
+          "name": "Cell Extractor",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADiSURBVHgBrZNNCsIwEIVfQ+sB1HXJuisLClrE01jEndeRHsIruBQU7KZdl67VA1hpzYiUaFOM0bfKz8w3M5kJIIm7bgUDMRiKcz4QQVcNSJbnli4AZbkBY1vaW6YlCICfZVn8gHzjV2cglnLW9ouRyIouZ8Gkkd21KHA6X3ADfAE6tkd6lkYQWUmSVNMgqMajYSXb1ZXhg9I0xSIMsY4idBxHacN0AZ7ntdqxXwGtEHpEXQDJfj+gNlIX+r0uluEcOmpAaA6ojbv9IYambMUZpzkQbVQ6yENmPO0qZ+Nf/HfIHdtzZ2+H3NhCAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.table.cellextractor.CellExtractorNodeFactory"
+          }
+        },
+        "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory": {
+          "name": "Excel Reader",
+          "type": "Source",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADPSURBVHgBtVFBDoIwEByIiSfrA2xAH0A8C1E+4l+Es+EXHrkazsTg3fAAhfABevOEQFISlNImxEmazna3050uMBHa2jBO9e5J6rxXnvsigQoKqAW0oXOdk2eWtUsUizDjZGtZeKQpzkEAVFV3JkPPAqUUtyRp+d5xUBRFV2jQ1XgH3yCE9OL4+P6pcS/zvkDzehiGYGWJaxS1FhhjULLAP2xjmhiKRRaUx8gFXcdGnNw73ozRl11ekoUwp4kSB3un1BnGBDjGuI6J+J8FVXwArGpkXrM0Y1EAAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.table.cropper.TableCropperNodeFactory": {
+          "name": "Table Cropper",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADxSURBVHgBrVNRCoJAEB0X9QDVt+wR8jODukwS/XWbCLtDV6ggjQz0CIvf1QEyrFlBWXEXtqUHgrs78+a9nVkAAdTzPmAAAoaglI6x6LpHworC0iWAqtoDIQe+tkwtIIHPGMtrkl/yWgX4K6q2O0Goih/OgklP3ass4f54whvAR6KsI0pV9XiO649jE+3AdlwYDQfQWNAiERUswxC2UQSu40hjbFXyfBq0FriCVbhQhaqViBaSa9pa0ybRsSCi0+J6ZrD/NiEZVyAjOMWJ1XSx2evfCc4Bb+MlveWgCdnFUj4HWE2aICownnZZsvEr/jvJF35HYTn30Kc/AAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.table.cropper.TableCropperNodeFactory"
+          }
+        },
+        "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory": {
+          "name": "Excel Writer",
+          "type": "Sink",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADUSURBVHgBpZFLDoIwEIYH7RrUA4AegOhWiOJZ5CK4NtyES6AB14YDGIxuNfQCSJuU1KSvpN+inWmnM/NPASxx9tG2Nwm81DdHdI7IUs4XysfJ9yO9m4AlSFfBKEFZ1dRJ4mi0N2EIHcZj4NL3RbPKpBL4xwoy6S88X2+6P9qW7qsgEPpSCSxgPUi5Nw2c8xyg78czBgINeJCyi2O4VhX1iY05eYhVZvC2CNd1/3xHFshPneguigJw18ExTakE1oU2gW6IRh2omMouZp5Hkh9AzQls+QHI9FBAzPdfuAAAAABJRU5ErkJggg==",
+          "nodeFactory": {
+            "className": "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.columnappend2.ColumnAppender2NodeFactory": {
+          "name": "Column Appender",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RTc3QkMxNUI4NzlBMTFFNUIyNjBENUZBOEI3RjgwMEUiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RTc3QkMxNUE4NzlBMTFFNUIyNjBENUZBOEI3RjgwMEUiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpGQTlGNjEyMjE4MzQxMUU1ODEzQUUwRDBBNzRDODlBMiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpGQTlGNjEyMzE4MzQxMUU1ODEzQUUwRDBBNzRDODlBMiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pux/F5IAAACUSURBVHjazJPBDYAwCEU/xrs3HcaZnMaZHMgJUGLbAKUnLv4LKX5eBFoCwK8gIiI5kEQv5TF+8gAJuq5EqpD/AUr+k4YpALs5GH8aQIMtMALVb90MAhN8Xvx1Biapd6wHEw3R34kOUFrASBreajx51L9nNX8EuM99WLkclwFMSCrdQvTiWGtbN3P2650zvy+8R4ABAGsmyujpfhG6AAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.columnappend2.ColumnAppender2NodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.column.renamer.ColumnRenamerNodeFactory": {
+          "name": "Column Renamer",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6ODRDQzA3MUIxODM0MTFFNTgxM0FFMEQwQTc0Qzg5QTIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6ODRDQzA3MUExODM0MTFFNTgxM0FFMEQwQTc0Qzg5QTIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpjZTBmYzg4ZC1kNjkyLTQ5NDEtOTZiOC03ODIxMjliYWZkYWIiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+HO3ikQAAAJtJREFUeNqsUgEOgCAIlLb8Qlt9lp/TMGkgktZyw1Vcxx2QiChFp+YoiCvPVwViXrMkUQC9iAi0FJpQNSTA3s8twcIPAFDA+3bQU/WKJaNSGKWZgSKNRVF4W9AErc+oFaYHX8/vBKT8vybAdoF6eJ6ShGuiXlGeVr+g3UZnYaRYVXcK3ChnFUC5AOQDBNtn8ua9seDiIV8snAIMABLi+X1A2bX9AAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.column.renamer.ColumnRenamerNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.rowtocolumnheader.RowToColumnHeaderNodeFactory": {
+          "name": "Row to Column Names",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACISURBVHgB1Y+7DYNAEERnrZPOLR2BwSU4d0IHdACUQAUkFHIQHJRBG0QLZPzER5vAi1YvmNkBHg99PMOQMAYsueJeECKfIEb6gVoHenHlXHq2QK0VJ74xAWkOrW3a0ZT/bj9g2cKEAB3lw/nFAapyNWE2wTAxW9LvH06wMQFZWTfRVPiFxn3pAWr8WqSjbH3KAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.rowtocolumnheader.RowToColumnHeaderNodeFactory"
+          }
+        }
+      }
+    }
+  }
+}

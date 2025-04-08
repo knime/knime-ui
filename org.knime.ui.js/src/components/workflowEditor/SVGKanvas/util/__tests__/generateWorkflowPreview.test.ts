@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
+import { preloadFontsAsBase64 } from "@/util/font";
 import { generateWorkflowPreview } from "../generateWorkflowPreview";
 
 vi.mock(
@@ -14,9 +15,10 @@ describe("generateWorkflowPreview", () => {
     }),
   );
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // @ts-ignore
     window.fetch = mockFetch;
+    await preloadFontsAsBase64();
   });
 
   /**

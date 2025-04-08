@@ -24,39 +24,67 @@ The frontend is based on the [Vue.js] JavaScript framework.
 pnpm install
 ```
 
-## Launch development server
+## UI running in KNIME Analytics Platform
 
-Compiles all JavaScript sources, assets, … and starts a local web server for development. Includes hot-reloading, so
-code changes will be visible in the browser immediately.
+Simply run the development server
 
 ```sh
-pnpm run dev
+pnpm dev
 ```
+
+and open KNIME Analytics Platform. The UI will be served from the dev server, including hot-reloading, so code changes will be visible in the app immediately.
 
 ## UI running in the browser
 
-### Standalone
+In addition to running inside the KNIME Analytics Platform, the new UI can also run in the browser:
 
-In addition to running inside the KNIME Analytics Platform, the new UI can also run in the browser. To use this mode, you need to have the proper Eclipse setup, as well as doing a couple extra steps. You can see more information on [this page][debugapbrowser].
+1. Copy the contents of the `.env.example` file over to a `.env` file.
+2. Adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url and port of the running WSS server (as configured below).
+3. Set `VITE_BROWSER_DEV_MODE` to `true`, otherwise the `VITE_BROWSER_DEV_WS_URL` variable will have no effect.
 
-After following the steps above, copy the contents of the `.env.example` file over to a `.env` file. Then adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url and port of the running WSS server (as configured in your Eclipse setup). NOTE: Remember to set `VITE_BROWSER_DEV_MODE` to `true` in your `.env` file, otherwise the `VITE_BROWSER_DEV_WS_URL` variable will have no effect.
+Then follow the steps below, either with the nightly build or Eclipse SDK.
 
-When both steps are done, you can open the app in the browser under `http://localhost:3000`
+When you're done, run `pnpm dev` and you can open the app in the browser under `http://localhost:3000`
 
-### Loaded in iframe via [AP-loader](https://bitbucket.org/KNIME/knime-hub-ap-loader/src/master/)
+### Option 1: AP nightly build
 
-If you want to load KNIME UI in an iframe by means of the AP-loader, in addition to the above you need to set the `VITE_BROWSER_DEV_MODE_EMBEDDED` variable to `true` in your `.env` file. This mode will enable you to develop for both knime-ui and the ap-loader application.
+This is the easiest setup and perfect if you only want to work on the workflow editing UI. You first need to:
 
-### Modes
+- Open the nightly build and install the KNIME extension called `Remote Workflow Editor for Executor`.
+- Create a `workflowContext.yaml` somewhere in your system. In this file you need to store a KNIME Hub application password (go to `https://hubdev.knime.com/<YOUR_HUBDEV_USER>/settings/application-passwords`) and a space id. This information will be used so that the Space Explorer can connect to that space in the Hub. Do note that the space id must start with a `*` character.
 
-The Analytics Platform can be started under a _mode_. It is used to specify a broad use-case.
-The mode determines the _permissions_ which, in a granular manner, control what functionality of the AP is available.
+  ```
+  spaceId: "*<SPACE_ID>"
+  applicationPasswordID: "XXX"
+  applicationPassword: "XXX"
+  ```
 
-To configure a mode, set the following Java system property (i.e., add to `knime.ini` or in the "VM Arguments" section in the Eclipse launch configuration).
+Then you can run the nightly in a "headless" mode, which will simply keep it running in the background with a websocket server which knime-ui will connect to:
+
+On Linux / Window (WSL):
 
 ```
--Dorg.knime.ui.mode=<mode>
+./knime -nosplash -consoleLog -application com.knime.gateway.executor.GATEWAY_DEV_SERVER_APPLICATION -workflowDir=/path/to/a/workflow -port=7000 -workflowContextConfig="/path/to/workflowContext.yaml"
 ```
+
+On Mac:
+
+```
+"/Applications/KNIME 5.x.x....app/Contents/MacOS/knime" -nosplash -consoleLog -application com.knime.gateway.executor.GATEWAY_DEV_SERVER_APPLICATION -workflowDir="/Users/<USER>/path/to/workflow" -port=7001 -workflowContextConfig=/Users/<USER>/.../workflowContext.yaml
+```
+
+Note: using port 7001 as port 7000 is already used on Mac.
+
+### Option 2: Eclipse SDK
+
+To use this mode, you need to have the proper Eclipse setup, as well as doing a couple extra steps. You can see more information on [this page][debugapbrowser].
+
+### Option 3: Loaded in iframe via [AP-loader](https://bitbucket.org/KNIME/knime-hub-ap-loader/src/master/)
+
+Only relevant if you need to develop for both knime-ui and the ap-loader application: in addition to the above, you need to set in your `.env` file:
+
+- `VITE_BROWSER_DEV_MODE_EMBEDDED` variable to `true`
+- `VITE_APP_PORT` to `3001` (because ap-loader will be running on port 3000)
 
 ## Git hooks
 
@@ -75,7 +103,7 @@ When committing your changes, a couple of commit hooks will run via [husky].
 
 ## Testing
 
-#### Running unit tests
+### Running unit tests
 
 This project contains unit tests written with [vitest].
 They are run with
@@ -95,6 +123,17 @@ pnpm run coverage
 
 The output can be found in the `test-results` folder. It contains a browseable html report as well as raw coverage data in
 [LCOV] and [Clover] format, which can be used in analysis software (SonarQube, Jenkins, …).
+
+### Running E2E & performance tests
+
+This project contains UI E2E and performance tests written with [Playwright]:
+
+```sh
+pnpm run test:e2e
+pnpm run test:performance
+```
+
+Read more in [e2e/README.md](e2e/README.md).
 
 ## Running security audit
 
@@ -120,6 +159,7 @@ This will also run the `type-check` step to ensure there are no TypeScript error
 [vitest]: https://vitest.dev/
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
+[Playwright]: https://playwright.dev/
 [Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file
 [husky]: https://www.npmjs.com/package/husky
 [lintstaged]: https://github.com/okonet/lint-staged

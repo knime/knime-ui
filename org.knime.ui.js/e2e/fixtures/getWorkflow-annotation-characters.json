@@ -1,0 +1,54 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "0",
+    "workflow": {
+      "dirty": false,
+      "nodes": {},
+      "workflowAnnotations": [
+        {
+          "bounds": {
+            "x": 605,
+            "width": 365,
+            "height": 425,
+            "y": 50
+          },
+          "id": "root_1",
+          "text": {
+            "value": "<p><strong>Xin chào thế giới</strong></p><p>こんにちは世界</p><p>γεια σου κόσμε</p><p style=\"text-align: right\">مرحبا بالعالم</p>",
+            "contentType": "text/html"
+          },
+          "borderWidth": 10,
+          "borderColor": "#FFD800",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": false,
+        "canReset": false,
+        "canRedo": false,
+        "canUndo": false
+      },
+      "metadata": {
+        "tags": ["spreadsheet", "aggregation", "data wrangling"],
+        "description": {
+          "value": "This workflow shows how to work with spreadsheets that come in a non-standard format using KNIME Analytics Platform. The aim is to clean up and rearrange a spreadsheet in a non-standard format and then apply a row aggregation. We demonstrate this by finding the number of male and female athletes born in January 2000 using the Olympic Athlete Bio file.",
+          "contentType": "text/plain"
+        },
+        "lastEdit": "2023-07-13T10:49:08.167+03:00",
+        "metadataType": "project",
+        "links": []
+      },
+      "connections": {},
+      "nodeTemplates": {},
+      "info": {
+        "name": "annotation-test",
+        "providerType": "HUB",
+        "containerId": "root",
+        "containerType": "project"
+      }
+    }
+  }
+}

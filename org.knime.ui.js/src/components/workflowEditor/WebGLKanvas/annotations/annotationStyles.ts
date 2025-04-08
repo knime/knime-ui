@@ -1,23 +1,24 @@
 import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
-import { loadFontsAsBase64 } from "@/util/font";
+import { getCachedFontsAsBase64 } from "@/util/font";
 
 const BASE_FONT_SIZE = 13;
 const BASE_LINE_HEIGHT = 1.44;
 const WRAPPER_PADDING = 10;
 
-export const getAnnotationStyles = async (
+export const getAnnotationStyles = (
   workflowAnnotation: WorkflowAnnotation,
   annotationStrokeSize: number,
 ) => {
-  const fonts = await loadFontsAsBase64();
+  const fonts = getCachedFontsAsBase64();
 
-  const fontFaces = fonts
+  const fontFaces = [...fonts.entries()]
     .map(
-      ([size, base64]) => `@font-face {
+      ([_, { fontData, fontStyle, fontWeight }]) => `@font-face {
       font-family: "Roboto Condensed";
-      font-weight: ${size};
-      src: url("data:application/font-woff;charset=utf-8;base64,${base64}") format('woff');
+      font-weight: ${fontWeight};
+      font-style: ${fontStyle};
+      src: url("data:application/font-woff;charset=utf-8;base64,${fontData}") format('woff');
   }`,
     )
     .join("\n");
@@ -87,12 +88,22 @@ export const getAnnotationStyles = async (
       margin: 10px 0 5px;
     }
 
-    h1:first-of-type,
-    h2:first-of-type,
-    h3:first-of-type,
-    h4:first-of-type,
-    h5:first-of-type,
-    h6:first-of-type {
+    hr {
+      border: none;
+      border-top: 1px solid ${$colors.SilverSand};
+      margin: 6px 0;
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    .wrapper:has(h1:first-child) > h1,
+    .wrapper:has(h2:first-child) > h2,
+    .wrapper:has(h3:first-child) > h3,
+    .wrapper:has(h4:first-child) > h4,
+    .wrapper:has(h5:first-child) > h5,
+    .wrapper:has(h6:first-child) > h6 {
       margin-top: 0;
     }
 
@@ -111,8 +122,8 @@ export const getAnnotationStyles = async (
       text-align: left !important;
     }
 
-    ol:first-of-type,
-    ul:first-of-type {
+    .wrapper:has(ol:first-child) > ol,
+    .wrapper:has(ul:first-child) > ul {
       margin-top: 0;
     }
 

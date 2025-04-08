@@ -1,0 +1,70 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "0",
+    "workflow": {
+      "dirty": false,
+      "nodes": {},
+      "workflowAnnotations": [
+        {
+          "bounds": {
+            "x": 30,
+            "width": 545,
+            "height": 425,
+            "y": 50
+          },
+          "id": "root_0",
+          "text": {
+            "value": "<p><strong>Read and arrange parts of the Excel sheet</strong></p><ul><li><p>Extract column headers from other than the top row</p></li><li><p>Shift data entered into a wrong cell</p></li><li><p>Remove rows without information</p></li></ul><h5>Extract column headers from</h5><hr><h5><s>than</s> the top row...</h5><ol><li><p style=\"text-align: left\">Shift data entered <strong>into</strong> a <s>wrong</s> cell</p></li><li><p style=\"text-align: left\">Remove rows <em>without</em> <u>information</u></p></li></ol><p style=\"text-align: left\"><a target=\"_blank\" rel=\"ugc noopener noreferrer nofollow\" href=\"https://www.getemojis.net/emoji/see-no-evil-monkey/\" draggable=\"false\" title=\"Affe - Augen zu\">🙈 </a><a target=\"_blank\" rel=\"ugc noopener noreferrer nofollow\" href=\"https://www.getemojis.net/emoji/monkey-face/\" draggable=\"false\" title=\"Affe - Gesicht\">🐵 </a><a target=\"_blank\" rel=\"ugc noopener noreferrer nofollow\" href=\"https://www.getemojis.net/emoji/speak-no-evil-monkey/\" draggable=\"false\" title=\"Affe - Mund zu\">🙊 </a><a target=\"_blank\" rel=\"ugc noopener noreferrer nofollow\" href=\"https://www.getemojis.net/emoji/hear-no-evil-monkey/\" draggable=\"false\" title=\"Affe - Ohren zu\">🙉 -&gt; </a><a target=\"_blank\" rel=\"ugc noopener noreferrer nofollow\" href=\"https://www.getemojis.net/emoji/fearful-face/\" draggable=\"false\" title=\"ängstliches Gesicht\">😨 </a><a target=\"_blank\" rel=\"ugc noopener noreferrer nofollow\" href=\"https://www.getemojis.net/emoji/winking-face/\" draggable=\"false\" title=\"augenzwinkerndes Gesicht\">😉</a></p><p style=\"text-align: left\"></p><h2 style=\"text-align: left\">Test</h2><p style=\"text-align: left\"></p><p style=\"text-align: right\"><a target=\"_blank\" rel=\"ugc noopener noreferrer nofollow\" href=\"https://example.com\" draggable=\"false\" title=\"Use &quot;Ctrl + click&quot; to follow link\">Something</a>. ÖÄÜß</p>",
+            "contentType": "text/html"
+          },
+          "borderWidth": 10,
+          "borderColor": "#3CB44B",
+          "backgroundColor": "#FFFFFF"
+        },
+        {
+          "bounds": {
+            "x": 605,
+            "width": 365,
+            "height": 425,
+            "y": 50
+          },
+          "id": "root_1",
+          "text": {
+            "value": "<p>This is another annotation</p>",
+            "contentType": "text/html"
+          },
+          "borderWidth": 10,
+          "borderColor": "#FFD800",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": false,
+        "canReset": false,
+        "canRedo": false,
+        "canUndo": false
+      },
+      "metadata": {
+        "tags": ["spreadsheet", "aggregation", "data wrangling"],
+        "description": {
+          "value": "This workflow shows how to work with spreadsheets that come in a non-standard format using KNIME Analytics Platform. The aim is to clean up and rearrange a spreadsheet in a non-standard format and then apply a row aggregation. We demonstrate this by finding the number of male and female athletes born in January 2000 using the Olympic Athlete Bio file.",
+          "contentType": "text/plain"
+        },
+        "lastEdit": "2023-07-13T10:49:08.167+03:00",
+        "metadataType": "project",
+        "links": []
+      },
+      "connections": {},
+      "nodeTemplates": {},
+      "info": {
+        "name": "annotation-test",
+        "providerType": "HUB",
+        "containerId": "root",
+        "containerType": "project"
+      }
+    }
+  }
+}

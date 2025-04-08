@@ -2,7 +2,7 @@
 import path from "node:path";
 
 import dotenvx from "@dotenvx/dotenvx";
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig } from "@playwright/test";
 
 // use e2e env file
 const envFilePath = path.resolve(import.meta.dirname, ".env.e2e");
@@ -39,17 +39,22 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
-
-    viewport: {
-      width: 1920,
-      height: 1040,
-    },
+    testIdAttribute: "data-test-id",
   },
   /* Configure projects for major browsers */
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        isMobile: false,
+        hasTouch: false,
+        defaultBrowserType: "chromium",
+        viewport: {
+          width: 1920,
+          height: 1040,
+        },
+        deviceScaleFactor: 2,
+      },
     },
 
     // {
