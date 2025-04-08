@@ -277,13 +277,12 @@ const actions = {
       useReexecutingCompositeViewState().addReexecutingNode(componentNodeId);
 
     if (addingResult === "alreadyExists") {
-      handleError({
-        caller: "triggerReExecution",
-        error: "Node is already re-executing. Will not trigger again.",
-      });
+      // svg kanvas fires multiple events when clicking on a node. As its a click and a pointerdown both will lead to
+      // the same re-execution. We need to check if the node is already re-executing and if so, we need to ignore the event.
       return;
     }
 
+    let viewValues: Record<string, string>;
     try {
       const viewValueResult = await dispatch(
         "pagebuilder/getViewValues",
@@ -294,47 +293,64 @@ const actions = {
       );
 
       // make all values to strings as expected by the API
-      const viewValues = Object.keys(viewValueResult).reduce(
+      viewValues = Object.keys(viewValueResult).reduce(
         (accumulator, nodeId) => {
           accumulator[nodeId] = JSON.stringify(viewValueResult[nodeId]);
           return accumulator;
         },
         {},
       );
-
-      const reexecutingPage =
-        (await API.component.triggerCompleteComponentReexecution({
-          ...resolvedIdentifiers,
-          viewValues,
-        })) as unknown as ReexecutingPage;
-
-      await Promise.all(
-        reexecutingPage.resetNodes.map((nodeId) => {
-          return dispatch(
-            "pagebuilder/resetDirtyState",
-            { nodeId },
-            { root: true },
-          );
-        }),
-      );
-
-      const isDirty = await dispatch("pagebuilder/isDirty", null, {
-        root: true,
-      });
-      await dispatch("api/onChange", { isDirty }, { root: true });
-
-      await dispatch("pollReExecution", {
-        reexecutingPage,
-        resolvedIdentifiers,
-      });
     } catch (error) {
       handleError({
         caller: "triggerReExecution",
         error,
+        nodeId: componentNodeId,
       });
-    } finally {
-      useReexecutingCompositeViewState().removeReexecutingNode(componentNodeId);
+      return;
     }
+
+    const reexecution = async () => {
+      try {
+        const reexecutingPage =
+          (await API.component.triggerCompleteComponentReexecution({
+            ...resolvedIdentifiers,
+            viewValues,
+          })) as unknown as ReexecutingPage;
+
+        await Promise.all(
+          reexecutingPage.resetNodes.map((nodeId) => {
+            return dispatch(
+              "pagebuilder/resetDirtyState",
+              { nodeId },
+              { root: true },
+            );
+          }),
+        );
+
+        const isDirty = await dispatch("pagebuilder/isDirty", null, {
+          root: true,
+        });
+        await dispatch("api/onChange", { isDirty }, { root: true });
+
+        await dispatch("pollReExecution", {
+          reexecutingPage,
+          resolvedIdentifiers,
+        });
+      } finally {
+        useReexecutingCompositeViewState().removeReexecutingNode(
+          componentNodeId,
+        );
+      }
+    };
+
+    // now we can fire the re-execution and return immediately to not block the selection process
+    reexecution().catch((error) => {
+      handleError({
+        caller: "triggerReExecution",
+        error,
+        nodeId: componentNodeId,
+      });
+    });
   },
 
   async pollReExecution(

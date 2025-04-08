@@ -2,6 +2,7 @@ import { type Ref, computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
+import { clickAwayCompositeView } from "@/composables/usePageBuilder/usePageBuilder";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { parseBendpointId } from "@/util/connectorUtil";
@@ -50,7 +51,9 @@ export const useSelectionStore = defineStore("selection", () => {
       (nodeIds.length === 0 ||
         nodeIds.some((id) => id !== singleSelectedNode.value!.id))
     ) {
-      const canContinue = await useNodeConfigurationStore().autoApplySettings();
+      const canContinue =
+        (await clickAwayCompositeView()) &&
+        (await useNodeConfigurationStore().autoApplySettings());
       if (!canContinue) {
         return { wasAborted: true };
       }

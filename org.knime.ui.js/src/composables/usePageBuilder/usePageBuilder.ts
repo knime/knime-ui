@@ -1,6 +1,7 @@
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { isBrowser, isDesktop } from "@/environment";
 
+import { promptConfirmationAndApply } from "./pageBuilderPromptApply";
 import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
 
 export type PageBuilderControl = {
@@ -35,6 +36,21 @@ let PageBuilder: {
   ) => Promise<PageBuilderControl>;
 } | null = null;
 
+let activePageBuilder: PageBuilderControl | null = null;
+
+export const clickAwayCompositeView = async (): Promise<boolean> => {
+  if (activePageBuilder === null) {
+    return true;
+  }
+
+  const isDirty = await activePageBuilder.isDirty();
+  if (!isDirty) {
+    return true;
+  }
+
+  return promptConfirmationAndApply(activePageBuilder);
+};
+
 /**
  * Load and initialize the PageBuilder and return a function to mount a shadow app on a given shadowRoot.
  * @param projectId The project ID. when using KNIME in browser the resolution of the PageBuilder module will be done using this project ID. This is not needed when using KNIME in desktop.
@@ -61,21 +77,30 @@ export const usePageBuilder = async (
     );
   }
 
-  return (
-    PageBuilder?.createPageBuilderApp(
-      {
-        ...pageBuilderApiVuexStoreConfig,
-        state: {
-          ...pageBuilderApiVuexStoreConfig.state,
-          disallowWebNodes: isBrowser(),
-          disableWidgetsWhileExecuting: true,
-        },
-        actions: {
-          ...pageBuilderApiVuexStoreConfig.actions,
-          onChange: (_, { isDirty }) => onChange(isDirty),
-        },
+  const createdPageBuilder = await (PageBuilder?.createPageBuilderApp(
+    {
+      ...pageBuilderApiVuexStoreConfig,
+      state: {
+        ...pageBuilderApiVuexStoreConfig.state,
+        disallowWebNodes: isBrowser(),
+        disableWidgetsWhileExecuting: true,
       },
-      resourceLocationResolver(projectId, "", pageBuilderBaseUrl),
-    ) ?? fallbackCreatePageBuilder
-  );
+      actions: {
+        ...pageBuilderApiVuexStoreConfig.actions,
+        onChange: (_, { isDirty }) => onChange(isDirty),
+      },
+    },
+    resourceLocationResolver(projectId, "", pageBuilderBaseUrl),
+  ) ?? fallbackCreatePageBuilder);
+
+  const pageBuilderUnmount = createdPageBuilder.unmountShadowApp;
+  activePageBuilder = {
+    ...createdPageBuilder,
+    unmountShadowApp() {
+      activePageBuilder = null;
+      pageBuilderUnmount();
+    },
+  };
+
+  return activePageBuilder;
 };
