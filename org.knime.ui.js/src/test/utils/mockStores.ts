@@ -25,6 +25,7 @@ import { useSettingsStore } from "@/store/settings";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
+import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
@@ -68,6 +69,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const spaceOperationsStore = useSpaceOperationsStore(testingPinia);
   const spacesStore = useSpacesStore(testingPinia);
   const spaceUploadsStore = useSpaceUploadsStore(testingPinia);
+  const spaceDownloadsStore = useSpaceDownloadsStore(testingPinia);
 
   const uiControlsStore = useUIControlsStore(testingPinia);
   const annotationInteractionsStore =
@@ -127,6 +129,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     spaceOperationsStore,
     spacesStore,
     spaceUploadsStore,
+    spaceDownloadsStore,
     uiControlsStore,
     annotationInteractionsStore,
     clipboardInteractionsStore,

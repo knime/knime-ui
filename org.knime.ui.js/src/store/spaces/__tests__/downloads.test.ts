@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick, ref } from "vue";
-import { createTestingPinia } from "@pinia/testing";
 
 import type { DownloadItem } from "@knime/components";
 import { rfcErrors } from "@knime/hub-features";
 
 import { getToastsProvider } from "@/plugins/toasts";
-import { useSpaceDownloadsStore } from "../downloads";
+import { mockStores } from "@/test/utils/mockStores";
 
 const { useDownloadArtifactMock, useAutoCloseOnCompletionMock } = vi.hoisted(
   () => ({
@@ -47,13 +46,7 @@ describe("downloads", () => {
     downloadItems = [],
   }: {
     downloadItems?: DownloadItem[];
-    enableAsyncDownload?: boolean;
   } = {}) => {
-    const testingPinia = createTestingPinia({
-      createSpy: vi.fn,
-      stubActions: false,
-    });
-
     const downloadArtifactMock = {
       start: vi.fn(),
       openDownload: vi.fn(),
@@ -64,7 +57,7 @@ describe("downloads", () => {
     };
     useDownloadArtifactMock.mockReturnValue(downloadArtifactMock);
 
-    const spaceDownloadsStore = useSpaceDownloadsStore(testingPinia);
+    const { spaceDownloadsStore } = mockStores();
 
     return {
       spaceDownloadsStore,

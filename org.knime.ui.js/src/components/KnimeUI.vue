@@ -301,7 +301,7 @@ const onCloseError = () => {
     <Transition name="slide-to-bottom">
       <div
         v-if="showUploadPanel || showDownloadPanel"
-        class="floating-uploads-panel"
+        class="floating-file-transfer-panel"
       >
         <DownloadProgressPanel
           v-if="showDownloadPanel"
@@ -375,7 +375,7 @@ const onCloseError = () => {
   z-index: calc(v-bind("$zIndices.layerToasts"));
 }
 
-.floating-uploads-panel {
+.floating-file-transfer-panel {
   z-index: v-bind("$zIndices.layerFloatingWindows");
   position: fixed;
   bottom: var(--space-16);
