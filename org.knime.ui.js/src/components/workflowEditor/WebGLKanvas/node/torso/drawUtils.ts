@@ -2,63 +2,68 @@
 import type { GraphicsInst } from "@/vue3-pixi";
 
 const drawDefault = (graphics: GraphicsInst) => {
-  graphics.moveTo(0, 29.2);
-  graphics.lineTo(0, 2.8);
-  graphics.quadraticCurveTo(0, 0, 2.8, 0);
-  graphics.lineTo(29.2, 0);
-  graphics.quadraticCurveTo(32, 0, 32, 2.8);
-  graphics.lineTo(32, 29.2);
-  graphics.quadraticCurveTo(32, 32, 29.2, 32);
-  graphics.lineTo(2.8, 32);
-  graphics.quadraticCurveTo(0, 32, 0, 29.2);
+  graphics
+    .moveTo(0, 29.2)
+    .lineTo(0, 2.8)
+    .bezierCurveTo(0, 1.3, 1.3, 0, 2.8, 0)
+    .lineTo(29.1, 0)
+    .bezierCurveTo(30.7, 0, 32, 1.3, 32, 2.8)
+    .lineTo(32, 29.1)
+    .bezierCurveTo(32, 30.7, 30.7, 32, 29.1, 32)
+    .lineTo(2.8, 32)
+    .bezierCurveTo(1.3, 32, 0, 30.7, 0, 29.2);
 };
 
 const drawLoopEnd = (graphics: GraphicsInst) => {
-  graphics.moveTo(32, 2.8);
-  graphics.lineTo(32, 29.2);
-  graphics.quadraticCurveTo(32, 32, 29.2, 32);
-  graphics.lineTo(4, 32);
-  graphics.lineTo(0, 16.1);
-  graphics.lineTo(4, 0);
-  graphics.lineTo(29.2, 0);
-  graphics.quadraticCurveTo(32, 0, 32, 2.8);
+  graphics
+    .moveTo(32, 2.8)
+    .lineTo(32, 29.1)
+    .bezierCurveTo(32, 30.7, 30.7, 32, 29.2, 32)
+    .lineTo(4, 32)
+    .lineTo(0, 16.1)
+    .lineTo(4, 0)
+    .lineTo(29.2, 0)
+    .bezierCurveTo(30.7, 0, 32, 1.3, 32, 2.8);
 };
 
 const drawLoopStart = (graphics: GraphicsInst) => {
-  graphics.moveTo(0, 29.2);
-  graphics.lineTo(0, 2.8);
-  graphics.quadraticCurveTo(0, 0, 2.8, 0);
-  graphics.lineTo(32, 0);
-  graphics.lineTo(28, 15.9);
-  graphics.lineTo(32, 32);
-  graphics.lineTo(2.8, 32);
-  graphics.quadraticCurveTo(0, 32, 0, 29.2);
+  graphics
+    .moveTo(0, 29.2)
+    .lineTo(0, 2.8)
+    .bezierCurveTo(0, 1.3, 1.3, 0, 2.8, 0)
+    .lineTo(32, 0)
+    .lineTo(28, 15.9)
+    .lineTo(32, 32)
+    .lineTo(2.8, 32)
+    .bezierCurveTo(1.3, 32, 0, 30.7, 0, 29.2);
 };
 
 const drawVirtualIn = (graphics: GraphicsInst) => {
-  graphics.moveTo(32, 2.8);
-  graphics.lineTo(32, 29.2);
-  graphics.quadraticCurveTo(32, 32, 29.2, 32);
-  graphics.lineTo(6.5, 32);
-  graphics.lineTo(0, 25.9);
-  graphics.lineTo(5.2, 15.9);
-  graphics.lineTo(0.7, 7.2);
-  graphics.lineTo(6.5, 0);
-  graphics.lineTo(29.2, 0);
-  graphics.quadraticCurveTo(32, 0, 32, 2.8);
+  graphics
+    .moveTo(32, 2.8)
+    .lineTo(32, 29.1)
+    .bezierCurveTo(32, 30.7, 30.7, 32, 29.2, 32)
+    .lineTo(6.5, 32)
+    .lineTo(0, 25.9)
+    .lineTo(5.2, 15.9)
+    .lineTo(0.7, 7.2)
+    .lineTo(6.5, 0)
+    .lineTo(29.2, 0)
+    .bezierCurveTo(30.7, 0, 32, 1.3, 32, 2.8);
 };
 
 const drawVirtualOut = (graphics: GraphicsInst) => {
-  graphics.moveTo(0, 29.2);
-  graphics.lineTo(0, 2.8);
-  graphics.quadraticCurveTo(0, 0, 2.8, 0);
-  graphics.lineTo(32, 0);
-  graphics.lineTo(26.2, 7.2);
-  graphics.lineTo(30.7, 15.9);
-  graphics.lineTo(25.5, 25.9);
-  graphics.lineTo(32, 32);
-  graphics.lineTo(2.8, 32);
-  graphics.quadraticCurveTo(0, 32, 0, 29.2);
+  graphics
+    .moveTo(0, 29.2)
+    .lineTo(0, 2.8)
+    .bezierCurveTo(0, 1.3, 1.3, 0, 2.8, 0)
+    .lineTo(32, 0)
+    .lineTo(26.2, 7.2)
+    .lineTo(30.7, 15.9)
+    .lineTo(25.5, 25.9)
+    .lineTo(32, 32)
+    .lineTo(2.8, 32)
+    .bezierCurveTo(1.3, 32, 0, 30.7, 0, 29.2);
 };
 
 export const torsoDrawUtils = {
