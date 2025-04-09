@@ -58,6 +58,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.js.cef.CEFUtils;
@@ -106,6 +107,8 @@ public class KnimeBrowserView {
     private static KnimeBrowserHealthChecker healthChecker;
 
     static boolean isInitialized;
+
+    private static Shell devToolsShell;
 
     /**
      * Activates the view initializer that will be executed as soon as this view becomes finally visible (again). Once
@@ -180,15 +183,20 @@ public class KnimeBrowserView {
     }
 
     private static void cancelAndOpenInBrowser(final WindowEvent windowEvent) {
+        cancelNavigation(windowEvent);
         if (windowEvent.data instanceof String location) {
             if (isDevToolsPage(location)) {
-                // allow dev tools to be opened in a separate Equo Chromium window
+                // open dev tools in a separate application window
+                if (devToolsShell == null) {
+                    devToolsShell = CEFUtils.openAndGetBrowserWindow(location);
+                    devToolsShell.addDisposeListener(e -> KnimeBrowserView.devToolsShell = null);
+                } else {
+                    devToolsShell.setFocus();
+                }
                 return;
             }
-            cancelNavigation(windowEvent);
             openBrowserWindow(location);
         } else {
-            cancelNavigation(windowEvent);
             LOGGER.warnWithFormat("Event payload %s is not a valid navigation target -- must be a string",
                 windowEvent.data);
         }
