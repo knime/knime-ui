@@ -87,7 +87,6 @@ import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
@@ -261,7 +260,7 @@ final class Init {
     }
 
     private static PreferencesProvider createPreferencesProvider() {
-        return new PreferencesProvider() {   // NOSONAR
+        return new PreferencesProvider() { // NOSONAR
 
             @Override
             public Predicate<String> activeNodeCollection() {
@@ -383,8 +382,7 @@ final class Init {
                 return;
             }
 
-            spaceProvider.getConnection(false) //
-                .ifPresent(connection -> addAuthorizationToRequestHeaderWithoutException(mutableRequest, connection));
+            authorizeSpaceProviderRequest(mutableRequest, spaceProvider);
         };
 
         var middleware = CEFPlugin.getMiddlewareService();
@@ -393,13 +391,18 @@ final class Init {
             .ifPresent(uri -> middleware.addRequestFilter(uri.getScheme(), uri.getHost(), requestFilter));
     }
 
-    private static void addAuthorizationToRequestHeaderWithoutException(final MutableRequest mutableRequest,
-        final SpaceProviderConnection connection) {
-        try {
-            mutableRequest.getHeaderMap().put("Authorization", connection.getAuthorization());
-        } catch (CouldNotAuthorizeException e) {
-            NodeLogger.getLogger(Init.class).error("Could not authorize request.", e);
-        }
+    private static void authorizeSpaceProviderRequest(final MutableRequest mutableRequest,
+        final SpaceProvider spaceProvider) {
+
+        spaceProvider.getConnection(false) //
+            .ifPresent(connection -> {
+                try {
+                    mutableRequest.getHeaderMap().put("Authorization", connection.getAuthorization());
+                    mutableRequest.getHeaderMap().replace("Origin", spaceProvider.getServerAddress().orElseThrow());
+                } catch (CouldNotAuthorizeException e) {
+                    NodeLogger.getLogger(Init.class).error("Could not authorize request.", e);
+                }
+            });
     }
 
     /**
