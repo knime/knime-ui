@@ -99,7 +99,7 @@ describe("spaces::providers", () => {
 
     it("should handle errors when loading provider data", async () => {
       mockedAPI.space.getSpaceGroups.mockImplementation(
-        // @ts-ignore
+        // @ts-expect-error
         ({ spaceProviderId }) => {
           if (spaceProviderId === "hub2") {
             return Promise.reject(new Error("Failed to load spaces"));

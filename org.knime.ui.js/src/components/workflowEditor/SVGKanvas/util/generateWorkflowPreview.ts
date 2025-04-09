@@ -157,10 +157,8 @@ const useCSSfromComputedStyles =
 
     if (compStyles.length > 0) {
       inheritedCssProperties.forEach((property) => {
-        // @ts-ignore
         const value = styleOverrides[camelCase(property)]
-          ? // @ts-ignore
-            styleOverrides[camelCase(property)]
+          ? styleOverrides[camelCase(property)]
           : compStyles.getPropertyValue(property);
 
         element.style.setProperty(property, value);
@@ -263,7 +261,7 @@ export const generateWorkflowPreview = (
   // Select connectors and inline all styles that may be only available from classes.
   // Additionally, override strokeWidth in case any connector is highlighted
   svgClone.querySelectorAll("[data-connector-id]").forEach(
-    // @ts-ignore
+    // @ts-expect-error (please add error description)
     useCSSfromComputedStyles({
       strokeWidth: "1px",
     }),
@@ -276,7 +274,7 @@ export const generateWorkflowPreview = (
 
   // select `foreignObject`s and inline all styles that may be only available from classes
   svgClone.querySelectorAll(".annotation-editor").forEach(
-    // @ts-ignore
+    // @ts-expect-error (please add error description)
     useCSSfromComputedStyles({
       overflowX: "hidden",
       overflowY: "hidden",

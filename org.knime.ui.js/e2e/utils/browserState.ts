@@ -1,11 +1,9 @@
-/* eslint-disable no-process-env */
-
 const getBrowserState = ({ perfMode = true, webGL = true } = {}) => {
   return {
     cookies: [],
     origins: [
       {
-        origin: process.env.PLAYWRIGHT_WEBSERVER_URL!,
+        origin: process.env.PLAYWRIGHT_WEBSERVER_URL!, // eslint-disable-line n/no-process-env
         localStorage: [
           { name: "onboarding.hints.user", value: '{"skipAll":true}' },
           { name: "CANVAS_PERF_MODE", value: perfMode ? "true" : "false" },

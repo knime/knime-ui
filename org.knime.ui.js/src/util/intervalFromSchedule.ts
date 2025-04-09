@@ -91,7 +91,7 @@ export const getIntervalFromSchedule = (schedule: any) => {
       frequency += " with exceptions";
     }
     interval = frequency;
-  } catch (e) {
+  } catch (_e) {
     // do nothing
   }
   return interval;

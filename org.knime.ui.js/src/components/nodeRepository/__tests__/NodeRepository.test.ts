@@ -135,7 +135,7 @@ describe("NodeRepository", () => {
     });
 
     it("resets description node on close of description panel", async () => {
-      // @ts-ignore
+      // @ts-expect-error
       window.setTimeout = vi.fn().mockImplementation((fn) => {
         fn();
         return 0;

@@ -159,12 +159,9 @@ const toolbarButtons = computed(() => {
     openLayoutEditor: $shortcuts.isEnabled("openLayoutEditor"),
   };
 
-  return (
-    Object.entries(visibleItems)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([_, visible]) => visible)
-      .map(([name]) => name)
-  );
+  return Object.entries(visibleItems)
+    .filter(([_, visible]) => visible)
+    .map(([name]) => name);
 });
 
 const onCanvasModeUpdate = (

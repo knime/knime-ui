@@ -1,4 +1,3 @@
-/* eslint-disable handle-callback-err */
 import type { ToastServiceProvider } from "@knime/components";
 
 import { defaultErrorPresetHandler } from "./defaultErrorPresetHandler";

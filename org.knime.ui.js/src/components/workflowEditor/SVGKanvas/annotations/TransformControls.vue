@@ -41,7 +41,6 @@ export default defineComponent({
   },
 
   emits: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transformEnd: (_payload: { bounds: Bounds }) => true,
   },
 

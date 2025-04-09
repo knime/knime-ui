@@ -109,12 +109,8 @@ const searchResults = computed(() =>
 
 const sidePortGroups = computed(() => {
   if (props.portGroups) {
-    return (
-      Object.entries(props.portGroups)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .filter(([_, group]) =>
-          props.side === "input" ? group.canAddInPort : group.canAddOutPort,
-        )
+    return Object.entries(props.portGroups).filter(([_, group]) =>
+      props.side === "input" ? group.canAddInPort : group.canAddOutPort,
     );
   }
 

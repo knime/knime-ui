@@ -36,7 +36,7 @@ vi.mock("@knime/utils", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     navigatorUtils: {
       isMac: vi.fn(() => false),
@@ -88,35 +88,35 @@ describe("Kanvas", () => {
 
     const mockedStores = mockStores();
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasModesStore.hasPanModeEnabled = false;
     mockedStores.settingsStore.settings.uiScale = 1.0;
 
     mockedStores.canvasStore.interactionsEnabled = true;
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.viewBox = { string: "viewbox-string" };
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.contentBounds = { left: 0, top: 0 };
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.contentPadding = { left: 10, top: 10 };
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.canvasSize = { width: 30, height: 300 };
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenFromCanvasCoordinates = vi.fn(() => ({
       x: 1000,
       y: 1000,
     }));
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates = vi.fn(() => [
       1000, 1000,
     ]);
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.getCenterOfScrollContainer = vi.fn(() => ({
       x: 10,
       y: 10,
     }));
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.workflowStore.isWorkflowEmpty = isWorkflowEmptyMock;
 
     const wrapper = shallowMount(Kanvas, {
@@ -195,7 +195,7 @@ describe("Kanvas", () => {
       mockedStores.canvasStore.contentBoundsChanged,
     ).not.toHaveBeenCalled();
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.contentBounds = { left: 10, top: 10 };
 
     await nextTick();
@@ -218,7 +218,7 @@ describe("Kanvas", () => {
       );
     });
 
-    it("should emit select-pointermove when moving on the canvas ", () => {
+    it("should emit select-pointermove when moving on the canvas", () => {
       const { wrapper } = doShallowMount();
 
       wrapper.find("svg").trigger("pointermove");
@@ -229,7 +229,7 @@ describe("Kanvas", () => {
       );
     });
 
-    it("should emit select-pointerup when releasing click on the canvas ", () => {
+    it("should emit select-pointerup when releasing click on the canvas", () => {
       const { wrapper } = doShallowMount();
 
       wrapper.find("svg").trigger("pointerup");
@@ -1076,7 +1076,7 @@ describe("Kanvas", () => {
       it("should not move objects if workflow is not writable", async () => {
         const { mockedStores, node1, wrapper } = mountWithWorkflow();
 
-        // @ts-ignore
+        // @ts-expect-error
         mockedStores.workflowStore.isWritable = false;
         await nextTick();
 

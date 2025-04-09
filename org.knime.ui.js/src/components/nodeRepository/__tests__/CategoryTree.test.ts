@@ -104,9 +104,9 @@ describe("CategoryTree", () => {
         path: ["child1"],
       },
       nodes: [
-        // @ts-ignore
+        // @ts-expect-error
         { id: "c11", name: "a node" },
-        // @ts-ignore
+        // @ts-expect-error
         { id: "c21", name: "another node" },
       ],
     });
@@ -116,7 +116,7 @@ describe("CategoryTree", () => {
         displayName: "child 2",
         path: ["child2"],
       },
-      // @ts-ignore
+      // @ts-expect-error
       nodes: [{ id: "c21", name: "visible node" }],
     });
 

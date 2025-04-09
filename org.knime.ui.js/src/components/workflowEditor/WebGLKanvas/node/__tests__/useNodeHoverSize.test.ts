@@ -29,7 +29,7 @@ describe("useNodeHoverSize", () => {
       composable: useNodeHoverSize,
       composableProps: {
         isHovering,
-        // @ts-ignore
+        // @ts-expect-error
         allowedActions,
         portPositions: computed(() => portPositions),
         nodeTopOffset: ref(0),

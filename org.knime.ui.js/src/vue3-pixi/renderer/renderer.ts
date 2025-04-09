@@ -18,7 +18,7 @@ export function createRenderer(options: { prefix?: string } = {}) {
   const { createElement, setText, ...nodeOps } = _nodeOps;
   const { prefix = "pixi" } = options;
   const rendererOptions = rendererWithCapture({
-    // @ts-expect-error
+    // @ts-expect-error (please add error description)
     createElement: (...args) => createElement(prefix, ...args),
     setElementText: (...args) => setText(prefix, ...args),
     setText: (...args) => setText(prefix, ...args),

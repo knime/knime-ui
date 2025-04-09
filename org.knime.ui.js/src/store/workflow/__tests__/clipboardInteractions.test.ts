@@ -167,7 +167,7 @@ describe("workflow::clipboardInteractions", () => {
 
     const clipboardMock = createClipboardMock();
     navigator.clipboard.writeText
-      // @ts-ignore
+      // @ts-expect-error
       .mockImplementationOnce((text) => {
         clipboardMock.setContent(JSON.parse(text));
       })
@@ -270,7 +270,7 @@ describe("workflow::clipboardInteractions", () => {
         canvasStore,
       } = mockStores();
 
-      // @ts-ignore - mock pinia getter
+      // @ts-expect-error mock pinia getter
       canvasStore.getVisibleFrame = {
         left: -500,
         top: -500,
@@ -312,7 +312,7 @@ describe("workflow::clipboardInteractions", () => {
 
       // mock previous copy paste state
       clipboardInteractionsStore.setCopyPaste({
-        // @ts-ignore
+        // @ts-expect-error
         dummy: null,
       });
 

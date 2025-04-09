@@ -1,4 +1,4 @@
-const hasAllObjectPropertiesDefined = <T extends Object>(
+const hasAllObjectPropertiesDefined = <T extends object>(
   object: T,
 ): object is Required<T> => {
   // eslint-disable-next-line no-undefined

@@ -23,7 +23,7 @@ describe("AnnotationRectangle", () => {
     const props = {};
 
     const mockedStores = mockStores();
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates = vi
       .fn()
       .mockImplementation(([x, y]) => [x, y]);

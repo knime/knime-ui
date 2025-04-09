@@ -30,7 +30,7 @@ vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useToasts: vi.fn(),
   };

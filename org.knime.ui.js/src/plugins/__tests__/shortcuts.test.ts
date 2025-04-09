@@ -36,10 +36,10 @@ describe("Shortcuts Plugin", () => {
     mockUserAgent(userAgent);
     const { default: shortcutPlugin } = await import("@/plugins/shortcuts");
 
-    // @ts-ignore
+    // @ts-expect-error
     shortcutPlugin({ app: mockApp, $router: mockRouter });
 
-    // @ts-ignore
+    // @ts-expect-error
     const $shortcuts = mockApp.config.globalProperties.$shortcuts;
 
     return { $shortcuts, mockRouter };

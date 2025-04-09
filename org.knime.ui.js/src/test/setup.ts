@@ -1,4 +1,3 @@
-/* eslint-disable no-undefined */
 import { vi } from "vitest";
 import { config } from "@vue/test-utils";
 
@@ -35,7 +34,7 @@ vi.mock("lodash-es", async (importActual) => {
   const actual = await importActual();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     ...lodashMockFactory(),
   };
@@ -45,7 +44,7 @@ vi.mock("@knime/components", async (importActual) => {
   const actual = await importActual();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     setupHints: vi.fn(),
     useHint: () => ({ createHint: vi.fn(), isCompleted: vi.fn(() => true) }),

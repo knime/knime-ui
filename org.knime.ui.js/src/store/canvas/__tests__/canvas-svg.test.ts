@@ -117,7 +117,7 @@ describe("SVG canvas store", () => {
   describe("scroll container element", () => {
     it("sets initial container size", () => {
       const { canvasStore, scrollContainer } = createStore();
-      // @ts-ignore
+      // @ts-expect-error
       canvasStore.initScrollContainerElement(scrollContainer);
       expect(canvasStore.containerSize).toStrictEqual({
         width: 300,
@@ -146,7 +146,7 @@ describe("SVG canvas store", () => {
       it("content padding", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.setFactor(2);
 
@@ -167,7 +167,7 @@ describe("SVG canvas store", () => {
         };
         const { canvasStore, scrollContainer } = createStore(workflowBounds);
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         // workflow size + padding + container sized padding
         const size = 400 + 2 * padding + 300 * 2;
@@ -187,7 +187,7 @@ describe("SVG canvas store", () => {
         };
         const { canvasStore, scrollContainer } = createStore(workflowBounds);
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.setFactor(0.01);
 
@@ -200,7 +200,7 @@ describe("SVG canvas store", () => {
       it("view box", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.setFactor(2);
         // content bounds including padding + padding based on container
@@ -228,9 +228,9 @@ describe("SVG canvas store", () => {
 
         scrollContainer.scrollLeft = 200;
         scrollContainer.scrollTop = 200;
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.scrollHeight = 1000;
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.scrollWidth = 1000;
 
         canvasStore.initScrollContainerElement(scrollContainer);
@@ -248,9 +248,9 @@ describe("SVG canvas store", () => {
       it("restores saved scroll state", async () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.scrollHeight = 1000;
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.scrollWidth = 1000;
 
         canvasStore.initScrollContainerElement(scrollContainer);
@@ -277,7 +277,7 @@ describe("SVG canvas store", () => {
       it("defaults to `fillScreen` if canvas state is not valid when restoring", async () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         await canvasStore.restoreScrollState({});
 
@@ -288,7 +288,7 @@ describe("SVG canvas store", () => {
     it("content bounds change", () => {
       const { canvasStore, scrollContainer } = createStore();
 
-      // @ts-ignore
+      // @ts-expect-error
       canvasStore.initScrollContainerElement(scrollContainer);
       const oldBounds = { ...workflowBounds };
       const newBounds = { ...oldBounds };
@@ -319,9 +319,9 @@ describe("SVG canvas store", () => {
 
         // container size is 300 => workflow padding is 300 (screen units) on each side
         // set container size to 200
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.clientWidth = 200;
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.clientHeight = 200;
 
         await canvasStore.updateContainerSize();
@@ -341,7 +341,7 @@ describe("SVG canvas store", () => {
       it("(0, 0) to upper left corner", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.scroll({
           canvasX: 0,
@@ -359,7 +359,7 @@ describe("SVG canvas store", () => {
       it("(0, 0) to center", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.scroll({
           canvasX: 0,
@@ -377,7 +377,7 @@ describe("SVG canvas store", () => {
       it("center to center", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.scroll({
           canvasX: "center",
@@ -402,7 +402,7 @@ describe("SVG canvas store", () => {
           bottom: 60,
         });
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         const fitToZoom = canvasStore.fitToScreenZoomFactor;
 
@@ -423,7 +423,7 @@ describe("SVG canvas store", () => {
           bottom: 60,
         });
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.fitToScreen();
 
@@ -444,7 +444,7 @@ describe("SVG canvas store", () => {
           bottom: 60,
         });
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.fillScreen();
 
@@ -466,7 +466,7 @@ describe("SVG canvas store", () => {
           bottom: 500,
         });
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
 
         canvasStore.fillScreen();
@@ -490,7 +490,7 @@ describe("SVG canvas store", () => {
           bottom: 200,
         });
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
 
         canvasStore.fillScreen();
@@ -514,7 +514,7 @@ describe("SVG canvas store", () => {
           bottom: 500,
         });
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
 
         canvasStore.fillScreen();
@@ -528,7 +528,7 @@ describe("SVG canvas store", () => {
       it("zoom around center by delta", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         // pass both delta and factor for this test
         canvasStore.zoomCentered({ delta: 1 });
@@ -544,7 +544,7 @@ describe("SVG canvas store", () => {
       it("zoom around center to factor", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         // pass both delta and factor for this test
         canvasStore.zoomCentered({ factor: 2 });
@@ -560,7 +560,7 @@ describe("SVG canvas store", () => {
       it("zoom by delta", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         expect(canvasStore.zoomFactor).toBe(1);
 
@@ -571,7 +571,7 @@ describe("SVG canvas store", () => {
       it("zoom to factor", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         expect(canvasStore.zoomFactor).toBe(1);
 
@@ -582,10 +582,10 @@ describe("SVG canvas store", () => {
       it("throws for incorrect arguments", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         expect(() => {
-          // @ts-ignore
+          // @ts-expect-error
           canvasStore.zoomAroundPointer();
         }).toThrow();
       });
@@ -596,7 +596,7 @@ describe("SVG canvas store", () => {
       ])("scrolls into workflow at point %s", (targetPoint) => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         // find target point on screen
         const { x: cursorX, y: cursorY } =
@@ -636,7 +636,7 @@ describe("SVG canvas store", () => {
       it("respects max and min zoom", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         const tooManyZoomSteps = 10000;
         expect(canvasStore.zoomFactor).toBe(1);
@@ -659,7 +659,7 @@ describe("SVG canvas store", () => {
       it("exponential zoom", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         canvasStore.initScrollContainerElement(scrollContainer);
         expect(canvasStore.zoomFactor).toBe(1);
 
@@ -686,9 +686,9 @@ describe("SVG canvas store", () => {
       it("screenFromCanvasCoordinates", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.offsetLeft = 10;
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.offsetTop = 10;
         scrollContainer.scrollLeft = 30;
         scrollContainer.scrollTop = 30;
@@ -703,9 +703,9 @@ describe("SVG canvas store", () => {
       it("screenToCanvasCoordinates", () => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.offsetLeft = 10;
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.offsetTop = 10;
         scrollContainer.scrollLeft = 30;
         scrollContainer.scrollTop = 30;
@@ -721,9 +721,9 @@ describe("SVG canvas store", () => {
     it("visible frame", () => {
       const { canvasStore, scrollContainer } = createStore();
 
-      // @ts-ignore
+      // @ts-expect-error
       scrollContainer.offsetLeft = 10;
-      // @ts-ignore
+      // @ts-expect-error
       scrollContainer.offsetTop = 10;
 
       canvasStore.initScrollContainerElement(scrollContainer);
@@ -749,9 +749,9 @@ describe("SVG canvas store", () => {
       (anchor, x, y) => {
         const { canvasStore, scrollContainer } = createStore();
 
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.offsetLeft = 10;
-        // @ts-ignore
+        // @ts-expect-error
         scrollContainer.offsetTop = 10;
 
         canvasStore.initScrollContainerElement(scrollContainer);

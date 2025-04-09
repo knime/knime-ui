@@ -22,10 +22,6 @@ export default {
   components: {
     TabBar,
   },
-  model: {
-    prop: "modelValue",
-    event: "update:modelValue",
-  },
   props: {
     /**
      * Node as given in a workflow store

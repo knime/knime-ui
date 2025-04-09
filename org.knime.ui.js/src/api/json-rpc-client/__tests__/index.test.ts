@@ -49,10 +49,10 @@ describe("rpc client initialization", () => {
     it("should check for the EquoComm service", async () => {
       const { initJSONRPCClient } = await import("../index");
 
-      // @ts-ignore: We need 'undefined' to be allowed here
+      // @ts-expect-error We need 'undefined' to be allowed here
       window.EquoCommService = undefined;
 
-      expect(() => {
+      await expect(() => {
         return initJSONRPCClient("DESKTOP", {
           url: "",
           restApiBaseUrl: "",
@@ -103,7 +103,7 @@ describe("rpc client initialization", () => {
   describe("browser", () => {
     it("should check for connection info", async () => {
       const { initJSONRPCClient } = await import("../index");
-      expect(() => {
+      await expect(() => {
         return initJSONRPCClient("BROWSER", null);
       }).rejects.toThrow("Missing connection info");
     });

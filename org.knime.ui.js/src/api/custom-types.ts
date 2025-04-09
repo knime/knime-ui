@@ -60,7 +60,6 @@ export interface SpaceUser {
 // This is re-exported due to the mixture of desktop and gateway functionality.
 // So that we have the types in the same location
 export namespace SpaceProviderNS {
-  // eslint-disable-next-line unused-imports/no-unused-vars
   export import TypeEnum = _SpaceProviderNS.TypeEnum;
 
   export interface Space extends Omit<_Space, "_private"> {
@@ -71,7 +70,6 @@ export namespace SpaceProviderNS {
     spaces: Array<Space>;
   }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
   export import UserTypeEnum = _SpaceGroupNS.TypeEnum;
 
   export interface SpaceProvider

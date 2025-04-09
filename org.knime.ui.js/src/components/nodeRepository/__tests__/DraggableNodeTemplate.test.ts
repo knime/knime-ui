@@ -112,7 +112,7 @@ describe("DraggableNodeTemplate", () => {
 
   describe("double click", () => {
     beforeEach(() => {
-      // @ts-ignore
+      // @ts-expect-error
       Document.prototype.getElementById = vi.fn(() => ({
         clientWidth: 1920,
         clientHeight: 1080,

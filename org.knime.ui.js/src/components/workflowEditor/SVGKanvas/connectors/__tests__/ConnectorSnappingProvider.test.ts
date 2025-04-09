@@ -308,7 +308,7 @@ describe("ConnectorSnappingProvider.vue", () => {
       it.each([
         ["input", "in", 0],
         ["output", "out", 30],
-      ])("snaps to %s placeholder port ", async (_, direction, x) => {
+      ])("snaps to %s placeholder port", async (_, direction, x) => {
         const { wrapper, getSlottedStubProp, getSlottedChildComponent } =
           doMount({ portGroups });
 
@@ -369,7 +369,7 @@ describe("ConnectorSnappingProvider.vue", () => {
           },
         ],
       ])(
-        "adds %s port on drop on a placeholder port ",
+        "adds %s port on drop on a placeholder port",
         async (side, direction, x, connect) => {
           const { wrapper, getSlottedChildComponent } = doMount({ portGroups });
 

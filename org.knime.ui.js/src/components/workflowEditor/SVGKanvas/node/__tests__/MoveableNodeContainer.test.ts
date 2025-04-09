@@ -15,7 +15,7 @@ const mockedAPI = deepMocked(API);
 
 vi.mock("@/composables/useEscapeStack", () => {
   function useEscapeStack({ onEscape }) {
-    // @ts-ignore
+    // @ts-expect-error
     useEscapeStack.onEscape = onEscape;
     return {
       /* empty */
@@ -37,7 +37,7 @@ describe("MoveableNodeContainer", () => {
     };
 
     const mockedStores = mockStores();
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates =
       screenToCanvasCoordinates;
 
@@ -78,11 +78,11 @@ describe("MoveableNodeContainer", () => {
 
   const moveNodeTo = ({ clientX, clientY, altKey = false }) => {
     const ptrEvent = new PointerEvent("pointermove");
-    // @ts-ignore
+    // @ts-expect-error
     ptrEvent.altKey = altKey;
-    // @ts-ignore
+    // @ts-expect-error
     ptrEvent.clientX = clientX;
-    // @ts-ignore
+    // @ts-expect-error
     ptrEvent.clientY = clientY;
     // fire twice because first move is being ignored due to a Windows (touchpad) issue
     document.dispatchEvent(ptrEvent);
@@ -246,7 +246,7 @@ describe("MoveableNodeContainer", () => {
       const { mockTarget } = await doMountWithHitTarget();
       const otherTarget = document.createElement("div");
       otherTarget.dispatchEvent = vi.fn();
-      // @ts-ignore
+      // @ts-expect-error
       window.document.elementFromPoint.mockReturnValue(otherTarget);
 
       moveNodeTo({ clientX: 260, clientY: 260 });

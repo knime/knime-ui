@@ -37,7 +37,7 @@ describe("WorkflowInfoBar.vue", () => {
 
     mockedStores.workflowStore.setActiveWorkflow(workflow ?? createWorkflow());
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.applicationStore.activeProjectOrigin = origin || null;
 
     const wrapper = mount(WorkflowInfoBar, {

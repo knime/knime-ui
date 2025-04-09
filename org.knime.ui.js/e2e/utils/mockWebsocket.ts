@@ -1,4 +1,3 @@
-/* eslint-disable no-process-env */
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -10,7 +9,7 @@ export const mockWebsocket = async (
   workflowJsonFile: string = "getWorkflow.json",
 ) => {
   const websocketUrl =
-    process.env.VITE_BROWSER_DEV_WS_URL ?? "ws://localhost:7000";
+    process.env.VITE_BROWSER_DEV_WS_URL ?? "ws://localhost:7000"; // eslint-disable-line n/no-process-env
   await page.routeWebSocket(websocketUrl, (ws: any) => {
     ws.onMessage((message: string) => {
       const messageObject = JSON.parse(message);

@@ -28,7 +28,7 @@ vi.mock("@/plugins/event-bus");
 
 vi.mock("@/composables/useEscapeStack", () => {
   function useEscapeStack({ onEscape }) {
-    // @ts-ignore
+    // @ts-expect-error
     useEscapeStack.onEscape = onEscape;
     return {
       /* empty mixin */

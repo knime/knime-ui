@@ -48,7 +48,7 @@ describe("NodeConfig", () => {
       }),
     );
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.selectionStore.singleSelectedNode = singleSelectedNodeMock;
     mockedStores.settingsStore.settings.nodeDialogSize = 100;
     mockedStores.applicationStore.activeProjectId = "project";
@@ -173,7 +173,7 @@ describe("NodeConfig", () => {
       mockedStores.nodeConfigurationStore.setActiveNodeId("root:1");
       await nextTick();
 
-      // @ts-ignore
+      // @ts-expect-error
       mockedStores.nodeConfigurationStore.setActiveExtensionConfig({
         canBeEnlarged: true,
       });

@@ -1,4 +1,3 @@
-/* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";
 import { type Router } from "vue-router";
@@ -473,7 +472,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
           if (!isProjectLoadedInAppState) {
             throw projectActivationError;
           }
-        } catch (error) {
+        } catch (_error) {
           throw projectActivationError;
         }
       }

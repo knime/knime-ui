@@ -1,5 +1,5 @@
 import { type Ref, onBeforeUnmount, watch } from "vue";
-import { onClickOutside } from "@vueuse/core";
+import { type MaybeElementRef, onClickOutside } from "@vueuse/core";
 
 import type { ComponentMetadata } from "@/api/custom-types";
 import type { ProjectMetadata } from "@/api/gateway-api/generated-api";
@@ -21,7 +21,7 @@ type UseSaveMetadataOptions<T> = {
   /**
    * Element that renders the metadata. Used to track "click-away" behavior
    */
-  metadataWrapperElement: Ref<HTMLElement>;
+  metadataWrapperElement: MaybeElementRef;
   /**
    * Callback to perfom the actual data save
    */

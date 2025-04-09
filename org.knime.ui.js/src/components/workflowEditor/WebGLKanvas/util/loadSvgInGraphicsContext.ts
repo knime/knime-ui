@@ -32,7 +32,7 @@ const loadSvgInGraphicsContext = (icon: string, size = 20) => {
   context.rect(...viewBoxValues);
   context.stroke({ alpha: 0 });
 
-  // @ts-ignore
+  // @ts-expect-error (please add error description)
   return context.svg(svg);
 };
 

@@ -32,7 +32,7 @@ onMounted(() => {
   // add a layer for nodes that are selected, so that they get displayed
   // above other nodes
   const selectedNodesLayer = new RenderLayer();
-  // @ts-expect-error
+  // @ts-expect-error (please add error description)
   selectedNodesLayer.label = "SelectedNodesRenderLayer";
 
   selectedNodesLayerContainer.value!.addChild(selectedNodesLayer);

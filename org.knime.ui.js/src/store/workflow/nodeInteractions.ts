@@ -322,8 +322,6 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
           return nodeTemplates[templateId][property];
         }
 
-        // @ts-ignore - TODO: NXT-2023 component is not inheriting properties correctly. Type narrowing
-        // can be improved here once NativeNode, ComponentNode and MetaNode types are generated correctly
         return node[property];
       },
 

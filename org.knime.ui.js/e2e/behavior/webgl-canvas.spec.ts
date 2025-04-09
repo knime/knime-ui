@@ -1,10 +1,8 @@
-/* eslint-disable no-console */
 /* eslint-disable no-magic-numbers */
 
 import { expect, test } from "@playwright/test";
 import { getComparator } from "playwright-core/lib/utils";
 
-/* eslint-disable no-process-env */
 import { getBrowserState } from "../utils/browserState";
 import { mockWebsocket } from "../utils/mockWebsocket";
 

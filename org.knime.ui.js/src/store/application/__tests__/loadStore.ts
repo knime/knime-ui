@@ -24,7 +24,7 @@ export const loadStore = () => {
 
   const mockedStores = mockStores();
 
-  // @ts-ignore
+  // @ts-expect-error
   mockedStores.canvasStore.screenToCanvasCoordinates = ([x, y]) => [x, y];
 
   mockedStores.workflowStore.setActiveWorkflow(

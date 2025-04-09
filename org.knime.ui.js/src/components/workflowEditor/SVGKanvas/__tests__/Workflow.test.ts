@@ -77,18 +77,18 @@ describe("Workflow", () => {
       ...workflow,
       ...customWorkflow,
     });
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.nodeInteractionsStore.getNodeIcon = (nodeId) =>
       `data:image/${nodeId}`;
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.nodeInteractionsStore.getNodeName = (nodeId) =>
       `name-${nodeId}`;
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.nodeInteractionsStore.getNodeType = (nodeId) =>
       `type-${nodeId}`;
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasModesStore.hasAnnotationModeEnabled = false;
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.selectionStore.isNodeSelected = isNodeSelectedMock;
 
     return mockedStores;

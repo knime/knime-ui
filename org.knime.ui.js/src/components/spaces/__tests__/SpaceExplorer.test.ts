@@ -86,7 +86,7 @@ vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useToasts: vi.fn(),
   };
@@ -733,7 +733,7 @@ describe("SpaceExplorer.vue", () => {
 
   describe("add node to workflow canvas", () => {
     it("should not attempt to add a node to canvas when the workflow is not displayed", async () => {
-      // @ts-ignore
+      // @ts-expect-error
       useRoute.mockImplementationOnce(() => ({
         name: APP_ROUTES.Home.SpaceBrowsingPage,
         params: {},

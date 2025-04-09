@@ -97,7 +97,7 @@ export const actions = {
     for (const cmd of patch) {
       const { op, ...payload } = cmd;
       // call directly - without commit
-      // @ts-ignore
+      // @ts-expect-error (please add error description)
       this[`patch.${op}`](this.$state, payload);
     }
   },

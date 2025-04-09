@@ -12,7 +12,7 @@ vi.mock("@vueuse/core", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     onClickOutside: vi.fn((_, cb) => {
       triggerClickOutside = cb;
@@ -94,7 +94,7 @@ describe("useFloatingMenuClickaway", () => {
     mockCanvasAnchorWrapper.appendChild(mockEventTarget);
 
     const event1 = new PointerEvent("pointerdown");
-    // @ts-ignore - see MockPointerEvent in test setup file
+    // @ts-expect-error see MockPointerEvent in test setup file
     event1.overrideTarget = mockEventTarget;
     kanvas.dispatchEvent(event1);
 

@@ -34,7 +34,6 @@ const props = withDefaults(defineProps<Props>(), {
   disableQuickNodeAdd: false,
 });
 
-// eslint-disable-next-line func-call-spacing
 const emit = defineEmits<{
   (e: "click"): void;
   (e: "deselect"): void;

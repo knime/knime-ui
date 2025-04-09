@@ -122,7 +122,6 @@ const { createHint } = useHint();
 onMounted(() => {
   createHint({
     hintId: HINTS.NEW_WORKFLOW,
-    // @ts-ignore
     referenceElement: createNewWorkflowButton,
   });
 });

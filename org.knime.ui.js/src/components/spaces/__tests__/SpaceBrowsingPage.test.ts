@@ -45,7 +45,7 @@ vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useRouter: vi.fn(() => ({ push: routerPush })),
     useRoute: vi.fn(() => ({
@@ -90,7 +90,7 @@ vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useToasts: vi.fn(),
   };
@@ -98,7 +98,7 @@ vi.mock("@knime/components", async (importOriginal) => {
 
 describe("SpaceBrowsingPage.vue", () => {
   beforeEach(() => {
-    // @ts-ignore
+    // @ts-expect-error
     useRoute.mockReturnValue({
       params: {
         spaceProviderId: spaceProvider.id,
@@ -192,7 +192,7 @@ describe("SpaceBrowsingPage.vue", () => {
         }),
       ],
     });
-    // @ts-ignore
+    // @ts-expect-error
     useRoute.mockReturnValue({
       params: {
         spaceProviderId: localProvider.id,

@@ -1,6 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable func-style */
-
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 

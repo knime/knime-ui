@@ -17,7 +17,7 @@ describe("NodeState.vue", () => {
     (executionState, expectedValue) => {
       const wrapper = mount(NodeState, { props: { executionState } });
 
-      // @ts-ignore
+      // @ts-expect-error
       expect(wrapper.vm.trafficLight).toEqual(expectedValue);
     },
   );

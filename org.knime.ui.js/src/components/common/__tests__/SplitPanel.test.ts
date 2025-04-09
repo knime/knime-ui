@@ -15,7 +15,7 @@ describe("SplitPanel", () => {
       ...propsOverride,
     };
     const wrapper = mount(SplitPanel, {
-      // @ts-ignore
+      // @ts-expect-error
       props,
       slots: {
         default: "<p>main content</p>",
@@ -29,7 +29,7 @@ describe("SplitPanel", () => {
     const isHorizontal = ["up", "down"].includes(direction!);
     const isReverse = ["left", "up"].includes(direction!);
 
-    const checkSecondarySize = (size: number) => {
+    const expectSecondarySize = (size: number) => {
       const unit = usePixel ? "px" : "%";
       const splitter = wrapper.findComponent(".base-splitter");
       const styles = splitter.attributes("style")!;
@@ -69,9 +69,9 @@ describe("SplitPanel", () => {
         pointerId,
       });
 
-      // @ts-ignore
+      // @ts-expect-error
       move.pageX = x;
-      // @ts-ignore
+      // @ts-expect-error
       move.pageY = y;
 
       window.dispatchEvent(move);
@@ -81,79 +81,79 @@ describe("SplitPanel", () => {
       await nextTick();
     };
 
-    return { wrapper, checkSecondarySize, dragSplitter };
+    return { wrapper, expectSecondarySize, dragSplitter };
   };
 
   it("sets the size correctly", () => {
-    const { checkSecondarySize } = doMount();
+    const { expectSecondarySize } = doMount();
 
-    checkSecondarySize(45);
+    expectSecondarySize(45);
   });
 
   it("sets the size correctly in pixel mode", () => {
-    const { checkSecondarySize } = doMount({
+    const { expectSecondarySize } = doMount({
       usePixel: true,
       secondarySize: 320,
     });
 
-    checkSecondarySize(320);
+    expectSecondarySize(320);
   });
 
   it("closes panel on click", async () => {
-    const { wrapper, checkSecondarySize } = doMount();
+    const { wrapper, expectSecondarySize } = doMount();
 
-    checkSecondarySize(45);
+    expectSecondarySize(45);
     await wrapper.find(".splitter").trigger("click");
-    checkSecondarySize(0);
+    expectSecondarySize(0);
   });
 
   it("opens panel on click", async () => {
-    const { wrapper, checkSecondarySize } = doMount();
-    checkSecondarySize(45);
+    const { wrapper, expectSecondarySize } = doMount();
+    expectSecondarySize(45);
 
     await wrapper.find(".splitter").trigger("click");
-    checkSecondarySize(0);
+    expectSecondarySize(0);
 
     await wrapper.find(".splitter").trigger("click");
-    checkSecondarySize(45);
+    expectSecondarySize(45);
   });
 
   it("snaps to close", async () => {
-    const { dragSplitter, checkSecondarySize } = doMount({
+    const { dragSplitter, expectSecondarySize } = doMount({
       usePixel: true,
       secondaryMinSize: 0,
       secondarySnapSize: 300,
     });
 
-    checkSecondarySize(300);
+    expectSecondarySize(300);
     await dragSplitter(300, 320);
-    checkSecondarySize(0);
+    expectSecondarySize(0);
   });
 
   it("honors min size", async () => {
-    const { dragSplitter, checkSecondarySize } = doMount({
+    const { dragSplitter, expectSecondarySize } = doMount({
       usePixel: true,
       secondarySize: 300,
       secondaryMinSize: 200,
       secondarySnapSize: 0,
     });
 
-    checkSecondarySize(300);
+    expectSecondarySize(300);
     await dragSplitter(300, 420); // would be 180px
-    checkSecondarySize(200);
+    expectSecondarySize(200);
   });
 
   it("resizes on drag", async () => {
-    const { dragSplitter, checkSecondarySize } = doMount();
+    const { dragSplitter, expectSecondarySize } = doMount();
 
     await dragSplitter(300, 400);
-    checkSecondarySize(34.84);
+    expectSecondarySize(34.84);
   });
 
   it.each(["down", "up", "left", "right"])(
     "opens to last resized size for direction=%s",
     async (direction: string) => {
-      const { wrapper, checkSecondarySize } = doMount({
+      const { wrapper, expectSecondarySize } = doMount({
         direction,
       });
 
@@ -166,27 +166,27 @@ describe("SplitPanel", () => {
 
       // close
       await wrapper.find(".splitter").trigger("click");
-      checkSecondarySize(0);
+      expectSecondarySize(0);
 
       // open
       await wrapper.find(".splitter").trigger("click");
-      checkSecondarySize(42);
+      expectSecondarySize(42);
     },
   );
 
   it("shows or hides the secondary panel with the show prop", async () => {
-    const { wrapper, checkSecondarySize } = doMount({
+    const { wrapper, expectSecondarySize } = doMount({
       secondarySize: 32,
       showSecondaryPanel: false,
     });
     const secondaryWrapper = wrapper.find(".secondary-wrapper").element;
 
-    checkSecondarySize(0);
+    expectSecondarySize(0);
     expect(secondaryWrapper.childElementCount).toBe(0);
 
     await wrapper.setProps({ showSecondaryPanel: true });
 
-    checkSecondarySize(32);
+    expectSecondarySize(32);
     expect(secondaryWrapper.childElementCount).toBe(1);
   });
 });

@@ -41,12 +41,12 @@ export const createDeepMock = <T extends Record<string, any>>(
     // object
     for (const [key, value] of Object.entries(_source)) {
       if (isFunction(value)) {
-        // @ts-ignore
+        // @ts-expect-error
         mock[key] = vi.fn();
       }
 
       if (Array.isArray(value)) {
-        // @ts-ignore
+        // @ts-expect-error
         mock[key] = value.map(recurse);
         // skip to next iteration to avoid Object check
         // because arrays are also objects
@@ -54,7 +54,7 @@ export const createDeepMock = <T extends Record<string, any>>(
       }
 
       if (isObject(value)) {
-        // @ts-ignore
+        // @ts-expect-error
         mock[key] = recurse(_source[key]);
       }
     }

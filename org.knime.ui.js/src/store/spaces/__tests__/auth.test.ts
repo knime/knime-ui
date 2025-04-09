@@ -32,7 +32,7 @@ describe("spaces::auth", () => {
       ];
 
       spaceProvidersStore.spaceProviders = {
-        // @ts-ignore
+        // @ts-expect-error
         hub1: {},
       };
       mockedAPI.space.getSpaceGroups.mockResolvedValue(mockSpaces);
@@ -59,7 +59,7 @@ describe("spaces::auth", () => {
       const { spaceAuthStore, spaceProvidersStore } = loadStore();
 
       spaceProvidersStore.spaceProviders = {
-        // @ts-ignore
+        // @ts-expect-error
         hub1: {},
       };
 
@@ -112,6 +112,7 @@ describe("spaces::auth", () => {
         hub1: fullProvider,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { spaceGroups, ...otherProperties } = fullProvider;
       const expectedProvider = {
         ...otherProperties,
@@ -168,6 +169,7 @@ describe("spaces::auth", () => {
         hub1: fullProvider,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { spaceGroups, ...otherProperties } = fullProvider;
       const expectedProvider = {
         ...otherProperties,
@@ -181,7 +183,7 @@ describe("spaces::auth", () => {
         $router: {
           push: routerPush,
           currentRoute: {
-            // @ts-ignore
+            // @ts-expect-error
             value: {
               name: APP_ROUTES.Home.SpaceBrowsingPage,
               params: { spaceProviderId: "hub1" },

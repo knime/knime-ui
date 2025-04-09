@@ -29,7 +29,7 @@ export const useSelectionEvents = () => {
       const listener = listeners.get(composeId(event));
       listener?.({
         eventType: "SelectionEvent",
-        // @ts-ignore
+        // @ts-expect-error (please add error description)
         payload: {
           ...event,
         },

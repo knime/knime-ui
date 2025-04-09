@@ -188,9 +188,9 @@ export const useRevealInSpaceExplorer = () => {
         return;
       }
 
-      const provider = spaceProviders.value?.[origin.providerId]!;
+      const provider = spaceProviders.value?.[origin.providerId];
       // try connect to provider if we are not connected
-      if (!provider.connected) {
+      if (provider && !provider.connected) {
         const { isConnected } = await connectProvider({
           spaceProviderId: provider.id,
         });

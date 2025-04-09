@@ -4,7 +4,6 @@
 import { expect, test } from "@playwright/test";
 import playwright from "playwright";
 
-/* eslint-disable no-process-env */
 import { getBrowserState } from "../utils/browserState";
 import { mockWebsocket } from "../utils/mockWebsocket";
 

@@ -112,6 +112,7 @@ const { isSVGRenderer, isWebGLRenderer } = useCanvasRendererUtils();
 
 const marginTop = computed(() => {
   if (isWebGLRenderer.value) {
+    // eslint-disable-next-line no-magic-numbers
     return 4; // --space-4 not yet defined in js
   }
   const ghostSizeZoomed =

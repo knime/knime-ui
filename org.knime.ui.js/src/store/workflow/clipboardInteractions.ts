@@ -25,7 +25,7 @@ const showFallbackToast = (clipboardContent: string) => {
       "If you want to paste the data into a different Analytics Platform you need to copy the data in JSON format.",
     buttons: [
       {
-        // @ts-expect-error
+        // @ts-expect-error (please add error description)
         icon: shallowRef(CopyIcon),
         text: " Copy data in JSON format",
         callback: () => {
@@ -240,7 +240,7 @@ export const useClipboardInteractionsStore = defineStore(
         try {
           // TODO: NXT-1168 Put a limit on the clipboard content size
           clipboardText = await navigator.clipboard.readText();
-        } catch (e) {
+        } catch (_e) {
           consola.info(
             "Could not read from clipboard. Maybe the user did not permit it?",
           );
@@ -260,7 +260,7 @@ export const useClipboardInteractionsStore = defineStore(
               ],
             );
           }
-        } catch (e) {
+        } catch (_e) {
           // try to paste the clipboard content as a URI
           if (
             !pasteURI(

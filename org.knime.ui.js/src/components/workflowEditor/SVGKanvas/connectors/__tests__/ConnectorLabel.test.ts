@@ -31,7 +31,7 @@ describe("ConnectorLabel.vue", () => {
       );
       mockedStores.movingStore.movePreviewDelta = { x: 0, y: 0 };
       mockedStores.movingStore.isDragging = false;
-      // @ts-ignore
+      // @ts-expect-error
       mockedStores.selectionStore.isNodeSelected = () => isNodeSelectedMock;
 
       const wrapper = shallowMount(ConnectorLabel, {
@@ -59,7 +59,7 @@ describe("ConnectorLabel.vue", () => {
       expect(initialPosition).toBe("translate(-480.25, -33.25)");
 
       isNodeSelectedMock.mockReturnValue(
-        // @ts-ignore
+        // @ts-expect-error
         (nodeId) => ({ "root:1": true, "root:2": true })[nodeId],
       );
       mockedStores.movingStore.movePreviewDelta = { x: 200, y: 200 };

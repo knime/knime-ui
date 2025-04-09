@@ -70,7 +70,7 @@ describe("QuickActionMenu.vue", () => {
         ports: [defaultPortMock, defaultPortMock, defaultPortMock],
       },
     });
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.contentBounds = {
       top: 33,
       height: 1236,

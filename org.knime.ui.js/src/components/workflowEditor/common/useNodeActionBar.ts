@@ -154,13 +154,9 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
         options.canOpenView.value !== null && uiControls.canDetachNodeViews,
     };
 
-    return (
-      Object.entries(conditionMap)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .filter(([_, visible]) => visible)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(([name, _]) => ({ ...actions.value[name], name }))
-    );
+    return Object.entries(conditionMap)
+      .filter(([_, visible]) => visible)
+      .map(([name, _]) => ({ ...actions.value[name], name }));
   });
 
   return { visibleActions };

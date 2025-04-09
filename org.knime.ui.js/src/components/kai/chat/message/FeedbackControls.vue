@@ -20,8 +20,8 @@ const emit = defineEmits(["feedbackSubmitted"]);
 const { isFeedbackProcessed } = storeToRefs(useAIAssistantStore());
 const { submitFeedback } = useAIAssistantStore();
 
-const isFeedbackSubmitted = ref<Boolean>(false);
-const showThankYou = ref<Boolean>(false);
+const isFeedbackSubmitted = ref<boolean>(false);
+const showThankYou = ref<boolean>(false);
 const shouldRenderFeedbackControls = computed(
   () =>
     !isFeedbackSubmitted.value &&

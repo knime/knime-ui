@@ -41,7 +41,7 @@ vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useRouter: vi.fn(() => ({ push: routerPush })),
     useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage, params: {} })),
@@ -197,7 +197,7 @@ describe("AppHeader.vue", () => {
     });
 
     it("updates the active tab when the activeProject changes", async () => {
-      // @ts-ignore
+      // @ts-expect-error
       useRoute.mockReturnValueOnce({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId: "2" },
@@ -212,7 +212,7 @@ describe("AppHeader.vue", () => {
     });
 
     it("scrolls into active tab", async () => {
-      // @ts-ignore
+      // @ts-expect-error
       useRoute.mockReturnValueOnce({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId: "2" },

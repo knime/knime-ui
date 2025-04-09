@@ -64,7 +64,7 @@ const setupServerEventListener = (ws: WebSocket) => {
       if (parsed.eventType) {
         serverEventHandler(data);
       }
-    } catch (error) {
+    } catch (_error) {
       consola.log(data);
     }
   });

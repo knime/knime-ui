@@ -9,10 +9,10 @@ vi.mock("motion", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     animate: (...args) => ({
-      // @ts-ignore
+      // @ts-expect-error
       ...actual.animate(...args),
       stop: stopAnimation,
     }),

@@ -20,7 +20,7 @@ vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useRouter: vi.fn(() => ({ push: routerPush })),
     useRoute: vi.fn(() => ({ meta: {} })),

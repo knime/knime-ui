@@ -267,7 +267,7 @@ describe("workflow store", () => {
           nodes,
         };
 
-        // @ts-ignore
+        // @ts-expect-error
         workflowStore.setActiveWorkflow({
           ...workflow,
           ...additionalProps,

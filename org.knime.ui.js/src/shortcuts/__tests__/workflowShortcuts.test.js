@@ -621,7 +621,7 @@ describe("workflowShortcuts", () => {
   });
 
   describe("editNodeComment", () => {
-    it("executes ", () => {
+    it("executes", () => {
       const { nodeInteractionsStore } = createStore();
 
       workflowShortcuts.editNodeComment.execute();
@@ -647,7 +647,7 @@ describe("workflowShortcuts", () => {
   });
 
   describe("editAnnotation", () => {
-    it("executes ", () => {
+    it("executes", () => {
       const { selectionStore, annotationInteractionsStore } = createStore();
 
       selectionStore.singleSelectedAnnotation = { id: "annotationId1" };
@@ -787,7 +787,7 @@ describe("workflowShortcuts", () => {
       expect(workflowStore.deleteSelectedPort).toHaveBeenCalled();
     });
 
-    it("condition checks when workflow is not writeable ", () => {
+    it("condition checks when workflow is not writeable", () => {
       const { workflowStore, selectionStore } = createStore();
 
       selectionStore.singleSelectedNode = null;

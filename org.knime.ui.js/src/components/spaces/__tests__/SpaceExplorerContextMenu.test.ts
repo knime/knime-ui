@@ -103,7 +103,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
           .fn()
           .mockReturnValue({ id: "duplicate", text: "duplicate" }),
         anchor: {
-          // @ts-ignore Partial mock
+          // @ts-expect-error Partial mock
           item: {
             name: "item-name",
             isOpen: false,

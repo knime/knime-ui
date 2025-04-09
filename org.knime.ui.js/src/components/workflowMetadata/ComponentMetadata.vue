@@ -152,7 +152,9 @@ const nodePreview = computed(() => {
 });
 
 const wrapper = ref<InstanceType<typeof SidebarPanelLayout>>();
-const wrapperElement = computed<HTMLDivElement>(() => wrapper.value?.$el!);
+const wrapperElement = computed<HTMLDivElement | undefined>(
+  () => wrapper.value?.$el,
+);
 
 const { saveContent } = useSaveMetadata({
   metadataDraft,

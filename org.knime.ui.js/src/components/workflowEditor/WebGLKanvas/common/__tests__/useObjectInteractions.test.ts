@@ -28,17 +28,17 @@ describe("useObjectInteractions", () => {
   ) => {
     startInteractionHandler({
       button: 0,
-      // @ts-ignore
+      // @ts-expect-error
       global: pointerPositions.start,
-      // @ts-ignore
+      // @ts-expect-error
       shiftKey: modifiers.shiftKey,
-      // @ts-ignore
+      // @ts-expect-error
       ctrlKey: modifiers.ctrlKey,
     });
 
     canvas.dispatchEvent(
       new PointerEvent("pointermove", {
-        // @ts-ignore
+        // @ts-expect-error
         offsetX: pointerPositions.move.x,
         offsetY: pointerPositions.move.y,
       }),
@@ -46,7 +46,7 @@ describe("useObjectInteractions", () => {
 
     canvas.dispatchEvent(
       new PointerEvent("pointerup", {
-        // @ts-ignore
+        // @ts-expect-error
         offsetX: pointerPositions.end.x,
         offsetY: pointerPositions.end.y,
       }),
@@ -72,7 +72,7 @@ describe("useObjectInteractions", () => {
     const removeEventSpy = vi.spyOn(canvas, "removeEventListener");
 
     const mockedStores = mockStores();
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.webglCanvasStore.pixiApplication = { canvas };
 
     const result = mountComposable({

@@ -26,7 +26,7 @@ vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useToasts: vi.fn(),
     useHint: () => ({ createHint: vi.fn(), isCompleted: vi.fn(() => true) }),
@@ -87,7 +87,7 @@ describe("WorkflowToolbar.vue", () => {
       const shortcutButtons = wrapper.findAllComponents(ToolbarShortcutButton);
       expect(
         shortcutButtons.map((button) => button.props("name")),
-        // @ts-ignore
+        // @ts-expect-error
       ).toStrictEqual(wrapper.vm.toolbarButtons);
     });
 
@@ -195,7 +195,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows menu items if no node is selected and not inside a component", async () => {
-      const { wrapper, $shortcuts, ...mockedStores } = doMount();
+      const { wrapper, ...mockedStores } = doMount();
 
       await setupStore({ mockedStores, workflow: createWorkflow() });
 
@@ -245,7 +245,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows layout editor button if inside a component", async () => {
-      const { wrapper, $shortcuts, ...mockedStores } = doMount();
+      const { wrapper, ...mockedStores } = doMount();
       const workflow = createWorkflow({
         info: { containerType: WorkflowInfo.ContainerTypeEnum.Component },
       });
@@ -259,7 +259,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows correct menu items if one node is selected", async () => {
-      const { wrapper, $shortcuts, ...mockedStores } = doMount();
+      const { wrapper, ...mockedStores } = doMount();
       const workflow = createWorkflow();
       await setupStore({ mockedStores, workflow });
 
@@ -284,7 +284,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows correct menu items if multiple nodes are selected", async () => {
-      const { wrapper, $shortcuts, ...mockedStores } = doMount();
+      const { wrapper, ...mockedStores } = doMount();
 
       const workflow = createWorkflow();
       await setupStore({ mockedStores, workflow });

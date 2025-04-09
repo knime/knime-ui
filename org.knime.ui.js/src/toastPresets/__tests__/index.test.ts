@@ -31,7 +31,7 @@ describe("toastPresets", () => {
   });
 
   describe("connectivity", () => {
-    it("should show networkProblem toast ", () => {
+    it("should show networkProblem toast", () => {
       const { toastPresets, $toast } = toastSetup();
       toastPresets.connectivity.networkProblem();
 
@@ -44,7 +44,7 @@ describe("toastPresets", () => {
       );
     });
 
-    it("should show hubSessionExpired toast ", () => {
+    it("should show hubSessionExpired toast", () => {
       const { toastPresets, $toast } = toastSetup();
       toastPresets.connectivity.hubSessionExpired();
 
@@ -57,7 +57,7 @@ describe("toastPresets", () => {
       );
     });
 
-    it("should show connectionLoss toast ", () => {
+    it("should show connectionLoss toast", () => {
       const { toastPresets, $toast } = toastSetup();
       toastPresets.connectivity.connectionLoss();
 
@@ -69,7 +69,7 @@ describe("toastPresets", () => {
       });
     });
 
-    it("should show connectionRestored toast ", () => {
+    it("should show connectionRestored toast", () => {
       const { toastPresets, $toast } = toastSetup();
       toastPresets.connectivity.connectionRestored();
 

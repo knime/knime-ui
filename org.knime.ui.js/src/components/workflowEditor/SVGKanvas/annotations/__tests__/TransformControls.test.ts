@@ -76,7 +76,7 @@ describe("TransformControls.vue", () => {
 
     const mockedStores = mockStores();
     mockedStores.movingStore.movePreviewDelta = { x: 0, y: 0 };
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates =
       screenToCanvasCoordinatesMock;
 

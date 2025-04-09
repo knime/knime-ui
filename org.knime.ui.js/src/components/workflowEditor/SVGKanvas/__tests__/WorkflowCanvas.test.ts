@@ -24,14 +24,14 @@ describe("WorkflowCanvas", () => {
     const mockedStores = mockStores();
     mockedStores.applicationStore.activeProjectId = "project1";
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.workflowStore.isWorkflowEmpty = isWorkflowEmpty;
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStateTrackingStore.workflowCanvasState =
       workflowCanvasState;
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates =
       screenToCanvasCoordinatesMock ?? (() => [0, 0]);
 
@@ -150,7 +150,7 @@ describe("WorkflowCanvas", () => {
       screenToCanvasCoordinatesMock,
     });
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.initScrollContainerElement({
       offsetLeft: 10,
       offsetTop: 10,
@@ -159,7 +159,7 @@ describe("WorkflowCanvas", () => {
       scrollTo: () => {},
     });
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates = () =>
       screenToCanvasCoordinatesMock;
 

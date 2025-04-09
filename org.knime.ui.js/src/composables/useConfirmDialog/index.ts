@@ -84,10 +84,9 @@ export const useConfirmDialog = () => {
   function show(config: PropertyBasedConfig): Promise<ConfirmResult>;
 
   // function overload to support 2 distinct configurations
-  // eslint-disable-next-line no-redeclare
   function show(config: ComponentBasedConfig): Promise<ConfirmResult>;
 
-  // eslint-disable-next-line func-style, no-redeclare
+  // eslint-disable-next-line func-style
   function show(config: ModalConfig): Promise<ConfirmResult> {
     activeModalConfig.value = { buttons: defaultButtons, ...config };
     isActive.value = true;

@@ -136,7 +136,7 @@ describe("CloseableTagList.vue", () => {
   });
 
   describe("hide more tags", () => {
-    it("hides more on close button click ", async () => {
+    it("hides more on close button click", async () => {
       const wrapper = doShallowMount({
         tags: sevenTags,
         modelValue: threeTags,

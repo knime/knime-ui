@@ -9,7 +9,7 @@ import { useCanvasFloatingContainer } from "../useCanvasFloatingContainer";
 
 vi.mock("@/composables/useEscapeStack", () => {
   function useEscapeStack({ onEscape }) {
-    // @ts-ignore
+    // @ts-expect-error
     useEscapeStack.onEscape = onEscape;
     return {
       /* empty mixin */
@@ -44,7 +44,7 @@ describe("useCanvasFloatingContainer", () => {
 
   it("closes menu on escape key", () => {
     const { closeMenu } = doMount();
-    // @ts-ignore
+    // @ts-expect-error
     useEscapeStack.onEscape();
     expect(closeMenu).toHaveBeenCalled();
   });

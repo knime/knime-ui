@@ -126,9 +126,9 @@ export const useSVGCanvasStore = defineStore("canvasSVG", {
       // center workflow
       this.scroll({
         canvasX: "center",
-        toScreenX: "center", // eslint-disable-line object-property-newline
+        toScreenX: "center",
         canvasY: "center",
-        toScreenY: "center", // eslint-disable-line object-property-newline
+        toScreenY: "center",
       });
     },
 
@@ -147,7 +147,7 @@ export const useSVGCanvasStore = defineStore("canvasSVG", {
       // if an axis doesn't fit, scroll to its beginning (top / left)
 
       // include top and left padding of 20px in screen coordinates
-      const screenPadding = 20; // eslint-disable-line no-magic-numbers
+      const screenPadding = 20;
 
       const scrollX = xAxisFits
         ? { canvasX: "center", toScreenX: "center" }
@@ -224,7 +224,6 @@ export const useSVGCanvasStore = defineStore("canvasSVG", {
       } else if (delta) {
         this.setFactor(this.zoomFactor * Math.pow(zoomMultiplier, delta));
       } else if (factor) {
-        // eslint-disable-line no-negated-condition
         this.setFactor(factor);
       }
 
@@ -325,7 +324,7 @@ export const useSVGCanvasStore = defineStore("canvasSVG", {
     },
 
     async restoreScrollState(savedState = {}) {
-      // @ts-expect-error
+      // @ts-expect-error (please add error description)
       const { zoomFactor, scrollLeft, scrollTop, scrollWidth, scrollHeight } =
         savedState;
 

@@ -17,7 +17,7 @@ describe("FeedbackControls", () => {
 
     const mockedStores = mockStores();
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.aiAssistantStore.isFeedbackProcessed = isFeedbackProcessedMock;
 
     const props = { interactionId };

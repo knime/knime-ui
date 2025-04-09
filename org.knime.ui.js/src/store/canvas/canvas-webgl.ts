@@ -1,6 +1,5 @@
 /* eslint-disable no-undefined */
 /* eslint-disable no-magic-numbers */
-/* eslint-disable max-lines */
 
 import {
   type ShallowRef,
@@ -438,7 +437,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
   const fillScreen = () => {
     // zoom factor for that at least one axis fits on the screen, but at most 100%
-    const newZoomFactor = Math.min(fitToScreenZoomFactor.value.max * 0.95, 1); // eslint-disable-line no-magic-numbers
+    const newZoomFactor = Math.min(fitToScreenZoomFactor.value.max * 0.95, 1);
 
     // set zoom
     setFactor(newZoomFactor);

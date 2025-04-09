@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import throttle from "raf-throttle";
 
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";

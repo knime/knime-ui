@@ -203,7 +203,6 @@ export const usePortDragging = (params: Params) => {
           // and needs to provide data for the to be added port for placeholder snaps
           return {
             didSnap: isCompatible,
-            // eslint-disable-next-line @typescript-eslint/no-extra-parens
             ...(validPortGroups && {
               createPortFromPlaceholder: {
                 validPortGroups,

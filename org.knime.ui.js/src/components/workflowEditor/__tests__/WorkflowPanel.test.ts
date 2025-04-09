@@ -31,7 +31,7 @@ describe("WorkflowPanel", () => {
     };
 
     const mockedStores = mockStores();
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates = (position: any) =>
       position;
 
@@ -70,7 +70,7 @@ describe("WorkflowPanel", () => {
       expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
 
       await mockedStores.canvasAnchoredComponentsStore.toggleContextMenu({
-        // @ts-ignore
+        // @ts-expect-error
         event: createEvent(242, 122),
       });
       await new Promise((r) => setTimeout(r, 0));
@@ -85,7 +85,7 @@ describe("WorkflowPanel", () => {
 
       wrapper.trigger("contextmenu", { clientX: 100, clientY: 200 });
       await mockedStores.canvasAnchoredComponentsStore.toggleContextMenu({
-        // @ts-ignore
+        // @ts-expect-error
         event: createEvent(100, 200),
       });
       await new Promise((r) => setTimeout(r, 0));
@@ -214,7 +214,7 @@ describe("WorkflowPanel", () => {
   it("should not display right panel when flag is set to false", async () => {
     const { wrapper } = doShallowMount({
       mockFeatureFlags: {
-        // @ts-ignore
+        // @ts-expect-error
         shouldDisplayEmbeddedDialogs: vi.fn(() => false),
       },
     });

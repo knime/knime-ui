@@ -16,7 +16,7 @@ describe("generateWorkflowPreview", () => {
   );
 
   beforeAll(async () => {
-    // @ts-ignore
+    // @ts-expect-error
     window.fetch = mockFetch;
     await preloadFontsAsBase64();
   });
@@ -53,7 +53,7 @@ describe("generateWorkflowPreview", () => {
     const workflow = document.createElementNS(svgNS, "g");
     workflow.classList.add("workflow");
 
-    // @ts-ignore the type  in lib.dom.d.ts seems to be wrong it should be SVGRect not DOMRect
+    // @ts-expect-error the type  in lib.dom.d.ts seems to be wrong it should be SVGRect not DOMRect
     workflow.getBBox = () => {
       const { x = 0, y = 0, width = 0, height = 0 } = workflowDimensions;
       return { x, y, width, height };

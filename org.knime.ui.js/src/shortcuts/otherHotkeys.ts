@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import type { Shortcut } from "./types";
 
 /**

@@ -15,7 +15,7 @@ type Props = {
   x?: number;
   disabled?: boolean;
   // TODO NXT-3411 implement tooltips
-  title?: String | null;
+  title?: string | null;
   primary?: boolean;
   icon: GraphicsContext;
 };

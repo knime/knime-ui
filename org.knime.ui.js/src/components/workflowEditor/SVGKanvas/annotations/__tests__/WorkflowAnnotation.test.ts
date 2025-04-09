@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { h, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
@@ -107,7 +106,7 @@ describe("WorkflowAnnotation.vue", () => {
       render(): any {
         return h(
           "g",
-          // @ts-ignore
+          // @ts-expect-error
           this.$slots.default({
             transformedBounds,
           }),
@@ -213,7 +212,7 @@ describe("WorkflowAnnotation.vue", () => {
       const bounds = { x: 15, y: 15, width: 100, height: 100 };
       const transformControlStub = getTransformControlsStub(bounds);
       const selector = '[data-test-id="transformed-controls"]';
-      // @ts-ignore
+      // @ts-expect-error
       const { wrapper } = doMount({ transformControlStub });
 
       expect(wrapper.find(selector).attributes("x")).toEqual(

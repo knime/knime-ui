@@ -33,7 +33,7 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
      * Is a generic event, that holds multiple events (names separated by ':')
      * Calls all event handlers with their params
      */
-    // @ts-expect-error
+    // @ts-expect-error (please add error description)
     CompositeEvent({ events, params, eventHandlers }) {
       consola.info("events::CompositeEvent", { events, params });
       (events ?? []).forEach((event, index) => {

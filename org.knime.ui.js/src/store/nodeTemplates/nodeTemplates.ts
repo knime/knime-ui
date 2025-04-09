@@ -59,7 +59,7 @@ export const useNodeTemplatesStore = defineStore("nodeTemplates", {
   }),
   actions: {
     updateCache(newValues: Partial<NodeTemplateDictionary>) {
-      // @ts-expect-error
+      // @ts-expect-error (please add error description)
       this.cache = {
         ...this.cache,
         ...newValues,

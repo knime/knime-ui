@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import type { TextStyle } from "pixi.js";
 
 import * as $colors from "@/style/colors";

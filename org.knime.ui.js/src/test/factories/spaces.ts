@@ -51,7 +51,7 @@ export const createSpaceProvider = (
   };
 
   if (!withGroupData) {
-    const { spaceGroups, ...rest } = merge(base, data);
+    const { spaceGroups, ...rest } = merge(base, data); // eslint-disable-line @typescript-eslint/no-unused-vars
     return { ...rest, spaceGroups: [] };
   }
 

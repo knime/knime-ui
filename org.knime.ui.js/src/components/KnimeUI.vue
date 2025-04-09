@@ -192,14 +192,14 @@ const checkClipboardSupport = async () => {
     // Ask for permission if Permission API is available
     const permission = await navigator.permissions.query({
       // TODO: check if this is needed anymore
-      // @ts-expect-error
+      // @ts-expect-error (please add error description)
       name: "clipboard-read",
     });
 
     if (permission.state === "granted" || permission.state === "prompt") {
       hasClipboardSupport = true;
     }
-  } catch (error) {
+  } catch (_error) {
     // Check if the Clipboard API is available
     // (on Firefox this is a property `readText` in navigator.clipboard)
     if (navigator.clipboard && "readText" in navigator.clipboard) {

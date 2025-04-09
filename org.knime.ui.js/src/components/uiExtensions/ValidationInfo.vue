@@ -40,7 +40,7 @@ const fullPortObject = computed(() => {
     const selectedPort = props.selectedNode.outPorts[props.selectedPortIndex];
 
     return toExtendedPortObject(availablePortTypes.value)(selectedPort.typeId);
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 });

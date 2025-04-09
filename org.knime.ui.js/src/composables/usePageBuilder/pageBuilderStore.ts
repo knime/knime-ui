@@ -81,7 +81,7 @@ const testValidityOfPage = async ({ dispatch }) => {
       });
       return "invalid";
     }
-  } catch (error) {
+  } catch (_error) {
     dispatch("handleError", {
       caller: "triggerReExecution",
       error: "Validation check failed unexpectedly.",
@@ -259,7 +259,6 @@ const actions = {
       return;
     }
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const pollingInformation = checkIfUpdatesAreNeeded(
         { dispatch },

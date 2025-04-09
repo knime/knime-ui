@@ -205,6 +205,7 @@ export default {
       default: null,
     },
   },
+  expose: ["setSelectionPreview"],
   data() {
     return {
       isHovering: false,
@@ -519,7 +520,6 @@ export default {
       this.selectionPreview = preview === "clear" ? null : preview;
     },
   },
-  expose: ["setSelectionPreview"],
 };
 </script>
 

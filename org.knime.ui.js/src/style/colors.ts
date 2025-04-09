@@ -1,4 +1,3 @@
-/* eslint-disable import/extensions */
 import * as knimeColors from "@knime/styles/colors/knimeColors";
 import * as nodeColors from "@knime/styles/colors/nodeColors";
 import * as portColorsCommon from "@knime/styles/colors/portColors";

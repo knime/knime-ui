@@ -245,7 +245,6 @@ describe("Node", () => {
 
       ports.forEach((port, index) => {
         expect(port.props("direction")).toBe(
-          // eslint-disable-next-line vitest/no-conditional-tests
           index < commonNode.inPorts.length ? "in" : "out",
         );
       });

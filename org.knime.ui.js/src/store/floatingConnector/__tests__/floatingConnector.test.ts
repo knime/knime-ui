@@ -35,7 +35,7 @@ describe("floatingConnector store", () => {
     mockedStores.workflowStore.setActiveWorkflow(workflow);
     const canvas = document.createElement("canvas");
     mockedStores.webglCanvasStore.pixiApplication = {
-      // @ts-ignore
+      // @ts-expect-error
       app: { canvas },
       canvas,
     };
@@ -61,7 +61,7 @@ describe("floatingConnector store", () => {
     };
 
     mockedStores.floatingConnectorStore.createConnectorFromPointerEvent(
-      // @ts-ignore
+      // @ts-expect-error
       pointerDown,
       {
         direction: "out",
@@ -88,7 +88,7 @@ describe("floatingConnector store", () => {
   ) => {
     canvas.dispatchEvent(
       new PointerEvent("pointermove", {
-        // @ts-ignore
+        // @ts-expect-error
         offsetX: offsets.offsetX,
         offsetY: offsets.offsetY,
       }),

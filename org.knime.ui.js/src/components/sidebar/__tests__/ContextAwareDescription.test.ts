@@ -48,7 +48,7 @@ describe("ContextAwareDescription.vue", () => {
       selectedNode: {
         id: "2",
         templateId: "org.mock.node",
-        // @ts-ignore
+        // @ts-expect-error
         kind: "node",
       },
     });

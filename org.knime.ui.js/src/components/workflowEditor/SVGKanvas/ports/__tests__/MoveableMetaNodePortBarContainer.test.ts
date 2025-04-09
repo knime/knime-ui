@@ -103,9 +103,9 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
 
   const moveTo = ({ clientX, clientY }) => {
     const ptrEvent = new PointerEvent("pointermove");
-    // @ts-ignore
+    // @ts-expect-error
     ptrEvent.clientX = clientX;
-    // @ts-ignore
+    // @ts-expect-error
     ptrEvent.clientY = clientY;
     // fire twice because first move is being ignored due to a Windows (touchpad) issue
     document.dispatchEvent(ptrEvent);

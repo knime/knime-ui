@@ -14,7 +14,6 @@ const request = {
   id: 0,
 } as const;
 
-// eslint-disable-next-line unused-imports/no-unused-vars
 export const createRPCClient = (): RPCClient => {
   const rpcClient: RPCClient = {
     async call(method, params) {

@@ -1,4 +1,3 @@
-/* eslint-disable one-var */
 import { Entries } from "type-fest";
 
 declare global {

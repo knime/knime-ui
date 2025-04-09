@@ -37,7 +37,7 @@ const addBackgroundRenderLayer = (app: ApplicationInst["app"]) => {
   // add a background layer so we can move the selection plane of the nodes all the way
   // to the back
   const backgroundRenderLayer = new RenderLayer();
-  // @ts-expect-error
+  // @ts-expect-error (please add error description)
   backgroundRenderLayer.label = "BackgroundRenderLayer";
 
   app.stage.addChildAt(backgroundRenderLayer, 0);

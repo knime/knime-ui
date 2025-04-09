@@ -11,7 +11,7 @@ import ErrorOverlay from "../ErrorOverlay.vue";
 
 vi.mock("@/util/copyErrorReportToClipboard", async (importOriginal) => {
   return {
-    ...((await importOriginal()) as Object),
+    ...((await importOriginal()) as object),
     copyErrorReportToClipboard: vi.fn(),
   };
 });
@@ -40,7 +40,7 @@ describe("ErrorOverlay.vue", () => {
       stack: "stacky",
     });
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(wrapper.find(".stack").element.value).toBe(
       `one-liner\n\nVue: ${version}\n\nstacky`,
     );
@@ -66,9 +66,9 @@ describe("ErrorOverlay.vue", () => {
   it("reload app", () => {
     const { wrapper } = doMount();
 
-    // @ts-ignore
+    // @ts-expect-error
     delete window.location;
-    // @ts-ignore
+    // @ts-expect-error
     window.location = { href: "" };
 
     const reloadButton = wrapper.findAllComponents(Button)[0];

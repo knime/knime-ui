@@ -21,7 +21,7 @@ const fetchUiStrings = async () => {
     const _uiStrings = await API.kai.getUiStrings({});
     Object.assign(uiStrings, _uiStrings);
     isServerAvailable.value = true;
-  } catch (error) {
+  } catch (_error) {
     // we want to show the loading indicator for at least 2 seconds
     await sleep(SLEEP_AFTER_ERROR);
     isServerAvailable.value = false;

@@ -10,7 +10,7 @@ describe("useConnectorCulling", () => {
   it("should be culled when outside view", async () => {
     const mockedStores = mockStores();
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.webglCanvasStore.visibleArea = {
       x: 0,
       y: 0,
@@ -49,7 +49,7 @@ describe("useConnectorCulling", () => {
     const { renderable } = getComposableResult();
     expect(renderable.value).toBe(true);
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.webglCanvasStore.visibleArea = {
       x: 100,
       y: 200,

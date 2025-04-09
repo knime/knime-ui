@@ -93,7 +93,6 @@ export const findFreeSpaceFrom =
   ({ objectBounds, nodes, visibleFrame }: FindFreeSpaceFromOptions) =>
   ({ left, top }: { left: number; top: number }) => {
     const position = findFreeSpace({
-      // eslint-disable-line implicit-arrow-linebreak
       area: objectBounds,
       workflow: { nodes },
       startPosition: {

@@ -582,7 +582,7 @@ describe("workflow::index", () => {
           projectId: "foo",
           nodes: {},
           workflowAnnotations: [],
-          // @ts-ignore
+          // @ts-expect-error
           metaInPorts: { ports: [{ id: "port" }] },
           metaOutPorts: { ports: [] },
         }),
@@ -595,7 +595,7 @@ describe("workflow::index", () => {
           nodes: {},
           workflowAnnotations: [],
           metaInPorts: { ports: [] },
-          // @ts-ignore
+          // @ts-expect-error
           metaOutPorts: { ports: [{ id: "port" }] },
         }),
       );

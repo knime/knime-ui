@@ -43,21 +43,20 @@ describe("nodeConfiguration", () => {
   });
 
   afterEach(() => {
-    // @ts-ignore
+    // @ts-expect-error
     runInEnvironment.mockClear();
   });
 
   const loadStore = (isWritableWorkflow: boolean = true) => {
-    // eslint-disable-next-line no-undef
     const testingPinia = createTestingPinia({
       stubActions: false,
       createSpy: vi.fn,
     });
 
     const workflowStore = useWorkflowStore(testingPinia);
-    // @ts-ignore
+    // @ts-expect-error
     workflowStore.isWritable = isWritableWorkflow;
-    // @ts-ignore
+    // @ts-expect-error
     workflowStore.executeNodes = () => {};
 
     const uiControlStore = useUIControlsStore(testingPinia);
@@ -115,7 +114,7 @@ describe("nodeConfiguration", () => {
     } satisfies APILayerDirtyState;
 
     beforeEach(() => {
-      // @ts-ignore
+      // @ts-expect-error
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
     });
@@ -203,7 +202,7 @@ describe("nodeConfiguration", () => {
     } satisfies APILayerDirtyState;
 
     beforeEach(() => {
-      // @ts-ignore
+      // @ts-expect-error
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
     });

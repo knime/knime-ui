@@ -33,7 +33,7 @@ vi.mock("@/plugins/shortcuts", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useShortcuts: () => $shortcuts,
   };
@@ -96,7 +96,7 @@ describe("ContextMenu.vue", () => {
     const mockedStores = customStores ?? _mockedStores;
 
     $shortcuts = createShortcutsService({
-      // @ts-ignore
+      // @ts-expect-error
       $router: mockRouter,
     });
 

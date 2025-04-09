@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 /* eslint-disable dot-notation */
-/* eslint-disable quote-props */
+
 import {
   checkPortCompatibility,
   detectConnectionCircle,

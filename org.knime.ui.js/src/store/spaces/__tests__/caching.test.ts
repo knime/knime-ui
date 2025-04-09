@@ -99,7 +99,7 @@ describe("spaces::caching", () => {
       ];
 
       spaceCachingStore.syncPathWithOpenProjects({
-        // @ts-ignore
+        // @ts-expect-error
         openProjects,
       });
 
@@ -154,7 +154,7 @@ describe("spaces::caching", () => {
       ];
 
       spaceCachingStore.syncPathWithOpenProjects({
-        // @ts-ignore
+        // @ts-expect-error
         openProjects,
       });
 
@@ -199,7 +199,7 @@ describe("spaces::caching", () => {
       ];
 
       spaceCachingStore.syncPathWithOpenProjects({
-        // @ts-ignore
+        // @ts-expect-error
         openProjects,
       });
 
@@ -227,7 +227,7 @@ describe("spaces::caching", () => {
       });
 
       spaceCachingStore.syncPathWithOpenProjects({
-        // @ts-ignore
+        // @ts-expect-error
         openProjects: [{ projectId: "myProject1" }],
       });
 
@@ -255,7 +255,7 @@ describe("spaces::caching", () => {
       });
 
       spaceCachingStore.syncPathWithOpenProjects({
-        // @ts-ignore
+        // @ts-expect-error
         openProjects: [
           createProject({
             projectId: "myProject1",
@@ -281,7 +281,7 @@ describe("spaces::caching", () => {
       const { spaceCachingStore } = loadStore();
 
       spaceCachingStore.syncPathWithOpenProjects({
-        // @ts-ignore
+        // @ts-expect-error
         openProjects: [{ projectId: "myProject1" }],
       });
 

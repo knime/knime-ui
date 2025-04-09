@@ -73,7 +73,6 @@ const hintIsVisibleCondition = computed(() => !panelStore.isTabActive("kai"));
 onMounted(() => {
   createHint({
     hintId: hintIds.K_AI,
-    // @ts-ignore
     isVisibleCondition: hintIsVisibleCondition,
   });
 });

@@ -237,7 +237,7 @@ const loadWorkflowGroup = async (
         },
       ]);
     }
-  } catch (error) {
+  } catch (_error) {
     addToTree([
       {
         nodeKey: `error_loadWorkflowGroup_${spaceProviderId}${spaceId}${itemId}`,

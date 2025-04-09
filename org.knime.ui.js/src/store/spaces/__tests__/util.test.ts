@@ -247,7 +247,7 @@ describe("spaces::util", () => {
           },
         },
       };
-      // @ts-ignore
+      // @ts-expect-error
       getToastPresetsMock.mockReturnValue(mock);
 
       return {

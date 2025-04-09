@@ -236,7 +236,7 @@ describe("application", () => {
       const { applicationStore, lifecycleStore, mockRouter } = loadStore();
       applicationStore.replaceApplicationState(state);
       await lifecycleStore.setActiveProject({
-        // @ts-ignore
+        // @ts-expect-error
         $router: mockRouter,
       });
 
@@ -255,7 +255,7 @@ describe("application", () => {
       const { applicationStore, lifecycleStore, mockRouter } = loadStore();
       applicationStore.replaceApplicationState(state);
       await lifecycleStore.setActiveProject({
-        // @ts-ignore
+        // @ts-expect-error
         $router: mockRouter,
       });
 
@@ -271,7 +271,7 @@ describe("application", () => {
 
       applicationStore.replaceApplicationState(state);
       await lifecycleStore.setActiveProject({
-        // @ts-ignore
+        // @ts-expect-error
         $router: mockRouter,
       });
 

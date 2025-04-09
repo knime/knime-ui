@@ -10,7 +10,7 @@ import { svgoConfig } from "@knime/styles/config/svgo.config";
 // TODO: replace with app.component calls
 import { isCustomElement } from "./src/vue3-pixi/index";
 
-// @ts-ignore
+// @ts-expect-error (please add error description)
 
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };

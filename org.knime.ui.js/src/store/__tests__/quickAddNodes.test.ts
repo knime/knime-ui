@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 import { createTestingPinia } from "@pinia/testing";
@@ -52,17 +51,16 @@ describe("Quick add node store", () => {
       getNodeRecommendationsResponse,
     );
 
-    // eslint-disable-next-line no-undef
     const testingPinia = createTestingPinia({
       stubActions: false,
       createSpy: vi.fn,
     });
 
-    // @ts-ignore
+    // @ts-expect-error
     useApplicationStore(testingPinia).setAvailablePortTypes(availablePortTypes);
     useWorkflowStore(testingPinia).activeWorkflow = {
       projectId: "proj1",
-      // @ts-ignore
+      // @ts-expect-error
       info: { containerId: "wfId" },
     };
 

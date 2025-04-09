@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { describe, expect, it } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";

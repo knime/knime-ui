@@ -56,7 +56,6 @@ const validPortGroups = computed(() => {
 
   return (
     Object.entries(props.portGroups)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .filter(([_, group]) => group.canAddInPort || group.canAddOutPort)
       // map back to an object structure after filtering to match the api object shape
       .reduce(

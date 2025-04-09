@@ -1,4 +1,3 @@
-/* eslint-disable func-style */
 /* eslint-disable no-undefined */
 import { type Ref, computed, ref } from "vue";
 import { defineStore, storeToRefs } from "pinia";
@@ -319,9 +318,9 @@ export const useFloatingConnectorStore = defineStore(
         absolutePoint: position,
         allowedActions: { canDelete: false },
         interactive: false,
-        // eslint-disable-next-line no-undefined
+
         [fakeNode]: parentNodeId ?? undefined,
-        // eslint-disable-next-line no-undefined
+
         [fakePort]: portIndex ?? undefined,
         context: {
           origin,

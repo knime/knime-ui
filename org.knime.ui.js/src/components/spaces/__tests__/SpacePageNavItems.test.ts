@@ -72,7 +72,7 @@ describe("SpacePageNavItems.vue", () => {
   });
 
   const doMount = () => {
-    // @ts-ignore
+    // @ts-expect-error
     useRoute.mockImplementation(() => ({
       params: {
         spaceProviderId: hubProvider1.id,

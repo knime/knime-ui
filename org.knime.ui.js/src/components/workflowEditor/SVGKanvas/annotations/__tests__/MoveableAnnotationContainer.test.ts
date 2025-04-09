@@ -39,7 +39,7 @@ describe("MoveableAnnotationContainer.vue", () => {
 
     const mockedStores = mockStores();
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates =
       screenToCanvasCoordinatesMock;
     mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
@@ -72,7 +72,7 @@ describe("MoveableAnnotationContainer.vue", () => {
 
   const moveTo = ({ clientX, clientY, altKey = false }) => {
     const ptrEvent = new PointerEvent("pointermove");
-    // @ts-ignore
+    // @ts-expect-error
     ptrEvent.altKey = altKey;
     ptrEvent.clientX = clientX;
     ptrEvent.clientY = clientY;

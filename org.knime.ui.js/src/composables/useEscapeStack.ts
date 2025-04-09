@@ -48,7 +48,6 @@ const runAllEntries = (
 };
 
 const handleGroupStackEntries = (_stack: Stack): Stack => {
-  // eslint-disable-next-line no-unused-vars
   const [_, lastEntryData] = getLastEntry(_stack);
 
   // run all handlers for the group, except `alwaysActive` ones, which were already executed
@@ -93,7 +92,6 @@ export const escapePressed = () => {
       runAllEntries(stack, ([_, entryData]) => Boolean(entryData.alwaysActive));
     }
 
-    // eslint-disable-next-line no-unused-vars
     const [_, lastEntryData] = getLastEntry(stack);
 
     // if it's a type of entry that has an "always active" handler then end here

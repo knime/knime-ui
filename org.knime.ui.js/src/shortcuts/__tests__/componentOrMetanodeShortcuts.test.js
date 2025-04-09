@@ -370,13 +370,13 @@ describe("componentOrMetanodeShortcuts", () => {
   });
 
   describe("openLayoutEditor", () => {
-    it("it is not a component, button disabled", () => {
+    it("is not a component, button disabled", () => {
       expect(
         componentOrMetanodeShortcuts.openLayoutEditor.condition(),
       ).toBeFalsy();
     });
 
-    it("it is not a writable component, button disabled", () => {
+    it("is not a writable component, button disabled", () => {
       const { workflowStore } = createStore();
 
       workflowStore.isWritable = false;
@@ -386,7 +386,7 @@ describe("componentOrMetanodeShortcuts", () => {
       ).toBeFalsy();
     });
 
-    it("it is a writable component, button enabled", () => {
+    it("is a writable component, button enabled", () => {
       const { workflowStore, uiControlsStore } = createStore();
 
       workflowStore.activeWorkflow.info.containerType = "component";

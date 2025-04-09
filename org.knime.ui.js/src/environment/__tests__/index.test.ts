@@ -14,14 +14,14 @@ describe("environment", () => {
     ["BROWSER", undefined],
     ["DESKTOP", commServiceMock],
   ])("should detect %s environment", async (env, mock) => {
-    // @ts-ignore: We need 'undefined' to be allowed here
+    // @ts-expect-error We need 'undefined' to be allowed here
     window.EquoCommService = mock;
     const module1 = await import("@/environment");
     expect(module1.environment).toBe(env);
   });
 
   it("should run code only in BROWSER environment via the `runInEnvironment` helper", async () => {
-    // @ts-ignore: We need 'undefined' to be allowed here
+    // @ts-expect-error We need 'undefined' to be allowed here
     window.EquoCommService = undefined;
     const module1 = await import("@/environment");
 

@@ -17,7 +17,6 @@ export const useNodeSelectionPlaneMeasures = (
       nodeStatusHeight,
       nodeStatusMarginTop,
       nodeSize,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       nodeSelectionPadding: [_top, right, bottom, left],
     } = $shapes;
 

@@ -36,6 +36,6 @@ export const initPlugins = ({
   app.use(wrapPlugin(eventBus));
   app.use(wrapPlugin(featureFlags));
 
-  app.component("Portal", Portal);
+  app.component("Portal", Portal); // eslint-disable-line vue/multi-word-component-names,vue/no-reserved-component-names
   app.component("PortalTarget", PortalTarget);
 };

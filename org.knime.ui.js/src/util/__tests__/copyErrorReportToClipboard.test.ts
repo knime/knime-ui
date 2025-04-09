@@ -41,7 +41,7 @@ describe("copyErrorReportToClipboard", () => {
   });
 
   it("serializes error objects", async () => {
-    const testError = new Error("mock error") as Error & { data: Object };
+    const testError = new Error("mock error") as Error & { data: object };
     testError.data = { testdataProp: "mocked" };
     const testData = { test1: new UnknownGatewayException(testError) };
     await copyErrorReportToClipboard(testData);

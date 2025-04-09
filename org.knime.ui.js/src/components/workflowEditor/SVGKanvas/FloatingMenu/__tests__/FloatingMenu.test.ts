@@ -16,7 +16,7 @@ const useFocusTrapMock = {
 
 vi.mock("@/composables/useEscapeStack", () => {
   function useEscapeStack({ onEscape }) {
-    // @ts-ignore
+    // @ts-expect-error
     useEscapeStack.onEscape = onEscape;
     return {
       /* empty mixin */
@@ -67,7 +67,7 @@ describe("FloatingMenu.vue", () => {
       width: 80,
       height: 80,
     }));
-    // @ts-ignore
+    // @ts-expect-error
     mockKanvas.getBoundingClientRect = getBoundingClientRect;
     document.body.appendChild(mockKanvas);
 
@@ -97,7 +97,7 @@ describe("FloatingMenu.vue", () => {
       y: y * mockedStores.canvasStore.zoomFactor,
     }));
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenFromCanvasCoordinates =
       screenFromCanvasCoordinatesMock ?? defaultScreenFromCanvasCoordinatesMock;
 

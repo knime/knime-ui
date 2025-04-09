@@ -5,7 +5,7 @@ import type { Renderer, RendererOptions } from "./types";
 export function baseUse(options: RendererOptions) {
   const { createElement: _createElement, name } = options;
   function createElement(...args: any) {
-    // @ts-expect-error
+    // @ts-expect-error (please add error description)
     const element = _createElement(...args);
     element._vp_name = name;
     return element;

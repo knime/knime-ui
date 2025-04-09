@@ -201,7 +201,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       baseUrl: getHubBaseUrl(activeProjectProvider),
     });
     await hubApi?.deleteVersion({
-      projectItemId: useApplicationStore().activeProjectOrigin?.itemId!,
+      projectItemId: useApplicationStore().activeProjectOrigin!.itemId,
       version,
     });
 

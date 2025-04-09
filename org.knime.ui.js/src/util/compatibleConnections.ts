@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-extra-parens */
 import type {
   AvailablePortTypes,
   NodePortGroups,

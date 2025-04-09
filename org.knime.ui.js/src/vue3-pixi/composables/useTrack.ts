@@ -37,7 +37,7 @@ export function useTrack<T, K extends keyof OmitUndef<T>>(
   }));
   whenever(
     () => toValue(target),
-    // @ts-expect-error
+    // @ts-expect-error (please add error description)
     (target) => (target[key] ??= defaultValue!),
   );
   return trackRef;

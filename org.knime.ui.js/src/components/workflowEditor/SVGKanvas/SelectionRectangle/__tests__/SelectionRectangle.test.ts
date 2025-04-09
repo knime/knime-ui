@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
@@ -42,13 +41,13 @@ describe("SelectionRectangle", () => {
     const workflow = createWorkflow();
 
     const mockedStores = mockStores();
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.selectionStore.selectedNodeIds = selectedNodeIds;
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.selectionStore.selectedAnnotationIds = selectedAnnotationIds;
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.selectionStore.selectedBendpointIds = selectedBendpointIds;
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates = vi
       .fn()
       .mockImplementation(([x, y]) => [x, y]);
@@ -544,7 +543,7 @@ describe("SelectionRectangle", () => {
     it("unregister events on beforeUnmount", () => {
       const $bussOffSpy = vi.spyOn($bus, "off");
       const { wrapper } = doMount();
-      // @ts-ignore
+      // @ts-expect-error
       wrapper.vm.$parent.$off = vi.fn();
       wrapper.unmount();
       expect($bussOffSpy).toHaveBeenCalledTimes(4);

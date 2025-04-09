@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 import { createTestingPinia } from "@pinia/testing";
@@ -124,7 +123,7 @@ describe("Node Repository store", () => {
 
     // setup stores
 
-    // @ts-ignore
+    // @ts-expect-error
     useApplicationStore(testingPinia).setAvailablePortTypes(availablePortTypes);
     useSettingsStore(testingPinia).settings.nodeRepositoryDisplayMode =
       nodeRepositoryDisplayMode;
@@ -147,7 +146,7 @@ describe("Node Repository store", () => {
       const { nodeRepository } = createStore();
       expect(nodeRepository.nodesPerTagContainNodeId(nodeId)).toBe(false);
       nodeRepository.nodesPerTag = [
-        // @ts-ignore
+        // @ts-expect-error
         { tag: "tag:1", nodes: [{ id: "1" }, { id: "2" }] },
       ];
       expect(nodeRepository.nodesPerTagContainNodeId("3")).toBe(false);
@@ -156,7 +155,7 @@ describe("Node Repository store", () => {
 
     it("returns proper value for isSelectedNodeVisible for searches", () => {
       const { nodeRepository } = createStore();
-      // @ts-ignore
+      // @ts-expect-error
       nodeRepository.nodes = [{ id: "1", name: "Node" }];
       nodeRepository.query = "value";
       expect(nodeRepository.isNodeVisible("3")).toBe(false);
@@ -167,11 +166,11 @@ describe("Node Repository store", () => {
       const { nodeRepository } = createStore("tree");
 
       nodeRepository.nodeCategoryCache.set("something", {
-        // @ts-ignore
+        // @ts-expect-error
         nodes: [{ id: "node1", name: "Node" }],
       });
       nodeRepository.nodeCategoryCache.set("other", {
-        // @ts-ignore
+        // @ts-expect-error
         nodes: [{ id: "node3", name: "Node" }],
       });
       nodeRepository.treeExpandedKeys.add("something");
@@ -184,7 +183,7 @@ describe("Node Repository store", () => {
       const { nodeRepository } = createStore();
       expect(nodeRepository.isNodeVisible("0")).toBe(false);
       nodeRepository.nodesPerTag = [
-        // @ts-ignore
+        // @ts-expect-error
         { tag: "tag:1", nodes: [{ id: "1" }, { id: "2" }] },
       ];
       expect(nodeRepository.isNodeVisible("2")).toBe(true);
@@ -202,7 +201,7 @@ describe("Node Repository store", () => {
       const { nodeRepository } = createStore();
       const tags = [{ tag: "MyTag1", nodes: [{ id: "node1" }] }];
       nodeRepository.setNodesPerTags({
-        // @ts-ignore
+        // @ts-expect-error
         groupedNodes: [{ tag: "MyTag1", nodes: [{ id: "node1" }] }],
       });
       expect(nodeRepository.nodesPerTag).toStrictEqual(tags);
@@ -239,7 +238,7 @@ describe("Node Repository store", () => {
     it("sets selected node", () => {
       const { nodeRepository } = createStore();
       const node = { id: "node1" };
-      // @ts-ignore
+      // @ts-expect-error
       nodeRepository.setSelectedNode({ id: "node1" });
       expect(nodeRepository.selectedNode).toEqual(node);
     });

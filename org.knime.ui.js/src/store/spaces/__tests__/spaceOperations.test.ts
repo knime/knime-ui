@@ -66,7 +66,7 @@ describe("spaces::spaceOperations", () => {
         loadStore();
 
       spaceProvidersStore.spaceProviders = {
-        // @ts-ignore
+        // @ts-expect-error
         hub1: {},
       };
 
@@ -103,11 +103,11 @@ describe("spaces::spaceOperations", () => {
       const { spaceOperationsStore, spaceProvidersStore } = loadStore();
 
       // mute consola
-      // @ts-ignore
+      // @ts-expect-error
       consola.error = () => {};
 
       spaceProvidersStore.spaceProviders = {
-        // @ts-ignore
+        // @ts-expect-error
         hub1: {},
       };
 
@@ -136,7 +136,7 @@ describe("spaces::spaceOperations", () => {
       const { spaceOperationsStore, spaceProvidersStore } = loadStore();
 
       spaceProvidersStore.spaceProviders = {
-        // @ts-ignore
+        // @ts-expect-error
         hub1: {},
       };
 
@@ -174,7 +174,7 @@ describe("spaces::spaceOperations", () => {
 
       spaceCachingStore.workflowGroupCache.set(
         JSON.stringify(spaceCachingStore.projectPath.myProject1),
-        // @ts-ignore
+        // @ts-expect-error
         { path: [{ id: "level1" }, { id: "level2" }] },
       );
 
@@ -372,7 +372,7 @@ describe("spaces::spaceOperations", () => {
         providerId: "local",
         spaceId: "local",
         itemId: "dummy",
-        // @ts-ignore
+        // @ts-expect-error
         $router: mockRouter,
       });
 
@@ -471,7 +471,7 @@ describe("spaces::spaceOperations", () => {
       await spaceOperationsStore.deleteItems({
         projectId: "project2",
         itemIds,
-        // @ts-ignore
+        // @ts-expect-error
         $router: {},
       });
 
@@ -529,7 +529,7 @@ describe("spaces::spaceOperations", () => {
       await spaceOperationsStore.deleteItems({
         projectId: "project2",
         itemIds,
-        // @ts-ignore
+        // @ts-expect-error
         $router,
       });
 
@@ -565,7 +565,7 @@ describe("spaces::spaceOperations", () => {
       });
 
       await spaceOperationsStore.deleteItems(
-        // @ts-ignore
+        // @ts-expect-error
         { projectId, itemIds },
       );
       expect(
@@ -590,7 +590,7 @@ describe("spaces::spaceOperations", () => {
       await spaceOperationsStore.deleteItems({
         projectId: "project2",
         itemIds,
-        // @ts-ignore
+        // @ts-expect-error
         $router: {},
       });
 
@@ -767,7 +767,7 @@ describe("spaces::spaceOperations", () => {
         };
         spaceCachingStore.workflowGroupCache.set(
           JSON.stringify(spaceCachingStore.projectPath[projectId]),
-          // @ts-ignore
+          // @ts-expect-error
           { path: [{ id: "level1" }, { id: "level2" }] },
         );
 
@@ -787,7 +787,7 @@ describe("spaces::spaceOperations", () => {
         };
         spaceCachingStore.workflowGroupCache.set(
           JSON.stringify(spaceCachingStore.projectPath[projectId]),
-          // @ts-ignore
+          // @ts-expect-error
           { path: [] },
         );
 
@@ -806,7 +806,7 @@ describe("spaces::spaceOperations", () => {
         };
         spaceCachingStore.workflowGroupCache.set(
           JSON.stringify(spaceCachingStore.projectPath[projectId]),
-          // @ts-ignore
+          // @ts-expect-error
           { path: [{ id: "path1" }] },
         );
 
@@ -825,7 +825,7 @@ describe("spaces::spaceOperations", () => {
         };
         spaceCachingStore.workflowGroupCache.set(
           JSON.stringify(spaceCachingStore.projectPath[projectId]),
-          // @ts-ignore
+          // @ts-expect-error
           { path: [{ id: "path1" }, { id: "path2" }] },
         );
 
@@ -846,7 +846,7 @@ describe("spaces::spaceOperations", () => {
         };
         spaceCachingStore.workflowGroupCache.set(
           JSON.stringify(spaceCachingStore.projectPath[projectId]),
-          // @ts-ignore
+          // @ts-expect-error
           { path: [] },
         );
 
@@ -865,7 +865,7 @@ describe("spaces::spaceOperations", () => {
         };
         spaceCachingStore.workflowGroupCache.set(
           JSON.stringify(spaceCachingStore.projectPath[projectId]),
-          // @ts-ignore
+          // @ts-expect-error
           { path: [{ id: "path1" }] },
         );
 
@@ -897,7 +897,7 @@ describe("spaces::spaceOperations", () => {
 
         spaceCachingStore.workflowGroupCache.set(
           JSON.stringify(spaceCachingStore.projectPath[projectId]),
-          // @ts-ignore
+          // @ts-expect-error
           fetchWorkflowGroupContentResponse,
         );
 
@@ -979,7 +979,7 @@ describe("spaces::spaceOperations", () => {
         };
         spaceProvidersStore.spaceProviders = {
           private: {
-            // @ts-ignore
+            // @ts-expect-error
             spaces: [{ id: "local" }],
           },
         };
@@ -1003,7 +1003,7 @@ describe("spaces::spaceOperations", () => {
 
         spaceCachingStore.workflowGroupCache.set(
           JSON.stringify(spaceCachingStore.projectPath[projectId]),
-          // @ts-ignore
+          // @ts-expect-error
           activeWorkflowGroup,
         );
 

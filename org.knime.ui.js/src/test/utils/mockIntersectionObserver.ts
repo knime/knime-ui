@@ -5,13 +5,13 @@ type IntersectionObserverMockType = {
   __trigger__: (isIntersecting: boolean) => void;
 };
 
-// @ts-ignore
+// @ts-expect-error
 export const MockIntersectionObserver: IntersectionObserverMockType =
   function MockIntersectionObserver(this: any, callback) {
     this.callbackRef = callback;
     this.element = null;
 
-    // @ts-ignore
+    // @ts-expect-error
     MockIntersectionObserver.__trigger__ = (isIntersecting = false) => {
       this.callbackRef([{ isIntersecting }]);
     };

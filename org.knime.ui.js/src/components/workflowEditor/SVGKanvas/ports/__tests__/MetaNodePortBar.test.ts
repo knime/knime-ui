@@ -1,4 +1,3 @@
-/* eslint-disable vitest/no-conditional-tests */
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";

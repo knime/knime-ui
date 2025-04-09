@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 import {
   type ApplicationState,
   useApplicationStore,
@@ -18,6 +17,7 @@ const featureFlagDefaults = {
   // [`${featureFlagsPrefix}.new_feature`]: false,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getFlagValue = (
   featureFlags: ApplicationState["featureFlags"] = featureFlagDefaults,
   name: string,
@@ -27,6 +27,7 @@ const getFlagValue = (
 
 export const features: (
   featureFlags: ApplicationState["featureFlags"],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 ) => Features = (featureFlags) => ({
   // Define your feature flag getters here, e.g.:
   // newFeature: () => getFlagValue(featureFlags, "new_feature"),

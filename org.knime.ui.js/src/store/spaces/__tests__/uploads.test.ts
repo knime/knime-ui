@@ -36,7 +36,7 @@ vi.mock("@knime/hub-features", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
 
     useFileUpload: (options) => {
@@ -81,7 +81,7 @@ vi.mock("@vueuse/core", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useFileDialog: vi.fn(() => ({
       open,

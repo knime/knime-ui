@@ -190,7 +190,7 @@ export const useComponentInteractionsStore = defineStore(
           });
           addToastId(workflowId, toastId);
           this.setProcessedNotification({ projectId, value: true });
-        } catch (error) {
+        } catch (_error) {
           const toastId = $toast.show({
             type: "error",
             headline: TOAST_HEADLINE,

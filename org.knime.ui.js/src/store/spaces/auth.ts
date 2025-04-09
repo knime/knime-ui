@@ -108,6 +108,7 @@ export const useSpaceAuthStore = defineStore("space.auth", {
           return null;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { spaceGroups, ...otherProperties } =
           providersStore.spaceProviders[spaceProviderId];
 

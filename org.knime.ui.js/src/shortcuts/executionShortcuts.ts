@@ -26,7 +26,6 @@ const executeAndOpenViewHelper = ({ payload = {} }: ShortcutExecuteContext) => {
   useExecutionStore().executeNodeAndOpenView(selectedNodeId);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-extra-parens
 const canExecuteAndOpenView = () =>
   useUIControlsStore().canDetachNodeViews &&
   Boolean(useSelectionStore().singleSelectedNode) &&

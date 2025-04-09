@@ -201,13 +201,13 @@ describe("workflow store: Execution", () => {
           mockStores();
 
         applicationStore.availablePortTypes = createAvailablePortTypes({
-          // @ts-ignore
+          // @ts-expect-error
           mockType0: { views: {} },
-          // @ts-ignore
+          // @ts-expect-error
           mockType1: { views: {} },
-          // @ts-ignore
+          // @ts-expect-error
           mockType2: { views: {} },
-          // @ts-ignore
+          // @ts-expect-error
           mockType3: { views: {} },
         });
 

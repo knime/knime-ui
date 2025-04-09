@@ -36,7 +36,6 @@ export const generateWorkflowPreview = async (isEmpty: boolean) => {
   webglCanvasStore.fitToScreen();
 
   // wait until node icons are loaded
-  // eslint-disable-next-line no-magic-numbers
   await sleep(10);
 
   // this is the real size including everything on the stage and with no scaling/offset

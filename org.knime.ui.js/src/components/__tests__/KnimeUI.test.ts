@@ -16,7 +16,7 @@ vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     useRouter: vi.fn(() => ({ push: () => {} })),
     useRoute: vi.fn(() => ({ meta: {} })),
@@ -46,7 +46,7 @@ describe("KnimeUI.vue", () => {
   );
 
   beforeAll(() => {
-    // @ts-ignore
+    // @ts-expect-error
     window.fetch = mockFetch;
   });
 
@@ -54,7 +54,7 @@ describe("KnimeUI.vue", () => {
     initializeApplication = vi.fn().mockResolvedValue({}),
     uiControlsOverrides = {},
   } = {}) => {
-    // @ts-ignore: assign read-only property
+    // @ts-expect-error assign read-only property
     document.fonts = {
       load: vi.fn(() => Promise.resolve("dummy")),
     };
@@ -105,7 +105,7 @@ describe("KnimeUI.vue", () => {
   });
 
   it("does not display the UpdateBanner when dismissedUpdateBanner is true", async () => {
-    // @ts-ignore
+    // @ts-expect-error
     useRoute.mockReturnValue({
       meta: { showUpdateBanner: true },
     });
@@ -121,7 +121,7 @@ describe("KnimeUI.vue", () => {
   });
 
   it("renders UpdateBanner if showUpdateBanner in meta in router is true", async () => {
-    // @ts-ignore
+    // @ts-expect-error
     useRoute.mockReturnValue({
       meta: { showUpdateBanner: true },
     });

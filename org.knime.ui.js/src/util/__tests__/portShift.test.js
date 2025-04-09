@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-/* eslint-disable max-nested-callbacks */
 
 import portShift, { placeholderPosition, portPositions } from "../portShift";
 

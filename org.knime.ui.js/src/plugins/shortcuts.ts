@@ -16,11 +16,11 @@ import type { PluginInitFunction } from "./types";
 // - add string representation of hotkeys
 // - add shortcut name
 Object.entries(shortcuts).forEach(([name, shortcut]) => {
-  // @ts-ignore
+  // @ts-expect-error (please add error description)
   shortcut.name = name;
 
   if (shortcut.hotkey) {
-    // @ts-ignore
+    // @ts-expect-error (please add error description)
     shortcut.hotkeyText = hotkeys.formatHotkeys(shortcut.hotkey);
   }
 });

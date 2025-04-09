@@ -377,7 +377,7 @@ export const useWorkflowStore = defineStore("workflow", {
         projectId,
         workflowId,
         // TODO: NXT-2023: remove when types are correctly generated
-        // @ts-expect-error
+        // @ts-expect-error (please add error description)
         description,
         type: (type as UpdateComponentMetadataCommand.TypeEnum) ?? undefined,
         metadataType: EditableMetadata.MetadataTypeEnum.Component,
@@ -406,7 +406,7 @@ export const useWorkflowStore = defineStore("workflow", {
         projectId,
         workflowId,
         // TODO: NXT-2023: remove when types are correctly generated
-        // @ts-expect-error
+        // @ts-expect-error (please add error description)
         metadataType: EditableMetadata.MetadataTypeEnum.Project,
         description,
         tags,

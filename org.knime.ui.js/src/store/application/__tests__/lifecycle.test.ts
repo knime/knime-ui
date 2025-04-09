@@ -32,7 +32,7 @@ vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     setupHints: vi.fn(),
   };
@@ -60,7 +60,7 @@ describe("application::lifecycle", () => {
     it("initialization (DESKTOP)", async () => {
       const router = getRouter();
 
-      // @ts-ignore
+      // @ts-expect-error
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
       const { lifecycleStore, applicationStore, settingsStore } = loadStore();
@@ -92,7 +92,7 @@ describe("application::lifecycle", () => {
 
     it("initialization (BROWSER)", async () => {
       const router = getRouter();
-      // @ts-ignore
+      // @ts-expect-error
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
 

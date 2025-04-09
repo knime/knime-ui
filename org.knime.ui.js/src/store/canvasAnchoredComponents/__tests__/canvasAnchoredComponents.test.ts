@@ -138,7 +138,7 @@ describe("canvasAnchoredComponents", () => {
     it("closes the quick add node menu", () => {
       const { canvasAnchoredComponentsStore } = mockStores();
 
-      // @ts-ignore
+      // @ts-expect-error
       canvasAnchoredComponentsStore.openQuickActionMenu({});
       expect(canvasAnchoredComponentsStore.quickActionMenu.isOpen).toBe(true);
 
@@ -192,7 +192,7 @@ describe("canvasAnchoredComponents", () => {
     it("closes the port type menu", () => {
       const { canvasAnchoredComponentsStore } = mockStores();
 
-      // @ts-ignore
+      // @ts-expect-error
       canvasAnchoredComponentsStore.openPortTypeMenu({});
       expect(canvasAnchoredComponentsStore.portTypeMenu.isOpen).toBe(true);
 
@@ -205,7 +205,7 @@ describe("canvasAnchoredComponents", () => {
     const mockStoresWith = () => {
       const mockedStores = mockStores();
 
-      // @ts-ignore
+      // @ts-expect-error
       mockedStores.canvasStore.screenToCanvasCoordinates = ([x, y]) => [x, y];
 
       return mockedStores;
@@ -232,7 +232,7 @@ describe("canvasAnchoredComponents", () => {
       const { selectionStore, canvasAnchoredComponentsStore } =
         mockStoresWith();
 
-      // @ts-ignore
+      // @ts-expect-error
       await canvasAnchoredComponentsStore.toggleContextMenu({ event });
       expect(selectionStore.deselectAllObjects).not.toHaveBeenCalled();
       expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
@@ -285,7 +285,7 @@ describe("canvasAnchoredComponents", () => {
         ...node2.position,
       });
 
-      // @ts-ignore
+      // @ts-expect-error
       await canvasAnchoredComponentsStore.toggleContextMenu({ event });
       expect(selectionStore.deselectAllObjects).not.toHaveBeenCalled();
       expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
@@ -305,7 +305,7 @@ describe("canvasAnchoredComponents", () => {
       const { node1 } = createAndSetWorkflow(workflowStore);
       selectionStore.addNodesToSelection([node1.id]);
 
-      // @ts-ignore
+      // @ts-expect-error
       await canvasAnchoredComponentsStore.toggleContextMenu({ event });
       expect(selectionStore.deselectAllObjects).not.toHaveBeenCalled();
       expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
@@ -325,10 +325,10 @@ describe("canvasAnchoredComponents", () => {
       const { selectionStore, canvasStore, canvasAnchoredComponentsStore } =
         mockStoresWith();
 
-      // @ts-ignore
+      // @ts-expect-error
       canvasStore.getCenterOfScrollContainer = () => ({ x: 10, y: 10 });
 
-      // @ts-ignore
+      // @ts-expect-error
       await canvasAnchoredComponentsStore.toggleContextMenu({ event });
       expect(selectionStore.deselectAllObjects).not.toHaveBeenCalled();
       expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
@@ -349,7 +349,7 @@ describe("canvasAnchoredComponents", () => {
         mockStoresWith();
 
       await canvasAnchoredComponentsStore.toggleContextMenu({
-        // @ts-ignore
+        // @ts-expect-error
         event,
         deselectAllObjects: true,
       });
@@ -371,7 +371,7 @@ describe("canvasAnchoredComponents", () => {
       };
       const { event, preventDefault } = createEvent();
 
-      // @ts-ignore
+      // @ts-expect-error
       await canvasAnchoredComponentsStore.toggleContextMenu({ event });
 
       expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(false);
@@ -387,7 +387,7 @@ describe("canvasAnchoredComponents", () => {
       async (_, stateMenuKey) => {
         const { canvasAnchoredComponentsStore } = mockStoresWith();
         const menuCloseMock = vi.fn();
-        // @ts-ignore
+        // @ts-expect-error
         canvasAnchoredComponentsStore[stateMenuKey] = {
           isOpen: true,
           events: {
@@ -396,7 +396,7 @@ describe("canvasAnchoredComponents", () => {
         };
         const { event } = createEvent();
 
-        // @ts-ignore
+        // @ts-expect-error
         await canvasAnchoredComponentsStore.toggleContextMenu({ event });
         expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
         expect(menuCloseMock).toHaveBeenCalled();

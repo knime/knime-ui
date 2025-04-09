@@ -65,7 +65,6 @@ const menuGroups = function () {
 
       currItems = currItems.concat(newItems);
 
-      // eslint-disable-next-line no-invalid-this
       return this;
     },
 
@@ -204,7 +203,6 @@ const portViews = (): MenuItem[] => {
 
     const headline: MenuItem = {
       text: buildPortNameAndIndex(port.name, portIndex),
-      // @ts-ignore
       icon: buildPortViewIcon(node, port, portIndex),
       sectionHeadline: true,
       separator: true,

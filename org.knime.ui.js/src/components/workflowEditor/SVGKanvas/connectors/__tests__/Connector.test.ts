@@ -73,7 +73,7 @@ describe("Connector.vue", () => {
       },
     );
 
-    // @ts-ignore
+    // @ts-expect-error
     mockedStores.canvasStore.screenToCanvasCoordinates = vi.fn(() => [5, 5]);
 
     const { sourceNode, destNode, connection } = createConnectedNodes(
@@ -315,7 +315,7 @@ describe("Connector.vue", () => {
         props: { streaming: true },
       });
 
-      // @ts-ignore
+      // @ts-expect-error
       mockedStores.workflowStore.activeWorkflow!.jobManager = {};
       await nextTick();
 
@@ -411,7 +411,7 @@ describe("Connector.vue", () => {
       });
 
       const { mockedStores } = createStore({ workflow });
-      // @ts-ignore
+      // @ts-expect-error
       mockedStores.canvasStore.contentBounds = {
         top: 33,
         height: 1236,
@@ -488,7 +488,7 @@ describe("Connector.vue", () => {
 
   describe("indicates being replaced", () => {
     beforeEach(() => {
-      // @ts-ignore
+      // @ts-expect-error
       animate.mockReset();
     });
 
@@ -592,9 +592,9 @@ describe("Connector.vue", () => {
       const { mockedStores, connection } = createStore();
       mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
       mockedStores.nodeTemplatesStore.draggedTemplateData = {
-        // @ts-ignore
+        // @ts-expect-error
         inPorts: [portMock],
-        // @ts-ignore
+        // @ts-expect-error
         outPorts: [portMock],
       };
 
@@ -620,9 +620,9 @@ describe("Connector.vue", () => {
 
       mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
       mockedStores.nodeTemplatesStore.draggedTemplateData = {
-        // @ts-ignore
+        // @ts-expect-error
         inPorts: [{ ...portMock, typeId: "portType2" }],
-        // @ts-ignore
+        // @ts-expect-error
         outPorts: [{ ...portMock, typeId: "portType2" }],
       };
 
@@ -644,9 +644,9 @@ describe("Connector.vue", () => {
 
       mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
       mockedStores.nodeTemplatesStore.draggedTemplateData = {
-        // @ts-ignore
+        // @ts-expect-error
         inPorts: [portMock],
-        // @ts-ignore
+        // @ts-expect-error
         outPorts: [portMock],
       };
 
@@ -721,9 +721,9 @@ describe("Connector.vue", () => {
 
       mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
       mockedStores.nodeTemplatesStore.draggedTemplateData = {
-        // @ts-ignore
+        // @ts-expect-error
         inPorts: [{ ...portMock, typeId: "portType2" }],
-        // @ts-ignore
+        // @ts-expect-error
         outPorts: [{ ...portMock, typeId: "portType2" }],
       };
 
@@ -865,7 +865,6 @@ describe("Connector.vue", () => {
 
       segmentComponents.forEach((comp, i) => {
         const segment = comp.props("segment");
-        // eslint-disable-next-line vitest/no-conditional-tests
         if (i === 0) {
           expect(segment.start).toEqual(startCoord);
           expect(segment.isStart).toBe(true);
@@ -873,7 +872,6 @@ describe("Connector.vue", () => {
           return;
         }
 
-        // eslint-disable-next-line vitest/no-conditional-tests
         if (i === totalSegments - 1) {
           expect(segment.end).toEqual(endCoord);
           expect(segment.isStart).toBe(false);

@@ -1,4 +1,3 @@
-/* eslint-disable new-cap */
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
@@ -27,7 +26,7 @@ describe("Event Plugin", () => {
   beforeAll(() => {
     const registerEventHandlers = (handlers: any) => {
       Object.entries(handlers).forEach(([key, value]) => {
-        // @ts-ignore
+        // @ts-expect-error
         registeredHandlers[key] = value;
       });
     };
@@ -50,7 +49,7 @@ describe("Event Plugin", () => {
 
     const mockedStores = mockStores({ stubActions: true });
 
-    // @ts-ignore
+    // @ts-expect-error
     eventsPlugin({ $router: routerMock, $toast: toastMock });
 
     return { mockedStores, routerMock, toastMock };

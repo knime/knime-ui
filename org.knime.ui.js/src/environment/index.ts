@@ -2,8 +2,6 @@ import type { App } from "vue";
 
 import DynamicEnvRenderer from "./DynamicEnvRenderer.vue";
 
-/* eslint-disable new-cap */
-
 export type Environment = "DESKTOP" | "BROWSER";
 
 export const environment: Environment =

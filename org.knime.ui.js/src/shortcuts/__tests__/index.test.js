@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-/* eslint-disable max-nested-callbacks */
 import { mockStores } from "@/test/utils/mockStores";
 import shortcuts, { conditionGroup } from "..";
 import canvasShortcutsMock from "../canvasShortcuts";

@@ -247,7 +247,6 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
 const actionBarPosition = computed(() => {
   return {
     x: translatedPosition.value.x + $shapes.nodeSize / 2,
-    // eslint-disable-next-line no-magic-numbers
     y:
       translatedPosition.value.y +
       nodeSelectionMeasures.value.y +

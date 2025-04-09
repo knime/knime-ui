@@ -56,7 +56,7 @@ describe("NodeTemplate.vue", () => {
     expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
   });
 
-  it("it adds class when node is hovered over", async () => {
+  it("adds class when node is hovered over", async () => {
     const { wrapper } = doMount();
 
     await wrapper.find(".node").trigger("pointerenter");

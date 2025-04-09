@@ -67,7 +67,7 @@ watch(toRef(props, "suggestDelete"), (newValue, oldValue) => {
 
   animate(
     visiblePath.value,
-    // @ts-ignore
+    // @ts-expect-error (please add error description)
     { d: newPath },
     {
       duration: 0.2,

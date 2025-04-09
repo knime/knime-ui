@@ -95,7 +95,7 @@ describe("SpaceSelectionPage.vue", () => {
 
   describe("for page with known space group", () => {
     beforeEach(() => {
-      // @ts-ignore
+      // @ts-expect-error
       useRoute.mockImplementation(() => ({
         name: APP_ROUTES.Home.SpaceSelectionPage,
         params: {
@@ -219,7 +219,7 @@ describe("SpaceSelectionPage.vue", () => {
 
   describe("for page with all space groups", () => {
     beforeEach(() => {
-      // @ts-ignore
+      // @ts-expect-error
       useRoute.mockImplementation(() => ({
         name: APP_ROUTES.Home.SpaceSelectionPage,
         params: {
@@ -273,7 +273,7 @@ describe("SpaceSelectionPage.vue", () => {
   });
 
   it("for page with no space groups it should show a message", () => {
-    // @ts-ignore
+    // @ts-expect-error
     useRoute.mockImplementation(() => ({
       name: APP_ROUTES.Home.SpaceSelectionPage,
       params: {
