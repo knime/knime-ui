@@ -10,6 +10,7 @@ export default [
     ignores: [
       "**/generated-api.ts",
       "**/generated-exceptions.ts",
+      "playwright-report",
       "**/vue3-pixi", // TODO: fix issues inside vue3-pixi
     ],
   },
