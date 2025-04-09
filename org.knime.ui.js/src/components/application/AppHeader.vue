@@ -24,6 +24,7 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { openInspector, reloadApp } from "@/util/devTools";
 
 import { AppHeaderContextMenu } from "./AppHeaderContextMenu";
 import AppHeaderTab from "./AppHeaderTab.vue";
@@ -92,24 +93,6 @@ const setupResizeListener = () => {
 };
 
 setupResizeListener();
-
-const reloadApp = () => (window.location.href = "/");
-
-const openInspector = async () => {
-  const remoteDebuggingPort =
-    import.meta.env.KNIME_CEF_REMOTE_DEBUGGING_PORT || "8888";
-  const remoteDebuggingUrl = `http://localhost:${remoteDebuggingPort}`;
-  const response = await fetch(`${remoteDebuggingUrl}/json`);
-  const targets = await response.json();
-  targets.forEach((target) => {
-    if (target.type === "page" && target.title === "KNIME Analytics Platform") {
-      window.open(
-        `${remoteDebuggingUrl}${target.devtoolsFrontendUrl}`,
-        "_blank",
-      );
-    }
-  });
-};
 
 const setGetStartedPageTab = () => {
   $router.push({ name: APP_ROUTES.Home.GetStarted });

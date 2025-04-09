@@ -2,6 +2,7 @@ import type { Router } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import {
   cachedLocalSpaceProjectId,
@@ -11,6 +12,7 @@ import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { openInspector } from "@/util/devTools";
 
 import type { UnionToShortcutRegistry } from "./types";
 
@@ -19,6 +21,7 @@ type ApplicationShortcuts = UnionToShortcutRegistry<
   | "createWorkflow"
   | "switchToNextWorkflow"
   | "switchToPreviousWorkflow"
+  | "openDevTools"
 >;
 
 declare module "./index" {
@@ -101,6 +104,16 @@ const applicationShortcuts: ApplicationShortcuts = {
     execute: ({ $router }) => {
       switchActiveProject($router, -1);
     },
+  },
+  openDevTools: {
+    hotkey: ["F12"],
+    additionalHotkeys: [{ key: ["Ctrl", "Shift", "I"], visible: false }],
+    text: "Dev Tools",
+    hidden: true,
+    execute: () => {
+      openInspector();
+    },
+    condition: () => useApplicationSettingsStore().devMode,
   },
 };
 

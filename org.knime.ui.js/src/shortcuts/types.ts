@@ -75,6 +75,11 @@ export type Shortcut = {
   group?: ShortcutGroups;
 
   /**
+   * Hide the shortcut in the ShortcutOverviewDialog
+   */
+  hidden?: boolean;
+
+  /**
    * Tooltip to display for the shortcut (on mouse hover)
    */
   title?: string;

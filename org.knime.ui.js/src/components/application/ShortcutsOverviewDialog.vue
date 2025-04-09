@@ -24,7 +24,7 @@ type ShortcutGroupsWithOthers = ShortcutGroups | "others";
 type ShortcutItemData = FormattedShortcut & { displayText: string };
 
 const boundShortcuts = Object.values(shortcuts).filter(
-  (s) => s.hotkey,
+  (s: Shortcut) => s.hotkey && !s.hidden,
 ) as Array<Shortcut>;
 
 const getText = (shortcut: FormattedShortcut) => {
