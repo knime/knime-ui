@@ -94,6 +94,7 @@ class ProjectAPITest {
             .build();
         pm.addProject(project);
 
+        DesktopAPI.injectDependency(pm);
         ProjectAPI.setProjectActiveAndEnsureItsLoaded(projectId, VersionId.currentState().toString());
 
         assertThat(pm.getProject(projectId)).isNotEmpty();

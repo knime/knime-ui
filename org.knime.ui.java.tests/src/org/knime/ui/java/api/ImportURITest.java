@@ -116,6 +116,7 @@ class ImportURITest {
                 .setId(projectId) //
                 .build();
             ProjectManager.getInstance().addProject(project);
+            ProjectManager.getInstance().setProjectActive(projectId);
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
                 new WorkflowMiddleware(ProjectManager.getInstance(), null));
             var nodeFactoryProvider = mock(NodeFactoryProvider.class);

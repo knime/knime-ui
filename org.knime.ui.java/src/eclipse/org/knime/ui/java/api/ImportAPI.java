@@ -153,7 +153,7 @@ final class ImportAPI {
     static String importComponent(final String projectId, final String workflowId, final URI uri,
             final boolean isRemoteLocation, final double x, final double y) {
         var workflowIdEnt = new NodeIDEnt(workflowId);
-        Supplier<WorkflowManager> wfmSupplier = () -> WorkflowManagerResolver.load(projectId, workflowIdEnt); // TODO: Is 'load' the right thing to do here?
+        Supplier<WorkflowManager> wfmSupplier = () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
         Supplier<NodeID> command = () -> Display.getDefault().syncCall(() -> {
             var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfmSupplier.get(), uri, (int)x, (int)y,
                 isRemoteLocation, false);
