@@ -23,12 +23,12 @@ import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
 /**
  * Renders a node view
- * TODO: NXT-3540, Add a version property here?
  */
 
 type Props = {
   projectId: string;
   workflowId: string;
+  versionId?: string;
   selectedNode: NativeNode;
   timestamp: number;
 };
@@ -61,7 +61,7 @@ const loadExtensionConfig = async () => {
     const nodeView = await API.node.getNodeView({
       projectId: props.projectId,
       workflowId: props.workflowId,
-      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+      versionId: props.versionId ?? CURRENT_STATE_VERSION,
       nodeId,
     });
 
@@ -70,7 +70,7 @@ const loadExtensionConfig = async () => {
         API.node.deactivateNodeDataServices({
           projectId: props.projectId,
           workflowId: props.workflowId,
-          versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+          versionId: props.versionId ?? CURRENT_STATE_VERSION,
           nodeId,
           extensionType: "view",
         });
@@ -103,7 +103,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.node.callNodeDataService({
       projectId: props.projectId,
       workflowId: props.workflowId,
-      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+      versionId: props.versionId ?? CURRENT_STATE_VERSION,
       nodeId: props.selectedNode.id,
       extensionType: "view",
       serviceType,
@@ -117,7 +117,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.node.updateDataPointSelection({
       projectId: props.projectId,
       workflowId: props.workflowId,
-      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+      versionId: props.versionId ?? CURRENT_STATE_VERSION,
       nodeId: props.selectedNode.id,
       mode: mode as "add" | "remove" | "replace",
       selection,

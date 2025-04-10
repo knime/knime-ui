@@ -250,6 +250,7 @@ const onPortViewLoadingState = async (
           v-if="isViewTabSelected && singleSelectedNode.kind === 'node'"
           :project-id="projectId!"
           :workflow-id="workflowId"
+          :version-id="versionId"
           :selected-node="singleSelectedNode as NativeNode"
           :timestamp="timestamp || 0"
           :available-port-types="availablePortTypes"

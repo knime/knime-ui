@@ -52,6 +52,7 @@ const runNodeValidationChecks = ({
 type Props = {
   projectId: string;
   workflowId: string;
+  versionId?: string;
   selectedNode: NativeNode;
   timestamp: number;
   availablePortTypes: AvailablePortTypes;
@@ -109,6 +110,7 @@ const openInNewWindow = () => {
     <NodeViewLoader
       :project-id="projectId"
       :workflow-id="workflowId"
+      :version-id="versionId"
       :selected-node="selectedNode"
       :timestamp="timestamp"
       @loading-state-change="emit('loadingStateChange', $event)"
