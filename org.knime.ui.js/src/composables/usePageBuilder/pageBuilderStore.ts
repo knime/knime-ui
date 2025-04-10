@@ -1,3 +1,5 @@
+import { computed } from "vue";
+
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { sleep } from "@knime/utils";
 
@@ -163,17 +165,19 @@ const actions = {
       requestParams,
     }: ServiceRequestParams,
   ): Promise<{ result: any }> {
-    // TODO: NXT-3540: Retrieve the 'versionId' from the extension config
     const { projectId, workflowId, nodeId, extensionType } = extensionConfig;
     let result: any;
 
     const realProjectId = useApplicationStore().activeProjectId ?? projectId;
+    const versionId = computed(
+      () => useWorkflowStore().activeWorkflow!.info.version,
+    );
 
     if (nodeService === "NodeService.callNodeDataService") {
       result = await API.node.callNodeDataService({
         projectId: realProjectId,
         workflowId,
-        versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+        versionId: versionId.value ?? CURRENT_STATE_VERSION,
         nodeId,
         extensionType,
         serviceType: serviceRequest,
@@ -183,7 +187,7 @@ const actions = {
       result = await API.node.updateDataPointSelection({
         projectId: realProjectId,
         workflowId,
-        versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+        versionId: versionId.value ?? CURRENT_STATE_VERSION,
         nodeId,
         mode: serviceRequest,
         selection: requestParams,
@@ -306,10 +310,14 @@ const actions = {
       nodeId,
     );
 
+    const versionId = computed(
+      () => useWorkflowStore().activeWorkflow!.info.version,
+    );
+
     const result = await API.component.getCompositeViewPage({
       projectId,
       workflowId,
-      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+      versionId: versionId.value ?? CURRENT_STATE_VERSION,
       nodeId,
     });
 

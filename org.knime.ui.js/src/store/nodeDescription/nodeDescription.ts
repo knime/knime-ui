@@ -80,12 +80,13 @@ export const useNodeDescriptionStore = defineStore("nodeDescription", {
     }: {
       nodeId: string;
     }): Promise<ComponentNodeDescriptionWithExtendedPorts> {
-      const { projectId, workflowId } =
-        useWorkflowStore().getProjectAndWorkflowIds;
+      const { getProjectAndWorkflowIds, activeWorkflow } = useWorkflowStore();
+      const { projectId, workflowId } = getProjectAndWorkflowIds;
+      const versionId = activeWorkflow?.info.version;
       const params = {
         projectId,
         workflowId,
-        versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+        versionId: versionId ?? CURRENT_STATE_VERSION,
         nodeId,
       };
 
