@@ -35,6 +35,7 @@ const {
 } = storeToRefs(nodeConfigurationStore);
 
 const workflowId = computed(() => activeWorkflow.value!.info.containerId);
+const versionId = computed(() => activeWorkflow.value!.info.version);
 const canBeEnlarged = computed(
   () => activeExtensionConfig.value?.canBeEnlarged ?? false,
 );
@@ -95,6 +96,7 @@ const rightPanelWidth = computed(() => settings.value.nodeDialogSize);
       :active-node="activeNode"
       :project-id="projectId!"
       :workflow-id="workflowId"
+      :version-id="versionId"
       :disabled="isConfigurationDisabled"
       :dirty-state="dirtyState"
       :is-large-mode="props.isLargeMode"

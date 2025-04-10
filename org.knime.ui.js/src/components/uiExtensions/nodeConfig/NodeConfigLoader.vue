@@ -19,11 +19,11 @@ import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
- * TODO: NXT-3540, Add a version property here?
  */
 interface Props {
   projectId: string;
   workflowId: string;
+  versionId?: string;
   selectedNode: NativeNode;
 }
 
@@ -34,7 +34,7 @@ const props = defineProps<Props>();
 const nodeConfigurationStore = useNodeConfigurationStore();
 const { notify } = useNotifyUIExtensionAlert();
 
-const { projectId, workflowId, selectedNode } = toRefs(props);
+const { projectId, workflowId, versionId, selectedNode } = toRefs(props);
 const extensionConfig = ref<ExtensionConfig | null>(null);
 const isConfigReady = ref(false);
 let deactivateDataServicesFn: () => void;
@@ -53,7 +53,7 @@ const loadExtensionConfig = async () => {
   const _extensionConfig = await API.node.getNodeDialog({
     projectId: projectId.value,
     workflowId: workflowId.value,
-    versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+    versionId: versionId.value ?? CURRENT_STATE_VERSION,
     nodeId: selectedNode.value.id,
   });
 
@@ -64,7 +64,7 @@ const loadExtensionConfig = async () => {
       API.node.deactivateNodeDataServices({
         projectId: projectId.value,
         workflowId: workflowId.value,
-        versionId: CURRENT_STATE_VERSION,
+        versionId: versionId.value ?? CURRENT_STATE_VERSION,
         nodeId: selectedNode.value.id,
         extensionType: "dialog",
       });
@@ -96,7 +96,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.node.callNodeDataService({
       projectId: projectId.value,
       workflowId: workflowId.value,
-      versionId: CURRENT_STATE_VERSION,
+      versionId: versionId.value ?? CURRENT_STATE_VERSION,
       nodeId: selectedNode.value.id,
       extensionType: "dialog",
       serviceType,

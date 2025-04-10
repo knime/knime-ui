@@ -14,6 +14,7 @@ type Props = {
   activeNode: NativeNode;
   projectId: string;
   workflowId: string;
+  versionId?: string;
   disabled: boolean;
   dirtyState: APILayerDirtyState;
   nodeName: string;
@@ -81,6 +82,7 @@ const onDiscard = () => {
       :key="mountKey"
       :project-id="projectId!"
       :workflow-id="workflowId"
+      :version-id="versionId"
       :selected-node="activeNode"
       @loading-state-change="loadingState = $event"
     >
