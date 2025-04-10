@@ -256,9 +256,8 @@ describe("SpaceExplorerContextMenu.vue", () => {
     menuItems.vm.$emit("item-click", null, uploadToHub);
     await nextTick();
 
-    expect(mockedStores.spacesStore.copyBetweenSpaces).toHaveBeenCalledWith({
+    expect(mockedStores.spacesStore.uploadToSpace).toHaveBeenCalledWith({
       itemIds: ["2342", "3432"],
-      projectId: "someProjectId",
     });
     expect(closeContextMenu).toHaveBeenCalled();
   });

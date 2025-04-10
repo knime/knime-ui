@@ -171,7 +171,18 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     returnValue: "NOOP",
   },
   {
-    name: "copyBetweenSpaces",
+    name: "downloadFromSpace",
+    params: [
+      ["sourceProviderId", "provider1"],
+      ["sourceSpaceId", "space1"],
+      ["sourceItemIds", ["123", "456"]],
+      ["destinationProviderId", "provider2"],
+      ["destinationSpaceId", "space2"],
+      ["destinationItemId", "123"],
+    ],
+  },
+  {
+    name: "uploadToSpace",
     params: [
       ["sourceProviderId", "provider1"],
       ["sourceSpaceId", "space1"],

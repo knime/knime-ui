@@ -21,9 +21,7 @@ const versionsStore = useWorkflowVersionsStore();
 const { activeProjectVersionsModeInfo, activeProjectVersionsModeStatus } =
   storeToRefs(versionsStore);
 
-const { activeProjectOrigin, openProjects } = storeToRefs(
-  useApplicationStore(),
-);
+const { activeProjectOrigin } = storeToRefs(useApplicationStore());
 
 const { uploadToSpace } = useSpacesStore();
 

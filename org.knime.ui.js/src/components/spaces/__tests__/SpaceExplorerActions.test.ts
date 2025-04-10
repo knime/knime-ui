@@ -174,7 +174,7 @@ describe("SpaceExplorerActions.vue", () => {
 
     it.each([
       ["createFolder", "createFolder", {}],
-      ["downloadToLocalSpace", "copyBetweenSpaces", { itemIds: ["934383"] }],
+      ["downloadToLocalSpace", "downloadFromSpace", { itemIds: ["934383"] }],
       ["importFiles", "importToWorkflowGroup", { importType: "FILES" }],
       ["importWorkflow", "importToWorkflowGroup", { importType: "WORKFLOW" }],
     ])("should call %s store action", async (actionId, storeAction, params) => {
@@ -300,9 +300,36 @@ describe("SpaceExplorerActions.vue", () => {
       );
     });
 
+    it.each([["upload", "uploadToSpace", { itemIds: ["934383"] }]])(
+      "upload selected items",
+      async (actionId, storeAction, params) => {
+        const { wrapper, mockedStores, projectId } = doMount({
+          props: { mode: "mini" },
+        });
+
+        await setupStoreWithProvider(
+          mockedStores,
+          projectId,
+          SpaceProviderNS.TypeEnum.LOCAL,
+        );
+
+        const subMenu = wrapper.findComponent(SubMenu);
+        const item = subMenu
+          .props("items")
+          .find((item) => item.id === actionId);
+        subMenu.vm.$emit("item-click", null, item);
+
+        expect(
+          mockedStores.spaceOperationsStore[storeAction] ??
+            mockedStores.spacesStore[storeAction],
+        ).toHaveBeenCalledWith({
+          ...params,
+        });
+      },
+    );
+
     it.each([
       ["createFolder", "createFolder", {}],
-      ["upload", "copyBetweenSpaces", { itemIds: ["934383"] }],
       ["importFiles", "importToWorkflowGroup", { importType: "FILES" }],
       ["importWorkflow", "importToWorkflowGroup", { importType: "WORKFLOW" }],
     ])(

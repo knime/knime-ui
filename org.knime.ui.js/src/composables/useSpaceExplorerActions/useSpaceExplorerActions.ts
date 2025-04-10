@@ -68,7 +68,7 @@ export const useSpaceExplorerActions = (
   } = useSpaceOperationsStore();
   const {
     setCreateWorkflowModalConfig,
-    copyBetweenSpaces,
+    downloadFromSpace,
     uploadToSpace,
     moveOrCopyToSpace,
     openInBrowser,
@@ -237,7 +237,7 @@ export const useSpaceExplorerActions = (
       : "Download to local space",
     separator: true,
     execute: () => {
-      copyBetweenSpaces({
+      downloadFromSpace({
         projectId: projectId.value,
         itemIds: selectedItemIds.value,
       });
@@ -331,7 +331,6 @@ export const useSpaceExplorerActions = (
       ? "Select at least one file to upload."
       : undefined,
     execute: () => {
-      console.log("uploadToHub", options?.providerInfo?.id);
       uploadToSpace({
         itemIds: selectedItemIds.value,
       });

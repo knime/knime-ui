@@ -1,7 +1,5 @@
-import { shallowRef } from "vue";
 import { API } from "@api";
 import { defineStore } from "pinia";
-import { useRouter } from "vue-router";
 
 import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 
@@ -19,9 +17,6 @@ import { localRootProjectPath, useSpaceCachingStore } from "./caching";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
 const { promptDestination, presets } = useDestinationPicker();
-// const { fetchWorkflowGroupContentByIdTriplet } = useSpaceOperationsStore();
-
-const $router = useRouter();
 
 type CreateWorkflowModalConfig = {
   isOpen: boolean;
@@ -65,7 +60,7 @@ export const useSpacesStore = defineStore("spaces", {
       this.deploymentsModalConfig = deploymentsModalConfig;
     },
 
-    async copyBetweenSpaces({
+    async downloadFromSpace({
       projectId,
       itemIds,
     }: {
@@ -75,20 +70,12 @@ export const useSpacesStore = defineStore("spaces", {
       // Takes space context from space explorer
       const { spaceId: sourceSpaceId, spaceProviderId: sourceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
-      console.log("copyBetweenSpaces", {
-        projectId,
-        itemIds,
-        sourceSpaceId,
-        localRootProjectPath: localRootProjectPath.spaceProviderId,
-      });
 
       const pickerConfig =
         sourceProviderId === localRootProjectPath.spaceProviderId
           ? presets.UPLOAD_PICKERCONFIG
           : presets.DOWNLOAD_PICKERCONFIG;
       const destinationResult = await promptDestination(pickerConfig);
-
-      console.log(destinationResult);
 
       if (destinationResult?.type === "item") {
         const {
@@ -98,7 +85,7 @@ export const useSpacesStore = defineStore("spaces", {
           resetWorkflow,
         } = destinationResult;
 
-        API.desktop.copyBetweenSpaces({
+        API.desktop.downloadFromSpace({
           sourceProviderId,
           sourceSpaceId,
           sourceItemIds: itemIds,
@@ -129,7 +116,7 @@ export const useSpacesStore = defineStore("spaces", {
           resetWorkflow,
         } = destinationResult;
 
-        const remoteItemIds = await API.desktop.copyBetweenSpaces({
+        const remoteItemIds = await API.desktop.uploadToSpace({
           sourceProviderId: localRootProjectPath.spaceProviderId,
           sourceSpaceId: localRootProjectPath.spaceId,
           sourceItemIds: itemIds,
@@ -138,28 +125,20 @@ export const useSpacesStore = defineStore("spaces", {
           destinationItemId,
           excludeData: resetWorkflow,
         });
-        console.log("openAfterUpload", { remoteItemIds });
 
-        const $toast = getToastsProvider();
-        if (!remoteItemIds) {
-          $toast.show({
-            headline: "Upload Failed",
-            message: "Failed to upload, check logs for details.",
-            type: "error",
-          });
+        if (!remoteItemIds || remoteItemIds.length === 0) {
           return;
         }
 
+        const $toast = getToastsProvider();
         if (!openAfterUpload) {
           const { revealInSpaceExplorer } = useRevealInSpaceExplorer();
-          console.log("revealInSpaceExplorer after upload");
           $toast.show({
             headline: "Upload complete",
             type: "success",
             buttons: [
               {
-                // @ts-expect-error
-                icon: shallowRef(ListIcon),
+                icon: ListIcon,
                 text: "Reveal in space explorer",
                 callback: () => {
                   revealInSpaceExplorer({
@@ -182,7 +161,6 @@ export const useSpacesStore = defineStore("spaces", {
             providerId: destinationProviderId,
             spaceId: destinationSpaceId,
             itemId: remoteItemIds[0],
-            $router,
           });
         }
       }

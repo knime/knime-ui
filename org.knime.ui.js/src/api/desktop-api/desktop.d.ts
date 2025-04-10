@@ -110,7 +110,16 @@ declare function getNameCollisionStrategy(
   usageContext: string,
 ): "OVERWRITE" | "NOOP" | "AUTORENAME" | "CANCEL";
 
-declare function copyBetweenSpaces(
+declare function downloadFromSpace(
+  sourceProviderId: string,
+  sourceSpaceId: string,
+  sourceItemIds: string[],
+  destinationProviderId: string,
+  destinationSpaceId: string,
+  destinationItemId: string,
+): boolean;
+
+declare function uploadToSpace(
   sourceProviderId: string,
   sourceSpaceId: string,
   sourceItemIds: string[],

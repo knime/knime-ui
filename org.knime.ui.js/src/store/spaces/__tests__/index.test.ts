@@ -41,8 +41,8 @@ describe("spaces::index", () => {
     vi.clearAllMocks();
   });
 
-  describe("copyBetweenSpace", () => {
-    it("should copy items between spaces", async () => {
+  describe("download from space", () => {
+    it("should download items from a space", async () => {
       const itemIds = ["id1", "id2"];
       const { spacesStore, spaceCachingStore } = loadStore();
 
@@ -53,11 +53,11 @@ describe("spaces::index", () => {
         itemId: "level2",
       };
 
-      await spacesStore.copyBetweenSpaces({
-        projectId,
+      await spacesStore.downloadFromSpace({
         itemIds,
+        projectId,
       });
-      expect(mockedAPI.desktop.copyBetweenSpaces).toHaveBeenCalledWith({
+      expect(mockedAPI.desktop.downloadFromSpace).toHaveBeenCalledWith({
         sourceProviderId: "local",
         sourceSpaceId: "local",
         sourceItemIds: itemIds,
@@ -73,43 +73,35 @@ describe("spaces::index", () => {
     const mockToast = mockedObject(getToastsProvider());
 
     it("should show a success toast after successful upload", async () => {
-      mockedAPI.desktop.copyBetweenSpaces.mockReturnValueOnce(true);
-      const itemIds = ["id1"];
+      mockedAPI.desktop.uploadToSpace.mockReturnValue(["newRemoteId"]);
       const { spacesStore } = loadStore();
 
       await spacesStore.uploadToSpace({
-        itemIds,
+        itemIds: ["id1"],
         openAfterUpload: false,
-        name: "testWorkflow",
       });
 
       expect(mockToast.show).toHaveBeenCalledWith({
         headline: "Upload complete",
         type: "success",
+        buttons: expect.anything(),
       });
     });
 
-    it("should show an error toast if upload fails", async () => {
-      mockedAPI.desktop.copyBetweenSpaces.mockReturnValueOnce(false);
-      const itemIds = ["id1"];
+    it("should skip toast notification if return value is empty", async () => {
+      mockedAPI.desktop.uploadToSpace.mockReturnValue([]);
       const { spacesStore } = loadStore();
 
       await spacesStore.uploadToSpace({
-        itemIds,
+        itemIds: ["id1"],
         openAfterUpload: false,
-        name: "testWorkflow",
       });
 
-      expect(mockToast.show).toHaveBeenCalledWith({
-        headline: "Upload Failed",
-        message: "Failed to upload, check logs for details.",
-        type: "error",
-      });
+      expect(mockToast.show).not.toHaveBeenCalled();
     });
 
     it("should open the uploaded workflow if openAfterUpload is true", async () => {
-      mockedAPI.desktop.copyBetweenSpaces.mockReturnValueOnce(true);
-      const itemIds = ["id1"];
+      mockedAPI.desktop.uploadToSpace.mockReturnValue(["mockWorkflowId"]);
       const { spacesStore, spaceOperationsStore } = loadStore();
       const mockOpenProject = vi.fn();
       vi.mocked(spaceOperationsStore.openProject).mockImplementation(
@@ -121,9 +113,8 @@ describe("spaces::index", () => {
       });
 
       await spacesStore.uploadToSpace({
-        itemIds,
+        itemIds: ["id1"],
         openAfterUpload: true,
-        name: "testWorkflow",
       });
 
       expect(mockOpenProject).toHaveBeenCalledWith({

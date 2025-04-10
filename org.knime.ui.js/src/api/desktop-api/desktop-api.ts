@@ -537,7 +537,39 @@ export const getNameCollisionStrategy = ({
   );
 };
 
-export const copyBetweenSpaces = ({
+export const downloadFromSpace = ({
+  sourceProviderId,
+  sourceSpaceId,
+  sourceItemIds,
+  destinationProviderId = "local",
+  destinationSpaceId = "local",
+  destinationItemId,
+}: {
+  sourceProviderId: SpaceProviderId["spaceProviderId"];
+  sourceSpaceId: SpaceId["spaceId"];
+  sourceItemIds: Array<SpaceItemId["itemId"]>;
+  destinationProviderId: SpaceProviderId["spaceProviderId"];
+  destinationSpaceId: SpaceId["spaceId"];
+  destinationItemId: SpaceItemId["itemId"];
+  excludeData?: boolean;
+}) => {
+  return callBrowserFunction(
+    window.downloadFromSpace,
+    [
+      sourceProviderId,
+      sourceSpaceId,
+      sourceItemIds,
+      destinationProviderId,
+      destinationSpaceId,
+      destinationItemId,
+    ],
+    "Error downloading from Hub space",
+    true,
+    { block: true, darkenBackground: true },
+  );
+};
+
+export const uploadToSpace = ({
   sourceProviderId = "local",
   sourceSpaceId = "local",
   sourceItemIds,
@@ -555,7 +587,7 @@ export const copyBetweenSpaces = ({
   excludeData?: boolean;
 }) => {
   return callBrowserFunction(
-    window.copyBetweenSpaces,
+    window.uploadToSpace,
     [
       sourceProviderId,
       sourceSpaceId,

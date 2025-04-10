@@ -240,7 +240,7 @@ describe("ManageVersionsWrapper.vue", () => {
         ).toHaveBeenCalledWith();
       });
 
-      it("upload", () => {
+      it("uploads the opened workflow", () => {
         const { wrapper, mockedStores } = doMount({
           versionsModeStatus: "promoteHub",
         });
@@ -265,7 +265,6 @@ describe("ManageVersionsWrapper.vue", () => {
         expect(spacesStore.uploadToSpace).toHaveBeenCalledWith({
           itemIds: ["mockItemId"],
           openAfterUpload: true,
-          name: "mockProject",
         });
       });
     });
