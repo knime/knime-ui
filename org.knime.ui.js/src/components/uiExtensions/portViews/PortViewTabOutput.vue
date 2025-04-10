@@ -61,6 +61,7 @@ const runValidationChecks = ({
 type Props = {
   projectId: string;
   workflowId: string;
+  versionId?: string;
   selectedNode: KnimeNode;
   selectedPortIndex: number;
   availablePortTypes: AvailablePortTypes;
@@ -156,6 +157,7 @@ const openViewInNewWindow = (viewIndex: number) => {
         :unique-port-key="`${uniquePortKey}/${activeView}`"
         :project-id="projectId"
         :workflow-id="workflowId"
+        :version-id="versionId"
         :selected-node="selectedNode"
         :selected-port-index="selectedPortIndex"
         :selected-view-index="activeView"

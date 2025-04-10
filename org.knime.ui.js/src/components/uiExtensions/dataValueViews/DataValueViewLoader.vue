@@ -20,10 +20,10 @@ import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import type { ExtensionConfig } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 
-// TODO: NXT-3540, Add a version property here?
 export interface Props {
   projectId: string;
   workflowId: string;
+  versionId?: string;
   nodeId: string;
   selectedPortIndex: number;
   selectedRowIndex: number;
@@ -51,7 +51,7 @@ const loadExtensionConfig = async () => {
     extensionConfig.value = await API.port.getDataValueView({
       projectId: props.projectId,
       workflowId: props.workflowId,
-      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+      versionId: props.versionId ?? CURRENT_STATE_VERSION,
       nodeId: props.nodeId,
       portIdx: props.selectedPortIndex,
       rowIdx: props.selectedRowIndex,

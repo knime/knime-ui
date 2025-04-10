@@ -18,11 +18,11 @@ import { useDataValueView } from "../dataValueViews/useDataValueView";
 
 /**
  * Dynamically loads a component that will render a Port's output view
- * TODO: NXT-3540, Add a version property here?
  */
 type Props = {
   projectId: string;
   workflowId: string;
+  versionId?: string;
   selectedNode: KnimeNode;
   selectedPortIndex: number;
   selectedViewIndex: number;
@@ -49,7 +49,7 @@ const loadExtensionConfig = async () => {
   const portView = await API.port.getPortView({
     projectId: props.projectId,
     workflowId: props.workflowId,
-    versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+    versionId: props.versionId ?? CURRENT_STATE_VERSION,
     nodeId: props.selectedNode.id,
     portIdx: props.selectedPortIndex,
     viewIdx: props.selectedViewIndex,
@@ -60,7 +60,7 @@ const loadExtensionConfig = async () => {
       API.port.deactivatePortDataServices({
         projectId: props.projectId,
         workflowId: props.workflowId,
-        versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+        versionId: props.versionId ?? CURRENT_STATE_VERSION,
         nodeId: props.selectedNode.id,
         portIdx: props.selectedPortIndex,
         viewIdx: props.selectedViewIndex,
@@ -101,7 +101,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.port.callPortDataService({
       projectId: props.projectId,
       workflowId: props.workflowId,
-      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+      versionId: props.versionId ?? CURRENT_STATE_VERSION,
       nodeId: props.selectedNode.id,
       portIdx: props.selectedPortIndex,
       viewIdx: props.selectedViewIndex,
@@ -117,7 +117,7 @@ const apiLayer: UIExtensionAPILayer = {
     const result = await API.port.updateDataPointSelection({
       projectId: props.projectId,
       workflowId: props.workflowId,
-      versionId: CURRENT_STATE_VERSION, // TODO: NXT-3540
+      versionId: props.versionId ?? CURRENT_STATE_VERSION,
       nodeId: props.selectedNode.id,
       portIdx: props.selectedPortIndex,
       viewIdx: props.selectedViewIndex,
@@ -212,6 +212,7 @@ onUnmounted(() => {
     :anchor="toRef(dataValueViewAnchor)"
     :project-id="projectId"
     :workflow-id="workflowId"
+    :version-id="versionId"
     :node-id="selectedNode.id"
     :selected-port-index="selectedPortIndex"
     :selected-row-index="dataValueViewConfig.rowIndex"

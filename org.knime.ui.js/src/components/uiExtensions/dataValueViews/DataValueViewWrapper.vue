@@ -114,6 +114,7 @@ const emit = defineEmits(["close"]);
       :style="isDragging ? { pointerEvents: 'none' } : {}"
       :project-id="projectId"
       :workflow-id="workflowId"
+      :version-id="versionId"
       :node-id="nodeId"
       :selected-port-index="selectedPortIndex"
       :selected-row-index="selectedRowIndex"

@@ -65,6 +65,7 @@ const { activeProjectId: projectId, availablePortTypes } = storeToRefs(
 );
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const workflowId = computed(() => activeWorkflow.value!.info.containerId);
+const versionId = computed(() => activeWorkflow.value!.info.version);
 const { timestamp } = storeToRefs(useNodeConfigurationStore());
 const { singleSelectedNode, getSelectedNodes: selectedNodes } = storeToRefs(
   useSelectionStore(),
@@ -272,6 +273,7 @@ const onPortViewLoadingState = async (
           ref="portViewTabOutput"
           :project-id="projectId!"
           :workflow-id="workflowId"
+          :version-id="versionId"
           :selected-node="singleSelectedNode!"
           :selected-port-index="selectedPortIndex!"
           :available-port-types="availablePortTypes"
