@@ -69,6 +69,7 @@ export const useSpaceExplorerActions = (
   const {
     setCreateWorkflowModalConfig,
     copyBetweenSpaces,
+    uploadToSpace,
     moveOrCopyToSpace,
     openInBrowser,
     openAPIDefinition,
@@ -331,8 +332,7 @@ export const useSpaceExplorerActions = (
       : undefined,
     execute: () => {
       console.log("uploadToHub", options?.providerInfo?.id);
-      copyBetweenSpaces({
-        projectId: projectId.value,
+      uploadToSpace({
         itemIds: selectedItemIds.value,
       });
     },

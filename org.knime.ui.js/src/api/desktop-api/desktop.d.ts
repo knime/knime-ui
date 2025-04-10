@@ -118,7 +118,7 @@ declare function copyBetweenSpaces(
   destinationSpaceId: string,
   destinationItemId: string,
   excludeData: boolean,
-): boolean; // returns a boolean! but I want the new itemId
+): string[];
 
 declare function openInBrowser(
   spaceProviderId: string,

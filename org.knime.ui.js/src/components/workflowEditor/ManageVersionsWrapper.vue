@@ -125,9 +125,6 @@ const onUpload = () => {
   uploadToSpace({
     itemIds: [activeProjectOrigin.value!.itemId],
     openAfterUpload: true,
-    name: openProjects.value.find(
-      (project) => project.origin?.itemId === activeProjectOrigin.value!.itemId,
-    )!.name,
   });
 };
 </script>

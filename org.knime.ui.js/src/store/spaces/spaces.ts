@@ -1,11 +1,15 @@
+import { shallowRef } from "vue";
 import { API } from "@api";
 import { defineStore } from "pinia";
 import { useRouter } from "vue-router";
+
+import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 
 import {
   type DestinationPickerConfig,
   useDestinationPicker,
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
+import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { getToastsProvider } from "@/plugins/toasts";
 import { checkOpenWorkflowsBeforeMove } from "@/store/spaces/util";
 import { useApplicationStore } from "../application/application";
@@ -109,20 +113,13 @@ export const useSpacesStore = defineStore("spaces", {
     async uploadToSpace({
       itemIds,
       openAfterUpload = false,
-      name, // TODO delete me, should not be needed
     }: {
       itemIds: string[];
       openAfterUpload?: boolean;
-      name?: string; // TODO delete me, should not be needed
     }) {
       const destinationResult = await promptDestination(
         presets.UPLOAD_PICKERCONFIG,
       );
-      console.log("uploadToSpace", {
-        itemIds,
-        openAfterUpload,
-        destinationResult,
-      });
 
       if (destinationResult?.type === "item") {
         const {
@@ -132,7 +129,7 @@ export const useSpacesStore = defineStore("spaces", {
           resetWorkflow,
         } = destinationResult;
 
-        const isUploadSuccessful = await API.desktop.copyBetweenSpaces({
+        const remoteItemIds = await API.desktop.copyBetweenSpaces({
           sourceProviderId: localRootProjectPath.spaceProviderId,
           sourceSpaceId: localRootProjectPath.spaceId,
           sourceItemIds: itemIds,
@@ -141,10 +138,10 @@ export const useSpacesStore = defineStore("spaces", {
           destinationItemId,
           excludeData: resetWorkflow,
         });
-        console.log("openAfterUpload", { isUploadSuccessful });
+        console.log("openAfterUpload", { remoteItemIds });
 
         const $toast = getToastsProvider();
-        if (!isUploadSuccessful) {
+        if (!remoteItemIds) {
           $toast.show({
             headline: "Upload Failed",
             message: "Failed to upload, check logs for details.",
@@ -154,36 +151,39 @@ export const useSpacesStore = defineStore("spaces", {
         }
 
         if (!openAfterUpload) {
+          const { revealInSpaceExplorer } = useRevealInSpaceExplorer();
+          console.log("revealInSpaceExplorer after upload");
           $toast.show({
             headline: "Upload complete",
             type: "success",
-            // buttons: // Add a button to open the remote workflow, only when is a single one
+            buttons: [
+              {
+                // @ts-expect-error
+                icon: shallowRef(ListIcon),
+                text: "Reveal in space explorer",
+                callback: () => {
+                  revealInSpaceExplorer({
+                    providerId: destinationProviderId,
+                    spaceId: destinationSpaceId,
+                    itemId: remoteItemIds[0], // TODO change me when there are multiple items
+                  });
+                },
+              },
+            ],
           });
           return;
         }
 
-        if (itemIds.length === 1) {
-          // TODO This is a workaround for the fact that the API does not return the new itemId
-          // this will fail in case of a name collision and if the user chooses to use another name
-          const workflowGroup = await API.space.listWorkflowGroup({
-            spaceProviderId: destinationProviderId,
-            spaceId: destinationSpaceId,
-            itemId: destinationItemId,
-          });
-          console.log("remoteContent", { workflowGroup });
+        if (remoteItemIds.length === 1) {
           const { activeProjectId } = useApplicationStore();
-          console.log("activeProjectId", { activeProjectId });
+          await useDesktopInteractionsStore().closeProject(activeProjectId!);
           const { openProject } = useSpaceOperationsStore();
           await openProject({
             providerId: destinationProviderId,
             spaceId: destinationSpaceId,
-            itemId: workflowGroup.items.find(
-              (remoteWorkflow) => remoteWorkflow.name === name,
-            )!.id,
+            itemId: remoteItemIds[0],
             $router,
           });
-          console.log("activeProjectId", { activeProjectId });
-          useDesktopInteractionsStore().closeProject(activeProjectId!);
         }
       }
     },

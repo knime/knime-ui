@@ -192,7 +192,7 @@ final class SpaceAPI {
      */
     @API
     @SuppressWarnings({"java:S1941", "java:S1142"})
-    static boolean copyBetweenSpaces( //
+    static List<String> copyBetweenSpaces( //
         final String sourceProviderId, //
         final String sourceSpaceId, //
         final Object[] sourceItemIdsParam, //
@@ -205,14 +205,14 @@ final class SpaceAPI {
             Stream.of(sourceItemIdsParam).map(String.class::cast).toList());
         final var destination = Locator.Destination.of(destinationProviderId, destinationSpaceId, destinationItemId);
         if (sources.itemIds().isEmpty()) {
-            return true;
+            return List.of();
         }
 
         if (sources.isLocal()) {
             final var opened = findDirtyOpenedWorkflows((LocalSpace)sources.space(), sources.itemIds());
             if (!opened.isEmpty()) {
                 showDirtyWorkflowsWarningToUser(opened);
-                return false;
+                return null;
             }
         }
 
@@ -226,7 +226,7 @@ final class SpaceAPI {
             } catch (Exception ex) { // NOSONAR
                 LOGGER.error("Upload error: " + ex.getMessage(), ex);
                 showErrorToast("Upload error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
-                return false;
+                return null;
             }
         } else if (!asyncDownloadDisabled && sources.isHub() && destination.isLocal()) {
             try {
@@ -234,7 +234,7 @@ final class SpaceAPI {
             } catch (Exception ex) { // NOSONAR
                 LOGGER.error("Download error: " + ex.getMessage(), ex);
                 showErrorToast("Download error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
-                return false;
+                return null;
             }
         }
 
@@ -251,10 +251,10 @@ final class SpaceAPI {
             destination.provider(), //
             destinationFileStore, //
             excludeData //
-        );
+        ) ? List.of() : null;
     }
 
-    private static boolean performAsyncHubDownload(final Locator.Siblings sources,
+    private static List<String> performAsyncHubDownload(final Locator.Siblings sources,
         final Locator.Destination destination) throws OperationNotAllowedException {
         final TransferResult result = sources.space().downloadInto( //
             sources.itemIds(), //
@@ -265,14 +265,14 @@ final class SpaceAPI {
             showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
                 false);
         }
-        return result.successful();
+        return result.itemIds();
     }
 
-    private static boolean performAsyncHubUpload(final Locator.Siblings sources, final Locator.Destination destination,
+    private static List<String> performAsyncHubUpload(final Locator.Siblings sources, final Locator.Destination destination,
         final boolean excludeData) throws OperationNotAllowedException {
         var uploadDeclined = !showUploadWarning(destination);
         if (uploadDeclined) {
-            return false;
+            return null;
         }
 
         var result = destination.space().uploadFrom( //
@@ -285,7 +285,7 @@ final class SpaceAPI {
             showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
                 false);
         }
-        return result.successful();
+        return result.itemIds();
     }
 
     private static boolean showUploadWarning(final Locator.Destination destination) {
