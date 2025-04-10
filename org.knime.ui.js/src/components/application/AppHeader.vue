@@ -98,10 +98,13 @@ const setGetStartedPageTab = () => {
   $router.push({ name: APP_ROUTES.Home.GetStarted });
 };
 
-const onProjectTabChange = (projectId: string) => {
+const onProjectTabChange = (projectId: string, version: number | null) => {
   $router.push({
     name: APP_ROUTES.WorkflowPage,
     params: { projectId, workflowId: "root" },
+    query: {
+      version: version === null ? null : String(version),
+    },
   });
 };
 
@@ -219,7 +222,7 @@ const onMouseDown = (e: MouseEvent) => {
                 {
                   name,
                   projectId,
-                  origin = { providerId: '', projectType: null },
+                  origin = { providerId: '', projectType: null, version: null },
                 },
                 index
               ) in openProjects"
@@ -232,6 +235,7 @@ const onMouseDown = (e: MouseEvent) => {
               :name="name"
               :data-project-id="projectId"
               :project-id="projectId"
+              :version="origin.version ? origin.version.version : null"
               :provider="origin.providerId"
               :project-type="origin.projectType"
               :window-width="windowWidth"

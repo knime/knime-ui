@@ -29,6 +29,7 @@ const maxCharFunction = (windowWidth: number) => {
 type Props = {
   name: string;
   projectId: string;
+  version: number | null;
   provider: string;
   projectType?: string | null;
   isActive?: boolean;
@@ -47,7 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: "hover", projectId: string | null): void;
-  (e: "switchWorkflow", projectId: string): void;
+  (e: "switchWorkflow", projectId: string, version: number | null): void;
   (e: "closeProject", projectId: string): void;
 }>();
 
@@ -79,8 +80,7 @@ const activateTab = () => {
     return;
   }
 
-  // TODO: NXT-3540, Add version parameter?
-  emit("switchWorkflow", props.projectId);
+  emit("switchWorkflow", props.projectId, props.version);
 };
 </script>
 

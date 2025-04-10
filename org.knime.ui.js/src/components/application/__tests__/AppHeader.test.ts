@@ -167,6 +167,7 @@ describe("AppHeader.vue", () => {
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId, workflowId: "root" },
+        query: { version: null },
       });
     });
 
