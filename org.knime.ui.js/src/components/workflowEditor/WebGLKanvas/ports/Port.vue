@@ -47,5 +47,6 @@ const shouldFill = computed(() => {
     :filled="shouldFill"
     :targeted="targeted"
     :hovered="hovered"
+    :inactive="port.inactive"
   />
 </template>

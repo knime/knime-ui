@@ -2,9 +2,8 @@
 /* eslint-disable no-magic-numbers */
 import { computed, toRefs, useTemplateRef } from "vue";
 
-import * as portColors from "@knime/styles/colors/portColors";
-
 import type { PortType } from "@/api/gateway-api/generated-api";
+import { portColors } from "@/style/colors";
 import { portSize } from "@/style/shapes";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
@@ -17,6 +16,7 @@ interface Props {
   filled: boolean;
   targeted?: boolean;
   hovered?: boolean;
+  inactive?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -92,6 +92,69 @@ useAnimatePixiContainer<number>({
     portIcon.value!.scale.y = value;
   },
 });
+
+// inactive port
+const createOutlinePoints = (portSize: number, width: number) => {
+  const offset = width / 2;
+
+  // diagonal 1
+  const d1 = [
+    { x: -portSize / 2 - offset, y: -portSize / 2 + offset },
+    { x: -portSize / 2 + offset, y: -portSize / 2 - offset },
+    { x: portSize / 2 + offset, y: portSize / 2 - offset },
+    { x: portSize / 2 - offset, y: portSize / 2 + offset },
+  ];
+
+  // diagonal 2
+  const d2 = [
+    { x: portSize / 2 - offset, y: -portSize / 2 - offset },
+    { x: portSize / 2 + offset, y: -portSize / 2 + offset },
+    { x: -portSize / 2 + offset, y: portSize / 2 + offset },
+    { x: -portSize / 2 - offset, y: portSize / 2 - offset },
+  ];
+
+  // cross mid points
+  const middles = [
+    { x: -width, y: 0 },
+    { x: 0, y: -width },
+    { x: width, y: 0 },
+    { x: 0, y: width },
+  ];
+
+  // ordered points to trace X outline
+  return [
+    middles[0],
+    d1[0],
+    d1[1],
+    middles[1],
+    d2[0],
+    d2[1],
+    middles[2],
+    d1[2],
+    d1[3],
+    middles[3],
+    d2[2],
+    d2[3],
+  ];
+};
+
+const renderOutlineX = (graphics: GraphicsInst) => {
+  const points = createOutlinePoints(portSize, 2);
+
+  graphics.poly(points).fill({ color: portColors.inactiveOutline });
+};
+
+const renderX = (graphics: GraphicsInst) => {
+  graphics
+    .moveTo(-portSize / 2, -portSize / 2)
+    .lineTo(portSize / 2, portSize / 2)
+    .moveTo(-portSize / 2, portSize / 2)
+    .lineTo(portSize / 2, -portSize / 2)
+    .stroke({
+      width: 1.5,
+      color: portColors.inactive,
+    });
+};
 </script>
 
 <template>
@@ -108,5 +171,11 @@ useAnimatePixiContainer<number>({
       :position="{ x: -portSize / 2, y: -portSize / 2 }"
       @render="otherPortsRenderFn"
     />
+
+    <!-- X outline -->
+    <Graphics v-if="inactive" @render="renderOutlineX" />
+
+    <!-- X -->
+    <Graphics v-if="inactive" @render="renderX" />
   </Container>
 </template>
