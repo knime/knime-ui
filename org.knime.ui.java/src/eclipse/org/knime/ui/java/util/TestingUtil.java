@@ -79,38 +79,44 @@ public final class TestingUtil {
 
     private static Set<String> loadedWorkflowsForTesting;
 
+    private TestingUtil() {
+        // utility
+    }
+
     /**
      * Initializes the app for testing and 'opens' the passed projects.
      *
+     * @param projectManager the project manager to use
      * @param projectIds projects to be available as tabs
      * @param activeProjectId the active tab
      * @param localSpaceSupplier the lazily supplied local space (might not be available at the time this method is
      *            called)
      */
-    public static void initAppForTesting(final List<String> projectIds, final String activeProjectId,
-        final Supplier<LocalSpace> localSpaceSupplier) {
-        clearAppForTesting();
-        TestingUtil.addToProjectManagerForTesting(projectIds, activeProjectId, localSpaceSupplier);
+    public static void initAppForTesting(final ProjectManager projectManager, final List<String> projectIds,
+        final String activeProjectId, final Supplier<LocalSpace> localSpaceSupplier) {
+        clearAppForTesting(projectManager);
         KnimeBrowserView.initViewForTesting();
+        addToProjectManagerForTesting(projectManager, projectIds, activeProjectId, localSpaceSupplier);
     }
 
     /**
      * Clears the entire app state.
+     *
+     * @param projectManager the project manager to use
      */
-    public static void clearAppForTesting() {
+    public static void clearAppForTesting(final ProjectManager projectManager) {
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
             KnimeBrowserView.clearView();
             lifeCycle.setStateTransition(StateTransition.SAVE_STATE);
             lifeCycle.suspend();
         }
-        disposeLoadedWorkflowsForTesting();
+        disposeLoadedWorkflowsForTesting(projectManager);
     }
 
-    private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId,
-        final Supplier<LocalSpace> localSpaceSupplier) {
-        var wpm = ProjectManager.getInstance();
-        projectIds.forEach(projectId -> wpm.addProject( //
+    private static void addToProjectManagerForTesting(final ProjectManager projectManager,
+        final List<String> projectIds, final String activeProjectId, final Supplier<LocalSpace> localSpaceSupplier) {
+        projectIds.forEach(projectId -> projectManager.addProject( //
             Project.builder() //
                 .setWfmLoader(() -> loadWorkflowForTesting(projectId)) //
                 .setName(projectId) //
@@ -118,7 +124,7 @@ public final class TestingUtil {
                 .setOrigin(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpaceSupplier.get())) //
                 .build()));
         if (activeProjectId != null) {
-            wpm.setProjectActive(activeProjectId);
+            projectManager.setProjectActive(activeProjectId);
         }
     }
 
@@ -138,22 +144,17 @@ public final class TestingUtil {
         }
     }
 
-    private static void disposeLoadedWorkflowsForTesting() {
+    private static void disposeLoadedWorkflowsForTesting(final ProjectManager projectManager) {
         if (loadedWorkflowsForTesting != null) {
             for (String id : loadedWorkflowsForTesting) {
-                var wpm = ProjectManager.getInstance();
-                wpm.removeProject(id);
+                projectManager.removeProject(id);
             }
             loadedWorkflowsForTesting.clear();
         }
-
     }
 
     private static File getProjectFile(final String projectId) {
         return new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), projectId);
     }
 
-    private TestingUtil() {
-        // utility
-    }
 }

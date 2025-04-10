@@ -171,8 +171,8 @@ public final class LifeCycle {
      * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
     public void webAppLoaded() {
-        doStateTransition(StateTransition.WEB_APP_LOADED, WebAppLoaded::run, StateTransition.INIT,
-            StateTransition.RELOAD);
+        doStateTransition(StateTransition.WEB_APP_LOADED, () -> m_state = WebAppLoaded.run(m_state),
+            StateTransition.INIT, StateTransition.RELOAD);
     }
 
     /**

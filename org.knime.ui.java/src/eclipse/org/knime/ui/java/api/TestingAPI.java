@@ -57,6 +57,7 @@ import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.TestingUtil;
@@ -76,8 +77,20 @@ final class TestingAPI {
     }
 
     /**
-     * Function that allows one to programmatically initialise (and parameterize) the application state from JS. It,
+     * Function that allows one to programmatically initialize (and parameterize) the application state from JS. It,
      * e.g., determines what workflow are opened from the beginning.
+     *
+     * @param appStateString Encodes the folder name of the workflow to be opened. It may look like this:
+     * """
+     * {
+     *   "openedWorkflows": [
+     *     {
+     *       "projectId": "The workflow directory name",
+     *       "visible": true
+     *     }
+     *   ]
+     * }
+     * """
      */
     @API
     static void initAppForTesting(final String appStateString) {
@@ -90,7 +103,8 @@ final class TestingAPI {
             NodeLogger.getLogger(TestingAPI.class).warn("Argument couldn't be parsed to JSON", ex);
             return;
         }
-        JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
+
+        var openedWorkflows = appStateNode.get("openedWorkflows");
         var activeProjectId = new AtomicReference<String>();
         List<String> projectIds = openedWorkflows == null ? //
             Collections.emptyList() : //
@@ -102,7 +116,9 @@ final class TestingAPI {
                 }
                 return projectId;
             }).toList();
-        TestingUtil.initAppForTesting(projectIds, activeProjectId.get(),
+
+        var projectManager = DesktopAPI.getDeps(ProjectManager.class);
+        TestingUtil.initAppForTesting(projectManager, projectIds, activeProjectId.get(),
             // the local space is lazily supplied since it's not available, yet,
             // when this desktop API function is being called
             // -> it will become available as soon as LifeCycle.init is called
@@ -110,12 +126,13 @@ final class TestingAPI {
     }
 
     /**
-     * Function that allows one to programmatically clear the App. I.e. clears the app state and sets the url to
-     * 'about:blank'.
+     * Function that allows one to programmatically clear the application. I.e. clears the {@link AppState} and sets the
+     * URL to {@code about:blank}.
      */
     @API
     static void clearAppForTesting() {
-        TestingUtil.clearAppForTesting();
+        var projectManager = DesktopAPI.getDeps(ProjectManager.class);
+        TestingUtil.clearAppForTesting(projectManager);
     }
 
     /**
