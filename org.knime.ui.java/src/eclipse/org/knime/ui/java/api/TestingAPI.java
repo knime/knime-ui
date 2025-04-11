@@ -78,19 +78,12 @@ final class TestingAPI {
 
     /**
      * Function that allows one to programmatically initialize (and parameterize) the application state from JS. It,
-     * e.g., determines what workflow are opened from the beginning.
+     * e.g., determines what workflow are opened from the beginning. When calling this function to initialize the
+     * automated end-to-end tests, we expect the application to be initialized with
+     * {@code -Dorg.knime.ui.dev.url=about:blank}.
      *
      * @param appStateString Encodes the folder name of the workflow to be opened. It may look like this:
-     * """
-     * {
-     *   "openedWorkflows": [
-     *     {
-     *       "projectId": "The workflow directory name",
-     *       "visible": true
-     *     }
-     *   ]
-     * }
-     * """
+     *        {@code `{"openedWorkflows": [ { "projectId": "The workflow directory name", "visible": true } ] }`}
      */
     @API
     static void initAppForTesting(final String appStateString) {
@@ -106,23 +99,25 @@ final class TestingAPI {
 
         var openedWorkflows = appStateNode.get("openedWorkflows");
         var activeProjectId = new AtomicReference<String>();
-        List<String> projectIds = openedWorkflows == null ? //
+        List<String> projectIds = (openedWorkflows == null) ? //
             Collections.emptyList() : //
-            StreamSupport.stream(openedWorkflows.spliterator(), false).map(ow -> {
-                var projectId = ow.get("projectId").asText();
-                var visible = ow.get("visible");
-                if (visible != null && visible.asBoolean()) {
-                    activeProjectId.set(projectId);
-                }
-                return projectId;
-            }).toList();
+            StreamSupport.stream(openedWorkflows.spliterator(), false) //
+                .map(openedWorkflow -> extractProjectIdAndSetActiveIfVisible(openedWorkflow, activeProjectId)) //
+                .toList();
 
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);
-        TestingUtil.initAppForTesting(projectManager, projectIds, activeProjectId.get(),
-            // the local space is lazily supplied since it's not available, yet,
-            // when this desktop API function is being called
-            // -> it will become available as soon as LifeCycle.init is called
-            () -> DesktopAPI.getDeps(LocalSpace.class));
+        var localSpace = DesktopAPI.getDeps(LocalSpace.class);
+        TestingUtil.initAppForTesting(projectManager, localSpace, projectIds, activeProjectId.get());
+    }
+
+    private static String extractProjectIdAndSetActiveIfVisible(final JsonNode openedWorkflow,
+        final AtomicReference<String> activeProjectId) {
+        var projectId = openedWorkflow.get("projectId").asText();
+        var visible = openedWorkflow.get("visible");
+        if (visible != null && visible.asBoolean()) {
+            activeProjectId.set(projectId);
+        }
+        return projectId;
     }
 
     /**
@@ -151,20 +146,21 @@ final class TestingAPI {
             return;
         }
 
-        JsonNode newReleases = updateStateNode.get("newReleases");
-        List<UpdateInfo> newReleasesList = newReleases == null ? //
+        var newReleases = updateStateNode.get("newReleases");
+        List<UpdateInfo> newReleasesList = (newReleases == null) ? //
             Collections.emptyList() : //
             StreamSupport.stream(newReleases.spliterator(), false)//
                 .map(TestingAPI::createUpdateInfo)//
                 .toList();
-        JsonNode bugfixes = updateStateNode.get("bugfixes");
-        List<String> bugfixesList = bugfixes == null ? //
+        var bugfixes = updateStateNode.get("bugfixes");
+        List<String> bugfixesList = (bugfixes == null) ? //
             Collections.emptyList() : //
             StreamSupport.stream(bugfixes.spliterator(), false)//
                 .map(JsonNode::textValue)//
                 .toList();
 
-        DesktopAPI.getDeps(UpdateStateProvider.class).emitUpdateNotificationsForTesting(newReleasesList, bugfixesList);
+        var updateStateProvider = DesktopAPI.getDeps(UpdateStateProvider.class);
+        updateStateProvider.emitUpdateNotificationsForTesting(newReleasesList, bugfixesList);
     }
 
     private static UpdateInfo createUpdateInfo(final JsonNode jsonNode) {

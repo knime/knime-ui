@@ -48,8 +48,6 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
-
 /**
  * The 'web-app-loaded' lifecycle state transition of the KNIME-UI. Called after {@link Init} as soon as the (html)-page
  * has been completely loaded.
@@ -63,13 +61,7 @@ final class WebAppLoaded {
     }
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state) {
-        return new LifeCycleStateInternalAdapter(state) {
-
-            @Override
-            public LocalSpace getLocalSpace() { // Needed to recover from "Suspend"
-                return state.getLocalSpace();
-            }
-        };
+        return new LifeCycleStateInternalAdapter(state);
     }
 
 }

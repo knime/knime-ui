@@ -52,7 +52,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
-import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 
@@ -75,19 +74,7 @@ final class Suspend {
         KnimeUIPreferences.unsetAllListeners();
         var listener = state.getJobChangeListener();
         Job.getJobManager().removeJobChangeListener(listener);
-
-        return new LifeCycleStateInternalAdapter(state) {
-
-            @Override
-            public LocalSpace getLocalSpace() { // To enable "Init" to recover from "Suspend"
-                return state.getLocalSpace();
-            }
-
-            @Override
-            public String serializedAppState() {
-                return state.serializedAppState();
-            }
-        };
+        return new LifeCycleStateInternalAdapter(state);
     }
 
     private static void disposeAllProjects(final ProjectManager pm) {

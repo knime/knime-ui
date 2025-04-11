@@ -147,16 +147,11 @@ final class Init {
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(), localSpace,
             state.getWelcomeApEndpoint(), createExampleProjects(), state.getUserProfile());
 
-        // Register preference listeners
+        // Register listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
         registerPreferenceListeners(appStateUpdater, spaceProvidersManager, nodeCollections, nodeRepo);
 
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
-
-            @Override
-            public LocalSpace getLocalSpace() { // Needed to recover from "Suspend"
-                return localSpace;
-            }
 
             @Override
             public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {

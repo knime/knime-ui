@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.core.node.CanceledExecutionException;
@@ -87,16 +86,15 @@ public final class TestingUtil {
      * Initializes the app for testing and 'opens' the passed projects.
      *
      * @param projectManager the project manager to use
+     * @param localSpace the local space to use
      * @param projectIds projects to be available as tabs
      * @param activeProjectId the active tab
-     * @param localSpaceSupplier the lazily supplied local space (might not be available at the time this method is
-     *            called)
      */
-    public static void initAppForTesting(final ProjectManager projectManager, final List<String> projectIds,
-        final String activeProjectId, final Supplier<LocalSpace> localSpaceSupplier) {
+    public static void initAppForTesting(final ProjectManager projectManager, final LocalSpace localSpace, final List<String> projectIds,
+        final String activeProjectId) {
         clearAppForTesting(projectManager);
         KnimeBrowserView.initViewForTesting();
-        addToProjectManagerForTesting(projectManager, projectIds, activeProjectId, localSpaceSupplier);
+        addToProjectManagerForTesting(projectManager, localSpace, projectIds, activeProjectId);
     }
 
     /**
@@ -114,14 +112,14 @@ public final class TestingUtil {
         disposeLoadedWorkflowsForTesting(projectManager);
     }
 
-    private static void addToProjectManagerForTesting(final ProjectManager projectManager,
-        final List<String> projectIds, final String activeProjectId, final Supplier<LocalSpace> localSpaceSupplier) {
+    private static void addToProjectManagerForTesting(final ProjectManager projectManager, final LocalSpace localSpace,
+        final List<String> projectIds, final String activeProjectId) {
         projectIds.forEach(projectId -> projectManager.addProject( //
             Project.builder() //
                 .setWfmLoader(() -> loadWorkflowForTesting(projectId)) //
                 .setName(projectId) //
                 .setId(projectId) //
-                .setOrigin(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpaceSupplier.get())) //
+                .setOrigin(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpace)) //
                 .build()));
         if (activeProjectId != null) {
             projectManager.setProjectActive(activeProjectId);
