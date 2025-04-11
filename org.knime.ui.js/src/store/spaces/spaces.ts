@@ -144,7 +144,15 @@ export const useSpacesStore = defineStore("spaces", {
                   revealInSpaceExplorer({
                     providerId: destinationProviderId,
                     spaceId: destinationSpaceId,
-                    itemId: remoteItemIds[0], // TODO change me when there are multiple items
+                    itemId: remoteItemIds[0],
+                    ancestorItemIds: [destinationItemId],
+                    // selectedItemIds: remoteItemIds, // TODO change me when there are multiple items
+                  }).then(() => {
+                    if (remoteItemIds.length > 1) {
+                      const { setCurrentSelectedItemIds } =
+                        useSpaceOperationsStore();
+                      setCurrentSelectedItemIds(remoteItemIds);
+                    }
                   });
                 },
               },

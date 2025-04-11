@@ -72,7 +72,10 @@ const dropdownItems = computed(() => {
     });
   }
 
-  if (activeProjectOrigin.value && canRevealItem(activeProjectOrigin.value)) {
+  if (
+    activeProjectOrigin.value &&
+    canRevealItem(activeProjectOrigin.value.providerId)
+  ) {
     items.push({
       text: "Reveal in space explorer",
       icon: ListIcon,

@@ -40,8 +40,8 @@ export const useRevealInSpaceExplorer = () => {
   const router = useRouter();
   const { toastPresets } = getToastPresets();
 
-  const canRevealItem = (origin: SpaceItemReference): boolean => {
-    const provider = spaceProviders.value?.[origin.providerId];
+  const canRevealItem = (providerId: string): boolean => {
+    const provider = spaceProviders.value?.[providerId];
 
     if (
       isBrowser() || // Ancestor information unavailable in browser
@@ -123,6 +123,7 @@ export const useRevealInSpaceExplorer = () => {
 
     setCurrentSelectedItemIds([origin.itemId]);
 
+    // this check does not make sense anymore when we open a folder we knew it existed
     checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
   };
 
@@ -183,7 +184,7 @@ export const useRevealInSpaceExplorer = () => {
     projectName: string = "",
   ) => {
     try {
-      if (!canRevealItem(origin)) {
+      if (!canRevealItem(origin.providerId)) {
         resetSelectedItemAndShowError();
         return;
       }
@@ -225,8 +226,79 @@ export const useRevealInSpaceExplorer = () => {
     }
   };
 
+  const revealFolderInSpaceExplorer = async ({
+    providerId,
+    spaceId,
+    folderItemId,
+    selectedItemIds = [],
+  }: {
+    providerId: string;
+    spaceId: string;
+    folderItemId: string;
+    selectedItemIds: string[];
+  }) => {
+    try {
+      if (!canRevealItem(providerId)) {
+        resetSelectedItemAndShowError();
+        return;
+      }
+
+      const provider = spaceProviders.value?.[providerId];
+      // try connect to provider if we are not connected
+      if (provider && !provider.connected) {
+        const { isConnected } = await connectProvider({
+          spaceProviderId: provider.id,
+        });
+        if (!isConnected) {
+          toastPresets.spaces.auth.connectFailed({
+            error: null,
+            providerName: provider.name,
+          });
+          return;
+        }
+      }
+
+      if (!expanded) {
+        toggleExpanded();
+      }
+
+      setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
+
+      setCurrentSelectedItemIds(selectedItemIds);
+
+      if (!activeProjectId.value) {
+        // No active project, navigate to Space Browsing Page
+        await navigateToSpaceBrowsingPage(
+          {
+            providerId,
+            spaceId,
+            itemId: selectedItemIds[0],
+            ancestorItemIds: [folderItemId],
+          },
+          null,
+        );
+        return;
+      }
+
+      // Active project exists, display Space Explorer
+      await displayInSidebarSpaceExplorer(
+        {
+          providerId,
+          spaceId,
+          itemId: selectedItemIds[0],
+          ancestorItemIds: [folderItemId],
+        },
+        null,
+      );
+    } catch (error) {
+      consola.error("Could not reveal in Space Explorer:", error);
+      resetSelectedItemAndShowError(error);
+    }
+  };
+
   return {
     revealInSpaceExplorer,
     canRevealItem,
+    revealFolderInSpaceExplorer,
   };
 };

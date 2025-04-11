@@ -25,7 +25,7 @@ export const useRevealProject = (options: UseRevealProject) => {
       return false;
     }
 
-    return canRevealItem(foundProject.origin!);
+    return canRevealItem(foundProject.origin!.providerId);
   });
 
   const menuItem: AppHeaderContextMenuItem = {

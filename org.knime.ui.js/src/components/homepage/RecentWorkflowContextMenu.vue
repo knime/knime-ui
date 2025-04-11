@@ -48,7 +48,10 @@ const recentWorkflowContextMenuItems = computed(() => {
   };
 
   const menuItems: Array<MenuItem> = [
-    ...valueOrEmpty(canRevealItem(recentWorkflow.origin), revealInSpaceOption),
+    ...valueOrEmpty(
+      canRevealItem(recentWorkflow.origin?.providerId),
+      revealInSpaceOption,
+    ),
   ] as ActionMenuItem[];
 
   return menuItems;
