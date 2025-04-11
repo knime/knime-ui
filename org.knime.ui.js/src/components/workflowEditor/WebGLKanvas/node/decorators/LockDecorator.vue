@@ -13,9 +13,8 @@ import type { GraphicsInst } from "@/vue3-pixi";
 type Props = {
   /**
    * Node type for determining the background color.
-   * Allows the node types defined in $colors.nodeBackgroundColors
    * */
-  backgroundType: string;
+  backgroundType: keyof typeof $colors.nodeBackgroundColors;
 
   /**
    * Whether or not the node is locked or a locked node has been unlocked.
@@ -75,7 +74,7 @@ const renderUnlocked = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container event-mode="none">
+  <Container>
     <Graphics v-if="backgroundColor" @render="renderBackground" />
     <Graphics v-if="isLocked" @render="renderLocked" />
     <Graphics v-else @render="renderUnlocked" />

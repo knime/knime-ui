@@ -14,9 +14,8 @@ import type { GraphicsInst } from "@/vue3-pixi";
 type Props = {
   /**
    * Node type for determining the background color.
-   * Allows the node types defined in $colors.nodeBackgroundColors
    * */
-  backgroundType: string;
+  backgroundType: keyof typeof $colors.nodeBackgroundColors;
 
   /**
    * executionInfo as sent by the backend.
@@ -81,7 +80,7 @@ const renderX = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container event-mode="none">
+  <Container>
     <Graphics v-if="streamable" @render="renderArrow" />
     <template v-else>
       <Graphics v-if="backgroundColor" @render="renderBackground" />

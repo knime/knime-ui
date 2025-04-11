@@ -110,7 +110,7 @@ export const loadStore = ({
   // @ts-expect-error
   applicationStore.isUnknownProject = () => isUnknownProject;
   // @ts-expect-error
-  // eslint-disable-next-line no-undefined
+
   applicationStore.activeProjectOrigin = activeProjectOrigin ?? undefined;
 
   vi.mocked(desktopInteractionsStore.forceCloseProjects).mockImplementation(

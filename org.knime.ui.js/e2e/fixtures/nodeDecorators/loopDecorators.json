@@ -1,0 +1,761 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "workflow": {
+      "info": {
+        "name": "Loop Decorators",
+        "containerType": "project",
+        "containerId": "root",
+        "providerType": "HUB"
+      },
+      "workflowAnnotations": [
+        {
+          "text": {
+            "contentType": "text/html",
+            "value": "<h3>Loop and re-execute decorators</h3><p>Loop end nodes can have a 'pause' and a 'running' decorator - depending on step or complete loop execution</p>"
+          },
+          "bounds": { "y": 140, "x": -185, "width": 285, "height": 440 },
+          "id": "root_0",
+          "borderWidth": 10,
+          "backgroundColor": "#FFFFFF",
+          "borderColor": "#FF9632"
+        }
+      ],
+      "metadata": {
+        "description": { "contentType": "text/plain", "value": "" },
+        "tags": [],
+        "metadataType": "project",
+        "lastEdit": "2025-04-08T14:52:13.857+02:00",
+        "links": []
+      },
+      "connections": {
+        "root:11_1": {
+          "id": "root:11_1",
+          "destPort": 1,
+          "sourcePort": 1,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:11",
+          "sourceNode": "root:12"
+        },
+        "root:12_1": {
+          "id": "root:12_1",
+          "destPort": 1,
+          "sourcePort": 1,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:12",
+          "sourceNode": "root:1"
+        },
+        "root:6_1": {
+          "id": "root:6_1",
+          "destPort": 1,
+          "sourcePort": 1,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:6",
+          "sourceNode": "root:8"
+        },
+        "root:13_0": {
+          "id": "root:13_0",
+          "destPort": 0,
+          "sourcePort": 1,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:13",
+          "sourceNode": "root:14",
+          "flowVariableConnection": true
+        },
+        "root:9_1": {
+          "id": "root:9_1",
+          "destPort": 1,
+          "sourcePort": 1,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:9",
+          "sourceNode": "root:6"
+        },
+        "root:8_1": {
+          "id": "root:8_1",
+          "destPort": 1,
+          "sourcePort": 1,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:8",
+          "sourceNode": "root:1"
+        },
+        "root:10_1": {
+          "id": "root:10_1",
+          "destPort": 1,
+          "sourcePort": 0,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:10",
+          "sourceNode": "root:6",
+          "flowVariableConnection": true
+        },
+        "root:9_0": {
+          "id": "root:9_0",
+          "destPort": 0,
+          "sourcePort": 1,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:9",
+          "sourceNode": "root:10",
+          "flowVariableConnection": true
+        },
+        "root:13_1": {
+          "id": "root:13_1",
+          "destPort": 1,
+          "sourcePort": 1,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:13",
+          "sourceNode": "root:11"
+        },
+        "root:14_1": {
+          "id": "root:14_1",
+          "destPort": 1,
+          "sourcePort": 0,
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:14",
+          "sourceNode": "root:11",
+          "flowVariableConnection": true
+        }
+      },
+      "dirty": true,
+      "nodes": {
+        "root:1": {
+          "position": { "y": 430, "x": -530 },
+          "annotation": {
+            "text": {
+              "contentType": "text/plain",
+              "value": "Read Penguin Data"
+            },
+            "styleRanges": [],
+            "textAlign": "center"
+          },
+          "id": "root:1",
+          "state": { "executionState": "EXECUTED" },
+          "outPorts": [
+            {
+              "info": "Variables connection",
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false
+            },
+            {
+              "info": "Rows: 344, Cols: 17",
+              "name": "File Table",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:8_1", "root:12_1"],
+              "portContentVersion": 1611876234,
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "web",
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canOpenLegacyFlowVariableDialog": true,
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.io.filehandling.csv.reader2.CSVTableReaderNodeFactory2",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": false,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            }
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            }
+          ]
+        },
+        "root:2": {
+          "position": { "y": 310, "x": -50 },
+          "id": "root:2",
+          "state": { "executionState": "CONFIGURED" },
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": -573032352,
+              "canRemove": false
+            },
+            {
+              "name": "Flow Variable Output",
+              "index": 1,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": -573032352,
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canOpenView": false,
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "templateId": "org.knime.js.base.node.widget.reexecution.refresh.RefreshButtonWidgetNodeFactory",
+          "isReexecutable": true,
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            }
+          ]
+        },
+        "root:10": {
+          "position": { "y": 320, "x": -255 },
+          "id": "root:10",
+          "state": { "executionState": "EXECUTED" },
+          "outPorts": [
+            {
+              "info": "Variables connection",
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": 1297050499,
+              "canRemove": false
+            },
+            {
+              "info": "Variables connection",
+              "name": "Output table",
+              "index": 1,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": ["root:9_0"],
+              "portContentVersion": 1297050499,
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.flowcontrol.sleep.SleepNodeFactory",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Input table",
+              "index": 1,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": ["root:10_1"],
+              "canRemove": false
+            }
+          ]
+        },
+        "root:6": {
+          "position": { "y": 430, "x": -330 },
+          "id": "root:6",
+          "state": { "executionState": "EXECUTED" },
+          "outPorts": [
+            {
+              "info": "Variables connection",
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": ["root:10_1"],
+              "portContentVersion": 1297050499,
+              "canRemove": false
+            },
+            {
+              "info": "Rows: 30, Cols: 17",
+              "name": "Filtered table",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:9_1"],
+              "portContentVersion": 845682224,
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "web",
+          "inputContentVersion": 1772969982,
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "true",
+            "canOpenLegacyFlowVariableDialog": true,
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Table to be filtered",
+              "index": 1,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:6_1"],
+              "canRemove": false
+            }
+          ]
+        },
+        "root:8": {
+          "position": { "y": 430, "x": -420 },
+          "id": "root:8",
+          "state": { "executionState": "EXECUTED" },
+          "outPorts": [
+            {
+              "info": "Variables connection",
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": 1297050499,
+              "canRemove": false
+            },
+            {
+              "info": "Rows: 30, Cols: 17",
+              "name": "Chunked input",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:6_1"],
+              "portContentVersion": 1525400036,
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "web",
+          "inputContentVersion": 854119100,
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "true",
+            "canOpenLegacyFlowVariableDialog": true,
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.meta.looper.chunk.LoopStartChunkNodeFactory",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Any table",
+              "index": 1,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:8_1"],
+              "canRemove": false
+            }
+          ]
+        },
+        "root:13": {
+          "position": { "y": 684, "x": -52 },
+          "id": "root:13",
+          "state": {
+            "progressMessages": ["Performing node execution..."],
+            "executionState": "QUEUED"
+          },
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false
+            },
+            {
+              "name": "Collected results",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": [],
+              "portGroupId": "Collector",
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": true,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.meta.looper.LoopEndDynamicNodeFactory",
+          "loopInfo": {
+            "status": "RUNNING",
+            "allowedActions": {
+              "canResume": false,
+              "canPause": true,
+              "canStep": false
+            }
+          },
+          "portGroups": {
+            "Collector": {
+              "inputRange": [1, 1],
+              "outputRange": [1, 1],
+              "canAddInPort": false,
+              "supportedPortTypeIds": ["org.knime.core.node.BufferedDataTable"]
+            }
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": ["root:13_0"],
+              "canRemove": false
+            },
+            {
+              "name": "Input table",
+              "index": 1,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:13_1"],
+              "portGroupId": "Collector",
+              "canRemove": false
+            }
+          ]
+        },
+        "root:9": {
+          "position": { "y": 435, "x": -50 },
+          "id": "root:9",
+          "state": {
+            "progressMessages": ["Performing node execution..."],
+            "executionState": "QUEUED"
+          },
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false
+            },
+            {
+              "name": "Collected results",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": [],
+              "portGroupId": "Collector",
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": true,
+            "canDelete": false,
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.meta.looper.LoopEndDynamicNodeFactory",
+          "loopInfo": {
+            "status": "PAUSED",
+            "allowedActions": {
+              "canResume": true,
+              "canPause": false,
+              "canStep": true
+            }
+          },
+          "portGroups": {
+            "Collector": {
+              "inputRange": [1, 1],
+              "outputRange": [1, 1],
+              "canAddInPort": true,
+              "supportedPortTypeIds": ["org.knime.core.node.BufferedDataTable"]
+            }
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": ["root:9_0"],
+              "canRemove": false
+            },
+            {
+              "name": "Input table",
+              "index": 1,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:9_1"],
+              "portGroupId": "Collector",
+              "canRemove": false
+            }
+          ]
+        },
+        "root:14": {
+          "position": { "y": 569, "x": -257 },
+          "id": "root:14",
+          "state": {
+            "progress": 0.11,
+            "progressMessages": ["Waited 0.1/1.0 seconds"],
+            "executionState": "EXECUTING"
+          },
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": 1297050561,
+              "canRemove": false
+            },
+            {
+              "name": "Output table",
+              "index": 1,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": ["root:13_0"],
+              "portContentVersion": 1297050561,
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": true,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.flowcontrol.sleep.SleepNodeFactory",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Input table",
+              "index": 1,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": ["root:14_1"],
+              "canRemove": false
+            }
+          ]
+        },
+        "root:11": {
+          "position": { "y": 679, "x": -332 },
+          "id": "root:11",
+          "state": { "executionState": "EXECUTED" },
+          "outPorts": [
+            {
+              "info": "Variables connection",
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": ["root:14_1"],
+              "portContentVersion": 1297050561,
+              "canRemove": false
+            },
+            {
+              "info": "Rows: 30, Cols: 17",
+              "name": "Filtered table",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:13_1"],
+              "portContentVersion": 836599134,
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "web",
+          "inputContentVersion": 1400995830,
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canOpenLegacyFlowVariableDialog": true,
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Table to be filtered",
+              "index": 1,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:11_1"],
+              "canRemove": false
+            }
+          ]
+        },
+        "root:12": {
+          "position": { "y": 679, "x": -422 },
+          "id": "root:12",
+          "state": { "executionState": "EXECUTED" },
+          "outPorts": [
+            {
+              "info": "Variables connection",
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": 1297050561,
+              "canRemove": false
+            },
+            {
+              "info": "Rows: 30, Cols: 17",
+              "name": "Chunked input",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:11_1"],
+              "portContentVersion": 1415761768,
+              "canRemove": false
+            }
+          ],
+          "kind": "node",
+          "dialogType": "web",
+          "inputContentVersion": 854119100,
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canOpenLegacyFlowVariableDialog": true,
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.meta.looper.chunk.LoopStartChunkNodeFactory",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Any table",
+              "index": 1,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": ["root:12_1"],
+              "canRemove": false
+            }
+          ]
+        }
+      },
+      "allowedActions": {
+        "canExecute": true,
+        "canCancel": true,
+        "canReset": false,
+        "canUndo": false,
+        "canRedo": false
+      },
+      "nodeTemplates": {
+        "org.knime.base.node.flowcontrol.sleep.SleepNodeFactory": {
+          "name": "Wait...",
+          "type": "Manipulator",
+          "nodeFactory": {
+            "className": "org.knime.base.node.flowcontrol.sleep.SleepNodeFactory"
+          },
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QzcwQTA5NkE3RjE2MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QzcwQTA5Njk3RjE2MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFRTMxRTc5RTQ1QzcxMUU1QUM2QkE3NzQyQjhFM0EyRCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFRTMxRTc5RjQ1QzcxMUU1QUM2QkE3NzQyQjhFM0EyRCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pi6LhAkAAAHaSURBVHjanFNNSxtRFL3zEUsWfsxCuxDdGIkVS11XUAiWIrpyEbJ3IQUli9KN2G5cSOnGtNCN4B9wJYZQKlIqRgVtdyZCJE4hmIXSViQzZjIzr+dGR+JEi3jgzLy575zD3HdniOrRBSbAHGiBFfDwqhbyiyXf+g04Fw6Hs/F4XNU0rd2yLDJN8ziRSFjZbLYX+2/BD6Dwh80rivInmUweiRqw0EMqldJZw1q/eRi8SKfTx8KH2gAGa1gLvqgN2IpGo3viFvgDGLFYbBf1Hc/czqJ8Pn9+3wBd189Rd6+8FEFfp+IO3BbAUFX1lFuXu1qDGh4q16OQpBu8C/DwiB/RycLz4uxYp2P8LrrinjAMg1+/DPZLZ58G9rHodUhxg8/G5Yb+GMmNj+l/+P45Xvz2ZaUp8qSljQNSqI1c78oqBXpeUnDoNZHSUGcuHayL8td3pMrV/n6ouPzyiwKhSJ1ZmH+ptL0onMyKBLNXfl8f4Np0tjrjBEODiqJ1kKgY5JzkyC78FBIJ71j5DF41T6eXOUAHeSRzrqAphHcHRFmxc2tk3/xRql5oMtBMwrxZ7Rjc4ENE4SM2+rCewPTXbVeUWOC4omJabgH3JTyOQvPUM1eDL7+Vh+OfAAMALKR5cjIu4dEAAAAASUVORK5CYII="
+        },
+        "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory": {
+          "name": "Column Filter",
+          "type": "Manipulator",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory"
+          },
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDIyRjAxMjk0NDI1MTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDIyRjAxMjg0NDI1MTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNmRiZTRmOC00Yzc3LTQyZGUtOGI5NC00ZGExNTM3Y2Q1M2YiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+vcE10QAAAGFJREFUeNrcUkEKwCAMa4L//7LCwA3bVYPztJxKDUlaS3tQLaJO+hdoH/EDgeKW1Gsk/MDlCxkTw8Cle4CQeuBSdE6TlORQlB3cAlvOR79xGdP1sEqAEyNAFabolqZqAgwA4/EMMjThx3gAAAAASUVORK5CYII="
+        },
+        "org.knime.base.node.meta.looper.LoopEndDynamicNodeFactory": {
+          "name": "Loop End",
+          "type": "LoopEnd",
+          "nodeFactory": {
+            "className": "org.knime.base.node.meta.looper.LoopEndDynamicNodeFactory"
+          },
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RDY5MDc0QUU4NDk5MTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RDY5MDc0QUQ4NDk5MTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo3NERCQzRDNTQ1QzcxMUU1QUM2QkE3NzQyQjhFM0EyRCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo3NERCQzRDNjQ1QzcxMUU1QUM2QkE3NzQyQjhFM0EyRCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PmDYy+YAAAD+SURBVHjapFNNC4JQEHx6iJAOeaz+UvRxKToVnfxJnaLwIHZJw79kx+wk0aHXrEygkiK6MC48Z8Z1d5+hcnGfzS2kAzAFhoABaOAJRIAzvoXpj6+1zgg/8RzpAvSAjxwBCWADE5q9gRVMwoIBxVeSPGAP0itn3kc6AWtWtBSTzIBlJ/zyDi/OqiLA3dJIKrFHYZCa/GcR+3ViCb73yBddVsGDDbPyZVeELh+YFMcNxH/DZOMS1TJMlmV3MZAlGXNUrQwi5mMDvjQ9AGSkLvbAEKHDuW44Z1WzB8JdkO8oNrC8iT4XKr+JAySX4uImVtwFIcWN70Kn2yiPLvEVYAB3zoAvwQaLyAAAAABJRU5ErkJggg=="
+        },
+        "org.knime.js.base.node.widget.reexecution.refresh.RefreshButtonWidgetNodeFactory": {
+          "name": "Refresh Button Widget",
+          "type": "Widget",
+          "nodeFactory": {
+            "className": "org.knime.js.base.node.widget.reexecution.refresh.RefreshButtonWidgetNodeFactory"
+          },
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAE+SURBVHgBpVI7TgMxEB17FyGQEjlNtE12nSYNHwmJA5CGgo4bwAXQ3iDhBGFvwAGQ0hBRJjegoKB1kgYJiYSCgFCC8XixJTbZj5Inza494/dm7BmAAuC+34JNoAQkD4I+9zyejBEMQlEQMhDDYdOI4t/FjxiNCORUAFIOgNJz40MO+l0ohkiMx2G6+gpIKTvKGORURjPimPFRifCMM5AloJP8iYTrCuQi7xGFsiYhRKwjEClrK/LUOHr8sLVdrejrzF7ebq/gPV2gHgRS9dqS7/2DDtuvh9R19H6nysKzp+flN+CMMV6r9SHugsVWZffCkBG4Pi2zuALsp53GUqmrRvbE+A1h9iOhnEi2mC+AIvHfKDvOpR5biMfVxl+n1/Ovb3sM1+7HZwRpUNnbSd8d4ze9xtHkYe940vUaOv4L7ctx1xGafG4AAAAASUVORK5CYII="
+        },
+        "org.knime.base.node.io.filehandling.csv.reader2.CSVTableReaderNodeFactory2": {
+          "name": "CSV Reader (Labs)",
+          "type": "Source",
+          "nodeFactory": {
+            "className": "org.knime.base.node.io.filehandling.csv.reader2.CSVTableReaderNodeFactory2"
+          },
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RkRBRThDOTU3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RkRBRThDOTQ3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2MjZBQjAxMDJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2MjZBQjAxMTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pr5h9h8AAABuSURBVHjaYmRgYPjPQAT4//8/IzZxkOD/j5Ot8Wrmzz2K0wAmBgoBI6VegMpBAD8/P1Y2VA0DNozihT9//mBlDyEvDEgsMEJciMN0RkZ0Q2Bi/2F68RqAx+D/cCYBFxA0nbYGUOwFAgaAQxMgwAD1CJc+ReyqcgAAAABJRU5ErkJggg=="
+        },
+        "org.knime.base.node.meta.looper.chunk.LoopStartChunkNodeFactory": {
+          "name": "Chunk Loop Start",
+          "type": "LoopStart",
+          "nodeFactory": {
+            "className": "org.knime.base.node.meta.looper.chunk.LoopStartChunkNodeFactory"
+          },
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NEFDQzk2NEI4NDlBMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NEFDQzk2NEE4NDlBMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2NkU4QTgyRjQ1QzcxMUU1QUM2QkE3NzQyQjhFM0EyRCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2NkU4QTgzMDQ1QzcxMUU1QUM2QkE3NzQyQjhFM0EyRCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pof9SJEAAAFWSURBVHjapJM9SwNBEIb3wqKolWKhlUUQsbCzEAQLg4UIfoDYW9pYKBEURZDYmCYQa3+CmhQaIY0QrMTC2loQFD/RFJr1mWNOYrh8kAw8DOzN++7s3qxnymL2JB4jJWAEOsEDB59QgFW4g/3sQnLTOecXiDBKOodB9fqBB/iCDuiDiJq9QLesZ+YPilZ3zYFV9zjupxWdifgY5lQsMQlnImqHEuwgTJjw6IHxirUJMQiOYBF/mzpB3SJpD4YhzxGmTDOB0QAs/11iSLgq6//qxcA2UlgrbCsd1DJovAMu45l8CLv8iVIzHXTBtgwQZkfkNYy8On8hT7qBDTF410GRgVqBJxmqKsI20iWM6XvxDR7VwOjsX4cIpW5djaXjNxj1z8THC91dHs+SaqSreyhCL/TrYzL6Kqc55kcwBzPBGGOWJqW0vSEVyMW+whVsUXtb3t2vAAMAMpls6M2UehYAAAAASUVORK5CYII="
+        }
+      }
+    },
+    "snapshotId": "14"
+  }
+}

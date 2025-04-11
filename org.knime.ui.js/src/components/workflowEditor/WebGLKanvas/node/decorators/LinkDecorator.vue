@@ -1,9 +1,4 @@
 <script setup lang="ts">
-/**
- * An arrow icon that is used to indicate a linked component / metanode.
- * For use inside the Node component.
- */
-
 import { computed } from "vue";
 import { Container, Graphics } from "pixi.js";
 
@@ -11,12 +6,16 @@ import * as $colors from "@/style/colors";
 import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 
+/**
+ * An arrow icon that is used to indicate a linked component / metanode.
+ * For use inside the Node component.
+ */
+
 type Props = {
   /**
    * Node type for determining the background color.
-   * Allows the node types defined in $colors.nodeBackgroundColors
    * */
-  backgroundType: string;
+  backgroundType: keyof typeof $colors.nodeBackgroundColors;
 
   /**
    * The update status of the link of a component (UpToDate, HasUpdate, Error)
@@ -81,7 +80,7 @@ const renderCross = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container event-mode="none">
+  <Container>
     <Graphics v-if="backgroundColor" @render="renderBackground" />
 
     <Graphics

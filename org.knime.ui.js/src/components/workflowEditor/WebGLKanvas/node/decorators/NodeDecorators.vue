@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import type { NativeNodeInvariants } from "@/api/gateway-api/generated-api";
+import type {
+  NativeNodeInvariants,
+  Node,
+} from "@/api/gateway-api/generated-api";
+import * as $colors from "@/style/colors";
 
 import LinkDecorator from "./LinkDecorator.vue";
 import LockDecorator from "./LockDecorator.vue";
@@ -27,7 +31,7 @@ type Props = {
   /**
    * Node variation.
    */
-  kind: "node" | "metanode" | "component";
+  kind: Node.KindEnum;
 
   /**
    * Information about the node execution. Might not be present if no special node execution info is available
@@ -62,7 +66,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const decoratorBackgroundType = computed(() => {
   // use type or kind and uppercase first letter (metanode or component)
-  return props.type || props.kind[0].toUpperCase() + props.kind.substring(1);
+  return (props.type ||
+    props.kind[0].toUpperCase() +
+      props.kind.substring(1)) as keyof typeof $colors.nodeBackgroundColors;
 });
 </script>
 

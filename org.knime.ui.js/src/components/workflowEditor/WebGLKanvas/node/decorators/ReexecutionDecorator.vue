@@ -5,12 +5,16 @@ import { Container, Graphics } from "pixi.js";
 import * as $colors from "@/style/colors";
 import type { GraphicsInst } from "@/vue3-pixi";
 
+/**
+ * A decorator component which displays arrows if a node can trigger workflow re-execution.
+ * For use on a node component of type 'Widget'.
+ */
+
 type Props = {
   /**
    * Node type for determining the background color.
-   * Allows the node types defined in $colors.nodeBackgroundColors
    * */
-  backgroundType: string;
+  backgroundType: keyof typeof $colors.nodeBackgroundColors;
 };
 const props = defineProps<Props>();
 
@@ -52,7 +56,7 @@ const renderArrows = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container event-mode="none">
+  <Container>
     <Graphics v-if="backgroundColor" @render="renderBackground" />
     <Graphics @render="renderArrows" />
   </Container>

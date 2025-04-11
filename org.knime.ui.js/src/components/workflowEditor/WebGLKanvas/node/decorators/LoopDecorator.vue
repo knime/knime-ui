@@ -2,8 +2,9 @@
 import { Container, Graphics, type StrokeInput } from "pixi.js";
 
 import * as $colors from "@/style/colors";
+
 /**
- * An SVG decorator component which displays icons for loop execution state.
+ * A decorator component which displays icons for loop execution state.
  * For use in a Node component.
  */
 
@@ -42,7 +43,6 @@ const renderBackground = (graphics: Graphics) => {
 };
 
 const renderPause = (graphics: Graphics) => {
-  consola.warn("rendering pause");
   renderBackground(graphics);
   graphics
     .moveTo(5, 9.0625)
@@ -80,7 +80,7 @@ const renderRunning = (graphics: Graphics) => {
 </script>
 
 <template>
-  <Container event-mode="none">
+  <Container>
     <!-- Loop execution paused. -->
     <Graphics v-if="loopStatus === 'PAUSED'" @render="renderPause" />
     <!-- Loop execution running. -->
