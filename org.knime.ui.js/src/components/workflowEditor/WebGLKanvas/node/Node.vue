@@ -1,6 +1,6 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, unref } from "vue";
+import { computed, ref, toRef, unref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -17,6 +17,7 @@ import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingCon
 import { isFullFloatingConnector } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
@@ -32,11 +33,14 @@ import { nodeNameText } from "../util/textStyles";
 import NodeActionBar from "./NodeActionBar.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeDecorators from "./decorators/NodeDecorators.vue";
+import NodeLabel from "./nodeLabel/NodeLabel.vue";
+import NodeName from "./nodeName/NodeName.vue";
 import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
+import { useNodeNameTextMetrics } from "./useNodeNameTextMetrics";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 
 interface Props {
@@ -52,6 +56,9 @@ const props = withDefaults(defineProps<Props>(), {
   type: null,
   link: null,
 });
+
+const isMetanode = computed(() => isNodeMetaNode(props.node));
+const isComponent = computed(() => isNodeComponent(props.node));
 
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
@@ -114,25 +121,11 @@ const isHovering = computed(
     (portTypeMenu.value.isOpen && portTypeMenu.value.nodeId === props.node.id),
 );
 
-// this is not reactive!
-const style = new PIXI.TextStyle(nodeNameText.styles);
-const nameMeasures = PIXI.CanvasTextMetrics.measureText(
-  props.name,
-  style,
-  undefined,
-  true,
-);
-
-const SINGLE_LINE_TEXT_HEIGHT_THRESHOLD = 40;
-const textYAnchor = computed(() =>
-  // eslint-disable-next-line no-magic-numbers
-  nameMeasures.height <= SINGLE_LINE_TEXT_HEIGHT_THRESHOLD ? 0 : 0.5,
-);
-
-const nodeNameDimensions = ref({
-  width: nameMeasures.width,
-  height: nameMeasures.height,
-});
+const { metrics: nodeNameDimensions, shortenedNodeName } =
+  useNodeNameTextMetrics({
+    nodeName: toRef(props, "name"),
+    shortenName: isMetanode.value || isComponent.value,
+  });
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
@@ -160,7 +153,7 @@ const nodeNamePosition = computed(() => {
   const padding = nodeNameText.styles.padding ?? 0;
   return {
     x: x + hoverSize.value.x + hoverSize.value.width / 2 + padding,
-    y: y - nameMeasures.height - $shapes.nodeNameMargin + padding,
+    y,
   };
 });
 
@@ -173,8 +166,6 @@ const nodeHitArea = computed(
       hoverSize.value.height,
     ),
 );
-
-const isMetanode = computed(() => isNodeMetaNode(props.node));
 
 const floatingConnectorStore = useFloatingConnectorStore();
 const {
@@ -240,10 +231,22 @@ const allAllowedActions = computed(() => {
   return { ...baseConfig, canConfigure };
 });
 
+const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
+  useNodeInteractionsStore(),
+);
+const nodeNameIsEdited = computed(
+  () => nameEditorNodeId.value === props.node.id,
+);
 const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
-  extraHeight: nodeNameDimensions.value.height,
+  extraHeight: () =>
+    nodeNameIsEdited.value
+      ? nameEditorDimensions.value.height
+      : nodeNameDimensions.value.height,
   kind: props.node.kind,
-  width: nodeNameDimensions.value.width + $shapes.nodeNameHorizontalMargin * 2,
+  width: () =>
+    nodeNameIsEdited.value
+      ? nameEditorDimensions.value.width
+      : $shapes.nodeNameHorizontalMargin * 2,
 });
 
 const actionBarPosition = computed(() => {
@@ -274,6 +277,17 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
 };
 
 const { resolution } = useZoomAwareResolution();
+
+const nodeLabelPosition = computed(() => {
+  return {
+    x: nodeNamePosition.value.x,
+    y:
+      translatedPosition.value.y +
+      nodeSelectionMeasures.value.y +
+      nodeSelectionMeasures.value.height +
+      10,
+  };
+});
 </script>
 
 <template>
@@ -307,7 +321,7 @@ const { resolution } = useZoomAwareResolution();
     />
 
     <NodeActionBar
-      v-if="isHovering && !isDragging"
+      v-if="isHovering && !isDragging && !nodeNameIsEdited"
       v-bind="allAllowedActions"
       :position="actionBarPosition"
       :node-id="node.id"
@@ -315,16 +329,12 @@ const { resolution } = useZoomAwareResolution();
       :is-node-selected="isNodeSelected(node.id)"
     />
 
-    <Text
-      label="NodeName"
+    <NodeName
+      :node-id="node.id"
+      :name="shortenedNodeName"
+      :is-editable="isMetanode || isComponent"
       :position="nodeNamePosition"
-      :resolution="resolution"
-      :style="nodeNameText.styles"
-      :anchor="{ x: 0.5, y: textYAnchor }"
-      :round-pixels="true"
-    >
-      {{ name }}
-    </Text>
+    />
 
     <Container label="NodeTorsoContainer" :position="translatedPosition">
       <NodeTorso
@@ -362,4 +372,11 @@ const { resolution } = useZoomAwareResolution();
       @update-port-positions="portPositions = $event"
     />
   </Container>
+
+  <NodeLabel
+    :node-id="node.id"
+    :label="node.annotation?.text.value"
+    :is-node-selected="isNodeSelected(node.id)"
+    :position="nodeLabelPosition"
+  />
 </template>

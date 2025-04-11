@@ -10,7 +10,7 @@ import PauseIcon from "@/assets/pause-execution.svg";
 import ResetIcon from "@/assets/reset-all.svg";
 import ResumeIcon from "@/assets/resume-execution.svg";
 import StepIcon from "@/assets/step-execution.svg";
-import ActionBar from "@/components/workflowEditor/SVGKanvas/common/ActionBar.vue";
+import ActionBar from "@/components/workflowEditor/common/svgActionBar/ActionBar.vue";
 import { useNodeActionBar } from "../../common/useNodeActionBar";
 
 /**

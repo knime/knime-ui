@@ -17,9 +17,22 @@ export const nodeNameText: TextStylePreset = {
     fontSize: 12,
     fontWeight: "bold",
     wordWrap: true,
+    breakWords: true,
     // fixes slight cut off of some chars
     padding: 2,
-    wordWrapWidth: 100,
+    wordWrapWidth: 90,
+    align: "center",
+    textBaseline: "bottom",
+  },
+};
+
+export const nodeLabelText: TextStylePreset = {
+  styles: {
+    ...defaultTextStyles,
+    fontSize: 12,
+    fontWeight: "normal",
+    whiteSpace: "pre",
+    padding: 2, // fixes slight cut off of some chars
     align: "center",
     textBaseline: "bottom",
   },

@@ -1,0 +1,154 @@
+<!-- eslint-disable no-magic-numbers -->
+<!-- eslint-disable no-undefined -->
+<script setup lang="ts">
+import { computed, ref, useTemplateRef } from "vue";
+import { onClickOutside } from "@vueuse/core";
+import { storeToRefs } from "pinia";
+
+import CancelIcon from "@/assets/cancel.svg";
+import SaveIcon from "@/assets/ok.svg";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { nodeSize } from "@/style/shapes";
+import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
+import type { ActionButtonConfig } from "../../../types";
+import FloatingHTML from "../../common/FloatingHTML.vue";
+import TextEditor from "../../common/TextEditor.vue";
+
+const nodeInteractionsStore = useNodeInteractionsStore();
+const { labelEditorNodeId } = storeToRefs(nodeInteractionsStore);
+const workflowStore = useWorkflowStore();
+const { activeWorkflow } = storeToRefs(workflowStore);
+
+const editedNode = computed(() => {
+  if (!activeWorkflow.value || !labelEditorNodeId.value) {
+    return undefined;
+  }
+
+  return activeWorkflow.value.nodes[labelEditorNodeId.value];
+});
+
+const textEditor = useTemplateRef("textEditor");
+
+const onCancel = () => {
+  nodeInteractionsStore.closeLabelEditor();
+};
+
+const position = computed(() => {
+  if (!editedNode.value) {
+    return undefined;
+  }
+
+  return {
+    x: editedNode.value.position.x,
+    y: editedNode.value.position.y,
+  };
+});
+
+const editResult = ref("");
+
+const onSave = () => {
+  const trimmedValue = editResult.value.trim();
+
+  // no change
+  if (trimmedValue === editedNode.value?.annotation?.text.value) {
+    onCancel();
+    return;
+  }
+
+  const nodeId = editedNode.value!.id;
+
+  // rename
+  nodeInteractionsStore.renameNodeLabel({
+    nodeId,
+    label: trimmedValue,
+  });
+
+  nodeInteractionsStore.closeLabelEditor();
+};
+
+const yOffset = 63;
+
+const positionStyle = computed(() => ({
+  transform: `translateX(calc(-50% + ${
+    nodeSize / 2
+  }px)) translateY(${yOffset}px)`,
+  transformOrigin: "top",
+}));
+
+const actions: ActionButtonConfig[] = [
+  {
+    title: "Save",
+    icon: SaveIcon,
+    onClick: onSave,
+    primary: true,
+  },
+  {
+    title: "Cancel",
+    icon: CancelIcon,
+    onClick: onCancel,
+  },
+];
+// @ts-expect-error seems to be typed wrong a component is possible to pass
+onClickOutside(textEditor, () => {
+  onSave();
+});
+</script>
+
+<template>
+  <Transition>
+    <FloatingHTML v-if="editedNode" :position="position!">
+      <div>
+        <svg class="action-bar">
+          <ActionBar
+            transform="scale(0.95) translate(31, 10)"
+            :actions="actions"
+          />
+        </svg>
+        <TextEditor
+          ref="textEditor"
+          :style="positionStyle"
+          :width-offset="2"
+          :value="editedNode.annotation?.text.value ?? ''"
+          class="label-text-editor"
+          :max-length="$characterLimits.nodeLabel"
+          @cancel="onCancel"
+          @save="onSave"
+          @update:value="editResult = $event"
+        />
+      </div>
+    </FloatingHTML>
+  </Transition>
+</template>
+
+<style lang="postcss" scoped>
+.v-leave-active {
+  transition: opacity 120ms ease-out;
+}
+
+.v-leave-to {
+  opacity: 0;
+}
+
+.action-bar {
+  position: absolute;
+  top: 43px;
+  left: -13.5px;
+  overflow: hidden;
+  width: 54px;
+  height: 25px;
+}
+
+.label-text-editor {
+  margin: auto;
+  text-align: center;
+  font-weight: normal;
+  border: 1.5px solid var(--knime-silver-sand);
+  line-height: 1.31;
+  padding: 2px;
+
+  &:focus-within {
+    border: 1.5px solid var(--knime-stone-dark);
+  }
+}
+</style>

@@ -4,7 +4,7 @@ import { computed } from "vue";
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import Port from "@/components/common/Port.vue";
-import ActionButton from "@/components/workflowEditor/SVGKanvas/common/ActionButton.vue";
+import ActionButton from "@/components/workflowEditor/common/svgActionBar/ActionButton.vue";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import * as $shapes from "@/style/shapes";
 

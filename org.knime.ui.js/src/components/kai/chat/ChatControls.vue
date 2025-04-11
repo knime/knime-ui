@@ -38,7 +38,7 @@ watch(
 );
 
 onMounted(() => {
-  textarea.value.focus();
+  textarea.value?.focus();
 });
 
 const sendMessage = () => {

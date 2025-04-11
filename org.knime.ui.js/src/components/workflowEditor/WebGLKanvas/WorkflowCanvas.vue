@@ -22,6 +22,8 @@ import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import Kanvas from "./kanvas/Kanvas.vue";
+import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
+import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 
 const { onDrop, onDragOver } = useDropNode();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
@@ -140,6 +142,10 @@ onUnmounted(() => {
     </Kanvas>
 
     <EditableWorkflowAnnotation />
+
+    <NodeNameEditor />
+
+    <NodeLabelEditor />
 
     <svg
       v-if="activeWorkflow && isWorkflowEmpty"

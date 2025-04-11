@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 
-import ActionButton from "@/components/workflowEditor/SVGKanvas/common/ActionButton.vue";
 import * as $shapes from "@/style/shapes";
 import type { ActionButtonConfig } from "../../types";
+
+import ActionButton from "./ActionButton.vue";
 /**
  * SVG based action bar
  */

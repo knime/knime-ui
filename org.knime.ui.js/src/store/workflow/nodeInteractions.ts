@@ -18,12 +18,14 @@ import { useWorkflowStore } from "./workflow";
 
 type NodeInteractionsState = {
   nameEditorNodeId: string | null;
+  nameEditorDimensions: { width: number; height: number };
   labelEditorNodeId: string | null;
 };
 
 export const useNodeInteractionsStore = defineStore("nodeInteractions", {
   state: (): NodeInteractionsState => ({
     nameEditorNodeId: null,
+    nameEditorDimensions: { width: 0, height: 0 },
     labelEditorNodeId: null,
   }),
   actions: {
@@ -33,6 +35,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
 
     closeNameEditor() {
       this.nameEditorNodeId = null;
+      this.nameEditorDimensions = { width: 0, height: 0 };
     },
 
     openLabelEditor(nodeId: string) {

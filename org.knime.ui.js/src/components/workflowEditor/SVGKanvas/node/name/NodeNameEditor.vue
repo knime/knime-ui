@@ -5,12 +5,13 @@ import { mapState } from "pinia";
 import type { XY } from "@/api/gateway-api/generated-api";
 import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
-import ActionBar from "@/components/workflowEditor/SVGKanvas/common/ActionBar.vue";
+import { invalidCharacters } from "@/components/workflowEditor/common/constants";
+import ActionBar from "@/components/workflowEditor/common/svgActionBar/ActionBar.vue";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 
 import NodeNameTextarea from "./NodeNameTextarea.vue";
 
-const invalidCharsErrorVisibleTime = 4000; // ms
+const invalidCharsErrorVisibleTime = invalidCharacters.errorVisibleTimeMs;
 
 type ComponentData = {
   hideInvalidCharsTimeoutId: number | null;
@@ -79,7 +80,7 @@ export default defineComponent({
       };
     },
     invalidCharacters() {
-      return /[*?#:"<>%~|/\\]/g;
+      return invalidCharacters.regexp;
     },
 
     actions() {

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import Port from "@/components/common/Port.vue";
-import ActionButton from "@/components/workflowEditor/SVGKanvas/common/ActionButton.vue";
+import ActionButton from "@/components/workflowEditor/common/svgActionBar/ActionButton.vue";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import * as $shapes from "@/style/shapes";
 import NodePortActions from "../NodePortActions.vue";
