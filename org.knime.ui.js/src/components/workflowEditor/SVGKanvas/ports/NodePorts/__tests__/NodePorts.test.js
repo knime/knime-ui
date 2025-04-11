@@ -6,9 +6,9 @@ import { flushPromises, mount } from "@vue/test-utils";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
-  PORT_TYPE_IDS,
   createAvailablePortTypes,
   createNativeNode,
+  PORT_TYPE_IDS
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
@@ -846,7 +846,6 @@ describe("NodePorts.vue", () => {
             index: 1,
             nodeId: "root:1",
             side,
-            portGroup: null,
           });
         });
       },
@@ -884,7 +883,6 @@ describe("NodePorts.vue", () => {
           nodeId: "root:1",
           side,
           index: 1,
-          portGroup: "group1",
         });
       },
     );

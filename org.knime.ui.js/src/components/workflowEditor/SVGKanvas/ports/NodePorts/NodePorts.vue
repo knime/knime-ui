@@ -196,7 +196,7 @@ const addPort = async ({
 };
 
 const removePort = async (
-  { portGroupId, index }: NodePortType,
+  { index }: NodePortType,
   side: "input" | "output",
 ) => {
   const canContinue = await nodeConfigurationStore.autoApplySettings({
