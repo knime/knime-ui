@@ -51,7 +51,7 @@ export const useCanvasPanning = ({
     const eventTarget = pointerDownEvent.currentTarget as HTMLElement;
     eventTarget.setPointerCapture(pointerDownEvent.pointerId);
 
-    const onPan = (ptrMoveEvent: PointerEvent) => {
+    const onPan = throttle((ptrMoveEvent: PointerEvent) => {
       if (isPanning.value) {
         hasMoved.value = true;
         canvasStore.setCanvasOffset({
@@ -68,7 +68,7 @@ export const useCanvasPanning = ({
           y: ptrMoveEvent.offsetY,
         };
       }
-    };
+    });
 
     const stopPan = (pointerUpEvent: PointerEvent) => {
       // show global context menu if we did not move
