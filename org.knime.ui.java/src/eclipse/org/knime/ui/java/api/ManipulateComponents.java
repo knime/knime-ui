@@ -58,7 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiPredicate;
 
 import org.eclipse.core.runtime.Path;
@@ -278,10 +277,12 @@ final class ManipulateComponents {
             //fetch input data
             final var optData = DesktopAPUtil.runWithProgress("Executing upstream nodes ...", LOGGER, mon -> {
                 try {
-                    return component.fetchInputDataFromParent();
-                } catch (ExecutionException e) {
-                    throw new InvocationTargetException(e);
+                    // since 5.5, the "fetchInputDataFromParent" method is not executing the workflow anymore
+                    component.getParent().executePredecessorsAndWait(component.getID());
+                } catch (InterruptedException e) { // NOSONAR: cancellation is handled
+                    throw new InvocationTargetException(e, "Execution aborted");
                 }
+                return component.fetchInputDataFromParent();
             });
             if (optData.isEmpty()) {
                 MessageDialog.openError(shell, "Problem saving component with example input data",
