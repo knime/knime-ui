@@ -9,7 +9,6 @@ import { useRouter } from "vue-router";
 import { rfcErrors } from "@knime/hub-features";
 import {
   CURRENT_STATE_VERSION,
-  MOST_RECENT_VERSION,
   VERSION_DEFAULT_LIMIT,
   useVersionsApi,
 } from "@knime/hub-features/versions";
@@ -231,16 +230,46 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     });
   }
 
+  function setActiveVersionOnActiveProject(
+    version: NamedItemVersion["version"],
+    activeProjectId: string,
+  ) {
+    const { openProjects } = useApplicationStore();
+
+    const activeProject = openProjects.find(
+      ({ projectId }) => projectId === activeProjectId,
+    );
+
+    if (activeProject?.origin) {
+      if (typeof version === "string") {
+        activeProject.origin.version = undefined;
+      } else {
+        const activeProjectVersionModeInfo =
+          versionsModeInfo.value.get(activeProjectId);
+        const loadedVersionModeInfo = activeProjectVersionModeInfo
+          ? activeProjectVersionModeInfo.loadedVersions.find(
+              (loadedVersion) => loadedVersion.version === version,
+            )
+          : undefined;
+        if (loadedVersionModeInfo) {
+          // TODO this is not persisted, i.e. information is lost on app reload
+          activeProject.origin.version = {
+            ...loadedVersionModeInfo,
+            version: Number(version),
+          };
+        }
+      }
+    }
+  }
+
   async function switchVersion(version: NamedItemVersion["version"]) {
-    const { activeProjectId, openProjects } = useApplicationStore();
+    const { activeProjectId } = useApplicationStore();
 
     if (!activeProjectId) {
       return;
     }
 
-    const openProject = openProjects.find(
-      ({ projectId }) => projectId === activeProjectId,
-    );
+    setActiveVersionOnActiveProject(version, activeProjectId);
 
     let canSetNewRoute: boolean | null = true;
 
@@ -265,30 +294,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
 
     if (canSetNewRoute) {
-      if (openProject && openProject.origin) {
-        if (
-          version === CURRENT_STATE_VERSION ||
-          version === MOST_RECENT_VERSION
-        ) {
-          openProject.origin.version = { title: "temp", version: 0 }; // TODO: hack to force change in openProjects so AppHeader registers it
-          openProject.origin.version = undefined;
-        } else {
-          const activeProjectVersionModeInfo =
-            versionsModeInfo.value.get(activeProjectId);
-          const loadedVersion = activeProjectVersionModeInfo
-            ? activeProjectVersionModeInfo.loadedVersions.find(
-                (loadedVersion) => loadedVersion.version === version,
-              )
-            : undefined;
-          if (loadedVersion) {
-            // TODO this is not persisted, i.e. information is lost on app reload
-            openProject.origin.version = {
-              ...loadedVersion,
-              version: Number(version),
-            };
-          }
-        }
-      }
       await $router.push({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId: activeProjectId },
