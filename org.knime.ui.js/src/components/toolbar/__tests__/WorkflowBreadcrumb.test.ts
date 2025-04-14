@@ -33,7 +33,7 @@ vi.mock(
     return {
       useRevealInSpaceExplorer: () => ({
         ...original.useRevealInSpaceExplorer(),
-        revealInSpaceExplorer: revealInSpaceExplorerSpy,
+        revealItemInSpaceExplorer: revealInSpaceExplorerSpy,
       }),
     };
   },

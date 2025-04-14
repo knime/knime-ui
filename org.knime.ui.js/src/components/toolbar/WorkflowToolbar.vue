@@ -16,6 +16,7 @@ import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
+import { useUploadToSpace } from "@/composables/useUploadToSpace";
 import { isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
@@ -29,7 +30,6 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { useSpacesStore } from "@/store/spaces/spaces";
 import { isLocalProvider } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -54,12 +54,13 @@ const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
 const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
-const { uploadToSpace } = useSpacesStore();
 const { getProviderInfoFromProjectPath, getCommunityHubInfo } = storeToRefs(
   useSpaceProvidersStore(),
 );
 
 const webglCanvasStore = useWebGLCanvasStore();
+
+const { uploadAndOpenProject } = useUploadToSpace();
 
 const providerInfo = computed(() =>
   getProviderInfoFromProjectPath.value(activeProjectId.value!),
@@ -190,10 +191,7 @@ const onUploadButtonClick = () => {
     return;
   }
 
-  uploadToSpace({
-    itemIds: [itemId.value],
-    openAfterUpload: true,
-  });
+  uploadAndOpenProject(itemId.value);
 };
 
 const uploadButton = ref<InstanceType<typeof ToolbarButton>>();

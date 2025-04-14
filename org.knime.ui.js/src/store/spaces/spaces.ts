@@ -1,17 +1,11 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
-
 import {
   type DestinationPickerConfig,
   useDestinationPicker,
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
-import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
-import { getToastsProvider } from "@/plugins/toasts";
 import { checkOpenWorkflowsBeforeMove } from "@/store/spaces/util";
-import { useApplicationStore } from "../application/application";
-import { useDesktopInteractionsStore } from "../workflow/desktopInteractions";
 
 import { localRootProjectPath, useSpaceCachingStore } from "./caching";
 import { useSpaceOperationsStore } from "./spaceOperations";
@@ -99,79 +93,43 @@ export const useSpacesStore = defineStore("spaces", {
 
     async uploadToSpace({
       itemIds,
-      openAfterUpload = false,
     }: {
       itemIds: string[];
-      openAfterUpload?: boolean;
-    }) {
+    }): Promise<{
+      destinationProviderId: string;
+      destinationSpaceId: string;
+      remoteItemIds: string[];
+    } | null> {
       const destinationResult = await promptDestination(
         presets.UPLOAD_PICKERCONFIG,
       );
 
-      if (destinationResult?.type === "item") {
-        const {
-          spaceProviderId: destinationProviderId,
-          spaceId: destinationSpaceId,
-          itemId: destinationItemId,
-          resetWorkflow,
-        } = destinationResult;
-
-        const remoteItemIds = await API.desktop.uploadToSpace({
-          sourceProviderId: localRootProjectPath.spaceProviderId,
-          sourceSpaceId: localRootProjectPath.spaceId,
-          sourceItemIds: itemIds,
-          destinationProviderId,
-          destinationSpaceId,
-          destinationItemId,
-          excludeData: resetWorkflow,
-        });
-
-        if (!remoteItemIds || remoteItemIds.length === 0) {
-          return;
-        }
-
-        const $toast = getToastsProvider();
-        if (!openAfterUpload) {
-          const { revealInSpaceExplorer } = useRevealInSpaceExplorer();
-          $toast.show({
-            headline: "Upload complete",
-            type: "success",
-            buttons: [
-              {
-                icon: ListIcon,
-                text: "Reveal in space explorer",
-                callback: () => {
-                  revealInSpaceExplorer({
-                    providerId: destinationProviderId,
-                    spaceId: destinationSpaceId,
-                    itemId: remoteItemIds[0],
-                    ancestorItemIds: [destinationItemId],
-                    // selectedItemIds: remoteItemIds, // TODO change me when there are multiple items
-                  }).then(() => {
-                    if (remoteItemIds.length > 1) {
-                      const { setCurrentSelectedItemIds } =
-                        useSpaceOperationsStore();
-                      setCurrentSelectedItemIds(remoteItemIds);
-                    }
-                  });
-                },
-              },
-            ],
-          });
-          return;
-        }
-
-        if (remoteItemIds.length === 1) {
-          const { activeProjectId } = useApplicationStore();
-          await useDesktopInteractionsStore().closeProject(activeProjectId!);
-          const { openProject } = useSpaceOperationsStore();
-          await openProject({
-            providerId: destinationProviderId,
-            spaceId: destinationSpaceId,
-            itemId: remoteItemIds[0],
-          });
-        }
+      if (destinationResult?.type !== "item") {
+        return null;
       }
+
+      const {
+        spaceProviderId: destinationProviderId,
+        spaceId: destinationSpaceId,
+        itemId: destinationItemId,
+        resetWorkflow,
+      } = destinationResult;
+
+      const remoteItemIds = await API.desktop.uploadToSpace({
+        sourceProviderId: localRootProjectPath.spaceProviderId,
+        sourceSpaceId: localRootProjectPath.spaceId,
+        sourceItemIds: itemIds,
+        destinationProviderId,
+        destinationSpaceId,
+        destinationItemId,
+        excludeData: resetWorkflow,
+      });
+
+      if (!remoteItemIds || remoteItemIds.length === 0) {
+        return null;
+      }
+
+      return { destinationProviderId, destinationSpaceId, remoteItemIds };
     },
 
     async moveOrCopyToSpace({

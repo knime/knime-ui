@@ -11,7 +11,8 @@ type UseRevealProject = {
 };
 
 export const useRevealProject = (options: UseRevealProject) => {
-  const { canRevealItem, revealInSpaceExplorer } = useRevealInSpaceExplorer();
+  const { canRevealItem, revealItemInSpaceExplorer } =
+    useRevealInSpaceExplorer();
 
   const { openProjects, isUnknownProject } = storeToRefs(useApplicationStore());
 
@@ -51,7 +52,7 @@ export const useRevealProject = (options: UseRevealProject) => {
           return;
         }
 
-        await revealInSpaceExplorer(foundProject.origin, foundProject.name);
+        await revealItemInSpaceExplorer(foundProject.origin, foundProject.name);
       },
     },
   };

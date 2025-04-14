@@ -9,9 +9,9 @@ import {
   type NamedItemVersion,
 } from "@knime/hub-features/versions";
 
+import { useUploadToSpace } from "@/composables/useUploadToSpace";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
-import { useSpacesStore } from "@/store/spaces/spaces";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
 
@@ -23,7 +23,7 @@ const { activeProjectVersionsModeInfo, activeProjectVersionsModeStatus } =
 
 const { activeProjectOrigin } = storeToRefs(useApplicationStore());
 
-const { uploadToSpace } = useSpacesStore();
+const { uploadAndOpenProject } = useUploadToSpace();
 
 const hasAdminRights = computed(
   () =>
@@ -120,10 +120,8 @@ const onCreate = async ({ name, description }) => {
 };
 
 const onUpload = () => {
-  uploadToSpace({
-    itemIds: [activeProjectOrigin.value!.itemId],
-    openAfterUpload: true,
-  });
+  const itemId = activeProjectOrigin.value!.itemId;
+  uploadAndOpenProject(itemId);
 };
 </script>
 

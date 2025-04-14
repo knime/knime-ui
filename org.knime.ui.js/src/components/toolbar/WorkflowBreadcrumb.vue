@@ -26,7 +26,7 @@ type Props = {
   workflow: Workflow;
 };
 const props = defineProps<Props>();
-const { revealInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
+const { revealItemInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
 const { getSpaceProviderIcon } = useSpaceIcons();
 
 const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
@@ -81,9 +81,13 @@ const dropdownItems = computed(() => {
       icon: ListIcon,
       metadata: {
         handler: async () => {
-          await revealInSpaceExplorer(
+          const projectName = openProjects.value.find(
+            (project) => project.projectId === activeProjectId.value,
+          )!.name;
+
+          await revealItemInSpaceExplorer(
             activeProjectOrigin.value!,
-            getActiveProject()!.name,
+            projectName,
           );
         },
       },

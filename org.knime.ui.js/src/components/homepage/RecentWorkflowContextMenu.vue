@@ -22,7 +22,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
-const { revealInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
+const { revealItemInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
 
 const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
   if (item.execute) {
@@ -43,7 +43,10 @@ const recentWorkflowContextMenuItems = computed(() => {
     text: isConnected ? "Show in explorer" : "Connect and show in explorer",
     icon: RevealInSpaceIcon,
     execute: async () => {
-      await revealInSpaceExplorer(recentWorkflow.origin, recentWorkflow.name);
+      await revealItemInSpaceExplorer(
+        recentWorkflow.origin,
+        recentWorkflow.name,
+      );
     },
   };
 

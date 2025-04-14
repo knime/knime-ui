@@ -1,6 +1,7 @@
 /* eslint-disable no-undefined */
 import { type Ref, computed } from "vue";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 
 import type {
   FileExplorerContextMenu,
@@ -17,6 +18,7 @@ import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import KeyIcon from "@knime/styles/img/icons/key.svg";
 import LinkExternal from "@knime/styles/img/icons/link-external.svg";
+import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.svg";
 import RenameIcon from "@knime/styles/img/icons/pencil.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
@@ -32,7 +34,9 @@ import AddFileIcon from "@/assets/add-file.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import PlusIcon from "@/assets/plus.svg";
 import { useMovingItems } from "@/components/spaces/useMovingItems";
+import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { isBrowser } from "@/environment";
+import { getToastsProvider } from "@/plugins/toasts";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
@@ -53,6 +57,7 @@ export const useSpaceExplorerActions = (
   },
 ) => {
   const { toastPresets } = getToastPresets();
+  const $router = useRouter();
   const { onDuplicateItems } = useMovingItems({ projectId });
 
   const { selectionContainsFile, isLoadingContent } = storeToRefs(
@@ -330,9 +335,33 @@ export const useSpaceExplorerActions = (
     title: isSelectionEmpty.value
       ? "Select at least one file to upload."
       : undefined,
-    execute: () => {
-      uploadToSpace({
+    execute: async () => {
+      const uploadResult = await uploadToSpace({
         itemIds: selectedItemIds.value,
+      });
+
+      if (!uploadResult || uploadResult.remoteItemIds.length === 0) {
+        return;
+      }
+
+      const $toast = getToastsProvider();
+      const { revealInSpaceExplorer } = useRevealInSpaceExplorer($router);
+      $toast.show({
+        headline: "Upload complete",
+        type: "success",
+        buttons: [
+          {
+            icon: ListIcon,
+            text: "Reveal in space explorer",
+            callback: async () => {
+              await revealInSpaceExplorer({
+                providerId: uploadResult.destinationProviderId,
+                spaceId: uploadResult.destinationSpaceId,
+                itemIds: uploadResult.remoteItemIds,
+              });
+            },
+          },
+        ],
       });
     },
   }));

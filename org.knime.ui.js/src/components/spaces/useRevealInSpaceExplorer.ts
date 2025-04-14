@@ -1,7 +1,7 @@
 import { watch } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+import { type Router, useRouter } from "vue-router";
 
 import type { AncestorInfo } from "@/api/custom-types";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
@@ -23,7 +23,8 @@ import { getToastPresets } from "@/toastPresets";
 const DEFAULT_GROUP_ID = "defaultGroupId";
 const ROOT_ITEM_ID = "root";
 
-export const useRevealInSpaceExplorer = () => {
+export const useRevealInSpaceExplorer = (router?: Router) => {
+  const $router = router || useRouter(); // router might not be available in all contexts
   const { isLoadingContent } = storeToRefs(useSpaceOperationsStore());
   const { setCurrentSelectedItemIds } = useSpaceOperationsStore();
   const { activeProjectId } = storeToRefs(useApplicationStore());
@@ -37,7 +38,6 @@ export const useRevealInSpaceExplorer = () => {
   const { setProjectPath } = useSpaceCachingStore();
   const { connectProvider } = useSpaceAuthStore();
 
-  const router = useRouter();
   const { toastPresets } = getToastPresets();
 
   const canRevealItem = (providerId: string): boolean => {
@@ -103,6 +103,7 @@ export const useRevealInSpaceExplorer = () => {
   const navigateToSpaceBrowsingPage = async (
     origin: SpaceItemReference,
     itemName: string | null,
+    selectedItemIds: string[],
   ) => {
     const group = findSpaceGroupFromSpaceId(
       spaceProviders.value ?? {},
@@ -110,8 +111,7 @@ export const useRevealInSpaceExplorer = () => {
     );
     const { itemName: updatedItemName, ancestorItemIds } =
       await getAncestorInfo(origin);
-
-    await router.push({
+    await $router.push({
       name: APP_ROUTES.Home.SpaceBrowsingPage,
       params: {
         spaceProviderId: origin.providerId,
@@ -121,15 +121,15 @@ export const useRevealInSpaceExplorer = () => {
       },
     });
 
-    setCurrentSelectedItemIds([origin.itemId]);
+    setCurrentSelectedItemIds(selectedItemIds);
 
-    // this check does not make sense anymore when we open a folder we knew it existed
     checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
   };
 
   const displayInSidebarSpaceExplorer = async (
     origin: SpaceItemReference,
     itemName: string | null,
+    selectedItemIds: string[],
   ) => {
     if (!activeProjectId.value) {
       return;
@@ -139,7 +139,7 @@ export const useRevealInSpaceExplorer = () => {
       setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
     }
 
-    const { providerId, spaceId, itemId } = origin;
+    const { providerId, spaceId } = origin;
     const { itemName: updatedItemName, ancestorItemIds } =
       await getAncestorInfo(origin);
 
@@ -167,75 +167,30 @@ export const useRevealInSpaceExplorer = () => {
         () => isLoadingContent.value,
         (isLoading, wasLoading) => {
           if (wasLoading && !isLoading) {
-            setCurrentSelectedItemIds([itemId]);
+            setCurrentSelectedItemIds(selectedItemIds);
             unWatch();
           }
         },
       );
     } else {
-      setCurrentSelectedItemIds([itemId]);
+      setCurrentSelectedItemIds(selectedItemIds);
     }
 
     checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
   };
 
-  const revealInSpaceExplorer = async (
-    origin: SpaceItemReference,
-    projectName: string = "",
-  ) => {
-    try {
-      if (!canRevealItem(origin.providerId)) {
-        resetSelectedItemAndShowError();
-        return;
-      }
-
-      const provider = spaceProviders.value?.[origin.providerId];
-      // try connect to provider if we are not connected
-      if (provider && !provider.connected) {
-        const { isConnected } = await connectProvider({
-          spaceProviderId: provider.id,
-        });
-        if (!isConnected) {
-          toastPresets.spaces.auth.connectFailed({
-            error: null,
-            providerName: provider.name,
-          });
-          return;
-        }
-      }
-
-      if (!expanded) {
-        toggleExpanded();
-      }
-
-      setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
-
-      setCurrentSelectedItemIds([origin.itemId]);
-
-      if (!activeProjectId.value) {
-        // No active project, navigate to Space Browsing Page
-        await navigateToSpaceBrowsingPage(origin, projectName);
-        return;
-      }
-
-      // Active project exists, display Space Explorer
-      await displayInSidebarSpaceExplorer(origin, projectName);
-    } catch (error) {
-      consola.error("Could not reveal in Space Explorer:", error);
-      resetSelectedItemAndShowError(error);
-    }
-  };
-
-  const revealFolderInSpaceExplorer = async ({
+  const revealInSpaceExplorer = async ({
     providerId,
     spaceId,
-    folderItemId,
-    selectedItemIds = [],
+    itemIds,
+    itemName = null,
+    ancestorItemIds,
   }: {
     providerId: string;
     spaceId: string;
-    folderItemId: string;
-    selectedItemIds: string[];
+    itemIds: string[];
+    itemName?: string | null;
+    ancestorItemIds?: Array<string>;
   }) => {
     try {
       if (!canRevealItem(providerId)) {
@@ -264,31 +219,21 @@ export const useRevealInSpaceExplorer = () => {
 
       setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
 
-      setCurrentSelectedItemIds(selectedItemIds);
-
       if (!activeProjectId.value) {
         // No active project, navigate to Space Browsing Page
         await navigateToSpaceBrowsingPage(
-          {
-            providerId,
-            spaceId,
-            itemId: selectedItemIds[0],
-            ancestorItemIds: [folderItemId],
-          },
-          null,
+          { providerId, spaceId, itemId: itemIds[0], ancestorItemIds },
+          itemName,
+          itemIds,
         );
         return;
       }
 
       // Active project exists, display Space Explorer
       await displayInSidebarSpaceExplorer(
-        {
-          providerId,
-          spaceId,
-          itemId: selectedItemIds[0],
-          ancestorItemIds: [folderItemId],
-        },
-        null,
+        { providerId, spaceId, itemId: itemIds[0], ancestorItemIds },
+        itemName,
+        itemIds,
       );
     } catch (error) {
       consola.error("Could not reveal in Space Explorer:", error);
@@ -296,9 +241,22 @@ export const useRevealInSpaceExplorer = () => {
     }
   };
 
+  const revealItemInSpaceExplorer = async (
+    origin: SpaceItemReference,
+    itemName = "",
+  ) => {
+    await revealInSpaceExplorer({
+      providerId: origin.providerId,
+      spaceId: origin.spaceId,
+      itemIds: [origin.itemId],
+      itemName,
+      ancestorItemIds: origin.ancestorItemIds,
+    });
+  };
+
   return {
     revealInSpaceExplorer,
+    revealItemInSpaceExplorer,
     canRevealItem,
-    revealFolderInSpaceExplorer,
   };
 };
