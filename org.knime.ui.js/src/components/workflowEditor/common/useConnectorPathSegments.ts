@@ -39,7 +39,7 @@ type UseConnectorPathSegmentsOptions = {
 export const useConnectorPathSegments = (
   options: UseConnectorPathSegmentsOptions,
 ) => {
-  const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
+  const { movePreviewDelta } = storeToRefs(useMovingStore());
   const { isMetaNodePortBarSelected, isNodeSelected, isBendpointSelected } =
     storeToRefs(useSelectionStore());
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
@@ -78,30 +78,33 @@ export const useConnectorPathSegments = (
   const { start: startSegmentPosition, end: endSegmentPosition } =
     useConnectorPosition(options);
 
+  const needToUpdateSourcePosition = computed(
+    () =>
+      isNodeSelected.value(options.sourceNode.value ?? "") ||
+      (isMetanodeInPortBarConnection.value &&
+        isMetaNodePortBarSelected.value("in")),
+  );
+
+  const needToUpdateDestPosition = computed(
+    () =>
+      isNodeSelected.value(options.destNode.value ?? "") ||
+      (isMetanodeOutPortBarConnection.value &&
+        isMetaNodePortBarSelected.value("out")),
+  );
+
   const pathSegments = computed(() => {
     let startX = startSegmentPosition.value.x;
     let startY = startSegmentPosition.value.y;
     let endX = endSegmentPosition.value.x;
     let endY = endSegmentPosition.value.y;
 
-    // Update position of source or destination node is being moved
-    if (isDragging.value) {
-      if (
-        isNodeSelected.value(options.sourceNode.value ?? "") ||
-        (isMetanodeInPortBarConnection.value &&
-          isMetaNodePortBarSelected.value("in"))
-      ) {
-        startX += movePreviewDelta.value.x;
-        startY += movePreviewDelta.value.y;
-      }
-      if (
-        isNodeSelected.value(options.destNode.value ?? "") ||
-        (isMetanodeOutPortBarConnection.value &&
-          isMetaNodePortBarSelected.value("out"))
-      ) {
-        endX += movePreviewDelta.value.x;
-        endY += movePreviewDelta.value.y;
-      }
+    if (needToUpdateSourcePosition.value) {
+      startX += movePreviewDelta.value.x;
+      startY += movePreviewDelta.value.y;
+    }
+    if (needToUpdateDestPosition.value) {
+      endX += movePreviewDelta.value.x;
+      endY += movePreviewDelta.value.y;
     }
 
     // when there are no bendpoints or we have an absolutePoint means we should
