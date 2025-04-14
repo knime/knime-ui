@@ -366,8 +366,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
     /**
      * W O R K F L O W   L I F E C Y C L E
-     *
-     * TODO: NXT-3540, Make sure this always yields the correct project version
      */
     async switchWorkflow({
       newWorkflow = null,
