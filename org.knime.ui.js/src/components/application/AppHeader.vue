@@ -202,7 +202,7 @@ const onMouseDown = (e: MouseEvent) => {
       :active="isHomeButtonActive"
       @click="setGetStartedPageTab()"
     >
-      <HouseIcon />
+      <HouseIcon aria-hidden="true" focusable="false" />
       Home
     </FunctionButton>
     <div
@@ -272,11 +272,12 @@ const onMouseDown = (e: MouseEvent) => {
       <div v-if="hasOpenProjects" class="create-workflow-container">
         <button
           class="create-workflow-btn"
+          :aria-label="createWorkflowTitle"
           data-test-id="create-workflow-btn"
           :title="createWorkflowTitle"
           @click="$shortcuts.dispatch('createWorkflow')"
         >
-          <PlusIcon />
+          <PlusIcon aria-hidden="true" focusable="false" />
         </button>
       </div>
 
@@ -292,7 +293,7 @@ const onMouseDown = (e: MouseEvent) => {
           title="Inspect Code (DEV MODE ONLY)"
           @click="openInspector()"
         >
-          <CodeHtmlIcon />
+          <CodeHtmlIcon aria-hidden="true" focusable="false" />
         </FunctionButton>
 
         <FunctionButton
@@ -302,7 +303,7 @@ const onMouseDown = (e: MouseEvent) => {
           title="Reload App (DEV MODE ONLY)"
           @click="reloadApp()"
         >
-          <ReloadIcon />
+          <ReloadIcon aria-hidden="true" focusable="false" />
         </FunctionButton>
 
         <HelpMenu ref="helpMenu" data-test-id="app-header-help-menu" />
@@ -313,7 +314,7 @@ const onMouseDown = (e: MouseEvent) => {
           data-test-id="open-preferences"
           @click="openKnimeUIPreferencePage"
         >
-          <CogIcon />
+          <CogIcon aria-hidden="true" focusable="false" />
           Preferences
         </FunctionButton>
 

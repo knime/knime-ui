@@ -42,6 +42,7 @@ const isBrowserWebKit = computed(
 <template>
   <div
     class="annotation-editor-wrapper"
+    aria-label="Edit annotation"
     @pointerdown="editable && $event.stopPropagation()"
   >
     <RichTextEditor
@@ -50,6 +51,7 @@ const isBrowserWebKit = computed(
       :model-value="initialValue"
       :editable="editable"
       :with-border="false"
+      aria-label="Workflow annotation editor"
       autofocus
       :base-extensions="{
         bold: true,

@@ -90,29 +90,41 @@ const activateTab = () => {
     :class="{ active: isActive }"
     :title="shouldTruncateName ? name : undefined"
     :data-test-id="name"
-    tabindex="0"
+    :tabindex="disabled ? -1 : 0"
     :aria-disabled="disabled"
+    :aria-selected="isActive"
+    :aria-labelledby="`tab-title-${projectId}`"
+    role="tab"
     @click.stop="activateTab"
     @keydown.enter="activateTab"
     @click.middle.stop="!disabled && emit('closeProject', projectId)"
   >
     <!-- There are different icons for local workflows and for components -->
     <template v-if="isLocal">
-      <NodeWorkflowIcon v-if="projectType === 'Component'" />
-      <WorkflowIcon v-else />
+      <NodeWorkflowIcon
+        v-if="projectType === 'Component'"
+        aria-hidden="true"
+        focusable="false"
+      />
+      <WorkflowIcon v-else aria-hidden="true" focusable="false" />
     </template>
     <template v-else>
-      <CloudComponentIcon v-if="projectType === 'Component'" />
-      <CloudWorkflowIcon v-else />
+      <CloudComponentIcon
+        v-if="projectType === 'Component'"
+        aria-hidden="true"
+        focusable="false"
+      />
+      <CloudWorkflowIcon v-else aria-hidden="true" focusable="false" />
     </template>
 
-    <span class="text" :title="tooltipContent">
+    <span :id="`tab-title-${projectId}`" class="text" :title="tooltipContent">
       {{ truncatedProjectName }}
     </span>
     <CloseButton
       :disabled="disabled"
       class="close-icon"
       :has-unsaved-changes="hasUnsavedChanges"
+      aria-label="Close project"
       @close.stop="emit('closeProject', projectId)"
     />
   </div>

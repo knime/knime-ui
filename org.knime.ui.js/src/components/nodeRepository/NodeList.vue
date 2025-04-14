@@ -251,12 +251,14 @@ defineExpose({ focusFirst, focusLast });
     <ul
       :class="['nodes', `display-${displayMode}`]"
       tabindex="0"
+      aria-label="Node list"
       @keydown="onKeyDown"
     >
       <li
         v-for="(node, index) in nodes"
         :key="node.id"
         tabindex="-1"
+        :aria-label="`Select node ${node.name}`"
         :data-index="index"
         @keydown.enter.stop.prevent="$emit('enterKey', node)"
         @keydown.i.stop.prevent="$emit('helpKey', node)"
@@ -276,7 +278,7 @@ defineExpose({ focusFirst, focusLast });
           @click="$emit('showMore')"
         >
           <slot name="more-button" /><br />
-          <CircleArrowIcon class="icon" />
+          <CircleArrowIcon class="icon" aria-hidden="true" focusable="false" />
         </Button>
       </li>
     </ul>

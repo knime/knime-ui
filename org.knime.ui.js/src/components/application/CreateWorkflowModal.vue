@@ -152,12 +152,14 @@ watch(
       <Label text="Workflow name">
         <div>
           <InputField
+            id="workflow-input"
             ref="inputRef"
             v-model="workflowName"
             type="text"
             title="Workflow name"
             :disabled="isSubmitted"
             :is-valid="isValid || isSubmitted"
+            aria-label="Workflow name"
             @keyup="onkeyup"
           />
           <div v-if="!isValid && !isSubmitted" class="item-error">
@@ -177,7 +179,7 @@ watch(
         :disabled="!isValid || isSubmitted"
         @click="onSubmit"
       >
-        <LoadingIcon v-if="isSubmitted" />
+        <LoadingIcon v-if="isSubmitted" aria-hidden="true" focusable="false" />
         <strong>Create</strong>
       </Button>
     </template>

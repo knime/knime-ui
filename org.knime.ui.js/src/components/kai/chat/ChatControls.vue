@@ -86,6 +86,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       ref="textarea"
       v-model="input"
       class="textarea"
+      aria-label="Type your message"
       :maxlength="$characterLimits.kai"
       :placeholder="placeholder"
       @keydown="handleKeyDown"
@@ -96,8 +97,13 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       :disabled="disabled"
       @click="handleSendButtonClick"
     >
-      <AbortIcon v-if="isProcessing" class="abort-icon" />
-      <SendIcon v-else class="send-icon" />
+      <AbortIcon
+        v-if="isProcessing"
+        class="abort-icon"
+        aria-hidden="true"
+        focusable="false"
+      />
+      <SendIcon v-else class="send-icon" aria-hidden="true" focusable="false" />
     </FunctionButton>
   </div>
 </template>

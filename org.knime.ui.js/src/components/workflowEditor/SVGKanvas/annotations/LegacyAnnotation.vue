@@ -68,7 +68,11 @@ export default defineComponent({
 </script>
 
 <template>
-  <div :style="annotationWrapperStyle" @dblclick="$emit('editStart')">
+  <div
+    :style="annotationWrapperStyle"
+    aria-label="Edit annotation"
+    @dblclick="$emit('editStart')"
+  >
     <span
       v-for="(part, i) in styledText"
       :key="`text-${i}`"

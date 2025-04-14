@@ -212,9 +212,11 @@ const setActiveDescendant = (
     <div
       v-if="selectedPortGroup && Object.keys(sidePortGroups ?? {}).length > 1"
       class="return-button"
+      aria-label="Back to port group selection"
       @click="selectedPortGroup = null"
+      @keydown.enter.space="selectedPortGroup = null"
     >
-      <ReturnIcon />
+      <ReturnIcon aria-hidden="true" focusable="false" />
     </div>
 
     <div class="search">

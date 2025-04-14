@@ -87,15 +87,20 @@ const updateField = <K extends keyof Link, V = Link[K]>(
       <div v-for="(link, index) of modelValue" :key="index" class="edit-link">
         <div class="edit-link-header">
           Link {{ index + 1 }}
-          <FunctionButton class="delete-link-btn" @click="removeLink(index)">
-            <TrashIcon />
+          <FunctionButton
+            class="delete-link-btn"
+            aria-label="Remove link"
+            @click="removeLink(index)"
+          >
+            <TrashIcon aria-hidden="true" focusable="false" />
           </FunctionButton>
         </div>
 
         <div class="edit-link-text">
-          <Label text="Text" compact>
+          <Label :for="`link-text-${index}`" text="Text" compact>
             <div>
               <InputField
+                :id="`link-text-${index}`"
                 :model-value="modelValue[index].text"
                 type="text"
                 title="Text"
@@ -110,9 +115,10 @@ const updateField = <K extends keyof Link, V = Link[K]>(
         </div>
 
         <div class="edit-link-url">
-          <Label text="URL" compact>
+          <Label :for="`link-url-${index}`" text="URL" compact>
             <div>
               <InputField
+                :id="`link-url-${index}`"
                 :model-value="modelValue[index].url"
                 type="text"
                 title="URL"
@@ -128,7 +134,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
       </div>
 
       <Button class="add-link-btn" with-border compact @click="addLink">
-        <PlusIcon />
+        <PlusIcon aria-hidden="true" focusable="false" />
         Add external resource
       </Button>
     </template>

@@ -18,10 +18,14 @@ const rounded = computed(() => round(props.progress * 100));
 
 <template>
   <div class="not-ready">
-    <span>{{ rounded }}%</span>
-    <progress :value="rounded" max="100" />
+    <span id="progress-label">{{ rounded }}%</span>
+    <progress
+      :value="rounded"
+      max="100"
+      aria-labelledby="progress-label extension-name"
+    />
     <div class="progress-message">
-      <span>{{ extensionName }} </span>
+      <span id="extension-name">{{ extensionName }} </span>
     </div>
   </div>
 </template>

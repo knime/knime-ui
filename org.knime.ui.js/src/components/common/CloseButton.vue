@@ -27,12 +27,23 @@ export default {
 </script>
 
 <template>
-  <button :disabled="disabled" @click="$emit('close', $event)">
+  <button
+    :disabled="disabled"
+    aria-label="Close"
+    @click="$emit('close', $event)"
+  >
     <DotIcon
       v-if="hasUnsavedChanges && !isHovered"
+      aria-hidden="true"
+      focusable="false"
       @mouseover="isHovered = !disabled"
     />
-    <CloseIcon v-else @mouseleave="isHovered = false" />
+    <CloseIcon
+      v-else
+      aria-hidden="true"
+      focusable="false"
+      @mouseleave="isHovered = false"
+    />
   </button>
 </template>
 

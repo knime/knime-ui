@@ -197,8 +197,10 @@ const onSplitterPointerDown = (e: PointerEvent) => {
       :data-test-id="splitterId"
       :class="{ active: isActive }"
       :title="splitterTitle"
+      aria-label="Resize panel"
       @pointerdown="onSplitterPointerDown"
       @click="onSplitterClick"
+      @keydown.enter="onSplitterClick"
     >
       <slot name="splitter" />
     </div>

@@ -127,7 +127,6 @@ onUnmounted(() => {
   <div
     :id="KANVAS_ID"
     ref="rootEl"
-    tabindex="0"
     class="kanvas-container"
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
@@ -147,6 +146,7 @@ onUnmounted(() => {
       :width="containerSize.width"
       :height="containerSize.height"
       :viewBox="workflowEmptyViewBox"
+      aria-label="Empty workflow – start by adding nodes"
     >
       <WorkflowEmpty />
     </svg>

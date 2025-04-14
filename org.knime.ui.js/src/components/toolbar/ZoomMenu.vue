@@ -94,6 +94,7 @@ const onWheel = (e: WheelEvent) => {
     <input
       ref="zoomInput"
       type="text"
+      aria-label="Zoom level"
       :value="zoomInputValue"
       class="zoom-input"
       @click.stop="onZoomInputClick"
@@ -101,7 +102,7 @@ const onWheel = (e: WheelEvent) => {
       @wheel.prevent="onWheel"
       @focusout.stop="onZoomInputFocusOut"
     />
-    <DropdownIcon />
+    <DropdownIcon aria-hidden="true" focusable="false" />
   </SubMenu>
 </template>
 

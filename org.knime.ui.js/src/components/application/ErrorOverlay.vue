@@ -67,12 +67,21 @@ const switchToJavaUI = () => {
     <div class="background" />
     <div class="content">
       <DynamicEnvRenderer value="DESKTOP">
-        <FunctionButton class="switch-classic" @click="switchToJavaUI">
-          <SwitchIcon />
+        <FunctionButton
+          class="switch-classic"
+          aria-label="Switch to Classic UI"
+          @click="switchToJavaUI"
+        >
+          <SwitchIcon aria-hidden="true" focusable="false" />
         </FunctionButton>
       </DynamicEnvRenderer>
 
-      <div class="header" @click="emit('close')">
+      <div
+        class="header"
+        aria-label="Close error overlay"
+        @click="emit('close')"
+        @keydown.enter="emit('close')"
+      >
         <h2>
           <WarningIcon /> KNIME Analytics Platform has stopped due to an error.
         </h2>
@@ -109,7 +118,12 @@ const switchToJavaUI = () => {
         </Button>
       </div>
 
-      <textarea class="stack" readonly :value="errorDetails" />
+      <textarea
+        class="stack"
+        readonly
+        :value="errorDetails"
+        aria-label="Error details"
+      />
     </div>
   </div>
 </template>

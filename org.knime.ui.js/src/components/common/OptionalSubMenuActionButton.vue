@@ -30,6 +30,7 @@ withDefaults(defineProps<Props>(), {
     orientation="left"
     class="submenu-button"
     :disabled="item.disabled"
+    :aria-label="item.title ?? item.text"
     :items="item.children"
     @item-click="
       (_: MouseEvent, item: MenuItem) =>
@@ -43,6 +44,8 @@ withDefaults(defineProps<Props>(), {
         v-if="!hideDropdown"
         class="dropdown-icon"
         :class="{ flip: expanded }"
+        aria-hidden="true"
+        focusable="false"
       />
     </template>
   </SubMenu>
@@ -50,12 +53,18 @@ withDefaults(defineProps<Props>(), {
     v-else
     v-bind="$attrs"
     :title="item.title ?? item.text"
+    :aria-label="item.title ?? item.text"
     class="item-button"
     compact
     :aria-disabled="item.disabled || null"
     @click="item.disabled ? null : $emit('click', item)"
   >
-    <Component :is="item.icon" class="icon" />
+    <Component
+      :is="item.icon"
+      class="icon"
+      aria-hidden="true"
+      focusable="false"
+    />
     <span class="text">{{ item.text }}</span>
   </Button>
 </template>

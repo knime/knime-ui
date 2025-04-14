@@ -100,13 +100,14 @@ const groupedShortcuts = computed(() =>
     @cancel="closeModal"
   >
     <template #icon>
-      <ShortcutsIcon />
+      <ShortcutsIcon aria-hidden="true" focusable="false" />
     </template>
     <template #notice>
       <div class="search">
         <SearchInput
           v-if="isOpen"
           v-model="searchQuery"
+          aria-label="Search shortcuts"
           focus-on-mount
           placeholder="Filter shortcuts"
         />
@@ -124,7 +125,11 @@ const groupedShortcuts = computed(() =>
             class="shortcut"
           >
             <span>
-              <ArrowRightIcon class="arrow" />
+              <ArrowRightIcon
+                class="arrow"
+                aria-hidden="true"
+                focusable="false"
+              />
               {{ shortcut.displayText }}
             </span>
 

@@ -203,6 +203,7 @@ const spaceIcon = computed(() => {
       class="submenu"
       button-title="Change space"
       orientation="left"
+      aria-label="Space selection dropdown"
       @item-click="
         (_: MouseEvent, item: MenuItem<ClickableItemsMetadata>) =>
           onSpaceChange(item)
@@ -215,7 +216,12 @@ const spaceIcon = computed(() => {
             {{ dropdownText }}
           </span>
         </template>
-        <DropdownIcon class="dropdown-icon" :class="{ flip: expanded }" />
+        <DropdownIcon
+          class="dropdown-icon"
+          :class="{ flip: expanded }"
+          aria-hidden="true"
+          focusable="false"
+        />
       </template>
     </SubMenu>
   </div>

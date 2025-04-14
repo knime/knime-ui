@@ -76,9 +76,15 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       :with-text="withText && Boolean(shortcut.text)"
       :disabled="!enabled"
       :title="title"
+      :aria-label="shortcut.text"
       @click="$shortcuts.dispatch(name)"
     >
-      <Component :is="shortcut.icon" v-if="shortcut.icon" />
+      <Component
+        :is="shortcut.icon"
+        v-if="shortcut.icon"
+        aria-hidden="true"
+        focusable="false"
+      />
       {{ withText ? shortcut.text : "" }}
     </ToolbarButton>
     <SubMenu
@@ -88,6 +94,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       :items="subMenuItems"
       tabindex="0"
       orientation="left"
+      :aria-label="`Open submenu for ${shortcut.text}`"
       @item-click="
         (_: MouseEvent, item: MenuItemWithName) =>
           $shortcuts.dispatch(item.name)
@@ -96,7 +103,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
         (e: KeyboardEvent) => ($refs.submenu as any).toggleMenu(e)
       "
     >
-      <DropdownIcon />
+      <DropdownIcon aria-hidden="true" focusable="false" />
     </SubMenu>
   </div>
 </template>

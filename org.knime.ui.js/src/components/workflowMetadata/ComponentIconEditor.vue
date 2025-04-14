@@ -23,10 +23,11 @@ defineProps<Props>();
         @update:model-value="emit('update:modelValue', $event)"
       />
       <FunctionButton
+        aria-label="Remove icon"
         class="delete-link-btn"
         @click="emit('update:modelValue', null)"
       >
-        <TrashIcon />
+        <TrashIcon aria-hidden="true" focusable="false" />
       </FunctionButton>
     </div>
   </Label>

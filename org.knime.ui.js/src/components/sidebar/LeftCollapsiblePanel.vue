@@ -39,11 +39,16 @@ defineEmits<Emits>();
 
     <button
       :title="expanded ? undefined : title ?? undefined"
+      :aria-label="expanded ? 'Collapse panel' : 'Expand panel'"
       :disabled="disabled"
       data-test-id="left-panel-handler"
       @click="$emit('toggleExpand')"
     >
-      <SwitchIcon :style="{ transform: expanded ? undefined : 'scaleX(-1)' }" />
+      <SwitchIcon
+        :style="{ transform: expanded ? undefined : 'scaleX(-1)' }"
+        aria-hidden="true"
+        focusable="false"
+      />
     </button>
   </div>
 </template>

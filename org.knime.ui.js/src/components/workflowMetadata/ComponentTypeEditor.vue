@@ -69,7 +69,12 @@ const emit = defineEmits<{
         <template #default="{ expanded }">
           <Component :is="activeComponentType.icon" />
           <span class="type-current-text">{{ activeComponentType.text }}</span>
-          <DropdownIcon class="dropdown-icon" :class="{ flip: expanded }" />
+          <DropdownIcon
+            class="dropdown-icon"
+            :class="{ flip: expanded }"
+            aria-hidden="true"
+            focusable="false"
+          />
         </template>
       </SubMenu>
     </div>

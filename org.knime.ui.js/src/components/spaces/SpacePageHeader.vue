@@ -111,6 +111,7 @@ onClickOutside(h2Ref, () => {
         :class="{ hidden: !isEditing }"
         :disabled="!isNameValid"
         title="Save"
+        aria-label="Save"
         primary
         @click="onSubmit"
       >
@@ -119,9 +120,10 @@ onClickOutside(h2Ref, () => {
       <FunctionButton
         :class="{ hidden: !isEditing }"
         title="Cancel"
+        aria-label="Cancel"
         @click="onCancel"
       >
-        <CancelIcon />
+        <CancelIcon aria-hidden="true" focusable="false" />
       </FunctionButton>
     </div>
   </h2>

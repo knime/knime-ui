@@ -238,6 +238,7 @@ onMounted(() => {
           :disabled="currentCanvasRenderer !== 'WebGL'"
           style="margin-right: var(--space-8)"
           class="header-button no-text control"
+          aria-label="Toggle canvas debug"
           data-test-id="dev-mode-only"
           title="Toggle canvas debug"
           @click="
@@ -276,17 +277,31 @@ onMounted(() => {
         :items="canvasModes"
         data-test-id="canvas-modes-selector"
         orientation="left"
+        aria-label="Canvas mode"
         @item-click="onCanvasModeUpdate"
       >
-        <SelectionModeIcon v-if="hasSelectionModeEnabled" />
-        <AnnotationModeIcon v-else-if="hasAnnotationModeEnabled" />
-        <ArrowMoveIcon v-else-if="hasPanModeEnabled" />
+        <SelectionModeIcon
+          v-if="hasSelectionModeEnabled"
+          aria-hidden="true"
+          focusable="false"
+        />
+        <AnnotationModeIcon
+          v-else-if="hasAnnotationModeEnabled"
+          aria-hidden="true"
+          focusable="false"
+        />
+        <ArrowMoveIcon
+          v-else-if="hasPanModeEnabled"
+          aria-hidden="true"
+          focusable="false"
+        />
       </SubMenu>
 
       <ZoomMenu
         v-if="activeWorkflow"
         data-test-id="zoom-menu"
         :disabled="isWorkflowEmpty"
+        aria-label="Zoom Menu"
       />
     </div>
   </div>

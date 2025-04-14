@@ -35,6 +35,7 @@ const emit = defineEmits<{
         v-if="!isLegacy || editable"
         :editable="editable"
         :model-value="modelValue"
+        aria-label="Metadata description"
         :class="['description-editor', { editable }]"
         :min-height="150"
         :base-extensions="{
