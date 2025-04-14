@@ -119,7 +119,7 @@ vi.mock("vue-router", async (importOriginal) => ({
 
 const mockedAPI = deepMocked(API);
 
-const version = 42;
+const version = 1;
 
 describe("workflow store: versions", () => {
   beforeEach(() => {
@@ -168,7 +168,7 @@ describe("workflow store: versions", () => {
     applicationStore.setActiveProjectId(projectId);
     // Start tests with versionsmode active
     await workflowVersionsStore.activateVersionsMode();
-    // Omit any mock calls caused by this inital "activation"
+    // Omit any mock calls caused by this initial "activation"
     vi.clearAllMocks();
 
     return { ...stores, projectId };
@@ -226,6 +226,7 @@ describe("workflow store: versions", () => {
           hasLoadedAll: false,
           loadedVersions: [],
           unversionedSavepoint: null,
+          permissions: [],
         };
 
         workflowVersionsStore.versionsModeInfo.set(projectId, info);
@@ -252,6 +253,7 @@ describe("workflow store: versions", () => {
           hasLoadedAll: false,
           loadedVersions: [],
           unversionedSavepoint: null,
+          permissions: [],
         };
 
         const info2: typeof info1 = {
@@ -270,6 +272,7 @@ describe("workflow store: versions", () => {
             },
           ],
           unversionedSavepoint: null,
+          permissions: [],
         };
         workflowVersionsStore.versionsModeInfo.set(projectId, info1);
 
@@ -298,6 +301,7 @@ describe("workflow store: versions", () => {
         hasLoadedAll: false,
         loadedVersions: [],
         unversionedSavepoint: null,
+        permissions: [],
       });
 
       workflowVersionsStore.versionsModeInfo.set("otherMockProjectId", {
@@ -314,6 +318,7 @@ describe("workflow store: versions", () => {
           lastEditedOn: "2025-01-01T00:00:00.000Z",
           savepointNumber: 1,
         },
+        permissions: [],
       });
       expect(workflowVersionsStore.activeProjectHasUnversionedChanges).toBe(
         false,
@@ -426,8 +431,36 @@ describe("workflow store: versions", () => {
     });
 
     describe("switchVersion", () => {
-      it("in clean state sets new route and does not try to save project", async () => {
-        const { workflowVersionsStore, projectId } = await setupStore();
+      it("in clean state sets new route, sets version on openProject.origin, and does not try to save project", async () => {
+        const { workflowVersionsStore, applicationStore, projectId } =
+          await setupStore();
+
+        const info: ReturnType<
+          typeof workflowVersionsStore.versionsModeInfo.get
+        > = {
+          hasLoadedAll: false,
+          loadedVersions: [
+            {
+              author: "Max Mustermock",
+              avatar: {
+                kind: "account",
+                name: "Max Mustermock",
+              },
+              createdOn: "2025-01-01T00:00:00.000Z",
+              labels: [],
+              title: "V1",
+              version: 1,
+            },
+          ],
+          unversionedSavepoint: null,
+          permissions: [],
+        };
+        workflowVersionsStore.versionsModeInfo.set(projectId, info);
+
+        const openProject = applicationStore.openProjects.find(
+          (openProject) => openProject.projectId === projectId,
+        );
+        expect(openProject!.origin!.version).toBeUndefined();
 
         await workflowVersionsStore.switchVersion(version);
         expect(useRouter().push).toHaveBeenLastCalledWith({
@@ -437,6 +470,9 @@ describe("workflow store: versions", () => {
             version: version.toString(),
           },
         });
+        expect(openProject!.origin!.version).toStrictEqual(
+          info.loadedVersions[0],
+        );
 
         await workflowVersionsStore.switchVersion(CURRENT_STATE_VERSION);
         expect(useRouter().push).toHaveBeenLastCalledWith({
@@ -447,6 +483,7 @@ describe("workflow store: versions", () => {
           },
         });
         expect(mockedAPI.desktop.saveProject).not.toHaveBeenCalled();
+        expect(openProject!.origin!.version).toBeUndefined();
       });
 
       it("in dirty state with successful saveProject sets new route but does not show error toast", async () => {

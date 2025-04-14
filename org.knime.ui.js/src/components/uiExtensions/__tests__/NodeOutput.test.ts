@@ -7,6 +7,7 @@ import { Button } from "@knime/components";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { Node, NodeState, PortType } from "@/api/gateway-api/generated-api";
+import type { NodeOutputTabIdentifier } from "@/store/selection";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
@@ -528,4 +529,33 @@ describe("NodeOutput.vue", () => {
       });
     });
   });
+
+  it.each([
+    // componentName, versionId, activePortTab
+    ["NodeViewTabOutput", "defined", "view"],
+    ["PortViewTabOutput", "defined", null],
+    ["NodeViewTabOutput", undefined, "view"],
+    ["PortViewTabOutput", undefined, null],
+  ])(
+    "passes versionId to %s if versionId is %s",
+    async (_componentName, versionId, activePortTab) => {
+      const mockedStores = createStores();
+      const { wrapper } = doMount(mockedStores);
+
+      mockedStores.workflowStore.activeWorkflow!.info.version = versionId;
+      mockedStores.selectionStore.activePortTab =
+        activePortTab as NodeOutputTabIdentifier;
+      await nextTick();
+
+      if (activePortTab) {
+        expect(
+          wrapper.findComponent(NodeViewTabOutput).props("versionId"),
+        ).toBe(versionId);
+      } else {
+        expect(
+          wrapper.findComponent(PortViewTabOutput).props("versionId"),
+        ).toBe(versionId);
+      }
+    },
+  );
 });

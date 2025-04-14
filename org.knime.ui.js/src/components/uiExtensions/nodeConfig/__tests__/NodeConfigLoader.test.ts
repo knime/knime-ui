@@ -60,6 +60,7 @@ describe("NodeConfigLoader.vue", () => {
   const defaultProps: MountOpts["props"] = {
     projectId: "project-id",
     workflowId: "workflow-id",
+    versionId: undefined,
     selectedNode: dummyNode,
   };
 
@@ -82,13 +83,25 @@ describe("NodeConfigLoader.vue", () => {
     mockGetNodeDialog();
     doMount();
 
-    expect(mockedAPI.node.getNodeDialog).toBeCalledWith(
-      expect.objectContaining({
-        projectId: defaultProps.projectId,
-        workflowId: defaultProps.workflowId,
-        nodeId: defaultProps.selectedNode.id,
-      }),
-    );
+    expect(mockedAPI.node.getNodeDialog).toBeCalledWith({
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
+      versionId: CURRENT_STATE_VERSION,
+      nodeId: defaultProps.selectedNode.id,
+    });
+  });
+
+  it("should load nodeDialog on mount if versionId prop is set", () => {
+    mockGetNodeDialog();
+    const versionId = "version-id";
+    doMount({ props: { ...defaultProps, versionId }, slots: {} });
+
+    expect(mockedAPI.node.getNodeDialog).toBeCalledWith({
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
+      versionId,
+      nodeId: defaultProps.selectedNode.id,
+    });
   });
 
   it("should load the node dialog when the selected node changes and the new node has a dialog", async () => {
@@ -125,6 +138,26 @@ describe("NodeConfigLoader.vue", () => {
       projectId: defaultProps.projectId,
       workflowId: defaultProps.workflowId,
       versionId: CURRENT_STATE_VERSION,
+      nodeId: defaultProps.selectedNode.id,
+      extensionType: "dialog",
+    });
+  });
+
+  it("should deactivate data services on unmount if versionId prop is set", async () => {
+    mockGetNodeDialog({
+      deactivationRequired: true,
+    });
+    const versionId = "version-id";
+    const { wrapper } = doMount({
+      props: { ...defaultProps, versionId },
+      slots: {},
+    });
+    await flushPromises();
+    wrapper.unmount();
+    expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
+      versionId,
       nodeId: defaultProps.selectedNode.id,
       extensionType: "dialog",
     });
@@ -207,6 +240,37 @@ describe("NodeConfigLoader.vue", () => {
         serviceType: "data",
         workflowId: "workflow-id",
         versionId: CURRENT_STATE_VERSION,
+      });
+    });
+
+    it("callNodeDataService calls API with versionId if provided as prop", async () => {
+      mockGetNodeDialog();
+      const versionId = "version-id";
+      const { wrapper } = doMount({
+        props: { ...defaultProps, versionId },
+        slots: {},
+      });
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      await apiLayer.callNodeDataService({
+        nodeId: "",
+        projectId: "",
+        workflowId: "",
+        extensionType: "",
+        serviceType: "data",
+        dataServiceRequest: "request",
+      });
+
+      expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
+        dataServiceRequest: "request",
+        extensionType: "dialog",
+        nodeId: "node1",
+        projectId: "project-id",
+        serviceType: "data",
+        workflowId: "workflow-id",
+        versionId,
       });
     });
 

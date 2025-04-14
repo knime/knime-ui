@@ -56,11 +56,11 @@ describe("NodeViewLoader.vue", () => {
     vi.clearAllMocks();
   });
 
-  const doMount = () => {
+  const doMount = (versionId?: string) => {
     const mockedStores = mockStores();
 
     const wrapper = mount(NodeViewLoader, {
-      props,
+      props: { ...props, versionId },
       global: {
         plugins: [mockedStores.testingPinia],
         stubs: { UIExtension: true },
@@ -74,14 +74,25 @@ describe("NodeViewLoader.vue", () => {
     mockGetNodeView();
     doMount();
 
-    expect(mockedAPI.node.getNodeView).toBeCalledWith(
-      expect.objectContaining({
-        projectId: props.projectId,
-        workflowId: props.workflowId,
-        versionId: CURRENT_STATE_VERSION,
-        nodeId: props.selectedNode.id,
-      }),
-    );
+    expect(mockedAPI.node.getNodeView).toBeCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION,
+      nodeId: props.selectedNode.id,
+    });
+  });
+
+  it("should load nodeView on mount if versionId prop is set", () => {
+    mockGetNodeView();
+    const versionId = "version-id";
+    doMount(versionId);
+
+    expect(mockedAPI.node.getNodeView).toBeCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId,
+      nodeId: props.selectedNode.id,
+    });
   });
 
   it("should load the node view when the selected node changes and the new node has a view", async () => {
@@ -116,6 +127,29 @@ describe("NodeViewLoader.vue", () => {
       projectId: props.projectId,
       workflowId: props.workflowId,
       versionId: CURRENT_STATE_VERSION,
+      nodeId: props.selectedNode.id,
+      extensionType: "view",
+    });
+  });
+
+  it("should conditionally deactivate data services on unmount if versionId prop is set", async () => {
+    mockGetNodeView();
+    const { wrapper } = doMount();
+    wrapper.unmount();
+    await flushPromises();
+    expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledTimes(0);
+
+    mockGetNodeView({
+      deactivationRequired: true,
+    });
+    const versionId = "version-id";
+    const { wrapper: wrapper2 } = doMount(versionId);
+    await flushPromises();
+    wrapper2.unmount();
+    expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId,
       nodeId: props.selectedNode.id,
       extensionType: "view",
     });
@@ -189,6 +223,37 @@ describe("NodeViewLoader.vue", () => {
         serviceType: "data",
         workflowId: "workflow-id",
         versionId: CURRENT_STATE_VERSION,
+      });
+    });
+
+    it("calls callNodeDataService with versionId if versionId is included in props", async () => {
+      mockGetNodeView();
+      mockedAPI.node.callNodeDataService.mockResolvedValue({ something: true });
+      const versionId = "version-id";
+      const { wrapper } = doMount(versionId);
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const result = await apiLayer.callNodeDataService({
+        nodeId: "",
+        projectId: "",
+        workflowId: "",
+        extensionType: "",
+        serviceType: "data",
+        dataServiceRequest: "request",
+      });
+
+      expect(result).toStrictEqual({ result: { something: true } });
+
+      expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
+        dataServiceRequest: "request",
+        extensionType: "view",
+        nodeId: "node1",
+        projectId: "project-id",
+        serviceType: "data",
+        workflowId: "workflow-id",
+        versionId,
       });
     });
 
@@ -285,6 +350,64 @@ describe("NodeViewLoader.vue", () => {
 
       notifyListeners(mockSelectionEvent);
       expect(dispatchPushEvent).toHaveBeenCalledOnce();
+    });
+
+    it("implements updateDataPointSelection", async () => {
+      mockGetNodeView();
+      mockedAPI.node.updateDataPointSelection.mockResolvedValue({
+        something: true,
+      });
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const result = await apiLayer.updateDataPointSelection({
+        nodeId: "",
+        projectId: "",
+        workflowId: "",
+        mode: "ADD",
+        selection: ["Row1", "Row3"],
+      });
+
+      expect(result).toStrictEqual({ result: { something: true } });
+
+      expect(mockedAPI.node.updateDataPointSelection).toHaveBeenCalledWith({
+        nodeId: "node1",
+        projectId: "project-id",
+        workflowId: "workflow-id",
+        versionId: CURRENT_STATE_VERSION,
+        mode: "ADD",
+        selection: ["Row1", "Row3"],
+      });
+    });
+
+    it("implements updateDataPointSelection if versionId prop is set", async () => {
+      mockGetNodeView();
+      mockedAPI.node.updateDataPointSelection.mockResolvedValue({
+        something: true,
+      });
+      const versionId = "version-id";
+      const { wrapper } = doMount(versionId);
+      await flushPromises();
+      const apiLayer = getApiLayer(wrapper);
+
+      await apiLayer.updateDataPointSelection({
+        nodeId: "",
+        projectId: "",
+        workflowId: "",
+        mode: "ADD",
+        selection: ["Row1", "Row3"],
+      });
+
+      expect(mockedAPI.node.updateDataPointSelection).toHaveBeenCalledWith({
+        nodeId: "node1",
+        projectId: "project-id",
+        workflowId: "workflow-id",
+        versionId,
+        mode: "ADD",
+        selection: ["Row1", "Row3"],
+      });
     });
   });
 

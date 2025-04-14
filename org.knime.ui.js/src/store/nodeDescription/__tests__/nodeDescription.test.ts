@@ -5,6 +5,7 @@ import { createTestingPinia } from "@pinia/testing";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
 import { PortType } from "@/api/gateway-api/generated-api";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import {
   NODE_FACTORIES,
   createAvailablePortTypes,
@@ -58,6 +59,7 @@ describe("nodeDescription", () => {
     return {
       availablePortTypes,
       nodeDescriptionStore: useNodeDescriptionStore(pinia),
+      workflowStore: useWorkflowStore(),
     };
   };
 
@@ -73,7 +75,7 @@ describe("nodeDescription", () => {
     });
 
     it("should fetch a description for a native node", async () => {
-      const { nodeDescriptionStore, availablePortTypes } = await createStore();
+      const { nodeDescriptionStore, availablePortTypes } = createStore();
       const params = {
         factoryId: NODE_FACTORIES.ExcelTableReaderNodeFactory,
         nodeFactory: {
@@ -126,7 +128,7 @@ describe("nodeDescription", () => {
     });
 
     it("should cache node descriptions", async () => {
-      const { nodeDescriptionStore } = await createStore();
+      const { nodeDescriptionStore } = createStore();
       const params = {
         factoryId: NODE_FACTORIES.ExcelTableReaderNodeFactory,
         nodeFactory: {
@@ -157,7 +159,7 @@ describe("nodeDescription", () => {
     });
 
     it("should fetch a description for a component node", async () => {
-      const { nodeDescriptionStore } = await createStore();
+      const { nodeDescriptionStore } = createStore();
       const params = { nodeId: "root1:1" };
 
       const result = await nodeDescriptionStore.getComponentDescription(params);
@@ -291,6 +293,22 @@ describe("nodeDescription", () => {
         ...result,
         inPorts,
         outPorts,
+      });
+    });
+
+    it("should fetch a description for a component node if versionId is given", async () => {
+      const { nodeDescriptionStore, workflowStore } = createStore();
+      const versionId = "version-id";
+      workflowStore.activeWorkflow!.info.version = versionId;
+      const params = { nodeId: "root1:1" };
+
+      await nodeDescriptionStore.getComponentDescription(params);
+
+      expect(mockedAPI.component.getComponentDescription).toHaveBeenCalledWith({
+        projectId: "mockProjectId1",
+        workflowId: "mockWorkflow1",
+        versionId,
+        nodeId: "root1:1",
       });
     });
   });

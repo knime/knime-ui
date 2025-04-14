@@ -161,12 +161,12 @@ describe("application::lifecycle", () => {
         workflow: mockWorkflow,
       });
 
-      expect(mockedAPI.workflow.getWorkflow).toHaveBeenCalledWith(
-        expect.objectContaining({
-          workflowId: mockWorkflow.info.containerId,
-          projectId: mockWorkflow.projectId,
-        }),
-      );
+      expect(mockedAPI.workflow.getWorkflow).toHaveBeenCalledWith({
+        workflowId: mockWorkflow.info.containerId,
+        projectId: mockWorkflow.projectId,
+        versionId: CURRENT_STATE_VERSION,
+        includeInteractionInfo: true,
+      });
 
       expect(lifecycleStore.afterSetActivateWorkflow).toHaveBeenCalled();
 
@@ -175,6 +175,49 @@ describe("application::lifecycle", () => {
       ).toHaveBeenCalledWith({
         projectId: mockWorkflow.projectId,
         versionId: CURRENT_STATE_VERSION,
+      });
+      expect(workflowStore.activeWorkflow).toStrictEqual(mockWorkflow);
+      expect(workflowStore.activeSnapshotId).toBe("snap");
+      expect(mockedAPI.event.subscribeEvent).toHaveBeenCalledWith({
+        typeId: "WorkflowChangedEventType",
+        projectId: mockWorkflow.projectId,
+        workflowId: mockWorkflow.info.containerId,
+        snapshotId: "snap",
+      });
+    });
+
+    it("loads root workflow successfully if versionId is provided", async () => {
+      const onWorkflowLoaded = vi.fn();
+      lifecycleBus.once("onWorkflowLoaded", onWorkflowLoaded);
+
+      const mockWorkflow = createWorkflow();
+      const { lifecycleStore, workflowStore } = loadStore();
+
+      mockedAPI.workflow.getWorkflow.mockResolvedValue({
+        workflow: mockWorkflow,
+        snapshotId: "snap",
+      });
+
+      const versionId = "version-id";
+      await lifecycleStore.loadWorkflow({
+        projectId: mockWorkflow.projectId,
+        versionId,
+      });
+
+      expect(mockedAPI.workflow.getWorkflow).toHaveBeenCalledWith({
+        workflowId: mockWorkflow.info.containerId,
+        projectId: mockWorkflow.projectId,
+        versionId,
+        includeInteractionInfo: true,
+      });
+
+      expect(lifecycleStore.afterSetActivateWorkflow).toHaveBeenCalled();
+
+      expect(
+        mockedAPI.desktop.setProjectActiveAndEnsureItsLoaded,
+      ).toHaveBeenCalledWith({
+        projectId: mockWorkflow.projectId,
+        versionId,
       });
       expect(workflowStore.activeWorkflow).toStrictEqual(mockWorkflow);
       expect(workflowStore.activeSnapshotId).toBe("snap");

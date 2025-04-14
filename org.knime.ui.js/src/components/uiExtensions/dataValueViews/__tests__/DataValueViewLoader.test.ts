@@ -3,6 +3,7 @@ import { nextTick } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 import { API } from "@api";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import {
   type Alert,
   USER_ERROR_CODE_BLOCKING,
@@ -62,16 +63,15 @@ describe("DataValueViewLoader.vue", () => {
     mockGetDataValueView();
     const { wrapper } = doMount();
 
-    expect(mockedAPI.port.getDataValueView).toBeCalledWith(
-      expect.objectContaining({
-        projectId: props.projectId,
-        workflowId: props.workflowId,
-        nodeId: props.nodeId,
-        portIdx: props.selectedPortIndex,
-        rowIdx: props.selectedRowIndex,
-        colIdx: props.selectedColIndex,
-      }),
-    );
+    expect(mockedAPI.port.getDataValueView).toBeCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION,
+      nodeId: props.nodeId,
+      portIdx: props.selectedPortIndex,
+      rowIdx: props.selectedRowIndex,
+      colIdx: props.selectedColIndex,
+    });
     expect(wrapper.findComponent(UIExtension).exists()).toBeFalsy();
     expect(wrapper.findComponent(SkeletonItem).exists()).toBeTruthy();
 
@@ -79,6 +79,22 @@ describe("DataValueViewLoader.vue", () => {
 
     expect(wrapper.findComponent(UIExtension).exists()).toBeTruthy();
     expect(wrapper.findComponent(SkeletonItem).exists()).toBeFalsy();
+  });
+
+  it("calls API with versionId if versionId is included in props", () => {
+    mockGetDataValueView();
+    const versionId = "version-id";
+    doMount({ versionId });
+
+    expect(mockedAPI.port.getDataValueView).toBeCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId,
+      nodeId: props.nodeId,
+      portIdx: props.selectedPortIndex,
+      rowIdx: props.selectedRowIndex,
+      colIdx: props.selectedColIndex,
+    });
   });
 
   it("does not show anything if an error occurs during loading", async () => {

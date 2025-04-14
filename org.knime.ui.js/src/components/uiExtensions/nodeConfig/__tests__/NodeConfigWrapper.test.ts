@@ -101,15 +101,35 @@ describe("NodeConfigWrapper.vue", () => {
   it("sets NodeConfigLayout props", () => {
     const { wrapper } = doMount();
 
-    expect(wrapper.findComponent(NodeConfigLayout).exists()).toBe(true);
-    expect(wrapper.findComponent(NodeConfigLayout).props("projectId")).toBe(
-      projectId,
+    const nodeConfigLayout = wrapper.findComponent(NodeConfigLayout);
+    expect(nodeConfigLayout.exists()).toBe(true);
+    expect(nodeConfigLayout.props()).toEqual(
+      expect.objectContaining({
+        projectId,
+        workflowId,
+        disabled: false,
+        versionId: undefined,
+      }),
     );
-    expect(wrapper.findComponent(NodeConfigLayout).props("workflowId")).toBe(
-      workflowId,
-    );
-    expect(wrapper.findComponent(NodeConfigLayout).props("disabled")).toBe(
-      false,
+  });
+
+  it("sets NodeConfigLayout props including versionId if given", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    const versionId = "versionId";
+    mockedStores.workflowStore.activeWorkflow!.info.version = versionId;
+    await nextTick();
+
+    const nodeConfigLayout = wrapper.findComponent(NodeConfigLayout);
+
+    expect(nodeConfigLayout.exists()).toBe(true);
+    expect(nodeConfigLayout.props()).toEqual(
+      expect.objectContaining({
+        projectId,
+        workflowId,
+        disabled: true,
+        versionId,
+      }),
     );
   });
 

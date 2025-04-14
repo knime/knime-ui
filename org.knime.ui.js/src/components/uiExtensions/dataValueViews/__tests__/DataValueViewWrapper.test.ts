@@ -132,4 +132,24 @@ describe("DataValueViewWrapper", () => {
       ).toBeUndefined();
     });
   });
+
+  it("passes versionId prop to DataValueViewLoader", async () => {
+    const versionId = "version-id";
+    const { wrapper } = doShallowMount({ versionId });
+    await nextTick();
+
+    const expectedProps = {
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId,
+      nodeId: props.nodeId,
+      selectedPortIndex: props.selectedPortIndex,
+      selectedRowIndex: props.selectedRowIndex,
+      selectedColIndex: props.selectedColIndex,
+    };
+
+    expect(wrapper.findComponent(DataValueViewLoader).props()).toStrictEqual(
+      expectedProps,
+    );
+  });
 });

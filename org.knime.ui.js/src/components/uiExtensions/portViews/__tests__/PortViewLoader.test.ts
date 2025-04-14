@@ -83,17 +83,33 @@ describe("PortViewLoader.vue", () => {
     return { wrapper, mockedStores };
   };
 
-  it("should load port view on mount", () => {
+  it("should load port view on mount if versionId is not set as prop", () => {
     mockGetPortView();
     doMount();
+
+    expect(mockedAPI.port.getPortView).toBeCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION,
+      nodeId: props.selectedNode.id,
+      portIdx: props.selectedPortIndex,
+      viewIdx: props.selectedViewIndex,
+    });
+  });
+
+  it("should load port view on mount if versionId is set as prop", () => {
+    mockGetPortView();
+    const versionId = "version-id";
+    doMount({ versionId });
 
     expect(mockedAPI.port.getPortView).toBeCalledWith(
       expect.objectContaining({
         projectId: props.projectId,
         workflowId: props.workflowId,
-        versionId: CURRENT_STATE_VERSION,
+        versionId,
         nodeId: props.selectedNode.id,
         portIdx: props.selectedPortIndex,
+        viewIdx: props.selectedViewIndex,
       }),
     );
   });
@@ -117,7 +133,26 @@ describe("PortViewLoader.vue", () => {
       versionId: CURRENT_STATE_VERSION,
       nodeId: props.selectedNode.id,
       portIdx: props.selectedPortIndex,
-      viewIdx: 0,
+      viewIdx: props.selectedViewIndex,
+    });
+  });
+
+  it("should conditionally deactivate data services on unmount if versionId is set as prop", async () => {
+    mockGetPortView({
+      deactivationRequired: true,
+    });
+
+    const versionId = "version-id";
+    const { wrapper } = doMount({ versionId });
+    await flushPromises();
+    wrapper.unmount();
+    expect(mockedAPI.port.deactivatePortDataServices).toHaveBeenCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId,
+      nodeId: props.selectedNode.id,
+      portIdx: props.selectedPortIndex,
+      viewIdx: props.selectedViewIndex,
     });
   });
 
@@ -243,6 +278,34 @@ describe("PortViewLoader.vue", () => {
       });
     });
 
+    it("implements callNodeDataService in apiLayer if versionId is set as prop", async () => {
+      mockGetPortView();
+      const versionId = "version-id";
+      const { wrapper } = doMount({ versionId });
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+      await apiLayer.callNodeDataService({
+        projectId: "",
+        workflowId: "",
+        nodeId: "",
+        serviceType: "data",
+        dataServiceRequest: "request",
+        extensionType: "data",
+      });
+
+      expect(mockedAPI.port.callPortDataService).toHaveBeenCalledWith({
+        dataServiceRequest: "request",
+        nodeId: "node1",
+        portIdx: 0,
+        projectId: "project-id",
+        serviceType: "data",
+        viewIdx: 0,
+        workflowId: "workflow-id",
+        versionId,
+      });
+    });
+
     it("implements registerPushEventService in apiLayer to listen to selection events", async () => {
       mockGetPortView();
       const { wrapper } = doMount();
@@ -289,20 +352,7 @@ describe("PortViewLoader.vue", () => {
       expect(dispatchPushEvent).toHaveBeenCalledOnce();
     });
 
-    it("opens data value view when openDataValueView is called", async () => {
-      vi.useFakeTimers();
-      mockGetPortView();
-      mockGetDataValueView();
-      const { wrapper } = doMount();
-
-      await flushPromises();
-
-      const apiLayer = getApiLayer(wrapper);
-      const dispatchPushEvent = vi.fn();
-      apiLayer.registerPushEventService({
-        dispatchPushEvent,
-      });
-
+    describe("opens data value view when openDataValueView is called", () => {
       const rowIndex = 0;
       const colIndex = 0;
       const anchor = {
@@ -316,60 +366,168 @@ describe("PortViewLoader.vue", () => {
         height: 0,
       };
 
-      apiLayer.showDataValueView({
-        rowIndex,
-        colIndex,
-        anchor,
+      it("without version id as prop", async () => {
+        vi.useFakeTimers();
+        mockGetPortView();
+        mockGetDataValueView();
+        const { wrapper } = doMount();
+
+        await flushPromises();
+
+        const apiLayer = getApiLayer(wrapper);
+        const dispatchPushEvent = vi.fn();
+        apiLayer.registerPushEventService({
+          dispatchPushEvent,
+        });
+
+        apiLayer.showDataValueView({
+          rowIndex,
+          colIndex,
+          anchor,
+        });
+
+        await flushPromises();
+        const dataValueViewWrapper =
+          wrapper.findComponent(DataValueViewWrapper);
+        expect(dataValueViewWrapper.exists()).toBe(true);
+        const dataValueViewWrapperProps = dataValueViewWrapper.props();
+        expect(dataValueViewWrapperProps).toStrictEqual(
+          expect.objectContaining({
+            projectId: "project-id",
+            workflowId: "workflow-id",
+            nodeId: "node1",
+            selectedPortIndex: 0,
+            selectedRowIndex: rowIndex,
+            selectedColIndex: colIndex,
+          }),
+        );
+        expect(dataValueViewWrapperProps.versionId).toBeUndefined();
+
+        expect(dispatchPushEvent).toHaveBeenCalledWith({
+          eventType: "DataValueViewShownEvent",
+          payload: true,
+        });
+
+        apiLayer.showDataValueView({
+          rowIndex: 1,
+          colIndex: 2,
+          anchor,
+        });
+
+        await flushPromises();
+        expect(dataValueViewWrapperProps.selectedRowIndex).toBe(1);
+        expect(dataValueViewWrapperProps.selectedColIndex).toBe(2);
+        expect(dispatchPushEvent).toHaveBeenCalledTimes(1);
+
+        apiLayer.closeDataValueView();
+        await vi.runAllTimers();
+        await flushPromises();
+        // Does not close the wrapper, since close is ignored closely after open
+        expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(true);
+
+        // Wait for the open to timeout
+        await vi.runAllTimers();
+        apiLayer.closeDataValueView();
+        await vi.runAllTimers();
+        await flushPromises();
+
+        expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(
+          false,
+        );
+        expect(dispatchPushEvent).toHaveBeenNthCalledWith(2, {
+          eventType: "DataValueViewShownEvent",
+          payload: false,
+        });
+        vi.useRealTimers();
       });
 
-      await flushPromises();
-      const dataValueViewWrapper = wrapper.findComponent(DataValueViewWrapper);
-      expect(dataValueViewWrapper.exists()).toBe(true);
-      expect(dataValueViewWrapper.props()).toStrictEqual(
-        expect.objectContaining({
-          projectId: "project-id",
-          workflowId: "workflow-id",
-          nodeId: "node1",
-          selectedPortIndex: 0,
-          selectedRowIndex: rowIndex,
-          selectedColIndex: colIndex,
-        }),
-      );
+      it("with versionId as prop", async () => {
+        mockGetPortView();
+        const versionId = "version-id";
+        const { wrapper } = doMount({ versionId });
 
-      expect(dispatchPushEvent).toHaveBeenCalledWith({
-        eventType: "DataValueViewShownEvent",
-        payload: true,
+        await flushPromises();
+
+        const apiLayer = getApiLayer(wrapper);
+        const dispatchPushEvent = vi.fn();
+        apiLayer.registerPushEventService({
+          dispatchPushEvent,
+        });
+
+        apiLayer.showDataValueView({
+          rowIndex,
+          colIndex,
+          anchor,
+        });
+
+        await flushPromises();
+        const dataValueViewWrapper =
+          wrapper.findComponent(DataValueViewWrapper);
+        expect(dataValueViewWrapper.exists()).toBe(true);
+        expect(dataValueViewWrapper.props().versionId).toBe(versionId);
+      });
+    });
+
+    it("implements updateDataPointSelection", async () => {
+      mockGetPortView();
+      mockedAPI.port.updateDataPointSelection.mockResolvedValue({
+        something: true,
+      });
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const result = await apiLayer.updateDataPointSelection({
+        nodeId: "",
+        projectId: "",
+        workflowId: "",
+        mode: "ADD",
+        selection: ["Row1", "Row3"],
       });
 
-      apiLayer.showDataValueView({
-        rowIndex: 1,
-        colIndex: 2,
-        anchor,
+      expect(result).toStrictEqual({ result: { something: true } });
+
+      expect(mockedAPI.port.updateDataPointSelection).toHaveBeenCalledWith({
+        nodeId: "node1",
+        projectId: "project-id",
+        workflowId: "workflow-id",
+        versionId: CURRENT_STATE_VERSION,
+        mode: "ADD",
+        selection: ["Row1", "Row3"],
+        portIdx: props.selectedPortIndex,
+        viewIdx: props.selectedViewIndex,
+      });
+    });
+
+    it("implements updateDataPointSelection if versionId prop is set", async () => {
+      mockGetPortView();
+      mockedAPI.port.updateDataPointSelection.mockResolvedValue({
+        something: true,
+      });
+      const versionId = "version-id";
+      const { wrapper } = doMount({ versionId });
+      await flushPromises();
+      const apiLayer = getApiLayer(wrapper);
+
+      await apiLayer.updateDataPointSelection({
+        nodeId: "",
+        projectId: "",
+        workflowId: "",
+        mode: "ADD",
+        selection: ["Row1", "Row3"],
       });
 
-      await flushPromises();
-      expect(dataValueViewWrapper.props().selectedRowIndex).toBe(1);
-      expect(dataValueViewWrapper.props().selectedColIndex).toBe(2);
-      expect(dispatchPushEvent).toHaveBeenCalledTimes(1);
-
-      apiLayer.closeDataValueView();
-      await vi.runAllTimers();
-      await flushPromises();
-      // Does not close the wrapper, since close is ignored closely after open
-      expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(true);
-
-      // Wait for the open to timeout
-      await vi.runAllTimers();
-      apiLayer.closeDataValueView();
-      await vi.runAllTimers();
-      await flushPromises();
-
-      expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(false);
-      expect(dispatchPushEvent).toHaveBeenNthCalledWith(2, {
-        eventType: "DataValueViewShownEvent",
-        payload: false,
+      expect(mockedAPI.port.updateDataPointSelection).toHaveBeenCalledWith({
+        nodeId: "node1",
+        projectId: "project-id",
+        workflowId: "workflow-id",
+        versionId,
+        mode: "ADD",
+        selection: ["Row1", "Row3"],
+        portIdx: props.selectedPortIndex,
+        viewIdx: props.selectedViewIndex,
       });
-      vi.useRealTimers();
     });
   });
 
