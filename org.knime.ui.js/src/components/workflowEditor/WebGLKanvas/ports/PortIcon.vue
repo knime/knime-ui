@@ -9,7 +9,7 @@ import { portSize } from "@/style/shapes";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
-const strokeWidth = 0.7;
+const strokeWidth = 1.5;
 
 interface Props {
   type: PortType.KindEnum;
@@ -55,19 +55,26 @@ const portColor = computed(() => {
 const tablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics.poly(trianglePath.value);
-  graphics.stroke({ width: 1, color: portColor.value });
+  graphics.stroke({ width: strokeWidth, color: portColor.value });
   graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
 };
 
 const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.circle(0, 0, portSize / 2 - 0.2);
+  graphics.circle(0, 0, (portSize - strokeWidth / 2) / 2 - 0.2);
+  graphics.stroke({ color: portColor.value, width: strokeWidth });
   graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
 };
 
 const otherPortsRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.rect(0, 0, portSize, portSize);
+  graphics.rect(
+    strokeWidth / 2,
+    0,
+    portSize - strokeWidth,
+    portSize - strokeWidth,
+  );
+  graphics.stroke({ color: portColor.value, width: strokeWidth });
   graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
 };
 
