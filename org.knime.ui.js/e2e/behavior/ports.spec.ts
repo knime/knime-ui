@@ -1,7 +1,6 @@
 import { test } from "@playwright/test";
 
-import { testSimpleScreenshot } from "../utils";
-import { getBrowserState } from "../utils/browserState";
+import { getBrowserState, testSimpleScreenshot } from "../utils";
 
 test.use({
   storageState: getBrowserState({ perfMode: true, webGL: true }),
@@ -10,5 +9,11 @@ test.use({
 test("optional ports: render correctly", async ({ page }) => {
   await testSimpleScreenshot(page, {
     workflowFixturePath: "ports/getWorkflow-optional-ports.json",
+  });
+});
+
+test("inactive ports: render correctly", async ({ page }) => {
+  await testSimpleScreenshot(page, {
+    workflowFixturePath: "ports/getWorkflow-inactive-ports.json",
   });
 });
