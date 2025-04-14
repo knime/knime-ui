@@ -6,9 +6,9 @@ import { flushPromises, mount } from "@vue/test-utils";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
+  PORT_TYPE_IDS,
   createAvailablePortTypes,
   createNativeNode,
-  PORT_TYPE_IDS
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
