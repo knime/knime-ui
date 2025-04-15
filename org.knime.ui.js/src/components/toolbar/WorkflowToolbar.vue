@@ -16,7 +16,7 @@ import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
-import { useUploadToSpace } from "@/composables/useUploadToSpace";
+import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
@@ -57,10 +57,9 @@ const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
 const { getProviderInfoFromProjectPath, getCommunityHubInfo } = storeToRefs(
   useSpaceProvidersStore(),
 );
+const { uploadWorkflowAndOpenAsProject } = useUploadWorkflowToSpace();
 
 const webglCanvasStore = useWebGLCanvasStore();
-
-const { uploadAndOpenProject } = useUploadToSpace();
 
 const providerInfo = computed(() =>
   getProviderInfoFromProjectPath.value(activeProjectId.value!),
@@ -191,7 +190,7 @@ const onUploadButtonClick = () => {
     return;
   }
 
-  uploadAndOpenProject(itemId.value);
+  uploadWorkflowAndOpenAsProject(itemId.value);
 };
 
 const uploadButton = ref<InstanceType<typeof ToolbarButton>>();

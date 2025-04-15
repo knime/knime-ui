@@ -73,16 +73,16 @@ export const useSpaceExplorerActions = (
   } = useSpaceOperationsStore();
   const {
     setCreateWorkflowModalConfig,
-    downloadFromSpace,
-    uploadToSpace,
     moveOrCopyToSpace,
     openInBrowser,
     openAPIDefinition,
   } = useSpacesStore();
+  const { moveToHubFromLocalProvider } = useSpaceUploadsStore();
   const { getWorkflowGroupContent } = useSpaceCachingStore();
   const { displayDeployments, executeWorkflow } = useDeploymentsStore();
   const { startUpload } = useSpaceUploadsStore();
-  const { startDownload } = useSpaceDownloadsStore();
+  const { startDownload, moveToLocalProviderFromHub } =
+    useSpaceDownloadsStore();
 
   const isSelectionMultiple = computed(() => selectedItemIds.value.length > 1);
   const isSelectionEmpty = computed(() => selectedItemIds.value.length === 0);
@@ -242,9 +242,8 @@ export const useSpaceExplorerActions = (
       : "Download to local space",
     separator: true,
     execute: () => {
-      downloadFromSpace({
+      moveToLocalProviderFromHub({
         projectId: projectId.value,
-        itemIds: selectedItemIds.value,
       });
     },
   }));
@@ -336,7 +335,7 @@ export const useSpaceExplorerActions = (
       ? "Select at least one file to upload."
       : undefined,
     execute: async () => {
-      const uploadResult = await uploadToSpace({
+      const uploadResult = await moveToHubFromLocalProvider({
         itemIds: selectedItemIds.value,
       });
 
@@ -353,8 +352,8 @@ export const useSpaceExplorerActions = (
           {
             icon: ListIcon,
             text: "Reveal in space explorer",
-            callback: async () => {
-              await revealInSpaceExplorer({
+            callback: () => {
+              revealInSpaceExplorer({
                 providerId: uploadResult.destinationProviderId,
                 spaceId: uploadResult.destinationSpaceId,
                 itemIds: uploadResult.remoteItemIds,

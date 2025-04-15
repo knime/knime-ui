@@ -57,9 +57,12 @@ describe("downloads", () => {
     };
     useDownloadArtifactMock.mockReturnValue(downloadArtifactMock);
 
-    const { spaceDownloadsStore } = mockStores();
+    const { spaceDownloadsStore, spaceCachingStore, spaceOperationsStore } =
+      mockStores();
 
     return {
+      spaceCachingStore,
+      spaceOperationsStore,
       spaceDownloadsStore,
       downloadArtifactMock,
     };

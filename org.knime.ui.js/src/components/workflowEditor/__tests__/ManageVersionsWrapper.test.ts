@@ -244,7 +244,7 @@ describe("ManageVersionsWrapper.vue", () => {
         const { wrapper, mockedStores } = doMount({
           versionsModeStatus: "promoteHub",
         });
-        const { spacesStore, applicationStore } = mockedStores;
+        const { applicationStore, spaceUploadsStore } = mockedStores;
 
         applicationStore.setOpenProjects([
           {
@@ -258,13 +258,16 @@ describe("ManageVersionsWrapper.vue", () => {
           },
         ]);
         applicationStore.setActiveProjectId("mockProjectId");
-        vi.mocked(spacesStore).uploadToSpace.mockImplementation(vi.fn());
+        vi.mocked(
+          spaceUploadsStore,
+        ).moveToHubFromLocalProvider.mockImplementation(vi.fn());
 
         wrapper.findComponent(VersionPanelPromoteHub).vm.$emit("upload");
 
-        expect(spacesStore.uploadToSpace).toHaveBeenCalledWith({
+        expect(
+          spaceUploadsStore.moveToHubFromLocalProvider,
+        ).toHaveBeenCalledWith({
           itemIds: ["mockItemId"],
-          openAfterUpload: true,
         });
       });
     });

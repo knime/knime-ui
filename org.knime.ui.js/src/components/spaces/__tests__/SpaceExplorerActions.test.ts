@@ -174,7 +174,11 @@ describe("SpaceExplorerActions.vue", () => {
 
     it.each([
       ["createFolder", "createFolder", {}],
-      ["downloadToLocalSpace", "downloadFromSpace", { itemIds: ["934383"] }],
+      [
+        "downloadToLocalSpace",
+        "moveToLocalProviderFromHub",
+        { projectId: "someProjectId" },
+      ],
       ["importFiles", "importToWorkflowGroup", { importType: "FILES" }],
       ["importWorkflow", "importToWorkflowGroup", { importType: "WORKFLOW" }],
     ])("should call %s store action", async (actionId, storeAction, params) => {
@@ -189,7 +193,8 @@ describe("SpaceExplorerActions.vue", () => {
       wrapper.find(`#${actionId}`).trigger("click");
       expect(
         mockedStores.spaceOperationsStore[storeAction] ??
-          mockedStores.spacesStore[storeAction],
+          mockedStores.spacesStore[storeAction] ??
+          mockedStores.spaceDownloadsStore[storeAction],
       ).toHaveBeenCalledWith({
         projectId: "someProjectId",
         ...params,
@@ -300,33 +305,27 @@ describe("SpaceExplorerActions.vue", () => {
       );
     });
 
-    it.each([["upload", "uploadToSpace", { itemIds: ["934383"] }]])(
-      "upload selected items",
-      async (actionId, storeAction, params) => {
-        const { wrapper, mockedStores, projectId } = doMount({
-          props: { mode: "mini" },
-        });
+    it.each([
+      ["upload", "moveToHubFromLocalProvider", { itemIds: ["934383"] }],
+    ])("upload selected items", async (actionId, storeAction, params) => {
+      const { wrapper, mockedStores, projectId } = doMount({
+        props: { mode: "mini" },
+      });
 
-        await setupStoreWithProvider(
-          mockedStores,
-          projectId,
-          SpaceProviderNS.TypeEnum.LOCAL,
-        );
+      await setupStoreWithProvider(
+        mockedStores,
+        projectId,
+        SpaceProviderNS.TypeEnum.LOCAL,
+      );
 
-        const subMenu = wrapper.findComponent(SubMenu);
-        const item = subMenu
-          .props("items")
-          .find((item) => item.id === actionId);
-        subMenu.vm.$emit("item-click", null, item);
+      const subMenu = wrapper.findComponent(SubMenu);
+      const item = subMenu.props("items").find((item) => item.id === actionId);
+      subMenu.vm.$emit("item-click", null, item);
 
-        expect(
-          mockedStores.spaceOperationsStore[storeAction] ??
-            mockedStores.spacesStore[storeAction],
-        ).toHaveBeenCalledWith({
-          ...params,
-        });
-      },
-    );
+      expect(mockedStores.spaceUploadsStore[storeAction]).toHaveBeenCalledWith({
+        ...params,
+      });
+    });
 
     it.each([
       ["createFolder", "createFolder", {}],

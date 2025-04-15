@@ -9,11 +9,14 @@ import {
 import { rfcErrors, useFileUpload } from "@knime/hub-features";
 import { knimeFileFormats } from "@knime/utils";
 
+import { API } from "@/api";
+import { useDestinationPicker } from "@/components/spaces/DestinationPicker/useDestinationPicker";
+import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { useApplicationStore } from "../application/application";
 
-import { useSpaceCachingStore } from "./caching";
+import { localRootProjectPath, useSpaceCachingStore } from "./caching";
 import { getCustomFetchOptions } from "./common";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
@@ -25,6 +28,7 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
   const { activeProjectPath } = storeToRefs(useSpaceCachingStore());
   const applicationStore = useApplicationStore();
   const spaceCachingStore = useSpaceCachingStore();
+  const { promptDestination, presets } = useDestinationPicker();
 
   const {
     isPreparingUpload,
@@ -155,6 +159,56 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
     close: closeUploadsPanel,
   });
 
+  /*
+   * This function is used to move items from a local provider to a hub provider.
+   *
+   * @param itemIds - the item IDs in the local provider of the items to move to hub
+   * */
+  const moveToHubFromLocalProvider = async ({
+    itemIds,
+  }: {
+    itemIds: string[];
+  }): Promise<{
+    destinationProviderId: string;
+    destinationSpaceId: string;
+    remoteItemIds: string[];
+  } | null> => {
+    if (isBrowser()) {
+      return null;
+    }
+
+    const destinationResult = await promptDestination(
+      presets.UPLOAD_PICKERCONFIG,
+    );
+
+    if (destinationResult?.type !== "item") {
+      return null;
+    }
+
+    const {
+      spaceProviderId: destinationProviderId,
+      spaceId: destinationSpaceId,
+      itemId: destinationItemId,
+      resetWorkflow,
+    } = destinationResult;
+
+    const remoteItemIds = await API.desktop.uploadToSpace({
+      sourceProviderId: localRootProjectPath.spaceProviderId,
+      sourceSpaceId: localRootProjectPath.spaceId,
+      sourceItemIds: itemIds,
+      destinationProviderId,
+      destinationSpaceId,
+      destinationItemId,
+      excludeData: resetWorkflow,
+    });
+
+    if (!remoteItemIds || remoteItemIds.length === 0) {
+      return null;
+    }
+
+    return { destinationProviderId, destinationSpaceId, remoteItemIds };
+  };
+
   return {
     isPreparingUpload,
     totalFilesBeingPrepared,
@@ -168,5 +222,6 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
     closeUploadsPanel,
     removeItem,
     unprocessedUploads,
+    moveToHubFromLocalProvider,
   };
 });

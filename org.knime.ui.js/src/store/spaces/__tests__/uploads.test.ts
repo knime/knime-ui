@@ -5,6 +5,7 @@ import { useFileDialog } from "@vueuse/core";
 
 import { rfcErrors, useFileUpload } from "@knime/hub-features";
 
+import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { getToastsProvider } from "@/plugins/toasts";
 import { mockStores } from "@/test/utils/mockStores";
 
@@ -88,6 +89,25 @@ vi.mock("@vueuse/core", async (importOriginal) => {
       reset: vi.fn(),
       onChange: onFilesChangeMock,
     })),
+  };
+});
+
+vi.mock("@/components/spaces/DestinationPicker/useDestinationPicker", () => {
+  return {
+    useDestinationPicker: () => ({
+      presets: {
+        UPLOAD_PICKERCONFIG: {},
+        DOWNLOAD_PICKERCONFIG: {},
+      },
+      promptDestination: vi.fn().mockResolvedValue({
+        type: "item",
+        spaceProviderId: "mockDestinationSpaceProviderId",
+        spaceId: "mockDestinationSpaceId",
+        itemId: "mockDestinationItemId",
+        resetWorkflow: true,
+        isWorkflowContainer: true,
+      } satisfies DestinationPickerResult),
+    }),
   };
 });
 

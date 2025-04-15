@@ -7,10 +7,10 @@ import {
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { checkOpenWorkflowsBeforeMove } from "@/store/spaces/util";
 
-import { localRootProjectPath, useSpaceCachingStore } from "./caching";
+import { useSpaceCachingStore } from "./caching";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
-const { promptDestination, presets } = useDestinationPicker();
+const { promptDestination } = useDestinationPicker();
 
 type CreateWorkflowModalConfig = {
   isOpen: boolean;
@@ -52,84 +52,6 @@ export const useSpacesStore = defineStore("spaces", {
 
     setDeploymentsModalConfig(deploymentsModalConfig: DeploymentsModalConfig) {
       this.deploymentsModalConfig = deploymentsModalConfig;
-    },
-
-    async downloadFromSpace({
-      projectId,
-      itemIds,
-    }: {
-      projectId: string;
-      itemIds: string[];
-    }) {
-      // Takes space context from space explorer
-      const { spaceId: sourceSpaceId, spaceProviderId: sourceProviderId } =
-        useSpaceCachingStore().projectPath[projectId];
-
-      const pickerConfig =
-        sourceProviderId === localRootProjectPath.spaceProviderId
-          ? presets.UPLOAD_PICKERCONFIG
-          : presets.DOWNLOAD_PICKERCONFIG;
-      const destinationResult = await promptDestination(pickerConfig);
-
-      if (destinationResult?.type === "item") {
-        const {
-          spaceProviderId: destinationProviderId,
-          spaceId: destinationSpaceId,
-          itemId: destinationItemId,
-          resetWorkflow,
-        } = destinationResult;
-
-        API.desktop.downloadFromSpace({
-          sourceProviderId,
-          sourceSpaceId,
-          sourceItemIds: itemIds,
-          destinationProviderId,
-          destinationSpaceId,
-          destinationItemId,
-          excludeData: resetWorkflow,
-        });
-      }
-    },
-
-    async uploadToSpace({
-      itemIds,
-    }: {
-      itemIds: string[];
-    }): Promise<{
-      destinationProviderId: string;
-      destinationSpaceId: string;
-      remoteItemIds: string[];
-    } | null> {
-      const destinationResult = await promptDestination(
-        presets.UPLOAD_PICKERCONFIG,
-      );
-
-      if (destinationResult?.type !== "item") {
-        return null;
-      }
-
-      const {
-        spaceProviderId: destinationProviderId,
-        spaceId: destinationSpaceId,
-        itemId: destinationItemId,
-        resetWorkflow,
-      } = destinationResult;
-
-      const remoteItemIds = await API.desktop.uploadToSpace({
-        sourceProviderId: localRootProjectPath.spaceProviderId,
-        sourceSpaceId: localRootProjectPath.spaceId,
-        sourceItemIds: itemIds,
-        destinationProviderId,
-        destinationSpaceId,
-        destinationItemId,
-        excludeData: resetWorkflow,
-      });
-
-      if (!remoteItemIds || remoteItemIds.length === 0) {
-        return null;
-      }
-
-      return { destinationProviderId, destinationSpaceId, remoteItemIds };
     },
 
     async moveOrCopyToSpace({

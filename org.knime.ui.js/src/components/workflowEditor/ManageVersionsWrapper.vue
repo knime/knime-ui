@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { rfcErrors } from "@knime/hub-features";
@@ -9,7 +9,7 @@ import {
   type NamedItemVersion,
 } from "@knime/hub-features/versions";
 
-import { useUploadToSpace } from "@/composables/useUploadToSpace";
+import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -21,9 +21,11 @@ const versionsStore = useWorkflowVersionsStore();
 const { activeProjectVersionsModeInfo, activeProjectVersionsModeStatus } =
   storeToRefs(versionsStore);
 
-const { activeProjectOrigin } = storeToRefs(useApplicationStore());
+const { activeProjectOrigin, activeProjectId } = storeToRefs(
+  useApplicationStore(),
+);
 
-const { uploadAndOpenProject } = useUploadToSpace();
+const { uploadWorkflowAndOpenAsProject } = useUploadWorkflowToSpace();
 
 const hasAdminRights = computed(
   () =>
@@ -119,9 +121,18 @@ const onCreate = async ({ name, description }) => {
   }
 };
 
-const onUpload = () => {
+const onUpload = async () => {
   const itemId = activeProjectOrigin.value!.itemId;
-  uploadAndOpenProject(itemId);
+  await uploadWorkflowAndOpenAsProject(itemId);
+
+  // activeProjectId can take a while to update
+  const stopWatcher = watch(
+    () => activeProjectId.value,
+    async () => {
+      stopWatcher();
+      await versionsStore.activateVersionsMode();
+    },
+  );
 };
 </script>
 

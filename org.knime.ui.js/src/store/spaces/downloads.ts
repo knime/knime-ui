@@ -5,13 +5,19 @@ import { type DownloadItem, useAutoCloseOnCompletion } from "@knime/components";
 import { rfcErrors, useDownloadArtifact } from "@knime/hub-features";
 import type { NamedItemVersion } from "@knime/hub-features/versions";
 
+import { API } from "@/api";
+import { useDestinationPicker } from "@/components/spaces/DestinationPicker/useDestinationPicker";
+import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 
+import { localRootProjectPath, useSpaceCachingStore } from "./caching";
 import { getCustomFetchOptions } from "./common";
+import { useSpaceOperationsStore } from "./spaceOperations";
 
 export const useSpaceDownloadsStore = defineStore("space.downloads", () => {
   const hasActiveDownload = ref(false);
   const $toast = getToastsProvider();
+  const { promptDestination, presets } = useDestinationPicker();
 
   const {
     start,
@@ -77,6 +83,53 @@ export const useSpaceDownloadsStore = defineStore("space.downloads", () => {
     close: closeDownloadPanel,
   });
 
+  /*
+   * Move items from a hub space to the local space provider
+   * Takes the space context from the space explorer
+   *
+   * @param projectId - The project ID to take the space context from
+   * @param itemIds - The itemIDs of the items in the Hub space
+   */
+  const moveToLocalProviderFromHub = async ({
+    projectId,
+  }: {
+    projectId: string;
+  }) => {
+    if (isBrowser()) {
+      return;
+    }
+
+    // Takes space context from space explorer
+    const { spaceId: sourceSpaceId, spaceProviderId: sourceProviderId } =
+      useSpaceCachingStore().projectPath[projectId];
+    const { currentSelectedItemIds } = useSpaceOperationsStore();
+
+    const pickerConfig =
+      sourceProviderId === localRootProjectPath.spaceProviderId
+        ? presets.UPLOAD_PICKERCONFIG
+        : presets.DOWNLOAD_PICKERCONFIG;
+    const destinationResult = await promptDestination(pickerConfig);
+
+    if (destinationResult?.type === "item") {
+      const {
+        spaceProviderId: destinationProviderId,
+        spaceId: destinationSpaceId,
+        itemId: destinationItemId,
+        resetWorkflow,
+      } = destinationResult;
+
+      await API.desktop.downloadFromSpace({
+        sourceProviderId,
+        sourceSpaceId,
+        sourceItemIds: currentSelectedItemIds,
+        destinationProviderId,
+        destinationSpaceId,
+        destinationItemId,
+        excludeData: resetWorkflow,
+      });
+    }
+  };
+
   return {
     startDownload,
     downloadItems,
@@ -88,5 +141,6 @@ export const useSpaceDownloadsStore = defineStore("space.downloads", () => {
       () => hasActiveDownload.value && downloadItems.value?.length > 0,
     ),
     openDownload,
+    moveToLocalProviderFromHub,
   };
 });
