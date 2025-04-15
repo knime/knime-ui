@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, markRaw, nextTick, ref } from "vue";
+import { type ComputedRef, computed, markRaw, nextTick, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button, Pill } from "@knime/components";
@@ -18,6 +18,7 @@ import type {
 } from "@/api/custom-types";
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { isBrowser } from "@/environment";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
@@ -179,10 +180,22 @@ const filteredSpaceProviders = computed(() => {
   return newSpaceProviders;
 });
 
+const filteredSpaceGroups = computed(() => ({
+  spaceGroups: filteredSpaceProviders.value?.[0]?.spaceGroups ?? [],
+  spaceProviderId: filteredSpaceProviders.value?.[0]?.id,
+}));
+
+const treeSource: ComputedRef<TreeNodeOptions[]> = computed(() => {
+  if (isBrowser() && filteredSpaceProviders.value?.length === 1) {
+    const { spaceGroups, spaceProviderId } = filteredSpaceGroups.value;
+    return spaceGroups.map((group) =>
+      mapSpaceGroupToTree(group, { spaceProviderId }),
+    );
+  }
+  return filteredSpaceProviders.value?.map(mapSpaceProviderToTree) ?? [];
+});
+
 const tree = ref<InstanceType<typeof Tree>>();
-const treeSource = ref<TreeNodeOptions[]>(
-  filteredSpaceProviders.value.map(mapSpaceProviderToTree),
-);
 
 const autoExpandTree = () => {
   nextTick(() => {

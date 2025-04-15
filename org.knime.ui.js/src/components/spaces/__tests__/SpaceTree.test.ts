@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
@@ -6,10 +6,14 @@ import { Tree } from "@knime/virtual-tree";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import { createSpaceProvider } from "@/test/factories";
+import { isBrowser, isDesktop } from "@/environment";
+import { createSpaceGroup, createSpaceProvider } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import SpaceTree from "../SpaceTree.vue";
+
+vi.mock("@/environment");
 
 const mockedAPI = deepMocked(API);
 
@@ -45,7 +49,12 @@ describe("SpaceTree.vue", () => {
       id: "mockProviderId",
       type: SpaceProviderNS.TypeEnum.HUB,
     }),
+    environment = "DESKTOP" as "BROWSER" | "DESKTOP",
   } = {}) => {
+    mockEnvironment(environment, {
+      isBrowser,
+      isDesktop,
+    });
     if (mockGetSpaceItems) {
       mockedAPI.space.listWorkflowGroup.mockImplementation(
         mockGetSpaceItems ?? (() => Promise.resolve(mockResponse)),
@@ -229,5 +238,41 @@ describe("SpaceTree.vue", () => {
     await flushPromises();
 
     expect(baseTree.vm.expandedKeys).to.contain("provider_someMockProviderId");
+  });
+
+  it("should not show root level in browser if only one hub is connected", async () => {
+    const mockSpaceProvider = createSpaceProvider({
+      id: "mockProviderId",
+      type: SpaceProviderNS.TypeEnum.HUB,
+      spaceGroups: [...Array(3).keys()].map((index) =>
+        createSpaceGroup({
+          id: `group_${index + 1}`,
+          name: `Group ${index + 1}`,
+        }),
+      ),
+    });
+    const { wrapper } = await doMount({
+      props: {
+        providerRules: {
+          restrictedTo: ["mockProviderId"],
+        },
+      },
+      environment: "BROWSER",
+      mockSpaceProvider,
+    });
+    await flushPromises();
+
+    expect(mockSpaceProvider.spaceGroups.length).toBe(3);
+
+    // check that all space groups are present in tree
+    const treeNodes = wrapper.findAllComponents({ name: "TreeNode" });
+    expect(treeNodes.length).toBe(mockSpaceProvider.spaceGroups.length);
+    const expectedGroups = mockSpaceProvider.spaceGroups.map(
+      ({ name }) => name,
+    );
+    const actualGroups = treeNodes.map(
+      (node) => node.vm.node.origin.name as string,
+    );
+    expect(actualGroups.sort()).toEqual(expectedGroups);
   });
 });
