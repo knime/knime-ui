@@ -35,19 +35,4 @@ export default [
       },
     },
   },
-  // TODO move this to @knime/eslint-config
-  {
-    files: [...knimeVitestConfig[0].files, "src/test/**", "**/__tests__/**"],
-    rules: {
-      "@typescript-eslint/ban-ts-comment": [
-        "error",
-        {
-          "ts-check": false,
-          "ts-expect-error": false,
-          "ts-ignore": true,
-          "ts-nocheck": true,
-        },
-      ],
-    },
-  },
 ];

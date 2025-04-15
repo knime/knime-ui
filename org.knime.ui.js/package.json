@@ -70,7 +70,7 @@
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^1.16.1",
     "@dotenvx/dotenvx": "^1.39.0",
-    "@knime/eslint-config": "^9.0.1",
+    "@knime/eslint-config": "^9.0.2",
     "@knime/licenses": "^1.1.0",
     "@pinia/testing": "^0.1.7",
     "@playwright/test": "^1.50.1",
