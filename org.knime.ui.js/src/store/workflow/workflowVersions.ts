@@ -230,6 +230,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     });
   }
 
+  // TODO: NXT-3458 this workaround to persist the selected version in the frontend
+  //  should not be necessary anymore if the selected version is persisted
   function setActiveVersionOnActiveProject(
     version: NamedItemVersion["version"],
     activeProjectId: string,
@@ -252,7 +254,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
             )
           : undefined;
         if (loadedVersionModeInfo) {
-          // TODO this is not persisted, i.e. information is lost on app reload
           activeProject.origin.version = {
             ...loadedVersionModeInfo,
             version: Number(version),

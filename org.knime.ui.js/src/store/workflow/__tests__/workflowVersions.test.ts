@@ -435,6 +435,7 @@ describe("workflow store: versions", () => {
         const { workflowVersionsStore, applicationStore, projectId } =
           await setupStore();
 
+        // TODO: NXT-3458 this should be available directly from openProjects as soon as the selected version is persisted
         const info: ReturnType<
           typeof workflowVersionsStore.versionsModeInfo.get
         > = {
