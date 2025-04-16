@@ -7,6 +7,7 @@ import {
   type PortType,
   type Project,
   type SpaceItemReference,
+  type SpaceItemVersion,
   type UpdateAvailableEvent,
 } from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
@@ -120,6 +121,14 @@ export const useApplicationStore = defineStore("application", {
 
     setOpenProjects(projects: Project[]) {
       this.openProjects = projects;
+    },
+
+    // TODO: NXT-3458 this action can be removed as soon as it is not called from workflowVersions any more
+    setVersionOfActiveProject(version?: SpaceItemVersion) {
+      const origin = this.activeProjectOrigin;
+      if (origin) {
+        origin.version = version;
+      }
     },
 
     async updateOpenProjectsOrder(projects: Project[]) {

@@ -232,33 +232,27 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
 
   // TODO: NXT-3458 this workaround to persist the selected version in the frontend
   //  should not be necessary anymore if the selected version is persisted
-  function setActiveVersionOnActiveProject(
+  function setVersionOfActiveProject(
     version: NamedItemVersion["version"],
     activeProjectId: string,
   ) {
-    const { openProjects } = useApplicationStore();
+    const { setVersionOfActiveProject } = useApplicationStore();
 
-    const activeProject = openProjects.find(
-      ({ projectId }) => projectId === activeProjectId,
-    );
-
-    if (activeProject?.origin) {
-      if (typeof version === "string") {
-        activeProject.origin.version = undefined;
-      } else {
-        const activeProjectVersionModeInfo =
-          versionsModeInfo.value.get(activeProjectId);
-        const loadedVersionModeInfo = activeProjectVersionModeInfo
-          ? activeProjectVersionModeInfo.loadedVersions.find(
-              (loadedVersion) => loadedVersion.version === version,
-            )
-          : undefined;
-        if (loadedVersionModeInfo) {
-          activeProject.origin.version = {
-            ...loadedVersionModeInfo,
-            version: Number(version),
-          };
-        }
+    if (typeof version === "string") {
+      setVersionOfActiveProject();
+    } else {
+      const activeProjectVersionModeInfo =
+        versionsModeInfo.value.get(activeProjectId);
+      const loadedVersionModeInfo = activeProjectVersionModeInfo
+        ? activeProjectVersionModeInfo.loadedVersions.find(
+            (loadedVersion) => loadedVersion.version === version,
+          )
+        : undefined;
+      if (loadedVersionModeInfo) {
+        setVersionOfActiveProject({
+          ...loadedVersionModeInfo,
+          version: Number(version),
+        });
       }
     }
   }
@@ -270,7 +264,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    setActiveVersionOnActiveProject(version, activeProjectId);
+    setVersionOfActiveProject(version, activeProjectId);
 
     let canSetNewRoute: boolean | null = true;
 
