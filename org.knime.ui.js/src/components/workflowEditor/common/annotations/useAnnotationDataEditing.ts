@@ -102,10 +102,10 @@ export const useAnnotationDataEditing = (
     );
   };
 
-  const { isAnnotationSelected } = storeToRefs(useSelectionStore());
+  const { isAnnotationSelected } = useSelectionStore();
 
   const isSelected = computed(() => {
-    return isAnnotationSelected.value(annotation.value.id);
+    return isAnnotationSelected(annotation.value.id);
   });
 
   const isSaving = ref(false);
@@ -130,10 +130,10 @@ export const useAnnotationDataEditing = (
 
   // Blur happens on:
   // - When the annotation exits the edit mode
-  // - Switching to another workflow (e.g clicking on another tab)
-  const onBlur = () => {
+  // - Switching to another workflow (e.g. clicking on another tab)
+  const onBlur = async () => {
     if (hasEdited.value) {
-      updateAnnotation();
+      await updateAnnotation();
     }
   };
 

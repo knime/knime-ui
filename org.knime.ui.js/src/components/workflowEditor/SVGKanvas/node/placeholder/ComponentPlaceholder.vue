@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
-import { cloneDeep, isEqual } from "lodash-es";
+import { isEqual } from "lodash-es";
 
 import { ComponentPlaceholder } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
@@ -15,13 +15,12 @@ type Props = {
 const props = defineProps<Props>();
 
 const { toastPresets } = getToastPresets();
-const { selectSingleObject } = useSelectionStore();
+const { deselectAllObjects } = useSelectionStore();
 
-let selectionStoreState = ref(null);
+let selectionStoreState = ref<null | string[]>(null);
 
 onMounted(() => {
-  // @ts-expect-error cant be null
-  selectionStoreState.value = cloneDeep(useSelectionStore().$state);
+  selectionStoreState.value = useSelectionStore().selectedNodeIds;
 });
 
 const placeholderState = computed(() => props.placeholder.state);
@@ -37,17 +36,16 @@ const isSuccess = computed(
   () => placeholderState.value === ComponentPlaceholder.StateEnum.SUCCESS,
 );
 
-watch(placeholderState, () => {
+watch(placeholderState, async () => {
   const didSelectionChange = !isEqual(
-    useSelectionStore().$state,
     selectionStoreState.value,
+    useSelectionStore().selectedNodeIds,
   );
 
   if (!didSelectionChange && (isSuccess.value || isSuccessWithWarning.value)) {
-    selectSingleObject({
-      type: "node",
-      id: props.placeholder.componentId ?? "",
-    });
+    if (props.placeholder.componentId) {
+      await deselectAllObjects([props.placeholder.componentId]);
+    }
   }
 
   if (isSuccessWithWarning.value || isError.value) {
@@ -56,9 +54,11 @@ watch(placeholderState, () => {
       details: props.placeholder.details,
     };
 
-    return isError.value
-      ? toastPresets.workflow.componentLoadingFailed(toastData)
-      : toastPresets.workflow.componentLoadedWithWarning(toastData);
+    if (isError.value) {
+      toastPresets.workflow.componentLoadingFailed(toastData);
+    } else {
+      toastPresets.workflow.componentLoadedWithWarning(toastData);
+    }
   }
 });
 
@@ -85,15 +85,3 @@ const adjustedPosition = computed(() => {
     :name="placeholder.name"
   />
 </template>
-
-<style scoped>
-.progress {
-  font-size: 10px;
-  dominant-baseline: middle;
-  text-anchor: middle;
-  fill: var(--knime-masala);
-  font-family: "Roboto Condensed", sans-serif;
-  font-weight: normal;
-  user-select: none;
-}
-</style>

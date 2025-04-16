@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import {
   ComponentNodeAndDescription,
@@ -56,6 +56,7 @@ describe("WorkflowMonitorContent.vue", () => {
     mockedStores.workflowMonitorStore.setCurrentState(workflowMonitorState);
     mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
+    await flushPromises();
   };
 
   const initStateComponent = async (
@@ -166,7 +167,8 @@ describe("WorkflowMonitorContent.vue", () => {
         .props("isHighlighted"),
     ).toBe(false);
 
-    mockedStores.selectionStore.selectNode("root:1");
+    await mockedStores.selectionStore.selectNodes(["root:1"]);
+    await flushPromises();
     await nextTick();
 
     expect(

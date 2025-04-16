@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
 
@@ -263,9 +263,8 @@ describe("WorkflowToolbar.vue", () => {
       const workflow = createWorkflow();
       await setupStore({ mockedStores, workflow });
 
-      mockedStores.selectionStore.selectNode("root:1");
-
-      await nextTick();
+      await mockedStores.selectionStore.selectNodes(["root:1"]);
+      await flushPromises();
 
       const toolbarShortcuts = wrapper
         .findAllComponents(ToolbarShortcutButton)
@@ -288,9 +287,8 @@ describe("WorkflowToolbar.vue", () => {
 
       const workflow = createWorkflow();
       await setupStore({ mockedStores, workflow });
-      mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
-
-      await nextTick();
+      await mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
+      await flushPromises();
 
       const toolbarShortcuts = wrapper
         .findAllComponents(ToolbarShortcutButton)

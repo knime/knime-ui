@@ -76,7 +76,7 @@ export const useArrowKeyNavigation = (
     }
   };
 
-  const keyboardNavHandler = throttle((event: KeyboardEvent) => {
+  const keyboardNavHandler = throttle(async (event: KeyboardEvent) => {
     if (options.isHoldingDownSpace.value) {
       return;
     }
@@ -91,7 +91,7 @@ export const useArrowKeyNavigation = (
     if (isArrowKey && shouldNavigate(event)) {
       // no objects are selected and no modifiers are used and nothing is focused -> initial selection
       if (isInitialSelectionEvent(event)) {
-        handleInitialSelection(event);
+        await handleInitialSelection(event);
         return;
       }
 
@@ -101,7 +101,7 @@ export const useArrowKeyNavigation = (
         return;
       }
 
-      handleSelection(event);
+      await handleSelection(event);
     }
   });
 

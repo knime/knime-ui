@@ -31,7 +31,7 @@ const LABEL_HEIGHT = 60;
 const OFFSET_Y = 16;
 
 const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
-const { isNodeSelected } = storeToRefs(useSelectionStore());
+const { isNodeSelected } = useSelectionStore();
 
 const {
   sourceNode,
@@ -66,8 +66,8 @@ const getLabelPosition = (start: XY, end: XY, offset: XY): XY => {
 const isConnectionAffectedByDrag = computed(
   () =>
     isDragging.value &&
-    (isNodeSelected.value(props.sourceNode ?? "") ||
-      isNodeSelected.value(props.destNode ?? "")),
+    (isNodeSelected(props.sourceNode ?? "") ||
+      isNodeSelected(props.destNode ?? "")),
 );
 
 const halfWayPosition = computed(() => {

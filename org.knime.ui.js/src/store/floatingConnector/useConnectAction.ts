@@ -3,10 +3,10 @@
 import { type Ref, computed, ref } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useSelectionStore } from "@/store/selection";
 import type { Direction } from "@/util/compatibleConnections";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
-import { useNodeConfigurationStore } from "../nodeConfiguration/nodeConfiguration";
 import { useNodeInteractionsStore } from "../workflow/nodeInteractions";
 
 import {
@@ -104,11 +104,11 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
       return Promise.reject(new Error("invalid state"));
     }
 
-    const canContinue = await useNodeConfigurationStore().autoApplySettings({
-      nextNodeId: snapTarget.value.parentNodeId,
-    });
+    const { wasAborted } = await useSelectionStore().deselectAllObjects([
+      snapTarget.value.parentNodeId,
+    ]);
 
-    if (!canContinue) {
+    if (wasAborted) {
       return Promise.reject(new Error("aborting connection"));
     }
 

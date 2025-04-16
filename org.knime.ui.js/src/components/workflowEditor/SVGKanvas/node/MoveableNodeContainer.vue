@@ -22,8 +22,7 @@ let lastHitTarget: Element | null = null;
 const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging, hasAbortedDrag } =
   storeToRefs(movingStore);
-const selectionStore = useSelectionStore();
-const { isNodeSelected } = storeToRefs(selectionStore);
+const { isNodeSelected, deselectAllObjects } = useSelectionStore();
 const { isNodeConnected, getNodeById } = storeToRefs(
   useNodeInteractionsStore(),
 );
@@ -35,18 +34,12 @@ const positionWithDelta = computed(() => ({
   y: props.position.y + movePreviewDelta.value.y,
 }));
 const translationAmount = computed(() => {
-  return isNodeSelected.value(props.id)
-    ? positionWithDelta.value
-    : props.position;
+  return isNodeSelected(props.id) ? positionWithDelta.value : props.position;
 });
 
 const dragContainer = computed(() => {
   return container.value!.querySelector(DRAG_TARGET_SELECTOR) as HTMLElement;
 });
-
-const moveNode = () => {
-  movingStore.moveObjects();
-};
 
 const notifyNodeDraggingListeners = (x: number, y: number) => {
   const hitTarget = document.elementFromPoint(x, y);
@@ -87,13 +80,6 @@ const position = toRef(props, "position");
 const { createPointerDownHandler } = useMoveObject({
   objectElement: dragContainer,
 
-  onMoveStartCallback: () => {
-    if (!isNodeSelected.value(props.id)) {
-      selectionStore.deselectAllObjects();
-    }
-    selectionStore.selectNode(props.id);
-  },
-
   onMoveCallback: (ptrMoveEvent) => {
     notifyNodeDraggingListeners(ptrMoveEvent.clientX, ptrMoveEvent.clientY);
   },
@@ -121,7 +107,7 @@ const { createPointerDownHandler } = useMoveObject({
             id: props.id,
             clientX: ptrUpEvent.clientX,
             clientY: ptrUpEvent.clientY,
-            onError: moveNode,
+            onError: movingStore.moveObjects,
           },
         }),
       );
@@ -135,7 +121,19 @@ const { createPointerDownHandler } = useMoveObject({
   },
 });
 
-const onPointerDown = createPointerDownHandler(position);
+const onPointerDown = async (event: PointerEvent) => {
+  // Capture currentTarget synchronously as the async deselectAllObjects call will
+  // cause the event to be already bubbled up and current Target to be null
+  const currentTarget = event.currentTarget as HTMLElement;
+
+  if (!isNodeSelected(props.id)) {
+    const { wasAborted } = await deselectAllObjects([props.id]);
+    if (wasAborted) {
+      return;
+    }
+  }
+  createPointerDownHandler(position)(event, currentTarget);
+};
 
 useEscapeStack({
   group: "OBJECT_DRAG",
@@ -154,7 +152,7 @@ useEscapeStack({
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :data-node-id="id"
     :class="[{ dragging: isDragging && isNodeSelected(id) }]"
-    @pointerdown.left="onPointerDown"
+    @pointerdown.left.exact="onPointerDown"
   >
     <slot :position="translationAmount" />
   </g>

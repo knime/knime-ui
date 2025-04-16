@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
-
-import type { ApplyState, ViewState } from "@knime/ui-extension-renderer/api";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
 import { createNativeNode, createWorkflow } from "@/test/factories";
@@ -35,7 +33,7 @@ describe("NodeConfigWrapper.vue", () => {
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTING },
   });
 
-  const createStores = (initiallySelectedNode?: string) => {
+  const createStores = async (initiallySelectedNode?: string) => {
     const mockedStores = mockStores();
     mockedStores.settingsStore.settings.nodeDialogSize = 200;
 
@@ -60,25 +58,16 @@ describe("NodeConfigWrapper.vue", () => {
 
     mockedStores.applicationStore.setActiveProjectId(projectId);
     mockedStores.workflowStore.setActiveWorkflow(workflow);
-    mockedStores.selectionStore.selectNode(
+    await mockedStores.selectionStore.selectNodes([
       initiallySelectedNode ?? idleNode.id,
-    );
-    mockedStores.nodeConfigurationStore.setActiveNodeId(
-      initiallySelectedNode ?? idleNode.id,
-    );
+    ]);
 
     return mockedStores;
   };
 
-  type MountOpts = {
-    mockedStores: ReturnType<typeof createStores>;
-  };
+  const doMount = async (initiallySelectedNode?: string) => {
+    const mockedStores = await createStores(initiallySelectedNode);
 
-  const doMount = (
-    { mockedStores }: MountOpts = {
-      mockedStores: createStores(),
-    },
-  ) => {
     const wrapper = mount(NodeConfigWrapper, {
       props: { isLargeMode: false },
       global: {
@@ -93,13 +82,13 @@ describe("NodeConfigWrapper.vue", () => {
     mockedStores: ReturnType<typeof mockStores>,
     nodeId: string,
   ) => {
-    mockedStores.selectionStore.deselectAllObjects();
-    mockedStores.selectionStore.selectNode(nodeId);
+    await mockedStores.selectionStore.deselectAllObjects([nodeId]);
+    await flushPromises();
     await nextTick();
   };
 
-  it("sets NodeConfigLayout props", () => {
-    const { wrapper } = doMount();
+  it("sets NodeConfigLayout props", async () => {
+    const { wrapper } = await doMount();
 
     const nodeConfigLayout = wrapper.findComponent(NodeConfigLayout);
     expect(nodeConfigLayout.exists()).toBe(true);
@@ -114,7 +103,7 @@ describe("NodeConfigWrapper.vue", () => {
   });
 
   it("sets NodeConfigLayout props including versionId if given", async () => {
-    const { wrapper, mockedStores } = doMount();
+    const { wrapper, mockedStores } = await doMount();
 
     const versionId = "versionId";
     mockedStores.workflowStore.activeWorkflow!.info.version = versionId;
@@ -134,85 +123,20 @@ describe("NodeConfigWrapper.vue", () => {
   });
 
   it("should set the next active node when there is no dirty config state", async () => {
-    const { wrapper, mockedStores } = doMount();
+    const { wrapper, mockedStores } = await doMount();
 
     expect(wrapper.findComponent(NodeConfigLayout).props("dirtyState")).toEqual(
       mockedStores.nodeConfigurationStore.dirtyState,
     );
 
     await selectNextNode(mockedStores, configuredNode.id);
-    expect(mockedStores.nodeConfigurationStore.activeNodeId).toBe(
-      configuredNode.id,
-    );
+
+    const activeNode = mockedStores.nodeConfigurationStore.activeNode;
+    expect(activeNode?.id).toBe(configuredNode.id);
   });
 
-  it("should set the next active node event when there's dirty config state but node config is disabled", async () => {
-    const { wrapper, mockedStores } = doMount({
-      mockedStores: createStores(executingNode.id),
-    });
-
-    mockedStores.nodeConfigurationStore.setDirtyState({
-      apply: "configured" satisfies ApplyState,
-      view: "configured" satisfies ViewState,
-    });
-
-    expect(wrapper.findComponent(NodeConfigLayout).props("disabled")).toBe(
-      true,
-    );
-
-    await selectNextNode(mockedStores, configuredNode.id);
-    expect(mockedStores.nodeConfigurationStore.activeNodeId).toBe(
-      configuredNode.id,
-    );
-  });
-
-  it("should skip selection to same node", async () => {
-    const { mockedStores } = doMount({
-      mockedStores: createStores(configuredNode.id),
-    });
-
-    expect(
-      mockedStores.nodeConfigurationStore.setActiveNodeId,
-    ).toHaveBeenCalledOnce();
-
-    await selectNextNode(mockedStores, configuredNode.id);
-
-    expect(
-      mockedStores.nodeConfigurationStore.setActiveNodeId,
-    ).toHaveBeenCalledOnce();
-  });
-
-  it("should call autoApplySettings when changing nodes and there's a dirty state", async () => {
-    const { wrapper, mockedStores } = doMount({
-      mockedStores: createStores(configuredNode.id),
-    });
-
-    expect(wrapper.findComponent(NodeConfigLayout).props("dirtyState")).toEqual(
-      mockedStores.nodeConfigurationStore.dirtyState,
-    );
-
-    mockedStores.nodeConfigurationStore.setDirtyState({
-      apply: "configured" satisfies ApplyState,
-      view: "configured" satisfies ViewState,
-    });
-
-    await selectNextNode(mockedStores, executedNode.id);
-    expect(
-      mockedStores.nodeConfigurationStore.autoApplySettings,
-    ).toHaveBeenCalledWith({ nextNodeId: executedNode.id });
-    expect(
-      mockedStores.nodeConfigurationStore.setActiveNodeId,
-    ).not.toHaveBeenCalledWith(executedNode.id);
-
-    expect(mockedStores.nodeConfigurationStore.activeNodeId).toBe(
-      configuredNode.id,
-    );
-  });
-
-  it("handles apply", () => {
-    const { wrapper, mockedStores } = doMount({
-      mockedStores: createStores(configuredNode.id),
-    });
+  it("handles apply", async () => {
+    const { wrapper, mockedStores } = await doMount(configuredNode.id);
 
     wrapper.findComponent(NodeConfigLayout).vm.$emit("apply", false);
 
@@ -224,10 +148,8 @@ describe("NodeConfigWrapper.vue", () => {
     });
   });
 
-  it("handles apply and execute", () => {
-    const { wrapper, mockedStores } = doMount({
-      mockedStores: createStores(configuredNode.id),
-    });
+  it("handles apply and execute", async () => {
+    const { wrapper, mockedStores } = await doMount(configuredNode.id);
 
     wrapper.findComponent(NodeConfigLayout).vm.$emit("apply", true);
 
@@ -239,10 +161,8 @@ describe("NodeConfigWrapper.vue", () => {
     });
   });
 
-  it("handles execute", () => {
-    const { wrapper, mockedStores } = doMount({
-      mockedStores: createStores(configuredNode.id),
-    });
+  it("handles execute", async () => {
+    const { wrapper, mockedStores } = await doMount(configuredNode.id);
 
     wrapper.findComponent(NodeConfigLayout).vm.$emit("execute");
 
@@ -251,10 +171,8 @@ describe("NodeConfigWrapper.vue", () => {
     ]);
   });
 
-  it("handles discard", () => {
-    const { wrapper, mockedStores } = doMount({
-      mockedStores: createStores(configuredNode.id),
-    });
+  it("handles discard", async () => {
+    const { wrapper, mockedStores } = await doMount(configuredNode.id);
 
     wrapper.findComponent(NodeConfigLayout).vm.$emit("discard");
 

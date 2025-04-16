@@ -39,13 +39,10 @@ const canvasStore = useWebGLCanvasStore();
 const { isDebugModeEnabled } = storeToRefs(canvasStore);
 
 const selectionStore = useSelectionStore();
-const {
-  isNodeSelected,
-  isConnectionSelected,
-  isBendpointSelected,
-  singleSelectedNode,
-  getSelectedConnections: selectedConnections,
-} = storeToRefs(selectionStore);
+const { singleSelectedNode, getSelectedConnections: selectedConnections } =
+  storeToRefs(selectionStore);
+const { isNodeSelected, isConnectionSelected, isBendpointSelected } =
+  selectionStore;
 
 const { floatingConnector, snapTarget } = storeToRefs(
   useFloatingConnectorStore(),
@@ -104,8 +101,8 @@ const isHighlighted = computed(() => {
     Boolean(singleSelectedNode.value) &&
     !shouldHideSelection.value &&
     selectedConnections.value.length === 0 &&
-    (isNodeSelected.value(props.sourceNode ?? "") ||
-      isNodeSelected.value(props.destNode ?? ""))
+    (isNodeSelected(props.sourceNode ?? "") ||
+      isNodeSelected(props.destNode ?? ""))
   );
 });
 
@@ -139,15 +136,15 @@ const isTargetForReplacement = computed(() => {
   return false;
 });
 
-const onConnectionPointerdown = (event: FederatedPointerEvent) => {
+const onConnectionPointerdown = async (event: FederatedPointerEvent) => {
   markEventAsHandled(event, { initiator: "connection-select" });
   if (!isMultiselectEvent(event)) {
-    selectionStore.deselectAllObjects();
+    await selectionStore.deselectAllObjects();
   }
 
-  const action = isConnectionSelected.value(props.id)
-    ? selectionStore.deselectConnection
-    : selectionStore.selectConnection;
+  const action = isConnectionSelected(props.id)
+    ? selectionStore.deselectConnections
+    : selectionStore.selectConnections;
 
   action(props.id);
 };
@@ -167,8 +164,8 @@ const {
 
 const sourceAndDestinationSelected = computed(() => {
   return (
-    isNodeSelected.value(sourceNode.value ?? "") &&
-    isNodeSelected.value(destNode.value ?? "")
+    isNodeSelected(sourceNode.value ?? "") &&
+    isNodeSelected(destNode.value ?? "")
   );
 });
 
@@ -178,7 +175,7 @@ watch(sourceAndDestinationSelected, (value) => {
       .fill(null)
       .map((_, i) => getBendpointId(props.id, i));
 
-    if (bendpoints.every((id) => !isBendpointSelected.value(id))) {
+    if (bendpoints.every((id) => !isBendpointSelected(id))) {
       selectionStore.selectBendpoints(bendpoints);
     }
   }

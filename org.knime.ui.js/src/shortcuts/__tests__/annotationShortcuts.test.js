@@ -104,9 +104,7 @@ describe("annotationShortcuts", () => {
         const { selectionStore, workflowStore } = createStore();
 
         expect(annotationShortcuts[shortcutName].condition()).toBe(false);
-        selectionStore.selectedAnnotations = {
-          "annotation:1": true,
-        };
+        selectionStore.selectAnnotations(["annotation:1"]);
         expect(annotationShortcuts[shortcutName].condition()).toBe(true);
         // @ts-expect-error: Getter is read only
         workflowStore.isWritable = false;

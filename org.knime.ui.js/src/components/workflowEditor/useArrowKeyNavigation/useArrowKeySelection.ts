@@ -2,8 +2,6 @@ import { type Ref, onMounted } from "vue";
 import { useEventListener } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import { capitalize } from "@knime/utils";
-
 import type { WorkflowObject } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
@@ -82,9 +80,16 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
     getFocusedObject: focusedObject,
     isSelectionEmpty,
     selectedObjects,
+  } = storeToRefs(selectionStore);
+
+  const {
     isNodeSelected,
     isAnnotationSelected,
-  } = storeToRefs(selectionStore);
+    selectNodes,
+    deselectNodes,
+    selectAnnotations,
+    deselectAnnotations,
+  } = selectionStore;
 
   const canvasStore = canvasRendererUtils.isSVGRenderer()
     ? useSVGCanvasStore()
@@ -170,14 +175,20 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
         return;
       }
 
-      const selectionAction =
-        nearestObject.type === "node"
-          ? selectionStore.selectNode
-          : selectionStore.selectAnnotation;
+      const preserveSelectionFor =
+        nearestObject.type === "node" ? [nearestObject.id] : [];
 
-      selectionStore.unfocusObject();
-      selectionStore.deselectAllObjects();
-      selectionAction(nearestObject.id);
+      const { wasAborted } = await selectionStore.deselectAllObjects(
+        preserveSelectionFor,
+      );
+
+      if (wasAborted) {
+        return;
+      }
+
+      if (nearestObject.type === "annotation") {
+        selectionStore.selectAnnotations([nearestObject.id]);
+      }
       canvasStore.moveObjectIntoView(nearestObject);
 
       return;
@@ -197,18 +208,21 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
         event,
       );
 
-      const selectionAction =
-        furthestObject.type === "node"
-          ? selectionStore.selectNode
-          : selectionStore.selectAnnotation;
-
       // deselect everything and select object that's furthest away in the same direction
-      selectionStore.deselectAllObjects();
-      selectionAction(furthestObject.id);
+      const { wasAborted } = await selectionStore.deselectAllObjects();
+      if (wasAborted) {
+        return;
+      }
+
+      if (furthestObject.type === "node") {
+        await selectionStore.selectNodes([furthestObject.id]);
+      } else {
+        selectionStore.selectAnnotations([furthestObject.id]);
+      }
     }
   };
 
-  const selectOnEnter = (event: KeyboardEvent) => {
+  const selectOnEnter = async (event: KeyboardEvent) => {
     if (
       event.key !== "Enter" ||
       isInputElement(event.target as HTMLElement) ||
@@ -218,31 +232,17 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
     }
 
     if (focusedObject.value !== null) {
-      const isObjectSelected = {
-        node: isNodeSelected.value,
-        annotation: isAnnotationSelected.value,
-      }[focusedObject.value.type];
-
-      const action:
-        | "selectNode"
-        | "deselectNode"
-        | "selectAnnotation"
-        | "deselectAnnotation" = isObjectSelected(focusedObject.value.id)
-        ? `deselect${
-            capitalize(focusedObject.value.type) as "Annotation" | "Node"
-          }`
-        : `select${
-            capitalize(focusedObject.value.type) as "Annotation" | "Node"
-          }`;
-
-      const match = {
-        selectNode: selectionStore.selectNode,
-        deselectNode: selectionStore.deselectNode,
-        selectAnnotation: selectionStore.selectAnnotation,
-        deselectAnnotation: selectionStore.deselectAnnotation,
-      };
-
-      match[action](focusedObject.value.id);
+      if (focusedObject.value.type === "node") {
+        const action = isNodeSelected(focusedObject.value.id)
+          ? deselectNodes
+          : selectNodes;
+        await action([focusedObject.value.id]);
+      } else {
+        const action = isAnnotationSelected(focusedObject.value.id)
+          ? deselectAnnotations
+          : selectAnnotations;
+        action([focusedObject.value.id]);
+      }
     }
   };
 

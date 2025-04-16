@@ -151,19 +151,21 @@ export const createWorkflowObject = (
   }
 
   if ("bounds" in data) {
-    return merge(base, {
+    return {
+      ...base,
       id: data.id,
       type: "annotation",
       x: data.bounds.x,
       y: data.bounds.y,
-    });
+    };
   } else {
-    return merge(base, {
+    return {
+      ...base,
       id: data.id,
       type: "node",
       x: data.position.x,
       y: data.position.y,
-    });
+    };
   }
 };
 

@@ -7,6 +7,7 @@ import {
   vi,
 } from "vitest";
 import { nextTick } from "vue";
+import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import { getToastsProvider } from "@/plugins/toasts";
@@ -114,7 +115,7 @@ describe("workflow::clipboardInteractions", () => {
         }),
       );
 
-      selectionStore.selectAllObjects();
+      await selectionStore.selectAllObjects();
       selectionStore.selectBendpoints([
         "connection1__0",
         "connection1__1",
@@ -220,12 +221,13 @@ describe("workflow::clipboardInteractions", () => {
       }),
     );
 
-    selectionStore.selectAllObjects();
+    await selectionStore.selectAllObjects();
     selectionStore.selectBendpoints([
       "connection1__0",
       "connection1__1",
       "connection2__0",
     ]);
+    await flushPromises();
     await nextTick();
 
     await clipboardInteractionsStore.copyOrCutWorkflowParts({
@@ -419,8 +421,8 @@ describe("workflow::clipboardInteractions", () => {
       const { startPaste, selectionStore } = await setupStoreForPaste();
       await startPaste();
 
-      expect(selectionStore.selectedNodes.foo).toBeFalsy();
-      expect(selectionStore.selectedNodes.bar).toBe(true);
+      expect(selectionStore.selectedNodeIds.includes("foo")).toBeFalsy();
+      expect(selectionStore.selectedNodeIds.includes("bar")).toBeTruthy();
     });
   });
 });

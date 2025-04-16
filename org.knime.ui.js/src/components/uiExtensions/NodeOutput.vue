@@ -71,13 +71,15 @@ const { singleSelectedNode, getSelectedNodes: selectedNodes } = storeToRefs(
   useSelectionStore(),
 );
 
+const { activePortTab } = storeToRefs(useSelectionStore());
+
 const selectedTab = computed({
   get() {
     // eslint-disable-next-line no-undefined
-    return useSelectionStore().activePortTab ?? undefined;
+    return activePortTab.value ?? undefined;
   },
   set(val: NodeOutputTabIdentifier) {
-    useSelectionStore().setActivePortTab(val);
+    activePortTab.value = val;
   },
 });
 

@@ -107,14 +107,18 @@ const startRectangleSelection = (event: PointerEvent) => {
 
 const selectionStore = useSelectionStore();
 
-const deselectAllObjects = () => {
-  selectionStore.deselectAllObjects();
+const onLeftControlClickOnMac = async (event: PointerEvent) => {
+  const { wasAborted } = await selectionStore.deselectAllObjects();
+  if (!wasAborted) {
+    await useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
+  }
 };
 
-const onLeftControlClick = (event: PointerEvent) => {
-  if (navigatorUtils.isMac()) {
-    useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
-    selectionStore.deselectAllObjects();
+const clickOnEmptyKanvas = async (event: MouseEvent) => {
+  const clickOnSvg = event.target === event.currentTarget;
+  const specialKey = event.ctrlKey || event.shiftKey || event.metaKey;
+  if (clickOnSvg && !specialKey) {
+    await selectionStore.deselectAllObjects();
   }
 };
 </script>
@@ -137,19 +141,22 @@ const onLeftControlClick = (event: PointerEvent) => {
     @pointerdown.middle="beginPan"
     @pointerdown.prevent.right="beginPan"
     @pointerdown.left.exact="beginPan"
-    @pointerdown.left.ctrl="onLeftControlClick"
+    @pointerdown.left.ctrl="
+      navigatorUtils.isMac() && onLeftControlClickOnMac($event)
+    "
     @pointerup.middle="stopPan"
     @pointerup.left="stopPan"
     @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
     @focusin="() => hasKeyboardFocus && doInitialSelection()"
-    @keydown.esc="deselectAllObjects"
+    @keydown.esc="() => selectionStore.deselectAllObjects()"
   >
     <svg
       ref="svg"
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBox.string"
+      @click="clickOnEmptyKanvas"
       @pointerdown.left.exact="$bus.emit('selection-pointerdown', $event)"
       @pointerdown.left="startRectangleSelection"
       @pointerup.left.stop="$bus.emit('selection-pointerup', $event)"

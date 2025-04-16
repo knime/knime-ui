@@ -6,7 +6,6 @@ import {
   onMounted,
   shallowRef,
   toRef,
-  unref,
   useTemplateRef,
   watch,
 } from "vue";
@@ -51,16 +50,14 @@ const annotationContainer = useTemplateRef<ContainerInst>(
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 
 const selectionStore = useSelectionStore();
-const { isAnnotationSelected } = storeToRefs(selectionStore);
+const { isAnnotationSelected } = selectionStore;
 
-const isSelected = computed(() =>
-  isAnnotationSelected.value(props.annotation.id),
-);
+const isSelected = computed(() => isAnnotationSelected(props.annotation.id));
 
 const canvasStore = useWebGLCanvasStore();
 const { toCanvasCoordinates, visibleArea } = storeToRefs(canvasStore);
 
-const onContextMenu = (event: PIXI.FederatedPointerEvent) => {
+const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
   markEventAsHandled(event, { initiator: "annotation-ctx-menu" });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
@@ -73,11 +70,14 @@ const onContextMenu = (event: PIXI.FederatedPointerEvent) => {
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   if (!isMultiselect && !isSelected.value) {
-    selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.deselectAllObjects();
+    if (wasAborted) {
+      return;
+    }
   }
 
-  selectionStore.selectAnnotation(props.annotation.id);
-  toggleContextMenu({ event });
+  selectionStore.selectAnnotations(props.annotation.id);
+  await toggleContextMenu({ event });
 };
 
 const annotationInteractionStore = useAnnotationInteractionsStore();
@@ -90,8 +90,10 @@ const { movePreviewDelta } = storeToRefs(movingStore);
 
 const { handlePointerInteraction } = useObjectInteractions({
   isObjectSelected: () => isSelected.value,
-  selectObject: () => selectionStore.selectAnnotation(props.annotation.id),
-  deselectObject: () => selectionStore.deselectAnnotation(props.annotation.id),
+  selectObject: () =>
+    Promise.resolve(selectionStore.selectAnnotations(props.annotation.id)),
+  deselectObject: () =>
+    Promise.resolve(selectionStore.deselectAnnotations(props.annotation.id)),
   onDoubleClick: () => {
     editableAnnotationId.value = props.annotation.id;
   },
@@ -227,7 +229,7 @@ const { isSelectionPreviewShown } = useSelectionPreview({
   objectId: props.annotation.id,
   eventNameResolver: () =>
     `annotation-selection-preview-${props.annotation.id}`,
-  isObjectSelected: unref(isAnnotationSelected),
+  isObjectSelected: isAnnotationSelected,
 });
 </script>
 

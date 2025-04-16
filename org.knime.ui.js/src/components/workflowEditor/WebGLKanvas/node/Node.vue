@@ -68,7 +68,8 @@ const { isDebugModeEnabled, visibleArea, toCanvasCoordinates, canvasLayers } =
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
 const selectionStore = useSelectionStore();
-const { isNodeSelected, getFocusedObject } = storeToRefs(selectionStore);
+const { getFocusedObject } = storeToRefs(selectionStore);
+const { isNodeSelected } = selectionStore;
 const { isWritable } = storeToRefs(useWorkflowStore());
 
 const movingStore = useMovingStore();
@@ -95,9 +96,13 @@ const isEditable = computed(() => {
 const { onNodeLeftDoubleClick } = useNodeDoubleClick({ node: props.node });
 
 const { handlePointerInteraction } = useObjectInteractions({
-  isObjectSelected: () => isNodeSelected.value(props.node.id),
-  selectObject: () => selectionStore.selectNode(props.node.id),
-  deselectObject: () => selectionStore.deselectNode(props.node.id),
+  isObjectSelected: () => isNodeSelected(props.node.id),
+  selectObject: async () => {
+    await selectionStore.selectNodes([props.node.id]);
+  },
+  deselectObject: async () => {
+    await selectionStore.deselectNodes([props.node.id]);
+  },
   onDoubleClick: onNodeLeftDoubleClick,
 });
 
@@ -251,7 +256,7 @@ const actionBarPosition = computed(() => {
   };
 });
 
-const onRightClick = (event: PIXI.FederatedPointerEvent) => {
+const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
   markEventAsHandled(event, { initiator: "node-ctx-menu" });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
@@ -260,12 +265,16 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
     anchor: { x, y },
   });
 
-  if (!isNodeSelected.value(props.node.id)) {
-    selectionStore.deselectAllObjects();
-    selectionStore.selectNode(props.node.id);
+  if (!isNodeSelected(props.node.id)) {
+    const { wasAborted } = await selectionStore.deselectAllObjects([
+      props.node.id,
+    ]);
+    if (wasAborted) {
+      return;
+    }
   }
 
-  canvasAnchoredComponentsStore.toggleContextMenu();
+  await canvasAnchoredComponentsStore.toggleContextMenu();
 };
 
 const { resolution } = useZoomAwareResolution();

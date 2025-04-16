@@ -76,7 +76,9 @@ describe("nodeConfiguration", () => {
 
     workflowStore.setActiveWorkflow(workflow);
 
-    return { nodeConfiguration, workflowStore, testingPinia };
+    const selectionStore = useSelectionStore(testingPinia);
+
+    return { nodeConfiguration, workflowStore, selectionStore, testingPinia };
   };
 
   it("should handle `applySettings`", async () => {
@@ -120,23 +122,17 @@ describe("nodeConfiguration", () => {
     });
 
     it("should handle accepting apply settings prompt", async () => {
-      const { nodeConfiguration } = loadStore();
+      const { nodeConfiguration, selectionStore } = loadStore();
 
       const { isActive, confirm: acceptConfirmDialog } = useConfirmDialog();
-
       expect(isActive.value).toBe(false);
 
+      await selectionStore.deselectAllObjects([node1.id]);
       nodeConfiguration.setDirtyState(dirtyState);
-      nodeConfiguration.setActiveNodeId(node1.id);
 
       const done = vi.fn();
 
-      nodeConfiguration
-        .autoApplySettings({
-          nextNodeId: node2.id,
-        })
-        .then(done);
-
+      nodeConfiguration.autoApplySettings().then(done);
       await flushPromises();
 
       expect(isActive.value).toBe(true);
@@ -151,32 +147,23 @@ describe("nodeConfiguration", () => {
 
       expect(done).toHaveBeenCalledWith(true);
 
-      expect(nodeConfiguration.applySettings).toHaveBeenCalledWith({
-        nodeId: node1.id,
-      });
-
-      expect(nodeConfiguration.activeNodeId).toBe(node2.id);
+      expect(nodeConfiguration.applySettings).toHaveBeenCalled();
     });
 
     it("should handle cancelling apply settings prompt", async () => {
-      const { nodeConfiguration, testingPinia } = loadStore();
-      const selectionStore = useSelectionStore(testingPinia);
+      const { nodeConfiguration, selectionStore } = loadStore();
 
       const { isActive, cancel: cancelConfirmDialog } = useConfirmDialog();
 
       expect(isActive.value).toBe(false);
 
-      selectionStore.selectNode(node1.id);
+      await selectionStore.selectNodes([node1.id]);
+      await flushPromises();
       nodeConfiguration.setDirtyState(dirtyState);
-      nodeConfiguration.setActiveNodeId(node1.id);
 
       const done = vi.fn();
 
-      nodeConfiguration
-        .autoApplySettings({
-          nextNodeId: node2.id,
-        })
-        .then(done);
+      nodeConfiguration.autoApplySettings().then(done);
 
       await flushPromises();
 
@@ -187,9 +174,7 @@ describe("nodeConfiguration", () => {
       await flushPromises();
 
       expect(done).toHaveBeenCalledWith(false);
-      expect(selectionStore.selectedNodes).toStrictEqual({
-        [node1.id]: true,
-      });
+      expect(selectionStore.selectedNodeIds).toStrictEqual([node1.id]);
 
       expect(nodeConfiguration.applySettings).not.toHaveBeenCalled();
     });
@@ -208,18 +193,17 @@ describe("nodeConfiguration", () => {
     });
 
     it("should handle auto apply configuration changes", async () => {
-      const { nodeConfiguration } = loadStore();
+      const { nodeConfiguration, selectionStore } = loadStore();
 
+      await selectionStore.deselectAllObjects([node1.id]);
       nodeConfiguration.setDirtyState(dirtyState);
-      nodeConfiguration.setActiveNodeId(node1.id);
 
       const done = vi.fn();
 
       nodeConfiguration
-        .autoApplySettings({
-          nextNodeId: node2.id,
-        })
-        .then(done);
+        .autoApplySettings()
+        .then(done)
+        .catch(() => {});
 
       await flushPromises();
 
@@ -229,69 +213,66 @@ describe("nodeConfiguration", () => {
 
       expect(done).toHaveBeenCalledWith(true);
 
-      expect(nodeConfiguration.applySettings).toHaveBeenCalledWith({
-        nodeId: node1.id,
-      });
-
-      expect(nodeConfiguration.activeNodeId).toBe(node2.id);
+      expect(nodeConfiguration.applySettings).toHaveBeenCalled();
     });
   });
 
   describe("getters", () => {
-    it("activeNode", () => {
-      const { nodeConfiguration } = loadStore();
+    it("activeNode", async () => {
+      const { nodeConfiguration, selectionStore } = loadStore();
 
       expect(nodeConfiguration.activeNode).toBeNull();
-      nodeConfiguration.setActiveNodeId(node1.id);
+
+      await selectionStore.deselectAllObjects([node1.id]);
       expect(nodeConfiguration.activeNode).toEqual(node1);
 
-      nodeConfiguration.setActiveNodeId(node3.id);
-      expect(nodeConfiguration.activeNode).toBeNull();
-
-      nodeConfiguration.setActiveNodeId(node2.id);
+      await selectionStore.deselectAllObjects([node2.id]);
       expect(nodeConfiguration.activeNode).toEqual(node2);
 
-      nodeConfiguration.setActiveNodeId(node4.id);
+      await selectionStore.deselectAllObjects([node3.id]);
+      expect(nodeConfiguration.activeNode).toBeNull();
+
+      await selectionStore.deselectAllObjects([node4.id]);
       expect(nodeConfiguration.activeNode).toBeNull();
     });
 
-    it("isConfigurationDisabled", () => {
-      const { nodeConfiguration } = loadStore();
+    it("isConfigurationDisabled", async () => {
+      const { nodeConfiguration, selectionStore } = loadStore();
       const isDisabled = () => nodeConfiguration.isConfigurationDisabled;
 
-      nodeConfiguration.setActiveNodeId(node1.id);
+      await selectionStore.deselectAllObjects([node1.id]);
       expect(isDisabled()).toBe(false);
 
-      nodeConfiguration.setActiveNodeId(node2.id);
+      await selectionStore.deselectAllObjects([node2.id]);
       expect(isDisabled()).toBe(true);
 
-      nodeConfiguration.setActiveNodeId(node3.id);
+      await selectionStore.deselectAllObjects([node3.id]);
       expect(isDisabled()).toBe(true);
 
-      nodeConfiguration.setActiveNodeId(node4.id);
+      await selectionStore.deselectAllObjects([node4.id]);
       expect(isDisabled()).toBe(true);
 
-      nodeConfiguration.setActiveNodeId(node5.id);
+      await selectionStore.deselectAllObjects([node5.id]);
       expect(isDisabled()).toBe(true);
     });
 
-    it("isConfigurationDisabled for non-writable workflows", () => {
-      const { nodeConfiguration } = loadStore(false);
+    it("isConfigurationDisabled for non-writable workflows", async () => {
+      const { nodeConfiguration, selectionStore } = loadStore(false);
       const isDisabled = () => nodeConfiguration.isConfigurationDisabled;
 
-      nodeConfiguration.setActiveNodeId(node1.id);
+      await selectionStore.deselectAllObjects([node1.id]);
       expect(isDisabled()).toBe(true);
 
-      nodeConfiguration.setActiveNodeId(node2.id);
+      await selectionStore.deselectAllObjects([node2.id]);
       expect(isDisabled()).toBe(true);
 
-      nodeConfiguration.setActiveNodeId(node3.id);
+      await selectionStore.deselectAllObjects([node3.id]);
       expect(isDisabled()).toBe(true);
 
-      nodeConfiguration.setActiveNodeId(node4.id);
+      await selectionStore.deselectAllObjects([node4.id]);
       expect(isDisabled()).toBe(true);
 
-      nodeConfiguration.setActiveNodeId(node5.id);
+      await selectionStore.deselectAllObjects([node5.id]);
       expect(isDisabled()).toBe(true);
     });
   });

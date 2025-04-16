@@ -92,12 +92,12 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     hotkey: ["Delete"],
     group: "general",
     icon: DeleteIcon,
-    execute: () => {
+    execute: async () => {
       const workflowStore = useWorkflowStore();
       if (useSelectionStore().activeNodePorts.selectedPort) {
-        workflowStore.deleteSelectedPort();
+        await workflowStore.deleteSelectedPort();
       } else {
-        workflowStore.deleteSelectedObjects();
+        await workflowStore.deleteSelectedObjects();
       }
     },
     condition: () => {

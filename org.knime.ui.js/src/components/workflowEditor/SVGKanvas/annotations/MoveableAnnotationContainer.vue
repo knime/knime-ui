@@ -18,13 +18,14 @@ const props = defineProps<Props>();
 const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
 const { isMoveLocked } = storeToRefs(useSVGCanvasStore());
-const selectionStore = useSelectionStore();
-const { isAnnotationSelected } = storeToRefs(selectionStore);
+const { isAnnotationSelected, selectAnnotations, deselectAllObjects } =
+  useSelectionStore();
+const { startedSelectionFromAnnotationId } = storeToRefs(useSelectionStore());
 
 const container = ref<HTMLElement | null>(null);
 
 const translationAmount = computed(() => {
-  return isAnnotationSelected.value(props.id)
+  return isAnnotationSelected(props.id)
     ? movePreviewDelta.value
     : { x: 0, y: 0 };
 });
@@ -36,23 +37,25 @@ const initialPosition = computed(() => ({
 
 const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => container.value as HTMLElement),
-  onMoveStartCallback: () => {
-    if (!isAnnotationSelected.value(props.id)) {
-      selectionStore.deselectAllObjects();
-    }
-
-    selectionStore.selectAnnotation(props.id);
-  },
 });
 
-const onPointerDown = (event: PointerEvent) => {
+const onPointerDown = async (event: PointerEvent) => {
   if (isMoveLocked.value) {
-    selectionStore.setStartedSelectionFromAnnotationId(props.id);
+    startedSelectionFromAnnotationId.value = props.id;
     return;
   }
 
-  const handler = createPointerDownHandler(initialPosition);
-  handler(event);
+  const currentTarget = event.currentTarget as HTMLElement;
+
+  if (!isAnnotationSelected(props.id)) {
+    const { wasAborted } = await deselectAllObjects();
+    if (wasAborted) {
+      return;
+    }
+    selectAnnotations(props.id);
+  }
+
+  createPointerDownHandler(initialPosition)(event, currentTarget);
 };
 
 useEscapeStack({
@@ -72,7 +75,7 @@ useEscapeStack({
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :class="[{ dragging: isDragging && isAnnotationSelected(id) }]"
     class="annotation"
-    @pointerdown.left="onPointerDown($event)"
+    @pointerdown.left.exact="onPointerDown($event)"
   >
     <slot />
   </g>

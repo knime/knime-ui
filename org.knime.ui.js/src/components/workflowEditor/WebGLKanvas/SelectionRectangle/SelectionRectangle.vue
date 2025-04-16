@@ -76,9 +76,9 @@ const updateSelectionPreview = () => {
   });
 };
 
-const doRealSelection = () => {
+const doRealSelection = async () => {
   if (nodesInside.value.length) {
-    selectionStore.selectNodes(nodesInside.value);
+    await selectionStore.selectNodes(nodesInside.value);
 
     nodesInside.value.forEach((id) => {
       $bus.emit(`node-selection-preview-${id}`, {
@@ -91,7 +91,7 @@ const doRealSelection = () => {
   }
 
   if (nodesOutside.value.length) {
-    selectionStore.deselectNodes(nodesOutside.value);
+    await selectionStore.deselectNodes(nodesOutside.value);
 
     nodesOutside.value.forEach((id) => {
       $bus.emit(`node-selection-preview-${id}`, {
@@ -143,7 +143,7 @@ const selectionRectangle = computed(() =>
 
 let selectionPointerId: number | undefined;
 
-const onSelectionStart = (event: PointerEvent) => {
+const onSelectionStart = async (event: PointerEvent) => {
   consola.debug("global rectangle selection:: start", { event });
   // Interactions originated from canvas objects can signal that the
   // global selection should be skipped.
@@ -153,7 +153,7 @@ const onSelectionStart = (event: PointerEvent) => {
 
   selectionPointerId = event.pointerId;
   (event.target as HTMLElement).setPointerCapture(event.pointerId);
-  selectionStore.deselectAllObjects();
+  await selectionStore.deselectAllObjects();
   isSelectionVisible.value = true;
 
   const { offsetX, offsetY } = event;

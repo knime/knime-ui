@@ -143,7 +143,10 @@ export const useClipboardInteractionsStore = defineStore(
         });
 
         if (command === "cut") {
-          selectionStore.deselectAllObjects();
+          const { wasAborted } = await selectionStore.deselectAllObjects();
+          if (wasAborted) {
+            return;
+          }
         }
 
         const workflowCommand =
@@ -236,6 +239,12 @@ export const useClipboardInteractionsStore = defineStore(
         const workflowStore = useWorkflowStore();
         const selectionStore = useSelectionStore();
 
+        const { wasAborted } = await selectionStore.deselectAllObjects();
+
+        if (wasAborted) {
+          return;
+        }
+
         let clipboardContent, clipboardText;
         try {
           // TODO: NXT-1168 Put a limit on the clipboard content size
@@ -306,8 +315,7 @@ export const useClipboardInteractionsStore = defineStore(
           canvasStore.value.fillScreen();
         }
 
-        selectionStore.deselectAllObjects();
-        selectionStore.selectNodes(nodeIds!);
+        await selectionStore.deselectAllObjects(nodeIds);
         selectionStore.selectAnnotations(annotationIds!);
       },
     },

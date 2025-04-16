@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
 import {
@@ -124,8 +123,8 @@ describe("DraggableNodeTemplate", () => {
     it("adds node to workflow on double click", async () => {
       const { wrapper } = doMount();
 
-      wrapper.find(".node").trigger("dblclick");
-      await nextTick();
+      await wrapper.find(".node").trigger("dblclick");
+      await flushPromises();
 
       expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith(
         expect.objectContaining({ position: { x: 235, y: 170 } }),
@@ -139,8 +138,8 @@ describe("DraggableNodeTemplate", () => {
         y: 171.5,
       };
 
-      wrapper.find(".node").trigger("dblclick");
-      await nextTick();
+      await wrapper.find(".node").trigger("dblclick");
+      await flushPromises();
 
       expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith(
         expect.objectContaining({ position: { x: 355, y: 290 } }),
@@ -150,8 +149,7 @@ describe("DraggableNodeTemplate", () => {
     it("does nothing on double click if workflow it not writeable", async () => {
       const { wrapper } = doMount({ isWritable: false });
 
-      wrapper.find(".node").trigger("dblclick");
-      await nextTick();
+      await wrapper.find(".node").trigger("dblclick");
 
       expect(mockedAPI.workflowCommand.AddNode).not.toHaveBeenCalled();
     });
@@ -162,10 +160,9 @@ describe("DraggableNodeTemplate", () => {
         x: 100,
         y: 100,
       };
-      selectionStore.addNodesToSelection(["root:2"]);
-
-      wrapper.find(".node").trigger("dblclick");
-      await nextTick();
+      await selectionStore.selectNodes(["root:2"]);
+      await wrapper.find(".node").trigger("dblclick");
+      await flushPromises();
 
       expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith(
         expect.objectContaining({

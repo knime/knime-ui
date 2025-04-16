@@ -11,11 +11,10 @@ import type { WorkflowMonitorMessage as WorkflowMonitorMessageType } from "@/api
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
-import * as $colors from "@/style/colors";
 
 import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
 
-const { selectedNodes } = storeToRefs(useSelectionStore());
+const { selectedNodeIds } = storeToRefs(useSelectionStore());
 const workflowMonitorStore = useWorkflowMonitorStore();
 const { currentState: workflowMonitorState, hasLoaded } =
   storeToRefs(workflowMonitorStore);
@@ -45,9 +44,8 @@ const isFromNestedNode = (message: WorkflowMonitorMessageType) => {
   return message.workflowId !== "root";
 };
 
-const isHighlighted = (message: WorkflowMonitorMessageType) => {
-  return selectedNodes.value[message.nodeId];
-};
+const isHighlighted = (message: WorkflowMonitorMessageType) =>
+  selectedNodeIds.value.some((nodeId) => nodeId === message.nodeId);
 </script>
 
 <template>

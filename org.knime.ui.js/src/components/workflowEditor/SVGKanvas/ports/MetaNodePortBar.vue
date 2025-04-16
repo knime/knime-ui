@@ -79,7 +79,7 @@ const barPosition = computed(() =>
 );
 
 const selectBar = () => {
-  selectMetanodePortBar(props.type);
+  selectMetanodePortBar([props.type]);
 };
 </script>
 

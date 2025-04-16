@@ -36,10 +36,7 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
         closingProjectIds: [closingProjectId],
       });
 
-      const canContinue = await useNodeConfigurationStore().autoApplySettings({
-        nextNodeId: null,
-      });
-
+      const canContinue = await useNodeConfigurationStore().autoApplySettings();
       if (!canContinue) {
         return;
       }

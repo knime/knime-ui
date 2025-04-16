@@ -17,11 +17,10 @@ const nodeAlignShortcuts: NodeAlignShortcuts = {
     text: "Align horizontally",
     hotkey: ["Shift", "H"],
     group: "general",
-    execute: () => {
+    execute: () =>
       useWorkflowStore().alignSelectedNodes(
         AlignNodesCommand.DirectionEnum.Horizontal,
-      );
-    },
+      ),
     condition: () =>
       useSelectionStore().getSelectedNodes.length > 1 &&
       useWorkflowStore().isWritable,

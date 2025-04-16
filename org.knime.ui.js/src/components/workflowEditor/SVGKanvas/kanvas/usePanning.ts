@@ -9,6 +9,7 @@ import { runInEnvironment } from "@/environment";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isInputElement } from "@/util/isInputElement";
@@ -196,13 +197,15 @@ export const usePanning = (options: UsePanningOptions) => {
     }
   });
 
-  const stopPan = (event: PointerEvent) => {
+  const stopPan = async (event: PointerEvent) => {
     // user is not panning but did right-clicked
     if (!isPanning.value && isHoldingDownRightClick.value) {
-      toggleContextMenu({
-        event,
-        deselectAllObjects: true,
-      });
+      const { wasAborted } = await useSelectionStore().deselectAllObjects();
+      if (!wasAborted) {
+        await toggleContextMenu({
+          event,
+        });
+      }
 
       // unset right-click state since we're directly opening the menu instead of panning
       isHoldingDownRightClick.value = false;

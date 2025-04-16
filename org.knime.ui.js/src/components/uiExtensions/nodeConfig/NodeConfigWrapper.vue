@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
-import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -24,11 +23,9 @@ const emit = defineEmits<{
 
 const { activeProjectId: projectId } = storeToRefs(useApplicationStore());
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
-const { singleSelectedNode: selectedNode } = storeToRefs(useSelectionStore());
 const nodeConfigurationStore = useNodeConfigurationStore();
 const {
   activeExtensionConfig,
-  activeNodeId,
   dirtyState,
   activeNode,
   isConfigurationDisabled,
@@ -41,8 +38,8 @@ const canBeEnlarged = computed(
 );
 
 const nodeName = computed<string>(() =>
-  activeNodeId.value
-    ? useNodeInteractionsStore().getNodeName(activeNodeId.value)
+  activeNode.value
+    ? useNodeInteractionsStore().getNodeName(activeNode.value.id)
     : "",
 );
 
@@ -54,35 +51,9 @@ const discardSettings = () => {
   nodeConfigurationStore.discardSettings();
 };
 
-const executeActiveNode = () => {
-  useExecutionStore().executeNodes([activeNode.value!.id]);
+const executeActiveNode = async () => {
+  await useExecutionStore().executeNodes([activeNode.value!.id]);
 };
-
-watch(
-  selectedNode,
-  async (nextNode) => {
-    // skip selection of already active node
-    // e.g when re-selecting same node after cancelling the auto-apply prompt
-    if (activeNodeId?.value === nextNode?.id) {
-      return;
-    }
-
-    if (dirtyState.value.apply === "clean" || isConfigurationDisabled.value) {
-      // set the active node to be the next selected node
-      nodeConfigurationStore.setActiveNodeId(nextNode?.id ?? null);
-      return;
-    }
-
-    // if the configuration state is dirty, attempt to auto apply the settings
-    // before changing the active node
-    await nodeConfigurationStore.autoApplySettings({
-      nextNodeId: nextNode?.id ?? null,
-    });
-  },
-  {
-    immediate: true,
-  },
-);
 
 const { settings } = storeToRefs(useSettingsStore());
 

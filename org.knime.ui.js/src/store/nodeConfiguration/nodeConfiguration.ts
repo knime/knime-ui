@@ -90,7 +90,6 @@ export type UIExtensionPushEventDispatcher = Parameters<
 >[0]["dispatchPushEvent"];
 
 export interface NodeConfigurationState {
-  activeNodeId: string | null;
   activeExtensionConfig: ExtensionConfig | null;
   dirtyState: APILayerDirtyState;
   latestPublishedData: {
@@ -107,7 +106,6 @@ export interface NodeConfigurationState {
 
 export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
   state: (): NodeConfigurationState => ({
-    activeNodeId: null,
     activeExtensionConfig: null,
     dirtyState: {
       apply: "clean",
@@ -121,10 +119,6 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
   actions: {
     setIsLargeMode(value: boolean) {
       this.isLargeMode = value;
-    },
-
-    setActiveNodeId(activeNodeId: string | null) {
-      this.activeNodeId = activeNodeId;
     },
 
     setPushEventDispatcher(
@@ -182,8 +176,8 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
       return isApplied;
     },
 
-    async autoApplySettings({ nextNodeId }: { nextNodeId: string | null }) {
-      const activeNode = this.activeNode;
+    async autoApplySettings() {
+      const activeNode = useNodeConfigurationStore().activeNode;
 
       if (!activeNode) {
         return true;
@@ -199,11 +193,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
             useApplicationStore().askToConfirmNodeConfigChanges,
           );
 
-          // if user cancelled then re-select the same node
           if (modalResult === "cancel") {
-            useSelectionStore().deselectAllObjects();
-            useSelectionStore().selectNode(activeNode.id);
-
             return false;
           }
 
@@ -225,18 +215,14 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
           } else {
             this.discardSettings();
           }
-
-          this.setActiveNodeId(nextNodeId ?? null);
-
           return true;
         },
 
-        BROWSER: () => {
+        BROWSER: async () => {
           if (activeNode) {
-            this.applySettings({ nodeId: activeNode.id });
+            await this.applySettings({ nodeId: activeNode.id });
           }
 
-          this.setActiveNodeId(nextNodeId ?? null);
           return Promise.resolve(true);
         },
       });
@@ -268,8 +254,8 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     },
   },
   getters: {
-    activeNode: (state): NativeNode | null => {
-      const { activeNodeId } = state;
+    activeNode: (_): NativeNode | null => {
+      const activeNodeId = useSelectionStore().singleSelectedNode?.id;
 
       if (!activeNodeId) {
         return null;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import {
@@ -78,6 +79,7 @@ describe("workflow::nodeInteractions", () => {
           info: { containerId: "baz" },
           nodes: {
             "root:1": { id: "root:1", position: { x: 0, y: 0 } },
+            "new-mock-node": { id: "new-mock-node", position: { x: 0, y: 0 } },
           },
         }),
       );
@@ -157,32 +159,25 @@ describe("workflow::nodeInteractions", () => {
     });
 
     it.each([
-      // selectionMode, currentSelectedNodeIds, expectedNodeIds
-      ["new-only" as const, ["root:id"], ["new-mock-node"]],
-      ["add" as const, ["root:id"], ["root:id", "new-mock-node"]],
+      ["new-only" as const, ["root:1"], ["new-mock-node"]],
+      ["add" as const, ["root:1"], ["root:1", "new-mock-node"]],
       ["none" as const, [], []],
     ])(
-      "adjusts selection correctly after adding node",
+      "adjusts selection correctly after adding node with %s selection mode",
       async (selectionMode, currentSelectedNodeIds, expectedNodeIds) => {
         const { nodeInteractionsStore, selectionStore } =
-          await setupStoreWithWorkflow();
-        selectionStore.selectNodes(currentSelectedNodeIds);
+          setupStoreWithWorkflow();
+        await selectionStore.selectNodes(currentSelectedNodeIds);
+        await flushPromises();
 
         await nodeInteractionsStore.addNode({
           position: { x: 0, y: 0 },
           nodeFactory: { className: "factory" },
           selectionMode,
         });
+        await flushPromises();
 
-        const expectedSelection = expectedNodeIds.reduce(
-          (acc, nodeId) => ({
-            ...acc,
-            [nodeId]: true,
-          }),
-          {},
-        );
-
-        expect(selectionStore.selectedNodes).toEqual(expectedSelection);
+        expect(selectionStore.selectedNodeIds).toEqual(expectedNodeIds);
       },
     );
   });

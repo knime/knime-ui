@@ -438,6 +438,7 @@ describe("ConnectorSnappingProvider.vue", () => {
           },
         });
 
+        await flushPromises();
         return wrapper;
       };
 

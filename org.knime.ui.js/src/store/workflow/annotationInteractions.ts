@@ -68,7 +68,10 @@ export const useAnnotationInteractionsStore = defineStore(
             borderColor: colors.defaultAnnotationBorderColor,
           });
 
-        useSelectionStore().deselectAllObjects();
+        const { wasAborted } = await useSelectionStore().deselectAllObjects();
+        if (wasAborted) {
+          return;
+        }
         useSelectionStore().selectAnnotations([newAnnotationId]);
         this.setEditableAnnotationId(newAnnotationId);
       },

@@ -25,10 +25,10 @@ describe("miscShortcuts", () => {
       expect(selectionStore.selectAllObjects).toHaveBeenCalled();
     });
 
-    it("execute deselectAll", () => {
+    it("execute deselectAll", async () => {
       const { selectionStore } = mockStores();
 
-      selectionShortcuts.deselectAll.execute();
+      await selectionShortcuts.deselectAll.execute();
       expect(selectionStore.deselectAllObjects).toHaveBeenCalled();
     });
   });

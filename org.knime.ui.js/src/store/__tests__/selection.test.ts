@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { flushPromises } from "@vue/test-utils";
 
+import type { WorkflowObject } from "@/api/custom-types";
 import {
   createConnection,
   createNativeNode,
@@ -9,604 +11,488 @@ import {
 import { mockStores } from "@/test/utils/mockStores";
 
 describe("selection store", () => {
-  describe("actions", () => {
-    it("adding nodes to selection", () => {
-      const { selectionStore } = mockStores();
+  const createWorkflowContext = () => {
+    const { workflowStore, selectionStore } = mockStores();
 
-      expect(Object.keys(selectionStore.selectedNodes).length).toBe(0);
-      selectionStore.addNodesToSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedNodes).length).toBe(1);
+    const node1 = createNativeNode({ id: "root:1" });
+    const node2 = createNativeNode({ id: "root:2" });
+    const connection1 = createConnection({ id: "1_to_2" });
+    const connection2 = createConnection({ id: "2_to_1" });
+    const annotation1 = createWorkflowAnnotation({
+      id: "anno1602",
+      text: { value: "Annotation text" },
+    });
+    const annotation2 = createWorkflowAnnotation({
+      id: "anno1603",
+      text: { value: "Annotation text 2" },
     });
 
-    it("removes nodes from selection", () => {
-      const { selectionStore } = mockStores();
+    workflowStore.activeWorkflow = createWorkflow({
+      nodes: { [node1.id]: node1, [node2.id]: node2 },
+      connections: {
+        [connection1.id]: connection1,
+        [connection2.id]: connection2,
+      },
+      workflowAnnotations: [annotation1, annotation2],
+    });
 
-      selectionStore.addNodesToSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedNodes).length).toBe(1);
-      selectionStore.removeNodesFromSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedNodes).length).toBe(0);
+    return {
+      selectionStore,
+      workflowStore,
+      node1,
+      node2,
+      connection1,
+      connection2,
+      annotation1,
+      annotation2,
+    };
+  };
+
+  describe("actions", () => {
+    it("adding nodes to selection", async () => {
+      const { selectionStore, node1 } = createWorkflowContext();
+
+      expect(selectionStore.selectedNodeIds.length).toBe(0);
+      await selectionStore.selectNodes([node1.id]);
+      expect(selectionStore.selectedNodeIds).toEqual([node1.id]);
+    });
+
+    it("removes nodes from selection", async () => {
+      const { selectionStore, node1, node2 } = createWorkflowContext();
+
+      await selectionStore.selectNodes([node1.id, node2.id]);
+      await selectionStore.deselectNodes([node1.id]);
+      expect(selectionStore.selectedNodeIds).toEqual([node2.id]);
     });
 
     it("adding connections to selection", () => {
-      const { selectionStore } = mockStores();
+      const { selectionStore, connection1 } = createWorkflowContext();
 
-      expect(Object.keys(selectionStore.selectedConnections).length).toBe(0);
-      selectionStore.addConnectionsToSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedConnections).length).toBe(1);
+      expect(selectionStore.getSelectedConnections.length).toBe(0);
+      selectionStore.selectConnections([connection1.id]);
+      expect(selectionStore.isConnectionSelected(connection1.id)).toBe(true);
     });
 
     it("removes connections from selection", () => {
-      const { selectionStore } = mockStores();
+      const { selectionStore, connection1 } = createWorkflowContext();
 
-      selectionStore.addConnectionsToSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedConnections).length).toBe(1);
-      selectionStore.removeConnectionsFromSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedConnections).length).toBe(0);
-    });
-
-    it("clear selection doesnt override state, if nothing to clear", () => {
-      const { selectionStore } = mockStores();
-
-      const selectedNodes = selectionStore.selectedNodes;
-      const selectedConnections = selectionStore.selectedConnections;
-      const selectedAnnotations = selectionStore.selectedAnnotations;
-
-      selectionStore.clearSelection();
-
-      expect(selectionStore.selectedNodes).toBe(selectedNodes);
-      expect(selectionStore.selectedConnections).toBe(selectedConnections);
-      expect(selectionStore.selectedAnnotations).toBe(selectedAnnotations);
+      selectionStore.selectConnections([connection1.id]);
+      selectionStore.deselectConnections(connection1.id);
+      expect(selectionStore.isConnectionSelected(connection1.id)).toBe(false);
     });
 
     it("adding annotations to selection", () => {
-      const { selectionStore } = mockStores();
+      const { selectionStore, annotation1 } = createWorkflowContext();
 
-      expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(0);
-      selectionStore.addAnnotationToSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(1);
+      expect(selectionStore.selectedAnnotationIds.length).toBe(0);
+      selectionStore.selectAnnotations([annotation1.id]);
+      expect(selectionStore.isAnnotationSelected(annotation1.id)).toBe(true);
     });
 
     it("removes annotations from selection", () => {
-      const { selectionStore } = mockStores();
+      const { selectionStore, annotation1 } = createWorkflowContext();
 
-      selectionStore.addAnnotationToSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(1);
-      selectionStore.removeAnnotationFromSelection(["root:1"]);
-      expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(0);
+      selectionStore.selectAnnotations([annotation1.id]);
+      selectionStore.deselectAnnotations(annotation1.id);
+      expect(selectionStore.isAnnotationSelected(annotation1.id)).toBe(false);
     });
 
     it("sets id of annotation that rectangle selection was started from", () => {
-      const { selectionStore } = mockStores();
+      const { selectionStore, annotation1 } = createWorkflowContext();
 
       expect(selectionStore.startedSelectionFromAnnotationId).toBeNull();
-      selectionStore.setStartedSelectionFromAnnotationId("root:1");
-      expect(selectionStore.startedSelectionFromAnnotationId).toBe("root:1");
-    });
-
-    it("sets if rectangle selection was started", () => {
-      const { selectionStore } = mockStores();
-
-      expect(selectionStore.didStartRectangleSelection).toBe(false);
-      selectionStore.setDidStartRectangleSelection(true);
-      expect(selectionStore.didStartRectangleSelection).toBe(true);
+      selectionStore.startedSelectionFromAnnotationId = annotation1.id;
+      expect(selectionStore.startedSelectionFromAnnotationId).toBe(
+        annotation1.id,
+      );
     });
 
     it("adding bendpoint to selection", () => {
-      const { selectionStore } = mockStores();
+      const { selectionStore, connection1 } = createWorkflowContext();
 
-      expect(Object.keys(selectionStore.selectedBendpoints).length).toBe(0);
-      selectionStore.addBendpointsToSelection(["connection1__0"]);
-      expect(Object.keys(selectionStore.selectedBendpoints).length).toBe(1);
+      expect(selectionStore.selectedBendpointIds.length).toBe(0);
+      selectionStore.selectBendpoints([connection1.id]);
+      expect(selectionStore.selectedBendpointIds).toEqual([connection1.id]);
     });
 
     it("removes bendpoints from selection", () => {
-      const { selectionStore } = mockStores();
+      const { selectionStore, connection1 } = createWorkflowContext();
 
-      selectionStore.addBendpointsToSelection(["connection1__0"]);
-      expect(Object.keys(selectionStore.selectedBendpoints).length).toBe(1);
-      selectionStore.removeBendpointsFromSelection(["connection1__0"]);
-      expect(Object.keys(selectionStore.selectedBendpoints).length).toBe(0);
+      selectionStore.selectBendpoints([connection1.id]);
+      selectionStore.deselectBendpoints(connection1.id);
+      expect(selectionStore.selectedBendpointIds).toEqual([]);
     });
 
-    describe("select and deselect all", () => {
-      const createStore = () => {
-        const { selectionStore, workflowStore } = mockStores();
+    it("deselects all selected objects", async () => {
+      const { selectionStore } = createWorkflowContext();
 
-        selectionStore.selectedNodes = { "root:1": true };
-        selectionStore.selectedConnections = { "root:1_1": true };
-        selectionStore.selectedAnnotations = { "root:2_1": true };
-
-        const node1 = createNativeNode({
-          id: "root:1",
-          position: { x: 10, y: 10 },
-        });
-        const node2 = createNativeNode({
-          id: "root:2",
-          position: { x: 20, y: 10 },
-        });
-        const annotation1 = createWorkflowAnnotation({
-          id: "annotation:1",
-          bounds: { x: 40, y: 10, width: 20, height: 20 },
-        });
-        const annotation2 = createWorkflowAnnotation({
-          id: "annotation:1",
-          bounds: { x: 40, y: 10, width: 20, height: 20 },
-        });
-
-        workflowStore.activeWorkflow = createWorkflow({
-          nodes: {
-            [node1.id]: node1,
-            [node2.id]: node2,
-          },
-          workflowAnnotations: [annotation1, annotation2],
-        });
-
-        return {
-          selectionStore,
-          workflowStore,
-        };
-      };
-
-      it("deselects all selected objects", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.activeNodePorts = {
-          nodeId: "root:3",
-          selectedPort: "output-3",
-          isModificationInProgress: false,
-        };
-        selectionStore.deselectAllObjects();
-
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(0);
-        expect(Object.keys(selectionStore.selectedConnections).length).toBe(0);
-        expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(0);
-        expect(selectionStore.activeNodePorts.nodeId).toBeNull();
-        expect(selectionStore.activeNodePorts.selectedPort).toBeNull();
+      selectionStore.updateActiveNodePorts({
+        nodeId: "root:3",
+        selectedPort: "output-3",
       });
 
-      it("selects all objects", () => {
-        const { selectionStore } = createStore();
+      await selectionStore.deselectAllObjects();
+      await flushPromises();
 
-        selectionStore.selectAllObjects();
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(2);
-        expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(2);
-        expect(Object.keys(selectionStore.selectedConnections).length).toBe(1);
-      });
+      expect(selectionStore.selectedNodeIds).toHaveLength(0);
+      expect(selectionStore.getSelectedConnections).toHaveLength(0);
+      expect(selectionStore.selectedAnnotationIds).toHaveLength(0);
+      expect(selectionStore.activeNodePorts.nodeId).toBeNull();
+      expect(selectionStore.activeNodePorts.selectedPort).toBeNull();
+    });
+
+    it("selects all objects", async () => {
+      const { selectionStore, node1, node2, annotation1 } =
+        createWorkflowContext();
+
+      await selectionStore.selectAllObjects();
+
+      expect(selectionStore.selectedNodeIds).toEqual(
+        expect.arrayContaining([node1.id, node2.id]),
+      );
+
+      expect(selectionStore.selectedAnnotationIds).toEqual(
+        expect.arrayContaining([annotation1.id]),
+      );
+
+      expect(selectionStore.getSelectedConnections).toHaveLength(0);
+    });
+
+    it("deselects all objects and ensures given nodes are selected afterwards", async () => {
+      const { selectionStore, node1, node2, annotation1 } =
+        createWorkflowContext();
+
+      await selectionStore.selectNodes([node1.id, node2.id]);
+      selectionStore.selectAnnotations([annotation1.id]);
+
+      expect(selectionStore.selectedNodeIds).toEqual([node1.id, node2.id]);
+      expect(selectionStore.selectedAnnotationIds).toEqual([annotation1.id]);
+
+      await selectionStore.deselectAllObjects([node1.id]);
+      expect(selectionStore.selectedNodeIds).toHaveLength(1);
+      expect(selectionStore.selectedAnnotationIds).toHaveLength(0);
     });
 
     describe("nodes", () => {
-      const createStore = () => {
-        const { selectionStore } = mockStores();
+      it("selects a specific node", async () => {
+        const { selectionStore, node1 } = createWorkflowContext();
 
-        selectionStore.selectedNodes = { "root:1": true };
-        selectionStore.selectedConnections = { "root:1_1": true };
+        await selectionStore.deselectAllObjects();
+        expect(selectionStore.selectedNodeIds).toEqual([]);
 
-        return {
-          selectionStore,
-        };
-      };
-
-      it("selects a specific node", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.deselectAllObjects();
-        selectionStore.selectNode("root:1");
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(1);
-        expect(Object.keys(selectionStore.selectedConnections).length).toBe(0);
+        await selectionStore.selectNodes([node1.id]);
+        expect(selectionStore.selectedNodeIds).toEqual([node1.id]);
       });
 
-      it("selects multiple nodes", () => {
-        const { selectionStore } = createStore();
+      it("selects multiple nodes", async () => {
+        const { selectionStore, node1, node2 } = createWorkflowContext();
 
-        selectionStore.deselectAllObjects();
-        selectionStore.selectNodes(["root:1", "root:2"]);
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(2);
-        expect(Object.keys(selectionStore.selectedConnections).length).toBe(0);
+        await selectionStore.deselectAllObjects();
+        expect(selectionStore.selectedNodeIds).toEqual([]);
+
+        await selectionStore.selectNodes([node1.id, node2.id]);
+        expect(selectionStore.selectedNodeIds).toEqual([node1.id, node2.id]);
       });
 
-      it("deselects a specific node", () => {
-        const { selectionStore } = createStore();
+      it("deselects a specific node", async () => {
+        const { selectionStore, node1, node2 } = createWorkflowContext();
 
-        selectionStore.deselectNode("root:1");
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(0);
-        expect(Object.keys(selectionStore.selectedConnections).length).toBe(1);
+        await selectionStore.selectNodes([node1.id, node2.id]);
+        expect(selectionStore.selectedNodeIds).toHaveLength(2);
+
+        await selectionStore.deselectNodes([node1.id]);
+        expect(selectionStore.selectedNodeIds).toHaveLength(1);
       });
 
-      it("deselects multiple nodes", () => {
-        const { selectionStore } = createStore();
+      it("deselects multiple nodes", async () => {
+        const { selectionStore, node1, node2 } = createWorkflowContext();
 
-        selectionStore.selectNodes(["root:1", "root:2"]);
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(2);
-        selectionStore.deselectNodes(["root:1", "root:2"]);
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(0);
-        expect(Object.keys(selectionStore.selectedConnections).length).toBe(1);
+        await selectionStore.selectNodes([node1.id, node2.id]);
+        expect(selectionStore.selectedNodeIds).toHaveLength(2);
+
+        await selectionStore.deselectNodes([node1.id, node2.id]);
+        expect(selectionStore.selectedNodeIds).toHaveLength(0);
       });
     });
 
     describe("connections", () => {
-      const createStore = () => {
-        const { selectionStore } = mockStores();
-
-        selectionStore.selectedNodes = { "root:1": true };
-        selectionStore.selectedConnections = { "root:1_1": true };
-
-        return {
-          selectionStore,
-        };
-      };
-
       it("selects a specific connection", () => {
-        const { selectionStore } = createStore();
+        const { selectionStore, connection1 } = createWorkflowContext();
 
-        selectionStore.deselectAllObjects();
-        selectionStore.selectConnection("root:1_1");
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(0);
-        expect(Object.keys(selectionStore.selectedConnections).length).toBe(1);
+        selectionStore.selectConnections([connection1.id]);
+
+        expect(selectionStore.getSelectedConnections).toHaveLength(1);
       });
 
       it("deselects a specific connection", () => {
-        const { selectionStore } = createStore();
+        const { selectionStore, connection1 } = createWorkflowContext();
 
-        selectionStore.deselectConnection("root:1_1");
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(1);
-        expect(Object.keys(selectionStore.selectedConnections).length).toBe(0);
+        selectionStore.deselectConnections(connection1.id);
+
+        expect(selectionStore.getSelectedConnections).toHaveLength(0);
       });
     });
 
     describe("bendpoints", () => {
       it("selects a specific bendpoint", () => {
-        const { selectionStore } = mockStores();
+        const { selectionStore } = createWorkflowContext();
 
-        selectionStore.selectBendpoint("connection1__0");
-        expect(Object.keys(selectionStore.selectedBendpoints).length).toBe(1);
+        selectionStore.selectBendpoints(["connection1__0"]);
+
+        expect(selectionStore.selectedBendpointIds).toEqual(["connection1__0"]);
       });
 
       it("selects multiple bendpoints", () => {
-        const { selectionStore } = mockStores();
+        const { selectionStore } = createWorkflowContext();
 
         selectionStore.selectBendpoints(["connection1__0", "connection1__1"]);
-        expect(Object.keys(selectionStore.selectedBendpoints).length).toBe(2);
-      });
 
-      it("deselects a specific bendpoint", () => {
-        const { selectionStore } = mockStores();
-
-        selectionStore.selectBendpoints(["connection1__0", "connection1__1"]);
-        selectionStore.deselectBendpoint("connection1__0");
-        expect(Object.keys(selectionStore.selectedBendpoints).length).toBe(1);
-      });
-
-      it("deselects multiple bendpoints", () => {
-        const { selectionStore } = mockStores();
-
-        selectionStore.selectBendpoints(["connection1__0", "connection1__1"]);
-        selectionStore.deselectBendpoints(["connection1__0", "connection1__1"]);
-        expect(Object.keys(selectionStore.selectedBendpoints).length).toBe(0);
-      });
-    });
-
-    describe("metanode port bars", () => {
-      it("selects a specific metanode port bar", () => {
-        const { selectionStore } = mockStores();
-
-        selectionStore.selectMetanodePortBar("in");
-        expect(
-          Object.keys(selectionStore.selectedMetanodePortBars).length,
-        ).toBe(1);
-      });
-
-      it("select both port bars", () => {
-        const { selectionStore } = mockStores();
-
-        selectionStore.selectMetanodePortBar("in");
-        selectionStore.selectMetanodePortBar("out");
-        expect(
-          Object.keys(selectionStore.selectedMetanodePortBars).length,
-        ).toBe(2);
-      });
-
-      it("deselects a port bar", () => {
-        const { selectionStore } = mockStores();
-
-        selectionStore.selectMetanodePortBar("in");
-        selectionStore.selectMetanodePortBar("out");
-        selectionStore.deselectMetanodePortBar("out");
-        expect(
-          Object.keys(selectionStore.selectedMetanodePortBars).length,
-        ).toBe(1);
-      });
-    });
-
-    describe("annotations", () => {
-      const createStore = () => {
-        const { selectionStore } = mockStores();
-
-        selectionStore.selectedNodes = { "root:1": true };
-        selectionStore.selectedAnnotations = { "root:2_1": true };
-
-        return {
-          selectionStore,
-        };
-      };
-
-      it("selects a specific annotation", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.deselectAllObjects();
-        selectionStore.selectAnnotation("root:3_1");
-        expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(1);
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(0);
-      });
-
-      it("selects multiple annotation", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.deselectAllObjects();
-        selectionStore.selectAnnotations(["root:3_1", "root:3_2"]);
-        expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(2);
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(0);
-      });
-
-      it("deselects a specific annotation", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.deselectAnnotation("root:2_1");
-        expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(0);
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(1);
-      });
-
-      it("deselects multiple annotation", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.selectAnnotation("root:3_1");
-        selectionStore.deselectAnnotations(["root:2_1", "root:3_1"]);
-        expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(0);
-        expect(Object.keys(selectionStore.selectedNodes).length).toBe(1);
-      });
-
-      it("toggles selection of an annotation", () => {
-        const { selectionStore } = createStore();
-
-        const annotationId = "root:1_1";
-        const isMultiselect = true;
-        const isSelected = false;
-
-        selectionStore.toggleAnnotationSelection({
-          annotationId,
-          isMultiselect,
-          isSelected,
-        });
-        expect(Object.keys(selectionStore.selectedAnnotations)).toContain(
-          annotationId,
-        );
-        expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(2);
-      });
-
-      it("selects only clicked annotation if multi selection is false", () => {
-        const { selectionStore } = createStore();
-
-        const annotationId = "root:1_1";
-        const isMultiselect = false;
-        const isSelected = false;
-
-        selectionStore.toggleAnnotationSelection({
-          annotationId,
-          isMultiselect,
-          isSelected,
-        });
-        expect(Object.keys(selectionStore.selectedAnnotations)).toStrictEqual([
-          annotationId,
-        ]);
-        expect(Object.keys(selectionStore.selectedAnnotations).length).toBe(1);
-      });
-
-      it("returns if rectangle selection was started from selected annotation", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.didStartRectangleSelection = true;
-        selectionStore.startedSelectionFromAnnotationId = "root:1_1";
-        selectionStore.toggleAnnotationSelection({
-          annotationId: "root:1_1",
-          isMultiselect: true,
-          isSelected: false,
-        });
-        expect(selectionStore.startedSelectionFromAnnotationId).toBeNull();
-      });
-    });
-  });
-
-  describe("getters", () => {
-    const createStore = () => {
-      const { selectionStore, workflowStore } = mockStores();
-
-      const node1 = createNativeNode({
-        id: "root:1",
-        position: { x: 10, y: 10 },
-      });
-      const node2 = createNativeNode({
-        id: "root:2",
-        position: { x: 20, y: 10 },
-      });
-      const connection1 = createConnection({
-        id: "root:2_1",
-        bendpoints: [{ x: 10, y: 10 }],
-      });
-      const connection2 = createConnection({
-        id: "root:2_2",
-        bendpoints: [{ x: 10, y: 10 }],
-      });
-      const annotation1 = createWorkflowAnnotation({
-        id: "root:3_1",
-        text: { value: "Annotation text" },
-      });
-      const annotation2 = createWorkflowAnnotation({
-        id: "root:3_2",
-        text: { value: "Annotation text 2" },
-      });
-
-      workflowStore.activeWorkflow = createWorkflow({
-        nodes: {
-          [node1.id]: node1,
-          [node2.id]: node2,
-        },
-        connections: {
-          [connection1.id]: connection1,
-          [connection2.id]: connection2,
-        },
-        workflowAnnotations: [annotation1, annotation2],
-      });
-      selectionStore.addNodesToSelection(["root:1", "root:2"]);
-      selectionStore.addConnectionsToSelection(["root:2_1", "root:2_2"]);
-      selectionStore.addAnnotationToSelection(["root:3_1", "root:3_2"]);
-      selectionStore.addNodesToSelection(["unknown node"]);
-      selectionStore.addConnectionsToSelection(["unknown connection"]);
-
-      return {
-        selectionStore,
-        workflowStore,
-      };
-    };
-
-    describe("nodes", () => {
-      it("get all selected node ids, for that nodes exist", () => {
-        const { selectionStore } = createStore();
-
-        expect(selectionStore.selectedNodeIds).toStrictEqual([
-          "root:1",
-          "root:2",
-        ]);
-      });
-
-      it("get multiple selected nodes", () => {
-        const { selectionStore } = createStore();
-
-        expect(selectionStore.getSelectedNodes).toMatchObject([
-          { id: "root:1" },
-          { id: "root:2" },
-        ]);
-        expect(selectionStore.singleSelectedNode).toBeNull();
-      });
-
-      it("get single selected node", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.clearSelection();
-        selectionStore.addNodesToSelection(["root:1"]);
-
-        expect(selectionStore.singleSelectedNode).toMatchObject({
-          id: "root:1",
-        });
-      });
-
-      it("test if node is selected", () => {
-        const { selectionStore } = createStore();
-
-        expect(selectionStore.isNodeSelected("root:1")).toBe(true);
-        expect(selectionStore.isNodeSelected("root:3")).toBe(false);
-      });
-
-      it("get multiple selected nodes without a active workflow", () => {
-        const { selectionStore, workflowStore } = createStore();
-
-        workflowStore.activeWorkflow = null;
-        expect(selectionStore.getSelectedNodes).toStrictEqual([]);
-      });
-    });
-
-    describe("connections", () => {
-      it("get all selected connections", () => {
-        const { selectionStore } = createStore();
-
-        expect(selectionStore.getSelectedConnections).toMatchObject([
-          { allowedActions: { canDelete: true }, id: "root:2_1" },
-          { allowedActions: { canDelete: true }, id: "root:2_2" },
-        ]);
-      });
-
-      it("get all selected connections without a active workflow", () => {
-        const { selectionStore, workflowStore } = createStore();
-
-        workflowStore.activeWorkflow = null;
-        expect(selectionStore.getSelectedConnections).toStrictEqual([]);
-      });
-
-      it("test if connection is selected", () => {
-        const { selectionStore } = createStore();
-
-        expect(selectionStore.isConnectionSelected("root:2_2")).toBe(true);
-        expect(selectionStore.isConnectionSelected("root:2_3")).toBe(false);
-      });
-    });
-
-    describe("bendpoints", () => {
-      it("returns selected bendpoint ids", () => {
-        const { selectionStore } = createStore();
-
-        selectionStore.addBendpointsToSelection([
-          "connection1__0",
-          "connection1__1",
-        ]);
         expect(selectionStore.selectedBendpointIds).toEqual([
           "connection1__0",
           "connection1__1",
         ]);
       });
 
-      it("returns selected bendpoints", () => {
-        const { selectionStore } = createStore();
+      it("deselects a specific bendpoint", () => {
+        const { selectionStore } = createWorkflowContext();
 
-        selectionStore.addBendpointsToSelection([
-          "connection1__0",
-          "connection1__1",
-          "connection2__1",
-        ]);
-        expect(selectionStore.getSelectedBendpoints).toEqual({
-          connection1: [0, 1],
-          connection2: [1],
-        });
+        selectionStore.selectBendpoints(["connection1__0", "connection1__1"]);
+        selectionStore.deselectBendpoints("connection1__0");
+
+        expect(selectionStore.selectedBendpointIds).toEqual(["connection1__1"]);
+      });
+
+      it("deselects multiple bendpoints", () => {
+        const { selectionStore } = createWorkflowContext();
+
+        selectionStore.selectBendpoints(["connection1__0", "connection1__1"]);
+        selectionStore.deselectBendpoints(["connection1__0", "connection1__1"]);
+
+        expect(selectionStore.selectedBendpointIds).toHaveLength(0);
+      });
+    });
+
+    describe("metanode port bars", () => {
+      it("selects a specific metanode port bar", () => {
+        const { selectionStore } = createWorkflowContext();
+
+        selectionStore.selectMetanodePortBar(["in"]);
+        expect(selectionStore.getSelectedMetanodePortBars).toEqual(["in"]);
+      });
+
+      it("selects both port bars", () => {
+        const { selectionStore } = createWorkflowContext();
+
+        selectionStore.selectMetanodePortBar(["in", "out"]);
+        expect(selectionStore.getSelectedMetanodePortBars).toEqual(
+          expect.arrayContaining(["in", "out"]),
+        );
+      });
+
+      it("deselects a port bar", () => {
+        const { selectionStore } = createWorkflowContext();
+
+        selectionStore.selectMetanodePortBar(["in", "out"]);
+        selectionStore.deselectMetanodePortBar(["out"]);
+        expect(selectionStore.getSelectedMetanodePortBars).toEqual(["in"]);
       });
     });
 
     describe("annotations", () => {
-      it("get all selected annotations", () => {
-        const { selectionStore } = createStore();
+      it("selects a specific annotation", () => {
+        const { selectionStore } = createWorkflowContext();
 
-        expect(selectionStore.getSelectedAnnotations).toMatchObject([
-          { id: "root:3_1", text: { value: "Annotation text" } },
-          { id: "root:3_2", text: { value: "Annotation text 2" } },
-        ]);
+        selectionStore.selectAnnotations(["anno2"]);
+
+        expect(selectionStore.selectedAnnotationIds).toEqual(["anno2"]);
+        expect(selectionStore.selectedNodeIds).toHaveLength(0);
       });
 
-      it("get all selected annotations ids", () => {
-        const { selectionStore } = createStore();
+      it("selects multiple annotations", () => {
+        const { selectionStore } = createWorkflowContext();
 
-        expect(selectionStore.selectedAnnotationIds).toStrictEqual([
-          "root:3_1",
-          "root:3_2",
-        ]);
+        selectionStore.selectAnnotations(["anno1", "anno2"]);
+
+        expect(selectionStore.selectedAnnotationIds).toEqual(
+          expect.arrayContaining(["anno1", "anno2"]),
+        );
+        expect(selectionStore.selectedNodeIds).toHaveLength(0);
       });
 
-      it("test if annotations is selected", () => {
-        const { selectionStore } = createStore();
+      it("deselects a specific annotation", () => {
+        const { selectionStore } = createWorkflowContext();
+        selectionStore.selectAnnotations(["anno1", "anno2"]);
+        expect(selectionStore.selectedAnnotationIds).toHaveLength(2);
 
-        expect(selectionStore.isAnnotationSelected("root:3_2")).toBe(true);
-        expect(selectionStore.isAnnotationSelected("root:3_3")).toBe(false);
+        selectionStore.deselectAnnotations("anno1");
+        expect(selectionStore.selectedAnnotationIds).toHaveLength(1);
       });
 
-      it("get all selected annotations without a active workflow", () => {
-        const { selectionStore, workflowStore } = createStore();
+      it("deselects multiple annotations", () => {
+        const { selectionStore } = createWorkflowContext();
+        selectionStore.selectAnnotations(["anno1", "anno2"]);
+        expect(selectionStore.selectedAnnotationIds).toHaveLength(2);
 
-        workflowStore.activeWorkflow = null;
-        expect(selectionStore.getSelectedAnnotations).toStrictEqual([]);
+        selectionStore.deselectAnnotations(["anno1", "anno2"]);
+        expect(selectionStore.selectedAnnotationIds).toHaveLength(0);
+      });
+
+      it("toggles selection with multiselect enabled", () => {
+        const { selectionStore } = createWorkflowContext();
+
+        selectionStore.selectAnnotations(["anno1"]);
+        selectionStore.toggleAnnotationSelection({
+          annotationId: "anno2",
+          isMultiselect: true,
+          isSelected: false,
+        });
+
+        expect(selectionStore.selectedAnnotationIds).toEqual(
+          expect.arrayContaining(["anno1", "anno2"]),
+        );
+      });
+
+      it("replaces selection when multiselect disabled", () => {
+        const { selectionStore } = createWorkflowContext();
+
+        selectionStore.toggleAnnotationSelection({
+          annotationId: "anno2",
+          isMultiselect: false,
+          isSelected: false,
+        });
+
+        expect(selectionStore.selectedAnnotationIds).toEqual(["anno2"]);
+      });
+
+      it("clears selection origin when starting from same annotation", () => {
+        const { selectionStore } = createWorkflowContext();
+
+        selectionStore.startedSelectionFromAnnotationId = "anno1";
+        selectionStore.didStartRectangleSelection = true;
+
+        selectionStore.toggleAnnotationSelection({
+          annotationId: "anno1",
+          isMultiselect: true,
+          isSelected: false,
+        });
+
+        expect(selectionStore.startedSelectionFromAnnotationId).toBeNull();
       });
     });
 
-    it("selection is empty", () => {
-      const { selectionStore } = createStore();
+    it("focuses and unfocuses objects", async () => {
+      const { selectionStore, node1, annotation1 } = createWorkflowContext();
 
-      expect(selectionStore.isSelectionEmpty).toBe(false);
-      selectionStore.clearSelection();
+      await selectionStore.selectNodes([node1.id]);
+      const nodeObject = selectionStore.selectedObjects[0];
+
+      selectionStore.focusObject(nodeObject);
+      expect(selectionStore.getFocusedObject).toStrictEqual(nodeObject);
+
+      selectionStore.focusObject(null);
+      expect(selectionStore.getFocusedObject).toBeNull();
+
+      await selectionStore.deselectNodes([node1.id]);
+      selectionStore.selectAnnotations(annotation1.id);
+
+      const annotationObject = selectionStore.selectedObjects[0];
+
+      selectionStore.focusObject(annotationObject);
+      expect(selectionStore.getFocusedObject).toStrictEqual(annotationObject);
+    });
+
+    it("updates activePortTab state", () => {
+      const { selectionStore } = createWorkflowContext();
+
+      selectionStore.activePortTab = "0";
+      expect(selectionStore.activePortTab).toBe("0");
+
+      selectionStore.activePortTab = null;
+      expect(selectionStore.activePortTab).toBeNull();
+    });
+
+    it("returns single selected objects correctly", async () => {
+      const { selectionStore, node1, node2, annotation1 } =
+        createWorkflowContext();
+
+      await selectionStore.selectNodes([node1.id]);
+      expect(selectionStore.singleSelectedNode?.id).toBe(node1.id);
+      expect(selectionStore.singleSelectedObject?.id).toBe(node1.id);
+
+      selectionStore.selectAnnotations([annotation1.id]);
+      expect(selectionStore.singleSelectedAnnotation?.id).toBe(annotation1.id);
+      expect(selectionStore.singleSelectedObject?.id).toBeUndefined();
+      await selectionStore.deselectNodes([node1.id]);
+      expect(selectionStore.singleSelectedObject?.id).toBe(annotation1.id);
+
+      await selectionStore.selectNodes([node1.id, node2.id]);
+      expect(selectionStore.singleSelectedNode).toBeNull();
+    });
+
+    it("detects empty selection state", async () => {
+      const { selectionStore, node1 } = createWorkflowContext();
+
       expect(selectionStore.isSelectionEmpty).toBe(true);
+
+      await selectionStore.selectNodes([node1.id]);
+      expect(selectionStore.isSelectionEmpty).toBe(false);
+
+      await selectionStore.deselectAllObjects();
+      expect(selectionStore.isSelectionEmpty).toBe(true);
+    });
+  });
+
+  describe("edge cases and invalid states", () => {
+    it("handles focusing non-existent objects", () => {
+      const { selectionStore } = createWorkflowContext();
+      const fakeNode = {
+        id: "ghost-node",
+        type: "non-existent",
+      } as unknown as WorkflowObject;
+
+      selectionStore.focusObject(fakeNode);
+      expect(selectionStore.getFocusedObject).toBeNull();
+    });
+
+    it("handles duplicate selection IDs", async () => {
+      const { selectionStore, node1 } = createWorkflowContext();
+
+      await selectionStore.selectNodes([node1.id, node1.id]);
+      expect(selectionStore.selectedNodeIds).toEqual([node1.id]);
+
+      await selectionStore.deselectNodes(["non-existent-id"]);
+      expect(selectionStore.selectedNodeIds).toEqual([node1.id]);
+    });
+
+    it("handles toggleAnnotationSelection with isSelected=true", () => {
+      const { selectionStore, annotation1 } = createWorkflowContext();
+
+      selectionStore.toggleAnnotationSelection({
+        annotationId: annotation1.id,
+        isMultiselect: false,
+        isSelected: true,
+      });
+
+      expect(selectionStore.selectedAnnotationIds).toEqual([annotation1.id]);
+    });
+
+    it("handles empty selection operations", async () => {
+      const { selectionStore } = createWorkflowContext();
+
+      await selectionStore.selectNodes([]);
+      await selectionStore.deselectNodes([]);
+      selectionStore.selectConnections([]);
+
+      expect(selectionStore.selectedNodeIds).toEqual([]);
+      expect(selectionStore.getSelectedConnections).toEqual([]);
+    });
+
+    it("handles selection of non-existent nodes", async () => {
+      const { selectionStore } = createWorkflowContext();
+
+      await selectionStore.selectNodes(["non-existent-node"]);
+      expect(selectionStore.selectedNodeIds).toEqual([]);
+      expect(selectionStore.getSelectedNodes).toEqual([]);
     });
   });
 });

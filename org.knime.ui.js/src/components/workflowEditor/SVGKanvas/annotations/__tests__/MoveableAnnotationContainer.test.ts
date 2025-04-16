@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
@@ -99,7 +100,8 @@ describe("MoveableAnnotationContainer.vue", () => {
       const { wrapper, mockedStores } = doMount();
 
       // add something to selection
-      mockedStores.selectionStore.selectNode("root:1");
+      await mockedStores.selectionStore.selectNodes(["root:1"]);
+      await flushPromises();
 
       startAnnotationDrag(wrapper, {
         clientX: 199,
@@ -109,19 +111,20 @@ describe("MoveableAnnotationContainer.vue", () => {
       await flushPromises();
 
       // node was unselected
-      expect(mockedStores.selectionStore.selectedNodes).toEqual({});
-      expect(mockedStores.selectionStore.selectedAnnotations).toEqual({
-        "annotation:1": true,
-      });
+      expect(mockedStores.selectionStore.getSelectedNodes).toEqual([]);
+      expect(mockedStores.selectionStore.selectedAnnotationIds).toEqual([
+        "annotation:1",
+      ]);
     });
 
     it("does not deselect annotation when annotation is already selected", () => {
       const { wrapper, mockedStores } = doMount();
 
-      mockedStores.selectionStore.selectAnnotation("annotation:1");
-      expect(mockedStores.selectionStore.selectedAnnotations).toEqual({
-        "annotation:1": true,
-      });
+      mockedStores.selectionStore.selectAnnotations("annotation:1");
+
+      expect(mockedStores.selectionStore.selectedAnnotationIds).toEqual([
+        "annotation:1",
+      ]);
 
       startAnnotationDrag(wrapper, {
         clientX: 199,
@@ -129,9 +132,9 @@ describe("MoveableAnnotationContainer.vue", () => {
         shiftKey: false,
       });
 
-      expect(mockedStores.selectionStore.selectedAnnotations).toEqual({
-        "annotation:1": true,
-      });
+      expect(mockedStores.selectionStore.selectedAnnotationIds).toEqual([
+        "annotation:1",
+      ]);
     });
 
     it.each([
@@ -161,9 +164,10 @@ describe("MoveableAnnotationContainer.vue", () => {
       const movePosition = { clientX: 213, clientY: 213 };
 
       startAnnotationDrag(wrapper, clickPosition);
-      moveTo({ clientX: 50, clientY: 50 });
-
       await flushPromises();
+
+      moveTo({ clientX: 50, clientY: 50 });
+      await nextTick();
 
       expect(mockedStores.movingStore.isDragging).toBe(true);
 
@@ -201,14 +205,14 @@ describe("MoveableAnnotationContainer.vue", () => {
     });
   });
 
-  it("sets an id of annotation from which selection started", () => {
+  it("sets an id of annotation from which selection started", async () => {
     const { wrapper, mockedStores } = doMount();
     mockedStores.canvasStore.isMoveLocked = true;
 
-    wrapper.trigger("pointerdown", { button: 0 });
+    await wrapper.trigger("pointerdown", { button: 0 });
 
     expect(
-      mockedStores.selectionStore.setStartedSelectionFromAnnotationId,
-    ).toHaveBeenCalledWith(defaultProps.id);
+      mockedStores.selectionStore.startedSelectionFromAnnotationId,
+    ).toEqual(defaultProps.id);
   });
 });

@@ -65,9 +65,7 @@ describe("workflowMonitor", () => {
     await $workflowMonitorStore.navigateToIssue({ message });
     await flushPromises();
 
-    expect($selectionStore.selectedNodes).toEqual({
-      [message.nodeId]: true,
-    });
+    expect($selectionStore.selectedNodeIds).toEqual([message.nodeId]);
 
     expect(moveObjectIntoView).toHaveBeenCalledWith(
       expect.objectContaining({ id: message.nodeId }),
@@ -84,7 +82,10 @@ describe("workflowMonitor", () => {
 
     const message = createWorkflowMonitorMessage({ workflowId: "root:2" });
 
-    $workflowMonitorStore.navigateToIssue({ message });
+    const error = vi.fn();
+    $workflowMonitorStore.navigateToIssue({ message }).catch(error);
+    await flushPromises();
+
     lifecycleBus.emit("onWorkflowLoaded");
     await flushPromises();
 
@@ -93,12 +94,12 @@ describe("workflowMonitor", () => {
       params: { projectId: workflow.projectId, workflowId: message.workflowId },
     });
 
-    expect($selectionStore.selectedNodes).toEqual({
-      [message.nodeId]: true,
-    });
+    expect($selectionStore.selectedNodeIds).toEqual([message.nodeId]);
 
     expect(moveObjectIntoView).toHaveBeenCalledWith(
       expect.objectContaining({ id: message.nodeId }),
     );
+
+    expect(error).not.toHaveBeenCalled();
   });
 });

@@ -70,7 +70,7 @@ describe("workflow::annotationInteractions", () => {
         },
       }),
     );
-    selectionStore.selectAnnotation(mockAnnotation1.id);
+    selectionStore.selectAnnotations(mockAnnotation1.id);
 
     const bounds = { x: 10, y: 10, width: 80, height: 80 };
     await annotationInteractionsStore.addWorkflowAnnotation({ bounds });
@@ -84,9 +84,7 @@ describe("workflow::annotationInteractions", () => {
       borderColor: $colors.defaultAnnotationBorderColor,
     });
 
-    expect(selectionStore.selectedAnnotations).toEqual({
-      "mock-annotation2": true,
-    });
+    expect(selectionStore.selectedAnnotationIds).toEqual(["mock-annotation2"]);
     expect(annotationInteractionsStore.editableAnnotationId).toBe(
       "mock-annotation2",
     );
@@ -116,8 +114,8 @@ describe("workflow::annotationInteractions", () => {
         },
       }),
     );
-    selectionStore.selectAnnotation(mockAnnotation1.id);
-    selectionStore.selectAnnotation(mockAnnotation2.id);
+    selectionStore.selectAnnotations(mockAnnotation1.id);
+    selectionStore.selectAnnotations(mockAnnotation2.id);
 
     await annotationInteractionsStore.reorderWorkflowAnnotation({ action });
 

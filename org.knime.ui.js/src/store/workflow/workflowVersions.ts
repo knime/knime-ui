@@ -442,12 +442,16 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
+    const { wasAborted } = await useSelectionStore().deselectAllObjects();
+    if (wasAborted) {
+      return;
+    }
+
     // Reset cached state
     versionsModeInfo.value.set(
       activeProjectId,
       createInitialProjectVersionsModeInfo(),
     );
-    useSelectionStore().deselectAllObjects();
 
     const provider = useSpaceProvidersStore().activeProjectProvider;
 

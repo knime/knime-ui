@@ -30,7 +30,7 @@ export const generateWorkflowPreview = async (isEmpty: boolean) => {
   app.ticker.stop();
 
   // change state for the snapshot
-  useSelectionStore().setShouldHideSelection(true);
+  useSelectionStore().shouldHideSelection = true;
   const state = webglCanvasStore.getCanvasScrollState;
   // just required to prevent culling the extract system does not honor offset and scale
   webglCanvasStore.fitToScreen();
@@ -62,7 +62,7 @@ export const generateWorkflowPreview = async (isEmpty: boolean) => {
   });
 
   webglCanvasStore.restoreScrollState(state);
-  useSelectionStore().setShouldHideSelection(false);
+  useSelectionStore().shouldHideSelection = false;
 
   // start the regular app again
   app.ticker.start();

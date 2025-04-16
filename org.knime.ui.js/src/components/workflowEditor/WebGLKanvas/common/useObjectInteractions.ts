@@ -15,8 +15,8 @@ const MIN_MOVE_THRESHOLD = $shapes.gridSize.x;
 
 type UseObjectInteractionsOptions = {
   isObjectSelected: () => boolean;
-  selectObject: () => void;
-  deselectObject: () => void;
+  selectObject: () => Promise<void>;
+  deselectObject: () => Promise<void>;
   onMoveEnd?: () => Promise<boolean>;
   onDoubleClick?: (event: PointerEvent) => void;
 };
@@ -63,7 +63,9 @@ export const useObjectInteractions = (
 
   const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
+  const onPointerDown = async (
+    pointerDownEvent: PIXI.FederatedPointerEvent,
+  ) => {
     // shift acts as a way to lock interactions and only do global selection
     if (pointerDownEvent.button !== 0) {
       return;
@@ -91,14 +93,14 @@ export const useObjectInteractions = (
 
     if (isMultiselect) {
       const action = isObjectSelected() ? deselectObject : selectObject;
-      action();
+      await action();
 
       // forbid move on multi select
       return;
     } else if (!isObjectSelected()) {
       // immediate selection feedback for non-selected objects
-      selectionStore.deselectAllObjects();
-      selectObject();
+      await selectionStore.deselectAllObjects();
+      await selectObject();
     }
 
     let didDrag = false;
@@ -123,15 +125,15 @@ export const useObjectInteractions = (
     };
 
     const onUp = () => {
-      onMoveEnd().then((shouldMove) => {
+      onMoveEnd().then(async (shouldMove) => {
         if (shouldMove && didDrag) {
-          movingStore.moveObjects();
+          await movingStore.moveObjects();
         } else if (wasSelectedOnStart) {
           // if a drag did not occur then an interaction on a previously
           // selected object should prioritize a selection on that object alone upon
           // a pointer up
-          selectionStore.deselectAllObjects();
-          selectObject();
+          await selectionStore.deselectAllObjects();
+          await selectObject();
         }
       });
 

@@ -166,9 +166,7 @@ const addPort = async ({
 
   portSelectionState.setModificationInProgress(true);
 
-  const canContinue = await nodeConfigurationStore.autoApplySettings({
-    nextNodeId: props.nodeId,
-  });
+  const canContinue = await nodeConfigurationStore.autoApplySettings();
 
   if (!canContinue) {
     portSelectionState.setModificationInProgress(false);
@@ -199,9 +197,7 @@ const removePort = async (
   { index }: NodePortType,
   side: "input" | "output",
 ) => {
-  const canContinue = await nodeConfigurationStore.autoApplySettings({
-    nextNodeId: props.nodeId,
-  });
+  const canContinue = await nodeConfigurationStore.autoApplySettings();
 
   if (!canContinue) {
     portSelectionState.setModificationInProgress(false);

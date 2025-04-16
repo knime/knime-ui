@@ -25,7 +25,7 @@ const { isMoveLocked } = storeToRefs(useSVGCanvasStore());
 const workflowStore = useWorkflowStore();
 const { activeWorkflow: workflow } = storeToRefs(workflowStore);
 const selectionStore = useSelectionStore();
-const { isMetaNodePortBarSelected } = storeToRefs(selectionStore);
+const { isMetaNodePortBarSelected } = selectionStore;
 
 const backendBounds = computed(() =>
   props.type === "out"
@@ -36,7 +36,7 @@ const backendBounds = computed(() =>
 const container = ref<HTMLElement | null>(null);
 
 const translationAmount = computed(() => {
-  return isMetaNodePortBarSelected.value(props.type)
+  return isMetaNodePortBarSelected(props.type)
     ? movePreviewDelta.value
     : { x: 0, y: 0 };
 });
@@ -48,13 +48,6 @@ const initialPosition = computed(() => ({
 
 const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => container.value),
-  onMoveStartCallback: (event) => {
-    if (!isMetaNodePortBarSelected.value(props.type) && !event.ctrlKey) {
-      selectionStore.deselectAllObjects();
-    }
-
-    selectionStore.selectMetanodePortBar(props.type);
-  },
   onMoveEndCallback: async () => {
     // we need to set this on the first move as the backend has no data to translate otherwise
     // only send if we have really moved
@@ -73,12 +66,22 @@ const { createPointerDownHandler } = useMoveObject({
   },
 });
 
-const onPointerDown = (event: PointerEvent) => {
+const onPointerDown = async (event: PointerEvent) => {
   if (isMoveLocked.value) {
     return;
   }
-  const handler = createPointerDownHandler(initialPosition);
-  handler(event);
+  // The following asynchronous call will cause the event to be already bubbled up and current Target to be null
+  const eventTarget = event.currentTarget as HTMLElement;
+
+  if (!isMetaNodePortBarSelected(props.type) && !event.ctrlKey) {
+    const { wasAborted } = await selectionStore.deselectAllObjects();
+    if (wasAborted) {
+      return;
+    }
+    selectionStore.selectMetanodePortBar([props.type]);
+  }
+
+  createPointerDownHandler(initialPosition)(event, eventTarget);
 };
 
 useEscapeStack({
@@ -98,7 +101,7 @@ useEscapeStack({
     :transform="`translate(${translationAmount.x}, ${translationAmount.y})`"
     :class="[{ dragging: isDragging && isMetaNodePortBarSelected(type) }]"
     class="annotation"
-    @pointerdown.left="onPointerDown($event)"
+    @pointerdown.left.exact="onPointerDown($event)"
   >
     <slot />
   </g>

@@ -16,7 +16,6 @@ import { resourceLocationResolver } from "@/components/uiExtensions/common/useRe
 import { isDesktop, runInEnvironment } from "@/environment";
 import { getHintConfiguration } from "@/hints/hints.config";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
@@ -119,12 +118,9 @@ export const useLifecycleStore = defineStore("lifecycle", {
         if (isLeavingWorkflow) {
           // before leaving a workflow check attempt to auto-apply pending
           // node configuration changes (if any)
-          const canContinue =
-            await useNodeConfigurationStore().autoApplySettings({
-              nextNodeId: null,
-            });
+          const { wasAborted } = await useSelectionStore().deselectAllObjects();
 
-          if (!canContinue) {
+          if (wasAborted) {
             // cancel the navigation if the user cancelled on the auto-apply prompt
             next(false);
             return;
@@ -211,12 +207,12 @@ export const useLifecycleStore = defineStore("lifecycle", {
       this.initializeHints();
     },
 
-    destroyApplication() {
+    async destroyApplication() {
       consola.trace("lifecycle::destroyApplication");
-      API.event.unsubscribeEventListener({
+      await API.event.unsubscribeEventListener({
         typeId: "AppStateChangedEventType",
       });
-      this.unloadActiveWorkflow({ clearWorkflow: true });
+      await this.unloadActiveWorkflow({ clearWorkflow: true });
     },
 
     populateHelpMenuAndExamples() {
@@ -591,7 +587,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       const { activeSnapshotId: snapshotId } = useWorkflowStore();
 
-      useSelectionStore().clearSelection();
       useWorkflowStore().setTooltip(null);
 
       if (clearWorkflow) {

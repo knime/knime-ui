@@ -9,7 +9,7 @@ import {
   vi,
 } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 import { mockUserAgent } from "jest-useragent-mock";
 import { animate } from "motion";
@@ -222,11 +222,12 @@ describe("Connector.vue", () => {
     it("selects the connection", async () => {
       const { wrapper, mockedStores, connection } = doMount();
       await wrapper.find("g path").trigger("click", { button: 0 });
+      await flushPromises();
 
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
-        connection.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectConnections,
+      ).toHaveBeenCalledWith(connection.id);
     });
 
     it("left click with control on Mac opens context menu", async () => {
@@ -235,27 +236,29 @@ describe("Connector.vue", () => {
       await wrapper
         .find("g path")
         .trigger("pointerdown", { button: 0, ctrlKey: true });
+      await flushPromises();
 
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
-        connection.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectConnections,
+      ).toHaveBeenCalledWith(connection.id);
     });
 
     it("right click selects the connection", async () => {
       const { wrapper, mockedStores, connection } = doMount();
       await wrapper.find("g path").trigger("pointerdown", { button: 2 });
+      await flushPromises();
 
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
-        connection.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectConnections,
+      ).toHaveBeenCalledWith(connection.id);
     });
 
     it("shift-click adds to selection", async () => {
@@ -265,11 +268,11 @@ describe("Connector.vue", () => {
         .trigger("click", { button: 0, shiftKey: true });
 
       expect(
-        mockedStores.selectionStore.deselectConnection,
+        mockedStores.selectionStore.deselectConnections,
       ).not.toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
-        connection.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectConnections,
+      ).toHaveBeenCalledWith(connection.id);
     });
 
     it("shift-click and right click add to selection", async () => {
@@ -282,24 +285,24 @@ describe("Connector.vue", () => {
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
       expect(
-        mockedStores.selectionStore.deselectConnection,
+        mockedStores.selectionStore.deselectConnections,
       ).not.toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
-        connection.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectConnections,
+      ).toHaveBeenCalledWith(connection.id);
     });
 
     it("shift-click removes from selection", async () => {
       const { wrapper, mockedStores, connection } = doMount();
 
-      mockedStores.selectionStore.selectConnection(connection.id);
-      expect(mockedStores.selectionStore.selectedConnections).not.toEqual({});
+      mockedStores.selectionStore.selectConnections(connection.id);
+      expect(mockedStores.selectionStore.selectedConnectionIds).not.toEqual([]);
 
       await wrapper
         .find("g path")
         .trigger("click", { button: 0, shiftKey: true });
 
-      expect(mockedStores.selectionStore.selectedConnections).toEqual({});
+      expect(mockedStores.selectionStore.selectedConnectionIds).toEqual([]);
     });
 
     it("draws no grab cursor if write protected", async () => {
@@ -349,25 +352,32 @@ describe("Connector.vue", () => {
 
     it("highlights connection if source node is selected", async () => {
       const { wrapper, mockedStores, connection } = doMount();
-      mockedStores.selectionStore.selectNode(connection.sourceNode);
-      await nextTick();
+
+      await mockedStores.selectionStore.selectNodes([connection.sourceNode]);
+      await flushPromises();
+
       const classes = wrapper.findAll("path")[1].classes();
       expect(classes.includes("highlighted")).toBe(true);
     });
 
     it("highlights connection if destination node is selected", async () => {
       const { wrapper, mockedStores, connection } = doMount();
-      mockedStores.selectionStore.selectNode(connection.destNode);
-      await nextTick();
+
+      await mockedStores.selectionStore.selectNodes([connection.destNode]);
+      await flushPromises();
+
       const classes = wrapper.findAll("path")[1].classes();
       expect(classes.includes("highlighted")).toBe(true);
     });
 
-    it("does not highlight connections if a connection is selected", () => {
+    it("does not highlight connections if a connection is selected", async () => {
       const { wrapper, mockedStores, connection } = doMount();
 
-      mockedStores.selectionStore.selectNode(connection.destNode);
-      mockedStores.selectionStore.selectConnection("root:2_0");
+      await mockedStores.selectionStore.selectNodes([connection.destNode]);
+      await flushPromises();
+
+      mockedStores.selectionStore.selectConnections("root:2_0");
+      await nextTick();
 
       const classes = wrapper.findAll("path")[1].classes();
       expect(classes).not.toContain("highlighted");
@@ -893,12 +903,12 @@ describe("Connector.vue", () => {
       const bendpoint = wrapper.findAllComponents(ConnectorBendpoint).at(4)!;
 
       // moving without first pressing down does nothing
-      bendpoint.trigger("pointermove", { clientX: 100, clientY: 100 });
+      await bendpoint.trigger("pointermove", { clientX: 100, clientY: 100 });
       expect(mockedStores.movingStore.movePreviewDelta).toEqual({ x: 0, y: 0 });
       expect(mockedStores.movingStore.isDragging).toBe(false);
 
       // start the drag
-      bendpoint.trigger("pointerdown", {
+      await bendpoint.trigger("pointerdown", {
         stopPropagation: vi.fn(),
         clientX: 0,
         clientY: 0,
@@ -906,6 +916,7 @@ describe("Connector.vue", () => {
 
       // bendpoint gets selected
       await nextTick();
+      await flushPromises();
       expect(bendpoint.props("isSelected")).toBe(true);
 
       expect(mockedStores.movingStore.movePreviewDelta).toEqual({ x: 0, y: 0 });
@@ -927,8 +938,7 @@ describe("Connector.vue", () => {
       });
       expect(mockedStores.movingStore.isDragging).toBe(true);
 
-      bendpoint.trigger("pointerup", {});
-      await nextTick();
+      await bendpoint.trigger("pointerup", {});
 
       expect(mockedStores.movingStore.moveObjects).toHaveBeenCalled();
     });
@@ -944,20 +954,17 @@ describe("Connector.vue", () => {
       expect(bendpoints.every((comp) => !comp.props("isSelected"))).toBe(true);
 
       // select the 2 nodes of this connector
-      mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
-      await nextTick();
+      await mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
 
       // every bendpoint IS selected now that the 2 nodes are selected
       expect(bendpoints.every((comp) => comp.props("isSelected"))).toBe(true);
 
       // start over - deselect nodes and select a single bendpoint
-      mockedStores.selectionStore.deselectAllObjects();
-      mockedStores.selectionStore.selectBendpoint(`${connection.id}__1`);
+      await mockedStores.selectionStore.deselectAllObjects();
+      mockedStores.selectionStore.selectBendpoints(`${connection.id}__1`);
 
       // select the 2 nodes of this connector
-      mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
-
-      await nextTick();
+      await mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
 
       // only the bendpoint at index 1 is selected
       bendpoints.forEach((comp, i) => {
@@ -987,6 +994,7 @@ describe("Connector.vue", () => {
         clientX: 0,
         clientY: 0,
       });
+      await flushPromises();
       await nextTick();
 
       expect(
@@ -1036,8 +1044,7 @@ describe("Connector.vue", () => {
       });
       expect(mockedStores.movingStore.isDragging).toBe(true);
 
-      addedBendpoint.trigger("pointerup", {});
-      await nextTick();
+      await addedBendpoint.trigger("pointerup", {});
 
       expect(
         mockedStores.connectionInteractionsStore.addBendpoint,
@@ -1064,21 +1071,17 @@ describe("Connector.vue", () => {
       expect(bendpoints.at(0)!.props("isVisible")).toBe(false);
 
       // when nodes are selected, connections are highlighted and BP are shown
-      mockedStores.selectionStore.selectNodes(["root:1"]);
-      await nextTick();
+      await mockedStores.selectionStore.selectNodes(["root:1"]);
       expect(bendpoints.at(0)!.props("isVisible")).toBe(true);
 
-      mockedStores.selectionStore.deselectAllObjects();
-      await nextTick();
+      await mockedStores.selectionStore.deselectAllObjects();
       expect(bendpoints.at(0)!.props("isVisible")).toBe(false);
 
       // selecting connections also shows bendpoints
-      mockedStores.selectionStore.selectConnection("root:2_0");
-      await nextTick();
+      await mockedStores.selectionStore.selectConnections("root:2_0");
       expect(bendpoints.at(0)!.props("isVisible")).toBe(true);
 
-      mockedStores.selectionStore.deselectAllObjects();
-      await nextTick();
+      await mockedStores.selectionStore.deselectAllObjects();
       expect(bendpoints.at(0)!.props("isVisible")).toBe(false);
 
       wrapper

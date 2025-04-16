@@ -6,6 +6,7 @@ import {
   it,
   vi,
 } from "vitest";
+import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
@@ -48,7 +49,7 @@ describe("workflow store: desktop interactions", () => {
       const versionId = "version-id";
       const nodeId = "node-id";
 
-      it("and does not update if node settings have not changed", () => {
+      it("and does not update if node settings have not changed", async () => {
         mockedAPI.desktop.openNodeDialog.mockReturnValue(
           Promise.resolve(false),
         ); // resolve with false (no setting change) to prevent triggering extra store actions
@@ -64,7 +65,7 @@ describe("workflow store: desktop interactions", () => {
           }),
         );
 
-        desktopInteractionsStore.openNodeConfiguration(nodeId);
+        await desktopInteractionsStore.openNodeConfiguration(nodeId);
 
         expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
           projectId,
@@ -90,7 +91,8 @@ describe("workflow store: desktop interactions", () => {
             info: { version: versionId },
           }),
         );
-        selectionStore.selectNode("root:1");
+        await selectionStore.selectNodes(["root:1"]);
+        await flushPromises();
 
         await desktopInteractionsStore.openNodeConfiguration(nodeId);
 
@@ -339,9 +341,7 @@ describe("workflow store: desktop interactions", () => {
 
         await desktopInteractionsStore.closeProject(closingProjectId);
         expect(mockedAPI.desktop.closeProject).not.toHaveBeenCalled();
-        expect(nodeConfigurationStore.autoApplySettings).toHaveBeenCalledWith(
-          expect.anything(),
-        );
+        expect(nodeConfigurationStore.autoApplySettings).toHaveBeenCalled();
         expect(
           canvasStateTrackingStore.removeCanvasState,
         ).not.toHaveBeenCalledWith(closingProjectId);

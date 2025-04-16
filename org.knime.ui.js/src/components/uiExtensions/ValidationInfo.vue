@@ -118,9 +118,7 @@ const executionStore = useExecutionStore();
 
 const onExecuteNode = async () => {
   if (props.selectedNode) {
-    const canContinue = await nodeConfigurationStore.autoApplySettings({
-      nextNodeId: props.selectedNode.id,
-    });
+    const canContinue = await nodeConfigurationStore.autoApplySettings();
 
     if (!canContinue) {
       return;

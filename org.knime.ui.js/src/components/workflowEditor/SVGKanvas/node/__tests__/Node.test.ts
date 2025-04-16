@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { VueWrapper, mount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 
 import { Node as NodeType } from "@/api/gateway-api/generated-api";
@@ -97,7 +97,6 @@ describe("Node", () => {
     props:
       | typeof commonNode
       | typeof nativeNode
-      | typeof commonNode
       | typeof metaNode
       | typeof linkedNode;
 
@@ -108,6 +107,7 @@ describe("Node", () => {
     mockedStores.selectionStore.isNodeSelected = vi.fn();
     mockedStores.workflowStore.isWritable = true;
     mockedStores.nodeConfigurationStore.canBeEnlarged = true;
+    mockedStores.desktopInteractionsStore.openNodeConfiguration = vi.fn();
 
     document.elementFromPoint = vi.fn();
   });
@@ -147,6 +147,10 @@ describe("Node", () => {
     });
     return { wrapper, mockedStores, props, $router };
   };
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
   describe("features", () => {
     beforeEach(() => {
@@ -417,10 +421,9 @@ describe("Node", () => {
       const { wrapper } = doMount({ props });
       await wrapper.find(".mouse-clickable").trigger("click", { button: 0 });
 
-      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
-        expect.stringMatching("root:1"),
-      );
+      expect(
+        mockedStores.selectionStore.deselectAllObjects,
+      ).toHaveBeenCalledWith([commonNode.id]);
     });
 
     it("left click with control on Mac opens context menu", async () => {
@@ -434,9 +437,8 @@ describe("Node", () => {
         .find(".mouse-clickable")
         .trigger("pointerdown", { button: 0, ctrlKey: true });
 
-      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
-        expect.stringMatching("root:1"),
-      );
+      await flushPromises();
+
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -452,10 +454,11 @@ describe("Node", () => {
       await wrapper
         .find(".mouse-clickable")
         .trigger("click", { button: 0, [`${mod}Key`]: true });
+      await flushPromises();
 
-      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
-        expect.stringMatching("root:1"),
-      );
+      expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledWith([
+        commonNode.id,
+      ]);
     });
 
     it("meta click adds to selection", async () => {
@@ -468,10 +471,11 @@ describe("Node", () => {
       await wrapper
         .find(".mouse-clickable")
         .trigger("click", { button: 0, metaKey: true });
+      await flushPromises();
 
-      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
-        expect.stringMatching("root:1"),
-      );
+      expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledWith([
+        commonNode.id,
+      ]);
     });
 
     it.each(["shift", "ctrl"])(
@@ -482,46 +486,62 @@ describe("Node", () => {
           .fn()
           .mockReturnValue(true);
         const { wrapper } = doMount({ props });
+        await mockedStores.selectionStore.selectNodes([commonNode.id]);
+        await flushPromises();
 
         await wrapper
           .find(".mouse-clickable")
           .trigger("click", { button: 0, [`${mod}Key`]: true });
-        expect(mockedStores.selectionStore.deselectNode).toHaveBeenCalledWith(
-          expect.stringMatching("root:1"),
-        );
+        await flushPromises();
+
+        expect(mockedStores.selectionStore.deselectNodes).toHaveBeenCalledWith([
+          commonNode.id,
+        ]);
       },
     );
 
-    it("meta click removes to selection", async () => {
+    it("meta click removes node from selection", async () => {
       mockUserAgent("mac");
       mockedStores.selectionStore.isNodeSelected = vi
         .fn()
         .mockReturnValue(true);
       const { wrapper } = doMount({ props });
+      await mockedStores.selectionStore.selectNodes([commonNode.id]);
+      await flushPromises();
 
       await wrapper
         .find(".mouse-clickable")
         .trigger("click", { button: 0, metaKey: true });
-      expect(mockedStores.selectionStore.deselectNode).toHaveBeenCalledWith(
-        expect.stringMatching("root:1"),
-      );
+      await flushPromises();
+
+      expect(mockedStores.selectionStore.deselectNodes).toHaveBeenCalledWith([
+        commonNode.id,
+      ]);
     });
 
     it.each(["shift", "ctrl", "meta"])(
       "%ss-right-click adds to selection",
       async (mod) => {
+        if (mod === "meta") {
+          mockUserAgent("mac");
+        } else {
+          mockUserAgent("windows");
+        }
         mockedStores.selectionStore.isNodeSelected = vi
           .fn()
-          .mockReturnValueOnce(true);
+          .mockReturnValue(true);
         const { wrapper } = doMount({ props });
+        await mockedStores.selectionStore.selectNodes([commonNode.id]);
 
         await wrapper
           .find(".mouse-clickable")
           .trigger("pointerdown", { button: 2, [`${mod}Key`]: true });
+        await flushPromises();
 
-        expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
-          expect.stringMatching("root:1"),
-        );
+        expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledWith([
+          commonNode.id,
+        ]);
+
         expect(
           mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
         ).toHaveBeenCalled();
@@ -535,13 +555,17 @@ describe("Node", () => {
           .fn()
           .mockReturnValue(true);
         const { wrapper } = doMount({ props });
+        await mockedStores.selectionStore.selectNodes([commonNode.id]);
+        await flushPromises();
 
         await wrapper
           .find(".mouse-clickable")
           .trigger("contextmenu", { [`${mod}Key`]: true });
-        expect(mockedStores.selectionStore.deselectNode).toHaveBeenCalledTimes(
-          0,
-        );
+        await flushPromises();
+
+        expect(
+          mockedStores.selectionStore.deselectNodes,
+        ).not.toHaveBeenCalled();
       },
     );
 
@@ -550,15 +574,15 @@ describe("Node", () => {
         .fn()
         .mockReturnValue(false);
       const { wrapper } = doMount({ props });
+      expect(mockedStores.selectionStore.selectedNodeIds).toStrictEqual([]);
 
       await wrapper
         .find(".mouse-clickable")
         .trigger("pointerdown", { button: 2 });
 
-      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
-        expect.stringMatching("root:1"),
-      );
+      expect(
+        mockedStores.selectionStore.deselectAllObjects,
+      ).toHaveBeenCalledWith([commonNode.id]);
     });
 
     it("forwards hover state to children", () => {
@@ -1095,9 +1119,10 @@ describe("Node", () => {
       await wrapper
         .findComponent(NodeName)
         .trigger("pointerdown", { button: 2 });
-      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
-        expect.stringMatching("root:1"),
-      );
+      await flushPromises();
+      expect(
+        mockedStores.selectionStore.deselectAllObjects,
+      ).toHaveBeenCalledWith([commonNode.id]);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -1105,9 +1130,9 @@ describe("Node", () => {
 
     it("should handle click events", async () => {
       await wrapper.findComponent(NodeName).trigger("click", { button: 0 });
-      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
-        expect.stringMatching("root:1"),
-      );
+      expect(
+        mockedStores.selectionStore.deselectAllObjects,
+      ).toHaveBeenCalledWith([commonNode.id]);
     });
 
     it("should handle width dimension changes and update the selection outline", async () => {

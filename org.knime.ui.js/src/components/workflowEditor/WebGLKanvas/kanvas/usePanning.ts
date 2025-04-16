@@ -63,7 +63,7 @@ export const useCanvasPanning = ({
       }
     });
 
-    const stopPan = (pointerUpEvent: PointerEvent) => {
+    const stopPan = async (pointerUpEvent: PointerEvent) => {
       consola.debug("Kanvas::usePanning - stopPan", { pointerUpEvent });
 
       const isUnhandledEvent = !pointerUpEvent.dataset;
@@ -78,8 +78,8 @@ export const useCanvasPanning = ({
           isOpen: true,
           anchor: { x, y },
         });
-        useSelectionStore().deselectAllObjects();
-        toggleContextMenu();
+        await useSelectionStore().deselectAllObjects();
+        await toggleContextMenu();
       }
 
       // cleanup

@@ -9,7 +9,7 @@ import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-type ComponentData = {
+type RectangleSelectionData = {
   startPos: XY;
   endPos: XY;
   pointerId: number | null;
@@ -18,12 +18,16 @@ type ComponentData = {
   selectedNodeIdsAtStart: string[];
   nodeIdsInsidePreviousSelection: string[];
 
+  inverseMode: boolean;
+  moved: boolean;
+
   annotationIdsToSelectOnEnd: string[];
   annotationIdsToDeselectOnEnd: string[];
   selectedAnnotationIdsAtStart: string[];
   annotationIdsInsidePreviousSelection: string[];
 };
 
+const MOVE_THRESHOLD = 5;
 /**
  * SelectionRectangle - select multiple nodes by drawing a rectangle with by mouse (pointer) movement
  *
@@ -35,7 +39,7 @@ type ComponentData = {
  */
 export default defineComponent({
   emits: ["nodeSelectionPreview", "annotationSelectionPreview"],
-  data: (): ComponentData => ({
+  data: (): RectangleSelectionData => ({
     startPos: {
       x: 0,
       y: 0,
@@ -49,6 +53,8 @@ export default defineComponent({
     nodeIdsToDeselectOnEnd: [],
     selectedNodeIdsAtStart: [],
     nodeIdsInsidePreviousSelection: [],
+    inverseMode: false,
+    moved: false,
 
     annotationIdsToSelectOnEnd: [],
     annotationIdsToDeselectOnEnd: [],
@@ -89,21 +95,18 @@ export default defineComponent({
   },
   methods: {
     ...mapActions(useSelectionStore, [
-      "selectNodes",
-      "deselectNodes",
       "deselectAllObjects",
       "selectAnnotations",
       "deselectAnnotations",
-      "setDidStartRectangleSelection",
     ]),
 
-    startRectangleSelection(e: PointerEvent) {
-      this.pointerId = e.pointerId;
-      (e.target! as HTMLElement).setPointerCapture(e.pointerId);
+    startRectangleSelection(event: PointerEvent) {
+      this.pointerId = event.pointerId;
+      (event.target! as HTMLElement).setPointerCapture(event.pointerId);
 
       [this.startPos.x, this.startPos.y] = this.screenToCanvasCoordinates([
-        e.clientX,
-        e.clientY,
+        event.clientX,
+        event.clientY,
       ]);
       this.endPos = { ...this.startPos };
 
@@ -113,79 +116,102 @@ export default defineComponent({
       this.annotationIdsToSelectOnEnd = [];
       this.annotationIdsToDeselectOnEnd = [];
 
-      // deselect all objects if we do not hold shift or control/meta key
-      if (e.shiftKey || e.ctrlKey || e.metaKey) {
+      if (event.shiftKey || event.ctrlKey || event.metaKey) {
+        this.inverseMode = true;
         // remember currently selected nodes, the nodes under the rectangle will inverse them
         this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
         this.selectedAnnotationIdsAtStart = [...this.selectedAnnotationIds];
       } else {
-        // TODO: NXT-978 could mock that for faster start of rectangle selection
-        this.deselectAllObjects();
+        this.inverseMode = false;
         this.selectedNodeIdsAtStart = [];
         this.selectedAnnotationIdsAtStart = [];
       }
+      this.moved = false;
     },
 
     // Because the selection update/move function is throttled we also need to
     // throttle the stop function to guarantee order of event handling
-    stopRectangleSelection: throttle(function (this: any, e) {
+    stopRectangleSelection: throttle(async function (
+      this: any,
+      event: PointerEvent,
+    ) {
       /* eslint-disable no-invalid-this */
-      if (this.pointerId !== e.pointerId) {
+      if (this.pointerId !== event.pointerId) {
         return;
       }
-      e.target.releasePointerCapture(this.pointerId);
+      (event.target! as HTMLElement).releasePointerCapture(this.pointerId);
 
       // hide rect
       this.pointerId = null;
 
-      // update selection (in store)
-      setTimeout(() => {
-        // do the real selection when we are finished as it is quite slow (updates to buttons, tables etc.)
-        if (this.nodeIdsToSelectOnEnd.length > 0) {
-          this.selectNodes(this.nodeIdsToSelectOnEnd);
-        }
+      // clear "preview state" of now selected elements
+      [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(
+        (nodeId) => {
+          this.$emit("nodeSelectionPreview", { type: "clear", nodeId });
+        },
+      );
 
-        if (this.nodeIdsToDeselectOnEnd.length > 0) {
-          this.deselectNodes(this.nodeIdsToDeselectOnEnd);
-        }
-
-        if (this.annotationIdsToSelectOnEnd.length > 0) {
-          this.selectAnnotations(this.annotationIdsToSelectOnEnd);
-        }
-
-        if (this.annotationIdsToDeselectOnEnd.length > 0) {
-          this.deselectAnnotations(this.annotationIdsToDeselectOnEnd);
-        }
-
-        // clear "preview state" of now selected elements
-        [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(
-          (nodeId) => {
-            this.$emit("nodeSelectionPreview", { type: "clear", nodeId });
-          },
-        );
-
-        [
-          ...this.annotationIdsToSelectOnEnd,
-          ...this.annotationIdsToDeselectOnEnd,
-        ].forEach((annotationId) => {
-          this.$emit("annotationSelectionPreview", {
-            type: null,
-            annotationId,
-          });
+      [
+        ...this.annotationIdsToSelectOnEnd,
+        ...this.annotationIdsToDeselectOnEnd,
+      ].forEach((annotationId) => {
+        this.$emit("annotationSelectionPreview", {
+          type: null,
+          annotationId,
         });
+      });
 
-        this.nodeIdsToSelectOnEnd = [];
-        this.nodeIdsToDeselectOnEnd = [];
-        this.selectedNodeIdsAtStart = [];
+      if (!this.moved) {
+        this.clearState();
+        return;
+      }
 
-        this.annotationIdsToSelectOnEnd = [];
-        this.annotationIdsToDeselectOnEnd = [];
-        this.selectedAnnotationIdsAtStart = [];
+      const calculateSelection = () => {
+        const selection = [
+          ...this.selectedNodeIdsAtStart,
+          ...this.nodeIdsToSelectOnEnd,
+        ];
 
-        this.setDidStartRectangleSelection(false);
-      }, 0);
+        return this.inverseMode
+          ? selection.filter(
+              (nodeId) => !this.nodeIdsToDeselectOnEnd.includes(nodeId),
+            )
+          : selection;
+      };
+
+      const calculateAnnotationSelection = () => {
+        const selection = [
+          ...this.selectedAnnotationIdsAtStart,
+          ...this.annotationIdsToSelectOnEnd,
+        ];
+        return this.inverseMode
+          ? selection.filter(
+              (annotationId) =>
+                !this.annotationIdsToDeselectOnEnd.includes(annotationId),
+            )
+          : selection;
+      };
+
+      const { wasAborted } = await this.deselectAllObjects(
+        calculateSelection(),
+      );
+      if (!wasAborted) {
+        await this.selectAnnotations(calculateAnnotationSelection());
+      }
+
+      this.clearState();
       /* eslint-enable no-invalid-this */
     }),
+
+    clearState() {
+      this.nodeIdsToSelectOnEnd = [];
+      this.nodeIdsToDeselectOnEnd = [];
+      this.selectedNodeIdsAtStart = [];
+
+      this.annotationIdsToSelectOnEnd = [];
+      this.annotationIdsToDeselectOnEnd = [];
+      this.selectedAnnotationIdsAtStart = [];
+    },
 
     updateRectangleSelection: throttle(function (this: any, e) {
       /* eslint-disable no-invalid-this */
@@ -193,7 +219,14 @@ export default defineComponent({
         return;
       }
 
-      this.setDidStartRectangleSelection(true);
+      if (!this.moved) {
+        if (
+          Math.abs(this.startPos.x - e.clientX) > MOVE_THRESHOLD ||
+          Math.abs(this.startPos.y - e.clientY) > MOVE_THRESHOLD
+        ) {
+          this.moved = true;
+        }
+      }
 
       [this.endPos.x, this.endPos.y] = this.screenToCanvasCoordinates([
         e.clientX,

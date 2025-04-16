@@ -326,32 +326,33 @@ describe("workflowShortcuts", () => {
         workflowShortcuts.activateOutputPort.execute({
           payload: { event: eventShiftDigit1 },
         });
-        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("1");
+        expect(selectionStore.activePortTab).toBe("1");
 
         workflowShortcuts.activateOutputPort.execute({
           payload: { event: eventShiftDigit3 },
         });
-        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("3");
+        expect(selectionStore.activePortTab).toBe("3");
 
         // handle metanodes
         selectionStore.singleSelectedNode.kind = Node.KindEnum.Metanode;
         workflowShortcuts.activateOutputPort.execute({
           payload: { event: eventShiftDigit1 },
         });
-        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("0");
+        expect(selectionStore.activePortTab).toBe("0");
 
         workflowShortcuts.activateOutputPort.execute({
           payload: { event: eventShiftDigit3 },
         });
-        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("2");
+        expect(selectionStore.activePortTab).toBe("2");
+      });
 
-        // handle too few outPorts
-        vi.clearAllMocks();
+      it("handles too few outPorts", () => {
+        const { selectionStore } = createStore();
         selectionStore.singleSelectedNode.outPorts = [{}, {}];
         workflowShortcuts.activateOutputPort.execute({
           payload: { event: eventShiftDigit3 },
         });
-        expect(selectionStore.setActivePortTab).not.toBeCalled();
+        expect(selectionStore.activePortTab).toBeNull();
       });
 
       it("handles views", () => {
@@ -366,9 +367,7 @@ describe("workflowShortcuts", () => {
         workflowShortcuts.activateOutputPort.execute({
           payload: { event: eventShiftDigit1 },
         });
-        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith(
-          "view",
-        );
+        expect(selectionStore.activePortTab).toBe("view");
       });
 
       it("checks condition", () => {
@@ -398,7 +397,7 @@ describe("workflowShortcuts", () => {
         const { selectionStore } = createStore();
 
         workflowShortcuts.activateFlowVarPort.execute({});
-        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("0");
+        expect(selectionStore.activePortTab).toBe("0");
       });
 
       it("checks condition", () => {

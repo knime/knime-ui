@@ -13,16 +13,18 @@ describe("nodeAlignShortcuts", () => {
   const createStore = () => {
     const { workflowStore, selectionStore } = mockStores();
 
+    const node1 = createNativeNode({ id: "root:1" });
+    const node2 = createComponentNode({ id: "root:2" });
+
     workflowStore.activeWorkflow = createWorkflow({
-      nodes: {
-        "root:1": createNativeNode(),
-        "root:2": createComponentNode({ id: "root:2" }),
-      },
+      nodes: { [node1.id]: node1, [node2.id]: node2 },
     });
 
     return {
-      workflowStore,
       selectionStore,
+      workflowStore,
+      node1,
+      node2,
     };
   };
 
@@ -46,9 +48,9 @@ describe("nodeAlignShortcuts", () => {
   describe("condition", () => {
     it.each([["alignHorizontally"], ["alignVertically"]])(
       "%s should check number of selected nodes and if workflow is writable",
-      (shortcutName) => {
-        const { selectionStore, workflowStore } = createStore();
-        selectionStore.selectedNodes = { "root:1": true, "root:2": true };
+      async (shortcutName) => {
+        const { selectionStore, workflowStore, node1, node2 } = createStore();
+        await selectionStore.selectNodes([node1.id, node2.id]);
 
         expect(nodeAlignShortcuts[shortcutName].condition()).toBe(true);
 
@@ -56,7 +58,8 @@ describe("nodeAlignShortcuts", () => {
         expect(nodeAlignShortcuts[shortcutName].condition()).toBe(false);
 
         workflowStore.isWritable = true;
-        selectionStore.selectedNodes = { "root:1": true };
+
+        await selectionStore.deselectAllObjects([node1.id]);
         expect(nodeAlignShortcuts[shortcutName].condition()).toBe(false);
       },
     );

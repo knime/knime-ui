@@ -16,7 +16,7 @@ describe("useObjectInteractions", () => {
     vi.clearAllMocks();
   });
 
-  const triggerInteraction = (
+  const triggerInteraction = async (
     canvas: HTMLCanvasElement,
     startInteractionHandler: (event: FederatedPointerEvent) => void,
     pointerPositions: {
@@ -39,6 +39,7 @@ describe("useObjectInteractions", () => {
       ctrlKey: modifiers.ctrlKey,
       nativeEvent: new PointerEvent("pointerdown"),
     });
+    await flushPromises();
 
     canvas.dispatchEvent(
       new PointerEvent("pointermove", {
@@ -55,6 +56,8 @@ describe("useObjectInteractions", () => {
         offsetY: pointerPositions.end.y,
       }),
     );
+
+    await flushPromises();
   };
 
   type MountOpts = {
@@ -64,8 +67,14 @@ describe("useObjectInteractions", () => {
 
   const doMount = (options: MountOpts = {}) => {
     const isSelected = ref(false);
-    const selectSpy = vi.fn(() => (isSelected.value = true));
-    const deselectSpy = vi.fn(() => (isSelected.value = false));
+    const selectSpy = vi.fn(() => {
+      isSelected.value = true;
+      return Promise.resolve();
+    });
+    const deselectSpy = vi.fn(() => {
+      isSelected.value = false;
+      return Promise.resolve();
+    });
 
     const setPointerCapture = vi.fn();
     const releasePointerCapture = vi.fn();
@@ -103,7 +112,7 @@ describe("useObjectInteractions", () => {
   };
 
   describe("selection", () => {
-    it("should select object and not drag", () => {
+    it("should select object and not drag", async () => {
       const {
         getComposableResult,
         addEventSpy,
@@ -121,7 +130,11 @@ describe("useObjectInteractions", () => {
         end: { x: 11, y: 21 },
       };
 
-      triggerInteraction(canvas, handlePointerInteraction, pointerPositions);
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
 
       expect(markEventAsHandled).toHaveBeenCalled();
 
@@ -143,7 +156,7 @@ describe("useObjectInteractions", () => {
       expect(deselectSpy).not.toHaveBeenCalled();
     });
 
-    it("should toggle selection", () => {
+    it("should toggle selection", async () => {
       const {
         getComposableResult,
         canvas,
@@ -160,9 +173,14 @@ describe("useObjectInteractions", () => {
         end: { x: 11, y: 21 },
       };
 
-      triggerInteraction(canvas, handlePointerInteraction, pointerPositions, {
-        ctrlKey: true,
-      });
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+        {
+          ctrlKey: true,
+        },
+      );
 
       expect(
         mockedStores.selectionStore.deselectAllObjects,
@@ -171,9 +189,14 @@ describe("useObjectInteractions", () => {
       expect(deselectSpy).not.toHaveBeenCalled();
 
       selectSpy.mockClear();
-      triggerInteraction(canvas, handlePointerInteraction, pointerPositions, {
-        ctrlKey: true,
-      });
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+        {
+          ctrlKey: true,
+        },
+      );
 
       expect(
         mockedStores.selectionStore.deselectAllObjects,
@@ -198,7 +221,12 @@ describe("useObjectInteractions", () => {
         end: { x: 20, y: 30 },
       };
 
-      triggerInteraction(canvas, handlePointerInteraction, pointerPositions);
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
+
       expect(selectSpy).toHaveBeenCalled();
       expect(mockedStores.movingStore.setIsDragging).toHaveBeenCalledWith(true);
       expect(mockedStores.movingStore.setMovePreview).toHaveBeenCalledWith({
@@ -212,7 +240,7 @@ describe("useObjectInteractions", () => {
   });
 
   describe("double click", () => {
-    it("handles double clicks", () => {
+    it("handles double clicks", async () => {
       const onDoubleClick = vi.fn();
       const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
         onDoubleClick,
@@ -226,8 +254,16 @@ describe("useObjectInteractions", () => {
         end: { x: 10, y: 20 },
       };
 
-      triggerInteraction(canvas, handlePointerInteraction, pointerPositions);
-      triggerInteraction(canvas, handlePointerInteraction, pointerPositions);
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
       expect(onDoubleClick).toHaveBeenCalledOnce();
       expect(selectSpy).toHaveBeenCalledOnce();
       expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();

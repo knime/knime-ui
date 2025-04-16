@@ -9,7 +9,7 @@ import type { TooltipDefinition } from "../../types";
 
 const anchorPoint = inject<XY>("anchorPoint");
 
-interface Props {
+type Props = {
   executionState?: NodeState.ExecutionStateEnum | null;
   progress?: number | null;
   progressMessages?: [];
@@ -20,7 +20,7 @@ interface Props {
   // TODO: NXT-845 validator and/or docs needed
   // TODO: NXT-845 naming state vs status
   loopStatus?: string | null;
-}
+};
 
 const props = withDefaults(defineProps<Props>(), {
   executionState: null,

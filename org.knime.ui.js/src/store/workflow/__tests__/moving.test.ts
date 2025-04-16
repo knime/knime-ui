@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import { createNativeNode, createWorkflow } from "@/test/factories";
@@ -75,11 +76,6 @@ describe("workflow::moving", () => {
         });
       }
 
-      const annotationsArrayCopy: Array<{ id: string; bounds: any }> =
-        JSON.parse(JSON.stringify(annotationsArray));
-      const nodesRecordsCopy: Record<string, { id: string; position: any }> =
-        JSON.parse(JSON.stringify(nodesRecords));
-
       workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
@@ -99,12 +95,17 @@ describe("workflow::moving", () => {
       await nextTick();
       const nodeIds: string[] = [];
       const annotationIds: string[] = [];
+      await selectionStore.selectNodes(
+        Object.values(nodesRecords).map((node) => node.id),
+      );
+      await flushPromises();
+
       Object.values(nodesRecords).forEach((node) => {
-        selectionStore.selectNode(node.id);
         nodeIds.push(node.id);
       });
+
       Object.values(annotationsArray).forEach((annotation) => {
-        selectionStore.selectAnnotation(annotation.id);
+        selectionStore.selectAnnotations(annotation.id);
         annotationIds.push(annotation.id);
       });
 
@@ -115,7 +116,7 @@ describe("workflow::moving", () => {
 
       // optimistic update
       expect(workflowStore.activeWorkflow!.workflowAnnotations).toStrictEqual(
-        annotationsArrayCopy.map((annotation: any) => ({
+        annotationsArray.map((annotation: any) => ({
           ...annotation,
           bounds: {
             ...annotation.bounds,
@@ -127,7 +128,7 @@ describe("workflow::moving", () => {
 
       expect(workflowStore.activeWorkflow!.nodes!).toStrictEqual(
         Object.fromEntries(
-          Object.entries(nodesRecordsCopy).map(([key, value]) => [
+          Object.entries(nodesRecords).map(([key, value]) => [
             key,
             { ...value, position: { x: 50, y: 50 } },
           ]),

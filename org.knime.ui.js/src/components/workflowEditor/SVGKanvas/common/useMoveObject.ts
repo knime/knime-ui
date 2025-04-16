@@ -63,14 +63,14 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
   };
 
   const createPointerDownHandler =
-    (initialPosition: Ref<XY>) => (pointerDownEvent: PointerEvent) => {
+    (initialPosition: Ref<XY>) =>
+    (pointerDownEvent: PointerEvent, eventTarget: HTMLElement) => {
       pointerDownEvent.stopPropagation();
 
       if (!isWritable.value || isMoveLocked.value) {
         return;
       }
 
-      const eventTarget = pointerDownEvent.currentTarget as HTMLElement;
       onMoveStartCallback(pointerDownEvent);
 
       let hasReleased = false;
@@ -145,7 +145,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         onMoveCallback(pointerMoveEvent);
 
         if (!shouldHideSelection.value) {
-          selectionStore.setShouldHideSelection(true);
+          selectionStore.shouldHideSelection = true;
         }
 
         const snapFn = useGridSnapping
@@ -185,7 +185,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
             consola.error("Error moving objects", error);
             movingStore.resetDragState();
           } finally {
-            selectionStore.setShouldHideSelection(false);
+            selectionStore.shouldHideSelection = false;
           }
 
           if (hasAbortedDrag.value) {

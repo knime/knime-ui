@@ -1,493 +1,379 @@
+import { type Ref, computed, ref } from "vue";
 import { defineStore } from "pinia";
 
-import type { KnimeNode, WorkflowObject } from "@/api/custom-types";
-import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
+import type { WorkflowObject } from "@/api/custom-types";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { parseBendpointId } from "@/util/connectorUtil";
-import type { SelectedPortIdentifier } from "@/util/portSelection";
 
 export type NodeOutputTabIdentifier = "view" | `${number}` | null;
 
-export interface SelectionState {
-  selectedNodes: Record<string, boolean>;
-  selectedConnections: Record<string, boolean>;
-  selectedAnnotations: Record<string, boolean>;
-  selectedBendpoints: Record<string, boolean>;
-  selectedMetanodePortBars: { in?: boolean; out?: boolean };
-  activePortTab: NodeOutputTabIdentifier;
-  activeNodePorts: {
-    nodeId: string | null;
-    selectedPort: SelectedPortIdentifier;
-    isModificationInProgress: boolean;
+const selectionAdder =
+  (target: Ref<Record<string, boolean>>) => (toAdd: string[] | string) => {
+    if (Array.isArray(toAdd)) {
+      toAdd.forEach((id) => (target.value[id] = true));
+    } else {
+      target.value[toAdd] = true;
+    }
   };
 
-  startedSelectionFromAnnotationId: string | null;
-  didStartRectangleSelection: boolean;
+const selectionRemover =
+  (target: Ref<Record<string, boolean>>) => (toRemove: string[] | string) => {
+    if (Array.isArray(toRemove)) {
+      toRemove.forEach((id) => delete target.value[id]);
+    } else {
+      delete target.value[toRemove];
+    }
+  };
 
-  focusedObject: WorkflowObject | null;
+export const useSelectionStore = defineStore("selection", () => {
+  const selectedNodes = ref<Record<string, boolean>>({});
+  const getSelectedNodes = computed(() => {
+    const workflowStore = useWorkflowStore();
+    return workflowStore.activeWorkflow
+      ? Object.keys(selectedNodes.value)
+          .map((id) => workflowStore.activeWorkflow!.nodes[id])
+          .filter(Boolean)
+      : [];
+  });
+  const selectedNodeIds = computed(() =>
+    getSelectedNodes.value.map(({ id }) => id),
+  );
+  const singleSelectedNode = computed(() => {
+    return getSelectedNodes.value.length === 1
+      ? getSelectedNodes.value[0]
+      : null;
+  });
+  const setNodeSelection = async (nodeIds: string[]) => {
+    if (
+      singleSelectedNode.value !== null &&
+      (nodeIds.length === 0 ||
+        nodeIds.some((id) => id !== singleSelectedNode.value!.id))
+    ) {
+      const canContinue = await useNodeConfigurationStore().autoApplySettings();
+      if (!canContinue) {
+        return { wasAborted: true };
+      }
+    }
+    const newSelected = nodeIds.reduce(
+      (acc, id) => ({ ...acc, [id]: true }),
+      {},
+    );
 
-  shouldHideSelection: boolean;
-}
+    if (
+      Object.keys(newSelected).length !==
+        Object.keys(selectedNodes.value).length ||
+      !nodeIds.every((id) => selectedNodes.value[id])
+    ) {
+      selectedNodes.value = newSelected;
+    }
+    return { wasAborted: false };
+  };
 
-/**
- * Store that holds selected objects (nodes, connections)
- */
-// WARNING: Do not use this state directly. Use getters that filter non existent workflow objects.
-export const useSelectionStore = defineStore("selection", {
-  state: (): SelectionState => ({
-    selectedNodes: {},
-    selectedConnections: {},
-    selectedAnnotations: {},
-    selectedMetanodePortBars: {},
-    startedSelectionFromAnnotationId: null,
-    didStartRectangleSelection: false,
-    selectedBendpoints: {},
-    activePortTab: null,
-    activeNodePorts: {
+  const selectedConnections = ref<Record<string, boolean>>({});
+  const getSelectedConnections = computed(() => {
+    const workflowStore = useWorkflowStore();
+    return workflowStore.activeWorkflow
+      ? Object.keys(selectedConnections.value)
+          .map((id) => workflowStore.activeWorkflow!.connections[id])
+          .filter(Boolean)
+      : [];
+  });
+  const selectedConnectionIds = computed(() =>
+    getSelectedConnections.value.map(({ id }) => id),
+  );
+
+  const selectedBendpoints = ref<Record<string, boolean>>({});
+  const selectedBendpointIds = computed(() =>
+    Object.keys(selectedBendpoints.value),
+  );
+  const getSelectedBendpoints = computed(() => {
+    if (!useWorkflowStore().activeWorkflow) {
+      return {};
+    }
+    const result: Record<string, number[]> = {};
+    Object.keys(selectedBendpoints.value).forEach((bendpointId) => {
+      const { connectionId, index } = parseBendpointId(bendpointId);
+      if (!result[connectionId]) {
+        result[connectionId] = [];
+      }
+      result[connectionId].push(index);
+    });
+    return result;
+  });
+
+  const selectedAnnotations = ref<Record<string, boolean>>({});
+  const selectedAnnotationIds = computed(() =>
+    Object.keys(selectedAnnotations.value),
+  );
+  const getSelectedAnnotations = computed(() => {
+    const workflowStore = useWorkflowStore();
+    return workflowStore.activeWorkflow
+      ? workflowStore.activeWorkflow.workflowAnnotations.filter(
+          ({ id }) => selectedAnnotations.value[id],
+        )
+      : [];
+  });
+
+  type MetanodePortBarType = "in" | "out";
+  const selectedMetanodePortBars = ref<Record<string, boolean>>({});
+  const getSelectedMetanodePortBars = computed(
+    () =>
+      Object.keys(selectedMetanodePortBars.value).filter(
+        (type) => selectedMetanodePortBars.value[type as MetanodePortBarType],
+      ) as MetanodePortBarType[],
+  );
+
+  const activePortTab = ref<NodeOutputTabIdentifier | null>(null);
+  const activeNodePorts = ref({
+    nodeId: null as string | null,
+    selectedPort: null as any,
+    isModificationInProgress: false,
+  });
+  const updateActiveNodePorts = (options) => {
+    if ("nodeId" in options) {
+      activeNodePorts.value.nodeId = options.nodeId;
+    }
+    if ("selectedPort" in options) {
+      activeNodePorts.value.selectedPort = options.selectedPort;
+    }
+    if ("isModificationInProgress" in options) {
+      activeNodePorts.value.isModificationInProgress =
+        options.isModificationInProgress;
+    }
+  };
+
+  const focusedObject = ref<WorkflowObject | null>(null);
+  const shouldHideSelection = ref(false);
+
+  const startedSelectionFromAnnotationId = ref<string | null>(null);
+  const didStartRectangleSelection = ref(false);
+
+  const singleSelectedAnnotation = computed(() => {
+    return getSelectedAnnotations.value.length === 1
+      ? getSelectedAnnotations.value[0]
+      : null;
+  });
+
+  const singleSelectedObject = computed(() => {
+    if (
+      getSelectedNodes.value.length > 1 ||
+      getSelectedAnnotations.value.length > 1
+    ) {
+      return null;
+    }
+
+    if (singleSelectedNode.value && !singleSelectedAnnotation.value) {
+      return {
+        ...singleSelectedNode.value.position,
+        id: singleSelectedNode.value.id,
+        type: "node",
+      } as const as WorkflowObject;
+    }
+    if (singleSelectedAnnotation.value && !singleSelectedNode.value) {
+      return {
+        id: singleSelectedAnnotation.value.id,
+        type: "annotation",
+        ...singleSelectedAnnotation.value.bounds,
+      } as const as WorkflowObject;
+    }
+    return null;
+  });
+
+  const selectedObjects = computed(() => [
+    ...getSelectedNodes.value.map(({ id, position }) => ({
+      id,
+      type: "node" as const,
+      ...position,
+    })),
+    ...getSelectedAnnotations.value.map(({ id, bounds }) => ({
+      id,
+      type: "annotation" as const,
+      ...bounds,
+    })),
+  ]);
+
+  const isSelectionEmpty = computed(
+    () =>
+      selectedNodeIds.value.length === 0 &&
+      getSelectedConnections.value.length === 0 &&
+      selectedAnnotationIds.value.length === 0 &&
+      selectedBendpointIds.value.length === 0,
+  );
+
+  const getFocusedObject = computed(() => {
+    if (!focusedObject.value) {
+      return null;
+    }
+    const workflowStore = useWorkflowStore();
+    const { activeWorkflow } = workflowStore;
+    if (!activeWorkflow) {
+      return null;
+    }
+
+    const object = focusedObject.value;
+    if (object.type === "node") {
+      const node = activeWorkflow.nodes[object.id];
+      return node ? { ...node.position, id: node.id, type: "node" } : null;
+    }
+    const annotation = activeWorkflow.workflowAnnotations.find(
+      ({ id }) => id === object.id,
+    );
+    return annotation
+      ? {
+          id: annotation.id,
+          type: "annotation",
+          ...annotation.bounds,
+        }
+      : null;
+  });
+
+  const toggleAnnotationSelection = ({
+    annotationId,
+    isMultiselect,
+    isSelected,
+  }: {
+    annotationId: string;
+    isMultiselect: boolean;
+    isSelected: boolean;
+  }) => {
+    if (
+      annotationId === startedSelectionFromAnnotationId.value &&
+      didStartRectangleSelection.value
+    ) {
+      startedSelectionFromAnnotationId.value = null;
+      return;
+    }
+
+    if (!isMultiselect) {
+      selectedAnnotations.value = { [annotationId]: true };
+      return;
+    }
+
+    if (isSelected) {
+      delete selectedAnnotations.value[annotationId];
+    } else {
+      selectedAnnotations.value[annotationId] = true;
+    }
+  };
+
+  /*
+   *  Deselects all objects in the workflow. Can be interrupted by the user.
+   *  @param preserveSelectionFor - the nodes will be except from deselecting avoiding unnecessary vue reactivity. In case they were not selected, they will be selected afterwards.
+   */
+  const deselectAllObjects = async (preserveSelectionFor: string[] = []) => {
+    const { wasAborted } = await setNodeSelection(preserveSelectionFor);
+    if (wasAborted) {
+      return { wasAborted: true };
+    }
+
+    // don't override selection objects in case there is nothing selected
+    // prevents unnecessary triggering of vue reactivity.
+    if (Object.keys(selectedConnections.value).length > 0) {
+      selectedConnections.value = {};
+    }
+    if (Object.keys(selectedAnnotations.value).length > 0) {
+      selectedAnnotations.value = {};
+    }
+    if (Object.keys(selectedBendpoints.value).length > 0) {
+      selectedBendpoints.value = {};
+    }
+    if (Object.keys(selectedMetanodePortBars.value).length > 0) {
+      selectedMetanodePortBars.value = {};
+    }
+
+    activeNodePorts.value = {
       nodeId: null,
       selectedPort: null,
       isModificationInProgress: false,
+    };
+
+    focusedObject.value = null;
+    return { wasAborted: false };
+  };
+
+  const selectAllObjects = async () => {
+    const { wasAborted } = await setNodeSelection(
+      Object.keys(useWorkflowStore().activeWorkflow!.nodes),
+    );
+    if (wasAborted) {
+      return { wasAborted: true };
+    }
+    useWorkflowStore().activeWorkflow!.workflowAnnotations.forEach(
+      ({ id }) => (selectedAnnotations.value[id] = true),
+    );
+
+    return { wasAborted: false };
+  };
+
+  return {
+    // actions
+    selectAllObjects,
+    deselectAllObjects,
+    toggleAnnotationSelection,
+    focusObject: (object: WorkflowObject | null) => {
+      focusedObject.value = object;
     },
 
-    focusedObject: null,
-
-    shouldHideSelection: false,
-  }),
-  actions: {
-    addNodesToSelection(nodeIds: string[]) {
-      // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
-      const selectedNodes = { ...this.selectedNodes };
-      nodeIds.forEach((id) => {
-        selectedNodes[id] = true;
-      });
-
-      this.selectedNodes = selectedNodes;
-    },
-
-    removeNodesFromSelection(nodeIds: string[]) {
-      // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
-      const selectedNodes = { ...this.selectedNodes };
-      nodeIds.forEach((id) => {
-        delete selectedNodes[id];
-      });
-
-      this.selectedNodes = selectedNodes;
-    },
-
-    clearSelection() {
-      // don't override selection objects in case there is nothing selected
-      // prevents unnecessary slowdown.
-      if (Object.keys(this.selectedNodes).length > 0) {
-        this.selectedNodes = {};
-      }
-      if (Object.keys(this.selectedConnections).length > 0) {
-        this.selectedConnections = {};
-      }
-      if (Object.keys(this.selectedAnnotations).length > 0) {
-        this.selectedAnnotations = {};
-      }
-      if (Object.keys(this.selectedBendpoints).length > 0) {
-        this.selectedBendpoints = {};
-      }
-      if (Object.keys(this.selectedMetanodePortBars).length > 0) {
-        this.selectedMetanodePortBars = {};
-      }
-      if (this.activeNodePorts.selectedPort) {
-        this.activeNodePorts.nodeId = null;
-        this.activeNodePorts.selectedPort = null;
-      }
-    },
-
-    addConnectionsToSelection(connectionIds: string[]) {
-      connectionIds.forEach((id) => {
-        this.selectedConnections[id] = true;
-      });
-    },
-
-    removeConnectionsFromSelection(connectionIds: string[]) {
-      connectionIds.forEach((id) => {
-        delete this.selectedConnections[id];
-      });
-    },
-
-    removeMetanodePortBarsFromSelection(
-      metaNodePortBarTypes: Array<"in" | "out">,
-    ) {
-      metaNodePortBarTypes.forEach((type) => {
-        delete this.selectedMetanodePortBars[type];
-      });
-    },
-
-    addMetanodePortBarsToSelection(metaNodePortBarTypes: Array<"in" | "out">) {
-      metaNodePortBarTypes.forEach(
-        (type) => (this.selectedMetanodePortBars[type] = true),
-      );
-    },
-
-    addAnnotationToSelection(annotationIds: string[]) {
-      annotationIds.forEach((id) => {
-        this.selectedAnnotations[id] = true;
-      });
-    },
-
-    removeAnnotationFromSelection(annotationIds: string[]) {
-      annotationIds.forEach((id) => {
-        delete this.selectedAnnotations[id];
-      });
-    },
-
-    addBendpointsToSelection(bendpoints: Array<string>) {
-      bendpoints.forEach((bendpointId) => {
-        this.selectedBendpoints[bendpointId] = true;
-      });
-    },
-
-    removeBendpointsFromSelection(bendpoints: Array<string>) {
-      bendpoints.forEach((bendpointId) => {
-        delete this.selectedBendpoints[bendpointId];
-      });
-    },
-
-    setStartedSelectionFromAnnotationId(
-      startedSelectionFromAnnotationId: string | null,
-    ) {
-      this.startedSelectionFromAnnotationId = startedSelectionFromAnnotationId;
-    },
-
-    setDidStartRectangleSelection(didStartRectangleSelection: boolean) {
-      this.didStartRectangleSelection = didStartRectangleSelection;
-    },
-
-    focusObject(focusedObject: WorkflowObject) {
-      this.focusedObject = focusedObject;
-    },
-
-    unfocusObject() {
-      this.focusedObject = null;
-    },
-
-    setShouldHideSelection(shouldHideSelection: boolean) {
-      this.shouldHideSelection = shouldHideSelection;
-    },
-
-    setActivePortTab(activePortTab: NodeOutputTabIdentifier) {
-      this.activePortTab = activePortTab;
-    },
-
-    updateActiveNodePorts(
-      activeNodePorts: Partial<SelectionState["activeNodePorts"]>,
-    ) {
-      Object.assign(this.activeNodePorts, activeNodePorts);
-    },
-
-    deselectAllObjects() {
-      this.clearSelection();
-      this.unfocusObject();
-    },
-
-    selectAllObjects() {
-      this.addNodesToSelection(
-        Object.keys(useWorkflowStore().activeWorkflow!.nodes),
-      );
-      this.addAnnotationToSelection(
-        useWorkflowStore().activeWorkflow!.workflowAnnotations.map(
-          (annotation) => annotation.id,
-        ),
-      );
-    },
-
-    selectNode(nodeId: string) {
-      this.addNodesToSelection([nodeId]);
-    },
-
-    selectSingleObject(object: Omit<WorkflowObject, keyof XY>) {
-      this.deselectAllObjects();
-
-      switch (object.type) {
-        case "node":
-          this.addNodesToSelection([object.id]);
-          break;
-        case "annotation":
-          this.addAnnotationToSelection([object.id]);
-          break;
-      }
-    },
-
-    selectNodes(nodeIds: string[]) {
-      this.addNodesToSelection(nodeIds);
-    },
-
-    deselectNode(nodeId: string) {
-      this.removeNodesFromSelection([nodeId]);
-    },
-
-    deselectNodes(nodeIds: string[]) {
-      this.removeNodesFromSelection(nodeIds);
-    },
-
-    selectConnection(connectionId: string) {
-      this.addConnectionsToSelection([connectionId]);
-    },
-
-    deselectConnection(connectionId: string) {
-      this.removeConnectionsFromSelection([connectionId]);
-    },
-
-    selectMetanodePortBar(metaNodePortBarType: "in" | "out") {
-      this.addMetanodePortBarsToSelection([metaNodePortBarType]);
-    },
-
-    deselectMetanodePortBar(metaNodePortBarType: "in" | "out") {
-      this.removeMetanodePortBarsFromSelection([metaNodePortBarType]);
-    },
-
-    selectAnnotation(annotationId: string) {
-      this.addAnnotationToSelection([annotationId]);
-    },
-
-    selectAnnotations(annotationIds: string[]) {
-      this.addAnnotationToSelection(annotationIds);
-    },
-
-    deselectAnnotation(annotationId: string) {
-      this.removeAnnotationFromSelection([annotationId]);
-    },
-
-    deselectAnnotations(annotationIds: string[]) {
-      this.removeAnnotationFromSelection(annotationIds);
-    },
-
-    selectBendpoint(bendpoint: string) {
-      this.addBendpointsToSelection([bendpoint]);
-    },
-
-    deselectBendpoint(bendpoint: string) {
-      this.removeBendpointsFromSelection([bendpoint]);
-    },
-
-    selectBendpoints(bendpoints: string[]) {
-      this.addBendpointsToSelection(bendpoints);
-    },
-
-    deselectBendpoints(bendpoints: string[]) {
-      this.removeBendpointsFromSelection(bendpoints);
-    },
-
-    toggleAnnotationSelection({
-      annotationId,
-      isMultiselect,
-      isSelected,
-    }: {
-      annotationId: string;
-      isMultiselect: boolean;
-      isSelected: boolean;
-    }) {
-      // Prevents selecting/deselecting the annotation that the rectangle selection started from but was not included
-      // in a rectangle selection
-      if (
-        annotationId === this.startedSelectionFromAnnotationId &&
-        this.didStartRectangleSelection
-      ) {
-        this.setStartedSelectionFromAnnotationId(null);
-        return;
-      }
-
-      if (!isMultiselect) {
-        this.deselectAllObjects();
-        this.selectAnnotation(annotationId);
-        return;
-      }
-
-      if (isSelected) {
-        this.deselectAnnotation(annotationId);
-      } else {
-        this.selectAnnotation(annotationId);
-      }
-    },
-  },
-  getters: {
-    // Returns an array of selected node objects.
-    // This getter filters non-existent selected nodes
-    getSelectedNodes: (state): KnimeNode[] => {
-      if (!useWorkflowStore().activeWorkflow) {
-        return [];
-      }
-      return Object.keys(state.selectedNodes)
-        .map((nodeId) => useWorkflowStore().activeWorkflow!.nodes[nodeId])
-        .filter(Boolean);
-    },
-
-    getSelectedAnnotations: (state): WorkflowAnnotation[] => {
-      const workflowStore = useWorkflowStore();
-
-      if (!workflowStore.activeWorkflow) {
-        return [];
-      }
-      return workflowStore.activeWorkflow.workflowAnnotations.filter(
-        (annotation) =>
-          Object.keys(state.selectedAnnotations).includes(annotation.id),
-      );
-    },
-
-    getSelectedMetanodePortBars: (state) => {
-      if (!useWorkflowStore().activeWorkflow) {
-        return [];
-      }
-
-      return Object.keys(state.selectedMetanodePortBars)
-        .map((type) =>
-          state.selectedMetanodePortBars[type as "in" | "out"] ? type : null,
-        )
-        .filter(Boolean);
-    },
-
-    getSelectedConnections: (state) => {
-      if (!useWorkflowStore().activeWorkflow) {
-        return [];
-      }
-
-      return Object.keys(state.selectedConnections)
-        .map((id) => useWorkflowStore().activeWorkflow!.connections[id])
-        .filter(Boolean); // after deleting a selected connection, it will be undefined
-    },
-
-    getSelectedBendpoints: (state) => {
-      if (!useWorkflowStore().activeWorkflow) {
-        return {};
-      }
-
-      return Object.keys(state.selectedBendpoints)
-        .map((bendpointId) => parseBendpointId(bendpointId))
-        .reduce(
-          (acc, item) => {
-            const { connectionId, index } = item;
-            const indexes = acc[connectionId] ?? [];
-            indexes.push(index);
-            acc[connectionId] = indexes;
-            return acc;
-          },
-          {} as Record<string, number[]>,
-        );
-    },
-
-    selectedNodeIds(): string[] {
-      return this.getSelectedNodes.map((node: KnimeNode) => node.id);
-    },
-
-    selectedAnnotationIds(): string[] {
-      return this.getSelectedAnnotations.map(
-        (annotation: WorkflowAnnotation) => annotation.id,
-      );
-    },
-
-    selectedBendpointIds: (state) => {
-      return Object.keys(state.selectedBendpoints);
-    },
-
-    singleSelectedNode(): KnimeNode | null {
-      if (this.getSelectedNodes.length !== 1) {
-        return null;
-      }
-
-      return this.getSelectedNodes[0];
-    },
-
-    singleSelectedAnnotation(): WorkflowAnnotation | null {
-      if (this.getSelectedAnnotations.length !== 1) {
-        return null;
-      }
-
-      return this.getSelectedAnnotations[0];
-    },
-
-    singleSelectedObject(): WorkflowObject | null {
-      if (
-        this.getSelectedNodes.length > 1 ||
-        this.getSelectedAnnotations.length > 1
-      ) {
-        return null;
-      }
-
-      if (this.singleSelectedNode && !this.singleSelectedAnnotation) {
-        return {
-          id: this.singleSelectedNode.id,
-          type: "node",
-          ...this.singleSelectedNode.position,
-        };
-      }
-
-      if (this.singleSelectedAnnotation && !this.singleSelectedNode) {
-        return {
-          id: this.singleSelectedAnnotation.id,
-          type: "annotation",
-          x: this.singleSelectedAnnotation.bounds.x,
-          y: this.singleSelectedAnnotation.bounds.y,
-        };
-      }
-
-      return null;
-    },
-
-    selectedObjects(): WorkflowObject[] {
-      const nodePositions = this.getSelectedNodes.map((node) => ({
-        id: node.id,
-        type: "node" as const,
-        ...node.position,
-      }));
-
-      const annotationPositions = this.getSelectedAnnotations.map(
-        ({ id, bounds }) => ({
-          id,
-          type: "annotation" as const,
-          x: bounds.x,
-          y: bounds.y,
-        }),
-      );
-
-      return [...nodePositions, ...annotationPositions];
-    },
-
-    isNodeSelected: (state) => (nodeId: string) =>
-      nodeId in state.selectedNodes,
-
-    isMetaNodePortBarSelected: (state) => (metaNodePortBarType: "in" | "out") =>
-      metaNodePortBarType in state.selectedMetanodePortBars,
-
-    isAnnotationSelected: (state) => (annotationId: string) =>
-      annotationId in state.selectedAnnotations,
-
-    isConnectionSelected: (state) => (connectionId: string) =>
-      Reflect.has(state.selectedConnections, connectionId),
-
-    isBendpointSelected: (state) => (bendpointId: string) =>
-      Reflect.has(state.selectedBendpoints, bendpointId),
-
-    isSelectionEmpty() {
-      return (
-        this.selectedNodeIds.length === 0 &&
-        this.getSelectedConnections.length === 0 &&
-        this.selectedAnnotationIds.length === 0 &&
-        this.selectedBendpointIds.length === 0
-      );
-    },
-
-    getFocusedObject(state): WorkflowObject | null {
-      if (!state.focusedObject) {
-        return null;
-      }
-
-      const { nodes, workflowAnnotations } = useWorkflowStore().activeWorkflow!;
-      const { id, type } = state.focusedObject;
-
-      if (type === "node") {
-        return { id, type, ...nodes[id].position };
-      }
-
-      const annotation = workflowAnnotations.find(
-        ({ id: annotationId }) => annotationId === id,
-      )!;
-
-      return { id, type, x: annotation.bounds.x, y: annotation.bounds.y };
-    },
-  },
+    // direct accessible state
+    startedSelectionFromAnnotationId,
+    didStartRectangleSelection,
+    activePortTab,
+
+    activeNodePorts,
+    updateActiveNodePorts,
+    shouldHideSelection,
+
+    // getters
+    selectedNodeIds,
+    singleSelectedNode,
+    getSelectedNodes,
+
+    selectedAnnotationIds,
+    getSelectedAnnotations,
+    singleSelectedAnnotation,
+
+    getSelectedMetanodePortBars,
+
+    selectedBendpointIds,
+    getSelectedBendpoints,
+
+    selectedConnectionIds,
+    getSelectedConnections,
+
+    singleSelectedObject,
+    selectedObjects,
+    isSelectionEmpty,
+    getFocusedObject,
+
+    // selection state predicates
+    isNodeSelected: (id: string) => Boolean(selectedNodes.value[id]),
+    isMetaNodePortBarSelected: (type: "in" | "out") =>
+      Boolean(selectedMetanodePortBars.value[type]),
+    isAnnotationSelected: (id: string) =>
+      Boolean(selectedAnnotations.value[id]),
+    isConnectionSelected: (id: string) =>
+      Boolean(selectedConnections.value[id]),
+    isBendpointSelected: (id: string) => Boolean(selectedBendpoints.value[id]),
+
+    // adder and remover functions
+    selectNodes: (ids: string[]) =>
+      setNodeSelection([...Object.keys(selectedNodes.value), ...ids]),
+    deselectNodes: (ids: string[]) =>
+      setNodeSelection(
+        Object.keys(selectedNodes.value).filter((id) => !ids.includes(id)),
+      ),
+
+    selectMetanodePortBar: selectionAdder(selectedMetanodePortBars),
+    deselectMetanodePortBar: selectionRemover(selectedMetanodePortBars),
+
+    selectAnnotations: selectionAdder(selectedAnnotations),
+    deselectAnnotations: selectionRemover(selectedAnnotations),
+
+    selectBendpoints: selectionAdder(selectedBendpoints),
+    deselectBendpoints: selectionRemover(selectedBendpoints),
+
+    selectConnections: selectionAdder(selectedConnections),
+    deselectConnections: selectionRemover(selectedConnections),
+  };
 });

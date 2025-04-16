@@ -154,8 +154,12 @@ export const useWorkflowMonitorStore = defineStore("workflowMonitor", {
       const { promise, resolve } = createUnwrappedPromise<void>();
 
       const selectNodeWithIssue = async (nodeId: string) => {
-        useSelectionStore().deselectAllObjects();
-        useSelectionStore().selectNode(nodeId);
+        const { wasAborted } = await useSelectionStore().deselectAllObjects([
+          nodeId,
+        ]);
+        if (wasAborted) {
+          return;
+        }
 
         const { position } = workflowStore.activeWorkflow!.nodes[nodeId];
         const workflowObject: WorkflowObject = {
@@ -172,6 +176,13 @@ export const useWorkflowMonitorStore = defineStore("workflowMonitor", {
 
       if (message.workflowId === activeWorkflowId) {
         await selectNodeWithIssue(message.nodeId);
+        resolve();
+        return promise;
+      }
+
+      // We need to switch to the sub workflow and leave the selection context.
+      const { wasAborted } = await useSelectionStore().deselectAllObjects();
+      if (wasAborted) {
         resolve();
         return promise;
       }

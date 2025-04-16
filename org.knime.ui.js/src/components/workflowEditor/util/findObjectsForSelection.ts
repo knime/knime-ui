@@ -1,9 +1,8 @@
 import type { Workflow } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import type { BendpointId } from "@/util/connectorUtil";
 
-// find nodes that are fully or partly inside the rectangle defined by startPos and endPos
+// find objects that are fully or partly inside the rectangle defined by startPos and endPos
 export const findObjectsForSelection = ({
   startPos,
   endPos,
@@ -68,29 +67,10 @@ export const findObjectsForSelection = ({
     }
   });
 
-  // divide bendpoints
-  const bendpointsInside: Array<BendpointId> = [];
-  const bendpointsOutside: Array<BendpointId> = [];
-  Object.values(workflow.connections).forEach(({ bendpoints = [], id }) => {
-    bendpoints.forEach(({ x, y }, index) => {
-      const xInside = rectangle.x1 <= x && rectangle.x2 >= x;
-      const yInside = rectangle.y1 <= y && rectangle.y2 >= y;
-
-      // create lists with bendpoint ids
-      if (xInside && yInside) {
-        bendpointsInside.push(`${id}__${index}`);
-      } else {
-        bendpointsOutside.push(`${id}__${index}`);
-      }
-    });
-  });
-
   return {
     nodesInside,
     nodesOutside,
     annotationsInside,
     annotationsOutside,
-    bendpointsInside,
-    bendpointsOutside,
   };
 };

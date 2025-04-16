@@ -47,7 +47,7 @@ describe("NodeOutput.vue", () => {
     }),
   };
 
-  const createStores = ({
+  const createStores = async ({
     nodes = dummyNodes,
     selectedNodeIds = ["node1"],
     isDragging = false,
@@ -69,14 +69,14 @@ describe("NodeOutput.vue", () => {
       }),
     );
     mockedStores.applicationStore.setActiveProjectId("projectId");
-    mockedStores.selectionStore.addNodesToSelection(selectedNodeIds);
+    await mockedStores.selectionStore.selectNodes(selectedNodeIds);
     return mockedStores;
   };
 
-  const doMount = (
+  const doMount = async (
     _mockedStores: ReturnType<typeof mockStores> | null = null,
   ) => {
-    const mockedStores = _mockedStores || createStores();
+    const mockedStores = _mockedStores || (await createStores());
 
     const wrapper = mount(NodeOutput, {
       global: {
@@ -93,9 +93,9 @@ describe("NodeOutput.vue", () => {
     wrapper.findComponent(ValidationInfo).text();
 
   describe("selection check", () => {
-    it("should render placeholder if no node is selected", () => {
-      const mockedStores = createStores({ selectedNodeIds: [] });
-      const { wrapper } = doMount(mockedStores);
+    it("should render placeholder if no node is selected", async () => {
+      const mockedStores = await createStores({ selectedNodeIds: [] });
+      const { wrapper } = await doMount(mockedStores);
 
       expect(validationInfoMessage(wrapper)).toBe(
         "Select a configured or executed node to show the node output.",
@@ -106,17 +106,17 @@ describe("NodeOutput.vue", () => {
       expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
     });
 
-    it("should render placeholder if more than one node is selected", () => {
+    it("should render placeholder if more than one node is selected", async () => {
       const nodes = {
         ...dummyNodes,
         node2: { ...dummyNodes.node1, id: "node2" },
       };
 
-      const mockedStores = createStores({
+      const mockedStores = await createStores({
         selectedNodeIds: ["node1", "node2"],
         nodes,
       });
-      const { wrapper } = doMount(mockedStores);
+      const { wrapper } = await doMount(mockedStores);
 
       expect(validationInfoMessage(wrapper)).toBe(
         "Select only one node to show the node output.",
@@ -134,12 +134,12 @@ describe("NodeOutput.vue", () => {
       outPorts: dummyNodes.node1.outPorts,
     });
 
-    const mockedStores = createStores({
+    const mockedStores = await createStores({
       selectedNodeIds: ["root:2"],
       nodes: { [node.id]: node },
     });
 
-    const { wrapper } = doMount(mockedStores);
+    const { wrapper } = await doMount(mockedStores);
     const portView = wrapper.findComponent(PortViewTabOutput);
 
     expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);
@@ -165,14 +165,12 @@ describe("NodeOutput.vue", () => {
         outPorts: dummyNodes.node1.outPorts,
       });
 
-      const mockedStores = createStores({
+      const mockedStores = await createStores({
         selectedNodeIds: ["root:2"],
         nodes: { [node.id]: node },
       });
 
-      const { wrapper } = doMount(mockedStores);
-
-      await nextTick();
+      const { wrapper } = await doMount(mockedStores);
 
       expect(
         wrapper.findComponent(ValidationInfo).props("validationError"),
@@ -190,9 +188,7 @@ describe("NodeOutput.vue", () => {
     });
 
     it("should remove validation info when error node becomes valid", async () => {
-      const { wrapper, mockedStores } = doMount();
-
-      await nextTick();
+      const { wrapper, mockedStores } = await doMount();
 
       expect(
         wrapper.findComponent(ValidationInfo).props("validationError"),
@@ -224,11 +220,11 @@ describe("NodeOutput.vue", () => {
         kind: Node.KindEnum.Metanode,
         outPorts: [dummyNodes.node1.outPorts[0]],
       });
-      const mockedStores = createStores({
+      const mockedStores = await createStores({
         nodes: { [node1.id]: node1, [node2.id]: node2 },
         selectedNodeIds: [node1.id],
       });
-      const { wrapper } = doMount(mockedStores);
+      const { wrapper } = await doMount(mockedStores);
 
       // port should initially be 1 because regular nodes by default select the second port
       // since the first is the flowVariable port
@@ -237,9 +233,7 @@ describe("NodeOutput.vue", () => {
       ).toBe(1);
 
       // change from node1 -> node2
-      mockedStores.selectionStore.clearSelection();
-      mockedStores.selectionStore.addNodesToSelection(["node2"]);
-      await nextTick();
+      await mockedStores.selectionStore.deselectAllObjects(["node2"]);
 
       // the port should change to 0 because metanode has a single port
       expect(
@@ -279,10 +273,8 @@ describe("NodeOutput.vue", () => {
         });
 
       it("shows button if no supported view available", async () => {
-        const mockedStores = storesWithNode(configuredUnsupportedNode);
-        const { wrapper } = doMount(mockedStores);
-
-        await nextTick();
+        const mockedStores = await storesWithNode(configuredUnsupportedNode);
+        const { wrapper } = await doMount(mockedStores);
 
         const button = wrapper
           .find('[data-test-id="execute-open-legacy-view-action"]')
@@ -307,9 +299,7 @@ describe("NodeOutput.vue", () => {
         ],
         ["executed node", () => executedUnsupportedNode, "Open port view"],
       ])("button properly displayed for %s", async (_, node, expectedText) => {
-        const { wrapper } = doMount(storesWithNode(node()));
-
-        await nextTick();
+        const { wrapper } = await doMount(await storesWithNode(node()));
 
         const buttonWrapper = wrapper.find(
           '[data-test-id="execute-open-legacy-view-action"]',
@@ -369,11 +359,11 @@ describe("NodeOutput.vue", () => {
       it("selects the proper tab when handling nodes with views", async () => {
         const node2 = createNativeNode({ ...nodeWithView, id: "6" });
 
-        const mockedStores = createStores({
+        const mockedStores = await createStores({
           nodes: { [nodeWithView.id]: nodeWithView, [node2.id]: node2 },
           selectedNodeIds: [nodeWithView.id],
         });
-        const { wrapper } = doMount(mockedStores);
+        const { wrapper } = await doMount(mockedStores);
 
         // start from the right tab
         wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "view");
@@ -381,10 +371,7 @@ describe("NodeOutput.vue", () => {
         expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(true);
 
         // select other node
-        mockedStores.selectionStore.clearSelection();
-        mockedStores.selectionStore.addNodesToSelection([node2.id]);
-
-        await nextTick();
+        await mockedStores.selectionStore.deselectAllObjects([node2.id]);
 
         expect(wrapper.findComponent(PortViewTabOutput).exists()).toBe(false);
         expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(true);
@@ -409,12 +396,11 @@ describe("NodeOutput.vue", () => {
         ["metanode", () => metanode, 0],
       ])("default ports %s", async (_, getNode, expectedPort) => {
         const node = getNode();
-        const mockedStores = createStores({
+        const mockedStores = await createStores({
           nodes: { [node.id]: node },
           selectedNodeIds: [node.id],
         });
-        const { wrapper } = doMount(mockedStores);
-        await nextTick();
+        const { wrapper } = await doMount(mockedStores);
 
         expect(
           wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
@@ -422,7 +408,7 @@ describe("NodeOutput.vue", () => {
       });
 
       it("selects port when node changes", async () => {
-        const mockedStores = createStores({
+        const mockedStores = await createStores({
           nodes: {
             [nodeWithPorts.id]: nodeWithPorts,
             [nodeWithManyPorts.id]: nodeWithManyPorts,
@@ -430,8 +416,7 @@ describe("NodeOutput.vue", () => {
           selectedNodeIds: [nodeWithPorts.id],
         });
 
-        const { wrapper } = doMount(mockedStores);
-        await nextTick();
+        const { wrapper } = await doMount(mockedStores);
 
         // first port is selected by default
         expect(
@@ -448,8 +433,9 @@ describe("NodeOutput.vue", () => {
         ).toBe(0);
 
         // change selection to nodeWithManyPorts
-        await mockedStores.selectionStore.deselectAllObjects();
-        await mockedStores.selectionStore.selectNode(nodeWithManyPorts.id);
+        await mockedStores.selectionStore.deselectAllObjects([
+          nodeWithManyPorts.id,
+        ]);
 
         // default port was selected after node changed
         expect(
@@ -505,11 +491,11 @@ describe("NodeOutput.vue", () => {
         const node1 = getNode1();
         const node2 = getNode2();
 
-        const mockedStores = createStores({
+        const mockedStores = await createStores({
           nodes: { [node1.id]: node1, [node2.id]: node2 },
           selectedNodeIds: [node1.id],
         });
-        const { wrapper } = doMount(mockedStores);
+        const { wrapper } = await doMount(mockedStores);
 
         // start from the right port (tab values are strings)
         wrapper
@@ -518,10 +504,7 @@ describe("NodeOutput.vue", () => {
         await nextTick();
 
         // select other node
-        mockedStores.selectionStore.clearSelection();
-        mockedStores.selectionStore.addNodesToSelection([node2.id]);
-
-        await nextTick();
+        await mockedStores.selectionStore.deselectAllObjects([node2.id]);
 
         expect(
           wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
@@ -539,8 +522,8 @@ describe("NodeOutput.vue", () => {
   ])(
     "passes versionId to %s if versionId is %s",
     async (_componentName, versionId, activePortTab) => {
-      const mockedStores = createStores();
-      const { wrapper } = doMount(mockedStores);
+      const mockedStores = await createStores();
+      const { wrapper } = await doMount(mockedStores);
 
       mockedStores.workflowStore.activeWorkflow!.info.version = versionId;
       mockedStores.selectionStore.activePortTab =

@@ -121,7 +121,7 @@ describe("workflow store: Execution", () => {
       });
     });
 
-    it("overloaded changeNodeState", () => {
+    it("overloaded changeNodeState", async () => {
       const { workflowStore, executionStore, selectionStore } = mockStores();
       workflowStore.setActiveWorkflow(
         createWorkflow({
@@ -135,7 +135,7 @@ describe("workflow store: Execution", () => {
         }),
       );
 
-      executionStore.changeNodeState({ action: "execute", nodes: "all" });
+      await executionStore.changeNodeState({ action: "execute", nodes: "all" });
       expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith(
         expect.objectContaining({
           projectId: "foo",
@@ -145,8 +145,11 @@ describe("workflow store: Execution", () => {
         }),
       );
 
-      selectionStore.selectAllObjects();
-      executionStore.changeNodeState({ action: "execute", nodes: "selected" });
+      await selectionStore.selectAllObjects();
+      await executionStore.changeNodeState({
+        action: "execute",
+        nodes: "selected",
+      });
 
       expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith(
         expect.objectContaining({
@@ -157,7 +160,10 @@ describe("workflow store: Execution", () => {
         }),
       );
 
-      executionStore.changeNodeState({ action: "execute", nodes: ["root:2"] });
+      await executionStore.changeNodeState({
+        action: "execute",
+        nodes: ["root:2"],
+      });
 
       expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith({
         nodeIds: ["root:2"],

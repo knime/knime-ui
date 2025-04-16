@@ -331,13 +331,7 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         };
       },
 
-      async openContextMenu({
-        event,
-        deselectAllObjects = false,
-      }: {
-        event?: MouseEvent;
-        deselectAllObjects?: boolean;
-      }) {
+      async openContextMenu({ event }: { event?: MouseEvent }) {
         if (this.contextMenu.isOpen) {
           return;
         }
@@ -356,10 +350,6 @@ export const useCanvasAnchoredComponentsStore = defineStore(
           // we do not want it to bubble up if we handle it here
           event.stopPropagation();
           event.preventDefault();
-        }
-
-        if (deselectAllObjects) {
-          useSelectionStore().deselectAllObjects();
         }
 
         // reset to selection mode
@@ -407,15 +397,13 @@ export const useCanvasAnchoredComponentsStore = defineStore(
 
       async toggleContextMenu({
         event,
-        deselectAllObjects = false,
       }: {
         event?: MouseEvent;
-        deselectAllObjects?: boolean;
       } = {}) {
         if (this.contextMenu.isOpen) {
           this.closeContextMenu(event);
         } else {
-          await this.openContextMenu({ event, deselectAllObjects });
+          await this.openContextMenu({ event });
         }
       },
 

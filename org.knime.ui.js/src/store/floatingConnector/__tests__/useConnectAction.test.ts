@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { type Ref, ref } from "vue";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
@@ -54,6 +54,10 @@ describe("floatingConnector::useConnectAction", () => {
   }) => {
     const mockedStores = mockStores();
 
+    mockedStores.nodeConfigurationStore.autoApplySettings = vi
+      .fn()
+      .mockResolvedValue(true);
+
     const result = mountComposable({
       composable: useConnectAction,
       composableProps: {
@@ -82,7 +86,7 @@ describe("floatingConnector::useConnectAction", () => {
 
     const { finishConnection } = getComposableResult();
 
-    finishConnection();
+    await finishConnection();
     await flushPromises();
 
     expect(

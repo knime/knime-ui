@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { h, nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 import { mockUserAgent } from "jest-useragent-mock";
 
@@ -157,7 +157,7 @@ describe("WorkflowAnnotation.vue", () => {
       const workflowId =
         mockedStores.workflowStore.activeWorkflow!.info.containerId;
 
-      await mockedStores.selectionStore.selectAnnotation(
+      await mockedStores.selectionStore.selectAnnotations(
         defaultProps.annotation.id,
       );
 
@@ -466,11 +466,11 @@ describe("WorkflowAnnotation.vue", () => {
         .trigger("click", { button: 0 });
       await nextTick();
 
-      expect(mockedStores.selectionStore.selectedNodes).toEqual({});
-      expect(mockedStores.selectionStore.selectedConnections).toEqual({});
-      expect(mockedStores.selectionStore.selectedAnnotations).toEqual({
-        id1: true,
-      });
+      expect(mockedStores.selectionStore.selectedNodeIds).toEqual([]);
+      expect(mockedStores.selectionStore.selectedConnectionIds).toEqual([]);
+      expect(mockedStores.selectionStore.selectedAnnotationIds).toEqual([
+        "id1",
+      ]);
     });
 
     it.each(["shift", "ctrl"])(
@@ -544,10 +544,12 @@ describe("WorkflowAnnotation.vue", () => {
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 2 });
 
+      await flushPromises();
+
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectAnnotation).toHaveBeenCalledWith(
-        defaultProps.annotation.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectAnnotations,
+      ).toHaveBeenCalledWith(defaultProps.annotation.id);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -559,11 +561,12 @@ describe("WorkflowAnnotation.vue", () => {
       await wrapper
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 0, ctrlKey: true });
+      await flushPromises();
 
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.selectAnnotation).toHaveBeenCalledWith(
-        defaultProps.annotation.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectAnnotations,
+      ).toHaveBeenCalledWith(defaultProps.annotation.id);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -577,9 +580,9 @@ describe("WorkflowAnnotation.vue", () => {
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 2, [`${mod}Key`]: true });
 
-      expect(mockedStores.selectionStore.selectAnnotation).toHaveBeenCalledWith(
-        defaultProps.annotation.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectAnnotations,
+      ).toHaveBeenCalledWith(defaultProps.annotation.id);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -593,9 +596,9 @@ describe("WorkflowAnnotation.vue", () => {
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 2, metaKey: true });
 
-      expect(mockedStores.selectionStore.selectAnnotation).toHaveBeenCalledWith(
-        defaultProps.annotation.id,
-      );
+      expect(
+        mockedStores.selectionStore.selectAnnotations,
+      ).toHaveBeenCalledWith(defaultProps.annotation.id);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();

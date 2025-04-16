@@ -41,7 +41,7 @@ export const useConnectorPathSegments = (
 ) => {
   const { movePreviewDelta } = storeToRefs(useMovingStore());
   const { isMetaNodePortBarSelected, isNodeSelected, isBendpointSelected } =
-    storeToRefs(useSelectionStore());
+    useSelectionStore();
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
 
   const virtualBendpoints = computed(
@@ -80,16 +80,15 @@ export const useConnectorPathSegments = (
 
   const needToUpdateSourcePosition = computed(
     () =>
-      isNodeSelected.value(options.sourceNode.value ?? "") ||
-      (isMetanodeInPortBarConnection.value &&
-        isMetaNodePortBarSelected.value("in")),
+      isNodeSelected(options.sourceNode.value ?? "") ||
+      (isMetanodeInPortBarConnection.value && isMetaNodePortBarSelected("in")),
   );
 
   const needToUpdateDestPosition = computed(
     () =>
-      isNodeSelected.value(options.destNode.value ?? "") ||
+      isNodeSelected(options.destNode.value ?? "") ||
       (isMetanodeOutPortBarConnection.value &&
-        isMetaNodePortBarSelected.value("out")),
+        isMetaNodePortBarSelected("out")),
   );
 
   const pathSegments = computed(() => {
@@ -178,8 +177,7 @@ export const useConnectorPathSegments = (
     ) => {
       const bendpointId = getBendpointId(options.id, bendpointIndex);
 
-      const isSelectedOrVirtual =
-        isBendpointSelected.value(bendpointId) || isVirtual;
+      const isSelectedOrVirtual = isBendpointSelected(bendpointId) || isVirtual;
 
       // translation delta is only added for segments that are NOT the first or last
       // and only if the bendpoint is selected or if it's virtual

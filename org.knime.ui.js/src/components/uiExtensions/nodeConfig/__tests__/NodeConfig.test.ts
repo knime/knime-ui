@@ -170,7 +170,6 @@ describe("NodeConfig", () => {
         singleSelectedNodeMock: node,
       });
       mockedStores.workflowStore.setActiveWorkflow(workflow);
-      mockedStores.nodeConfigurationStore.setActiveNodeId("root:1");
       await nextTick();
 
       // @ts-expect-error

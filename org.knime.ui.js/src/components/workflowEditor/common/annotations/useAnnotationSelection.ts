@@ -25,11 +25,10 @@ export const useAnnotationSelection = (
     selectedAnnotationIds,
     shouldHideSelection,
     getFocusedObject,
-    isAnnotationSelected,
   } = storeToRefs(selectionStore);
 
   const isSelected = computed(() =>
-    isAnnotationSelected.value(annotation.value.id),
+    selectionStore.isAnnotationSelected(annotation.value.id),
   );
 
   const showSelectionPlane = computed(() => {

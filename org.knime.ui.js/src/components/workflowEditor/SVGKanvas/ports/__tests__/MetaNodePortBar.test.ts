@@ -142,10 +142,8 @@ describe("MetaNodePortBar.vue", () => {
       await wrapper.find(".hover-area").trigger("click");
 
       expect(
-        mockedStores.selectionStore.selectedMetanodePortBars,
-      ).toStrictEqual({
-        [type]: true,
-      });
+        mockedStores.selectionStore.getSelectedMetanodePortBars,
+      ).toStrictEqual([type]);
 
       expect(wrapper.find(".port-bar-selected").exists()).toBe(true);
     });

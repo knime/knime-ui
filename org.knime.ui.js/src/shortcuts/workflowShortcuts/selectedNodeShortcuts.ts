@@ -1,3 +1,5 @@
+import { storeToRefs } from "pinia";
+
 import { navigatorUtils } from "@knime/utils";
 
 import type { KnimeNode } from "@/api/custom-types";
@@ -52,11 +54,13 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     group: "selectedNode",
     execute: ({ payload }) => {
       const event = payload.event! as KeyboardEvent;
-      const { singleSelectedNode, setActivePortTab } = useSelectionStore();
+      const { singleSelectedNode } = useSelectionStore();
+      const { activePortTab } = storeToRefs(useSelectionStore());
+
       const port = getPortFromKey(singleSelectedNode!, event);
 
       if (port) {
-        setActivePortTab(port);
+        activePortTab.value = port;
       }
     },
     condition: () => {
@@ -72,7 +76,7 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     additionalHotkeys: [{ key: ["Shift", "0-0"], visible: false }], // range matches Digit0 Key even with shift
     group: "selectedNode",
     execute: () => {
-      useSelectionStore().setActivePortTab("0");
+      storeToRefs(useSelectionStore()).activePortTab.value = "0";
     },
     condition: () => {
       const { singleSelectedNode } = useSelectionStore();

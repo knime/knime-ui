@@ -120,9 +120,9 @@ describe("application::lifecycle", () => {
       expect(setupHints).toHaveBeenCalled();
     });
 
-    it("destroy application", () => {
+    it("destroy application", async () => {
       const { lifecycleStore } = loadStore();
-      lifecycleStore.destroyApplication();
+      await lifecycleStore.destroyApplication();
 
       expect(mockedAPI.event.unsubscribeEventListener).toHaveBeenCalled();
       expect(lifecycleStore.unloadActiveWorkflow).toHaveBeenCalledWith({
@@ -343,8 +343,8 @@ describe("application::lifecycle", () => {
         snapshotId: "snap",
       });
       expect(workflowStore.activeWorkflow).toBeNull();
-      expect(selectionStore.selectedConnections).toEqual({});
-      expect(selectionStore.selectedNodes).toEqual({});
+      expect(selectionStore.selectedConnectionIds).toEqual([]);
+      expect(selectionStore.selectedNodeIds).toEqual([]);
     });
 
     it("does not unload if there is no active workflow", async () => {
@@ -409,7 +409,7 @@ describe("application::lifecycle", () => {
   });
 
   describe("load workflows on navigation", () => {
-    it("should unload workflows when leaving the worklow page", async () => {
+    it("should unload workflows when leaving the workflow page", async () => {
       const router = getRouter();
       const { lifecycleStore } = loadStore();
 
@@ -437,11 +437,11 @@ describe("application::lifecycle", () => {
 
     it("should prevent navigation when auto-apply node configuration is cancelled", async () => {
       const router = getRouter();
-      const { lifecycleStore, nodeConfigurationStore } = loadStore();
+      const { lifecycleStore, selectionStore } = loadStore();
 
-      vi.mocked(
-        nodeConfigurationStore.autoApplySettings,
-      ).mockImplementationOnce(() => Promise.resolve(false));
+      vi.mocked(selectionStore.deselectAllObjects).mockImplementationOnce(() =>
+        Promise.resolve({ wasAborted: true }),
+      );
 
       await lifecycleStore.initializeApplication({
         $router: router,
@@ -453,6 +453,7 @@ describe("application::lifecycle", () => {
       });
 
       await router.push({ name: APP_ROUTES.Home.GetStarted });
+      await flushPromises();
 
       expect(lifecycleStore.switchWorkflow).not.toHaveBeenCalledWith({
         newWorkflow: null,

@@ -1,7 +1,5 @@
 import { storeToRefs } from "pinia";
 
-import { capitalize } from "@knime/utils";
-
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
@@ -60,9 +58,13 @@ export const useInitialSelection = () => {
 
     // the nearestObject uses some max distances so it can happen that there is nothing "found", just use any object
     const objectToSelect = mostCenterObject ?? workflowObjects.value.at(0)!;
-    const objectName = capitalize(objectToSelect.type) as "Node" | "Annotation";
 
-    selectionStore[`select${objectName}`](objectToSelect.id);
+    const action =
+      objectToSelect.type === "node"
+        ? selectionStore.selectNodes
+        : selectionStore.selectAnnotations;
+
+    await action([objectToSelect.id]);
 
     moveObjectIntoView(objectToSelect);
   };

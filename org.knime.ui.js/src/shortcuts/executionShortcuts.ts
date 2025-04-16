@@ -91,9 +91,7 @@ const executionShortcuts: ExecutionShortcuts = {
     group: "execution",
     icon: ExecuteSelectedIcon,
     execute: async ({ payload = {} }) => {
-      const canContinue = await useNodeConfigurationStore().autoApplySettings({
-        nextNodeId: payload?.metadata?.nodeId,
-      });
+      const canContinue = await useNodeConfigurationStore().autoApplySettings();
 
       if (!canContinue) {
         return;

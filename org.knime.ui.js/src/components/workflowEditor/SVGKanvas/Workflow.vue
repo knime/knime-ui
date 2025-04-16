@@ -23,7 +23,7 @@ const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
   useNodeInteractionsStore(),
 );
 const { editableAnnotationId } = storeToRefs(useAnnotationInteractionsStore());
-const { isNodeSelected } = storeToRefs(useSelectionStore());
+const { isNodeSelected } = useSelectionStore();
 const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
 
 // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
@@ -32,7 +32,7 @@ const sortedNodes = computed(() => {
   let unselected: any[] = [];
 
   for (const nodeId of Object.keys(workflow.value!.nodes)) {
-    if (isNodeSelected.value(nodeId)) {
+    if (isNodeSelected(nodeId)) {
       selected.push(workflow.value!.nodes[nodeId]);
     } else {
       unselected.push(workflow.value!.nodes[nodeId]);

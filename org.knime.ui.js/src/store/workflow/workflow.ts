@@ -142,6 +142,11 @@ export const useWorkflowStore = defineStore("workflow", {
         selectedAnnotationIds.length ||
         hasBendpointsToDelete
       ) {
+        const { wasAborted } = await selectionStore.deselectAllObjects();
+        if (wasAborted) {
+          return;
+        }
+
         await API.workflowCommand.Delete({
           projectId,
           workflowId,
@@ -154,8 +159,6 @@ export const useWorkflowStore = defineStore("workflow", {
             : [],
           connectionBendpoints: deleteableBendpoints,
         });
-
-        selectionStore.deselectAllObjects();
       }
 
       const messages: string[] = [];
@@ -232,7 +235,6 @@ export const useWorkflowStore = defineStore("workflow", {
             }
           }
         })
-
         .finally(() => {
           selectionStore.updateActiveNodePorts({
             isModificationInProgress: false,
@@ -273,7 +275,10 @@ export const useWorkflowStore = defineStore("workflow", {
       }
 
       // 1. deselect all objects
-      selectionStore.deselectAllObjects();
+      const { wasAborted } = await selectionStore.deselectAllObjects();
+      if (wasAborted) {
+        return;
+      }
 
       // 2. send request
       const { newNodeId } = await API.workflowCommand.Collapse({
@@ -287,7 +292,7 @@ export const useWorkflowStore = defineStore("workflow", {
 
       // 3. select new container node, if user hasn't selected something else in the meantime
       if (selectionStore.isSelectionEmpty) {
-        selectionStore.selectNode(newNodeId);
+        await selectionStore.selectNodes([newNodeId]);
         useNodeInteractionsStore().openNameEditor(newNodeId);
       }
     },
@@ -298,6 +303,12 @@ export const useWorkflowStore = defineStore("workflow", {
       const selectedNode = selectionStore.singleSelectedNode;
 
       if (!selectedNode) {
+        return;
+      }
+
+      // 1. deselect all objects
+      const { wasAborted } = await selectionStore.deselectAllObjects();
+      if (wasAborted) {
         return;
       }
 
@@ -315,9 +326,6 @@ export const useWorkflowStore = defineStore("workflow", {
         }
       }
 
-      // 1. deselect all objects
-      selectionStore.deselectAllObjects();
-
       // 2. send request
       const { expandedNodeIds, expandedAnnotationIds } =
         await API.workflowCommand.Expand({
@@ -328,7 +336,7 @@ export const useWorkflowStore = defineStore("workflow", {
 
       // 3. select expanded nodes, if user hasn't selected something else in the meantime
       if (selectionStore.isSelectionEmpty) {
-        selectionStore.selectNodes(expandedNodeIds);
+        await selectionStore.selectNodes(expandedNodeIds);
         selectionStore.selectAnnotations(expandedAnnotationIds);
       }
     },

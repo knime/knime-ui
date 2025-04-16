@@ -22,9 +22,12 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
   const { connectionId, isConnectionHighlighted, isConnectionHovered } =
     options;
 
-  const selectionStore = useSelectionStore();
-  const { isConnectionSelected, isBendpointSelected } =
-    storeToRefs(selectionStore);
+  const {
+    isConnectionSelected,
+    isBendpointSelected,
+    selectBendpoints,
+    deselectBendpoints,
+  } = useSelectionStore();
 
   const virtualBendpoint = ref<{ index: number; position: XY } | null>(null);
   const { addVirtualBendpoint, addBendpoint } =
@@ -39,7 +42,7 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
 
   const isBendpointVisible = computed(() => {
     return (
-      isConnectionSelected.value(connectionId) ||
+      isConnectionSelected(connectionId) ||
       isConnectionHighlighted.value ||
       isConnectionHovered.value
     );
@@ -49,9 +52,9 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     const bendpointId = getBendpointId(connectionId, index - 1);
 
     const { handlePointerInteraction } = useObjectInteractions({
-      isObjectSelected: () => isBendpointSelected.value(bendpointId),
-      selectObject: () => selectionStore.selectBendpoint(bendpointId),
-      deselectObject: () => selectionStore.deselectBendpoint(bendpointId),
+      isObjectSelected: () => isBendpointSelected(bendpointId),
+      selectObject: () => Promise.resolve(selectBendpoints(bendpointId)),
+      deselectObject: () => Promise.resolve(deselectBendpoints(bendpointId)),
       onMoveEnd: () => {
         if (virtualBendpoint.value) {
           addBendpoint({
@@ -85,7 +88,7 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     markEventAsHandled(event, { initiator: "bendpoint-ctx-menu" });
     const bendpointId = getBendpointId(connectionId, index);
     hoveredBendpoint.value = index;
-    selectionStore.selectBendpoint(bendpointId);
+    selectBendpoints(bendpointId);
 
     const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 

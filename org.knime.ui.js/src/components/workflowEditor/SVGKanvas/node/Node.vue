@@ -328,11 +328,11 @@ export default {
     ...mapActions(useComponentInteractionsStore, ["unlockSubnode"]),
     ...mapActions(useDesktopInteractionsStore, ["openNodeConfiguration"]),
     ...mapActions(useSelectionStore, [
-      "selectNode",
       "deselectAllObjects",
-      "deselectNode",
+      "selectNodes",
+      "deselectNodes",
     ]),
-    ...mapActions(useMovingStore, ["setIsDragging", "resetDragState"]),
+    ...mapActions(useMovingStore, ["resetDragState"]),
     ...mapActions(useNodeConfigurationStore, ["setIsLargeMode"]),
 
     onLeaveHoverArea(e) {
@@ -417,24 +417,21 @@ export default {
      * Left-Click                      => Select only this node
      * Left-Click & Shift or Ctrl/Meta => Add/Remove this node to/from selection
      */
-    onLeftMouseClick(event) {
+    async onLeftMouseClick(event) {
       if (this.isDragging) {
         return;
       }
 
-      const metaOrCtrlKey = getMetaOrCtrlKey();
-
-      if (event.shiftKey || event[metaOrCtrlKey]) {
+      if (event.shiftKey || event[getMetaOrCtrlKey()]) {
         // Multi select
         if (this.isNodeSelected(this.id)) {
-          this.deselectNode(this.id);
+          await this.deselectNodes([this.id]);
         } else {
-          this.selectNode(this.id);
+          await this.selectNodes([this.id]);
         }
       } else {
         // Single select
-        this.deselectAllObjects();
-        this.selectNode(this.id);
+        await this.deselectAllObjects([this.id]);
       }
     },
     /*
@@ -443,23 +440,20 @@ export default {
      *
      * We use the contextmenu event as click with button = 2 was not reliable.
      */
-    onContextMenu(event) {
+    async onContextMenu(event) {
       if (this.isDragging) {
         return;
       }
 
-      const metaOrCtrlKey = getMetaOrCtrlKey();
-
-      if (event.shiftKey || event[metaOrCtrlKey]) {
+      if (event.shiftKey || event[getMetaOrCtrlKey()]) {
         // Multi select
-        this.selectNode(this.id);
+        await this.selectNodes([this.id]);
       } else if (!this.isNodeSelected(this.id)) {
         // single select
-        this.deselectAllObjects();
-        this.selectNode(this.id);
+        await this.deselectAllObjects([this.id]);
       }
 
-      this.toggleContextMenu({ event });
+      await this.toggleContextMenu({ event });
     },
 
     onTorsoDragEnter(dragEvent) {

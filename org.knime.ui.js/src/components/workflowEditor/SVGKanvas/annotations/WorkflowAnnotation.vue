@@ -41,14 +41,14 @@ const props = defineProps<Props>();
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const annotationInteractionStore = useAnnotationInteractionsStore();
 const selectionStore = useSelectionStore();
-const { singleSelectedAnnotation, singleSelectedObject, isAnnotationSelected } =
+const { singleSelectedAnnotation, singleSelectedObject } =
   storeToRefs(selectionStore);
 const canvasStore = useSVGCanvasStore();
 const { zoomFactor } = storeToRefs(canvasStore);
 const { focus: focusCanvas } = canvasStore;
 
 const isSelected = computed(() => {
-  return isAnnotationSelected.value(props.annotation.id);
+  return selectionStore.isAnnotationSelected(props.annotation.id);
 });
 
 const {
@@ -90,16 +90,19 @@ const onLeftClick = (event: PointerEvent) => {
   });
 };
 
-const onContextMenu = (event: PointerEvent) => {
+const onContextMenu = async (event: PointerEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   if (!isMultiselect && !isSelected.value) {
-    selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.deselectAllObjects();
+    if (wasAborted) {
+      return;
+    }
   }
 
-  selectionStore.selectAnnotation(props.annotation.id);
-  toggleContextMenu({ event });
+  selectionStore.selectAnnotations(props.annotation.id);
+  await toggleContextMenu({ event });
 };
 
 const setSelectionPreview = (type: UnwrapRef<typeof selectionPreview>) => {

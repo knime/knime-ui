@@ -65,9 +65,7 @@ describe("executionShortcuts", () => {
 
         nodeConfigurationStore.autoApplySettings.mockResolvedValue(false);
         await executionShortcuts.executeSelected.execute({ payload: {} });
-        expect(nodeConfigurationStore.autoApplySettings).toHaveBeenCalledWith({
-          nextNodeId: undefined,
-        });
+        expect(nodeConfigurationStore.autoApplySettings).toHaveBeenCalled();
       });
 
       it("executeAndOpenView", async () => {

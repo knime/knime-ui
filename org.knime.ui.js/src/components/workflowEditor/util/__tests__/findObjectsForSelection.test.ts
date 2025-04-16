@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  createConnection,
   createNativeNode,
   createWorkflow,
   createWorkflowAnnotation,
@@ -41,15 +40,7 @@ describe("findObjectsForSelection", () => {
           },
         }),
       },
-      connections: {
-        connection1: createConnection({
-          id: "connection1",
-          bendpoints: [
-            { x: 10, y: 0 },
-            { x: 100, y: 0 },
-          ],
-        }),
-      },
+      connections: {},
       workflowAnnotations: [
         createWorkflowAnnotation({
           id: "ann1",
@@ -98,8 +89,6 @@ describe("findObjectsForSelection", () => {
         nodesOutside: [],
         annotationsInside: ["ann1", "ann2", "ann3"],
         annotationsOutside: [],
-        bendpointsInside: ["connection1__0"],
-        bendpointsOutside: ["connection1__1"],
       }),
     );
 
@@ -112,8 +101,6 @@ describe("findObjectsForSelection", () => {
         nodesOutside: [],
         annotationsInside: ["ann1", "ann2", "ann3"],
         annotationsOutside: [],
-        bendpointsInside: ["connection1__0"],
-        bendpointsOutside: ["connection1__1"],
       }),
     );
   });
@@ -132,8 +119,6 @@ describe("findObjectsForSelection", () => {
         nodesOutside: ["up-left", "down-left", "down-right", "up-right"],
         annotationsInside: [],
         annotationsOutside: ["ann1", "ann2", "ann3"],
-        bendpointsInside: [],
-        bendpointsOutside: ["connection1__0", "connection1__1"],
       }),
     );
 
@@ -146,8 +131,6 @@ describe("findObjectsForSelection", () => {
         nodesOutside: ["up-left", "down-left", "down-right", "up-right"],
         annotationsInside: [],
         annotationsOutside: ["ann1", "ann2", "ann3"],
-        bendpointsInside: [],
-        bendpointsOutside: ["connection1__0", "connection1__1"],
       }),
     );
   });
@@ -166,8 +149,6 @@ describe("findObjectsForSelection", () => {
         nodesOutside: [],
         annotationsInside: ["ann3"],
         annotationsOutside: ["ann1", "ann2"],
-        bendpointsInside: [],
-        bendpointsOutside: ["connection1__0", "connection1__1"],
       }),
     );
 
@@ -180,8 +161,6 @@ describe("findObjectsForSelection", () => {
         nodesOutside: [],
         annotationsInside: ["ann3"],
         annotationsOutside: ["ann1", "ann2"],
-        bendpointsInside: [],
-        bendpointsOutside: ["connection1__0", "connection1__1"],
       }),
     );
   });

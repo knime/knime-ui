@@ -1,7 +1,7 @@
 /* eslint-disable func-style */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { VueWrapper, shallowMount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 import { API } from "@api";
 
 import { useEscapeStack } from "@/composables/useEscapeStack";
@@ -69,11 +69,12 @@ describe("MoveableNodeContainer", () => {
     return { wrapper, mockedStores };
   };
 
-  const startNodeDrag = (
+  const startNodeDrag = async (
     wrapper: VueWrapper<any>,
     { clientX, clientY, altKey = false },
   ) => {
-    return wrapper.trigger("pointerdown.left", { clientX, clientY, altKey });
+    await wrapper.trigger("pointerdown.left", { clientX, clientY, altKey });
+    await flushPromises();
   };
 
   const moveNodeTo = ({ clientX, clientY, altKey = false }) => {
@@ -107,15 +108,12 @@ describe("MoveableNodeContainer", () => {
     it("should deselect other nodes on movement of unselected node", async () => {
       const { mockedStores, wrapper } = doMount();
 
-      // select different node
-      mockedStores.selectionStore.selectNode("root:2");
-      await nextTick();
+      await mockedStores.selectionStore.selectNodes(["root:2"]);
+      await flushPromises();
 
       await startNodeDrag(wrapper, { clientX: 199, clientY: 199 });
 
-      expect(mockedStores.selectionStore.selectedNodes).toEqual({
-        "root:1": true,
-      });
+      expect(mockedStores.selectionStore.selectedNodeIds).toEqual(["root:1"]);
     });
 
     it("should not deselect a node that is already selected", async () => {
@@ -123,14 +121,12 @@ describe("MoveableNodeContainer", () => {
         props: { id: "root:2" },
       });
 
-      mockedStores.selectionStore.selectNode("root:2");
-      await nextTick();
+      await mockedStores.selectionStore.selectNodes(["root:2"]);
+      await flushPromises();
 
       await startNodeDrag(wrapper, { clientX: 199, clientY: 199 });
 
-      expect(mockedStores.selectionStore.selectedNodes).toEqual({
-        "root:2": true,
-      });
+      expect(mockedStores.selectionStore.selectedNodeIds).toEqual(["root:2"]);
     });
 
     it.each([

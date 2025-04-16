@@ -118,7 +118,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       /**
        * 'new-only' clears the active selection and selects only the new node
        * 'add' adds the new node to the active selection
-       * 'none' doesn't modify the active selection nor it selects the new node
+       * 'none' doesn't modify the active selection nor selects the new node
        */
       selectionMode?: "new-only" | "add" | "none";
       /**
@@ -133,6 +133,15 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         message: string;
       };
     }> {
+      const selectionStore = useSelectionStore();
+      const currentSelection = selectionStore.selectedNodeIds;
+      if (selectionMode !== "none") {
+        const { wasAborted } = await selectionStore.deselectAllObjects();
+        if (wasAborted) {
+          return {};
+        }
+      }
+
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
 
@@ -202,12 +211,9 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
 
       if (selectionMode !== "none") {
         if (selectionMode === "new-only") {
-          useSelectionStore().selectSingleObject({
-            type: "node",
-            id: newNodeId,
-          });
+          await selectionStore.selectNodes([newNodeId]);
         } else {
-          useSelectionStore().selectNode(newNodeId);
+          await selectionStore.selectNodes([...currentSelection, newNodeId]);
         }
       }
 

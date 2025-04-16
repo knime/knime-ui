@@ -1,9 +1,10 @@
 /* eslint-disable max-lines */
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { VueWrapper, shallowMount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
 import { MenuItems } from "@knime/components";
+import { sleep } from "@knime/utils";
 
 import type { KnimeNode } from "@/api/custom-types";
 import {
@@ -23,6 +24,7 @@ import {
   createNativeNode,
   createPort,
   createWorkflow,
+  createWorkflowAnnotation,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import ContextMenu from "../ContextMenu.vue";
@@ -63,6 +65,16 @@ describe("ContextMenu.vue", () => {
       createWorkflow({
         allowedActions: { canReset: true, ...options.allowedWorkflowActions },
         nodes: options.nodes,
+        workflowAnnotations: [
+          createWorkflowAnnotation({
+            id: "annotation:1",
+            text: { value: "Annotation text" },
+          }),
+          createWorkflowAnnotation({
+            id: "annotation:2",
+            text: { value: "Annotation text 2" },
+          }),
+        ],
       }),
     );
 
@@ -112,7 +124,7 @@ describe("ContextMenu.vue", () => {
       },
     });
 
-    await new Promise((r) => setTimeout(r, 0));
+    await sleep(0);
 
     return { wrapper, mockedStores, shortcutsSpy };
   };
@@ -142,7 +154,8 @@ describe("ContextMenu.vue", () => {
     it("focuses menu items on position change", async () => {
       const { mockedStores } = createStores();
 
-      mockedStores.selectionStore.selectNode("root:1");
+      await mockedStores.selectionStore.selectNodes(["root:1"]);
+      await flushPromises();
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -167,7 +180,9 @@ describe("ContextMenu.vue", () => {
 
     const totalItemsBefore = renderedMenuItems(wrapper).length;
 
-    mockedStores.selectionStore.selectNode("root:1");
+    await mockedStores.selectionStore.selectNodes(["root:1"]);
+    await flushPromises();
+
     await wrapper.setProps({ position: { x: 2, y: 3 } });
     await new Promise((r) => setTimeout(r, 0));
 
@@ -177,7 +192,8 @@ describe("ContextMenu.vue", () => {
   it("items are not set reactively", async () => {
     const { wrapper, mockedStores } = await doMount();
 
-    mockedStores.selectionStore.selectNode("root:1");
+    await mockedStores.selectionStore.selectNodes(["root:1"]);
+    await flushPromises();
 
     expect(
       renderedMenuItems(wrapper).map((item) => item.metadata.shortcutName),
@@ -263,7 +279,8 @@ describe("ContextMenu.vue", () => {
     it("shows correct menu items if one node is selected", async () => {
       const { mockedStores } = createStores();
 
-      mockedStores.selectionStore.selectNode("root:1");
+      await mockedStores.selectionStore.selectNodes(["root:1"]);
+      await flushPromises();
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -300,7 +317,8 @@ describe("ContextMenu.vue", () => {
       });
       const { mockedStores } = createStores({ nodes: { "root:0": node } });
 
-      mockedStores.selectionStore.selectNode("root:0");
+      await mockedStores.selectionStore.selectNodes(["root:0"]);
+      await flushPromises();
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -336,7 +354,8 @@ describe("ContextMenu.vue", () => {
 
       const { mockedStores } = createStores({ nodes: { "root:0": node } });
 
-      mockedStores.selectionStore.selectNode("root:0");
+      await mockedStores.selectionStore.selectNodes(["root:0"]);
+      await flushPromises();
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -373,7 +392,8 @@ describe("ContextMenu.vue", () => {
 
       const { mockedStores } = createStores({ nodes: { "root:0": node } });
 
-      mockedStores.selectionStore.selectNode("root:0");
+      await mockedStores.selectionStore.selectNodes(["root:0"]);
+      await flushPromises();
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -429,7 +449,12 @@ describe("ContextMenu.vue", () => {
         },
       });
 
-      mockedStores.selectionStore.selectNodes(["root:1", "root:2", "root:3"]);
+      await mockedStores.selectionStore.selectNodes([
+        "root:1",
+        "root:2",
+        "root:3",
+      ]);
+      await flushPromises();
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -481,7 +506,7 @@ describe("ContextMenu.vue", () => {
       Object.values(connections)
         .map(({ id }) => id)
         .forEach((id) => {
-          mockedStores.selectionStore.selectConnection(id);
+          mockedStores.selectionStore.selectConnections(id);
         });
 
       const { wrapper } = await doMount({ customStores: mockedStores });
@@ -497,7 +522,7 @@ describe("ContextMenu.vue", () => {
       const { mockedStores } = createStores();
       const connections =
         mockedStores.workflowStore.activeWorkflow!.connections;
-      mockedStores.selectionStore.selectConnection(
+      mockedStores.selectionStore.selectConnections(
         Object.keys(connections).at(0)!,
       );
 
@@ -523,7 +548,8 @@ describe("ContextMenu.vue", () => {
 
       const { mockedStores } = createStores({ nodes: { [node.id]: node } });
 
-      mockedStores.selectionStore.selectNode("root:0");
+      await mockedStores.selectionStore.selectNodes(["root:0"]);
+      await flushPromises();
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -560,7 +586,8 @@ describe("ContextMenu.vue", () => {
 
         const { mockedStores } = createStores({ nodes: { [node.id]: node } });
 
-        mockedStores.selectionStore.selectNode("root:0");
+        await mockedStores.selectionStore.selectNodes(["root:0"]);
+        await flushPromises();
 
         const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -612,7 +639,8 @@ describe("ContextMenu.vue", () => {
 
         const { mockedStores } = createStores({ nodes: { [node.id]: node } });
 
-        mockedStores.selectionStore.selectNode("root:0");
+        await mockedStores.selectionStore.selectNodes(["root:0"]);
+        await flushPromises();
 
         const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -649,7 +677,7 @@ describe("ContextMenu.vue", () => {
     it("shows correct menu items if one annotation is selected", async () => {
       const { mockedStores } = createStores();
 
-      mockedStores.selectionStore.selectAnnotation("annotation:1");
+      mockedStores.selectionStore.selectAnnotations("annotation:1");
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 
@@ -669,10 +697,19 @@ describe("ContextMenu.vue", () => {
     });
 
     it("shows correct menu items if different object types are selected", async () => {
-      const { mockedStores } = createStores();
+      const { mockedStores } = createStores({
+        nodes: {
+          "root:1": createNativeNode({ id: "root:1" }),
+          "root:2": createNativeNode({ id: "root:2" }),
+        },
+      });
 
-      mockedStores.selectionStore.selectAnnotation("annotation:1");
-      mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
+      mockedStores.selectionStore.selectAnnotations([
+        "annotation:1",
+        "annotation:2",
+      ]);
+      await mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
+      await flushPromises();
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 

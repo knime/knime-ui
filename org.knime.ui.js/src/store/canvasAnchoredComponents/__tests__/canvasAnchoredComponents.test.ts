@@ -276,7 +276,7 @@ describe("canvasAnchoredComponents", () => {
         mockStoresWith();
 
       const { node1, node2 } = createAndSetWorkflow(workflowStore);
-      selectionStore.addNodesToSelection([node1.id, node2.id]);
+      await selectionStore.selectNodes([node1.id, node2.id]);
 
       const mocked = mockedObject(workflowNavigationService);
       mocked.nearestObject.mockResolvedValueOnce({
@@ -303,7 +303,7 @@ describe("canvasAnchoredComponents", () => {
         mockStoresWith();
 
       const { node1 } = createAndSetWorkflow(workflowStore);
-      selectionStore.addNodesToSelection([node1.id]);
+      await selectionStore.selectNodes([node1.id]);
 
       // @ts-expect-error
       await canvasAnchoredComponentsStore.toggleContextMenu({ event });
@@ -335,29 +335,6 @@ describe("canvasAnchoredComponents", () => {
       expect(canvasAnchoredComponentsStore.contextMenu.position).toEqual({
         x: 10,
         y: 10,
-      });
-      expect(preventDefault).toHaveBeenCalled();
-      expect(stopPropagation).toHaveBeenCalled();
-    });
-
-    it("should deselect all objects if parameter is given", async () => {
-      const { event, preventDefault, stopPropagation } = createEvent({
-        x: 200,
-        y: 200,
-      });
-      const { selectionStore, canvasAnchoredComponentsStore } =
-        mockStoresWith();
-
-      await canvasAnchoredComponentsStore.toggleContextMenu({
-        // @ts-expect-error
-        event,
-        deselectAllObjects: true,
-      });
-      expect(selectionStore.deselectAllObjects).toHaveBeenCalled();
-      expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
-      expect(canvasAnchoredComponentsStore.contextMenu.position).toEqual({
-        x: 200,
-        y: 200,
       });
       expect(preventDefault).toHaveBeenCalled();
       expect(stopPropagation).toHaveBeenCalled();

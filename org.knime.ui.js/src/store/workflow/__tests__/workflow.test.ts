@@ -56,28 +56,28 @@ describe("workflow::index", () => {
       for (let i = 0; i < amount / 2; i++) {
         const id = `node-${i}`;
         nodesArray[id] = { id, allowedActions: { canDelete: true } };
-        selectionStore.selectNode(id);
+        await selectionStore.selectNodes([id]);
         nodeIds.push(id);
       }
 
       for (let i = 0; i < amount / 2; i++) {
         const id = `connection-${i}`;
         connectionsArray[id] = { id, allowedActions: { canDelete: true } };
-        selectionStore.selectConnection(id);
+        selectionStore.selectConnections(id);
         connectionIds.push(id);
       }
 
       for (let i = 0; i < amount / 2; i++) {
         const id = `annotation-${i}`;
         annotationsArray[i] = { id };
-        selectionStore.selectAnnotation(id);
+        selectionStore.selectAnnotations(id);
         annotationIds.push(id);
       }
 
       for (let i = 0; i < amount / 2; i++) {
         const connectionId = `connection-${i}`;
         const id = `${connectionId}__0`;
-        selectionStore.selectBendpoint(id);
+        selectionStore.selectBendpoints(id);
         connectionBendpoints[connectionId] = [0];
       }
 
@@ -141,7 +141,8 @@ describe("workflow::index", () => {
       it("nodes", async () => {
         const { selectionStore, workflowStore } = setupStoreWithWorkflow();
 
-        selectionStore.selectNode(nodesArray[nodeName].id);
+        await selectionStore.selectNodes([nodesArray[nodeName].id]);
+        await flushPromises();
 
         await workflowStore.deleteSelectedObjects();
         expect(window.alert).toHaveBeenCalledWith(
@@ -152,7 +153,7 @@ describe("workflow::index", () => {
       it("connections", async () => {
         const { selectionStore, workflowStore } = setupStoreWithWorkflow();
 
-        selectionStore.selectConnection(connectionsArray[connectorName].id);
+        selectionStore.selectConnections(connectionsArray[connectorName].id);
 
         await workflowStore.deleteSelectedObjects();
 
@@ -164,8 +165,9 @@ describe("workflow::index", () => {
       it("nodes and connections", async () => {
         const { workflowStore, selectionStore } = setupStoreWithWorkflow();
 
-        selectionStore.selectNode(nodesArray[nodeName].id);
-        selectionStore.selectConnection(connectionsArray[connectorName].id);
+        await selectionStore.selectNodes([nodesArray[nodeName].id]);
+        await flushPromises();
+        selectionStore.selectConnections(connectionsArray[connectorName].id);
 
         await workflowStore.deleteSelectedObjects();
 
@@ -199,20 +201,22 @@ describe("workflow::index", () => {
       };
 
       mockedAPI.workflowCommand.RemovePort.mockResolvedValue(true);
-      workflowStore.deleteSelectedPort();
+      await workflowStore.deleteSelectedPort();
+      await flushPromises();
 
       expect(nodeInteractionsStore.removeNodePort).toHaveBeenCalled();
 
-      expect(selectionStore.activeNodePorts.isModificationInProgress).toBe(
-        true,
-      );
+      expect(selectionStore.updateActiveNodePorts).toHaveBeenNthCalledWith(1, {
+        isModificationInProgress: true,
+      });
 
-      await flushPromises();
-      // check modification lock is removed
-      expect(selectionStore.activeNodePorts.isModificationInProgress).toBe(
-        false,
-      );
-      // deleted port was at last index: check selection is updated to new last
+      expect(selectionStore.updateActiveNodePorts).toHaveBeenNthCalledWith(2, {
+        selectedPort: "output-1",
+      });
+      expect(selectionStore.updateActiveNodePorts).toHaveBeenNthCalledWith(3, {
+        isModificationInProgress: false,
+      });
+
       expect(selectionStore.activeNodePorts.selectedPort).toBe("output-1");
     });
   });
@@ -238,6 +242,12 @@ describe("workflow::index", () => {
               id: "bar",
               allowedActions: {
                 canCollapse: AllowedNodeActions.CanCollapseEnum.True,
+                canExecute: true,
+              },
+            },
+            "new-container": {
+              id: "new-container",
+              allowedActions: {
                 canExecute: true,
               },
             },
@@ -275,7 +285,9 @@ describe("workflow::index", () => {
       }));
 
       const { workflowStore, selectionStore } = loadStoreWithNodes();
-      selectionStore.selectAllObjects();
+      await selectionStore.selectAllObjects();
+      await flushPromises();
+
       selectionStore.selectBendpoints([
         "connection1__0",
         "connection1__1",
@@ -289,7 +301,7 @@ describe("workflow::index", () => {
       expect(mockedAPI.workflowCommand.Collapse).toHaveBeenCalledWith({
         projectId: "bar",
         workflowId: "root",
-        nodeIds: ["foo", "bar"],
+        nodeIds: ["foo", "bar", "new-container"],
         containerType: "metanode",
         annotationIds: ["root:2_1", "root:2_2"],
         connectionBendpoints: {
@@ -307,15 +319,14 @@ describe("workflow::index", () => {
 
       const { selectionStore, workflowStore, nodeInteractionsStore } =
         loadStoreWithNodes();
-      selectionStore.selectAllObjects();
+      await selectionStore.selectAllObjects();
+      await flushPromises();
 
       await workflowStore.collapseToContainer({
         containerType: CollapseCommand.ContainerTypeEnum.Metanode,
       });
 
-      expect(selectionStore.selectedNodes).toEqual({
-        [newNodeId]: true,
-      });
+      expect(selectionStore.selectedNodeIds).toEqual([newNodeId]);
       expect(nodeInteractionsStore.nameEditorNodeId).toBe(newNodeId);
     });
 
@@ -326,19 +337,19 @@ describe("workflow::index", () => {
       }));
       const { selectionStore, workflowStore, nodeInteractionsStore } =
         loadStoreWithNodes();
-      selectionStore.selectAllObjects();
+      await selectionStore.selectAllObjects();
+      await flushPromises();
 
       const commandCall = workflowStore.collapseToContainer({
         containerType: CollapseCommand.ContainerTypeEnum.Metanode,
       });
 
-      selectionStore.selectNode("foo");
+      await selectionStore.selectNodes(["foo"]);
+      await flushPromises();
 
       await commandCall;
 
-      expect(selectionStore.selectedNodes).toStrictEqual({
-        foo: true,
-      });
+      expect(selectionStore.selectedNodeIds).toStrictEqual(["foo"]);
       expect(nodeInteractionsStore.nameEditorNodeId).toBeNull();
     });
   });
@@ -356,6 +367,22 @@ describe("workflow::index", () => {
             foo: {
               id: "foo",
               kind: Node.KindEnum.Metanode,
+              allowedActions: {
+                canCollapse: AllowedNodeActions.CanCollapseEnum.True,
+                canExecute: true,
+                canExpand: AllowedNodeActions.CanExpandEnum.True,
+              },
+            },
+            bar: {
+              id: "bar",
+              kind: Node.KindEnum.Node,
+              allowedActions: {
+                canExecute: true,
+              },
+            },
+            "new-container": {
+              id: "new-container",
+              kind: Node.KindEnum.Component,
               allowedActions: {
                 canCollapse: AllowedNodeActions.CanCollapseEnum.True,
                 canExecute: true,
@@ -383,7 +410,8 @@ describe("workflow::index", () => {
         expandedAnnotationIds: [],
       }));
       const { selectionStore, workflowStore } = loadStoreWithNodes();
-      selectionStore.selectNode("foo");
+      await selectionStore.selectNodes(["foo"]);
+      await flushPromises();
 
       await workflowStore.expandContainerNode();
 
@@ -403,17 +431,14 @@ describe("workflow::index", () => {
       }));
 
       const { selectionStore, workflowStore } = loadStoreWithNodes();
-      selectionStore.selectNode("foo");
+      await selectionStore.selectNodes(["new-container"]);
+      await flushPromises();
 
       await workflowStore.expandContainerNode();
+      await flushPromises();
 
-      expect(selectionStore.selectedNodes).toEqual({
-        foo: true,
-        bar: true,
-      });
-      expect(selectionStore.selectedAnnotations).toEqual({
-        id1: true,
-      });
+      expect(selectionStore.selectedNodeIds).toEqual(["foo", "bar"]);
+      expect(selectionStore.selectedAnnotationIds).toEqual(["id1"]);
     });
 
     it("does not select the expanded nodes if user selected something before command ends", async () => {
@@ -423,22 +448,20 @@ describe("workflow::index", () => {
         expandedNodeIds,
       }));
       const { selectionStore, workflowStore } = loadStoreWithNodes();
-      selectionStore.selectNode("foo");
+      await selectionStore.selectNodes(["foo"]);
 
       const commandCall = workflowStore.expandContainerNode();
 
-      selectionStore.selectNode("barbaz");
+      await selectionStore.deselectAllObjects(["barbaz"]);
 
       await commandCall;
 
-      expect(selectionStore.selectedNodes).toStrictEqual({
-        barbaz: true,
-      });
+      expect(selectionStore.selectedNodeIds).toStrictEqual(["barbaz"]);
     });
   });
 
   describe("alignSelectedNodes", () => {
-    it("calls workflow command API with correct arguments", () => {
+    it("calls workflow command API with correct arguments", async () => {
       const { workflowStore, selectionStore } = mockStores();
       const direction = AlignNodesCommand.DirectionEnum.Horizontal;
       const projectId = "projectId";
@@ -464,14 +487,13 @@ describe("workflow::index", () => {
           },
         }),
       );
-      // @ts-expect-error
-      selectionStore.getSelectedNodes = [node1, node3];
 
-      workflowStore.alignSelectedNodes(direction);
+      await selectionStore.selectNodes([node1.id, node3.id]);
+      await workflowStore.alignSelectedNodes(direction);
 
       expect(mockedAPI.workflowCommand.AlignNodes).toHaveBeenCalledWith({
         direction,
-        nodeIds: [nodeId1, nodeId3],
+        nodeIds: [node1.id, node3.id],
         projectId,
         workflowId,
       });

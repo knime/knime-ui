@@ -233,9 +233,9 @@ onMounted(() => {
   checkClipboardSupport();
 });
 
-onBeforeUnmount(() => {
+onBeforeUnmount(async () => {
   document.removeEventListener("wheel", preventBrowserZooming);
-  lifecycleStore.destroyApplication();
+  await lifecycleStore.destroyApplication();
 });
 
 const onDismissUpdateBanner = () => {

@@ -126,9 +126,8 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
     it("deselects all objects on movement of unselected port bar", async () => {
       const { wrapper, mockedStores } = doMount();
 
-      // add something to selection
-      mockedStores.selectionStore.selectNode("root:1");
-      await nextTick();
+      await mockedStores.selectionStore.selectNodes(["root:1"]);
+      await flushPromises();
 
       startPortBarDrag(wrapper, {
         clientX: 199,
@@ -137,21 +136,20 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       });
       await flushPromises();
 
-      // node was unselected
-      expect(mockedStores.selectionStore.selectedNodes).toEqual({});
-      expect(mockedStores.selectionStore.selectedMetanodePortBars).toEqual({
-        in: true,
-      });
+      expect(mockedStores.selectionStore.selectedNodeIds).toEqual([]);
+      expect(mockedStores.selectionStore.getSelectedMetanodePortBars).toEqual([
+        "in",
+      ]);
     });
 
-    it("does not deselect annotation when annotation is already selected", async () => {
+    it("does not deselect MetanodePortBar when MetanodePortBar is already selected?", async () => {
       const { wrapper, mockedStores } = doMount();
 
       mockedStores.selectionStore.selectMetanodePortBar("in");
       await nextTick();
-      expect(mockedStores.selectionStore.selectedMetanodePortBars).toEqual({
-        in: true,
-      });
+      expect(mockedStores.selectionStore.getSelectedMetanodePortBars).toEqual([
+        "in",
+      ]);
 
       startPortBarDrag(wrapper, {
         clientX: 199,
@@ -159,9 +157,9 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
         shiftKey: false,
       });
 
-      expect(mockedStores.selectionStore.selectedMetanodePortBars).toEqual({
-        in: true,
-      });
+      expect(mockedStores.selectionStore.getSelectedMetanodePortBars).toEqual([
+        "in",
+      ]);
     });
 
     it("moves an port bar", async () => {
@@ -189,9 +187,10 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       const movePosition = { clientX: 213, clientY: 213 };
 
       startPortBarDrag(wrapper, clickPosition);
-      moveTo({ clientX: 50, clientY: 50 });
-
       await flushPromises();
+
+      moveTo({ clientX: 50, clientY: 50 });
+      await nextTick();
 
       expect(mockedStores.movingStore.isDragging).toBe(true);
 
@@ -218,7 +217,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
 
       moveTo({ clientX: 50, clientY: 50 });
 
-      endPortBarDrag(wrapper, { clientX: 50, clientY: 50 });
+      await endPortBarDrag(wrapper, { clientX: 50, clientY: 50 });
 
       vi.advanceTimersByTime(5000);
 
@@ -248,7 +247,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
 
       moveTo({ clientX: 50, clientY: 50 });
 
-      endPortBarDrag(wrapper, { clientX: 50, clientY: 50 });
+      await endPortBarDrag(wrapper, { clientX: 50, clientY: 50 });
 
       vi.advanceTimersByTime(5000);
 

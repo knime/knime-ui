@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import { findObjectsForSelection } from "@/components/workflowEditor/util/findObjectsForSelection";
 import { $bus } from "@/plugins/event-bus";
@@ -17,8 +18,6 @@ findObjectsForSelectionMock.mockReturnValue({
   nodesOutside: ["root:2"],
   annotationsInside: [],
   annotationsOutside: [],
-  bendpointsInside: [],
-  bendpointsOutside: [],
 });
 
 describe("SelectionRectangle.vue", () => {
@@ -37,7 +36,7 @@ describe("SelectionRectangle.vue", () => {
     return { wrapper, mockedStores, busEmitSpy };
   };
 
-  const triggerSelection = (
+  const triggerSelection = async (
     mockedStores: ReturnType<typeof mockStores>,
     endSelection = true,
   ) => {
@@ -55,6 +54,8 @@ describe("SelectionRectangle.vue", () => {
         releasePointerCapture: () => null,
       },
     });
+
+    await flushPromises();
 
     const ptrMove = {
       pointerId: 1,
@@ -74,6 +75,7 @@ describe("SelectionRectangle.vue", () => {
       // @ts-expect-error
       $bus.emit("selection-pointerup", ptrMove);
     }
+    await flushPromises();
   };
 
   it("should not get called if use is dragging", () => {
@@ -106,13 +108,13 @@ describe("SelectionRectangle.vue", () => {
     expect(mockedStores.selectionStore.selectNodes).not.toHaveBeenCalled();
   });
 
-  it("should search for objects inside selection and update selection preview", () => {
+  it("should search for objects inside selection and update selection preview", async () => {
     const { mockedStores, busEmitSpy } = doMount();
 
     mockedStores.webglCanvasStore.canvasOffset = { x: 10, y: 10 };
     mockedStores.webglCanvasStore.zoomFactor = 1;
 
-    triggerSelection(mockedStores);
+    await triggerSelection(mockedStores);
     expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
 
     expect(findObjectsForSelectionMock).toHaveBeenCalledWith({
@@ -131,13 +133,14 @@ describe("SelectionRectangle.vue", () => {
     });
   });
 
-  it("should select the found objects inside the selection", () => {
+  it("should select the found objects inside the selection", async () => {
     const { mockedStores, busEmitSpy } = doMount();
 
     mockedStores.webglCanvasStore.canvasOffset = { x: 10, y: 10 };
     mockedStores.webglCanvasStore.zoomFactor = 1;
 
-    triggerSelection(mockedStores);
+    await triggerSelection(mockedStores);
+    await nextTick();
 
     expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledWith([
       "root:1",

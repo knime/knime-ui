@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
 
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -9,7 +8,7 @@ import { useReexecutingCompositeViewState } from "../useReexecutingCompositeView
 describe("useReexecutingCompositeViewState", () => {
   let selectionStore: ReturnType<typeof useSelectionStore>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const mockedStores = mockStores();
 
     vi.resetModules();
@@ -23,33 +22,27 @@ describe("useReexecutingCompositeViewState", () => {
       },
     } as any;
 
-    selectionStore.$patch({ selectedNodes: {} });
+    await selectionStore.deselectAllObjects();
   });
 
   it("removes old node ID when single selection changes", async () => {
     const { addReexecutingNode, isReexecuting } =
       useReexecutingCompositeViewState();
 
-    selectionStore.$patch({ selectedNodes: { nodeA: true } });
+    await selectionStore.selectNodes(["nodeA"]);
     addReexecutingNode("nodeA");
 
-    await nextTick();
     expect(isReexecuting("nodeA")).toBe(true);
 
-    selectionStore.deselectAllObjects();
-
-    await nextTick();
+    await selectionStore.deselectAllObjects();
     expect(isReexecuting("nodeA")).toBe(false);
   });
 
   it("handles multiple selections gracefully", async () => {
     const { isReexecuting } = useReexecutingCompositeViewState();
 
-    // Set multi-selection
-    selectionStore.$patch({ selectedNodes: { node1: true, node2: true } });
-    await nextTick();
+    await selectionStore.selectNodes(["node1", "node2"]);
 
-    // Should not affect reexecuting nodes since single selection is null
     expect(isReexecuting("node1")).toBe(false);
     expect(isReexecuting("node2")).toBe(false);
   });

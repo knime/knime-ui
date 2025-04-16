@@ -3,6 +3,7 @@ import { mapActions, mapState } from "pinia";
 
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 /**
@@ -124,6 +125,7 @@ export default {
     ]),
     ...mapActions(useNodeInteractionsStore, ["connectNodes", "addNodePort"]),
     ...mapActions(useNodeConfigurationStore, ["autoApplySettings"]),
+    ...mapActions(useSelectionStore, ["deselectAllObjects"]),
 
     onConnectorStart({ validConnectionTargets, startNodeId }) {
       // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
@@ -308,8 +310,8 @@ export default {
       // onConnectorEnd()
       let targetPort = { ...this.targetPort };
 
-      const canContinue = await this.autoApplySettings({ nextNodeId: this.id });
-      if (!canContinue) {
+      const { wasAborted } = await this.deselectAllObjects([this.id]);
+      if (wasAborted) {
         return;
       }
 
