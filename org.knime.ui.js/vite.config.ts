@@ -3,6 +3,7 @@ import { URL, fileURLToPath } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { ViteUserConfig } from "vitest/config";
+import sbom from "rollup-plugin-sbom";
 import svgLoader from "vite-svg-loader";
 
 import { svgoConfig } from "@knime/styles/config/svgo.config";
@@ -25,6 +26,12 @@ export default defineConfig(({ mode }) => {
       svgLoader({ svgoConfig }),
       // TODO: enable once it's compatible with the WebGL canvas
       // vueDevTools(),
+      sbom({
+        outFormats: ["json"],
+        outDir: "sbom",
+        includeWellKnown: false,
+        generateSerial: true,
+      }),
     ],
 
     build: {

@@ -67,7 +67,7 @@
                         </configuration>
                     </execution>
 
-                     <execution>
+                    <execution>
                         <id>pnpm install</id>
                         <phase>initialize</phase>
                         <goals>
@@ -82,18 +82,7 @@
                             <goal>pnpm</goal>
                         </goals>
                         <configuration>
-                            <arguments>run build</arguments>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>generate sbom</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>pnpm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run sbom</arguments>
+                            <arguments>run build:ci</arguments>
                         </configuration>
                     </execution>
 

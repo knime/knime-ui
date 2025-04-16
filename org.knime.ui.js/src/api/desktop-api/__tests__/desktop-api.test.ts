@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { $bus } from "@/plugins/event-bus";
-import { API } from "../../index";
+import * as desktopAPI from "../desktop-api";
 
 type BrowserFunctionDescriptor = {
   name: string;
@@ -267,7 +267,7 @@ describe("desktop-api", () => {
 
       const busOnSpy = vi.spyOn($bus, "on");
 
-      const result = API.desktop[desktopApiName || name](paramsAsObj);
+      const result = desktopAPI[desktopApiName || name](paramsAsObj);
 
       expect(busOnSpy).toHaveBeenCalledWith(
         "desktop-api-function-result-spy",
