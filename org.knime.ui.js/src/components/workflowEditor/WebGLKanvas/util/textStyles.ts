@@ -22,7 +22,6 @@ export const nodeNameText: TextStylePreset = {
     padding: 2,
     wordWrapWidth: 90,
     align: "center",
-    textBaseline: "bottom",
   },
 };
 
@@ -32,9 +31,9 @@ export const nodeLabelText: TextStylePreset = {
     fontSize: 12,
     fontWeight: "normal",
     whiteSpace: "pre",
-    padding: 2, // fixes slight cut off of some chars
+    // fixes slight cut off of some chars
+    padding: 2,
     align: "center",
-    textBaseline: "bottom",
   },
 };
 

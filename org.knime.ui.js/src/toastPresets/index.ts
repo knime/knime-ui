@@ -14,11 +14,16 @@ import {
   type SpacesToastPresets,
   getPresets as getSpacesPresets,
 } from "./spaces";
+import {
+  type WorkflowToastPresets,
+  getPresets as getWorkflowPresets,
+} from "./workflow";
 
 type ToastPresetRegistry = {
   app: ApplicationToastPresets;
   connectivity: ConnectivityPresets;
   spaces: SpacesToastPresets;
+  workflow: WorkflowToastPresets;
 };
 
 let registry: ToastPresetRegistry | null = null;
@@ -28,6 +33,7 @@ const initToastPresets = ($toastService: ToastServiceProvider) => {
     app: getApplicationPresets($toastService),
     connectivity: getConnectivityPresets($toastService),
     spaces: getSpacesPresets($toastService),
+    workflow: getWorkflowPresets($toastService),
   } satisfies ToastPresetRegistry);
 };
 

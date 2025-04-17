@@ -29,13 +29,13 @@ import { geometry } from "@/util/geometry";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { useAnnotationSelection } from "../../common/annotations/useAnnotationSelection";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
+import { FLOATING_HTML_FADE_DELAY_MS } from "../common/constants";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import { markEventAsHandled } from "../util/interaction";
 
 import TransformControls from "./TransformControls.vue";
 import { getAnnotationStyles } from "./annotationStyles";
-import { TRANSFORM_DELAY_MS } from "./constants";
 
 const ANNOTATION_STROKE_SIZE = 1.5;
 type Props = {
@@ -220,7 +220,7 @@ const onTransformEnd = (bounds: Bounds) => {
 
   setTimeout(() => {
     activeTransform.value = undefined;
-  }, TRANSFORM_DELAY_MS);
+  }, FLOATING_HTML_FADE_DELAY_MS);
 };
 
 const { isSelectionPreviewShown } = useSelectionPreview({

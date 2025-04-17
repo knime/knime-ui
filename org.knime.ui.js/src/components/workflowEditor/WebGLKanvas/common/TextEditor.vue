@@ -1,10 +1,12 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { onMounted, ref, useTemplateRef } from "vue";
+import { nextTick, onMounted, ref, useTemplateRef } from "vue";
 import { useFocus } from "@vueuse/core";
 import { isNumber } from "lodash-es";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
+
+import { usePauseCanvasInteractions } from "./usePauseCanvasInteractions";
 
 type Props = {
   value: string;
@@ -42,8 +44,8 @@ const resizeTextarea = () => {
   if (!textarea.value || !ghost.value) {
     return;
   }
-  // width
 
+  // width
   const doMinMax = isNumber(props.maxWidth) && isNumber(props.minWidth);
 
   const width = doMinMax
@@ -89,9 +91,14 @@ const onInput = () => {
   emit("update:value", value);
 };
 
+usePauseCanvasInteractions();
+
 onMounted(() => {
   onInput();
   resizeTextarea();
+  nextTick(() => {
+    textarea.value?.setSelectionRange(0, props.value.length);
+  });
 });
 
 const onEnterKey = (event: KeyboardEvent) => {

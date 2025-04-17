@@ -1,30 +1,29 @@
 /* eslint-disable no-magic-numbers */
+import { Page, test } from "@playwright/test";
 
-import { expect, test } from "@playwright/test";
-
-import { getKanvasBoundingBox, startApplication } from "../utils";
+import {
+  assertSnapshot,
+  getKanvasBoundingBox,
+  startApplication,
+} from "../utils";
 import { getBrowserState } from "../utils/browserState";
 
 test.use({
   storageState: getBrowserState({ perfMode: true, webGL: true }),
 });
 
-test("standard workflow: does render", async ({ page }) => {
-  await startApplication(page, {
+const start = (page: Page) =>
+  startApplication(page, {
     workflowFixturePath: "getWorkflow-non-std-spread-sheet.json",
   });
 
-  const kanvasBox = await getKanvasBoundingBox(page);
-
-  await expect(page).toHaveScreenshot({
-    clip: kanvasBox!,
-  });
+test("standard workflow: does render", async ({ page }) => {
+  await start(page);
+  await assertSnapshot(page);
 });
 
-test("interaction: zoom", async ({ page }) => {
-  await startApplication(page, {
-    workflowFixturePath: "getWorkflow-non-std-spread-sheet.json",
-  });
+test("zoom", async ({ page }) => {
+  await start(page);
   const kanvasBox = await getKanvasBoundingBox(page);
 
   await page.mouse.move(
@@ -38,8 +37,36 @@ test("interaction: zoom", async ({ page }) => {
   await page.keyboard.up("ControlOrMeta");
 
   await page.waitForTimeout(200);
+  await assertSnapshot(page);
+});
 
-  await expect(page).toHaveScreenshot({
-    clip: kanvasBox!,
+test.describe("panning", () => {
+  const getBlankCanvasPosition = async (
+    page: Page,
+  ): Promise<[number, number]> => {
+    const kanvasBox = await getKanvasBoundingBox(page);
+    return [kanvasBox!.x + 385, kanvasBox!.y + 100];
+  };
+
+  test("with middle click", async ({ page }) => {
+    await start(page);
+
+    const [startX, startY] = await getBlankCanvasPosition(page);
+    await page.mouse.move(startX, startY);
+    await page.mouse.down({ button: "middle" });
+    await page.mouse.move(startX + 300, startY - 300);
+    await page.mouse.up();
+    await assertSnapshot(page);
+  });
+
+  test("with right click", async ({ page }) => {
+    await start(page);
+
+    const [startX, startY] = await getBlankCanvasPosition(page);
+    await page.mouse.move(startX, startY);
+    await page.mouse.down({ button: "right" });
+    await page.mouse.move(startX + 300, startY - 300);
+    await page.mouse.up();
+    await assertSnapshot(page);
   });
 });

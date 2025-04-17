@@ -70,7 +70,7 @@ const handleSendButtonClick = () => {
 
 const handleClick = (event: MouseEvent) => {
   if (event.target === event.currentTarget) {
-    textarea.value.focus();
+    textarea.value?.focus();
   }
 };
 

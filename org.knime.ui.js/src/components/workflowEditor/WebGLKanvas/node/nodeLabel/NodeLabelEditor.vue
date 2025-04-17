@@ -10,6 +10,7 @@ import SaveIcon from "@/assets/ok.svg";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
+import { getToastPresets } from "@/toastPresets";
 import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";
@@ -19,6 +20,7 @@ const nodeInteractionsStore = useNodeInteractionsStore();
 const { labelEditorNodeId } = storeToRefs(nodeInteractionsStore);
 const workflowStore = useWorkflowStore();
 const { activeWorkflow } = storeToRefs(workflowStore);
+const { toastPresets } = getToastPresets();
 
 const editedNode = computed(() => {
   if (!activeWorkflow.value || !labelEditorNodeId.value) {
@@ -47,7 +49,7 @@ const position = computed(() => {
 
 const editResult = ref("");
 
-const onSave = () => {
+const onSave = async () => {
   const trimmedValue = editResult.value.trim();
 
   // no change
@@ -59,20 +61,23 @@ const onSave = () => {
   const nodeId = editedNode.value!.id;
 
   // rename
-  nodeInteractionsStore.renameNodeLabel({
-    nodeId,
-    label: trimmedValue,
-  });
+  try {
+    await nodeInteractionsStore.renameNodeLabel({
+      nodeId,
+      label: trimmedValue,
+    });
+  } catch (error) {
+    toastPresets.workflow.commands.nodeLabelEditFail({ error });
+  }
 
   nodeInteractionsStore.closeLabelEditor();
 };
 
-const yOffset = 63;
+const xOffset = nodeSize / 2;
+const yOffset = nodeSize * 2;
 
 const positionStyle = computed(() => ({
-  transform: `translateX(calc(-50% + ${
-    nodeSize / 2
-  }px)) translateY(${yOffset}px)`,
+  transform: `translateX(calc(-50% + ${xOffset}px)) translateY(${yOffset}px)`,
   transformOrigin: "top",
 }));
 
@@ -89,6 +94,7 @@ const actions: ActionButtonConfig[] = [
     onClick: onCancel,
   },
 ];
+
 // @ts-expect-error seems to be typed wrong a component is possible to pass
 onClickOutside(textEditor, () => {
   onSave();
@@ -96,40 +102,30 @@ onClickOutside(textEditor, () => {
 </script>
 
 <template>
-  <Transition>
-    <FloatingHTML v-if="editedNode" :position="position!">
-      <div>
-        <svg class="action-bar">
-          <ActionBar
-            transform="scale(0.95) translate(31, 10)"
-            :actions="actions"
-          />
-        </svg>
-        <TextEditor
-          ref="textEditor"
-          :style="positionStyle"
-          :width-offset="2"
-          :value="editedNode.annotation?.text.value ?? ''"
-          class="label-text-editor"
-          :max-length="$characterLimits.nodeLabel"
-          @cancel="onCancel"
-          @save="onSave"
-          @update:value="editResult = $event"
+  <FloatingHTML :active="Boolean(editedNode)" :canvas-position="position">
+    <div>
+      <svg class="action-bar">
+        <ActionBar
+          transform="scale(0.95) translate(31, 10)"
+          :actions="actions"
         />
-      </div>
-    </FloatingHTML>
-  </Transition>
+      </svg>
+      <TextEditor
+        ref="textEditor"
+        :style="positionStyle"
+        :width-offset="2"
+        :value="editedNode?.annotation?.text.value ?? ''"
+        class="label-text-editor"
+        :max-length="$characterLimits.nodeLabel"
+        @cancel="onCancel"
+        @save="onSave"
+        @update:value="editResult = $event"
+      />
+    </div>
+  </FloatingHTML>
 </template>
 
 <style lang="postcss" scoped>
-.v-leave-active {
-  transition: opacity 120ms ease-out;
-}
-
-.v-leave-to {
-  opacity: 0;
-}
-
 .action-bar {
   position: absolute;
   top: 43px;
@@ -145,7 +141,7 @@ onClickOutside(textEditor, () => {
   font-weight: normal;
   border: 1.5px solid var(--knime-silver-sand);
   line-height: 1.31;
-  padding: 2px;
+  padding: 1px;
 
   &:focus-within {
     border: 1.5px solid var(--knime-stone-dark);

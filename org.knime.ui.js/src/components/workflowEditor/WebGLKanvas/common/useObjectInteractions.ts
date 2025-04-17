@@ -86,11 +86,8 @@ export const useObjectInteractions = (
       y: pointerDownEvent.global.y,
     };
 
+    const wasSelectedOnStart = isObjectSelected();
     const isMultiselect = isMultiselectEvent(pointerDownEvent);
-    if (!isObjectSelected() && !isMultiselect) {
-      selectionStore.deselectAllObjects();
-      selectObject();
-    }
 
     if (isMultiselect) {
       const action = isObjectSelected() ? deselectObject : selectObject;
@@ -98,6 +95,10 @@ export const useObjectInteractions = (
 
       // forbid move on multi select
       return;
+    } else if (!isObjectSelected()) {
+      // immediate selection feedback for non-selected objects
+      selectionStore.deselectAllObjects();
+      selectObject();
     }
 
     let didDrag = false;
@@ -125,6 +126,12 @@ export const useObjectInteractions = (
       onMoveEnd().then((shouldMove) => {
         if (shouldMove && didDrag) {
           movingStore.moveObjects();
+        } else if (wasSelectedOnStart) {
+          // if a drag did not occur then an interaction on a previously
+          // selected object should prioritize a selection on that object alone upon
+          // a pointer up
+          selectionStore.deselectAllObjects();
+          selectObject();
         }
       });
 

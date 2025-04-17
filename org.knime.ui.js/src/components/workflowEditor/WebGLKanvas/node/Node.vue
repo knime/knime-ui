@@ -28,7 +28,6 @@ import { useObjectInteractions } from "../common/useObjectInteractions";
 import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import NodePorts from "../ports/NodePorts.vue";
 import { markEventAsHandled } from "../util/interaction";
-import { nodeNameText } from "../util/textStyles";
 
 import NodeActionBar from "./NodeActionBar.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
@@ -150,10 +149,11 @@ const renderable = computed(
 
 const nodeNamePosition = computed(() => {
   const { x, y } = translatedPosition.value;
-  const padding = nodeNameText.styles.padding ?? 0;
+
   return {
-    x: x + hoverSize.value.x + hoverSize.value.width / 2 + padding,
-    y,
+    x: x + $shapes.nodeSize / 2,
+    // leave space between name and torso for the flowvariable ports
+    y: y - $shapes.portSize,
   };
 });
 
@@ -279,13 +279,14 @@ const onRightClick = (event: PIXI.FederatedPointerEvent) => {
 const { resolution } = useZoomAwareResolution();
 
 const nodeLabelPosition = computed(() => {
+  const yOffset = 8;
   return {
-    x: nodeNamePosition.value.x,
+    x: translatedPosition.value.x + $shapes.nodeSize / 2,
     y:
       translatedPosition.value.y +
       nodeSelectionMeasures.value.y +
       nodeSelectionMeasures.value.height +
-      10,
+      yOffset,
   };
 });
 </script>
@@ -334,11 +335,13 @@ const nodeLabelPosition = computed(() => {
       :name="shortenedNodeName"
       :is-editable="isMetanode || isComponent"
       :position="nodeNamePosition"
+      :metrics="nodeNameDimensions"
     />
 
     <Container label="NodeTorsoContainer" :position="translatedPosition">
       <NodeTorso
         v-if="renderable"
+        label="NodeTorso"
         :node-id="node.id"
         :kind="node.kind"
         :type="type"
@@ -376,7 +379,6 @@ const nodeLabelPosition = computed(() => {
   <NodeLabel
     :node-id="node.id"
     :label="node.annotation?.text.value"
-    :is-node-selected="isNodeSelected(node.id)"
     :position="nodeLabelPosition"
   />
 </template>

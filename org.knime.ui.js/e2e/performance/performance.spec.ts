@@ -2,19 +2,9 @@
 /* eslint-disable no-magic-numbers */
 
 import { Page, expect, test } from "@playwright/test";
-import { Application } from "pixi.js";
 
-import { getKanvasBoundingBox, startApplication } from "../utils";
+import { CustomWindow, getKanvasBoundingBox, startApplication } from "../utils";
 import { getBrowserState } from "../utils/browserState";
-
-type WindowWithPerf = typeof window & {
-  __PIXI_APP__: Application;
-  __PERF_FPS_MEASUREMENT__?: {
-    start: DOMHighResTimeStamp;
-    frameCount: number;
-    countFrames: () => void;
-  };
-};
 
 test.use({
   storageState: getBrowserState({ perfMode: true, webGL: true }),
@@ -59,7 +49,7 @@ const getMeasurements = async (page: Page) => {
 
 const startFpsMeasurement = async (page: Page) => {
   await page.evaluate(() => {
-    const win = window as WindowWithPerf;
+    const win = window as CustomWindow;
     const fpsMeasurement = (win.__PERF_FPS_MEASUREMENT__ = {
       start: performance.now(),
       frameCount: 0,
@@ -73,7 +63,7 @@ const startFpsMeasurement = async (page: Page) => {
 
   const stop = async () => {
     const averageFps = await page.evaluate(() => {
-      const win = window as WindowWithPerf;
+      const win = window as CustomWindow;
       const app = win.__PIXI_APP__;
       const fpsMeasurement = win.__PERF_FPS_MEASUREMENT__!;
 

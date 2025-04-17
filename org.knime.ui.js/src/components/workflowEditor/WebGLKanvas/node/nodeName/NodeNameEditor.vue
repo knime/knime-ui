@@ -9,7 +9,8 @@ import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { nodeNameMargin, nodeSize } from "@/style/shapes";
+import { nodeNameMargin, nodeSize, portSize } from "@/style/shapes";
+import { getToastPresets } from "@/toastPresets";
 import { invalidCharacters } from "../../../common/constants";
 import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
@@ -23,6 +24,7 @@ const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
 );
 const workflowStore = useWorkflowStore();
 const { activeWorkflow } = storeToRefs(workflowStore);
+const { toastPresets } = getToastPresets();
 
 const editedNode = computed(() => {
   if (!activeWorkflow.value || !nameEditorNodeId.value) {
@@ -44,22 +46,27 @@ const nodeName = computed(() =>
     ? nodeInteractionsStore.getNodeName(editedNode.value.id)
     : undefined,
 );
-const maxWidth = nodeNameText.styles.wordWrapWidth! - 5;
+
+const maxWidth = (nodeNameText.styles.wordWrapWidth ?? 0) - 5;
+const namePadding = nodeNameText.styles.padding ?? 0;
+const borderOffset = 1;
 
 const position = computed(() => {
   if (!editedNode.value) {
     return undefined;
   }
 
+  const offsetY = namePadding + borderOffset / 2;
+
   return {
-    x: editedNode.value.position.x - (maxWidth - nodeSize) / 2,
-    y: editedNode.value.position.y,
+    x: editedNode.value.position.x - (maxWidth - nodeSize) / 2 + borderOffset,
+    y: editedNode.value.position.y - portSize / 2 + offsetY,
   };
 });
 
 const editResult = ref("");
 
-const onSave = () => {
+const onSave = async () => {
   const trimmedValue = editResult.value.trim();
 
   // reset to old value on empty edits
@@ -76,17 +83,21 @@ const onSave = () => {
 
   const nodeId = editedNode.value!.id;
 
-  // rename
-  nodeInteractionsStore.renameContainerNode({
-    nodeId,
-    name: trimmedValue,
-  });
+  try {
+    // rename
+    await nodeInteractionsStore.renameContainerNode({
+      nodeId,
+      name: trimmedValue,
+    });
+  } catch (error) {
+    toastPresets.workflow.commands.nodeNameEditFail({ error });
+  }
 
   nodeInteractionsStore.closeNameEditor();
 };
 
 const padding = nodeNameText.styles.padding ?? 0;
-const yOffset = nodeNameMargin + padding - 3;
+const yOffset = nodeNameMargin + padding - 3.5;
 
 const positionStyle = computed(() => ({
   transform: `translateX(-1px) translateY(calc(-100% - ${yOffset}px))`,
@@ -124,57 +135,44 @@ onClickOutside(textEditor, () => {
 </script>
 
 <template>
-  <Transition>
-    <FloatingHTML
-      v-if="editedNode"
-      :position="position!"
-      :style="{ width: `${maxWidth}px` }"
-    >
-      <div :style="positionStyle">
-        <svg class="action-bar">
-          <ActionBar
-            transform="scale(0.95) translate(31, 10)"
-            :actions="actions"
-          />
-        </svg>
-        <TextEditor
-          ref="textEditor"
-          :value="nodeName"
-          :width-offset="2"
-          class="name-text-editor"
-          :min-width="$shapes.nodeNameEditorMinWidth"
-          :max-width="maxWidth"
-          :invalid-characters="invalidCharacters.regexp"
-          :max-length="$characterLimits.nodeName"
-          save-on-enter
-          @text-dimension-change="nameEditorDimensions = $event"
-          @cancel="onCancel"
-          @save="onSave"
-          @update:value="editResult = $event"
-          @invalid-input="onInvalidInput"
+  <FloatingHTML
+    :active="Boolean(editedNode)"
+    :canvas-position="position"
+    :dimensions="{ width: maxWidth }"
+  >
+    <div :style="positionStyle">
+      <svg class="action-bar">
+        <ActionBar
+          transform="scale(0.95) translate(31, 10)"
+          :actions="actions"
         />
-      </div>
-      <div
-        v-if="Boolean(hideInvalidCharsTimeoutId)"
-        class="invalid-chars-error"
-      >
-        Characters
-        <span class="chars">{{ invalidCharacters.regexp.source }}</span> are not
-        allowed and have been removed.
-      </div>
-    </FloatingHTML>
-  </Transition>
+      </svg>
+      <TextEditor
+        ref="textEditor"
+        :value="nodeName"
+        :width-offset="2"
+        class="name-text-editor"
+        :min-width="$shapes.nodeNameEditorMinWidth"
+        :max-width="maxWidth"
+        :invalid-characters="invalidCharacters.regexp"
+        :max-length="$characterLimits.nodeName"
+        save-on-enter
+        @text-dimension-change="nameEditorDimensions = $event"
+        @cancel="onCancel"
+        @save="onSave"
+        @update:value="editResult = $event"
+        @invalid-input="onInvalidInput"
+      />
+    </div>
+    <div v-if="Boolean(hideInvalidCharsTimeoutId)" class="invalid-chars-error">
+      Characters
+      <span class="chars">{{ invalidCharacters.regexp.source }}</span> are not
+      allowed and have been removed.
+    </div>
+  </FloatingHTML>
 </template>
 
 <style lang="postcss" scoped>
-.v-leave-active {
-  transition: opacity 120ms ease-out;
-}
-
-.v-leave-to {
-  opacity: 0;
-}
-
 .action-bar {
   position: absolute;
   top: -25px;

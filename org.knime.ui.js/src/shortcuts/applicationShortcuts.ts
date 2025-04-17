@@ -1,5 +1,6 @@
 import type { Router } from "vue-router";
 
+import { isDesktop } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -113,7 +114,7 @@ const applicationShortcuts: ApplicationShortcuts = {
     execute: () => {
       openInspector();
     },
-    condition: () => useApplicationSettingsStore().devMode,
+    condition: () => useApplicationSettingsStore().devMode && isDesktop(),
   },
 };
 

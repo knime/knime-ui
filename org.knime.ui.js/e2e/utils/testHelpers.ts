@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { Application } from "pixi.js";
 import { Page } from "playwright-core";
 
 import { mockWebsocket } from "./mockWebsocket";
@@ -7,6 +8,15 @@ type StartApplicationHelperOptions = {
   workflowFixturePath: string;
   withMouseCursor?: boolean;
   waitForRender?: boolean;
+};
+
+export type CustomWindow = typeof window & {
+  __PIXI_APP__: Application;
+  __PERF_FPS_MEASUREMENT__?: {
+    start: DOMHighResTimeStamp;
+    frameCount: number;
+    countFrames: () => void;
+  };
 };
 
 export const startApplication = async (
@@ -42,6 +52,13 @@ export const startApplication = async (
 
 export const getKanvasBoundingBox = (page: Page) =>
   page.locator("#kanvas").boundingBox();
+
+export const assertSnapshot = async (page: Page) => {
+  const kanvasBox = await getKanvasBoundingBox(page);
+  await expect(page).toHaveScreenshot({
+    clip: kanvasBox!,
+  });
+};
 
 export const testSimpleScreenshot = async (
   page: Page,

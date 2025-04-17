@@ -1,25 +1,27 @@
 <!-- eslint-disable no-magic-numbers -->
-<!-- eslint-disable no-undefined -->
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { sleep } from "@knime/utils";
 
-import type { XY } from "@/api/gateway-api/generated-api";
+import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 import NodeLabelText from "./NodeLabelText.vue";
 
 const props = defineProps<{
-  label?: string;
   nodeId: string;
-  isNodeSelected: boolean;
-  position: XY;
+  label?: string;
 }>();
 
 const nodeInteractionsStore = useNodeInteractionsStore();
 const { labelEditorNodeId } = storeToRefs(nodeInteractionsStore);
+const { singleSelectedNode } = storeToRefs(useSelectionStore());
+
+const isSelected = computed(
+  () => props.nodeId === singleSelectedNode.value?.id,
+);
 
 const isEditing = computed(
   () =>
@@ -43,9 +45,8 @@ watch(isEditing, async () => {
 <template>
   <NodeLabelText
     v-if="showText"
-    :position="position"
     :label="label"
     :node-id="nodeId"
-    :is-node-selected="isNodeSelected"
+    :is-node-selected="isSelected"
   />
 </template>

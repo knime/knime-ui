@@ -84,6 +84,7 @@ test.describe("editing", () => {
 
     // click somewhere outside annotation
     await page.mouse.dblclick(10, 10);
+    await page.waitForTimeout(300);
     await expect(page).toHaveScreenshot({
       clip: kanvasBox!,
       maxDiffPixels,

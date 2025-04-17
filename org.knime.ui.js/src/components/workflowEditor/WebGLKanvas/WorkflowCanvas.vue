@@ -29,6 +29,10 @@ const { onDrop, onDragOver } = useDropNode();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 
 const openQuickActionMenu = (event: PointerEvent) => {
+  if (event.dataset) {
+    return;
+  }
+
   const [x, y] = useWebGLCanvasStore().screenToCanvasCoordinates([
     event.clientX,
     event.clientY,

@@ -3,20 +3,21 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import type { CanvasTextMetrics, FederatedPointerEvent } from "pixi.js";
 
 import { sleep } from "@knime/utils";
 
-import type { XY } from "@/api/gateway-api/generated-api";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
 import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
+import { markEventAsHandled } from "../../util/interaction";
 import { nodeNameText } from "../../util/textStyles";
 
 const props = defineProps<{
   name: string;
   nodeId: string;
   isEditable: boolean;
-  position: XY;
+  metrics: CanvasTextMetrics;
 }>();
 
 const { resolution } = useZoomAwareResolution();
@@ -31,10 +32,15 @@ const isEditing = computed(
 
 const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
-const onPointerdown = async (event: PointerEvent) => {
+const onPointerdown = async (event: FederatedPointerEvent) => {
+  markEventAsHandled(event, { initiator: "node-name-edit" });
   if (isPointerDownDoubleClick(event)) {
-    // avoid click away to be run
-    await sleep(10);
+    // stop to prevent handling of double click action on the node itself
+    // e.g opening a metanode
+    event.stopPropagation();
+    // make a brief pause before registering the click outside handler,
+    // to avoid closing immediately after opening
+    await sleep(50);
     nodeInteractionsStore.openNameEditor(props.nodeId);
   }
 };
@@ -52,18 +58,19 @@ watch(isEditing, async (isEdit) => {
 </script>
 
 <template>
-  <Text
-    v-if="!isEditing"
-    label="NodeName"
-    :position="position"
-    :resolution="resolution"
-    :style="nodeNameText.styles"
-    :alpha="alpha"
-    :anchor="{ x: 0.5, y: 1 }"
-    :round-pixels="true"
-    event-mode="static"
-    @pointerdown.stop.prevent="onPointerdown"
-  >
-    {{ name }}
-  </Text>
+  <Container label="NodeName">
+    <Text
+      v-if="!isEditing"
+      :resolution="resolution"
+      :style="nodeNameText.styles"
+      :alpha="alpha"
+      :round-pixels="true"
+      :x="-metrics.width / 2 + 1.2"
+      :y="-metrics.height"
+      event-mode="static"
+      @pointerdown.prevent="isEditable && onPointerdown($event)"
+    >
+      {{ name }}
+    </Text>
+  </Container>
 </template>

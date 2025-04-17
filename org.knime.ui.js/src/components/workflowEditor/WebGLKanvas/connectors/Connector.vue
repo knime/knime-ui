@@ -186,7 +186,11 @@ watch(sourceAndDestinationSelected, (value) => {
 </script>
 
 <template>
-  <Container :renderable="renderable" :visible="renderable">
+  <Container
+    :label="`Connection__${id}`"
+    :renderable="renderable"
+    :visible="renderable"
+  >
     <template v-for="(segment, index) of pathSegments" :key="index">
       <ConnectorPathSegment
         :connection-id="id"

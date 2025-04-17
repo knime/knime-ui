@@ -1,0 +1,1 @@
+export const FLOATING_HTML_FADE_DELAY_MS = 100;
