@@ -1,12 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
+import type { Toast } from "@knime/components";
+import { rfcErrors } from "@knime/hub-features";
 import {
   CreateVersionForm,
   ManageVersions,
 } from "@knime/hub-features/versions";
 
+import { getToastsProvider } from "@/plugins/toasts";
 import {
   type VersionsModeStatus,
   useWorkflowVersionsStore,
@@ -63,9 +66,25 @@ const mockVersionsModeInfo: ReturnType<
     savepointNumber: 42,
   },
   permissions: ["EDIT", "DELETE"],
-} as const;
+};
+
+const getExpectedToastWithHeadline = (headline: string): Toast => {
+  return {
+    headline,
+    autoRemove: false,
+    buttons: expect.any(Array),
+    message: "An unexpected error occurred.",
+    type: "error",
+  };
+};
+const someError = new Error("someError");
+const toast = getToastsProvider();
 
 describe("ManageVersionsWrapper.vue", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   const doMount = ({
     props,
     versionsModeStatus = "active",
@@ -113,6 +132,8 @@ describe("ManageVersionsWrapper.vue", () => {
 
   describe("events", () => {
     describe("source: ManageVersions", () => {
+      const version = 42;
+
       it("close", () => {
         const { wrapper, mockedVersionsStore } = doMount();
         mockedVersionsStore.deactivateVersionsMode = vi.fn();
@@ -127,24 +148,56 @@ describe("ManageVersionsWrapper.vue", () => {
         const { wrapper, mockedVersionsStore } = doMount();
         mockedVersionsStore.switchVersion = vi.fn();
 
-        wrapper.findComponent(ManageVersions).vm.$emit("select", 42);
-        expect(mockedVersionsStore.switchVersion).toHaveBeenCalledWith(42);
+        wrapper.findComponent(ManageVersions).vm.$emit("select", version);
+        expect(mockedVersionsStore.switchVersion).toHaveBeenCalledWith(version);
       });
 
       it("delete", () => {
         const { wrapper, mockedVersionsStore } = doMount();
         mockedVersionsStore.deleteVersion = vi.fn();
 
-        wrapper.findComponent(ManageVersions).vm.$emit("delete", 42);
-        expect(mockedVersionsStore.deleteVersion).toHaveBeenCalledWith(42);
+        wrapper.findComponent(ManageVersions).vm.$emit("delete", version);
+        expect(mockedVersionsStore.deleteVersion).toHaveBeenCalledWith(version);
+        expect(toast.show).not.toHaveBeenCalled();
+      });
+
+      it("delete shows error toast on failure", () => {
+        const { wrapper, mockedVersionsStore } = doMount();
+        mockedVersionsStore.deleteVersion.mockImplementationOnce(() => {
+          throw someError;
+        });
+
+        wrapper.findComponent(ManageVersions).vm.$emit("delete", version);
+        expect(mockedVersionsStore.deleteVersion).toHaveBeenCalledWith(version);
+        expect(toast.show).toHaveBeenCalledWith(
+          getExpectedToastWithHeadline("Deletion of the version failed"),
+        );
       });
 
       it("restore", () => {
         const { wrapper, mockedVersionsStore } = doMount();
         mockedVersionsStore.restoreVersion = vi.fn();
 
-        wrapper.findComponent(ManageVersions).vm.$emit("restore", 42);
-        expect(mockedVersionsStore.restoreVersion).toHaveBeenCalledWith(42);
+        wrapper.findComponent(ManageVersions).vm.$emit("restore", version);
+        expect(mockedVersionsStore.restoreVersion).toHaveBeenCalledWith(
+          version,
+        );
+        expect(toast.show).not.toHaveBeenCalled();
+      });
+
+      it("restore shows error toast on failure", () => {
+        const { wrapper, mockedVersionsStore } = doMount();
+        mockedVersionsStore.restoreVersion.mockImplementationOnce(() => {
+          throw someError;
+        });
+
+        wrapper.findComponent(ManageVersions).vm.$emit("restore", version);
+        expect(mockedVersionsStore.restoreVersion).toHaveBeenCalledWith(
+          version,
+        );
+        expect(toast.show).toHaveBeenCalledWith(
+          getExpectedToastWithHeadline("Restoring of the version failed"),
+        );
       });
 
       it("loadAll", () => {
@@ -155,6 +208,22 @@ describe("ManageVersionsWrapper.vue", () => {
         expect(mockedVersionsStore.refreshData).toHaveBeenCalledWith({
           loadAll: true,
         });
+        expect(toast.show).not.toHaveBeenCalled();
+      });
+
+      it("loadAll shows error toast on failure", () => {
+        const { wrapper, mockedVersionsStore } = doMount();
+        mockedVersionsStore.refreshData.mockImplementationOnce(() => {
+          throw someError;
+        });
+
+        wrapper.findComponent(ManageVersions).vm.$emit("loadAll");
+        expect(mockedVersionsStore.refreshData).toHaveBeenCalledWith({
+          loadAll: true,
+        });
+        expect(toast.show).toHaveBeenCalledWith(
+          getExpectedToastWithHeadline("Loading all versions failed"),
+        );
       });
     });
 
@@ -228,6 +297,7 @@ describe("ManageVersionsWrapper.vue", () => {
       expect(mockedVersionsStore.createVersion).toHaveBeenCalledWith(
         versionData,
       );
+      expect(toast.show).not.toHaveBeenCalled();
     });
 
     it("handles cancel event", async () => {
@@ -238,6 +308,64 @@ describe("ManageVersionsWrapper.vue", () => {
       await nextTick();
 
       expect(wrapper.findComponent(CreateVersionForm).exists()).toBe(false);
+      expect(toast.show).not.toHaveBeenCalled();
+    });
+
+    it("shows error toast on failure", async () => {
+      const { wrapper, mockedVersionsStore } = doMount();
+      await openCreateVersionsForm(wrapper);
+
+      mockedVersionsStore.createVersion.mockImplementationOnce(() => {
+        throw someError;
+      });
+      const versionData = {
+        name: "mockName",
+        description: "someMockDescription",
+      };
+      wrapper.findComponent(CreateVersionForm).vm.$emit("create", versionData);
+      expect(mockedVersionsStore.createVersion).toHaveBeenCalledWith(
+        versionData,
+      );
+      expect(toast.show).toHaveBeenCalledWith(
+        getExpectedToastWithHeadline("Creation of the version failed"),
+      );
+    });
+  });
+
+  describe("showErrorToast", () => {
+    it("works for RFCError", () => {
+      const { wrapper } = doMount();
+
+      const headline = "some headline";
+      (wrapper.vm as any).showErrorToast({
+        error: new rfcErrors.RFCError({
+          title: "some title",
+          status: 0,
+          date: new Date(),
+          requestId: "requestId",
+        }),
+        headline,
+      });
+
+      expect(toast.show).toHaveBeenCalledWith({
+        type: "error",
+        headline,
+        component: expect.any(Object),
+        autoRemove: false,
+      });
+    });
+
+    it("works for other errors", () => {
+      const { wrapper } = doMount();
+
+      (wrapper.vm as any).showErrorToast({
+        error: someError,
+        headline: "some headline",
+      });
+
+      expect(toast.show).toHaveBeenCalledWith(
+        getExpectedToastWithHeadline("some headline"),
+      );
     });
   });
 });

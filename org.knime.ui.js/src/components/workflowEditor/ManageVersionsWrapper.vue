@@ -57,7 +57,7 @@ const showErrorToast = ({
     showProblemDetailsErrorToast({
       headline,
       problemDetails: {
-        title: "An unexpected error occured.",
+        title: "An unexpected error occurred.",
       },
       error,
       copyToClipboard: true,
@@ -96,7 +96,14 @@ const onDelete = async (version: NamedItemVersion["version"]) => {
 };
 
 const onRestore = (version: NamedItemVersion["version"]) => {
-  versionsStore.restoreVersion(version);
+  try {
+    versionsStore.restoreVersion(version);
+  } catch (error) {
+    showErrorToast({
+      error,
+      headline: "Restoring of the version failed",
+    });
+  }
 };
 
 const onCreate = async ({ name, description }) => {
