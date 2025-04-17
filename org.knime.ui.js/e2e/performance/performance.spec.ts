@@ -1,15 +1,14 @@
 /* eslint-disable no-console */
 /* eslint-disable no-magic-numbers */
 
-import { expect, test } from "@playwright/test";
-import playwright from "playwright";
+import { Page, expect, test } from "@playwright/test";
+import { Application } from "pixi.js";
 
-import type { ApplicationInst } from "@/vue3-pixi";
+import { getKanvasBoundingBox, startApplication } from "../utils";
 import { getBrowserState } from "../utils/browserState";
-import { mockWebsocket } from "../utils/mockWebsocket";
 
 type WindowWithPerf = typeof window & {
-  __PIXI_APP__?: ApplicationInst;
+  __PIXI_APP__: Application;
   __PERF_FPS_MEASUREMENT__?: {
     start: DOMHighResTimeStamp;
     frameCount: number;
@@ -21,7 +20,7 @@ test.use({
   storageState: getBrowserState({ perfMode: true, webGL: true }),
 });
 
-const getMeasurements = async (page: playwright.Page) => {
+const getMeasurements = async (page: Page) => {
   // To get all performance marks
   const getAllMeasuresJson = await page.evaluate(() =>
     JSON.stringify(window.performance.getEntriesByType("measure")),
@@ -58,9 +57,9 @@ const getMeasurements = async (page: playwright.Page) => {
   };
 };
 
-const startFpsMeasurement = async (page: playwright.Page) => {
+const startFpsMeasurement = async (page: Page) => {
   await page.evaluate(() => {
-    const win: WindowWithPerf = window;
+    const win = window as WindowWithPerf;
     const fpsMeasurement = (win.__PERF_FPS_MEASUREMENT__ = {
       start: performance.now(),
       frameCount: 0,
@@ -74,7 +73,7 @@ const startFpsMeasurement = async (page: playwright.Page) => {
 
   const stop = async () => {
     const averageFps = await page.evaluate(() => {
-      const win: WindowWithPerf = window;
+      const win = window as WindowWithPerf;
       const app = win.__PIXI_APP__;
       const fpsMeasurement = win.__PERF_FPS_MEASUREMENT__!;
 
@@ -118,10 +117,13 @@ const testWorkflows = [
 ];
 
 test.describe("rendering performance", () => {
-  const doTest = async (page, workflow, expectedFps, expectedSlowestFrame) => {
-    await mockWebsocket(page, workflow);
-    await page.goto("/");
-    await page.waitForSelector('body[data-first-render="done"]');
+  const doTest = async (
+    page: Page,
+    workflowFixturePath: string,
+    expectedFps: number,
+    expectedSlowestFrame: number,
+  ) => {
+    await startApplication(page, { workflowFixturePath });
 
     const { measurements, slowestFrame, averageFps } = await getMeasurements(
       page,
@@ -145,10 +147,13 @@ test.describe("rendering performance", () => {
 });
 
 test.describe("pan performance", () => {
-  const doTest = async (page, workflow, expectedFps = 50) => {
-    await mockWebsocket(page, workflow);
-    await page.goto("/");
-    const kanvasBox = await page.locator("#kanvas").boundingBox();
+  const doTest = async (
+    page: Page,
+    workflowFixturePath: string,
+    expectedFps = 50,
+  ) => {
+    await startApplication(page, { workflowFixturePath, waitForRender: false });
+    const kanvasBox = await getKanvasBoundingBox(page);
     await page.mouse.move(
       kanvasBox!.x + kanvasBox!.width / 2 + 10,
       kanvasBox!.y + kanvasBox!.height / 2 + 20,
@@ -190,10 +195,13 @@ test.describe("pan performance", () => {
 });
 
 test.describe("zoom performance", () => {
-  const doTest = async (page, workflow, expectedFps = 50) => {
-    await mockWebsocket(page, workflow);
-    await page.goto("/");
-    const kanvasBox = await page.locator("#kanvas").boundingBox();
+  const doTest = async (
+    page: Page,
+    workflowFixturePath: string,
+    expectedFps = 50,
+  ) => {
+    await startApplication(page, { workflowFixturePath, waitForRender: false });
+    const kanvasBox = await getKanvasBoundingBox(page);
     await page.mouse.move(
       kanvasBox!.x + kanvasBox!.width / 2 + 10,
       kanvasBox!.y + kanvasBox!.height / 2 + 20,

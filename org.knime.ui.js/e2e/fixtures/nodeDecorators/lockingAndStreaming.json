@@ -28,19 +28,7 @@
           "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RkRBRThDOTU3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RkRBRThDOTQ3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2MjZBQjAxMDJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2MjZBQjAxMTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pr5h9h8AAABuSURBVHjaYmRgYPjPQAT4//8/IzZxkOD/j5Ot8Wrmzz2K0wAmBgoBI6VegMpBAD8/P1Y2VA0DNozihT9//mBlDyEvDEgsMEJciMN0RkZ0Q2Bi/2F68RqAx+D/cCYBFxA0nbYGUOwFAgaAQxMgwAD1CJc+ReyqcgAAAABJRU5ErkJggg=="
         }
       },
-      "workflowAnnotations": [
-        {
-          "bounds": { "y": -165, "x": -520, "width": 420, "height": 555 },
-          "id": "root_0",
-          "text": {
-            "value": "<h3>Streaming and locking decorators</h3><p>Streaming decorators can be displayed on the component, as well as on nodes inside. For nodes that do not support streaming an x is rendered as decorator.</p><p></p><p>A locked component can display a lock decorator or when unlocked (password entered) an open lock.</p><p></p><p>Sharing, locking and streaming can be configured and displayed on the same component.</p>",
-            "contentType": "text/html"
-          },
-          "borderWidth": 10,
-          "backgroundColor": "#FFFFFF",
-          "borderColor": "#FF9632"
-        }
-      ],
+      "workflowAnnotations": [],
       "metadata": {
         "metadataType": "project",
         "lastEdit": "2025-04-08T14:52:13.857+02:00",

@@ -2,20 +2,19 @@
 
 import { expect, test } from "@playwright/test";
 
+import { getKanvasBoundingBox, startApplication } from "../utils";
 import { getBrowserState } from "../utils/browserState";
-import { mockWebsocket } from "../utils/mockWebsocket";
 
 test.use({
   storageState: getBrowserState({ perfMode: true, webGL: true }),
 });
 
 test("standard workflow: does render", async ({ page }) => {
-  await mockWebsocket(page, "getWorkflow-non-std-spread-sheet.json");
-  await page.goto("/");
+  await startApplication(page, {
+    workflowFixturePath: "getWorkflow-non-std-spread-sheet.json",
+  });
 
-  await page.waitForSelector('body[data-first-render="done"]');
-
-  const kanvasBox = await page.locator("#kanvas").boundingBox();
+  const kanvasBox = await getKanvasBoundingBox(page);
 
   await expect(page).toHaveScreenshot({
     clip: kanvasBox!,
@@ -23,12 +22,10 @@ test("standard workflow: does render", async ({ page }) => {
 });
 
 test("interaction: zoom", async ({ page }) => {
-  await mockWebsocket(page, "getWorkflow-non-std-spread-sheet.json");
-  await page.goto("/");
-
-  await page.waitForSelector('body[data-first-render="done"]');
-
-  const kanvasBox = await page.locator("#kanvas").boundingBox();
+  await startApplication(page, {
+    workflowFixturePath: "getWorkflow-non-std-spread-sheet.json",
+  });
+  const kanvasBox = await getKanvasBoundingBox(page);
 
   await page.mouse.move(
     kanvasBox!.x + kanvasBox!.width / 2 + 10,

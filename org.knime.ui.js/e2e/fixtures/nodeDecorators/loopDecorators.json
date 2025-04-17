@@ -9,19 +9,7 @@
         "containerId": "root",
         "providerType": "HUB"
       },
-      "workflowAnnotations": [
-        {
-          "text": {
-            "contentType": "text/html",
-            "value": "<h3>Loop and re-execute decorators</h3><p>Loop end nodes can have a 'pause' and a 'running' decorator - depending on step or complete loop execution</p>"
-          },
-          "bounds": { "y": 140, "x": -185, "width": 285, "height": 440 },
-          "id": "root_0",
-          "borderWidth": 10,
-          "backgroundColor": "#FFFFFF",
-          "borderColor": "#FF9632"
-        }
-      ],
+      "workflowAnnotations": [],
       "metadata": {
         "description": { "contentType": "text/plain", "value": "" },
         "tags": [],

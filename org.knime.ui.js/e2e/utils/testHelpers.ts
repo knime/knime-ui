@@ -1,23 +1,39 @@
+import { expect } from "@playwright/test";
 import { Page } from "playwright-core";
 
 import { mockWebsocket } from "./mockWebsocket";
 
+type StartApplicationHelperOptions = {
+  workflowFixturePath: string;
+  withMouseCursor?: boolean;
+  waitForRender?: boolean;
+};
+
 export const startApplication = async (
   page: Page,
-  options: { workflowFixturePath: string; withMouseCursor?: boolean },
+  options: StartApplicationHelperOptions,
 ) => {
-  if (options.withMouseCursor) {
+  const {
+    workflowFixturePath,
+    waitForRender = true,
+    withMouseCursor = false,
+  } = options;
+
+  if (withMouseCursor) {
     await page.addInitScript({
       path: "./node_modules/mouse-helper/dist/mouse-helper.js",
     });
   }
 
-  await mockWebsocket(page, options.workflowFixturePath);
+  await mockWebsocket(page, workflowFixturePath);
   await page.goto("/");
-  // TODO: NXT-3621 investigate how to improve this
-  await page.waitForSelector('body[data-first-render="done"]');
 
-  if (options.withMouseCursor) {
+  if (waitForRender) {
+    // TODO: NXT-3621 investigate how to improve this
+    await page.waitForSelector('body[data-first-render="done"]');
+  }
+
+  if (withMouseCursor) {
     await page.evaluate(() => {
       window["mouse-helper"]();
     });
@@ -26,3 +42,15 @@ export const startApplication = async (
 
 export const getKanvasBoundingBox = (page: Page) =>
   page.locator("#kanvas").boundingBox();
+
+export const testSimpleScreenshot = async (
+  page: Page,
+  options: StartApplicationHelperOptions,
+) => {
+  await startApplication(page, options);
+  const kanvasBox = await getKanvasBoundingBox(page);
+
+  await expect(page).toHaveScreenshot({
+    clip: kanvasBox!,
+  });
+};

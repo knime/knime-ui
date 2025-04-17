@@ -47,20 +47,18 @@ test.describe("editing", () => {
       maxDiffPixels,
     });
 
-    const { clickCoords } = await startAnnotationEdit(page);
+    await startAnnotationEdit(page);
     expect(page.getByTestId("rich-text-annotation-toolbar")).toBeVisible();
-    await page.waitForTimeout(200);
-
-    await page.keyboard.press("Escape");
-    expect(page.getByTestId("rich-text-annotation-toolbar")).not.toBeVisible();
-
-    await page.mouse.dblclick(clickCoords.x, clickCoords.y);
     await page.waitForTimeout(200);
 
     await expect(page).toHaveScreenshot({
       clip: kanvasBox!,
       maxDiffPixels,
     });
+
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+    expect(page.getByTestId("rich-text-annotation-toolbar")).not.toBeVisible();
   });
 
   test("can be edited", async ({ page }) => {
