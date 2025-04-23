@@ -37,9 +37,7 @@ export const useFloatingContextMenu = (
     }
 
     const referenceRect = anchorElement.value.getBoundingClientRect();
-    const clickPosition = menuPosition.value.y - referenceRect.top;
-
-    return clickPosition * -1;
+    return menuPosition.value.y - referenceRect.bottom;
   });
 
   const middleware = computed(() => [
@@ -50,7 +48,7 @@ export const useFloatingContextMenu = (
     anchorElement,
     menuElement,
     {
-      placement: "top-start",
+      placement: "bottom-start",
       strategy: "fixed",
       middleware,
       whileElementsMounted: autoUpdate,
