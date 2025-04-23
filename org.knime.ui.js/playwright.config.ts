@@ -4,6 +4,8 @@ import path from "node:path";
 import dotenvx from "@dotenvx/dotenvx";
 import { defineConfig } from "@playwright/test";
 
+import { getBrowserState } from "./e2e/utils";
+
 // use e2e env file
 const envFilePath = path.resolve(import.meta.dirname, ".env.e2e");
 dotenvx.config({ path: envFilePath });
@@ -54,6 +56,7 @@ export default defineConfig({
           height: 1040,
         },
         deviceScaleFactor: 2,
+        storageState: getBrowserState(),
       },
     },
 

@@ -18,8 +18,7 @@ export const markEventAsHandled = (
 ) => {
   if (event.nativeEvent.dataset) {
     consola.warn(
-      "Tried to mark event as handled but was already marked by::",
-      event.nativeEvent.dataset.initiator,
+      `Tried to mark event as handled for "${dataset.initiator}" but was already marked by "${event.nativeEvent.dataset.initiator}"`,
     );
   }
 

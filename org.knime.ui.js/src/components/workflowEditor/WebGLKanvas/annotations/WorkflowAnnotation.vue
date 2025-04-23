@@ -37,7 +37,6 @@ const {
   initialRichTextAnnotationValue,
   toggleEdit,
   saveContent,
-  onBlur,
   onAnnotationColorChange,
   onAnnotationTextChange,
 } = useAnnotationDataEditing({
@@ -97,7 +96,6 @@ onMounted(async () => {
     @change="onAnnotationTextChange"
     @change-border-color="onAnnotationColorChange"
     @edit-start="toggleEdit"
-    @blur="onBlur"
   />
 </template>
 

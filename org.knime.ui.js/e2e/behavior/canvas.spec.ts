@@ -6,11 +6,6 @@ import {
   getKanvasBoundingBox,
   startApplication,
 } from "../utils";
-import { getBrowserState } from "../utils/browserState";
-
-test.use({
-  storageState: getBrowserState({ perfMode: true, webGL: true }),
-});
 
 const start = (page: Page) =>
   startApplication(page, {

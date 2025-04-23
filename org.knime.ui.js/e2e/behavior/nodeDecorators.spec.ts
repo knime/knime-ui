@@ -1,11 +1,6 @@
 import { test } from "@playwright/test";
 
 import { testSimpleScreenshot } from "../utils";
-import { getBrowserState } from "../utils/browserState";
-
-test.use({
-  storageState: getBrowserState({ perfMode: true, webGL: true }),
-});
 
 test("loop decorators render", async ({ page }) => {
   await testSimpleScreenshot(page, {

@@ -54,6 +54,7 @@ const getTitle = (action: ActionButtonConfig) => {
       :x="positions[index]"
       :primary="action.primary"
       :disabled="action.disabled"
+      :data-test-id="action.testId"
       :title="getTitle(action)"
       @click="action.onClick"
     >

@@ -1,17 +1,9 @@
 /* eslint-disable no-magic-numbers */
 import test, { Page, expect } from "@playwright/test";
 
-import {
-  getBrowserState,
-  getKanvasBoundingBox,
-  startApplication,
-} from "../utils";
+import { getKanvasBoundingBox, startApplication } from "../utils";
 
 const maxDiffPixels = 350;
-
-test.use({
-  storageState: getBrowserState({ perfMode: true, webGL: true }),
-});
 
 test("renders correcly", async ({ page }) => {
   await startApplication(page, {
@@ -32,6 +24,7 @@ test.describe("editing", () => {
     const clickCoords = { x: kanvasBox!.x + 300, y: kanvasBox!.y + 220 };
 
     await page.mouse.dblclick(clickCoords.x, clickCoords.y);
+    await page.waitForTimeout(200);
     return { clickCoords };
   };
 
@@ -48,8 +41,9 @@ test.describe("editing", () => {
     });
 
     await startAnnotationEdit(page);
-    expect(page.getByTestId("rich-text-annotation-toolbar")).toBeVisible();
-    await page.waitForTimeout(200);
+    await expect(
+      page.getByTestId("rich-text-annotation-toolbar"),
+    ).toBeVisible();
 
     await expect(page).toHaveScreenshot({
       clip: kanvasBox!,
@@ -57,8 +51,9 @@ test.describe("editing", () => {
     });
 
     await page.keyboard.press("Escape");
-    await page.waitForTimeout(200);
-    expect(page.getByTestId("rich-text-annotation-toolbar")).not.toBeVisible();
+    await expect(
+      page.getByTestId("rich-text-annotation-toolbar"),
+    ).not.toBeVisible();
   });
 
   test("can be edited", async ({ page }) => {
@@ -66,29 +61,14 @@ test.describe("editing", () => {
       workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
     });
 
-    const kanvasBox = await getKanvasBoundingBox(page);
-
-    await expect(page).toHaveScreenshot({
-      clip: kanvasBox!,
-      maxDiffPixels,
-    });
-
     await startAnnotationEdit(page);
 
     // select all text
     await page.keyboard.press("ControlOrMeta+a");
     await page.keyboard.insertText("This is the new content");
-    expect(page.getByRole("paragraph")).toContainText(
+    await expect(page.getByRole("paragraph")).toContainText(
       "This is the new content",
     );
-
-    // click somewhere outside annotation
-    await page.mouse.dblclick(10, 10);
-    await page.waitForTimeout(300);
-    await expect(page).toHaveScreenshot({
-      clip: kanvasBox!,
-      maxDiffPixels,
-    });
   });
 
   test("aborting edit reverts back to previous text", async ({ page }) => {
@@ -108,7 +88,8 @@ test.describe("editing", () => {
     // select all text
     await page.keyboard.press("ControlOrMeta+a");
     await page.keyboard.insertText("This is the new content");
-    expect(page.getByRole("paragraph")).toContainText(
+    await page.waitForTimeout(200);
+    await expect(page.getByRole("paragraph")).toContainText(
       "This is the new content",
     );
 

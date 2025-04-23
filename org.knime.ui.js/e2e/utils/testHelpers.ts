@@ -1,13 +1,20 @@
+/* eslint-disable no-undefined */
 import { expect } from "@playwright/test";
-import { Application } from "pixi.js";
+import { Application, Container, ContainerChild } from "pixi.js";
 import { Page } from "playwright-core";
 
 import { mockWebsocket } from "./mockWebsocket";
+
+export type WorkflowCommandFnMock = (payload: any) => {
+  matcher: () => boolean;
+  response: () => any;
+};
 
 type StartApplicationHelperOptions = {
   workflowFixturePath: string;
   withMouseCursor?: boolean;
   waitForRender?: boolean;
+  workflowCommandFn?: WorkflowCommandFnMock;
 };
 
 export type CustomWindow = typeof window & {
@@ -27,6 +34,7 @@ export const startApplication = async (
     workflowFixturePath,
     waitForRender = true,
     withMouseCursor = false,
+    workflowCommandFn,
   } = options;
 
   if (withMouseCursor) {
@@ -35,7 +43,7 @@ export const startApplication = async (
     });
   }
 
-  await mockWebsocket(page, workflowFixturePath);
+  await mockWebsocket(page, { workflowFixturePath, workflowCommandFn });
   await page.goto("/");
 
   if (waitForRender) {
@@ -71,3 +79,56 @@ export const testSimpleScreenshot = async (
     clip: kanvasBox!,
   });
 };
+
+export const getPixiObjectCenter = (page: Page, labels: string[]) =>
+  page.evaluate(
+    ({ labels }) => {
+      const pixiApp = (window as CustomWindow).__PIXI_APP__;
+
+      let obj: Container<ContainerChild> | undefined = pixiApp.stage;
+
+      labels.forEach(
+        (label) => (obj = obj?.getChildByLabel(label, true) ?? undefined),
+      );
+
+      if (!obj) {
+        throw new Error(
+          `getPixiObjectCenter: pixi object not found, path: ${labels}`,
+        );
+      }
+
+      const bounds = obj.getBounds();
+
+      return {
+        x: bounds.x + bounds.width / 2,
+        y: bounds.y + bounds.height / 2,
+      };
+    },
+    { labels },
+  );
+
+export const getPixiObjectAttributes = (
+  page: Page,
+  labels: string[],
+  attributes: string[],
+) =>
+  page.evaluate(
+    ({ labels, attributes }) => {
+      const pixiApp = (window as CustomWindow).__PIXI_APP__;
+
+      let obj: Container<ContainerChild> | undefined = pixiApp.stage;
+
+      labels.forEach(
+        (label) => (obj = obj?.getChildByLabel(label, true) ?? undefined),
+      );
+
+      if (!obj) {
+        throw new Error(
+          `getPixiObjectCenter: pixi object not found, path: ${labels}`,
+        );
+      }
+
+      return Object.fromEntries(attributes.map((a) => [a, obj![a]]));
+    },
+    { labels, attributes },
+  );

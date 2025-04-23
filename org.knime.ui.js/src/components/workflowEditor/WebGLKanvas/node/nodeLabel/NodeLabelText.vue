@@ -82,6 +82,7 @@ const renderBorder = (graphics: GraphicsInst) => {
 <template>
   <Container :label="`NodeLabel__${nodeId}`">
     <Text
+      label="NodeLabelText"
       :resolution="resolution"
       :style="textStyle"
       :round-pixels="true"

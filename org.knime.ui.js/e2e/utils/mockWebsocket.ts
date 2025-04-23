@@ -1,18 +1,42 @@
+/* eslint-disable func-style */
+/* eslint-disable no-console */
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
 import { type Page } from "playwright-core";
 
+const parseJSONFile = (path: string) =>
+  JSON.parse(fs.readFileSync(path, "utf-8"));
+
+function* snapshotIdGenerator() {
+  let snapshotId = 0;
+  while (true) {
+    yield ++snapshotId;
+  }
+}
+const getSnapshotId = (() => {
+  const g = snapshotIdGenerator();
+  return () => g.next().value;
+})();
+
 export const mockWebsocket = async (
   page: Page,
-  workflowJsonFile: string = "getWorkflow.json",
+  options: {
+    workflowFixturePath: string;
+    workflowCommandFn?: (payload: any) => {
+      matcher: () => boolean;
+      response: () => any;
+    };
+  },
 ) => {
+  const { workflowFixturePath, workflowCommandFn } = options;
   const websocketUrl =
     process.env.VITE_BROWSER_DEV_WS_URL ?? "ws://localhost:7000"; // eslint-disable-line n/no-process-env
-  await page.routeWebSocket(websocketUrl, (ws: any) => {
-    ws.onMessage((message: string) => {
-      const messageObject = JSON.parse(message);
+
+  await page.routeWebSocket(websocketUrl, (ws) => {
+    ws.onMessage((message) => {
+      const messageObject = JSON.parse(message.toString());
       const answer = (result: any) =>
         ws.send(
           JSON.stringify({
@@ -23,27 +47,75 @@ export const mockWebsocket = async (
         );
 
       const answerFromFile = (file: string) =>
-        answer(JSON.parse(fs.readFileSync(file, "utf-8")).result);
+        answer(parseJSONFile(file).result);
 
       switch (messageObject.method) {
-        case "EventService.addEventListener":
+        case "EventService.addEventListener": {
           answer(null);
-          break;
-        case "ApplicationService.getState":
-          answerFromFile(
-            path.resolve(import.meta.dirname, "../fixtures/getState.json"),
-          );
-          break;
-        case "WorkflowService.getWorkflow":
+          return;
+        }
+
+        case "ApplicationService.getState": {
           answerFromFile(
             path.resolve(
               import.meta.dirname,
-              `../fixtures/${workflowJsonFile}`,
+              "../fixtures/applicationState.json",
             ),
           );
-          break;
-        default:
+          return;
+        }
+
+        case "WorkflowService.getWorkflow": {
+          answerFromFile(
+            path.resolve(
+              import.meta.dirname,
+              `../fixtures/${workflowFixturePath}`,
+            ),
+          );
+          return;
+        }
+
+        case "WorkflowService.executeWorkflowCommand": {
+          if (!workflowCommandFn) {
+            return;
+          }
+
+          try {
+            const { matcher, response } = workflowCommandFn(messageObject);
+
+            if (matcher()) {
+              const id = getSnapshotId();
+
+              // resolve command itself
+              ws.send(
+                JSON.stringify({
+                  jsonrpc: "2.0",
+                  id: messageObject.id,
+                  result: null,
+                  snapshotId: id,
+                }),
+              );
+
+              // send server event associated to this command
+              ws.send(
+                JSON.stringify({
+                  ...response(),
+                  snapshotId: id,
+                }),
+              );
+            }
+          } catch (error) {
+            console.error("Failed to handle fixture for workflow command", {
+              error,
+            });
+          }
+
+          return;
+        }
+
+        default: {
           answer({});
+        }
       }
     });
   });

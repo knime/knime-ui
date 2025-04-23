@@ -8,11 +8,6 @@ import {
   getKanvasBoundingBox,
   startApplication,
 } from "../utils";
-import { getBrowserState } from "../utils/browserState";
-
-test.use({
-  storageState: getBrowserState({ perfMode: true, webGL: true }),
-});
 
 const getMeasurements = async (page: Page) => {
   // To get all performance marks

@@ -120,11 +120,13 @@ const actions: ActionButtonConfig[] = [
     icon: SaveIcon,
     onClick: onSave,
     primary: true,
+    testId: "node-name-editor-save",
   },
   {
     title: "Cancel",
     icon: CancelIcon,
     onClick: onCancel,
+    testId: "node-name-editor-cancel",
   },
 ];
 

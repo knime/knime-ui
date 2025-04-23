@@ -108,20 +108,24 @@ export const useAnnotationDataEditing = (
     return isAnnotationSelected.value(annotation.value.id);
   });
 
+  const isSaving = ref(false);
+
   const saveContent = async () => {
     if (window.getSelection()?.toString() !== "" && isSelected.value) {
       return;
     }
 
-    if (!isEditing.value) {
+    if (!isEditing.value || isSaving.value) {
       return;
     }
 
     if (hasEdited.value) {
+      isSaving.value = true;
       await updateAnnotation();
     }
 
     toggleEdit();
+    isSaving.value = false;
   };
 
   // Blur happens on:

@@ -11,6 +11,7 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
+import { isNodeMetaNode } from "@/util/nodeUtil";
 import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";
@@ -73,13 +74,28 @@ const onSave = async () => {
   nodeInteractionsStore.closeLabelEditor();
 };
 
-const xOffset = nodeSize / 2;
-const yOffset = nodeSize * 2;
+const actionBarStyle = computed(() => {
+  const top =
+    editedNode.value && isNodeMetaNode(editedNode.value) ? "20px" : "43px";
 
-const positionStyle = computed(() => ({
-  transform: `translateX(calc(-50% + ${xOffset}px)) translateY(${yOffset}px)`,
-  transformOrigin: "top",
-}));
+  return {
+    top,
+    left: "-13.5px",
+  };
+});
+
+const textEditorStyle = computed(() => {
+  const xOffset = nodeSize / 2;
+  const yOffset =
+    editedNode.value && isNodeMetaNode(editedNode.value)
+      ? nodeSize + 12
+      : nodeSize * 2;
+
+  return {
+    transform: `translateX(calc(-50% + ${xOffset}px)) translateY(${yOffset}px)`,
+    transformOrigin: "top",
+  };
+});
 
 const actions: ActionButtonConfig[] = [
   {
@@ -87,11 +103,13 @@ const actions: ActionButtonConfig[] = [
     icon: SaveIcon,
     onClick: onSave,
     primary: true,
+    testId: "node-label-editor-save",
   },
   {
     title: "Cancel",
     icon: CancelIcon,
     onClick: onCancel,
+    testId: "node-label-editor-cancel",
   },
 ];
 
@@ -104,7 +122,7 @@ onClickOutside(textEditor, () => {
 <template>
   <FloatingHTML :active="Boolean(editedNode)" :canvas-position="position">
     <div>
-      <svg class="action-bar">
+      <svg class="action-bar" :style="actionBarStyle">
         <ActionBar
           transform="scale(0.95) translate(31, 10)"
           :actions="actions"
@@ -112,7 +130,7 @@ onClickOutside(textEditor, () => {
       </svg>
       <TextEditor
         ref="textEditor"
-        :style="positionStyle"
+        :style="textEditorStyle"
         :width-offset="2"
         :value="editedNode?.annotation?.text.value ?? ''"
         class="label-text-editor"
@@ -128,8 +146,6 @@ onClickOutside(textEditor, () => {
 <style lang="postcss" scoped>
 .action-bar {
   position: absolute;
-  top: 43px;
-  left: -13.5px;
   overflow: hidden;
   width: 54px;
   height: 25px;

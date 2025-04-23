@@ -61,6 +61,7 @@ watch(isEditing, async (isEdit) => {
   <Container label="NodeName">
     <Text
       v-if="!isEditing"
+      label="NodeNameText"
       :resolution="resolution"
       :style="nodeNameText.styles"
       :alpha="alpha"

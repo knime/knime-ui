@@ -234,17 +234,15 @@ const allAllowedActions = computed(() => {
 const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
   useNodeInteractionsStore(),
 );
-const nodeNameIsEdited = computed(
-  () => nameEditorNodeId.value === props.node.id,
-);
+const isEditingName = computed(() => nameEditorNodeId.value === props.node.id);
 const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
   extraHeight: () =>
-    nodeNameIsEdited.value
+    isEditingName.value
       ? nameEditorDimensions.value.height
       : nodeNameDimensions.value.height,
   kind: props.node.kind,
   width: () =>
-    nodeNameIsEdited.value
+    isEditingName.value
       ? nameEditorDimensions.value.width
       : $shapes.nodeNameHorizontalMargin * 2,
 });
@@ -322,7 +320,7 @@ const nodeLabelPosition = computed(() => {
     />
 
     <NodeActionBar
-      v-if="isHovering && !isDragging && !nodeNameIsEdited"
+      v-if="isHovering && !isDragging && !isEditingName"
       v-bind="allAllowedActions"
       :position="actionBarPosition"
       :node-id="node.id"

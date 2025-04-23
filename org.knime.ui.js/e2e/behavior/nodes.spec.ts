@@ -1,72 +1,41 @@
-/* eslint-disable no-undefined */
 /* eslint-disable no-magic-numbers */
-import { Page, test } from "@playwright/test";
-import { Container, ContainerChild } from "pixi.js";
+import { Page, expect, test } from "@playwright/test";
 
 import {
-  CustomWindow,
   assertSnapshot,
-  getBrowserState,
   getKanvasBoundingBox,
+  getPixiObjectAttributes,
+  getPixiObjectCenter,
   startApplication,
+  testSimpleScreenshot,
 } from "../utils";
 
-test.use({
-  storageState: getBrowserState({ perfMode: true, webGL: true }),
-});
+import {
+  changeLabelCommand,
+  changeNameCommand,
+} from "./workflowCommandMocks/node-name-and-label";
 
-const getPixiObjectCenter = (page: Page, labels: string[]) =>
-  page.evaluate(
-    ({ labels }) => {
-      const pixiApp = (window as CustomWindow).__PIXI_APP__;
-
-      let obj: Container<ContainerChild> | undefined = pixiApp.stage;
-
-      labels.forEach(
-        (label) => (obj = obj?.getChildByLabel(label, true) ?? undefined),
-      );
-
-      if (!obj) {
-        throw new Error(
-          `getPixiObjectCenter: pixi object not found, path: ${labels}`,
-        );
-      }
-
-      const bounds = obj.getBounds();
-
-      return {
-        x: bounds.x + bounds.width / 2,
-        y: bounds.y + bounds.height / 2,
-      };
-    },
-    { labels },
-  );
+const IDS = {
+  node1: "root:1",
+  node2: "root:2",
+  metanode: "root:4",
+  component: "root:6",
+} as const;
 
 const getNodeTorsoCenter = (page: Page, nodeId: string) =>
   getPixiObjectCenter(page, [`Node__${nodeId}`, "NodeTorso"]);
 
-const getNode1Position = async (page: Page): Promise<[number, number]> => {
+const getNodePosition = async (
+  page: Page,
+  id: (typeof IDS)[keyof typeof IDS],
+): Promise<[number, number]> => {
   const kanvasBox = await getKanvasBoundingBox(page);
-  const torso = await getNodeTorsoCenter(page, "root:1");
+  const torso = await getNodeTorsoCenter(page, id);
 
   return [kanvasBox!.x + torso.x, kanvasBox!.y + torso.y];
 };
 
-const getNode2Position = async (page: Page): Promise<[number, number]> => {
-  const kanvasBox = await getKanvasBoundingBox(page);
-  const torso = await getNodeTorsoCenter(page, "root:2");
-
-  return [kanvasBox!.x + torso.x, kanvasBox!.y + torso.y];
-};
-
-const getNode3Position = async (page: Page): Promise<[number, number]> => {
-  const kanvasBox = await getKanvasBoundingBox(page);
-  const torso = await getNodeTorsoCenter(page, "root:4");
-
-  return [kanvasBox!.x + torso.x, kanvasBox!.y + torso.y];
-};
-
-const start = (page: Page) =>
+const startForPointerInteractions = (page: Page) =>
   startApplication(page, {
     workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
     withMouseCursor: true,
@@ -74,66 +43,66 @@ const start = (page: Page) =>
 
 test.describe("selection", () => {
   test("selects only 1 node", async ({ page }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
     // select a node
-    await page.mouse.click(...(await getNode1Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     await assertSnapshot(page);
 
     // select another node
-    await page.mouse.click(...(await getNode2Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await assertSnapshot(page);
   });
 
   test("adds to selection if modifier is pressed", async ({ page }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
     // select a node
-    await page.mouse.click(...(await getNode1Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     await assertSnapshot(page);
 
     // select another node using the shift modifier
     await page.keyboard.down("Shift");
-    await page.mouse.click(...(await getNode2Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await assertSnapshot(page);
   });
 
   test("clicking unselected node selects only that node", async ({ page }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
     // select a node
-    await page.mouse.click(...(await getNode1Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     // select another node using the shift modifier
     await page.keyboard.down("Shift");
-    await page.mouse.click(...(await getNode2Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await assertSnapshot(page);
 
     // remove modifier and select another unselected node
     await page.keyboard.up("Shift");
-    await page.mouse.click(...(await getNode3Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.metanode)));
     await assertSnapshot(page);
   });
 
   test("clicking selected node selects only that node", async ({ page }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
     // select a node
-    await page.mouse.click(...(await getNode1Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     // select another node using the shift modifier
     await page.keyboard.down("Shift");
-    await page.mouse.click(...(await getNode2Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await assertSnapshot(page);
 
     // remove modifier and select an already selected node
     await page.keyboard.up("Shift");
-    await page.mouse.click(...(await getNode2Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await assertSnapshot(page);
   });
 
   test("rectangle selection", async ({ page }) => {
-    await start(page);
-    const [node1X, node1Y] = await getNode1Position(page);
-    const [node2X, node2Y] = await getNode2Position(page);
+    await startForPointerInteractions(page);
+    const [node1X, node1Y] = await getNodePosition(page, IDS.node1);
+    const [node2X, node2Y] = await getNodePosition(page, IDS.node2);
 
     // make a selection that covers 2 nodes
     // select a node
@@ -147,14 +116,14 @@ test.describe("selection", () => {
   });
 
   test("click on empty canvas clears selection", async ({ page }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
-    const [n1x, n1y] = await getNode1Position(page);
+    const [n1x, n1y] = await getNodePosition(page, IDS.node1);
 
     // select nodes
     await page.mouse.click(n1x, n1y);
     await page.keyboard.down("Shift");
-    await page.mouse.click(...(await getNode2Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await page.keyboard.up("Shift");
 
     await page.mouse.click(n1x - 200, n1y);
@@ -164,9 +133,9 @@ test.describe("selection", () => {
 
 test.describe("dragging", () => {
   test("from unselected node", async ({ page }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
-    const [n1x, n1y] = await getNode1Position(page);
+    const [n1x, n1y] = await getNodePosition(page, IDS.node1);
 
     // start an immediate drag from a pointer down without selecting first
     await page.mouse.move(n1x, n1y);
@@ -176,9 +145,9 @@ test.describe("dragging", () => {
   });
 
   test("from selected node", async ({ page }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
-    const [n1x, n1y] = await getNode1Position(page);
+    const [n1x, n1y] = await getNodePosition(page, IDS.node1);
 
     // first select
     await page.mouse.click(n1x, n1y);
@@ -192,17 +161,17 @@ test.describe("dragging", () => {
   test("will replace selection when dragging from unselected node", async ({
     page,
   }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
     // select 2 nodes
-    await page.mouse.click(...(await getNode1Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     await page.keyboard.down("Shift");
-    await page.mouse.click(...(await getNode2Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await page.keyboard.up("Shift");
     await assertSnapshot(page);
 
     // start an immediate drag from another node
-    const [n3x, n3y] = await getNode3Position(page);
+    const [n3x, n3y] = await getNodePosition(page, IDS.metanode);
     await page.mouse.move(n3x, n3y);
     await page.mouse.down();
     await page.mouse.move(n3x + 100, n3y + 100);
@@ -212,12 +181,12 @@ test.describe("dragging", () => {
   test("will respect multi-selection when dragging from selected node", async ({
     page,
   }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
     // select 2 nodes
-    await page.mouse.click(...(await getNode1Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     await page.keyboard.down("Shift");
-    const [n2x, n2y] = await getNode2Position(page);
+    const [n2x, n2y] = await getNodePosition(page, IDS.node2);
     await page.mouse.click(n2x, n2y);
     await page.keyboard.up("Shift");
 
@@ -231,12 +200,12 @@ test.describe("dragging", () => {
   test("will ignore drag if multi-selection modifier is pressed", async ({
     page,
   }) => {
-    await start(page);
+    await startForPointerInteractions(page);
 
     // select 2 nodes
-    await page.mouse.click(...(await getNode1Position(page)));
+    await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     await page.keyboard.down("Shift");
-    const [n2x, n2y] = await getNode2Position(page);
+    const [n2x, n2y] = await getNodePosition(page, IDS.node2);
     await page.mouse.click(n2x, n2y);
     await page.keyboard.up("Shift");
 
@@ -246,5 +215,263 @@ test.describe("dragging", () => {
     await page.mouse.down();
     await page.mouse.move(n2x + 100, n2y + 100);
     await assertSnapshot(page);
+  });
+});
+
+test("node names render correctly", async ({ page }) => {
+  await testSimpleScreenshot(page, {
+    workflowFixturePath: "nodes/getWorkflow-node-name-rendering.json",
+  });
+});
+
+const waitForFloatingEditor = (page: Page) =>
+  page.waitForSelector(".canvas-floating-html", { state: "visible" });
+
+test.describe("node name editing", () => {
+  const startForNameChange = (page: Page) =>
+    startApplication(page, {
+      workflowFixturePath: "nodes/getWorkflow-node-interactions-rename.json",
+      withMouseCursor: true,
+      workflowCommandFn: changeNameCommand,
+    });
+
+  const getNodeNamePosition = async (
+    page: Page,
+    id: (typeof IDS)[keyof typeof IDS],
+  ): Promise<[number, number]> => {
+    const kanvasBox = await getKanvasBoundingBox(page);
+    const name = await getPixiObjectCenter(page, [`Node__${id}`, "NodeName"]);
+
+    return [kanvasBox!.x + name.x, kanvasBox!.y + name.y];
+  };
+
+  const getNodeNameText = async (
+    page: Page,
+    id: (typeof IDS)[keyof typeof IDS],
+  ) => {
+    const obj = await getPixiObjectAttributes(
+      page,
+      [`Node__${id}`, "NodeNameText"],
+      ["text"],
+    );
+    return obj.text;
+  };
+
+  [
+    { name: "metanode", id: IDS.metanode },
+    { name: "component", id: IDS.component },
+  ].forEach(({ name, id }) => {
+    test(`${name}::can edit name with dblclick->enter`, async ({ page }) => {
+      await startForNameChange(page);
+
+      // start edit
+      const [metanodeX, metanodeY] = await getNodeNamePosition(page, id);
+      await page.mouse.dblclick(metanodeX, metanodeY);
+      await assertSnapshot(page);
+
+      // save name
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+      await page.keyboard.press("Enter");
+      await page.waitForTimeout(200);
+      await assertSnapshot(page);
+      expect(await getNodeNameText(page, id)).toBe("New name");
+    });
+
+    test(`${name}::can edit name with shift+F2->click-outside`, async ({
+      page,
+    }) => {
+      await startForNameChange(page);
+
+      const [metanodeX, metanodeY] = await getNodePosition(page, id);
+      // select metanode
+      await page.mouse.click(metanodeX, metanodeY);
+      await page.keyboard.press("Shift+F2");
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+      await page.waitForTimeout(200);
+      await assertSnapshot(page);
+
+      // click-away
+      await page.mouse.click(metanodeX - 150, metanodeY - 150);
+      await page.waitForTimeout(200);
+      await assertSnapshot(page);
+    });
+
+    test(`${name}::cancels edit name with Escape`, async ({ page }) => {
+      await startForNameChange(page);
+
+      // start edit
+      const [metanodeX, metanodeY] = await getNodeNamePosition(page, id);
+      await page.mouse.dblclick(metanodeX, metanodeY);
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+      await page.waitForTimeout(500);
+      await assertSnapshot(page);
+
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(200);
+      await assertSnapshot(page);
+    });
+
+    test(`${name}::saves edit name with button`, async ({ page }) => {
+      await startForNameChange(page);
+
+      // start edit
+      const [metanodeX, metanodeY] = await getNodeNamePosition(page, id);
+      await page.mouse.dblclick(metanodeX, metanodeY);
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+      await assertSnapshot(page);
+
+      const saveButton = page.getByTestId("node-name-editor-save");
+      await saveButton.click();
+      // make sure editor is closed and text is on stage
+      await page.waitForTimeout(300);
+      await assertSnapshot(page);
+      await expect(await getNodeNameText(page, id)).toBe("New name");
+    });
+
+    test(`${name}::cancels edit name with button`, async ({ page }) => {
+      await startForNameChange(page);
+
+      // start edit
+      const [metanodeX, metanodeY] = await getNodeNamePosition(page, id);
+      await page.mouse.dblclick(metanodeX, metanodeY);
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+      await assertSnapshot(page);
+
+      const cancelButton = page.getByTestId("node-name-editor-cancel");
+      await cancelButton.click();
+      // make sure editor is closed and text is on stage
+      await page.waitForTimeout(200);
+      await assertSnapshot(page);
+      await expect(await getNodeNameText(page, id)).not.toBe("New name");
+    });
+  });
+});
+
+test.describe("node label editing", () => {
+  const startForLabelChange = (page: Page) =>
+    startApplication(page, {
+      workflowFixturePath: "nodes/getWorkflow-node-interactions-rename.json",
+      withMouseCursor: true,
+      workflowCommandFn: changeLabelCommand,
+    });
+
+  const getNodeLabelPosition = async (
+    page: Page,
+  ): Promise<[number, number]> => {
+    const kanvasBox = await getKanvasBoundingBox(page);
+    const label = await getPixiObjectCenter(page, [
+      `NodeLabel__${IDS.metanode}`,
+    ]);
+
+    return [kanvasBox!.x + label.x, kanvasBox!.y + label.y];
+  };
+
+  const getNodeLabelText = async (page: Page) => {
+    const obj = await getPixiObjectAttributes(
+      page,
+      [`NodeLabel__${IDS.metanode}`, "NodeLabelText"],
+      ["text"],
+    );
+    return obj.text;
+  };
+
+  const selectNode = async (page: Page) => {
+    const [metanodeX, metanodeY] = await getNodePosition(page, IDS.metanode);
+    return page.mouse.click(metanodeX, metanodeY);
+  };
+
+  test("can edit label with dblclick->Ctrl+enter", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    // start edit
+    const [metanodeX, metanodeY] = await getNodeLabelPosition(page);
+    await page.mouse.dblclick(metanodeX, metanodeY);
+    await assertSnapshot(page);
+
+    // save name
+    await page.keyboard.insertText("New name");
+    await page.waitForTimeout(5000);
+    await page.keyboard.press("ControlOrMeta+Enter");
+    await page.waitForTimeout(200);
+    await assertSnapshot(page);
+    await expect(await getNodeLabelText(page)).toBe("New name");
+    await page.waitForTimeout(5000);
+  });
+
+  test("can edit label with F2->click-outside", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    const [metanodeX, metanodeY] = await getNodePosition(page, IDS.metanode);
+    // select metanode
+    await page.mouse.click(metanodeX, metanodeY);
+    await page.keyboard.press("F2");
+    await waitForFloatingEditor(page);
+    await page.keyboard.insertText("New name");
+    await assertSnapshot(page);
+
+    // click-away
+    await page.mouse.click(metanodeX - 150, metanodeY - 150);
+    await page.waitForTimeout(200);
+    await assertSnapshot(page);
+  });
+
+  test("cancels edit name with Escape", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    // start edit
+    const [metanodeX, metanodeY] = await getNodeLabelPosition(page);
+    await page.mouse.dblclick(metanodeX, metanodeY);
+    await waitForFloatingEditor(page);
+    await page.keyboard.insertText("New name");
+    await assertSnapshot(page);
+
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+    await assertSnapshot(page);
+  });
+
+  test("cancels edit label with button", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    // start edit
+    const [metanodeX, metanodeY] = await getNodeLabelPosition(page);
+    await page.mouse.dblclick(metanodeX, metanodeY);
+    await waitForFloatingEditor(page);
+    await page.keyboard.insertText("New name");
+    await assertSnapshot(page);
+
+    const cancelButton = page.getByTestId("node-label-editor-cancel");
+    await cancelButton.click();
+    page.waitForTimeout(200);
+    await assertSnapshot(page);
+    await expect(await getNodeLabelText(page)).toBe("Add comment");
+  });
+
+  test("can edit label with button", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    const [metanodeX, metanodeY] = await getNodePosition(page, IDS.metanode);
+    // select metanode
+    await page.mouse.click(metanodeX, metanodeY);
+    await page.keyboard.press("F2");
+    await waitForFloatingEditor(page);
+    await page.keyboard.insertText("New name");
+    await assertSnapshot(page);
+
+    const saveButton = page.getByTestId("node-label-editor-save");
+    await saveButton.click();
+    await page.waitForTimeout(200);
+    await assertSnapshot(page);
+    await expect(await getNodeLabelText(page)).toBe("New name");
   });
 });
