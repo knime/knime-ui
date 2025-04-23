@@ -124,10 +124,10 @@ describe("spaces::spaceOperations", () => {
         spaceOperationsStore.fetchWorkflowGroupContent({
           projectId: "myProject1",
         }),
-      ).rejects.toThrow("Error trying to fetch workflow group content");
+      ).rejects.toThrow("error message");
     });
 
-    it("should forward errors when trying to connect `NetworkException`s", async () => {
+    it("should forward errors when trying to connect", async () => {
       const { spaceOperationsStore, spaceProvidersStore } = loadStore();
 
       spaceProvidersStore.spaceProviders = {
@@ -221,15 +221,22 @@ describe("spaces::spaceOperations", () => {
   });
 
   describe("createFolder", () => {
-    const serviceCallExceptionFromBE = {
-      code: -32600,
-      data: {
-        code: "ServiceCallException",
-        title: "error message",
-        canCopy: false,
-        message: "error message",
-      },
-    };
+    class BackendError extends Error {
+      code: number;
+      data: any;
+
+      constructor(code, data) {
+        super();
+        this.code = code;
+        this.data = data;
+      }
+    }
+    const serviceCallExceptionFromBE = new BackendError(-32600, {
+      code: "ServiceCallException",
+      title: "error message",
+      canCopy: false,
+      message: "error message",
+    });
 
     it("should create a new folder", async () => {
       const { spaceOperationsStore, spaceCachingStore } = loadStore();
@@ -270,14 +277,10 @@ describe("spaces::spaceOperations", () => {
 
       await expect(() =>
         spaceOperationsStore.createFolder({ projectId: "project2" }),
-      ).rejects.toThrow(
-        Error("Error while creating folder", {
-          cause: serviceCallExceptionFromBE,
-        }),
-      );
+      ).rejects.toThrow(serviceCallExceptionFromBE);
     });
 
-    it("should throw StoreActionException if content refresh fails after folder is created", async () => {
+    it("should throw if content refresh fails after folder is created", async () => {
       mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(
         createSpaceProvider({ connected: true }),
       );
@@ -300,11 +303,7 @@ describe("spaces::spaceOperations", () => {
 
       await expect(() =>
         spaceOperationsStore.createFolder({ projectId: "project2" }),
-      ).rejects.toThrow(
-        Error("Error trying to fetch workflow group content", {
-          cause: serviceCallExceptionFromBE,
-        }),
-      );
+      ).rejects.toThrow(serviceCallExceptionFromBE);
     });
   });
 

@@ -56,7 +56,12 @@ import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.ProgressMonitorAdapter;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.VersionId;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
@@ -69,6 +74,8 @@ import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
  */
 public final class CreateProject {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(CreateProject.class);
+
     private CreateProject() {
 
     }
@@ -78,15 +85,22 @@ public final class CreateProject {
      *
      * @param origin -
      * @param progressReporter -
-     * @param spaceProviders -
+     * @param space -
      * @return -
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ServiceCallException
      */
     public static Project createProjectFromOrigin(final Origin origin, final ProgressReporter progressReporter,
-        final SpaceProviders spaceProviders) {
-        var name = spaceProviders.getSpace(origin.providerId(), origin.spaceId()) //
-            .getItemName(origin.itemId());
+        final Space space) throws NetworkException, LoggedOutException, ServiceCallException {
+        String name;
+        try {
+            name = space.getItemName(origin.itemId());
+        } catch (final MutableServiceCallException e) {
+            throw e.toGatewayException("Failed to open project");
+        }
         var projectId = Project.getUniqueProjectId(name);
-        return createProjectFromOrigin(projectId, name, origin, progressReporter, spaceProviders);
+        return createProjectFromOrigin(projectId, name, origin, progressReporter, space);
     }
 
     /**
@@ -96,13 +110,13 @@ public final class CreateProject {
      * @param name -
      * @param origin -
      * @param progressReporter -
-     * @param spaceProviders -
+     * @param space -
      * @return -
      */
     public static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
-        final ProgressReporter progressReporter, final SpaceProviders spaceProviders) {
+        final ProgressReporter progressReporter, final Space space) {
         return Project.builder() //
-            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, spaceProviders)) //
+            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
             .setName(name) //
             .setId(projectId) //
             .setOrigin(origin) //
@@ -121,31 +135,34 @@ public final class CreateProject {
      * @return A loader instance that can be called to load the {@link WorkflowManager}
      */
     private static WorkflowManagerLoader fromOriginWithProgressReporter(final Origin origin,
-        final ProgressReporter progressReporter, final SpaceProviders spaceProviders) {
+        final ProgressReporter progressReporter, final Space space) {
         return version -> progressReporter.getWithProgress( // NOSONAR
             WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, //
-            NodeLogger.getLogger(CreateProject.class), //
+            LOGGER, //
             monitor -> { // NOSONAR
                 final var subMonitor =
                     SubMonitor.convert(monitor, WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, 100);
 
                 final var execMon = new ExecutionMonitor(new ProgressMonitorAdapter(subMonitor)); // one tick/percent
-                var path = WorkflowManagerLoader.fetch(origin, version, spaceProviders, execMon);
+                var path = WorkflowManagerLoader.fetch(origin, version, space, execMon);
                 if (path.isEmpty()) {
-                    NodeLogger.getLogger(CreateProject.class).error("Could not fetch workflow from origin " + origin);
+                    LOGGER.error("Could not fetch workflow from origin " + origin);
                     return null;
                 }
 
-                var space = spaceProviders.getSpace(origin.providerId(), origin.spaceId());
-                final var workflowContext = createWorkflowContext(space, origin.itemId(), path.get(), version);
-
-                monitor.subTask("Loading workflow from disk");
-                return DesktopAPUtil.loadWorkflowManager(subMonitor.slice(0), path.get(), workflowContext, version);
+                try {
+                    final var workflowContext = createWorkflowContext(space, origin.itemId(), path.get(), version);
+                    monitor.subTask("Loading workflow from disk");
+                    return DesktopAPUtil.loadWorkflowManager(subMonitor.slice(0), path.get(), workflowContext, version);
+                } catch (final GatewayException | MutableServiceCallException e) {
+                    LOGGER.error(e);
+                    return null;
+                }
             }).orElse(null);
     }
 
     private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path,
-        final VersionId version) {
+        final VersionId version) throws NetworkException, LoggedOutException, MutableServiceCallException {
         final var mountId = space.toKnimeUrl(itemId).getAuthority();
         final var location = space.getLocationInfo(itemId, version);
         // TODO A local space root makes no sense for remote mountpoints

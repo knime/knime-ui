@@ -17,10 +17,10 @@ import {
   SpaceProvider,
 } from "@/api/gateway-api/generated-api";
 import { isBrowser, isDesktop } from "@/environment";
-import { getToastsProvider } from "@/plugins/toasts";
 import { deepMocked } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
+import { getToastPresets } from "@/toastPresets";
 import { notifyPatch } from "@/util/event-syncer";
 import eventsPlugin from "../events";
 
@@ -186,7 +186,7 @@ describe("Event Plugin", () => {
         const { mockedStores } = loadPlugin();
         vi.mocked(
           mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
-        ).mockResolvedValueOnce({ failedProviderNames: [] });
+        ).mockResolvedValueOnce({ failedProviders: [] });
 
         registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
 
@@ -199,20 +199,28 @@ describe("Event Plugin", () => {
       });
 
       it("shows an error toast if a provider's space groups can't be loaded", async () => {
+        const { toastPresets } = getToastPresets();
+        const preset = vi.spyOn(
+          toastPresets.spaces.crud,
+          "fetchProviderSpaceGroupsFailed",
+        );
         const { mockedStores } = loadPlugin();
+
+        const failedProviders = [
+          { name: spaceProviders[0].name, error: new Error("foo") },
+        ];
+
         vi.mocked(
           mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
         ).mockResolvedValueOnce({
-          failedProviderNames: [spaceProviders[0].name],
+          failedProviders,
         });
 
         registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
         await flushPromises();
 
-        expect(getToastsProvider().show).toHaveBeenCalledWith({
-          headline: "Error fetching provider space groups",
-          message: "Could not load spaces for:\n- provider name",
-          type: "error",
+        expect(preset).toHaveBeenCalledWith({
+          failedProviders,
         });
       });
 

@@ -3,7 +3,6 @@ import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { useEventBus } from "@vueuse/core";
 
-import type { Toast } from "@knime/components";
 import {
   CreateVersionForm,
   ManageVersions,
@@ -15,6 +14,7 @@ import {
   useWorkflowVersionsStore,
 } from "@/store/workflow/workflowVersions";
 import { mockStores } from "@/test/utils/mockStores";
+import { getToastPresets } from "@/toastPresets";
 import ManageVersionsWrapper from "../ManageVersionsWrapper.vue";
 import VersionPanelPromoteHub from "../VersionPanelPromoteHub.vue";
 
@@ -68,16 +68,22 @@ const mockVersionsModeInfo: ReturnType<
   permissions: ["EDIT", "DELETE"],
 };
 
-const getExpectedToastWithHeadline = (headline: string): Toast => {
-  return {
-    headline,
-    autoRemove: false,
-    buttons: expect.any(Array),
-    message: expect.any(String),
-    type: "error",
-  };
-};
-const someError = new Error("someError");
+class BackendError extends Error {
+  code: number;
+  data: any;
+
+  constructor(code, data) {
+    super();
+    this.code = code;
+    this.data = data;
+  }
+}
+const someError = new BackendError(-32600, {
+  code: "ServiceCallException",
+  title: "error message",
+  canCopy: false,
+  message: "error message",
+});
 const toast = getToastsProvider();
 
 const eventHandlers: Set<Function> = new Set();
@@ -180,6 +186,8 @@ describe("ManageVersionsWrapper.vue", () => {
       });
 
       it("delete shows error toast on failure", async () => {
+        const { toastPresets } = getToastPresets();
+        const preset = vi.spyOn(toastPresets.versions, "deleteFailed");
         const { wrapper, mockedVersionsStore } = doMount();
         mockedVersionsStore.deleteVersion.mockRejectedValue(someError);
 
@@ -187,9 +195,7 @@ describe("ManageVersionsWrapper.vue", () => {
         await flushPromises();
 
         expect(mockedVersionsStore.deleteVersion).toHaveBeenCalledWith(version);
-        expect(toast.show).toHaveBeenCalledWith(
-          getExpectedToastWithHeadline("Deletion of the version failed"),
-        );
+        expect(preset).toHaveBeenCalledWith({ error: someError });
       });
 
       it("restore", () => {
@@ -204,6 +210,8 @@ describe("ManageVersionsWrapper.vue", () => {
       });
 
       it("restore shows error toast on failure", async () => {
+        const { toastPresets } = getToastPresets();
+        const preset = vi.spyOn(toastPresets.versions, "restoreFailed");
         const { wrapper, mockedVersionsStore } = doMount();
         mockedVersionsStore.restoreVersion.mockRejectedValue(someError);
 
@@ -213,9 +221,7 @@ describe("ManageVersionsWrapper.vue", () => {
         expect(mockedVersionsStore.restoreVersion).toHaveBeenCalledWith(
           version,
         );
-        expect(toast.show).toHaveBeenCalledWith(
-          getExpectedToastWithHeadline("Restoring of the version failed"),
-        );
+        expect(preset).toHaveBeenCalledWith({ error: someError });
       });
 
       it("loadAll", () => {
@@ -230,6 +236,8 @@ describe("ManageVersionsWrapper.vue", () => {
       });
 
       it("loadAll shows error toast on failure", async () => {
+        const { toastPresets } = getToastPresets();
+        const preset = vi.spyOn(toastPresets.versions, "fetchAllFailed");
         const { wrapper, mockedVersionsStore } = doMount();
         mockedVersionsStore.refreshData.mockRejectedValue(someError);
 
@@ -239,9 +247,7 @@ describe("ManageVersionsWrapper.vue", () => {
         expect(mockedVersionsStore.refreshData).toHaveBeenCalledWith({
           loadAll: true,
         });
-        expect(toast.show).toHaveBeenCalledWith(
-          getExpectedToastWithHeadline("Loading all versions failed"),
-        );
+        expect(preset).toHaveBeenCalledWith({ error: someError });
       });
     });
 
@@ -333,6 +339,9 @@ describe("ManageVersionsWrapper.vue", () => {
     });
 
     it("shows error toast on failure", async () => {
+      const { toastPresets } = getToastPresets();
+      const preset = vi.spyOn(toastPresets.versions, "createFailed");
+
       const { wrapper, mockedVersionsStore } = doMount();
       await openCreateVersionsForm(wrapper);
 
@@ -347,9 +356,7 @@ describe("ManageVersionsWrapper.vue", () => {
       expect(mockedVersionsStore.createVersion).toHaveBeenCalledWith(
         versionData,
       );
-      expect(toast.show).toHaveBeenCalledWith(
-        getExpectedToastWithHeadline("Creation of the version failed"),
-      );
+      expect(preset).toHaveBeenCalledWith({ error: someError });
     });
   });
 

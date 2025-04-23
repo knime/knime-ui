@@ -13,6 +13,8 @@ import {
   SpaceProviderNS,
 } from "../custom-types";
 
+import { DESKTOP_API_ERROR_CODE, type DesktopApiError } from "./exceptions";
+
 const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   browserFunction: TFunction,
   params: Parameters<TFunction>,
@@ -61,7 +63,22 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
               params,
               payload,
             });
-            reject(payload.error);
+
+            try {
+              const data = JSON.parse(payload.error);
+              // eslint-disable-next-line prefer-promise-reject-errors
+              reject({
+                code: DESKTOP_API_ERROR_CODE,
+                data,
+              } satisfies DesktopApiError);
+            } catch (error) {
+              consola.warn("Unexpected error format received for:", {
+                functionCall: browserFunction.name,
+                error,
+              });
+              reject(error);
+            }
+
             return; // To really stop execution here
           }
 

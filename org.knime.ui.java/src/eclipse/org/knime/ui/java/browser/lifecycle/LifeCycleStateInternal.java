@@ -54,7 +54,6 @@ import java.util.function.Supplier;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.SaveAndCloseProjects;
@@ -110,7 +109,7 @@ public interface LifeCycleStateInternal extends LifeCycleState {
 
     /**
      * @return the logic which saves and closes all workflows.
-     * @see SaveAndCloseProjects#saveAndCloseProjectsInteractively(List, EventConsumer)
+     * @see SaveAndCloseProjects#saveAndCloseProjectsInteractively(List)
      */
     default Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
         return null;

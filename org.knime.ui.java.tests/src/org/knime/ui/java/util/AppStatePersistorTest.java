@@ -71,7 +71,6 @@ import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
-import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
 import org.knime.ui.java.persistence.AppStatePersistor;
@@ -169,7 +168,7 @@ public class AppStatePersistorTest {
     private static String itemId;
 
     @Test
-    void testSaveAndLoadAppState() throws IOException {
+    void testSaveAndLoadAppState() throws Exception {
         openWorkflowProject(true);
         var pm = ProjectManager.getInstance();
         var mruProjects = new MostRecentlyUsedProjects();
@@ -182,10 +181,10 @@ public class AppStatePersistorTest {
         var spaceProvider = new LocalSpaceProvider(m_space);
         var spaceProvidersManager = new SpaceProvidersManager(null, null, null, spaceProvider, List.of());
         spaceProvidersManager.update();
-        AppStatePersistor.loadAppState(m_space).openProjectsToRestore()
-            .forEach(p -> pm.addProject(
-                CreateProject.createProjectFromOrigin(p.origin(), new ProgressReporter.NullProgressReporter(),
-                    spaceProvidersManager.getSpaceProviders(Key.defaultKey()))));
+        for (final var p : AppStatePersistor.loadAppState(m_space).openProjectsToRestore()) {
+            pm.addProject(CreateProject.createProjectFromOrigin(p.origin(), new ProgressReporter.NullProgressReporter(),
+                m_space));
+        }
         var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
         assertThat(appStateStringNew).as("Assert the valid app state was saved and loaded").isEqualTo(appStateString);
     }
@@ -245,7 +244,7 @@ public class AppStatePersistorTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() throws Exception {
         var localSpacePath = PathUtils.createTempDir("workspace");
         var localSpace = new LocalSpace(localSpacePath);
         itemId = localSpace.createWorkflow(Space.ROOT_ITEM_ID, "relPath").getId();
@@ -265,10 +264,13 @@ public class AppStatePersistorTest {
 
         var providerId = isLocal ? SpaceProvider.LOCAL_SPACE_PROVIDER_ID : "other provider id";
         var spaceId = isLocal ? LocalSpace.LOCAL_SPACE_ID : "other space id";
-        var origin = new Origin(providerId, spaceId, itemId);
 
-        var project = Project.builder().setWfmLoader(WorkflowManagerLoader.providingOnlyCurrentState(() -> null)).setName("relPath").setId("test_id")
-            .setOrigin(origin).build();
+        final var project = Project.builder() //
+            .setWfmLoader(WorkflowManagerLoader.providingOnlyCurrentState(() -> null)) //
+            .setName("relPath") //
+            .setId("test_id") //
+            .setOrigin(new Origin(providerId, spaceId, itemId)) //
+            .build();
         pm.addProject(project);
     }
 
@@ -283,6 +285,7 @@ public class AppStatePersistorTest {
         assertThat(appStateJson).as("Assert app state file as expected").isEqualTo(appStateString);
     }
 
+    @SuppressWarnings("javadoc")
     public static void assertAppStateFileExists() {
         assertThat(Files.exists(Paths.get(KNIMEConstants.getKNIMEHomeDir(), "app_state.json"))).isTrue();
     }

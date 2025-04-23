@@ -2,10 +2,12 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
+import type { Toast } from "@knime/components";
+
 import { ComponentPlaceholder, Node } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
-import { getToastPresets } from "@/toastPresets";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 
 import ComponentPlaceholderState from "./ComponentPlaceholderState.vue";
@@ -16,7 +18,6 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const { toastPresets } = getToastPresets();
 const { getSelectedComponentPlaceholder } = storeToRefs(useSelectionStore());
 const { deselectAllObjects } = useSelectionStore();
 const {
@@ -55,6 +56,8 @@ const isComponentSelected = computed(() => {
   return props.placeholder.id === getSelectedComponentPlaceholder.value?.id;
 });
 
+const $toast = getToastsProvider();
+
 watch(placeholderState, async () => {
   const currentSelection = getSelection();
   const isSelectionUnchanged =
@@ -70,16 +73,14 @@ watch(placeholderState, async () => {
   }
 
   if (isSuccessWithWarning.value || isError.value) {
-    const toastData = {
-      message: props.placeholder.message,
-      details: props.placeholder.details,
+    const toastData: Toast = {
+      headline: props.placeholder.message,
+      message: props.placeholder.details,
+      type: isError.value ? "error" : "warning",
+      autoRemove: !isError.value,
     };
 
-    if (isError.value) {
-      toastPresets.workflow.componentLoadingFailed(toastData);
-    } else {
-      toastPresets.workflow.componentLoadedWithWarning(toastData);
-    }
+    $toast.show(toastData);
   }
 });
 

@@ -34,9 +34,9 @@ import {
   useUnsavedChangesDialog,
 } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
 import { isBrowser } from "@/environment";
-import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useLifecycleStore } from "@/store/application/lifecycle.ts";
+import { getToastPresets } from "@/toastPresets/index.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
 import { usePanelStore } from "../panel.ts";
@@ -74,6 +74,7 @@ const createInitialProjectVersionsModeInfo = (): ProjectVersionsModeInfo => ({
 export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   const $router = useRouter();
   const { show: showConfirmDialog } = useConfirmDialog();
+  const { toastPresets } = getToastPresets();
 
   /** State: */
   const status = ref<Map<string, VersionsModeStatus>>(new Map());
@@ -471,10 +472,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     };
 
     try {
-      const newData = await promise.retryPromise({
-        fn: doLoadData,
-        retryCount: 1,
-      });
+      const newData = await doLoadData();
 
       // Atomically apply new data
       versionsModeInfo.value.set(activeProjectId, newData);
@@ -573,7 +571,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.SAVE;
       } catch (error) {
-        handleSaveProjectError(error);
+        toastPresets.app.saveProjectFailed({ error });
         useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.CANCEL;
       }
@@ -594,24 +592,13 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         });
         useLifecycleStore().setIsLoadingWorkflow(false);
       } catch (error) {
-        handleSaveProjectError(error);
+        toastPresets.app.saveProjectFailed({ error });
         useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.CANCEL;
       }
     }
 
     return action;
-  }
-
-  function handleSaveProjectError(error: unknown) {
-    const errorMessage = typeof error === "string" ? error : "unknown"; // desktop-api.ts returns reject(DesktopAPIFunctionResultPayload.error)
-    getToastsProvider().show({
-      type: "warning",
-      deduplicationKey: "workflowVersion.ts::saveProject::ProjectWasNotSaved",
-      headline: "Could not save workflow",
-      message: `Saving project failed. Cause: ${errorMessage}`,
-      autoRemove: true,
-    });
   }
 
   async function discardUnsavedChanges(projectId: string, version: string) {

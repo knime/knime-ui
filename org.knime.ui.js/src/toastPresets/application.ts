@@ -1,6 +1,6 @@
 import type { ToastServiceProvider } from "@knime/components";
 
-import { defaultErrorPresetHandler } from "./defaultErrorPresetHandler";
+import { defaultAPIErrorHandler } from "./defaultAPIErrorHandler";
 import type { ToastPresetErrorHandler } from "./types";
 
 export type ApplicationToastPresets = {
@@ -13,14 +13,14 @@ export const getPresets = (
 ): ApplicationToastPresets => {
   return {
     openProjectFailed: ({ error }) =>
-      defaultErrorPresetHandler($toast, error, {
+      defaultAPIErrorHandler($toast, error, {
         type: "warning",
         headline: "Could not open workflow",
         message: "The workflow might not exist anymore or be corrupted",
       }),
 
     saveProjectFailed: ({ error }) =>
-      defaultErrorPresetHandler($toast, error, {
+      defaultAPIErrorHandler($toast, error, {
         type: "error",
         headline: "Could not save workflow",
       }),

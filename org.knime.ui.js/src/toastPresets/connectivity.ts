@@ -1,13 +1,11 @@
 import type { ToastServiceProvider } from "@knime/components";
 
-import { defaultErrorPresetHandler } from "./defaultErrorPresetHandler";
-import { type ToastPresetErrorHandler, type ToastPresetHandler } from "./types";
+import { type ToastPresetHandler } from "./types";
 import { removeAllToastsByIds } from "./utils";
 
 const toastIds = new Set<string>();
 
 export type ConnectivityPresets = {
-  networkProblem: ToastPresetErrorHandler;
   hubSessionExpired: ToastPresetHandler;
   // browser
   connectionLoss: ToastPresetHandler;
@@ -19,15 +17,6 @@ export const getPresets = (
   $toast: ToastServiceProvider,
 ): ConnectivityPresets => {
   return {
-    networkProblem: ({ error } = {}) => {
-      const toastId = defaultErrorPresetHandler($toast, error, {
-        headline: "Connectivity problem",
-        message: "Check you network connection.",
-        type: "error",
-        autoRemove: false,
-      });
-      toastIds.add(toastId);
-    },
     connectionLoss: () => {
       const toastId = $toast.show({
         headline: "Connection lost",

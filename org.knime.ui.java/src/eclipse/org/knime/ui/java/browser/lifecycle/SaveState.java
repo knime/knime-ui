@@ -53,6 +53,7 @@ import java.util.function.Supplier;
 
 import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.api.SaveAndCloseProjects.State;
 import org.knime.ui.java.persistence.AppStatePersistor;
 
 /**
@@ -93,7 +94,7 @@ final class SaveState {
         return new LifeCycleStateInternalAdapter(state) {
 
             @Override
-            public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
+            public Supplier<State> getSaveAndCloseAllProjectsFunction() {
                 return saveProjectsFunction;
             }
 

@@ -54,8 +54,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
@@ -94,7 +92,7 @@ class OpenProjectTest {
         var spaceProvidersManager = SpaceAPITest.createSpaceProvidersManager(spaceProvider);
         var eventConsumer = mock(EventConsumer.class);
         var appStateUpdater = new AppStateUpdater();
-        var appStateUpdateListener = mock(Runnable.class);
+        Runnable appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
         var mruProjects = new MostRecentlyUsedProjects();
         var pm = ProjectManager.getInstance();
@@ -127,9 +125,9 @@ class OpenProjectTest {
     }
 
     @Test
-    void testRegisterProjectAndSetActive() throws IOException {
+    void testRegisterProjectAndSetActive() throws Exception {
         var appStateUpdater = new AppStateUpdater();
-        var appStateUpdateListener = mock(Runnable.class);
+        Runnable appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
         var mruProjects = new MostRecentlyUsedProjects();
         var pm = ProjectManager.getInstance();

@@ -159,7 +159,7 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
             createAndSendProgressEvent(m_eventConsumer, job.getName(), null, Status.STARTED, 0.0);
             var listener = new JobProgressMonitor(job.getName());
             // Adds progress listener to job monitor
-            m_addProgressListener.accept(job,  listener);
+            m_addProgressListener.accept(job, listener);
             // Locally keeps track of the progress listener s.t. it can be removed when done
             m_progressListener.put(job.getName(), listener);
 

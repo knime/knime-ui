@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +56,6 @@ import java.util.stream.Stream;
 
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.swt.program.Program;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -67,6 +65,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.ui.workflowcoach.data.NodeTripleProviderFactory;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -214,8 +213,8 @@ final class EclipseUIAPI {
     @API
     static void switchToJavaUI() {
         final var projectIds = ProjectManager.getInstance().getProjectIds();
-        final var doProcced = PerspectiveUtil.showDialogCloseAllProjectsOnSwitch(() -> !projectIds.isEmpty());
-        if (!doProcced) {
+        final var doProceed = PerspectiveUtil.showDialogCloseAllProjectsOnSwitch(() -> !projectIds.isEmpty());
+        if (!doProceed) {
             return; // Skips perspective switch
         }
 
@@ -232,8 +231,8 @@ final class EclipseUIAPI {
      * Function that opens the dialog to switch workspace.
      */
     @API
-    static void switchWorkspace() { // NOSONAR
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+    static void switchWorkspace() {
+        var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         new OpenWorkspaceAction(window).run();
     }
 
@@ -251,11 +250,11 @@ final class EclipseUIAPI {
      * @param spaceProviderId
      * @param spaceId
      * @param itemId
-     * @throws IOException Thrown if there was an error fetching the space item.
+     * @throws GatewayException -
      */
     @API
     static void openPermissionsDialog(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
+        throws GatewayException {
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         space.openPermissionsDialogForItem(itemId); // Method call might throw a `NotImplementedException` exception.
     }

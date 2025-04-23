@@ -81,7 +81,8 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
     ) {
       const spaceProvidersById = Object.fromEntries(
         spaceProviders.map((sp) => [sp.id, sp]),
-      );
+      ) as Record<string, SpaceProviderNS.SpaceProvider>;
+
       const connectedProviderIds = spaceProviders
         .filter(
           ({ connected, connectionMode }) =>
@@ -94,10 +95,11 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
         { connectedProviderIds },
       );
 
-      const failedProviderNames: string[] = [];
+      type FailedProviders = Array<{ name: string; error: unknown }>;
+      const failedProviders: FailedProviders = [];
 
       const { promise, resolve } = createUnwrappedPromise<{
-        failedProviderNames: string[];
+        failedProviders: FailedProviders;
       }>();
 
       const spaceGroupsQueue: Promise<void>[] = [];
@@ -120,7 +122,10 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
             );
           })
           .catch((error) => {
-            failedProviderNames.push(currentSpaceProvider.name);
+            failedProviders.push({
+              name: currentSpaceProvider.name,
+              error,
+            });
 
             consola.error(
               "action::fetchSpaceGroupsForProviders -> Failed to fetch provider space groups",
@@ -140,7 +145,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       Promise.allSettled(spaceGroupsQueue).then(() => {
         const { openProjects } = useApplicationStore();
         useSpaceCachingStore().syncPathWithOpenProjects({ openProjects });
-        resolve({ failedProviderNames });
+        resolve({ failedProviders });
       });
 
       return promise;

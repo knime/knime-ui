@@ -275,6 +275,7 @@ describe("space::uploads", () => {
       expect.objectContaining({
         headline: "There was a problem preparing your upload",
         ...mockError.data,
+      	canCopyToClipboard: true,
       }),
     );
   });

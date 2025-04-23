@@ -53,6 +53,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceFileStore;
 import org.knime.workbench.explorer.view.ContentObject;
@@ -73,9 +74,11 @@ final class ExportAPI {
      * Export workflows into a .knwf file or folders into a .knar file
      *
      * @return Success state
+     * @throws GatewayException -
      */
     @API
-    static boolean exportSpaceItem(final String spaceProviderId, final String spaceId, final String itemId) {
+    static boolean exportSpaceItem(final String spaceProviderId, final String spaceId, final String itemId)
+        throws GatewayException {
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         final var success = openExportWizard(space, itemId);
         if (success) {

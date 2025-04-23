@@ -54,7 +54,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
-import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.api.SaveAndCloseProjects.State;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -74,7 +74,7 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     }
 
     @Override
-    public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
+    public Supplier<State> getSaveAndCloseAllProjectsFunction() {
         return m_lifeCycleStateInternal.getSaveAndCloseAllProjectsFunction();
     }
 

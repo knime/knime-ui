@@ -162,7 +162,9 @@ public final class ImportURI {
                 && repoObjectImport.getType() == RepoObjectType.Workflow) {
                 var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
                 var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
-                runInDisplayThread(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null)));
+                runInDisplayThread(() -> {
+                    OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null));
+                });
             } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
                 runInDisplayThread(() -> checkAndInstallExtension(extensionImport));
             } else {
@@ -205,8 +207,8 @@ public final class ImportURI {
             var knimeURI = repoObjectImport.getKnimeURI();
             var itemVersions = ResolverUtil.getHubItemVersionList(knimeURI);
             return itemVersions.stream()//
-                    .filter(version -> version.version() == itemVersion.getAsInt())//
-                    .findFirst();
+                .filter(version -> version.version() == itemVersion.getAsInt())//
+                .findFirst();
         } catch (ResourceAccessException e) {
             LOGGER.warn("Failed to retrieve version information", e);
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.WARNING,
@@ -341,8 +343,8 @@ public final class ImportURI {
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
             OpenProject.openProjectCopy(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
-            importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId,
-                canvasX, canvasY);
+            importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId, canvasX,
+                canvasY);
         }
     }
 

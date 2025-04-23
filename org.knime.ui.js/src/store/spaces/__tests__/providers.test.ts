@@ -71,7 +71,7 @@ describe("spaces::providers", () => {
       ).toBeUndefined();
 
       await expect(promise).resolves.toEqual({
-        failedProviderNames: [],
+        failedProviders: [],
       });
 
       expect(spaceProvidersStore.spaceProviders!.hub1).toEqual({
@@ -121,7 +121,9 @@ describe("spaces::providers", () => {
       ).toBeUndefined();
 
       await expect(promise).resolves.toEqual({
-        failedProviderNames: ["Hub 2"],
+        failedProviders: [
+          { name: "Hub 2", error: new Error("Failed to load spaces") },
+        ],
       });
 
       expect(spaceProvidersStore.spaceProviders!.hub1).toEqual({

@@ -136,7 +136,7 @@ public class MostRecentlyUsedProjectsTest {
      * @throws OperationNotAllowedException
      */
     @Test
-    void testUpdateOriginAndName() throws IOException, OperationNotAllowedException {
+    void testUpdateOriginAndName() throws Exception {
         var localSpace = new LocalSpace(FileUtil.createTempDir("testUpdateOriginAndName").toPath());
         var wfId = localSpace.createWorkflow("root", "simple").getId();
         var groupId = localSpace.createWorkflowGroup("root").getId();

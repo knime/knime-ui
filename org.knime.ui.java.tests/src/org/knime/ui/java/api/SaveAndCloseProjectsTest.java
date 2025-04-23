@@ -55,7 +55,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -92,7 +91,7 @@ class SaveAndCloseProjectsTest {
     }
 
     @Test
-    void testSaveAndCloseWorkflows() throws IOException {
+    void testSaveAndCloseWorkflows() throws Exception {
         var wfm1 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm2 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm3 = WorkflowManagerUtil.createEmptyWorkflow();

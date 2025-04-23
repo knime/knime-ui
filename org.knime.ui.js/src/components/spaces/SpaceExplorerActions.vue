@@ -11,6 +11,7 @@ import SearchButton from "@/components/common/SearchButton.vue";
 import { useContextualSpaceExplorerActions } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { getToastPresets } from "@/toastPresets";
 import type { MenuItemWithHandler } from "../common/types";
 
 import SpaceExplorerActionButton from "./SpaceExplorerActionButton.vue";
@@ -43,11 +44,18 @@ const { createWorkflow, spaceExplorerActionsItems } =
     mode: props.mode,
   });
 
-const reload = () => {
+const reload = async () => {
   if (projectId.value) {
-    fetchWorkflowGroupContent({
-      projectId: projectId.value,
-    });
+    try {
+      await fetchWorkflowGroupContent({
+        projectId: projectId.value,
+        retry: false,
+      });
+    } catch (error) {
+      getToastPresets().toastPresets.spaces.crud.fetchWorkflowGroupFailed({
+        error,
+      });
+    }
   }
 };
 

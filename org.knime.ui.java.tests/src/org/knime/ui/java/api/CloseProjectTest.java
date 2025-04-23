@@ -119,7 +119,7 @@ class CloseProjectTest {
     }
 
     @Test
-    void testCloseWorkflow() {
+    void testCloseWorkflow() throws Exception {
         assertThat(CloseProject.closeProject("projectId1", "projectId2")).isTrue();
 
         var wfm1 = m_wfms.get(0);
@@ -134,7 +134,7 @@ class CloseProjectTest {
     }
 
     @Test
-    void testForceCloseWorkflow() {
+    void testForceCloseWorkflow() throws Exception {
         // make sure that a workflow is dirty
         var wfm1 = m_wfms.get(0);
         wfm1.setDirty();

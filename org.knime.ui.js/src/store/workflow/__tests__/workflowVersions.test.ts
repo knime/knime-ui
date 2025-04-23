@@ -27,6 +27,7 @@ import {
 } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
+import { getToastPresets } from "@/toastPresets";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import type { VersionsModeStatus } from "../workflowVersions";
 
@@ -487,12 +488,15 @@ describe("workflow store: versions", () => {
         expect(toast.show).not.toHaveBeenCalled();
       });
 
-      it.each([
-        ["some error", "some error"],
-        [{}, "unknown"],
-      ])(
+      it.each([["some error"], [{}]])(
         "in dirty state with unsuccessful saveProject, shows error toast on save",
-        async (rejectedValue, expectedErrorCause) => {
+        async (rejectedValue) => {
+          const { toastPresets } = getToastPresets();
+          const saveProjectFailed = vi.spyOn(
+            toastPresets.app,
+            "saveProjectFailed",
+          );
+
           const { workflowVersionsStore, projectId, workflowStore } =
             await setupStore();
 
@@ -502,7 +506,6 @@ describe("workflow store: versions", () => {
           mockedAPI.workflow.disposeVersion.mockResolvedValueOnce(true);
           mockedAPI.desktop.saveProject.mockRejectedValueOnce(rejectedValue);
           mockedVersionsApi.createVersion.mockResolvedValueOnce(response);
-          const toast = mockedObject(getToastsProvider());
           useUnsavedChangesDialogMock.mockResolvedValue({
             action: UnsavedChangesAction.SAVE,
           });
@@ -515,13 +518,8 @@ describe("workflow store: versions", () => {
             projectId,
           });
           expect(useRouter().push).not.toHaveBeenCalled();
-          expect(toast.show).toHaveBeenCalledWith({
-            type: "warning",
-            deduplicationKey:
-              "workflowVersion.ts::saveProject::ProjectWasNotSaved",
-            headline: "Could not save workflow",
-            message: `Saving project failed. Cause: ${expectedErrorCause}`,
-            autoRemove: true,
+          expect(saveProjectFailed).toHaveBeenCalledWith({
+            error: rejectedValue,
           });
         },
       );
@@ -758,18 +756,20 @@ describe("workflow store: versions", () => {
         expect(toast.show).not.toHaveBeenCalled();
       });
 
-      it.each([
-        ["some error", "some error"],
-        [{}, "unknown"],
-      ])(
+      it.each([["some error"], [{}]])(
         "in dirty state with unsuccessful saveProject does not set new route but shows error toast on save",
-        async (rejectedValue, expectedErrorCause) => {
+        async (rejectedValue) => {
+          const { toastPresets } = getToastPresets();
+          const saveProjectFailed = vi.spyOn(
+            toastPresets.app,
+            "saveProjectFailed",
+          );
+
           const { workflowVersionsStore, projectId, workflowStore } =
             await setupStore();
           useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
           workflowStore.activeWorkflow = createWorkflow({ projectId });
           mockedAPI.desktop.saveProject.mockRejectedValueOnce(rejectedValue);
-          const toast = mockedObject(getToastsProvider());
           useUnsavedChangesDialogMock.mockResolvedValue({
             action: UnsavedChangesAction.SAVE,
           });
@@ -781,13 +781,8 @@ describe("workflow store: versions", () => {
             projectId,
           });
           expect(useRouter().push).not.toHaveBeenCalled();
-          expect(toast.show).toHaveBeenCalledWith({
-            type: "warning",
-            deduplicationKey:
-              "workflowVersion.ts::saveProject::ProjectWasNotSaved",
-            headline: "Could not save workflow",
-            message: `Saving project failed. Cause: ${expectedErrorCause}`,
-            autoRemove: true,
+          expect(saveProjectFailed).toHaveBeenCalledWith({
+            error: rejectedValue,
           });
         },
       );

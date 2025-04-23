@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
+import { rfcErrors } from "@knime/hub-features";
+
 import {
   NodeState,
   UpdateLinkedComponentsResult,
@@ -12,6 +14,20 @@ import { deepMocked, mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
+
+vi.mock("@knime/hub-features", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-expect-error
+    ...actual,
+    rfcErrors: {
+      // @ts-expect-error
+      ...actual.rfcErrors,
+      toToast: vi.fn(),
+    },
+  };
+});
 
 describe("workflow::componentInteractions", () => {
   const toast = mockedObject(getToastsProvider());
@@ -373,12 +389,7 @@ describe("workflow::componentInteractions", () => {
         message: "Updating...",
       }),
     );
-    expect(toast.show).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "error",
-        message: "Could not update the linked components. Try again later.",
-      }),
-    );
+    expect(rfcErrors.toToast).toHaveBeenCalled();
     expect(
       mockedAPI.workflowCommand.UpdateLinkedComponents,
     ).toHaveBeenCalledWith({
