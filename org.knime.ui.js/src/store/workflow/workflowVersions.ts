@@ -247,6 +247,15 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       }),
       refreshData(),
     ]);
+
+    await $router.push({
+      name: APP_ROUTES.WorkflowPage,
+      params: { projectId: activeProjectId },
+      query: {
+        version: null,
+      },
+      force: true,
+    });
   }
 
   // TODO: NXT-3458 this workaround to persist the selected version in the frontend
