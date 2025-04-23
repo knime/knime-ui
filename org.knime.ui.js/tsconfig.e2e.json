@@ -1,0 +1,19 @@
+{
+  "include": ["e2e/**/*.ts", "playwright.config.*"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    // we don't need to compile or build the test files, so choosing bundler allows us to
+    // easily mix ES imports in a node environment without too much hassle
+    "moduleResolution": "bundler",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": false
+  }
+}

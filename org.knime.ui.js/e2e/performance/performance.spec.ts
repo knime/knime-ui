@@ -1,9 +1,13 @@
 /* eslint-disable no-console */
 /* eslint-disable no-magic-numbers */
 
-import { Page, expect, test } from "@playwright/test";
+import { type Page, expect, test } from "@playwright/test";
 
-import { CustomWindow, getKanvasBoundingBox, startApplication } from "../utils";
+import {
+  type CustomWindow,
+  getKanvasBoundingBox,
+  startApplication,
+} from "../utils";
 import { getBrowserState } from "../utils/browserState";
 
 test.use({
