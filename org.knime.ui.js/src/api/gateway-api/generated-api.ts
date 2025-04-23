@@ -5270,6 +5270,8 @@ const component = function(rpcClient: RPCClient) {
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getComponentDescription(
@@ -5301,9 +5303,9 @@ const componenteditor = function(rpcClient: RPCClient) {
         async getConfigurationLayout(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<string> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentEditorService.getConfigurationLayout', { ...defaultParams, ...params });
         },
         /**
@@ -5318,9 +5320,9 @@ const componenteditor = function(rpcClient: RPCClient) {
         async getConfigurationNodes(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<string> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentEditorService.getConfigurationNodes', { ...defaultParams, ...params });
         },
         /**
@@ -5335,9 +5337,9 @@ const componenteditor = function(rpcClient: RPCClient) {
         async getViewLayout(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<string> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentEditorService.getViewLayout', { ...defaultParams, ...params });
         },
         /**
@@ -5352,9 +5354,9 @@ const componenteditor = function(rpcClient: RPCClient) {
         async getViewNodes(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<string> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentEditorService.getViewNodes', { ...defaultParams, ...params });
         },
         /**
@@ -5362,7 +5364,7 @@ const componenteditor = function(rpcClient: RPCClient) {
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {string} [params.componentConfigurationLayout]
+         * @param {string} [params.componentConfigurationLayout] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
@@ -5370,10 +5372,10 @@ const componenteditor = function(rpcClient: RPCClient) {
         async setConfigurationLayout(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  componentConfigurationLayout?: string  }
         ): Promise<Response> {
-            const defaultParams = {
+            const defaultParams = { 
                 componentConfigurationLayout: null,
             }
-
+            
             return rpcClient.call('ComponentEditorService.setConfigurationLayout', { ...defaultParams, ...params });
         },
         /**
@@ -5381,7 +5383,7 @@ const componenteditor = function(rpcClient: RPCClient) {
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {string} [params.componentViewLayout]
+         * @param {string} [params.componentViewLayout] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
@@ -5389,10 +5391,10 @@ const componenteditor = function(rpcClient: RPCClient) {
         async setViewLayout(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  componentViewLayout?: string  }
         ): Promise<Response> {
-            const defaultParams = {
+            const defaultParams = { 
                 componentViewLayout: null,
             }
-
+            
             return rpcClient.call('ComponentEditorService.setViewLayout', { ...defaultParams, ...params });
         },
     }
@@ -5483,6 +5485,8 @@ const compositeview = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async setViewValuesAsNewDefault(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  viewValues: { [key: string]: string; }  }
@@ -5544,6 +5548,11 @@ const event = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async addEventListener(
         	params: { eventType?: EventType  }
@@ -5655,8 +5664,11 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} [params.dataServiceRequest] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async callNodeDataService(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  extensionType: 'dialog' | 'view',  serviceType: 'initial_data' | 'data' | 'apply_data',  dataServiceRequest?: string  }
@@ -5675,8 +5687,11 @@ const node = function(rpcClient: RPCClient) {
          * @param {'pause' | 'resume' | 'step'} [params.action] The action (pause, resume, step) to be performed in order to change the loop state.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async changeLoopState(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  action?: 'pause' | 'resume' | 'step'  }
@@ -5695,8 +5710,11 @@ const node = function(rpcClient: RPCClient) {
          * @param {'reset' | 'cancel' | 'execute'} [params.action] The action (reset, cancel, execute) to be performed in order to change the node&#39;s state.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async changeNodeStates(
         	params: { projectId: string,  workflowId: string,  nodeIds?: Array<string>,  action?: 'reset' | 'cancel' | 'execute'  }
@@ -5717,8 +5735,11 @@ const node = function(rpcClient: RPCClient) {
          * @param {'dialog' | 'view'} params.extensionType The node ui-extension-type, i.e. dialog or view.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async deactivateNodeDataServices(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  extensionType: 'dialog' | 'view'  }
@@ -5752,8 +5773,11 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getNodeDialog(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string  }
@@ -5771,8 +5795,11 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getNodeView(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string  }
@@ -5792,6 +5819,9 @@ const node = function(rpcClient: RPCClient) {
          * @param {Array<string>} [params.selection] A list of strings that are translated to the row keys affected by the data point selection modification.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {NodeNotFoundException} The requested node was not found.
          */
         async updateDataPointSelection(
@@ -5838,7 +5868,10 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {boolean} [params.fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getNodeRecommendations(
         	params: { projectId: string,  workflowId: string,  nodeId?: string,  portIdx?: number,  nodesLimit?: number,  nodeRelation?: 'PREDECESSORS' | 'SUCCESSORS',  fullTemplateInfo?: boolean  }
@@ -5940,8 +5973,11 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} [params.dataServiceRequest] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async callPortDataService(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
@@ -5962,8 +5998,11 @@ const port = function(rpcClient: RPCClient) {
          * @param {number} params.viewIdx The index of the specific port view to obtain
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async deactivatePortDataServices(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
@@ -5984,8 +6023,10 @@ const port = function(rpcClient: RPCClient) {
          * @param {number} params.colIdx The column index to be used.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {NodeNotFoundException} The requested node was not found.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getDataValueView(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  rowIdx: number,  colIdx: number  }
@@ -6005,8 +6046,11 @@ const port = function(rpcClient: RPCClient) {
          * @param {number} params.viewIdx The index of the specific port view to obtain
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getPortView(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
@@ -6028,6 +6072,9 @@ const port = function(rpcClient: RPCClient) {
          * @param {Array<string>} [params.selection] A list of strings that are translated to the row keys affected by the data point selection modification.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {NodeNotFoundException} The requested node was not found.
          */
         async updateDataPointSelection(
@@ -6055,6 +6102,9 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         async createSpace(
         	params: { spaceProviderId: string,  spaceGroupName: string  }
@@ -6072,7 +6122,10 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} params.itemName Name given to a space item.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async createWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  itemName: string  }
@@ -6089,7 +6142,10 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async createWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
@@ -6107,7 +6163,10 @@ const space = function(rpcClient: RPCClient) {
          * @param {boolean} [params.softDelete] If true the specified items will be moved to the bin. Otherwise they will be permanently deleted.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async deleteItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  softDelete?: boolean  }
@@ -6127,6 +6186,8 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async deleteJobsForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  jobId: string  }
@@ -6145,6 +6206,8 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async deleteSchedulesForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  scheduleId: string  }
@@ -6160,6 +6223,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
          * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async getSpaceGroups(
@@ -6178,6 +6242,8 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async listJobsForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
@@ -6195,6 +6261,8 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async listSchedulesForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
@@ -6212,6 +6280,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
          * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async listWorkflowGroup(
@@ -6235,6 +6304,9 @@ const space = function(rpcClient: RPCClient) {
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {CollisionException} If there was a collision, e.g. due to naming conflicts
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         async moveOrCopyItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destSpaceId: string,  destWorkflowGroupItemId: string,  copy: boolean,  collisionHandling?: 'NOOP' | 'AUTORENAME' | 'OVERWRITE'  }
@@ -6254,6 +6326,8 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async renameItem(
         	params: { spaceProviderId: string,  spaceId: string,  itemId: string,  itemName: string  }
@@ -6271,6 +6345,8 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async renameSpace(
         	params: { spaceProviderId: string,  spaceId: string,  spaceName: string  }
@@ -6312,6 +6388,8 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {WorkflowCommand} params.workflowCommand An object that describes the command to be executed.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async executeWorkflowCommand(
@@ -6328,9 +6406,12 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getUpdatableLinkedComponents(
         	params: { projectId: string,  workflowId: string  }
@@ -6348,8 +6429,11 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {boolean} [params.includeInteractionInfo] Whether to enclose information that is required when the user is interacting with the returned workflow. E.g. the allowed actions (reset, execute, cancel) for contained nodes and the entire workflow itself.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getWorkflow(
         	params: { projectId: string,  workflowId: string,  versionId: string,  includeInteractionInfo?: boolean  }
@@ -6380,6 +6464,8 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async redoWorkflowCommand(
@@ -6396,6 +6482,8 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} [params.workflowPreviewSvg] The workflow SVG to save with the workflow
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async saveProject(
@@ -6413,6 +6501,8 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async undoWorkflowCommand(

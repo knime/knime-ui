@@ -48,15 +48,17 @@
  */
 package org.knime.ui.java.api;
 
-import java.io.IOException;
 import java.net.URI;
-import java.util.function.Supplier;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.WorkflowKey;
@@ -84,12 +86,14 @@ final class ImportAPI {
      * Import workflows into a space and save them to the specified location.
      *
      * @return the ids of the imported items or {@code null} if the import failed
+     * @throws GatewayException -
      */
     @API
     static String[] importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
+        throws GatewayException {
+
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
-        var itemIds = IMPORT_WORKFLOWS.importItems(space, itemId);
+        final var itemIds = IMPORT_WORKFLOWS.importItems(space, itemId);
         if (itemIds != null && itemIds.length > 0) {
             NodeTimer.GLOBAL_TIMER.incWorkflowImport();
         }
@@ -100,10 +104,12 @@ final class ImportAPI {
      * Import data files into a space and save them to the specified location.
      *
      * @return the ids of the imported items or {@code null} if the import failed
+     * @throws GatewayException -
      */
     @API
     static String[] importFiles(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
+        throws GatewayException {
+
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         return IMPORT_FILES.importItems(space, itemId);
     }
@@ -111,10 +117,11 @@ final class ImportAPI {
     /**
      * Imports a URI at a certain position in the workflow canvas (i.e. usually imported as a new node). If a node is to
      * be imported and the node isn't installed yet, it will ask the user whether to install the respective extension.
+     * @throws GatewayException -
      */
     @API
     static void importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
-        final double canvasX, final double canvasY) {
+        final double canvasX, final double canvasY) throws GatewayException {
         ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
     }
 
@@ -127,10 +134,12 @@ final class ImportAPI {
      * @param x X-Position to place the component in the workflow canvas
      * @param y Y-Position to place the component in the workflow canvas
      * @return the node-id of the new component or {@code null} if the import failed
+     * @throws GatewayException -
      */
     @API
     static String importComponent(final String spaceProviderId, final String spaceId, final String itemId,
-        final String projectId, final String workflowId, final double x, final double y) {
+        final String projectId, final String workflowId, final double x, final double y) throws GatewayException {
+
         var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         var uri = space.toKnimeUrl(itemId);
         var isRemoteLocation = !SpaceProvider.LOCAL_SPACE_PROVIDER_ID.equals(spaceProviderId);
@@ -147,16 +156,26 @@ final class ImportAPI {
      * @param x X-Position to place the component in the workflow canvas
      * @param y Y-Position to place the component in the workflow canvas
      * @return the node-id of the new component or {@code null} if the import failed
+     * @throws GatewayException -
      */
     static String importComponent(final String projectId, final String workflowId, final URI uri,
-            final boolean isRemoteLocation, final double x, final double y) {
+        final boolean isRemoteLocation, final double x, final double y) throws GatewayException {
+
         var workflowIdEnt = new NodeIDEnt(workflowId);
-        Supplier<WorkflowManager> wfmSupplier = () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
-        Supplier<NodeID> command = () -> Display.getDefault().syncCall(() -> {
-            var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfmSupplier.get(), uri, (int)x, (int)y,
-                isRemoteLocation, false);
-            return snc == null ? null : snc.getID();
-        });
+        AddComponentCommand.GatewaySupplier<WorkflowManager> wfmSupplier =
+            () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
+        AddComponentCommand.GatewaySupplier<NodeID> command = () -> {
+            try {
+                return Display.getDefault().syncCall(() -> {
+                    final var wfm = wfmSupplier.get();
+                    var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y,
+                        isRemoteLocation, false);
+                    return snc == null ? null : snc.getID();
+                });
+            } catch (GatewayException e) {
+                throw ExceptionUtils.asRuntimeException(e);
+            }
+        };
         var componentId = command.get();
         if (componentId == null) {
             return null;
@@ -179,17 +198,21 @@ final class ImportAPI {
      */
     private static class AddComponentCommand implements WorkflowCommand {
 
+        interface GatewaySupplier<T> {
+            T get() throws ServiceCallException, LoggedOutException, NetworkException;
+        }
+
         private NodeID m_componentId;
 
-        private final Supplier<NodeID> m_redo;
+        private final GatewaySupplier<NodeID> m_redo;
 
-        private final Supplier<WorkflowManager> m_wfm;
+        private final GatewaySupplier<WorkflowManager> m_wfm;
 
-        AddComponentCommand(final Supplier<WorkflowManager> wfm, final NodeID componentId,
-            final Supplier<NodeID> redo) {
-            m_wfm = wfm;
+        AddComponentCommand(final GatewaySupplier<WorkflowManager> wfmSupplier, final NodeID componentId,
+            final GatewaySupplier<NodeID> command) {
+            m_wfm = wfmSupplier;
             m_componentId = componentId;
-            m_redo = redo;
+            m_redo = command;
         }
 
         @Override
@@ -198,12 +221,12 @@ final class ImportAPI {
         }
 
         @Override
-        public boolean canUndo() {
+        public boolean canUndo() throws ServiceCallException, LoggedOutException, NetworkException {
             return m_wfm.get().canRemoveNode(m_componentId);
         }
 
         @Override
-        public void undo() {
+        public void undo() throws ServiceCallException, LoggedOutException, NetworkException {
             m_wfm.get().removeNode(m_componentId);
             m_componentId = null;
         }
@@ -214,7 +237,7 @@ final class ImportAPI {
         }
 
         @Override
-        public void redo() {
+        public void redo() throws ServiceCallException, LoggedOutException, NetworkException {
             m_componentId = m_redo.get();
         }
 

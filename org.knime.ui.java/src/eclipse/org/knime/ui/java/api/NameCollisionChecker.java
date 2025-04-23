@@ -51,7 +51,6 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,6 +63,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.Pair;
+import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 
@@ -92,12 +94,17 @@ final class NameCollisionChecker {
      * @param destWorkflowGroupItemId The destination workflow group ID
      * @param itemIds The list of source item IDs
      * @return List of already existing names
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ContextfulServiceCallException
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
-            final Object[] itemIds) {
-        return checkForNameCollisions(space, destWorkflowGroupItemId, Arrays.stream(itemIds) //
-            .map(String.class::cast) //
-            .map(space::getItemName));
+        final Object[] itemIds) throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+        final List<String> itemNames = new ArrayList<>();
+        for (final var id : itemIds) {
+            itemNames.add(space.getItemName(id.toString()));
+        }
+        return checkForNameCollisions(space, destWorkflowGroupItemId, itemNames.stream());
     }
 
     /**
@@ -107,26 +114,42 @@ final class NameCollisionChecker {
      * @param destWorkflowGroupItemId The destination workflow group ID
      * @param itemNames The already-present item names
      * @return List of already existing names
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ContextfulServiceCallException
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
-            final Stream<String> itemNames) {
-        return itemNames //
-            .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName)) //
-            .toList();
+        final Stream<String> itemNames) throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+
+        final List<String> existing = new ArrayList<>();
+        for (final String itemName : (Iterable<String>)itemNames::iterator) {
+            if (space.containsItemWithName(destWorkflowGroupItemId, itemName)) {
+                existing.add(itemName);
+            }
+        }
+        return existing;
     }
 
     /**
      * Check for name collisions
-     * 
+     *
      * @param space The space to check in
      * @param destinationItemId The item ID of the workflow group to check in
      * @param itemIds The new item ids to check whether they collide with anything already present
      * @return {@code true} iff there is a name collision, {@code false} otherwise.
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ContextfulServiceCallException
      */
-    static boolean test(final Space space, final String destinationItemId, final List<String> itemIds) {
-        return itemIds.stream() //
-            .map(space::getItemName) //
-            .anyMatch(itemName -> space.containsItemWithName(destinationItemId, itemName));
+    static boolean test(final Space space, final String destinationItemId, final List<String> itemIds)
+        throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+        for (final var itemId : itemIds) {
+            final var itemName = space.getItemName(itemId);
+            if (space.containsItemWithName(destinationItemId, itemName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -136,14 +159,21 @@ final class NameCollisionChecker {
      * @param destWorkflowGroupItemId The destination workflow group ID
      * @param srcPaths The list of source paths
      * @return List of already existing names
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ContextfulServiceCallException
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
-        final List<Path> srcPaths) {
-        return srcPaths.stream() //
-            .map(srcPath ->
-                checkForNameCollisionInDir(space, srcPath.getFileName().toString(), destWorkflowGroupItemId))//
-            .flatMap(Optional::stream)//
-            .toList();
+        final List<Path> srcPaths) throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+
+        final List<String> existing = new ArrayList<>();
+        for (final var srcPath : srcPaths) {
+            final var itemName = srcPath.getFileName().toString();
+            if (space.containsItemWithName(destWorkflowGroupItemId, itemName)) {
+                existing.add(itemName);
+            }
+        }
+        return existing;
     }
 
     /**
@@ -153,10 +183,13 @@ final class NameCollisionChecker {
      * @param destWorkflowGroupItemId The destination workflow group ID
      * @param srcPath The source path of the *.zip file
      * @return The optional name of the existing workflow group.
-     * @throws IOException If it couldn't extract the *.zip file properly.
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ContextfulServiceCallException
      */
     static Optional<String> checkForNameCollisionInZip(final Space space, final Path srcPath,
-        final String destWorkflowGroupItemId) throws IOException {
+        final String destWorkflowGroupItemId)
+        throws NetworkException, LoggedOutException, ContextfulServiceCallException {
         try (final var zipFile = new ZipFile(srcPath.toFile())) {
             final var rootNames = zipFile.stream() //
                 .map(ZipEntry::getName) // item path
@@ -164,10 +197,14 @@ final class NameCollisionChecker {
                 .map(path -> path.segment(0)) // get root item name
                 .collect(Collectors.toSet());
             if (rootNames.size() != 1) {
-                throw new IOException("Expected one item in archive '" + srcPath + "', found " + rootNames + ".");
+                throw new ContextfulServiceCallException("Invalid archive contents",
+                    List.of("Expected single item in archive '%s', found %s".formatted(srcPath, rootNames)), null);
             }
-            return Optional.of(rootNames.iterator().next()) //
-                .filter(name -> space.containsItemWithName(destWorkflowGroupItemId, name));
+            final String name = rootNames.iterator().next();
+            return space.containsItemWithName(destWorkflowGroupItemId, name) ? Optional.of(name) : Optional.empty();
+        } catch (final IOException e) {
+            throw new ContextfulServiceCallException("Error encountered while reading archive",
+                List.of("Could not read '%s': %s".formatted(srcPath, e.getMessage())), e);
         }
     }
 
@@ -178,15 +215,15 @@ final class NameCollisionChecker {
      * @param fileName The filename as it appears on the directory
      * @param destWorkflowGroupItemId The destination workflow group ID
      *
-     * @return The optional name of the existing workflow group.
+     * @return {@code true} if an item with that name already exists in the workflow group, {@code false} otherwise
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ContextfulServiceCallException
      */
-    static Optional<String> checkForNameCollisionInDir(final Space space, final String fileName,
-        final String destWorkflowGroupItemId) {
-        if (space.containsItemWithName(destWorkflowGroupItemId, fileName)) {
-            return Optional.of(fileName);
-        } else {
-            return Optional.empty();
-        }
+    static boolean checkForNameCollisionInDir(final Space space, final String fileName,
+        final String destWorkflowGroupItemId)
+        throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+        return space.containsItemWithName(destWorkflowGroupItemId, fileName);
     }
 
     /**
@@ -196,9 +233,13 @@ final class NameCollisionChecker {
      * @return Can be either {@link Space.NameCollisionHandling#AUTORENAME},
      *         {@link Space.NameCollisionHandling#OVERWRITE} or an empty optional if no collision handling strategy has
      *         been selected (cancel)
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ContextfulServiceCallException
      */
     static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final Space space,
-        final String workflowGroupItemId, final List<String> nameCollisions, final UsageContext context) {
+        final String workflowGroupItemId, final List<String> nameCollisions, final UsageContext context)
+        throws NetworkException, LoggedOutException, ContextfulServiceCallException {
         final var groupName = space.getItemName(workflowGroupItemId);
         return openDialogToSelectCollisionHandling(groupName, nameCollisions, context, true);
     }

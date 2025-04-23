@@ -64,6 +64,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
+import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 
 /**
@@ -75,6 +77,8 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
  * @author Martin Horn, KNIME GmbH
  */
 final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
+
+    static final NodeLogger LOGGER = NodeLogger.getLogger(SoftwareUpdateProgressEventListener.class);
 
     /**
      * When installing extension(s)
@@ -156,7 +160,11 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
     public void running(final IJobChangeEvent event) {
         var job = event.getJob();
         if (isWatchedJob(job)) {
-            createAndSendProgressEvent(m_eventConsumer, job.getName(), null, Status.STARTED, 0.0);
+            try {
+                createAndSendProgressEvent(m_eventConsumer, job.getName(), null, Status.STARTED, 0.0);
+            } catch (GatewayException e) {
+                LOGGER.error(e);
+            }
             var listener = new JobProgressMonitor(job.getName());
             // Adds progress listener to job monitor
             m_addProgressListener.accept(job,  listener);
@@ -170,7 +178,11 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
     public void done(final IJobChangeEvent event) {
         var job = event.getJob();
         if (isWatchedJob(job)) {
-            createAndSendProgressEvent(m_eventConsumer, job.getName(), null, Status.FINISHED, 100.0);
+            try {
+                createAndSendProgressEvent(m_eventConsumer, job.getName(), null, Status.FINISHED, 100.0);
+            } catch (GatewayException e) {
+                LOGGER.error(e);
+            }
             Optional.ofNullable(m_progressListener.get(job.getName())).ifPresent(listener -> {
                 // Removes progress listener from job monitor
                 m_removeProgressListener.accept(job, listener);
@@ -199,9 +211,10 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
 
     /**
      * Creates and consumes a 'ProgressEvent' for the given task, subtask and progress.
+     * @throws GatewayException -
      */
     private static void createAndSendProgressEvent(final EventConsumer eventConsumer, final String task,
-        final String subTask, final double progress) {
+        final String subTask, final double progress) throws GatewayException {
         var status = determineStatus(task, subTask);
         createAndSendProgressEvent(eventConsumer, task, subTask, status, progress);
     }
@@ -223,7 +236,7 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
     }
 
     private static void createAndSendProgressEvent(final EventConsumer eventConsumer, final String task,
-        final String subTask, final Status status, final double progress) {
+        final String subTask, final Status status, final double progress) throws GatewayException {
         var progressEvent = MAPPER.createObjectNode();
 
         progressEvent.put("task", task);
@@ -253,7 +266,7 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
             m_task = task;
         }
 
-        private void createAndSendEvent() {
+        private void createAndSendEvent() throws GatewayException {
             if (m_totalWork > 0 && m_worked > 0) {
                 var progress = m_worked / m_totalWork * 100;
                 createAndSendProgressEvent(m_eventConsumer, m_task, m_subTask, progress);
@@ -268,7 +281,11 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
         @Override
         public void subTask(final String name) {
             m_subTask = name;
-            createAndSendEvent();
+            try {
+                createAndSendEvent();
+            } catch (GatewayException e) {
+                LOGGER.error(e);
+            }
         }
 
         @Override
@@ -289,7 +306,11 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
         @Override
         public void internalWorked(final double work) {
             m_worked += work;
-            createAndSendEvent();
+            try {
+                createAndSendEvent();
+            } catch (GatewayException e) {
+                LOGGER.error(e);
+            }
         }
 
         @Override

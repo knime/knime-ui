@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -84,6 +83,7 @@ import org.knime.core.util.urlresolve.KnimeUrlResolver;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.IdAndPath;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
 import org.knime.core.util.urlresolve.URLResolverUtil;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
@@ -119,7 +119,7 @@ final class ManipulateComponents {
         // Stateless
     }
 
-    static boolean openLinkComponentDialog(final SubNodeContainer component) throws OperationNotAllowedException {
+    static boolean openLinkComponentDialog(final SubNodeContainer component) throws GatewayException {
         assertLinkedComponent(component, false);
 
         final var validMountPoints = getAllValidMountPoint(ExplorerMountTable.getMountedContent());
@@ -136,7 +136,7 @@ final class ManipulateComponents {
     }
 
     static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, ServiceCallException {
+        throws GatewayException {
         assertLinkedComponent(component, true);
 
         final var templateInfo = component.getTemplateInformation();
@@ -198,9 +198,10 @@ final class ManipulateComponents {
 
     /**
      * This will not be callable from the FE until NXT-2038 is solved.
+     * @throws GatewayException
      */
     static void openChangeComponentHubItemVersionDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, ServiceCallException {
+        throws GatewayException {
         assertLinkedComponent(component, true);
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
@@ -269,19 +270,16 @@ final class ManipulateComponents {
 
     /**
      * @return The data of the component, can be {@code null}.
+     * @throws GatewayException
      */
     private static PortObject[] getDataFromComponent(final boolean isIncludeInputData, final SubNodeContainer component,
-        final Shell shell) {
+        final Shell shell) throws GatewayException {
         PortObject[] data = null;
         if (isIncludeInputData) {
             //fetch input data
             final var optData = DesktopAPUtil.runWithProgress("Executing upstream nodes ...", LOGGER, mon -> {
-                try {
-                    // since 5.5, the "fetchInputDataFromParent" method is not executing the workflow anymore
-                    component.getParent().executePredecessorsAndWait(component.getID());
-                } catch (InterruptedException e) { // NOSONAR: cancellation is handled
-                    throw new InvocationTargetException(e, "Execution aborted");
-                }
+                // since 5.5, the "fetchInputDataFromParent" method is not executing the workflow anymore
+                component.getParent().executePredecessorsAndWait(component.getID());
                 return component.fetchInputDataFromParent();
             });
             if (optData.isEmpty()) {

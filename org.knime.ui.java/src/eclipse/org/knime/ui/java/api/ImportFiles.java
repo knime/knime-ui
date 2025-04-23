@@ -48,19 +48,23 @@
  */
 package org.knime.ui.java.api;
 
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.util.ClassUtils;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
+import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
@@ -83,36 +87,52 @@ class ImportFiles extends AbstractImportItems {
 
     @Override
     protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final Space space,
-            final String workflowGroupItemId, final List<Path> srcPaths) {
-        final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId, srcPaths);
-        if (nameCollisions.isEmpty()) {
-            return Optional.of(NameCollisionHandling.NOOP);
-        } else {
-            return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions,
-                UsageContext.IMPORT);
+        final String workflowGroupItemId, final List<Path> srcPaths)
+        throws NetworkException, LoggedOutException, ServiceCallException {
+
+        try {
+            final var nameCollisions =
+                NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId, srcPaths);
+            if (nameCollisions.isEmpty()) {
+                return Optional.of(NameCollisionHandling.NOOP);
+            } else {
+                return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId,
+                    nameCollisions, UsageContext.IMPORT);
+            }
+        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being propagated
+            e.pushContext("Failed to import workflow(s)", null);
+            throw e.toGatewayException();
         }
     }
 
     @Override
     protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final Space space,
         final String workflowGroupItemId, final List<Path> srcPaths,
-        final Space.NameCollisionHandling collisionHandling) {
-        final var name = ClassUtils.castOptional(LocalSpace.class, space) //
-            .map(local -> local.getItemName(workflowGroupItemId)) //
-            .orElse(space.getName());
+        final Space.NameCollisionHandling collisionHandling) throws ServiceCallException, CanceledExecutionException {
+        final String name;
+        try {
+            name = space instanceof LocalSpace local ? local.getItemName(workflowGroupItemId) : space.getName();
+        } catch (ContextfulServiceCallException e) { // NOSONAR
+            e.pushContext("Failed to import file%s".formatted(srcPaths.size() == 1 ? "" : "s"), null);
+            throw e.toGatewayException();
+        }
+
         monitor.beginTask(String.format("Importing %d files into \"%s\"", srcPaths.size(), name),
             IProgressMonitor.UNKNOWN);
-        var importedSpaceItems = srcPaths.stream()//
-            .map(srcPath -> { // Import every single file
-                try {
-                    return space.importFile(srcPath, workflowGroupItemId, collisionHandling, monitor);
-                } catch (IOException e) {
-                    LOGGER.error(String.format("Could not import <%s>", srcPath), e);
-                    return null;
-                }
-            })//
-            .filter(Objects::nonNull) // Exclude the failed ones from the result
-            .toList();
+        final List<SpaceItemEnt> importedSpaceItems = new ArrayList<>();
+
+        for (final var srcPath : srcPaths) {
+            try {
+                importedSpaceItems.add(space.importFile(srcPath, workflowGroupItemId, collisionHandling, monitor));
+            } catch (GatewayException e) { // TODO urgh
+                LOGGER.error(String.format("Could not import <%s>", srcPath), e);
+                return null;
+            } catch (ContextfulServiceCallException e) {
+                LOGGER.error(String.format("Could not import <%s>", srcPath), e.toGatewayException());
+                return null;
+            }
+
+        }
         monitor.done();
         return importedSpaceItems;
     }

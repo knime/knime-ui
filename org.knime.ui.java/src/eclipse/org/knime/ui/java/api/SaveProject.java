@@ -54,6 +54,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,7 +77,11 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.ResetOnUploadEnum;
+import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -110,7 +115,8 @@ final class SaveProject {
      * @param localOnly -
      * @return -
      */
-    static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
+    static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly)
+        throws GatewayException {
         return saveProject(projectId, projectSVG, localOnly, true);
     }
 
@@ -124,9 +130,11 @@ final class SaveProject {
      * @param localOnly if {@code true}, the project is only saved locally even if it is a temporary copy from Hub
      * @param allowOverwritePrompt -
      * @return A boolean indicating whether the project was saved.
+     * @throws GatewayException
      */
     static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly,
-        final boolean allowOverwritePrompt) {
+        final boolean allowOverwritePrompt) throws GatewayException {
+
         if (projectSVG == null) {
             LOGGER.warn("Saving the project without a workflow preview. This is unexpected and should not happen.");
         }
@@ -150,27 +158,44 @@ final class SaveProject {
     }
 
     private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
-        final boolean localOnly, final boolean allowOverwritePrompt) {
+        final boolean localOnly, boolean allowOverwritePrompt) throws GatewayException {
+
         var wasSaveSuccessful = new AtomicBoolean();
+        final var gatewayExceptionRef = new AtomicReference<GatewayException>();
         try {
-            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(
-                monitor -> wasSaveSuccessful.set(saveProject(monitor, wfm, svg, localOnly, allowOverwritePrompt)));
+            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
+                try {
+                    wasSaveSuccessful.set(saveProject(monitor, wfm, svg, localOnly, allowOverwritePrompt));
+                } catch (GatewayException ge) {
+                    gatewayExceptionRef.set(ge);
+                }
+            });
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted the saving process");
             Thread.currentThread().interrupt();
         }
-        return wasSaveSuccessful.get();
+
+        if (wasSaveSuccessful.get()) {
+            return true;
+        }
+
+        if (gatewayExceptionRef.get() != null) {
+            throw gatewayExceptionRef.get();
+        }
+
+        return false;
     }
 
     static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
-        final boolean localOnly) {
+        final boolean localOnly) throws GatewayException {
         return saveProject(monitor, wfm, svg, localOnly, true);
     }
 
     static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
-        final boolean localOnly, final boolean allowOverwritePrompt) {
+        final boolean localOnly, final boolean allowOverwritePrompt) throws GatewayException {
+
         // use the flag and try/catch to make sure that the workflow is also set to dirty if any exception is thrown
         var success = false;
         try {
@@ -256,7 +281,9 @@ final class SaveProject {
     }
 
     private static boolean saveBackToServerOrHub(final IProgressMonitor rootMonitor, final WorkflowManager wfm,
-        final RestLocationInfo remoteLocation, final String svg, final boolean allowOverwritePrompt) {
+        final RestLocationInfo remoteLocation, final String svg, final boolean allowOverwritePrompt)
+        throws GatewayException {
+
         final var context = wfm.getContextV2();
         if (!context.isTemporyWorkflowCopyMode()) {
             throw new IllegalStateException("Can only save temporary copies to Server or Hub.");
@@ -273,12 +300,17 @@ final class SaveProject {
 
         final boolean preCheckResult;
         final Space space;
-        if (remoteLocation instanceof HubSpaceLocationInfo hubInfo) {
-            space = spaceProvider.getSpace(hubInfo.getSpaceItemId());
-            preCheckResult = checkHubUpload(mountId, hubInfo, space, allowOverwritePrompt);
-        } else {
-            space = spaceProvider.getSpace(Space.ROOT_ITEM_ID);
-            preCheckResult = checkServerUpload(remoteMountpointURI);
+        try {
+            if (remoteLocation instanceof HubSpaceLocationInfo hubInfo) {
+                space = spaceProvider.getSpace(hubInfo.getSpaceItemId());
+                preCheckResult = checkHubUpload(mountId, hubInfo, space, allowOverwritePrompt);
+            } else {
+                space = spaceProvider.getSpace(Space.ROOT_ITEM_ID);
+                preCheckResult = checkServerUpload(remoteMountpointURI);
+            }
+        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being promoted
+            e.pushContext("Failed to upload item(s)", List.of("Pre-check for upload failed"));
+            throw e.toGatewayException();
         }
 
         if (!preCheckResult) {
@@ -306,21 +338,28 @@ final class SaveProject {
     }
 
     private static boolean checkHubUpload(final String mountId, final HubSpaceLocationInfo hubInfo,
-        final Space hubSpace, final boolean allowOverwritePrompt) {
-        if (allowOverwritePrompt && hubItemExists(hubInfo, hubSpace)) {
-            final var resultRef = new AtomicReference<Pair<OverwriteRemotelyResult, String>>();
-            Display.getDefault().syncExec(() -> resultRef.set(//
-                DesktopAPUtil.openOverwriteRemotelyDialog(mountId + ':' + hubInfo.getWorkflowPath(), null, "Hub")));
-            final var dialogResult = resultRef.get();
-            final var answer = dialogResult.getFirst();
-            if (answer == OverwriteRemotelyResult.CANCEL) {
-                return false;
+        final Space hubSpace, final boolean allowOverwritePrompt) throws GatewayException {
+
+        try {
+            if (allowOverwritePrompt && hubItemExists(hubInfo, hubSpace)) {
+                final var resultRef = new AtomicReference<Pair<OverwriteRemotelyResult, String>>();
+                Display.getDefault().syncExec(() -> resultRef.set(//
+                    DesktopAPUtil.openOverwriteRemotelyDialog(mountId + ':' + hubInfo.getWorkflowPath(), null, "Hub")));
+                final var dialogResult = resultRef.get();
+                final var answer = dialogResult.getFirst();
+                if (answer == OverwriteRemotelyResult.CANCEL) {
+                    return false;
+                }
             }
+            return true;
+        } catch (final ContextfulServiceCallException e) { // NOSONAR
+            e.pushContext("Failed to upload item(s)", null);
+            throw e.toGatewayException();
         }
-        return true;
     }
 
-    private static boolean hubItemExists(final HubSpaceLocationInfo hubInfo, final Space space) {
+    private static boolean hubItemExists(final HubSpaceLocationInfo hubInfo, final Space space)
+        throws NetworkException, LoggedOutException, ContextfulServiceCallException {
         try {
             space.getItemType(hubInfo.getWorkflowItemId());
             return true;

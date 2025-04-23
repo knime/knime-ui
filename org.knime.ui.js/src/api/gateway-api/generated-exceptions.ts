@@ -7,8 +7,8 @@ export const KNOWN_EXECUTOR_EXCEPTIONS = [
   "NotASubWorkflowException",
   "InvalidRequestException",
   "OperationNotAllowedException",
-  "IOException",
   "CollisionException",
+  "LoggedOutException",
 ] as const;
 export type KnownExecutorExceptions =
   (typeof KNOWN_EXECUTOR_EXCEPTIONS)[number];
@@ -23,8 +23,8 @@ export class NoSuchElementException extends Error {}
 export class NotASubWorkflowException extends Error {}
 export class InvalidRequestException extends Error {}
 export class OperationNotAllowedException extends Error {}
-export class IOException extends Error {}
 export class CollisionException extends Error {}
+export class LoggedOutException extends Error {}
 
 function isObject(e: unknown): e is Exclude<object, any[]> {
   return e !== null && typeof e === "object" && !Array.isArray(e);

@@ -56,6 +56,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.lang3.function.FailableRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Origin;
@@ -83,14 +85,14 @@ class CloseProjectTest {
 
     private List<WorkflowManager> m_wfms;
 
-    private Runnable m_appStateUpdateListener;
+    private FailableRunnable<GatewayException> m_appStateUpdateListener;
 
     @BeforeEach
     void setup() throws IOException, InvalidSettingsException, CanceledExecutionException,
         UnsupportedWorkflowVersionException, LockFailedException {
         var eventConsumer = mock(EventConsumer.class);
         var appStateUpdater = new AppStateUpdater();
-        m_appStateUpdateListener = mock(Runnable.class);
+        m_appStateUpdateListener = mock(FailableRunnable.class);
         appStateUpdater.addAppStateChangedListener(m_appStateUpdateListener);
         var pm = ProjectManager.getInstance();
         DesktopAPI.injectDependency(pm);
@@ -119,7 +121,7 @@ class CloseProjectTest {
     }
 
     @Test
-    void testCloseWorkflow() {
+    void testCloseWorkflow() throws Exception {
         assertThat(CloseProject.closeProject("projectId1", "projectId2")).isTrue();
 
         var wfm1 = m_wfms.get(0);
@@ -134,7 +136,7 @@ class CloseProjectTest {
     }
 
     @Test
-    void testForceCloseWorkflow() {
+    void testForceCloseWorkflow() throws Exception {
         // make sure that a workflow is dirty
         var wfm1 = m_wfms.get(0);
         wfm1.setDirty();

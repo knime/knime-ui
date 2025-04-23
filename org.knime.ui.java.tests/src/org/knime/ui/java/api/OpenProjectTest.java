@@ -54,12 +54,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
+import org.apache.commons.lang3.function.FailableRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.Origin;
@@ -94,7 +94,7 @@ class OpenProjectTest {
         var spaceProvidersManager = SpaceAPITest.createSpaceProvidersManager(spaceProvider);
         var eventConsumer = mock(EventConsumer.class);
         var appStateUpdater = new AppStateUpdater();
-        var appStateUpdateListener = mock(Runnable.class);
+        FailableRunnable<GatewayException> appStateUpdateListener = mock(FailableRunnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
         var mruProjects = new MostRecentlyUsedProjects();
         var pm = ProjectManager.getInstance();
@@ -127,9 +127,9 @@ class OpenProjectTest {
     }
 
     @Test
-    void testRegisterProjectAndSetActive() throws IOException {
+    void testRegisterProjectAndSetActive() throws Exception {
         var appStateUpdater = new AppStateUpdater();
-        var appStateUpdateListener = mock(Runnable.class);
+        FailableRunnable<GatewayException> appStateUpdateListener = mock(FailableRunnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
         var mruProjects = new MostRecentlyUsedProjects();
         var pm = ProjectManager.getInstance();
