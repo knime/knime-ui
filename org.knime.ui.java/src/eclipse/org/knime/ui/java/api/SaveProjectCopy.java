@@ -49,14 +49,12 @@
 package org.knime.ui.java.api;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.function.FailableFunction;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.knime.core.node.CanceledExecutionException;
@@ -68,8 +66,13 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
 import org.knime.core.util.LockFailedException;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -80,6 +83,7 @@ import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.DesktopAPUtil.FunctionWithProgress;
 
 /**
  * Helper class to save a copy of a project, for instance
@@ -106,7 +110,7 @@ final class SaveProjectCopy {
      * @param sourceProjectId The ID identifying the project to save
      * @param projectSVG The project SVG
      */
-    static void saveCopyOf(final String sourceProjectId) {
+    static void saveCopyOf(final String sourceProjectId) throws GatewayException {
         final var originalProject = DesktopAPI.getDeps(ProjectManager.class)//
             .getProject(sourceProjectId) //
             .orElseThrow(() -> {
@@ -141,6 +145,11 @@ final class SaveProjectCopy {
             );
             // Provider type can only be Local here
             OpenProject.registerProjectAndSetActive(updatedProject, SpaceProviderEnt.TypeEnum.LOCAL);
+        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being promoted
+            e.pushContext("Failed to save workflow copy", null);
+            throw e.toGatewayException();
+        } catch (GatewayException e) {
+            throw e;
         } catch (Exception ex) {
             LOGGER.error(ex);
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Save Error",
@@ -151,10 +160,10 @@ final class SaveProjectCopy {
     /**
      * @return The new workflow context, identical with the old context if it simply overwrites the old location.
      *         {@code null} if something went wrong with the destination selection.
-     *
      */
     private static WorkflowContextV2 pickDestinationAndGetNewContext(final WorkflowContextV2 oldContext)
-        throws InvalidPathException, IOException {
+        throws NetworkException, LoggedOutException, OperationNotAllowedException, ContextfulServiceCallException {
+
         final var srcPath = oldContext.getExecutorInfo().getLocalWorkflowPath();
         final var projectName = srcPath.getFileName().toString();
 
@@ -191,7 +200,8 @@ final class SaveProjectCopy {
                 localSpace.getItemId(path) //
             );
             if (openProject.isPresent()) {
-                throw new IOException("Project <%s> is opened and can't be overwritten.".formatted(fileName));
+                throw new OperationNotAllowedException(
+                    "Project <%s> is opened and can't be overwritten.".formatted(fileName));
             }
         }
 
@@ -222,17 +232,14 @@ final class SaveProjectCopy {
     }
 
     private static NameCollisionHandling getNameCollisionStrategy(final String fileName,
-        final String workflowGroupItemId, final LocalSpace localSpace) {
-        var nameCollisions = NameCollisionChecker//
-            .checkForNameCollisionInDir(localSpace, fileName, workflowGroupItemId)//
-            .stream()//
-            .toList();
-        if (nameCollisions.isEmpty()) {
-            return NameCollisionHandling.NOOP;
+        final String workflowGroupItemId, final LocalSpace localSpace)
+        throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+
+        if (localSpace.containsItemWithName(workflowGroupItemId, fileName)) {
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(localSpace, workflowGroupItemId,
+                List.of(fileName), UsageContext.SAVE).orElse(null);
         } else {
-            return NameCollisionChecker
-                .openDialogToSelectCollisionHandling(localSpace, workflowGroupItemId, nameCollisions, UsageContext.SAVE)
-                .orElse(null);
+            return NameCollisionHandling.NOOP;
         }
     }
 
@@ -290,8 +297,8 @@ final class SaveProjectCopy {
     }
 
     private static WorkflowManager withCleanup(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
-        final FailableFunction<IProgressMonitor, WorkflowManager, InvocationTargetException> saveLogic)
-        throws NoSuchElementException {
+        final FunctionWithProgress<WorkflowManager> saveLogic)
+        throws NoSuchElementException, GatewayException {
         final Consumer<WorkflowManager> successHandler = wfm -> {
             if (oldContext.isTemporyWorkflowCopyMode()) { // If saved from a yellow bar editor
                 final var execInfo = oldContext.getExecutorInfo();

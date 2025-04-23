@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -83,7 +84,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 class ProjectAPITest {
 
     @Test
-    void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
+    void testSetProjectActiveAndEnsureItsLoaded() throws Exception {
         WorkflowManager m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         var projectManager = ProjectManager.getInstance();
         var origin = new Origin("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
@@ -101,8 +102,9 @@ class ProjectAPITest {
 
         ProjectAPI.setProjectActiveAndEnsureItsLoaded(projectId, VersionId.currentState().toString(), Boolean.TRUE);
 
-        assertThat(projectManager.getProject(projectId)).isNotEmpty();
-        assertThat(projectManager.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded)).isNotEmpty();
+        final Optional<Project> optProject = projectManager.getProject(projectId);
+        assertThat(optProject).isNotEmpty();
+        assertThat(optProject.get().getWorkflowManagerIfLoaded()).isNotEmpty();
         assertThat(projectManager.isActiveProject(projectId)).isTrue();
     }
 

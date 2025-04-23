@@ -55,7 +55,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
@@ -81,7 +80,7 @@ import org.knime.testing.util.WorkflowManagerUtil;
 class ImportURITest {
 
     @Test
-    void testImportURI() throws IOException {
+    void testImportURI() throws Exception {
         Supplier<int[]> cursorLocationSupplier = () -> new int[]{102, 99};
         var eventConsumer = mock(EventConsumer.class);
         DesktopAPI.injectDependency(eventConsumer);
@@ -107,13 +106,13 @@ class ImportURITest {
     }
 
     @Test
-    void testImportURIAtWorkflowCanvas() throws IOException {
+    void testImportURIAtWorkflowCanvas() throws Exception {
         var file = FileUtil.createTempFile("uri_import_test", ".txt");
         importURIAtWorkflowCanvasAndAssert(file.getAbsolutePath());
         importURIAtWorkflowCanvasAndAssert(file.toURI().toString());
     }
 
-    private static void importURIAtWorkflowCanvasAndAssert(final String uri) throws IOException {
+    private static void importURIAtWorkflowCanvasAndAssert(final String uri) throws Exception {
         var projectId = "projectId";
         try {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();

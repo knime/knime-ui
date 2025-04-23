@@ -61,6 +61,11 @@ import java.util.function.Consumer;
 
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ToastService;
@@ -141,11 +146,19 @@ public final class DesktopAPI {
     }
 
     /**
+     * @throws ServiceCallException
+     * @throws LoggedOutException
+     * @throws NetworkException
      * @throws NoSuchElementException If the space provider or space could not be found
      */
-    static Space getSpace(final String spaceProviderId, final String spaceId) {
+    static Space getSpace(final String spaceProviderId, final String spaceId)
+        throws NetworkException, LoggedOutException, ServiceCallException {
         final var spaceProvider = getSpaceProvider(spaceProviderId);
-        return spaceProvider.getSpace(spaceId);
+        try {
+            return spaceProvider.getSpace(spaceId);
+        } catch (ContextfulServiceCallException e) { // NOSONAR
+            throw e.toGatewayException();
+        }
     }
 
     private record APIMethod(Method method, boolean runInUIThread) {
@@ -183,7 +196,10 @@ public final class DesktopAPI {
                     try {
                         var res = invokeMethod(method, args);
                         event.set("result", MAPPER.valueToTree(res));
-                    } catch (Throwable e) { // NOSONAR
+                    } catch (GatewayException e) {  // TODO handle better error messages
+                        LOGGER.debug("Desktop API function call failed with `GatewayException` for '" + name + "'", e);
+                        event.put("error", e.getMessage());
+                    } catch (Throwable e) {  // NOSONAR
                         LOGGER.debug("Desktop API function call failed for '" + name + "'", e);
                         event.put("error", e.getMessage());
                     }

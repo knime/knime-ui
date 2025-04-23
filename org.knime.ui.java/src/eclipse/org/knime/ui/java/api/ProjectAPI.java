@@ -75,9 +75,13 @@ import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager.NodeModelFilter;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -85,6 +89,7 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.ui.java.api.SaveAndCloseProjects.SaveAndCloseProjectsException;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -108,7 +113,7 @@ final class ProjectAPI {
      */
     @API
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
-        throws IOException {
+        throws OpenProjectException, GatewayException {
         OpenProject.openProject(spaceId, itemId, spaceProviderId);
     }
 
@@ -139,9 +144,11 @@ final class ProjectAPI {
      *
      * @param projectId ID of the project
      * @return A boolean indicating whether the project was saved.
+     * @throws GatewayException -
      */
     @API
-    static boolean saveProject(final String projectId, final Boolean allowOverwritePrompt) {
+    static boolean saveProject(final String projectId, final Boolean allowOverwritePrompt)
+        throws GatewayException {
         var allowPrompt = allowOverwritePrompt == null ? Boolean.TRUE : allowOverwritePrompt;
         return SaveProject.saveProject(projectId, false, allowPrompt);
     }
@@ -156,10 +163,11 @@ final class ProjectAPI {
      *            it could not be loaded. This is helpful in case of version switches: we might try to re-load the
      *            previously loaded version before we removing the project entirely.
      * @return Whether the project is or has been loaded successfully
+     * @throws GatewayException -
      */
     @API
     static boolean setProjectActiveAndEnsureItsLoaded(final String projectId, final String versionId,
-        final boolean removeProjectIfNotLoaded) {
+        final boolean removeProjectIfNotLoaded) throws GatewayException {
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);
         var appStateUpdater = DesktopAPI.getDeps(AppStateUpdater.class);
 
@@ -217,16 +225,16 @@ final class ProjectAPI {
         var projectId = project.getID();
         var switchingVersions = pm.isActiveProject(projectId) && !pm.isActiveProjectVersion(projectId, versionId);
         if (switchingVersions) {
-            pm.getActiveVersionForProject(projectId) //
-                .flatMap(project::getWorkflowManagerIfLoaded) // Should be loaded, since the version is active
-                .ifPresent(wfm -> {
-                    var nodeIdsAndModels = wfm.findNodes(NodeModel.class, new NodeModelFilter<>(), true, true);
+            final var activeVersion = pm.getActiveVersionForProject(projectId).orElse(null);
+            if (activeVersion != null) {
+                final var optWfm = project.getWorkflowManagerIfLoaded(activeVersion);
+                if (optWfm.isPresent()) { // Should be loaded, since the version is active
+                    var nodeIdsAndModels = optWfm.get().findNodes(NodeModel.class, new NodeModelFilter<>(), true, true);
                     nodeIdsAndModels.values().forEach(Node::invokeNodeModelCloseViews);
-                });
+                }
+            }
         }
     }
-
-
 
     static WorkflowType getWorkflowTypeToTrack(final SpaceProviderEnt.TypeEnum providerType) {
         return switch (providerType) {
@@ -242,10 +250,10 @@ final class ProjectAPI {
      * @see SaveProjectCopy#saveCopyOf(String, String)
      *
      * @param projectId The project ID of the open remote workflow
-     * @throws IOException if moving the workflow fails
+     * @throws GatewayException -
      */
     @API
-    static void saveProjectAs(final String projectId) {
+    static void saveProjectAs(final String projectId) throws GatewayException {
         SaveProjectCopy.saveCopyOf(projectId);
     }
 
@@ -255,9 +263,11 @@ final class ProjectAPI {
      * @param spaceProviderId
      * @param spaceId
      * @param itemId
+     * @throws GatewayException -
      */
     @API
-    static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId) {
+    static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId)
+        throws GatewayException {
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         space.openRemoteExecution(itemId);
     }
@@ -271,9 +281,7 @@ final class ProjectAPI {
      */
     @API
     static void openWorkflowConfiguration(final String projectId) {
-        final var projectWfm = DesktopAPI.getDeps(ProjectManager.class) //
-            .getProject(projectId) //
-            .flatMap(Project::getWorkflowManagerIfLoaded) //
+        final var projectWfm = getProject(projectId).getWorkflowManagerIfLoaded() //
             .orElseThrow(() -> new NoSuchElementException("WorkflowManager of project is not loaded"));
         try {
             var dialog = new WrappedNodeDialog(Display.getDefault().getActiveShell(),
@@ -286,6 +294,12 @@ final class ProjectAPI {
                 "Workflow not configurable", //
                 "This workflow cannot be configured: " + exception.getMessage());
         }
+    }
+
+    private static Project getProject(final String projectId) {
+        return DesktopAPI.getDeps(ProjectManager.class) //
+            .getProject(projectId) //
+            .orElseThrow(() -> new NoSuchElementException("WorkflowManager of project is not loaded"));
     }
 
     /**
@@ -320,7 +334,8 @@ final class ProjectAPI {
         if (LocalSpaceUtil.isLocalSpace(origin.providerId(), origin.spaceId())) {
             try {
                 return localSpace.toLocalAbsolutePath(null, origin.itemId()).isEmpty();
-            } catch (CanceledExecutionException ex) { // NOSONAR: We don't care about this exception
+            } catch (CanceledExecutionException | NetworkException // NOSONAR: We don't care about these exceptions
+                    | LoggedOutException | ContextfulServiceCallException ex) {
                 return true;
             }
         } else {
@@ -334,7 +349,11 @@ final class ProjectAPI {
     private static JsonNode createAncestorItemIds(final Origin origin, final LocalSpace localSpace) {
         if (origin.isLocal()) {
             var res = MAPPER.createArrayNode();
-            localSpace.getAncestorItemIds(origin.itemId()).forEach(res::add);
+            try {
+                localSpace.getAncestorItemIds(origin.itemId()).forEach(res::add);
+            } catch (final ContextfulServiceCallException e) { // TODO
+                throw new IllegalStateException("Could not create ancestors", e.toGatewayException());
+            }
             return res;
         } else {
             return null;

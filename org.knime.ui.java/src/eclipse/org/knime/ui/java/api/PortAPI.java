@@ -58,6 +58,7 @@ import org.eclipse.swt.widgets.Display;
 import org.knime.core.webui.node.port.PortViewManager;
 import org.knime.core.webui.node.port.PortViewManager.PortViewDescriptor;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.js.cef.nodeview.CEFNodeView;
@@ -82,10 +83,11 @@ final class PortAPI {
      * @param portIdx the port index to open the port view for
      * @param viewIdx the view index (a port type can have multiple views)
      * @throws IOException in case the {@link CEFNodeView} couldn't be instantiated
+     * @throws GatewayException
      */
     @API
     static void openPortView(final String projectId, final String nodeId, final Double portIdx, final Double viewIdx)
-        throws IOException {
+        throws IOException, GatewayException {
         var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         var view = new CEFNodeView(nc, portIdx.intValue(), viewIdx.intValue());
         var port = nc.getOutPort(portIdx.intValue());
@@ -102,10 +104,11 @@ final class PortAPI {
      * @param nodeId
      * @param portIdx
      * @param execute whether to execute and wait until the node is executed before opening the legacy port view
+     * @throws GatewayException
      */
     @API
     static void openLegacyPortView(final String projectId, final String nodeId, final Double portIdx,
-        final Boolean execute) {
+        final Boolean execute) throws GatewayException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         if (nc.isInactive()) {
