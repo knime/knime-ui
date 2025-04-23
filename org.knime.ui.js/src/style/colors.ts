@@ -43,6 +43,8 @@ export const trafficLight = {
   redBorder: "hsl(348, 94%, 21%)",
   yellow: knimeColors.Yellow,
   yellowBorder: "hsla(0, 0%, 0%, 54%)",
+  yellowBorderWebGL: "hsl(0, 0%, 0%)",
+  yellowBorderWebGLAlpha: 0.54,
   green: "hsl(107, 43%, 55%)",
   greenBorder: "hsl(116, 47%, 26%)",
   blue: "hsl(206, 69.7%, 55.9%)",

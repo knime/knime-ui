@@ -1,14 +1,16 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
 import { computed, toRefs, useTemplateRef } from "vue";
+import { AlphaFilter } from "pixi.js";
 
-import type { PortType } from "@/api/gateway-api/generated-api";
-import { portColors } from "@/style/colors";
+import type { MetaNodePort, PortType } from "@/api/gateway-api/generated-api";
+import { portColors, trafficLight } from "@/style/colors";
 import { portSize } from "@/style/shapes";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 const strokeWidth = 1.5;
+const metanodePortLightOffset = -5.5;
 
 interface Props {
   type: PortType.KindEnum;
@@ -17,6 +19,7 @@ interface Props {
   targeted?: boolean;
   hovered?: boolean;
   inactive?: boolean;
+  nodeState?: MetaNodePort.NodeStateEnum;
 }
 
 const props = defineProps<Props>();
@@ -74,7 +77,7 @@ const otherPortsRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics.rect(
     strokeWidth / 2,
-    0,
+    strokeWidth / 2,
     portSize - strokeWidth,
     portSize - strokeWidth,
   );
@@ -159,6 +162,62 @@ const renderX = (graphics: GraphicsInst) => {
       color: portColors.inactive,
     });
 };
+
+const trafficLightState = () => {
+  if (props.nodeState) {
+    return {
+      IDLE: "red",
+      CONFIGURED: "yellow",
+      EXECUTING: "blue",
+      QUEUED: "yellow",
+      HALTED: "green",
+      EXECUTED: "green",
+    }[props.nodeState];
+  }
+  return "";
+};
+
+const renderMetanodeTrafficLight = (graphics: GraphicsInst) => {
+  graphics.clear();
+  const stateColor = trafficLightState();
+  graphics
+    .circle(metanodePortLightOffset / 2, 0, 3.75)
+    .fill({ color: "white" });
+  graphics
+    .circle(metanodePortLightOffset / 2, 0, 3)
+    .fill({ color: trafficLight[stateColor] });
+};
+const renderMetanodeTrafficLightBorder = (graphics: GraphicsInst) => {
+  graphics.clear();
+  const stateColor = trafficLightState();
+  const borderDiameter = 5;
+  graphics
+    .moveTo(0, 0)
+    .arcToSvg(1, 1, 0, 0, 0, -borderDiameter, 0)
+    .arcToSvg(1, 1, 0, 0, 0, 0, 0);
+  if (stateColor === "green") {
+    graphics.lineTo(-borderDiameter, 0);
+  } else if (stateColor === "yellow") {
+    graphics
+      .moveTo(-borderDiameter / 2, -borderDiameter / 2)
+      .lineTo(-borderDiameter / 2, borderDiameter / 2);
+  }
+
+  graphics.stroke({
+    color:
+      trafficLight[
+        `${stateColor}Border${stateColor === "yellow" ? "WebGL" : ""}`
+      ],
+  });
+  if (stateColor === "yellow") {
+    graphics.filters = [
+      new AlphaFilter({
+        alpha: trafficLight.yellowBorderWebGLAlpha,
+        antialias: true,
+      }),
+    ];
+  }
+};
 </script>
 
 <template>
@@ -181,5 +240,14 @@ const renderX = (graphics: GraphicsInst) => {
 
     <!-- X -->
     <Graphics v-if="inactive" @render="renderX" />
+
+    <!-- Metanode traffic light -->
+    <Container
+      v-if="trafficLightState() !== ''"
+      :x="metanodePortLightOffset / 2"
+    >
+      <Graphics @render="renderMetanodeTrafficLight" />
+      <Graphics @render="renderMetanodeTrafficLightBorder" />
+    </Container>
   </Container>
 </template>

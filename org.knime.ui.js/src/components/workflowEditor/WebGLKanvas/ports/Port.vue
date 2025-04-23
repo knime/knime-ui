@@ -2,14 +2,14 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { NodePort } from "@/api/gateway-api/generated-api";
+import { MetaNodePort, type NodePort } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import * as $colors from "@/style/colors";
 
 import PortIcon from "./PortIcon.vue";
 
 interface Props {
-  port: NodePort;
+  port: NodePort | MetaNodePort;
   targeted?: boolean;
   hovered?: boolean;
 }
@@ -38,6 +38,10 @@ const shouldFill = computed(() => {
   }
   return !props.port.optional;
 });
+
+const nodeState = computed(() => {
+  return "nodeState" in props.port ? props.port.nodeState : undefined; // eslint-disable-line no-undefined
+});
 </script>
 
 <template>
@@ -48,5 +52,6 @@ const shouldFill = computed(() => {
     :targeted="targeted"
     :hovered="hovered"
     :inactive="port.inactive"
+    :node-state="nodeState"
   />
 </template>
