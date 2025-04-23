@@ -3,20 +3,23 @@ import { nextTick } from "vue";
 import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import { ComponentPlaceholder as ComponentPlaceholderType } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 import {
   createComponentPlaceholder,
   createConnection,
   createWorkflow,
   createWorkflowAnnotation,
 } from "@/test/factories";
+import { mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { getToastPresets } from "@/toastPresets";
 import NodeSelectionPlane from "../../NodeSelectionPlane.vue";
 import ComponentPlaceholder from "../ComponentPlaceholder.vue";
 
 const defaultProps = { placeholder: createComponentPlaceholder() };
 
 describe("ComponentPlaceholder", () => {
+  const toast = mockedObject(getToastsProvider());
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -27,7 +30,6 @@ describe("ComponentPlaceholder", () => {
   const testConnectionId = "connectionId";
 
   const doMount = (props = {}) => {
-    const { toastPresets } = getToastPresets();
     const mockedStores = mockStores();
 
     mockedStores.workflowStore.setActiveWorkflow(
@@ -56,18 +58,13 @@ describe("ComponentPlaceholder", () => {
 
     return {
       wrapper,
-      toastPresets,
       mockedStores,
     };
   };
 
   it("should show error toast if the state is ERROR", async () => {
-    const { wrapper, toastPresets } = doMount();
+    const { wrapper } = doMount();
 
-    const componentLoadingFailedSpy = vi.spyOn(
-      toastPresets.workflow,
-      "componentLoadingFailed",
-    );
     const placeholderData = {
       message: "Placeholder failed loading",
       details: "No details",
@@ -81,16 +78,17 @@ describe("ComponentPlaceholder", () => {
       },
     });
 
-    expect(componentLoadingFailedSpy).toHaveBeenCalledWith(placeholderData);
+    expect(toast.show).toHaveBeenCalledWith({
+      headline: placeholderData.message,
+      message: placeholderData.details,
+      type: "error",
+      autoRemove: false,
+    });
   });
 
   it("should show warning toast if the state is SUCCESSWITHWARNING", async () => {
-    const { wrapper, toastPresets } = doMount();
+    const { wrapper } = doMount();
 
-    const componentLoadedWithWarningSpy = vi.spyOn(
-      toastPresets.workflow,
-      "componentLoadedWithWarning",
-    );
     const placeholderData = {
       message: "There are some issues",
       details: "Fix this",
@@ -104,7 +102,12 @@ describe("ComponentPlaceholder", () => {
       },
     });
 
-    expect(componentLoadedWithWarningSpy).toHaveBeenCalledWith(placeholderData);
+    expect(toast.show).toHaveBeenCalledWith({
+      headline: placeholderData.message,
+      message: placeholderData.details,
+      type: "warning",
+      autoRemove: true,
+    });
   });
 
   it("should select the loaded component if selection state hasnt changed and state of placeholder is SUCCESS", async () => {

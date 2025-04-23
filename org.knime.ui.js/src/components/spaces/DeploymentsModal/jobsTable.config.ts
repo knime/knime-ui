@@ -2,7 +2,7 @@ import { columnTypes } from "@knime/knime-ui-table";
 import { caseFormatter } from "@knime/utils";
 
 import { useDeploymentsStore } from "@/store/spaces/deployments";
-import { formatTime } from "@/util/time";
+import { formatTime } from "@/util/date-time";
 
 export const defaultColumns = ["createdAt", "owner", "state", "nodeMessages"];
 

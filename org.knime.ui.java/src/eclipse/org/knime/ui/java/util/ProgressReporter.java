@@ -46,20 +46,22 @@
 
 package org.knime.ui.java.util;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
-import org.apache.commons.lang3.function.FailableFunction;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
+import org.knime.ui.java.util.DesktopAPUtil.FunctionWithProgress;
 
 /**
  * The task needs to be executed inside the reporter (i.e. given as lambda) s.t. the reporter is able to catch
  * exceptions and notify accordingly.
  * <p>
  * Can be moved to knime-gateway and become a ProgressService at some point. To extend for proper error handling, see
- * {@link DesktopAPUtil#runWithProgress(String, NodeLogger, FailableFunction)}.
+ * {@link DesktopAPUtil#runWithProgress(String, NodeLogger, FunctionWithProgress)}.
  *
  */
 public interface ProgressReporter {
@@ -73,9 +75,11 @@ public interface ProgressReporter {
      * @param task -
      * @return The result of the computation, if successful.
      * @param <R> The result type
+     * @throws ServiceCallException
+     * @throws LoggedOutException
+     * @throws NetworkException
      */
-    <R> Optional<R> getWithProgress(String name, NodeLogger logger,
-        FailableFunction<IProgressMonitor, R, InvocationTargetException> task);
+    <R> Optional<R> getWithProgress(String name, NodeLogger logger, FunctionWithProgress<R> task);
 
     /**
      * Implementation of {@link ProgressReporter} for the Eclipse Workbench environment. Delegates progress reporting to
@@ -85,11 +89,8 @@ public interface ProgressReporter {
     class WorkbenchProgressReporter implements ProgressReporter {
 
         @Override
-        public <R> Optional<R> getWithProgress( //
-            final String name, //
-            final NodeLogger logger, //
-            final FailableFunction<IProgressMonitor, R, InvocationTargetException> task //
-        ) {
+        public <R> Optional<R> getWithProgress(final String name, final NodeLogger logger,
+            final FunctionWithProgress<R> task) {
             return DesktopAPUtil.runWithProgress(name, logger, task);
         }
     }
@@ -100,16 +101,9 @@ public interface ProgressReporter {
     class NullProgressReporter implements ProgressReporter {
 
         @Override
-        public <R> Optional<R> getWithProgress( //
-            final String name, //
-            final NodeLogger logger, //
-            final FailableFunction<IProgressMonitor, R, InvocationTargetException> task //
-        ) {
-            try {
-                return Optional.ofNullable(task.apply(new NullProgressMonitor()));
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+        public <R> Optional<R> getWithProgress(final String name, final NodeLogger logger,
+            final FunctionWithProgress<R> task) {
+            return Optional.ofNullable(task.invoke(new NullProgressMonitor()));
         }
     }
 

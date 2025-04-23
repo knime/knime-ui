@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.function.Supplier;
 
@@ -57,6 +56,7 @@ import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.WorkflowKey;
@@ -84,12 +84,14 @@ final class ImportAPI {
      * Import workflows into a space and save them to the specified location.
      *
      * @return the ids of the imported items or {@code null} if the import failed
+     * @throws GatewayException -
      */
     @API
     static String[] importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
+        throws GatewayException {
+
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
-        var itemIds = IMPORT_WORKFLOWS.importItems(space, itemId);
+        final var itemIds = IMPORT_WORKFLOWS.importItems(space, itemId);
         if (itemIds != null && itemIds.length > 0) {
             NodeTimer.GLOBAL_TIMER.incWorkflowImport();
         }
@@ -100,10 +102,12 @@ final class ImportAPI {
      * Import data files into a space and save them to the specified location.
      *
      * @return the ids of the imported items or {@code null} if the import failed
+     * @throws GatewayException -
      */
     @API
     static String[] importFiles(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
+        throws GatewayException {
+
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         return IMPORT_FILES.importItems(space, itemId);
     }
@@ -127,10 +131,12 @@ final class ImportAPI {
      * @param x X-Position to place the component in the workflow canvas
      * @param y Y-Position to place the component in the workflow canvas
      * @return the node-id of the new component or {@code null} if the import failed
+     * @throws GatewayException -
      */
     @API
     static String importComponent(final String spaceProviderId, final String spaceId, final String itemId,
-        final String projectId, final String workflowId, final double x, final double y) {
+        final String projectId, final String workflowId, final double x, final double y) throws GatewayException {
+
         var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         var uri = space.toKnimeUrl(itemId);
         var isRemoteLocation = !SpaceProvider.LOCAL_SPACE_PROVIDER_ID.equals(spaceProviderId);
@@ -149,14 +155,19 @@ final class ImportAPI {
      * @return the node-id of the new component or {@code null} if the import failed
      */
     static String importComponent(final String projectId, final String workflowId, final URI uri,
-            final boolean isRemoteLocation, final double x, final double y) {
+        final boolean isRemoteLocation, final double x, final double y) {
+
         var workflowIdEnt = new NodeIDEnt(workflowId);
-        Supplier<WorkflowManager> wfmSupplier = () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
-        Supplier<NodeID> command = () -> Display.getDefault().syncCall(() -> {
-            var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfmSupplier.get(), uri, (int)x, (int)y,
-                isRemoteLocation, false);
-            return snc == null ? null : snc.getID();
-        });
+        Supplier<WorkflowManager> wfmSupplier =
+            () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
+        Supplier<NodeID> command = () -> {
+            return Display.getDefault().syncCall(() -> {
+                final var wfm = wfmSupplier.get();
+                var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y,
+                    isRemoteLocation, false);
+                return snc == null ? null : snc.getID();
+            });
+        };
         var componentId = command.get();
         if (componentId == null) {
             return null;
@@ -185,11 +196,11 @@ final class ImportAPI {
 
         private final Supplier<WorkflowManager> m_wfm;
 
-        AddComponentCommand(final Supplier<WorkflowManager> wfm, final NodeID componentId,
-            final Supplier<NodeID> redo) {
-            m_wfm = wfm;
+        AddComponentCommand(final Supplier<WorkflowManager> wfmSupplier, final NodeID componentId,
+            final Supplier<NodeID> command) {
+            m_wfm = wfmSupplier;
             m_componentId = componentId;
-            m_redo = redo;
+            m_redo = command;
         }
 
         @Override

@@ -50,7 +50,7 @@ package org.knime.ui.java.api;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -125,13 +125,28 @@ final class NodeAPI {
      */
     @API
     static void executeNodeAndOpenView(final String projectId, final String nodeId) {
+        executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openNodeView(projectId, nodeId));
+    }
+
+    /**
+     * If the node is already executed, run the given task. If the node is not already executed, execute the workflow up
+     * to the node and attach a listener to run the given task once executed.
+     *
+     * @param projectId The project containing the workflow
+     * @param nodeId The node to act on
+     * @param task The task to run
+     */
+    private static void executeNodeThenRun(final String projectId, final String nodeId, final Runnable task) {
         if (isInactive(projectId, nodeId)) {
             return;
         }
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
-        CoreUtil.executeThenRun(nc,
-            () -> Display.getDefault().asyncExec(() -> NodeAPI.openNodeView(projectId, nodeId)));
+
+        CoreUtil.executeThenRun(nc, () -> {
+            Display.getDefault().asyncExec(task);
+        });
+
     }
 
     /**
@@ -175,6 +190,7 @@ final class NodeAPI {
 
     /**
      * Opens the swing dialog or CEF-based dialog of a node.
+     *
      */
     @API
     static void openLegacyFlowVariableDialog(final String projectId, final String nodeId) {

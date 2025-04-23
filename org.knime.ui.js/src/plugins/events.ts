@@ -122,14 +122,14 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
         try {
           useSpaceProvidersStore().setAllSpaceProviders(spaceProviders);
 
-          const { failedProviderNames } =
+          const { failedProviders } =
             await useSpaceProvidersStore().fetchSpaceGroupsForProviders(
               spaceProviders,
             );
 
-          if (failedProviderNames.length > 0) {
+          if (failedProviders.length > 0) {
             toastPresets.spaces.crud.fetchProviderSpaceGroupsFailed({
-              failedProviderNames,
+              failedProviders,
             });
           }
         } catch (error) {

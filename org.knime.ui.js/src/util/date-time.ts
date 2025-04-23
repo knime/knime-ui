@@ -15,3 +15,8 @@ export const formatTime = (timeInMs: number) => {
     formattedMinute,
   )}`;
 };
+
+export const isValidDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return !isNaN(date.getTime());
+};

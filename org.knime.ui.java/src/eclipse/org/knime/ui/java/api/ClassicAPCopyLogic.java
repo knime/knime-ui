@@ -123,8 +123,7 @@ final class ClassicAPCopyLogic {
      */
     private ClassicAPCopyLogic(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
         final List<AbstractExplorerFileStore> sources, final boolean excludeData,
-        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target,
-        final String targetSpaceId) {
+        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target, final String targetSpaceId) {
         m_shellProvider = shellProvider;
         m_sourceSpaceProvider = sourceSpaceProvider;
         m_sources = CheckUtils.checkArgumentNotNull(sources);
@@ -136,8 +135,7 @@ final class ClassicAPCopyLogic {
 
     public static boolean copy(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
         final List<AbstractExplorerFileStore> sources, final SpaceProvider targetSpaceProvider,
-        final AbstractExplorerFileStore target, final String targetSpaceId,
-        final boolean excludeData) {
+        final AbstractExplorerFileStore target, final String targetSpaceId, final boolean excludeData) {
 
         // make sure that the target provider is finished loading
         DesktopAPUtil.waitForMountpointToFinishFetching(target);
@@ -147,8 +145,8 @@ final class ClassicAPCopyLogic {
 
         // Make sure that the target is not a child of any item in the selection.
         if (isTargetContainedInSelection(sources, target)) {
-            final var msg = "Cannot copy the selected files into "
-                + target.toString().replace("&", "&&") + " because it is a child of the selection.";
+            final var msg = "Cannot copy the selected files into " + target.toString().replace("&", "&&")
+                + " because it is a child of the selection.";
             MessageDialog.openError(shellProvider.getShell(), "Copy Workflow", msg);
             LOGGER.info(msg);
             return false;

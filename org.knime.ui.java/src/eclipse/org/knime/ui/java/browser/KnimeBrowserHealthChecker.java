@@ -150,8 +150,8 @@ final class KnimeBrowserHealthChecker {
     }
 
     private static void saveAndCloseProjects() {
-        var projectIds = ProjectManager.getInstance().getDirtyProjectsMap().entrySet().stream()
-            .filter(Entry::getValue).map(Entry::getKey).toArray(String[]::new);
+        var projectIds = ProjectManager.getInstance().getDirtyProjectsMap().entrySet().stream().filter(Entry::getValue)
+            .map(Entry::getKey).toArray(String[]::new);
         // save and close projects
         var svgs = new String[projectIds.length];
         Arrays.fill(svgs, EMPTY_SVG);

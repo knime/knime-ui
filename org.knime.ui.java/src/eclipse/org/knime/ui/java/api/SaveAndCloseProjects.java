@@ -52,6 +52,7 @@ import static org.knime.ui.java.util.DesktopAPUtil.assertUiThread;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -61,12 +62,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -78,6 +79,8 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
  */
 public final class SaveAndCloseProjects {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveAndCloseProjects.class);
+
     private SaveAndCloseProjects() {
         // utility
     }
@@ -88,7 +91,8 @@ public final class SaveAndCloseProjects {
      *
      * @param projectIds Array containing the project-ids of the projects to save
      * @param progressService Displays the progress
-     * @throws SaveAndCloseProjectsException if the save and close process failed
+     * @throws GatewayException -
+     * @throws SaveAndCloseProjectsException -
      */
     static void saveAndCloseProjects(final String[] projectIds, final IProgressService progressService)
         throws SaveAndCloseProjectsException { // NOSONAR
@@ -133,14 +137,16 @@ public final class SaveAndCloseProjects {
      */
     public static State saveAndCloseProjectsInteractively(final List<String> projectIds) {
         var projectManager = ProjectManager.getInstance();
-        var dirtyProjectIds = projectIds.stream() //
-            .filter(id -> projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded)
-                .map(WorkflowManager::isDirty).orElse(false)) //
-            .toArray(String[]::new);
-        var dirtyWfms = Arrays.stream(dirtyProjectIds) //
-            .flatMap(id -> projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded).stream()) //
-            .toArray(WorkflowManager[]::new);
-        var shallSaveProjects = promptWhetherToSaveProjects(dirtyWfms);
+        final List<WorkflowManager> dirtyWfmsList = new ArrayList<>();
+        for (final var id : projectIds) {
+            projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded).ifPresent(wfm -> {
+                if (wfm.isDirty()) {
+                    dirtyWfmsList.add(wfm);
+                }
+            });
+        }
+        final var dirtyWfms = dirtyWfmsList.toArray(WorkflowManager[]::new);
+        var shallSaveProjects = promptWhetherToSaveProjects();
         return switch (shallSaveProjects) {
             case YES -> { // NOSONAR
                 assertUiThread();
@@ -149,6 +155,7 @@ public final class SaveAndCloseProjects {
                     try {
                         saveAndCloseProjects(projectIds.toArray(String[]::new), progressService);
                     } catch (SaveAndCloseProjectsException e) {
+                        LOGGER.error(e);
                         yield State.CANCEL_OR_FAIL;
                     }
                 }
@@ -168,30 +175,32 @@ public final class SaveAndCloseProjects {
      * @param projectIds id of the projects to save
      * @param firstFailure the first id of the project that couldn't be saved
      * @param progressService
+     * @throws GatewayException -
      */
     public static void saveProjectsWithProgressBar(final String[] projectIds,
-        final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService) {
-        IRunnableWithProgress saveRunnable = monitor -> saveProjects(projectIds, firstFailure, monitor);
+        final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService)
+         {
         try {
-            progressService.busyCursorWhile(saveRunnable);
+            progressService.busyCursorWhile(monitor -> {
+                saveProjects(projectIds, firstFailure, monitor);
+            });
         } catch (InvocationTargetException e) {
-            NodeLogger.getLogger(SaveAndCloseProjects.class).error("Saving workflow failed", e);
+            LOGGER.error("Saving workflow failed", e);
             firstFailure.compareAndExchange(null, Optional.empty());
         } catch (InterruptedException e) {
-            NodeLogger.getLogger(SaveAndCloseProjects.class).warn("Saving process was interrupted", e);
+            LOGGER.warn("Saving process was interrupted", e);
             Thread.currentThread().interrupt();
             firstFailure.compareAndExchange(null, Optional.empty());
         }
     }
 
     private static void saveProjects(final String[] projectIds, final AtomicReference<Optional<String>> firstFailure,
-        final IProgressMonitor monitor) {
+        final IProgressMonitor monitor)  {
         monitor.beginTask("Saving " + projectIds.length + " projects", projectIds.length);
-        for (var i = 0; i < projectIds.length; i++) {
-            var projectId = projectIds[i];
+        for (var projectId : projectIds) {
             var projectManager = ProjectManager.getInstance();
             var projectWfm =
-                projectManager.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded).orElse(null);
+                    projectManager.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded).orElse(null);
             var success = saveAndCloseProject(monitor, projectId, projectWfm, projectManager);
             if (!success) {
                 firstFailure.compareAndExchange(null, Optional.of(projectId));
@@ -254,7 +263,7 @@ public final class SaveAndCloseProjects {
         } else {
             title = "Save Workflows";
             message.append("Save workflows?\n");
-            for (WorkflowManager dirtyWfm : dirtyWfms) {
+            for (var dirtyWfm : dirtyWfms) {
                 message.append("\n").append(dirtyWfm.getName());
             }
         }

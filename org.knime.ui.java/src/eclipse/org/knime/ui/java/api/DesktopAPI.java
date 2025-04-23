@@ -61,6 +61,13 @@ import java.util.function.Consumer;
 
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.util.EntityUtil;
+import org.knime.gateway.api.webui.entity.GatewayProblemDescriptionEnt;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ToastService;
@@ -73,12 +80,14 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProgressReporter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -141,11 +150,19 @@ public final class DesktopAPI {
     }
 
     /**
+     * @throws ServiceCallException
+     * @throws LoggedOutException
+     * @throws NetworkException
      * @throws NoSuchElementException If the space provider or space could not be found
      */
-    static Space getSpace(final String spaceProviderId, final String spaceId) {
+    static Space getSpace(final String spaceProviderId, final String spaceId)
+        throws NetworkException, LoggedOutException, ServiceCallException {
         final var spaceProvider = getSpaceProvider(spaceProviderId);
-        return spaceProvider.getSpace(spaceId);
+        try {
+            return spaceProvider.getSpace(spaceId);
+        } catch (final MutableServiceCallException e) {
+            throw e.toGatewayException("Failed to fetch space");
+        }
     }
 
     private record APIMethod(Method method, boolean runInUIThread) {
@@ -174,32 +191,43 @@ public final class DesktopAPI {
      *            unexpected reasons.
      */
     public static void forEachAPIFunction(final BiConsumer<String, Consumer<Object[]>> functionCaller) {
-        for (APIMethod apiMethod : METHODS) {
-            var method = apiMethod.method;
-            var name = method.getName();
-            functionCaller.accept(name, args -> { // NOSONAR
-                Runnable invokeMethod = () -> { // NOSONAR
-                    var event = MAPPER.createObjectNode().put("name", name);
-                    try {
-                        var res = invokeMethod(method, args);
-                        event.set("result", MAPPER.valueToTree(res));
-                    } catch (Throwable e) { // NOSONAR
-                        LOGGER.debug("Desktop API function call failed for '" + name + "'", e);
-                        event.put("error", e.getMessage());
-                    }
-                    var eventConsumer = getDeps(EventConsumer.class);
-                    if (eventConsumer != null) {
-                        // eventConsumer is null in case of the 'switchToJavaUI' function
-                        // because it clears all the deps when invoked
-                        eventConsumer.accept(DESKTOP_API_FUNCTION_RESULT_EVENT_NAME, event);
-                    }
-                };
-                if (apiMethod.runInUIThread) {
-                    Display.getDefault().asyncExec(invokeMethod);
-                } else {
-                    CompletableFuture.runAsync(invokeMethod);
-                }
-            });
+        for (final APIMethod apiMethod : METHODS) {
+            final var method = apiMethod.method;
+            functionCaller.accept( //
+                method.getName(), //
+                apiMethod.runInUIThread //
+                    ? (args -> Display.getDefault().asyncExec(() -> invoke(method, args))) //
+                    : (args -> CompletableFuture.runAsync(() -> invoke(method, args))) //
+            );
+        }
+    }
+
+    private static void invoke(final Method method, final Object[] args) {
+        final var event = MAPPER.createObjectNode().put("name", method.getName());
+        try {
+            event.set("result", MAPPER.valueToTree(invokeMethod(method, args)));
+        } catch (GatewayException e) {
+            LOGGER.debug("Desktop API function call failed with `GatewayException` for '" + method.getName() + "'", e);
+            event.put("error", problemToString(EntityUtil.knownToProblemDescription(e)));
+        } catch (Throwable e) {
+            LOGGER.debug("Desktop API function call failed for '" + method.getName() + "'", e);
+            event.put("error", problemToString(EntityUtil.unknownToProblemDescription(e)));
+        }
+
+        final var eventConsumer = getDeps(EventConsumer.class);
+        if (eventConsumer != null) {
+            // eventConsumer is null in case of the 'switchToJavaUI' function
+            // because it clears all the deps when invoked
+            eventConsumer.accept(DESKTOP_API_FUNCTION_RESULT_EVENT_NAME, event);
+        }
+    }
+
+    private static String problemToString(final GatewayProblemDescriptionEnt problemDesc) {
+        try {
+            // we have to use this mapper because it contains special mixins for Gateway entities
+            return ObjectMapperUtil.getInstance().getObjectMapper().writeValueAsString(problemDesc);
+        } catch (final JsonProcessingException e) {
+            throw new IllegalStateException(e);
         }
     }
 
@@ -215,7 +243,7 @@ public final class DesktopAPI {
             }
             LOGGER.debug("Desktop API function successfully called: " + name);
             return res;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+        } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw ex instanceof InvocationTargetException invocationTargetException
                 ? invocationTargetException.getTargetException() : ex;
         }
@@ -254,8 +282,7 @@ public final class DesktopAPI {
         final LocalSpace localSpace, //
         final WelcomeAPEndpoint welcomeAPEndpoint, //
         final ExampleProjects exampleProjects, //
-        final UserProfile userProfile,
-        final ProgressReporter progressReporter) {
+        final UserProfile userProfile, final ProgressReporter progressReporter) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -375,9 +402,19 @@ public final class DesktopAPI {
         for (Class<?> clazz : classes) {
             for (Method m : clazz.getDeclaredMethods()) {
                 if (m.isAnnotationPresent(API.class)) {
+                    checkExceptions(m);
                     var apiAnno = m.getAnnotation(API.class);
                     res.add(new APIMethod(m, apiAnno.runInUIThread()));
                 }
+            }
+        }
+    }
+
+    private static void checkExceptions(final Method m) {
+        for (final var exClass : m.getExceptionTypes()) {
+            if (exClass != GatewayException.class) {
+                LOGGER.coding(
+                    () -> "Unexpected `throws` declaration for `%s`: '%s".formatted(m, exClass.getSimpleName()));
             }
         }
     }

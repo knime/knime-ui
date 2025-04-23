@@ -1,5 +1,9 @@
 export type ToastPresetHandler<T = []> = (...args: T[]) => void;
 
-export type ToastPresetErrorHandler<T = any> = ToastPresetHandler<
-  T & { error: unknown }
+type WithOptionalError<T> = T extends { error?: unknown }
+  ? T
+  : { error: unknown } & T;
+
+export type ToastPresetErrorHandler<T = unknown> = ToastPresetHandler<
+  WithOptionalError<T>
 >;

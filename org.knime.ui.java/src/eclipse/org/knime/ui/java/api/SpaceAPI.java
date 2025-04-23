@@ -50,7 +50,6 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,16 +62,21 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hc.core5.net.URIBuilder;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -154,7 +158,7 @@ final class SpaceAPI {
     @API
     static void disconnectSpaceProvider(final String spaceProviderId) {
         var spaceProvider = DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey())
-            .getSpaceProvider(spaceProviderId);
+                .getSpaceProvider(spaceProviderId);
         if (spaceProvider != null) {
             spaceProvider.getConnection(false).ifPresent(SpaceProviderConnection::disconnect);
         }
@@ -170,18 +174,25 @@ final class SpaceAPI {
      * @param destWorkflowGroupItemId The item ID of the destination workflow group
      * @param context The {@link UsageContext} in string form for this collision check
      * @return Can be one of the {@link Space.NameCollisionHandling}-values or 'CANCEL'
+     * @throws GatewayException -
      */
     @API
     static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
-        final String destWorkflowGroupItemId, final String context) {
+        final String destWorkflowGroupItemId, final String context) throws GatewayException {
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
-        return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId, UsageContext.valueOf(context)) //
-            .map(NameCollisionHandling::toString) //
-            .orElse("CANCEL");
+        final var usageContext = UsageContext.valueOf(context);
+        try {
+            return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId, usageContext) //
+                .map(NameCollisionHandling::toString) //
+                .orElse("CANCEL");
+        } catch (final MutableServiceCallException e) {
+            throw e.toGatewayException("Failed to determine name collision strategy");
+        }
     }
 
     private static Optional<NameCollisionHandling> determineNameCollisionHandling(final Space space,
-        final Object[] itemIds, final String destWorkflowGroupItemId, final UsageContext context) {
+        final Object[] itemIds, final String destWorkflowGroupItemId, final UsageContext context)
+        throws GatewayException, MutableServiceCallException {
         final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
         return nameCollisions.isEmpty() ? Optional.of(Space.NameCollisionHandling.NOOP) : NameCollisionChecker //
             .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions, context);
@@ -189,14 +200,10 @@ final class SpaceAPI {
 
     @API
     @SuppressWarnings({"java:S1941"})
-    static boolean downloadFromSpace( //
-        final String sourceProviderId, //
-        final String sourceSpaceId, //
-        final Object[] sourceItemIdsParam, //
-        final String destinationProviderId, //
-        final String destinationSpaceId, //
-        final String destinationItemId //
-    ) { // NOSONAR
+    static boolean downloadFromSpace(final String sourceProviderId, final String sourceSpaceId,
+        final Object[] sourceItemIdsParam, final String destinationProviderId, final String destinationSpaceId,
+        final String destinationItemId) throws GatewayException {
+
         final var sources = new Locator.Siblings(sourceProviderId, sourceSpaceId,
             Stream.of(sourceItemIdsParam).map(String.class::cast).toList());
         final var destination = Locator.Destination.of(destinationProviderId, destinationSpaceId, destinationItemId);
@@ -205,18 +212,20 @@ final class SpaceAPI {
             return true;
         }
 
-        final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
-        if (!asyncDownloadDisabled && sources.isHub() && destination.isLocal()) {
-            try {
+        try {
+            final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
+            if (!asyncDownloadDisabled && sources.isHub() && destination.isLocal()) {
                 return performAsyncHubDownload(sources, destination);
-            } catch (Exception ex) { // NOSONAR
-                LOGGER.error("Download error: " + ex.getMessage(), ex);
-                showErrorToast("Download error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
-                return false;
             }
-        }
+            return legacyCopyBetweenSpaces(sources, destination, false);
 
-        return legacyCopyBetweenSpaces(sources, destination, false);
+        } catch (OperationNotAllowedException e) {
+            LOGGER.error("Download error: " + e.getMessage(), e);
+            throw new IllegalStateException("Failed to download items: " + e.getMessage(), e);
+        } catch (MutableServiceCallException e) { // NOSONAR
+            throw e.toGatewayException( //
+                "Failed to download item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"));
+        }
     }
 
     /**
@@ -224,18 +233,14 @@ final class SpaceAPI {
      *
      * @return ids of the items that have been successfully uploaded or an empty list if the upload wasn't successful
      *         (or the item ids couldn't be determined)
+     * @throws GatewayException -
      */
     @API
     @SuppressWarnings({"java:S1941"})
-    static List<String> uploadToSpace( //
-        final String sourceProviderId, //
-        final String sourceSpaceId, //
-        final Object[] sourceItemIdsParam, //
-        final String destinationProviderId, //
-        final String destinationSpaceId, //
-        final String destinationItemId, //
-        final boolean excludeData //
-    ) { // NOSONAR
+    static List<String> uploadToSpace(final String sourceProviderId, final String sourceSpaceId,
+        final Object[] sourceItemIdsParam, final String destinationProviderId, final String destinationSpaceId,
+        final String destinationItemId, final boolean excludeData) throws GatewayException {
+
         final var sources = new Locator.Siblings(sourceProviderId, sourceSpaceId,
             Stream.of(sourceItemIdsParam).map(String.class::cast).toList());
         final var destination = Locator.Destination.of(destinationProviderId, destinationSpaceId, destinationItemId);
@@ -245,23 +250,34 @@ final class SpaceAPI {
         }
 
         if (sources.isLocal()) {
-            final var opened = findDirtyOpenedWorkflows((LocalSpace)sources.space(), sources.itemIds());
+            final LocalSpace localSpace;
+            try {
+                localSpace = (LocalSpace)sources.space();
+            } catch (final MutableServiceCallException e) {
+                throw e.toGatewayException("Failed to upload item(s)");
+            }
+            final var opened = findDirtyOpenedWorkflows(localSpace, sources.itemIds());
             if (!opened.isEmpty()) {
                 showDirtyWorkflowsWarningToUser(opened);
                 return List.of();
             }
         }
 
+        try {
+            return performUpload(sources, destination, excludeData);
+        } catch (final MutableServiceCallException e) {
+            throw e.toGatewayException("Failed to upload item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"));
+        }
+    }
+
+    private static List<String> performUpload(final Locator.Siblings sources, final Locator.Destination destination,
+        final boolean excludeData) throws GatewayException, MutableServiceCallException {
         final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
         if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
             try {
                 return performAsyncHubUpload(sources, destination, excludeData);
             } catch (OperationNotAllowedException e) { // NOSONAR
                 // fall through to the default upload
-            } catch (Exception ex) { // NOSONAR
-                LOGGER.error("Upload error: " + ex.getMessage(), ex);
-                showErrorToast("Upload error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
-                return List.of();
             }
         }
 
@@ -270,12 +286,10 @@ final class SpaceAPI {
     }
 
     private static boolean performAsyncHubDownload(final Locator.Siblings sources,
-        final Locator.Destination destination) throws OperationNotAllowedException {
-        final TransferResult result = sources.space().downloadInto( //
-            sources.itemIds(), //
-            (LocalSpace)destination.space(), //
-            destination.itemId()//
-        );
+        final Locator.Destination destination) throws GatewayException, MutableServiceCallException {
+        final var remoteSpace = sources.space();
+        final var localSpace = (LocalSpace)destination.space();
+        final TransferResult result = remoteSpace.downloadInto(sources.itemIds(), localSpace, destination.itemId());
         if (result.errorTitleAndDescription() != null) {
             showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
                 false);
@@ -284,7 +298,9 @@ final class SpaceAPI {
     }
 
     private static List<String> performAsyncHubUpload(final Locator.Siblings sources,
-        final Locator.Destination destination, final boolean excludeData) throws OperationNotAllowedException {
+        final Locator.Destination destination, final boolean excludeData)
+        throws GatewayException, MutableServiceCallException {
+
         var uploadDeclined = !showUploadWarning(destination);
         if (uploadDeclined) {
             return List.of();
@@ -308,8 +324,11 @@ final class SpaceAPI {
         return List.of();
     }
 
-    private static boolean showUploadWarning(final Locator.Destination destination) {
-        if (destination.space().toEntity().isPrivate()) { // NOSONAR
+    private static boolean showUploadWarning(final Locator.Destination destination)
+        throws GatewayException, MutableServiceCallException {
+
+        final var remoteTargetSpace = destination.space();
+        if (remoteTargetSpace.toEntity().isPrivate().booleanValue()) {
             return true;
         }
         var contentProvider = ExplorerMountTable.getMountedContent().values().stream()
@@ -317,7 +336,7 @@ final class SpaceAPI {
         if (contentProvider.isEmpty()) {
             return false;
         }
-        var response = contentProvider.get().showUploadWarning(destination.space().getName());
+        var response = contentProvider.get().showUploadWarning(remoteTargetSpace.getName());
         return response.isOK();
     }
 
@@ -325,20 +344,14 @@ final class SpaceAPI {
         DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, title, message, autoRemove);
     }
 
-    private static List<String> itemNamesToItemIds(final Locator.Destination destination,
-        final List<String> itemNames) {
-        try {
-            var destinationWfGroup = destination.space().listWorkflowGroup(destination.itemId());
-            return destinationWfGroup.getItems().stream() //
-                .filter(item -> itemNames.stream().anyMatch(sourceName -> item.getName().equals(sourceName))) //
-                .map(item -> item.getId()) //
-                .toList();
-        } catch (IOException e) {
-            NodeLogger.getLogger(SpaceAPI.class)
-                .debug("Problem fetching hub item with id '" + destination.itemId() + "'", e);
-            return List.of();
-        }
+    private static List<String> itemNamesToItemIds(final Locator.Destination destination, final List<String> itemNames)
+        throws GatewayException, MutableServiceCallException {
 
+        var destinationWfGroup = destination.space().listWorkflowGroup(destination.itemId());
+        return destinationWfGroup.getItems().stream() //
+                .filter(item -> itemNames.stream().anyMatch(sourceName -> item.getName().equals(sourceName))) //
+                .map(SpaceItemEnt::getId) //
+                .toList();
     }
 
     @Deprecated(forRemoval = true) // this should be done by frontend in the future
@@ -367,9 +380,8 @@ final class SpaceAPI {
                 LocalSpace.LOCAL_SPACE_ID, //
                 itemId //
             );
-            var isDirty = openProjectWithId //
-                .map(Project::getID) //
-                .map(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)).orElse(false);
+            var isDirty = openProjectWithId.isPresent()
+                && Boolean.TRUE.equals(projects.getDirtyProjectsMap().get(openProjectWithId.get().getID()));
             if (isDirty) {
                 final var localDir = space.toLocalAbsolutePath(itemId).orElseThrow();
                 final var relPath = spaceRoot.relativize(localDir);
@@ -380,9 +392,10 @@ final class SpaceAPI {
     }
 
     private static boolean legacyCopyBetweenSpaces(final Siblings sources, final Locator.Destination destination,
-        final boolean excludeData) {
+        final boolean excludeData) throws GatewayException, MutableServiceCallException {
+        final var space = sources.space();
         final var sourceFileStores = sources.itemIds().stream() //
-            .map(itemId -> ExplorerMountTable.getFileSystem().getStore(sources.space().toKnimeUrl(itemId))).toList();
+            .map(itemId -> ExplorerMountTable.getFileSystem().getStore(space.toKnimeUrl(itemId))).toList();
         final var destinationFileStore =
             ExplorerMountTable.getFileSystem().getStore((destination.space().toKnimeUrl(destination.itemId())));
         return ClassicAPCopyLogic.copy( //
@@ -400,11 +413,11 @@ final class SpaceAPI {
      * Retrieves ancestor information necessary to reveal a project in the space explorer
      *
      * @return An object containing the ancestor item IDs and a boolean whether the project name has changed or not
-     * @throws IOException If the ancestors could not be retrieved
+     * @throws GatewayException If the ancestors could not be retrieved
      */
     @API
     static String getAncestorInfo(final String providerId, final String spaceId, final String itemId)
-        throws IOException {
+        throws GatewayException {
         final var space = DesktopAPI.getSpace(providerId, spaceId);
         try {
             final var ancestorItemIds = space.getAncestorItemIds(itemId);
@@ -412,15 +425,15 @@ final class SpaceAPI {
             // Explorer" and display a notification.
             final var itemName = space.getItemName(itemId);
             return buildAncestorInfo(ancestorItemIds, itemName).toString();
-        } catch (ResourceAccessException e) {
+        } catch (MutableServiceCallException e) { // NOSONAR
             // The project name may have changed on the remote side, so for an informative message, the name as
             // currently known by the application is used.
             final var projectName = DesktopAPI.getDeps(ProjectManager.class) //
-                .getProject(providerId, spaceId, itemId) //
-                .map(Project::getName) //
-                .orElse("the project");
-            throw new IOException(
-                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName), e);
+                    .getProject(providerId, spaceId, itemId) //
+                    .map(Project::getName) //
+                    .orElse("the project");
+            throw e.toGatewayException( //
+                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName));
         }
     }
 
@@ -438,16 +451,17 @@ final class SpaceAPI {
      * @param spaceProviderId provider ID of the source space
      * @param spaceId ID of the source space
      * @param itemId ID of the selected item
-     * @param queryString If non-null, appends custom query string to the url
+     * @throws GatewayException -
+     * @throws IllegalStateException
      * @throws NoSuchElementException if there is no space provider, space or item for the given id
      */
     @API
     static void openInBrowser(final String spaceProviderId, final String spaceId, final String itemId,
-        final String queryString) {
+        final String queryString) throws GatewayException {
         final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
-        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         try {
-            URIBuilder uriBuilder = new URIBuilder(sourceSpace.getItemUrl(itemId)
+            final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
+            final var uriBuilder = new URIBuilder(sourceSpace.getItemUrl(itemId)
                 .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider")));
 
             if (queryString != null && !uriBuilder.isQueryEmpty()) {
@@ -457,12 +471,14 @@ final class SpaceAPI {
             Optional.ofNullable(queryString).ifPresent(uriBuilder::setCustomQuery);
 
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(uriBuilder.build().toString(), EclipseUIAPI.class);
-        } catch (ResourceAccessException | IllegalStateException | URISyntaxException e) {
+        } catch (IllegalStateException | URISyntaxException e) {
             // In the future, this could also be handled by exception handling for desktop API calls in the frontend,
             // see NXT-2092.
             showErrorToast("Could not show item page in browser", "Check that the item still exists.", true);
             LOGGER.error("Could not open in browser", e);
             throw new IllegalStateException(e);
+        } catch (final MutableServiceCallException e) { // NOSONAR exception is being propagated
+            throw e.toGatewayException("Could not show item page in browser");
         }
     }
 
@@ -472,22 +488,20 @@ final class SpaceAPI {
      * @param spaceProviderId provider ID of the source space
      * @param spaceId ID of the source space
      * @param itemId ID of the selected item
+     * @throws GatewayException -
      * @throws NoSuchElementException if there is no space provider, space or item for the given id
      */
     @API
-    static void openAPIDefinition(final String spaceProviderId, final String spaceId, final String itemId) {
+    static void openAPIDefinition(final String spaceProviderId, final String spaceId, final String itemId)
+        throws GatewayException {
         final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
-        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         try {
+            final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
             final var url = sourceSpace.getAPIDefinitionUrl(itemId)
                 .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url.toString(), EclipseUIAPI.class);
-        } catch (ResourceAccessException e) {
-            // In the future, this could also be handled by exception handling for desktop API calls in the frontend,
-            // see NXT-2092.
-            showErrorToast("Could not show item in browser", "Check that the item still exists.", true);
-            LOGGER.error("Could not open in browser", e);
-            throw new IllegalStateException(e);
+        } catch (MutableServiceCallException e) { // NOSONAR
+            throw e.toGatewayException("Could not show item in browser");
         }
     }
 
@@ -499,13 +513,13 @@ final class SpaceAPI {
      * @param itemId
      * @param jobId
      * @return the workflow derived from the job or {@code null} if the workflow could not be saved
-     * @throws ResourceAccessException
+     * @throws GatewayException -
      * @throws NoSuchElementException if there is no job for the given ids
      */
     @API
     @SuppressWarnings({"java:S1142"})
     static String saveJobAsWorkflow(final String spaceProviderId, final String spaceId, final String itemId,
-        final String jobId, final String jobName) throws ResourceAccessException {
+        final String jobId, final String jobName) throws GatewayException {
 
         final var destination = promptDestination(jobName, spaceProviderId);
         if (destination == null) {
@@ -543,19 +557,42 @@ final class SpaceAPI {
             throw new IllegalStateException("Missing workflow name");
         }
 
-        final var groupPath = org.eclipse.core.runtime.Path.forPosix(destinationFileStore.getFullName());
-        final var workflowGroupItemId = space.getItemIdByURI(destinationFileStore.toURI()).orElseThrow();
-        final var nameCollisions =
-            NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId, Stream.of(name));
-        if (nameCollisions.isEmpty()) {
-            return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
+        String workflowGroupItemId;
+        try {
+            workflowGroupItemId = space.getItemIdByURI(destinationFileStore.toURI()).orElseThrow();
+        } catch (MutableServiceCallException e) { // NOSONAR
+            throw e.toGatewayException("Failed to save job");
         }
 
-        final AtomicReference<NameCollisionHandling> collisionHandlingStrategyRef = new AtomicReference<>();
-        Display.getDefault()
-            .syncExec(() -> NameCollisionChecker
-                .openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions, UsageContext.SAVE)
-                .ifPresent(collisionHandlingStrategyRef::set));
+        final var groupPath = IPath.forPosix(destinationFileStore.getFullName());
+        final List<String> nameCollisions;
+        try {
+            nameCollisions = NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId, Stream.of(name));
+            if (nameCollisions.isEmpty()) {
+                return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
+            }
+        } catch (final MutableServiceCallException e) { // NOSONAR exception is being propagated
+            throw e.toGatewayException("Failed to check for name collisions");
+        }
+
+        final var collisionHandlingStrategyRef = new AtomicReference<NameCollisionHandling>();
+        final var gatewayExceptionRef = new AtomicReference<GatewayException>();
+        Display.getDefault().syncExec(() -> {
+            try {
+                NameCollisionChecker
+                    .openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions, UsageContext.SAVE)
+                    .ifPresent(collisionHandlingStrategyRef::set);
+            } catch (GatewayException e) {
+                gatewayExceptionRef.set(e);
+            } catch (MutableServiceCallException e) {
+                gatewayExceptionRef.set(e.toGatewayException("Failed to determine collision handling strategy"));
+            }
+        });
+
+        if (gatewayExceptionRef.get() != null) {
+            throw gatewayExceptionRef.get();
+        }
+
         final var strategy = collisionHandlingStrategyRef.get();
         if (strategy == null) {
             // aborted
@@ -567,7 +604,17 @@ final class SpaceAPI {
         }
 
         // It is NameCollisionHandling.AUTORENAME since we got collisions, so it should not be NOOP
-        final Predicate<String> taken = testName -> space.containsItemWithName(workflowGroupItemId, testName);
+        final Predicate<String> taken = testName -> {
+            try {
+                return space.containsItemWithName(workflowGroupItemId, testName);
+            } catch (NetworkException | LoggedOutException | MutableServiceCallException e) {
+                // this is safe here because the surrounding method declared all of these exceptions
+                final GatewayException ge =
+                    e instanceof MutableServiceCallException csce
+                        ? csce.toGatewayException("Failed to check folder for collisions") : (GatewayException)e;
+                throw ExceptionUtils.asRuntimeException(ge);
+            }
+        };
         final var newName = Space.generateUniqueSpaceItemName(taken, name, true);
         return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, newName, jobId));
     }
@@ -621,9 +668,13 @@ final class SpaceAPI {
 
     @API
     static String editSchedule(final String spaceProviderId, final String spaceId, final String itemId,
-        final String scheduleId) throws ResourceAccessException {
+        final String scheduleId) throws GatewayException {
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
-        return space.editScheduleInfo(itemId, scheduleId);
+        try {
+            return space.editScheduleInfo(itemId, scheduleId);
+        } catch (MutableServiceCallException e) { // NOSONAR
+            throw e.toGatewayException("Failed to edit schedule");
+        }
     }
 
 }

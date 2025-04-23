@@ -59,10 +59,15 @@ import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.util.Pair;
 import org.knime.core.util.hub.NamedItemVersion;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceItemVersionEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -74,7 +79,6 @@ import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProgressReporter;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.explorer.ExplorerMountTable;
-import org.knime.workbench.explorer.RemoteWorkflowInput;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 /**
@@ -99,39 +103,41 @@ final class OpenProject {
      * @param spaceId The ID of the space the item is located in
      * @param itemId The ID of the item to open
      * @param spaceProviderId The ID of the space provider
+     * @throws ServiceCallException
+     * @throws LoggedOutException
+     * @throws NetworkException
      * @throws OpenProjectException Specific exception thrown when a project failed to open
      */
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
-        throws IOException {
+        throws OpenProjectException, NetworkException, LoggedOutException, ServiceCallException {
         var spaceProviders = DesktopAPI.getSpaceProviders();
 
-        final Space space;
-        try {
-            space = spaceProviders.getSpace(spaceProviderId, spaceId);
-        } catch (NoSuchElementException e) {
-            throw new OpenProjectException("The space could not be accessed.", e);
-        }
-
+        Space space;
         final ProjectTypeEnum projectType;
         try {
+            space = spaceProviders.getSpace(spaceProviderId, spaceId);
             projectType = space.getProjectType(itemId).orElseThrow(
                 () -> new OpenProjectException("The item is not a valid project.", new IllegalArgumentException(
                     "The item for id " + itemId + " is neither a workflow- nor a component-project")));
         } catch (NoSuchElementException e) {
             throw new OpenProjectException("The project could not be found.", e);
+        } catch (MutableServiceCallException e) {
+            throw e.toGatewayException("Failed to open project");
         }
 
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);
-        var project = projectManager //
-            .getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType) //
-            .orElseGet(() -> {
-                final var origin = new Origin(spaceProviderId, spaceId, itemId, projectType);
-                return CreateProject.createProjectFromOrigin( //
-                    origin, //
-                    DesktopAPI.getDeps(ProgressReporter.class), //
-                    DesktopAPI.getSpaceProviders() //
-                );
-            });
+
+        final var optProject = projectManager //
+            .getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType);
+
+        final Project project;
+        if (optProject.isPresent()) {
+            project = optProject.get();
+        } else {
+            final var origin = new Origin(spaceProviderId, spaceId, itemId, projectType);
+            project = CreateProject.createProjectFromOrigin(origin, DesktopAPI.getDeps(ProgressReporter.class), space);
+        }
+
         // already trigger loading of wfm here because we want to abort and not register the project if this fails
         var loadedWfm = project.getFromCacheOrLoadWorkflowManager(VersionId.currentState());
         if (loadedWfm.isEmpty()) {
@@ -162,8 +168,11 @@ final class OpenProject {
      * @param repoObjectImport The source of the project
      * @param selectedVersion The version information of the given import, can be {@code null}
      * @return Whether the project could be fetched and opened
+     * @throws GatewayException
      */
-    static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion) {
+    static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion)
+         {
+
         final var wfm = loadWorkflowWithProgress(repoObjectImport);
         if (wfm == null) {
             return false;
@@ -239,8 +248,10 @@ final class OpenProject {
     /**
      * Registers the project with the {@link ProjectManager}, sets it as active, adds it to the most recently used and
      * updates the app state.
+     * @throws GatewayException
      */
     static void registerProjectAndSetActive(final Project project, final SpaceProviderEnt.TypeEnum providerType) {
+
         var pm = DesktopAPI.getDeps(ProjectManager.class);
         pm.addProject(project);
         pm.setProjectActive(project.getID());
@@ -257,12 +268,15 @@ final class OpenProject {
     }
 
     private static WorkflowManager loadWorkflowWithProgress(final RepoObjectImport repoObjectImport) {
+
         final var fileStore =
             (RemoteExplorerFileStore)ExplorerMountTable.getFileSystem().getStore(repoObjectImport.getKnimeURI());
         var locationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
-        return DesktopAPUtil.downloadWorkflowWithProgress(fileStore, locationInfo) //
-            .map(RemoteWorkflowInput::getWorkflowContext) //
-            .flatMap(DesktopAPUtil::loadWorkflowManagerWithProgress) //
-            .orElse(null);
+        final var remoteInput = DesktopAPUtil.downloadWorkflowWithProgress(fileStore, locationInfo);
+        if (remoteInput.isEmpty()) {
+            return null;
+        }
+
+        return DesktopAPUtil.loadWorkflowManagerWithProgress(remoteInput.get().getWorkflowContext()).orElse(null);
     }
 }

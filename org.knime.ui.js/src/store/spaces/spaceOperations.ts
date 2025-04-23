@@ -82,19 +82,20 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
             retry: false,
           });
         } else {
-          consola.error("Error trying to fetch workflow group content", {
-            error: dataFetchError,
-          });
-          throw new Error("Error trying to fetch workflow group content", {
-            cause: dataFetchError,
-          });
+          throw dataFetchError;
         }
       } finally {
         this.setIsLoadingContent(false);
       }
     },
 
-    async fetchWorkflowGroupContent({ projectId }: { projectId: string }) {
+    async fetchWorkflowGroupContent({
+      projectId,
+      retry = true,
+    }: {
+      projectId: string;
+      retry?: boolean;
+    }) {
       const pathTriplet = useSpaceCachingStore().projectPath[projectId];
       if (!pathTriplet) {
         return [];
@@ -106,6 +107,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         spaceId,
         spaceProviderId,
         itemId,
+        retry,
       });
 
       useSpaceCachingStore().setWorkflowGroupContent({ projectId, content });
@@ -278,7 +280,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         .catch((error) => {
           this.setIsLoadingContent(false);
           consola.error("Error while creating folder", { error });
-          throw new Error("Error while creating folder", { cause: error });
+          throw error;
         });
 
       // Clears loading, might also throw but we let the exception bubble up

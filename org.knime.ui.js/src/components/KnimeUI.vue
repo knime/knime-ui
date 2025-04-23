@@ -167,13 +167,13 @@ const setup = async () => {
   const spaceProviders = Object.values(
     spaceProvidersStore.spaceProviders ?? {},
   );
-  const { failedProviderNames } =
+  const { failedProviders } =
     await spaceProvidersStore.fetchSpaceGroupsForProviders(spaceProviders);
 
-  if (failedProviderNames.length > 0) {
+  if (failedProviders.length > 0) {
     const { toastPresets } = getToastPresets();
     toastPresets.spaces.crud.fetchProviderSpaceGroupsFailed({
-      failedProviderNames,
+      failedProviders,
     });
   }
 };

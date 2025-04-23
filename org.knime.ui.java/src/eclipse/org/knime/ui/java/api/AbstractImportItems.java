@@ -49,7 +49,6 @@
 package org.knime.ui.java.api;
 
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,6 +59,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.FileDialog;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -76,7 +78,8 @@ abstract class AbstractImportItems {
     /**
      * @return the ids of the imported items or {@code null} if the import failed
      */
-    String[] importItems(final Space space, final String itemId) throws IOException {
+    String[] importItems(final Space space, final String itemId)
+        throws NetworkException, LoggedOutException, ServiceCallException {
         // Get file paths of files to import
         var dialog = getFileDialog();
         var pathString = dialog.open();
@@ -95,7 +98,10 @@ abstract class AbstractImportItems {
 
         // Attempt to import files
         var importedSpaceItems = DesktopAPUtil.runWithProgress(itemId, LOGGER, //
-                monitor -> importItems(monitor, space, itemId, srcPaths, collisionHandling)) //
+            monitor -> {
+                // TODO NXT-3938 React to workflow load exceptions
+                return importItems(monitor, space, itemId, srcPaths, collisionHandling);
+            }) //
             .orElse(Collections.emptyList());
 
         if (importedSpaceItems.size() < fileNames.length) {
@@ -120,10 +126,10 @@ abstract class AbstractImportItems {
      *
      * @return Can be one of {@link NameCollisionHandling}, or an empty optional if no collision handling strategy is
      *         provided
-     * @throws IOException In case some files could not be read
      */
     protected abstract Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(Space space,
-        final String workflowGroupItemId, final List<Path> srcPaths) throws IOException;
+        final String workflowGroupItemId, final List<Path> srcPaths)
+        throws NetworkException, LoggedOutException, ServiceCallException;
 
     /**
      * Shows a warning if the import was not complete.

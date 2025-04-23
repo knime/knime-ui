@@ -51,6 +51,9 @@ import java.util.Objects;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 
 /**
@@ -113,7 +116,8 @@ final class Locator {
             }
         }
 
-        org.knime.gateway.impl.webui.spaces.Space space();
+        org.knime.gateway.impl.webui.spaces.Space space()
+            throws NetworkException, LoggedOutException, MutableServiceCallException;
 
         SpaceProvider provider();
 
@@ -150,9 +154,13 @@ final class Locator {
         /**
          * @return The {@link org.knime.gateway.impl.webui.spaces.Space} instance (requires
          *         {@link org.knime.gateway.impl.webui.spaces.SpaceProviders} dependency).
+         * @throws LoggedOutException
+         * @throws NetworkException
+         * @throws MutableServiceCallException
          */
         @Override
-        public org.knime.gateway.impl.webui.spaces.Space space() {
+        public org.knime.gateway.impl.webui.spaces.Space space()
+            throws NetworkException, LoggedOutException, MutableServiceCallException {
             return this.provider().getSpace(this.spaceId());
         }
 

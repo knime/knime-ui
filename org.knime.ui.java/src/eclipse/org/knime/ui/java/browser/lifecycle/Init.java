@@ -69,7 +69,12 @@ import org.knime.core.util.auth.CouldNotAuthorizeException;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
@@ -89,7 +94,9 @@ import org.knime.gateway.impl.webui.repo.NodeRepository;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
+import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
@@ -101,6 +108,7 @@ import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.js.cef.wizardnodeview.CEFWizardNodeView;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.api.SaveAndCloseProjects.State;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
@@ -125,6 +133,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 final class Init {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(Init.class);
+
     private Init() {
         //
     }
@@ -142,13 +152,19 @@ final class Init {
         } else {
             // NOSONAR TODO NXT-3607: explicitly create new instance of ProjectManager here
             projectManager = ProjectManager.getInstance();
+            final var spaceProviders = spaceProvidersManager.getSpaceProviders(SpaceProvidersManager.Key.defaultKey());
             state.loadedApplicationState().openProjectsToRestore().forEach(projectToRestore -> {
-                var project = CreateProject.createProjectFromOrigin(projectToRestore.origin(), progressReporter, //
-                    spaceProvidersManager.getSpaceProviders(SpaceProvidersManager.Key.defaultKey()) //
-                );
-                projectManager.addProject(project);
-                if (projectToRestore.isActive()) {
-                    projectManager.setProjectActive(project.getID());
+                try {
+                    final var origin = projectToRestore.origin();
+                    final Space space = getSpace(spaceProviders, origin);
+                    final var project = CreateProject.createProjectFromOrigin(origin, progressReporter, space);
+                    projectManager.addProject(project);
+                    if (projectToRestore.isActive()) {
+                        projectManager.setProjectActive(project.getID());
+                    }
+                } catch (NetworkException | LoggedOutException | ServiceCallException e) {
+                    LOGGER.error("Could not restore projects from state", e);
+                    // TODO NXT-3938 react to workflow load exceptions
                 }
             });
         }
@@ -215,7 +231,7 @@ final class Init {
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
 
             @Override
-            public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
+            public Supplier<State> getSaveAndCloseAllProjectsFunction() {
                 return () -> SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectManager.getProjectIds());
             }
 
@@ -240,6 +256,15 @@ final class Init {
             }
         };
 
+    }
+
+    private static Space getSpace(final SpaceProviders spaceProviders, final Origin origin)
+        throws NetworkException, LoggedOutException, ServiceCallException {
+        try {
+            return spaceProviders.getSpace(origin.providerId(), origin.spaceId());
+        } catch (final MutableServiceCallException e) { // NOSONAR
+            throw e.toGatewayException("Failed to load space");
+        }
     }
 
     private static SelectionEventBus createSelectionEventBus(final EventConsumer eventConsumer) {
@@ -498,7 +523,7 @@ final class Init {
                     mutableRequest.getHeaderMap().put("Authorization", connection.getAuthorization());
                     mutableRequest.getHeaderMap().replace("Origin", spaceProvider.getServerAddress().orElseThrow());
                 } catch (CouldNotAuthorizeException e) {
-                    NodeLogger.getLogger(Init.class).error("Could not authorize request.", e);
+                    LOGGER.error("Could not authorize request.", e);
                 }
             });
     }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addLeadingZero, formatTime } from "@/util/time";
+import { addLeadingZero, formatTime, isValidDate } from "@/util/date-time";
 
 describe("time", () => {
   it("correctly formats time from milliseconds", () => {
@@ -13,5 +13,17 @@ describe("time", () => {
 
   it("adds 0 if number of is smaller than 10", () => {
     expect(addLeadingZero(5)).toBe("05");
+  });
+});
+
+describe("date", () => {
+  it("checks whether date is valid", () => {
+    const date1 = new Date("2025-08-12").toISOString();
+    const date2 = "2025/08/12";
+    const date3 = "foo bar";
+
+    expect(isValidDate(date1)).toBe(true);
+    expect(isValidDate(date2)).toBe(true);
+    expect(isValidDate(date3)).toBe(false);
   });
 });

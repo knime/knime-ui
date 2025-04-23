@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -84,6 +83,7 @@ import org.knime.core.util.urlresolve.KnimeUrlResolver;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.IdAndPath;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
 import org.knime.core.util.urlresolve.URLResolverUtil;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
@@ -119,7 +119,7 @@ final class ManipulateComponents {
         // Stateless
     }
 
-    static boolean openLinkComponentDialog(final SubNodeContainer component) throws OperationNotAllowedException {
+    static boolean openLinkComponentDialog(final SubNodeContainer component) throws GatewayException {
         assertLinkedComponent(component, false);
 
         final var validMountPoints = getAllValidMountPoint(ExplorerMountTable.getMountedContent());
@@ -136,15 +136,18 @@ final class ManipulateComponents {
     }
 
     static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, ServiceCallException {
+        throws GatewayException {
         assertLinkedComponent(component, true);
 
         final var templateInfo = component.getTemplateInformation();
         final var sourceURI = templateInfo.getSourceURI();
         final var optLinkVariant = KnimeUrlVariant.getVariant(sourceURI);
         if (optLinkVariant.isEmpty()) {
-            throw new OperationNotAllowedException(
-                "Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.");
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Not a KNIME URL") //
+                .withDetails("Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.") //
+                .canCopy(true) //
+                .build();
         }
 
         final var linkVariant = optLinkVariant.get();
@@ -198,17 +201,19 @@ final class ManipulateComponents {
 
     /**
      * This will not be callable from the FE until NXT-2038 is solved.
+     * @throws GatewayException
      */
     static void openChangeComponentHubItemVersionDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, ServiceCallException {
+        throws GatewayException {
         assertLinkedComponent(component, true);
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
         if (queryHubInfo(srcUri).isEmpty()) {
-            throw new OperationNotAllowedException("""
-                    Changing item version is not possible, since the source of this component is not located on a
-                    mountpoint that supports item versioning.
-                    """);
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Cannot change Hub item version") //
+                .withDetails("This component is not located on a mountpoint that supports item versioning.")
+                .canCopy(false) //
+                .build();
         }
 
         final var shell = SWTUtilities.getActiveShell();
@@ -245,7 +250,12 @@ final class ManipulateComponents {
         throws OperationNotAllowedException {
         final BiPredicate<Role, Role> predicate = (left, right) -> isLinked ? (left == right) : (left != right);
         if (!predicate.test(component.getTemplateInformation().getRole(), Role.Link)) {
-            throw new OperationNotAllowedException("The component is " + (isLinked ? "not " : "") + "linked.");
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Component in unexpected state") //
+                .withDetails(
+                    "The component %s is %slinked.".formatted(component.getNameWithID(), isLinked ? "not " : "")) //
+                .canCopy(false) //
+                .build();
         }
     }
 
@@ -261,7 +271,11 @@ final class ManipulateComponents {
 
         if (list.isEmpty()) {
             // Hard to imagine when this would happen, since `LOCAL` is always an option
-            throw new OperationNotAllowedException("None of your spaces can host shared components.");
+            throw OperationNotAllowedException.builder() //
+                .withTitle("No valid mountpoint found") //
+                .withDetails("None of your spaces can host shared components.") //
+                .canCopy(false) //
+                .build();
         }
 
         return list.toArray(new String[0]);
@@ -276,11 +290,11 @@ final class ManipulateComponents {
         if (isIncludeInputData) {
             //fetch input data
             final var optData = DesktopAPUtil.runWithProgress("Executing upstream nodes ...", LOGGER, mon -> {
+                // since 5.5, the "fetchInputDataFromParent" method is not executing the workflow anymore
                 try {
-                    // since 5.5, the "fetchInputDataFromParent" method is not executing the workflow anymore
                     component.getParent().executePredecessorsAndWait(component.getID());
-                } catch (InterruptedException e) { // NOSONAR: cancellation is handled
-                    throw new InvocationTargetException(e, "Execution aborted");
+                } catch (InterruptedException e) {// NOSONAR: cancellation is handled
+                    return null;
                 }
                 return component.fetchInputDataFromParent();
             });

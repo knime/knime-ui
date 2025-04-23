@@ -56,12 +56,10 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.util.CoreUtil.ContainerType;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.workbench.editor2.actions.LockMetaNodeDialog;
@@ -92,7 +90,8 @@ final class ComponentAPI {
      */
     @API
     static boolean openLinkComponentDialog(final String projectId, final String rootWorkflowId, final String nodeId)
-        throws OperationNotAllowedException {
+        throws GatewayException {
+
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         return ManipulateComponents.openLinkComponentDialog(component);
     }
@@ -104,15 +103,12 @@ final class ComponentAPI {
      * @param rootWorkflowId
      * @param nodeId
      *
-     * @throws OperationNotAllowedException
-     * @throws NotASubWorkflowException
-     * @throws NodeNotFoundException
-     * @throws ServiceCallException
+     * @throws GatewayException
      */
     @API
     static void openChangeComponentLinkTypeDialog(final String projectId, final String rootWorkflowId,
-        final String nodeId)
-        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException, ServiceCallException {
+        final String nodeId) throws GatewayException {
+
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentLinkTypeDialog(component, wfKey);
@@ -125,15 +121,12 @@ final class ComponentAPI {
      * @param rootWorkflowId
      * @param nodeId
      *
-     * @throws OperationNotAllowedException
-     * @throws NotASubWorkflowException
-     * @throws NodeNotFoundException
-     * @throws ServiceCallException
+     * @throws GatewayException
      */
     @API
     static void openChangeComponentHubItemVersionDialog(final String projectId, final String rootWorkflowId,
-        final String nodeId)
-        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException, ServiceCallException {
+        final String nodeId) throws GatewayException {
+
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentHubItemVersionDialog(component, wfKey);
@@ -148,10 +141,14 @@ final class ComponentAPI {
      * @throws OperationNotAllowedException
      */
     @API
-    static void openLockSubnodeDialog(final String projectId, final String nodeId) throws OperationNotAllowedException {
+    static void openLockSubnodeDialog(final String projectId, final String nodeId) throws GatewayException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         final var containerTypeAndWfm = CoreUtil.getTypeAndContainedWfm(nc).orElseThrow(
-            () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
+            () -> OperationNotAllowedException.builder() //
+                .withTitle("Failed to open dialog") //
+                .withDetails("Not a component nor a metanode: " + nc.getNameWithID()) //
+                .canCopy(false) //
+                .build());
         final var containerType = containerTypeAndWfm.getFirst();
         final var wfm = containerTypeAndWfm.getSecond();
 
@@ -186,25 +183,36 @@ final class ComponentAPI {
      * @throws OperationNotAllowedException
      */
     @API
-    static boolean unlockSubnode(final String projectId, final String nodeId) throws OperationNotAllowedException {
+    static boolean unlockSubnode(final String projectId, final String nodeId) throws GatewayException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         return CoreUtil.getTypeAndContainedWfm(nc)
             .map(containerTypeAndWfm -> containerTypeAndWfm.getSecond()
                 .unlock(new GUIWorkflowCipherPrompt(containerTypeAndWfm.getFirst() == ContainerType.COMPONENT)))
-            .orElseThrow(
-                () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
+            .orElseThrow(() -> OperationNotAllowedException.builder() //
+                .withTitle("Failed to unlock") //
+                .withDetails("Not a component nor a metanode: " + nc.getNameWithID()) //
+                .canCopy(false) //
+                .build());
     }
 
     private static SubNodeContainer assertIsWritableAndGetComponent(final String projectId, final String nodeId)
-        throws OperationNotAllowedException {
+        throws GatewayException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         final var wfm = nc.getParent();
         if (wfm.isWriteProtected()) {
-            throw new OperationNotAllowedException("Container is read-only.");
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Operation not allowed") //
+                .withDetails("Container is read-only: " + nc.getNameWithID()) //
+                .canCopy(false) //
+                .build();
         }
 
         if (!(nc instanceof SubNodeContainer)) {
-            throw new OperationNotAllowedException("Not a component: " + nodeId);
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Operation not allowed") //
+                .withDetails("Not a component: " + nc.getNameWithID()) //
+                .canCopy(false) //
+                .build();
         }
         return (SubNodeContainer)nc;
     }
