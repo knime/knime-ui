@@ -431,10 +431,17 @@ describe("workflow store: versions", () => {
       });
     });
 
-    it("restoreVersion", async () => {
-      const { workflowVersionsStore, dirtyProjectsTrackingStore } =
-        await setupStore();
+    it("restoreVersion restores version to a clean and unversioned current-state project", async () => {
+      const {
+        workflowVersionsStore,
+        dirtyProjectsTrackingStore,
+        applicationStore,
+      } = await setupStore();
       dirtyProjectsTrackingStore.dirtyProjectsMap = { [projectId]: true };
+      applicationStore.setVersionOfActiveProject({
+        title: "someTitle",
+        version,
+      });
 
       await workflowVersionsStore.restoreVersion(1);
 
@@ -463,6 +470,7 @@ describe("workflow store: versions", () => {
         force: true,
       });
       expect(dirtyProjectsTrackingStore.isDirtyActiveProject).toBeFalsy();
+      expect(applicationStore.activeProjectOrigin?.version).toBeUndefined();
     });
 
     describe("switchVersion", () => {

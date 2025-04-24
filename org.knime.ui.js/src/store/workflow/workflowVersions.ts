@@ -275,6 +275,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     useDirtyProjectsTrackingStore().updateDirtyProjectsMap({
       [activeProjectId]: false,
     });
+    // the project which has been restored is not a version anymore, previously set version needs to be unset
+    setVersionOfActiveProject(CURRENT_STATE_VERSION, activeProjectId);
   }
 
   // TODO: NXT-3458 this workaround to persist the selected version in the frontend
