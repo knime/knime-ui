@@ -432,7 +432,9 @@ describe("workflow store: versions", () => {
     });
 
     it("restoreVersion", async () => {
-      const { workflowVersionsStore } = await setupStore();
+      const { workflowVersionsStore, dirtyProjectsTrackingStore } =
+        await setupStore();
+      dirtyProjectsTrackingStore.dirtyProjectsMap = { [projectId]: true };
 
       await workflowVersionsStore.restoreVersion(1);
 
@@ -460,6 +462,7 @@ describe("workflow store: versions", () => {
         },
         force: true,
       });
+      expect(dirtyProjectsTrackingStore.isDirtyActiveProject).toBeFalsy();
     });
 
     describe("switchVersion", () => {

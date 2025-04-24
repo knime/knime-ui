@@ -226,7 +226,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     const { show: showConfirmDialog } = useConfirmDialog();
     const { confirmed } = await showConfirmDialog({
       title: "Confirm version restore",
-      message: "Restoring a version will overwrite the current workflow.",
+      message:
+        "Restoring a version will overwrite the current workflow. Unversioned changes will be lost.",
       buttons: [
         { type: "cancel", label: "Cancel" },
         { type: "confirm", label: "Confirm", flushRight: true },
@@ -268,6 +269,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         version: null,
       },
       force: true,
+    });
+
+    // any unsaved changes before the restore have been overwritten, so the project is clean
+    useDirtyProjectsTrackingStore().updateDirtyProjectsMap({
+      [activeProjectId]: false,
     });
   }
 
