@@ -223,6 +223,19 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   }
 
   async function restoreVersion(version: NamedItemVersion["version"]) {
+    const { show: showConfirmDialog } = useConfirmDialog();
+    const { confirmed } = await showConfirmDialog({
+      title: "Confirm version restore",
+      message: "Restoring a version will overwrite the current workflow.",
+      buttons: [
+        { type: "cancel", label: "Cancel" },
+        { type: "confirm", label: "Confirm", flushRight: true },
+      ],
+    });
+    if (!confirmed) {
+      return;
+    }
+
     const { activeProjectId, activeProjectOrigin } = useApplicationStore();
     const { activeProjectProvider } = useSpaceProvidersStore();
     if (!activeProjectId || !activeProjectProvider || !activeProjectOrigin) {
