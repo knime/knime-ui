@@ -57,33 +57,38 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <InputField
-    v-if="isInputFieldShown"
-    ref="inputField"
-    v-bind="$attrs"
-    :model-value="modelValue"
-    :placeholder="placeholder"
-    class="search-button-input"
-    spellcheck="false"
-    :maxlength="$characterLimits.searchFields"
-    @keydown.esc="toggleInput"
-    @update:model-value="$emit('update:modelValue', $event)"
-  />
-  <FunctionButton
-    class="search-button"
-    :data-test-id="dataTestId"
-    :active="isInputFieldShown"
-    @click="toggleInput"
-  >
-    <LensIcon />
-  </FunctionButton>
+  <div class="search-button-wrapper">
+    <InputField
+      v-if="isInputFieldShown"
+      ref="inputField"
+      :model-value="modelValue"
+      :placeholder="placeholder"
+      class="search-button-input"
+      spellcheck="false"
+      :maxlength="$characterLimits.searchFields"
+      @keydown.esc="toggleInput"
+      @update:model-value="$emit('update:modelValue', $event)"
+    />
+    <FunctionButton
+      class="search-button"
+      :data-test-id="dataTestId"
+      :active="isInputFieldShown"
+      @click="toggleInput"
+    >
+      <LensIcon />
+    </FunctionButton>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
-.search-button-input {
-  height: 30px;
-  margin-right: 5px;
-  min-width: 120px;
-  max-width: 350px;
+.search-button-wrapper {
+  display: flex;
+  background: var(--search-button-background, transparent);
+
+  & .search-button-input {
+    height: 30px;
+    margin-right: 5px;
+    width: 240px;
+  }
 }
 </style>
