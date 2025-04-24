@@ -26,7 +26,7 @@ export class OperationNotAllowedException extends KnownGatewayException {}
 export class IOException extends KnownGatewayException {}
 export class CollisionException extends KnownGatewayException {}
 
-function isKnownGatewayException(e: unknown): e is { message: string, data: string } {
+function isKnownGatewayException(e: unknown): e is { message: string, data: { code: KnownExecutorExceptions} } {
     return (
         e !== null &&
 	    typeof e === "object" &&
@@ -34,8 +34,11 @@ function isKnownGatewayException(e: unknown): e is { message: string, data: stri
 	    typeof e.code === "number" &&
 	    e.code === -32600 &&
 	    "data" in e &&
-	    typeof e.data === "string" &&
-	    (KNOWN_EXECUTOR_EXCEPTIONS as ReadonlyArray<string>).includes(e.data)
+	    typeof e.data === "object" &&
+        e.data !== null &&
+        "code" in e.data &&
+        typeof e.data.code === "string" &&
+	    (KNOWN_EXECUTOR_EXCEPTIONS as ReadonlyArray<string>).includes(e.data.code)
     );
 }
 
@@ -66,7 +69,7 @@ const exceptionClassMapping = {
 
 export function mapToExceptionClass(e: unknown) {
     if (isKnownGatewayException(e)) {
-        return new exceptionClassMapping[e.data](e);
+        return new exceptionClassMapping[e.data.code](e);
     } else if (isUnknownGatewayException(e)) {
         return new UnknownGatewayException(e);
     } else {
