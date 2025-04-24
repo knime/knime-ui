@@ -289,6 +289,8 @@ export default defineComponent({
           :model-value="filterQuery"
           placeholder="Filter current level"
           @update:model-value="$emit('update:filterQuery', $event)"
+          data-test-id="space-filter-btn"
+          class="search-button-mini"
         />
         <FunctionButton class="reload-button" @click="reload">
           <ReloadIcon />
@@ -327,15 +329,13 @@ export default defineComponent({
   & .toolbar-actions-mini {
     display: flex;
     gap: var(--space-4);
+    position: relative;
 
-    /* the position root (relative) is the .sidebar-header */
-
-    & :deep(.search-button-input) {
-      --theme-input-field-background-color-focus: var(--knime-stone-light);
+    & .search-button-mini {
+      --search-button-background: var(--sidebar-background-color);
 
       position: absolute;
-      left: 0;
-      right: 100px;
+      right: 68px;
     }
 
     /* Aligning text in the submenu */
