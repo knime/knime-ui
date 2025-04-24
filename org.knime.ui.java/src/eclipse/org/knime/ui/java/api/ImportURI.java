@@ -132,8 +132,8 @@ public final class ImportURI {
      *
      * @param cursorLocationSupplier
      * @param uriString the URI to import from
-     * @return {@code true} if the import was successful or no operation was performed (e.g. an extension is already
-     *         installed), {@code false} otherwise
+     * @return {@code true} if the passed URI represents an object that can be imported (node, extension, workflow),
+     *         {@code false} otherwise
      */
     public static boolean importURI(final Supplier<int[]> cursorLocationSupplier, final String uriString) {
         var importResult = getEntityImportResult(uriString);
@@ -154,13 +154,26 @@ public final class ImportURI {
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
             var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
             var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
-            Display.getDefault().asyncExec(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion));
+            asyncExec(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion));
             return true;
         } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
-            return checkAndInstallExtension(extensionImport);
+            asyncExec(() -> checkAndInstallExtension(extensionImport));
         } else {
-            var cursorLocation = cursorLocationSupplier.get();
-            return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
+            asyncExec(() -> {
+                var cursorLocation = cursorLocationSupplier.get();
+                sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
+            });
+        }
+        return true;
+    }
+
+    static boolean useDisplayThread = true;
+
+    private static void asyncExec(final Runnable runnable) {
+        if (useDisplayThread) {
+            Display.getDefault().asyncExec(runnable);
+        } else {
+            runnable.run();
         }
     }
 
@@ -237,13 +250,12 @@ public final class ImportURI {
         }
     }
 
-    private static boolean checkAndInstallExtension(final ExtensionImport extensionImport) {
+    private static void checkAndInstallExtension(final ExtensionImport extensionImport) {
         final var symbolicName = extensionImport.getSymbolicName();
         final var featureName = extensionImport.getName();
         if (isFeatureInstalled(symbolicName)) {
             showPopup("Extension cannot be installed!", "Extension " + featureName + " is already installed",
                 SWT.ICON_INFORMATION);
-            return true; // Changed from false with AP-20962 to not open the extension page in a browser again
         } else {
             final String[] dialogButtonLabels = {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
             MessageDialog dialog = new MessageDialog(SWTUtilities.getActiveShell(), "Install Extension?", null,
@@ -252,9 +264,7 @@ public final class ImportURI {
             if ((dialog.open() == 0) && AbstractP2Action.checkSDKAndReadOnly()) {
                 //try installing the missing extension
                 startInstallationJob(featureName, symbolicName, extensionImport.getUpdateSiteInfo());
-                return true;
             }
-            return false;
         }
     }
 
@@ -265,12 +275,11 @@ public final class ImportURI {
         mb.open();
     }
 
-    private static boolean sendImportURIEvent(final int x, final int y) {
+    private static void sendImportURIEvent(final int x, final int y) {
         var event = MAPPER.createObjectNode();
         event.put("x", x);
         event.put("y", y);
         DesktopAPI.getDeps(EventConsumer.class).accept("ImportURIEvent", event);
-        return true;
     }
 
     /**

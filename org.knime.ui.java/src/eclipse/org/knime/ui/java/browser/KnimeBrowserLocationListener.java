@@ -97,7 +97,7 @@ public class KnimeBrowserLocationListener implements LocationListener {
 
     private static Supplier<int[]> createCursorLocationSupplier(final Browser browser) {
         return () -> {
-            var display = Display.getCurrent();
+            var display = Display.getDefault();
             var displayCursorLocation = display.getCursorLocation();
             var browserCursorLocation = display.map(null, browser, displayCursorLocation);
             return new int[]{browserCursorLocation.x, browserCursorLocation.y};
