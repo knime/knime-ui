@@ -13,3 +13,9 @@ test("inactive ports: render correctly", async ({ page }) => {
     workflowFixturePath: "ports/getWorkflow-inactive-ports.json",
   });
 });
+
+test("metanode port traffic lights render correctly", async ({ page }) => {
+  await testSimpleScreenshot(page, {
+    workflowFixturePath: "ports/getWorkflow-metanode-port-traffic-lights.json",
+  });
+});

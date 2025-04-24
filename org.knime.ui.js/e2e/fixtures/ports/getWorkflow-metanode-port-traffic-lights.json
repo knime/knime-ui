@@ -1,0 +1,389 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "0",
+    "workflow": {
+      "dirty": false,
+      "allowedActions": {
+        "canExecute": true,
+        "canCancel": false,
+        "canUndo": false,
+        "canRedo": false,
+        "canReset": true
+      },
+      "nodes": {
+        "root:19": {
+          "name": "Metanode",
+          "id": "root:19",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canExpand": "true",
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:19_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Connected to: Second partition",
+              "index": 0,
+              "connectedVia": ["root:4_2"],
+              "portContentVersion": 1539214008,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "nodeState": "CONFIGURED"
+            },
+            {
+              "name": "Connected to: Decision Tree Model",
+              "index": 1,
+              "connectedVia": ["root:4_1"],
+              "portContentVersion": 1063926464,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.pmml.PMMLPortObject",
+              "nodeState": "CONFIGURED"
+            }
+          ],
+          "position": {
+            "x": 475,
+            "y": 478
+          }
+        },
+        "root:4": {
+          "annotation": {
+            "text": {
+              "value": "Apply decision \r\ntree model\r\nto test set",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": [],
+            "defaultFontSize": 9
+          },
+          "id": "root:4",
+          "state": {
+            "executionState": "CONFIGURED"
+          },
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canOpenView": false,
+            "canDelete": true,
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.mine.decisiontree2.predictor2.DecTreePredictorNodeFactory",
+          "dialogType": "swing",
+          "kind": "node",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Decision Tree Model",
+              "index": 1,
+              "connectedVia": ["root:4_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.port.pmml.PMMLPortObject"
+            },
+            {
+              "name": "Data to classify",
+              "index": 2,
+              "connectedVia": ["root:4_2"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -575230117,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Classified Data",
+              "index": 1,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "position": {
+            "x": 565,
+            "y": 480
+          }
+        },
+        "root:17": {
+          "id": "root:17",
+          "state": {
+            "executionState": "EXECUTED"
+          },
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": true,
+            "canCollapse": "resetRequired",
+            "canReset": true
+          },
+          "templateId": "org.knime.base.node.util.sampledata.SampleDataNodeFactory",
+          "dialogType": "swing",
+          "kind": "node",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -575230117,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "info": "Variables connection"
+            },
+            {
+              "name": "Random data with cluster ID",
+              "index": 1,
+              "connectedVia": ["root:16_0"],
+              "portContentVersion": 126547553,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "info": "Rows: 5400, Cols: 5"
+            },
+            {
+              "name": "Cluster centers",
+              "index": 2,
+              "connectedVia": [],
+              "portContentVersion": 660514423,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "info": "Rows: 4, Cols: 4"
+            }
+          ],
+          "position": {
+            "x": 393,
+            "y": 563
+          }
+        },
+        "root:18": {
+          "id": "root:18",
+          "state": {
+            "executionState": "CONFIGURED"
+          },
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.io.tablecreator.TableCreator2NodeFactory",
+          "dialogType": "swing",
+          "kind": "node",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -575230117,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Manually created table",
+              "index": 1,
+              "connectedVia": ["root:19_0"],
+              "portContentVersion": 1539214008,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "position": {
+            "x": 395,
+            "y": 478
+          }
+        },
+        "root:16": {
+          "name": "Metanode",
+          "id": "root:16",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": true,
+            "canExpand": "resetRequired",
+            "canCollapse": "resetRequired",
+            "canReset": true
+          },
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:16_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Connected to: Second partition",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 2005398167,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "nodeState": "EXECUTED",
+              "info": "Rows: 1080, Cols: 5"
+            },
+            {
+              "name": "Connected to: Decision Tree Model",
+              "index": 1,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.pmml.PMMLPortObject",
+              "nodeState": "IDLE"
+            }
+          ],
+          "position": {
+            "x": 477,
+            "y": 564
+          }
+        }
+      },
+      "workflowAnnotations": [],
+      "metadata": {
+        "metadataType": "project",
+        "lastEdit": "2023-07-13T10:45:02.608+03:00",
+        "tags": ["model training", "classification", "training", "testing"],
+        "description": {
+          "value": "From adult data set (census data) predict income group from demographic attributes.",
+          "contentType": "text/plain"
+        },
+        "links": [
+          {
+            "text": "KNIME's Learning page",
+            "url": "https://www.knime.com/learning"
+          }
+        ]
+      },
+      "connections": {
+        "root:19_0": {
+          "id": "root:19_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:19",
+          "sourceNode": "root:18",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:16_0": {
+          "id": "root:16_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:16",
+          "sourceNode": "root:17",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:4_2": {
+          "id": "root:4_2",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:4",
+          "sourceNode": "root:19",
+          "destPort": 2,
+          "sourcePort": 0
+        },
+        "root:4_1": {
+          "id": "root:4_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:4",
+          "sourceNode": "root:19",
+          "destPort": 1,
+          "sourcePort": 1
+        }
+      },
+      "nodeTemplates": {
+        "org.knime.base.node.io.tablecreator.TableCreator2NodeFactory": {
+          "name": "Table Creator",
+          "type": "Source",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NUU3RjlDREM4MjM0MTFFNUIwNzZBNjc5RjFCMTFDMjgiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NUU3RjlDREI4MjM0MTFFNUIwNzZBNjc5RjFCMTFDMjgiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpERDBGMTM4NjJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpERDBGMTM4NzJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PlCVz2UAAAAMUExURQAAAP///xoXG////z/w6+gAAAAEdFJOU////wBAKqn0AAAALElEQVR42mJggANmMGBgYGSEIpwCA6OFGQmABFEFmFAEUHRiFcDQAhEACDAAyxQBw9A1CLMAAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.base.node.io.tablecreator.TableCreator2NodeFactory"
+          }
+        },
+        "org.knime.base.node.util.sampledata.SampleDataNodeFactory": {
+          "name": "Data Generator",
+          "type": "Source",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MkRBMkI1RTE4QTIyMTFFNTkyQzJBQjlCNTFCMUUyMzIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MkRBMkI1RTA4QTIyMTFFNTkyQzJBQjlCNTFCMUUyMzIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpBM0VBMDE1RTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpCQTI5MjQyMjJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pp5Rd2EAAAE8SURBVHjaYmSAAu8WJ242btZ2ZhYmRyZWZn6Q2L/ffz/+/fNv/6+vvyu31uz7ChL7//8/AzJgBBF+HS7qrJwsW0SU+FVYedlQFPz+/Ivhzb2Pd35//+OzqWLPTQwDQDZz8LJdkNQRUWFgZmTACv7+Z3h+5c2dH59/GWyp3vsVWYoJ5GyQzTg1gwBQDqQGpBZdigXkZ2Rnf335neHSottgtl6cKgO3OCeYDVIDUotpACsTP7IASPPzM2/gfMtSPYRD0NSCvcBAIWD5+/vfRyAtCxMAORsbGxyWELVoBgDjGRhVOrBwAPkZ2dnI0QlSi+EFUCIBxTMoqnACoBxIDUgthgGgFAZKJKB4BtmCzWawHFANSC0jI+N/KGYAY1KTMig1I6diRvSkiQuAbMUmTnk0kqCWEZsXKHYBQIABAPVenM3vr81YAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.util.sampledata.SampleDataNodeFactory"
+          }
+        },
+        "org.knime.base.node.mine.decisiontree2.predictor2.DecTreePredictorNodeFactory": {
+          "name": "Decision Tree Predictor",
+          "type": "Predictor",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NTNFRDUyQUQ4NEE1MTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NTNFRDUyQUM4NEE1MTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoxM0I0QUVGRDM4NEExMUU1OTk3MThDMzA3QzdERDI0QyIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoxM0I0QUVGRTM4NEExMUU1OTk3MThDMzA3QzdERDI0QyIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqFfWUMAAAGzSURBVHjaYmJAAjKS0v+V5OWvSolLyzOggv9QjAGYkDn//jEwKKiwarGyMd6XlpBeDDSIhYEAYEIXKG8SZSiuFWMUFmWJ4eRk/go0JJ0kA0DAyJyTYdICaYbASD42oGtmyMtIM7CysCJ75QMMM+EymYWFkSEggp9hykIZBjMbHgZJcXEGMWFRBiYmsBZ+GGYi5EdBYWaG/EoRhvoeCQZFFV4GeVnpv0BvNcLkGZEVAyX+z18nx8DNg93c/0DH793+mWHJ7PfgAH/67BUDQRcgA0agdS5evAzdM6QYgGHDICoswsBCigEgF+wDumAx1AWv374BG/CBGM03r/1kmDXhHcOrF7///vzxr+XZy6cN4MCGhiZO8P7tX4ZFs94znDz8FeSJ3X/+/AsCav4Cjy2E8/4zSkvIwJPrnz//Gbas+cSweskHUEj/ff7yJfPvP7/dMKIbm63nTn5nmDP5LcPXz/9//f71Pw9oYyZQWB9rwMIyCcwFGjqcDHdv/fj/5/f/pcBASwRq/gOUvgA1gBGvC0CJ7MGd39eAtnoBNT4kJnBRDHjy/Ckj/mj8D0wLqEoAAgwACfqfX1Qyyo8AAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.base.node.mine.decisiontree2.predictor2.DecTreePredictorNodeFactory"
+          }
+        }
+      },
+      "info": {
+        "name": "metanode_port_lights",
+        "containerId": "root",
+        "providerType": "HUB",
+        "containerType": "project"
+      }
+    }
+  }
+}
