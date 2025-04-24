@@ -181,9 +181,50 @@ final class SpaceAPI {
 
     private static Optional<NameCollisionHandling> determineNameCollisionHandling(final Space space,
         final Object[] itemIds, final String destWorkflowGroupItemId, final UsageContext context) {
-        final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
+        final var nameCollisions = checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
+        if (nameCollisions == null) {
+            // source is a parent of the destination -> abort
+            return Optional.empty();
+        }
         return nameCollisions.isEmpty() ? Optional.of(Space.NameCollisionHandling.NOOP) : NameCollisionChecker //
             .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions, context);
+    }
+
+    private static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
+        final Object[] itemIds) {
+        var res = new ArrayList<String>();
+        for (var itemId : itemIds) {
+            var itemName = space.getItemName(itemId.toString());
+            var destItemId = space.getItemIdForName(destWorkflowGroupItemId, itemName).orElse(null);
+            if (destItemId != null) {
+                if (isDestinationContainingSource(space, itemId.toString(), destItemId, itemName)) {
+                    return null;
+                }
+                res.add(itemName);
+            }
+        }
+        return res;
+    }
+
+    private static boolean isDestinationContainingSource(final Space space, final String sourceItemId,
+        final String destinationItemId, final String itemName) {
+        try {
+            var anchestorItemIds = space.getAncestorItemIds(sourceItemId);
+            if (anchestorItemIds.contains(destinationItemId)) {
+                DesktopAPI.getDeps(ToastService.class).showToast(
+                    org.knime.gateway.api.webui.entity.ShowToastEventEnt.TypeEnum.ERROR, "Can't copy or move item(s)",
+                    "The item with name '%s' can't overwrite itself. I.e. the destination item is a parent of the source item."
+                        .formatted(itemName),
+                    false);
+                return true;
+            }
+        } catch (ResourceAccessException ex) {
+            DesktopAPI.getDeps(ToastService.class).showToast(
+                org.knime.gateway.api.webui.entity.ShowToastEventEnt.TypeEnum.ERROR, "Can't copy or move item(s)",
+                "A problem occurred while checking for collisions".formatted(itemName), false);
+            return true;
+        }
+        return false;
     }
 
     /**

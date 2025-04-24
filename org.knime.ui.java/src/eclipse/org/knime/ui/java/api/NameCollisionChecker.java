@@ -51,7 +51,6 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -94,21 +93,6 @@ final class NameCollisionChecker {
      * @return List of already existing names
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
-            final Object[] itemIds) {
-        return checkForNameCollisions(space, destWorkflowGroupItemId, Arrays.stream(itemIds) //
-            .map(String.class::cast) //
-            .map(space::getItemName));
-    }
-
-    /**
-     * Checks for name collisions before something is written to the destination workflow group.
-     *
-     * @param space surrounding space
-     * @param destWorkflowGroupItemId The destination workflow group ID
-     * @param itemIds The list of source item IDs
-     * @return List of already existing names
-     */
-    static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
             final Stream<String> itemNames) {
         return itemNames //
             .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName)) //
@@ -117,7 +101,7 @@ final class NameCollisionChecker {
 
     /**
      * Check for name collisions
-     * 
+     *
      * @param space The space to check in
      * @param destinationItemId The item ID of the workflow group to check in
      * @param itemIds The new item ids to check whether they collide with anything already present
