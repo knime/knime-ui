@@ -121,6 +121,7 @@ vi.mock("vue-router", async (importOriginal) => ({
 const mockedAPI = deepMocked(API);
 
 const version = 1;
+const projectId = "someMockProjectId";
 
 describe("workflow store: versions", () => {
   beforeEach(() => {
@@ -132,7 +133,6 @@ describe("workflow store: versions", () => {
     const { workflowVersionsStore, applicationStore, spaceProvidersStore } =
       stores;
 
-    const projectId = "someMockProjectId";
     const providerId = "mockProviderId";
 
     spaceProvidersStore.setSpaceProviders({
@@ -428,6 +428,37 @@ describe("workflow store: versions", () => {
         query: {
           version: null,
         },
+      });
+    });
+
+    it("restoreVersion", async () => {
+      const { workflowVersionsStore } = await setupStore();
+
+      await workflowVersionsStore.restoreVersion(1);
+
+      expect(mockedVersionsApi.restoreVersion).toHaveBeenCalledWith({
+        itemId: "mockItemId",
+        version: 1,
+      });
+      expect(mockedAPI.workflow.disposeVersion).toHaveBeenCalledWith({
+        projectId,
+        version: CURRENT_STATE_VERSION,
+      });
+      expect(mockedVersionsApi.fetchItemSavepoints).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          itemId: "mockItemId",
+        }),
+      );
+      expect(mockedVersionsApi.loadSavepointMetadata).toHaveBeenCalledTimes(
+        mockSavepoints.length,
+      );
+      expect(useRouter().push).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId },
+        query: {
+          version: null,
+        },
+        force: true,
       });
     });
 
