@@ -63,6 +63,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.Pair;
+import org.knime.core.util.exception.ResourceAccessException;
+import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
+import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 
@@ -128,6 +131,43 @@ final class NameCollisionChecker {
                 checkForNameCollisionInDir(space, srcPath.getFileName().toString(), destWorkflowGroupItemId))//
             .flatMap(Optional::stream)//
             .collect(Collectors.toList());
+    }
+
+    static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,
+        final Object[] itemIds) {
+        var res = new ArrayList<String>();
+        for (var itemId : itemIds) {
+            var itemName = space.getItemName(itemId.toString());
+            var destItemId = space.getItemIdForName(destWorkflowGroupItemId, itemName).orElse(null);
+            if (destItemId != null) {
+                if (isDestinationContainingSource(space, itemId.toString(), destItemId, itemName)) {
+                    return null;
+                }
+                res.add(itemName);
+            }
+        }
+        return res;
+    }
+
+    private static boolean isDestinationContainingSource(final Space space, final String sourceItemId,
+        final String destinationItemId, final String itemName) {
+        try {
+            var anchestorItemIds = space.getAncestorItemIds(sourceItemId);
+            if (anchestorItemIds.contains(destinationItemId)) {
+                DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR,
+                    "Can't copy or move item(s)",
+                    "The item with name '%s' can't overwrite itself. I.e. the destination item is a parent of the source item."
+                        .formatted(itemName),
+                    false);
+                return true;
+            }
+        } catch (ResourceAccessException ex) {
+            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR,
+                "Can't copy or move item(s)", "A problem occurred while checking for collisions".formatted(itemName),
+                false);
+            return true;
+        }
+        return false;
     }
 
     /**
