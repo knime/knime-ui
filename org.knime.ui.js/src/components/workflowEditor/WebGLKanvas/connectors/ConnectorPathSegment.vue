@@ -150,17 +150,16 @@ useAnimatePixiContainer({
   animateOut: true,
 });
 
-useAnimatePixiContainer({
-  targetDisplayObject: pathSegment,
-  changeTracker: computed(() => props.isHighlighted),
-  initialValue: $shapes.connectorWidth,
-  targetValue: $shapes.highlightedConnectorWidth,
-  animationParams: { duration: 0.1, ease: "easeIn" },
-  onUpdate: (value) => {
-    if (!props.isSelected) {
-      renderConnector(pathSegment.value!, bezier.value, value);
-    }
-  },
+const strokeWidth = computed(() => {
+  if (props.isHighlighted) {
+    return $shapes.highlightedConnectorWidth;
+  }
+
+  if (props.isSelected) {
+    return $shapes.selectedConnectorWidth;
+  }
+
+  return $shapes.connectorWidth;
 });
 
 const suggestShiftX = -12;
@@ -176,10 +175,6 @@ watch(suggestDelete, (shouldAnimate) => {
     props.segment.end.y + suggestShiftY,
   );
 
-  const currentWidth = props.isSelected
-    ? $shapes.selectedConnectorWidth
-    : $shapes.connectorWidth;
-
   if (shouldAnimate) {
     replacementAnimation = animate(
       normalBezier.end,
@@ -193,14 +188,14 @@ watch(suggestDelete, (shouldAnimate) => {
             return;
           }
 
-          renderConnector(pathSegment.value!, normalBezier, currentWidth);
+          renderConnector(pathSegment.value!, normalBezier, strokeWidth.value);
         },
       },
     );
   } else {
     replacementAnimation?.stop();
     replacementAnimation = undefined;
-    renderConnector(pathSegment.value!, normalBezier, currentWidth);
+    renderConnector(pathSegment.value!, normalBezier, strokeWidth.value);
   }
 });
 </script>
@@ -217,13 +212,7 @@ watch(suggestDelete, (shouldAnimate) => {
     <Graphics
       ref="pathSegment"
       event-mode="none"
-      @render="
-        renderConnector(
-          $event,
-          bezier,
-          isSelected ? $shapes.selectedConnectorWidth : $shapes.connectorWidth,
-        )
-      "
+      @render="renderConnector($event, bezier, strokeWidth)"
     />
 
     <ConnectorBendpoint
