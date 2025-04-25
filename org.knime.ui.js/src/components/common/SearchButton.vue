@@ -84,7 +84,7 @@ onUnmounted(() => {
   & .search-button-input {
     height: 30px;
     margin-right: 5px;
-    width: 240px;
+    width: 225px;
   }
 }
 </style>
