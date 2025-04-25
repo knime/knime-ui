@@ -5,7 +5,6 @@ import type { NodePortGroups } from "@/api/custom-types";
 import {
   Node,
   type NodePort as NodePortType,
-  type XY,
 } from "@/api/gateway-api/generated-api";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $shapes from "@/style/shapes";
@@ -20,7 +19,6 @@ import NodePort from "./NodePort.vue";
 
 interface Props {
   nodeId: string;
-  anchor: XY;
   isEditable: boolean;
   nodeKind: Node.KindEnum;
   inPorts: NodePortType[];
@@ -109,7 +107,7 @@ const addPort = async ({
 </script>
 
 <template>
-  <Container ref="ports" :position="anchor" label="NodePorts">
+  <Container ref="ports" label="NodePorts">
     <NodePort
       v-for="port of inPorts"
       :key="`in-${port.index}`"

@@ -74,15 +74,14 @@ const { isWritable } = storeToRefs(useWorkflowStore());
 const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
 
-const positionWithDelta = computed(() => ({
-  x: props.position.x + movePreviewDelta.value.x,
-  y: props.position.y + movePreviewDelta.value.y,
-}));
-
 const translatedPosition = computed(() => {
-  return isNodeSelected.value(props.node.id)
-    ? positionWithDelta.value
-    : props.position;
+  if (selectionStore.isNodeSelected(props.node.id)) {
+    return {
+      x: props.position.x + movePreviewDelta.value.x,
+      y: props.position.y + movePreviewDelta.value.y,
+    };
+  }
+  return { x: props.position.x, y: props.position.y };
 });
 
 const isEditable = computed(() => {
@@ -148,12 +147,10 @@ const renderable = computed(
 );
 
 const nodeNamePosition = computed(() => {
-  const { x, y } = translatedPosition.value;
-
   return {
-    x: x + $shapes.nodeSize / 2,
+    x: $shapes.nodeSize / 2,
     // leave space between name and torso for the flowvariable ports
-    y: y - $shapes.portSize,
+    y: -$shapes.portSize,
   };
 });
 
@@ -249,11 +246,8 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
 
 const actionBarPosition = computed(() => {
   return {
-    x: translatedPosition.value.x + $shapes.nodeSize / 2,
-    y:
-      translatedPosition.value.y +
-      nodeSelectionMeasures.value.y +
-      $shapes.webGlNodeActionBarYOffset,
+    x: $shapes.nodeSize / 2,
+    y: nodeSelectionMeasures.value.y + $shapes.webGlNodeActionBarYOffset,
   };
 });
 
@@ -306,6 +300,7 @@ const nodeLabelPosition = computed(() => {
     :layer="isNodeSelected(node.id) ? canvasLayers.selectedNodes : null"
     event-mode="static"
     :alpha="floatingConnector && isConnectionForbidden ? 0.7 : 1"
+    :position="translatedPosition"
     @rightclick="onRightClick"
     @pointerenter="onNodeHoverAreaPointerEnter"
     @pointermove="onNodeHoverAreaPointerMove"
@@ -315,7 +310,6 @@ const nodeLabelPosition = computed(() => {
     <Graphics
       label="NodeHoverArea"
       :hit-area="nodeHitArea"
-      :position="translatedPosition"
       @render="renderHoverArea"
     />
 
@@ -329,6 +323,7 @@ const nodeLabelPosition = computed(() => {
     />
 
     <NodeName
+      v-if="renderable"
       :node-id="node.id"
       :name="shortenedNodeName"
       :is-editable="isMetanode || isComponent"
@@ -336,7 +331,7 @@ const nodeLabelPosition = computed(() => {
       :metrics="nodeNameDimensions"
     />
 
-    <Container label="NodeTorsoContainer" :position="translatedPosition">
+    <Container label="NodeTorsoContainer">
       <NodeTorso
         v-if="renderable"
         label="NodeTorso"
@@ -365,7 +360,6 @@ const nodeLabelPosition = computed(() => {
       v-if="renderable"
       :node-id="node.id"
       :node-kind="node.kind"
-      :anchor="translatedPosition"
       :in-ports="node.inPorts"
       :out-ports="node.outPorts"
       :is-editable="isEditable"
@@ -375,6 +369,7 @@ const nodeLabelPosition = computed(() => {
   </Container>
 
   <NodeLabel
+    v-if="renderable"
     :node-id="node.id"
     :label="node.annotation?.text.value"
     :position="nodeLabelPosition"
