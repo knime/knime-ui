@@ -1,30 +1,10 @@
 /* eslint-disable no-undefined */
 import { expect } from "@playwright/test";
-import { Application, Container, ContainerChild } from "pixi.js";
+import { Container, ContainerChild } from "pixi.js";
 import { Page } from "playwright-core";
 
 import { mockWebsocket } from "./mockWebsocket";
-
-export type WorkflowCommandFnMock = (payload: any) => {
-  matcher: () => boolean;
-  response: () => any;
-};
-
-type StartApplicationHelperOptions = {
-  workflowFixturePath: string;
-  withMouseCursor?: boolean;
-  waitForRender?: boolean;
-  workflowCommandFn?: WorkflowCommandFnMock;
-};
-
-export type CustomWindow = typeof window & {
-  __PIXI_APP__: Application;
-  __PERF_FPS_MEASUREMENT__?: {
-    start: DOMHighResTimeStamp;
-    frameCount: number;
-    countFrames: () => void;
-  };
-};
+import { CustomWindow, StartApplicationHelperOptions } from "./types";
 
 export const startApplication = async (
   page: Page,
@@ -35,6 +15,7 @@ export const startApplication = async (
     waitForRender = true,
     withMouseCursor = false,
     workflowCommandFn,
+    workflowUndoCommand,
   } = options;
 
   if (withMouseCursor) {
@@ -43,7 +24,11 @@ export const startApplication = async (
     });
   }
 
-  await mockWebsocket(page, { workflowFixturePath, workflowCommandFn });
+  await mockWebsocket(page, {
+    workflowFixturePath,
+    workflowCommandFn,
+    workflowUndoCommand,
+  });
   await page.goto("/");
 
   if (waitForRender) {

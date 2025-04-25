@@ -6,6 +6,8 @@ import process from "node:process";
 
 import { type Page } from "playwright-core";
 
+import { MockWebsocketOptions } from "./types";
+
 const parseJSONFile = (path: string) =>
   JSON.parse(fs.readFileSync(path, "utf-8"));
 
@@ -22,15 +24,10 @@ const getSnapshotId = (() => {
 
 export const mockWebsocket = async (
   page: Page,
-  options: {
-    workflowFixturePath: string;
-    workflowCommandFn?: (payload: any) => {
-      matcher: () => boolean;
-      response: () => any;
-    };
-  },
+  options: MockWebsocketOptions,
 ) => {
-  const { workflowFixturePath, workflowCommandFn } = options;
+  const { workflowFixturePath, workflowCommandFn, workflowUndoCommand } =
+    options;
   const websocketUrl =
     process.env.VITE_BROWSER_DEV_WS_URL ?? "ws://localhost:7000"; // eslint-disable-line n/no-process-env
 
@@ -75,6 +72,40 @@ export const mockWebsocket = async (
           return;
         }
 
+        case "WorkflowService.undoWorkflowCommand": {
+          console.log("WorkflowService.undoWorkflowCommand");
+          if (!workflowUndoCommand) {
+            return;
+          }
+
+          const { response } = workflowUndoCommand.fn(
+            messageObject,
+            workflowUndoCommand.data,
+          );
+          const id = getSnapshotId();
+
+          console.log("undo wf command", response());
+
+          // resolve command itself
+          ws.send(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: messageObject.id,
+              result: null,
+              snapshotId: id,
+            }),
+          );
+
+          // send server event associated to this command
+          ws.send(
+            JSON.stringify({
+              ...response(),
+              snapshotId: id,
+            }),
+          );
+          return;
+        }
+
         case "WorkflowService.executeWorkflowCommand": {
           if (!workflowCommandFn) {
             return;
@@ -114,6 +145,9 @@ export const mockWebsocket = async (
         }
 
         default: {
+          console.warn(
+            `mockWebsocket.ts: no handling of '${messageObject.method}'`,
+          );
           answer({});
         }
       }

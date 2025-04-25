@@ -9,11 +9,14 @@ import {
   startApplication,
   testSimpleScreenshot,
 } from "../utils";
+import { WorkflowCommandFnMock, WorkflowUndoCommandMock } from "../utils/types";
 
 import {
   changeLabelCommand,
   changeNameCommand,
 } from "./workflowCommandMocks/node-name-and-label";
+import { nodeTranslate } from "./workflowCommandMocks/node-translate";
+import { undoNodePosition } from "./workflowUndoCommandMock/node-undo";
 
 const IDS = {
   node1: "root:1",
@@ -35,10 +38,16 @@ const getNodePosition = async (
   return [kanvasBox!.x + torso.x, kanvasBox!.y + torso.y];
 };
 
-const startForPointerInteractions = (page: Page) =>
+const startForPointerInteractions = (
+  page: Page,
+  workflowCommandFn?: WorkflowCommandFnMock,
+  workflowUndoCommand?: WorkflowUndoCommandMock,
+) =>
   startApplication(page, {
     workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
     withMouseCursor: true,
+    workflowCommandFn,
+    workflowUndoCommand,
   });
 
 test.describe("selection", () => {
@@ -214,6 +223,37 @@ test.describe("dragging", () => {
     await page.keyboard.down("Shift");
     await page.mouse.down();
     await page.mouse.move(n2x + 100, n2y + 100);
+    await assertSnapshot(page);
+  });
+
+  test("undo node position", async ({ page }) => {
+    const nodeId = IDS.node1;
+
+    await startForPointerInteractions(page, nodeTranslate, {
+      fn: undoNodePosition,
+      data: { nodeId },
+    });
+
+    const [n1x, n1y] = await getNodePosition(page, nodeId);
+
+    // first select node
+    await page.mouse.click(n1x, n1y);
+
+    // then move node
+    await page.mouse.down();
+    // keep this in sync with e2e/behavior/workflowCommandMocks/node-translate.ts
+    await page.mouse.move(n1x + 100, n1y - 100);
+    await page.mouse.up();
+
+    // deselect node by click on empty kanvas
+    const kanvas = await getKanvasBoundingBox(page);
+    await page.mouse.click(kanvas!.x + 5, kanvas!.y + 5);
+    await assertSnapshot(page);
+
+    // execute undo
+    await page.keyboard.press("ControlOrMeta+Z");
+    await page.waitForTimeout(500);
+
     await assertSnapshot(page);
   });
 });
