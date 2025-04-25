@@ -85,8 +85,6 @@ public final class MostRecentlyUsedProjects {
     }
 
     /**
-     * -
-     * 
      * @param localSpace The local space instance to listen to
      */
     public MostRecentlyUsedProjects(final LocalSpace localSpace) {

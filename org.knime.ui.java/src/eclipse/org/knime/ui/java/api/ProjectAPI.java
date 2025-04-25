@@ -66,6 +66,7 @@ import java.util.stream.Collector;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.workflow.NodeTimer;
@@ -82,6 +83,7 @@ import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.ExampleProjects;
+import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.workbench.ui.wrapper.WrappedNodeDialog;
 
@@ -243,9 +245,10 @@ final class ProjectAPI {
      * @return json-serialized list of the recently used projects with the most recently used one at the bottom
      */
     @API
-    static String getMostRecentlyUsedProjects() {
+    static String updateAndGetMostRecentlyUsedProjects() {
         var mruProjects = DesktopAPI.getDeps(MostRecentlyUsedProjects.class);
         var localSpace = DesktopAPI.getDeps(LocalSpace.class);
+        mruProjects.removeIf(p -> wasRemovedFromLocalSpace(p.origin(), localSpace));
         return reverseList(mruProjects.get()).stream() //
             .map(p -> MAPPER.createObjectNode() //
                 .put("name", p.name()) //
@@ -257,7 +260,20 @@ final class ProjectAPI {
                     .put("projectType", p.origin().projectType().orElse(ProjectTypeEnum.WORKFLOW).toString()) //
                     .set("ancestorItemIds", createAncestorItemIds(p.origin(), localSpace)) //
                 )) //
-            .collect(arrayNodeCollector()).toPrettyString();
+            .collect(arrayNodeCollector()) //
+            .toPrettyString();
+    }
+
+    private static boolean wasRemovedFromLocalSpace(final Origin origin, final LocalSpace localSpace) {
+        if (LocalSpaceUtil.isLocalSpace(origin.providerId(), origin.spaceId())) {
+            try {
+                return localSpace.toLocalAbsolutePath(null, origin.itemId()).isEmpty();
+            } catch (CanceledExecutionException ex) { // NOSONAR: We don't care about this exception
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**

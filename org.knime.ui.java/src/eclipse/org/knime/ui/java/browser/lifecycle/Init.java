@@ -174,26 +174,39 @@ final class Init {
         }
 
         // "Inject" the service dependencies
-        ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
-                eventConsumer, spaceProvidersManager, updateStateProvider, preferenceProvider,
-                createNodeFactoryProvider(), kaiHandler, codeKaiHandler, nodeCollections, nodeRepository,
-                nodeCategoryExtensions, selectionEventBus);
-        DesktopAPI.injectDependencies( //
+        ServiceDependencies.setDefaultServiceDependencies( //
             projectManager, //
+            workflowMiddleware, //
             appStateUpdater, //
+            eventConsumer, //
             spaceProvidersManager, //
             updateStateProvider, //
-            eventConsumer, //
+            nodeRepository, //
+            preferenceProvider, //
+            createNodeFactoryProvider(), //
+            kaiHandler, //
+            codeKaiHandler, //
+            nodeCollections, //
+
+            nodeCategoryExtensions, //
+            selectionEventBus);
+        DesktopAPI.injectDependencies( //
+            projectManager, //
             workflowMiddleware, //
+            appStateUpdater, //
+            eventConsumer, //
+            spaceProvidersManager, //
+            updateStateProvider, //
+            nodeRepository, //
+            state.getMostRecentlyUsedProjects(), //
             toastService, //
-                nodeRepository, //
-            mostRecentlyUsedProjects, //
-            state.getLocalSpace(), //
+            localSpace, //
             state.getWelcomeApEndpoint(), //
             createExampleProjects(), //
             state.getUserProfile(), //
             progressReporter //
         );
+
         // Register listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
         registerPreferenceListeners(appStateUpdater, spaceProvidersManager, nodeCollections, nodeRepository);

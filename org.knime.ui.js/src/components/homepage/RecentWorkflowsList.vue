@@ -57,7 +57,8 @@ const toFileExplorerItem = (
 });
 
 const getRecentWorkflows = async () => {
-  const recentWorkflows = await API.desktop.getMostRecentlyUsedProjects();
+  const recentWorkflows =
+    await API.desktop.updateAndGetMostRecentlyUsedProjects();
 
   items.value = recentWorkflows.map(toFileExplorerItem);
 };

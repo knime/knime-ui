@@ -793,11 +793,11 @@ export const setConfirmNodeConfigChangesPreference = (value: boolean) => {
   );
 };
 
-export const getMostRecentlyUsedProjects = async (): Promise<
+export const updateAndGetMostRecentlyUsedProjects = async (): Promise<
   RecentWorkflow[]
 > => {
   const response = await callBrowserFunction(
-    window.getMostRecentlyUsedProjects,
+    window.updateAndGetMostRecentlyUsedProjects,
     [],
     "Failed to fetch most recently used projects",
     true,

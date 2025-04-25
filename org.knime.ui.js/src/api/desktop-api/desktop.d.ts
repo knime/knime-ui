@@ -197,7 +197,7 @@ declare function setZoomLevel(zoomLevel: number): void;
 
 declare function setConfirmNodeConfigChangesPreference(value: boolean): void;
 
-declare function getMostRecentlyUsedProjects(): string;
+declare function updateAndGetMostRecentlyUsedProjects(): string;
 
 declare function removeMostRecentlyUsedProject(
   spaceProviderId: string,

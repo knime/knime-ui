@@ -103,7 +103,7 @@ class ProjectAPITest {
     }
 
     @Test
-    void testGetMostRecentlyUsedProjects() throws IOException {
+    void testUpdateAndGetMostRecentlyUsedProjects() throws IOException {
         var mruProjects = new MostRecentlyUsedProjects();
         var localSpace = LocalSpaceUtilTest.createLocalSpace();
         var proj1 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
@@ -115,7 +115,7 @@ class ProjectAPITest {
         DesktopAPI.injectDependency(mruProjects);
         DesktopAPI.injectDependency(localSpace);
 
-        var res = ProjectAPI.getMostRecentlyUsedProjects();
+        var res = ProjectAPI.updateAndGetMostRecentlyUsedProjects();
         assertThat(res).isEqualTo(String.format("""
                 [ {
                   "name" : "name3",

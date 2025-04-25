@@ -224,15 +224,15 @@ public final class DesktopAPI {
     /**
      * Initializes the desktop API with dependencies for some desktop API functions.
      *
-     * @param workflowProjectManager
+     * @param projectManager
+     * @param workflowMiddleware
      * @param appStateUpdater
+     * @param eventConsumer
      * @param spaceProvidersManager
      * @param updateStateProvider optional, can be {@code null}
-     * @param eventConsumer
-     * @param workflowMiddleware
-     * @param toastService
      * @param nodeRepo
      * @param mruProjects
+     * @param toastService
      * @param localSpace
      * @param welcomeAPEndpoint
      * @param exampleProjects
@@ -240,18 +240,26 @@ public final class DesktopAPI {
      * @param progressReporter
      * @throws IllegalStateException if the dependencies have been already injected
      */
-    @SuppressWarnings({"java:S107", "JavadocDeclaration", "javadoc"}) // parameter count
-    public static void injectDependencies(final ProjectManager workflowProjectManager,
-        final AppStateUpdater appStateUpdater, final SpaceProvidersManager spaceProvidersManager,
-        final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
-        final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
-        final MostRecentlyUsedProjects mruProjects, final LocalSpace localSpace,
-        final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects, final UserProfile userProfile,
+    @SuppressWarnings({"java:S107", "JavadocDeclaration", "javadoc"}) // Parameter count
+    public static void injectDependencies( //
+        final ProjectManager projectManager, //
+        final WorkflowMiddleware workflowMiddleware, //
+        final AppStateUpdater appStateUpdater, //
+        final EventConsumer eventConsumer, //
+        final SpaceProvidersManager spaceProvidersManager, //
+        final UpdateStateProvider updateStateProvider, //
+        final NodeRepository nodeRepo, //
+        final MostRecentlyUsedProjects mruProjects, //
+        final ToastService toastService, //
+        final LocalSpace localSpace, //
+        final WelcomeAPEndpoint welcomeAPEndpoint, //
+        final ExampleProjects exampleProjects, //
+        final UserProfile userProfile,
         final ProgressReporter progressReporter) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
-        injectDependency(workflowProjectManager);
+        injectDependency(projectManager);
         injectDependency(appStateUpdater);
         injectDependency(spaceProvidersManager);
         injectDependency(eventConsumer);
