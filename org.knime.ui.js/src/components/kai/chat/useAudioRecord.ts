@@ -1,4 +1,3 @@
-
 import { type Ref, computed, nextTick, ref } from "vue";
 
 export const useAudioRecorder = (textInput: Ref<string>) => {
@@ -90,7 +89,7 @@ export const useAudioRecorder = (textInput: Ref<string>) => {
   };
 
   return {
-    busy : computed(() => isRecording.value || isRecordingProcessing.value),
+    busy: computed(() => isRecording.value || isRecordingProcessing.value),
     isRecording,
     elapsedTime,
     audioBlob,

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { useSpeechRecognition, useTextareaAutosize } from "@vueuse/core";
+import { computed, onMounted, watch } from "vue";
+import { useTextareaAutosize } from "@vueuse/core";
 
-import { FunctionButton, SkeletonItem } from "@knime/components";
+import { FunctionButton } from "@knime/components";
 import AbortIcon from "@knime/styles/img/icons/close.svg";
 import MicrophoneIcon from "@knime/styles/img/icons/microphone.svg";
 import SendIcon from "@knime/styles/img/icons/paper-flier.svg";
 
-import { useAudioRecorder } from "@/components/kai/chat/useAudioRecord.ts";
+import { useAudioRecorder } from "@/components/kai/chat/useAudioRecord";
 
 const emit = defineEmits(["sendMessage", "abort"]);
 
@@ -94,7 +94,6 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
     }"
     @click="handleClick"
   >
-
     <div class="input-container">
       <textarea
         ref="textarea"
@@ -104,11 +103,10 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
         :maxlength="$characterLimits.kai"
         :placeholder="placeholder"
         :disabled="busy"
-        style="position: relative;"
+        style="position: relative"
         @keydown="handleKeyDown"
       />
     </div>
-
 
     <div class="button-group">
       <FunctionButton
@@ -165,9 +163,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   cursor: text;
 
   &.busy {
-
-      background-color: var(--knime-gray-ultra-light);
-
+    background-color: var(--knime-gray-ultra-light);
   }
 
   & .textarea {
@@ -203,7 +199,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   }
 
   .recording {
-    background-color: #ff4444;
+    background-color: #f44;
 
     & svg {
       stroke: white;
