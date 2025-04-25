@@ -57,6 +57,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +69,10 @@ import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 
@@ -84,7 +88,7 @@ public class AppStatePersistorTest {
             {
               "version" : "%s",
               "projects" : [ {
-                "name" : "Test Project",
+                "name" : "relPath",
                 "active" : false,
                 "origin" : {
                   "providerId" : "%s",
@@ -174,7 +178,13 @@ public class AppStatePersistorTest {
 
         pm.getProjectIds().forEach(pm::removeProject);
 
-        AppStatePersistor.loadAppState(m_space);
+        var spaceProvider = new LocalSpaceProvider(m_space);
+        var spaceProvidersManager = new SpaceProvidersManager(null, null, null, spaceProvider, List.of());
+        spaceProvidersManager.update();
+        AppStatePersistor.loadAppState(m_space).openProjectsToRestore()
+            .forEach(p -> pm.addProject(
+                CreateProject.createProjectFromOrigin(p.origin(), new ProgressReporter.NullProgressReporter(),
+                    spaceProvidersManager.getSpaceProviders(Key.defaultKey()))));
         var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
         assertThat(appStateStringNew).as("Assert the valid app state was saved and loaded").isEqualTo(appStateString);
     }
@@ -221,7 +231,7 @@ public class AppStatePersistorTest {
 
         var loadedMRUProjects = new MostRecentlyUsedProjects();
         var localSpace = m_space;
-        AppStatePersistor.loadAppState(localSpace);
+        AppStatePersistor.loadAppState(localSpace).recentlyUsedProjects().forEach(loadedMRUProjects::add);
         assertThat(loadedMRUProjects.get()).hasSize(2);
         var loadedProj1 = loadedMRUProjects.get().get(0);
         assertThat(loadedProj1.name()).isEqualTo("name1");
@@ -256,7 +266,7 @@ public class AppStatePersistorTest {
         var spaceId = isLocal ? LocalSpace.LOCAL_SPACE_ID : "other space id";
         var origin = new Origin(providerId, spaceId, itemId);
 
-        var project = Project.builder().setWfmLoaderProvidingOnlyCurrentState(() -> null).setName("Test Project").setId("test_id")
+        var project = Project.builder().setWfmLoaderProvidingOnlyCurrentState(() -> null).setName("relPath").setId("test_id")
             .setOrigin(origin).build();
         pm.addProject(project);
     }
