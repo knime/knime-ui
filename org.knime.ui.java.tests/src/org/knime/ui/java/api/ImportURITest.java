@@ -120,10 +120,11 @@ class ImportURITest {
                 .setOrigin(new Origin("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW)) //
                 .setId(projectId) //
                 .build();
-            ProjectManager.getInstance().addProject(project);
-            ProjectManager.getInstance().setProjectActive(projectId);
-            ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
-                new WorkflowMiddleware(ProjectManager.getInstance(), null));
+            var pm = ProjectManager.getInstance();
+            pm.addProject(project);
+            pm.setProjectActive(projectId);
+            ServiceDependencies.setServiceDependency(WorkflowMiddleware.class, new WorkflowMiddleware(pm, null));
+            ServiceDependencies.setServiceDependency(ProjectManager.class, pm);
             var nodeFactoryProvider = mock(NodeFactoryProvider.class);
             Class factoryClass = PortObjectInNodeFactory.class;
             when(nodeFactoryProvider.fromFileExtension(endsWith(".txt"))).thenReturn(factoryClass);

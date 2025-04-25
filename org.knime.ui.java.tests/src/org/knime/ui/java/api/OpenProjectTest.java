@@ -111,7 +111,7 @@ class OpenProjectTest {
         assertThatThrownBy(() -> OpenProject.openProject("local", "local", "does-not-exist"))
             .isInstanceOf(OpenProject.OpenProjectException.class);
 
-        OpenProject.openProject("local", "local", itemId);
+        OpenProject.openProject("local", itemId, "local");
 
         var projectIds = pm.getProjectIds();
         assertThat(projectIds).hasSize(1);
