@@ -62,12 +62,12 @@ const color = computed(() => {
     return $colors.Cornflower;
   }
 
-  if (props.isHighlighted) {
-    return $colors.Masala;
+  if (props.isFlowvariableConnection) {
+    return $colors.Coral;
   }
 
-  const connectorColor = props.isFlowvariableConnection
-    ? $colors.Coral
+  const connectorColor = props.isHighlighted
+    ? $colors.Masala
     : $colors.StoneGray;
 
   return props.isFloatingConnector && props.isDebugModeEnabled

@@ -61,9 +61,13 @@ const tablePortRenderFn = (graphics: GraphicsInst) => {
 
 const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.circle(0, 0, (portSize - strokeWidth / 2) / 2 - 0.2);
-  graphics.stroke({ color: portColor.value, width: strokeWidth });
-  graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
+  if (props.filled) {
+    graphics.circle(0, 0, portSize / 2);
+    graphics.fill({ color: portColor.value });
+  } else {
+    graphics.circle(0, 0, (portSize - strokeWidth / 2) / 2 - 0.2);
+    graphics.stroke({ color: portColor.value, width: strokeWidth });
+  }
 };
 
 const otherPortsRenderFn = (graphics: GraphicsInst) => {
