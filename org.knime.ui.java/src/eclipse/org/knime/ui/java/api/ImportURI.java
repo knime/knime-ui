@@ -58,8 +58,10 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.function.FailableSupplier;
 import org.eclipse.core.runtime.IBundleGroup;
 import org.eclipse.core.runtime.IBundleGroupProvider;
 import org.eclipse.core.runtime.Platform;
@@ -98,6 +100,7 @@ import org.knime.workbench.core.imports.ImportForbiddenException;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.core.imports.RepoObjectImport.RepoObjectType;
+import org.knime.workbench.core.imports.URIImporter;
 import org.knime.workbench.core.imports.URIImporterFinder;
 import org.knime.workbench.core.imports.UpdateSiteInfo;
 import org.knime.workbench.editor2.InstallMissingNodesJob;
@@ -122,6 +125,9 @@ public final class ImportURI {
 
     /**
      * Helper to import objects (e.g. nodes) from a URI (e.g. a Hub-URL) into the App.
+     *
+     * First checks whether the passed URI represent an object that can be imported and then runs the actual import
+     * asynchronously.
      * <p>
      * Sends an event to the FE in order to get the actual workflow canvas coordinates (and more) back (the FE
      * indirectly calls {@link #importURIAtWorkflowCanvas(String, String, String, int, int)} to return those). The event
@@ -133,41 +139,49 @@ public final class ImportURI {
      *         {@code false} otherwise
      */
     public static boolean importURI(final Supplier<int[]> cursorLocationSupplier, final String uriString) {
-        var importResult = getEntityImportResult(uriString);
-        if (importResult.status == EntityImportResult.Status.UNAUTHORIZED) {
-            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Import error",
-                "It looks like you do not have permissions to open this workflow or component. "
-                    + "Are you logged in to the correct KNIME Hub?",
-                false);
-            return true;
-        }
-
-        entityImportInProgress = importResult.entityImport;
-        if (entityImportInProgress == null) {
+        var entityImportSupplier = prepareEntityImport(uriString);
+        if (entityImportSupplier == null) {
             return false;
         }
 
-        if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
-            && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
-            var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
-            asyncExec(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null)));
-        } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
-            asyncExec(() -> checkAndInstallExtension(extensionImport));
-        } else {
-            asyncExec(() -> {
-                var cursorLocation = cursorLocationSupplier.get();
-                sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
-            });
-        }
+        // The actual import logic needs to be run in a separate thread because URIImporter-implementations
+        // use Display.syncExec in order to run logic in the display thread. This, however, causes problems
+        // on Windows (freezes) when this method is called from a browser's LocationListener (or OpenWindowListener)
+        // (a side-effect of enabling browser multi-threading on Windows - NXT-3446).
+        CompletableFuture.runAsync(() -> {
+            try {
+                entityImportInProgress = entityImportSupplier.get();
+            } catch (ImportForbiddenException e) { // NOSONAR
+                DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Import error",
+                    "It looks like you do not have permissions to open this workflow or component. "
+                        + "Are you logged in to the correct KNIME Hub?",
+                    false);
+            }
+
+            if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
+                && repoObjectImport.getType() == RepoObjectType.Workflow) {
+                var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
+                var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
+                runInDisplayThread(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null)));
+            } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
+                runInDisplayThread(() -> checkAndInstallExtension(extensionImport));
+            } else if (entityImportInProgress instanceof NodeImport) {
+                runInDisplayThread(() -> {
+                    var cursorLocation = cursorLocationSupplier.get();
+                    sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
+                });
+            } else {
+                LOGGER.errorWithFormat("The URI '%s' doesn't represent an object that can be imported.", uriString);
+            }
+        });
         return true;
     }
 
     static boolean useDisplayThread = true;
 
-    private static void asyncExec(final Runnable runnable) {
+    private static void runInDisplayThread(final Runnable runnable) {
         if (useDisplayThread) {
-            Display.getDefault().asyncExec(runnable);
+            Display.getDefault().syncExec(runnable);
         } else {
             runnable.run();
         }
@@ -206,28 +220,29 @@ public final class ImportURI {
         }
     }
 
-    private static EntityImportResult getEntityImportResult(final String uriString) {
-        URI uri;
+    private static FailableSupplier<EntityImport, ImportForbiddenException>
+        prepareEntityImport(final String uriString) {
         Exception exception = null;
         try {
-            uri = new URI(uriString);
-            var entityImport = URIImporterFinder.getInstance().createEntityImportFor(uri).orElse(null);
-            if (entityImport != null) {
-                trackNodeImportFromHub(uriString, entityImport);
-                return EntityImportResult.success(entityImport);
+            var uri = new URI(uriString);
+            var entityImporter = URIImporterFinder.getInstance().findURIImporterFor(uri).orElse(null);
+            var entityImportClass =
+                entityImporter == null ? null : entityImporter.getEntityImportClass(uri).orElse(null);
+            if (entityImportClass != null) {
+                trackNodeImportFromHub(uriString, entityImportClass);
+                return () -> URIImporter.createEntityImport(uri, entityImporter, entityImportClass).orElse(null);
             }
-            Path path = null;
+            Path path;
             if ("file".equals(uri.getScheme())) {
                 path = Path.of(uri);
             } else if (uri.getScheme() == null) {
                 path = Path.of(uriString);
+            } else {
+                path = null;
             }
             if (path != null && Files.exists(path)) {
-                return EntityImportResult.success(new FromFileEntityImport(path));
+                return () -> new FromFileEntityImport(path);
             }
-        } catch (ImportForbiddenException e) {
-            LOGGER.debug(e);
-            return EntityImportResult.unauthorized();
         } catch (Exception e) { // NOSONAR
             exception = e;
         }
@@ -237,11 +252,12 @@ public final class ImportURI {
         } else {
             LOGGER.debug(message, exception);
         }
-        return EntityImportResult.error();
+        return null;
     }
 
-    private static void trackNodeImportFromHub(final String uri, final EntityImport entityImport) {
-        if (entityImport instanceof NodeImport && uri.startsWith("http")) {
+    private static void trackNodeImportFromHub(final String uri,
+        final Class<? extends EntityImport> entityImportClass) {
+        if (NodeImport.class.isAssignableFrom(entityImportClass) && uri.startsWith("http")) {
             NodeTimer.GLOBAL_TIMER.incNodeCreatedVia(NodeCreationType.WEB_UI_HUB);
         }
     }
@@ -297,7 +313,12 @@ public final class ImportURI {
         if (uri == null) {
             entityImport = entityImportInProgress;
         } else {
-            entityImport = getEntityImportResult(uri).entityImport;
+            try {
+                var supplier = prepareEntityImport(uri);
+                entityImport = supplier == null ? null : supplier.get();
+            } catch (ImportForbiddenException e) { // NOSONAR
+                return false;
+            }
         }
         entityImportInProgress = null;
 
@@ -456,26 +477,6 @@ public final class ImportURI {
             m_path = path;
         }
 
-    }
-
-    private record EntityImportResult(EntityImport entityImport, Status status) {
-        private enum Status {
-            SUCCESS,
-            UNAUTHORIZED,
-            ERROR
-        }
-
-        public static EntityImportResult success(final EntityImport entityImport) {
-            return new EntityImportResult(entityImport, Status.SUCCESS);
-        }
-
-        public static EntityImportResult unauthorized() {
-            return new EntityImportResult(null, Status.UNAUTHORIZED);
-        }
-
-        public static EntityImportResult error() {
-            return new EntityImportResult(null, Status.ERROR);
-        }
     }
 
 }

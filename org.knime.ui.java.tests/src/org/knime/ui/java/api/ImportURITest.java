@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.endsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -89,7 +90,8 @@ class ImportURITest {
         try {
             var success = ImportURI.importURI(cursorLocationSupplier, "test://domain/resource");
             assertThat(success).isTrue();
-            verify(eventConsumer).accept("ImportURIEvent", DesktopAPI.MAPPER.readTree("{\"x\":102,\"y\":99}"));
+            await().untilAsserted(() -> verify(eventConsumer).accept("ImportURIEvent",
+                DesktopAPI.MAPPER.readTree("{\"x\":102,\"y\":99}")));
 
             success = ImportURI.importURI(cursorLocationSupplier, "invalid://domain/resource");
             assertThat(success).isFalse();
@@ -129,8 +131,7 @@ class ImportURITest {
             Class factoryClass = PortObjectInNodeFactory.class;
             when(nodeFactoryProvider.fromFileExtension(endsWith(".txt"))).thenReturn(factoryClass);
             ServiceDependencies.setServiceDependency(NodeFactoryProvider.class, nodeFactoryProvider);
-            var success = ImportURI.importURIAtWorkflowCanvas(uri, projectId, "root", 44, 34);
-            assertThat(success).isTrue();
+            ImportURI.importURIAtWorkflowCanvas(uri, projectId, "root", 44, 34);
             assertThat(wfm.getNodeContainers()).hasSize(1);
         } finally {
             ProjectManager.getInstance().removeProject(projectId);
