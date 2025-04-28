@@ -51,7 +51,7 @@ package org.knime.ui.java.api;
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -63,6 +63,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.core5.net.URIBuilder;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -395,7 +396,7 @@ final class SpaceAPI {
         );
     }
 
-        /**
+    /**
      * Retrieves ancestor information necessary to reveal a project in the space explorer
      *
      * @return An object containing the ancestor item IDs and a boolean whether the project name has changed or not
@@ -437,20 +438,29 @@ final class SpaceAPI {
      * @param spaceProviderId provider ID of the source space
      * @param spaceId ID of the source space
      * @param itemId ID of the selected item
+     * @param queryString If non-null, appends custom query string to the url
      * @throws NoSuchElementException if there is no space provider, space or item for the given id
      */
     @API
-    static void openInBrowser(final String spaceProviderId, final String spaceId, final String itemId) {
+    static void openInBrowser(final String spaceProviderId, final String spaceId, final String itemId,
+        final String queryString) {
         final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         try {
-            URI url = sourceSpace.getItemUrl(itemId)
-                .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url.toString(), EclipseUIAPI.class);
-        } catch (ResourceAccessException e) {
+            URIBuilder uriBuilder = new URIBuilder(sourceSpace.getItemUrl(itemId)
+                .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider")));
+
+            if (queryString != null && !uriBuilder.isQueryEmpty()) {
+                throw new IllegalStateException("Cannot set custom queryString: ItemUrl already contains a query");
+            }
+
+            Optional.ofNullable(queryString).ifPresent(uriBuilder::setCustomQuery);
+
+            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(uriBuilder.build().toString(), EclipseUIAPI.class);
+        } catch (ResourceAccessException | IllegalStateException | URISyntaxException e) {
             // In the future, this could also be handled by exception handling for desktop API calls in the frontend,
             // see NXT-2092.
-            showErrorToast("Could not show item in browser", "Check that the item still exists.", true);
+            showErrorToast("Could not show item page in browser", "Check that the item still exists.", true);
             LOGGER.error("Could not open in browser", e);
             throw new IllegalStateException(e);
         }

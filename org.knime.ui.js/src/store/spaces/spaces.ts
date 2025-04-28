@@ -126,13 +126,20 @@ export const useSpacesStore = defineStore("spaces", {
     openInBrowser({
       projectId,
       itemId,
+      queryString,
     }: {
       projectId: string;
       itemId: string;
+      queryString?: string;
     }) {
       const { spaceId, spaceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
-      API.desktop.openInBrowser({ spaceProviderId, spaceId, itemId });
+      API.desktop.openInBrowser({
+        spaceProviderId,
+        spaceId,
+        itemId,
+        queryString,
+      });
     },
 
     openAPIDefinition({

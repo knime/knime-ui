@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, defineComponent, h, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import {
@@ -12,6 +12,7 @@ import {
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
+import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
@@ -30,7 +31,8 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { isLocalProvider } from "@/store/spaces/util";
+import { useSpacesStore } from "@/store/spaces/spaces";
+import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
@@ -43,7 +45,6 @@ import ZoomMenu from "./ZoomMenu.vue";
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
  */
-const { createHint } = useHint();
 const $shortcuts = useShortcuts();
 const uiControls = useUIControlsStore();
 const { activeProjectId, isUnknownProject, openProjects } = storeToRefs(
@@ -54,6 +55,7 @@ const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
 const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
+const { openInBrowser } = useSpacesStore();
 const { getProviderInfoFromProjectPath, getCommunityHubInfo } = storeToRefs(
   useSpaceProvidersStore(),
 );
@@ -66,6 +68,9 @@ const providerInfo = computed(() =>
 );
 const isLocal = computed(() =>
   Boolean(providerInfo.value && isLocalProvider(providerInfo.value)),
+);
+const isHub = computed(() =>
+  Boolean(providerInfo.value && isHubProvider(providerInfo.value)),
 );
 
 const canvasModes = computed<Array<MenuItem>>(() => {
@@ -185,6 +190,19 @@ const itemId = computed(
 const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
   useCanvasRendererUtils();
 
+const onDeploymentButtonClick = () => {
+  if (!itemId.value) {
+    consola.warn("Item id not found for active project");
+    return;
+  }
+
+  openInBrowser({
+    projectId: activeProjectId.value!,
+    itemId: itemId.value,
+    queryString: "show-deployment=true",
+  });
+};
+
 const onUploadButtonClick = () => {
   if (!itemId.value) {
     consola.warn("Item id not found for active project");
@@ -196,12 +214,23 @@ const onUploadButtonClick = () => {
 
 const uploadButton = ref<InstanceType<typeof ToolbarButton>>();
 
-onMounted(() => {
-  createHint({
-    hintId: HINTS.UPLOAD_BUTTON,
-    referenceElement: uploadButton,
-  });
-});
+type CreateHintOptions = Parameters<
+  ReturnType<typeof useHint>["createHint"]
+>[0];
+
+const ToolbarButtonWithHint = defineComponent(
+  (props: { createHintOptions: CreateHintOptions }, ctx) => {
+    onMounted(() => {
+      // By creating the hint in this wrapper, it's lifecycle is independent of the WorkflowToolbar
+      //  (e.g. when switching between two tabs with different ToolbarButtons each)
+      useHint().createHint(props.createHintOptions);
+    });
+    return () => h(ToolbarButton, ctx.attrs, ctx.slots);
+  },
+  {
+    props: ["createHintOptions"] as const,
+  },
+);
 </script>
 
 <template>
@@ -258,16 +287,30 @@ onMounted(() => {
         />
       </template>
 
-      <ToolbarButton
+      <ToolbarButtonWithHint
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocal"
         ref="uploadButton"
         class="toolbar-button"
         :with-text="true"
         title="Upload"
+        :create-hint-options="{
+          hintId: HINTS.UPLOAD_BUTTON,
+          referenceElement: computed(() => uploadButton),
+        }"
         @click="onUploadButtonClick"
       >
         <Component :is="CloudUploadIcon" />
         Upload
+      </ToolbarButtonWithHint>
+      <ToolbarButton
+        v-else-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isHub"
+        class="toolbar-button"
+        :with-text="true"
+        title="Deploy on Hub"
+        @click="onDeploymentButtonClick"
+      >
+        <DeploymentIcon />
+        Deploy on Hub
       </ToolbarButton>
 
       <SubMenu

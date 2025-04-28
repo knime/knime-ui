@@ -218,6 +218,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["spaceProviderId", "provider1"],
       ["spaceId", "space1"],
       ["itemId", "123"],
+      ["queryString", undefined],
     ],
   },
   {

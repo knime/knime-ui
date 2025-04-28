@@ -137,6 +137,7 @@ declare function openInBrowser(
   spaceProviderId: string,
   spaceId: string,
   itemId: string,
+  queryString?: string,
 ): void;
 
 declare function openAPIDefinition(

@@ -609,10 +609,11 @@ export const openInBrowser = ({
   spaceProviderId,
   spaceId,
   itemId,
-}: FullSpacePath) => {
+  queryString,
+}: FullSpacePath & { queryString?: string }) => {
   return callBrowserFunction(
     window.openInBrowser,
-    [spaceProviderId, spaceId, itemId],
+    [spaceProviderId, spaceId, itemId, queryString],
     "Error opening in browser",
     false,
     { block: false },

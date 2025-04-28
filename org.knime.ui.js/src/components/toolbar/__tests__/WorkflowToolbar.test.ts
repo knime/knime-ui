@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { flushPromises, shallowMount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
 
-import type { Workflow } from "@/api/custom-types";
+import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { createShortcutsService } from "@/plugins/shortcuts";
@@ -342,6 +342,9 @@ describe("WorkflowToolbar.vue", () => {
   });
 
   describe("upload button", () => {
+    const getUploadButton = (wrapper: VueWrapper) =>
+      wrapper.findComponent({ ref: "uploadButton" });
+
     it("doesnt show any button if not only Community Hub is mounted", () => {
       const { wrapper } = doMount({
         getCommunityHubInfo: {
@@ -349,17 +352,68 @@ describe("WorkflowToolbar.vue", () => {
         },
       });
 
-      expect(wrapper.findComponent(ToolbarButton).exists()).toBe(false);
+      expect(getUploadButton(wrapper).exists()).toBe(false);
     });
 
     it("should show upload button if only Community Hub is mounted and workflow is local", () => {
       const { wrapper } = doMount();
 
-      expect(wrapper.findComponent(ToolbarButton).exists()).toBe(true);
-      expect(wrapper.findComponent(ToolbarButton).attributes("title")).toBe(
-        "Upload",
-      );
-      expect(wrapper.findComponent(ToolbarButton).text()).toBe("Upload");
+      const uploadButton = getUploadButton(wrapper);
+
+      expect(uploadButton.exists()).toBe(true);
+      expect(uploadButton.attributes("title")).toBe("Upload");
+      expect(uploadButton.text()).toBe("Upload");
+    });
+  });
+
+  describe("deploy button", () => {
+    const getDeployButton = (wrapper: VueWrapper) => {
+      return wrapper
+        .findAllComponents(ToolbarButton)
+        .filter((w) => w.text() === "Deploy on Hub")
+        .at(0);
+    };
+
+    it("doesnt show the button if not only Community Hub is mounted", () => {
+      const { wrapper } = doMount({
+        getCommunityHubInfo: {
+          isOnlyCommunityHubMounted: false,
+        },
+      });
+
+      expect(getDeployButton(wrapper)).toBeUndefined();
+    });
+
+    it("should show deployment button if only Community Hub is mounted and workflow is from hub", async () => {
+      const { wrapper, ...mockedStores } = doMount();
+
+      // does not show for local wf
+      expect(getDeployButton(wrapper)).toBeUndefined();
+
+      // set active wf to hub
+      const hubProjectId = "hubProject1";
+      mockedStores.applicationStore.setActiveProjectId(hubProjectId);
+      const hub = createSpaceProvider({
+        id: "hubProviderId",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        isCommunityHub: true,
+      });
+      mockedStores.spaceProvidersStore.setSpaceProviders({
+        [hub.id]: hub,
+      });
+      mockedStores.spaceCachingStore.projectPath = {
+        [hubProjectId]: {
+          spaceId: "space1",
+          spaceProviderId: "hubProviderId",
+          itemId: "root",
+        },
+      };
+      await flushPromises();
+
+      const deployButton = getDeployButton(wrapper);
+
+      expect(deployButton?.exists()).toBe(true);
+      expect(deployButton?.attributes("title")).toBe("Deploy on Hub");
     });
   });
 });
