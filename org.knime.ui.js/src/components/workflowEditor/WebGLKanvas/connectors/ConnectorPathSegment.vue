@@ -103,7 +103,7 @@ const renderHoverArea = (graphics: GraphicsInst) => {
     )
     .stroke({
       width: HOVER_AREA_SIZE,
-      color: isDebugModeEnabled.value ? $colors.MeadowLight : "white",
+      color: isDebugModeEnabled.value ? $colors.MeadowLight : $colors.White,
       alpha: isDebugModeEnabled.value ? 1 : 0,
       cap: "square",
     });
