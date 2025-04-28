@@ -198,7 +198,7 @@ final class Init {
             spaceProvidersManager, //
             updateStateProvider, //
             nodeRepository, //
-            state.getMostRecentlyUsedProjects(), //
+            mostRecentlyUsedProjects,
             toastService, //
             localSpace, //
             state.getWelcomeApEndpoint(), //

@@ -239,8 +239,10 @@ final class ProjectAPI {
     }
 
     /**
-     * Updates the list of most recently used projects (i.e. removes non-existing ones, at least for the local space)
-     * and returns the updated list.
+     * Updates the list of most recently used projects and returns the updated list.
+     * <p>
+     * The list needs to be explicitly updated here because projects in the Local space may have been
+     * removed by other means than via AP (e.g. through OS file explorer).
      *
      * @return json-serialized list of the recently used projects with the most recently used one at the bottom
      */
