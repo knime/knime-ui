@@ -1,8 +1,10 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
 import { Button, Checkbox, InlineMessage, Modal } from "@knime/components";
 
+import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import SpaceTree, {
   type SpaceTreeSelection,
 } from "@/components/spaces/SpaceTree.vue";
@@ -14,11 +16,20 @@ const { isActive, config, cancel, confirm } = useDestinationPicker();
 const isValid = ref<boolean>(false);
 const validationHint = ref<string | null>(null);
 const resetWorkflow = ref(false);
+const resetMode = ref<SpaceProvider.ResetOnUploadEnum>();
 
 const selected = ref<SpaceTreeSelection>(null);
 
 const onSpaceTreeSelection = (selection: SpaceTreeSelection) => {
   selected.value = selection;
+  if (selection?.type === "item") {
+    resetMode.value = selection.resetOnUpload!;
+    resetWorkflow.value =
+      selection.resetOnUpload !== SpaceProvider.ResetOnUploadEnum.NOPREFERENCE;
+  } else {
+    resetMode.value = undefined;
+  }
+
   const { valid, hint } = config.value!.validate(selection);
   isValid.value = valid;
   validationHint.value = hint ?? null;
@@ -84,9 +95,13 @@ const showValidationHint = computed(
       #confirmation
     >
       <div class="spaced-container">
-        <Checkbox v-if="config?.askResetWorkflow" v-model="resetWorkflow"
-          >Reset Workflow(s) before upload</Checkbox
+        <Checkbox
+          v-if="config?.askResetWorkflow && selected?.type === 'item'"
+          v-model="resetWorkflow"
+          :disabled="resetMode === SpaceProvider.ResetOnUploadEnum.MANDATORY"
         >
+          Reset Workflow(s) before upload
+        </Checkbox>
       </div>
     </template>
 

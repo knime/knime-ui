@@ -10,7 +10,7 @@ import { useDestinationPicker } from "@/components/spaces/DestinationPicker/useD
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 
-import { localRootProjectPath, useSpaceCachingStore } from "./caching";
+import { useSpaceCachingStore } from "./caching";
 import { getCustomFetchOptionsForBrowser } from "./common";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
@@ -106,11 +106,9 @@ export const useSpaceDownloadsStore = defineStore("space.downloads", () => {
       useSpaceCachingStore().projectPath[projectId];
     const { currentSelectedItemIds } = useSpaceOperationsStore();
 
-    const pickerConfig =
-      sourceProviderId === localRootProjectPath.spaceProviderId
-        ? presets.UPLOAD_PICKERCONFIG
-        : presets.DOWNLOAD_PICKERCONFIG;
-    const destinationResult = await promptDestination(pickerConfig);
+    const destinationResult = await promptDestination(
+      presets.DOWNLOAD_PICKERCONFIG,
+    );
 
     if (destinationResult?.type === "item") {
       const {

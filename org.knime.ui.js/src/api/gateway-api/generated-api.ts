@@ -4067,6 +4067,12 @@ export interface SpaceProvider {
      * @memberof SpaceProvider
      */
     username?: string;
+    /**
+     * Preference of a (remote) space provider regarding reset of uploaded workflows.
+     * @type {string}
+     * @memberof SpaceProvider
+     */
+    resetOnUpload?: SpaceProvider.ResetOnUploadEnum;
 
 }
 
@@ -4093,6 +4099,15 @@ export namespace SpaceProvider {
         AUTHENTICATED = 'AUTHENTICATED',
         ANONYMOUS = 'ANONYMOUS',
         AUTOMATIC = 'AUTOMATIC'
+    }
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ResetOnUploadEnum {
+        NOPREFERENCE = 'NO_PREFERENCE',
+        ENCOURAGED = 'ENCOURAGED',
+        MANDATORY = 'MANDATORY'
     }
 }
 /**

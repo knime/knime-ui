@@ -76,6 +76,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.ResetOnUploadEnum;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -292,7 +293,8 @@ final class SaveProject {
             subMonitor.setTaskName(
                 "Uploading workflow to " + (context.getLocationType() == LocationType.HUB_SPACE ? "Hub" : "Server"));
             final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
-            return space.saveBackTo(workflowPath, remoteMountpointURI, false, subMonitor);
+            final var excludeData = spaceProvider.getResetOnUploadMode() == ResetOnUploadEnum.MANDATORY;
+            return space.saveBackTo(workflowPath, remoteMountpointURI, excludeData, subMonitor);
         } catch (Exception e) { // NOSONAR
             final var message = "Failed to upload the workflow to its remote location\n(" + e.getMessage() + ")";
             Display.getDefault().syncExec(() -> DesktopAPUtil.showAndLogError("Upload has failed", message, LOGGER, e));
