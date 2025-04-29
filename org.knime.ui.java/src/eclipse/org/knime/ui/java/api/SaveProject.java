@@ -71,6 +71,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.ResetOnUploadEnum;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
@@ -267,10 +268,12 @@ final class SaveProject {
         final var spaceProvider = Optional.ofNullable(spaceProviders.get(remoteMountpointURI.getAuthority())) //
                 .orElseThrow(() -> new IllegalStateException("Space provider '" + remoteMountpointURI.getAuthority()
                           + "' not found."));
-        final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+        final var excludeData = spaceProvider.getResetOnUploadMode().orElse(null) == ResetOnUploadEnum.MANDATORY;
+        final var deleteSource = false;
+        final var workflowPath = context.getExecutorInfo().getLocalWorkflowPath();
         var uploaded = false;
         try {
-            spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, false, false, monitor);
+            spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, deleteSource, excludeData, monitor);
             uploaded = true;
         } catch (final CoreException | IOException e) {
             final var message = "Failed to upload the workflow to its remote location\n(" + e.getMessage() + ")";
