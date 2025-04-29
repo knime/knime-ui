@@ -288,9 +288,9 @@ export default defineComponent({
         <SearchButton
           :model-value="filterQuery"
           placeholder="Filter current level"
-          @update:model-value="$emit('update:filterQuery', $event)"
           data-test-id="space-filter-btn"
           class="search-button-mini"
+          @update:model-value="$emit('update:filterQuery', $event)"
         />
         <FunctionButton class="reload-button" @click="reload">
           <ReloadIcon />

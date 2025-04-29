@@ -15,7 +15,10 @@ import type {
   SpaceProviderId,
   SpaceProviderNS,
 } from "@/api/custom-types";
-import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
+import type {
+  SpaceProvider,
+  WorkflowGroupContent,
+} from "@/api/gateway-api/generated-api";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
@@ -38,7 +41,7 @@ type SpaceTreeProvider = SpaceProviderId & {
 };
 
 export type SpaceTreeSelection =
-  | SpaceTreeItem
+  | (SpaceTreeItem & { resetOnUpload?: SpaceProvider.ResetOnUploadEnum })
   | SpaceTreeGroup
   | SpaceTreeProvider
   | null;
@@ -344,6 +347,11 @@ const retryLoadProvider = (treeNodeKey: NodeKey) => {
   }, RETRY_DELAY_MS);
 };
 
+const getResetMode = (spaceProviderId: string) => {
+  const spaceProvider = store.state.spaces.spaceProviders![spaceProviderId]!;
+  return spaceProvider.resetOnUpload;
+};
+
 const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
   if (!node) {
     emit("selectChange", null);
@@ -359,6 +367,7 @@ const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
       itemId,
       spaceId,
       spaceProviderId,
+      resetOnUpload: getResetMode(spaceProviderId),
       isWorkflowContainer: hasChildren!,
     });
     return;

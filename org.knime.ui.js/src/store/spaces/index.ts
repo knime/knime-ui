@@ -86,10 +86,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId: sourceSpaceId, spaceProviderId: sourceProviderId } =
       state.projectPath[projectId];
 
-    const pickerConfig =
-      sourceProviderId === caching.localRootProjectPath.spaceProviderId
-        ? presets.UPLOAD_PICKERCONFIG
-        : presets.DOWNLOAD_PICKERCONFIG;
+    const isUpload =
+      sourceProviderId === caching.localRootProjectPath.spaceProviderId;
+
+    const pickerConfig = isUpload
+      ? presets.UPLOAD_PICKERCONFIG
+      : presets.DOWNLOAD_PICKERCONFIG;
+
     const destinationResult = await promptDestination(pickerConfig);
 
     if (destinationResult?.type === "item") {
