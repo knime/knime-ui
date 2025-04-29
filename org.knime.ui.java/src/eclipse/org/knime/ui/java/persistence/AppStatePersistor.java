@@ -275,7 +275,10 @@ public final class AppStatePersistor {
             if (!hasOriginAndRelativePath(projectJson)) {
                 continue;
             }
-            restoredOpenProjects.add(deserializeLocalProject(projectJson, localSpace));
+            var restoredOpenProject = deserializeLocalProject(projectJson, localSpace);
+            if (restoredOpenProject != null) {
+                restoredOpenProjects.add(restoredOpenProject);
+            }
         }
         return restoredOpenProjects;
     }
