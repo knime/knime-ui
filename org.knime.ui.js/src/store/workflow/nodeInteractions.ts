@@ -13,6 +13,7 @@ import { isBrowser } from "@/environment";
 import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
+import { useSpaceOperationsStore } from "../spaces/spaceOperations";
 
 import { useWorkflowStore } from "./workflow";
 
@@ -141,7 +142,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       if (isComponent && spaceItemReference) {
         if (isBrowser()) {
           try {
-            const result = await API.workflowCommand.AddComponent({
+            await API.workflowCommand.AddComponent({
               projectId,
               workflowId,
               providerId: spaceItemReference.providerId,
@@ -152,10 +153,10 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
               spaceId: spaceItemReference.spaceId,
               itemId: spaceItemReference.itemId,
             });
-            // TODO re-visit with NXT-3471
-            newNodeId = result.newPlaceholderId;
+            newNodeId = null;
+
+            useSpaceOperationsStore().setCurrentSelectedItemIds([]);
           } catch (error) {
-            // TODO re-visit with NXT-3471
             return {
               problem: {
                 type: "error",

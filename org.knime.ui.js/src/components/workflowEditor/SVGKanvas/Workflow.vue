@@ -15,6 +15,7 @@ import Connector from "./connectors/Connector.vue";
 import ConnectorLabel from "./connectors/ConnectorLabel.vue";
 import MoveableNodeContainer from "./node/MoveableNodeContainer.vue";
 import Node from "./node/Node.vue";
+import ComponentPlaceholder from "./node/placeholder/ComponentPlaceholder.vue";
 import MetaNodePortBars from "./ports/MetaNodePortBars.vue";
 
 const { activeWorkflow: workflow } = storeToRefs(useWorkflowStore());
@@ -42,6 +43,10 @@ const sortedNodes = computed(() => {
 
 const nodeRefs = ref<Record<string, any>>({});
 const annotationRefs = ref<Record<string, any>>({});
+
+const componentPlaceholders = computed(
+  () => workflow.value?.componentPlaceholders ?? [],
+);
 
 const applyNodeSelectionPreview = ({
   nodeId,
@@ -110,6 +115,12 @@ defineExpose({ applyNodeSelectionPreview, applyAnnotationSelectionPreview });
       </template>
 
       <template #nodes>
+        <ComponentPlaceholder
+          v-for="componentPlaceholder of componentPlaceholders"
+          :key="`placeholder-${componentPlaceholder.id}`"
+          :placeholder="componentPlaceholder"
+        />
+
         <MoveableNodeContainer
           v-for="node of sortedNodes"
           :id="node.id"

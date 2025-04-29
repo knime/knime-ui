@@ -5,6 +5,7 @@ import {
   AllowedNodeActions,
   Annotation,
   type ComponentNode,
+  ComponentPlaceholder,
   type MetaNode,
   MetaNodeState,
   type NativeNode,
@@ -164,4 +165,18 @@ export const createWorkflowObject = (
       y: data.position.y,
     });
   }
+};
+
+export const createComponentPlaceholder = (
+  data: DeepPartial<ComponentPlaceholder> = {},
+): ComponentPlaceholder => {
+  const componentPlaceholder: ComponentPlaceholder = {
+    id: "placeholder:1",
+    name: "Component Placeholder",
+    position: createXY({ x: 0, y: 0 }),
+    progress: 0,
+    state: ComponentPlaceholder.StateEnum.LOADING,
+  };
+
+  return merge(componentPlaceholder, data);
 };

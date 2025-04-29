@@ -479,9 +479,16 @@ export const useWorkflowStore = defineStore("workflow", {
       const hasMetaNodeOutBar = Boolean(
         state.activeWorkflow?.metaOutPorts?.ports?.length,
       );
+      const hasComponentPlaceholders = Boolean(
+        state.activeWorkflow?.componentPlaceholders?.length,
+      );
 
       return (
-        !hasNodes && !hasAnnotations && !hasMetaNodeInBar && !hasMetaNodeOutBar
+        !hasNodes &&
+        !hasAnnotations &&
+        !hasMetaNodeInBar &&
+        !hasMetaNodeOutBar &&
+        !hasComponentPlaceholders
       );
     },
 

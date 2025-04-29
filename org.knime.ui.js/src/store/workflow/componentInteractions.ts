@@ -244,6 +244,24 @@ export const useComponentInteractionsStore = defineStore(
           });
         }
       },
+
+      async cancelOrRetryComponentLoading({
+        placeholderId,
+        action,
+      }: {
+        placeholderId: string;
+        action: "cancel" | "retry";
+      }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+
+        await API.component.cancelOrRetryComponentLoadJob({
+          projectId,
+          workflowId,
+          placeholderId,
+          action,
+        });
+      },
     },
   },
 );

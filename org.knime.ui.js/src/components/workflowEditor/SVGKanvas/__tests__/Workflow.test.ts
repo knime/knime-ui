@@ -4,13 +4,14 @@ import { mount } from "@vue/test-utils";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import { createWorkflow } from "@/test/factories";
+import { createComponentPlaceholder, createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import Workflow from "../Workflow.vue";
 import WorkflowAnnotation from "../annotations/WorkflowAnnotation.vue";
 import Connector from "../connectors/Connector.vue";
 import MoveableNodeContainer from "../node/MoveableNodeContainer.vue";
 import Node from "../node/Node.vue";
+import ComponentPlaceholder from "../node/placeholder/ComponentPlaceholder.vue";
 import MetaNodePortBars from "../ports/MetaNodePortBars.vue";
 
 const mockNode = ({ id, position }) => ({
@@ -185,6 +186,34 @@ describe("Workflow", () => {
       expect(annotation.vm.setSelectionPreview).toHaveBeenLastCalledWith(
         "show",
       );
+    });
+
+    it("renders component placeholders", () => {
+      const componentPlaceholders = [
+        createComponentPlaceholder(),
+        createComponentPlaceholder({
+          id: "placeholder:2",
+          name: "Component Placeholder 2",
+          position: { x: 50, y: 50 },
+          message: "Error while loading",
+        }),
+      ];
+      const mockedStores = getStores({
+        customWorkflow: {
+          componentPlaceholders,
+        },
+      });
+      const wrapper = doShallowMount({ mockedStores });
+
+      const componentPlaceholderProps = wrapper
+        .findAllComponents(ComponentPlaceholder)
+        .map((c) => c.props("placeholder"));
+
+      componentPlaceholderProps.forEach((props, i) => {
+        expect(props).toEqual(
+          expect.objectContaining(componentPlaceholders[i]),
+        );
+      });
     });
 
     it("renders nodes", () => {

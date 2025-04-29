@@ -1024,6 +1024,12 @@ export interface ComponentPlaceholder {
      */
     id: string;
     /**
+     * The name of the to be added copmonent.
+     * @type {string}
+     * @memberof ComponentPlaceholder
+     */
+    name?: string;
+    /**
      * The state of the placeholder.
      * @type {string}
      * @memberof ComponentPlaceholder

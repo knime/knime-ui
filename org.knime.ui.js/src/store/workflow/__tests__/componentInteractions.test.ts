@@ -429,4 +429,22 @@ describe("workflow::componentInteractions", () => {
       nodeId: "root:2",
     });
   });
+
+  it("should cancel or retry component loading", () => {
+    const { workflowStore, componentInteractionsStore } = mockStores();
+
+    workflowStore.setActiveWorkflow(createWorkflow());
+    componentInteractionsStore.cancelOrRetryComponentLoading({
+      placeholderId: "root:2",
+      action: "cancel",
+    });
+    expect(
+      mockedAPI.component.cancelOrRetryComponentLoadJob,
+    ).toHaveBeenCalledWith({
+      projectId: "project1",
+      workflowId: "root",
+      placeholderId: "root:2",
+      action: "cancel",
+    });
+  });
 });

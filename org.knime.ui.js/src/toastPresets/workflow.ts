@@ -10,6 +10,8 @@ type WorkflowCommandsToastPresets = {
 
 export type WorkflowToastPresets = {
   commands: WorkflowCommandsToastPresets;
+  componentLoadedWithWarning: ToastPresetErrorHandler;
+  componentLoadingFailed: ToastPresetErrorHandler;
 };
 
 export const getPresets = (
@@ -28,6 +30,22 @@ export const getPresets = (
           type: "error",
           headline: "Failed to save node annotation",
         }),
+    },
+    componentLoadedWithWarning: ({ message, details }) => {
+      $toast.show({
+        headline: message,
+        message: details,
+        type: "warning",
+        autoRemove: true,
+      });
+    },
+    componentLoadingFailed: ({ message, details }) => {
+      $toast.show({
+        headline: message,
+        message: details,
+        type: "error",
+        autoRemove: false,
+      });
     },
   };
 };

@@ -11,6 +11,7 @@ import {
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 import {
+  createComponentPlaceholder,
   createConnection,
   createMetanode,
   createNativeNode,
@@ -555,6 +556,7 @@ describe("workflow::index", () => {
           projectId: "foo",
           nodes: Object.create({}),
           workflowAnnotations: Object.create([]),
+          componentPlaceholders: Object.create({}),
         }),
       );
       expect(workflowStore.isWorkflowEmpty).toBe(true);
@@ -599,6 +601,17 @@ describe("workflow::index", () => {
           metaOutPorts: { ports: [{ id: "port" }] },
         }),
       );
+      expect(workflowStore.isWorkflowEmpty).toBe(false);
+
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          nodes: {},
+          workflowAnnotations: [],
+          componentPlaceholders: [createComponentPlaceholder()],
+        }),
+      );
+      expect(workflowStore.isWorkflowEmpty).toBe(false);
     });
 
     it("totalNodes returns correct node count", () => {
