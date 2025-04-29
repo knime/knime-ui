@@ -72,14 +72,18 @@ const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
 
 const otherPortsRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.rect(
-    strokeWidth / 2,
-    0,
-    portSize - strokeWidth,
-    portSize - strokeWidth,
-  );
-  graphics.stroke({ color: portColor.value, width: strokeWidth });
-  graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
+  if (props.filled) {
+    graphics.rect(0, 0, portSize, portSize);
+    graphics.fill({ color: portColor.value });
+  } else {
+    graphics.rect(
+      0 + strokeWidth / 2,
+      0 + strokeWidth / 2,
+      portSize - strokeWidth,
+      portSize - strokeWidth,
+    );
+    graphics.stroke({ color: portColor.value, width: strokeWidth });
+  }
 };
 
 const portIcon = useTemplateRef<ContainerInst>("portIcon");
