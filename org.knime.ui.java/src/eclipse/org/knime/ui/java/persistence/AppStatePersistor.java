@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.persistence;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -275,21 +276,24 @@ public final class AppStatePersistor {
             if (!hasOriginAndRelativePath(projectJson)) {
                 continue;
             }
-            var restoredOpenProject = deserializeLocalProject(projectJson, localSpace);
-            if (restoredOpenProject != null) {
+            try {
+                var restoredOpenProject = deserializeLocalProject(projectJson, localSpace);
                 restoredOpenProjects.add(restoredOpenProject);
+            } catch (FileNotFoundException ignored) { // NOSONAR
+                // continue
             }
         }
         return restoredOpenProjects;
     }
 
     private static RestoredOpenProject deserializeLocalProject(final JsonNode projectJson,
-        final LocalSpace localSpace) {
+        final LocalSpace localSpace) throws FileNotFoundException {
         var originAndRelativePath = deserializeOrigin(projectJson.get(ORIGIN), localSpace);
         var absolutePath = localSpace.getRootPath().resolve(originAndRelativePath.getSecond().orElseThrow());
         if (!Files.exists(absolutePath)) {
-            DesktopAPUtil.showWarning("No workflow project found", "No workflow project found at " + absolutePath);
-            return null;
+            var message = "No workflow project found at " + absolutePath;
+            DesktopAPUtil.showWarning("No workflow project found", message);
+            throw new FileNotFoundException(message);
         }
 
         var origin = originAndRelativePath.getFirst();
