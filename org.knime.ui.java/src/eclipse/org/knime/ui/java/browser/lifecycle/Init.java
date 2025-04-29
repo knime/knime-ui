@@ -468,16 +468,14 @@ final class Init {
 
             authorizeSpaceProviderRequest(mutableRequest, spaceProvider);
         };
-
-        var middleware = CEFPlugin.getMiddlewareService();
         spaceProvider.getServerAddress() //
             .map(URI::create) //
-            .ifPresent(uri -> middleware.addRequestFilter(uri.getScheme(), uri.getHost(), requestFilter));
+            .ifPresent(uri -> CEFPlugin.getMiddlewareService().addRequestFilter(uri.getScheme(), uri.getHost(),
+                requestFilter));
     }
 
     private static void authorizeSpaceProviderRequest(final MutableRequest mutableRequest,
         final SpaceProvider spaceProvider) {
-
         spaceProvider.getConnection(false) //
             .ifPresent(connection -> {
                 try {
@@ -497,10 +495,9 @@ final class Init {
             return;
         }
 
-        var middleware = CEFPlugin.getMiddlewareService();
         spaceProvider.getServerAddress() //
             .map(URI::create) //
-            .ifPresent(uri -> middleware.removeRequestFilter(uri.getScheme(), uri.getHost()));
+            .ifPresent(uri -> CEFPlugin.getMiddlewareService().removeRequestFilter(uri.getScheme(), uri.getHost()));
     }
 
 }
