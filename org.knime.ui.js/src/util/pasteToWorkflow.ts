@@ -120,7 +120,7 @@ export const pasteURI = (
         },
       });
 
-  return API.desktop.importURIAtWorkflowCanvas({
+  API.desktop.importURIAtWorkflowCanvas({
     uri,
     projectId,
     workflowId: containerId,

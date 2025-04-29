@@ -148,7 +148,7 @@ declare function importURIAtWorkflowCanvas(
   worflowId: string,
   x: number,
   y: number,
-): unknown;
+): void;
 
 declare function importComponent(
   spaceProviderId: string,

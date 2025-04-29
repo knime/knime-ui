@@ -111,13 +111,11 @@ final class ImportAPI {
     /**
      * Imports a URI at a certain position in the workflow canvas (i.e. usually imported as a new node). If a node is to
      * be imported and the node isn't installed yet, it will ask the user whether to install the respective extension.
-     *
-     * @return {@code true} if the import was successful, otherwise {@code false}
      */
     @API
-    static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
+    static void importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
         final double canvasX, final double canvasY) {
-        return ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
+        ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
     }
 
     /**

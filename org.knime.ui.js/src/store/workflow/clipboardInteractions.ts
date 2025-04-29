@@ -262,16 +262,12 @@ export const useClipboardInteractionsStore = defineStore(
           }
         } catch (_e) {
           // try to paste the clipboard content as a URI
-          if (
-            !pasteURI(
-              clipboardText,
-              workflowStore.activeWorkflow!,
-              customPosition ?? { x: 0, y: 0 },
-              canvasStore.value.getVisibleFrame,
-            )
-          ) {
-            consola.info("Could not parse json or URI from clipboard.");
-          }
+          pasteURI(
+            clipboardText,
+            workflowStore.activeWorkflow!,
+            customPosition ?? { x: 0, y: 0 },
+            canvasStore.value.getVisibleFrame,
+          );
           return;
         }
 

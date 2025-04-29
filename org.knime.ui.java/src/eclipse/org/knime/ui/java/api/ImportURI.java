@@ -305,9 +305,8 @@ public final class ImportURI {
      * @param workflowId
      * @param canvasX
      * @param canvasY
-     * @return {@code true} if the import was successful
      */
-    static boolean importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
+    static void importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
         final int canvasX, final int canvasY) {
         EntityImport entityImport;
         if (uri == null) {
@@ -317,7 +316,7 @@ public final class ImportURI {
                 var supplier = prepareEntityImport(uri);
                 entityImport = supplier == null ? null : supplier.get();
             } catch (ImportForbiddenException e) { // NOSONAR
-                return false;
+                return;
             }
         }
         entityImportInProgress = null;
@@ -326,27 +325,26 @@ public final class ImportURI {
             switch (checkNodeAvailable(nodeImport)) {
                 case AVAILABLE:
                     var key = getNodeFactoryKey(nodeImport.getFactoryId());
-                    return importNode(key, null, projectId, workflowId, canvasX, canvasY);
+                    importNode(key, null, projectId, workflowId, canvasX, canvasY);
+                    return;
                 case NOT_INSTALLED:
                     askToInstallExtension(nodeImport);
-                    return false;
+                    return;
                 case FORBIDDEN:
                     MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Usage of node is restricted",
                         "Usage of this node is restricted in this installation.");
-                    return false;
+                    return;
             }
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.WorkflowTemplate) {
             ImportAPI.importComponent(projectId, workflowId, repoObjectImport.getKnimeURI(), true, canvasX, canvasY);
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            return OpenProject.openProjectCopy(repoObjectImport);
+            OpenProject.openProjectCopy(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
-            return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId,
+            importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId,
                 canvasX, canvasY);
         }
-
-        return false;
     }
 
     private enum NodeAvailability {
