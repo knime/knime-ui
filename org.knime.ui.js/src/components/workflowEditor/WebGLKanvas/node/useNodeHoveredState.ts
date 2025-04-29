@@ -1,6 +1,13 @@
-import { ref, watch } from "vue";
+import { onUnmounted, ref, watch } from "vue";
 
 const hoveredNodeId = ref<string | null>(null);
+
+type NodeId = "*" | Omit<string, "*">;
+type Callback = (nodeId: string) => void;
+const callbackRegistry = new Map<
+  NodeId,
+  Map<string, { onEnter?: Callback; onLeave?: Callback }>
+>();
 
 /**
  * Composable to be used *only* by the controller of the node state hover, who sets
@@ -30,6 +37,24 @@ export const useNodeHoveredStateProvider = () => {
   return { onPointerEnter, onPointerLeave, hoveredNodeId };
 };
 
+watch(hoveredNodeId, (nextId, prevId) => {
+  if (prevId && prevId !== nextId) {
+    const wildcardCallbacks = callbackRegistry.get("*");
+    wildcardCallbacks?.forEach(({ onLeave }) => onLeave?.(prevId));
+
+    const prevCallbacks = callbackRegistry.get(prevId);
+    prevCallbacks?.forEach(({ onLeave }) => onLeave?.(prevId));
+  }
+
+  if (nextId) {
+    const wildcardCallbacks = callbackRegistry.get("*");
+    wildcardCallbacks?.forEach(({ onEnter }) => onEnter?.(nextId));
+
+    const nextCallbacks = callbackRegistry.get(nextId);
+    nextCallbacks?.forEach(({ onEnter }) => onEnter?.(nextId));
+  }
+});
+
 type UseNodeHoveredStateListener = {
   /**
    * The id of the node to listen to.
@@ -45,13 +70,31 @@ type UseNodeHoveredStateListener = {
 export const useNodeHoveredStateListener = (
   options: UseNodeHoveredStateListener,
 ) => {
-  watch(hoveredNodeId, (nextId, prevId) => {
-    if (nextId && nextId === options.nodeId) {
-      options.onEnterCallback?.(nextId);
+  const listenerId = window.crypto.randomUUID();
+
+  if (!callbackRegistry.has(options.nodeId)) {
+    callbackRegistry.set(options.nodeId, new Map());
+  }
+
+  if (callbackRegistry.has(options.nodeId)) {
+    const current = callbackRegistry.get(options.nodeId)!;
+    current.set(listenerId, {
+      onEnter: options.onEnterCallback,
+      onLeave: options.onLeaveCallback,
+    });
+  }
+
+  onUnmounted(() => {
+    const current = callbackRegistry.get(options.nodeId);
+
+    if (!current) {
+      consola.warn("Tried to clear hover callbacks but it's empty already");
+      return;
     }
 
-    if (prevId && prevId !== nextId && prevId === options.nodeId) {
-      options.onLeaveCallback?.(prevId);
+    current.delete(listenerId);
+    if (current.size === 0) {
+      callbackRegistry.delete(options.nodeId);
     }
   });
 };
