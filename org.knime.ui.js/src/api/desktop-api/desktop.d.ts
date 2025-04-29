@@ -67,7 +67,7 @@ declare function closeProject(
   nextProjectId: string | null,
 ): boolean;
 
-declare function forceCloseProjects(...args: string[]): boolean;
+declare function forceCloseProjects(...args: string[]): void;
 
 declare function setProjectActiveAndEnsureItsLoaded(
   projectId: string,

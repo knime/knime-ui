@@ -401,7 +401,7 @@ export const forceCloseProjects = ({
     window.forceCloseProjects,
     projectIds,
     "Could not close workflow",
-    true,
+    false,
     { block: false },
   );
 };

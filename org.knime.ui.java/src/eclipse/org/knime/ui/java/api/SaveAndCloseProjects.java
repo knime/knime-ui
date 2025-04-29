@@ -168,7 +168,10 @@ public final class SaveAndCloseProjects {
                 }
                 yield projectsSavedState.get();
             }
-            case NO -> CloseProject.closeProjects(projectIds) ? State.SUCCESS : State.CANCEL_OR_FAIL;
+            case NO -> {
+                CloseProject.closeProjects(projectIds);
+                yield State.SUCCESS;
+            }
             default -> State.CANCEL_OR_FAIL;
         };
     }
@@ -202,9 +205,10 @@ public final class SaveAndCloseProjects {
         for (var i = 0; i < projectIds.length; i++) {
             var projectId = projectIds[i];
             var projectSVG = svgs[i];
-            var projectWfm = ProjectManager.getInstance().getProject(projectId)
-                .flatMap(Project::getWorkflowManagerIfLoaded).orElse(null);
-            var success = saveAndCloseProject(monitor, projectId, projectSVG, projectWfm);
+            var projectManager = ProjectManager.getInstance();
+            var projectWfm =
+                projectManager.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded).orElse(null);
+            var success = saveAndCloseProject(monitor, projectId, projectSVG, projectWfm, projectManager);
             if (!success) {
                 firstFailure.compareAndExchange(null, Optional.of(projectId));
             }
@@ -212,11 +216,13 @@ public final class SaveAndCloseProjects {
     }
 
     private static boolean saveAndCloseProject(final IProgressMonitor monitor, final String projectId,
-        final String projectSVG, final WorkflowManager projectWfm) {
+        final String projectSVG, final WorkflowManager projectWfm, final ProjectManager projectManager) {
         monitor.subTask("Saving '" + projectId + "'");
         // workflow not loaded -> nothing to save
-        final var success = (projectWfm == null || SaveProject.saveProject(monitor, projectWfm, projectSVG, false))
-            && CloseProject.closeProject(projectId);
+        final var success = (projectWfm == null || SaveProject.saveProject(monitor, projectWfm, projectSVG, false));
+        if (success) {
+            projectManager.removeProject(projectId);
+        }
         monitor.worked(1);
         return success;
     }

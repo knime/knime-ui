@@ -50,7 +50,6 @@ import static org.knime.ui.java.api.SaveAndCloseProjects.saveAndCloseProjectsInt
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -62,7 +61,7 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class CloseProject {
+final class CloseProject {
 
     private CloseProject() {
         // utility
@@ -91,10 +90,9 @@ public final class CloseProject {
     /**
      * @param projectIdsToClose
      */
-    static boolean forceCloseProjects(final Collection<String> projectIdsToClose) {
-        var success = closeProjects(projectIdsToClose);
+    static void closeProjectsAndUpdateAppState(final Collection<String> projectIdsToClose) {
+        closeProjects(projectIdsToClose);
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-        return success;
     }
 
     /**
@@ -102,21 +100,12 @@ public final class CloseProject {
      * given id, it will be ignored.
      *
      * @param projectIds the ids of the projects to close
-     * @return {@code false} if at least one project wasn't closed successfully otherwise {@code true}
      */
-    public static boolean closeProjects(final Iterable<String> projectIds) {
-        var success = true;
+    static void closeProjects(final Iterable<String> projectIds) {
+        var projectManager = DesktopAPI.getDeps(ProjectManager.class);
         for (var projectId : projectIds) {
-            success &= closeProject(projectId);
+            projectManager.removeProject(projectId);
         }
-        return success;
-    }
-
-    static boolean closeProject(final String projectId) {
-        var projectManager = ProjectManager.getInstance();
-        var success = new AtomicBoolean(true);
-        projectManager.removeProject(projectId);
-        return success.get();
     }
 
 }

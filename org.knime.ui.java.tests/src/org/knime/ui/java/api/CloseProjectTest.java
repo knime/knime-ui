@@ -144,7 +144,7 @@ class CloseProjectTest {
         assertThat(wfm2.isDirty()).isTrue();
         ProjectManager.getInstance().getProject("projectId2").orElseThrow().getWorkflowManagerIfLoaded();
 
-        CloseProject.forceCloseProjects(List.of("projectId1", "projectId2", "non-existing-id"));
+        CloseProject.closeProjectsAndUpdateAppState(List.of("projectId1", "projectId2", "non-existing-id"));
 
         assertThatThrownBy(() -> WorkflowManager.ROOT.getNodeContainer(wfm1.getID())) // NOSONAR
             .isInstanceOf(IllegalArgumentException.class);

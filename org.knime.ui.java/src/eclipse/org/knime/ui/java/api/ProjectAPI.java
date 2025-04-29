@@ -125,12 +125,10 @@ final class ProjectAPI {
     /**
      * Closes (i.e. removes from memory) all the workflow or component projects for the given projects ids without
      * saving any pending changes.
-     *
-     * @return whether all the workflows have been successfully been closed
      */
     @API
-    static boolean forceCloseProjects(final Object[] projectIdsToClose) {
-        return CloseProject.forceCloseProjects(Arrays.stream(projectIdsToClose).map(String.class::cast).toList());
+    static void forceCloseProjects(final Object[] projectIdsToClose) {
+        CloseProject.closeProjectsAndUpdateAppState(Arrays.stream(projectIdsToClose).map(String.class::cast).toList());
     }
 
     /**
