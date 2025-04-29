@@ -171,7 +171,7 @@ onMounted(() => {
   autoUpdateResolution();
 });
 
-const isBorderVisible = computed(
+const isStaticContent = computed(
   () =>
     activeTransform.value?.annotationId !== props.annotation.id &&
     editableAnnotationId.value !== props.annotation.id,
@@ -233,6 +233,7 @@ const { isSelectionPreviewShown } = useSelectionPreview({
 
 <template>
   <Container
+    :label="`StaticWorkflowAnnotation__${annotation.id}`"
     :position="translatedPosition"
     :visible="renderable"
     :renderable="renderable"
@@ -250,7 +251,23 @@ const { isSelectionPreviewShown } = useSelectionPreview({
     />
 
     <Graphics
-      v-if="isBorderVisible"
+      v-if="isStaticContent"
+      @render="
+        (graphics: GraphicsInst) => {
+          graphics.clear();
+          graphics.rect(
+            0,
+            0,
+            annotation.bounds.width,
+            annotation.bounds.height,
+          );
+          graphics.fill($colors.White);
+        }
+      "
+    />
+
+    <Graphics
+      v-if="isStaticContent"
       label="AnnotationBorder"
       @render="
         (graphics: GraphicsInst) => {

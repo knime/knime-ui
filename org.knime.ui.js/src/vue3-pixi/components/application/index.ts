@@ -83,6 +83,10 @@ export const Application = defineComponent({
       type: Object as PropType<Partial<WebGLOptions>>,
       default: undefined,
     },
+    onBeforeMount: {
+      type: Function as PropType<(app: ApplicationInst["app"]) => void>,
+      default: undefined,
+    },
   },
   emits: ["initComplete"],
   setup(props, { slots, expose, emit }) {
@@ -117,6 +121,10 @@ export const Application = defineComponent({
       app = createApp({ render: () => renderSlot(slots, "default") });
 
       inheritParent(app, appContext);
+
+      if (props.onBeforeMount) {
+        props.onBeforeMount(pixiApp.value);
+      }
 
       app.mount(pixiApp.value.stage);
 

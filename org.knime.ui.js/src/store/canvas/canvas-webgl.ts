@@ -58,16 +58,21 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   });
   const pixiApplication = shallowRef<ApplicationInst | null>(null);
 
-  type CanvasLayerNames = "background" | "selectedNodes";
+  type CanvasLayerNames =
+    | "nodeSelectionPlane"
+    | "selectedNodes"
+    | "annotations";
   type CanvasLayers = Record<CanvasLayerNames, IRenderLayer | undefined>;
   const canvasLayers: ShallowRef<CanvasLayers> = shallowRef({
-    background: undefined,
+    nodeSelectionPlane: undefined,
     selectedNodes: undefined,
+    annotations: undefined,
   });
 
   const removeLayers = () => {
-    canvasLayers.value.background = undefined;
+    canvasLayers.value.nodeSelectionPlane = undefined;
     canvasLayers.value.selectedNodes = undefined;
+    canvasLayers.value.annotations = undefined;
   };
 
   const stage = shallowRef<StageInst | null>(null);

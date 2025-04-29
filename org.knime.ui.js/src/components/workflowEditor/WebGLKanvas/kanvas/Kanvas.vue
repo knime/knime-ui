@@ -33,15 +33,22 @@ const isPixiAppInitialized = ref(false);
 
 const MAIN_CONTAINER_LABEL = "MainContainer";
 
-const addBackgroundRenderLayer = (app: ApplicationInst["app"]) => {
-  // add a background layer so we can move the selection plane of the nodes all the way
-  // to the back
-  const backgroundRenderLayer = new RenderLayer();
-  // @ts-expect-error (please add error description)
-  backgroundRenderLayer.label = "BackgroundRenderLayer";
+const addRenderLayers = (app: ApplicationInst["app"]) => {
+  // annotations need to be behind everything else
+  const annotationsLayer = new RenderLayer({ sortableChildren: true });
+  // @ts-expect-error type misses label
+  annotationsLayer.label = "AnnotationsLayer";
 
-  app.stage.addChildAt(backgroundRenderLayer, 0);
-  canvasLayers.value.background = backgroundRenderLayer;
+  app.stage.addChildAt(annotationsLayer, 0);
+  canvasLayers.value.annotations = annotationsLayer;
+
+  // add a layer so we can move the selection plane of the nodes to the back
+  const nodeSelectionPlaneRenderLayer = new RenderLayer();
+  // @ts-expect-error type misses label
+  nodeSelectionPlaneRenderLayer.label = "NodeSelectionPlaneRenderLayer";
+
+  app.stage.addChildAt(nodeSelectionPlaneRenderLayer, 1);
+  canvasLayers.value.nodeSelectionPlane = nodeSelectionPlaneRenderLayer;
 };
 
 watch(
@@ -54,13 +61,8 @@ watch(
     // Store reference Pixi.js application instance
     const app = pixiApp.value!.app;
     globalThis.__PIXI_APP__ = app;
-
-    // Store reference to the Pixi.js Stage.
-    // https://pixijs.com/8.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
     canvasStore.stage = app.stage;
-
-    addBackgroundRenderLayer(app);
 
     canvasStore.isDebugModeEnabled =
       import.meta.env.VITE_CANVAS_DEBUG === "true";
@@ -96,6 +98,11 @@ watch(
   },
   { immediate: true },
 );
+
+// before the mount the pixi app is already there so we can add the layers and make sure they are available early
+const beforePixiMount = (app: ApplicationInst["app"]) => {
+  addRenderLayers(app);
+};
 </script>
 
 <template>
@@ -109,6 +116,7 @@ watch(
     :antialias="true"
     :resize-to="() => getKanvasDomElement()!"
     :auto-start="!performanceTracker.isCanvasPerfMode()"
+    :on-before-mount="beforePixiMount"
     @wheel.prevent="onMouseWheel"
     @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
     @pointermove="$bus.emit('selection-pointermove', $event)"

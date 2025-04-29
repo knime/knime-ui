@@ -3,9 +3,11 @@ import test, { Page, expect } from "@playwright/test";
 
 import { getKanvasBoundingBox, startApplication } from "../utils";
 
+import { annotationBringToFront } from "./workflowCommandMocks/annotation-bring-to-front";
+
 const maxDiffPixels = 350;
 
-test("renders correcly", async ({ page }) => {
+test("renders correctly", async ({ page }) => {
   await startApplication(page, {
     workflowFixturePath: "annotation/getWorkflow-annotation-characters.json",
   });
@@ -141,6 +143,34 @@ test("can be dragged", async ({ page }) => {
   await page.mouse.down({ button: "left", clickCount: 1 });
   await page.mouse.move(selectCoords.x - 300, selectCoords.y - 100);
   await page.mouse.up();
+
+  await expect(page).toHaveScreenshot({
+    clip: kanvasBox!,
+    maxDiffPixels,
+  });
+});
+
+test("can be ordered", async ({ page }) => {
+  await startApplication(page, {
+    workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
+    workflowCommandFn: annotationBringToFront,
+  });
+
+  const kanvasBox = await getKanvasBoundingBox(page);
+  const selectCoords = { x: kanvasBox!.x + 350, y: kanvasBox!.y + 350 };
+
+  await page.mouse.move(selectCoords.x, selectCoords.y);
+  await page.mouse.down({ button: "left", clickCount: 1 });
+  await page.mouse.move(selectCoords.x + 300, selectCoords.y + 100);
+  await page.mouse.up();
+
+  await expect(page).toHaveScreenshot({
+    clip: kanvasBox!,
+    maxDiffPixels,
+  });
+
+  // bring to front
+  await page.keyboard.press("ControlOrMeta+Shift+PageUp");
 
   await expect(page).toHaveScreenshot({
     clip: kanvasBox!,

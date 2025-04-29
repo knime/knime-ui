@@ -285,7 +285,7 @@ const nodeLabelPosition = computed(() => {
 
 <template>
   <NodeSelectionPlane
-    :layer="canvasLayers.background"
+    :layer="canvasLayers.nodeSelectionPlane"
     :anchor-position="translatedPosition"
     :renderable="renderable"
     :show-selection="isSelectionPreviewShown"

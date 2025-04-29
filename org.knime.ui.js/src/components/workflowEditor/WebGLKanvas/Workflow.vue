@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { ContainerInst } from "@/vue3-pixi";
@@ -21,6 +22,8 @@ const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
 
 const canvasStore = useWebGLCanvasStore();
 const { canvasLayers } = storeToRefs(canvasStore);
+
+const { editableAnnotationId } = storeToRefs(useAnnotationInteractionsStore());
 
 const selectedNodesLayerContainer = useTemplateRef<ContainerInst>(
   "selectedNodesLayerContainer",
@@ -41,10 +44,18 @@ onMounted(() => {
 <template>
   <template v-if="activeWorkflow">
     <template
-      v-for="annotation of activeWorkflow!.workflowAnnotations"
+      v-for="(annotation, index) in activeWorkflow!.workflowAnnotations"
       :key="annotation.id"
     >
-      <StaticWorkflowAnnotation :annotation="annotation" />
+      <StaticWorkflowAnnotation
+        :annotation="annotation"
+        :layer="canvasLayers.annotations"
+        :z-index="
+          editableAnnotationId === annotation.id
+            ? Number.MAX_SAFE_INTEGER
+            : index
+        "
+      />
     </template>
 
     <Node

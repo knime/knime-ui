@@ -34,21 +34,21 @@ export const mockWebsocket = async (
   await page.routeWebSocket(websocketUrl, (ws) => {
     ws.onMessage((message) => {
       const messageObject = JSON.parse(message.toString());
-      const answer = (result: any) =>
+      const answer = (payload: any) =>
         ws.send(
           JSON.stringify({
+            ...payload,
             jsonrpc: "2.0",
             id: messageObject.id,
-            result,
           }),
         );
 
       const answerFromFile = (file: string) =>
-        answer(parseJSONFile(file).result);
+        answer({ result: parseJSONFile(file).result });
 
       switch (messageObject.method) {
         case "EventService.addEventListener": {
-          answer(null);
+          answer({ result: null });
           return;
         }
 
@@ -87,22 +87,10 @@ export const mockWebsocket = async (
           console.log("undo wf command", response());
 
           // resolve command itself
-          ws.send(
-            JSON.stringify({
-              jsonrpc: "2.0",
-              id: messageObject.id,
-              result: null,
-              snapshotId: id,
-            }),
-          );
+          answer({ result: null, snapshotId: id });
 
           // send server event associated to this command
-          ws.send(
-            JSON.stringify({
-              ...response(),
-              snapshotId: id,
-            }),
-          );
+          answer({ ...response(), snapshotId: id });
           return;
         }
 
@@ -118,22 +106,10 @@ export const mockWebsocket = async (
               const id = getSnapshotId();
 
               // resolve command itself
-              ws.send(
-                JSON.stringify({
-                  jsonrpc: "2.0",
-                  id: messageObject.id,
-                  result: null,
-                  snapshotId: id,
-                }),
-              );
+              answer({ result: null, snapshotId: id });
 
               // send server event associated to this command
-              ws.send(
-                JSON.stringify({
-                  ...response(),
-                  snapshotId: id,
-                }),
-              );
+              answer({ ...response(), snapshotId: id });
             }
           } catch (error) {
             console.error("Failed to handle fixture for workflow command", {
