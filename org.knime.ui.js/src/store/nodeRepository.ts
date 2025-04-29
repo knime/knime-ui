@@ -95,6 +95,7 @@ export const useNodeRepositoryStore = defineStore("nodeRepository", () => {
     node: NodeTemplateWithExtendedPorts | null,
   ) => {
     showDescriptionForNode.value = node;
+    selectedNode.value = node;
   };
 
   const updateNodeCategoryCache = ({

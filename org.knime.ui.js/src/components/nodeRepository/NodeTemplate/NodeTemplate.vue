@@ -20,7 +20,7 @@ export interface Props {
   nodeTemplate: NodeTemplateWithExtendedPorts;
   displayMode?: NodeRepositoryDisplayModesType;
   isSelected?: boolean;
-  isDescriptionActive: boolean;
+  isDescriptionActive?: boolean;
   isHighlighted?: boolean;
   showFloatingHelpIcon?: boolean;
 }

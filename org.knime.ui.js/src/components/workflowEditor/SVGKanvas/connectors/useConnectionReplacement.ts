@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import type { ExtendedPortType } from "@/api/custom-types";
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
-import { KNIME_MIME } from "@/composables/useDropNode";
+import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
 import { useApplicationStore } from "@/store/application/application";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";

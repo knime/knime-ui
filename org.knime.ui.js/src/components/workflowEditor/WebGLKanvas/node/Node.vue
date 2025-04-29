@@ -40,6 +40,7 @@ import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
 import { useNodeNameTextMetrics } from "./useNodeNameTextMetrics";
+import { useNodeReplacement } from "./useNodeReplacement";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 
 interface Props {
@@ -95,16 +96,35 @@ const isEditable = computed(() => {
 
 const { onNodeLeftDoubleClick } = useNodeDoubleClick({ node: props.node });
 
-const { handlePointerInteraction } = useObjectInteractions({
-  isObjectSelected: () => isNodeSelected(props.node.id),
-  selectObject: async () => {
-    await selectionStore.selectNodes([props.node.id]);
-  },
-  deselectObject: async () => {
-    await selectionStore.deselectNodes([props.node.id]);
-  },
-  onDoubleClick: onNodeLeftDoubleClick,
-});
+const nodeInteractionsStore = useNodeInteractionsStore();
+const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
+  nodeInteractionsStore,
+);
+
+const { isReplacementCandidate, onNodeDragStart, onNodeDragMove, onNodeDrop } =
+  useNodeReplacement({
+    nodeId: props.node.id,
+    position: translatedPosition,
+  });
+
+const { handlePointerInteraction, isDraggingThisObject } =
+  useObjectInteractions({
+    objectId: props.node.id,
+    isObjectSelected: () => isNodeSelected(props.node.id),
+    selectObject: async () => {
+      await selectionStore.selectNodes([props.node.id]);
+    },
+    deselectObject: async () => {
+      await selectionStore.deselectNodes([props.node.id]);
+    },
+    onDoubleClick: onNodeLeftDoubleClick,
+    onInteractionStart: onNodeDragStart,
+    onMove: onNodeDragMove,
+    onMoveEnd: async () => {
+      const { wasReplaced } = await onNodeDrop();
+      return { shouldMove: !wasReplaced };
+    },
+  });
 
 const { isSelectionPreviewShown } = useSelectionPreview({
   objectId: props.node.id,
@@ -233,9 +253,6 @@ const allAllowedActions = computed(() => {
   return { ...baseConfig, canConfigure };
 });
 
-const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
-  useNodeInteractionsStore(),
-);
 const isEditingName = computed(() => nameEditorNodeId.value === props.node.id);
 const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
   extraHeight: () =>
@@ -307,7 +324,7 @@ const nodeLabelPosition = computed(() => {
     :renderable="renderable"
     :visible="renderable"
     :layer="isNodeSelected(node.id) ? canvasLayers.selectedNodes : null"
-    event-mode="static"
+    :event-mode="isDraggingThisObject ? 'none' : 'static'"
     :alpha="floatingConnector && isConnectionForbidden ? 0.7 : 1"
     :position="translatedPosition"
     @rightclick="onRightClick"
@@ -349,6 +366,7 @@ const nodeLabelPosition = computed(() => {
         :kind="node.kind"
         :type="type"
         :icon="icon"
+        :is-replacement-candidate="isReplacementCandidate"
         :is-hovered="isHovering && !isDraggingFloatingConnector"
         :execution-state="
           isMetanode

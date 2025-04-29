@@ -52,6 +52,7 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     const bendpointId = getBendpointId(connectionId, index - 1);
 
     const { handlePointerInteraction } = useObjectInteractions({
+      objectId: bendpointId,
       isObjectSelected: () => isBendpointSelected(bendpointId),
       selectObject: () => Promise.resolve(selectBendpoints(bendpointId)),
       deselectObject: () => Promise.resolve(deselectBendpoints(bendpointId)),
@@ -64,10 +65,10 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
           });
           virtualBendpoint.value = null;
 
-          return Promise.resolve(false);
+          return Promise.resolve({ shouldMove: false });
         }
 
-        return Promise.resolve(true);
+        return Promise.resolve({ shouldMove: true });
       },
     });
 

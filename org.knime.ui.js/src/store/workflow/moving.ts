@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";
 
@@ -11,6 +12,7 @@ type MovingState = {
   isDragging: boolean;
   hasAbortedDrag: boolean;
   movePreviewDelta: XY;
+  dragInitiatorId: string | undefined;
 };
 
 export const useMovingStore = defineStore("moving", {
@@ -19,6 +21,7 @@ export const useMovingStore = defineStore("moving", {
     hasAbortedDrag: false,
     // TODO: rename to `translationDelta`
     movePreviewDelta: { x: 0, y: 0 },
+    dragInitiatorId: undefined,
   }),
   actions: {
     // Shifts the position of the node for the provided amount
@@ -42,8 +45,7 @@ export const useMovingStore = defineStore("moving", {
 
     abortDrag() {
       this.setHasAbortedDrag(true);
-      this.setMovePreview({ deltaX: 0, deltaY: 0 });
-      this.setIsDragging(false);
+      this.resetDragState();
     },
 
     resetAbortDrag() {
@@ -51,6 +53,7 @@ export const useMovingStore = defineStore("moving", {
     },
 
     resetDragState() {
+      this.dragInitiatorId = undefined;
       this.setMovePreview({ deltaX: 0, deltaY: 0 });
       this.setIsDragging(false);
     },

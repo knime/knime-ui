@@ -61,7 +61,7 @@ describe("useObjectInteractions", () => {
   };
 
   type MountOpts = {
-    onMoveEnd?: () => Promise<boolean>;
+    onMoveEnd?: () => Promise<{ shouldMove: boolean }>;
     onDoubleClick?: () => void;
   };
 
@@ -91,6 +91,7 @@ describe("useObjectInteractions", () => {
     const result = mountComposable({
       composable: useObjectInteractions,
       composableProps: {
+        objectId: "root:1",
         isObjectSelected: () => isSelected.value,
         selectObject: selectSpy,
         deselectObject: deselectSpy,
@@ -208,7 +209,7 @@ describe("useObjectInteractions", () => {
 
   describe("drag & drop", () => {
     it("should set drag state and move objects", async () => {
-      const onMoveEnd = vi.fn(() => Promise.resolve(true));
+      const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
       const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
         onMoveEnd,
       });

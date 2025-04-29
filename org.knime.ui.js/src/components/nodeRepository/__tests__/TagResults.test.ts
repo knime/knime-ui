@@ -28,9 +28,10 @@ describe("TagResults", () => {
 
     nodeRepositoryStore.setNodesPerTags({ groupedNodes, append: false });
     nodeRepositoryStore.setTagScrollPosition(100);
-    nodeRepositoryStore.setShowDescriptionForNode(
-      createNodeTemplateWithExtendedPorts({ id: "selected-node-id" }),
-    );
+    const selectedNode = createNodeTemplateWithExtendedPorts({
+      id: "selected-node-id",
+    });
+    nodeRepositoryStore.setShowDescriptionForNode(selectedNode);
 
     vi.mocked(nodeRepositoryStore.getAllNodes).mockImplementation(() =>
       Promise.resolve(),
@@ -40,7 +41,7 @@ describe("TagResults", () => {
       global: { plugins: [testingPinia] },
     });
 
-    return { wrapper, nodeRepositoryStore };
+    return { wrapper, nodeRepositoryStore, selectedNode };
   };
 
   describe("scroller", () => {
@@ -73,12 +74,12 @@ describe("TagResults", () => {
   });
 
   it("renders tags", () => {
-    const { wrapper } = doShallowMount();
+    const { wrapper, selectedNode } = doShallowMount();
 
     const nodeTag = wrapper.findAllComponents(NodesGroupedByTags);
     expect(nodeTag.at(0)?.props()).toStrictEqual({
       tag: "tag:1",
-      selectedNode: null,
+      selectedNode,
       showDescriptionForNode: expect.objectContaining({
         id: "selected-node-id",
       }),
@@ -87,7 +88,7 @@ describe("TagResults", () => {
     });
     expect(nodeTag.at(1)?.props()).toStrictEqual({
       tag: "tag:2",
-      selectedNode: null,
+      selectedNode,
       showDescriptionForNode: expect.objectContaining({
         id: "selected-node-id",
       }),

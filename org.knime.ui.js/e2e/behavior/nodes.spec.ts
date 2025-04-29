@@ -18,7 +18,9 @@ import {
   changeNameCommand,
 } from "./workflowCommandMocks/node-name-and-label";
 import { nodeTranslate } from "./workflowCommandMocks/node-translate";
+import { replaceNode } from "./workflowCommandMocks/replace-node";
 import { undoNodePosition } from "./workflowUndoCommandMock/node-undo";
+import { undoNodeReplace } from "./workflowUndoCommandMock/undo-node-replace";
 
 const IDS = {
   node1: "root:1",
@@ -50,6 +52,11 @@ const startForPointerInteractions = (
     workflowCommandFn,
     workflowUndoCommand,
   });
+
+const executeUndo = async (page) => {
+  await page.keyboard.press("ControlOrMeta+Z");
+  await page.waitForTimeout(500);
+};
 
 test.describe("selection", () => {
   test("selects only 1 node", async ({ page }) => {
@@ -251,10 +258,71 @@ test.describe("dragging", () => {
     await page.mouse.click(kanvas!.x + 5, kanvas!.y + 5);
     await assertSnapshot(page);
 
-    // execute undo
-    await page.keyboard.press("ControlOrMeta+Z");
-    await page.waitForTimeout(500);
+    await executeUndo(page);
+    await assertSnapshot(page);
+  });
+});
 
+test.describe("node replacement", () => {
+  test("should replace node", async ({ page }) => {
+    await startForPointerInteractions(page, replaceNode);
+
+    const [n1x, n1y] = await getNodePosition(page, IDS.node1);
+    const [n2x, n2y] = await getNodePosition(page, IDS.node2);
+
+    await page.mouse.move(n1x, n1y);
+    await page.mouse.down();
+    // move twice to better simulate a user interaction because
+    // playwright moves the mouse immediately
+    await page.mouse.move(n2x - 30, n2y - 30);
+    await page.mouse.move(n2x - 20, n2y - 20);
+    await assertSnapshot(page);
+
+    await page.mouse.up();
+    await assertSnapshot(page);
+  });
+
+  test("should undo node replacement", async ({ page }) => {
+    await startForPointerInteractions(page, replaceNode, {
+      fn: undoNodeReplace,
+      data: {},
+    });
+
+    const [n1x, n1y] = await getNodePosition(page, IDS.node1);
+    const [n2x, n2y] = await getNodePosition(page, IDS.node2);
+
+    await page.mouse.move(n1x, n1y);
+    await page.mouse.down();
+    // move twice to better simulate a user interaction because
+    // playwright moves the mouse immediately
+    await page.mouse.move(n2x - 30, n2y - 30);
+    await page.mouse.move(n2x - 20, n2y - 20);
+    await page.mouse.up();
+
+    await executeUndo(page);
+    await assertSnapshot(page);
+  });
+
+  test("should abort node replacement", async ({ page }) => {
+    await startForPointerInteractions(page);
+
+    const [n1x, n1y] = await getNodePosition(page, IDS.node1);
+    const [n2x, n2y] = await getNodePosition(page, IDS.node2);
+
+    await page.mouse.move(n1x, n1y);
+    await page.mouse.down();
+    // move twice to better simulate a user interaction because
+    // playwright moves the mouse immediately
+    await page.mouse.move(n2x - 30, n2y - 30);
+    await page.mouse.move(n2x - 20, n2y - 20);
+    await assertSnapshot(page);
+
+    await page.keyboard.press("Escape");
+    // double check that move again does not affect anything because of the abort
+    await page.mouse.move(n2x - 10, n2y - 10);
+    await assertSnapshot(page);
+
+    await page.mouse.up();
     await assertSnapshot(page);
   });
 });

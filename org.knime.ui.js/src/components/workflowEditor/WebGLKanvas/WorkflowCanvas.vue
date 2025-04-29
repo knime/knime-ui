@@ -9,7 +9,7 @@ import {
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 
-import { useDropNode } from "@/composables/useDropNode";
+import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -25,7 +25,7 @@ import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 
-const { onDrop, onDragOver } = useDropNode();
+const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 
 const openQuickActionMenu = (event: PointerEvent) => {

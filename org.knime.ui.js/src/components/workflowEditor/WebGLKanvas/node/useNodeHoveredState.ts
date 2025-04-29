@@ -1,4 +1,4 @@
-import { onUnmounted, ref, watch } from "vue";
+import { onUnmounted, ref, useId, watch } from "vue";
 
 const hoveredNodeId = ref<string | null>(null);
 
@@ -42,16 +42,16 @@ watch(hoveredNodeId, (nextId, prevId) => {
     const wildcardCallbacks = callbackRegistry.get("*");
     wildcardCallbacks?.forEach(({ onLeave }) => onLeave?.(prevId));
 
-    const prevCallbacks = callbackRegistry.get(prevId);
-    prevCallbacks?.forEach(({ onLeave }) => onLeave?.(prevId));
+    const leaveCallbacks = callbackRegistry.get(prevId);
+    leaveCallbacks?.forEach(({ onLeave }) => onLeave?.(prevId));
   }
 
   if (nextId) {
     const wildcardCallbacks = callbackRegistry.get("*");
     wildcardCallbacks?.forEach(({ onEnter }) => onEnter?.(nextId));
 
-    const nextCallbacks = callbackRegistry.get(nextId);
-    nextCallbacks?.forEach(({ onEnter }) => onEnter?.(nextId));
+    const enterCallbacks = callbackRegistry.get(nextId);
+    enterCallbacks?.forEach(({ onEnter }) => onEnter?.(nextId));
   }
 });
 
@@ -70,7 +70,7 @@ type UseNodeHoveredStateListener = {
 export const useNodeHoveredStateListener = (
   options: UseNodeHoveredStateListener,
 ) => {
-  const listenerId = window.crypto.randomUUID();
+  const listenerId = useId();
 
   if (!callbackRegistry.has(options.nodeId)) {
     callbackRegistry.set(options.nodeId, new Map());

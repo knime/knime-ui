@@ -15,12 +15,14 @@ import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
 import { useSpaceOperationsStore } from "../spaces/spaceOperations";
 
+import { useMovingStore } from "./moving";
 import { useWorkflowStore } from "./workflow";
 
 type NodeInteractionsState = {
   nameEditorNodeId: string | null;
   nameEditorDimensions: { width: number; height: number };
   labelEditorNodeId: string | null;
+  replacementCandidateId: string | null;
 };
 
 export const useNodeInteractionsStore = defineStore("nodeInteractions", {
@@ -28,6 +30,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
     nameEditorNodeId: null,
     nameEditorDimensions: { width: 0, height: 0 },
     labelEditorNodeId: null,
+    replacementCandidateId: null,
   }),
   actions: {
     openNameEditor(nodeId: string) {
@@ -220,25 +223,39 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       return { newNodeId };
     },
 
-    replaceNode({
+    async replaceNode({
       targetNodeId,
       replacementNodeId,
       nodeFactory,
     }: {
+      /**
+       * Node to be replaced
+       */
       targetNodeId: string;
+      /**
+       * When defined, this refers to the node id in the canvas that will
+       * be the replacement
+       */
       replacementNodeId?: string;
+      /**
+       * When defined, this refers to the node template factory which will
+       * instantiate a new node to replace one in the canvas. This is used when
+       * dragging from the node repository
+       */
       nodeFactory?: NodeFactoryKey;
     }) {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
 
-      return API.workflowCommand.ReplaceNode({
+      await API.workflowCommand.ReplaceNode({
         projectId,
         workflowId,
         targetNodeId,
         replacementNodeId,
         nodeFactory,
       });
+
+      useMovingStore().resetDragState();
     },
 
     insertNode({

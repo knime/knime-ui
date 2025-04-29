@@ -14,6 +14,7 @@ import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
 import NodeTorsoMissing from "./NodeTorsoMissing.vue";
 import NodeTorsoNormal from "./NodeTorsoNormal.vue";
+import NodeTorsoReplace from "./NodeTorsoReplace.vue";
 import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
 import { torsoDrawUtils } from "./drawUtils";
 
@@ -22,6 +23,7 @@ type Props = {
   kind: Node.KindEnum;
   icon: string | null;
   type: NativeNodeInvariants.TypeEnum | null;
+  isReplacementCandidate: boolean;
   executionState?: MetaNodeState.ExecutionStateEnum;
   isHovered?: boolean;
 };
@@ -61,24 +63,30 @@ const renderTorso = (graphics: GraphicsInst) => {
       @render="renderTorso($event)"
     />
 
-    <NodeTorsoMissing v-if="type === NativeNodeInvariants.TypeEnum.Missing" />
-    <NodeTorsoForbidden
-      v-if="type === NativeNodeInvariants.TypeEnum.Forbidden"
-    />
+    <template v-if="isReplacementCandidate">
+      <NodeTorsoReplace />
+    </template>
 
-    <NodeTorsoMetanode
-      v-else-if="isMetanode"
-      :execution-state="executionState"
-    />
+    <template v-else>
+      <NodeTorsoMissing v-if="type === NativeNodeInvariants.TypeEnum.Missing" />
+      <NodeTorsoForbidden
+        v-if="type === NativeNodeInvariants.TypeEnum.Forbidden"
+      />
 
-    <NodeTorsoNormal
-      v-else-if="isKnownNode"
-      :node-id="nodeId"
-      :type="type"
-      :kind="kind"
-      :icon="icon"
-    />
+      <NodeTorsoMetanode
+        v-else-if="isMetanode"
+        :execution-state="executionState"
+      />
 
-    <NodeTorsoUnknown v-else />
+      <NodeTorsoNormal
+        v-else-if="isKnownNode"
+        :node-id="nodeId"
+        :type="type"
+        :kind="kind"
+        :icon="icon"
+      />
+
+      <NodeTorsoUnknown v-else />
+    </template>
   </Container>
 </template>

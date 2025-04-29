@@ -89,6 +89,7 @@ const movingStore = useMovingStore();
 const { movePreviewDelta } = storeToRefs(movingStore);
 
 const { handlePointerInteraction } = useObjectInteractions({
+  objectId: props.annotation.id,
   isObjectSelected: () => isSelected.value,
   selectObject: () =>
     Promise.resolve(selectionStore.selectAnnotations(props.annotation.id)),

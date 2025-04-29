@@ -2,7 +2,7 @@
 import { nextTick, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useDropNode } from "@/composables/useDropNode";
+import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
@@ -21,7 +21,7 @@ import AnnotationRectangle from "./annotations/AnnotationRectangle.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
 import KanvasFilters from "./kanvas/KanvasFilters.vue";
 
-const { onDrop, onDragOver } = useDropNode();
+const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const kanvas = ref<InstanceType<typeof Kanvas>>();
 
 watch(

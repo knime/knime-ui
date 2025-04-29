@@ -152,7 +152,9 @@ export const useNodeTemplatesStore = defineStore("nodeTemplates", {
       this.updateCache(nodeTemplateDictionary);
     },
 
-    setDraggingNodeTemplate(nodeTemplate: NodeTemplateWithExtendedPorts) {
+    setDraggingNodeTemplate(
+      nodeTemplate: NodeTemplateWithExtendedPorts | null,
+    ) {
       this.setIsDraggingNodeTemplate(Boolean(nodeTemplate));
       this.setDraggedTemplateData(nodeTemplate);
     },

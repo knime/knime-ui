@@ -16,7 +16,7 @@ import { animate } from "motion";
 
 import type { Workflow } from "@/api/custom-types";
 import { PortType } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/composables/useDropNode";
+import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";

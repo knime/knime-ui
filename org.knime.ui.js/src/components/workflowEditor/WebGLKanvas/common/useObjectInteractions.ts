@@ -1,4 +1,5 @@
-import { ref } from "vue";
+/* eslint-disable no-undefined */
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -14,10 +15,13 @@ import { usePointerDownDoubleClick } from "./usePointerDownDoubleClick";
 const MIN_MOVE_THRESHOLD = $shapes.gridSize.x;
 
 type UseObjectInteractionsOptions = {
+  objectId: string;
   isObjectSelected: () => boolean;
   selectObject: () => Promise<void>;
   deselectObject: () => Promise<void>;
-  onMoveEnd?: () => Promise<boolean>;
+  onInteractionStart?: () => void;
+  onMove?: () => void;
+  onMoveEnd?: () => Promise<{ shouldMove: boolean }>;
   onDoubleClick?: (event: PointerEvent) => void;
 };
 
@@ -51,17 +55,39 @@ export const useObjectInteractions = (
     isObjectSelected,
     selectObject,
     deselectObject,
-    onMoveEnd = () => Promise.resolve(true),
+    onMoveEnd = () => Promise.resolve({ shouldMove: true }),
   } = options;
 
   const selectionStore = useSelectionStore();
   const movingStore = useMovingStore();
+  const { dragInitiatorId, hasAbortedDrag, isDragging } =
+    storeToRefs(movingStore);
 
   const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
   const { zoomFactor, pixiApplication } = storeToRefs(useWebGLCanvasStore());
 
   const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const registerDragAbort = () => {
+    const abort = (event: KeyboardEvent) => {
+      if (isDragging.value && event.key === "Escape") {
+        movingStore.abortDrag();
+      }
+    };
+
+    const teardown = () => {
+      if (hasAbortedDrag.value) {
+        movingStore.resetAbortDrag();
+      }
+
+      window.removeEventListener("keydown", abort);
+    };
+
+    window.addEventListener("keydown", abort);
+
+    return teardown;
+  };
 
   const onPointerDown = async (
     pointerDownEvent: PIXI.FederatedPointerEvent,
@@ -71,7 +97,7 @@ export const useObjectInteractions = (
       return;
     }
 
-    consola.debug("object interaction", { pointerDownEvent });
+    consola.trace("object interaction", { pointerDownEvent });
     markEventAsHandled(pointerDownEvent, { initiator: "object-interaction" });
 
     // check for double clicks
@@ -82,6 +108,7 @@ export const useObjectInteractions = (
 
     const canvas = pixiApplication.value!.canvas;
     canvas.setPointerCapture(pointerDownEvent.pointerId);
+    const removeDragAbortListener = registerDragAbort();
 
     startPos.value = {
       x: pointerDownEvent.global.x,
@@ -103,6 +130,9 @@ export const useObjectInteractions = (
       await selectObject();
     }
 
+    // make sure to start after selection has been made, because that's async
+    options.onInteractionStart?.();
+
     let didDrag = false;
 
     const onMove = (pointerMoveEvent: PointerEvent): void => {
@@ -119,15 +149,23 @@ export const useObjectInteractions = (
         return;
       }
 
+      dragInitiatorId.value = options.objectId;
       didDrag = true;
+
+      if (hasAbortedDrag.value) {
+        return;
+      }
+
+      options.onMove?.();
       movingStore.setIsDragging(true);
       movingStore.setMovePreview({ deltaX, deltaY });
     };
 
     const onUp = () => {
-      onMoveEnd().then(async (shouldMove) => {
+      onMoveEnd().then(async ({ shouldMove }) => {
         if (shouldMove && didDrag) {
           await movingStore.moveObjects();
+          dragInitiatorId.value = undefined;
         } else if (wasSelectedOnStart) {
           // if a drag did not occur then an interaction on a previously
           // selected object should prioritize a selection on that object alone upon
@@ -137,6 +175,7 @@ export const useObjectInteractions = (
         }
       });
 
+      removeDragAbortListener();
       canvas.releasePointerCapture(pointerDownEvent.pointerId);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
@@ -146,5 +185,10 @@ export const useObjectInteractions = (
     canvas.addEventListener("pointerup", onUp);
   };
 
-  return { handlePointerInteraction: onPointerDown };
+  return {
+    handlePointerInteraction: onPointerDown,
+    isDraggingThisObject: computed(
+      () => options.objectId === dragInitiatorId.value,
+    ),
+  };
 };

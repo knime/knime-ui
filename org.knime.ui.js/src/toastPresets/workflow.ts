@@ -8,10 +8,16 @@ type WorkflowCommandsToastPresets = {
   nodeLabelEditFail: ToastPresetErrorHandler;
 };
 
+type AddToCanvasToastPresets = {
+  addNode: ToastPresetErrorHandler;
+  replaceNode: ToastPresetErrorHandler;
+};
+
 export type WorkflowToastPresets = {
   commands: WorkflowCommandsToastPresets;
   componentLoadedWithWarning: ToastPresetErrorHandler;
   componentLoadingFailed: ToastPresetErrorHandler;
+  addToCanvas: AddToCanvasToastPresets;
 };
 
 export const getPresets = (
@@ -46,6 +52,19 @@ export const getPresets = (
         type: "error",
         autoRemove: false,
       });
+    },
+    addToCanvas: {
+      addNode: ({ error }) =>
+        defaultErrorPresetHandler($toast, error, {
+          type: "error",
+          headline: "Failed to add node to canvas",
+        }),
+
+      replaceNode: ({ error }) =>
+        defaultErrorPresetHandler($toast, error, {
+          type: "error",
+          headline: "Failed to replace node in the canvas",
+        }),
     },
   };
 };

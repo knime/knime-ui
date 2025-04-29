@@ -7,7 +7,7 @@ import {
   type NodeTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/composables/useDropNode";
+import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 import { deepMocked, mockBoundingRect } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
@@ -205,14 +205,14 @@ describe("DraggableNodeTemplate", () => {
       wrapper.trigger("dragstart", testEvent);
 
       expect(document.body.childNodes.length).toBe(1);
-      expect(document.body.childNodes[0]).toBe(wrapper.vm.dragGhost);
-      expect(wrapper.vm.dragGhost).toBeTruthy();
+      expect(document.body.childNodes[0]).toBe(
+        document.body.querySelector("#draggable-node-ghost"),
+      );
 
       // remove node preview clone
       wrapper.trigger("dragend", { dataTransfer: { dropEffect: "" } });
 
       expect(document.body.childNodes.length).toBe(0);
-      expect(wrapper.vm.dragGhost).toBeFalsy();
     });
 
     it("sets a ghostImage", () => {
@@ -220,7 +220,9 @@ describe("DraggableNodeTemplate", () => {
 
       wrapper.trigger("dragstart", testEvent);
 
-      const clonedNodePreview = wrapper.vm.dragGhost as unknown as HTMLElement;
+      const clonedNodePreview = document.body.querySelector(
+        "#draggable-node-ghost",
+      ) as HTMLElement;
 
       // Correct Styling
       expect(clonedNodePreview.style.position).toBe("absolute");
@@ -230,7 +232,7 @@ describe("DraggableNodeTemplate", () => {
       expect(clonedNodePreview.style.height).toBe("70px");
 
       expect(testEvent.dataTransfer.setDragImage).toHaveBeenCalledWith(
-        wrapper.vm.dragGhost,
+        document.body.querySelector("#draggable-node-ghost"),
         35,
         35,
       );

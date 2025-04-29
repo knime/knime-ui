@@ -1,144 +1,96 @@
-<script>
-import { mapActions, mapState } from "pinia";
+<script setup lang="ts">
+import { ref, useTemplateRef } from "vue";
+import { storeToRefs } from "pinia";
 
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
-import { KNIME_MIME } from "@/composables/useDropNode";
-import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { usePanelStore } from "@/store/panel";
-import { useWorkflowStore } from "@/store/workflow/workflow";
-import { useSelectionEvents } from "../uiExtensions/common/useSelectionEvents";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
+
 /**
- * This component was ripped out of NodeTemplate to make NodeTemplate re-useable. This makes still heavy use of the
- * store and might be further improved by emitting events and let the parents handle the store actions.
+ * This component wraps around NodeTemplate to add dragging functionality.
  */
-export default {
-  components: {
-    NodeTemplate,
-  },
-  props: {
-    displayMode: {
-      type: String,
-      default: "icon",
-    },
-    nodeTemplate: {
-      type: Object,
-      default: null,
-    },
-    isSelected: {
-      type: Boolean,
-      default: false,
-    },
-    isHighlighted: {
-      type: Boolean,
-      default: false,
-    },
-    isDescriptionActive: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ["showNodeDescription"],
-  setup() {
-    const addNodeToWorkflow = useAddNodeToWorkflow();
-    return {
-      addNodeToWorkflow,
-    };
-  },
-  data() {
-    return {
-      dragGhost: null,
-      shouldShowDescriptionOnAbort: false,
-    };
-  },
-  computed: {
-    ...mapState(usePanelStore, ["isExtensionPanelOpen"]),
-    ...mapState(useWorkflowStore, {
-      workflow: "activeWorkflow",
-      isWritable: "isWritable",
-    }),
-    ...mapState(useSelectionEvents, { selectedNodes: "getSelectedNodes" }),
-  },
-  methods: {
-    ...mapActions(useNodeTemplatesStore, ["setDraggingNodeTemplate"]),
-    ...mapActions(usePanelStore, ["closeExtensionPanel"]),
 
-    onDragStart(e) {
-      // close description panel
-      this.shouldShowDescriptionOnAbort =
-        this.isSelected && this.isExtensionPanelOpen;
-      this.closeExtensionPanel();
-      this.setDraggingNodeTemplate(this.nodeTemplate);
+type Props = {
+  nodeTemplate: NodeTemplateWithExtendedPorts;
+  isSelected?: boolean;
+  isHighlighted?: boolean;
+  isDescriptionActive?: boolean;
+  displayMode?: NodeRepositoryDisplayModesType;
+};
 
-      // Fix for cursor style for Firefox
-      if (!this.isWritable && navigator.userAgent.indexOf("Firefox") !== -1) {
-        e.currentTarget.style.cursor = "not-allowed";
-      }
-      // clone node preview
-      this.dragGhost = this.$refs.nodeTemplate
-        .getNodePreview()
-        .$el.cloneNode(true);
+const props = withDefaults(defineProps<Props>(), {
+  displayMode: "icon",
+  isSelected: false,
+  isHighlighted: false,
+  isDescriptionActive: false,
+});
 
-      // position it outside the view of the user
-      this.dragGhost.style.position = "absolute";
-      this.dragGhost.style.left = "-100px";
-      this.dragGhost.style.top = "0px";
-      this.dragGhost.style.width = "70px";
-      this.dragGhost.style.height = "70px";
-      document.body.appendChild(this.dragGhost);
+const emit = defineEmits<{
+  showNodeDescription: [];
+}>();
 
-      // this ensures no other element (like the name) will be part of the drag-ghost bitmap
-      const dragGhostRect = this.dragGhost.getBoundingClientRect();
+const addNodeToWorkflow = useAddNodeToWorkflow();
 
-      // 'screenshot' cloned node for use as drag-ghost. position it, s.th. cursor is in the middle
-      e.dataTransfer.setDragImage(
-        this.dragGhost,
-        dragGhostRect.width / 2,
-        dragGhostRect.height / 2,
-      );
+const panelStore = usePanelStore();
+const { isExtensionPanelOpen } = storeToRefs(panelStore);
 
-      e.dataTransfer.setData("text/plain", this.nodeTemplate.id);
-      e.dataTransfer.setData(
-        KNIME_MIME,
-        JSON.stringify(this.nodeTemplate.nodeFactory),
-      );
-    },
-    onDragEnd(e) {
-      e.target.style.cursor = "pointer";
-      this.setDraggingNodeTemplate(null);
+const shouldShowDescriptionOnAbort = ref(false);
+const dragNodeIntoCanvas = useDragNodeIntoCanvas();
 
-      // remove cloned node preview
-      if (this.dragGhost) {
-        document.body.removeChild(this.dragGhost);
-        this.dragGhost = null;
-      }
+const nodeTemplateRef = useTemplateRef("nodeTemplate");
 
-      // ending with dropEffect none indicates that dragging has been aborted
-      if (e.dataTransfer.dropEffect === "none") {
-        this.onDragAbort();
-      }
-    },
-    onDragAbort() {
-      // if drag is aborted and node was showing the description before, show it again
-      if (this.shouldShowDescriptionOnAbort) {
-        this.$emit("showNodeDescription");
-      }
-    },
-    onDoubleClick() {
-      this.addNodeToWorkflow(this.nodeTemplate);
-    },
-    onDrag(e) {
-      if (!this.isWritable) {
-        e.currentTarget.style.cursor = "not-allowed";
-      }
-    },
-  },
+const ghostElementId = "draggable-node-ghost";
+const createDragGhost = () => {
+  // clone node preview
+  const dragGhost = nodeTemplateRef
+    .value!.getNodePreview()
+    .$el.cloneNode(true) as HTMLElement;
+
+  dragGhost.id = ghostElementId;
+  // position it outside the view of the user
+  dragGhost.style.position = "absolute";
+  dragGhost.style.left = "-100px";
+  dragGhost.style.top = "0px";
+  dragGhost.style.width = "70px";
+  dragGhost.style.height = "70px";
+  document.body.appendChild(dragGhost);
+
+  // this ensures no other element (like the name) will be part of the drag-ghost bitmap
+  const rect = dragGhost.getBoundingClientRect();
+
+  return { element: dragGhost, size: rect };
+};
+
+const onDragStart = (event: DragEvent) => {
+  // close description panel
+  shouldShowDescriptionOnAbort.value =
+    props.isSelected && isExtensionPanelOpen.value;
+  panelStore.closeExtensionPanel();
+
+  dragNodeIntoCanvas.onDragStart(event, props.nodeTemplate, createDragGhost);
+};
+
+const onDragEnd = (event: DragEvent) => {
+  const { wasAborted } = dragNodeIntoCanvas.onDragEnd(event);
+
+  const dragGhost = document.querySelector(`#${ghostElementId}`);
+  if (dragGhost) {
+    document.body.removeChild(dragGhost);
+  }
+
+  if (wasAborted && shouldShowDescriptionOnAbort.value) {
+    emit("showNodeDescription");
+  }
 };
 </script>
 
 <template>
   <NodeTemplate
+    v-if="nodeTemplate"
     ref="nodeTemplate"
     draggable="true"
     :node-template="nodeTemplate"
@@ -149,8 +101,8 @@ export default {
     :show-floating-help-icon="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
-    @dblclick="onDoubleClick"
-    @drag="onDrag"
-    @help-icon-click="$emit('showNodeDescription')"
+    @dblclick="addNodeToWorkflow(nodeTemplate)"
+    @drag="dragNodeIntoCanvas.onDrag"
+    @help-icon-click="emit('showNodeDescription')"
   />
 </template>

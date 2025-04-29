@@ -9,6 +9,7 @@ import { storeToRefs } from "pinia";
 
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { ContainerInst } from "@/vue3-pixi";
 import { canvasRendererUtils } from "../util/canvasRenderer";
@@ -22,6 +23,7 @@ export const useTooltip = (params: {
 }) => {
   const workflowStore = useWorkflowStore();
   const { tooltip } = storeToRefs(workflowStore);
+  const { isDragging } = storeToRefs(useMovingStore());
 
   let removeTooltipWatcher: (() => void) | null;
   // eslint-disable-next-line one-var
@@ -61,6 +63,10 @@ export const useTooltip = (params: {
   };
 
   const showTooltip = () => {
+    if (isDragging.value) {
+      return;
+    }
+
     // add watcher to component's "tooltip" property
     const removeWatcher = watch(
       params.tooltip,
