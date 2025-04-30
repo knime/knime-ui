@@ -41,7 +41,9 @@ const onClick = () => {
   </g>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .floating-button {
   & circle {
     fill: white;
@@ -60,17 +62,18 @@ const onClick = () => {
     }
   }
 
-  & :deep(svg) {
-    stroke-width: calc(32px / 10);
+  & svg {
+    @mixin svg-icon-size 10;
+
     stroke: var(--knime-masala);
     pointer-events: none;
   }
 
-  &:hover :deep(svg) {
+  &:hover svg {
     stroke: var(--knime-white);
   }
 
-  &:active :deep(svg) {
+  &:active svg {
     stroke: var(--knime-white);
   }
 }

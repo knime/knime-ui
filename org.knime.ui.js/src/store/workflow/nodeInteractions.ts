@@ -92,6 +92,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       });
     },
 
+    // TODO NXT-3668 reduce complexity
     async addNode({
       position,
       // use either nodeFactory or spaceItemReference

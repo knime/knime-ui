@@ -36,9 +36,12 @@ const errorIconSize = 15;
   </g>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .error-icon {
+  @mixin svg-icon-size v-bind("errorIconSize");
+
   user-select: none;
-  stroke-width: calc(32px / 15);
 }
 </style>
