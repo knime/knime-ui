@@ -168,13 +168,12 @@ public final class ImportURI {
                 runInDisplayThread(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion));
             } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
                 runInDisplayThread(() -> checkAndInstallExtension(extensionImport));
-            } else if (entityImportInProgress instanceof NodeImport) {
+            } else {
+                // node and component import
                 runInDisplayThread(() -> {
                     var cursorLocation = cursorLocationSupplier.get();
                     sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
                 });
-            } else {
-                LOGGER.errorWithFormat("The URI '%s' doesn't represent an object that can be imported.", uriString);
             }
         });
         return true;
