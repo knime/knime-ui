@@ -125,6 +125,7 @@ const apiLayer: UIExtensionAPILayer = {
       projectId: projectId.value,
       workflowId: workflowId.value,
       nodeId: selectedNode.value.id,
+      versionId: versionId.value,
     });
   },
 

@@ -98,6 +98,7 @@ export interface NodeConfigurationState {
     projectId: string;
     workflowId: string;
     nodeId: string;
+    versionId?: string;
   } | null;
   pushEventDispatcher: UIExtensionPushEventDispatcher;
   timestamp: number | null;

@@ -39,8 +39,9 @@ const mockGetNodeDialog = (additionalMocks?: object) => {
 const toast = mockedObject(getToastsProvider());
 
 describe("NodeConfigLoader.vue", () => {
+  const nodeId = "node1";
   const dummyNode = createNativeNode({
-    id: "node1",
+    id: nodeId,
     outPorts: [],
     allowedActions: {
       canExecute: false,
@@ -57,9 +58,12 @@ describe("NodeConfigLoader.vue", () => {
     "props" | "slots"
   >;
 
+  const projectId = "project-id";
+  const workflowId = "workflow-id";
+
   const defaultProps: MountOpts["props"] = {
-    projectId: "project-id",
-    workflowId: "workflow-id",
+    projectId,
+    workflowId,
     versionId: undefined,
     selectedNode: dummyNode,
   };
@@ -84,10 +88,10 @@ describe("NodeConfigLoader.vue", () => {
     doMount();
 
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith({
-      projectId: defaultProps.projectId,
-      workflowId: defaultProps.workflowId,
+      projectId,
+      workflowId,
       versionId: CURRENT_STATE_VERSION,
-      nodeId: defaultProps.selectedNode.id,
+      nodeId,
     });
   });
 
@@ -97,10 +101,10 @@ describe("NodeConfigLoader.vue", () => {
     doMount({ props: { ...defaultProps, versionId }, slots: {} });
 
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith({
-      projectId: defaultProps.projectId,
-      workflowId: defaultProps.workflowId,
+      projectId,
+      workflowId,
       versionId,
-      nodeId: defaultProps.selectedNode.id,
+      nodeId,
     });
   });
 
@@ -109,9 +113,7 @@ describe("NodeConfigLoader.vue", () => {
     const { wrapper } = doMount();
     const newNode = { ...dummyNode, id: "node2" };
 
-    wrapper.setProps({ selectedNode: newNode });
-
-    await nextTick();
+    await wrapper.setProps({ selectedNode: newNode });
 
     expect(mockedAPI.node.getNodeDialog).toBeCalledTimes(2);
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith(
@@ -135,10 +137,10 @@ describe("NodeConfigLoader.vue", () => {
     await flushPromises();
     wrapper2.unmount();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
-      projectId: defaultProps.projectId,
-      workflowId: defaultProps.workflowId,
+      projectId,
+      workflowId,
       versionId: CURRENT_STATE_VERSION,
-      nodeId: defaultProps.selectedNode.id,
+      nodeId,
       extensionType: "dialog",
     });
   });
@@ -155,10 +157,10 @@ describe("NodeConfigLoader.vue", () => {
     await flushPromises();
     wrapper.unmount();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
-      projectId: defaultProps.projectId,
-      workflowId: defaultProps.workflowId,
+      projectId,
+      workflowId,
       versionId,
-      nodeId: defaultProps.selectedNode.id,
+      nodeId,
       extensionType: "dialog",
     });
   });
@@ -235,10 +237,10 @@ describe("NodeConfigLoader.vue", () => {
       expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
         dataServiceRequest: "request",
         extensionType: "dialog",
-        nodeId: "node1",
-        projectId: "project-id",
+        nodeId,
+        projectId,
         serviceType: "data",
-        workflowId: "workflow-id",
+        workflowId,
         versionId: CURRENT_STATE_VERSION,
       });
     });
@@ -266,17 +268,22 @@ describe("NodeConfigLoader.vue", () => {
       expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
         dataServiceRequest: "request",
         extensionType: "dialog",
-        nodeId: "node1",
-        projectId: "project-id",
+        nodeId,
+        projectId,
         serviceType: "data",
-        workflowId: "workflow-id",
+        workflowId,
         versionId,
       });
     });
 
     it("implements publishData", async () => {
       mockGetNodeDialog();
-      const { wrapper, mockedStores } = doMount();
+      const versionId = "version-id";
+      const { wrapper, mockedStores } = doMount({
+        props: { ...defaultProps, versionId },
+        slots: {},
+      });
+
       await flushPromises();
       expect(
         mockedStores.nodeConfigurationStore.latestPublishedData,
@@ -288,9 +295,10 @@ describe("NodeConfigLoader.vue", () => {
         data: {
           mock: "data",
         },
-        projectId: "project-id",
-        workflowId: "workflow-id",
-        nodeId: "node1",
+        projectId,
+        workflowId,
+        nodeId,
+        versionId,
       });
     });
 

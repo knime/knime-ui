@@ -173,11 +173,13 @@ const latestPublishedDataForThisNode = computed(() => {
   if (latestPublishedData.value === null) {
     return null;
   }
-  const { projectId, workflowId, nodeId, data } = latestPublishedData.value;
+  const { projectId, workflowId, nodeId, versionId, data } =
+    latestPublishedData.value;
   if (
     projectId !== props.projectId ||
     workflowId !== props.workflowId ||
-    nodeId !== props.selectedNode.id
+    nodeId !== props.selectedNode.id ||
+    versionId !== props.versionId
   ) {
     return null;
   }

@@ -7,7 +7,6 @@ import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import type {
   Alert,
   ApplyState,
-  UIExtensionPushEvents,
   ViewState,
 } from "@knime/ui-extension-renderer/api";
 import { UIExtension } from "@knime/ui-extension-renderer/vue";
@@ -93,6 +92,42 @@ describe("NodeViewLoader.vue", () => {
       versionId,
       nodeId: props.selectedNode.id,
     });
+  });
+
+  it("is aware of version when computing latestPublishedDataForThisNode", async () => {
+    mockGetNodeView();
+    const { wrapper, mockedStores } = doMount();
+    // 1. no versionId in latestPublishedData
+    mockedStores.nodeConfigurationStore.setLatestPublishedData({
+      data: { mock: "new-data" },
+      projectId: "project-id",
+      workflowId: "workflow-id",
+      nodeId: "node1",
+      versionId: undefined,
+    });
+    const nodeViewLoaderInstance = wrapper.vm as any;
+
+    expect(nodeViewLoaderInstance.latestPublishedDataForThisNode).toEqual({
+      mock: "new-data",
+    });
+
+    const versionId = "version-id";
+    await wrapper.setProps({ versionId });
+    expect(nodeViewLoaderInstance.latestPublishedDataForThisNode).toBeNull();
+
+    // 2. versionId in latestPublishedData
+    mockedStores.nodeConfigurationStore.setLatestPublishedData({
+      data: { mock: "new-data" },
+      projectId: "project-id",
+      workflowId: "workflow-id",
+      nodeId: "node1",
+      versionId: "version-id",
+    });
+    await wrapper.setProps({ versionId: undefined });
+    expect(nodeViewLoaderInstance.latestPublishedDataForThisNode).toBeNull();
+
+    await wrapper.setProps({ versionId: "other-version-id" });
+    expect(nodeViewLoaderInstance.latestPublishedDataForThisNode).toBeNull();
   });
 
   it("should load the node view when the selected node changes and the new node has a view", async () => {
@@ -301,7 +336,7 @@ describe("NodeViewLoader.vue", () => {
       await nextTick();
 
       expect(pushEventDispatcher).toHaveBeenCalledWith({
-        eventType: "DataEvent" satisfies UIExtensionPushEvents.KnownEventType,
+        eventType: "DataEvent",
         payload: { mock: "new-data" },
       });
     });

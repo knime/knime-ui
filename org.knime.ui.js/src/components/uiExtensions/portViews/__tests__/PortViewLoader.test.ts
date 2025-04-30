@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
@@ -5,7 +6,12 @@ import { API } from "@api";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
-import { SelectionEvent } from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/custom-types";
+import {
+  Node,
+  NodeState,
+  SelectionEvent,
+} from "@/api/gateway-api/generated-api";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
@@ -16,25 +22,43 @@ import PortViewLoader from "../PortViewLoader.vue";
 const mockedAPI = deepMocked(API);
 
 describe("PortViewLoader.vue", () => {
-  const dummyNode = {
-    id: "node1",
-    selected: true,
+  const nodeId = "node1";
+  const dummyNode: KnimeNode = {
+    id: nodeId,
+    name: "node1",
     outPorts: [
-      { portContentVersion: "dummy" },
-      { portContentVersion: "dummy2" },
+      {
+        index: 1,
+        connectedVia: [],
+        typeId: "someTypeId",
+        portContentVersion: 1,
+      },
+      {
+        index: 2,
+        connectedVia: [],
+        typeId: "someTypeId",
+        portContentVersion: 2,
+      },
     ],
-    isLoaded: false,
+    inPorts: [],
     state: {
-      executionState: "UNSET",
+      executionState: NodeState.ExecutionStateEnum.IDLE,
     },
     allowedActions: {
       canExecute: false,
+      canCancel: false,
+      canReset: false,
     },
+    position: { x: 0, y: 0 },
+    kind: Node.KindEnum.Node,
   };
 
+  const projectId = "project-id";
+  const workflowId = "workflow-id";
+
   const props = {
-    projectId: "project-id",
-    workflowId: "workflow-id",
+    projectId,
+    workflowId,
     selectedNode: dummyNode,
     selectedPortIndex: 0,
     selectedViewIndex: 0,
@@ -102,23 +126,20 @@ describe("PortViewLoader.vue", () => {
     const versionId = "version-id";
     doMount({ versionId });
 
-    expect(mockedAPI.port.getPortView).toBeCalledWith(
-      expect.objectContaining({
-        projectId: props.projectId,
-        workflowId: props.workflowId,
-        versionId,
-        nodeId: props.selectedNode.id,
-        portIdx: props.selectedPortIndex,
-        viewIdx: props.selectedViewIndex,
-      }),
-    );
+    expect(mockedAPI.port.getPortView).toBeCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId,
+      nodeId: props.selectedNode.id,
+      portIdx: props.selectedPortIndex,
+      viewIdx: props.selectedViewIndex,
+    });
   });
 
   it("should conditionally deactivate data services on unmount", async () => {
     mockGetPortView();
     const { wrapper } = doMount();
     wrapper.unmount();
-    await flushPromises();
     expect(mockedAPI.port.deactivatePortDataServices).toHaveBeenCalledTimes(0);
 
     mockGetPortView({
@@ -260,8 +281,12 @@ describe("PortViewLoader.vue", () => {
       const apiLayer = getApiLayer(wrapper);
 
       const result = await apiLayer.callNodeDataService({
+        projectId,
+        workflowId,
+        nodeId,
         serviceType: "data",
         dataServiceRequest: "request",
+        extensionType: "data",
       });
 
       expect(result).toStrictEqual({ result: { something: true } });
@@ -371,7 +396,6 @@ describe("PortViewLoader.vue", () => {
         mockGetPortView();
         mockGetDataValueView();
         const { wrapper } = doMount();
-
         await flushPromises();
 
         const apiLayer = getApiLayer(wrapper);
@@ -420,15 +444,14 @@ describe("PortViewLoader.vue", () => {
         expect(dispatchPushEvent).toHaveBeenCalledTimes(1);
 
         apiLayer.closeDataValueView();
-        await vi.runAllTimers();
-        await flushPromises();
+        vi.runAllTimers();
         // Does not close the wrapper, since close is ignored closely after open
         expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(true);
 
         // Wait for the open to timeout
-        await vi.runAllTimers();
+        vi.runAllTimers();
         apiLayer.closeDataValueView();
-        await vi.runAllTimers();
+        vi.runAllTimers();
         await flushPromises();
 
         expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(
@@ -445,7 +468,6 @@ describe("PortViewLoader.vue", () => {
         mockGetPortView();
         const versionId = "version-id";
         const { wrapper } = doMount({ versionId });
-
         await flushPromises();
 
         const apiLayer = getApiLayer(wrapper);
@@ -534,9 +556,7 @@ describe("PortViewLoader.vue", () => {
   describe("error", () => {
     it("should emit error state when receiving a alert from apiLayer", async () => {
       mockGetPortView();
-
       const { wrapper } = doMount();
-
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);
@@ -557,9 +577,7 @@ describe("PortViewLoader.vue", () => {
 
     it("should reset error state if uniquePortKey changes", async () => {
       mockGetPortView();
-
       const { wrapper } = doMount();
-
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);
