@@ -66,6 +66,7 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.wrapper.NativeNodeContainerWrapper;
 import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
@@ -91,12 +92,18 @@ final class NodeAPI {
      * Opens the swing dialog or CEF-based dialog of a node.
      *
      * @param projectId
+     * @param workflowId
      * @param nodeId
+     * @param versionId
      * @return whether the node settings have changed
      */
     @API
-    static boolean openNodeDialog(final String projectId, final String nodeId) {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+    static boolean openNodeDialog(final String projectId, final String workflowId, final String nodeId,
+        final String versionId) {
+        var workflowIdEnt = new NodeIDEnt(workflowId);
+        var version = VersionId.parse(versionId);
+        var nodeIdEnt = new NodeIDEnt(nodeId);
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, workflowIdEnt, version, nodeIdEnt);
         checkIsNotNull(nc, projectId, nodeId);
         var oldSettings = nc.getNodeSettings();
         NodeContainerEditPart.openNodeDialog(wrap(nc));

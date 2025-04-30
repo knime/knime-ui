@@ -8,6 +8,8 @@ import {
 } from "vitest";
 import { API } from "@api";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
+
 import { generateWorkflowPreview } from "@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
@@ -41,39 +43,94 @@ describe("workflow store: desktop interactions", () => {
       });
     });
 
-    it("calls openNodeDialog from API", () => {
-      const { workflowStore, desktopInteractionsStore } = mockStores();
+    describe("calls openNodeDialog from API", () => {
+      const projectId = "project-id";
+      const workflowId = "workflow-id";
+      const versionId = "version-id";
+      const nodeId = "node-id";
 
-      workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
-      desktopInteractionsStore.openNodeConfiguration("node x");
+      it("and does not update if node settings have not changed", () => {
+        mockedAPI.desktop.openNodeDialog.mockReturnValue(
+          Promise.resolve(false),
+        ); // resolve with false (no setting change) to prevent triggering extra store actions
+        const {
+          workflowStore,
+          desktopInteractionsStore,
+          nodeConfigurationStore,
+        } = mockStores();
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            projectId,
+            info: { containerId: workflowId, version: versionId },
+          }),
+        );
 
-      expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
-        nodeId: "node x",
-        projectId: "foo",
+        desktopInteractionsStore.openNodeConfiguration(nodeId);
+
+        expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
+          projectId,
+          workflowId,
+          nodeId,
+          versionId,
+        });
+        expect(nodeConfigurationStore.updateTimestamp).not.toHaveBeenCalled();
       });
-    });
 
-    it("calls openNodeDialog from API and update if node settings have changed", async () => {
-      mockedAPI.desktop.openNodeDialog.mockImplementation(() =>
-        Promise.resolve(true),
-      );
+      it("and update if node settings have changed", async () => {
+        mockedAPI.desktop.openNodeDialog.mockImplementation(() =>
+          Promise.resolve(true),
+        );
+        const {
+          workflowStore,
+          desktopInteractionsStore,
+          nodeConfigurationStore,
+          selectionStore,
+        } = mockStores();
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            projectId,
+            info: { containerId: workflowId, version: versionId },
+          }),
+        );
+        selectionStore.selectNode("root:1");
 
-      const {
-        workflowStore,
-        desktopInteractionsStore,
-        nodeConfigurationStore,
-        selectionStore,
-      } = mockStores();
+        await desktopInteractionsStore.openNodeConfiguration(nodeId);
 
-      selectionStore.selectNode("root:1");
-      workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
-      await desktopInteractionsStore.openNodeConfiguration("node x");
-
-      expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
-        nodeId: "node x",
-        projectId: "foo",
+        expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
+          projectId,
+          workflowId,
+          nodeId,
+          versionId,
+        });
+        expect(nodeConfigurationStore.updateTimestamp).toHaveBeenCalled();
       });
-      expect(nodeConfigurationStore.updateTimestamp).toHaveBeenCalled();
+
+      it("with current version if no versionId is provided", () => {
+        mockedAPI.desktop.openNodeDialog.mockReturnValue(
+          Promise.resolve(false),
+        ); // resolve with false (no setting change) to prevent triggering extra store actions
+        const {
+          workflowStore,
+          desktopInteractionsStore,
+          nodeConfigurationStore,
+        } = mockStores();
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            projectId,
+            info: { containerId: workflowId },
+          }),
+        );
+
+        desktopInteractionsStore.openNodeConfiguration(nodeId);
+
+        expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
+          projectId,
+          workflowId,
+          nodeId,
+          versionId: CURRENT_STATE_VERSION,
+        });
+        expect(nodeConfigurationStore.updateTimestamp).not.toHaveBeenCalled();
+      });
     });
 
     it("calls openFlowVariableConfiguration from API", async () => {

@@ -1,6 +1,8 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
+
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
@@ -70,9 +72,16 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
 
     /* See docs in API */
     async openNodeConfiguration(nodeId: string) {
+      const { activeWorkflow } = useWorkflowStore();
+
+      const { version: versionId, containerId: workflowId } =
+        activeWorkflow!.info;
+
       const settingsChanged = await API.desktop.openNodeDialog({
-        projectId: useWorkflowStore().activeWorkflow!.projectId,
+        projectId: activeWorkflow!.projectId,
+        workflowId,
         nodeId,
+        versionId: versionId ?? CURRENT_STATE_VERSION,
       });
 
       // after dialog is closed, check if the node was selected and rerender port views
