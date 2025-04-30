@@ -91,6 +91,12 @@ export interface AddComponentCommand extends WorkflowCommand {
      * @memberof AddComponentCommand
      */
     position: XY;
+    /**
+     * The name of the component to be added. Such that it can already be used for the loading placeholder before the component is loaded.
+     * @type {string}
+     * @memberof AddComponentCommand
+     */
+    name: string;
 
 }
 

@@ -120,7 +120,7 @@ describe("workflow::nodeInteractions", () => {
       await nodeInteractionsStore.addNode({
         position: { x: 7, y: 31 },
         nodeFactory: undefined,
-        isComponent: true,
+        componentName: "component-name",
         spaceItemReference: {
           providerId: "provider",
           spaceId: "space",

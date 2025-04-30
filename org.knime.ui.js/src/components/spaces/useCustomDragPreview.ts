@@ -168,7 +168,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         nodeFactory: isItemAComponent
           ? undefined
           : { className: nodeTemplateId },
-        isComponent: isItemAComponent,
+        componentName: isItemAComponent ? sourceItem.name : undefined,
       });
 
       if (problem) {

@@ -846,7 +846,7 @@ describe("SpaceExplorer.vue", () => {
           providerId: "local",
           spaceId: "local",
         },
-        isComponent: false,
+        componentName: undefined,
       });
       await flushPromises();
       expect(onComplete).toHaveBeenCalledWith(true);
@@ -895,7 +895,7 @@ describe("SpaceExplorer.vue", () => {
           providerId: "local",
           spaceId: "local",
         },
-        isComponent: true,
+        componentName: "file.test",
       });
       await flushPromises();
       expect(onComplete).toHaveBeenCalledWith(true);

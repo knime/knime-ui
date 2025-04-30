@@ -107,7 +107,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       // 'add' adds the new node to the active selection
       // 'none' doesn't modify the active selection nor it selects the new node
       selectionMode = "new-only",
-      isComponent = false,
+      componentName,
     }: {
       position: XY;
       nodeFactory?: { className: string };
@@ -121,7 +121,10 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
        * 'none' doesn't modify the active selection nor it selects the new node
        */
       selectionMode?: "new-only" | "add" | "none";
-      isComponent?: boolean;
+      /**
+       * The name of the component, iff the object to be added is a component
+       */
+      componentName?: string;
     }): Promise<{
       newNodeId?: string | null;
       problem?: {
@@ -140,7 +143,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       };
 
       let newNodeId: string | null;
-      if (isComponent && spaceItemReference) {
+      if (componentName && spaceItemReference) {
         if (isBrowser()) {
           try {
             await API.workflowCommand.AddComponent({
@@ -153,6 +156,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
               },
               spaceId: spaceItemReference.spaceId,
               itemId: spaceItemReference.itemId,
+              name: componentName,
             });
             newNodeId = null;
 
