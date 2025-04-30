@@ -221,7 +221,8 @@ final class SpaceAPI {
     /**
      * Copies space items from Local to Hub space or vice versa.
      *
-     * @return {@code true} if all files could be uploaded, {@code false} otherwise
+     * @return ids of the items that have been successfully uploaded or an empty list if the upload wasn't successful
+     *         (or the item ids couldn't be determined)
      */
     @API
     @SuppressWarnings({"java:S1941"})
@@ -298,7 +299,12 @@ final class SpaceAPI {
             showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
                 false);
         }
-        return result.itemIds();
+
+        if (result.successful() && result.itemPaths() != null) {
+            var sourceItemNames = result.itemPaths().stream().map(itemPath -> itemPath.segment(0)).distinct().toList();
+            return itemNamesToItemIds(destination, sourceItemNames);
+        }
+        return List.of();
     }
 
     private static boolean showUploadWarning(final Locator.Destination destination) {
@@ -316,6 +322,22 @@ final class SpaceAPI {
 
     private static void showErrorToast(final String title, final String message, final boolean autoRemove) {
         DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, title, message, autoRemove);
+    }
+
+    private static List<String> itemNamesToItemIds(final Locator.Destination destination,
+        final List<String> itemNames) {
+        try {
+            var destinationWfGroup = destination.space().listWorkflowGroup(destination.itemId());
+            return destinationWfGroup.getItems().stream() //
+                .filter(item -> itemNames.stream().anyMatch(sourceName -> item.getName().equals(sourceName))) //
+                .map(item -> item.getId()) //
+                .toList();
+        } catch (IOException e) {
+            NodeLogger.getLogger(SpaceAPI.class)
+                .debug("Problem fetching hub item with id '" + destination.itemId() + "'", e);
+            return List.of();
+        }
+
     }
 
     @Deprecated(forRemoval = true) // this should be done by frontend in the future
