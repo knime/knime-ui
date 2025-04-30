@@ -9,19 +9,20 @@ type BrowserFunctionDescriptor = {
   params?: Iterable<Readonly<[key: string, value: any]>>;
   flattenParams?: boolean;
   returnValue?: any;
+  blocksUi?: boolean;
 };
 
 const browserFunctions: BrowserFunctionDescriptor[] = [
   { name: "switchToJavaUI" },
-  { name: "switchWorkspace" },
-  { name: "openAboutDialog" },
-  { name: "openUpdateDialog" },
+  { name: "switchWorkspace", blocksUi: true },
+  { name: "openAboutDialog", blocksUi: true },
+  { name: "openUpdateDialog", blocksUi: true },
   { name: "openKNIMEHomeDir" },
   { name: "checkForUpdates" },
   { name: "openUrlInExternalBrowser", params: [["url", "http://www.url.com"]] },
   { name: "openInstallExtensionsDialog" },
-  { name: "openWebUIPreferencePage" },
-  { name: "openWorkflowCoachPreferencePage" },
+  { name: "openWebUIPreferencePage", blocksUi: true },
+  { name: "openWorkflowCoachPreferencePage", blocksUi: true },
   {
     name: "openNodeDialog",
     params: [
@@ -30,6 +31,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["nodeId", "1"],
       ["versionId", "current-state"],
     ],
+    blocksUi: true,
   },
   {
     name: "openLinkComponentDialog",
@@ -38,6 +40,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["workflowId", "root"],
       ["nodeId", "1"],
     ],
+    blocksUi: true,
   },
   {
     name: "openChangeComponentHubItemVersionDialog",
@@ -46,6 +49,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["workflowId", "root"],
       ["nodeId", "1"],
     ],
+    blocksUi: true,
   },
   {
     name: "openChangeComponentLinkTypeDialog",
@@ -54,6 +58,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["workflowId", "root"],
       ["nodeId", "1"],
     ],
+    blocksUi: true,
   },
   {
     name: "openLegacyFlowVariableDialog",
@@ -61,6 +66,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["projectId", "project1"],
       ["nodeId", "1"],
     ],
+    blocksUi: true,
   },
   {
     name: "executeNodeAndOpenView",
@@ -84,6 +90,8 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["projectId", "project1"],
       ["workflowPreviewSvg", "<svg></svg>"],
     ],
+    returnValue: true,
+    blocksUi: true,
   },
   {
     name: "openProject",
@@ -92,6 +100,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["itemId", "123"],
       ["spaceProviderId", "provider1"],
     ],
+    blocksUi: true,
   },
   {
     name: "closeProject",
@@ -100,6 +109,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["nextProjectId", "1"],
     ],
     returnValue: true,
+    blocksUi: true,
   },
   {
     name: "forceCloseProjects",
@@ -112,6 +122,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["projectId", "1"],
       ["versionId", "current-state"],
     ],
+    blocksUi: true,
   },
   {
     name: "openLayoutEditor",
@@ -119,6 +130,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["projectId", "project1"],
       ["workflowId", "workflow1"],
     ],
+    blocksUi: true,
   },
   {
     name: "connectSpaceProvider",
@@ -132,6 +144,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       spaces: [],
       user: { name: "user" },
     }),
+    blocksUi: true,
   },
   {
     name: "disconnectSpaceProvider",
@@ -144,6 +157,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["spaceId", "space1"],
       ["itemId", "123"],
     ],
+    blocksUi: true,
   },
   {
     name: "importWorkflows",
@@ -152,6 +166,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["spaceId", "space1"],
       ["itemId", "123"],
     ],
+    blocksUi: true,
   },
   {
     name: "exportSpaceItem",
@@ -160,6 +175,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["spaceId", "space1"],
       ["itemId", "123"],
     ],
+    blocksUi: true,
   },
   {
     name: "getNameCollisionStrategy",
@@ -182,6 +198,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["destinationSpaceId", "space2"],
       ["destinationItemId", "123"],
     ],
+    blocksUi: true,
   },
   {
     name: "uploadToSpace",
@@ -194,6 +211,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["destinationItemId", "123"],
       ["excludeData", false],
     ],
+    blocksUi: true,
   },
   {
     name: "openInBrowser",
@@ -209,18 +227,20 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["projectId", "project1"],
       ["workflowPreviewSvg", "<svg></svg>"],
     ],
+    blocksUi: true,
   },
   {
     name: "importComponent",
     params: [
       ["spaceProviderId", "provider1"],
       ["spaceId", "space1"],
-      ["itemId", ["123"]],
+      ["itemId", "123"],
       ["projectId", "project1"],
       ["workflowId", "root"],
       ["x", 10],
       ["y", 10],
     ],
+    blocksUi: true,
   },
   {
     name: "saveAndCloseProjects",
@@ -231,6 +251,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["params", []],
     ],
     flattenParams: true,
+    blocksUi: true,
   },
   {
     name: "importURIAtWorkflowCanvas",
@@ -241,6 +262,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["x", 10],
       ["y", 10],
     ],
+    blocksUi: true,
   },
   {
     name: "openLegacyPortView",
@@ -249,6 +271,72 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["nodeId", "root:1"],
       ["portIdx", 0],
       ["executeNode", false],
+    ],
+  },
+  {
+    name: "openAPIDefinition",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+    ],
+  },
+  {
+    name: "openPermissionsDialog",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+    ],
+    blocksUi: true,
+  },
+  {
+    name: "executeOnClassic",
+    desktopApiName: "executeWorkflow",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+    ],
+  },
+  {
+    name: "saveJobAsWorkflow",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+      ["jobId", "job123"],
+      ["jobName", "myJob"],
+    ],
+    returnValue: "spaceItemEntId",
+    blocksUi: true,
+  },
+  {
+    name: "editSchedule",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+      ["scheduleId", "mySchedule"],
+    ],
+    returnValue: "scheduledJobInfoId",
+    blocksUi: true,
+  },
+  {
+    name: "removeMostRecentlyUsedProject",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+    ],
+  },
+  {
+    name: "updateMostRecentlyUsedProject",
+    params: [
+      ["spaceProviderId", "provider1"],
+      ["spaceId", "space1"],
+      ["itemId", "123"],
+      ["newName", "newProjectName"],
     ],
   },
 ];
@@ -268,17 +356,18 @@ describe("desktop-api", () => {
       params = [],
       flattenParams,
       returnValue,
+      blocksUi,
     }) => {
-      const paramEntries = new Map(params);
-      const paramsAsObj = Object.fromEntries(paramEntries);
+      const paramsAsObj = Object.fromEntries(new Map(params));
 
       const mappingFn = ([_, value]: readonly [string, any]) => value;
 
-      const values = flattenParams
+      const paramValues = flattenParams
         ? [...params].flatMap(mappingFn)
         : [...params].map(mappingFn);
 
       const busOnSpy = vi.spyOn($bus, "on");
+      const busEmitSpy = vi.spyOn($bus, "emit");
 
       const result = desktopAPI[desktopApiName || name](paramsAsObj);
 
@@ -287,7 +376,13 @@ describe("desktop-api", () => {
         expect.anything(),
       );
 
-      expect(window[name]).toHaveBeenCalledWith(...values);
+      expect(window[name]).toHaveBeenCalledWith(...paramValues);
+      if (blocksUi) {
+        expect(busEmitSpy).toHaveBeenCalledTimes(1);
+        expect(busEmitSpy).toHaveBeenCalledWith("block-ui", expect.any(Object));
+      } else {
+        expect(busEmitSpy).toHaveBeenCalledTimes(0);
+      }
 
       // test promise
       let resolved = false;
@@ -300,6 +395,13 @@ describe("desktop-api", () => {
       });
       await new Promise((r) => setTimeout(r, 0));
       expect(resolved).toBe(true);
+
+      if (blocksUi) {
+        expect(busEmitSpy).toHaveBeenCalledTimes(3); // block-ui, desktop-api-function-result-spy, unblock-ui
+        expect(busEmitSpy).toHaveBeenNthCalledWith(3, "unblock-ui");
+      } else {
+        expect(busEmitSpy).toHaveBeenCalledTimes(1); // explicitly emitted above "desktop-api-function-result-spy"
+      }
     },
   );
 });
