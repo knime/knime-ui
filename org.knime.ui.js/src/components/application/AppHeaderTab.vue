@@ -125,6 +125,7 @@ const activateTab = () => {
       class="close-icon"
       :has-unsaved-changes="hasUnsavedChanges"
       aria-label="Close project"
+      title="Close project"
       @close.stop="emit('closeProject', projectId)"
     />
   </div>

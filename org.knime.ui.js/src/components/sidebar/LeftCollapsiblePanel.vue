@@ -38,7 +38,7 @@ defineEmits<Emits>();
     </div>
 
     <button
-      :title="expanded ? undefined : title ?? undefined"
+      :title="expanded ? 'Collapse panel' : title ?? undefined"
       :aria-label="expanded ? 'Collapse panel' : 'Expand panel'"
       :disabled="disabled"
       data-test-id="left-panel-handler"

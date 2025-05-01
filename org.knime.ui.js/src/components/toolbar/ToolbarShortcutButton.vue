@@ -94,6 +94,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       :items="subMenuItems"
       tabindex="0"
       orientation="left"
+      button-title="Open save options"
       :aria-label="`Open submenu for ${shortcut.text}`"
       @item-click="
         (_: MouseEvent, item: MenuItemWithName) =>

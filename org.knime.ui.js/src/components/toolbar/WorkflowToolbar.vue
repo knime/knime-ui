@@ -91,6 +91,7 @@ const canvasModes = computed<Array<MenuItem>>(() => {
 
     return {
       text: shortcutText,
+      title: shortcutText,
       hotkeyText: shortcut.hotkeyText,
       disabled: !$shortcuts.isEnabled(shortcutName),
       metadata: { id },
@@ -274,6 +275,7 @@ onMounted(() => {
         :items="canvasModes"
         data-test-id="canvas-modes-selector"
         orientation="left"
+        button-title="Canvas mode"
         aria-label="Canvas mode"
         @item-click="onCanvasModeUpdate"
       >

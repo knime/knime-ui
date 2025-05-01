@@ -89,6 +89,7 @@ const onWheel = (e: WheelEvent) => {
     :teleport-to-body="false"
     :items="zoomMenuItems"
     :disabled="disabled"
+    button-title="Zoom Menu"
     @item-click="onZoomItemClick"
   >
     <input

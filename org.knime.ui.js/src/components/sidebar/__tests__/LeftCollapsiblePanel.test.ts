@@ -64,9 +64,9 @@ describe("LeftCollapsiblePanel.vue", () => {
   });
 
   describe("open panel", () => {
-    it("doesn’t display a hover title", () => {
+    it("display a hover title", () => {
       const wrapper = doShallowMount({ expanded: true });
-      expect(wrapper.find("button").attributes().title).toBeUndefined();
+      expect(wrapper.find("button").attributes().title).toBe("Collapse panel");
     });
 
     it("icon is not flipped", () => {
