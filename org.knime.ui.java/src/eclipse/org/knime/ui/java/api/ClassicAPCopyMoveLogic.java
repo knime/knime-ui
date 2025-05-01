@@ -240,8 +240,7 @@ final class ClassicAPCopyMoveLogic {
                 // If uploading, check for reset preference
                 if (!m_sources.isEmpty() && !(m_sources.get(0) instanceof RemoteExplorerFileStore)
                         && m_target instanceof RemoteExplorerFileStore) {
-                    copyMove.setExcludeDataInWorkflows(m_excludeData
-                        || m_target.getContentProvider().isForceResetOnUpload());
+                    copyMove.setExcludeDataInWorkflows(m_excludeData);
                 }
                 copyMove.setNotOverwritableDest(notOverwritableDest);
                 final var copyMoveResult = copyMove.run(monitor);
