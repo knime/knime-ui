@@ -55,11 +55,15 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.knime.core.node.NodeLogger;
 
 /**
- * The task needs to be executed inside the reporter (i.e. given as lambda) s.t. the reporter is able to catch
- * exceptions and notify accordingly.
- * <p>
- * Can be moved to knime-gateway and become a ProgressService at some point. To extend for proper error handling, see
- * {@link DesktopAPUtil#runWithProgress(String, NodeLogger, FailableFunction)}.
+ * 
+ * Implementations are expected to call {@code task.apply(...)} with a {@link IProgressMonitor} and catch any
+ * {@link InvocationTargetException} that the task may throw.
+ * 
+ * @implNote The task needs to be executed inside the reporter (i.e. given as lambda) s.t. the reporter is able to catch
+ *           exceptions and notify accordingly.
+ *           <p>
+ * @apiNote Can be moved to knime-gateway and become a ProgressService at some point. To extend for proper error
+ *          handling, see {@link DesktopAPUtil#runWithProgress(String, NodeLogger, FailableFunction)}.
  *
  */
 public interface ProgressReporter {
