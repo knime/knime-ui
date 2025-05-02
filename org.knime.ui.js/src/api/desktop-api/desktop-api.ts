@@ -206,18 +206,16 @@ export const openInstallExtensionsDialog = () => {
 
 export const openNodeDialog = ({
   projectId,
-  workflowId,
-  nodeId,
   versionId,
+  nodeId,
 }: {
   projectId: string;
-  workflowId: string;
-  nodeId: string;
   versionId: string;
+  nodeId: string;
 }) => {
   return callBrowserFunction(
     window.openNodeDialog,
-    [projectId, workflowId, nodeId, versionId],
+    [projectId, versionId, nodeId],
     `Could not open dialog of node ${nodeId} in version ${versionId}`,
     true,
     { block: true, darkenBackground: false },

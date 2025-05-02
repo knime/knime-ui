@@ -9,9 +9,8 @@ declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
 declare function openNodeDialog(
   projectId: string,
-  workflowId: string,
-  nodeId: string,
   versionId: string,
+  nodeId: string,
 ): boolean;
 
 declare function openLinkComponentDialog(

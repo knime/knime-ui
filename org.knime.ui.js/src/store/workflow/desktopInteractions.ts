@@ -73,15 +73,12 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
     /* See docs in API */
     async openNodeConfiguration(nodeId: string) {
       const { activeWorkflow } = useWorkflowStore();
-
-      const { version: versionId, containerId: workflowId } =
-        activeWorkflow!.info;
+      const { version: versionId } = activeWorkflow!.info;
 
       const settingsChanged = await API.desktop.openNodeDialog({
         projectId: activeWorkflow!.projectId,
-        workflowId,
-        nodeId,
         versionId: versionId ?? CURRENT_STATE_VERSION,
+        nodeId,
       });
 
       // after dialog is closed, check if the node was selected and rerender port views

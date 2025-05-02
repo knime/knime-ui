@@ -92,18 +92,15 @@ final class NodeAPI {
      * Opens the swing dialog or CEF-based dialog of a node.
      *
      * @param projectId
-     * @param workflowId
-     * @param nodeId
      * @param versionId
+     * @param nodeId
      * @return whether the node settings have changed
      */
     @API
-    static boolean openNodeDialog(final String projectId, final String workflowId, final String nodeId,
-        final String versionId) {
-        var workflowIdEnt = new NodeIDEnt(workflowId);
+    static boolean openNodeDialog(final String projectId, final String versionId, final String nodeId) {
         var version = VersionId.parse(versionId);
         var nodeIdEnt = new NodeIDEnt(nodeId);
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, workflowIdEnt, version, nodeIdEnt);
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, version, nodeIdEnt);
         checkIsNotNull(nc, projectId, nodeId);
         var oldSettings = nc.getNodeSettings();
         NodeContainerEditPart.openNodeDialog(wrap(nc));

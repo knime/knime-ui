@@ -27,9 +27,8 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     name: "openNodeDialog",
     params: [
       ["projectId", "project1"],
-      ["workflowId", "root"],
-      ["nodeId", "1"],
       ["versionId", "current-state"],
+      ["nodeId", "1"],
     ],
     blocksUi: true,
   },

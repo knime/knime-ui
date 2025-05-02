@@ -45,7 +45,6 @@ describe("workflow store: desktop interactions", () => {
 
     describe("calls openNodeDialog from API", () => {
       const projectId = "project-id";
-      const workflowId = "workflow-id";
       const versionId = "version-id";
       const nodeId = "node-id";
 
@@ -61,7 +60,7 @@ describe("workflow store: desktop interactions", () => {
         workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId,
-            info: { containerId: workflowId, version: versionId },
+            info: { version: versionId },
           }),
         );
 
@@ -69,9 +68,8 @@ describe("workflow store: desktop interactions", () => {
 
         expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
           projectId,
-          workflowId,
-          nodeId,
           versionId,
+          nodeId,
         });
         expect(nodeConfigurationStore.updateTimestamp).not.toHaveBeenCalled();
       });
@@ -89,7 +87,7 @@ describe("workflow store: desktop interactions", () => {
         workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId,
-            info: { containerId: workflowId, version: versionId },
+            info: { version: versionId },
           }),
         );
         selectionStore.selectNode("root:1");
@@ -98,9 +96,8 @@ describe("workflow store: desktop interactions", () => {
 
         expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
           projectId,
-          workflowId,
-          nodeId,
           versionId,
+          nodeId,
         });
         expect(nodeConfigurationStore.updateTimestamp).toHaveBeenCalled();
       });
@@ -117,7 +114,7 @@ describe("workflow store: desktop interactions", () => {
         workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId,
-            info: { containerId: workflowId },
+            info: {},
           }),
         );
 
@@ -125,9 +122,8 @@ describe("workflow store: desktop interactions", () => {
 
         expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
           projectId,
-          workflowId,
-          nodeId,
           versionId: CURRENT_STATE_VERSION,
+          nodeId,
         });
         expect(nodeConfigurationStore.updateTimestamp).not.toHaveBeenCalled();
       });
@@ -240,8 +236,8 @@ describe("workflow store: desktop interactions", () => {
           dummyEl.outerHTML,
         );
 
-        mockedGenerateWorkflowPreview.mockImplementation((input) =>
-          Promise.resolve(input.outerHTML),
+        mockedGenerateWorkflowPreview.mockImplementation(
+          (input) => input.outerHTML,
         );
 
         workflowStore.setActiveWorkflow(
