@@ -348,6 +348,7 @@ describe("NodeOutput.vue", () => {
       const metanode = createMetanode({
         id: "4",
         outPorts: defaultPorts,
+        hasView: false,
       });
 
       const nodeWithView = createNativeNode({
@@ -511,6 +512,55 @@ describe("NodeOutput.vue", () => {
         ).toBe(toPort);
       });
     });
+
+    const nodeWithView = createNativeNode({
+      id: "1",
+      hasView: true,
+    });
+    const nodeWithoutView = createNativeNode({
+      id: "2",
+      hasView: false,
+    });
+
+    it.each([
+      // test name, nodes in wf, selectedNodes, expectedHasView
+      [
+        "single selected node with view",
+        { [nodeWithView.id]: { ...nodeWithView } },
+        [nodeWithView.id],
+        true,
+      ],
+      [
+        "single selected node without view",
+        { [nodeWithoutView.id]: { ...nodeWithoutView } },
+        [nodeWithoutView.id],
+        false,
+      ],
+      [
+        "multiple selected nodes",
+        {
+          [nodeWithView.id]: {
+            ...nodeWithView,
+          },
+          [nodeWithoutView.id]: { ...nodeWithoutView },
+        },
+        [nodeWithView.id, nodeWithoutView.id],
+        false,
+      ],
+    ])(
+      "hasView evaluates correctly for %s",
+      async (_, nodes, selectedNodeIds, expectedHasView) => {
+        const mockedStores = await createStores({
+          nodes,
+          selectedNodeIds,
+        });
+        const { wrapper } = await doMount(mockedStores);
+
+        const hasViewTab = (wrapper.vm as any).hasViewTab;
+
+        expect(hasViewTab).toBe(expectedHasView);
+      },
+    );
   });
 
   it.each([

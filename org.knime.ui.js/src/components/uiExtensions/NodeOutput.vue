@@ -21,7 +21,7 @@ import {
 } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import { isNodeMetaNode } from "@/util/nodeUtil";
 
 import LoadingIndicator from "./LoadingIndicator.vue";
 import PortTabs from "./PortTabs.vue";
@@ -129,17 +129,7 @@ const loadingMessage = computed(() => {
 });
 
 const hasViewTab = computed(() => {
-  if (!singleSelectedNode.value) {
-    return false;
-  }
-  if (isNodeComponent(singleSelectedNode.value)) {
-    // eslint-disable-next-line no-undefined
-    return singleSelectedNode.value.allowedActions?.canOpenView !== undefined;
-  }
-  if (isNativeNode(singleSelectedNode.value)) {
-    return singleSelectedNode.value.hasView;
-  }
-  return false;
+  return singleSelectedNode.value ? singleSelectedNode.value.hasView : false;
 });
 
 // select the first tab
