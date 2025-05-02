@@ -2117,12 +2117,6 @@ export interface NativeNode extends Node {
      */
     portGroups?: { [key: string]: PortGroup; };
     /**
-     * Indicates whether the node has a view. Not present, if the node has no view.
-     * @type {boolean}
-     * @memberof NativeNode
-     */
-    hasView?: boolean;
-    /**
      * Indicates whether the node can re-execute itself (e.g. within a page of a data app). It&#39;s absent if the node isn&#39;t re-executable at all (i.e. it can&#39;t even be configured to be re-executable).
      * @type {boolean}
      * @memberof NativeNode
@@ -2290,6 +2284,12 @@ export interface Node {
      * @memberof Node
      */
     outPorts: Array<NodePort>;
+    /**
+     * Indicates whether the node has a view.
+     * @type {boolean}
+     * @memberof Node
+     */
+    hasView: boolean;
     /**
      *
      * @type {NodeAnnotation}

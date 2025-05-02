@@ -76,6 +76,7 @@ const createBaseNode = (
 
     inPorts: [defaultVariablePort],
     outPorts: [defaultVariablePort],
+    hasView: true,
   };
 
   return merge(node, data);
