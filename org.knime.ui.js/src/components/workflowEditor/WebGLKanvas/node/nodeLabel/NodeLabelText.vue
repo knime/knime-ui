@@ -27,6 +27,8 @@ const nodeInteractionsStore = useNodeInteractionsStore();
 const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
 const onPointerdown = async (event: FederatedPointerEvent) => {
+  // label is positioned outside the node interaction container, so we need to
+  // mark it as handled always
   markEventAsHandled(event, { initiator: "node-label-edit" });
   if (isPointerDownDoubleClick(event)) {
     // make a brief pause before registering the click outside handler,

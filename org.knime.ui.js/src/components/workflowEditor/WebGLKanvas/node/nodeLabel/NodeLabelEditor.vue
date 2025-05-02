@@ -31,8 +31,6 @@ const editedNode = computed(() => {
   return activeWorkflow.value.nodes[labelEditorNodeId.value];
 });
 
-const textEditor = useTemplateRef("textEditor");
-
 const onCancel = () => {
   nodeInteractionsStore.closeLabelEditor();
 };
@@ -113,15 +111,13 @@ const actions: ActionButtonConfig[] = [
   },
 ];
 
-// @ts-expect-error seems to be typed wrong a component is possible to pass
-onClickOutside(textEditor, () => {
-  onSave();
-});
+const textEditorWrapper = useTemplateRef("textEditorWrapper");
+onClickOutside(textEditorWrapper, onSave);
 </script>
 
 <template>
   <FloatingHTML :active="Boolean(editedNode)" :canvas-position="position">
-    <div>
+    <div ref="textEditorWrapper">
       <svg class="action-bar" :style="actionBarStyle">
         <ActionBar
           transform="scale(0.95) translate(31, 10)"
@@ -129,7 +125,6 @@ onClickOutside(textEditor, () => {
         />
       </svg>
       <TextEditor
-        ref="textEditor"
         :style="textEditorStyle"
         :width-offset="2"
         :value="editedNode?.annotation?.text.value ?? ''"

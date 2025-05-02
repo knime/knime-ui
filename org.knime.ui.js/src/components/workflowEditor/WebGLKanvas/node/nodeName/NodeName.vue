@@ -33,11 +33,13 @@ const isEditing = computed(
 const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
 const onPointerdown = async (event: FederatedPointerEvent) => {
-  markEventAsHandled(event, { initiator: "node-name-edit" });
   if (isPointerDownDoubleClick(event)) {
     // stop to prevent handling of double click action on the node itself
     // e.g opening a metanode
     event.stopPropagation();
+
+    markEventAsHandled(event, { initiator: "node-name-edit" });
+
     // make a brief pause before registering the click outside handler,
     // to avoid closing immediately after opening
     await sleep(50);

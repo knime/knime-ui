@@ -122,6 +122,7 @@ const onEnterKey = (event: KeyboardEvent) => {
       @keydown.esc.stop.prevent="$emit('cancel')"
       @input="onInput"
       @keydown.enter="onEnterKey"
+      @pointerdown.stop
     />
   </div>
 </template>

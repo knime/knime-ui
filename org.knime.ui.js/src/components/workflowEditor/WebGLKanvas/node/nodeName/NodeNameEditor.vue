@@ -34,9 +34,6 @@ const editedNode = computed(() => {
   return activeWorkflow.value.nodes[nameEditorNodeId.value];
 });
 
-const textEditor =
-  useTemplateRef<InstanceType<typeof TextEditor>>("textEditor");
-
 const onCancel = () => {
   nodeInteractionsStore.closeNameEditor();
 };
@@ -130,10 +127,8 @@ const actions: ActionButtonConfig[] = [
   },
 ];
 
-// @ts-expect-error seems to be typed wrong a component is possible to pass
-onClickOutside(textEditor, () => {
-  onSave();
-});
+const textEditorWrapper = useTemplateRef("textEditorWrapper");
+onClickOutside(textEditorWrapper, onSave);
 </script>
 
 <template>
@@ -142,7 +137,7 @@ onClickOutside(textEditor, () => {
     :canvas-position="position"
     :dimensions="{ width: maxWidth }"
   >
-    <div :style="positionStyle">
+    <div ref="textEditorWrapper" :style="positionStyle">
       <svg class="action-bar">
         <ActionBar
           transform="scale(0.95) translate(31, 10)"
@@ -150,7 +145,6 @@ onClickOutside(textEditor, () => {
         />
       </svg>
       <TextEditor
-        ref="textEditor"
         :value="nodeName"
         :width-offset="2"
         class="name-text-editor"
