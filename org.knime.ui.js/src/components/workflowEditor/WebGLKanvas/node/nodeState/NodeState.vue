@@ -1,12 +1,14 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed } from "vue";
-import { type Container, Graphics } from "pixi.js";
+import { computed, useTemplateRef } from "vue";
+import { Graphics, Point, Polygon } from "pixi.js";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
+import { useTooltip } from "@/components/workflowEditor/common/useTooltip";
+import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import type { GraphicsInst } from "@/vue3-pixi";
+import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { nodeStateText } from "../../util/textStyles";
 
 import NodeStateIssues from "./NodeStateIssues.vue";
@@ -84,12 +86,70 @@ const strokeColors = computed(() => {
       : $colors.trafficLight.inactiveBorder;
   });
 });
+
+const tooltip = computed<TooltipDefinition | null>(() => {
+  const { nodeSize } = $shapes;
+  let tooltip = {
+    position: {
+      x: nodeSize / 2,
+      y: 0,
+    },
+    anchorPoint: undefined,
+    gap: 1,
+    hoverable: true,
+    orientation: "bottom",
+    text: "",
+    // eslint-disable-next-line no-undefined
+    issue: props.issue ?? undefined,
+    resolutions: props.resolutions,
+  } satisfies TooltipDefinition;
+
+  if (props.error) {
+    return { ...tooltip, text: props.error, type: "error" };
+  } else if (props.warning) {
+    return { ...tooltip, text: props.warning, type: "warning" };
+  } else if (props.progressMessages.length) {
+    return { ...tooltip, text: props.progressMessages.join(" – ") };
+  }
+
+  return null;
+});
+
+const tooltipRef = useTemplateRef<ContainerInst>("tooltipRef");
+useTooltip({ tooltip, element: tooltipRef });
+
+const issuesIconWidth = 13;
+const issuesIconHeight = 10;
+const hitArea = new Polygon([
+  new Point(0, 0),
+  new Point($shapes.nodeSize, 0),
+  new Point($shapes.nodeSize, $shapes.nodeStatusHeight),
+  new Point(
+    $shapes.nodeSize / 2 + issuesIconWidth / 2,
+    $shapes.nodeStatusHeight,
+  ),
+  new Point(
+    $shapes.nodeSize / 2 + issuesIconWidth / 2,
+    $shapes.nodeStatusHeight + issuesIconHeight / 2,
+  ),
+  new Point(
+    $shapes.nodeSize / 2 - issuesIconWidth / 2,
+    $shapes.nodeStatusHeight + issuesIconHeight / 2,
+  ),
+  new Point(
+    $shapes.nodeSize / 2 - issuesIconWidth / 2,
+    $shapes.nodeStatusHeight,
+  ),
+  new Point(0, $shapes.nodeStatusHeight),
+]);
 </script>
 
 <template>
   <Container
+    ref="tooltipRef"
     label="NodeState"
-    event-mode="none"
+    :hit-area="hitArea"
+    event-mode="static"
     :y="$shapes.nodeSize + $shapes.nodeStatusMarginTop"
   >
     <Graphics
@@ -151,6 +211,7 @@ const strokeColors = computed(() => {
 
     <template v-else-if="executionState === 'EXECUTING'">
       <NodeStateProgress
+        event-mode="none"
         :progress="progress"
         :execution-state="executionState"
         :text-resolution="textResolution"
@@ -159,6 +220,7 @@ const strokeColors = computed(() => {
 
     <NodeStateIssues
       v-if="error || warning"
+      event-mode="none"
       :error="error"
       :warning="warning"
     />

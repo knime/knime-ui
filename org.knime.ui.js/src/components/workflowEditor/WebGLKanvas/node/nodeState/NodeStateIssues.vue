@@ -12,13 +12,11 @@ defineProps<Props>();
 <template>
   <Container
     v-if="error || warning"
-    event-mode="none"
     :x="$shapes.nodeSize / 2"
     :y="$shapes.nodeStatusHeight"
   >
     <template v-if="error">
       <Graphics
-        event-mode="none"
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
@@ -28,7 +26,6 @@ defineProps<Props>();
         "
       />
       <Graphics
-        event-mode="none"
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
@@ -39,7 +36,6 @@ defineProps<Props>();
         "
       />
       <Graphics
-        event-mode="none"
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
@@ -51,18 +47,13 @@ defineProps<Props>();
       />
     </template>
 
-    <Container
-      v-else-if="warning"
-      event-mode="none"
-      :position="{ x: -6, y: -5.5 }"
-    >
+    <Container v-else-if="warning" :position="{ x: -6, y: -6.5 }">
       <Graphics
-        event-mode="none"
         @render="
           (graphics: GraphicsInst) => {
             graphics.moveTo(6, 1.25);
-            graphics.lineTo(0.5, 10.75);
-            graphics.lineTo(11.5, 10.75);
+            graphics.lineTo(0.5, 10.25);
+            graphics.lineTo(11.5, 10.25);
             graphics.closePath();
             graphics.stroke({
               width: 2,
@@ -75,7 +66,6 @@ defineProps<Props>();
         "
       />
       <Graphics
-        event-mode="none"
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
@@ -86,7 +76,6 @@ defineProps<Props>();
         "
       />
       <Graphics
-        event-mode="none"
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();

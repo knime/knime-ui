@@ -89,6 +89,8 @@ export default defineComponent({
 <template>
   <div
     :class="['tooltip', orientation, type, { hoverable }]"
+    data-test-id="tooltip"
+    data-is-tooltip="true"
     :style="{
       '--arrow-size': `${$shapes.tooltipArrowSize}px`,
       '--gap-size': `${expandedGap}px`,

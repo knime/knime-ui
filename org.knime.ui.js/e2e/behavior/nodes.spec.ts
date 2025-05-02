@@ -6,6 +6,8 @@ import {
   getKanvasBoundingBox,
   getPixiObjectAttributes,
   getPixiObjectCenter,
+  getPixiObjectCenterScreenCoordinates,
+  pointToArray,
   startApplication,
   testSimpleScreenshot,
 } from "../utils";
@@ -25,17 +27,16 @@ const IDS = {
   component: "root:6",
 } as const;
 
-const getNodeTorsoCenter = (page: Page, nodeId: string) =>
-  getPixiObjectCenter(page, [`Node__${nodeId}`, "NodeTorso"]);
-
 const getNodePosition = async (
   page: Page,
   id: (typeof IDS)[keyof typeof IDS],
 ): Promise<[number, number]> => {
-  const kanvasBox = await getKanvasBoundingBox(page);
-  const torso = await getNodeTorsoCenter(page, id);
+  const center = await getPixiObjectCenterScreenCoordinates(page, [
+    `Node__${id}`,
+    "NodeTorso",
+  ]);
 
-  return [kanvasBox!.x + torso.x, kanvasBox!.y + torso.y];
+  return pointToArray(center);
 };
 
 const startForPointerInteractions = (
@@ -279,10 +280,12 @@ test.describe("node name editing", () => {
     page: Page,
     id: (typeof IDS)[keyof typeof IDS],
   ): Promise<[number, number]> => {
-    const kanvasBox = await getKanvasBoundingBox(page);
-    const name = await getPixiObjectCenter(page, [`Node__${id}`, "NodeName"]);
+    const nodeNameCenter = await getPixiObjectCenterScreenCoordinates(page, [
+      `Node__${id}`,
+      "NodeName",
+    ]);
 
-    return [kanvasBox!.x + name.x, kanvasBox!.y + name.y];
+    return pointToArray(nodeNameCenter);
   };
 
   const getNodeNameText = async (

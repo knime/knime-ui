@@ -4,7 +4,7 @@ export interface TooltipDefinition {
     y: number;
   };
   gap: number;
-  anchorPoint: { x: number; y: number };
+  anchorPoint?: { x: number; y: number };
   text: string;
   title?: string;
   issue?: string;

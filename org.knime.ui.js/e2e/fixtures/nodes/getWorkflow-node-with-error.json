@@ -1,0 +1,100 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "2",
+    "workflow": {
+      "dirty": true,
+      "nodes": {
+        "root:1": {
+          "id": "root:1",
+          "state": {
+            "error": "Execute failed: Direct access to the local file system is not allowed on KNIME Hub.",
+            "executionState": "CONFIGURED",
+            "resolutions": []
+          },
+          "dialogType": "swing",
+          "kind": "node",
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canReset": false,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            }
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -337043238,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "File Table",
+              "index": 1,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "position": { "x": 190, "y": 165 }
+        }
+      },
+      "workflowAnnotations": [],
+      "allowedActions": {
+        "canExecute": true,
+        "canCancel": false,
+        "canReset": false,
+        "canUndo": false,
+        "canRedo": false
+      },
+      "metadata": {
+        "tags": [],
+        "description": { "value": "", "contentType": "text/plain" },
+        "metadataType": "project",
+        "lastEdit": "2025-04-29T13:54:45.255+02:00",
+        "links": []
+      },
+      "connections": {},
+      "nodeTemplates": {
+        "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory": {
+          "name": "CSV Reader",
+          "type": "Source",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RkRBRThDOTU3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RkRBRThDOTQ3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2MjZBQjAxMDJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2MjZBQjAxMTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pr5h9h8AAABuSURBVHjaYmRgYPjPQAT4//8/IzZxkOD/j5Ot8Wrmzz2K0wAmBgoBI6VegMpBAD8/P1Y2VA0DNozihT9//mBlDyEvDEgsMEJciMN0RkZ0Q2Bi/2F68RqAx+D/cCYBFxA0nbYGUOwFAgaAQxMgwAD1CJc+ReyqcgAAAABJRU5ErkJggg==",
+          "nodeFactory": {
+            "className": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory"
+          }
+        }
+      },
+      "info": {
+        "name": "csv",
+        "providerType": "HUB",
+        "containerId": "root",
+        "containerType": "project"
+      }
+    }
+  }
+}

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed, inject, useTemplateRef } from "vue";
 
 import type { NodeState, XY } from "@/api/gateway-api/generated-api";
-import { useTooltip } from "@/components/workflowEditor/SVGKanvas/common/useTooltip";
+import { useTooltip } from "@/components/workflowEditor/common/useTooltip";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import type { TooltipDefinition } from "../../types";
@@ -126,7 +126,7 @@ const strokeColor = (active: boolean, index: number) => {
     : $colors.trafficLight.inactiveBorder;
 };
 
-const { elemRef: tooltipRef } = useTooltip({ tooltip });
+useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
 </script>
 
 <template>

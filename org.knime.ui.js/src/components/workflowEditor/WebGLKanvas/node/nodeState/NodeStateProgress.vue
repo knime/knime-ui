@@ -55,13 +55,8 @@ useAnimatePixiContainer<number>({
 </script>
 
 <template>
-  <Container
-    v-if="progress === undefined"
-    ref="animatedCircleRef"
-    event-mode="none"
-  >
+  <Container v-if="progress === undefined" ref="animatedCircleRef">
     <Graphics
-      event-mode="none"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
@@ -74,7 +69,6 @@ useAnimatePixiContainer<number>({
 
   <template v-else>
     <Text
-      event-mode="none"
       :fill="$colors.text.default"
       :x="$shapes.nodeSize / 2"
       :y="1"
@@ -86,7 +80,6 @@ useAnimatePixiContainer<number>({
     </Text>
 
     <Graphics
-      event-mode="none"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
@@ -102,7 +95,7 @@ useAnimatePixiContainer<number>({
       "
     />
 
-    <Container event-mode="none" :mask="$refs.textMask as any">
+    <Container :mask="$refs.textMask as any">
       <Graphics
         ref="textMask"
         :is-mask="true"
@@ -122,7 +115,6 @@ useAnimatePixiContainer<number>({
       />
 
       <Text
-        event-mode="none"
         :fill="$colors.text.default"
         :x="$shapes.nodeSize / 2"
         :y="1"

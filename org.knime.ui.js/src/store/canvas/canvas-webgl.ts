@@ -79,6 +79,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isDebugModeEnabled = ref(false);
 
   const setFactor = (newFactor: number) => {
+    useWorkflowStore().setTooltip(null);
     zoomFactor.value = clampZoomFactor(newFactor);
 
     if (stage.value) {
@@ -116,6 +117,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   };
 
   const setCanvasOffset = (value: XY) => {
+    useWorkflowStore().setTooltip(null);
     if (stage.value) {
       stage.value.x = value.x;
       stage.value.y = value.y;

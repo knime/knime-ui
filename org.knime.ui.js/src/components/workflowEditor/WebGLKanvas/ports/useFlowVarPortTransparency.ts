@@ -8,7 +8,7 @@ import type { ContainerInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 type UseFlowVarPortTransparencyOptions = {
-  portContainer: ShallowRef<ContainerInst | undefined>;
+  portContainer: ShallowRef<ContainerInst | null>;
   nodeKind: Node.KindEnum;
   port: NodePortType;
 };

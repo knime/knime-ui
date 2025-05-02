@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed, inject, useTemplateRef } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
-import { useTooltip } from "@/components/workflowEditor/SVGKanvas/common/useTooltip";
+import { useTooltip } from "@/components/workflowEditor/common/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -82,7 +82,9 @@ const tooltip = computed<TooltipDefinition>(() => {
 const { isWritable } = storeToRefs(useWorkflowStore());
 const { openQuickActionMenu } = useCanvasAnchoredComponentsStore();
 
-const { elemRef: tooltipRef } = useTooltip({ tooltip });
+const tooltipRef = useTemplateRef<SVGGElement>("tooltipRef");
+useTooltip({ tooltip, element: tooltipRef });
+
 const {
   didMove,
   didDragToCompatibleTarget,

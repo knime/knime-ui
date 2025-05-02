@@ -45,7 +45,7 @@ const setPosition = () => {
   });
 };
 
-// TODO NXT-3411 verify if this can even happen
+// this can only happen on SVG
 const onCanvasScroll = () => {
   consola.trace("scrolling canvas while tooltip is open");
   setPosition();
@@ -66,7 +66,7 @@ const closeTooltip = () => {
   kanvas?.removeEventListener("scroll", onCanvasScroll);
 };
 
-// TODO NXT-3411 verify if this can even happen
+// close hoverable tooltips on leave
 const onMouseLeave = () => {
   // trigger closing tooltip
   workflowStore.setTooltip(null);

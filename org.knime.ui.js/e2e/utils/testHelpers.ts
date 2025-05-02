@@ -117,3 +117,30 @@ export const getPixiObjectAttributes = (
     },
     { labels, attributes },
   );
+
+export const addKanvasOffset = async (
+  page: Page,
+  { x, y }: { x: number; y: number },
+) => {
+  const kanvasBox = await getKanvasBoundingBox(page);
+  return { x: x + kanvasBox!.x, y: y + kanvasBox!.y };
+};
+
+export const pointToArray = ({
+  x,
+  y,
+}: {
+  x: number;
+  y: number;
+}): [number, number] => {
+  return [x, y];
+};
+
+export const getPixiObjectCenterScreenCoordinates = async (
+  page: Page,
+  labels: string[],
+): Promise<{ x: number; y: number }> => {
+  const objectPosition = await getPixiObjectCenter(page, labels);
+
+  return addKanvasOffset(page, objectPosition);
+};

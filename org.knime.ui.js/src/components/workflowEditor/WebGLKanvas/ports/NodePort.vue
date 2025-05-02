@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
-import { computed, ref, shallowRef } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { Container, FederatedPointerEvent, Rectangle } from "pixi.js";
 
@@ -13,6 +13,8 @@ import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingCon
 import { portSize } from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
+import { useTooltip } from "../../common/useTooltip";
+import type { TooltipDefinition } from "../../types";
 
 import Port from "./Port.vue";
 import { useFlowVarPortTransparency } from "./useFlowVarPortTransparency";
@@ -114,7 +116,7 @@ const onPointerDown = (event: FederatedPointerEvent) => {
   });
 };
 
-const portContainer = shallowRef<ContainerInst | undefined>();
+const portContainer = useTemplateRef<ContainerInst>("portContainer");
 
 const flowVarTransparency = useFlowVarPortTransparency({
   portContainer,
@@ -133,6 +135,22 @@ const onPointerLeave = () => {
   isHovered.value = false;
   flowVarTransparency.onPointerLeave();
 };
+
+const tooltip = computed<TooltipDefinition>(() => {
+  return {
+    position: {
+      // + 1 is due to the animation that makes the port bigger
+      x: portSize / 2 + 1,
+      y: 0,
+    },
+    gap: 4,
+    title: props.port.name,
+    text: props.port.info ?? "",
+    orientation: "top",
+    hoverable: false,
+  } satisfies TooltipDefinition;
+});
+useTooltip({ tooltip, element: portContainer });
 </script>
 
 <template>

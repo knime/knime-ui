@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import { NodeState as NodeStateType } from "@/api/gateway-api/generated-api";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeState from "../NodeState.vue";
 
 describe("NodeState.vue", () => {
@@ -15,6 +16,7 @@ describe("NodeState.vue", () => {
   ])(
     "should have correct traffic light value for state %s",
     (executionState, expectedValue) => {
+      mockStores();
       const wrapper = mount(NodeState, { props: { executionState } });
 
       // @ts-expect-error
