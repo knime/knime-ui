@@ -84,8 +84,6 @@ export const mockWebsocket = async (
           );
           const id = getSnapshotId();
 
-          console.log("undo wf command", response());
-
           // resolve command itself
           answer({ result: null, snapshotId: id });
 
@@ -121,9 +119,6 @@ export const mockWebsocket = async (
         }
 
         default: {
-          console.warn(
-            `mockWebsocket.ts: no handling of '${messageObject.method}'`,
-          );
           answer({});
         }
       }
