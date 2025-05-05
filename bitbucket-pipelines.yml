@@ -1,5 +1,5 @@
 options:
-  max-time: 20
+  max-time: 40
 
 definitions:
   caches:
