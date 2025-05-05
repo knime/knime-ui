@@ -107,47 +107,57 @@ final class ClassicAPCopyMoveLogic {
 
     private final SpaceProvider m_targetSpaceProvider;
 
+    private final Locator.Destination m_targetDestination;
+
     private final AbstractExplorerFileStore m_target;
 
     private final boolean m_performMove;
 
     /**
      * Creates a new copy/move action that copies/moves the source files to the target file store.
-     * 
+     *
      * @param sourceSpaceProvider the source space provider
      * @param shellProvider parent shell
      * @param sources the file stores to copy
      * @param excludeData flag indicating whether source data should be excluded
      * @param target the file store to copy/move the files to
+     * @param targetDestination the {@link Locator.Destination} of the target only required on hub
      * @param performMove true to move the files, false to copy them
      */
     private ClassicAPCopyMoveLogic(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
         final List<AbstractExplorerFileStore> sources, final boolean excludeData,
-        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target, final boolean performMove) {
+        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target,
+        final Locator.Destination targetDestination, final boolean performMove) {
         m_shellProvider = shellProvider;
         m_sourceSpaceProvider = sourceSpaceProvider;
         m_sources = CheckUtils.checkArgumentNotNull(sources);
         m_excludeData = excludeData;
         m_targetSpaceProvider = targetSpaceProvider;
         m_target = target.fetchInfo().isWorkflowGroup() ? target : target.getParent();
+        m_targetDestination = targetDestination;
         m_performMove = performMove;
     }
 
     public static boolean copy(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
         final List<AbstractExplorerFileStore> sources, final SpaceProvider targetSpaceProvider,
-        final AbstractExplorerFileStore target, final boolean excludeData) {
-        return copyOrMove(shellProvider, sourceSpaceProvider, sources, excludeData, targetSpaceProvider, target, false);
+        final AbstractExplorerFileStore target, final Locator.Destination targetDestination,
+        final boolean excludeData) {
+        return copyOrMove(shellProvider, sourceSpaceProvider, sources, excludeData,
+            targetSpaceProvider, target, targetDestination, false);
     }
 
     public static boolean move(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
         final List<AbstractExplorerFileStore> sources, final SpaceProvider targetSpaceProvider,
-        final AbstractExplorerFileStore target, final boolean excludeData) {
-        return copyOrMove(shellProvider, sourceSpaceProvider, sources, excludeData, targetSpaceProvider, target, true);
+        final AbstractExplorerFileStore target,
+        final boolean excludeData) {
+        return copyOrMove(shellProvider, sourceSpaceProvider, sources, excludeData,
+            targetSpaceProvider, target, null, true);
     }
 
     private static boolean copyOrMove(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
         final List<AbstractExplorerFileStore> sources, final boolean excludeData,
-        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target, final boolean performMove) {
+        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target,
+        final Locator.Destination targetDestination, final boolean performMove) {
 
         // make sure that the target provider is finished loading
         DesktopAPUtil.waitForMountpointToFinishFetching(target);
@@ -173,7 +183,7 @@ final class ClassicAPCopyMoveLogic {
 
         final var actualTarget = newTarget.fetchInfo().isWorkflowGroup() ? newTarget : newTarget.getParent();
         final var instance = new ClassicAPCopyMoveLogic(shellProvider, sourceSpaceProvider, sources, excludeData,
-            targetSpaceProvider, actualTarget, performMove);
+            targetSpaceProvider, actualTarget, targetDestination, performMove);
         if (instance.run()) {
             LOGGER.debug("Successfully " + (performMove ? "moved " : "copied ") + instance.m_sources.size()
                 + " item(s) to \"" + target.getFullName() + "\".");
@@ -477,8 +487,12 @@ final class ClassicAPCopyMoveLogic {
                         return false;
                     }
                     final var localSource = (LocalExplorerFileStore)srcFS;
+                    String spaceId = null;
+                    if (m_targetDestination != null) {
+                        spaceId = m_targetDestination.space().getId();
+                    }
                     m_targetSpaceProvider.syncUploadWorkflow(localSource.toLocalFile().toPath(), remoteDest.toIdURI(),
-                        m_performMove, m_excludeDataInWorkflows, monitor);
+                        spaceId, m_performMove, m_excludeDataInWorkflows, monitor);
                 } else if (isSrcRemote && !isDstRemote) { // download
                     CheckUtils.checkState(!m_excludeDataInWorkflows, "Download 'without data' not implemented");
                     final var remoteSource = (RemoteExplorerFileStore)srcFS;

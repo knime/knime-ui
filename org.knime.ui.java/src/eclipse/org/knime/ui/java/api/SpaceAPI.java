@@ -321,7 +321,7 @@ final class SpaceAPI {
         return response.isOK();
     }
 
-    private static void showErrorToast(final String title, final String message, final boolean autoRemove) {
+    static void showErrorToast(final String title, final String message, final boolean autoRemove) {
         DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, title, message, autoRemove);
     }
 
@@ -392,6 +392,7 @@ final class SpaceAPI {
             sourceFileStores, //
             destination.provider(), //
             destinationFileStore, //
+            destination, //
             excludeData //
         );
     }

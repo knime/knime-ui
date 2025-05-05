@@ -50,6 +50,7 @@ package org.knime.ui.java.api;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,13 +68,18 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.RestLocationInfo;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.spaces.Space.TransferResult;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -90,6 +96,16 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 final class SaveProject {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveProject.class);
+
+    private static final String ASYNC_UPLOAD_FEATURE_FLAG = "knime.hub.async_upload";
+
+    /** Maximum length of paths in upload/download UI popups. */
+    public static final int MAX_PATH_LENGTH_IN_MESSAGE = 64;
+
+    private static boolean systemPropertyIsFalse(final String propertyName) {
+        return Boolean.FALSE.toString() //
+            .equalsIgnoreCase(System.getProperty(propertyName));
+    }
 
     private SaveProject() {
         // utility
@@ -226,6 +242,62 @@ final class SaveProject {
         }
 
         var remoteMountpointURI = context.getMountpointURI().orElseThrow();
+
+        // Check if the workflow location is on Hub and obtain the parent space Id
+        // which is needed for the upload to a hub instance.
+        final var locationInfo = context.getLocationInfo();
+        String parentSpaceId = null;
+        var isHub = false;
+        if (locationInfo instanceof HubSpaceLocationInfo hubSpaceLocationInfo) {
+            parentSpaceId = hubSpaceLocationInfo.getSpaceItemId();
+            isHub = true;
+        }
+
+        var uploaded = false;
+        final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
+        if (!asyncUploadDisabled && isHub) {
+            final var spaceId = parentSpaceId;
+
+            // selected a remote location: save + upload
+            saveLocalProject(monitor, wfm, svg);
+
+            final var spaceProviders =
+                DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey());
+            final SpaceProvider spaceProvider =
+                Optional.ofNullable(spaceProviders.getSpaceProvider(remoteMountpointURI.getAuthority())) //
+                    .orElseThrow(() -> new IllegalStateException(
+                        "Space provider '" + remoteMountpointURI.getAuthority() + "' not found."));
+            final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+
+            AtomicReference<TransferResult> resultRef = new AtomicReference<>();
+            AtomicReference<Exception> exceptionRef = new AtomicReference<>();
+            Display.getDefault().syncExec(() -> {
+                try {
+                    resultRef.set(spaceProvider.getSpace(spaceId).saveBackToHub(
+                        workflowPath, remoteMountpointURI, null, false, monitor));
+                } catch (OperationNotAllowedException e) { // NOSONAR
+                    // fall through to the default upload
+                    exceptionRef.set(e);
+                }
+            });
+
+            if (exceptionRef.get() instanceof OperationNotAllowedException) {
+                return legacySaveBackToServerOrHub(parentSpaceId, remoteMountpointURI, wfm, context, svg, monitor);
+            }
+
+            final var result = resultRef.get();
+            if (result.errorTitleAndDescription() != null) {
+                SpaceAPI.showErrorToast(result.errorTitleAndDescription().getFirst(),
+                    result.errorTitleAndDescription().getSecond(), false);
+            }
+            uploaded = result.successful();
+        }
+
+        return uploaded;
+    }
+
+    private static boolean legacySaveBackToServerOrHub(final String spaceId, final URI remoteMountpointURI,
+        final WorkflowManager wfm, final WorkflowContextV2 context, final String svg, final IProgressMonitor monitor) {
         final var remoteStore = ExplorerMountTable.getFileSystem().getStore(remoteMountpointURI);
 
         final var fetchedInfo = remoteStore.fetchInfo();
@@ -272,18 +344,20 @@ final class SaveProject {
 
         final var spaceProviders = DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey());
         final var spaceProvider = Optional
-            .ofNullable(spaceProviders.getSpaceProvider(remoteMountpointURI.getAuthority())) //
-            .orElseThrow(() -> new IllegalStateException(
-                "Space provider '" + remoteMountpointURI.getAuthority() + "' not found."));
+                .ofNullable(spaceProviders.getSpaceProvider(remoteMountpointURI.getAuthority())) //
+                .orElseThrow(() -> new IllegalStateException(
+                    "Space provider '" + remoteMountpointURI.getAuthority() + "' not found."));
         final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
+
         var uploaded = false;
         try {
-            spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, false, false, monitor);
+            spaceProvider.syncUploadWorkflow(workflowPath, remoteMountpointURI, spaceId, false, false, monitor);
             uploaded = true;
         } catch (final CoreException | IOException e) {
             final var message = "Failed to upload the workflow to its remote location\n(" + e.getMessage() + ")";
             DesktopAPUtil.showAndLogError("Upload has failed", message, LOGGER, e);
         }
+
         return uploaded;
     }
 }
