@@ -71,4 +71,24 @@ test.describe("tooltips", () => {
 
     await assertSnapshot(page);
   });
+
+  test("metanode / component show tooltip for cut off names", async ({
+    page,
+  }) => {
+    await startApplication(page, {
+      withMouseCursor: true,
+      workflowFixturePath: "nodes/getWorkflow-node-metanode-long-name.json",
+    });
+
+    const nodeNamePosition = await getPixiObjectCenterScreenCoordinates(page, [
+      `Node__${tooltipNodeId}`,
+      "NodeName",
+    ]);
+    await page.mouse.move(...pointToArray(nodeNamePosition));
+    await page.waitForTimeout(200);
+
+    await waitForTooltip(page);
+
+    await assertSnapshot(page);
+  });
 });

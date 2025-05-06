@@ -9,7 +9,7 @@ import {
 } from "pixi.js";
 
 import * as $colors from "@/style/colors";
-import type { GraphicsInst } from "@/vue3-pixi";
+import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { useTooltip } from "../../common/useTooltip";
 import type { TooltipDefinition } from "../../types";
 import { markEventAsHandled } from "../util/interaction";
@@ -81,7 +81,7 @@ const tooltip = computed<TooltipDefinition>(() => {
   };
 });
 
-useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
+useTooltip({ tooltip, element: useTemplateRef<ContainerInst>("tooltipRef") });
 </script>
 
 <template>

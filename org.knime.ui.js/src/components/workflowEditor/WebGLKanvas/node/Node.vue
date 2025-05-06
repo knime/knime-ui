@@ -326,6 +326,7 @@ const nodeLabelPosition = computed(() => {
       v-if="renderable"
       :node-id="node.id"
       :name="shortenedNodeName"
+      :full-name="name"
       :is-editable="isMetanode || isComponent"
       :position="nodeNamePosition"
       :metrics="nodeNameDimensions"

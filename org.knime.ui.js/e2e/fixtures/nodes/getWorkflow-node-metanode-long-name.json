@@ -1,0 +1,52 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "13",
+    "workflow": {
+      "dirty": true,
+      "nodes": {
+        "root:1": {
+          "name": "This is a super long title that gets cut off at some point.",
+          "id": "root:1",
+          "state": { "executionState": "IDLE" },
+          "kind": "metanode",
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canExpand": "true",
+            "canDelete": true,
+            "canReset": false,
+            "canCollapse": "true"
+          },
+          "inPorts": [],
+          "outPorts": [],
+          "position": { "x": 161, "y": 156 }
+        }
+      },
+      "workflowAnnotations": [],
+      "allowedActions": {
+        "canExecute": true,
+        "canCancel": false,
+        "canReset": false,
+        "canUndo": true,
+        "canRedo": false
+      },
+      "metadata": {
+        "tags": [],
+        "description": { "value": "", "contentType": "text/plain" },
+        "lastEdit": "2025-04-29T13:54:45.255+02:00",
+        "metadataType": "project",
+        "links": []
+      },
+      "connections": {},
+      "nodeTemplates": {},
+      "info": {
+        "name": "csv",
+        "providerType": "HUB",
+        "containerId": "root",
+        "containerType": "project"
+      }
+    }
+  }
+}
