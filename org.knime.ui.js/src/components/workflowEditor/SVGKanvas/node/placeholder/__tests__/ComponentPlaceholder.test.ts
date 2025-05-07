@@ -3,7 +3,12 @@ import { nextTick } from "vue";
 import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import { ComponentPlaceholder as ComponentPlaceholderType } from "@/api/gateway-api/generated-api";
-import { createComponentPlaceholder } from "@/test/factories";
+import {
+  createComponentPlaceholder,
+  createConnection,
+  createWorkflow,
+  createWorkflowAnnotation,
+} from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { getToastPresets } from "@/toastPresets";
 import ComponentPlaceholder from "../ComponentPlaceholder.vue";
@@ -14,10 +19,31 @@ describe("ComponentPlaceholder", () => {
   });
 
   const defaultProps = { placeholder: createComponentPlaceholder() };
+  const testNodeId = "root:1";
+  const testAnnotationId = "annotationId";
+  const testComponentId = "componentId";
+  const testConnectionId = "connectionId";
 
   const doMount = (props = {}) => {
     const { toastPresets } = getToastPresets();
     const mockedStores = mockStores();
+
+    mockedStores.workflowStore.setActiveWorkflow(
+      createWorkflow({
+        nodes: {
+          [testNodeId]: { id: testNodeId, position: { x: 0, y: 0 } },
+        },
+        connections: {
+          [testConnectionId]: createConnection({ id: testConnectionId }),
+        },
+        workflowAnnotations: [
+          createWorkflowAnnotation({
+            id: testAnnotationId,
+            text: { value: "Annotation text" },
+          }),
+        ],
+      }),
+    );
 
     const wrapper = shallowMount(ComponentPlaceholder, {
       props: { ...defaultProps, ...props },
@@ -79,41 +105,52 @@ describe("ComponentPlaceholder", () => {
     expect(componentLoadedWithWarningSpy).toHaveBeenCalledWith(placeholderData);
   });
 
-  it("should select a node if selection state hasnt changed and state of placeholder is SUCCESS", async () => {
+  it("should select the loaded component if selection state hasnt changed and state of placeholder is SUCCESS", async () => {
     const { wrapper, mockedStores } = doMount();
-
-    const componentId = "componentId1";
 
     await wrapper.setProps({
       placeholder: {
         ...defaultProps.placeholder,
-        componentId,
+        componentId: testComponentId,
         state: ComponentPlaceholderType.StateEnum.SUCCESS,
       },
     });
 
     expect(mockedStores.selectionStore.deselectAllObjects).toBeCalledWith([
-      componentId,
+      testComponentId,
     ]);
   });
 
-  // TODO(NXT-3679) will be fixed in a follow-up
-  it.todo(
-    "should not select a node if selection state has changed",
-    async () => {
+  it.each([
+    {
+      description: "another node",
+      selectAction: (store) => store.selectNodes([testNodeId]),
+    },
+    {
+      description: "an annotation",
+      selectAction: (store) => store.selectAnnotations(testAnnotationId),
+    },
+    {
+      description: "a connection",
+      selectAction: (store) => store.selectConnections(["connectionId"]),
+    },
+    {
+      description: "a bendpoint",
+      selectAction: (store) => store.selectBendpoints(["bendPointId"]),
+    },
+  ])(
+    "should not select the loaded component if $description was selected in the meantime",
+    async ({ selectAction }) => {
       const { wrapper, mockedStores } = doMount();
+
+      selectAction(mockedStores.selectionStore);
       await flushPromises();
       await nextTick();
-
-      const componentId = "componentId1";
-
-      await mockedStores.selectionStore.selectNodes(["id1"]);
-      await flushPromises();
 
       await wrapper.setProps({
         placeholder: {
           ...defaultProps.placeholder,
-          componentId,
+          componentId: testComponentId,
           state: ComponentPlaceholderType.StateEnum.SUCCESS,
         },
       });

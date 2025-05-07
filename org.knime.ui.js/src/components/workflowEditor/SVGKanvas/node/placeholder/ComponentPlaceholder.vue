@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
-import { isEqual } from "lodash-es";
+import { storeToRefs } from "pinia";
 
 import { ComponentPlaceholder } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
@@ -16,11 +16,23 @@ const props = defineProps<Props>();
 
 const { toastPresets } = getToastPresets();
 const { deselectAllObjects } = useSelectionStore();
+const {
+  selectedNodeIds,
+  selectedAnnotationIds,
+  selectedConnectionIds,
+  selectedBendpointIds,
+} = storeToRefs(useSelectionStore());
 
-let selectionStoreState = ref<null | string[]>(null);
-
+const previousSelection = ref<Set<string>>(new Set());
+const getSelection = () =>
+  new Set([
+    ...selectedNodeIds.value,
+    ...selectedAnnotationIds.value,
+    ...selectedConnectionIds.value,
+    ...selectedBendpointIds.value,
+  ]);
 onMounted(() => {
-  selectionStoreState.value = useSelectionStore().selectedNodeIds;
+  previousSelection.value = getSelection();
 });
 
 const placeholderState = computed(() => props.placeholder.state);
@@ -37,12 +49,12 @@ const isSuccess = computed(
 );
 
 watch(placeholderState, async () => {
-  const didSelectionChange = !isEqual(
-    selectionStoreState.value,
-    useSelectionStore().selectedNodeIds,
-  );
+  const currentSelection = getSelection();
+  const isSelectionUnchanged =
+    previousSelection.value.size === currentSelection.size &&
+    [...previousSelection.value].every((id) => currentSelection.has(id));
 
-  if (!didSelectionChange && (isSuccess.value || isSuccessWithWarning.value)) {
+  if (isSelectionUnchanged && (isSuccess.value || isSuccessWithWarning.value)) {
     if (props.placeholder.componentId) {
       await deselectAllObjects([props.placeholder.componentId]);
     }
