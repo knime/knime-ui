@@ -50,8 +50,8 @@ const isComponent = (node?: KnimeNode): node is ComponentNode =>
 const isMetanode = (node?: KnimeNode): node is MetaNode =>
   Boolean(node && isNodeMetaNode(node));
 
-const isLinkedComponent = (node?: KnimeNode) =>
-  Boolean(isComponent(node) && node.link);
+const isLinked = (node?: KnimeNode) =>
+  Boolean((isComponent(node) || isMetanode(node)) && node.link);
 
 const canExpand = (kind: "metanode" | "component") => {
   const selectedNode = useSelectionStore().singleSelectedNode;
@@ -240,7 +240,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       return (
         isWritable &&
         (isComponent(selectedNode) || isMetanode(selectedNode)) &&
-        !isLinkedComponent(selectedNode)
+        !isLinked(selectedNode)
       );
     },
   },
@@ -263,7 +263,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       return (
         useWorkflowStore().isWritable &&
         isComponent(selectedNode) &&
-        !isLinkedComponent(selectedNode) &&
+        !isLinked(selectedNode) &&
         useUIControlsStore().canDoComponentSharingOperations
       );
     },
@@ -288,7 +288,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
 
       return (
         useWorkflowStore().isWritable &&
-        isLinkedComponent(selectedNode) &&
+        isLinked(selectedNode) &&
         useUIControlsStore().canDoComponentSharingOperations
       );
     },
@@ -313,7 +313,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
 
       return (
         useWorkflowStore().isWritable &&
-        isLinkedComponent(selectedNode) &&
+        isLinked(selectedNode) &&
         useUIControlsStore().canDoComponentSharingOperations
       );
     },
@@ -339,7 +339,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
 
       const isHubItemVersionChangeable =
         isComponent(selectedNode) &&
-        isLinkedComponent(selectedNode) &&
+        isLinked(selectedNode) &&
         selectedNode.link?.isHubItemVersionChangeable;
 
       return (
@@ -370,7 +370,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
 
       const isLinkTypeChangeable =
         isComponent(selectedNode) &&
-        isLinkedComponent(selectedNode) &&
+        isLinked(selectedNode) &&
         selectedNode.link?.isLinkTypeChangeable;
 
       return (
@@ -422,7 +422,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         isWritable &&
         isComponent(selectedNode) &&
         !selectedNode?.isLocked &&
-        !isLinkedComponent(selectedNode) &&
+        !isLinked(selectedNode) &&
         useUIControlsStore().canOpenComponentLayoutEditor
       );
     },

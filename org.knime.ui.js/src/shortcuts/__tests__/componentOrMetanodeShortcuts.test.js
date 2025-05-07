@@ -221,13 +221,16 @@ describe("componentOrMetanodeShortcuts", () => {
         },
       );
 
-      it("cannot rename if the selected node is linked", () => {
+      it.each([
+        ["metanode", createMetanode({ id: "root:1", link: { url: "foo" } })],
+        [
+          "component",
+          createComponentNode({ id: "root:1", link: { url: "foo" } }),
+        ],
+      ])("cannot rename if the %s is linked", (_, node) => {
         const { selectionStore } = createStore();
 
-        selectionStore.singleSelectedNode = createComponentNode({
-          id: "root:0",
-          link: true,
-        });
+        selectionStore.singleSelectedNode = node;
         expect(componentOrMetanodeShortcuts.editName.condition()).toBe(false);
       });
     });
