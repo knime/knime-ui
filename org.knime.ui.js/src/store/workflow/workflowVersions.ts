@@ -4,7 +4,7 @@
 import { computed, markRaw, ref } from "vue";
 import { API } from "@api";
 import { merge } from "lodash-es";
-import { defineStore } from "pinia";
+import { defineStore  } from "pinia";
 import { useRouter } from "vue-router";
 
 import { rfcErrors } from "@knime/hub-features";
@@ -26,6 +26,7 @@ import { promise } from "@knime/utils";
 
 import type { SpaceItemVersion } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { getCustomFetchOptionsForBrowser } from "@/store/spaces/common.ts";
