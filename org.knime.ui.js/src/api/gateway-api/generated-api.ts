@@ -1435,6 +1435,29 @@ export interface DeleteCommand extends WorkflowCommand {
 export namespace DeleteCommand {
 }
 /**
+ * Removes a component placeholder.
+ * @export
+ * @interface DeleteComponentPlaceholderCommand
+ */
+export interface DeleteComponentPlaceholderCommand extends WorkflowCommand {
+
+    /**
+     *
+     * @type {string}
+     * @memberof DeleteComponentPlaceholderCommand
+     */
+    placeholderId: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace DeleteComponentPlaceholderCommand
+ */
+export namespace DeleteComponentPlaceholderCommand {
+}
+/**
  * The description of a dynamic port group. A dynamic port group is a collection of dynamic ports, grouped by a common identifier, e.g. \&quot;Input\&quot; or \&quot;Output\&quot;.
  * @export
  * @interface DynamicPortGroupDescription
@@ -4819,6 +4842,7 @@ export namespace WorkflowCommand {
         AutoDisconnect = 'auto_disconnect',
         AddNode = 'add_node',
         AddComponent = 'add_component',
+        DeleteComponentPlaceholder = 'delete_component_placeholder',
         ReplaceNode = 'replace_node',
         InsertNode = 'insert_node',
         UpdateComponentOrMetanodeName = 'update_component_or_metanode_name',
@@ -6271,6 +6295,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddComponent }
 		}) as Promise<AddComponentPlaceholderResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Removes a component placeholder.
+     */
+	DeleteComponentPlaceholder(
+		params: { projectId: string, workflowId: string } & Omit<DeleteComponentPlaceholderCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.DeleteComponentPlaceholder }
+		});
 		return postProcessCommandResponse(commandResponse);
 	},	
 
