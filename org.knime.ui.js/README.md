@@ -11,7 +11,7 @@ The frontend is based on the [Vue.js] JavaScript framework.
 - Configure your KNIME Analytics Platform to use the locally running UI
 
   - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
-  - add the following arguments to the `<knime-installation-folder>/knime.ini` (For more information see [this page][debugap])
+  - add the following arguments to the `<knime-installation-folder>/knime.ini`
 
     | argument                                       | comment                                                                                                            |
     | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -163,5 +163,4 @@ This will also run the `type-check` step to ensure there are no TypeScript error
 [Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file
 [husky]: https://www.npmjs.com/package/husky
 [lintstaged]: https://github.com/okonet/lint-staged
-[debugap]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/1418854401/Debug+the+KNIME+AP+Modern+UI+inside+the+AP
 [debugapbrowser]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/3054895127/Debug+KNIME+AP+Modern+UI+in+browser+w+Eclipse+back+end
