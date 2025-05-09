@@ -1,6 +1,7 @@
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import { useNodeCollisionCheck } from "@/components/workflowEditor/WebGLKanvas/common/useNodeCollisionCheck";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -17,12 +18,10 @@ const getNodeFactoryFromEvent = (event: DragEvent) => {
   const data = event.dataTransfer?.getData(KNIME_MIME);
 
   if (!data) {
-    throw new Error(
-      "Invalid source or MIME type while reading node factory key",
-    );
+    return null;
   }
 
-  return JSON.parse(data);
+  return JSON.parse(data) as NodeFactoryKey;
 };
 
 export const useDragNodeIntoCanvas = () => {
@@ -101,10 +100,11 @@ export const useDragNodeIntoCanvas = () => {
     }
   };
 
-  const addNodeToCanvas = async (event: DragEvent) => {
+  const addNodeToCanvas = async (
+    event: DragEvent,
+    nodeFactory: NodeFactoryKey,
+  ) => {
     try {
-      const nodeFactory = getNodeFactoryFromEvent(event);
-
       const [x, y] = canvasStore.value.screenToCanvasCoordinates([
         event.clientX - $shapes.nodeSize / 2,
         event.clientY - $shapes.nodeSize / 2,
@@ -117,9 +117,11 @@ export const useDragNodeIntoCanvas = () => {
     }
   };
 
-  const replaceNodeInCanvas = async (event: DragEvent) => {
+  const replaceNodeInCanvas = async (
+    event: DragEvent,
+    nodeFactory: NodeFactoryKey,
+  ) => {
     try {
-      const nodeFactory = getNodeFactoryFromEvent(event);
       const targetNodeId = nodeInteractionsStore.replacementCandidateId!;
       await nodeInteractionsStore.replaceNode({
         targetNodeId,
@@ -134,19 +136,24 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   const onDrop = async (event: DragEvent) => {
-    // Default action when dropping links is to open them in your browser.
-    event.preventDefault();
+    const nodeFactory = getNodeFactoryFromEvent(event);
 
-    if (!isWritable.value) {
+    if (!isWritable.value || !nodeFactory) {
       return;
     }
+
+    // Default action when dropping links is to open them in your browser.
+    // We must prevent here because if a nodeFactory is supplied then the drag
+    // is coming from within the application, otherwise it comes from outside and
+    // it'll be handled automatically by the backend, so we must not prevent the default
+    event.preventDefault();
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
     if (isWebGLRenderer.value && nodeInteractionsStore.replacementCandidateId) {
-      await replaceNodeInCanvas(event);
+      await replaceNodeInCanvas(event, nodeFactory);
     } else {
-      await addNodeToCanvas(event);
+      await addNodeToCanvas(event, nodeFactory);
     }
   };
 
