@@ -65,6 +65,7 @@ import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.ExampleProjects;
@@ -84,7 +85,7 @@ class ProjectAPITest {
     @Test
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
         WorkflowManager m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var pm = ProjectManager.getInstance();
+        var projectManager = ProjectManager.getInstance();
         var origin = new Origin("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
         var projectId = "projectId";
         var project = Project.builder() //
@@ -92,14 +93,17 @@ class ProjectAPITest {
             .setOrigin(origin) //
             .setId(projectId) //
             .build();
-        pm.addProject(project);
+        projectManager.addProject(project);
+        DesktopAPI.injectDependency(projectManager);
 
-        DesktopAPI.injectDependency(pm);
+        var appStateUpdater = new AppStateUpdater();
+        DesktopAPI.injectDependency(appStateUpdater);
+
         ProjectAPI.setProjectActiveAndEnsureItsLoaded(projectId, VersionId.currentState().toString());
 
-        assertThat(pm.getProject(projectId)).isNotEmpty();
-        assertThat(pm.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded)).isNotEmpty();
-        assertThat(pm.isActiveProject(projectId)).isTrue();
+        assertThat(projectManager.getProject(projectId)).isNotEmpty();
+        assertThat(projectManager.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded)).isNotEmpty();
+        assertThat(projectManager.isActiveProject(projectId)).isTrue();
     }
 
     @Test

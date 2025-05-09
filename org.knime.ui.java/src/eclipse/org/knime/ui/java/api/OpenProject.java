@@ -210,7 +210,8 @@ final class OpenProject {
             Optional.empty() : //
             Optional.of(buildVersionInfo(selectedVersion));
 
-        return Optional.of(new Origin(providerId, spaceId, itemId, projectType, itemVersion));
+        // TODO NXT-3701: Remove itemVersion from this record
+        return Optional.of(new Origin(providerId, spaceId, itemId, projectType, null, itemVersion));
     }
 
     private static SpaceItemVersionEnt buildVersionInfo(final NamedItemVersion selectedVersion) {
