@@ -15,6 +15,7 @@ import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useWorkflowVersionsStore } from "../workflow/workflowVersions";
 
 import { useApplicationSettingsStore } from "./settings";
 
@@ -119,16 +120,35 @@ export const useApplicationStore = defineStore("application", {
       this.activeProjectId = projectId;
     },
 
+    /**
+     * We map 'versionId' to the 'itemVersion' in the 'origin' of the project
+     * to be able to keep track of project versions
+     */
     setOpenProjects(projects: Project[]) {
-      this.openProjects = projects;
-    },
+      const workflowVersionsStore = useWorkflowVersionsStore();
+      const updatedProjects = projects.map((project) => {
+        const projectId = project.projectId;
+        const orgin = project.origin;
+        if (!orgin) {
+          return project; // No origin, no version
+        }
 
-    // TODO: NXT-3458 this action can be removed as soon as it is not called from workflowVersions any more
-    setVersionOfActiveProject(version?: SpaceItemVersion) {
-      const origin = this.activeProjectOrigin;
-      if (origin) {
-        origin.version = version;
-      }
+        const versionId = project.origin?.versionId;
+        const itemVersion = workflowVersionsStore.getNamedItemVersion(
+          projectId,
+          versionId,
+        ) as SpaceItemVersion;
+        const newOrigin = {
+          ...project.origin,
+          version: itemVersion,
+        } as SpaceItemReference;
+
+        const newProject = { ...project, origin: newOrigin };
+        return newProject;
+      });
+
+      debugger;
+      this.openProjects = updatedProjects;
     },
 
     async updateOpenProjectsOrder(projects: Project[]) {

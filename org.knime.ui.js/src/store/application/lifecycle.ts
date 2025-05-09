@@ -348,15 +348,21 @@ export const useLifecycleStore = defineStore("lifecycle", {
         projectId: activeProject.projectId,
         workflowId: activeProject.activeWorkflowId,
       };
+      const version =
+        activeProject.origin?.version?.version ?? CURRENT_STATE_VERSION;
 
       consola.trace(
         "action::setActiveProject -> Navigating to project",
         params,
+        version,
       );
 
       await $router.push({
         name: APP_ROUTES.WorkflowPage,
         params,
+        query: {
+          version: version === CURRENT_STATE_VERSION ? null : String(version),
+        },
         force: true,
       });
     },
@@ -481,6 +487,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
           throw projectActivationError;
         }
       }
+
       const getWorkflowParams: Parameters<typeof API.workflow.getWorkflow>[0] =
         {
           projectId,
@@ -490,7 +497,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
         };
 
       let project: WorkflowSnapshot;
-
       try {
         project = await API.workflow.getWorkflow(getWorkflowParams);
       } catch (error) {

@@ -438,10 +438,6 @@ describe("workflow store: versions", () => {
         applicationStore,
       } = await setupStore();
       dirtyProjectsTrackingStore.dirtyProjectsMap = { [projectId]: true };
-      applicationStore.setVersionOfActiveProject({
-        title: "someTitle",
-        version,
-      });
 
       await workflowVersionsStore.restoreVersion(1);
 
@@ -478,7 +474,6 @@ describe("workflow store: versions", () => {
         const { workflowVersionsStore, applicationStore, projectId } =
           await setupStore();
 
-        // TODO: NXT-3458 this should be available directly from openProjects as soon as the selected version is persisted
         const info: ReturnType<
           typeof workflowVersionsStore.versionsModeInfo.get
         > = {
@@ -501,10 +496,10 @@ describe("workflow store: versions", () => {
         };
         workflowVersionsStore.versionsModeInfo.set(projectId, info);
 
-        const openProject = applicationStore.openProjects.find(
+        const openProjectBefore = applicationStore.openProjects.find(
           (openProject) => openProject.projectId === projectId,
         );
-        expect(openProject!.origin!.version).toBeUndefined();
+        expect(openProjectBefore!.origin!.version).toBeUndefined();
 
         await workflowVersionsStore.switchVersion(version);
         expect(useRouter().push).toHaveBeenLastCalledWith({
@@ -514,7 +509,35 @@ describe("workflow store: versions", () => {
             version: version.toString(),
           },
         });
-        expect(openProject!.origin!.version).toStrictEqual(
+
+        // Should be handled by the backend
+        applicationStore.setOpenProjects([
+          {
+            name: "Mock Project",
+            projectId,
+            origin: {
+              providerId: "mockProviderId",
+              itemId: "mockItemId",
+              spaceId: "mockSpaceId",
+              versionId: "1",
+            },
+          },
+          {
+            name: "Mock Project 2",
+            projectId: "otherMockProjectId",
+            origin: {
+              providerId: "mockProviderId",
+              itemId: "mockItemId2",
+              spaceId: "mockSpaceId",
+            },
+          },
+        ]);
+
+        const openProjectAfter = applicationStore.openProjects.find(
+          (openProject) => openProject.projectId === projectId,
+        );
+
+        expect(openProjectAfter!.origin!.version).toStrictEqual(
           info.loadedVersions[0],
         );
 
@@ -527,7 +550,34 @@ describe("workflow store: versions", () => {
           },
         });
         expect(mockedAPI.desktop.saveProject).not.toHaveBeenCalled();
-        expect(openProject!.origin!.version).toBeUndefined();
+
+        // Should be handled by the backend
+        applicationStore.setOpenProjects([
+          {
+            name: "Mock Project",
+            projectId,
+            origin: {
+              providerId: "mockProviderId",
+              itemId: "mockItemId",
+              spaceId: "mockSpaceId",
+            },
+          },
+          {
+            name: "Mock Project 2",
+            projectId: "otherMockProjectId",
+            origin: {
+              providerId: "mockProviderId",
+              itemId: "mockItemId2",
+              spaceId: "mockSpaceId",
+            },
+          },
+        ]);
+
+        const openProjectAfterAfter = applicationStore.openProjects.find(
+          (openProject) => openProject.projectId === projectId,
+        );
+
+        expect(openProjectAfterAfter!.origin!.version).toBeUndefined();
       });
 
       it("in dirty state with successful saveProject sets new route but does not show error toast", async () => {

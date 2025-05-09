@@ -54,7 +54,7 @@ const getHubBaseUrl = (provider?: SpaceProviderNS.SpaceProvider | null) => {
 };
 
 const createInitialProjectVersionsModeInfo = (): ProjectVersionsModeInfo => ({
-  loadedVersions: [],
+  loadedVersions: [], // TODO: Source of truth for complete version infos.
   unversionedSavepoint: null,
   permissions: [],
   hasLoadedAll: false,
@@ -80,18 +80,35 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     return status.value.get(activeProjectId) ?? "inactive";
   });
 
-  const activeProjectVersionsModeInfo = computed(() => {
-    const { activeProjectId } = useApplicationStore();
+  const activeProjectVersionsModeInfo = computed(
+    (): ProjectVersionsModeInfo | undefined => {
+      const { activeProjectId } = useApplicationStore();
 
-    if (!activeProjectId) {
+      if (!activeProjectId) {
+        return undefined;
+      }
+
+      return versionsModeInfo.value.get(activeProjectId);
+    },
+  );
+
+  const getNamedItemVersion = (
+    projectId: string,
+    versionId: string | undefined,
+  ): NamedItemVersion | undefined => {
+    const projectVersionsModeInfo = versionsModeInfo.value.get(projectId);
+    if (!projectVersionsModeInfo) {
       return undefined;
     }
+    return projectVersionsModeInfo.loadedVersions.find(
+      (namedItemVersion) => namedItemVersion.version.toString() === versionId,
+    );
+  };
 
-    return versionsModeInfo.value.get(activeProjectId);
-  });
   const activeProjectHasUnversionedChanges = computed(() => {
     return Boolean(activeProjectVersionsModeInfo.value?.unversionedSavepoint);
   });
+
   const isSidepanelOpen = computed(() => {
     const { activeProjectId } = useApplicationStore();
     return Boolean(
@@ -101,6 +118,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         ),
     );
   });
+
   const activeProjectCurrentVersion = computed(() => {
     const versionInfo = useWorkflowStore().activeWorkflow?.info.version;
     return versionInfo ? Number(versionInfo) : CURRENT_STATE_VERSION;
@@ -275,46 +293,15 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     useDirtyProjectsTrackingStore().updateDirtyProjectsMap({
       [activeProjectId]: false,
     });
-    // the project which has been restored is not a version anymore, previously set version needs to be unset
-    setVersionOfActiveProject(CURRENT_STATE_VERSION, activeProjectId);
-  }
-
-  // TODO: NXT-3458 this workaround to persist the selected version in the frontend
-  //  should not be necessary anymore if the selected version is persisted
-  function setVersionOfActiveProject(
-    version: NamedItemVersion["version"],
-    activeProjectId: string,
-  ) {
-    const { setVersionOfActiveProject } = useApplicationStore();
-
-    if (typeof version === "string") {
-      setVersionOfActiveProject();
-    } else {
-      const activeProjectVersionModeInfo =
-        versionsModeInfo.value.get(activeProjectId);
-      const loadedVersionModeInfo = activeProjectVersionModeInfo
-        ? activeProjectVersionModeInfo.loadedVersions.find(
-            (loadedVersion) => loadedVersion.version === version,
-          )
-        : undefined;
-      if (loadedVersionModeInfo) {
-        setVersionOfActiveProject({
-          ...loadedVersionModeInfo,
-          version: Number(version),
-        });
-      }
-    }
   }
 
   async function switchVersion(version: NamedItemVersion["version"]) {
     const { activeProjectId } = useApplicationStore();
-
     if (!activeProjectId) {
       return;
     }
 
     let canSetNewRoute: boolean | null = true;
-
     if (
       activeProjectCurrentVersion.value === CURRENT_STATE_VERSION &&
       useDirtyProjectsTrackingStore().dirtyProjectsMap[activeProjectId]
@@ -505,6 +492,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     activeProjectHasUnversionedChanges,
     isSidepanelOpen,
     activeProjectCurrentVersion,
+    getNamedItemVersion,
     // actions:
     setVersionsModeStatus,
     createVersion,

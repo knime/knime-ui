@@ -197,6 +197,7 @@ describe("application", () => {
       expect(lifecycleStore.loadWorkflow).toHaveBeenCalledWith({
         projectId: "baz",
         workflowId: "root:2",
+        versionId: null,
       });
     });
 
@@ -245,6 +246,9 @@ describe("application", () => {
         params: {
           projectId: "bee",
           workflowId: "root",
+        },
+        query: {
+          version: null,
         },
         force: true,
       });

@@ -3894,6 +3894,12 @@ export interface SpaceItemReference {
     projectType?: SpaceItemReference.ProjectTypeEnum;
     /**
      *
+     * @type {string}
+     * @memberof SpaceItemReference
+     */
+    versionId?: string;
+    /**
+     *
      * @type {SpaceItemVersion}
      * @memberof SpaceItemReference
      */
