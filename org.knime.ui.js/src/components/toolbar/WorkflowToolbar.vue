@@ -15,6 +15,8 @@ import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 import { sleep } from "@knime/utils";
 
+import { API } from "@/api";
+import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
@@ -33,8 +35,6 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { useSpacesStore } from "@/store/spaces/spaces";
-import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { reloadApp } from "@/util/devTools";
@@ -54,7 +54,7 @@ import ZoomMenu from "./ZoomMenu.vue";
  */
 const $shortcuts = useShortcuts();
 const uiControls = useUIControlsStore();
-const { activeProjectId, isUnknownProject, openProjects } = storeToRefs(
+const { activeProjectId, activeProjectOrigin, isUnknownProject } = storeToRefs(
   useApplicationStore(),
 );
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
@@ -62,22 +62,20 @@ const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
 const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
-const { openInBrowser } = useSpacesStore();
-const { getProviderInfoFromProjectPath, getCommunityHubInfo } = storeToRefs(
-  useSpaceProvidersStore(),
-);
+const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const { uploadWorkflowAndOpenAsProject } = useUploadWorkflowToSpace();
 
 const webglCanvasStore = useWebGLCanvasStore();
 
-const providerInfo = computed(() =>
-  getProviderInfoFromProjectPath.value(activeProjectId.value!),
+const isLocalWorkflow = computed(
+  () =>
+    activeWorkflow.value?.info.providerType ===
+    WorkflowInfo.ProviderTypeEnum.LOCAL,
 );
-const isLocal = computed(() =>
-  Boolean(providerInfo.value && isLocalProvider(providerInfo.value)),
-);
-const isHub = computed(() =>
-  Boolean(providerInfo.value && isHubProvider(providerInfo.value)),
+const isHubWorkflow = computed(
+  () =>
+    activeWorkflow.value?.info.providerType ===
+    WorkflowInfo.ProviderTypeEnum.HUB,
 );
 
 const canvasModes = computed<Array<MenuItem>>(() => {
@@ -186,36 +184,35 @@ const onCanvasModeUpdate = (
 
 // toggle renderer svg/webgl
 const { devMode } = storeToRefs(useApplicationSettingsStore());
-
-const itemId = computed(
-  () =>
-    openProjects.value.find(
-      ({ projectId }) => projectId === activeProjectId.value,
-    )?.origin?.itemId,
-);
-
 const { currentRenderer: currentCanvasRenderer } = useCanvasRendererUtils();
 
 const onDeploymentButtonClick = () => {
-  if (!itemId.value) {
-    consola.warn("Item id not found for active project");
+  if (!activeProjectOrigin.value) {
+    consola.warn("Invalid activeProjectOrigin.");
     return;
   }
 
-  openInBrowser({
-    projectId: activeProjectId.value!,
-    itemId: itemId.value,
+  const {
+    providerId: spaceProviderId,
+    spaceId,
+    itemId,
+  } = activeProjectOrigin.value;
+
+  API.desktop.openInBrowser({
+    spaceProviderId,
+    spaceId,
+    itemId,
     queryString: "show-deployment=true",
   });
 };
 
 const onUploadButtonClick = () => {
-  if (!itemId.value) {
+  if (!activeProjectOrigin.value?.itemId) {
     consola.warn("Item id not found for active project");
     return;
   }
 
-  uploadWorkflowAndOpenAsProject(itemId.value);
+  uploadWorkflowAndOpenAsProject(activeProjectOrigin.value.itemId);
 };
 
 const uploadButton = ref<InstanceType<typeof ToolbarButton>>();
@@ -332,7 +329,7 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
       />
 
       <ToolbarButtonWithHint
-        v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocal"
+        v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocalWorkflow"
         ref="uploadButton"
         class="toolbar-button"
         :with-text="true"
@@ -347,7 +344,9 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
         Upload
       </ToolbarButtonWithHint>
       <ToolbarButton
-        v-else-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isHub"
+        v-else-if="
+          getCommunityHubInfo.isOnlyCommunityHubMounted && isHubWorkflow
+        "
         class="toolbar-button"
         :with-text="true"
         title="Deploy on Hub"

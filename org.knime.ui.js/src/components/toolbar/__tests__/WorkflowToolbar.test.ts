@@ -345,7 +345,7 @@ describe("WorkflowToolbar.vue", () => {
     const getUploadButton = (wrapper: VueWrapper) =>
       wrapper.findComponent({ ref: "uploadButton" });
 
-    it("doesnt show any button if not only Community Hub is mounted", () => {
+    it("doesn't show if not only Community Hub is mounted", () => {
       const { wrapper } = doMount({
         getCommunityHubInfo: {
           isOnlyCommunityHubMounted: false,
@@ -355,8 +355,17 @@ describe("WorkflowToolbar.vue", () => {
       expect(getUploadButton(wrapper).exists()).toBe(false);
     });
 
-    it("should show upload button if only Community Hub is mounted and workflow is local", () => {
-      const { wrapper } = doMount();
+    it("shows if only Community Hub is mounted and workflow is local", async () => {
+      const { wrapper, workflowStore } = doMount();
+
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          info: {
+            providerType: WorkflowInfo.ProviderTypeEnum.LOCAL,
+          },
+        }),
+      );
+      await flushPromises();
 
       const uploadButton = getUploadButton(wrapper);
 
@@ -374,7 +383,7 @@ describe("WorkflowToolbar.vue", () => {
         .at(0);
     };
 
-    it("doesnt show the button if not only Community Hub is mounted", () => {
+    it("doesn't show if not only Community Hub is mounted", () => {
       const { wrapper } = doMount({
         getCommunityHubInfo: {
           isOnlyCommunityHubMounted: false,
@@ -384,7 +393,7 @@ describe("WorkflowToolbar.vue", () => {
       expect(getDeployButton(wrapper)).toBeUndefined();
     });
 
-    it("should show deployment button if only Community Hub is mounted and workflow is from hub", async () => {
+    it("shows if only Community Hub is mounted and workflow is from hub", async () => {
       const { wrapper, ...mockedStores } = doMount();
 
       // does not show for local wf
@@ -408,6 +417,13 @@ describe("WorkflowToolbar.vue", () => {
           itemId: "root",
         },
       };
+      mockedStores.workflowStore.setActiveWorkflow(
+        createWorkflow({
+          info: {
+            providerType: WorkflowInfo.ProviderTypeEnum.HUB,
+          },
+        }),
+      );
       await flushPromises();
 
       const deployButton = getDeployButton(wrapper);
