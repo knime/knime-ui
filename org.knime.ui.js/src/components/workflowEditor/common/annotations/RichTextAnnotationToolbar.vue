@@ -196,6 +196,7 @@ const changeBorderColor = (color: string) => {
       <SubMenu
         v-if="secondaryTools.length > 0"
         :items="secondaryToolsMenuItems"
+        :teleport-to-body="false"
         orientation="left"
         @item-click="onSecondaryToolClick"
       >

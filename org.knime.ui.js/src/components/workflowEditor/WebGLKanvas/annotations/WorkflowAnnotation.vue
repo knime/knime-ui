@@ -77,7 +77,11 @@ onMounted(async () => {
   await sleep(300);
 
   onClickOutside(richTextAnnotationRef, saveContent, {
-    ignore: [".editor-toolbar[data-ignore-click-outside]"],
+    ignore: [
+      ".editor-toolbar[data-ignore-click-outside]",
+      // the link modal is still portalled
+      "#annotation-editor-toolbar",
+    ],
     capture: true,
   });
 });
