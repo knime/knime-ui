@@ -13,10 +13,12 @@ import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
+import { sleep } from "@knime/utils";
 
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
@@ -35,7 +37,12 @@ import { useSpacesStore } from "@/store/spaces/spaces";
 import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
+import { reloadApp } from "@/util/devTools";
+import {
+  type CanvasRendererType,
+  canvasRendererUtils,
+  useCanvasRendererUtils,
+} from "../workflowEditor/util/canvasRenderer";
 
 import FPSMeter from "./FPSMeter.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
@@ -187,8 +194,7 @@ const itemId = computed(
     )?.origin?.itemId,
 );
 
-const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
-  useCanvasRendererUtils();
+const { currentRenderer: currentCanvasRenderer } = useCanvasRendererUtils();
 
 const onDeploymentButtonClick = () => {
   if (!itemId.value) {
@@ -231,6 +237,41 @@ const ToolbarButtonWithHint = defineComponent(
     props: ["createHintOptions"] as const,
   },
 );
+
+const rendererValueSwitchModel = ref<CanvasRendererType>(
+  canvasRendererUtils.getCurrentCanvasRenderer(),
+);
+
+const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
+
+const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
+  // just change it in dev mode, no questions asked nor reloaded
+  if (devMode.value) {
+    currentCanvasRenderer.value = nextRenderer;
+    rendererValueSwitchModel.value = nextRenderer;
+    return;
+  }
+
+  const { show } = useConfirmDialog();
+  const result = await show({
+    title: "Change workflow editor engine",
+    message:
+      "The app will reload and you might loose any unsaved changes. Continue?",
+  });
+
+  // update the display model
+  rendererValueSwitchModel.value = nextRenderer;
+
+  if (result.confirmed) {
+    currentCanvasRenderer.value = nextRenderer;
+    reloadApp();
+    return;
+  }
+
+  // set switch back
+  await sleep(0);
+  rendererValueSwitchModel.value = nextRenderer === "WebGL" ? "SVG" : "WebGL";
+};
 </script>
 
 <template>
@@ -275,17 +316,20 @@ const ToolbarButtonWithHint = defineComponent(
         >
           <ChartDotsIcon />
         </FunctionButton>
-        <ValueSwitch
-          style="margin-right: var(--space-16)"
-          compact
-          :model-value="currentCanvasRenderer"
-          :possible-values="[
-            { id: 'SVG', text: 'SVG' },
-            { id: 'WebGL', text: 'WebGL' },
-          ]"
-          @update:model-value="toggleCanvasRenderer()"
-        />
       </template>
+
+      <ValueSwitch
+        compact
+        style="margin-right: var(--space-16)"
+        :model-value="rendererValueSwitchModel"
+        :possible-values="
+          Object.entries(canvasRendererNameMap).map(([id, text]) => ({
+            id,
+            text,
+          }))
+        "
+        @update:model-value="requestCanvasRenderToggle"
+      />
 
       <ToolbarButtonWithHint
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocal"

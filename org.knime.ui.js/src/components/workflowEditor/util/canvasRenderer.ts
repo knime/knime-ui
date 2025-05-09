@@ -1,13 +1,17 @@
 import { computed } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 
-const STORAGE_KEY = "KNIME_KANVAS_RENDERER";
+export const KANVAS_RENDERER_STORAGE_KEY = "KNIME_KANVAS_RENDERER";
 
 export type CanvasRendererType = "SVG" | "WebGL";
 
+const defaultRenderer: CanvasRendererType = "SVG";
+
 const getCurrentCanvasRenderer = (): CanvasRendererType => {
   return (
-    (window.localStorage.getItem(STORAGE_KEY) as CanvasRendererType) ?? "SVG"
+    (window.localStorage.getItem(
+      KANVAS_RENDERER_STORAGE_KEY,
+    ) as CanvasRendererType) ?? defaultRenderer
   );
 };
 
@@ -16,7 +20,7 @@ const toggleCanvasRenderer = () => {
 
   const nextRenderer = currentRenderer === "SVG" ? "WebGL" : "SVG";
 
-  window.localStorage.setItem(STORAGE_KEY, nextRenderer);
+  window.localStorage.setItem(KANVAS_RENDERER_STORAGE_KEY, nextRenderer);
 };
 
 const isWebGLRenderer = () => {
@@ -44,8 +48,8 @@ export const canvasRendererUtils = {
  */
 export const useCanvasRendererUtils = () => {
   const currentRenderer = useLocalStorage<CanvasRendererType>(
-    STORAGE_KEY,
-    "SVG",
+    KANVAS_RENDERER_STORAGE_KEY,
+    defaultRenderer,
   );
 
   const toggleCanvasRenderer = () => {

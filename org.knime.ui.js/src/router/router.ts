@@ -1,7 +1,7 @@
 import {
   type RouteRecordRaw,
   createRouter,
-  createWebHistory,
+  createWebHashHistory,
 } from "vue-router";
 
 import WorkflowPage from "@/components/workflowEditor/WorkflowPage.vue";
@@ -74,7 +74,7 @@ export const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 });
 

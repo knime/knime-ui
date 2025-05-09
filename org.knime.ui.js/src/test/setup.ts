@@ -1,6 +1,7 @@
 import { vi } from "vitest";
 import { config } from "@vue/test-utils";
 
+import { KANVAS_RENDERER_STORAGE_KEY } from "@/components/workflowEditor/util/canvasRenderer";
 import { characterLimits } from "@/plugins/constants";
 import { setupLogger } from "@/plugins/logger";
 
@@ -20,6 +21,9 @@ window.EquoCommService = {
   send: (_: any, __: any) => Promise.resolve(),
   on: (_: any, __: any, ___: any) => {},
 };
+
+// tests will for now only run when svg is the default
+localStorage.setItem(KANVAS_RENDERER_STORAGE_KEY, "SVG");
 
 vi.mock("raf-throttle", () => ({
   default(func: (..._args: any) => any) {
