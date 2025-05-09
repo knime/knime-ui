@@ -158,6 +158,10 @@ export default defineComponent({
       line-height: 19px;
     }
 
+    & .text {
+      overflow-wrap: anywhere;
+    }
+
     & .title,
     & .text,
     & .resolutions {
