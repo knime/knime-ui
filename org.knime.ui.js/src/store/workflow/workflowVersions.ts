@@ -54,7 +54,7 @@ const getHubBaseUrl = (provider?: SpaceProviderNS.SpaceProvider | null) => {
 };
 
 const createInitialProjectVersionsModeInfo = (): ProjectVersionsModeInfo => ({
-  loadedVersions: [], // TODO: Source of truth for complete version infos.
+  loadedVersions: [],
   unversionedSavepoint: null,
   permissions: [],
   hasLoadedAll: false,

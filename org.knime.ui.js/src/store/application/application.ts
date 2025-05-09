@@ -121,33 +121,24 @@ export const useApplicationStore = defineStore("application", {
     },
 
     /**
-     * We map 'versionId' to the 'itemVersion' in the 'origin' of the project
+     * We map 'versionId' to the 'version' in the 'origin' of the project
      * to be able to keep track of project versions
      */
     setOpenProjects(projects: Project[]) {
-      const workflowVersionsStore = useWorkflowVersionsStore();
+      const getVersion = useWorkflowVersionsStore().getNamedItemVersion;
       const updatedProjects = projects.map((project) => {
-        const projectId = project.projectId;
-        const orgin = project.origin;
-        if (!orgin) {
+        if (!project.origin) {
           return project; // No origin, no version
         }
 
-        const versionId = project.origin?.versionId;
-        const itemVersion = workflowVersionsStore.getNamedItemVersion(
-          projectId,
-          versionId,
-        ) as SpaceItemVersion;
-        const newOrigin = {
-          ...project.origin,
-          version: itemVersion,
-        } as SpaceItemReference;
+        const projectId = project.projectId;
+        const versionId = project.origin.versionId;
+        const version = getVersion(projectId, versionId) as SpaceItemVersion;
 
-        const newProject = { ...project, origin: newOrigin };
+        const origin = { ...project.origin, version };
+        const newProject = { ...project, origin };
         return newProject;
       });
-
-      debugger;
       this.openProjects = updatedProjects;
     },
 
