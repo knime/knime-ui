@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapActions, mapState } from "pinia";
+import { mapActions, mapState, storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -39,6 +39,12 @@ const MOVE_THRESHOLD = 5;
  */
 export default defineComponent({
   emits: ["nodeSelectionPreview", "annotationSelectionPreview"],
+  setup: () => {
+    const { shouldHideSelection } = storeToRefs(useSelectionStore());
+    return {
+      shouldHideSelection,
+    };
+  },
   data: (): RectangleSelectionData => ({
     startPos: {
       x: 0,
@@ -123,6 +129,7 @@ export default defineComponent({
         this.selectedAnnotationIdsAtStart = [...this.selectedAnnotationIds];
       } else {
         this.inverseMode = false;
+        this.shouldHideSelection = true;
         this.selectedNodeIdsAtStart = [];
         this.selectedAnnotationIdsAtStart = [];
       }
@@ -143,6 +150,7 @@ export default defineComponent({
 
       // hide rect
       this.pointerId = null;
+      this.shouldHideSelection = false;
 
       // clear "preview state" of now selected elements
       [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(
