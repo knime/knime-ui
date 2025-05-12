@@ -3,6 +3,7 @@ import { onMounted, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
 
+import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -14,6 +15,7 @@ import StaticWorkflowAnnotation from "./annotations/StaticWorkflowAnnotation.vue
 import Connector from "./connectors/Connector.vue";
 import FloatingConnector from "./floatingConnector/FloatingConnector.vue";
 import Node from "./node/Node.vue";
+import MetanodePortBars from "./portbars/MetanodePortBars.vue";
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
@@ -57,6 +59,13 @@ onMounted(() => {
         "
       />
     </template>
+
+    <MetanodePortBars
+      v-if="
+        activeWorkflow!.info.containerType ===
+        WorkflowInfo.ContainerTypeEnum.Metanode
+      "
+    />
 
     <Node
       v-for="node in activeWorkflow!.nodes"

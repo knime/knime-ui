@@ -129,6 +129,7 @@ describe("floatingConnector store", () => {
       },
       flowVariableConnection: false,
       id: "full-floating-connector",
+      interactive: false,
       sourceNode: "root:1",
       sourcePort: 0,
     });

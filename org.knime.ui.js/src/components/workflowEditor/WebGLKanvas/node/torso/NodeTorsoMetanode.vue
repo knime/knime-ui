@@ -78,6 +78,30 @@ const renderBorder = (graphics: GraphicsInst) => {
     .rect(30, 13, 2, 6);
   fill();
 };
+
+const renderExecutingArrows = (graphics: GraphicsInst) => {
+  graphics
+    .clear()
+    .poly([
+      { x: 11, y: 11 },
+      { x: 11, y: 21 },
+      { x: 14.75, y: 18.5 },
+      { x: 14.75, y: 21 },
+      { x: 22.25, y: 16 },
+      { x: 14.75, y: 11 },
+      { x: 14.75, y: 13.5 },
+    ])
+    .stroke({ width: 2, color: $colors.metanodeState });
+};
+
+const renderCheckmark = (graphics: GraphicsInst) => {
+  graphics
+    .clear()
+    .moveTo(8, 16)
+    .lineTo(14, 21.5)
+    .lineTo(24, 10.5)
+    .stroke({ width: 2, color: $colors.metanodeState });
+};
 </script>
 
 <template>
@@ -97,23 +121,11 @@ const renderBorder = (graphics: GraphicsInst) => {
 
     <Graphics
       v-if="executionState === 'EXECUTING'"
-      event-mode="none"
-      @render="
-        (graphics: GraphicsInst) => {
-          graphics
-            .clear()
-            .poly([
-              { x: 11, y: 11 },
-              { x: 11, y: 21 },
-              { x: 14.75, y: 18.5 },
-              { x: 14.75, y: 21 },
-              { x: 22.25, y: 16 },
-              { x: 14.75, y: 11 },
-              { x: 14.75, y: 13.5 },
-            ])
-            .stroke({ width: 2, color: $colors.metanodeState });
-        }
-      "
+      @render="renderExecutingArrows"
+    />
+    <Graphics
+      v-else-if="executionState === 'EXECUTED'"
+      @render="renderCheckmark"
     />
   </Container>
 </template>

@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRefs, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
+import { Container } from "pixi.js";
 
-import type { NodePort } from "@/api/gateway-api/generated-api";
+import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import * as $colors from "@/style/colors";
+import type { ContainerInst } from "@/vue3-pixi";
+import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 import PortIcon from "./PortIcon.vue";
+import PortInactiveDecorator from "./PortInactiveDecorator.vue";
+import PortTrafficLightDecorator from "./PortTrafficLightDecorator.vue";
 
 interface Props {
-  port: NodePort;
+  port: NodePort | MetaNodePort;
   targeted?: boolean;
   hovered?: boolean;
 }
@@ -38,15 +43,32 @@ const shouldFill = computed(() => {
   }
   return !props.port.optional;
 });
+
+const portContainer = useTemplateRef<ContainerInst>("portContainer");
+const { hovered, targeted } = toRefs(props);
+
+/* eslint-disable no-magic-numbers */
+useAnimatePixiContainer<number>({
+  initialValue: 1,
+  targetValue: 1.2,
+  targetDisplayObject: portContainer,
+  changeTracker: computed(() => hovered.value || targeted.value),
+  animationParams: { duration: 0.17, ease: [0.8, 2, 1, 2.5] },
+  onUpdate: (value) => {
+    portContainer.value!.scale.x = value;
+    portContainer.value!.scale.y = value;
+  },
+});
+/* eslint-enable no-magic-numbers */
 </script>
 
 <template>
-  <PortIcon
-    :type="portKind"
-    :color="portColor"
-    :filled="shouldFill"
-    :targeted="targeted"
-    :hovered="hovered"
-    :inactive="port.inactive"
-  />
+  <Container ref="portContainer">
+    <PortIcon :type="portKind" :color="portColor" :filled="shouldFill" />
+    <PortInactiveDecorator v-if="port.inactive" :port="port" />
+    <PortTrafficLightDecorator
+      v-if="'nodeState' in port && port.nodeState"
+      :node-state="port.nodeState"
+    />
+  </Container>
 </template>

@@ -44,9 +44,11 @@ const { singleSelectedNode, getSelectedConnections: selectedConnections } =
 const { isNodeSelected, isConnectionSelected, isBendpointSelected } =
   selectionStore;
 
-const { floatingConnector, snapTarget } = storeToRefs(
-  useFloatingConnectorStore(),
-);
+const {
+  floatingConnector,
+  snapTarget,
+  isDragging: isDraggingFloatingConnector,
+} = storeToRefs(useFloatingConnectorStore());
 
 const {
   sourceNode,
@@ -201,7 +203,7 @@ watch(sourceAndDestinationSelected, (value) => {
         :is-selected="
           isConnectionSelected(id) && !isDragging && !shouldHideSelection
         "
-        :interactive="interactive"
+        :interactive="interactive && !isDraggingFloatingConnector"
         :streaming="streaming"
         :suggest-delete="Boolean(segment.isEnd && isTargetForReplacement)"
         :is-connection-hovered="isConnectionHovered"

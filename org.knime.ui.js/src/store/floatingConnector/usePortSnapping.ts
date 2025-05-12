@@ -4,8 +4,8 @@ import type { Ref } from "vue";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
-import type { KnimeNode, NodePortGroups } from "@/api/custom-types";
-import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import type { NodePortGroups } from "@/api/custom-types";
+import type { NativeNode, NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { PortPositions } from "@/components/workflowEditor/common/usePortPositions";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -15,7 +15,6 @@ import {
   checkCompatibleConnectionAndPort,
   generateValidPortGroupsForPlaceholderPort,
 } from "@/util/compatibleConnections";
-import { isNativeNode } from "@/util/nodeUtil";
 
 import {
   type FullFloatingConnector,
@@ -23,6 +22,11 @@ import {
   type SnappedPlaceholderPort,
 } from "./types";
 import { usePortSnappingEventPublisher } from "./usePortSnappingEventPublisher";
+
+type SnapTargetCandidate = Pick<
+  NativeNode,
+  "id" | "position" | "inPorts" | "outPorts" | "portGroups"
+>;
 
 /**
  * Builds snap partitions based on the port positions of a node. For example,
@@ -134,15 +138,15 @@ export const usePortSnapping = (options: {
 
   let lastHitTarget:
     | {
-        node: KnimeNode;
+        candidate: SnapTargetCandidate;
         targetPortDirection: Direction;
         snapIndex: number;
       }
     | undefined;
 
   type ConnectionSnapCandidateDetails = {
-    referenceNode: KnimeNode;
-    parentNodePortPositions: PortPositions;
+    candidate: SnapTargetCandidate;
+    portPositions: PortPositions;
   };
 
   const activeSnapPosition = ref<XY>();
@@ -188,9 +192,9 @@ export const usePortSnapping = (options: {
 
       const targetPortDirection =
         floatingConnector.value.context.origin === "out" ? "in" : "out";
-      const { referenceNode, parentNodePortPositions } = details;
+      const { candidate, portPositions: parentNodePortPositions } = details;
 
-      const { position: nodePosition } = referenceNode;
+      const { position: nodePosition } = candidate;
 
       const snapPartitions = buildSnapPartitions(parentNodePortPositions)[
         targetPortDirection
@@ -239,7 +243,7 @@ export const usePortSnapping = (options: {
         y: relPortY + nodePosition.y,
       };
 
-      const possibleTargetPorts = referenceNode[`${targetPortDirection}Ports`];
+      const possibleTargetPorts = candidate[`${targetPortDirection}Ports`];
 
       let targetPortCandidate: NodePort | { isPlaceHolderPort: true };
 
@@ -255,9 +259,7 @@ export const usePortSnapping = (options: {
         sourcePort: floatingConnector.value.context.portInstance,
         targetPort: targetPortCandidate,
         targetPortDirection,
-        targetPortGroups: isNativeNode(referenceNode)
-          ? referenceNode.portGroups ?? null
-          : null,
+        targetPortGroups: candidate.portGroups ?? null,
       });
 
       const maybeNextSnapTarget: SnapTarget =
@@ -266,12 +268,12 @@ export const usePortSnapping = (options: {
               isPlaceHolderPort: true,
               validPortGroups,
               typeId: floatingConnector.value.context.portInstance.typeId,
-              parentNodeId: referenceNode.id,
+              parentNodeId: candidate.id,
               side: targetPortDirection,
             } satisfies SnappedPlaceholderPort)
           : ({
               ...targetPortCandidate,
-              parentNodeId: referenceNode.id,
+              parentNodeId: candidate.id,
               side: targetPortDirection,
             } satisfies SnapTarget);
 
@@ -279,7 +281,7 @@ export const usePortSnapping = (options: {
       // (e.g: same node, direction and snapIndex -- there has been no change)
       if (
         lastHitTarget &&
-        lastHitTarget.node.id === referenceNode.id &&
+        lastHitTarget.candidate.id === candidate.id &&
         lastHitTarget.targetPortDirection === targetPortDirection &&
         lastHitTarget.snapIndex === snapPortIndex
       ) {
@@ -296,7 +298,7 @@ export const usePortSnapping = (options: {
       activeSnapPosition.value = { ...absolutePortPosition };
 
       lastHitTarget = {
-        node: referenceNode,
+        candidate,
         targetPortDirection,
         snapIndex: snapPortIndex,
       };

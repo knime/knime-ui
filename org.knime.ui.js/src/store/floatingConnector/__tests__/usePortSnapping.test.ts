@@ -121,8 +121,8 @@ describe("floatingConnector:usePortSnapping", () => {
     mockCursorPosition.value = toPosition;
 
     onMoveOverConnectionSnapCandidate({
-      referenceNode: referenceNode.instance,
-      parentNodePortPositions: referenceNode.portPositions,
+      candidate: referenceNode.instance,
+      portPositions: referenceNode.portPositions,
     });
   };
 

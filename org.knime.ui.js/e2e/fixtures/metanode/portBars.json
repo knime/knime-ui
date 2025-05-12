@@ -1,0 +1,323 @@
+{
+  "jsonrpc": "2.0",
+  "id": "7",
+  "result": {
+    "snapshotId": "1",
+    "workflow": {
+      "dirty": false,
+      "nodes": {
+        "root:15:15": {
+          "id": "root:15:15",
+          "state": {
+            "executionState": "IDLE",
+            "warning": "Column \"Species\" has no nominal values set: execute predecessor or add Binner.",
+            "resolutions": []
+          },
+          "dialogType": "swing",
+          "kind": "node",
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canCollapse": "true",
+            "canDelete": true
+          },
+          "templateId": "org.knime.base.node.viz.property.color.ColorManager2NodeFactory",
+          "position": {
+            "x": 517,
+            "y": 363
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Table",
+              "index": 1,
+              "connectedVia": ["root:15:15_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -1532197330,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Table with Color information",
+              "index": 1,
+              "connectedVia": ["root:15_5"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Color Model",
+              "index": 2,
+              "connectedVia": ["root:15_4"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.viewproperty.ColorHandlerPortObject"
+            }
+          ]
+        },
+        "root:15:14": {
+          "id": "root:15:14",
+          "state": {
+            "executionState": "CONFIGURED"
+          },
+          "dialogType": "swing",
+          "kind": "node",
+          "allowedActions": {
+            "canReset": false,
+            "canExecute": true,
+            "canCancel": false,
+            "canCollapse": "true",
+            "canDelete": true
+          },
+          "templateId": "org.knime.base.node.preproc.stringmanipulation.StringManipulationNodeFactory",
+          "position": {
+            "x": 521,
+            "y": 205
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Input table",
+              "index": 1,
+              "connectedVia": ["root:15:14_1"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": ["root:15_3"],
+              "portContentVersion": -1532197330,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Appended table",
+              "index": 1,
+              "connectedVia": ["root:15_0", "root:15_2", "root:15_1"],
+              "portContentVersion": 1264973544,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        }
+      },
+      "parents": [
+        {
+          "name": "Metanode Execution",
+          "providerType": "HUB",
+          "containerId": "root",
+          "containerType": "project"
+        }
+      ],
+      "workflowAnnotations": [],
+      "allowedActions": {
+        "canReset": false,
+        "canExecute": true,
+        "canCancel": false,
+        "canUndo": false,
+        "canRedo": false
+      },
+      "metaInPorts": {
+        "ports": [
+          {
+            "name": "Connected to: File Table",
+            "index": 0,
+            "connectedVia": ["root:15:15_1", "root:15:14_1"],
+            "portContentVersion": 1570741333,
+            "canRemove": false,
+            "typeId": "org.knime.core.node.BufferedDataTable"
+          }
+        ]
+      },
+      "metaOutPorts": {
+        "ports": [
+          {
+            "name": "Inport 0",
+            "index": 0,
+            "connectedVia": ["root:15_0"],
+            "canRemove": false,
+            "typeId": "org.knime.core.node.BufferedDataTable"
+          },
+          {
+            "name": "Inport 1",
+            "index": 1,
+            "connectedVia": ["root:15_1"],
+            "canRemove": false,
+            "typeId": "org.knime.core.node.BufferedDataTable"
+          },
+          {
+            "name": "Inport 2",
+            "index": 2,
+            "connectedVia": ["root:15_2"],
+            "canRemove": false,
+            "typeId": "org.knime.core.node.BufferedDataTable"
+          },
+          {
+            "name": "Inport 3",
+            "index": 3,
+            "connectedVia": ["root:15_3"],
+            "canRemove": false,
+            "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+          },
+          {
+            "name": "Inport 4",
+            "index": 4,
+            "connectedVia": ["root:15_4"],
+            "canRemove": false,
+            "typeId": "org.knime.core.node.port.viewproperty.ColorHandlerPortObject"
+          },
+          {
+            "name": "Inport 5",
+            "index": 5,
+            "connectedVia": ["root:15_5"],
+            "canRemove": false,
+            "typeId": "org.knime.core.node.BufferedDataTable"
+          }
+        ]
+      },
+      "info": {
+        "name": "Lots of ports",
+        "providerType": "LOCAL",
+        "containerId": "root:15",
+        "containerType": "metanode"
+      },
+      "metadata": {
+        "tags": [],
+        "description": {
+          "value": "",
+          "contentType": "text/plain"
+        },
+        "metadataType": "project",
+        "lastEdit": "2025-04-15T11:57:30.248+02:00",
+        "links": []
+      },
+      "connections": {
+        "root:15_1": {
+          "id": "root:15_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:15:14",
+          "destPort": 1,
+          "sourcePort": 1
+        },
+        "root:15_2": {
+          "id": "root:15_2",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:15:14",
+          "destPort": 2,
+          "sourcePort": 1
+        },
+        "root:15_0": {
+          "id": "root:15_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:15:14",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:15_5": {
+          "id": "root:15_5",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:15:15",
+          "destPort": 5,
+          "sourcePort": 1
+        },
+        "root:15:15_1": {
+          "id": "root:15:15_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15:15",
+          "sourceNode": "root:15",
+          "destPort": 1,
+          "sourcePort": 0
+        },
+        "root:15_3": {
+          "id": "root:15_3",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:15:14",
+          "flowVariableConnection": true,
+          "destPort": 3,
+          "sourcePort": 0
+        },
+        "root:15_4": {
+          "id": "root:15_4",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:15:15",
+          "destPort": 4,
+          "sourcePort": 2
+        },
+        "root:15:14_1": {
+          "id": "root:15:14_1",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15:14",
+          "sourceNode": "root:15",
+          "destPort": 1,
+          "sourcePort": 0
+        }
+      },
+      "nodeTemplates": {
+        "org.knime.base.node.preproc.stringmanipulation.StringManipulationNodeFactory": {
+          "name": "String Manipulation",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QTRBMDBEMkQxODM0MTFFNTgxM0FFMEQwQTc0Qzg5QTIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QTRBMDBEMkMxODM0MTFFNTgxM0FFMEQwQTc0Qzg5QTIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpjZTBmYzg4ZC1kNjkyLTQ5NDEtOTZiOC03ODIxMjliYWZkYWIiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+Mg1IMQAAAIdJREFUeNrMk+8KgCAMxJ0vEdTL6pNfTvpzrM2gPtRBKLv5a2MqANIbyT8BIoIoh70WlwugJXRPt5Ro/S0M2U3Ql2hVFfIKxdHPEiBZ0/FAFT0CJAvIupunxdJZNWjhpDUALD2YGtwKIt3AurI3qkELNfqLXTG6od4UvF4RlH94evb7x7QKMACq4pshQaRWkAAAAABJRU5ErkJggg==",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.stringmanipulation.StringManipulationNodeFactory"
+          }
+        },
+        "org.knime.base.node.viz.property.color.ColorManager2NodeFactory": {
+          "name": "Color Manager",
+          "type": "Visualizer",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsSAAALEgHS3X78AAABEUlEQVQ4jZ2TMU7DQBBFn3DW0UbK2oWLkMYcgQMgOTcIHXegyjHofARLFGlX4gJuOAbCJQVFCiSoyKcIRhvHjhK+9JvdnTezMxokMeT5fP4Ux/HbsTeDF9ba9XQ6/QYURdHrWYAkSR4A1XUtQICMMc8nAYBbQGVZSruD0KujACCN4/hzuVyqVQewBfJBgLV27ZzbbjabIcBBP8LsV4CqqlKoLuDXNwcAa+06z3N11QcIq/gDjMfjr7ZxJ1SgPQBwDahpmpMBwJ0kLtgpBUjTlDN0Cew1Ud77/31BEs65l3D+xwCj0eijb4yLM8a4OgBIYjab3QMqikLe+71daD2ZTB7DmL5dWGRZVncDjTHv9OzCDzh0GQnKHalZAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.viz.property.color.ColorManager2NodeFactory"
+          }
+        }
+      }
+    }
+  }
+}

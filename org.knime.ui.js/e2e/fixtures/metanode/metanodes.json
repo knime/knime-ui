@@ -1,0 +1,593 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "7",
+    "workflow": {
+      "info": {
+        "name": "Metanode Execution",
+        "containerId": "root",
+        "providerType": "HUB",
+        "containerType": "project"
+      },
+      "allowedActions": {
+        "canExecute": true,
+        "canCancel": true,
+        "canReset": true,
+        "canUndo": false,
+        "canRedo": false
+      },
+      "nodeTemplates": {
+        "org.knime.base.node.io.filehandling.csv.reader2.CSVTableReaderNodeFactory2": {
+          "name": "CSV Reader (Labs)",
+          "type": "Source",
+          "nodeFactory": {
+            "className": "org.knime.base.node.io.filehandling.csv.reader2.CSVTableReaderNodeFactory2"
+          },
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RkRBRThDOTU3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RkRBRThDOTQ3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2MjZBQjAxMDJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2MjZBQjAxMTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pr5h9h8AAABuSURBVHjaYmRgYPjPQAT4//8/IzZxkOD/j5Ot8Wrmzz2K0wAmBgoBI6VegMpBAD8/P1Y2VA0DNozihT9//mBlDyEvDEgsMEJciMN0RkZ0Q2Bi/2F68RqAx+D/cCYBFxA0nbYGUOwFAgaAQxMgwAD1CJc+ReyqcgAAAABJRU5ErkJggg=="
+        }
+      },
+      "workflowAnnotations": [],
+      "metadata": {
+        "metadataType": "project",
+        "lastEdit": "2025-04-15T11:57:30.248+02:00",
+        "description": {
+          "contentType": "text/plain",
+          "value": ""
+        },
+        "tags": [],
+        "links": []
+      },
+      "connections": {
+        "root:7_0": {
+          "id": "root:7_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:7",
+          "sourceNode": "root:1",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:13_0": {
+          "id": "root:13_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:13",
+          "sourceNode": "root:1",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:9_0": {
+          "id": "root:9_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:9",
+          "sourceNode": "root:1",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:15_0": {
+          "id": "root:15_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:15",
+          "sourceNode": "root:1",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:3_0": {
+          "id": "root:3_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:3",
+          "sourceNode": "root:1",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:6_0": {
+          "id": "root:6_0",
+          "allowedActions": {
+            "canDelete": false
+          },
+          "destNode": "root:6",
+          "sourceNode": "root:1",
+          "destPort": 0,
+          "sourcePort": 1
+        },
+        "root:5_0": {
+          "id": "root:5_0",
+          "allowedActions": {
+            "canDelete": true
+          },
+          "destNode": "root:5",
+          "sourceNode": "root:1",
+          "destPort": 0,
+          "sourcePort": 1
+        }
+      },
+      "dirty": true,
+      "nodes": {
+        "root:1": {
+          "position": {
+            "y": 487,
+            "x": -13
+          },
+          "annotation": {
+            "text": {
+              "contentType": "text/plain",
+              "value": "Read Penguin Data"
+            },
+            "textAlign": "center",
+            "styleRanges": []
+          },
+          "id": "root:1",
+          "state": {
+            "executionState": "EXECUTED"
+          },
+          "dialogType": "web",
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canOpenLegacyFlowVariableDialog": true,
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.io.filehandling.csv.reader2.CSVTableReaderNodeFactory2",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": false,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            }
+          },
+          "outPorts": [
+            {
+              "info": "Variables connection",
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "info": "Rows: 344, Cols: 17",
+              "name": "File Table",
+              "index": 1,
+              "connectedVia": [
+                "root:7_0",
+                "root:13_0",
+                "root:9_0",
+                "root:15_0",
+                "root:3_0",
+                "root:6_0",
+                "root:5_0"
+              ],
+              "portContentVersion": 84357752,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "kind": "node",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ]
+        },
+        "root:3": {
+          "position": {
+            "y": 282,
+            "x": 141
+          },
+          "name": "Metanode",
+          "annotation": {
+            "text": {
+              "contentType": "text/plain",
+              "value": "Simple default Metanode"
+            },
+            "textAlign": "center",
+            "styleRanges": []
+          },
+          "id": "root:3",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canExpand": "true",
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "outPorts": [],
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:3_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:5": {
+          "position": {
+            "y": 390,
+            "x": 142
+          },
+          "name": "Output red",
+          "annotation": {
+            "text": {
+              "contentType": "text/plain",
+              "value": ""
+            },
+            "textAlign": "center",
+            "styleRanges": []
+          },
+          "id": "root:5",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canExpand": "true",
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "outPorts": [
+            {
+              "name": "Connected to: Filtered table",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "nodeState": "IDLE",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:5_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:6": {
+          "position": {
+            "y": 479,
+            "x": 143
+          },
+          "name": "Running - output yellow",
+          "annotation": {
+            "text": {
+              "contentType": "text/plain",
+              "value": ""
+            },
+            "textAlign": "center",
+            "styleRanges": []
+          },
+          "id": "root:6",
+          "state": {
+            "executionState": "EXECUTING"
+          },
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": true,
+            "canDelete": false,
+            "canExpand": "false",
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "outPorts": [
+            {
+              "name": "Connected to: Filtered table",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "nodeState": "QUEUED",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:6_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:7": {
+          "position": {
+            "y": 565,
+            "x": 333
+          },
+          "name": "Executed - output green",
+          "annotation": {
+            "text": {
+              "contentType": "text/plain",
+              "value": ""
+            },
+            "textAlign": "center",
+            "styleRanges": []
+          },
+          "id": "root:7",
+          "state": {
+            "executionState": "EXECUTED"
+          },
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": true,
+            "canExpand": "resetRequired",
+            "canCollapse": "resetRequired",
+            "canReset": true
+          },
+          "outPorts": [
+            {
+              "info": "Rows: 344, Cols: 17",
+              "name": "Connected to: Filtered table",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1825809064,
+              "canRemove": false,
+              "nodeState": "EXECUTED",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:7_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:13": {
+          "position": {
+            "y": 760,
+            "x": 147
+          },
+          "name": "Disabled port",
+          "id": "root:13",
+          "state": {
+            "executionState": "EXECUTED"
+          },
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": true,
+            "canExpand": "resetRequired",
+            "canCollapse": "resetRequired",
+            "canReset": true
+          },
+          "outPorts": [
+            {
+              "info": "Rows: 344, Cols: 17",
+              "name": "Connected to: First output table",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1607302605,
+              "canRemove": false,
+              "nodeState": "EXECUTED",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "info": "Inactive Port Object",
+              "name": "Connected to: Second output table",
+              "index": 1,
+              "connectedVia": [],
+              "portContentVersion": 2137515204,
+              "canRemove": false,
+              "nodeState": "EXECUTED",
+              "inactive": true,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:13_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:9": {
+          "position": {
+            "y": 669,
+            "x": 147
+          },
+          "name": "Error on node",
+          "id": "root:9",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canExpand": "resetRequired",
+            "canCollapse": "resetRequired",
+            "canReset": true
+          },
+          "outPorts": [
+            {
+              "name": "Connected to: Output table",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 13826365,
+              "canRemove": false,
+              "nodeState": "CONFIGURED",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:9_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:11": {
+          "position": {
+            "y": 286,
+            "x": 281
+          },
+          "name": "Running - output blue",
+          "id": "root:11",
+          "state": {
+            "executionState": "EXECUTING"
+          },
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": true,
+            "canDelete": false,
+            "canExpand": "false",
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "outPorts": [
+            {
+              "name": "Connected to: Output table",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "nodeState": "EXECUTING",
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ],
+          "kind": "metanode",
+          "inPorts": []
+        },
+        "root:15": {
+          "position": {
+            "y": 660,
+            "x": 333
+          },
+          "name": "Lots of ports",
+          "id": "root:15",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "allowedActions": {
+            "canExecute": true,
+            "canCancel": false,
+            "canDelete": true,
+            "canExpand": "true",
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "outPorts": [
+            {
+              "name": "Connected to: Appended table",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1449206846,
+              "canRemove": false,
+              "nodeState": "CONFIGURED",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Connected to: Appended table",
+              "index": 1,
+              "connectedVia": [],
+              "portContentVersion": 1449206846,
+              "canRemove": false,
+              "nodeState": "CONFIGURED",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Connected to: Appended table",
+              "index": 2,
+              "connectedVia": [],
+              "portContentVersion": 1449206846,
+              "canRemove": false,
+              "nodeState": "CONFIGURED",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Connected to: Variable Outport",
+              "index": 3,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "nodeState": "CONFIGURED",
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Connected to: Color Model",
+              "index": 4,
+              "connectedVia": [],
+              "portContentVersion": 1783187576,
+              "canRemove": false,
+              "nodeState": "CONFIGURED",
+              "typeId": "org.knime.core.node.port.viewproperty.ColorHandlerPortObject"
+            },
+            {
+              "name": "Connected to: Table with Color information",
+              "index": 5,
+              "connectedVia": [],
+              "portContentVersion": 332406510,
+              "canRemove": false,
+              "nodeState": "CONFIGURED",
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "kind": "metanode",
+          "inPorts": [
+            {
+              "name": "Inport 0",
+              "index": 0,
+              "connectedVia": ["root:15_0"],
+              "canRemove": false,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

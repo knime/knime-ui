@@ -151,7 +151,6 @@ export const useObjectInteractions = (
 
       dragInitiatorId.value = options.objectId;
       didDrag = true;
-
       if (hasAbortedDrag.value) {
         return;
       }
@@ -174,7 +173,6 @@ export const useObjectInteractions = (
           await selectObject();
         }
       });
-
       removeDragAbortListener();
       canvas.releasePointerCapture(pointerDownEvent.pointerId);
       canvas.removeEventListener("pointermove", onMove);

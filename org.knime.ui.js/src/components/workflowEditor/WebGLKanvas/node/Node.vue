@@ -221,8 +221,8 @@ const onNodeHoverAreaPointerMove = () => {
   }
 
   floatingConnectorStore.onMoveOverConnectionSnapCandidate({
-    referenceNode: props.node,
-    parentNodePortPositions: portPositions.value,
+    candidate: props.node,
+    portPositions: portPositions.value,
   });
 };
 
@@ -230,8 +230,8 @@ const onNodeHoverAreaPointerLeave = () => {
   hoverStateProvider.onPointerLeave();
 
   floatingConnectorStore.onLeaveConnectionSnapCandidate({
-    referenceNode: props.node,
-    parentNodePortPositions: portPositions.value,
+    candidate: props.node,
+    portPositions: portPositions.value,
   });
 };
 

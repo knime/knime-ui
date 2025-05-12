@@ -45,6 +45,7 @@ const createConnectorFromEvent = (
   return {
     id: "full-floating-connector",
     allowedActions: { canDelete: false },
+    interactive: false,
     context: {
       origin: params.direction,
       portInstance: params.port,
