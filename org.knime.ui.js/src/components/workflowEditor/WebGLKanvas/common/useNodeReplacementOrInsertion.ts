@@ -267,7 +267,7 @@ export const useNodeReplacementOrInsertion = () => {
     }
   };
 
-  const onDrop = (dropPosition: XY, params: ReplacementPayload) => {
+  const onDrop = throttle((dropPosition: XY, params: ReplacementPayload) => {
     if (hasAbortedDrag.value) {
       replacementOperation.value = null;
       return Promise.resolve({ wasReplaced: false });
@@ -286,7 +286,7 @@ export const useNodeReplacementOrInsertion = () => {
         params,
       );
     }
-  };
+  });
 
   return { onDragStart, onDragMove, onDrop };
 };

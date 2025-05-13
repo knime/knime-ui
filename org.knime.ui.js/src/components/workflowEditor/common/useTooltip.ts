@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import {
   type ComputedRef,
   type Ref,
@@ -59,7 +60,7 @@ export const useTooltip = (params: {
         y: canvasY,
       };
     }
-    return { x: 0, y: 0 };
+    return undefined;
   };
 
   const showTooltip = () => {
@@ -76,6 +77,9 @@ export const useTooltip = (params: {
           value?.anchorPoint,
           value?.orientation,
         );
+        if (!anchorPoint) {
+          return;
+        }
         workflowStore.setTooltip(
           value === null ? null : { ...value, anchorPoint },
         );
