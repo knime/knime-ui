@@ -6,6 +6,7 @@ import type { AllowedPixiProps } from "./props";
 
 export interface ContainerProps {
   layer?: IRenderLayer | null;
+  dataset?: { [key: string]: string };
 }
 
 export interface ContainerEvents extends PixiEvents {

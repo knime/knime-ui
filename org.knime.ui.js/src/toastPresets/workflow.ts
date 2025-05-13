@@ -8,16 +8,17 @@ type WorkflowCommandsToastPresets = {
   nodeLabelEditFail: ToastPresetErrorHandler;
 };
 
-type AddToCanvasToastPresets = {
-  addNode: ToastPresetErrorHandler;
+type replacementOperation = {
   replaceNode: ToastPresetErrorHandler;
+  insertOnConnection: ToastPresetErrorHandler;
 };
 
 export type WorkflowToastPresets = {
   commands: WorkflowCommandsToastPresets;
   componentLoadedWithWarning: ToastPresetErrorHandler;
   componentLoadingFailed: ToastPresetErrorHandler;
-  addToCanvas: AddToCanvasToastPresets;
+  addNodeToCanvas: ToastPresetErrorHandler;
+  replacementOperation: replacementOperation;
 };
 
 export const getPresets = (
@@ -37,6 +38,7 @@ export const getPresets = (
           headline: "Failed to save node annotation",
         }),
     },
+
     componentLoadedWithWarning: ({ message, details }) => {
       $toast.show({
         headline: message,
@@ -45,6 +47,7 @@ export const getPresets = (
         autoRemove: true,
       });
     },
+
     componentLoadingFailed: ({ message, details }) => {
       $toast.show({
         headline: message,
@@ -53,17 +56,24 @@ export const getPresets = (
         autoRemove: false,
       });
     },
-    addToCanvas: {
-      addNode: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
-          type: "error",
-          headline: "Failed to add node to canvas",
-        }),
 
+    addNodeToCanvas: ({ error }) =>
+      defaultErrorPresetHandler($toast, error, {
+        type: "error",
+        headline: "Failed to add node to canvas",
+      }),
+
+    replacementOperation: {
       replaceNode: ({ error }) =>
         defaultErrorPresetHandler($toast, error, {
           type: "error",
           headline: "Failed to replace node in the canvas",
+        }),
+
+      insertOnConnection: ({ error }) =>
+        defaultErrorPresetHandler($toast, error, {
+          type: "error",
+          headline: "Failed to insert node on connection",
         }),
     },
   };

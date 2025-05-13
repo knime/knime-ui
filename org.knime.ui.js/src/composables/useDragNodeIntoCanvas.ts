@@ -1,8 +1,8 @@
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
-import { useNodeCollisionCheck } from "@/components/workflowEditor/WebGLKanvas/common/useNodeCollisionCheck";
+import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
+import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -25,7 +25,6 @@ const getNodeFactoryFromEvent = (event: DragEvent) => {
 };
 
 export const useDragNodeIntoCanvas = () => {
-  const { collisionChecker } = useNodeCollisionCheck();
   const isKnimeNode = (event: DragEvent) =>
     event.dataTransfer?.types.includes(KNIME_MIME);
 
@@ -37,6 +36,7 @@ export const useDragNodeIntoCanvas = () => {
   const webglCanvasStore = useWebGLCanvasStore();
   const { isWebGLRenderer } = useCanvasRendererUtils();
   const { toastPresets } = getToastPresets();
+  const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
   const onDragStart = (
     event: DragEvent,
@@ -50,7 +50,7 @@ export const useDragNodeIntoCanvas = () => {
 
     // collision check only works for the webgl canvas
     if (isWebGLRenderer.value) {
-      collisionChecker.init();
+      nodeReplacementOrInsertion.onDragStart();
     }
 
     // Fix for cursor style for Firefox
@@ -87,51 +87,32 @@ export const useDragNodeIntoCanvas = () => {
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
-    if (isWebGLRenderer.value) {
+    if (
+      isWebGLRenderer.value &&
+      // on dragover there's no access to a drag event's dataTransfer
+      nodeTemplatesStore.draggedTemplateData?.nodeFactory
+    ) {
       const [canvasX, canvasY] = webglCanvasStore.screenToCanvasCoordinates([
-        event.clientX - $shapes.nodeSize / 2,
-        event.clientY - $shapes.nodeSize / 2,
+        event.clientX,
+        event.clientY,
       ]);
 
-      nodeInteractionsStore.replacementCandidateId = collisionChecker.check({
-        id: "node-template",
-        position: { x: canvasX, y: canvasY },
-      });
+      nodeReplacementOrInsertion.onDragMove(
+        { x: canvasX, y: canvasY },
+        {
+          type: "from-node-template",
+          nodeFactory: nodeTemplatesStore.draggedTemplateData?.nodeFactory,
+        },
+      );
     }
   };
 
-  const addNodeToCanvas = async (
-    event: DragEvent,
-    nodeFactory: NodeFactoryKey,
-  ) => {
+  const addNodeToCanvas = async (position: XY, nodeFactory: NodeFactoryKey) => {
     try {
-      const [x, y] = canvasStore.value.screenToCanvasCoordinates([
-        event.clientX - $shapes.nodeSize / 2,
-        event.clientY - $shapes.nodeSize / 2,
-      ]);
-
-      await nodeInteractionsStore.addNode({ position: { x, y }, nodeFactory });
+      await nodeInteractionsStore.addNode({ position, nodeFactory });
     } catch (error) {
       consola.error({ message: "Error adding node to workflow", error });
-      toastPresets.workflow.addToCanvas.addNode({ error });
-    }
-  };
-
-  const replaceNodeInCanvas = async (
-    event: DragEvent,
-    nodeFactory: NodeFactoryKey,
-  ) => {
-    try {
-      const targetNodeId = nodeInteractionsStore.replacementCandidateId!;
-      await nodeInteractionsStore.replaceNode({
-        targetNodeId,
-        nodeFactory,
-      });
-    } catch (error) {
-      consola.error("Failed to replace node", { error });
-      toastPresets.workflow.addToCanvas.replaceNode({ error });
-    } finally {
-      nodeInteractionsStore.replacementCandidateId = null;
+      toastPresets.workflow.addNodeToCanvas({ error });
     }
   };
 
@@ -148,12 +129,25 @@ export const useDragNodeIntoCanvas = () => {
     // it'll be handled automatically by the backend, so we must not prevent the default
     event.preventDefault();
 
+    const [canvasX, canvasY] = canvasStore.value.screenToCanvasCoordinates([
+      event.clientX,
+      event.clientY,
+    ]);
+
+    const dropPosition: XY = {
+      x: canvasX - $shapes.nodeSize / 2,
+      y: canvasY - $shapes.nodeSize / 2,
+    };
+
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
-    if (isWebGLRenderer.value && nodeInteractionsStore.replacementCandidateId) {
-      await replaceNodeInCanvas(event, nodeFactory);
+    if (isWebGLRenderer.value && nodeInteractionsStore.replacementOperation) {
+      await nodeReplacementOrInsertion.onDrop(dropPosition, {
+        type: "from-node-template",
+        nodeFactory,
+      });
     } else {
-      await addNodeToCanvas(event, nodeFactory);
+      await addNodeToCanvas(dropPosition, nodeFactory);
     }
   };
 
@@ -165,7 +159,7 @@ export const useDragNodeIntoCanvas = () => {
     const wasAborted = event.dataTransfer!.dropEffect === "none";
 
     if (wasAborted) {
-      nodeInteractionsStore.replacementCandidateId = null;
+      nodeInteractionsStore.replacementOperation = null;
     }
 
     return { wasAborted };

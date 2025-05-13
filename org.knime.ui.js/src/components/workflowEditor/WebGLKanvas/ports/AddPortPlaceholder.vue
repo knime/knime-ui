@@ -17,7 +17,7 @@ import {
 import { useSelectionStore } from "@/store/selection";
 import type { ContainerInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
-import { useNodeHoveredStateListener } from "../node/useNodeHoveredState";
+import { useNodeHoverListener } from "../common/useNodeHoverState";
 import { markEventAsHandled } from "../util/interaction";
 
 import Port from "./Port.vue";
@@ -155,7 +155,7 @@ useAnimatePixiContainer<number>({
   animateOut: true,
 });
 
-useNodeHoveredStateListener({
+useNodeHoverListener({
   nodeId: props.nodeId,
   onEnterCallback: () => {
     isNodeHovered.value = true;

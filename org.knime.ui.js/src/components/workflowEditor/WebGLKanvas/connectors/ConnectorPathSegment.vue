@@ -58,6 +58,10 @@ const centerPoint = computed(() =>
 );
 
 const color = computed(() => {
+  if (props.isDraggedOver) {
+    return $colors.MeadowDark;
+  }
+
   if (props.isSelected) {
     return $colors.Cornflower;
   }
@@ -155,7 +159,7 @@ const strokeWidth = computed(() => {
     return $shapes.highlightedConnectorWidth;
   }
 
-  if (props.isSelected) {
+  if (props.isSelected || props.isDraggedOver) {
     return $shapes.selectedConnectorWidth;
   }
 
@@ -203,9 +207,11 @@ watch(suggestDelete, (shouldAnimate) => {
 <template>
   <Container label="ConnectorPathSegment">
     <Graphics
+      label="ConnectorPathSegmentHoverArea"
       v-bind="$attrs"
       :event-mode="interactive ? 'static' : 'none'"
       cursor="pointer"
+      :dataset="{ connectionId }"
       @render="renderHoverArea"
     />
 

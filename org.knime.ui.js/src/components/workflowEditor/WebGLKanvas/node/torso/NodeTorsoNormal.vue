@@ -1,6 +1,6 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import * as PIXI from "pixi.js";
 
 import {
@@ -53,34 +53,40 @@ const texture = ref<PIXI.Texture>();
 const NODE_ICON_SIZE = 16;
 const nodeIconScaleFactor = ref(0);
 
-onMounted(() => {
-  if (props.icon) {
-    const imageLocal = new window.Image();
-    imageLocal.src = props.icon;
+watch(
+  () => props.icon,
+  () => {
+    texture.value?.destroy();
 
-    imageLocal.onload = () => {
-      nodeIconScaleFactor.value =
-        NODE_ICON_SIZE /
-        Math.max(imageLocal.naturalWidth, imageLocal.naturalHeight);
+    if (props.icon) {
+      const imageLocal = new window.Image();
+      imageLocal.src = props.icon;
 
-      // draw image on a temp canvas to make pixi happy
-      const canvas = document.createElement("canvas");
-      canvas.width = imageLocal.naturalWidth;
-      canvas.height = imageLocal.naturalHeight;
-      const context = canvas.getContext("2d")!;
+      imageLocal.onload = () => {
+        nodeIconScaleFactor.value =
+          NODE_ICON_SIZE /
+          Math.max(imageLocal.naturalWidth, imageLocal.naturalHeight);
 
-      context.drawImage(
-        imageLocal,
-        0,
-        0,
-        imageLocal.naturalWidth,
-        imageLocal.naturalHeight,
-      );
+        // draw image on a temp canvas to make pixi happy
+        const canvas = document.createElement("canvas");
+        canvas.width = imageLocal.naturalWidth;
+        canvas.height = imageLocal.naturalHeight;
+        const context = canvas.getContext("2d")!;
 
-      texture.value = PIXI.Texture.from(canvas);
-    };
-  }
-});
+        context.drawImage(
+          imageLocal,
+          0,
+          0,
+          imageLocal.naturalWidth,
+          imageLocal.naturalHeight,
+        );
+
+        texture.value = PIXI.Texture.from(canvas);
+      };
+    }
+  },
+  { immediate: true },
+);
 
 onUnmounted(() => {
   texture.value?.destroy();

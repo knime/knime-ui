@@ -22,7 +22,10 @@ type NodeInteractionsState = {
   nameEditorNodeId: string | null;
   nameEditorDimensions: { width: number; height: number };
   labelEditorNodeId: string | null;
-  replacementCandidateId: string | null;
+  replacementOperation: {
+    type: "node" | "connection";
+    candidateId: string;
+  } | null;
 };
 
 export const useNodeInteractionsStore = defineStore("nodeInteractions", {
@@ -30,7 +33,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
     nameEditorNodeId: null,
     nameEditorDimensions: { width: 0, height: 0 },
     labelEditorNodeId: null,
-    replacementCandidateId: null,
+    replacementOperation: null,
   }),
   actions: {
     openNameEditor(nodeId: string) {
@@ -258,7 +261,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       useMovingStore().resetDragState();
     },
 
-    insertNode({
+    async insertNode({
       connectionId,
       position,
       nodeFactory,
@@ -272,7 +275,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       const projectId = useWorkflowStore().activeWorkflow!.projectId;
       const workflowId = useWorkflowStore().activeWorkflow!.info.containerId;
 
-      return API.workflowCommand.InsertNode({
+      await API.workflowCommand.InsertNode({
         projectId,
         workflowId,
         connectionId,
@@ -280,6 +283,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         nodeFactory,
         nodeId,
       });
+
+      useMovingStore().resetDragState();
     },
 
     addNodePort({

@@ -13,7 +13,7 @@ const callbackRegistry = new Map<
  * Composable to be used *only* by the controller of the node state hover, who sets
  * up the listeners for enter and leave; aka the Node component instance
  */
-export const useNodeHoveredStateProvider = () => {
+export const useNodeHoverProvider = () => {
   const onPointerEnter = (nodeId: string) => {
     if (hoveredNodeId.value !== nodeId) {
       consola.trace("Node hover [ENTER] :>> ", {
@@ -67,9 +67,7 @@ type UseNodeHoveredStateListener = {
 /**
  * Composable that allows to listen to a node's hover enter/leave state
  */
-export const useNodeHoveredStateListener = (
-  options: UseNodeHoveredStateListener,
-) => {
+export const useNodeHoverListener = (options: UseNodeHoveredStateListener) => {
   const listenerId = useId();
 
   if (!callbackRegistry.has(options.nodeId)) {

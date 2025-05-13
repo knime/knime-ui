@@ -24,6 +24,8 @@ import { geometry } from "@/util/geometry";
 import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
+import { useNodeHoverProvider } from "../common/useNodeHoverState";
+import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import NodePorts from "../ports/NodePorts.vue";
@@ -38,9 +40,7 @@ import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeHoverSize } from "./useNodeHoverSize";
-import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
 import { useNodeNameTextMetrics } from "./useNodeNameTextMetrics";
-import { useNodeReplacement } from "./useNodeReplacement";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 
 interface Props {
@@ -69,12 +69,13 @@ const { isDebugModeEnabled, visibleArea, toCanvasCoordinates, canvasLayers } =
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
 const selectionStore = useSelectionStore();
-const { getFocusedObject } = storeToRefs(selectionStore);
+const { getFocusedObject, singleSelectedNode } = storeToRefs(selectionStore);
 const { isNodeSelected } = selectionStore;
 const { isWritable } = storeToRefs(useWorkflowStore());
 
 const movingStore = useMovingStore();
-const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
+const { movePreviewDelta, isDragging, hasAbortedDrag } =
+  storeToRefs(movingStore);
 
 const translatedPosition = computed(() => {
   if (selectionStore.isNodeSelected(props.node.id)) {
@@ -97,15 +98,16 @@ const isEditable = computed(() => {
 const { onNodeLeftDoubleClick } = useNodeDoubleClick({ node: props.node });
 
 const nodeInteractionsStore = useNodeInteractionsStore();
-const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
-  nodeInteractionsStore,
+const { nameEditorNodeId, nameEditorDimensions, replacementOperation } =
+  storeToRefs(nodeInteractionsStore);
+
+const isReplacementCandidate = computed(
+  () =>
+    !hasAbortedDrag.value &&
+    replacementOperation.value?.candidateId === props.node.id,
 );
 
-const { isReplacementCandidate, onNodeDragStart, onNodeDragMove, onNodeDrop } =
-  useNodeReplacement({
-    nodeId: props.node.id,
-    position: translatedPosition,
-  });
+const { onDragStart, onDragMove, onDrop } = useNodeReplacementOrInsertion();
 
 const { handlePointerInteraction, isDraggingThisObject } =
   useObjectInteractions({
@@ -118,10 +120,41 @@ const { handlePointerInteraction, isDraggingThisObject } =
       await selectionStore.deselectNodes([props.node.id]);
     },
     onDoubleClick: onNodeLeftDoubleClick,
-    onInteractionStart: onNodeDragStart,
-    onMove: onNodeDragMove,
+    onInteractionStart: () => {
+      if (singleSelectedNode.value) {
+        onDragStart();
+      }
+    },
+    onMove: (event) => {
+      if (singleSelectedNode.value) {
+        const [moveX, moveY] = canvasStore.screenToCanvasCoordinates([
+          event.clientX,
+          event.clientY,
+        ]);
+
+        const clickOffset = {
+          x: moveX - translatedPosition.value.x,
+          y: moveY - translatedPosition.value.y,
+        };
+
+        // add to the position of the node an offset based on where the
+        // user clicked inside the node body itself, so that replacement
+        // is visually hinted on the cursor itself
+        onDragMove(
+          {
+            x: translatedPosition.value.x + clickOffset.x,
+            y: translatedPosition.value.y + clickOffset.y,
+          },
+          { type: "from-node-instance", replacementNodeId: props.node.id },
+        );
+      }
+    },
     onMoveEnd: async () => {
-      const { wasReplaced } = await onNodeDrop();
+      const { wasReplaced } = await onDrop(translatedPosition.value, {
+        type: "from-node-instance",
+        replacementNodeId: props.node.id,
+      });
+
       return { shouldMove: !wasReplaced };
     },
   });
@@ -136,11 +169,11 @@ const isSelectionFocusShown = computed(
   () => getFocusedObject.value?.id === props.node.id,
 );
 
-const hoverStateProvider = useNodeHoveredStateProvider();
+const hoverProvider = useNodeHoverProvider();
 
 const isHovering = computed(
   () =>
-    hoverStateProvider.hoveredNodeId.value === props.node.id ||
+    hoverProvider.hoveredNodeId.value === props.node.id ||
     (portTypeMenu.value.isOpen && portTypeMenu.value.nodeId === props.node.id),
 );
 
@@ -205,7 +238,7 @@ const isConnectionForbidden = computed(
 );
 
 const onNodeHoverAreaPointerEnter = () => {
-  hoverStateProvider.onPointerEnter(props.node.id);
+  hoverProvider.onPointerEnter(props.node.id);
 };
 
 const onNodeHoverAreaPointerMove = () => {
@@ -227,7 +260,7 @@ const onNodeHoverAreaPointerMove = () => {
 };
 
 const onNodeHoverAreaPointerLeave = () => {
-  hoverStateProvider.onPointerLeave();
+  hoverProvider.onPointerLeave();
 
   floatingConnectorStore.onLeaveConnectionSnapCandidate({
     candidate: props.node,

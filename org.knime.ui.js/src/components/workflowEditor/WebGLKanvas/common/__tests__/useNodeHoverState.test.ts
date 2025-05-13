@@ -2,23 +2,23 @@ import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 
 import {
-  useNodeHoveredStateListener,
-  useNodeHoveredStateProvider,
-} from "../useNodeHoveredState";
+  useNodeHoverListener,
+  useNodeHoverProvider,
+} from "../useNodeHoverState";
 
 describe("useNodeHoveredState", () => {
   it("should trigger callbacks", async () => {
     const onEnterCallback = vi.fn();
     const onLeaveCallback = vi.fn();
 
-    useNodeHoveredStateListener({
+    useNodeHoverListener({
       nodeId: "root:1",
       onEnterCallback,
       onLeaveCallback,
     });
 
     const { onPointerEnter, onPointerLeave, hoveredNodeId } =
-      useNodeHoveredStateProvider();
+      useNodeHoverProvider();
 
     expect(onEnterCallback).not.toHaveBeenCalled();
     expect(onLeaveCallback).not.toHaveBeenCalled();

@@ -20,7 +20,7 @@ type UseObjectInteractionsOptions = {
   selectObject: () => Promise<void>;
   deselectObject: () => Promise<void>;
   onInteractionStart?: () => void;
-  onMove?: () => void;
+  onMove?: (event: PointerEvent) => void;
   onMoveEnd?: () => Promise<{ shouldMove: boolean }>;
   onDoubleClick?: (event: PointerEvent) => void;
 };
@@ -155,7 +155,7 @@ export const useObjectInteractions = (
         return;
       }
 
-      options.onMove?.();
+      options.onMove?.(pointerMoveEvent);
       movingStore.setIsDragging(true);
       movingStore.setMovePreview({ deltaX, deltaY });
     };

@@ -11,6 +11,7 @@ import {
 } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId } from "@/util/connectorUtil";
 import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
@@ -49,6 +50,8 @@ const {
   snapTarget,
   isDragging: isDraggingFloatingConnector,
 } = storeToRefs(useFloatingConnectorStore());
+
+const { replacementOperation } = storeToRefs(useNodeInteractionsStore());
 
 const {
   sourceNode,
@@ -197,7 +200,7 @@ watch(sourceAndDestinationSelected, (value) => {
         :index="index"
         :is-flowvariable-connection="Boolean(flowVariableConnection)"
         :is-highlighted="isHighlighted"
-        :is-dragged-over="false"
+        :is-dragged-over="replacementOperation?.candidateId === id"
         :is-readonly="!isWorkflowWritable"
         :is-last-segment="index === pathSegments.length - 1"
         :is-selected="

@@ -84,6 +84,7 @@ declare module "pixi.js" {
   }
   interface Container {
     _vp_name: string;
+    dataset?: { [key: string]: string };
   }
 }
 
