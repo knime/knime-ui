@@ -5,3 +5,4 @@ generated-api.ts
 generated-exceptions.ts
 licenses/
 .pnpm-store
+knime-js-pagebuilder
