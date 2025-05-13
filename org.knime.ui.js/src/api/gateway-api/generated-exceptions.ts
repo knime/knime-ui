@@ -28,16 +28,16 @@ export class CollisionException extends KnownGatewayException {}
 
 function isKnownGatewayException(e: unknown): e is { message: string, data: { code: KnownExecutorExceptions} } {
     return (
-        e !== null &&
+	    e !== null &&
 	    typeof e === "object" &&
 	    "code" in e &&
 	    typeof e.code === "number" &&
 	    e.code === -32600 &&
 	    "data" in e &&
 	    typeof e.data === "object" &&
-        e.data !== null &&
-        "code" in e.data &&
-        typeof e.data.code === "string" &&
+	    e.data !== null &&
+	    "code" in e.data &&
+	    typeof e.data.code === "string" &&
 	    (KNOWN_EXECUTOR_EXCEPTIONS as ReadonlyArray<string>).includes(e.data.code)
     );
 }

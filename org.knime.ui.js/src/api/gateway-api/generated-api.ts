@@ -1,6 +1,6 @@
-import type { Configuration } from "./configuration";
-import type { RPCClient } from "./rpc-client";
-import { mapToExceptionClass } from "./generated-exceptions";
+import type { Configuration } from './configuration';
+import type { RPCClient } from './rpc-client';
+import { mapToExceptionClass } from './generated-exceptions';
 
 /**
  *
@@ -1640,6 +1640,35 @@ export interface Extension {
      * @memberof Extension
      */
     vendor?: Vendor;
+
+}
+
+
+/**
+ * Represents a thrown instance of x-knime-gateway-executor-exceptions i.e. GatewayException.
+ * @export
+ * @interface GatewayProblemDescription
+ */
+export interface GatewayProblemDescription {
+
+    /**
+     * Message of the thrown exception.
+     * @type {string}
+     * @memberof GatewayProblemDescription
+     */
+    title?: string;
+    /**
+     * Name of the thrown exception.
+     * @type {string}
+     * @memberof GatewayProblemDescription
+     */
+    code?: string;
+    /**
+     * Indicating whether error details can be copied by the user.
+     * @type {boolean}
+     * @memberof GatewayProblemDescription
+     */
+    canCopy?: boolean;
 
 }
 
@@ -5240,6 +5269,23 @@ const component = function(rpcClient: RPCClient) {
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async pollCompleteComponentReexecutionStatus(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<any> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentService.pollCompleteComponentReexecutionStatus', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
+        /**
+         * Query the current page while reexecuting
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {string} params.resetNodeIdSuffix The ID of the node that triggered the reexecution from within a component, i.e., there is no leading root.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
@@ -5254,7 +5300,25 @@ const component = function(rpcClient: RPCClient) {
             return rpcClient.call('ComponentService.pollComponentReexecutionStatus', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
-         * Triggers the re-execution process.
+         * Triggers the re-execution process (and updates the viewValues) for the whole component, i.e.,  every containing node will be re-executed. If a specific node has triggered the re-execution process use  'trigger-reexecution/{resetNodeIdSuffix}' to only re-execute that node together  with every down-stream node of it.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {{ [key: string]: string; }} params.viewValues 
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async triggerCompleteComponentReexecution(
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  viewValues: { [key: string]: string; }  }
+        ): Promise<any> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentService.triggerCompleteComponentReexecution', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
+        /**
+         * Triggers the re-execution process (and updates the viewValues).
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
@@ -5271,41 +5335,6 @@ const component = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('ComponentService.triggerComponentReexecution', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
-        },
-        /**
-         * Query the current page while reexecuting
-         * @param {string} params.projectId ID of the workflow-project.
-         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [params.options] Override http request option.
-         * @throws {RequiredError}
-         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         */
-        async pollCompleteComponentReexecutionStatus(
-        	params: { projectId: string,  workflowId: string,  nodeId: string  }
-        ): Promise<any> {
-            const defaultParams = {
-            }
-
-            return rpcClient.call('ComponentService.pollCompleteComponentReexecutionStatus', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
-        },
-        /**
-         * Triggers the re-execution process (and updates the viewValues) for the whole component, i.e.,  every containing node will be re-executed. If a specific node has triggered the re-execution process use  'trigger-reexecution/{resetNodeIdSuffix}' to only re-execute that node together  with every down-stream node of it.
-         * @param {string} params.projectId ID of the workflow-project.
-         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {{ [key: string]: string; }} params.viewValues
-         * @param {*} [params.options] Override http request option.
-         * @throws {RequiredError}
-         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         */
-        async triggerCompleteComponentReexecution(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  viewValues: { [key: string]: string; }  }
-        ): Promise<any> {
-            const defaultParams = {
-            }
-
-            return rpcClient.call('ComponentService.triggerCompleteComponentReexecution', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
