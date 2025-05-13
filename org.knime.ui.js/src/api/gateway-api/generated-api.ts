@@ -5620,7 +5620,7 @@ const node = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
-         * @throws {NodeDescriptionNotAvailableException} A description for a given node could not be determined.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getNodeDescription(
         	params: { nodeFactoryKey: NodeFactoryKey  }
