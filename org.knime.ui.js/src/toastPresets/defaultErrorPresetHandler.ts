@@ -1,10 +1,11 @@
 import type { Toast, ToastServiceProvider } from "@knime/components";
+import { rfcErrors } from "@knime/hub-features";
 
 import { UnknownGatewayException } from "@/api/gateway-api/generated-exceptions";
 import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
 
 /**
- * For UnknownGatewayException a problem detail toast is shown in other cases the toast payload is used
+ * Offers specialized handling for instances of UnknownGatewayException and RFCError. In other cases the toast payload is used
  * and filled with the error message if no message was given.
  * @param $toast
  * @param error
@@ -16,17 +17,27 @@ export const defaultErrorPresetHandler = (
   error: unknown,
   payload: Toast,
 ) => {
-  // unknown error handling
+  const genericHeadline = "An unexpected error occurred";
+
   if (error instanceof UnknownGatewayException) {
     return showProblemDetailsErrorToast({
-      headline: payload.headline ?? "An unexpected error occurred",
+      headline: payload.headline ?? genericHeadline,
       problemDetails: {
         title: error.message,
-        details: [], // We could add more details here
+        details: [],
       },
-      error: error as Error,
+      error,
       copyToClipboard: true,
     });
+  }
+
+  if (error instanceof rfcErrors.RFCError) {
+    return $toast.show(
+      rfcErrors.toToast({
+        headline: payload.headline ?? genericHeadline,
+        rfcError: error,
+      }),
+    );
   }
 
   if (error instanceof Error) {

@@ -116,33 +116,4 @@ describe("WorkflowInfoBar.vue", () => {
     expect(wrapper.findComponent(StreamingInfo).exists()).toBe(false);
     expect(wrapper.findComponent(RemoteWorkflowInfo).exists()).toBe(true);
   });
-
-  it("should render info bar for versioned workflows not in their latest version", () => {
-    const workflow = createWorkflow({
-      info: {
-        providerType: WorkflowInfo.ProviderTypeEnum.HUB,
-      },
-    });
-
-    const origin = {
-      itemId: "itemId",
-      providerId: "providerId",
-      spaceId: "spaceId",
-      ancestorItemIds: [],
-      version: {
-        version: 1,
-        author: "author",
-        authorAccountId: "authorAccountId",
-        createdOn: "createdOn",
-        description: "description",
-        title: "Testversion123",
-      },
-    };
-
-    const { wrapper } = doMount({ workflow, origin });
-
-    expect(wrapper.text()).toMatch(
-      `You are currently viewing version "${origin.version.title}" of this workflow.`,
-    );
-  });
 });

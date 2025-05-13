@@ -1,3 +1,4 @@
+import ArrowLeftIcon from "@knime/styles/img/icons/arrow-left.svg";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 
 import { Node } from "@/api/gateway-api/generated-api";
@@ -10,6 +11,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import type { UnionToShortcutRegistry } from "../types";
 
 type OtherWorkflowShortcuts = UnionToShortcutRegistry<
@@ -18,6 +20,7 @@ type OtherWorkflowShortcuts = UnionToShortcutRegistry<
   | "editAnnotation"
   | "switchToPanMode"
   | "switchToSelectionMode"
+  | "closeVersionHistory"
 >;
 
 const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
@@ -117,6 +120,16 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
       useCanvasModesStore().switchCanvasMode("pan");
     },
     condition: () => !useWorkflowStore().isWorkflowEmpty,
+  },
+  closeVersionHistory: {
+    text: "Close version history",
+    icon: ArrowLeftIcon,
+    hidden: true,
+    execute: () => {
+      useWorkflowVersionsStore().deactivateVersionsMode();
+    },
+    condition: () =>
+      useWorkflowVersionsStore().activeProjectVersionsModeStatus === "active",
   },
 };
 

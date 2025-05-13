@@ -111,7 +111,6 @@ const onWheel = (e: WheelEvent) => {
 @import url("@/assets/mixins.css");
 
 .zoom {
-  margin-left: auto;
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   & :deep(.submenu-toggle.expanded) {

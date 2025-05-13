@@ -313,8 +313,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    setVersionOfActiveProject(version, activeProjectId);
-
     let canSetNewRoute: boolean | null = true;
 
     if (
@@ -345,6 +343,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
           version: version === CURRENT_STATE_VERSION ? null : String(version),
         },
       });
+      setVersionOfActiveProject(version, activeProjectId);
     }
   }
 
@@ -491,6 +490,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       params: { projectId: activeProjectId },
       query: { version: null },
     });
+    setVersionOfActiveProject(CURRENT_STATE_VERSION, activeProjectId);
     setVersionsModeStatus(activeProjectId, "inactive");
   }
 

@@ -2,8 +2,6 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import { isDesktop } from "@/environment";
-import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -18,7 +16,6 @@ const {
   isRemoteWorkflow,
   activeWorkflow,
 } = storeToRefs(useWorkflowStore());
-const { activeProjectOrigin: origin } = storeToRefs(useApplicationStore());
 const width = computed(() => useCurrentCanvasStore().value.containerSize.width);
 
 const containerType = computed(() => activeWorkflow.value!.info.containerType);
@@ -26,10 +23,7 @@ const containerType = computed(() => activeWorkflow.value!.info.containerType);
 
 <template>
   <div v-if="width > 0" class="stack">
-    <div
-      v-if="isLinked || isInsideLinked || origin?.version"
-      class="workflow-info"
-    >
+    <div v-if="isLinked || isInsideLinked" class="workflow-info">
       <span v-if="isInsideLinked" class="linked">
         This is a {{ containerType }} inside a linked {{ insideLinkedType }} and
         cannot be edited.
@@ -37,11 +31,6 @@ const containerType = computed(() => activeWorkflow.value!.info.containerType);
 
       <span v-else-if="isLinked" class="linked">
         This is a linked {{ containerType }} and therefore cannot be edited.
-      </span>
-
-      <span v-else-if="isDesktop() && origin?.version" class="linked">
-        You are currently viewing version "{{ origin?.version.title }}" of this
-        workflow.
       </span>
     </div>
 

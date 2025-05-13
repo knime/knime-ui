@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";
 import { type Router } from "vue-router";
@@ -374,9 +375,9 @@ export const useLifecycleStore = defineStore("lifecycle", {
     }) {
       consola.trace("action::switchWorkflow >> Params", { newWorkflow });
 
+      const activeWorkflow = useWorkflowStore()?.activeWorkflow;
       const isChangingProject =
-        useWorkflowStore()?.activeWorkflow?.projectId !==
-        newWorkflow?.projectId;
+        activeWorkflow?.projectId !== newWorkflow?.projectId;
 
       // no previews for the browser
       if (isDesktop()) {
@@ -437,7 +438,12 @@ export const useLifecycleStore = defineStore("lifecycle", {
           await this.loadWorkflow({
             projectId,
             workflowId,
-            versionId: newWorkflow.version,
+            // When not switching projects, the version is kept the same
+            // if another one is not explicitly requested (e.g. opening components/metanodes)
+            versionId:
+              newWorkflow.version === undefined
+                ? activeWorkflow?.info.version
+                : newWorkflow.version,
           });
         }
       }

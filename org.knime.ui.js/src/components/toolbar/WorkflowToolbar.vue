@@ -37,6 +37,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { reloadApp } from "@/util/devTools";
 import {
   type CanvasRendererType,
@@ -54,6 +55,7 @@ import ZoomMenu from "./ZoomMenu.vue";
  */
 const $shortcuts = useShortcuts();
 const uiControls = useUIControlsStore();
+const workflowVersionsStore = useWorkflowVersionsStore();
 const { activeProjectId, activeProjectOrigin, isUnknownProject } = storeToRefs(
   useApplicationStore(),
 );
@@ -63,6 +65,7 @@ const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
+const { activeProjectVersionsModeStatus } = storeToRefs(workflowVersionsStore);
 const { uploadWorkflowAndOpenAsProject } = useUploadWorkflowToSpace();
 
 const webglCanvasStore = useWebGLCanvasStore();
@@ -134,13 +137,17 @@ const toolbarDropdowns = computed<
   };
 });
 
-const toolbarButtons = computed(() => {
+const toolbarButtons = computed<Array<ShortcutName>>(() => {
   if (!activeWorkflow.value || !activeProjectId.value) {
     return [];
   }
 
   if (!activeWorkflow.value || !uiControls.canEditWorkflow) {
     return [];
+  }
+
+  if (activeProjectVersionsModeStatus.value === "active") {
+    return ["closeVersionHistory"];
   }
 
   const hasNodesSelected = selectedNodes.value.length > 0;
@@ -273,7 +280,7 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
 
 <template>
   <div class="toolbar">
-    <transition-group tag="div" name="button-list">
+    <transition-group tag="div" name="button-list" class="button-list-wrapper">
       <!--
         setting :key="the list of all visible buttons",
         re-renders the whole list in a new div whenever buttons appear or disappear,
@@ -332,7 +339,7 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocalWorkflow"
         ref="uploadButton"
         class="toolbar-button"
-        :with-text="true"
+        with-text
         title="Upload"
         :create-hint-options="{
           hintId: HINTS.UPLOAD_BUTTON,
@@ -348,7 +355,7 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
           getCommunityHubInfo.isOnlyCommunityHubMounted && isHubWorkflow
         "
         class="toolbar-button"
-        :with-text="true"
+        with-text
         title="Deploy on Hub"
         @click="onDeploymentButtonClick"
       >
@@ -403,15 +410,19 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
   background-color: var(--knime-gray-ultra-light);
   border-bottom: 1px solid var(--knime-silver-sand);
 
+  & .button-list-wrapper {
+    flex: 1 1;
+  }
+
   & .control-list {
     --z-index-common-menu-items-expanded: v-bind(
       "$zIndices.layerExpandedMenus"
     );
 
     display: flex;
-    justify-content: center;
+    justify-content: end;
     align-items: center;
-    margin-left: auto;
+    flex: 1 1;
 
     & .control {
       margin-right: 5px;
@@ -437,8 +448,8 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
 }
 
 .breadcrumb {
+  display: flex;
   text-align: center;
   white-space: pre;
-  flex: 1;
 }
 </style>

@@ -2,6 +2,7 @@ import type { ToastServiceProvider } from "@knime/components";
 
 import { getToastsProvider } from "@/plugins/toasts";
 
+import { type ApiToastPresets, getPresets as getApiPresets } from "./api";
 import {
   type ApplicationToastPresets,
   getPresets as getApplicationPresets,
@@ -24,6 +25,7 @@ type ToastPresetRegistry = {
   connectivity: ConnectivityPresets;
   spaces: SpacesToastPresets;
   workflow: WorkflowToastPresets;
+  api: ApiToastPresets;
 };
 
 let registry: ToastPresetRegistry | null = null;
@@ -34,6 +36,7 @@ const initToastPresets = ($toastService: ToastServiceProvider) => {
     connectivity: getConnectivityPresets($toastService),
     spaces: getSpacesPresets($toastService),
     workflow: getWorkflowPresets($toastService),
+    api: getApiPresets($toastService),
   } satisfies ToastPresetRegistry);
 };
 

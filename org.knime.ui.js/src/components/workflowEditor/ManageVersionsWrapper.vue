@@ -2,7 +2,6 @@
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import { rfcErrors } from "@knime/hub-features";
 import {
   CreateVersionForm,
   ManageVersions,
@@ -10,10 +9,9 @@ import {
 } from "@knime/hub-features/versions";
 
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
-import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
+import { getToastPresets } from "@/toastPresets";
 
 import VersionPanelPromoteHub from "./VersionPanelPromoteHub.vue";
 
@@ -46,23 +44,11 @@ const showErrorToast = ({
   error: unknown;
   headline: string;
 }) => {
-  if (error instanceof rfcErrors.RFCError) {
-    getToastsProvider().show(
-      rfcErrors.toToast({
-        headline,
-        rfcError: error,
-      }),
-    );
-  } else {
-    showProblemDetailsErrorToast({
-      headline,
-      problemDetails: {
-        title: "An unexpected error occurred.",
-      },
-      error,
-      copyToClipboard: true,
-    });
-  }
+  getToastPresets().toastPresets.api.hubActionError({
+    error,
+    headline,
+    message: "An unexpected error occurred.",
+  });
 };
 
 const onClose = () => {
