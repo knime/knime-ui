@@ -1,5 +1,5 @@
 /* eslint-disable no-undefined */
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
@@ -89,7 +89,7 @@ const getPortsOnReplacementCandidate = async (
   }
 
   if (params.type === "from-node-template") {
-    // awaited but should resolve immediatlely because node template is already cached
+    // awaited but should resolve immediately because node template is already cached
     // since you can't drag a node template if it wasn't loaded before
     const nodeTemplate = await useNodeTemplatesStore().getSingleNodeTemplate({
       nodeTemplateId: params.nodeFactory.className,
@@ -109,6 +109,11 @@ const getPortsOnReplacementCandidate = async (
 
   return null;
 };
+
+// keep the dragging state as a singleton outside the composable,
+// because the interaction of the drag can start from a different place
+// than the handling of a move or a drop (e.g node repository)
+const isDragging = ref(false);
 
 /**
  * Composable that handles node replacement and node insertion operations.
@@ -137,31 +142,40 @@ export const useNodeReplacementOrInsertion = () => {
   const { hasAbortedDrag } = storeToRefs(useMovingStore());
 
   const canvasStore = useWebGLCanvasStore();
-  const pixiApplication = computed(() => canvasStore.pixiApplication);
+  const { pixiApplication } = storeToRefs(canvasStore);
 
   const tryFindConnectorAtPosition = (position: XY): string | undefined => {
     if (!pixiApplication.value) {
       return undefined;
     }
 
-    const [x, y] = canvasStore.fromCanvasCoordinates([position.x, position.y]);
+    const foundObject = canvasStore.findObjectFromScreenCordinates(position);
 
-    const foundObject =
-      pixiApplication.value.app.renderer.events.rootBoundary.hitTest(x, y);
-
-    if (foundObject && foundObject.label === "ConnectorPathSegmentHoverArea") {
-      return foundObject.dataset?.connectionId;
+    if (
+      foundObject &&
+      foundObject.label.startsWith("ConnectorPathSegmentHoverArea__")
+    ) {
+      const connectionId = foundObject.label.replace(
+        "ConnectorPathSegmentHoverArea__",
+        "",
+      );
+      return connectionId;
     }
 
     return undefined;
   };
 
   const onDragStart = () => {
+    isDragging.value = true;
     collisionChecker.init();
   };
 
   const onDragMove = throttle(
     async (position: XY, params: ReplacementPayload) => {
+      if (!isDragging.value) {
+        return;
+      }
+
       // favor node detection first, since it's more efficient
       // and has a larger detection zone
       const nodeCandidateId = collisionChecker.check({
@@ -267,7 +281,7 @@ export const useNodeReplacementOrInsertion = () => {
     }
   };
 
-  const onDrop = throttle((dropPosition: XY, params: ReplacementPayload) => {
+  const onDrop = (dropPosition: XY, params: ReplacementPayload) => {
     if (hasAbortedDrag.value) {
       replacementOperation.value = null;
       return Promise.resolve({ wasReplaced: false });
@@ -277,16 +291,25 @@ export const useNodeReplacementOrInsertion = () => {
       return Promise.resolve({ wasReplaced: false });
     }
 
-    if (replacementOperation.value.type === "node") {
-      return doNodeReplacement(replacementOperation.value.candidateId, params);
-    } else {
-      return doNodeInsertion(
-        replacementOperation.value.candidateId,
-        dropPosition,
-        params,
-      );
+    try {
+      if (replacementOperation.value.type === "node") {
+        return doNodeReplacement(
+          replacementOperation.value.candidateId,
+          params,
+        );
+      } else {
+        return doNodeInsertion(
+          replacementOperation.value.candidateId,
+          dropPosition,
+          params,
+        );
+      }
+    } finally {
+      // update the drag state in raf so that it's in sync with the move handler
+      // which is throttled
+      requestAnimationFrame(() => (isDragging.value = false));
     }
-  });
+  };
 
   return { onDragStart, onDragMove, onDrop };
 };

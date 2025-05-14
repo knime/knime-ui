@@ -553,6 +553,19 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     await Promise.resolve();
   };
 
+  const findObjectFromScreenCordinates = (coordinates: XY) => {
+    if (!pixiApplication.value) {
+      return undefined;
+    }
+
+    const [x, y] = fromCanvasCoordinates.value([coordinates.x, coordinates.y]);
+
+    const foundObject =
+      pixiApplication.value.app.renderer.events.rootBoundary.hitTest(x, y);
+
+    return foundObject;
+  };
+
   return {
     zoomFactor,
     containerSize,
@@ -601,5 +614,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     clearCanvasAnchor,
     setPixelRatio,
     pixelRatio: getPixelRatio,
+    findObjectFromScreenCordinates,
   };
 });

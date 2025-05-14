@@ -207,7 +207,7 @@ watch(suggestDelete, (shouldAnimate) => {
 <template>
   <Container label="ConnectorPathSegment">
     <Graphics
-      label="ConnectorPathSegmentHoverArea"
+      :label="`ConnectorPathSegmentHoverArea__${connectionId}`"
       v-bind="$attrs"
       :event-mode="interactive ? 'static' : 'none'"
       cursor="pointer"

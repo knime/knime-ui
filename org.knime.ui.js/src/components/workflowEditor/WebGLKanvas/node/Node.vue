@@ -107,7 +107,7 @@ const isReplacementCandidate = computed(
     replacementOperation.value?.candidateId === props.node.id,
 );
 
-const { onDragStart, onDragMove, onDrop } = useNodeReplacementOrInsertion();
+const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
 const { handlePointerInteraction, isDraggingThisObject } =
   useObjectInteractions({
@@ -122,7 +122,7 @@ const { handlePointerInteraction, isDraggingThisObject } =
     onDoubleClick: onNodeLeftDoubleClick,
     onInteractionStart: () => {
       if (singleSelectedNode.value) {
-        onDragStart();
+        nodeReplacementOrInsertion.onDragStart();
       }
     },
     onMove: (event) => {
@@ -140,7 +140,7 @@ const { handlePointerInteraction, isDraggingThisObject } =
         // add to the position of the node an offset based on where the
         // user clicked inside the node body itself, so that replacement
         // is visually hinted on the cursor itself
-        onDragMove(
+        nodeReplacementOrInsertion.onDragMove(
           {
             x: translatedPosition.value.x + clickOffset.x,
             y: translatedPosition.value.y + clickOffset.y,
@@ -150,10 +150,10 @@ const { handlePointerInteraction, isDraggingThisObject } =
       }
     },
     onMoveEnd: async () => {
-      const { wasReplaced } = await onDrop(translatedPosition.value, {
-        type: "from-node-instance",
-        replacementNodeId: props.node.id,
-      });
+      const { wasReplaced } = await nodeReplacementOrInsertion.onDrop(
+        translatedPosition.value,
+        { type: "from-node-instance", replacementNodeId: props.node.id },
+      );
 
       return { shouldMove: !wasReplaced };
     },

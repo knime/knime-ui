@@ -7,7 +7,6 @@ import type { AllowedPixiProps } from "./props";
 export interface GraphicsProps {
   blendMode?: PIXI.BLEND_MODES;
   geometry?: PIXI.GraphicsOptions | PIXI.GraphicsContext;
-  dataset?: { [key: string]: string };
 }
 
 export interface GraphicsEvents extends PixiEvents {
