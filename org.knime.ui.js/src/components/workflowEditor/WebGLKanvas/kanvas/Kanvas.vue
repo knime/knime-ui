@@ -6,6 +6,7 @@ import { RenderLayer } from "pixi.js";
 
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
@@ -33,6 +34,7 @@ const {
 const isPixiAppInitialized = ref(false);
 
 const MAIN_CONTAINER_LABEL = "MainContainer";
+const { devMode } = storeToRefs(useApplicationSettingsStore());
 
 const addRenderLayers = (app: ApplicationInst["app"]) => {
   // annotations need to be behind everything else
@@ -61,7 +63,11 @@ watch(
 
     // Store reference Pixi.js application instance
     const app = pixiApp.value!.app;
-    globalThis.__PIXI_APP__ = app;
+
+    if (!import.meta.env.PROD || devMode.value) {
+      globalThis.__PIXI_APP__ = app;
+    }
+
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
     canvasStore.stage = app.stage;
 

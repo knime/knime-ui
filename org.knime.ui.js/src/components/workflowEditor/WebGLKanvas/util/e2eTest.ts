@@ -15,7 +15,8 @@ import { removeAnnotationStyles } from "../annotations/annotationStyles";
  * They are used by e2e tests in this repo but also by QA.
  */
 export const initE2ETestUtils = (app: Application) => {
-  let kanvasBox;
+  let kanvasBox: DOMRect | undefined;
+
   const updateKanvasBox = () => {
     kanvasBox = getKanvasDomElement()?.getBoundingClientRect();
   };
