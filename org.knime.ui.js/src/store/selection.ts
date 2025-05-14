@@ -2,7 +2,10 @@ import { type Ref, computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
-import { clickAwayCompositeView } from "@/composables/usePageBuilder/usePageBuilder";
+import {
+  clickAwayCompositeView,
+  isComponentViewDirty,
+} from "@/composables/usePageBuilder/usePageBuilder";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { parseBendpointId } from "@/util/connectorUtil";
@@ -40,11 +43,19 @@ export const useSelectionStore = defineStore("selection", () => {
   const selectedNodeIds = computed(() =>
     getSelectedNodes.value.map(({ id }) => id),
   );
+
   const singleSelectedNode = computed(() => {
     return getSelectedNodes.value.length === 1
       ? getSelectedNodes.value[0]
       : null;
   });
+
+  const hasDirtySelectionContext = async () => {
+    return (
+      (await isComponentViewDirty()) || useNodeConfigurationStore().isDirty
+    );
+  };
+
   const setNodeSelection = async (nodeIds: string[]) => {
     if (
       singleSelectedNode.value !== null &&
@@ -378,5 +389,7 @@ export const useSelectionStore = defineStore("selection", () => {
 
     selectConnections: selectionAdder(selectedConnections),
     deselectConnections: selectionRemover(selectedConnections),
+
+    hasDirtySelectionContext,
   };
 });

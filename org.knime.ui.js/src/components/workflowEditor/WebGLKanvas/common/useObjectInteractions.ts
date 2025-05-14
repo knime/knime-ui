@@ -19,7 +19,7 @@ type UseObjectInteractionsOptions = {
   isObjectSelected: () => boolean;
   selectObject: () => Promise<void>;
   deselectObject: () => Promise<void>;
-  onInteractionStart?: () => void;
+  onMoveStart?: () => void;
   onMove?: (event: PointerEvent) => void;
   onMoveEnd?: () => Promise<{ shouldMove: boolean }>;
   onDoubleClick?: (event: PointerEvent) => void;
@@ -29,15 +29,19 @@ type UseObjectInteractionsOptions = {
  * This composable handles 3 key interactions that are initiated
  * from a PointerDown event:
  *
+ * - **Selection/Deselection**:
+ *    This is the very first interaction, which is fired immediately as soon as
+ *    the user triggers a pointerdown. The object will be selected/deselected
+ *    depending on its current state and also depending on the modifiers used on
+ *    on the event (e.g multi-selection).
+ *
  * - **Drag & Drop**:
  *    Only fired when the user continues to move the pointer
- *    without releasing (not firing a pointerup)and also when the distance
- *    moved surpasses a defined threshold
- *
- * - **Selection/Deselection**:
- *    Fired when the user triggers a pointerdown, followed by a poinerup. If a
- *    small (insignificant) move is made in between this is discarded and not
- *    treated as a drag.
+ *    without releasing (not firing a pointerup) and also when the distance
+ *    moved surpasses a pre-defined threshold. However, worth noting that a move
+ *    won't happen if upon making the selection it is detected that the were pending
+ *    changes that would possibly prevent the user from continuing with a selection
+ *    (e.g dirty configurations, etc)
  *
  * - **Double click**:
  *    NOTE: this behavior is only handled when the `onDoubleClick` is supplied.
@@ -106,10 +110,6 @@ export const useObjectInteractions = (
       return;
     }
 
-    const canvas = pixiApplication.value!.canvas;
-    canvas.setPointerCapture(pointerDownEvent.pointerId);
-    const removeDragAbortListener = registerDragAbort();
-
     startPos.value = {
       x: pointerDownEvent.global.x,
       y: pointerDownEvent.global.y,
@@ -117,6 +117,9 @@ export const useObjectInteractions = (
 
     const wasSelectedOnStart = isObjectSelected();
     const isMultiselect = isMultiselectEvent(pointerDownEvent);
+
+    const shouldSkipDragInteraction =
+      await selectionStore.hasDirtySelectionContext();
 
     if (isMultiselect) {
       const action = isObjectSelected() ? deselectObject : selectObject;
@@ -130,8 +133,16 @@ export const useObjectInteractions = (
       await selectObject();
     }
 
+    if (shouldSkipDragInteraction) {
+      return;
+    }
+
+    const canvas = pixiApplication.value!.canvas;
+    canvas.setPointerCapture(pointerDownEvent.pointerId);
+    const removeDragAbortListener = registerDragAbort();
+
     // make sure to start after selection has been made, because that's async
-    options.onInteractionStart?.();
+    options.onMoveStart?.();
 
     let didDrag = false;
 

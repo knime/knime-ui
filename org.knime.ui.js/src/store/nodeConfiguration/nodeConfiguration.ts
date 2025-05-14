@@ -254,6 +254,12 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     },
   },
   getters: {
+    isDirty: (state) => {
+      return (
+        state.dirtyState.apply !== "clean" || state.dirtyState.view !== "clean"
+      );
+    },
+
     activeNode: (_): NativeNode | null => {
       const activeNodeId = useSelectionStore().singleSelectedNode?.id;
 

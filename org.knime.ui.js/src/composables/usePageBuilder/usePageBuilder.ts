@@ -38,6 +38,9 @@ let PageBuilder: {
 
 let activePageBuilder: PageBuilderControl | null = null;
 
+export const isComponentViewDirty = async () =>
+  (await activePageBuilder?.isDirty()) ?? false;
+
 export const clickAwayCompositeView = async (): Promise<boolean> => {
   if (activePageBuilder === null) {
     return true;
