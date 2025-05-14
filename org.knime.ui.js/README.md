@@ -15,7 +15,7 @@ The frontend is based on the [Vue.js] JavaScript framework.
 
     | argument                                       | comment                                                                                                            |
     | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-    | `-Dorg.knime.ui.dev.mode=true`                 | Enables debugging the AP's browser from your system browser at http://localhost:8888 and more                      |
+    | `-Dorg.knime.ui.dev.mode=true`                 | Enables debugging the AP's browser (described in the [Debugging section](#section_debugging) of this README)       |
     | `-Dorg.knime.ui.dev.url=http://localhost:3000` | Makes the AP use KNIME UI served from localhost instead of using the resources bundled with the KNIME UI Extension |
 
 ### Install dependencies
@@ -135,11 +135,20 @@ pnpm run test:performance
 
 Read more in [e2e/README.md](e2e/README.md).
 
+<a id="section_debugging"></a>
+
 ## Debugging
 
 Make sure you have `-Dorg.knime.ui.dev.mode=true` in your `<knime-installation-folder>/knime.ini`.
 
-You can open the Dev Tools at http://localhost:8888/ or by clicking the "Inspect Code" button in the header.
+You can open the DevTools by clicking the `Inspect Code` button in the AP header toolbar.
+
+An alternative way to do it would be:
+
+1. In your system Chrome browser, go to `chrome://inspect`
+2. Under "Devices" -> "Discover network targets", click the `Configure...` button
+3. Add `localhost:8888` and close the popup
+4. Under "Remote Target", you can click `inspect` to open the DevTools.
 
 ### Enable [Consola](https://www.npmjs.com/package/consola) logging
 
@@ -147,7 +156,7 @@ Set the `KNIME_LOG_LEVEL` item to `verbose` in the `localStorage` and then refre
 
 Alternatively, set the `VITE_LOG_LEVEL` env variable to `verbose` in the `.env` file and then restart the dev server and restart the AP.
 
-This will enable detailed logs in the Dev Tools Console.
+This will enable detailed logs in the DevTools Console.
 
 ## Running security audit
 
