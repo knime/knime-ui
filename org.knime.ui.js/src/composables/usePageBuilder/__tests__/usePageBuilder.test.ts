@@ -61,7 +61,11 @@ describe("usePageBuilder", () => {
 
     expect(mockCreatePageBuilder).toHaveBeenCalledWith(
       expect.objectContaining({
-        state: { disallowWebNodes: false, disableWidgetsWhileExecuting: true },
+        state: {
+          disallowWebNodes: false,
+          disableWidgetsWhileExecuting: true,
+          alwaysTearDownKnimePageBuilderAPI: true,
+        },
       }),
       "mocked-url",
     );

@@ -84,6 +84,7 @@ export const usePageBuilder = async (
         ...pageBuilderApiVuexStoreConfig.state,
         disallowWebNodes: isBrowser(),
         disableWidgetsWhileExecuting: true,
+        alwaysTearDownKnimePageBuilderAPI: true,
       },
       actions: {
         ...pageBuilderApiVuexStoreConfig.actions,
