@@ -11,35 +11,29 @@ import {
 import * as $colors from "@/style/colors";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { useTooltip } from "../../common/useTooltip";
-import type { TooltipDefinition } from "../../types";
+import type { ActionButtonConfig, TooltipDefinition } from "../../types";
 import { markEventAsHandled } from "../util/interaction";
 
 const buttonRadius = 9;
 const buttonStroke = 1;
 
-type Props = {
+type Props = ActionButtonConfig & {
   x?: number;
-  disabled?: boolean;
-  title?: string | null;
-  primary?: boolean;
   icon: GraphicsContext;
+  title?: string;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   x: 0,
   disabled: false,
-  title: null,
   primary: false,
+  title: "",
 });
-
-const emit = defineEmits<{
-  click: [event: FederatedPointerEvent];
-}>();
 
 const onClick = (event: FederatedPointerEvent) => {
   if (!props.disabled) {
     markEventAsHandled(event, { initiator: "action-button" });
-    emit("click", event);
+    props.onClick();
   }
 };
 
@@ -77,7 +71,7 @@ const tooltip = computed<TooltipDefinition>(() => {
     },
     gap: 4,
     orientation: "top",
-    text: props.title ?? "",
+    text: props.title,
   };
 });
 
@@ -88,7 +82,7 @@ useTooltip({ tooltip, element: useTemplateRef<ContainerInst>("tooltipRef") });
   <Container
     ref="tooltipRef"
     event-mode="static"
-    label="ActionButton"
+    :label="'ActionButton__' + testId"
     :cursor="disabled ? 'default' : 'pointer'"
     :position-x="x"
     :hit-area="hitArea"

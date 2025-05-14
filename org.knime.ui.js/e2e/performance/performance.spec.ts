@@ -3,11 +3,7 @@
 
 import { type Page, expect, test } from "@playwright/test";
 
-import {
-  type CustomWindow,
-  getKanvasBoundingBox,
-  startApplication,
-} from "../utils";
+import { getKanvasBoundingBox, startApplication } from "../utils";
 
 const getMeasurements = async (page: Page) => {
   // To get all performance marks
@@ -48,23 +44,21 @@ const getMeasurements = async (page: Page) => {
 
 const startFpsMeasurement = async (page: Page) => {
   await page.evaluate(() => {
-    const win = window as CustomWindow;
-    const fpsMeasurement = (win.__PERF_FPS_MEASUREMENT__ = {
+    const fpsMeasurement = (window.__PERF_FPS_MEASUREMENT__ = {
       start: performance.now(),
       frameCount: 0,
       countFrames: () => {
         fpsMeasurement.frameCount++;
       },
     });
-    const app = win.__PIXI_APP__;
+    const app = window.__PIXI_APP__;
     app.ticker.add(fpsMeasurement.countFrames);
   });
 
   const stop = async () => {
     const averageFps = await page.evaluate(() => {
-      const win = window as CustomWindow;
-      const app = win.__PIXI_APP__;
-      const fpsMeasurement = win.__PERF_FPS_MEASUREMENT__!;
+      const app = window.__PIXI_APP__;
+      const fpsMeasurement = window.__PERF_FPS_MEASUREMENT__!;
 
       const endTime = performance.now();
       app.ticker.remove(fpsMeasurement.countFrames);

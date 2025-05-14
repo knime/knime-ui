@@ -145,6 +145,7 @@ const updateAnnotationText = (nextValue: WorkflowAnnotation) => {
   );
 
   const text = new PIXI.HTMLText({
+    label: "AnnotationText",
     text: annotationTextWithStyles,
     style: {
       fontFamily: "Roboto Condensed",

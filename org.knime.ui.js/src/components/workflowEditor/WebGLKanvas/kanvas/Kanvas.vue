@@ -11,6 +11,7 @@ import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
+import { initE2ETestUtils } from "../util/e2eTest";
 
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
@@ -63,6 +64,9 @@ watch(
     globalThis.__PIXI_APP__ = app;
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
     canvasStore.stage = app.stage;
+
+    // used by e2e tests in this repo and by QA
+    globalThis.__E2E_TEST__ = initE2ETestUtils(app);
 
     canvasStore.isDebugModeEnabled =
       import.meta.env.VITE_CANVAS_DEBUG === "true";

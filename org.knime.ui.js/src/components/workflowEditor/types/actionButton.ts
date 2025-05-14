@@ -7,5 +7,5 @@ export type ActionButtonConfig = {
   title?: string | ((action?: ActionButtonConfig) => string);
   disabled?: boolean;
   primary?: boolean;
-  testId?: string;
+  testId: string;
 };

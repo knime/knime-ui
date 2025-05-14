@@ -140,3 +140,9 @@ export const getAnnotationStyles = (
 
   return annotationTextWithStyles;
 };
+
+export const removeAnnotationStyles = (html: string) => {
+  const domElement = document.createElement("div");
+  domElement.innerHTML = html;
+  return domElement.querySelector(".wrapper")?.innerHTML;
+};

@@ -54,79 +54,83 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
   };
 
   // all possible actions
-  const actions = computed<Record<string, ActionButtonConfig>>(() => {
-    return {
-      configureNode: {
-        title: () =>
-          hoverTitle("Configure", $shortcuts.get("configureNode").hotkeyText),
-        disabled: !options.canConfigure.value,
-        icon: options.icons.OpenDialogIcon,
-        onClick: () => dispatchShortcut("configureNode"),
-      },
-      pauseLoopExecution: {
-        title: () =>
-          hoverTitle("Pause", $shortcuts.get("pauseLoopExecution").hotkeyText),
-        disabled: false,
-        icon: options.icons.PauseIcon,
-        onClick: () => dispatchShortcut("pauseLoopExecution"),
-      },
-      resumeLoopExecution: {
-        title: () =>
-          hoverTitle(
-            "Resume",
-            $shortcuts.get("resumeLoopExecution").hotkeyText,
-          ),
-        disabled: false,
-        icon: options.icons.ResumeIcon,
-        onClick: () => dispatchShortcut("resumeLoopExecution"),
-      },
-      execute: {
-        title: () =>
-          hoverTitle("Execute", $shortcuts.get("executeSelected").hotkeyText),
-        disabled: !options.canExecute.value,
-        icon: options.icons.ExecuteIcon,
-        onClick: () => dispatchShortcut("executeSelected"),
-      },
-      stepLoopExecution: {
-        title: () =>
-          hoverTitle("Step", $shortcuts.get("stepLoopExecution").hotkeyText),
-        disabled: !options.canStep.value,
-        icon: options.icons.StepIcon,
-        onClick: () => dispatchShortcut("stepLoopExecution"),
-      },
-      cancelExecution: {
-        title: () =>
-          hoverTitle("Cancel", $shortcuts.get("cancelSelected").hotkeyText),
-        disabled: !options.canCancel.value,
-        icon: options.icons.CancelIcon,
-        onClick: () => dispatchShortcut("cancelSelected"),
-      },
-      reset: {
-        title: () =>
-          hoverTitle("Reset", $shortcuts.get("resetSelected").hotkeyText),
-        disabled: !options.canReset.value,
-        icon: options.icons.ResetIcon,
-        onClick: () => dispatchShortcut("resetSelected"),
-      },
-      openView: {
-        title: () =>
-          hoverTitle(
-            options.canExecute.value ? "Execute and open view" : "Open view",
-            $shortcuts.get("executeAndOpenView").hotkeyText,
-          ),
-        disabled: !options.canOpenView.value && !options.canExecute.value,
-        icon: options.icons.OpenViewIcon,
-        onClick: () => dispatchShortcut("executeAndOpenView"),
-      },
-    } as const;
-  });
+  const actions = computed<Record<string, Omit<ActionButtonConfig, "testId">>>(
+    () => {
+      return {
+        configureNode: {
+          title: () =>
+            hoverTitle("Configure", $shortcuts.get("configureNode").hotkeyText),
+          disabled: !options.canConfigure.value,
+          icon: options.icons.OpenDialogIcon,
+          onClick: () => dispatchShortcut("configureNode"),
+        },
+        pauseLoopExecution: {
+          title: () =>
+            hoverTitle(
+              "Pause",
+              $shortcuts.get("pauseLoopExecution").hotkeyText,
+            ),
+          disabled: false,
+          icon: options.icons.PauseIcon,
+          onClick: () => dispatchShortcut("pauseLoopExecution"),
+        },
+        resumeLoopExecution: {
+          title: () =>
+            hoverTitle(
+              "Resume",
+              $shortcuts.get("resumeLoopExecution").hotkeyText,
+            ),
+          disabled: false,
+          icon: options.icons.ResumeIcon,
+          onClick: () => dispatchShortcut("resumeLoopExecution"),
+        },
+        execute: {
+          title: () =>
+            hoverTitle("Execute", $shortcuts.get("executeSelected").hotkeyText),
+          disabled: !options.canExecute.value,
+          icon: options.icons.ExecuteIcon,
+          onClick: () => dispatchShortcut("executeSelected"),
+        },
+        stepLoopExecution: {
+          title: () =>
+            hoverTitle("Step", $shortcuts.get("stepLoopExecution").hotkeyText),
+          disabled: !options.canStep.value,
+          icon: options.icons.StepIcon,
+          onClick: () => dispatchShortcut("stepLoopExecution"),
+        },
+        cancelExecution: {
+          title: () =>
+            hoverTitle("Cancel", $shortcuts.get("cancelSelected").hotkeyText),
+          disabled: !options.canCancel.value,
+          icon: options.icons.CancelIcon,
+          onClick: () => dispatchShortcut("cancelSelected"),
+        },
+        reset: {
+          title: () =>
+            hoverTitle("Reset", $shortcuts.get("resetSelected").hotkeyText),
+          disabled: !options.canReset.value,
+          icon: options.icons.ResetIcon,
+          onClick: () => dispatchShortcut("resetSelected"),
+        },
+        openView: {
+          title: () =>
+            hoverTitle(
+              options.canExecute.value ? "Execute and open view" : "Open view",
+              $shortcuts.get("executeAndOpenView").hotkeyText,
+            ),
+          disabled: !options.canOpenView.value && !options.canExecute.value,
+          icon: options.icons.OpenViewIcon,
+          onClick: () => dispatchShortcut("executeAndOpenView"),
+        },
+      } as const;
+    },
+  );
 
   const uiControls = useUIControlsStore();
 
   type Actions = typeof actions.value;
-  type NamedAction = ActionButtonConfig & { name: string };
 
-  const visibleActions = computed<NamedAction[]>(() => {
+  const visibleActions = computed<ActionButtonConfig[]>(() => {
     if (!uiControls.canEditWorkflow) {
       return [];
     }
@@ -156,7 +160,7 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
 
     return Object.entries(conditionMap)
       .filter(([_, visible]) => visible)
-      .map(([name, _]) => ({ ...actions.value[name], name }));
+      .map(([name, _]) => ({ ...actions.value[name], testId: name }));
   });
 
   return { visibleActions };

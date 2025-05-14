@@ -1,10 +1,10 @@
-/* eslint-disable no-undefined */
 import { expect } from "@playwright/test";
-import { Container, ContainerChild } from "pixi.js";
 import { Page } from "playwright-core";
 
+import { KANVAS_ID } from "../../src/util/getKanvasDomElement";
+
 import { mockWebsocket } from "./mockWebsocket";
-import { CustomWindow, StartApplicationHelperOptions } from "./types";
+import { StartApplicationHelperOptions } from "./types";
 
 export const startApplication = async (
   page: Page,
@@ -44,7 +44,7 @@ export const startApplication = async (
 };
 
 export const getKanvasBoundingBox = (page: Page) =>
-  page.locator("#kanvas").boundingBox();
+  page.locator(`#${KANVAS_ID}`).boundingBox();
 
 export const assertSnapshot = async (page: Page) => {
   const kanvasBox = await getKanvasBoundingBox(page);
@@ -65,67 +65,6 @@ export const testSimpleScreenshot = async (
   });
 };
 
-export const getPixiObjectCenter = (page: Page, labels: string[]) =>
-  page.evaluate(
-    ({ labels }) => {
-      const pixiApp = (window as CustomWindow).__PIXI_APP__;
-
-      let obj: Container<ContainerChild> | undefined = pixiApp.stage;
-
-      labels.forEach(
-        (label) => (obj = obj?.getChildByLabel(label, true) ?? undefined),
-      );
-
-      if (!obj) {
-        throw new Error(
-          `getPixiObjectCenter: pixi object not found, path: ${labels}`,
-        );
-      }
-
-      const bounds = obj.getBounds();
-
-      return {
-        x: bounds.x + bounds.width / 2,
-        y: bounds.y + bounds.height / 2,
-      };
-    },
-    { labels },
-  );
-
-export const getPixiObjectAttributes = (
-  page: Page,
-  labels: string[],
-  attributes: string[],
-) =>
-  page.evaluate(
-    ({ labels, attributes }) => {
-      const pixiApp = (window as CustomWindow).__PIXI_APP__;
-
-      let obj: Container<ContainerChild> | undefined = pixiApp.stage;
-
-      labels.forEach(
-        (label) => (obj = obj?.getChildByLabel(label, true) ?? undefined),
-      );
-
-      if (!obj) {
-        throw new Error(
-          `getPixiObjectCenter: pixi object not found, path: ${labels}`,
-        );
-      }
-
-      return Object.fromEntries(attributes.map((a) => [a, obj![a]]));
-    },
-    { labels, attributes },
-  );
-
-export const addKanvasOffset = async (
-  page: Page,
-  { x, y }: { x: number; y: number },
-) => {
-  const kanvasBox = await getKanvasBoundingBox(page);
-  return { x: x + kanvasBox!.x, y: y + kanvasBox!.y };
-};
-
 export const pointToArray = ({
   x,
   y,
@@ -136,11 +75,52 @@ export const pointToArray = ({
   return [x, y];
 };
 
-export const getPixiObjectCenterScreenCoordinates = async (
-  page: Page,
-  labels: string[],
-): Promise<{ x: number; y: number }> => {
-  const objectPosition = await getPixiObjectCenter(page, labels);
+export const getCenter = ({
+  center,
+}: {
+  center: { x: number; y: number };
+}): [number, number] => {
+  return pointToArray(center);
+};
 
-  return addKanvasOffset(page, objectPosition);
+export const getNode = async (page: Page, id: string) => {
+  const node = await page.evaluate(
+    ({ id }) => {
+      return window.__E2E_TEST__.getNode(id);
+    },
+    { id },
+  );
+
+  return node;
+};
+
+export const getNodePosition = async (
+  page: Page,
+  id: string,
+): Promise<[number, number]> => {
+  const node = await getNode(page, id);
+
+  return getCenter(node.torso);
+};
+
+export const getNodeActionButtons = async (page: Page, id: string) => {
+  const actionButtons = await page.evaluate(
+    ({ id }) => {
+      return window.__E2E_TEST__.getNodeActionButtons(id);
+    },
+    { id },
+  );
+
+  return actionButtons;
+};
+
+export const getAnnotation = async (page: Page, id: string) => {
+  const annotation = await page.evaluate(
+    ({ id }) => {
+      return window.__E2E_TEST__.getAnnotation(id);
+    },
+    { id },
+  );
+
+  return annotation;
 };

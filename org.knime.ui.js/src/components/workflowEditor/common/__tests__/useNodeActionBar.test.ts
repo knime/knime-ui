@@ -89,7 +89,7 @@ describe("useNodeActionBar", () => {
     });
     expect(
       getComposableResult().visibleActions.value.map((a) => [
-        a.name,
+        a.testId,
         a.disabled,
       ]),
     ).toStrictEqual([
@@ -148,7 +148,7 @@ describe("useNodeActionBar", () => {
       ...config,
     });
     expect(
-      getComposableResult().visibleActions.value.map((a) => a.name),
+      getComposableResult().visibleActions.value.map((a) => a.testId),
     ).toContain(actionName);
   });
 });

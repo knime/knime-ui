@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script lang="ts" setup>
 import { computed } from "vue";
 import type { GraphicsContext } from "pixi.js";
@@ -29,7 +30,7 @@ const positions = computed(() => {
 const getTitle = (action: ActionButtonConfig) => {
   const { title } = action;
   if (!title) {
-    return null;
+    return undefined;
   }
 
   if (typeof title === "string") {
@@ -40,12 +41,12 @@ const getTitle = (action: ActionButtonConfig) => {
     return title(action);
   }
 
-  return null;
+  return undefined;
 };
 </script>
 
 <template>
-  <Container>
+  <Container label="ActionBar">
     <ActionButton
       v-for="(action, index) in actions"
       :key="index"
@@ -54,7 +55,8 @@ const getTitle = (action: ActionButtonConfig) => {
       :disabled="action.disabled"
       :title="getTitle(action)"
       :icon="action.icon as GraphicsContext"
-      @click="action.onClick"
+      :test-id="action.testId"
+      :on-click="action.onClick"
     />
   </Container>
 </template>

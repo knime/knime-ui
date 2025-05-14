@@ -3,11 +3,10 @@ import { Page, expect, test } from "@playwright/test";
 
 import {
   assertSnapshot,
+  getCenter,
   getKanvasBoundingBox,
-  getPixiObjectAttributes,
-  getPixiObjectCenter,
-  getPixiObjectCenterScreenCoordinates,
-  pointToArray,
+  getNode,
+  getNodePosition,
   startApplication,
   testSimpleScreenshot,
 } from "../utils";
@@ -28,18 +27,6 @@ const IDS = {
   metanode: "root:4",
   component: "root:6",
 } as const;
-
-const getNodePosition = async (
-  page: Page,
-  id: (typeof IDS)[keyof typeof IDS],
-): Promise<[number, number]> => {
-  const center = await getPixiObjectCenterScreenCoordinates(page, [
-    `Node__${id}`,
-    "NodeTorso",
-  ]);
-
-  return pointToArray(center);
-};
 
 const startForPointerInteractions = (
   page: Page,
@@ -344,28 +331,12 @@ test.describe("node name editing", () => {
       workflowCommandFn: changeNameCommand,
     });
 
-  const getNodeNamePosition = async (
-    page: Page,
-    id: (typeof IDS)[keyof typeof IDS],
-  ): Promise<[number, number]> => {
-    const nodeNameCenter = await getPixiObjectCenterScreenCoordinates(page, [
-      `Node__${id}`,
-      "NodeName",
-    ]);
-
-    return pointToArray(nodeNameCenter);
-  };
-
-  const getNodeNameText = async (
+  const getNodeName = async (
     page: Page,
     id: (typeof IDS)[keyof typeof IDS],
   ) => {
-    const obj = await getPixiObjectAttributes(
-      page,
-      [`Node__${id}`, "NodeNameText"],
-      ["text"],
-    );
-    return obj.text;
+    const name = (await getNode(page, id)).name;
+    return name;
   };
 
   [
@@ -376,8 +347,7 @@ test.describe("node name editing", () => {
       await startForNameChange(page);
 
       // start edit
-      const [metanodeX, metanodeY] = await getNodeNamePosition(page, id);
-      await page.mouse.dblclick(metanodeX, metanodeY);
+      await page.mouse.dblclick(...getCenter(await getNodeName(page, id)));
       await assertSnapshot(page);
 
       // save name
@@ -386,7 +356,7 @@ test.describe("node name editing", () => {
       await page.keyboard.press("Enter");
       await page.waitForTimeout(200);
       await assertSnapshot(page);
-      expect(await getNodeNameText(page, id)).toBe("New name");
+      expect((await getNodeName(page, id)).text).toBe("New name");
     });
 
     test(`${name}::can edit name with shift+F2->click-outside`, async ({
@@ -413,8 +383,7 @@ test.describe("node name editing", () => {
       await startForNameChange(page);
 
       // start edit
-      const [metanodeX, metanodeY] = await getNodeNamePosition(page, id);
-      await page.mouse.dblclick(metanodeX, metanodeY);
+      await page.mouse.dblclick(...getCenter(await getNodeName(page, id)));
       await waitForFloatingEditor(page);
       await page.keyboard.insertText("New name");
       await page.waitForTimeout(500);
@@ -429,8 +398,7 @@ test.describe("node name editing", () => {
       await startForNameChange(page);
 
       // start edit
-      const [metanodeX, metanodeY] = await getNodeNamePosition(page, id);
-      await page.mouse.dblclick(metanodeX, metanodeY);
+      await page.mouse.dblclick(...getCenter(await getNodeName(page, id)));
       await waitForFloatingEditor(page);
       await page.keyboard.insertText("New name");
       await assertSnapshot(page);
@@ -440,15 +408,14 @@ test.describe("node name editing", () => {
       // make sure editor is closed and text is on stage
       await page.waitForTimeout(300);
       await assertSnapshot(page);
-      await expect(await getNodeNameText(page, id)).toBe("New name");
+      await expect((await getNodeName(page, id)).text).toBe("New name");
     });
 
     test(`${name}::cancels edit name with button`, async ({ page }) => {
       await startForNameChange(page);
 
       // start edit
-      const [metanodeX, metanodeY] = await getNodeNamePosition(page, id);
-      await page.mouse.dblclick(metanodeX, metanodeY);
+      await page.mouse.dblclick(...getCenter(await getNodeName(page, id)));
       await waitForFloatingEditor(page);
       await page.keyboard.insertText("New name");
       await assertSnapshot(page);
@@ -458,7 +425,7 @@ test.describe("node name editing", () => {
       // make sure editor is closed and text is on stage
       await page.waitForTimeout(200);
       await assertSnapshot(page);
-      await expect(await getNodeNameText(page, id)).not.toBe("New name");
+      await expect((await getNodeName(page, id)).text).not.toBe("New name");
     });
   });
 });
@@ -471,24 +438,10 @@ test.describe("node label editing", () => {
       workflowCommandFn: changeLabelCommand,
     });
 
-  const getNodeLabelPosition = async (
-    page: Page,
-  ): Promise<[number, number]> => {
-    const kanvasBox = await getKanvasBoundingBox(page);
-    const label = await getPixiObjectCenter(page, [
-      `NodeLabel__${IDS.metanode}`,
-    ]);
-
-    return [kanvasBox!.x + label.x, kanvasBox!.y + label.y];
-  };
-
-  const getNodeLabelText = async (page: Page) => {
-    const obj = await getPixiObjectAttributes(
-      page,
-      [`NodeLabel__${IDS.metanode}`, "NodeLabelText"],
-      ["text"],
-    );
-    return obj.text;
+  const getNodeLabel = async (page: Page) => {
+    const id = IDS.metanode;
+    const label = (await getNode(page, id)).label!;
+    return label;
   };
 
   const selectNode = async (page: Page) => {
@@ -501,7 +454,7 @@ test.describe("node label editing", () => {
     await selectNode(page);
 
     // start edit
-    const [metanodeX, metanodeY] = await getNodeLabelPosition(page);
+    const [metanodeX, metanodeY] = getCenter(await getNodeLabel(page));
     await page.mouse.dblclick(metanodeX, metanodeY);
     await assertSnapshot(page);
 
@@ -511,7 +464,7 @@ test.describe("node label editing", () => {
     await page.keyboard.press("ControlOrMeta+Enter");
     await page.waitForTimeout(200);
     await assertSnapshot(page);
-    await expect(await getNodeLabelText(page)).toBe("New name");
+    await expect((await getNodeLabel(page)).text).toBe("New name");
     await page.waitForTimeout(5000);
   });
 
@@ -538,7 +491,7 @@ test.describe("node label editing", () => {
     await selectNode(page);
 
     // start edit
-    const [metanodeX, metanodeY] = await getNodeLabelPosition(page);
+    const [metanodeX, metanodeY] = getCenter(await getNodeLabel(page));
     await page.mouse.dblclick(metanodeX, metanodeY);
     await waitForFloatingEditor(page);
     await page.keyboard.insertText("New name");
@@ -554,7 +507,7 @@ test.describe("node label editing", () => {
     await selectNode(page);
 
     // start edit
-    const [metanodeX, metanodeY] = await getNodeLabelPosition(page);
+    const [metanodeX, metanodeY] = getCenter(await getNodeLabel(page));
     await page.mouse.dblclick(metanodeX, metanodeY);
     await waitForFloatingEditor(page);
     await page.keyboard.insertText("New name");
@@ -564,7 +517,7 @@ test.describe("node label editing", () => {
     await cancelButton.click();
     page.waitForTimeout(200);
     await assertSnapshot(page);
-    await expect(await getNodeLabelText(page)).toBe("Add comment");
+    await expect((await getNodeLabel(page)).text).toBe("Add comment");
   });
 
   test("can edit label with button", async ({ page }) => {
@@ -583,6 +536,6 @@ test.describe("node label editing", () => {
     await saveButton.click();
     await page.waitForTimeout(200);
     await assertSnapshot(page);
-    await expect(await getNodeLabelText(page)).toBe("New name");
+    await expect((await getNodeLabel(page)).text).toBe("New name");
   });
 });

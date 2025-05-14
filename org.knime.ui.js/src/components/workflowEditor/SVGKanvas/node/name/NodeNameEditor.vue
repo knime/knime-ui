@@ -86,15 +86,15 @@ export default defineComponent({
     actions() {
       return [
         {
-          name: "save",
           icon: SaveIcon,
           onClick: this.onSave,
           primary: true,
+          testId: "node-name-editor-save",
         },
         {
-          name: "cancel",
           icon: CancelIcon,
           onClick: this.onCancel,
+          testId: "node-name-editor-cancel",
         },
       ];
     },

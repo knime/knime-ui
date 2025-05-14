@@ -1,7 +1,12 @@
 /* eslint-disable no-magic-numbers */
 import test, { Page, expect } from "@playwright/test";
 
-import { getKanvasBoundingBox, startApplication } from "../utils";
+import {
+  getAnnotation,
+  getCenter,
+  getKanvasBoundingBox,
+  startApplication,
+} from "../utils";
 
 import { annotationBringToFront } from "./workflowCommandMocks/annotation-bring-to-front";
 
@@ -22,12 +27,10 @@ test("renders correctly", async ({ page }) => {
 
 test.describe("editing", () => {
   const startAnnotationEdit = async (page: Page) => {
-    const kanvasBox = await getKanvasBoundingBox(page);
-    const clickCoords = { x: kanvasBox!.x + 300, y: kanvasBox!.y + 220 };
+    const annotation = await getAnnotation(page, "root_0");
 
-    await page.mouse.dblclick(clickCoords.x, clickCoords.y);
+    await page.mouse.dblclick(...getCenter(annotation));
     await page.waitForTimeout(200);
-    return { clickCoords };
   };
 
   test("content display remains consistent on edit", async ({ page }) => {
@@ -109,12 +112,16 @@ test("can be transformed", async ({ page }) => {
     workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
   });
 
+  const annotation = await getAnnotation(page, "root_0");
+
+  await page.mouse.click(...getCenter(annotation));
+
+  const southEastTransform = {
+    x: annotation.x + annotation.width + 3,
+    y: annotation.y + annotation.height + 3,
+  };
+
   const kanvasBox = await getKanvasBoundingBox(page);
-  const selectCoords = { x: kanvasBox!.x + 600, y: kanvasBox!.y + 500 };
-  await page.mouse.click(selectCoords.x, selectCoords.y);
-
-  const southEastTransform = { x: kanvasBox!.x + 625, y: kanvasBox!.y + 510 };
-
   await expect(page).toHaveScreenshot({
     clip: kanvasBox!,
     maxDiffPixels,
@@ -136,14 +143,14 @@ test("can be dragged", async ({ page }) => {
     workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
   });
 
-  const kanvasBox = await getKanvasBoundingBox(page);
-  const selectCoords = { x: kanvasBox!.x + 350, y: kanvasBox!.y + 350 };
+  const annotation = await getAnnotation(page, "root_0");
 
-  await page.mouse.move(selectCoords.x, selectCoords.y);
+  await page.mouse.move(...getCenter(annotation));
   await page.mouse.down({ button: "left", clickCount: 1 });
-  await page.mouse.move(selectCoords.x - 300, selectCoords.y - 100);
+  await page.mouse.move(annotation.center.x - 300, annotation.center.y - 100);
   await page.mouse.up();
 
+  const kanvasBox = await getKanvasBoundingBox(page);
   await expect(page).toHaveScreenshot({
     clip: kanvasBox!,
     maxDiffPixels,
@@ -156,13 +163,13 @@ test("can be ordered", async ({ page }) => {
     workflowCommandFn: annotationBringToFront,
   });
 
-  const kanvasBox = await getKanvasBoundingBox(page);
-  const selectCoords = { x: kanvasBox!.x + 350, y: kanvasBox!.y + 350 };
-
-  await page.mouse.move(selectCoords.x, selectCoords.y);
+  const annotation = await getAnnotation(page, "root_0");
+  await page.mouse.move(...getCenter(annotation));
   await page.mouse.down({ button: "left", clickCount: 1 });
-  await page.mouse.move(selectCoords.x + 300, selectCoords.y + 100);
+  await page.mouse.move(annotation.center.x + 300, annotation.center.y + 100);
   await page.mouse.up();
+
+  const kanvasBox = await getKanvasBoundingBox(page);
 
   await expect(page).toHaveScreenshot({
     clip: kanvasBox!,
@@ -183,10 +190,13 @@ test("have context menu", async ({ page }) => {
     workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
   });
 
-  const kanvasBox = await getKanvasBoundingBox(page);
-  const selectCoords = { x: kanvasBox!.x + 350, y: kanvasBox!.y + 350 };
-  await page.mouse.click(selectCoords.x, selectCoords.y, { button: "right" });
+  const annotation = await getAnnotation(page, "root_0");
 
+  await page.mouse.click(...getCenter(annotation), {
+    button: "right",
+  });
+
+  const kanvasBox = await getKanvasBoundingBox(page);
   await expect(page).toHaveScreenshot({
     clip: kanvasBox!,
     maxDiffPixels,

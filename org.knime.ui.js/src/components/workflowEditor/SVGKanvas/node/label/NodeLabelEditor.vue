@@ -58,15 +58,15 @@ export default {
     actions() {
       return [
         {
-          name: "save",
           icon: SaveIcon,
           onClick: this.onSave,
           primary: true,
+          testId: "node-label-editor-save",
         },
         {
-          name: "cancel",
           icon: CancelIcon,
           onClick: this.onCancel,
+          testId: "node-label-editor-cancel",
         },
       ];
     },
