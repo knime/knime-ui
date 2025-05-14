@@ -65,6 +65,8 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviderFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Tests methods in {@link SpaceAPI}.
@@ -92,12 +94,22 @@ class SpaceAPITest {
 
         DesktopAPI.injectDependency(createSpaceProvidersManager(connectedSpaceProvider, disconnectedSpaceProvider));
 
-        assertThat(SpaceAPI.connectSpaceProvider("1")).isEqualTo(
+        ObjectMapper mapper = new ObjectMapper();
+        String actualConnectedJson = SpaceAPI.connectSpaceProvider("1");
+        JsonNode actualConnectedNode = mapper.readTree(actualConnectedJson);
+        JsonNode expectedConnectedNode = mapper.readTree(
             """
-                    {"connected":true,"name":"Connected Provider","id":"1","type":"HUB","connectionMode":"AUTHENTICATED"}""");
-        assertThat(SpaceAPI.connectSpaceProvider("2")).isEqualTo(
+            {"connected":true,"name":"Connected Provider","id":"1","type":"HUB","connectionMode":"AUTHENTICATED"}"""
+        );
+        assertThat(actualConnectedNode).isEqualTo(expectedConnectedNode);
+
+        String actualDisconnectedJson = SpaceAPI.connectSpaceProvider("2");
+        JsonNode actualDisconnectedNode = mapper.readTree(actualDisconnectedJson);
+        JsonNode expectedDisconnectedNode = mapper.readTree(
             """
-                    {"username":"blub","connected":false,"name":"Disconnected Provider","id":"2","type":"HUB","connectionMode":"AUTHENTICATED"}""");
+            {"username":"blub","connected":false,"name":"Disconnected Provider","id":"2","type":"HUB","connectionMode":"AUTHENTICATED"}"""
+        );
+        assertThat(actualDisconnectedNode).isEqualTo(expectedDisconnectedNode);
     }
 
     @Test
