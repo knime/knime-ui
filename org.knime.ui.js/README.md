@@ -135,6 +135,20 @@ pnpm run test:performance
 
 Read more in [e2e/README.md](e2e/README.md).
 
+## Debugging
+
+Make sure you have `-Dorg.knime.ui.dev.mode=true` in your `<knime-installation-folder>/knime.ini`.
+
+You can open the Dev Tools at http://localhost:8888/ or by clicking the "Inspect Code" button in the header.
+
+### Enable [Consola](https://www.npmjs.com/package/consola) logging
+
+Set the `KNIME_LOG_LEVEL` item to `verbose` in the `localStorage` and then refresh the AP.
+
+Alternatively, set the `VITE_LOG_LEVEL` env variable to `verbose` in the `.env` file and then restart the dev server and restart the AP.
+
+This will enable detailed logs in the Dev Tools Console.
+
 ## Running security audit
 
 pnpm provides a check against known security issues of used dependencies. In most cases it is sufficient to only check
