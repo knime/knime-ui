@@ -10,6 +10,7 @@ import { useRouter } from "vue-router";
 import { rfcErrors } from "@knime/hub-features";
 import {
   CURRENT_STATE_VERSION,
+  MOST_RECENT_VERSION,
   VERSION_DEFAULT_LIMIT,
   useVersionsApi,
 } from "@knime/hub-features/versions";
@@ -24,6 +25,7 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import { promise } from "@knime/utils";
 
 import type { SpaceProviderNS } from "@/api/custom-types";
+import type { SpaceItemVersion } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
@@ -92,17 +94,32 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     },
   );
 
-  const getNamedItemVersion = (
+  /**
+   * @param projectId
+   * @param versionId
+   * @returns The 'SpaceItemVersion' if it could be found, 'undefined' for the current state
+   */
+  const getSpaceItemVersion = (
     projectId: string,
     versionId: string | undefined,
-  ): NamedItemVersion | undefined => {
+  ): SpaceItemVersion | undefined => {
     const projectVersionsModeInfo = versionsModeInfo.value.get(projectId);
     if (!projectVersionsModeInfo) {
       return undefined;
     }
-    return projectVersionsModeInfo.loadedVersions.find(
+
+    const foundVersion = projectVersionsModeInfo.loadedVersions.find(
       (namedItemVersion) => namedItemVersion.version.toString() === versionId,
     );
+    if (
+      !foundVersion ||
+      foundVersion.version === CURRENT_STATE_VERSION ||
+      foundVersion.version === MOST_RECENT_VERSION
+    ) {
+      return undefined;
+    }
+
+    return { ...foundVersion, version: foundVersion.version };
   };
 
   const activeProjectHasUnversionedChanges = computed(() => {
@@ -330,7 +347,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
           version: version === CURRENT_STATE_VERSION ? null : String(version),
         },
       });
-      setVersionOfActiveProject(version, activeProjectId);
     }
   }
 
@@ -477,7 +493,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       params: { projectId: activeProjectId },
       query: { version: null },
     });
-    setVersionOfActiveProject(CURRENT_STATE_VERSION, activeProjectId);
     setVersionsModeStatus(activeProjectId, "inactive");
   }
 
@@ -492,7 +507,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     activeProjectHasUnversionedChanges,
     isSidepanelOpen,
     activeProjectCurrentVersion,
-    getNamedItemVersion,
+    getSpaceItemVersion,
     // actions:
     setVersionsModeStatus,
     createVersion,

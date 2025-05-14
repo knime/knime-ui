@@ -7,7 +7,6 @@ import {
   type PortType,
   type Project,
   type SpaceItemReference,
-  type SpaceItemVersion,
   type UpdateAvailableEvent,
 } from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
@@ -121,11 +120,11 @@ export const useApplicationStore = defineStore("application", {
     },
 
     /**
-     * We map 'versionId' to the 'version' in the 'origin' of the project
+     * We map 'versionId' to the 'version' in the 'origin' of the 'Project'
      * to be able to keep track of project versions
      */
     setOpenProjects(projects: Project[]) {
-      const getVersion = useWorkflowVersionsStore().getNamedItemVersion;
+      const { getSpaceItemVersion } = useWorkflowVersionsStore();
       const updatedProjects = projects.map((project) => {
         if (!project.origin) {
           return project; // No origin, no version
@@ -133,11 +132,9 @@ export const useApplicationStore = defineStore("application", {
 
         const projectId = project.projectId;
         const versionId = project.origin.versionId;
-        const version = getVersion(projectId, versionId) as SpaceItemVersion;
-
+        const version = getSpaceItemVersion(projectId, versionId);
         const origin = { ...project.origin, version };
-        const newProject = { ...project, origin };
-        return newProject;
+        return { ...project, origin };
       });
       this.openProjects = updatedProjects;
     },
