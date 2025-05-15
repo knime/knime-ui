@@ -258,9 +258,14 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
 
   const { show } = useConfirmDialog();
   const result = await show({
-    title: "Change workflow editor engine",
+    title: "Change canvas rendering engine",
     message:
-      "The app will reload and you might loose any unsaved changes. Continue?",
+      "Changing this setting will cause the application to reload, " +
+      "and any unsaved changes may be lost. Do you want to proceed?",
+    buttons: [
+      { type: "cancel", label: "Cancel" },
+      { type: "confirm", label: "Reload application", flushRight: true },
+    ],
   });
 
   // update the display model
