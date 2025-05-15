@@ -9,7 +9,7 @@ import {
 import { isBrowser } from "@/environment";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { parseBendpointId } from "@/util/connectorUtil";
+import { getBendpointId, parseBendpointId } from "@/util/connectorUtil";
 
 export type NodeOutputTabIdentifier = "view" | `${number}` | null;
 
@@ -78,10 +78,10 @@ export const useSelectionStore = defineStore("selection", () => {
         return { wasAborted: true };
       }
     }
-    const newSelected = nodeIds.reduce(
-      (acc, id) => ({ ...acc, [id]: true }),
-      {},
-    );
+    const newSelected = {};
+    nodeIds.forEach((id) => {
+      newSelected[id] = true;
+    });
 
     if (
       Object.keys(newSelected).length !==
@@ -280,6 +280,27 @@ export const useSelectionStore = defineStore("selection", () => {
     }
   };
 
+  const connectionsBetweenSelectedNodes = computed(() => {
+    const workflow = useWorkflowStore().activeWorkflow;
+    if (!workflow) {
+      return [];
+    }
+    return Object.values(workflow.connections).filter(
+      (conn) =>
+        selectedNodes.value[conn.sourceNode] &&
+        selectedNodes.value[conn.destNode],
+    );
+  });
+
+  const selectBendpointsBetweenSelectedNodes = () => {
+    connectionsBetweenSelectedNodes.value.forEach((conn) => {
+      const bendpoints = Array(conn.bendpoints?.length ?? 0)
+        .fill(null)
+        .map((_, i) => getBendpointId(conn.id, i));
+      selectionAdder(selectedBendpoints)(bendpoints);
+    });
+  };
+
   /*
    *  Deselects all objects in the workflow. Can be interrupted by the user.
    *  @param preserveSelectionFor - the nodes will be except from deselecting avoiding unnecessary vue reactivity. In case they were not selected, they will be selected afterwards.
@@ -300,6 +321,9 @@ export const useSelectionStore = defineStore("selection", () => {
     }
     if (Object.keys(selectedBendpoints.value).length > 0) {
       selectedBendpoints.value = {};
+    }
+    if (preserveSelectionFor.length > 1) {
+      selectBendpointsBetweenSelectedNodes();
     }
     if (Object.keys(selectedMetanodePortBars.value).length > 0) {
       selectedMetanodePortBars.value = {};
@@ -380,8 +404,16 @@ export const useSelectionStore = defineStore("selection", () => {
     isBendpointSelected: (id: string) => Boolean(selectedBendpoints.value[id]),
 
     // adder and remover functions
-    selectNodes: (ids: string[]) =>
-      setNodeSelection([...Object.keys(selectedNodes.value), ...ids]),
+    selectNodes: async (ids: string[]) => {
+      const selectionResult = await setNodeSelection([
+        ...Object.keys(selectedNodes.value),
+        ...ids,
+      ]);
+      if (!selectionResult.wasAborted) {
+        selectBendpointsBetweenSelectedNodes();
+      }
+      return selectionResult;
+    },
     deselectNodes: (ids: string[]) =>
       setNodeSelection(
         Object.keys(selectedNodes.value).filter((id) => !ids.includes(id)),

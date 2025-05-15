@@ -944,7 +944,7 @@ describe("Connector.vue", () => {
     });
 
     it("automatically selects all bendpoints when nodes are selected", async () => {
-      const { wrapper, mockedStores, connection } = doMountWithBendpoints();
+      const { wrapper, mockedStores } = doMountWithBendpoints();
 
       const bendpoints = wrapper
         .findAllComponents(ConnectorBendpoint)
@@ -958,19 +958,6 @@ describe("Connector.vue", () => {
 
       // every bendpoint IS selected now that the 2 nodes are selected
       expect(bendpoints.every((comp) => comp.props("isSelected"))).toBe(true);
-
-      // start over - deselect nodes and select a single bendpoint
-      await mockedStores.selectionStore.deselectAllObjects();
-      mockedStores.selectionStore.selectBendpoints(`${connection.id}__1`);
-
-      // select the 2 nodes of this connector
-      await mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
-
-      // only the bendpoint at index 1 is selected
-      bendpoints.forEach((comp, i) => {
-        const isSelected = i === 1;
-        expect(comp.props("isSelected")).toEqual(isSelected);
-      });
     });
 
     it("adds bendpoint via virtual bendpoints", async () => {

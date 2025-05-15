@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, toRefs, watch } from "vue";
+import { computed, nextTick, ref, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 
 import { navigatorUtils } from "@knime/utils";
@@ -66,25 +66,6 @@ const { pathSegments } = useConnectorPathSegments({
   destPort,
   absolutePoint,
   bendpoints,
-});
-
-const sourceAndDestinationSelected = computed(() => {
-  return (
-    isNodeSelected(sourceNode.value ?? "") &&
-    isNodeSelected(destNode.value ?? "")
-  );
-});
-
-watch(sourceAndDestinationSelected, (value) => {
-  if (value) {
-    const bendpoints = Array(pathSegments.value.length - 1)
-      .fill(null)
-      .map((_, i) => getBendpointId(props.id, i));
-
-    if (bendpoints.every((id) => !isBendpointSelected(id))) {
-      selectionStore.selectBendpoints(bendpoints);
-    }
-  }
 });
 
 const isHighlighted = computed(() => {
