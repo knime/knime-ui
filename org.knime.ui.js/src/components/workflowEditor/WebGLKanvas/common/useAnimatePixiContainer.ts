@@ -64,6 +64,16 @@ export const useAnimatePixiContainer = <T>(options: Options<T>) => {
     }
   };
 
+  const triggerAnimationUpdate = (value: T, type: "in" | "out") => {
+    try {
+      if (targetDisplayObject.value) {
+        options.onUpdate(value, type);
+      }
+    } catch (error) {
+      consola.warn("Failed to animate pixi object", { error });
+    }
+  };
+
   const doAnimateIn = () => {
     activeAnimation = animate(initialValue, targetValue, {
       ...animationParams,
@@ -73,14 +83,14 @@ export const useAnimatePixiContainer = <T>(options: Options<T>) => {
           return;
         }
 
-        options.onUpdate(value, "in");
+        triggerAnimationUpdate(value, "in");
       },
     });
   };
 
   const doAnimateOut = () => {
     if (!animateOut) {
-      options.onUpdate(initialValue, "out");
+      triggerAnimationUpdate(initialValue, "out");
       teardown();
       return;
     }
@@ -93,7 +103,7 @@ export const useAnimatePixiContainer = <T>(options: Options<T>) => {
           return;
         }
 
-        options.onUpdate(value, "out");
+        triggerAnimationUpdate(value, "out");
       },
     });
   };
