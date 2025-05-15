@@ -2,7 +2,11 @@ import { type Ref, computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
-import { clickAwayCompositeView } from "@/composables/usePageBuilder/usePageBuilder";
+import {
+  clickAwayCompositeView,
+  isComponentViewDirty,
+} from "@/composables/usePageBuilder/usePageBuilder";
+import { isBrowser } from "@/environment";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { parseBendpointId } from "@/util/connectorUtil";
@@ -40,11 +44,27 @@ export const useSelectionStore = defineStore("selection", () => {
   const selectedNodeIds = computed(() =>
     getSelectedNodes.value.map(({ id }) => id),
   );
+
   const singleSelectedNode = computed(() => {
     return getSelectedNodes.value.length === 1
       ? getSelectedNodes.value[0]
       : null;
   });
+
+  const canDiscardCurrentSelection = async () => {
+    // in the browser all operations to save
+    // node configurations, etc are made on clickaway
+    // without prompting the user, so we can always change the selection
+    if (isBrowser()) {
+      return true;
+    }
+
+    const hasDirtyComponentView = await isComponentViewDirty();
+    const { isDirty: hasDirtyNodeConfiguration } = useNodeConfigurationStore();
+
+    return !hasDirtyComponentView && !hasDirtyNodeConfiguration;
+  };
+
   const setNodeSelection = async (nodeIds: string[]) => {
     if (
       singleSelectedNode.value !== null &&
@@ -378,5 +398,7 @@ export const useSelectionStore = defineStore("selection", () => {
 
     selectConnections: selectionAdder(selectedConnections),
     deselectConnections: selectionRemover(selectedConnections),
+
+    canDiscardCurrentSelection,
   };
 });

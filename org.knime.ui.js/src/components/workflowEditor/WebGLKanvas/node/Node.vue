@@ -120,7 +120,7 @@ const { handlePointerInteraction, isDraggingThisObject } =
       await selectionStore.deselectNodes([props.node.id]);
     },
     onDoubleClick: onNodeLeftDoubleClick,
-    onInteractionStart: () => {
+    onMoveStart: () => {
       if (singleSelectedNode.value) {
         nodeReplacementOrInsertion.onDragStart();
       }

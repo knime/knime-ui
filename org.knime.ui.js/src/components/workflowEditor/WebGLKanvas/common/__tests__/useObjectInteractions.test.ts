@@ -208,6 +208,71 @@ describe("useObjectInteractions", () => {
   });
 
   describe("drag & drop", () => {
+    it("should not move any object if current selection cannot be discarded", async () => {
+      const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
+      const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
+        onMoveEnd,
+      });
+
+      vi.mocked(
+        mockedStores.selectionStore,
+      ).canDiscardCurrentSelection.mockImplementation(() =>
+        Promise.resolve(false),
+      );
+
+      const { handlePointerInteraction } = getComposableResult();
+
+      const pointerPositions = {
+        start: { x: 10, y: 20 },
+        move: { x: 20, y: 30 },
+        end: { x: 20, y: 30 },
+      };
+
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
+
+      expect(selectSpy).toHaveBeenCalled();
+      expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
+      await flushPromises();
+      expect(onMoveEnd).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
+    });
+
+    it("should not move any object if workflow is not writable", async () => {
+      const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
+      const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
+        onMoveEnd,
+      });
+
+      // @ts-expect-error - mock getter
+      mockedStores.workflowStore.isWritable = false;
+
+      const { handlePointerInteraction } = getComposableResult();
+
+      const pointerPositions = {
+        start: { x: 10, y: 20 },
+        move: { x: 20, y: 30 },
+        end: { x: 20, y: 30 },
+      };
+
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
+
+      expect(selectSpy).toHaveBeenCalled();
+      expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
+      await flushPromises();
+      expect(onMoveEnd).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
+    });
+
     it("should set drag state and move objects", async () => {
       const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
       const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
