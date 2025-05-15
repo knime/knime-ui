@@ -38,6 +38,9 @@ type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "openLayoutEditorByNodeId"
   | "checkForComponentUpdates"
   | "lockSubnode"
+  | "retryComponentPlaceholderLoading"
+  | "cancelComponentPlaceholderLoading"
+  | "deleteComponentPlaceholder"
 >;
 
 declare module "./index" {
@@ -97,6 +100,17 @@ const canOpen = (kind: "metanode" | "component") => {
   }
 
   return selectedNode?.kind === kind;
+};
+
+const canInteractWithComponentPlaceholder = () => {
+  const selectedComponentPlaceholder =
+    useSelectionStore().getSelectedComponentPlaceholder;
+
+  if (!selectedComponentPlaceholder) {
+    return false;
+  }
+
+  return useWorkflowStore().isWritable && Boolean(selectedComponentPlaceholder);
 };
 
 const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
@@ -467,6 +481,60 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         useUIControlsStore().canLockAndUnlockSubnodes
       );
     },
+  },
+  retryComponentPlaceholderLoading: {
+    text: "Retry",
+    title: "Retry component loading",
+    execute: () => {
+      const selectedComponentPlaceholder =
+        useSelectionStore().getSelectedComponentPlaceholder;
+
+      if (!selectedComponentPlaceholder) {
+        return;
+      }
+
+      useComponentInteractionsStore().cancelOrRetryComponentLoading({
+        placeholderId: selectedComponentPlaceholder.id,
+        action: "retry",
+      });
+    },
+    condition: () => canInteractWithComponentPlaceholder(),
+  },
+  cancelComponentPlaceholderLoading: {
+    text: "Cancel",
+    title: "Cancel component loading",
+    execute: () => {
+      const selectedComponentPlaceholder =
+        useSelectionStore().getSelectedComponentPlaceholder;
+
+      if (!selectedComponentPlaceholder) {
+        return;
+      }
+
+      useComponentInteractionsStore().cancelOrRetryComponentLoading({
+        placeholderId: selectedComponentPlaceholder.id,
+        action: "cancel",
+      });
+    },
+    condition: () => canInteractWithComponentPlaceholder(),
+  },
+  deleteComponentPlaceholder: {
+    text: "Delete",
+    title: "Delete component placeholder",
+    hotkey: ["Delete"],
+    execute: () => {
+      const selectedComponentPlaceholder =
+        useSelectionStore().getSelectedComponentPlaceholder;
+
+      if (!selectedComponentPlaceholder) {
+        return;
+      }
+
+      useComponentInteractionsStore().deleteComponentPlaceholder({
+        placeholderId: selectedComponentPlaceholder.id,
+      });
+    },
+    condition: () => canInteractWithComponentPlaceholder(),
   },
 };
 

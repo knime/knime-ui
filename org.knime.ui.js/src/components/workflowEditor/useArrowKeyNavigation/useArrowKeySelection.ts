@@ -73,23 +73,25 @@ type UseArrowKeySelectionOptions = {
 
 export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
   const { workflowObjects } = storeToRefs(useWorkflowStore());
-  const selectionStore = useSelectionStore();
 
   const {
     singleSelectedObject,
     getFocusedObject: focusedObject,
     isSelectionEmpty,
     selectedObjects,
-  } = storeToRefs(selectionStore);
+  } = storeToRefs(useSelectionStore());
 
   const {
+    focusObject,
+    deselectAllObjects,
     isNodeSelected,
     isAnnotationSelected,
     selectNodes,
     deselectNodes,
     selectAnnotations,
     deselectAnnotations,
-  } = selectionStore;
+    selectComponentPlaceholder,
+  } = useSelectionStore();
 
   const canvasStore = canvasRendererUtils.isSVGRenderer()
     ? useSVGCanvasStore()
@@ -125,7 +127,7 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
         return;
       }
 
-      selectionStore.focusObject(nearestObject);
+      focusObject(nearestObject);
       canvasStore.moveObjectIntoView(nearestObject);
 
       return;
@@ -147,7 +149,7 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
             getFurthestObjectByDirection(selectedObjects.value, event)
           : singleSelectedObject.value!;
 
-      selectionStore.focusObject(objectToFocus);
+      focusObject(objectToFocus);
       canvasStore.moveObjectIntoView(objectToFocus);
 
       return;
@@ -162,7 +164,6 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
       consola.log(
         "Case 3: single obj selected or selection empty with focused object -> arrow key W/O shift pressed",
       );
-
       const reference = singleSelectedObject.value ?? focusedObject.value!;
 
       const nearestObject = await workflowNavigationService.nearestObject({
@@ -178,16 +179,18 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
       const preserveSelectionFor =
         nearestObject.type === "node" ? [nearestObject.id] : [];
 
-      const { wasAborted } = await selectionStore.deselectAllObjects(
-        preserveSelectionFor,
-      );
+      const { wasAborted } = await deselectAllObjects(preserveSelectionFor);
 
       if (wasAborted) {
         return;
       }
 
+      if (nearestObject.type === "componentPlaceholder") {
+        selectComponentPlaceholder(nearestObject.id);
+      }
+
       if (nearestObject.type === "annotation") {
-        selectionStore.selectAnnotations([nearestObject.id]);
+        selectAnnotations([nearestObject.id]);
       }
       canvasStore.moveObjectIntoView(nearestObject);
 
@@ -209,15 +212,15 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
       );
 
       // deselect everything and select object that's furthest away in the same direction
-      const { wasAborted } = await selectionStore.deselectAllObjects();
+      const { wasAborted } = await deselectAllObjects();
       if (wasAborted) {
         return;
       }
 
       if (furthestObject.type === "node") {
-        await selectionStore.selectNodes([furthestObject.id]);
+        await selectNodes([furthestObject.id]);
       } else {
-        selectionStore.selectAnnotations([furthestObject.id]);
+        selectAnnotations([furthestObject.id]);
       }
     }
   };

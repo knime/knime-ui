@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import { ComponentPlaceholder } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 import { createComponentPlaceholder } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import ComponentError from "../ComponentError.vue";
 import ComponentFloatingOptions from "../ComponentFloatingOptions.vue";
 import ComponentLoading from "../ComponentLoading.vue";
@@ -14,18 +15,22 @@ describe("ComponentPlaceholderState", () => {
     vi.clearAllMocks();
   });
 
+  const defaultProps = createComponentPlaceholder();
+
   const doMount = (props = {}) => {
-    const defaultProps = createComponentPlaceholder();
+    const mockedStores = mockStores();
 
     const wrapper = shallowMount(ComponentPlaceholderState, {
       props: { ...defaultProps, ...props },
       global: {
+        plugins: [mockedStores.testingPinia],
         mocks: { $shapes },
       },
     });
 
     return {
       wrapper,
+      mockedStores,
     };
   };
 
@@ -52,5 +57,49 @@ describe("ComponentPlaceholderState", () => {
     await wrapper.find("g").trigger("mouseenter");
 
     expect(wrapper.findComponent(ComponentFloatingOptions).exists()).toBe(true);
+  });
+
+  it("should select component placeholder", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await wrapper.find("g").trigger("pointerdown", {
+      button: 0,
+    });
+
+    expect(
+      mockedStores.selectionStore.selectComponentPlaceholder,
+    ).toBeCalledWith(defaultProps.id);
+  });
+
+  it("should deselect component placeholder if already selected", async () => {
+    const { wrapper, mockedStores } = doMount();
+    // @ts-expect-error
+    mockedStores.selectionStore.getSelectedComponentPlaceholder = {
+      id: defaultProps.id,
+    };
+
+    await wrapper.find("g").trigger("pointerdown", {
+      button: 0,
+    });
+
+    expect(
+      mockedStores.selectionStore.deselectComponentPlaceholder,
+    ).toBeCalled();
+  });
+
+  it("should select component placeholder and toggle context menu", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await wrapper.find("g").trigger("pointerdown", {
+      button: 2,
+    });
+    await flushPromises();
+
+    expect(
+      mockedStores.selectionStore.selectComponentPlaceholder,
+    ).toBeCalledWith(defaultProps.id);
+    expect(
+      mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
+    ).toBeCalled();
   });
 });

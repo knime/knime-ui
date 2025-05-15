@@ -8,7 +8,11 @@ import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
 import type { ExtendedPortType, KnimeNode } from "@/api/custom-types";
-import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import {
+  ComponentPlaceholder,
+  type NodePort,
+  type XY,
+} from "@/api/gateway-api/generated-api";
 import portIcon from "@/components/common/PortIconRenderer";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
@@ -135,6 +139,7 @@ const uiControls = useUIControlsStore();
 const {
   getSelectedNodes: selectedNodes,
   getSelectedAnnotations: selectedAnnotations,
+  getSelectedComponentPlaceholder: selectedComponentPlaceholder,
   singleSelectedNode,
   singleSelectedAnnotation,
   isSelectionEmpty,
@@ -243,6 +248,12 @@ const mapToShortcut = (
 const setMenuItems = () => {
   const areNodesSelected = selectedNodes.value.length > 0;
   const areAnnotationsSelected = selectedAnnotations.value.length > 0;
+  const isComponentPlaceholderSelected = Boolean(
+    selectedComponentPlaceholder.value,
+  );
+  const isComponentPlaceholderError =
+    selectedComponentPlaceholder.value?.state ===
+    ComponentPlaceholder.StateEnum.ERROR;
 
   const isLoopEnd = Boolean(
     singleSelectedNode.value &&
@@ -339,6 +350,23 @@ const setMenuItems = () => {
     ...mapToShortcut([
       { name: "alignHorizontally", isVisible: !isSelectionEmpty.value },
       { name: "alignVertically", isVisible: !isSelectionEmpty.value },
+    ]),
+  ];
+
+  const componentPlaceholderGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      {
+        name: "retryComponentPlaceholderLoading",
+        isVisible: isComponentPlaceholderError,
+      },
+      {
+        name: "cancelComponentPlaceholderLoading",
+        isVisible: !isComponentPlaceholderError,
+      },
+      {
+        name: "deleteComponentPlaceholder",
+        isVisible: isComponentPlaceholderSelected,
+      },
     ]),
   ];
 
@@ -446,6 +474,7 @@ const setMenuItems = () => {
     .append(annotationsGroup.concat(nodeConnectionsGroup))
     .append(nodeAlignmentGroup)
     .append(metanodeAndComponentGroup)
+    .append(componentPlaceholderGroup)
     .value();
 };
 

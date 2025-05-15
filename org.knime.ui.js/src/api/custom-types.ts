@@ -164,7 +164,10 @@ export type NodeTemplateWithExtendedPorts = NodeTemplate & {
   outPorts: ExtendedPortType[];
 };
 
-export type WorkflowObject = XY & { id: string; type: "node" | "annotation" };
+export type WorkflowObject = XY & {
+  id: string;
+  type: "node" | "annotation" | "componentPlaceholder";
+};
 
 export type RecentWorkflow = {
   name: string;

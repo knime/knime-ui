@@ -262,6 +262,21 @@ export const useComponentInteractionsStore = defineStore(
           action,
         });
       },
+
+      async deleteComponentPlaceholder({
+        placeholderId,
+      }: {
+        placeholderId: string;
+      }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+
+        await API.workflowCommand.DeleteComponentPlaceholder({
+          projectId,
+          workflowId,
+          placeholderId,
+        });
+      },
     },
   },
 );

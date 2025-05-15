@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import { ComponentPlaceholder, type XY } from "@/api/gateway-api/generated-api";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { useSelectionStore } from "@/store/selection";
 
 import ComponentError from "./ComponentError.vue";
 import ComponentFloatingOptions from "./ComponentFloatingOptions.vue";
@@ -17,17 +20,52 @@ type Props = {
   name?: string;
 };
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const { getSelectedComponentPlaceholder } = storeToRefs(useSelectionStore());
+const { selectComponentPlaceholder, deselectComponentPlaceholder } =
+  useSelectionStore();
+const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 
 const isHovering = ref(false);
+const isComponentPlaceholderSelected = computed(
+  () => props.id === getSelectedComponentPlaceholder.value?.id,
+);
+
+const onClick = () => {
+  // TODO: NXT-3389 prompt about unsaved changes in node configuration
+  if (isComponentPlaceholderSelected.value) {
+    return deselectComponentPlaceholder();
+  }
+  return selectComponentPlaceholder(props.id);
+};
+
+const onContextMenu = async (event) => {
+  if (!isComponentPlaceholderSelected.value) {
+    await selectComponentPlaceholder(props.id);
+  }
+
+  await toggleContextMenu({ event });
+};
 </script>
 
 <template>
   <g
     :transform="`translate(${position.x}, ${position.y})`"
+    :data-placeholder-id="id"
     @mouseenter="isHovering = true"
     @mouseleave="isHovering = false"
+    @pointerdown.left.stop="onClick"
+    @pointerdown.right.stop="onContextMenu"
   >
+    <ComponentLoading
+      v-if="state === ComponentPlaceholder.StateEnum.LOADING"
+      :progress="progress"
+      :name="name"
+    />
+
+    <ComponentError v-else :name="name" />
+
     <!-- Transparent hitbox -->
     <rect
       :x="-10"
@@ -42,13 +80,5 @@ const isHovering = ref(false);
       :id="id"
       :is-error="state === ComponentPlaceholder.StateEnum.ERROR"
     />
-
-    <ComponentLoading
-      v-if="state === ComponentPlaceholder.StateEnum.LOADING"
-      :progress="progress"
-      :name="name"
-    />
-
-    <ComponentError v-else :name="name" />
   </g>
 </template>

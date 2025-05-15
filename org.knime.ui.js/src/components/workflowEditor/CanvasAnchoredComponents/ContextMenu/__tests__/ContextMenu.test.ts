@@ -19,6 +19,7 @@ import type { ShortcutName, ShortcutsService } from "@/shortcuts";
 import {
   createAvailablePortTypes,
   createComponentNode,
+  createComponentPlaceholder,
   createMetanode,
   createMetanodePort,
   createNativeNode,
@@ -75,6 +76,7 @@ describe("ContextMenu.vue", () => {
             text: { value: "Annotation text 2" },
           }),
         ],
+        componentPlaceholders: [createComponentPlaceholder()],
       }),
     );
 
@@ -724,6 +726,24 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "alignVertically" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+        ]),
+      );
+    });
+
+    it("shows correct menu items if component placeholder is selected", async () => {
+      const { mockedStores } = createStores();
+
+      await mockedStores.selectionStore.selectComponentPlaceholder(
+        "placeholder:1",
+      );
+      await flushPromises();
+
+      const { wrapper } = await doMount({ customStores: mockedStores });
+
+      expect(renderedMenuItems(wrapper)).toEqual(
+        assertItems([
+          { metadata: { shortcutName: "cancelComponentPlaceholderLoading" } },
+          { metadata: { shortcutName: "deleteComponentPlaceholder" } },
         ]),
       );
     });

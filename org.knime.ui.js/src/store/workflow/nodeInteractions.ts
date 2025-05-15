@@ -13,6 +13,7 @@ import { isBrowser } from "@/environment";
 import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
+import { useSVGCanvasStore } from "../canvas/canvas-svg";
 import { useSpaceOperationsStore } from "../spaces/spaceOperations";
 
 import { useMovingStore } from "./moving";
@@ -161,20 +162,26 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       if (componentName && spaceItemReference) {
         if (isBrowser()) {
           try {
-            await API.workflowCommand.AddComponent({
-              projectId,
-              workflowId,
-              providerId: spaceItemReference.providerId,
-              position: {
-                x: gridAdjustedPosition.x,
-                y: gridAdjustedPosition.y,
+            const componentPlaceholder = await API.workflowCommand.AddComponent(
+              {
+                projectId,
+                workflowId,
+                providerId: spaceItemReference.providerId,
+                position: {
+                  x: gridAdjustedPosition.x,
+                  y: gridAdjustedPosition.y,
+                },
+                spaceId: spaceItemReference.spaceId,
+                itemId: spaceItemReference.itemId,
+                name: componentName,
               },
-              spaceId: spaceItemReference.spaceId,
-              itemId: spaceItemReference.itemId,
-              name: componentName,
-            });
+            );
             newNodeId = null;
 
+            useSVGCanvasStore().focus();
+            useSelectionStore().selectComponentPlaceholder(
+              componentPlaceholder.newPlaceholderId,
+            );
             useSpaceOperationsStore().setCurrentSelectedItemIds([]);
           } catch (error) {
             return {

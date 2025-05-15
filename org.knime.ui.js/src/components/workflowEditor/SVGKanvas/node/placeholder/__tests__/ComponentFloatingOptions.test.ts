@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 
 import CloseIcon from "@knime/styles/img/icons/cancel-execution.svg";
 import ReExecutionIcon from "@knime/styles/img/icons/reexecution.svg";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { mockStores } from "@/test/utils/mockStores";
 import ComponentFloatingOptions from "../ComponentFloatingOptions.vue";
@@ -20,7 +21,7 @@ describe("ComponentFloatingOptions", () => {
 
     const mockedStores = mockStores();
 
-    const wrapper = shallowMount(ComponentFloatingOptions, {
+    const wrapper = mount(ComponentFloatingOptions, {
       props: { ...defaultProps, ...props },
       global: {
         plugins: [mockedStores.testingPinia],
@@ -36,13 +37,25 @@ describe("ComponentFloatingOptions", () => {
   it("should show re-execution icon and trigger this action if clicked", async () => {
     const { wrapper, mockedStores } = doMount();
 
-    const button = wrapper.find(".floating-button");
+    expect(wrapper.findComponent(ReExecutionIcon).exists()).toBe(true);
+    const button = wrapper.findComponent(ReExecutionIcon);
     await button.trigger("click");
 
-    expect(wrapper.findComponent(ReExecutionIcon).exists()).toBe(true);
     expect(
       mockedStores.componentInteractionsStore.cancelOrRetryComponentLoading,
     ).toBeCalledWith({ placeholderId: "id1", action: "retry" });
+  });
+
+  it("should show trash icon and trigger delete if clicked", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    expect(wrapper.findComponent(TrashIcon).exists()).toBe(true);
+    const button = wrapper.findComponent(TrashIcon);
+    await button.trigger("click");
+
+    expect(
+      mockedStores.componentInteractionsStore.deleteComponentPlaceholder,
+    ).toBeCalledWith({ placeholderId: "id1" });
   });
 
   it("should show cancel icon and trigger this action if clicked", async () => {

@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { APP_ROUTES } from "@/router/appRoutes";
-import { createComponentNode, createMetanode } from "@/test/factories";
+import {
+  createComponentNode,
+  createComponentPlaceholder,
+  createMetanode,
+} from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import componentOrMetanodeShortcuts from "../componentOrMetanodeShortcuts";
 
@@ -402,6 +406,35 @@ describe("componentOrMetanodeShortcuts", () => {
       expect(componentOrMetanodeShortcuts.openLayoutEditor.condition()).toBe(
         true,
       );
+    });
+  });
+
+  describe.each([
+    ["deleteComponentPlaceholder"],
+    ["retryComponentPlaceholderLoading"],
+    ["cancelComponentPlaceholderLoading"],
+  ])("%s", (shortcut) => {
+    it("is disabled if component placeholder isn't selected", () => {
+      createStore();
+
+      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBeFalsy();
+    });
+
+    it("is disabled if workflow isn't writable", () => {
+      const { workflowStore, selectionStore } = createStore();
+
+      workflowStore.isWritable = false;
+      selectionStore.getSelectedComponentPlaceholder =
+        createComponentPlaceholder();
+      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBeFalsy();
+    });
+
+    it("is enabled when component placeholder is selected", () => {
+      const { selectionStore } = createStore();
+
+      selectionStore.getSelectedComponentPlaceholder =
+        createComponentPlaceholder();
+      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(true);
     });
   });
 });

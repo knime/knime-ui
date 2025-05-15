@@ -454,7 +454,8 @@ export const useWorkflowStore = defineStore("workflow", {
         return [];
       }
 
-      const { nodes, workflowAnnotations } = state.activeWorkflow;
+      const { nodes, workflowAnnotations, componentPlaceholders } =
+        state.activeWorkflow;
 
       const nodeObjects = Object.values(nodes).map(({ id, position }) => ({
         id,
@@ -470,7 +471,20 @@ export const useWorkflowStore = defineStore("workflow", {
         y: bounds.y,
       }));
 
-      return [...nodeObjects, ...annotationObjects];
+      const componentPlaceholderObjects = (componentPlaceholders ?? []).map(
+        ({ id, position }) => ({
+          id,
+          type: "componentPlaceholder" as const,
+          x: position.x,
+          y: position.y,
+        }),
+      );
+
+      return [
+        ...nodeObjects,
+        ...annotationObjects,
+        ...componentPlaceholderObjects,
+      ];
     },
 
     /* Workflow is empty if it doesn't contain nodes */

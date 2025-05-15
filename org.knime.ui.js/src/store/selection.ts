@@ -65,7 +65,13 @@ export const useSelectionStore = defineStore("selection", () => {
     return !hasDirtyComponentView && !hasDirtyNodeConfiguration;
   };
 
+  const selectedComponentPlaceholder = ref<string | null>(null);
+
   const setNodeSelection = async (nodeIds: string[]) => {
+    if (selectedComponentPlaceholder.value) {
+      selectedComponentPlaceholder.value = null;
+    }
+
     if (
       singleSelectedNode.value !== null &&
       (nodeIds.length === 0 ||
@@ -92,6 +98,20 @@ export const useSelectionStore = defineStore("selection", () => {
     }
     return { wasAborted: false };
   };
+
+  const getSelectedComponentPlaceholder = computed(() => {
+    const workflowStore = useWorkflowStore();
+
+    if (!selectedComponentPlaceholder.value) {
+      return null;
+    }
+
+    return workflowStore.activeWorkflow
+      ? workflowStore.activeWorkflow.componentPlaceholders!.find(
+          (component) => component.id === selectedComponentPlaceholder.value,
+        )
+      : null;
+  });
 
   const selectedConnections = ref<Record<string, boolean>>({});
   const getSelectedConnections = computed(() => {
@@ -186,18 +206,37 @@ export const useSelectionStore = defineStore("selection", () => {
       return null;
     }
 
-    if (singleSelectedNode.value && !singleSelectedAnnotation.value) {
+    if (
+      singleSelectedNode.value &&
+      !singleSelectedAnnotation.value &&
+      !getSelectedComponentPlaceholder.value
+    ) {
       return {
         ...singleSelectedNode.value.position,
         id: singleSelectedNode.value.id,
         type: "node",
       } as const as WorkflowObject;
     }
-    if (singleSelectedAnnotation.value && !singleSelectedNode.value) {
+    if (
+      singleSelectedAnnotation.value &&
+      !singleSelectedNode.value &&
+      !getSelectedComponentPlaceholder.value
+    ) {
       return {
         id: singleSelectedAnnotation.value.id,
         type: "annotation",
         ...singleSelectedAnnotation.value.bounds,
+      } as const as WorkflowObject;
+    }
+    if (
+      getSelectedComponentPlaceholder.value &&
+      !singleSelectedAnnotation.value &&
+      !singleSelectedNode.value
+    ) {
+      return {
+        id: getSelectedComponentPlaceholder.value.id,
+        type: "componentPlaceholder",
+        ...getSelectedComponentPlaceholder.value.position,
       } as const as WorkflowObject;
     }
     return null;
@@ -214,6 +253,15 @@ export const useSelectionStore = defineStore("selection", () => {
       type: "annotation" as const,
       ...bounds,
     })),
+    ...(getSelectedComponentPlaceholder?.value
+      ? [
+          {
+            id: getSelectedComponentPlaceholder.value.id,
+            type: "componentPlaceholder" as const,
+            ...getSelectedComponentPlaceholder.value.position,
+          },
+        ]
+      : []),
   ]);
 
   const isSelectionEmpty = computed(
@@ -221,7 +269,8 @@ export const useSelectionStore = defineStore("selection", () => {
       selectedNodeIds.value.length === 0 &&
       getSelectedConnections.value.length === 0 &&
       selectedAnnotationIds.value.length === 0 &&
-      selectedBendpointIds.value.length === 0,
+      selectedBendpointIds.value.length === 0 &&
+      Boolean(!getSelectedComponentPlaceholder.value),
   );
 
   const getFocusedObject = computed(() => {
@@ -328,6 +377,9 @@ export const useSelectionStore = defineStore("selection", () => {
     if (Object.keys(selectedMetanodePortBars.value).length > 0) {
       selectedMetanodePortBars.value = {};
     }
+    if (selectedComponentPlaceholder.value) {
+      selectedComponentPlaceholder.value = null;
+    }
 
     activeNodePorts.value = {
       nodeId: null,
@@ -343,9 +395,15 @@ export const useSelectionStore = defineStore("selection", () => {
     const { wasAborted } = await setNodeSelection(
       Object.keys(useWorkflowStore().activeWorkflow!.nodes),
     );
+
     if (wasAborted) {
       return { wasAborted: true };
     }
+
+    if (selectedComponentPlaceholder.value) {
+      selectedComponentPlaceholder.value = null;
+    }
+
     useWorkflowStore().activeWorkflow!.workflowAnnotations.forEach(
       ({ id }) => (selectedAnnotations.value[id] = true),
     );
@@ -418,6 +476,14 @@ export const useSelectionStore = defineStore("selection", () => {
       setNodeSelection(
         Object.keys(selectedNodes.value).filter((id) => !ids.includes(id)),
       ),
+
+    getSelectedComponentPlaceholder,
+    selectComponentPlaceholder: async (newComponentPlaceholderId: string) => {
+      await deselectAllObjects();
+      selectedComponentPlaceholder.value = newComponentPlaceholderId;
+    },
+    deselectComponentPlaceholder: () =>
+      (selectedComponentPlaceholder.value = null),
 
     selectMetanodePortBar: selectionAdder(selectedMetanodePortBars),
     deselectMetanodePortBar: selectionRemover(selectedMetanodePortBars),

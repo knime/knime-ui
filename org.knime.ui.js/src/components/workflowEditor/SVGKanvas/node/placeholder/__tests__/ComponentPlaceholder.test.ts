@@ -11,14 +11,16 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { getToastPresets } from "@/toastPresets";
+import NodeSelectionPlane from "../../NodeSelectionPlane.vue";
 import ComponentPlaceholder from "../ComponentPlaceholder.vue";
+
+const defaultProps = { placeholder: createComponentPlaceholder() };
 
 describe("ComponentPlaceholder", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  const defaultProps = { placeholder: createComponentPlaceholder() };
   const testNodeId = "root:1";
   const testAnnotationId = "annotationId";
   const testComponentId = "componentId";
@@ -158,4 +160,22 @@ describe("ComponentPlaceholder", () => {
       expect(mockedStores.selectionStore.deselectAllObjects).not.toBeCalled();
     },
   );
+
+  it("should show selection if component placeholder is selected", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    expect(
+      wrapper.findComponent(NodeSelectionPlane).attributes("style"),
+    ).toContain("display: none");
+
+    // @ts-expect-error
+    mockedStores.selectionStore.getSelectedComponentPlaceholder = {
+      id: defaultProps.placeholder.id,
+    };
+    await nextTick();
+
+    expect(
+      wrapper.findComponent(NodeSelectionPlane).attributes("style"),
+    ).not.toContain("display: none");
+  });
 });

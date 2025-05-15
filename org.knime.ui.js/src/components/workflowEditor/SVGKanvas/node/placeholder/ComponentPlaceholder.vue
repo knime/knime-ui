@@ -2,9 +2,11 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import { ComponentPlaceholder } from "@/api/gateway-api/generated-api";
+import { ComponentPlaceholder, Node } from "@/api/gateway-api/generated-api";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { getToastPresets } from "@/toastPresets";
+import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 
 import ComponentPlaceholderState from "./ComponentPlaceholderState.vue";
 
@@ -15,6 +17,7 @@ type Props = {
 const props = defineProps<Props>();
 
 const { toastPresets } = getToastPresets();
+const { getSelectedComponentPlaceholder } = storeToRefs(useSelectionStore());
 const { deselectAllObjects } = useSelectionStore();
 const {
   selectedNodeIds,
@@ -22,6 +25,7 @@ const {
   selectedConnectionIds,
   selectedBendpointIds,
 } = storeToRefs(useSelectionStore());
+const { closeContextMenu } = useCanvasAnchoredComponentsStore();
 
 const previousSelection = ref<Set<string>>(new Set());
 const getSelection = () =>
@@ -30,6 +34,7 @@ const getSelection = () =>
     ...selectedAnnotationIds.value,
     ...selectedConnectionIds.value,
     ...selectedBendpointIds.value,
+    ...(getSelectedComponentPlaceholder.value?.id ?? []),
   ]);
 onMounted(() => {
   previousSelection.value = getSelection();
@@ -54,6 +59,8 @@ watch(placeholderState, async () => {
     previousSelection.value.size === currentSelection.size &&
     [...previousSelection.value].every((id) => currentSelection.has(id));
 
+  closeContextMenu();
+
   if (isSelectionUnchanged && (isSuccess.value || isSuccessWithWarning.value)) {
     if (props.placeholder.componentId) {
       await deselectAllObjects([props.placeholder.componentId]);
@@ -74,6 +81,10 @@ watch(placeholderState, async () => {
   }
 });
 
+const shouldShowSelection = computed(() => {
+  return props.placeholder.id === getSelectedComponentPlaceholder.value?.id;
+});
+
 // Adjust so there is no jumping when component is loaded
 const adjustedPosition = computed(() => {
   return {
@@ -85,6 +96,13 @@ const adjustedPosition = computed(() => {
 </script>
 
 <template>
+  <NodeSelectionPlane
+    v-show="shouldShowSelection"
+    :show-selection="true"
+    :position="adjustedPosition"
+    :kind="Node.KindEnum.Component"
+  />
+
   <ComponentPlaceholderState
     v-if="
       placeholder.state === ComponentPlaceholder.StateEnum.LOADING ||
