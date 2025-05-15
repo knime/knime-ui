@@ -29,7 +29,7 @@ import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { getCustomFetchOptions } from "@/store/spaces/common.ts";
+import { getCustomFetchOptionsForBrowser } from "@/store/spaces/common.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
 import { useSelectionStore } from "../selection";
@@ -48,14 +48,10 @@ type ProjectVersionsModeInfo = {
 };
 
 const getVersionsApi = () => {
-  const { activeProjectProvider } = useSpaceProvidersStore();
-  const { baseURL: customBaseURL } = getCustomFetchOptions();
-
-  const baseUrl = isBrowser() ? customBaseURL : activeProjectProvider?.hostname;
-
   return useVersionsApi({
-    baseUrl,
-    customFetchClientOptions: getCustomFetchOptions(),
+    customFetchClientOptions: isBrowser()
+      ? getCustomFetchOptionsForBrowser()
+      : { baseURL: useSpaceProvidersStore().activeProjectProvider?.hostname },
   });
 };
 

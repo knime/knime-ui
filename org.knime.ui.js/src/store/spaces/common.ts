@@ -1,7 +1,15 @@
+import { isDesktop } from "@/environment";
+
 export const globalSpaceBrowserProjectId = "__SPACE_BROWSER_TAB__";
 export const cachedLocalSpaceProjectId = "__LOCAL_ROOT__";
 
-export const getCustomFetchOptions = () => {
+export const getCustomFetchOptionsForBrowser = () => {
+  if (isDesktop()) {
+    throw new Error(
+      "Util 'getCustomFetchOptionsForBrowser' is only compatible with AP in the browser",
+    );
+  }
+
   // not relevant for prod because the app will use the auth cookie set for the
   // hub domain, when the AP is running in the browser
   if (import.meta.env.PROD) {

@@ -11,7 +11,7 @@ import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 
 import { localRootProjectPath, useSpaceCachingStore } from "./caching";
-import { getCustomFetchOptions } from "./common";
+import { getCustomFetchOptionsForBrowser } from "./common";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
 export const useSpaceDownloadsStore = defineStore("space.downloads", () => {
@@ -27,7 +27,9 @@ export const useSpaceDownloadsStore = defineStore("space.downloads", () => {
     resetState,
     removeItem,
   } = useDownloadArtifact({
-    customFetchClientOptions: getCustomFetchOptions(),
+    customFetchClientOptions: isBrowser()
+      ? getCustomFetchOptionsForBrowser()
+      : {},
   });
 
   const startDownload = async ({

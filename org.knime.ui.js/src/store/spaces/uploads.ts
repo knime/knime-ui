@@ -17,7 +17,7 @@ import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { useApplicationStore } from "../application/application";
 
 import { localRootProjectPath, useSpaceCachingStore } from "./caching";
-import { getCustomFetchOptions } from "./common";
+import { getCustomFetchOptionsForBrowser } from "./common";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
 export const useSpaceUploadsStore = defineStore("space.uploads", () => {
@@ -41,7 +41,9 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
     hasPendingUploads,
     unprocessedUploads,
   } = useFileUpload({
-    customFetchClientOptions: getCustomFetchOptions(),
+    customFetchClientOptions: isBrowser()
+      ? getCustomFetchOptionsForBrowser()
+      : {},
 
     onFileUploadComplete: ({ parentId }) => {
       const { activeProjectId } = applicationStore;
