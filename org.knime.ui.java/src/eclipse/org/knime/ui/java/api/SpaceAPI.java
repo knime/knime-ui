@@ -385,14 +385,13 @@ final class SpaceAPI {
             .map(itemId -> ExplorerMountTable.getFileSystem().getStore(sources.space().toKnimeUrl(itemId))).toList();
         final var destinationFileStore =
             ExplorerMountTable.getFileSystem().getStore((destination.space().toKnimeUrl(destination.itemId())));
-        final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
-        return ClassicAPCopyMoveLogic.copy( //
-            shellProvider, //
+        return ClassicAPCopyLogic.copy( //
+            PlatformUI.getWorkbench().getModalDialogShellProvider(), //
             sources.provider(), //
             sourceFileStores, //
             destination.provider(), //
             destinationFileStore, //
-            destination, //
+            destination.space().getId(), //
             excludeData //
         );
     }
