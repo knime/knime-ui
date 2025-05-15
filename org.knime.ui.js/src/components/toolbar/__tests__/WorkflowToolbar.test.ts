@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
@@ -33,7 +33,16 @@ vi.mock("@knime/components", async (importOriginal) => {
   };
 });
 
+const { showConfirmDialogMock } = vi.hoisted(() => ({
+  showConfirmDialogMock: vi.fn(() => Promise.resolve({ confirmed: true })),
+}));
+vi.mock("@/composables/useConfirmDialog", () => ({
+  useConfirmDialog: () => ({ show: showConfirmDialogMock }),
+}));
+
 describe("WorkflowToolbar.vue", () => {
+  afterEach(vi.restoreAllMocks);
+
   const doMount = ({
     getCommunityHubInfo = {
       isOnlyCommunityHubMounted: true,
@@ -344,8 +353,15 @@ describe("WorkflowToolbar.vue", () => {
   describe("upload button", () => {
     const getUploadButton = (wrapper: VueWrapper) =>
       wrapper.findComponent({ ref: "uploadButton" });
+    const localWorkflow = createWorkflow({
+      info: { providerType: WorkflowInfo.ProviderTypeEnum.LOCAL },
+    });
+    const mockProject = createProject({
+      projectId: "projectId",
+      origin: { itemId: "itemId" },
+    });
 
-    it("doesn't show if not only Community Hub is mounted", () => {
+    it("isn't visible if not only Community Hub is mounted", () => {
       const { wrapper } = doMount({
         getCommunityHubInfo: {
           isOnlyCommunityHubMounted: false,
@@ -355,23 +371,91 @@ describe("WorkflowToolbar.vue", () => {
       expect(getUploadButton(wrapper).exists()).toBe(false);
     });
 
-    it("shows if only Community Hub is mounted and workflow is local", async () => {
+    it("is visible if only Community Hub is mounted and workflow is local", async () => {
       const { wrapper, workflowStore } = doMount();
 
-      workflowStore.setActiveWorkflow(
-        createWorkflow({
-          info: {
-            providerType: WorkflowInfo.ProviderTypeEnum.LOCAL,
-          },
-        }),
-      );
-      await flushPromises();
+      workflowStore.setActiveWorkflow(localWorkflow);
+      await nextTick();
 
       const uploadButton = getUploadButton(wrapper);
 
       expect(uploadButton.exists()).toBe(true);
       expect(uploadButton.attributes("title")).toBe("Upload");
       expect(uploadButton.text()).toBe("Upload");
+    });
+
+    it("shows a prompt if the current workflow is dirty and saves on confirm", async () => {
+      const {
+        wrapper,
+        applicationStore,
+        workflowStore,
+        dirtyProjectsTrackingStore,
+        desktopInteractionsStore,
+      } = doMount();
+
+      workflowStore.setActiveWorkflow(localWorkflow);
+      applicationStore.setOpenProjects([mockProject]);
+      applicationStore.setActiveProjectId(mockProject.projectId);
+      dirtyProjectsTrackingStore.updateDirtyProjectsMap({
+        [mockProject.projectId]: true,
+      });
+      await nextTick();
+
+      const uploadButton = getUploadButton(wrapper);
+      uploadButton.trigger("click");
+      // Await confirmation and workflow save calls
+      await flushPromises();
+
+      expect(showConfirmDialogMock).toHaveBeenCalled();
+      expect(desktopInteractionsStore.saveProject).toHaveBeenCalled();
+    });
+
+    it("shows a prompt if the current workflow is dirty and doesn't save on cancel", async () => {
+      showConfirmDialogMock.mockResolvedValue({ confirmed: false });
+
+      const {
+        wrapper,
+        applicationStore,
+        workflowStore,
+        dirtyProjectsTrackingStore,
+        desktopInteractionsStore,
+      } = doMount();
+
+      workflowStore.setActiveWorkflow(localWorkflow);
+      applicationStore.setOpenProjects([mockProject]);
+      applicationStore.setActiveProjectId(mockProject.projectId);
+      dirtyProjectsTrackingStore.updateDirtyProjectsMap({
+        [mockProject.projectId]: true,
+      });
+      await nextTick();
+
+      const uploadButton = getUploadButton(wrapper);
+      uploadButton.trigger("click");
+
+      expect(showConfirmDialogMock).toHaveBeenCalled();
+      expect(desktopInteractionsStore.saveProject).not.toHaveBeenCalled();
+    });
+
+    it("doesn't show a prompt if the current workflow is clean", async () => {
+      const {
+        wrapper,
+        applicationStore,
+        workflowStore,
+        dirtyProjectsTrackingStore,
+      } = doMount();
+
+      workflowStore.setActiveWorkflow(localWorkflow);
+      applicationStore.setOpenProjects([mockProject]);
+      applicationStore.setActiveProjectId(mockProject.projectId);
+      dirtyProjectsTrackingStore.updateDirtyProjectsMap({
+        [mockProject.projectId]: false,
+      });
+      await nextTick();
+
+      const uploadButton = getUploadButton(wrapper);
+      uploadButton.trigger("click");
+
+      expect(showConfirmDialogMock).not.toHaveBeenCalled();
     });
   });
 

@@ -31,13 +31,16 @@ import {
   type CanvasMode,
   useCanvasModesStore,
 } from "@/store/application/canvasModes";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
+import { getToastPresets } from "@/toastPresets";
 import { reloadApp } from "@/util/devTools";
 import {
   type CanvasRendererType,
@@ -66,6 +69,7 @@ const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const { activeProjectVersionsModeStatus } = storeToRefs(workflowVersionsStore);
+const { isDirtyActiveProject } = storeToRefs(useDirtyProjectsTrackingStore());
 const { uploadWorkflowAndOpenAsProject } = useUploadWorkflowToSpace();
 
 const webglCanvasStore = useWebGLCanvasStore();
@@ -213,13 +217,47 @@ const onDeploymentButtonClick = () => {
   });
 };
 
-const onUploadButtonClick = () => {
+const showUploadDirtyWorkflowPrompt = () => {
+  const { show } = useConfirmDialog();
+  return show({
+    title: "Upload unsaved workflow",
+    message:
+      "To upload a workflow, you need to save it first. " +
+      "Would you like to save the workflow and continue with the upload?",
+    buttons: [
+      {
+        type: "cancel",
+        label: "Cancel",
+      },
+      {
+        type: "confirm",
+        label: "Save workflow and continue",
+      },
+    ],
+  });
+};
+
+const onUploadButtonClick = async () => {
   if (!activeProjectOrigin.value?.itemId) {
     consola.warn("Item id not found for active project");
     return;
   }
 
-  uploadWorkflowAndOpenAsProject(activeProjectOrigin.value.itemId);
+  if (!isDirtyActiveProject.value) {
+    uploadWorkflowAndOpenAsProject(activeProjectOrigin.value.itemId);
+    return;
+  }
+
+  const result = await showUploadDirtyWorkflowPrompt();
+  if (!result.confirmed) {
+    return;
+  }
+  try {
+    await useDesktopInteractionsStore().saveProject();
+    uploadWorkflowAndOpenAsProject(activeProjectOrigin.value.itemId);
+  } catch (e) {
+    getToastPresets().toastPresets.app.saveProjectFailed({ error: e });
+  }
 };
 
 const uploadButton = ref<InstanceType<typeof ToolbarButton>>();

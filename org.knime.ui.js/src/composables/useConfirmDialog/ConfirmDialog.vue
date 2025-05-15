@@ -44,7 +44,7 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
     :title="config?.title"
     :implicit-dismiss="config?.implicitDismiss"
     style-type="info"
-    class="modal"
+    class="confirm-dialog"
     :animate="false"
     @cancel="onCancel"
   >
@@ -87,7 +87,7 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
 </template>
 
 <style lang="postcss" scoped>
-.modal {
+.confirm-dialog {
   --modal-width: 450px;
 
   & :deep(.wrapper .inner) {
