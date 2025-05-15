@@ -88,17 +88,12 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.LocationInfo;
-import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
-import org.knime.gateway.api.util.VersionId;
-import org.knime.gateway.impl.project.Origin;
+import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
-import org.knime.gateway.impl.webui.spaces.Space;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.LoadMetaNodeTemplateRunnable;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
@@ -126,47 +121,10 @@ import org.knime.workbench.explorer.view.dialogs.SnapshotPanel;
  */
 public final class DesktopAPUtil {
 
-    @SuppressWarnings({"javadoc", "MissingJavadoc"})
-    public static final String LOADING_WORKFLOW_PROGRESS_MSG = "Loading workflow...";
-
     private static final NodeLogger LOGGER = NodeLogger.getLogger(DesktopAPUtil.class);
 
     private DesktopAPUtil() {
         // utility
-    }
-
-    /**
-     * Loads the workflow for the given origin and version from the given space while
-     * reporting progress to the given monitor.
-     *
-     * @param spaceProviders -
-     * @param origin -
-     * @param monitor progress monitor
-     * @param version -
-     * @return the loaded workflow or {@code null} if it couldn't be loaded
-     */
-    public static WorkflowManager fetchAndLoadWorkflowWithTask(
-            final SpaceProviders spaceProviders, //
-            final Origin origin, //
-            final IProgressMonitor monitor,//
-            final VersionId version
-        ) {
-        monitor.beginTask(LOADING_WORKFLOW_PROGRESS_MSG, IProgressMonitor.UNKNOWN);
-        final var exec = DesktopAPUtil.toExecutionMonitor(monitor);
-        var space = spaceProviders.getSpace(origin.providerId(), origin.spaceId());
-        // For some Space implementations, this might download the workflow from a remote server.
-        Path path;
-        try {
-            path = space.toLocalAbsolutePath(exec, origin.itemId(), version).orElse(null);
-        } catch (CanceledExecutionException e) {
-            return null;
-        }
-        if (path == null) {
-            return null;
-        }
-        monitor.done();
-        final var workflowContext = createWorkflowContext(space, origin.itemId(), path, version);
-        return loadWorkflow(monitor, path, workflowContext);
     }
 
     /**
@@ -175,13 +133,14 @@ public final class DesktopAPUtil {
      * @param ctx The workflow context
      * @return The optional workflow manager that has been loaded.
      */
-    public static Optional<WorkflowManager> loadWorkflowWithProgress(final WorkflowContextV2 ctx) {
-        return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
-            progress -> loadWorkflow(progress, ctx.getExecutorInfo().getLocalWorkflowPath(), ctx));
+    public static Optional<WorkflowManager> loadWorkflowManagerWithProgress(final WorkflowContextV2 ctx) {
+        return runWithProgress(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+            progress -> loadWorkflowManager(progress, ctx.getExecutorInfo().getLocalWorkflowPath(), ctx));
     }
 
-    private static WorkflowManager loadWorkflow(final IProgressMonitor monitor, final Path path,
+    static WorkflowManager loadWorkflowManager(final IProgressMonitor monitor, final Path path,
         final WorkflowContextV2 workflowContext) {
+        monitor.subTask(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG);
         final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE);
         var isComponentProject = path.resolve(WorkflowPersistor.TEMPLATE_FILE).toFile().exists();
 
@@ -241,30 +200,6 @@ public final class DesktopAPUtil {
         }
 
         return wfm;
-    }
-
-    private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path, final VersionId version) {
-        final var mountId = space.toKnimeUrl(itemId).getAuthority();
-        final var location = space.getLocationInfo(itemId, version);
-        // TODO A local space root makes no sense for temp-copy mode, remove this workaround when AP-22097 is closed.
-        final var localSpaceRoot = getLocalRoot(space, location, path);
-        return WorkflowContextV2.builder() //
-            .withAnalyticsPlatformExecutor(builder -> builder //
-                .withCurrentUserAsUserId() //
-                .withLocalWorkflowPath(path) //
-                .withMountpoint(mountId, localSpaceRoot)) //
-            .withLocation(location) //
-            .build();
-    }
-
-    private static Path getLocalRoot(final Space space, final LocationInfo location, final Path path) {
-        if (space instanceof LocalSpace localSpace) {
-            return localSpace.getRootPath();
-        }
-        if (location instanceof RestLocationInfo) {
-            return path.getParent();
-        }
-        return Path.of("/").toAbsolutePath();
     }
 
     /**
@@ -528,7 +463,7 @@ public final class DesktopAPUtil {
      */
     public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgress(
         final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
-        return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+        return runWithProgress(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
     }
 
@@ -541,7 +476,7 @@ public final class DesktopAPUtil {
      */
     public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgressWithoutWarnings(
         final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
-        return runWithProgressWithoutWarnings(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+        return runWithProgressWithoutWarnings(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
     }
 

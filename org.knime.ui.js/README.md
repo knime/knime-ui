@@ -5,86 +5,163 @@ The frontend is based on the [Vue.js] JavaScript framework.
 
 # Development
 
-### Prerequisites
+Install [Node.js][node], see version in [package.json](package.json)
 
-- Install [Node.js][node], see version in [package.json](package.json)
-- Configure your KNIME Analytics Platform to use the locally running UI
-
-  - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
-  - add the following arguments to the `<knime-installation-folder>/knime.ini`
-
-    | argument                                       | comment                                                                                                            |
-    | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-    | `-Dorg.knime.ui.dev.mode=true`                 | Enables debugging the AP's browser (described in the [Debugging section](#section_debugging) of this README)       |
-    | `-Dorg.knime.ui.dev.url=http://localhost:3000` | Makes the AP use KNIME UI served from localhost instead of using the resources bundled with the KNIME UI Extension |
-
-### Install dependencies
+## Install dependencies
 
 ```sh
 pnpm install
 ```
 
-## UI running in KNIME Analytics Platform
-
-Simply run the development server
+## Run the development server
 
 ```sh
 pnpm dev
 ```
 
-and open KNIME Analytics Platform. The UI will be served from the dev server, including hot-reloading, so code changes will be visible in the app immediately.
+This will start a Vite server supplying the Modern UI Vue application on
+default port 3000.
 
-## UI running in the browser
+This includes hot-reloading, so code changes will be visible in the app
+immediately.
 
-In addition to running inside the KNIME Analytics Platform, the new UI can also run in the browser:
+The UI can be loaded in either the "Desktop AP" (the standalone desktop
+application) or in your web browser of choice.
 
-1. Copy the contents of the `.env.example` file over to a `.env` file.
-2. Adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url and port of the running WSS server (as configured below).
-3. Set `VITE_BROWSER_DEV_MODE` to `true`, otherwise the `VITE_BROWSER_DEV_WS_URL` variable will have no effect.
+---
 
-Then follow the steps below, either with the nightly build or Eclipse SDK.
+## Option 1: UI running in Desktop AP
 
-When you're done, run `pnpm dev` and you can open the app in the browser under `http://localhost:3000`
+You will need to start and instance of the KNIME Analytics Platform and
+configure it so that it accesses the UI served from your local development
+server.
 
-### Option 1: AP nightly build
-
-This is the easiest setup and perfect if you only want to work on the workflow editing UI. You first need to:
-
-- Open the nightly build and install the KNIME extension called `Remote Workflow Editor for Executor`.
-- Create a `workflowContext.yaml` somewhere in your system. In this file you need to store a KNIME Hub application password (go to `https://hubdev.knime.com/<YOUR_HUBDEV_USER>/settings/application-passwords`) and a space id. This information will be used so that the Space Explorer can connect to that space in the Hub. Do note that the space id must start with a `*` character.
-
-  ```
-  spaceId: "*<SPACE_ID>"
-  applicationPasswordID: "XXX"
-  applicationPassword: "XXX"
-  ```
-
-Then you can run the nightly in a "headless" mode, which will simply keep it running in the background with a websocket server which knime-ui will connect to:
-
-On Linux / Window (WSL):
+Such an instance can be a normal KNIME Analytics Platform installation (such
+as e.g. a nightly build, or started from a development environment ("Eclipse
+SDK"). In both cases, this amounts to starting an Eclipse RCP Application
+which includes an embedded browser that displays the UI.
 
 ```
-./knime -nosplash -consoleLog -application com.knime.gateway.executor.GATEWAY_DEV_SERVER_APPLICATION -port=7000 -workflowContextConfig="/path/to/workflowContext.yaml" -workflowDir="/path/to/a/workflow"
+ ┌─────────────────────────────────────┐
+ │       Eclipse RCP Application       │
+ │ org.knime.product.KNIME_APPLICATION │
+ │                                     │
+ │     ┌─────────────────────────┐     │
+ │     │                         │     │
+ │     │         Backend         │     │
+ │     │                         │     │
+ │     └───────────┬▲────────────┘     │
+ │   ┌─────────────────────────────┐   │      ┌─────────────────────────┐
+ │   │   Eclipse RCP Workbench UI  │   │      │     Vite Dev Server     │
+ │   │             ││              │   │      │ ┌─────────────────────┐ │
+ │   │ ┌───────────▼└────────────┐ │   │      │ │                     │ │
+ │   │ │       CEF Browser       └─┼───┼──────┼─► Modern UI Frontend  │ │
+ │   │ │ Equo Comm / Middleware  ◄─┼───┼──────┼─┐   Vue Application   │ │
+ │   │ │                         │ │   │      │ │                     │ │
+ │   └─────────────────────────────┘   │      │ └─────────────────────┘ │
+ └─────────────────────────────────────┘      └─────────────────────────┘
 ```
 
-On Mac:
+In both cases, you need to apply the following configuration as Java system
+properties to the application:
+
+| argument                                       | comment                                                                                                            |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `-Dorg.knime.ui.dev.mode=true`                 | Enables debugging the AP's browser (described in the [Debugging section](#section_debugging) of this README)       |
+| `-Dorg.knime.ui.dev.url=http://localhost:3000` | Makes the AP use KNIME UI served from localhost instead of using the resources bundled with the KNIME UI Extension |
+
+### Configuring a KNIME Analytics Platform installation
+
+Add the arguments to the `<knime-installation-folder>/knime.ini` file. For
+more information see [this page][debugap].
+
+### Configuring an instance started from development environment
+
+Set the system properties in the IDE's run configuration.
+
+---
+
+## Option 2: UI running in the browser
+
+In this setting, the Backend (i.e the Executor) and the browser displaying
+the frontend are separate components and must not necessarily be running
+on the same machine. Instead of invoking the "Desktop AP" RCP Application,
+you start a different kind of application that provides access to the
+backend via a websocket server.
 
 ```
-"/Applications/KNIME 5.x.x....app/Contents/MacOS/knime" -nosplash -consoleLog -application com.knime.gateway.executor.GATEWAY_DEV_SERVER_APPLICATION -port=7001 -workflowContextConfig="/Users/<USER>/.../workflowContext.yaml" -workflowDir="/Users/<USER>/path/to/workflow"
+ ┌─────────────────────────────────────┐
+ │      Eclipse RCP Application        │
+ │ org.knime.gateway.executor.\        │  <- started either as AP build (e.g. a nightly build)
+ │      GATEWAY_DEV_SERVER_APPLICATION │     or from IDE in development setup
+ │     ┌─────────────────────────┐     │
+ │     │                         │     │
+ │     │         Backend         │     │
+ │     │                         │     │
+ │     └───────────┐▲────────────┘     │
+ │                 ││                  │
+ │   ┌─────────────▼└──────────────┐   │
+ │   │      Websocket Server       │   │
+ │   └─────────────┬▲──────────────┘   │
+ └─────────────────┼┼──────────────────┘
+                   ││
+                   ││                        ┌─────────────────────────┐
+                   ││                        │     Vite Dev Server     │
+ ┌─────────────────▼└──────────────────┐     │ ┌─────────────────────┐ │
+ │                                     │     │ │                     │ │
+ │                                     ┼─────┼─► Modern UI Frontend  │ │
+ │        Your Desktop Browser         ◄─────┼─┐   Vue Application   │ │
+ │                                     │     │ │                     │ │
+ │                                     │     │ └─────────────────────┘ │
+ └─────────────────────────────────────┘     └─────────────────────────┘
+
 ```
 
-Note: using port 7001 as port 7000 is already used on Mac.
+### Enable access to Hub instances (Optional)
 
-### Option 2: Eclipse SDK
+Both the backend and frontend will need to communicate with a Hub instance
+for some features. In the production setting, this is facilitated implicitly
+by virtue of the Executor and other Hub services being part of the same
+cluster. In the development setting, we need to configure the base URL of a
+hub instance and the credentials to access it.
 
-To use this mode, you need to have the proper Eclipse setup, as well as doing a couple extra steps. You can see more information on [this page][debugapbrowser].
+Obtain an application password and ID via
+`https://hubdev.knime.com/<YOUR_HUBDEV_USER>/settings/application-passwords`.
 
-### Option 3: Loaded in iframe via [AP-loader](https://bitbucket.org/KNIME/knime-hub-ap-loader/src/master/)
+For the frontend, set the environment variables `VITE_HUB_API_URL`,
+`VITE_HUB_AUTH_USER` and `VITE_HUB_AUTH_PASS` in `org.knime.js/.env`. See
+the provided `.env.example` file for an example.
 
-Only relevant if you need to develop for both knime-ui and the ap-loader application: in addition to the above, you need to set in your `.env` file:
+### Configure and start the websocket server to provide the backend
+
+Instruct the frontend where to reach the websocket server:
+
+- Adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url
+  and port of the running websocket server.
+- Set `VITE_BROWSER_DEV_MODE` to `true`, otherwise the
+  `VITE_BROWSER_DEV_WS_URL` variable will have no effect.
+
+Configure and start the websocket server: see instructions at [com.knime.
+gateway.executor/README.md](https://bitbucket.org/KNIME/knime-com-gateway/src/master/com.knime.gateway.executor/README.md)
+
+### Install and use the Vue.js dev tools browser extension (Optional)
+
+- Install the browser extension [Vue.js dev tools](https://github.com/vuejs/vue-devtools)
+- On your browser, open up the Web Developer Tools and switch to the Vue tab
+- You can inspect components, see their state and inspect the Vuex store,
+  which makes development so much easier now.
+
+---
+
+## Option 3: UI Loaded in iframe via [AP-loader](https://bitbucket.org/KNIME/knime-hub-ap-loader/src/master/)
+
+Only relevant if you need to develop for both knime-ui and the ap-loader
+application: in addition to the above, you need to set in your `.env` file:
 
 - `VITE_BROWSER_DEV_MODE_EMBEDDED` variable to `true`
 - `VITE_APP_PORT` to `3001` (because ap-loader will be running on port 3000)
+
+---
 
 ## Git hooks
 
@@ -100,6 +177,8 @@ When committing your changes, a couple of commit hooks will run via [husky].
 
 - `pre-commit` hook to lint and format the changes in your stage zone (via [lintstaged])
 - `prepare-commit-msg` hook to format your commit message to conform with the required format by KNIME. In order for this to work you must set environment variables with your Atlassian email and API token. Refer to [webapps-common/scripts/README.md](webapps-common/scripts/README.md) for more information.
+
+---
 
 ## Testing
 
@@ -167,6 +246,8 @@ dependencies that are used in production. Run it by calling
 pnpm audit --prod
 ```
 
+---
+
 ## Build production version
 
 Run the JS production build via:
@@ -186,4 +267,4 @@ This will also run the `type-check` step to ensure there are no TypeScript error
 [Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file
 [husky]: https://www.npmjs.com/package/husky
 [lintstaged]: https://github.com/okonet/lint-staged
-[debugapbrowser]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/3054895127/Debug+KNIME+AP+Modern+UI+in+browser+w+Eclipse+back+end
+[debugap]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/1418854401/Debug+the+KNIME+AP+Modern+UI+inside+the+AP

@@ -265,7 +265,7 @@ final class OpenProject {
         var locationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
         return DesktopAPUtil.downloadWorkflowWithProgress(fileStore, locationInfo) //
             .map(RemoteWorkflowInput::getWorkflowContext) //
-            .flatMap(DesktopAPUtil::loadWorkflowWithProgress) //
+            .flatMap(DesktopAPUtil::loadWorkflowManagerWithProgress) //
             .orElse(null);
     }
 }

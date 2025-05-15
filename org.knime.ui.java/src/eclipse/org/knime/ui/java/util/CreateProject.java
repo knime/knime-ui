@@ -46,13 +46,20 @@
 
 package org.knime.ui.java.util;
 
+import java.nio.file.Path;
+
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.node.workflow.contextv2.LocationInfo;
+import org.knime.core.node.workflow.contextv2.RestLocationInfo;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 
 /**
  * Static logic to load and create projects.
@@ -92,7 +99,7 @@ public final class CreateProject {
     public static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
         final ProgressReporter progressReporter, final SpaceProviders spaceProviders) {
         return Project.builder() //
-            .setWfmLoader(loaderFromOrigin(origin, progressReporter, spaceProviders)) //
+            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, spaceProviders)) //
             .setName(name) //
             .setId(projectId) //
             .setOrigin(origin) //
@@ -107,15 +114,49 @@ public final class CreateProject {
      *           the SpaceProvider dependency is set (namely in `Create` and not in `Init`).
      * @param origin Locates the space item to load from
      * @param progressReporter to report loading state to
-     * @param spaceProviders
+     * @param spaceProviders -
      * @return A loader instance that can be called to load the {@link WorkflowManager}
      */
-    private static WorkflowManagerLoader loaderFromOrigin(final Origin origin, final ProgressReporter progressReporter,
-        final SpaceProviders spaceProviders) {
-        return version -> progressReporter.getWithProgress( //
-            DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, //
+    private static WorkflowManagerLoader fromOriginWithProgressReporter(final Origin origin,
+        final ProgressReporter progressReporter, final SpaceProviders spaceProviders) {
+        return version -> progressReporter.getWithProgress( // NOSONAR
+            WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, //
             NodeLogger.getLogger(CreateProject.class), //
-            monitor -> DesktopAPUtil.fetchAndLoadWorkflowWithTask(spaceProviders, origin, monitor, version) //
-        ).orElse(null);
+            monitor -> { // NOSONAR
+                var path = WorkflowManagerLoader.fetch(origin, version, spaceProviders, monitor);
+                if (path.isEmpty()) {
+                    NodeLogger.getLogger(CreateProject.class).error("Could not fetch workflow from origin " + origin);
+                    return null;
+                }
+                var space = spaceProviders.getSpace(origin.providerId(), origin.spaceId());
+                final var workflowContext = createWorkflowContext(space, origin.itemId(), path.get(), version);
+                return DesktopAPUtil.loadWorkflowManager(monitor, path.get(), workflowContext);
+            }).orElse(null);
+    }
+
+    private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path,
+        final VersionId version) {
+        final var mountId = space.toKnimeUrl(itemId).getAuthority();
+        final var location = space.getLocationInfo(itemId, version);
+        // TODO A local space root makes no sense for remote mountpoints
+        //  see AP-22097 Remove Requirement for Local Mountpoint Root Path from `WorkflowContextV2`
+        final var localSpaceRoot = getLocalRoot(space, location, path);
+        return WorkflowContextV2.builder() //
+            .withAnalyticsPlatformExecutor(builder -> builder //
+                .withCurrentUserAsUserId() //
+                .withLocalWorkflowPath(path) //
+                .withMountpoint(mountId, localSpaceRoot)) //
+            .withLocation(location) //
+            .build();
+    }
+
+    private static Path getLocalRoot(final Space space, final LocationInfo location, final Path path) {
+        if (space instanceof LocalSpace localSpace) {
+            return localSpace.getRootPath();
+        }
+        if (location instanceof RestLocationInfo) {
+            return path.getParent();
+        }
+        return Path.of("/").toAbsolutePath();
     }
 }

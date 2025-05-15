@@ -24,12 +24,12 @@ import type {
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import { promise } from "@knime/utils";
 
-import type { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceItemVersion } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getCustomFetchOptions } from "@/store/spaces/common.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
 import { useSelectionStore } from "../selection";
@@ -47,12 +47,16 @@ type ProjectVersionsModeInfo = {
   hasLoadedAll: boolean;
 };
 
-const getHubBaseUrl = (provider?: SpaceProviderNS.SpaceProvider | null) => {
-  if (isBrowser()) {
-    return "/_/api";
-  }
+const getVersionsApi = () => {
+  const { activeProjectProvider } = useSpaceProvidersStore();
+  const { baseURL: customBaseURL } = getCustomFetchOptions();
 
-  return provider?.hostname;
+  const baseUrl = isBrowser() ? customBaseURL : activeProjectProvider?.hostname;
+
+  return useVersionsApi({
+    baseUrl,
+    customFetchClientOptions: getCustomFetchOptions(),
+  });
 };
 
 const createInitialProjectVersionsModeInfo = (): ProjectVersionsModeInfo => ({
@@ -170,12 +174,9 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       );
       return;
     }
-    const { activeProjectProvider } = useSpaceProvidersStore();
-    const hubApi = useVersionsApi({
-      baseUrl: getHubBaseUrl(activeProjectProvider),
-    });
+    const versionsApi = getVersionsApi();
 
-    const newVersion = await hubApi.createVersion({
+    const newVersion = await versionsApi.createVersion({
       itemId: activeProjectOrigin!.itemId,
       title: name,
       description,
@@ -195,7 +196,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     activeProjectVersionsModeInfo.value.loadedVersions.unshift({
       ...newVersion,
       labels: [],
-      avatar: await hubApi.getAvatar({
+      avatar: await versionsApi.getAvatar({
         accountName: newVersion.author,
       }),
     });
@@ -240,10 +241,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    const hubApi = useVersionsApi({
-      baseUrl: getHubBaseUrl(activeProjectProvider),
-    });
-    await hubApi?.deleteVersion({
+    await getVersionsApi().deleteVersion({
       itemId: useApplicationStore().activeProjectOrigin!.itemId,
       version,
     });
@@ -281,10 +279,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       );
       return;
     }
-    const hubApi = useVersionsApi({
-      baseUrl: getHubBaseUrl(activeProjectProvider),
-    });
-    await hubApi?.restoreVersion({
+    await getVersionsApi().restoreVersion({
       itemId: activeProjectOrigin.itemId,
       version,
     });
@@ -354,33 +349,28 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     { loadAll }: { loadAll: boolean } = { loadAll: false },
   ) {
     const itemId = useApplicationStore().activeProjectOrigin?.itemId;
-    const hubApiBaseUrl = getHubBaseUrl(
-      useSpaceProvidersStore().activeProjectProvider,
-    );
     const { activeProjectId } = useApplicationStore();
 
-    if (!itemId || !hubApiBaseUrl || !activeProjectId) {
+    if (!itemId || !activeProjectId) {
       consola.error(
         "WorkflowVersionsStore::refreshData -> Prerequisite failed",
-        { itemId, hubApiBaseUrl, activeProjectId },
+        { itemId, activeProjectId },
       );
       return;
     }
 
     loading.value = true;
-    const hubApi = useVersionsApi({
-      baseUrl: hubApiBaseUrl,
-    });
+    const versionsApi = getVersionsApi();
 
     const doLoadData = async () => {
       const newData: ProjectVersionsModeInfo =
         createInitialProjectVersionsModeInfo();
 
-      newData.permissions = await hubApi.fetchPermissions({
+      newData.permissions = await versionsApi.fetchPermissions({
         itemId,
       });
 
-      const itemSavepointsInfo = await hubApi.fetchItemSavepoints({
+      const itemSavepointsInfo = await versionsApi.fetchItemSavepoints({
         itemId,
         limit: loadAll ? -1 : undefined,
       });
@@ -391,7 +381,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         newData.unversionedSavepoint = merge(
           {},
           lastSavepoint,
-          await hubApi.loadSavepointMetadata(lastSavepoint),
+          await versionsApi.loadSavepointMetadata(lastSavepoint),
         );
       }
 
@@ -400,7 +390,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
           .filter((savepoint) => savepoint.version)
           .map(async (savepoint) => {
             const savepointMetadata = await promise.retryPromise({
-              fn: () => hubApi.loadSavepointMetadata(savepoint),
+              fn: () => versionsApi.loadSavepointMetadata(savepoint),
               retryCount: 1,
             });
 
