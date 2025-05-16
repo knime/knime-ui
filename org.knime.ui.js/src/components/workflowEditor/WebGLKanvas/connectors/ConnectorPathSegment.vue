@@ -32,6 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
   streaming: false,
   isDebugModeEnabled: false,
   isFloatingConnector: false,
+  magnetic: false,
 });
 
 const { isDebugModeEnabled, suggestDelete } = toRefs(props);
@@ -58,6 +59,10 @@ const centerPoint = computed(() =>
 );
 
 const color = computed(() => {
+  if (props.magnetic) {
+    return $colors.AvocadoDark;
+  }
+
   if (props.isDraggedOver) {
     return $colors.MeadowDark;
   }

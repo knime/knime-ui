@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { Container, FederatedPointerEvent, Rectangle } from "pixi.js";
 
@@ -26,6 +26,7 @@ interface Props {
   position: XY;
   direction: "in" | "out";
   disableQuickNodeAdd?: boolean;
+  isDraggingParent?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -125,6 +126,17 @@ const flowVarTransparency = useFlowVarPortTransparency({
 });
 
 const isHovered = ref(false);
+
+watch(
+  () => props.isDraggingParent,
+  () => {
+    if (props.isDraggingParent) {
+      flowVarTransparency.onPointerEnter();
+    } else {
+      flowVarTransparency.onPointerLeave();
+    }
+  },
+);
 
 const onPointerEnter = () => {
   isHovered.value = true;

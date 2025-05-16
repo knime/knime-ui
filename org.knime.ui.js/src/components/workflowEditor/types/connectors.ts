@@ -39,6 +39,7 @@ export type ConnectorProps<TAbsolutePoint extends AbsolutePoint> = Omit<
    * Whether the connector can be interacted with or not
    */
   interactive?: boolean;
+  magnetic?: boolean;
 };
 
 export type ConnectorPathSegmentProps = {
@@ -55,6 +56,7 @@ export type ConnectorPathSegmentProps = {
   isSelected?: boolean;
   interactive?: boolean;
   streaming?: boolean;
+  magnetic?: boolean;
 };
 
 export type ConnectorBendpointProps = {

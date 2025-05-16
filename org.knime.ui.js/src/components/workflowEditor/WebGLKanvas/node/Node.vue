@@ -425,6 +425,7 @@ const nodeLabelPosition = computed(() => {
       :out-ports="node.outPorts"
       :is-editable="isEditable"
       :port-groups="isNativeNode(node) ? node.portGroups : undefined"
+      :is-dragging-parent="isDraggingThisObject"
       @update-port-positions="portPositions = $event"
     />
   </Container>

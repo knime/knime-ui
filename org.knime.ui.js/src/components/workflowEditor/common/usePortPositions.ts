@@ -1,6 +1,6 @@
 import { type ComputedRef, computed, watch } from "vue";
 
-import type { KnimeNode } from "@/api/custom-types";
+// import type { KnimeNode } from "@/api/custom-types";
 import * as portPositionUtils from "@/util/portShift";
 import { useNodeInfo } from "../SVGKanvas/ports/NodePorts/useNodeInfo";
 
@@ -11,14 +11,14 @@ export type PortPositions = {
 
 type UsePortPositionsOptions = {
   nodeId: string;
-  inPorts: KnimeNode["inPorts"];
-  outPorts: KnimeNode["outPorts"];
+  // inPorts: KnimeNode["inPorts"];
+  // outPorts: KnimeNode["outPorts"];
   canAddPort: ComputedRef<{ input: boolean; output: boolean }>;
-  emitPositionUpdate: (positions: PortPositions) => void;
+  emitPositionUpdate?: (positions: PortPositions) => void;
 };
 
 export const usePortPositions = (options: UsePortPositionsOptions) => {
-  const { isMetanode } = useNodeInfo({ nodeId: options.nodeId });
+  const { isMetanode, node } = useNodeInfo({ nodeId: options.nodeId });
 
   /**
    * @returns the position of all inPorts and outPorts.
@@ -27,11 +27,11 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
   const portPositions = computed<PortPositions>(() => {
     const positions = {
       in: portPositionUtils.portPositions({
-        portCount: options.inPorts.length,
+        portCount: node.value.inPorts.length,
         isMetanode: isMetanode.value,
       }),
       out: portPositionUtils.portPositions({
-        portCount: options.outPorts.length,
+        portCount: node.value.outPorts.length,
         isMetanode: isMetanode.value,
         isOutports: true,
       }),
@@ -41,7 +41,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
     if (options.canAddPort.value.input) {
       positions.in.push(
         portPositionUtils.placeholderPosition({
-          portCount: options.inPorts.length,
+          portCount: node.value.inPorts.length,
           isMetanode: isMetanode.value,
         }),
       );
@@ -50,7 +50,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
     if (options.canAddPort.value.output) {
       positions.out.push(
         portPositionUtils.placeholderPosition({
-          portCount: options.outPorts.length,
+          portCount: node.value.outPorts.length,
           isMetanode: isMetanode.value,
           isOutport: true,
         }),
@@ -71,7 +71,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
   watch(
     portPositions,
     () => {
-      options.emitPositionUpdate(portPositions.value);
+      options.emitPositionUpdate?.(portPositions.value);
     },
     { immediate: true },
   );

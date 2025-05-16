@@ -24,6 +24,7 @@ interface Props {
   inPorts: NodePortType[];
   outPorts: NodePortType[];
   portGroups?: NodePortGroups;
+  isDraggingParent?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -59,8 +60,8 @@ const canAddPort = computed(() => {
 const { portPositions, addPortPlaceholderPositions } = usePortPositions({
   nodeId: props.nodeId,
   canAddPort,
-  inPorts: props.inPorts,
-  outPorts: props.outPorts,
+  // inPorts: props.inPorts,
+  // outPorts: props.outPorts,
   emitPositionUpdate: (portPositions) =>
     emit("updatePortPositions", portPositions),
 });
@@ -120,6 +121,7 @@ const addPort = async ({
         x: getPortPositionOffset('in', port.index)[0] - $shapes.portSize / 2,
         y: getPortPositionOffset('in', port.index)[1] - $shapes.portSize / 2,
       }"
+      :is-dragging-parent="isDraggingParent"
     />
 
     <NodePort
@@ -134,6 +136,7 @@ const addPort = async ({
         x: getPortPositionOffset('out', port.index)[0] - $shapes.portSize / 2,
         y: getPortPositionOffset('out', port.index)[1] - $shapes.portSize / 2,
       }"
+      :is-dragging-parent="isDraggingParent"
     />
 
     <template v-for="side in ['input', 'output'] as const" :key="side">

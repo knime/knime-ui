@@ -6,7 +6,8 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 
-const DISTANCE_BUFFER = 20;
+const REPLACE_DISTANCE = 150;
+// const MAGNETIC_CONNECTION_DISTANCE = 150;
 const spatialHash = ref<Record<string, string[]>>({});
 const cellSize = ref(0);
 
@@ -22,7 +23,7 @@ export const useNodeCollisionCheck = () => {
 
     const result = geometry.buildSpatialHash(
       nodes.value,
-      $shapes.nodeSize + DISTANCE_BUFFER,
+      $shapes.nodeSize + REPLACE_DISTANCE,
     );
     spatialHash.value = result.hash;
     cellSize.value = result.cellSize;
@@ -46,14 +47,14 @@ export const useNodeCollisionCheck = () => {
             {
               left: reference.position.x,
               top: reference.position.y,
-              width: $shapes.nodeSize + DISTANCE_BUFFER,
-              height: $shapes.nodeSize + DISTANCE_BUFFER,
+              width: $shapes.nodeSize + REPLACE_DISTANCE,
+              height: $shapes.nodeSize + REPLACE_DISTANCE,
             },
             {
               left: candidate.position.x,
               top: candidate.position.y,
-              width: $shapes.nodeSize + DISTANCE_BUFFER,
-              height: $shapes.nodeSize + DISTANCE_BUFFER,
+              width: $shapes.nodeSize + REPLACE_DISTANCE,
+              height: $shapes.nodeSize + REPLACE_DISTANCE,
             },
           ),
         );

@@ -17,6 +17,11 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
+import { isNodeMetaNode } from "@/util/nodeUtil";
+import {
+  type PortPositions,
+  usePortPositions,
+} from "../../common/usePortPositions";
 
 import { useNodeCollisionCheck } from "./useNodeCollisionCheck";
 
@@ -60,6 +65,117 @@ const canInsertOnConnection = (
   );
 
   return Boolean(hasCompatibleSrcPort || hasCompatibleDestPort);
+};
+
+const buildSnapPartitions = (referencePositions: PortPositions) => {
+  const makePartitions = (positions: number[]): number[] | null => {
+    if (!positions.length) {
+      return null;
+    }
+
+    const partitions: number[] = [];
+    for (let i = 0; i < positions.length - 1; i++) {
+      partitions.push((positions[i] + positions[i + 1]) / 2);
+    }
+    return partitions;
+  };
+
+  const partitions: {
+    in: number[] | null;
+    out: number[] | null;
+  } = {
+    in: null,
+    out: null,
+  };
+
+  if (referencePositions.in) {
+    partitions.in = makePartitions(referencePositions.in.map(([, y]) => y));
+  }
+
+  if (referencePositions.out) {
+    partitions.out = makePartitions(referencePositions.out.map(([, y]) => y));
+  }
+
+  return partitions;
+};
+
+const canCreateMagneticConnection = (
+  connection: Connection,
+  dragPosition: XY,
+) => {
+  const { availablePortTypes } = useApplicationStore();
+  const nodeInteractionsStore = useNodeInteractionsStore();
+
+  const connectionSourceNode = nodeInteractionsStore.getNodeById(
+    connection.sourceNode,
+  );
+
+  const connectionDestNode = nodeInteractionsStore.getNodeById(
+    connection.destNode,
+  );
+
+  if (!connectionSourceNode || !connectionDestNode) {
+    return { sourceOutPort: undefined, destInPort: undefined };
+  }
+
+  const { portPositions: sourceNodePortPositions } = usePortPositions({
+    nodeId: connectionSourceNode.id,
+    canAddPort: computed(() => ({ input: false, output: false })),
+  });
+
+  const snapPartitions = buildSnapPartitions(sourceNodePortPositions.value).out;
+  const relativeY = dragPosition.y - connectionSourceNode.position.y;
+
+  const maxDistance = Math.max(50, connectionSourceNode.outPorts.length * 9);
+
+  if (!snapPartitions || Math.abs(relativeY) >= maxDistance) {
+    return { sourceOutPort: undefined, destInPort: undefined };
+  }
+
+  // find index of port to snap to
+  const partitionIndex = snapPartitions.findIndex(
+    (boundary) => relativeY <= boundary,
+  );
+
+  let snapPortIndex: number;
+
+  if (snapPartitions.length === 0) {
+    // only one port
+    snapPortIndex = 0;
+  } else if (partitionIndex === -1) {
+    // below last partition boundary, select last port
+    snapPortIndex = sourceNodePortPositions.value.out.length - 1;
+  } else {
+    // port index matches partition index
+    snapPortIndex = partitionIndex;
+  }
+
+  for (const sourceOutPort of connectionSourceNode.outPorts) {
+    if (
+      (!isNodeMetaNode(connectionSourceNode) && sourceOutPort.index === 0) ||
+      sourceOutPort.index < snapPortIndex
+    ) {
+      continue;
+    }
+
+    for (const destInPort of connectionDestNode.inPorts) {
+      if (!isNodeMetaNode(connectionDestNode) && sourceOutPort.index === 0) {
+        continue;
+      }
+
+      const isCompatible = checkPortCompatibility({
+        fromPort: sourceOutPort,
+        toPort: destInPort,
+        availablePortTypes,
+      });
+
+      if (isCompatible) {
+        return { sourceOutPort, destInPort };
+      }
+    }
+  }
+
+  return { sourceOutPort: undefined, destInPort: undefined };
 };
 
 type ReplacementPayload =
@@ -110,6 +226,8 @@ const getPortsOnReplacementCandidate = async (
   return null;
 };
 
+const MAGNETIC_CONNECTION_ID = "magnetic__connection";
+
 // keep the dragging state as a singleton outside the composable,
 // because the interaction of the drag can start from a different place
 // than the handling of a move or a drop (e.g node repository)
@@ -139,7 +257,7 @@ export const useNodeReplacementOrInsertion = () => {
   const { replacementOperation } = storeToRefs(nodeInteractionsStore);
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
   const connections = computed(() => activeWorkflow.value!.connections);
-  const { hasAbortedDrag } = storeToRefs(useMovingStore());
+  const { hasAbortedDrag, dragInitiatorId } = storeToRefs(useMovingStore());
 
   const canvasStore = useWebGLCanvasStore();
   const { pixiApplication } = storeToRefs(canvasStore);
@@ -165,6 +283,11 @@ export const useNodeReplacementOrInsertion = () => {
     return undefined;
   };
 
+  const clearState = () => {
+    replacementOperation.value = null;
+    delete activeWorkflow.value!.connections[MAGNETIC_CONNECTION_ID];
+  };
+
   const onDragStart = () => {
     isDragging.value = true;
     collisionChecker.init();
@@ -186,13 +309,40 @@ export const useNodeReplacementOrInsertion = () => {
         position,
       });
 
-      if (nodeCandidateId) {
-        replacementOperation.value = {
-          candidateId: nodeCandidateId,
-          type: "node",
+      if (nodeCandidateId && dragInitiatorId.value) {
+        const magneticConnection: Connection = {
+          allowedActions: { canDelete: false },
+          destNode: dragInitiatorId.value,
+          destPort: -Infinity, // unknown yet
+          id: MAGNETIC_CONNECTION_ID,
+          sourceNode: nodeCandidateId,
+          sourcePort: -Infinity, // unknown yet
+          flowVariableConnection: true,
         };
-        return;
+
+        const { sourceOutPort, destInPort } = canCreateMagneticConnection(
+          magneticConnection,
+          position,
+        );
+
+        if (sourceOutPort && destInPort) {
+          activeWorkflow.value!.connections[MAGNETIC_CONNECTION_ID] = {
+            ...magneticConnection,
+            destPort: destInPort.index,
+            sourcePort: sourceOutPort.index,
+          };
+
+          return;
+        }
       }
+
+      // if (nodeCandidateId) {
+      //   replacementOperation.value = {
+      //     candidateId: nodeCandidateId,
+      //     type: "node",
+      //   };
+      //   return;
+      // }
 
       const connectionCandidateId = tryFindConnectorAtPosition(position);
       const connection = connections.value[connectionCandidateId ?? ""];
@@ -209,7 +359,7 @@ export const useNodeReplacementOrInsertion = () => {
       }
 
       // unset any previous value if current move didn't detect anything
-      replacementOperation.value = null;
+      clearState();
     },
   );
 
@@ -238,7 +388,7 @@ export const useNodeReplacementOrInsertion = () => {
       toastPresets.workflow.replacementOperation.replaceNode({ error });
       return { wasReplaced: false };
     } finally {
-      replacementOperation.value = null;
+      clearState();
     }
   };
 
@@ -277,13 +427,13 @@ export const useNodeReplacementOrInsertion = () => {
       });
       return { wasReplaced: false };
     } finally {
-      replacementOperation.value = null;
+      clearState();
     }
   };
 
   const onDrop = (dropPosition: XY, params: ReplacementPayload) => {
     if (hasAbortedDrag.value) {
-      replacementOperation.value = null;
+      clearState();
       return Promise.resolve({ wasReplaced: false });
     }
 

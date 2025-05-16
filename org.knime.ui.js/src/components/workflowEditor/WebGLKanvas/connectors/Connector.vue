@@ -31,6 +31,7 @@ const props = withDefaults(defineProps<ConnectorProps<AbsolutePointXY>>(), {
   destPort: null,
   absolutePoint: null,
   interactive: true,
+  magnetic: false,
   bendpoints: () => [],
 });
 
@@ -194,6 +195,7 @@ const {
         :is-segment-hovered="hoveredPathSegment === index"
         :is-debug-mode-enabled="isDebugModeEnabled"
         :is-floating-connector="Boolean(absolutePoint)"
+        :magnetic="magnetic"
         @pointerdown.stop="onConnectionPointerdown"
         @pointerenter="onPathSegmentHovered(true, index)"
         @pointerleave="onPathSegmentHovered(false, undefined)"
