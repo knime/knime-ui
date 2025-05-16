@@ -251,8 +251,21 @@ test.describe("dragging", () => {
 });
 
 test.describe("node replacement", () => {
+  const startForNodeReplacement = (
+    page: Page,
+    workflowCommandFn?: WorkflowCommandFnMock,
+    workflowUndoCommand?: WorkflowUndoCommandMock,
+  ) =>
+    startApplication(page, {
+      workflowFixturePath:
+        "nodes/getWorkflow-node-interactions-replacement.json",
+      withMouseCursor: true,
+      workflowCommandFn,
+      workflowUndoCommand,
+    });
+
   test("should replace node", async ({ page }) => {
-    await startForPointerInteractions(page, replaceNode);
+    await startForNodeReplacement(page, replaceNode);
 
     const [n1x, n1y] = await getNodePosition(page, IDS.node1);
     const [n2x, n2y] = await getNodePosition(page, IDS.node2);
@@ -270,7 +283,7 @@ test.describe("node replacement", () => {
   });
 
   test("should undo node replacement", async ({ page }) => {
-    await startForPointerInteractions(page, replaceNode, {
+    await startForNodeReplacement(page, replaceNode, {
       fn: undoNodeReplace,
       data: {},
     });
@@ -291,7 +304,7 @@ test.describe("node replacement", () => {
   });
 
   test("should abort node replacement", async ({ page }) => {
-    await startForPointerInteractions(page);
+    await startForNodeReplacement(page);
 
     const [n1x, n1y] = await getNodePosition(page, IDS.node1);
     const [n2x, n2y] = await getNodePosition(page, IDS.node2);

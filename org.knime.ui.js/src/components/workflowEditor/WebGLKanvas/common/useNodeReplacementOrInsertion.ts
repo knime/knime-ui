@@ -136,8 +136,10 @@ export const useNodeReplacementOrInsertion = () => {
   const { toastPresets } = getToastPresets();
 
   const nodeInteractionsStore = useNodeInteractionsStore();
-  const { replacementOperation } = storeToRefs(nodeInteractionsStore);
-  const { activeWorkflow } = storeToRefs(useWorkflowStore());
+  const { replacementOperation, isNodeConnected } = storeToRefs(
+    nodeInteractionsStore,
+  );
+  const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
   const connections = computed(() => activeWorkflow.value!.connections);
   const { hasAbortedDrag } = storeToRefs(useMovingStore());
 
@@ -166,13 +168,24 @@ export const useNodeReplacementOrInsertion = () => {
   };
 
   const onDragStart = () => {
+    if (!isWritable.value) {
+      isDragging.value = false;
+      return;
+    }
+
     isDragging.value = true;
     collisionChecker.init();
   };
 
   const onDragMove = throttle(
     async (position: XY, params: ReplacementPayload) => {
-      if (!isDragging.value) {
+      if (
+        !isDragging.value ||
+        !isWritable.value ||
+        isNodeConnected.value(
+          params.type === "from-node-instance" ? params.replacementNodeId : "",
+        )
+      ) {
         return;
       }
 
@@ -237,8 +250,6 @@ export const useNodeReplacementOrInsertion = () => {
       consola.error("Failed to replace node", { error });
       toastPresets.workflow.replacementOperation.replaceNode({ error });
       return { wasReplaced: false };
-    } finally {
-      replacementOperation.value = null;
     }
   };
 
@@ -276,39 +287,48 @@ export const useNodeReplacementOrInsertion = () => {
         error,
       });
       return { wasReplaced: false };
-    } finally {
-      replacementOperation.value = null;
     }
   };
 
-  const onDrop = (dropPosition: XY, params: ReplacementPayload) => {
-    if (hasAbortedDrag.value) {
-      replacementOperation.value = null;
-      return Promise.resolve({ wasReplaced: false });
-    }
-
-    if (!replacementOperation.value) {
-      return Promise.resolve({ wasReplaced: false });
-    }
-
-    try {
-      if (replacementOperation.value.type === "node") {
-        return doNodeReplacement(
-          replacementOperation.value.candidateId,
-          params,
-        );
-      } else {
-        return doNodeInsertion(
-          replacementOperation.value.candidateId,
-          dropPosition,
-          params,
-        );
-      }
-    } finally {
+  const onDrop = (
+    dropPosition: XY,
+    params: ReplacementPayload,
+  ): Promise<{ wasReplaced: boolean }> => {
+    return new Promise((resolve) => {
       // update the drag state in raf so that it's in sync with the move handler
       // which is throttled
-      requestAnimationFrame(() => (isDragging.value = false));
-    }
+      requestAnimationFrame(() => {
+        if (
+          !isWritable.value ||
+          hasAbortedDrag.value ||
+          !replacementOperation.value
+        ) {
+          isDragging.value = false;
+          replacementOperation.value = null;
+          resolve(Promise.resolve({ wasReplaced: false }));
+          return;
+        }
+
+        try {
+          if (replacementOperation.value.type === "node") {
+            resolve(
+              doNodeReplacement(replacementOperation.value.candidateId, params),
+            );
+          } else {
+            resolve(
+              doNodeInsertion(
+                replacementOperation.value.candidateId,
+                dropPosition,
+                params,
+              ),
+            );
+          }
+        } finally {
+          isDragging.value = false;
+          replacementOperation.value = null;
+        }
+      });
+    });
   };
 
   return { onDragStart, onDragMove, onDrop };

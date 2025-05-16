@@ -5,11 +5,6 @@ export const undoNodeReplace = (_payload: any) => {
       patch: {
         ops: [
           {
-            value: "root:2_1",
-            path: "/nodes/root:1/outPorts/1/connectedVia/0",
-            op: "add",
-          },
-          {
             value: 1293710628,
             path: "/nodes/root:1/outPorts/1/portContentVersion",
             op: "replace",
@@ -62,7 +57,7 @@ export const undoNodeReplace = (_payload: any) => {
                 {
                   name: "Input Table",
                   index: 1,
-                  connectedVia: ["root:2_1"],
+                  connectedVia: [],
                   canRemove: false,
                   optional: false,
                   typeId: "org.knime.core.node.BufferedDataTable",
@@ -101,20 +96,6 @@ export const undoNodeReplace = (_payload: any) => {
               },
             },
             path: "/nodeTemplates/org.knime.base.node.preproc.filter.row3.RowFilterNodeFactory",
-            op: "add",
-          },
-          {
-            value: {
-              id: "root:2_1",
-              allowedActions: {
-                canDelete: true,
-              },
-              destNode: "root:2",
-              sourceNode: "root:1",
-              destPort: 1,
-              sourcePort: 1,
-            },
-            path: "/connections/root:2_1",
             op: "add",
           },
           {
