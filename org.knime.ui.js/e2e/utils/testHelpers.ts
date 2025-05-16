@@ -46,10 +46,11 @@ export const startApplication = async (
 export const getKanvasBoundingBox = (page: Page) =>
   page.locator(`#${KANVAS_ID}`).boundingBox();
 
-export const assertSnapshot = async (page: Page) => {
+export const assertSnapshot = async (page: Page, maxDiffPixels?: number) => {
   const kanvasBox = await getKanvasBoundingBox(page);
   await expect(page).toHaveScreenshot({
     clip: kanvasBox!,
+    maxDiffPixels,
   });
 };
 

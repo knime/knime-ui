@@ -97,6 +97,7 @@ const { handlePointerInteraction } = useObjectInteractions({
   onDoubleClick: () => {
     editableAnnotationId.value = props.annotation.id;
   },
+  isAnnotation: true,
 });
 
 const translatedPosition = computed(() => {

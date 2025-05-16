@@ -16,14 +16,45 @@ import { usePointerDownDoubleClick } from "./usePointerDownDoubleClick";
 const MIN_MOVE_THRESHOLD = $shapes.gridSize.x;
 
 type UseObjectInteractionsOptions = {
+  /**
+   * The id of the object for the interaction
+   */
   objectId: string;
+  /**
+   * A function that checks if the object is selected
+   */
   isObjectSelected: () => boolean;
+  /**
+   * A function to perform a selection for this object
+   */
   selectObject: () => Promise<void>;
+  /**
+   * A function to perform a deselection for this object
+   */
   deselectObject: () => Promise<void>;
+  /**
+   * Optional handler to run when the move interaction starts
+   */
   onMoveStart?: () => void;
+  /**
+   * Optional handler to run when the move interaction is happening
+   */
   onMove?: (event: PointerEvent) => void;
+  /**
+   * Optional handler to run when the move interaction finishes
+   */
   onMoveEnd?: () => Promise<{ shouldMove: boolean }>;
+  /**
+   * Optional handler to run when the user fires off a double click
+   */
   onDoubleClick?: (event: PointerEvent) => void;
+  /**
+   * Annotations are handled slighlty different when not selected, by making the
+   * selection only if the user performs a pointerdown and a pointerup without moving their mouse.
+   * Otherwise, provided they do move, this interaction will be ignored and the annotation will be neither selected
+   * nor moved. When the annotation is already selected, the behavior is the same as for other objects.
+   */
+  isAnnotation?: boolean;
 };
 
 /**
@@ -60,6 +91,7 @@ export const useObjectInteractions = (
     selectObject,
     deselectObject,
     onMoveEnd = () => Promise.resolve({ shouldMove: true }),
+    isAnnotation = false,
   } = options;
 
   const selectionStore = useSelectionStore();
@@ -95,14 +127,78 @@ export const useObjectInteractions = (
     return teardown;
   };
 
-  const onPointerDown = async (
+  const calculateMoveDeltas = (pointerMoveEvent: PointerEvent) => {
+    const deltaX =
+      (pointerMoveEvent.offsetX - startPos.value.x) / zoomFactor.value;
+    const deltaY =
+      (pointerMoveEvent.offsetY - startPos.value.y) / zoomFactor.value;
+
+    const isSignificantMove =
+      Math.abs(deltaX) >= MIN_MOVE_THRESHOLD ||
+      Math.abs(deltaY) >= MIN_MOVE_THRESHOLD;
+
+    return { isSignificantMove, deltaX, deltaY };
+  };
+
+  const handleUnselectedAnnotation = (
     pointerDownEvent: PIXI.FederatedPointerEvent,
   ) => {
-    // shift acts as a way to lock interactions and only do global selection
-    if (pointerDownEvent.button !== 0) {
+    // clicking outside an existing selection but on top of
+    // an annotation should still not select it
+    if (
+      !selectionStore.isSelectionEmpty &&
+      !isMultiselectEvent(pointerDownEvent)
+    ) {
       return;
     }
 
+    startPos.value = {
+      x: pointerDownEvent.global.x,
+      y: pointerDownEvent.global.y,
+    };
+
+    // check for double clicks
+    if (options.onDoubleClick && isPointerDownDoubleClick(pointerDownEvent)) {
+      options.onDoubleClick(pointerDownEvent);
+      return;
+    }
+
+    const canvas = pixiApplication.value!.canvas;
+    canvas.setPointerCapture(pointerDownEvent.pointerId);
+    let didMove = false;
+
+    const onMove = (pointerMoveEvent: PointerEvent): void => {
+      const { isSignificantMove } = calculateMoveDeltas(pointerMoveEvent);
+
+      if (!isSignificantMove) {
+        return;
+      }
+
+      didMove = true;
+    };
+
+    const onUp = async () => {
+      // mark interaction and do selection on pointer up instead of pointerdown
+      // but only if the user didn't move the mouse between the pointerdown and the pointerup
+      if (!didMove) {
+        markEventAsHandled(pointerDownEvent, {
+          initiator: "object-interaction",
+        });
+        await selectObject();
+      }
+
+      canvas.releasePointerCapture(pointerDownEvent.pointerId);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerup", onUp);
+    };
+
+    canvas.addEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerup", onUp);
+  };
+
+  const handleDefaultInteraction = async (
+    pointerDownEvent: PIXI.FederatedPointerEvent,
+  ) => {
     consola.trace("object interaction", { pointerDownEvent });
     markEventAsHandled(pointerDownEvent, { initiator: "object-interaction" });
 
@@ -153,14 +249,8 @@ export const useObjectInteractions = (
     let didDrag = false;
 
     const onMove = (pointerMoveEvent: PointerEvent): void => {
-      const deltaX =
-        (pointerMoveEvent.offsetX - startPos.value.x) / zoomFactor.value;
-      const deltaY =
-        (pointerMoveEvent.offsetY - startPos.value.y) / zoomFactor.value;
-
-      const isSignificantMove =
-        Math.abs(deltaX) >= MIN_MOVE_THRESHOLD ||
-        Math.abs(deltaY) >= MIN_MOVE_THRESHOLD;
+      const { isSignificantMove, deltaX, deltaY } =
+        calculateMoveDeltas(pointerMoveEvent);
 
       if (!isSignificantMove) {
         return;
@@ -198,6 +288,18 @@ export const useObjectInteractions = (
 
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
+  };
+
+  const onPointerDown = async (
+    pointerDownEvent: PIXI.FederatedPointerEvent,
+  ) => {
+    // handle annotations differently only when they're not selected
+    if (isAnnotation && !isObjectSelected()) {
+      handleUnselectedAnnotation(pointerDownEvent);
+      return;
+    }
+
+    await handleDefaultInteraction(pointerDownEvent);
   };
 
   return {

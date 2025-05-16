@@ -63,6 +63,7 @@ describe("useObjectInteractions", () => {
   type MountOpts = {
     onMoveEnd?: () => Promise<{ shouldMove: boolean }>;
     onDoubleClick?: () => void;
+    isAnnotation?: boolean;
   };
 
   const doMount = (options: MountOpts = {}) => {
@@ -97,6 +98,7 @@ describe("useObjectInteractions", () => {
         deselectObject: deselectSpy,
         onMoveEnd: options.onMoveEnd,
         onDoubleClick: options.onDoubleClick,
+        isAnnotation: options.isAnnotation,
       },
       mockedStores,
     });
@@ -379,6 +381,34 @@ describe("useObjectInteractions", () => {
       expect(selectSpy).toHaveBeenCalledOnce();
       expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("annotation interaction mode", () => {
+    it("should select when pointer did not move", async () => {
+      const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
+        isAnnotation: true,
+      });
+
+      const { handlePointerInteraction } = getComposableResult();
+
+      const pointerPositions = {
+        start: { x: 10, y: 20 },
+        move: { x: 10, y: 20 },
+        end: { x: 10, y: 20 },
+      };
+
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
+
+      expect(selectSpy).toHaveBeenCalled();
+      expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
+      await flushPromises();
       expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
     });
   });

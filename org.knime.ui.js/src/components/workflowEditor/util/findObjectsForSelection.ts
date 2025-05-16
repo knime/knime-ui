@@ -2,6 +2,8 @@ import type { Workflow } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 
+import { canvasRendererUtils } from "./canvasRenderer";
+
 // find objects that are fully or partly inside the rectangle defined by startPos and endPos
 export const findObjectsForSelection = ({
   startPos,
@@ -40,6 +42,8 @@ export const findObjectsForSelection = ({
     }
   });
 
+  const includeFullAnnotation = canvasRendererUtils.isWebGLRenderer();
+
   // divide annotations
   const annotationsInside: string[] = [];
   const annotationsOutside: string[] = [];
@@ -49,21 +53,35 @@ export const findObjectsForSelection = ({
     const annotationY1 = bounds.y; // y top
     const annotationY2 = bounds.y + bounds.height; // y bottom
 
-    const startedFromInside =
-      annotationX1 <= rectangle.x1 &&
-      annotationX2 >= rectangle.x2 &&
-      annotationY1 <= rectangle.y1 &&
-      annotationY2 >= rectangle.y2;
-    const xInside =
-      rectangle.x1 <= annotationX2 && rectangle.x2 >= annotationX1;
-    const yInside =
-      rectangle.y1 <= annotationY2 && rectangle.y2 >= annotationY1;
+    if (includeFullAnnotation) {
+      const isCoveringComplete =
+        rectangle.x1 < annotationX1 &&
+        rectangle.y1 < annotationY1 &&
+        rectangle.x2 > annotationX2 &&
+        rectangle.y2 > annotationY2;
 
-    // create lists with annotation ids
-    if (xInside && yInside && !startedFromInside) {
-      annotationsInside.push(id);
+      if (isCoveringComplete) {
+        annotationsInside.push(id);
+      } else {
+        annotationsOutside.push(id);
+      }
     } else {
-      annotationsOutside.push(id);
+      const startedFromInside =
+        annotationX1 <= rectangle.x1 &&
+        annotationX2 >= rectangle.x2 &&
+        annotationY1 <= rectangle.y1 &&
+        annotationY2 >= rectangle.y2;
+      const xInside =
+        rectangle.x1 <= annotationX2 && rectangle.x2 >= annotationX1;
+      const yInside =
+        rectangle.y1 <= annotationY2 && rectangle.y2 >= annotationY1;
+
+      // create lists with annotation ids
+      if (xInside && yInside && !startedFromInside) {
+        annotationsInside.push(id);
+      } else {
+        annotationsOutside.push(id);
+      }
     }
   });
 
