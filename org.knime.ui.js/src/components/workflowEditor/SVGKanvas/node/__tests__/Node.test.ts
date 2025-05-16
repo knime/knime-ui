@@ -320,13 +320,13 @@ describe("Node", () => {
         .mockReturnValueOnce(false);
       let { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
-      wrapper.vm.setSelectionPreview("show");
-      await nextTick();
-      expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
-      mockedStores.selectionStore.isNodeSelected = () =>
-        vi.fn().mockReturnValueOnce(true);
-      wrapper = doMount({ props }).wrapper;
+      mockedStores.selectionStore.preselectionMode = true;
+      mockedStores.selectionStore.isNodePreselected = vi
+        .fn()
+        .mockReturnValueOnce(true);
+
+      await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
     });
 
@@ -336,8 +336,13 @@ describe("Node", () => {
         .mockReturnValueOnce(true);
       const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
-      wrapper.vm.setSelectionPreview("hide");
+
+      mockedStores.selectionStore.preselectionMode = true;
+      mockedStores.selectionStore.isNodePreselected = vi
+        .fn()
+        .mockReturnValueOnce(false);
       await nextTick();
+
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
     });
 
@@ -347,10 +352,18 @@ describe("Node", () => {
         .mockReturnValue(true);
       const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
-      wrapper.vm.setSelectionPreview("hide");
+
+      mockedStores.selectionStore.preselectionMode = true;
+      mockedStores.selectionStore.isNodePreselected = vi
+        .fn()
+        .mockReturnValueOnce(false);
       await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
-      wrapper.vm.setSelectionPreview("clear");
+
+      mockedStores.selectionStore.preselectionMode = false;
+      mockedStores.selectionStore.isNodePreselected = vi
+        .fn()
+        .mockReturnValueOnce(true);
       await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
     });

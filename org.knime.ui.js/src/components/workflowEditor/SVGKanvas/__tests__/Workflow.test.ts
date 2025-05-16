@@ -146,48 +146,6 @@ describe("Workflow", () => {
       expect(wrapper.find('[name="node-select"]').exists()).toBe(true);
     });
 
-    it("forwards nodeSelectionPreview calls to the correct node", () => {
-      const wrapper = doShallowMount();
-
-      const node = wrapper
-        .findAllComponents(Node)
-        .find((n) => n.props("id") === "root:1");
-
-      node.vm.setSelectionPreview = vi.fn();
-      wrapper.vm.applyNodeSelectionPreview({ type: "show", nodeId: "root:1" });
-
-      expect(node.vm.setSelectionPreview).toHaveBeenLastCalledWith("show");
-    });
-
-    it("forwards annotationSelectionPreview calls to the correct annotation", () => {
-      const mockedStores = getStores({
-        customWorkflow: {
-          workflowAnnotations: [
-            {
-              bounds: { x: 0, y: 0, width: 42, height: 42 },
-              backgroundColor: "#fff",
-              borderColor: "#000",
-              id: "id1",
-            },
-          ],
-        },
-      });
-      const wrapper = doShallowMount({ mockedStores });
-
-      const annotation = wrapper
-        .findAllComponents(WorkflowAnnotation)
-        .find((c) => c.props("annotation").id === "id1");
-      annotation.vm.setSelectionPreview = vi.fn();
-      wrapper.vm.applyAnnotationSelectionPreview({
-        type: "show",
-        annotationId: "id1",
-      });
-
-      expect(annotation.vm.setSelectionPreview).toHaveBeenLastCalledWith(
-        "show",
-      );
-    });
-
     it("renders component placeholders", () => {
       const componentPlaceholders = [
         createComponentPlaceholder(),

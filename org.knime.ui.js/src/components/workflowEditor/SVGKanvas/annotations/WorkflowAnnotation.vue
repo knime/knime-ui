@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  type ComponentPublicInstance,
-  type UnwrapRef,
-  computed,
-  ref,
-  toRef,
-  watch,
-} from "vue";
+import { type ComponentPublicInstance, computed, ref, toRef, watch } from "vue";
 import { onClickOutside, useMagicKeys } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
@@ -17,6 +10,7 @@ import type {
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
 import { TypedText } from "@/api/gateway-api/generated-api";
+import { useAnnotationVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -25,7 +19,6 @@ import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInter
 import { gridSize } from "@/style/shapes";
 import RichTextAnnotation from "../../common/annotations/RichTextAnnotation.vue";
 import { useAnnotationDataEditing } from "../../common/annotations/useAnnotationDataEditing";
-import { useAnnotationSelection } from "../../common/annotations/useAnnotationSelection";
 
 import LegacyAnnotation from "./LegacyAnnotation.vue";
 import TransformControls from "./TransformControls.vue";
@@ -66,14 +59,8 @@ const {
   focusCanvas,
 });
 
-const {
-  selectionPreview,
-  showSelectionPlane,
-  showTransformControls,
-  showFocus,
-} = useAnnotationSelection({
-  annotation: toRef(props, "annotation"),
-});
+const { showSelectionPlane, showTransformControls, showFocus } =
+  useAnnotationVisualStatus(toRef(props.annotation.id));
 
 const isRichTextAnnotation = computed(() => {
   return props.annotation.text.contentType === TypedText.ContentTypeEnum.Html;
@@ -104,12 +91,6 @@ const onContextMenu = async (event: PointerEvent) => {
   selectionStore.selectAnnotations(props.annotation.id);
   await toggleContextMenu({ event });
 };
-
-const setSelectionPreview = (type: UnwrapRef<typeof selectionPreview>) => {
-  selectionPreview.value = type;
-};
-
-defineExpose({ setSelectionPreview });
 
 const transformAnnotation = (bounds: Bounds) => {
   annotationInteractionStore.transformWorkflowAnnotation({

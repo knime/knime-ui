@@ -1,6 +1,6 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, toRef, unref } from "vue";
+import { computed, ref, toRef } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -10,6 +10,7 @@ import {
   NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
+import { useNodeVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -23,7 +24,6 @@ import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import type { PortPositions } from "../../common/usePortPositions";
-import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import { useNodeHoverProvider } from "../common/useNodeHoverState";
 import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";
 import { useObjectInteractions } from "../common/useObjectInteractions";
@@ -69,7 +69,7 @@ const { isDebugModeEnabled, visibleArea, toCanvasCoordinates, canvasLayers } =
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
 const selectionStore = useSelectionStore();
-const { getFocusedObject, singleSelectedNode } = storeToRefs(selectionStore);
+const { singleSelectedNode } = storeToRefs(selectionStore);
 const { isNodeSelected } = selectionStore;
 const { isWritable } = storeToRefs(useWorkflowStore());
 
@@ -159,14 +159,8 @@ const { handlePointerInteraction, isDraggingThisObject } =
     },
   });
 
-const { isSelectionPreviewShown } = useSelectionPreview({
-  objectId: props.node.id,
-  eventNameResolver: () => `node-selection-preview-${props.node.id}`,
-  isObjectSelected: unref(isNodeSelected),
-});
-
-const isSelectionFocusShown = computed(
-  () => getFocusedObject.value?.id === props.node.id,
+const { showSelectionPlane, showFocus } = useNodeVisualStatus(
+  toRef(props.node.id),
 );
 
 const hoverProvider = useNodeHoverProvider();
@@ -347,8 +341,8 @@ const nodeLabelPosition = computed(() => {
     :layer="canvasLayers.nodeSelectionPlane"
     :anchor-position="translatedPosition"
     :renderable="renderable"
-    :show-selection="isSelectionPreviewShown"
-    :show-focus="isSelectionFocusShown"
+    :show-selection="showSelectionPlane"
+    :show-focus="showFocus"
     :measures="nodeSelectionMeasures"
   />
 

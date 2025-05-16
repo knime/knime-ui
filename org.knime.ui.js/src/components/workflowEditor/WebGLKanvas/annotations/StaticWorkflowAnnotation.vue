@@ -19,6 +19,7 @@ import type {
   WorkflowAnnotation,
   WorkflowAnnotation as WorkflowAnnotationType,
 } from "@/api/gateway-api/generated-api";
+import { useAnnotationVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -26,8 +27,6 @@ import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInter
 import { useMovingStore } from "@/store/workflow/moving";
 import { geometry } from "@/util/geometry";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
-import { useAnnotationSelection } from "../../common/annotations/useAnnotationSelection";
-import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import { FLOATING_HTML_FADE_DELAY_MS } from "../common/constants";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
@@ -182,9 +181,7 @@ const isStaticContent = computed(
 );
 
 const { showFocus, showSelectionPlane, showTransformControls } =
-  useAnnotationSelection({
-    annotation: toRef(props, "annotation"),
-  });
+  useAnnotationVisualStatus(toRef(props.annotation.id));
 
 const renderable = computed(() => {
   const intersect = geometry.utils.rectangleIntersection(
@@ -226,13 +223,6 @@ const onTransformEnd = (bounds: Bounds) => {
     activeTransform.value = undefined;
   }, FLOATING_HTML_FADE_DELAY_MS);
 };
-
-const { isSelectionPreviewShown } = useSelectionPreview({
-  objectId: props.annotation.id,
-  eventNameResolver: () =>
-    `annotation-selection-preview-${props.annotation.id}`,
-  isObjectSelected: isAnnotationSelected,
-});
 </script>
 
 <template>
@@ -249,7 +239,7 @@ const { isSelectionPreviewShown } = useSelectionPreview({
       :initial-value="annotation.bounds"
       :show-transform-controls="showTransformControls"
       :show-focus="showFocus"
-      :show-selection="showSelectionPlane || isSelectionPreviewShown"
+      :show-selection="showSelectionPlane"
       @on-bounds-change="onTransformChange"
       @transform-end="onTransformEnd($event.bounds)"
     />

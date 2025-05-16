@@ -4,7 +4,6 @@ import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import { TABS } from "@/store/panel";
 import { mockStores } from "@/test/utils/mockStores";
-import SelectionRectangle from "../SelectionRectangle/SelectionRectangle.vue";
 import Workflow from "../Workflow.vue";
 import WorkflowCanvas from "../WorkflowCanvas.vue";
 import WorkflowEmpty from "../WorkflowEmpty.vue";
@@ -53,21 +52,6 @@ describe("WorkflowCanvas", () => {
 
       expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(false);
       expect(wrapper.findComponent(Workflow).exists()).toBe(true);
-    });
-
-    it("clicking on empty canvas deselects all", () => {
-      const { wrapper } = doShallowMount();
-
-      const workflowComponent = wrapper.findComponent(Workflow);
-
-      workflowComponent.vm.applyNodeSelectionPreview = vi.fn();
-      wrapper
-        .findComponent(SelectionRectangle)
-        .vm.$emit("node-selection-preview", "args");
-
-      expect(
-        workflowComponent.vm.applyNodeSelectionPreview,
-      ).toHaveBeenCalledWith("args");
     });
 
     it("does not fill the screen if workflow is not empty", async () => {

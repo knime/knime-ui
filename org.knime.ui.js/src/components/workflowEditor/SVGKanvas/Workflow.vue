@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useCanvasModesStore } from "@/store/application/canvasModes";
@@ -41,33 +41,9 @@ const sortedNodes = computed(() => {
   return [...unselected, ...selected];
 });
 
-const nodeRefs = ref<Record<string, any>>({});
-const annotationRefs = ref<Record<string, any>>({});
-
 const componentPlaceholders = computed(
   () => workflow.value?.componentPlaceholders ?? [],
 );
-
-const applyNodeSelectionPreview = ({
-  nodeId,
-  type,
-}: {
-  nodeId: string;
-  type: string;
-}) => {
-  nodeRefs.value[`node-${nodeId}`].setSelectionPreview(type);
-};
-
-const applyAnnotationSelectionPreview = ({
-  annotationId,
-  type,
-}: {
-  annotationId: string;
-  type: "hide" | "show" | "clear" | null;
-}) => {
-  annotationRefs.value[`annotation-${annotationId}`].setSelectionPreview(type);
-};
-defineExpose({ applyNodeSelectionPreview, applyAnnotationSelectionPreview });
 </script>
 
 <template>
@@ -83,7 +59,6 @@ defineExpose({ applyNodeSelectionPreview, applyAnnotationSelectionPreview });
         >
           <WorkflowAnnotation
             v-if="editableAnnotationId !== annotation.id"
-            :ref="(el) => (annotationRefs[`annotation-${annotation.id}`] = el)"
             :annotation="annotation"
           />
 
@@ -131,7 +106,6 @@ defineExpose({ applyNodeSelectionPreview, applyAnnotationSelectionPreview });
         >
           <template #default="{ position }">
             <Node
-              :ref="(el) => (nodeRefs[`node-${node.id}`] = el)"
               :class="{ disabled: hasAnnotationModeEnabled }"
               v-bind="node"
               :icon="getNodeIcon(node.id)"

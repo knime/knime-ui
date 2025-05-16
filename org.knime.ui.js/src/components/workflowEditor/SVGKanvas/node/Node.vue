@@ -1,10 +1,12 @@
 <script>
 /* eslint-disable max-lines */
 // TODO: NXT-1069 split up this file
+import { toRef } from "vue";
 import { mapActions, mapState } from "pinia";
 
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
+import { useNodeVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
 import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -236,6 +238,9 @@ export default {
       "isNodeSelected",
       "singleSelectedNode",
       "shouldHideSelection",
+      "preselectionMode",
+      "isNodeSelected",
+      "isNodePreselected",
     ]),
     ...mapState(useWorkflowStore, ["isWritable"]),
     ...mapState(useNodeConfigurationStore, ["isLargeMode", "canBeEnlarged"]),
@@ -283,21 +288,11 @@ export default {
     },
 
     showSelection() {
-      // no preview, honor dragging state
-      if (this.selectionPreview === null) {
-        return this.isSelected && !this.shouldHideSelection;
-      }
-
-      // preview can override selected state (think: deselect with shift)
-      if (this.isSelected && this.selectionPreview === "hide") {
-        return false;
-      }
-
-      return this.selectionPreview === "show" || this.isSelected;
+      return useNodeVisualStatus(toRef(this.id)).showSelectionPlane.value;
     },
 
     showFocus() {
-      return this.getFocusedObject?.id === this.id;
+      return useNodeVisualStatus(toRef(this.id)).showFocus.value;
     },
 
     isExecuting() {

@@ -55,25 +55,10 @@ type DesktopAPIEvents = {
   ]: DesktopAPIFunctionResultPayload;
 };
 
-export type PreviewMode = "show" | "hide" | "clear" | null;
-
-export type SelectionPreviewEvents = {
-  [key: `node-selection-preview-${string}`]: {
-    id: string;
-    preview: PreviewMode;
-  };
-
-  [key: `annotation-selection-preview-${string}`]: {
-    id: string;
-    preview: PreviewMode;
-  };
-};
-
 export type BusEvents = SelectionRectangleEvents &
   UIBlockingOverlayEvents &
   PortConnectionEvents &
-  DesktopAPIEvents &
-  SelectionPreviewEvents;
+  DesktopAPIEvents;
 
 const emitter = mitt<BusEvents>();
 

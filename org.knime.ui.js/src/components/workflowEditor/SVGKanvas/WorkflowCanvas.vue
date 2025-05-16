@@ -53,17 +53,6 @@ onMounted(async () => {
 
 const workflow = ref<InstanceType<typeof Workflow>>();
 
-const onNodeSelectionPreview = ($event: { nodeId: string; type: string }) => {
-  workflow.value?.applyNodeSelectionPreview($event);
-};
-
-const onAnnotationPreview = ($event: {
-  annotationId: string;
-  type: "hide" | "show" | "clear" | null;
-}) => {
-  workflow.value?.applyAnnotationSelectionPreview($event);
-};
-
 const onContainerSizeUpdated = async () => {
   if (isWorkflowEmpty.value) {
     await nextTick();
@@ -105,10 +94,6 @@ const openQuickActionMenu = (event: MouseEvent) => {
 
     <!-- The Annotation- and SelectionRectangle register to the selection-pointer{up,down,move} events of their parent (the Kanvas) -->
     <AnnotationRectangle v-if="hasAnnotationModeEnabled" />
-    <SelectionRectangle
-      v-else
-      @node-selection-preview="onNodeSelectionPreview"
-      @annotation-selection-preview="onAnnotationPreview"
-    />
+    <SelectionRectangle v-else />
   </Kanvas>
 </template>

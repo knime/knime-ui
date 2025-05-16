@@ -65,6 +65,10 @@ export const useSelectionStore = defineStore("selection", () => {
     return !hasDirtyComponentView && !hasDirtyNodeConfiguration;
   };
 
+  const preselectedNodes = ref<Record<string, boolean>>({});
+  const preselectedAnnotations = ref<Record<string, boolean>>({});
+  const preselectionMode = ref(false);
+
   const selectedComponentPlaceholder = ref<string | null>(null);
 
   const setNodeSelection = async (nodeIds: string[]) => {
@@ -167,7 +171,6 @@ export const useSelectionStore = defineStore("selection", () => {
       ) as MetanodePortBarType[],
   );
 
-  const activePortTab = ref<NodeOutputTabIdentifier | null>(null);
   const activeNodePorts = ref({
     nodeId: null as string | null,
     selectedPort: null as any,
@@ -187,8 +190,6 @@ export const useSelectionStore = defineStore("selection", () => {
   };
 
   const focusedObject = ref<WorkflowObject | null>(null);
-  const shouldHideSelection = ref(false);
-
   const startedSelectionFromAnnotationId = ref<string | null>(null);
   const didStartRectangleSelection = ref(false);
 
@@ -423,11 +424,16 @@ export const useSelectionStore = defineStore("selection", () => {
     // direct accessible state
     startedSelectionFromAnnotationId,
     didStartRectangleSelection,
-    activePortTab,
+    activePortTab: ref<NodeOutputTabIdentifier | null>(null),
 
     activeNodePorts,
     updateActiveNodePorts,
-    shouldHideSelection,
+    shouldHideSelection: ref(false),
+
+    preselectionMode,
+    setPreselectionMode: (isPreselectionMode: boolean) => {
+      preselectionMode.value = isPreselectionMode;
+    },
 
     // getters
     selectedNodeIds,
@@ -453,6 +459,10 @@ export const useSelectionStore = defineStore("selection", () => {
 
     // selection state predicates
     isNodeSelected: (id: string) => Boolean(selectedNodes.value[id]),
+    isNodePreselected: (id: string) =>
+      preselectionMode.value && Boolean(preselectedNodes.value[id]),
+    isAnnotationPreselected: (id: string) =>
+      preselectionMode.value && Boolean(preselectedAnnotations.value[id]),
     isMetaNodePortBarSelected: (type: "in" | "out") =>
       Boolean(selectedMetanodePortBars.value[type]),
     isAnnotationSelected: (id: string) =>
@@ -484,6 +494,13 @@ export const useSelectionStore = defineStore("selection", () => {
     },
     deselectComponentPlaceholder: () =>
       (selectedComponentPlaceholder.value = null),
+
+    preselectNodes: selectionAdder(preselectedNodes),
+    preselectAnnotations: selectionAdder(preselectedAnnotations),
+    deselectAllPreselectedObjects: () => {
+      preselectedNodes.value = {};
+      preselectedAnnotations.value = {};
+    },
 
     selectMetanodePortBar: selectionAdder(selectedMetanodePortBars),
     deselectMetanodePortBar: selectionRemover(selectedMetanodePortBars),
