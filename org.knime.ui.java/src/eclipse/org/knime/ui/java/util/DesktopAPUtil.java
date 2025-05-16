@@ -92,6 +92,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
+import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
@@ -135,14 +136,15 @@ public final class DesktopAPUtil {
      */
     public static Optional<WorkflowManager> loadWorkflowManagerWithProgress(final WorkflowContextV2 ctx) {
         return runWithProgress(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
-            progress -> loadWorkflowManager(progress, ctx.getExecutorInfo().getLocalWorkflowPath(), ctx));
+            progress -> loadWorkflowManager(progress, ctx.getExecutorInfo().getLocalWorkflowPath(), ctx,
+                VersionId.currentState()));
     }
 
     static WorkflowManager loadWorkflowManager(final IProgressMonitor monitor, final Path path,
-        final WorkflowContextV2 workflowContext) {
+        final WorkflowContextV2 workflowContext, final VersionId version) {
         monitor.subTask(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG);
         final var wfFile = path.resolve(WorkflowPersistor.WORKFLOW_FILE);
-        var isComponentProject = path.resolve(WorkflowPersistor.TEMPLATE_FILE).toFile().exists();
+        final var isComponentProject = path.resolve(WorkflowPersistor.TEMPLATE_FILE).toFile().exists();
 
         if (isComponentProject) {
             try {
@@ -153,15 +155,20 @@ public final class DesktopAPUtil {
             }
         }
 
-        var wfmRef = new AtomicReference<WorkflowManager>();
+        final var wfmRef = new AtomicReference<WorkflowManager>();
         final BiConsumer<WorkflowManager, Boolean> wfmLoadedCallback = (wfm, doSave) -> {
-            wfmRef.set(wfm);
+            if (wfm != null) {
+                // We do this, since this is the most straight forward way to re-use the
+                // 'WorkflowManager.isWriteProtected()' property that causes dialogs to be displayed as read-only.
+                wfm.setWriteProtected(version instanceof VersionId.Fixed);
+            }
+            wfmRef.set(wfm); // Sets the workflow manager reference
             if (Boolean.TRUE.equals(doSave)) {
                 doSaveWorkflowWithWorkflowManager(wfm, monitor);
             }
         };
         final var runnable = new LoadWorkflowRunnable(wfmLoadedCallback, wfFile.toFile(), workflowContext);
-        runnable.run(monitor); // Sets the workflow reference using the callback as a side effect
+        runnable.run(monitor); // Sets the workflow manager reference using the callback as a side effect
 
         return wfmRef.get();
     }

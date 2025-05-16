@@ -130,7 +130,7 @@ public final class CreateProject {
                 }
                 var space = spaceProviders.getSpace(origin.providerId(), origin.spaceId());
                 final var workflowContext = createWorkflowContext(space, origin.itemId(), path.get(), version);
-                return DesktopAPUtil.loadWorkflowManager(monitor, path.get(), workflowContext);
+                return DesktopAPUtil.loadWorkflowManager(monitor, path.get(), workflowContext, version);
             }).orElse(null);
     }
 
