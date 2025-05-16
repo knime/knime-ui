@@ -20,7 +20,7 @@ export const getPresets = ($toast: ToastServiceProvider): ApiToastPresets => {
         type: "error",
         autoRemove: false,
         headline,
-        message: message ?? "Unexpected error during hub communication",
+        message: message ?? "Unexpected error during hub action.",
         buttons: [
           {
             callback: () => {

@@ -37,19 +37,7 @@ const hasEditCapability = computed(
 
 const isCreatingVersion = ref(false);
 
-const showErrorToast = ({
-  error,
-  headline,
-}: {
-  error: unknown;
-  headline: string;
-}) => {
-  getToastPresets().toastPresets.api.hubActionError({
-    error,
-    headline,
-    message: "An unexpected error occurred.",
-  });
-};
+const { toastPresets } = getToastPresets();
 
 const onClose = () => {
   versionsStore.deactivateVersionsMode();
@@ -59,37 +47,31 @@ const onSelect = (version: NamedItemVersion["version"]) => {
   versionsStore.switchVersion(version);
 };
 
-const onLoadAll = async () => {
-  try {
-    await versionsStore.refreshData({ loadAll: true });
-  } catch (error) {
-    showErrorToast({
+const onLoadAll = () => {
+  versionsStore.refreshData({ loadAll: true }).catch((error) =>
+    toastPresets.api.hubActionError({
       error,
       headline: "Loading all versions failed",
-    });
-  }
+    }),
+  );
 };
 
-const onDelete = async (version: NamedItemVersion["version"]) => {
-  try {
-    await versionsStore.deleteVersion(version);
-  } catch (error) {
-    showErrorToast({
+const onDelete = (version: NamedItemVersion["version"]) => {
+  versionsStore.deleteVersion(version).catch((error) =>
+    toastPresets.api.hubActionError({
       error,
       headline: "Deletion of the version failed",
-    });
-  }
+    }),
+  );
 };
 
 const onRestore = (version: NamedItemVersion["version"]) => {
-  try {
-    versionsStore.restoreVersion(version);
-  } catch (error) {
-    showErrorToast({
+  versionsStore.restoreVersion(version).catch((error) =>
+    toastPresets.api.hubActionError({
       error,
       headline: "Restoring of the version failed",
-    });
-  }
+    }),
+  );
 };
 
 const onCreate = async ({ name, description }) => {
@@ -100,7 +82,7 @@ const onCreate = async ({ name, description }) => {
     });
     isCreatingVersion.value = false;
   } catch (error) {
-    showErrorToast({
+    toastPresets.api.hubActionError({
       error,
       headline: "Creation of the version failed",
     });
@@ -118,6 +100,15 @@ const onUpload = async () => {
       stopWatcher();
       await versionsStore.activateVersionsMode();
     },
+  );
+};
+
+const onDiscardCurrentState = () => {
+  versionsStore.discardUnversionedChanges().catch((error) =>
+    toastPresets.api.hubActionError({
+      error,
+      headline: "Discarding unversioned changes failed",
+    }),
   );
 };
 </script>
@@ -159,6 +150,7 @@ const onUpload = async () => {
       @delete="onDelete"
       @restore="onRestore"
       @create="isCreatingVersion = true"
+      @discard-current-state="onDiscardCurrentState"
     />
   </div>
 </template>

@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { VueWrapper, mount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import type { Toast } from "@knime/components";
-import { rfcErrors } from "@knime/hub-features";
 import {
   CreateVersionForm,
   ManageVersions,
@@ -73,7 +72,7 @@ const getExpectedToastWithHeadline = (headline: string): Toast => {
     headline,
     autoRemove: false,
     buttons: expect.any(Array),
-    message: "An unexpected error occurred.",
+    message: expect.any(String),
     type: "error",
   };
 };
@@ -136,7 +135,7 @@ describe("ManageVersionsWrapper.vue", () => {
 
       it("close", () => {
         const { wrapper, mockedVersionsStore } = doMount();
-        mockedVersionsStore.deactivateVersionsMode = vi.fn();
+        mockedVersionsStore.deactivateVersionsMode.mockResolvedValue();
 
         wrapper.findComponent(ManageVersions).vm.$emit("close");
         expect(
@@ -146,7 +145,7 @@ describe("ManageVersionsWrapper.vue", () => {
 
       it("select", () => {
         const { wrapper, mockedVersionsStore } = doMount();
-        mockedVersionsStore.switchVersion = vi.fn();
+        mockedVersionsStore.switchVersion.mockResolvedValue();
 
         wrapper.findComponent(ManageVersions).vm.$emit("select", version);
         expect(mockedVersionsStore.switchVersion).toHaveBeenCalledWith(version);
@@ -154,20 +153,20 @@ describe("ManageVersionsWrapper.vue", () => {
 
       it("delete", () => {
         const { wrapper, mockedVersionsStore } = doMount();
-        mockedVersionsStore.deleteVersion = vi.fn();
+        mockedVersionsStore.deleteVersion.mockResolvedValue();
 
         wrapper.findComponent(ManageVersions).vm.$emit("delete", version);
         expect(mockedVersionsStore.deleteVersion).toHaveBeenCalledWith(version);
         expect(toast.show).not.toHaveBeenCalled();
       });
 
-      it("delete shows error toast on failure", () => {
+      it("delete shows error toast on failure", async () => {
         const { wrapper, mockedVersionsStore } = doMount();
-        mockedVersionsStore.deleteVersion.mockImplementationOnce(() => {
-          throw someError;
-        });
+        mockedVersionsStore.deleteVersion.mockRejectedValue(someError);
 
         wrapper.findComponent(ManageVersions).vm.$emit("delete", version);
+        await flushPromises();
+
         expect(mockedVersionsStore.deleteVersion).toHaveBeenCalledWith(version);
         expect(toast.show).toHaveBeenCalledWith(
           getExpectedToastWithHeadline("Deletion of the version failed"),
@@ -176,7 +175,7 @@ describe("ManageVersionsWrapper.vue", () => {
 
       it("restore", () => {
         const { wrapper, mockedVersionsStore } = doMount();
-        mockedVersionsStore.restoreVersion = vi.fn();
+        mockedVersionsStore.restoreVersion.mockResolvedValue();
 
         wrapper.findComponent(ManageVersions).vm.$emit("restore", version);
         expect(mockedVersionsStore.restoreVersion).toHaveBeenCalledWith(
@@ -185,13 +184,13 @@ describe("ManageVersionsWrapper.vue", () => {
         expect(toast.show).not.toHaveBeenCalled();
       });
 
-      it("restore shows error toast on failure", () => {
+      it("restore shows error toast on failure", async () => {
         const { wrapper, mockedVersionsStore } = doMount();
-        mockedVersionsStore.restoreVersion.mockImplementationOnce(() => {
-          throw someError;
-        });
+        mockedVersionsStore.restoreVersion.mockRejectedValue(someError);
 
         wrapper.findComponent(ManageVersions).vm.$emit("restore", version);
+        await flushPromises();
+
         expect(mockedVersionsStore.restoreVersion).toHaveBeenCalledWith(
           version,
         );
@@ -202,7 +201,7 @@ describe("ManageVersionsWrapper.vue", () => {
 
       it("loadAll", () => {
         const { wrapper, mockedVersionsStore } = doMount();
-        mockedVersionsStore.refreshData = vi.fn();
+        mockedVersionsStore.refreshData.mockResolvedValue();
 
         wrapper.findComponent(ManageVersions).vm.$emit("loadAll");
         expect(mockedVersionsStore.refreshData).toHaveBeenCalledWith({
@@ -211,13 +210,13 @@ describe("ManageVersionsWrapper.vue", () => {
         expect(toast.show).not.toHaveBeenCalled();
       });
 
-      it("loadAll shows error toast on failure", () => {
+      it("loadAll shows error toast on failure", async () => {
         const { wrapper, mockedVersionsStore } = doMount();
-        mockedVersionsStore.refreshData.mockImplementationOnce(() => {
-          throw someError;
-        });
+        mockedVersionsStore.refreshData.mockRejectedValue(someError);
 
         wrapper.findComponent(ManageVersions).vm.$emit("loadAll");
+        await flushPromises();
+
         expect(mockedVersionsStore.refreshData).toHaveBeenCalledWith({
           loadAll: true,
         });
@@ -232,7 +231,7 @@ describe("ManageVersionsWrapper.vue", () => {
         const { wrapper, mockedVersionsStore } = doMount({
           versionsModeStatus: "promoteHub",
         });
-        mockedVersionsStore.deactivateVersionsMode = vi.fn();
+        mockedVersionsStore.deactivateVersionsMode.mockResolvedValue();
 
         wrapper.findComponent(VersionPanelPromoteHub).vm.$emit("close");
         expect(
@@ -291,7 +290,7 @@ describe("ManageVersionsWrapper.vue", () => {
       const { wrapper, mockedVersionsStore } = doMount();
       await openCreateVersionsForm(wrapper);
 
-      mockedVersionsStore.createVersion = vi.fn();
+      mockedVersionsStore.createVersion.mockResolvedValue();
       const versionData = {
         name: "mockName",
         description: "someMockDescription",
@@ -331,43 +330,6 @@ describe("ManageVersionsWrapper.vue", () => {
       );
       expect(toast.show).toHaveBeenCalledWith(
         getExpectedToastWithHeadline("Creation of the version failed"),
-      );
-    });
-  });
-
-  describe("showErrorToast", () => {
-    it("works for RFCError", () => {
-      const { wrapper } = doMount();
-
-      const headline = "some headline";
-      (wrapper.vm as any).showErrorToast({
-        error: new rfcErrors.RFCError({
-          title: "some title",
-          status: 0,
-          date: new Date(),
-          requestId: "requestId",
-        }),
-        headline,
-      });
-
-      expect(toast.show).toHaveBeenCalledWith({
-        type: "error",
-        headline,
-        component: expect.any(Object),
-        autoRemove: false,
-      });
-    });
-
-    it("works for other errors", () => {
-      const { wrapper } = doMount();
-
-      (wrapper.vm as any).showErrorToast({
-        error: someError,
-        headline: "some headline",
-      });
-
-      expect(toast.show).toHaveBeenCalledWith(
-        getExpectedToastWithHeadline("some headline"),
       );
     });
   });

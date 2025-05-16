@@ -29,7 +29,7 @@ import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { getCustomFetchOptions } from "@/store/spaces/common.ts";
+import { getCustomFetchOptionsForBrowser } from "@/store/spaces/common.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
 import { useSelectionStore } from "../selection";
@@ -48,14 +48,10 @@ type ProjectVersionsModeInfo = {
 };
 
 const getVersionsApi = () => {
-  const { activeProjectProvider } = useSpaceProvidersStore();
-  const { baseURL: customBaseURL } = getCustomFetchOptions();
-
-  const baseUrl = isBrowser() ? customBaseURL : activeProjectProvider?.hostname;
-
   return useVersionsApi({
-    baseUrl,
-    customFetchClientOptions: getCustomFetchOptions(),
+    customFetchClientOptions: isBrowser()
+      ? getCustomFetchOptionsForBrowser()
+      : { baseURL: useSpaceProvidersStore().activeProjectProvider?.hostname },
   });
 };
 
@@ -307,6 +303,61 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     });
   }
 
+  async function discardUnversionedChanges() {
+    const { show: showConfirmDialog } = useConfirmDialog();
+    const { confirmed } = await showConfirmDialog({
+      title: "Confirm discarding changes",
+      message:
+        "Any changes to the workflow since the last created version will be deleted.",
+      buttons: [
+        { type: "cancel", label: "Cancel" },
+        { type: "confirm", label: "Confirm", flushRight: true },
+      ],
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    const { activeProjectId, activeProjectOrigin } = useApplicationStore();
+    const { activeProjectProvider } = useSpaceProvidersStore();
+
+    if (!activeProjectId || !activeProjectOrigin || !activeProjectProvider) {
+      consola.error(
+        "WorkflowVersionsStore::discardUnversionedChanges -> Prerequisite failed",
+        { activeProjectId, activeProjectProvider, activeProjectOrigin },
+      );
+      return;
+    }
+
+    await getVersionsApi().discardUnversionedChanges({
+      itemId: activeProjectOrigin.itemId,
+    });
+
+    await Promise.all([
+      API.workflow.disposeVersion({
+        projectId: activeProjectId,
+        version: CURRENT_STATE_VERSION,
+      }),
+      refreshData(),
+    ]);
+
+    if (activeProjectCurrentVersion.value === CURRENT_STATE_VERSION) {
+      // refresh the project current-state
+      await $router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: activeProjectId },
+        query: {
+          version: null,
+        },
+        force: true,
+      });
+      // project is clean after reload
+      useDirtyProjectsTrackingStore().updateDirtyProjectsMap({
+        [activeProjectId]: false,
+      });
+    }
+  }
+
   async function switchVersion(version: NamedItemVersion["version"]) {
     const { activeProjectId } = useApplicationStore();
     if (!activeProjectId) {
@@ -503,6 +554,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     createVersion,
     deleteVersion,
     restoreVersion,
+    discardUnversionedChanges,
     switchVersion,
     activateVersionsMode,
     deactivateVersionsMode,
