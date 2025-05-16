@@ -127,12 +127,16 @@ onMounted(() => {
 onUnmounted(() => {
   stopResizeObserver?.();
 });
+
+// Canvas div needs to be focusable to receive keyboard events for navigation, moving objects, Escape handling, etc.
+const TAB_INDEX = 0;
 </script>
 
 <template>
   <div
     :id="KANVAS_ID"
     ref="rootEl"
+    :tabindex="TAB_INDEX"
     class="kanvas-container"
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
