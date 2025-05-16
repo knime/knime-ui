@@ -4,7 +4,7 @@ import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
 
-import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
+import { type Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { createShortcutsService } from "@/plugins/shortcuts";
@@ -467,12 +467,47 @@ describe("WorkflowToolbar.vue", () => {
         .at(0);
     };
 
+    const projectId = "projectId";
+    const openProjects = [
+      createProject({ projectId, origin: { spaceId: "space1" } }),
+    ];
+    const localWorkflow = createWorkflow({
+      info: { providerType: WorkflowInfo.ProviderTypeEnum.LOCAL },
+    });
+    const hubWorkflow = createWorkflow({
+      info: { providerType: WorkflowInfo.ProviderTypeEnum.HUB },
+    });
+
     it("doesn't show if not only Community Hub is mounted", () => {
       const { wrapper } = doMount({
-        getCommunityHubInfo: {
-          isOnlyCommunityHubMounted: false,
-        },
+        getCommunityHubInfo: { isOnlyCommunityHubMounted: false },
       });
+
+      expect(getDeployButton(wrapper)).toBeUndefined();
+    });
+
+    it("doesn't show if workflow isn't from hub", async () => {
+      const { wrapper, ...mockedStores } = doMount();
+
+      // set active workflow to local
+      mockedStores.applicationStore.setActiveProjectId(projectId);
+      mockedStores.applicationStore.setOpenProjects(openProjects);
+      mockedStores.workflowStore.setActiveWorkflow(localWorkflow);
+      await flushPromises();
+
+      expect(getDeployButton(wrapper)).toBeUndefined();
+    });
+
+    it("doesn't show if project is unknown", async () => {
+      const { wrapper, ...mockedStores } = doMount();
+
+      // set active workflow to unknown
+      mockedStores.applicationStore.setActiveProjectId(projectId);
+      mockedStores.applicationStore.setOpenProjects([
+        createProject({ projectId, origin: { spaceId: "restrictedSpace" } }),
+      ]);
+      mockedStores.workflowStore.setActiveWorkflow(hubWorkflow);
+      await flushPromises();
 
       expect(getDeployButton(wrapper)).toBeUndefined();
     });
@@ -480,34 +515,10 @@ describe("WorkflowToolbar.vue", () => {
     it("shows if only Community Hub is mounted and workflow is from hub", async () => {
       const { wrapper, ...mockedStores } = doMount();
 
-      // does not show for local wf
-      expect(getDeployButton(wrapper)).toBeUndefined();
-
-      // set active wf to hub
-      const hubProjectId = "hubProject1";
-      mockedStores.applicationStore.setActiveProjectId(hubProjectId);
-      const hub = createSpaceProvider({
-        id: "hubProviderId",
-        type: SpaceProviderNS.TypeEnum.HUB,
-        isCommunityHub: true,
-      });
-      mockedStores.spaceProvidersStore.setSpaceProviders({
-        [hub.id]: hub,
-      });
-      mockedStores.spaceCachingStore.projectPath = {
-        [hubProjectId]: {
-          spaceId: "space1",
-          spaceProviderId: "hubProviderId",
-          itemId: "root",
-        },
-      };
-      mockedStores.workflowStore.setActiveWorkflow(
-        createWorkflow({
-          info: {
-            providerType: WorkflowInfo.ProviderTypeEnum.HUB,
-          },
-        }),
-      );
+      // set active workflow to hub
+      mockedStores.applicationStore.setActiveProjectId(projectId);
+      mockedStores.applicationStore.setOpenProjects(openProjects);
+      mockedStores.workflowStore.setActiveWorkflow(hubWorkflow);
       await flushPromises();
 
       const deployButton = getDeployButton(wrapper);

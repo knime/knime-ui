@@ -395,7 +395,9 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
       </ToolbarButtonWithHint>
       <ToolbarButton
         v-else-if="
-          getCommunityHubInfo.isOnlyCommunityHubMounted && isHubWorkflow
+          getCommunityHubInfo.isOnlyCommunityHubMounted &&
+          isHubWorkflow &&
+          !isUnknownProject(activeProjectId)
         "
         class="toolbar-button"
         with-text
