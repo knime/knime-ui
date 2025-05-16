@@ -1,163 +1,374 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { findObjectsForSelection } from "@/components/workflowEditor/util/findObjectsForSelection";
 import { $bus } from "@/plugins/event-bus";
-import { createWorkflow } from "@/test/factories";
+import {
+  createNativeNode,
+  createWorkflow,
+  createWorkflowAnnotation,
+} from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import SelectionRectangle from "../SelectionRectangle.vue";
 
+const findObjectsForSelectionMock = vi.hoisted(() => vi.fn());
+
 vi.mock("@/components/workflowEditor/util/findObjectsForSelection", () => ({
-  findObjectsForSelection: vi.fn(),
+  findObjectsForSelection: findObjectsForSelectionMock,
 }));
 
-const findObjectsForSelectionMock = vi.mocked(findObjectsForSelection);
-findObjectsForSelectionMock.mockReturnValue({
-  nodesInside: ["root:1"],
-  nodesOutside: ["root:2"],
-  annotationsInside: [],
-  annotationsOutside: [],
+const node1 = createNativeNode({ id: "root:1" });
+const node2 = createNativeNode({ id: "root:2" });
+const annotation1 = createWorkflowAnnotation({
+  id: "anno1602",
+  text: { value: "Annotation text" },
+});
+const annotation2 = createWorkflowAnnotation({
+  id: "anno1603",
+  text: { value: "Annotation text 2" },
 });
 
+const nodesInside = [node1.id, node2.id];
+const nodesOutside = ["outside-1", "outside-2"];
+const annotationsInside = [annotation1.id, annotation2.id];
+const annotationsOutside = ["ann-outside-1", "ann-outside-2"];
+
+const startPos = { x: 0, y: 0 };
+const endPos = { x: 100, y: 100 };
+
 describe("SelectionRectangle.vue", () => {
-  const doMount = () => {
+  const doMount = (
+    selectedNodeIds: string[] = [],
+    selectedAnnotationIds: string[] = [],
+  ) => {
+    findObjectsForSelectionMock.mockReturnValue({
+      nodesInside,
+      nodesOutside,
+      annotationsInside,
+      annotationsOutside,
+    });
+
+    const workflow = createWorkflow({
+      nodes: { [node1.id]: node1, [node2.id]: node2 },
+      connections: {},
+      workflowAnnotations: [annotation1, annotation2],
+    });
+
     const mockedStores = mockStores();
+    // @ts-expect-error
+    mockedStores.selectionStore.selectedNodeIds = selectedNodeIds;
+    // @ts-expect-error
+    mockedStores.selectionStore.selectedAnnotationIds = selectedAnnotationIds;
+    // @ts-expect-error
+
+    mockedStores.canvasStore.screenToCanvasCoordinates = vi
+      .fn()
+      .mockImplementation(([x, y]) => [x, y]);
+
+    mockedStores.webglCanvasStore.canvasOffset = { x: 0, y: 0 };
+    mockedStores.webglCanvasStore.zoomFactor = 1;
+
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
+
     const wrapper = mount(SelectionRectangle, {
       global: {
         plugins: [mockedStores.testingPinia],
       },
     });
-
-    const busEmitSpy = vi.spyOn($bus, "emit");
-
-    mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
-
-    return { wrapper, mockedStores, busEmitSpy };
-  };
-
-  const triggerSelection = async (
-    mockedStores: ReturnType<typeof mockStores>,
-    endSelection = true,
-  ) => {
-    mockedStores.webglCanvasStore.canvasOffset = { x: 10, y: 10 };
-    mockedStores.webglCanvasStore.zoomFactor = 1;
-
-    $bus.emit("selection-pointerdown", {
+    const startEvent = {
+      offsetX: startPos.x,
+      offsetY: startPos.y,
+      shiftKey: false,
       pointerId: 1,
-      offsetX: 20,
-      offsetY: 20,
-      target: {
-        // @ts-expect-error
-        hasPointerCapture: () => true,
-        setPointerCapture: () => null,
-        releasePointerCapture: () => null,
-      },
-    });
+    };
+    const endEvent = { offsetX: endPos.x, offsetY: endPos.y, pointerId: 1 };
 
-    await flushPromises();
-
-    const ptrMove = {
-      pointerId: 1,
-      offsetX: 80,
-      offsetY: 80,
-      target: {
-        hasPointerCapture: () => true,
-        setPointerCapture: () => null,
-        releasePointerCapture: () => null,
-      },
+    const pointerDown = async (event?: Partial<typeof startEvent>) => {
+      $bus.emit("selection-pointerdown", {
+        ...startEvent,
+        ...event,
+        currentTarget: {
+          // @ts-expect-error
+          getBoundingClientRect: () => ({
+            left: 0,
+            top: 0,
+          }),
+        },
+        target: {
+          // @ts-expect-error
+          setPointerCapture: () => null,
+        },
+      });
+      await flushPromises();
+      await nextTick();
     };
 
-    // @ts-expect-error
-    $bus.emit("selection-pointermove", ptrMove);
+    const pointerMove = async (event?: Partial<typeof endEvent>) => {
+      $bus.emit("selection-pointermove", {
+        ...endEvent,
+        ...event,
+        currentTarget: {
+          // @ts-expect-error
+          getBoundingClientRect: () => ({
+            left: 0,
+            top: 0,
+          }),
+        },
+      });
+      await flushPromises();
+      await nextTick();
+    };
 
-    if (endSelection) {
-      // @ts-expect-error
-      $bus.emit("selection-pointerup", ptrMove);
-    }
-    await flushPromises();
+    const pointerUp = async (event?: Partial<typeof endEvent>) => {
+      vi.useFakeTimers(); // implementation contains setTimout
+
+      // stop also changes global dragging state
+      $bus.emit("selection-pointerup", {
+        ...endEvent,
+        ...event,
+        target: {
+          // @ts-expect-error
+          releasePointerCapture: vi.fn(),
+          // @ts-expect-error
+          hasPointerCapture: vi.fn(),
+        },
+      });
+
+      vi.runAllTimers();
+      await flushPromises();
+      await nextTick();
+    };
+
+    return {
+      wrapper,
+      pointerDown,
+      pointerMove,
+      pointerUp,
+      mockedStores,
+      selectionStore: mockedStores.selectionStore,
+      workflow,
+    };
   };
 
-  it("should not get called if use is dragging", () => {
-    const { mockedStores, busEmitSpy } = doMount();
+  beforeEach(vi.clearAllMocks);
 
-    mockedStores.movingStore.isDragging = true;
+  it("appears on pointerDown, disappears on pointerUp", async () => {
+    const { pointerDown, pointerUp, wrapper } = await doMount();
+    expect(wrapper.isVisible()).toBe(false);
 
-    triggerSelection(mockedStores);
-    expect(
-      mockedStores.selectionStore.deselectAllObjects,
-    ).not.toHaveBeenCalled();
+    await pointerDown();
 
-    expect(findObjectsForSelectionMock).not.toHaveBeenCalled();
+    expect(wrapper.isVisible()).toBe(true);
 
-    expect(busEmitSpy).not.toHaveBeenCalledWith(
-      "node-selection-preview-root:1",
-      {
-        id: "root:1",
-        preview: "show",
-      },
-    );
-    expect(busEmitSpy).not.toHaveBeenCalledWith(
-      "node-selection-preview-root:2",
-      {
-        id: "root:2",
-        preview: "hide",
-      },
-    );
-
-    expect(mockedStores.selectionStore.selectNodes).not.toHaveBeenCalled();
-  });
-
-  it("should search for objects inside selection and update selection preview", async () => {
-    const { mockedStores, busEmitSpy } = doMount();
-
-    mockedStores.webglCanvasStore.canvasOffset = { x: 10, y: 10 };
-    mockedStores.webglCanvasStore.zoomFactor = 1;
-
-    await triggerSelection(mockedStores);
-    expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
-
-    expect(findObjectsForSelectionMock).toHaveBeenCalledWith({
-      startPos: { x: 10, y: 10 },
-      endPos: { x: 70, y: 70 },
-      workflow: mockedStores.workflowStore.activeWorkflow,
-    });
-
-    expect(busEmitSpy).toHaveBeenCalledWith("node-selection-preview-root:1", {
-      id: "root:1",
-      preview: "show",
-    });
-    expect(busEmitSpy).toHaveBeenCalledWith("node-selection-preview-root:2", {
-      id: "root:2",
-      preview: "hide",
-    });
-  });
-
-  it("should select the found objects inside the selection", async () => {
-    const { mockedStores, busEmitSpy } = doMount();
-
-    mockedStores.webglCanvasStore.canvasOffset = { x: 10, y: 10 };
-    mockedStores.webglCanvasStore.zoomFactor = 1;
-
-    await triggerSelection(mockedStores);
+    await pointerUp();
     await nextTick();
 
-    expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledWith([
-      "root:1",
-    ]);
+    expect(wrapper.isVisible()).toBe(false);
+  });
 
-    expect(busEmitSpy).toHaveBeenCalledWith("node-selection-preview-root:1", {
-      id: "root:1",
-      preview: null,
+  describe("selection", () => {
+    const mountAndSelect = async () => {
+      const mountResult = doMount();
+
+      await mountResult.pointerDown();
+      await mountResult.pointerMove();
+      await nextTick();
+
+      return mountResult;
+    };
+
+    it("correctly uses algorithm to find included and excluded items", async () => {
+      const { workflow } = await mountAndSelect();
+      expect(findObjectsForSelectionMock).toHaveBeenCalledWith({
+        startPos,
+        endPos,
+        workflow,
+      });
     });
 
-    expect(mockedStores.selectionStore.deselectNodes).toHaveBeenCalledWith([
-      "root:2",
-    ]);
+    it("shows selection preview for included nodes and annotations", async () => {
+      const { selectionStore } = await mountAndSelect();
 
-    expect(busEmitSpy).toHaveBeenCalledWith("node-selection-preview-root:2", {
-      id: "root:2",
-      preview: null,
+      expect(selectionStore.preselectionMode).toBe(true);
+      expect(selectionStore.isNodePreselected(nodesInside[0])).toBe(true);
+      expect(selectionStore.isNodePreselected(nodesInside[1])).toBe(true);
+
+      expect(selectionStore.isAnnotationPreselected(annotationsInside[0])).toBe(
+        true,
+      );
+      expect(selectionStore.isAnnotationPreselected(annotationsInside[1])).toBe(
+        true,
+      );
+
+      expect(selectionStore.isNodePreselected(nodesOutside[0])).toBe(false);
+      expect(selectionStore.isNodePreselected(nodesOutside[1])).toBe(false);
+
+      expect(
+        selectionStore.isAnnotationPreselected(annotationsOutside[0]),
+      ).toBe(false);
+      expect(
+        selectionStore.isAnnotationPreselected(annotationsOutside[1]),
+      ).toBe(false);
+    });
+
+    it("removes selection preview of previously selected nodes", async () => {
+      const { pointerMove, selectionStore } = await mountAndSelect();
+      findObjectsForSelectionMock.mockReturnValue({
+        nodesInside: [],
+        nodesOutside: nodesInside,
+        annotationsInside: [],
+        annotationsOutside: annotationsInside,
+      });
+      await pointerMove();
+
+      expect(selectionStore.preselectionMode).toBe(true);
+      expect(selectionStore.isNodePreselected(nodesInside[0])).toBe(false);
+      expect(selectionStore.isNodePreselected(nodesInside[1])).toBe(false);
+
+      expect(selectionStore.isAnnotationPreselected(annotationsInside[0])).toBe(
+        false,
+      );
+      expect(selectionStore.isAnnotationPreselected(annotationsInside[1])).toBe(
+        false,
+      );
+    });
+
+    it("selects nodes and annotations on pointer up", async () => {
+      const { pointerUp, selectionStore } = await mountAndSelect();
+      await pointerUp();
+      await flushPromises();
+
+      expect(selectionStore.deselectAllObjects).toHaveBeenCalledWith(
+        nodesInside,
+      );
+
+      expect(selectionStore.selectAnnotations).toHaveBeenCalledWith(
+        annotationsInside,
+      );
+    });
+  });
+
+  describe("rectangle selection inverse mode, i.e. shift/ctrl", () => {
+    const mountAndSelect = async () => {
+      const mountResult = doMount(nodesInside, annotationsInside);
+
+      await mountResult.pointerDown({ shiftKey: true });
+      await mountResult.pointerMove();
+      await mountResult.pointerMove();
+      await nextTick();
+
+      return mountResult;
+    };
+
+    it("deselects already selected nodes and annotations with preview", async () => {
+      const { selectionStore } = await mountAndSelect();
+
+      expect(selectionStore.preselectionMode).toBe(true);
+      expect(selectionStore.isNodePreselected(nodesInside[0])).toBe(false);
+      expect(selectionStore.isNodePreselected(nodesInside[1])).toBe(false);
+
+      expect(selectionStore.isAnnotationPreselected(annotationsInside[0])).toBe(
+        false,
+      );
+      expect(selectionStore.isAnnotationPreselected(annotationsInside[1])).toBe(
+        false,
+      );
+    });
+
+    it("pointerup deselects nodes", async () => {
+      const { selectionStore, pointerUp, pointerMove } = await mountAndSelect();
+
+      await pointerMove();
+      await pointerUp();
+
+      expect(selectionStore.preselectionMode).toBe(false);
+      expect(selectionStore.deselectAllObjects).toHaveBeenCalledWith([]);
+      expect(selectionStore.selectAnnotations).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe("selection with shift", () => {
+    it("adds nodes to selection with shift", async () => {
+      const someOtherNodeId = "some_other_node";
+      const { mockedStores, pointerDown, pointerMove, pointerUp } = doMount(
+        [someOtherNodeId],
+        [],
+      );
+
+      await pointerDown({ shiftKey: true });
+      await pointerMove();
+      await pointerUp();
+
+      expect(
+        mockedStores.selectionStore.deselectAllObjects,
+      ).toHaveBeenCalledWith(
+        expect.arrayContaining([...nodesInside, someOtherNodeId]),
+      );
+    });
+
+    it("adds annotations to selection with shift", async () => {
+      const someOtherAnnotationId = "some_other_annotation";
+
+      const { mockedStores, pointerDown, pointerMove, pointerUp } = doMount(
+        [],
+        [someOtherAnnotationId],
+      );
+
+      await pointerDown({ shiftKey: true });
+      await pointerMove();
+      await pointerUp();
+
+      expect(
+        mockedStores.selectionStore.selectAnnotations,
+      ).toHaveBeenCalledWith(
+        expect.arrayContaining([...annotationsInside, someOtherAnnotationId]),
+      );
+    });
+  });
+
+  describe("non actions", () => {
+    it("unregister events on beforeUnmount", () => {
+      const $bussOffSpy = vi.spyOn($bus, "off");
+      const { wrapper } = doMount();
+      // @ts-expect-error
+      wrapper.vm.$parent.$off = vi.fn();
+      wrapper.unmount();
+      // pointer-down, pointer-move, pointer-up
+      expect($bussOffSpy).toHaveBeenCalledTimes(3);
+    });
+
+    it("does nothing if move is called but pointerDown is missing", async () => {
+      const { wrapper, pointerMove, pointerUp, mockedStores } = doMount();
+      await pointerMove();
+      await pointerUp();
+
+      expect(wrapper.emitted("nodeSelectionPreview")).toBeFalsy();
+      expect(wrapper.emitted("annotationSelectionPreview")).toBeFalsy();
+      expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledTimes(0);
+      expect(
+        mockedStores.selectionStore.selectAnnotations,
+      ).toHaveBeenCalledTimes(0);
+    });
+
+    it("does nothing if pointerId is different", async () => {
+      const { pointerDown, pointerMove, pointerUp, mockedStores } = doMount();
+
+      findObjectsForSelectionMock.mockClear();
+      await pointerDown({ pointerId: 22 });
+      expect(findObjectsForSelectionMock).toHaveBeenCalled();
+      findObjectsForSelectionMock.mockClear();
+
+      await pointerMove({ pointerId: 3 });
+      expect(findObjectsForSelectionMock).not.toHaveBeenCalled();
+
+      await pointerUp({ pointerId: 42 });
+
+      expect(
+        mockedStores.selectionStore.deselectAllObjects,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockedStores.selectionStore.selectAnnotations,
+      ).not.toHaveBeenCalled();
     });
   });
 });

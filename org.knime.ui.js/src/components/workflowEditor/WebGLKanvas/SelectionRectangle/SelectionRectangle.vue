@@ -5,7 +5,6 @@ import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
-import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -21,112 +20,92 @@ const { isDragging } = storeToRefs(useMovingStore());
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const selectionStore = useSelectionStore();
 
+const inverseMode = ref(false);
 const isSelectionVisible = ref(false);
+
 const startPos = ref<XY>({ x: 0, y: 0 });
 const endPos = ref<XY>({ x: 0, y: 0 });
 
-const nodesInside = ref<string[]>([]);
-const nodesOutside = ref<string[]>([]);
-const annotationsInside = ref<string[]>([]);
-const annotationsOutside = ref<string[]>([]);
+const selectedNodeIdsAtStart = ref<string[]>([]);
+const nodeIdsToSelectOnEnd = ref<string[]>([]);
+const nodeIdsToDeselectOnEnd = ref<string[]>([]);
+
+const selectedAnnotationIdsAtStart = ref<string[]>([]);
+const annotationIdsToSelectOnEnd = ref<string[]>([]);
+const annotationIdsToDeselectOnEnd = ref<string[]>([]);
+
+let selectionPointerId: number | undefined;
+
+const calculateNodeSelection = () => {
+  const selection = [
+    ...selectedNodeIdsAtStart.value,
+    ...nodeIdsToSelectOnEnd.value,
+  ];
+
+  return inverseMode.value
+    ? selection.filter(
+        (nodeId) => !nodeIdsToDeselectOnEnd.value.includes(nodeId),
+      )
+    : selection;
+};
+
+const calculateAnnotationSelection = () => {
+  const selection = [
+    ...selectedAnnotationIdsAtStart.value,
+    ...annotationIdsToSelectOnEnd.value,
+  ];
+  return inverseMode.value
+    ? selection.filter(
+        (annotationId) =>
+          !annotationIdsToDeselectOnEnd.value.includes(annotationId),
+      )
+    : selection;
+};
 
 const updateSelectionPreview = () => {
-  const {
-    nodesInside: _nodesInside,
-    nodesOutside: _nodesOutside,
-    annotationsInside: _annotationsInside,
-    annotationsOutside: _annotationsOutside,
-  } = findObjectsForSelection({
+  const { nodesInside, annotationsInside } = findObjectsForSelection({
     startPos: startPos.value,
     endPos: endPos.value,
     workflow: activeWorkflow.value!,
   });
 
-  nodesInside.value = _nodesInside;
-  nodesOutside.value = _nodesOutside;
-  annotationsInside.value = _annotationsInside;
-  annotationsOutside.value = _annotationsOutside;
+  nodeIdsToSelectOnEnd.value = nodesInside.filter(
+    (nodeId) => !selectedNodeIdsAtStart.value.includes(nodeId),
+  );
+  nodeIdsToDeselectOnEnd.value = nodesInside.filter((nodeId) =>
+    selectedNodeIdsAtStart.value.includes(nodeId),
+  );
 
-  nodesInside.value.forEach((id) => {
-    $bus.emit(`node-selection-preview-${id}`, {
-      id,
-      preview: "show",
-    });
-  });
+  annotationIdsToSelectOnEnd.value = annotationsInside.filter(
+    (annotationId) =>
+      !selectedAnnotationIdsAtStart.value.includes(annotationId),
+  );
+  annotationIdsToDeselectOnEnd.value = annotationsInside.filter(
+    (annotationId) => selectedAnnotationIdsAtStart.value.includes(annotationId),
+  );
 
-  nodesOutside.value.forEach((id) => {
-    $bus.emit(`node-selection-preview-${id}`, {
-      id,
-      preview: "hide",
-    });
-  });
+  selectionStore.setPreselectionMode(true);
+  selectionStore.deselectAllPreselectedObjects();
+  selectionStore.preselectNodes(calculateNodeSelection());
+  selectionStore.preselectAnnotations(calculateAnnotationSelection());
+};
 
-  annotationsInside.value.forEach((id) => {
-    $bus.emit(`annotation-selection-preview-${id}`, {
-      id,
-      preview: "show",
-    });
-  });
+const clearState = () => {
+  nodeIdsToSelectOnEnd.value = [];
+  nodeIdsToDeselectOnEnd.value = [];
+  selectedNodeIdsAtStart.value = [];
 
-  annotationsOutside.value.forEach((id) => {
-    $bus.emit(`annotation-selection-preview-${id}`, {
-      id,
-      preview: "hide",
-    });
-  });
+  annotationIdsToSelectOnEnd.value = [];
+  annotationIdsToDeselectOnEnd.value = [];
+  selectedAnnotationIdsAtStart.value = [];
 };
 
 const doRealSelection = async () => {
-  if (nodesInside.value.length) {
-    await selectionStore.selectNodes(nodesInside.value);
+  const { deselectAllObjects, selectAnnotations } = useSelectionStore();
 
-    nodesInside.value.forEach((id) => {
-      $bus.emit(`node-selection-preview-${id}`, {
-        id,
-        preview: null,
-      });
-    });
-
-    nodesInside.value = [];
-  }
-
-  if (nodesOutside.value.length) {
-    await selectionStore.deselectNodes(nodesOutside.value);
-
-    nodesOutside.value.forEach((id) => {
-      $bus.emit(`node-selection-preview-${id}`, {
-        id,
-        preview: null,
-      });
-    });
-
-    nodesOutside.value = [];
-  }
-
-  if (annotationsInside.value.length) {
-    selectionStore.selectAnnotations(annotationsInside.value);
-
-    annotationsInside.value.forEach((id) => {
-      $bus.emit(`annotation-selection-preview-${id}`, {
-        id,
-        preview: null,
-      });
-    });
-
-    annotationsInside.value = [];
-  }
-
-  if (annotationsOutside.value.length) {
-    selectionStore.deselectAnnotations(annotationsOutside.value);
-
-    annotationsOutside.value.forEach((id) => {
-      $bus.emit(`annotation-selection-preview-${id}`, {
-        id,
-        preview: null,
-      });
-    });
-
-    annotationsOutside.value = [];
+  const { wasAborted } = await deselectAllObjects(calculateNodeSelection());
+  if (!wasAborted) {
+    selectAnnotations(calculateAnnotationSelection());
   }
 };
 
@@ -141,19 +120,18 @@ const selectionRectangle = computed(() =>
     : {},
 );
 
-let selectionPointerId: number | undefined;
-
-const onSelectionStart = async (event: PointerEvent) => {
+const onSelectionStart = (event: PointerEvent) => {
   consola.debug("global rectangle selection:: start", { event });
+
   // Interactions originated from canvas objects can signal that the
   // global selection should be skipped.
   if (event.dataset?.skipGlobalSelection || isDragging.value) {
+    isSelectionVisible.value = false;
     return;
   }
 
   selectionPointerId = event.pointerId;
   (event.target as HTMLElement).setPointerCapture(event.pointerId);
-  await selectionStore.deselectAllObjects();
   isSelectionVisible.value = true;
 
   const { offsetX, offsetY } = event;
@@ -166,10 +144,29 @@ const onSelectionStart = async (event: PointerEvent) => {
     x: startPos.value.x,
     y: startPos.value.y,
   };
+
+  selectionStore.setPreselectionMode(true);
+
+  inverseMode.value = event.shiftKey || event.ctrlKey || event.metaKey;
+  if (inverseMode.value) {
+    selectedNodeIdsAtStart.value = [...selectionStore.selectedNodeIds];
+    selectedAnnotationIdsAtStart.value = [
+      ...selectionStore.selectedAnnotationIds,
+    ];
+  } else {
+    selectedNodeIdsAtStart.value = [];
+    selectedAnnotationIdsAtStart.value = [];
+  }
+
+  updateSelectionPreview();
 };
 
 const onSelectionMove = (event: PointerEvent) => {
-  if (!isSelectionVisible.value || isDragging.value) {
+  if (
+    !isSelectionVisible.value ||
+    isDragging.value ||
+    event.pointerId !== selectionPointerId
+  ) {
     return;
   }
 
@@ -183,19 +180,34 @@ const onSelectionMove = (event: PointerEvent) => {
   updateSelectionPreview();
 };
 
-const onSelectionEnd = (event: PointerEvent) => {
+const onSelectionEnd = async (event: PointerEvent) => {
   consola.debug("global rectangle selection:: end", { event });
-  isSelectionVisible.value = false;
   startPos.value = { x: 0, y: 0 };
   endPos.value = { x: 0, y: 0 };
 
-  doRealSelection();
+  selectionStore.deselectAllPreselectedObjects();
+  selectionStore.setPreselectionMode(false);
+
+  if (
+    event.dataset?.skipGlobalSelection ||
+    isDragging.value ||
+    !isSelectionVisible.value ||
+    event.pointerId !== selectionPointerId
+  ) {
+    isSelectionVisible.value = false;
+    clearState();
+    return;
+  }
+  isSelectionVisible.value = false;
 
   const target = event.target as HTMLElement;
   if (target.hasPointerCapture(selectionPointerId!)) {
     target.releasePointerCapture(selectionPointerId!);
   }
   selectionPointerId = undefined;
+
+  await doRealSelection();
+  clearState();
 };
 
 const DASH_ARRAY = 5;

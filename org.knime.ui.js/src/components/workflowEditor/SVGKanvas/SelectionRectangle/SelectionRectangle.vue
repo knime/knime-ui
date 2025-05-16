@@ -16,7 +16,6 @@ type RectangleSelectionData = {
   nodeIdsToSelectOnEnd: string[];
   nodeIdsToDeselectOnEnd: string[];
   selectedNodeIdsAtStart: string[];
-  nodeIdsInsidePreviousSelection: string[];
 
   inverseMode: boolean;
   moved: boolean;
@@ -24,7 +23,6 @@ type RectangleSelectionData = {
   annotationIdsToSelectOnEnd: string[];
   annotationIdsToDeselectOnEnd: string[];
   selectedAnnotationIdsAtStart: string[];
-  annotationIdsInsidePreviousSelection: string[];
 };
 
 const MOVE_THRESHOLD = 5;
@@ -38,7 +36,6 @@ const MOVE_THRESHOLD = 5;
  * define what is rendered, but that's too slow in this case.
  */
 export default defineComponent({
-  emits: ["nodeSelectionPreview", "annotationSelectionPreview"],
   setup: () => {
     const { shouldHideSelection } = storeToRefs(useSelectionStore());
     return {
@@ -58,14 +55,13 @@ export default defineComponent({
     nodeIdsToSelectOnEnd: [],
     nodeIdsToDeselectOnEnd: [],
     selectedNodeIdsAtStart: [],
-    nodeIdsInsidePreviousSelection: [],
+
     inverseMode: false,
     moved: false,
 
     annotationIdsToSelectOnEnd: [],
     annotationIdsToDeselectOnEnd: [],
     selectedAnnotationIdsAtStart: [],
-    annotationIdsInsidePreviousSelection: [],
   }),
   computed: {
     ...mapState(useWorkflowStore, ["activeWorkflow"]),
@@ -86,6 +82,33 @@ export default defineComponent({
         height: Math.abs(startPos.y - endPos.y),
       };
     },
+
+    calculateSelection() {
+      const selection = [
+        ...this.selectedNodeIdsAtStart,
+        ...this.nodeIdsToSelectOnEnd,
+      ];
+
+      return this.inverseMode
+        ? selection.filter(
+            (nodeId) => !this.nodeIdsToDeselectOnEnd.includes(nodeId),
+          )
+        : selection;
+    },
+
+    calculateAnnotationSelection() {
+      const selection = [
+        ...this.selectedAnnotationIdsAtStart,
+        ...this.annotationIdsToSelectOnEnd,
+      ];
+
+      return this.inverseMode
+        ? selection.filter(
+            (annotationId) =>
+              !this.annotationIdsToDeselectOnEnd.includes(annotationId),
+          )
+        : selection;
+    },
   },
   created() {
     this.$bus.on("selection-pointerdown", this.startRectangleSelection);
@@ -104,6 +127,10 @@ export default defineComponent({
       "deselectAllObjects",
       "selectAnnotations",
       "deselectAnnotations",
+      "deselectAllPreselectedObjects",
+      "preselectNodes",
+      "preselectAnnotations",
+      "setPreselectionMode",
     ]),
 
     startRectangleSelection(event: PointerEvent) {
@@ -116,11 +143,7 @@ export default defineComponent({
       ]);
       this.endPos = { ...this.startPos };
 
-      this.nodeIdsToSelectOnEnd = [];
-      this.nodeIdsToDeselectOnEnd = [];
-
-      this.annotationIdsToSelectOnEnd = [];
-      this.annotationIdsToDeselectOnEnd = [];
+      this.clearState();
 
       if (event.shiftKey || event.ctrlKey || event.metaKey) {
         this.inverseMode = true;
@@ -129,7 +152,6 @@ export default defineComponent({
         this.selectedAnnotationIdsAtStart = [...this.selectedAnnotationIds];
       } else {
         this.inverseMode = false;
-        this.shouldHideSelection = true;
         this.selectedNodeIdsAtStart = [];
         this.selectedAnnotationIdsAtStart = [];
       }
@@ -143,6 +165,9 @@ export default defineComponent({
       event: PointerEvent,
     ) {
       /* eslint-disable no-invalid-this */
+      this.deselectAllPreselectedObjects();
+      this.setPreselectionMode(false);
+
       if (this.pointerId !== event.pointerId) {
         return;
       }
@@ -150,61 +175,17 @@ export default defineComponent({
 
       // hide rect
       this.pointerId = null;
-      this.shouldHideSelection = false;
-
-      // clear "preview state" of now selected elements
-      [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(
-        (nodeId) => {
-          this.$emit("nodeSelectionPreview", { type: "clear", nodeId });
-        },
-      );
-
-      [
-        ...this.annotationIdsToSelectOnEnd,
-        ...this.annotationIdsToDeselectOnEnd,
-      ].forEach((annotationId) => {
-        this.$emit("annotationSelectionPreview", {
-          type: null,
-          annotationId,
-        });
-      });
 
       if (!this.moved) {
         this.clearState();
         return;
       }
 
-      const calculateSelection = () => {
-        const selection = [
-          ...this.selectedNodeIdsAtStart,
-          ...this.nodeIdsToSelectOnEnd,
-        ];
-
-        return this.inverseMode
-          ? selection.filter(
-              (nodeId) => !this.nodeIdsToDeselectOnEnd.includes(nodeId),
-            )
-          : selection;
-      };
-
-      const calculateAnnotationSelection = () => {
-        const selection = [
-          ...this.selectedAnnotationIdsAtStart,
-          ...this.annotationIdsToSelectOnEnd,
-        ];
-        return this.inverseMode
-          ? selection.filter(
-              (annotationId) =>
-                !this.annotationIdsToDeselectOnEnd.includes(annotationId),
-            )
-          : selection;
-      };
-
       const { wasAborted } = await this.deselectAllObjects(
-        calculateSelection(),
+        this.calculateSelection,
       );
       if (!wasAborted) {
-        await this.selectAnnotations(calculateAnnotationSelection());
+        await this.selectAnnotations(this.calculateAnnotationSelection);
       }
 
       this.clearState();
@@ -245,72 +226,32 @@ export default defineComponent({
     }),
 
     previewSelectionForItemsInRectangle(startPos: XY, endPos: XY) {
-      let { nodesInside, nodesOutside, annotationsInside, annotationsOutside } =
-        findObjectsForSelection({
-          startPos,
-          endPos,
-          workflow: this.activeWorkflow!,
-        });
-
-      // remember this for the real selection at the end of the movement (pointerup)
-      let selectNodes: string[] = [];
-      let deselectNodes: string[] = [];
-      let selectAnnotations: string[] = [];
-      let deselectAnnotations: string[] = [];
-
-      // do the preview
-      nodesInside.forEach((nodeId) => {
-        // support for shift (remove selection on selected ones)
-        if (this.selectedNodeIdsAtStart?.includes(nodeId)) {
-          this.$emit("nodeSelectionPreview", { type: "hide", nodeId });
-          deselectNodes.push(nodeId);
-        } else {
-          this.$emit("nodeSelectionPreview", { type: "show", nodeId });
-          selectNodes.push(nodeId);
-        }
+      let { nodesInside, annotationsInside } = findObjectsForSelection({
+        startPos,
+        endPos,
+        workflow: this.activeWorkflow!,
       });
 
-      // As we update the selection, we need to tell every node that is NOW outside
-      // the selection AND that it used to be inside the previous selection
-      // to clear its selected state
-      nodesOutside.forEach((nodeId) => {
-        if (this.nodeIdsInsidePreviousSelection?.includes(nodeId)) {
-          this.$emit("nodeSelectionPreview", { type: "clear", nodeId });
-        }
-      });
+      this.nodeIdsToSelectOnEnd = nodesInside.filter(
+        (nodeId) => !this.selectedNodeIdsAtStart.includes(nodeId),
+      );
+      this.nodeIdsToDeselectOnEnd = nodesInside.filter((nodeId) =>
+        this.selectedNodeIdsAtStart.includes(nodeId),
+      );
 
-      annotationsInside.forEach((annotationId) => {
-        if (this.selectedAnnotationIdsAtStart?.includes(annotationId)) {
-          this.$emit("annotationSelectionPreview", {
-            type: "hide",
-            annotationId,
-          });
-          deselectAnnotations.push(annotationId);
-        } else {
-          this.$emit("annotationSelectionPreview", {
-            type: "show",
-            annotationId,
-          });
-          selectAnnotations.push(annotationId);
-        }
-      });
+      this.annotationIdsToSelectOnEnd = annotationsInside.filter(
+        (annotationId) =>
+          !this.selectedAnnotationIdsAtStart.includes(annotationId),
+      );
+      this.annotationIdsToDeselectOnEnd = annotationsInside.filter(
+        (annotationId) =>
+          this.selectedAnnotationIdsAtStart.includes(annotationId),
+      );
 
-      annotationsOutside.forEach((annotationId) => {
-        if (this.annotationIdsInsidePreviousSelection?.includes(annotationId)) {
-          this.$emit("annotationSelectionPreview", {
-            type: null,
-            annotationId,
-          });
-        }
-      });
-
-      this.nodeIdsInsidePreviousSelection = nodesInside;
-      this.nodeIdsToSelectOnEnd = selectNodes;
-      this.nodeIdsToDeselectOnEnd = deselectNodes;
-
-      this.annotationIdsInsidePreviousSelection = annotationsInside;
-      this.annotationIdsToSelectOnEnd = selectAnnotations;
-      this.annotationIdsToDeselectOnEnd = deselectAnnotations;
+      this.setPreselectionMode(true);
+      this.deselectAllPreselectedObjects();
+      this.preselectNodes(this.calculateSelection);
+      this.preselectAnnotations(this.calculateAnnotationSelection);
     },
   },
 });
