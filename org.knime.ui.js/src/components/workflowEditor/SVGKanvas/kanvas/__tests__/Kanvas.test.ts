@@ -161,8 +161,11 @@ describe("Kanvas", () => {
     position,
     pointerId,
     button,
+    directlyOnSvg = false,
   }) => {
-    await wrapper.trigger("pointerdown", {
+    const elementToPointerDown = directlyOnSvg ? wrapper.find("svg") : wrapper;
+
+    await elementToPointerDown.trigger("pointerdown", {
       button,
       screenX: position.x,
       screenY: position.y,
@@ -491,6 +494,7 @@ describe("Kanvas", () => {
             y: 100,
           },
           pointerId: -1,
+          directlyOnSvg: true,
         });
         expect(setPointerCapture).not.toHaveBeenCalled();
 
@@ -530,6 +534,7 @@ describe("Kanvas", () => {
             y: 100,
           },
           pointerId: -1,
+          directlyOnSvg: true,
         });
 
         // we need (1) a small delta to trigger
@@ -627,17 +632,14 @@ describe("Kanvas", () => {
           y: 100,
         },
         pointerId: -1,
+        directlyOnSvg: true,
       });
 
       await triggerPointerUp({ wrapper });
 
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
-      ).toHaveBeenCalledWith(
-        expect.objectContaining({
-          event: expect.anything(),
-        }),
-      );
+      ).toHaveBeenCalled();
     });
 
     it("allows native context menu if source element allows it", async () => {

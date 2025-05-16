@@ -121,6 +121,9 @@ const clickOnEmptyKanvas = async (event: MouseEvent) => {
     await selectionStore.deselectAllObjects();
   }
 };
+
+const isTriggeredByAttachedElement = (event: Event) =>
+  event.target === event.currentTarget;
 </script>
 
 <template>
@@ -139,7 +142,6 @@ const clickOnEmptyKanvas = async (event: MouseEvent) => {
     ]"
     @wheel="onMouseWheel"
     @pointerdown.middle="beginPan"
-    @pointerdown.prevent.right="beginPan"
     @pointerdown.left.exact="beginPan"
     @pointerdown.left.ctrl="
       navigatorUtils.isMac() && onLeftControlClickOnMac($event)
@@ -149,7 +151,10 @@ const clickOnEmptyKanvas = async (event: MouseEvent) => {
     @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
     @focusin="() => hasKeyboardFocus && doInitialSelection()"
-    @keydown.esc="() => selectionStore.deselectAllObjects()"
+    @keydown.esc="
+      isTriggeredByAttachedElement($event) &&
+        selectionStore.deselectAllObjects()
+    "
   >
     <svg
       ref="svg"
@@ -160,6 +165,9 @@ const clickOnEmptyKanvas = async (event: MouseEvent) => {
       @pointerdown.left.exact="$bus.emit('selection-pointerdown', $event)"
       @pointerdown.left="startRectangleSelection"
       @pointerup.left.stop="$bus.emit('selection-pointerup', $event)"
+      @pointerdown.right="
+        isTriggeredByAttachedElement($event) && beginPan($event)
+      "
       @pointermove="$bus.emit('selection-pointermove', $event)"
       @lostpointercapture="$bus.emit('selection-lostpointercapture', $event)"
     >

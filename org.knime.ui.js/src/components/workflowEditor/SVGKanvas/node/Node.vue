@@ -445,12 +445,17 @@ export default {
         return;
       }
 
+      let wasAborted = false;
       if (event.shiftKey || event[getMetaOrCtrlKey()]) {
         // Multi select
-        await this.selectNodes([this.id]);
+        wasAborted = (await this.selectNodes([this.id])).wasAborted;
       } else if (!this.isNodeSelected(this.id)) {
         // single select
-        await this.deselectAllObjects([this.id]);
+        wasAborted = (await this.deselectAllObjects([this.id])).wasAborted;
+      }
+
+      if (wasAborted) {
+        return;
       }
 
       await this.toggleContextMenu({ event });
