@@ -280,24 +280,24 @@ public final class DesktopAPUtil {
     /**
      * Opens a dialog asking whether a remote workflow should be overwritten.
      *
-     * @param remoteStore file store representing the remote workflow
+     * @param itemNameAndPath location of the item on Server/Hub
+     * @param contentProvider content provider of the item to upload, may be {@code null} for Hub
      * @param location location name, either {@code "Hub"} or {@code "Server"}
      * @return pair of answer and the comment to be used if the answer is
      *        {@link OverwriteRemotelyResult#OVERWRITE_WITH_SNAPSHOT}
      */
-    public static Pair<OverwriteRemotelyResult, String> openOverwriteRemotelyDialog(
-            final AbstractExplorerFileStore remoteStore, final String location) {
+    public static Pair<OverwriteRemotelyResult, String> openOverwriteRemotelyDialog(final String itemNameAndPath,
+            final AbstractContentProvider contentProvider, final String location) {
         final var snapshotPanelRef = new AtomicReference<SnapshotPanel>();
         @SuppressWarnings("restriction")
         final var shell = org.knime.core.ui.util.SWTUtilities.getActiveShell();
         final var dialog = new MessageDialog(shell, "Overwrite on " + location + "?", null,
-            "The workflow\n\n\t" + remoteStore.getMountIDWithFullPath()
+            "The workflow\n\n\t" + itemNameAndPath
                 + "\n\nalready exists on the " + location + ". Do you want to overwrite it?\n",
             MessageDialog.QUESTION, new String[] { IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL }, 1) {
             @Override
             protected Control createCustomArea(final Composite parent) {
-                final var contentProvider = remoteStore.getContentProvider();
-                if (contentProvider.supportsSnapshots()) {
+                if (contentProvider != null && contentProvider.supportsSnapshots()) {
                     final var forceSnapshot = contentProvider.isForceSnapshotCreation();
                     final var panel = new SnapshotPanel(parent, SWT.NONE, forceSnapshot);
                     panel.setEnabled(true);

@@ -419,8 +419,9 @@ final class ClassicAPCopyLogic {
                         return false;
                     }
                     final var localSource = (LocalExplorerFileStore)srcFS;
-                    m_targetSpaceProvider.syncUploadWorkflow(localSource.toLocalFile().toPath(), remoteDest.toIdURI(),
-                        m_targetSpaceId, false, m_excludeDataInWorkflows, monitor);
+                    final var targetSpace = m_targetSpaceProvider.getSpace(m_targetSpaceId);
+                    targetSpace.saveBackTo(localSource.toLocalFile().toPath(), remoteDest.toURI(),
+                        m_excludeDataInWorkflows, monitor);
                 } else if (isSrcRemote && !isDstRemote) { // download
                     CheckUtils.checkState(!m_excludeDataInWorkflows, "Download 'without data' not implemented");
                     final var remoteSource = (RemoteExplorerFileStore)srcFS;
