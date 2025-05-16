@@ -119,7 +119,7 @@ export const useObjectInteractions = (
     const wasSelectedOnStart = isObjectSelected();
     const isMultiselect = isMultiselectEvent(pointerDownEvent);
 
-    const canMove =
+    let canMove =
       (await selectionStore.canDiscardCurrentSelection()) &&
       isWorkflowWritable.value;
 
@@ -129,7 +129,10 @@ export const useObjectInteractions = (
 
       // forbid move on multi select
       return;
-    } else if (!isObjectSelected()) {
+    } else if (isObjectSelected()) {
+      // nothing to do, even if one cannot discard the current selection
+      canMove = isWorkflowWritable.value;
+    } else {
       // immediate selection feedback for non-selected objects
       await selectionStore.deselectAllObjects();
       await selectObject();

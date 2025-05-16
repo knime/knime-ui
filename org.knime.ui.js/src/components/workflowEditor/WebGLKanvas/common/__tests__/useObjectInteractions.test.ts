@@ -109,6 +109,7 @@ describe("useObjectInteractions", () => {
       canvas,
       selectSpy,
       deselectSpy,
+      isSelected,
     };
   };
 
@@ -233,23 +234,68 @@ describe("useObjectInteractions", () => {
         handlePointerInteraction,
         pointerPositions,
       );
+      await flushPromises();
 
       expect(selectSpy).toHaveBeenCalled();
       expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
-      await flushPromises();
       expect(onMoveEnd).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
     });
 
-    it("should not move any object if workflow is not writable", async () => {
+    it("should move object in single-select mode when selected even if current selection cannot be discarded", async () => {
       const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
-      const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
+      const {
+        getComposableResult,
+        canvas,
+        selectSpy,
+        mockedStores,
+        isSelected,
+      } = doMount({
         onMoveEnd,
       });
 
+      vi.mocked(
+        mockedStores.selectionStore,
+      ).canDiscardCurrentSelection.mockImplementation(() =>
+        Promise.resolve(false),
+      );
+
+      isSelected.value = true;
+
+      const { handlePointerInteraction } = getComposableResult();
+
+      const pointerPositions = {
+        start: { x: 10, y: 20 },
+        move: { x: 20, y: 30 },
+        end: { x: 20, y: 30 },
+      };
+
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
+      await flushPromises();
+
+      expect(selectSpy).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.setIsDragging).toHaveBeenCalled();
+      expect(mockedStores.movingStore.setMovePreview).toHaveBeenCalled();
+      expect(onMoveEnd).toHaveBeenCalled();
+      expect(mockedStores.movingStore.moveObjects).toHaveBeenCalled();
+    });
+
+    it("should not move any object if workflow is not writable", async () => {
+      const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
+      const { getComposableResult, canvas, mockedStores, isSelected } = doMount(
+        {
+          onMoveEnd,
+        },
+      );
+
       // @ts-expect-error - mock getter
       mockedStores.workflowStore.isWritable = false;
+      isSelected.value = true;
 
       const { handlePointerInteraction } = getComposableResult();
 
@@ -265,7 +311,6 @@ describe("useObjectInteractions", () => {
         pointerPositions,
       );
 
-      expect(selectSpy).toHaveBeenCalled();
       expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
       await flushPromises();
