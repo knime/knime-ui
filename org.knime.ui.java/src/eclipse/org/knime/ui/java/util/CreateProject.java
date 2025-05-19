@@ -48,11 +48,14 @@ package org.knime.ui.java.util;
 
 import java.nio.file.Path;
 
+import org.eclipse.core.runtime.SubMonitor;
+import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
@@ -123,14 +126,21 @@ public final class CreateProject {
             WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, //
             NodeLogger.getLogger(CreateProject.class), //
             monitor -> { // NOSONAR
-                var path = WorkflowManagerLoader.fetch(origin, version, spaceProviders, monitor);
+                final var subMonitor =
+                    SubMonitor.convert(monitor, WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, 100);
+
+                final var execMon = new ExecutionMonitor(new ProgressMonitorAdapter(subMonitor)); // one tick/percent
+                var path = WorkflowManagerLoader.fetch(origin, version, spaceProviders, execMon);
                 if (path.isEmpty()) {
                     NodeLogger.getLogger(CreateProject.class).error("Could not fetch workflow from origin " + origin);
                     return null;
                 }
+
                 var space = spaceProviders.getSpace(origin.providerId(), origin.spaceId());
                 final var workflowContext = createWorkflowContext(space, origin.itemId(), path.get(), version);
-                return DesktopAPUtil.loadWorkflowManager(monitor, path.get(), workflowContext, version);
+
+                monitor.subTask("Loading workflow from disk");
+                return DesktopAPUtil.loadWorkflowManager(subMonitor.slice(0), path.get(), workflowContext, version);
             }).orElse(null);
     }
 
