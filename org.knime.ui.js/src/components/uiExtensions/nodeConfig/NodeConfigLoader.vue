@@ -113,6 +113,7 @@ const apiLayer: UIExtensionAPILayer = {
       projectId: projectId.value,
       workflowId: workflowId.value,
       nodeId: selectedNode.value.id,
+      versionId: versionId.value ?? CURRENT_STATE_VERSION,
       ...params,
     });
     return { isSome: true, result: response };
