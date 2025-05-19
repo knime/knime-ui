@@ -83,6 +83,8 @@ export const useDragNodeIntoCanvas = () => {
   const onDragOver = (event: DragEvent) => {
     if (isWritable.value && isKnimeNode(event)) {
       event.dataTransfer!.dropEffect = "copy";
+    } else {
+      event.dataTransfer!.dropEffect = "none";
     }
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
