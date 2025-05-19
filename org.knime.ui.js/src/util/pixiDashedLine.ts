@@ -17,13 +17,14 @@ export type Dashes = number[];
 
 export type DashLineOptions = {
   dash?: Dashes;
+  dashOffset?: number;
   width?: number;
-  color?: number;
+  color?: PIXI.ColorSource;
   alpha?: number;
   scale?: number;
   useTexture?: boolean;
   useDots?: boolean;
-  cap?: "butt" | "round" | "square";
+  cap?: PIXI.LineCap;
   join?: "bevel" | "miter" | "round";
   alignment?: number;
 };
@@ -49,6 +50,7 @@ function getPointOnArc(
 
 const dashLineOptionsDefault: Partial<DashLineOptions> = {
   dash: [10, 5],
+  dashOffset: 0,
   width: 1,
   color: 0xffffff,
   alpha: 1,
@@ -69,6 +71,9 @@ export class DashLine {
   /** desired scale of line */
   scale = 1;
 
+  /** dash offset for animation */
+  // dashOffset: number = 0;
+
   // sanity check to ensure the strokeStyle is still in use
   private activeTexture: PIXI.Texture | undefined;
 
@@ -83,12 +88,15 @@ export class DashLine {
   // cache of PIXI.Textures for dashed lines
   static readonly dashTextureCache: Record<string, PIXI.Texture> = {};
 
+  private ticker: PIXI.Ticker | null = null;
+
   /**
    * Create a DashLine
    * @param graphics
    * @param [options]
    * @param [options.useTexture=false] - use the texture based render (useful for very large or very small dashed lines)
    * @param [options.dashes=[10,5] - an array holding the dash and gap (eg, [10, 5, 20, 5, ...])
+   * @param [options.dashOffset=0] - an offset for the dash pattern (useful for animation)
    * @param [options.width=1] - width of the dashed line
    * @param [options.alpha=1] - alpha of the dashed line
    * @param [options.color=0xffffff] - color of the dashed line
@@ -179,7 +187,9 @@ export class DashLine {
       let y0 = this.cursor.y;
 
       // find the first part of the dash for this line
-      const place = this.lineLength % (this.dashSize * this.scale);
+      const place =
+        (this.lineLength + this.options.dashOffset) %
+        (this.dashSize * this.scale);
       let dashIndex: number = 0;
       let dashStart: number = 0;
       let dashX = 0;
@@ -241,6 +251,117 @@ export class DashLine {
 
   closePath() {
     this.lineTo(this.start.x, this.start.y, true);
+  }
+
+  bezierCurveTo(
+    cpX: number,
+    cpY: number,
+    cpX2: number,
+    cpY2: number,
+    toX: number,
+    toY: number,
+    segments = 50,
+  ): this {
+    const fromX = this.cursor.x;
+    const fromY = this.cursor.y;
+
+    let previousPoint = new PIXI.Point(fromX, fromY);
+    let dashOffset = this.options.dashOffset;
+
+    for (let t = 1 / segments; t <= 1; t += 1 / segments) {
+      const x =
+        Math.pow(1 - t, 3) * fromX +
+        3 * Math.pow(1 - t, 2) * t * cpX +
+        3 * (1 - t) * Math.pow(t, 2) * cpX2 +
+        Math.pow(t, 3) * toX;
+      const y =
+        Math.pow(1 - t, 3) * fromY +
+        3 * Math.pow(1 - t, 2) * t * cpY +
+        3 * (1 - t) * Math.pow(t, 2) * cpY2 +
+        Math.pow(t, 3) * toY;
+
+      const currentPoint = new PIXI.Point(x, y);
+      const segmentLength = DashLine.distance(
+        previousPoint.x,
+        previousPoint.y,
+        currentPoint.x,
+        currentPoint.y,
+      );
+
+      this._drawDashedSegment(
+        previousPoint,
+        currentPoint,
+        segmentLength,
+        dashOffset,
+      );
+      dashOffset = (dashOffset + segmentLength) % (this.dashSize * this.scale);
+
+      previousPoint = currentPoint;
+    }
+
+    // Last segment might need to be drawn separately if it does not align with the dash pattern
+    const finalPoint = new PIXI.Point(toX, toY);
+    const finalSegmentLength = DashLine.distance(
+      previousPoint.x,
+      previousPoint.y,
+      finalPoint.x,
+      finalPoint.y,
+    );
+    if (finalSegmentLength > 0) {
+      this._drawDashedSegment(
+        previousPoint,
+        finalPoint,
+        finalSegmentLength,
+        dashOffset,
+      );
+    }
+
+    return this;
+  }
+
+  private _drawDashedSegment(
+    start: PIXI.Point,
+    end: PIXI.Point,
+    segmentLength: number,
+    dashOffset: number,
+  ): void {
+    const angle = Math.atan2(end.y - start.y, end.x - start.x);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    let remaining = segmentLength;
+    let x0 = start.x;
+    let y0 = start.y;
+
+    // Find the starting dash index and offset
+    let dashIndex = 0;
+    let dashStart = dashOffset;
+    while (dashStart >= this.dash[dashIndex] * this.scale) {
+      dashStart -= this.dash[dashIndex] * this.scale;
+      dashIndex = (dashIndex + 1) % this.dash.length;
+    }
+
+    // Draw the dashed segment
+    while (remaining > 0) {
+      const dashSize = this.dash[dashIndex] * this.scale - dashStart;
+      const dist = remaining > dashSize ? dashSize : remaining;
+
+      x0 += cos * dist;
+      y0 += sin * dist;
+
+      if (dashIndex % 2 === 0) {
+        this.graphics.lineTo(x0, y0);
+      } else {
+        this.graphics.moveTo(x0, y0);
+      }
+
+      remaining -= dist;
+      dashIndex = (dashIndex + 1) % this.dash.length;
+      dashStart = 0;
+    }
+
+    this.lineLength += segmentLength;
+    this.cursor.set(end.x, end.y);
   }
 
   circle(

@@ -2,12 +2,13 @@
 <script setup lang="ts">
 import { computed, toRefs, useTemplateRef, watch } from "vue";
 import { type AnimationPlaybackControls, animate } from "motion";
-import type { FederatedPointerEvent } from "pixi.js";
+import type { ColorSource, FederatedPointerEvent, LineCap } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
+import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 import type { ConnectorPathSegmentProps } from "../../types";
 import { type BezierPoints, getBezier } from "../../util/connectorPath";
@@ -113,49 +114,6 @@ const renderHoverArea = (graphics: GraphicsInst) => {
     });
 };
 
-const renderConnector = (
-  graphics: GraphicsInst,
-  points: BezierPoints,
-  strokeWidth = $shapes.connectorWidth,
-) => {
-  const { offsetStart, offsetEnd } = getStrokeBasedBezierOffsets(strokeWidth);
-  const smoothness = 0.9;
-
-  graphics
-    .clear()
-    .moveTo(points.start.x + offsetStart, points.start.y)
-    .bezierCurveTo(
-      points.control1.x,
-      points.control1.y,
-      points.control2.x,
-      points.control2.y,
-      points.end.x + offsetEnd,
-      points.end.y,
-      smoothness,
-    )
-    .stroke({
-      width: strokeWidth,
-      color: color.value,
-      cap: "square",
-    });
-};
-
-const pathSegment = useTemplateRef<GraphicsInst>("pathSegment");
-
-useAnimatePixiContainer({
-  targetDisplayObject: pathSegment,
-  changeTracker: computed(() => props.isConnectionHovered),
-  initialValue: $shapes.connectorWidth,
-  targetValue: $shapes.selectedConnectorWidth,
-  animationParams: { duration: 0.1, ease: "easeIn" },
-  onUpdate: (value) => {
-    if (!props.isSelected && !props.suggestDelete) {
-      renderConnector(pathSegment.value!, bezier.value, value);
-    }
-  },
-  animateOut: true,
-});
-
 const strokeWidth = computed(() => {
   if (props.isHighlighted) {
     return $shapes.highlightedConnectorWidth;
@@ -166,6 +124,85 @@ const strokeWidth = computed(() => {
   }
 
   return $shapes.connectorWidth;
+});
+
+const pathSegment = useTemplateRef<GraphicsInst>("pathSegment");
+
+let animatedStrokeWidth = $shapes.connectorWidth;
+let animatedDashOffset = 0;
+const dashLength = 5;
+
+const renderConnector = (graphics: GraphicsInst, points: BezierPoints) => {
+  const dashOffset = props.streaming ? animatedDashOffset : 0;
+  const connectorWidth = props.isConnectionHovered
+    ? animatedStrokeWidth
+    : strokeWidth.value;
+  const { offsetStart, offsetEnd } =
+    getStrokeBasedBezierOffsets(connectorWidth);
+  const smoothness = 0.9;
+
+  graphics.clear();
+
+  const stroke = {
+    width: connectorWidth,
+    color: color.value as ColorSource,
+    cap: "square" as LineCap,
+  };
+
+  let graphicsOrDashed: GraphicsInst | DashLine = graphics;
+
+  if (props.streaming) {
+    graphicsOrDashed = new DashLine(graphics, {
+      dash: [dashLength, dashLength],
+      dashOffset,
+      ...stroke,
+    });
+  }
+
+  graphicsOrDashed
+    .moveTo(points.start.x + offsetStart, points.start.y)
+    .bezierCurveTo(
+      points.control1.x,
+      points.control1.y,
+      points.control2.x,
+      points.control2.y,
+      points.end.x + offsetEnd,
+      points.end.y,
+      smoothness,
+    );
+
+  graphics.stroke(stroke);
+};
+
+/** hover animation */
+useAnimatePixiContainer({
+  targetDisplayObject: pathSegment,
+  changeTracker: computed(() => props.isConnectionHovered),
+  initialValue: $shapes.connectorWidth,
+  targetValue: $shapes.selectedConnectorWidth,
+  animationParams: { duration: 0.1, ease: "easeIn" },
+  onUpdate: (value) => {
+    if (!props.isSelected && !props.suggestDelete) {
+      animatedStrokeWidth = value;
+      renderConnector(pathSegment.value!, bezier.value);
+    }
+  },
+  animateOut: true,
+});
+
+/** streaming animation */
+useAnimatePixiContainer({
+  targetDisplayObject: pathSegment,
+  changeTracker: computed(() => props.streaming),
+  initialValue: dashLength * 2 * 10, // move 10 dashes per 3 seconds
+  targetValue: 0,
+  animationParams: { duration: 3, ease: "linear", repeat: Infinity },
+  onUpdate: (value) => {
+    animatedDashOffset = value;
+    renderConnector(pathSegment.value!, bezier.value);
+  },
+  animateOut: false,
+  immediate: props.streaming,
 });
 
 const suggestShiftX = -12;
@@ -194,14 +231,14 @@ watch(suggestDelete, (shouldAnimate) => {
             return;
           }
 
-          renderConnector(pathSegment.value!, normalBezier, strokeWidth.value);
+          renderConnector(pathSegment.value!, normalBezier);
         },
       },
     );
   } else {
     replacementAnimation?.stop();
     replacementAnimation = undefined;
-    renderConnector(pathSegment.value!, normalBezier, strokeWidth.value);
+    renderConnector(pathSegment.value!, normalBezier);
   }
 });
 </script>
@@ -220,7 +257,7 @@ watch(suggestDelete, (shouldAnimate) => {
     <Graphics
       ref="pathSegment"
       event-mode="none"
-      @render="renderConnector($event, bezier, strokeWidth)"
+      @render="renderConnector($event, bezier)"
     />
 
     <ConnectorBendpoint
