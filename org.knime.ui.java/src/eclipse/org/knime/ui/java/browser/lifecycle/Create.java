@@ -93,8 +93,6 @@ final class Create {
     }
 
     static LifeCycleStateInternal run(final BiConsumer<String, Consumer<Object[]>> apiFunctionCaller) {
-        // In order for the mechanism to block external requests to work (see CEFPlugin-class)
-        // the resource handlers must be registered before the browser initialization
         initializeResourceHandlers();
         DesktopAPI.forEachAPIFunction(apiFunctionCaller);
 

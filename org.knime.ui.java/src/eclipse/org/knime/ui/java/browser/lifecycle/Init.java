@@ -96,6 +96,7 @@ import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.CEFPlugin;
 import org.knime.js.cef.commservice.CEFCommService;
+import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.js.cef.wizardnodeview.CEFWizardNodeView;
 import org.knime.ui.java.api.DesktopAPI;
@@ -187,7 +188,6 @@ final class Init {
             kaiHandler, //
             codeKaiHandler, //
             nodeCollections, //
-
             nodeCategoryExtensions, //
             selectionEventBus);
         DesktopAPI.injectDependencies( //
@@ -325,12 +325,31 @@ final class Init {
 
     private static SpaceProvidersManager createSpaceProvidersManager(final LocalSpace localSpace,
         final ToastService toastService) {
-        Consumer<String> loginErrorHandler = loginErrorMessage -> toastService
+        final Consumer<String> loginErrorHandler = loginErrorMessage -> toastService
             .showToast(ShowToastEventEnt.TypeEnum.ERROR, "Login failed", loginErrorMessage, false);
-        var spaceProvidersManager = new SpaceProvidersManager(loginErrorHandler, Init::addRequestFilterForSpaceProvider,
-            Init::removeRequestFilterForSpaceProvider, new LocalSpaceProvider(localSpace));
+        final Consumer<SpaceProvider> onProviderCreated = spaceProvider -> {
+            addAuthorizationToHeaderForSpaceProvider(spaceProvider);
+            final var domain = getDomainForSpaceProvider(spaceProvider);
+            CEFMiddlewareService.addAllowedDomain(domain);
+        };
+        final Consumer<SpaceProvider> onProviderRemoved = spaceProvider -> {
+            removeAuthorizationFromHeaderForSpaceProvider(spaceProvider);
+            final var domain = getDomainForSpaceProvider(spaceProvider);
+            CEFMiddlewareService.removeAllowedDomain(domain);
+        };
+        final var spaceProvidersManager = new SpaceProvidersManager(loginErrorHandler, onProviderCreated,
+            onProviderRemoved, new LocalSpaceProvider(localSpace));
+
         spaceProvidersManager.update();
         return spaceProvidersManager;
+    }
+
+    private static String getDomainForSpaceProvider(final SpaceProvider spaceProvider) {
+        return spaceProvider.getServerAddress() //
+            .map(URI::create) //
+            .map(URI::getHost) //
+            .orElseThrow(
+                () -> new IllegalStateException("No server address for space provider <%s>".formatted(spaceProvider)));
     }
 
     private static PreferencesProvider createPreferencesProvider() {
@@ -455,17 +474,16 @@ final class Init {
     /**
      * Enables the FE to send authorized requests to a certain Hub space provider.
      */
-    private static void addRequestFilterForSpaceProvider(final SpaceProvider spaceProvider) {
+    private static void addAuthorizationToHeaderForSpaceProvider(final SpaceProvider spaceProvider) {
         if (spaceProvider.getType() != TypeEnum.HUB) {
-            return;
+            return; // Only works for Hub space providers
         }
 
-        var origin = KnimeBrowserView.getDevURL().orElse(KnimeBrowserView.BASE_URL);
+        final var origin = KnimeBrowserView.getDevURL().orElse(KnimeBrowserView.BASE_URL);
         IRequestFilter requestFilter = mutableRequest -> {
             if (!mutableRequest.getFrame().isMain() || !mutableRequest.getFrame().getCurrentUrl().startsWith(origin)) {
                 return;
             }
-
             authorizeSpaceProviderRequest(mutableRequest, spaceProvider);
         };
         spaceProvider.getServerAddress() //
@@ -490,9 +508,9 @@ final class Init {
     /**
      * Disables the FE to send authorized requests to a certain Hub space provider.
      */
-    private static void removeRequestFilterForSpaceProvider(final SpaceProvider spaceProvider) {
+    private static void removeAuthorizationFromHeaderForSpaceProvider(final SpaceProvider spaceProvider) {
         if (spaceProvider.getType() != TypeEnum.HUB) {
-            return;
+            return; // Only works for Hub space providers
         }
 
         spaceProvider.getServerAddress() //
