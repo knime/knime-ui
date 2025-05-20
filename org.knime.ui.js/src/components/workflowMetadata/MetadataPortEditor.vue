@@ -6,6 +6,7 @@ import type {
   PortType,
 } from "@/api/gateway-api/generated-api";
 import portIconRenderer from "@/components/common/PortIconRenderer";
+import { sanitizeHTML } from "@/util/sanitization";
 
 export type PortEditorData = Pick<PortType, "color"> & NodePortDescription;
 
@@ -54,7 +55,9 @@ const updateField = <K extends keyof PortEditorData, V = PortEditorData[K]>(
           :model-value="port.description"
           class="port-description-editor"
           title="Port description"
-          @update:model-value="updateField('description', $event, index)"
+          @update:model-value="
+            updateField('description', sanitizeHTML($event), index)
+          "
         />
       </div>
     </Label>

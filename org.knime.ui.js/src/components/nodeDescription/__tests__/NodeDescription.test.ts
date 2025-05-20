@@ -198,4 +198,64 @@ describe("NodeDescription", () => {
     expect(wrapper.find(".extension-vendor").text()).toMatch("Vendor name");
     expect(wrapper.find(".knime-icon").exists()).toBe(false);
   });
+
+  it("sanitizes malicious HTML in component port descriptions", async () => {
+    getComponentDescriptionMock.mockReturnValueOnce({
+      id: 1,
+      description: "Component with potential XSS",
+      links: [],
+      inPorts: [
+        {
+          name: "Input Port 1",
+          description: "<img src=x onerror=\"alert('XSS')\" />",
+        },
+      ],
+      outPorts: [],
+      options: [],
+      views: [],
+    });
+
+    const { wrapper } = await doMount({
+      props: {
+        params: { id: "component-id", name: "Malicious Component" },
+      },
+    });
+
+    const featureList = wrapper.findComponent(NodeFeatureList);
+    expect(featureList.exists()).toBe(true);
+
+    const html = featureList.html();
+    expect(html).not.toContain("onerror=");
+    expect(html).not.toContain("<img");
+    expect(html).not.toContain("alert(");
+  });
+
+  it("renders cleaned plain text if malicious description is present in component port descriptions", async () => {
+    getComponentDescriptionMock.mockReturnValueOnce({
+      id: 1,
+      description: "Some description",
+      links: [],
+      inPorts: [
+        {
+          name: "InPort 1",
+          description: '<script>alert("bad")</script>Safe text',
+        },
+      ],
+      outPorts: [],
+      options: [],
+      views: [],
+    });
+
+    const { wrapper } = await doMount({
+      props: {
+        params: { id: "component-id", name: "Script Test" },
+      },
+    });
+
+    const featureList = wrapper.findComponent(NodeFeatureList);
+    const html = featureList.html();
+    expect(html).toContain("Safe text");
+    expect(html).not.toContain("<script>");
+    expect(html).not.toContain("alert");
+  });
 });
