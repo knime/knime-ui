@@ -11,6 +11,7 @@ import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
 } from "@/util/portDataMapper";
+import { sanitizeComponentDescription } from "@/util/sanitization";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 
@@ -96,9 +97,11 @@ const loadComponentDescription = async () => {
   isLoading.value = true;
 
   try {
-    descriptionData.value = await nodeDescriptionStore.getComponentDescription({
-      nodeId: params.value.id,
-    });
+    const unsafeNodeDescription =
+      await nodeDescriptionStore.getComponentDescription({
+        nodeId: params.value.id,
+      });
+    descriptionData.value = sanitizeComponentDescription(unsafeNodeDescription);
   } catch (error) {
     consola.error("NodeDescription::Problem fetching Component description", {
       params,

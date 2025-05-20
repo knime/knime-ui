@@ -16,6 +16,7 @@ import ComponentIconEditor from "@/components/workflowMetadata/ComponentIconEdit
 import ComponentTypeEditor from "@/components/workflowMetadata/ComponentTypeEditor.vue";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
+import { sanitizeHTML } from "@/util/sanitization";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 import SidebarPanelSubHeading from "../common/side-panel/SidebarPanelSubHeading.vue";
@@ -72,12 +73,12 @@ export type MetadataDraftData = {
 const getInitialDraftData = () => {
   const inPorts = (nodeFeatures.value.inPorts || []).map((port) => ({
     name: port.name,
-    description: port.description,
+    description: sanitizeHTML(port.description),
   }));
 
   const outPorts = (nodeFeatures.value.outPorts || []).map((port) => ({
     name: port.name,
-    description: port.description,
+    description: sanitizeHTML(port.description),
   }));
 
   return {

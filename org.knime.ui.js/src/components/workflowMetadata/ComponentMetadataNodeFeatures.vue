@@ -82,9 +82,9 @@ const filterPortData = (fullPorts: PortEditorData[]) =>
   </div>
   <NodeFeatureList
     v-else
-    :in-ports="nodeFeatures.inPorts"
+    :in-ports="fullPortValue.inPorts"
     :dyn-in-ports="nodeFeatures.dynInPorts"
-    :out-ports="nodeFeatures.outPorts"
+    :out-ports="fullPortValue.outPorts"
     :dyn-out-ports="nodeFeatures.dynOutPorts"
     :views="nodeFeatures.views"
     :options="nodeFeatures.options"
