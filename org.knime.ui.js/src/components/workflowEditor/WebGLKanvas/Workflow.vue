@@ -15,6 +15,7 @@ import type { ContainerInst } from "@/vue3-pixi";
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import StaticWorkflowAnnotation from "./annotations/StaticWorkflowAnnotation.vue";
 import Connector from "./connectors/Connector.vue";
+import ConnectorLabel from "./connectors/ConnectorLabel.vue";
 import FloatingConnector from "./floatingConnector/FloatingConnector.vue";
 import Node from "./node/Node.vue";
 import MetanodePortBars from "./portbars/MetanodePortBars.vue";
@@ -102,6 +103,15 @@ onMounted(() => {
       :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
       v-bind="connector"
     />
+    <template
+      v-for="(connector, id) of activeWorkflow.connections"
+      :key="`connector-label-${id}`"
+    >
+      <ConnectorLabel
+        v-if="(connector.label ?? '').length > 0"
+        v-bind="connector"
+      />
+    </template>
 
     <Container ref="selectedNodesLayerContainer" />
     <Container ref="selectedPortsLayerContainer" />

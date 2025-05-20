@@ -55,3 +55,11 @@ export const nodeStateText: TextStylePreset = {
     lineHeight: 9,
   },
 };
+
+export const connectorLabelText: TextStylePreset = {
+  styles: {
+    ...defaultTextStyles,
+    fontSize: 12,
+    fill: $colors.White,
+  },
+};

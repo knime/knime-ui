@@ -191,6 +191,7 @@ useAnimatePixiContainer({
 });
 
 /** streaming animation */
+/* eslint-disable no-magic-numbers */
 useAnimatePixiContainer({
   targetDisplayObject: pathSegment,
   changeTracker: computed(() => props.streaming),
@@ -204,6 +205,7 @@ useAnimatePixiContainer({
   animateOut: false,
   immediate: props.streaming,
 });
+/* eslint-enable no-magic-numbers */
 
 const suggestShiftX = -12;
 const suggestShiftY = -6;

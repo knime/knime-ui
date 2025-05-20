@@ -1,7 +1,22 @@
 ## How to add test fixtures
 
-To obtain data for the fixtures, **you must run the AP in the browser**. Refer to the [main README](../README.md) on details for how to do this.
+To obtain data for the fixtures, **you can either log the API calls from the AP in dev mode** or **you can run the AP in the browser** to log the network calls.
 
+### Logging API calls from AP in dev mode
+
+In `store/application/lifecycle.ts` you can log the return values of API calls. E.g. to create a fixture log the return value `project` after `API.workflow.getWorkflow()` in the `loadWorkflow` method. The value will be the `result` field of the JSON RPC object, so in the fxture file make sure to wrap it in
+
+```
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": {[...]}
+}
+```
+
+### Logging network calls from AP in browser
+
+Refer to the [main README](../README.md) on details how to set up running the AP in the browser.
 Once you have that setup ready, point it to a workflow for which you want to create a fixture. Once it opens in the browser, inspect the network tab and in the Websockets section inspect the messages so that you find the message for which you want to create a fixture from. Generally, you will just need the workflow state, but of course you can create a fixture for any other endpoint if you use the corresponding message. Make sure to copy the whole JSON RPC object, not just the data.
 
 ![Get fixture from WebSocket](fixtureFromWebsocket.webp)

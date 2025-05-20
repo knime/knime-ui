@@ -1,9 +1,8 @@
 /* eslint-disable no-magic-numbers */
 import { toValue } from "vue";
-/* eslint-disable no-undefined */
 import { type MaybeRefOrGetter, computed } from "vue";
-import * as PIXI from "pixi.js";
 
+import { measureText } from "../util/measureText";
 import { nodeNameText } from "../util/textStyles";
 
 type UseNodeNameBoundsOptions = {
@@ -11,17 +10,10 @@ type UseNodeNameBoundsOptions = {
   shortenName: MaybeRefOrGetter<boolean>;
 };
 
-const measureText = (text: string) => {
-  return PIXI.CanvasTextMetrics.measureText(
-    text,
-    new PIXI.TextStyle(nodeNameText.styles),
-    undefined,
-    true,
-  );
-};
-
 export const useNodeNameTextMetrics = (options: UseNodeNameBoundsOptions) => {
-  const rawMetrics = computed(() => measureText(toValue(options.nodeName)));
+  const rawMetrics = computed(() =>
+    measureText(toValue(options.nodeName), nodeNameText.styles),
+  );
 
   // manual two line ellipsis in pixi
   const shortenedNodeName = computed(() => {
@@ -37,7 +29,7 @@ export const useNodeNameTextMetrics = (options: UseNodeNameBoundsOptions) => {
     if (options.nodeName === shortenedNodeName.value) {
       return rawMetrics.value;
     }
-    return measureText(shortenedNodeName.value);
+    return measureText(shortenedNodeName.value, nodeNameText.styles);
   });
 
   return { metrics, shortenedNodeName };

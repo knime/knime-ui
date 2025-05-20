@@ -1,0 +1,1070 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "209",
+    "workflow": {
+      "info": {
+        "name": "Textprocessing",
+        "jobManager": { "type": "streaming" },
+        "containerType": "component",
+        "containerId": "root:125",
+        "providerType": "LOCAL"
+      },
+      "workflowAnnotations": [],
+      "nodes": {
+        "root:125:0:7": {
+          "position": { "y": 172, "x": 1763 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 11,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:7",
+          "state": {
+            "progressMessages": ["Row 796 (\"Row870\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.tagging.pos.PosTaggerNodeFactory2",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents output table",
+              "index": 1,
+              "connectedVia": ["root:125:0:105_1"],
+              "portContentVersion": 351707305,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents input table",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:7_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:108": {
+          "position": { "y": 84, "x": 2627 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 9,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:108",
+          "state": {
+            "progressMessages": ["Row 749 (\"Row821\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.preprocessing.caseconverter.CaseConverterNodeFactory2",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Preprocessed documents.",
+              "index": 1,
+              "connectedVia": ["root:125:0:120_1"],
+              "portContentVersion": 897625124,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents to preprocess",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:108_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:119": {
+          "position": { "y": 84, "x": 2970 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 11,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:119",
+          "state": {
+            "progressMessages": ["Row 749 (\"Row821\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.preprocessing.ncharsfilter.NCharsFilterNodeFactory2",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Preprocessed documents.",
+              "index": 1,
+              "connectedVia": ["root:125:0:114_1"],
+              "portContentVersion": 472411141,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents to preprocess",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:119_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:120": {
+          "position": { "y": 85, "x": 2739 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 11,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:120",
+          "state": {
+            "progressMessages": ["Row 749 (\"Row821\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.preprocessing.diacriticremover.DiacriticRemoverNodeFactory",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Preprocessed documents.",
+              "index": 1,
+              "connectedVia": ["root:125:0:123_1"],
+              "portContentVersion": 1767113272,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents to preprocess",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:120_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:115": {
+          "position": { "y": 41, "x": 2505 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 9,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:115",
+          "state": {
+            "progressMessages": ["Row 749 (\"Row821\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.preprocessing.stopwordfilter.StopWordFilterNodeFactory3",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Preprocessed documents.",
+              "index": 1,
+              "connectedVia": ["root:125:0:108_1"],
+              "portContentVersion": 349348309,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents to preprocess",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:115_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            },
+            {
+              "name": "Stop words",
+              "index": 2,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:114": {
+          "position": { "y": 84, "x": 3050 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 9,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:114",
+          "state": {
+            "progressMessages": ["Row 749 (\"Row821\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.preprocessing.tagfilter2.TagFilterNodeFactory2",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Preprocessed documents.",
+              "index": 1,
+              "connectedVia": ["root:125:0:117_1"],
+              "portContentVersion": 124721066,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents to preprocess",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:114_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:125": {
+          "position": { "y": 172, "x": 1643 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 11,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:125",
+          "state": {
+            "progressMessages": ["Added row 975 (\"Row974\")"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Filtered",
+              "index": 1,
+              "connectedVia": ["root:125:0:7_1"],
+              "portContentVersion": 1482206278,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "To be filtered",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:125_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:106": {
+          "position": { "y": -21, "x": 2305 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 9,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:106",
+          "state": {
+            "progressMessages": ["Row 749 (\"Row821\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.preprocessing.puncterasure.PunctuationErasureNodeFactory2",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Preprocessed documents.",
+              "index": 1,
+              "connectedVia": ["root:125:0:115_1"],
+              "portContentVersion": 690721868,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents to preprocess",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:106_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:117": {
+          "position": { "y": 35, "x": 3176 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 11,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:117",
+          "state": { "executionState": "EXECUTING" },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.core.node.workflow.virtual.subnode.VirtualSubNodeOutputNodeFactory#Component Output",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Passed-on Component Output 0",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:117_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:105": {
+          "position": { "y": 96, "x": 1861 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 9,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:105",
+          "state": {
+            "progressMessages": ["Row 749 (\"Row821\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.preprocessing.numberfilter.NumberFilterNodeFactory2",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Preprocessed documents.",
+              "index": 1,
+              "connectedVia": ["root:125:0:106_1"],
+              "portContentVersion": 1616709111,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents to preprocess",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:105_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:116": {
+          "position": { "y": 5, "x": 1369 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 11,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:116",
+          "state": { "executionState": "EXECUTING" },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.core.node.workflow.virtual.subnode.VirtualSubNodeInputNodeFactory#Component Input",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Delegated Component Input 0",
+              "index": 1,
+              "connectedVia": ["root:125:0:124_1"],
+              "portContentVersion": 766792397,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ]
+        },
+        "root:125:0:124": {
+          "position": { "y": 167, "x": 1513 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 11,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:124",
+          "state": {
+            "progressMessages": ["Row 1098 (\"Row1098\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.misc.tikalangdetector.TikaLangDetectorNodeFactory",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Table with appended language and confidence value column",
+              "index": 1,
+              "connectedVia": ["root:125:0:125_1"],
+              "portContentVersion": 1482206278,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Table containing the strings/documents",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:124_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        },
+        "root:125:0:123": {
+          "position": { "y": 84, "x": 2850 },
+          "annotation": {
+            "text": { "contentType": "text/plain", "value": "" },
+            "styleRanges": [],
+            "defaultFontSize": 11,
+            "textAlign": "center"
+          },
+          "id": "root:125:0:123",
+          "state": {
+            "progressMessages": ["Row 749 (\"Row821\"))"],
+            "executionState": "EXECUTING"
+          },
+          "kind": "node",
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": false,
+            "canCollapse": "false",
+            "canReset": false
+          },
+          "executionInfo": { "streamable": true },
+          "templateId": "org.knime.ext.textprocessing.nodes.preprocessing.stanfordlemmatizer.StanfordLemmatizerNodeFactory",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": 1816965645,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Preprocessed documents.",
+              "index": 1,
+              "connectedVia": ["root:125:0:119_1"],
+              "portContentVersion": 1493525178,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "Documents to preprocess",
+              "index": 1,
+              "optional": false,
+              "connectedVia": ["root:125:0:123_1"],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ]
+        }
+      },
+      "dirty": true,
+      "parents": [
+        {
+          "name": "Streaming - Text Processing",
+          "containerType": "project",
+          "containerId": "root",
+          "providerType": "LOCAL"
+        }
+      ],
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": true,
+        "canUndo": false,
+        "canRedo": false,
+        "canReset": false
+      },
+      "nodeTemplates": {
+        "org.knime.ext.textprocessing.nodes.tagging.pos.PosTaggerNodeFactory2": {
+          "name": "POS Tagger",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.tagging.pos.PosTaggerNodeFactory2"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.preprocessing.numberfilter.NumberFilterNodeFactory2": {
+          "name": "Number Filter",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.preprocessing.numberfilter.NumberFilterNodeFactory2"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.preprocessing.stanfordlemmatizer.StanfordLemmatizerNodeFactory": {
+          "name": "Stanford Lemmatizer",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.preprocessing.stanfordlemmatizer.StanfordLemmatizerNodeFactory"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.preprocessing.diacriticremover.DiacriticRemoverNodeFactory": {
+          "name": "Diacritic Remover",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.preprocessing.diacriticremover.DiacriticRemoverNodeFactory"
+          }
+        },
+        "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory": {
+          "name": "Row Filter (deprecated)",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Rjk3QThFRUE0NDFDMTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Rjk3QThFRTk0NDFDMTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNmRiZTRmOC00Yzc3LTQyZGUtOGI5NC00ZGExNTM3Y2Q1M2YiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+JOw8vQAAAJVJREFUeNqkUgEKwCAI9KL/f9ll6BCntrGDkEhPu3MwM8WzwBrTuz+DCgDYRStShymJHYmElqBIMNK+/cJo3lBN5b81TZyQdGeoDpFMSNCK6BwwUkpIjiKeJOBBPyEa4EtBmBjzxZiUCW0uVS7sBbI33UpvBtI9kATvYLg/iqVB64JuJLpvpSIaaRg71aMUMSvOcAkwALIaZjL1MMxxAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.preprocessing.ncharsfilter.NCharsFilterNodeFactory2": {
+          "name": "N Chars Filter",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.preprocessing.ncharsfilter.NCharsFilterNodeFactory2"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.preprocessing.caseconverter.CaseConverterNodeFactory2": {
+          "name": "Case Converter",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.preprocessing.caseconverter.CaseConverterNodeFactory2"
+          }
+        },
+        "org.knime.core.node.workflow.virtual.subnode.VirtualSubNodeInputNodeFactory#Component Input": {
+          "name": "Component Input",
+          "type": "VirtualIn",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH3gMNDwYK7Pl8VwAAAN1JREFUOMvVkj0KwkAQhb9ZNQb8gYA5goUnECy9ggew9AiexdJ72FiJnZ1gYZELKBJko5ixMCYK/kRSOc3ug7cz770dUVWKVDkPSZZCs9pERFBVDtEB7Wr+BnWnTr/dxyk5nC4nZpvZZwUi8oRbixZ+zU+xG7kpx3x7/JJlXmQgIwEPGCQED3Ry89lYNQj2ARVT4RyfsY7lHn5mwQOGQBWIgGk2JTyGzLdzDIaYGGttpiCVPAY6j8llV+29/2pDwTKqmvphDWyTM/x1kXaJbwPECc6zZEVXuXgG/9/gCm3SQpkbJEazAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.core.node.workflow.virtual.subnode.VirtualSubNodeInputNodeFactory",
+            "settings": "{\"name\":\"settings\",\"value\":{\"port_0\":{\"type\":\"tree\",\"value\":{\"index\":{\"type\":\"int\",\"value\":0},\"type\":{\"type\":\"tree\",\"value\":{\"object_class\":{\"type\":\"string\",\"value\":\"org.knime.core.node.BufferedDataTable\"}}}}}}}"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.preprocessing.tagfilter2.TagFilterNodeFactory2": {
+          "name": "Tag Filter",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.preprocessing.tagfilter2.TagFilterNodeFactory2"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.preprocessing.stopwordfilter.StopWordFilterNodeFactory3": {
+          "name": "Stop Word Filter",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.preprocessing.stopwordfilter.StopWordFilterNodeFactory3"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.preprocessing.puncterasure.PunctuationErasureNodeFactory2": {
+          "name": "Punctuation Erasure",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.preprocessing.puncterasure.PunctuationErasureNodeFactory2"
+          }
+        },
+        "org.knime.core.node.workflow.virtual.subnode.VirtualSubNodeOutputNodeFactory#Component Output": {
+          "name": "Component Output",
+          "type": "VirtualOut",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH3gMNDwYK7Pl8VwAAAN1JREFUOMvVkj0KwkAQhb9ZNQb8gYA5goUnECy9ggew9AiexdJ72FiJnZ1gYZELKBJko5ixMCYK/kRSOc3ug7cz770dUVWKVDkPSZZCs9pERFBVDtEB7Wr+BnWnTr/dxyk5nC4nZpvZZwUi8oRbixZ+zU+xG7kpx3x7/JJlXmQgIwEPGCQED3Ry89lYNQj2ARVT4RyfsY7lHn5mwQOGQBWIgGk2JTyGzLdzDIaYGGttpiCVPAY6j8llV+29/2pDwTKqmvphDWyTM/x1kXaJbwPECc6zZEVXuXgG/9/gCm3SQpkbJEazAAAAAElFTkSuQmCC",
+          "nodeFactory": {
+            "className": "org.knime.core.node.workflow.virtual.subnode.VirtualSubNodeOutputNodeFactory",
+            "settings": "{\"name\":\"settings\",\"value\":{\"port_0\":{\"type\":\"tree\",\"value\":{\"index\":{\"type\":\"int\",\"value\":0},\"type\":{\"type\":\"tree\",\"value\":{\"object_class\":{\"type\":\"string\",\"value\":\"org.knime.core.node.BufferedDataTable\"}}}}}}}"
+          }
+        },
+        "org.knime.ext.textprocessing.nodes.misc.tikalangdetector.TikaLangDetectorNodeFactory": {
+          "name": "Tika Language Detector",
+          "type": "Manipulator",
+          "icon": "data:image/png;base64,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",
+          "nodeFactory": {
+            "className": "org.knime.ext.textprocessing.nodes.misc.tikalangdetector.TikaLangDetectorNodeFactory"
+          }
+        }
+      },
+      "connections": {
+        "root:125:0:123_1": {
+          "id": "root:125:0:123_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:123",
+          "sourceNode": "root:125:0:120",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:124_1": {
+          "id": "root:125:0:124_1",
+          "label": "1.099",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:124",
+          "sourceNode": "root:125:0:116",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:125_1": {
+          "id": "root:125:0:125_1",
+          "label": "974",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:125",
+          "sourceNode": "root:125:0:124",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:115_1": {
+          "id": "root:125:0:115_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:115",
+          "sourceNode": "root:125:0:106",
+          "streaming": true,
+          "bendpoints": [
+            { "y": 269, "x": 2374 },
+            { "y": 92, "x": 2430 },
+            { "y": 286, "x": 2800 }
+          ],
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:120_1": {
+          "id": "root:125:0:120_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:120",
+          "sourceNode": "root:125:0:108",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:114_1": {
+          "id": "root:125:0:114_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:114",
+          "sourceNode": "root:125:0:119",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:7_1": {
+          "id": "root:125:0:7_1",
+          "label": "797",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:7",
+          "sourceNode": "root:125:0:125",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:108_1": {
+          "id": "root:125:0:108_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:108",
+          "sourceNode": "root:125:0:115",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:106_1": {
+          "id": "root:125:0:106_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:106",
+          "sourceNode": "root:125:0:105",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:117_1": {
+          "id": "root:125:0:117_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:117",
+          "sourceNode": "root:125:0:114",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:105_1": {
+          "id": "root:125:0:105_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:105",
+          "sourceNode": "root:125:0:7",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        },
+        "root:125:0:119_1": {
+          "id": "root:125:0:119_1",
+          "label": "749",
+          "allowedActions": { "canDelete": false },
+          "destNode": "root:125:0:119",
+          "sourceNode": "root:125:0:123",
+          "streaming": true,
+          "sourcePort": 1,
+          "destPort": 1
+        }
+      },
+      "metadata": {
+        "name": "Textprocessing",
+        "description": { "contentType": "text/plain", "value": "" },
+        "metadataType": "component",
+        "outPorts": [
+          {
+            "name": "Port 1",
+            "typeName": "Table",
+            "optional": false,
+            "typeId": "org.knime.core.node.BufferedDataTable"
+          }
+        ],
+        "inPorts": [
+          {
+            "name": "Port 1",
+            "typeName": "Table",
+            "optional": false,
+            "typeId": "org.knime.core.node.BufferedDataTable"
+          }
+        ]
+      }
+    }
+  }
+}

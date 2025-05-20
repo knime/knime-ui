@@ -88,7 +88,7 @@ export class DashLine {
   // cache of PIXI.Textures for dashed lines
   static readonly dashTextureCache: Record<string, PIXI.Texture> = {};
 
-  private ticker: PIXI.Ticker | null = null;
+  private readonly ticker: PIXI.Ticker | null = null;
 
   /**
    * Create a DashLine
@@ -260,6 +260,8 @@ export class DashLine {
     cpY2: number,
     toX: number,
     toY: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    smoothness = 1, // not used, but needed for compatibility with normal bezierCurveTo function
     segments = 50,
   ): this {
     const fromX = this.cursor.x;
