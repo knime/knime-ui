@@ -205,6 +205,11 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
     SpaceItemChangedEvent(event) {
       consola.info("<<< events::SpaceItemChangedEvent", event);
     },
+
+    TaskStatusEvent({ message, progress, error }) {
+      consola.log("<<< events::TaskStatusEvent", { message, progress, error });
+      useGlobalLoaderStore().updateTaskStatus({ message, progress, error });
+    },
   });
 
   API.desktop.registerEventHandlers({

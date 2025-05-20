@@ -70,6 +70,7 @@ import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.service.util.progress.TaskManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.PreferencesProvider;
@@ -143,7 +144,7 @@ final class Init {
             projectManager = ProjectManager.getInstance();
             state.loadedApplicationState().openProjectsToRestore().forEach(projectToRestore -> {
                 var project = CreateProject.createProjectFromOrigin(projectToRestore.origin(), progressReporter, //
-                        spaceProvidersManager.getSpaceProviders(SpaceProvidersManager.Key.defaultKey()) //
+                    spaceProvidersManager.getSpaceProviders(SpaceProvidersManager.Key.defaultKey()) //
                 );
                 projectManager.addProject(project);
                 if (projectToRestore.isActive()) {
@@ -187,9 +188,10 @@ final class Init {
             kaiHandler, //
             codeKaiHandler, //
             nodeCollections, //
-
             nodeCategoryExtensions, //
-            selectionEventBus);
+            selectionEventBus, //
+            new TaskManager(projectManager) //
+        );
         DesktopAPI.injectDependencies( //
             projectManager, //
             workflowMiddleware, //
@@ -198,8 +200,7 @@ final class Init {
             spaceProvidersManager, //
             updateStateProvider, //
             nodeRepository, //
-            mostRecentlyUsedProjects,
-            toastService, //
+            mostRecentlyUsedProjects, toastService, //
             localSpace, //
             state.getWelcomeApEndpoint(), //
             createExampleProjects(), //
