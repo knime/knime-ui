@@ -117,6 +117,7 @@ export const createComponentNode = (
     state: {
       executionState: NodeState.ExecutionStateEnum.CONFIGURED,
     },
+    hasView: false,
   };
 
   return merge(component, data);

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { type Ref, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { debounce } from "lodash-es";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import LoadingIndicator from "@/components/uiExtensions/LoadingIndicator.vue";
@@ -24,15 +23,8 @@ const emit = defineEmits<{
 }>();
 
 const shadowHost = ref<HTMLElement | null>(null);
-const componentViewIsDirty = ref<boolean>(false);
 
-const DEBOUNCE_TIME = 300;
-const getPageBuilder = () =>
-  usePageBuilder(props.projectId, (isDirty) => {
-    debounce(() => {
-      componentViewIsDirty.value = isDirty;
-    }, DEBOUNCE_TIME)();
-  });
+const getPageBuilder = () => usePageBuilder(props.projectId);
 
 const pageBuilder: Ref<PageBuilderControl> = ref(await getPageBuilder());
 
@@ -56,8 +48,7 @@ const mount = async () => {
 
   emit("loadingStateChange", { value: "loading", message: "Loading view" });
   try {
-    componentViewIsDirty.value = false;
-    pageBuilder.value.mountShadowApp(shadowRoot.value!);
+    await pageBuilder.value.mountShadowApp(shadowRoot.value!);
 
     emit("loadingStateChange", { value: "ready" });
   } catch (error) {

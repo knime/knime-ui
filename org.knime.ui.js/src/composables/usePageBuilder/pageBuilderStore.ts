@@ -35,7 +35,7 @@ interface SelectionServiceParams {
 export type PageBuilderStoreState = {
   projectId: string | null;
   disallowWebNodes: boolean;
-  onChange: (isDirty: boolean) => void;
+  onChange: (isDirty: boolean, isDefault: boolean) => void;
 };
 
 const state: PageBuilderStoreState = {
@@ -50,7 +50,7 @@ const mutations = {
   },
 };
 
-const handleError = (
+export const handleError = (
   {
     caller,
     error,
@@ -77,7 +77,7 @@ const handleError = (
   }
 };
 
-const getSelectedNodeIdentifierFromStore = (): Identifiers | null => {
+export const getSelectedNodeIdentifierFromStore = (): Identifiers | null => {
   const { projectId, workflowId } = useWorkflowStore().getProjectAndWorkflowIds;
 
   const selectedNode = useSelectionStore().singleSelectedNode;
@@ -242,6 +242,80 @@ const actions = {
     addListener({ ...id, projectId: state.projectId }, service);
   },
 
+  async resetOnChangeState({ dispatch }) {
+    await dispatch("pagebuilder/resetDirtyState", null, { root: true });
+    const isDirty = await dispatch("pagebuilder/isDirty", null, {
+      root: true,
+    });
+    const isDefault = await dispatch("pagebuilder/isDefault", null, {
+      root: true,
+    });
+    await dispatch("api/onChange", { isDirty, isDefault }, { root: true });
+  },
+
+  async getViewValues({
+    dispatch,
+  }): Promise<(Identifiers & { viewValues: Record<string, string> }) | null> {
+    consola.debug("KNIME-UI pageBuilderStore: getViewValues");
+
+    const resolvedIdentifiers = getSelectedNodeIdentifierFromStore();
+    if (resolvedIdentifiers === null) {
+      return null;
+    }
+
+    const { nodeId: componentNodeId } = resolvedIdentifiers;
+
+    try {
+      const viewValues = await dispatch("pagebuilder/getViewValues", null, {
+        root: true,
+      });
+
+      return {
+        ...resolvedIdentifiers,
+        viewValues: Object.keys(viewValues).reduce((accumulator, nodeId) => {
+          accumulator[nodeId] = JSON.stringify(viewValues[nodeId]);
+          return accumulator;
+        }, {}),
+      };
+    } catch (error) {
+      handleError({
+        caller: "getViewValues",
+        error,
+        nodeId: componentNodeId,
+      });
+      return null;
+    }
+  },
+
+  /**
+   * Triggers a partial re-execution of the composite view. This consists of the following steps: validation, value
+   * retrieval and page update or polling.
+   *
+   * @async
+   * @param {Object} context - Vuex context.
+   * @returns {undefined}
+   */
+  async applyAsDefault({ dispatch }) {
+    consola.debug("KNIME-UI pageBuilderStore: applyAsDefault");
+
+    const viewValues = await dispatch("getViewValues");
+    if (viewValues === null) {
+      consola.debug(
+        "KNIME-UI pageBuilderStore: applyAsDefault failed. No view values available.",
+      );
+      return;
+    }
+    try {
+      await API.component.setViewValuesAsNewDefault(viewValues);
+    } catch (error) {
+      handleError({
+        caller: "applyAsDefault",
+        error,
+        nodeId: viewValues.nodeId,
+      });
+    }
+  },
+
   /**
    * Triggers a partial re-execution of the composite view. This consists of the following steps: validation, value
    * retrieval and page update or polling.
@@ -260,12 +334,15 @@ const actions = {
         : "none (complete re-execution)",
     );
 
-    const resolvedIdentifiers = getSelectedNodeIdentifierFromStore();
-    if (resolvedIdentifiers === null) {
+    const viewValues = await dispatch("getViewValues");
+    if (viewValues === null) {
+      consola.debug(
+        "KNIME-UI pageBuilderStore: triggerReExecution failed. No view values available.",
+      );
       return;
     }
 
-    const { nodeId: componentNodeId } = resolvedIdentifiers;
+    const { nodeId: componentNodeId } = viewValues;
 
     if (
       (await testValidityOfPage({ dispatch }, componentNodeId)) === "invalid"
@@ -282,59 +359,22 @@ const actions = {
       return;
     }
 
-    let viewValues: Record<string, string>;
-    try {
-      const viewValueResult = await dispatch(
-        "pagebuilder/getViewValues",
-        null,
-        {
-          root: true,
-        },
-      );
-
-      // make all values to strings as expected by the API
-      viewValues = Object.keys(viewValueResult).reduce(
-        (accumulator, nodeId) => {
-          accumulator[nodeId] = JSON.stringify(viewValueResult[nodeId]);
-          return accumulator;
-        },
-        {},
-      );
-    } catch (error) {
-      handleError({
-        caller: "triggerReExecution",
-        error,
-        nodeId: componentNodeId,
-      });
-      return;
-    }
-
     const reexecution = async () => {
       try {
         const reexecutingPage =
-          (await API.component.triggerCompleteComponentReexecution({
-            ...resolvedIdentifiers,
+          (await API.component.triggerCompleteComponentReexecution(
             viewValues,
-          })) as unknown as ReexecutingPage;
+          )) as unknown as ReexecutingPage;
 
-        await Promise.all(
-          reexecutingPage.resetNodes.map((nodeId) => {
-            return dispatch(
-              "pagebuilder/resetDirtyState",
-              { nodeId },
-              { root: true },
-            );
-          }),
-        );
-
-        const isDirty = await dispatch("pagebuilder/isDirty", null, {
-          root: true,
-        });
-        await dispatch("api/onChange", { isDirty }, { root: true });
+        await dispatch("resetOnChangeState");
 
         await dispatch("pollReExecution", {
           reexecutingPage,
-          resolvedIdentifiers,
+          resolvedIdentifiers: {
+            projectId: viewValues.projectId,
+            workflowId: viewValues.workflowId,
+            nodeId: viewValues.nodeId,
+          },
         });
       } finally {
         useReexecutingCompositeViewState().removeReexecutingNode(

@@ -176,9 +176,7 @@ describe("ComponentViewTabOutput.vue", () => {
     await nextTick();
 
     expect(wrapper.find(".detach-view").exists()).toBe(true);
-    await expect(wrapper.findComponent(OpenInNewWindowIcon).exists()).toBe(
-      true,
-    );
+    expect(wrapper.findComponent(OpenInNewWindowIcon).exists()).toBe(true);
   });
 
   it("triggers node execution on button click", async () => {

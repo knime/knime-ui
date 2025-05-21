@@ -1,32 +1,42 @@
+import { ref } from "vue";
+import { debounce } from "lodash-es";
+
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
-import { isBrowser, isDesktop } from "@/environment";
+import { isDesktop } from "@/environment";
+import { useExecutionStore } from "@/store/workflow/execution";
 
 import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
 import { showPageBuilderUnsavedChangesDialog } from "./showPageBuilderUnsavedChangesDialog";
 
 export type PageBuilderControl = {
-  mountShadowApp: (shadowRoot: ShadowRoot) => void;
+  mountShadowApp: (shadowRoot: ShadowRoot) => Promise<void>;
   loadPage: (
     projectId: string,
     workflowId: string,
     nodeId: string,
   ) => Promise<void>;
   isDirty: () => Promise<boolean>;
+  isDefault: () => Promise<boolean>;
   hasPage: () => boolean;
+  applyToDefaultAndExecute: () => Promise<void>;
   updateAndReexecute: () => Promise<void>;
   unmountShadowApp: () => void;
 };
 
-const errop = () => {
-  consola.error("PageBuilder failed to un/mount. Fallback active.");
-};
 const fallbackCreatePageBuilder: PageBuilderControl = {
-  mountShadowApp: errop,
+  mountShadowApp: () => {
+    consola.error("PageBuilder failed to mount. Fallback active.");
+    return Promise.resolve();
+  },
   loadPage: () => Promise.resolve(),
   isDirty: () => Promise.resolve(false),
+  isDefault: () => Promise.resolve(true),
   hasPage: () => false,
+  applyToDefaultAndExecute: () => Promise.resolve(),
   updateAndReexecute: () => Promise.resolve(),
-  unmountShadowApp: errop,
+  unmountShadowApp: () => {
+    consola.error("PageBuilder failed to unmount. Fallback active.");
+  },
 };
 
 let PageBuilder: {
@@ -41,6 +51,54 @@ let activePageBuilder: PageBuilderControl | null = null;
 export const isComponentViewDirty = async () =>
   (await activePageBuilder?.isDirty()) ?? false;
 
+export const applyAndExecute = async (): Promise<void> => {
+  if (activePageBuilder === null) {
+    consola.debug("applyAndExecute: PageBuilder not mounted");
+    return;
+  }
+
+  const isDirty = await activePageBuilder.isDirty();
+  if (!isDirty) {
+    consola.debug("applyAndExecute: PageBuilder not dirty");
+    return;
+  }
+
+  if (!activePageBuilder.hasPage()) {
+    consola.debug("applyAndExecute: PageBuilder has no page");
+    return;
+  }
+
+  await activePageBuilder.updateAndReexecute();
+};
+
+export const applyToDefaultAndExecute = async (
+  componentNodeId: string,
+): Promise<void> => {
+  if (!activePageBuilder?.hasPage()) {
+    consola.debug(
+      "applyToDefaultAndExecute: PageBuilder not mounted or has no page.",
+    );
+    return;
+  }
+  await activePageBuilder.applyToDefaultAndExecute();
+
+  await useExecutionStore().executeNodes([componentNodeId]);
+};
+
+export const resetToDefaults = async (
+  componentNodeId: string,
+): Promise<void> => {
+  if (activePageBuilder === null) {
+    return;
+  }
+
+  await useExecutionStore().changeNodeState({
+    action: "reset",
+    nodes: [componentNodeId],
+  });
+  await useExecutionStore().executeNodes([componentNodeId]);
+};
+
 export const clickAwayCompositeView = async (): Promise<boolean> => {
   if (activePageBuilder === null) {
     return true;
@@ -54,6 +112,15 @@ export const clickAwayCompositeView = async (): Promise<boolean> => {
   return showPageBuilderUnsavedChangesDialog(activePageBuilder);
 };
 
+export const isCompositeViewDirty = ref(false);
+export const isCompositeViewDefault = ref(true);
+
+const DEBOUNCE_DELAY_ON_CHANGE = 100;
+const onChangeGlobally = debounce((isDirty: boolean, isDefault: boolean) => {
+  isCompositeViewDirty.value = isDirty;
+  isCompositeViewDefault.value = isDefault;
+}, DEBOUNCE_DELAY_ON_CHANGE);
+
 /**
  * Load and initialize the PageBuilder and return a function to mount a shadow app on a given shadowRoot.
  * @param projectId The project ID. when using KNIME in browser the resolution of the PageBuilder module will be done using this project ID. This is not needed when using KNIME in desktop.
@@ -61,7 +128,6 @@ export const clickAwayCompositeView = async (): Promise<boolean> => {
  */
 export const usePageBuilder = async (
   projectId: string,
-  onChange: (isDirty: boolean) => void,
 ): Promise<PageBuilderControl> => {
   const pageBuilderBaseUrl =
     // eslint-disable-next-line no-undefined
@@ -85,21 +151,29 @@ export const usePageBuilder = async (
       ...pageBuilderApiVuexStoreConfig,
       state: {
         ...pageBuilderApiVuexStoreConfig.state,
-        disallowWebNodes: isBrowser(),
+        disallowWebNodes: true,
         disableWidgetsWhileExecuting: true,
         alwaysTearDownKnimePageBuilderAPI: true,
       },
       actions: {
         ...pageBuilderApiVuexStoreConfig.actions,
-        onChange: (_, { isDirty }) => onChange(isDirty),
+        onChange: (_, { isDirty, isDefault }) =>
+          onChangeGlobally(isDirty, isDefault),
       },
     },
     resourceLocationResolver(projectId, "", pageBuilderBaseUrl),
   ) ?? fallbackCreatePageBuilder);
 
   const pageBuilderUnmount = createdPageBuilder.unmountShadowApp;
+  const pageBuilderMount = createdPageBuilder.mountShadowApp;
   activePageBuilder = {
     ...createdPageBuilder,
+    mountShadowApp: async (shadowRoot: ShadowRoot) => {
+      await pageBuilderMount(shadowRoot);
+      isCompositeViewDirty.value = false;
+      isCompositeViewDefault.value =
+        (await activePageBuilder?.isDefault()) ?? true;
+    },
     unmountShadowApp() {
       activePageBuilder = null;
       pageBuilderUnmount();

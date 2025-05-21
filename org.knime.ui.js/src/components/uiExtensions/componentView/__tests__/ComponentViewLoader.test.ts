@@ -11,6 +11,7 @@ const pageBuilderMountMock = vi.hoisted(() => vi.fn());
 const mockUnmountShadowApp = vi.hoisted(() => vi.fn());
 const mockLoadPage = vi.hoisted(() => vi.fn());
 const isDirtyMock = vi.hoisted(() => vi.fn());
+const isDefaultMock = vi.hoisted(() => vi.fn());
 const hasPageMock = vi.hoisted(() => vi.fn());
 const updateAndReexecuteMock = vi.hoisted(() => vi.fn());
 const onDirtyChangeCallback = vi.hoisted(() => vi.fn());
@@ -23,6 +24,7 @@ vi.mock("@/composables/usePageBuilder/usePageBuilder.ts", () => ({
       mountShadowApp: pageBuilderMountMock,
       loadPage: mockLoadPage,
       isDirty: isDirtyMock,
+      isDefault: isDefaultMock,
       hasPage: hasPageMock,
       updateAndReexecute: updateAndReexecuteMock,
       unmountShadowApp: mockUnmountShadowApp,
