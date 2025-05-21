@@ -12,9 +12,12 @@ import {
   type Direction,
   detectConnectionCircle,
 } from "@/util/compatibleConnections";
+import {
+  type PortSnapCallback,
+  usePortSnapping,
+} from "../../../common/usePortSnapping";
 
 import type { DragConnector } from "./types";
-import { type PortSnapCallback, usePortSnapping } from "./usePortSnapping";
 
 type Params = {
   direction: Direction;

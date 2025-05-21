@@ -134,6 +134,16 @@ export const initE2ETestUtils = (app: Application) => {
           "NodePorts",
           "Port__defaultFlowVarOut",
         ]),
+        addInPortPlaceholder: getPixiContainerBounds([
+          nodeIdLabel,
+          "NodePorts",
+          "AddPortPlaceholder__input",
+        ]),
+        addOutPortPlaceholder: getPixiContainerBounds([
+          nodeIdLabel,
+          "NodePorts",
+          "AddPortPlaceholder__output",
+        ]),
       };
     },
 
@@ -157,6 +167,33 @@ export const initE2ETestUtils = (app: Application) => {
       } catch (error) {
         throw new Error(
           `Make sure the node exists and is hovered before calling this function; ${
+            (error as Error).message
+          }`,
+        );
+      }
+    },
+    /**
+     * Returns the bounds of the port action button. Make sure the port is selected
+     * before calling this function as only then the button is rendered.
+     */
+    getPortActionButton: (nodeId: string, portId: string) => {
+      const nodeIdLabel = `Node__${nodeId}`;
+      const portIdLabel = `Port__${portId}`;
+
+      try {
+        const actionButton = getPixiContainer([
+          nodeIdLabel,
+          "NodePorts",
+          portIdLabel,
+          /^ActionButton__/,
+        ]);
+        return {
+          ...getBoundsFromContainer(actionButton!),
+          testId: actionButton!.label.replace("ActionButton__", ""),
+        };
+      } catch (error) {
+        throw new Error(
+          `Make sure the port is selected before calling this function; ${
             (error as Error).message
           }`,
         );

@@ -3,8 +3,7 @@ import { storeToRefs } from "pinia";
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-
-import { useNodeInfo } from "./useNodeInfo";
+import { useNodeInfo } from "../../../common/useNodeInfo";
 
 type UsePortAnimationClassesOptions = {
   nodeId: string;

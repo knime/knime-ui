@@ -6,7 +6,7 @@ import { Container } from "pixi.js";
 import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import * as $colors from "@/style/colors";
-import type { ContainerInst } from "@/vue3-pixi";
+import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 import PortIcon from "./PortIcon.vue";
@@ -17,6 +17,7 @@ interface Props {
   port: NodePort | MetaNodePort;
   targeted?: boolean;
   hovered?: boolean;
+  selected?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -45,24 +46,65 @@ const shouldFill = computed(() => {
 });
 
 const portContainer = useTemplateRef<ContainerInst>("portContainer");
-const { hovered, targeted } = toRefs(props);
+const { hovered, targeted, selected } = toRefs(props);
 
 /* eslint-disable no-magic-numbers */
 useAnimatePixiContainer<number>({
   initialValue: 1,
   targetValue: 1.2,
   targetDisplayObject: portContainer,
-  changeTracker: computed(() => hovered.value || targeted.value),
+  changeTracker: computed(
+    () => (hovered.value || targeted.value) && !selected.value,
+  ),
   animationParams: { duration: 0.17, ease: [0.8, 2, 1, 2.5] },
   onUpdate: (value) => {
-    portContainer.value!.scale.x = value;
-    portContainer.value!.scale.y = value;
+    if (selected.value) {
+      portContainer.value!.scale.x = 1;
+      portContainer.value!.scale.y = 1;
+    } else {
+      portContainer.value!.scale.x = value;
+      portContainer.value!.scale.y = value;
+    }
   },
 });
+/* eslint-enable no-magic-numbers */
+const selectionContainer = useTemplateRef<ContainerInst>("selectionContainer");
+useAnimatePixiContainer<number>({
+  initialValue: 0,
+  targetValue: 1,
+  targetDisplayObject: selectionContainer,
+  animationParams: { duration: 0.5 },
+  changeTracker: computed(() => props.selected),
+  onUpdate: (value) => {
+    selectionContainer.value!.alpha = value;
+  },
+});
+const selectionOffset = () => {
+  let offset = 0;
+  if (portKind.value === "table") {
+    offset -= 1;
+  }
+  if ("nodeState" in props.port && props.port.nodeState) {
+    offset -= 1;
+  }
+
+  return offset;
+};
+
+/* eslint-disable no-magic-numbers */
+const renderSelectionCircle = (graphics: GraphicsInst) => {
+  graphics
+    .circle(selectionOffset(), 0, 9)
+    .stroke({ color: $colors.CornflowerDark, width: 1 });
+  graphics.circle(selectionOffset(), 0, 8.5).fill({ color: $colors.White });
+};
 /* eslint-enable no-magic-numbers */
 </script>
 
 <template>
+  <Container ref="selectionContainer">
+    <Graphics v-if="selected" @render="renderSelectionCircle" />
+  </Container>
   <Container ref="portContainer">
     <PortIcon :type="portKind" :color="portColor" :filled="shouldFill" />
     <PortInactiveDecorator v-if="port.inactive" :port="port" />

@@ -6,6 +6,7 @@ import {
   Node,
   type NodePort as NodePortType,
 } from "@/api/gateway-api/generated-api";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $shapes from "@/style/shapes";
 import type { ContainerInst } from "@/vue3-pixi";
@@ -13,6 +14,7 @@ import {
   type PortPositions,
   usePortPositions,
 } from "../../common/usePortPositions";
+import { usePortSelection } from "../../common/usePortSelection";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
 import NodePort from "./NodePort.vue";
@@ -82,7 +84,19 @@ const getPortPositionOffset = (type: "in" | "out", portIndex: number) => {
   return portPositions.value[type][portIndex] ?? [0, 0];
 };
 
+const {
+  currentlySelectedPort,
+  portSelectionState,
+  clearSelection,
+  selectPort,
+} = usePortSelection({
+  nodeId: props.nodeId,
+  isEditable: props.isEditable,
+  portGroups: props.portGroups,
+});
+
 const nodeInteractionsStore = useNodeInteractionsStore();
+const nodeConfigurationStore = useNodeConfigurationStore();
 
 const addPort = async ({
   side,
@@ -104,6 +118,26 @@ const addPort = async ({
     consola.error("Failed to add port", { error });
   }
 };
+
+const removePort = async (
+  { index }: NodePortType,
+  side: "input" | "output",
+) => {
+  // TODO: NXT-3714 follow-up when NXT-3553 is merged
+  const canContinue = await nodeConfigurationStore.autoApplySettings();
+
+  if (!canContinue) {
+    portSelectionState.setModificationInProgress(false);
+    return;
+  }
+
+  nodeInteractionsStore.removeNodePort({
+    nodeId: props.nodeId,
+    side,
+    index,
+  });
+  clearSelection();
+};
 </script>
 
 <template>
@@ -116,10 +150,14 @@ const addPort = async ({
       :node-kind="nodeKind"
       :label="getPortContainerLabel(port.index, 'in')"
       :port="port"
+      :selected="currentlySelectedPort === `input-${port.index}`"
       :position="{
         x: getPortPositionOffset('in', port.index)[0] - $shapes.portSize / 2,
         y: getPortPositionOffset('in', port.index)[1] - $shapes.portSize / 2,
       }"
+      @select-port="selectPort(port, 'input')"
+      @remove="removePort(port, 'input')"
+      @deselect="clearSelection"
     />
 
     <NodePort
@@ -130,10 +168,14 @@ const addPort = async ({
       :node-kind="nodeKind"
       :label="getPortContainerLabel(port.index, 'out')"
       :port="port"
+      :selected="currentlySelectedPort === `output-${port.index}`"
       :position="{
         x: getPortPositionOffset('out', port.index)[0] - $shapes.portSize / 2,
         y: getPortPositionOffset('out', port.index)[1] - $shapes.portSize / 2,
       }"
+      @select-port="selectPort(port, 'output')"
+      @remove="removePort(port, 'output')"
+      @deselect="clearSelection"
     />
 
     <template v-for="side in ['input', 'output'] as const" :key="side">

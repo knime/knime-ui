@@ -61,16 +61,19 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   type CanvasLayerNames =
     | "nodeSelectionPlane"
     | "selectedNodes"
+    | "selectedPorts"
     | "annotations";
   type CanvasLayers = Record<CanvasLayerNames, IRenderLayer | undefined>;
   const canvasLayers: ShallowRef<CanvasLayers> = shallowRef({
     nodeSelectionPlane: undefined,
     selectedNodes: undefined,
+    selectedPorts: undefined,
     annotations: undefined,
   });
 
   const removeLayers = () => {
     canvasLayers.value.nodeSelectionPlane = undefined;
+    canvasLayers.value.selectedPorts = undefined;
     canvasLayers.value.selectedNodes = undefined;
     canvasLayers.value.annotations = undefined;
   };

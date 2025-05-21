@@ -35,7 +35,6 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   addPort: [{ typeId: string; portGroup?: string }];
 }>();
-
 const webGLCanvasStore = useWebGLCanvasStore();
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
@@ -220,7 +219,7 @@ const onPointerdown = (event: FederatedPointerEvent) => {
 <template>
   <Container
     ref="container"
-    label="AddPortPlaceholder"
+    :label="`AddPortPlaceholder__${side}`"
     event-mode="static"
     :position="position"
     :alpha="0"

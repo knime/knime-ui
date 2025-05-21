@@ -9,14 +9,14 @@ import type {
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type { TargetPort } from "../../../CanvasAnchoredComponents/PortTypeMenu/types";
+import { useNodeInfo } from "../../../common/useNodeInfo";
 import { usePortPositions } from "../../../common/usePortPositions";
+import { usePortSelection } from "../../../common/usePortSelection";
 import NodePort from "../NodePort/NodePort.vue";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
-import { useNodeInfo } from "./useNodeInfo";
 import { usePortAnimationClasses } from "./usePortAnimationClasses";
 import { usePortKeyboardNavigation } from "./usePortKeyboardNavigation";
-import { usePortSelection } from "./usePortSelection";
 
 /**
  * This component renders and handles interactions with a Node's Ports

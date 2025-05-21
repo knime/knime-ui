@@ -121,6 +121,31 @@ export const getAnnotation = async (page: Page, id: string) => {
     },
     { id },
   );
-
   return annotation;
+};
+
+export const getAddPortPlaceholder = async (
+  page: Page,
+  id: string,
+  side: "input" | "output",
+) => {
+  const node = await getNode(page, id);
+  const addPortPlaceholder =
+    side === "input" ? node.addInPortPlaceholder : node.addOutPortPlaceholder;
+  return addPortPlaceholder;
+};
+
+export const getPortActionButton = async (
+  page: Page,
+  nodeId: string,
+  portId: string,
+) => {
+  const actionButton = await page.evaluate(
+    ({ nodeId, portId }) => {
+      return window.__E2E_TEST__.getPortActionButton(nodeId, portId);
+    },
+    { nodeId, portId },
+  );
+
+  return actionButton;
 };

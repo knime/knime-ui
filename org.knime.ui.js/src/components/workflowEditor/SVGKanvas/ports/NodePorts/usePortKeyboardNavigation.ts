@@ -16,9 +16,9 @@ import {
   type SelectedPortIdentifier,
   getPortContext,
 } from "@/util/portSelection";
+import { useNodeInfo } from "../../../common/useNodeInfo";
 
 import type AddPortPlaceholder from "./AddPortPlaceholder.vue";
-import { useNodeInfo } from "./useNodeInfo";
 
 const clamp = (val: number, min: number, max: number) => {
   return Math.max(min, Math.min(val, max));

@@ -2,7 +2,8 @@ import { type ComputedRef, computed, watch } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
 import * as portPositionUtils from "@/util/portShift";
-import { useNodeInfo } from "../SVGKanvas/ports/NodePorts/useNodeInfo";
+
+import { useNodeInfo } from "./useNodeInfo";
 
 export type PortPositions = {
   in: Array<[number, number]>;

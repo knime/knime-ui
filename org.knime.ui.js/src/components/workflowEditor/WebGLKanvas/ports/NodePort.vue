@@ -11,11 +11,14 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { portSize } from "@/style/shapes";
+import * as $shapes from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import { useTooltip } from "../../common/useTooltip";
 import type { TooltipDefinition } from "../../types";
+import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
+import NodePortActions from "./NodePortActions.vue";
 import Port from "./Port.vue";
 import { useFlowVarPortTransparency } from "./useFlowVarPortTransparency";
 
@@ -23,6 +26,7 @@ interface Props {
   nodeId: string;
   nodeKind: Node.KindEnum;
   port: NodePort;
+  selected: boolean;
   position: XY;
   direction: "in" | "out";
   disableQuickNodeAdd?: boolean;
@@ -32,8 +36,15 @@ const props = withDefaults(defineProps<Props>(), {
   disableQuickNodeAdd: false,
 });
 
+const emit = defineEmits<{
+  selectPort: [];
+  deselect: [];
+  remove: [];
+}>();
+
 const canvasStore = useWebGLCanvasStore();
-const { isDebugModeEnabled: isCanvasDebugEnabled } = storeToRefs(canvasStore);
+const { isDebugModeEnabled: isCanvasDebugEnabled, canvasLayers } =
+  storeToRefs(canvasStore);
 const { availablePortTypes } = storeToRefs(useApplicationStore());
 
 const hitAreaBufferSize = portSize / 6;
@@ -114,6 +125,9 @@ const onPointerDown = (event: FederatedPointerEvent) => {
       return { removeConnector: false };
     },
   });
+  if (!floatingConnectorStore.didMove) {
+    emit("selectPort");
+  }
 };
 
 const portContainer = useTemplateRef<ContainerInst>("portContainer");
@@ -151,11 +165,59 @@ const tooltip = computed<TooltipDefinition>(() => {
   } satisfies TooltipDefinition;
 });
 useTooltip({ tooltip, element: portContainer });
+
+const onClose = () => {
+  if (props.selected) {
+    emit("deselect");
+  }
+};
+
+const portActionsOffsetX = () => {
+  const delta = props.direction === "in" ? -1 : 1;
+  return (
+    ($shapes.portActionButtonSize + $shapes.portActionsGapSize) * 1 * delta
+  );
+};
+
+// node port actions animation
+const actionBarContainer = useTemplateRef<ContainerInst>("actionBarContainer");
+const animating = ref<boolean>(false);
+
+useAnimatePixiContainer({
+  initialValue: 0,
+  targetValue: portActionsOffsetX(),
+  targetDisplayObject: actionBarContainer,
+  animationParams: { duration: 0.25, ease: "easeInOut" },
+  changeTracker: computed(() => props.selected),
+  onUpdate: (value) => {
+    actionBarContainer.value!.x = value;
+    if (actionBarContainer.value!.x === 0) {
+      animating.value = false;
+    } else {
+      animating.value = true;
+    }
+  },
+  animateOut: true,
+  immediate: true,
+});
+useAnimatePixiContainer({
+  initialValue: 0,
+  targetValue: 1,
+  targetDisplayObject: actionBarContainer,
+  animationParams: { duration: 0.25, ease: "easeInOut" },
+  changeTracker: computed(() => props.selected),
+  onUpdate: (value) => {
+    actionBarContainer.value!.scale = value;
+  },
+  animateOut: true,
+  immediate: true,
+});
 </script>
 
 <template>
   <Container
     ref="portContainer"
+    :layer="selected ? canvasLayers.selectedPorts : null"
     :alpha="flowVarTransparency.initialAlpha ? 1 : 0"
     event-mode="static"
     :position="position"
@@ -184,6 +246,17 @@ useTooltip({ tooltip, element: portContainer });
         :port="port"
         :targeted="isTargetedByFloatingConnector"
         :hovered="isHovered && !isDraggingFloatingConnector"
+        :selected="selected"
+      />
+    </Container>
+    <Container ref="actionBarContainer">
+      <NodePortActions
+        v-if="animating"
+        :port="port"
+        :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
+        :direction="direction"
+        @action:remove="$emit('remove')"
+        @close="onClose"
       />
     </Container>
   </Container>

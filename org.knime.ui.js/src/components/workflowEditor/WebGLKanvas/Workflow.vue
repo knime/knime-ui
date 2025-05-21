@@ -31,15 +31,27 @@ const selectedNodesLayerContainer = useTemplateRef<ContainerInst>(
   "selectedNodesLayerContainer",
 );
 
+const selectedPortsLayerContainer = useTemplateRef<ContainerInst>(
+  "selectedPortsLayerContainer",
+);
+
 onMounted(() => {
   // add a layer for nodes that are selected, so that they get displayed
   // above other nodes
   const selectedNodesLayer = new RenderLayer();
-  // @ts-expect-error (please add error description)
+  // @ts-expect-error Property 'label' does not exist on type 'IRenderLayer'
   selectedNodesLayer.label = "SelectedNodesRenderLayer";
 
   selectedNodesLayerContainer.value!.addChild(selectedNodesLayer);
   canvasLayers.value.selectedNodes = selectedNodesLayer;
+
+  // add layer for selected ports so that the selected port + action button
+  // get rendered above other elements
+  const selectedPortsLayer = new RenderLayer();
+  // @ts-expect-error Property 'label' does not exist on type 'IRenderLayer'
+  selectedPortsLayer.label = "SelectedPortsRenderLayer";
+  selectedPortsLayerContainer.value!.addChild(selectedPortsLayer);
+  canvasLayers.value.selectedPorts = selectedPortsLayer;
 });
 </script>
 
@@ -84,6 +96,7 @@ onMounted(() => {
     />
 
     <Container ref="selectedNodesLayerContainer" />
+    <Container ref="selectedPortsLayerContainer" />
 
     <FloatingConnector />
 

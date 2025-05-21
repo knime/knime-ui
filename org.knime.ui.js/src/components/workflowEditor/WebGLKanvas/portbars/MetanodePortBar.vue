@@ -253,6 +253,7 @@ const { handlePointerInteraction } = useObjectInteractions({
         y: portPositions[portDirection][port.index][1],
       }"
       :disable-quick-node-add="true"
+      :selected="false"
     />
   </Container>
 </template>
