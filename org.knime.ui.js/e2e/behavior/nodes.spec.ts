@@ -298,6 +298,7 @@ test.describe("node replacement", () => {
     await page.mouse.move(n2x - 30, n2y - 30);
     await page.mouse.move(n2x - 20, n2y - 20);
     await page.mouse.up();
+    await assertSnapshot(page);
 
     await executeUndo(page);
     await assertSnapshot(page);
