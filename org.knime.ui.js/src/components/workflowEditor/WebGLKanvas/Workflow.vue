@@ -5,7 +5,6 @@ import { RenderLayer } from "pixi.js";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { ContainerInst } from "@/vue3-pixi";
@@ -25,14 +24,15 @@ const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
 const canvasStore = useWebGLCanvasStore();
 const { canvasLayers } = storeToRefs(canvasStore);
 
-const { editableAnnotationId } = storeToRefs(useAnnotationInteractionsStore());
-
 const selectedNodesLayerContainer = useTemplateRef<ContainerInst>(
   "selectedNodesLayerContainer",
 );
 
 const selectedPortsLayerContainer = useTemplateRef<ContainerInst>(
   "selectedPortsLayerContainer",
+);
+const annotationControlsContainer = useTemplateRef<ContainerInst>(
+  "annotationControlsContainer",
 );
 
 onMounted(() => {
@@ -52,6 +52,13 @@ onMounted(() => {
   selectedPortsLayer.label = "SelectedPortsRenderLayer";
   selectedPortsLayerContainer.value!.addChild(selectedPortsLayer);
   canvasLayers.value.selectedPorts = selectedPortsLayer;
+
+  // controls of the annotation need to be above everything when in edit mode
+  const annotationControlsLayer = new RenderLayer();
+  // @ts-expect-error Property 'label' does not exist on type 'IRenderLayer'
+  annotationControlsLayer.label = "AnnotationControlsRenderLayer";
+  annotationControlsContainer.value!.addChild(annotationControlsLayer);
+  canvasLayers.value.annotationControls = selectedPortsLayer;
 });
 </script>
 
@@ -64,11 +71,7 @@ onMounted(() => {
       <StaticWorkflowAnnotation
         :annotation="annotation"
         :layer="canvasLayers.annotations"
-        :z-index="
-          editableAnnotationId === annotation.id
-            ? Number.MAX_SAFE_INTEGER
-            : index
-        "
+        :z-index="index"
       />
     </template>
 
@@ -97,6 +100,7 @@ onMounted(() => {
 
     <Container ref="selectedNodesLayerContainer" />
     <Container ref="selectedPortsLayerContainer" />
+    <Container ref="annotationControlsContainer" />
 
     <FloatingConnector />
 

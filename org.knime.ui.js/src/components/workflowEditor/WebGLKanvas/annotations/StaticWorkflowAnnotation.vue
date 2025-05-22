@@ -223,6 +223,7 @@ const onTransformEnd = (bounds: Bounds) => {
     activeTransform.value = undefined;
   }, FLOATING_HTML_FADE_DELAY_MS);
 };
+const { canvasLayers } = storeToRefs(canvasStore);
 </script>
 
 <template>
@@ -235,14 +236,22 @@ const onTransformEnd = (bounds: Bounds) => {
     @pointerdown="handlePointerInteraction"
     @rightclick.stop="onContextMenu"
   >
-    <TransformControls
-      :initial-value="annotation.bounds"
-      :show-transform-controls="showTransformControls"
-      :show-focus="showFocus"
-      :show-selection="showSelectionPlane"
-      @on-bounds-change="onTransformChange"
-      @transform-end="onTransformEnd($event.bounds)"
-    />
+    <Container
+      :layer="
+        editableAnnotationId === annotation.id
+          ? canvasLayers.annotationControls
+          : null
+      "
+    >
+      <TransformControls
+        :initial-value="annotation.bounds"
+        :show-transform-controls="showTransformControls"
+        :show-focus="showFocus"
+        :show-selection="showSelectionPlane"
+        @on-bounds-change="onTransformChange"
+        @transform-end="onTransformEnd($event.bounds)"
+      />
+    </Container>
 
     <Graphics
       v-if="isStaticContent"
