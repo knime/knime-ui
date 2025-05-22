@@ -161,6 +161,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       let newNodeId: string | null;
       if (componentName && spaceItemReference) {
         if (isBrowser()) {
+          // needs to be before focus() to not set focus back to space explorer items
+          useSpaceOperationsStore().setCurrentSelectedItemIds([]);
           try {
             const componentPlaceholder = await API.workflowCommand.AddComponent(
               {
@@ -182,7 +184,6 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
             useSelectionStore().selectComponentPlaceholder(
               componentPlaceholder.newPlaceholderId,
             );
-            useSpaceOperationsStore().setCurrentSelectedItemIds([]);
           } catch (error) {
             return {
               problem: {

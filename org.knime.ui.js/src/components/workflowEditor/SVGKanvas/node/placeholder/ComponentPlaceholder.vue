@@ -34,7 +34,6 @@ const getSelection = () =>
     ...selectedAnnotationIds.value,
     ...selectedConnectionIds.value,
     ...selectedBendpointIds.value,
-    ...(getSelectedComponentPlaceholder.value?.id ?? []),
   ]);
 onMounted(() => {
   previousSelection.value = getSelection();
@@ -52,6 +51,9 @@ const isSuccessWithWarning = computed(
 const isSuccess = computed(
   () => placeholderState.value === ComponentPlaceholder.StateEnum.SUCCESS,
 );
+const isComponentSelected = computed(() => {
+  return props.placeholder.id === getSelectedComponentPlaceholder.value?.id;
+});
 
 watch(placeholderState, async () => {
   const currentSelection = getSelection();
@@ -62,7 +64,7 @@ watch(placeholderState, async () => {
   closeContextMenu();
 
   if (isSelectionUnchanged && (isSuccess.value || isSuccessWithWarning.value)) {
-    if (props.placeholder.componentId) {
+    if (props.placeholder.componentId && isComponentSelected.value) {
       await deselectAllObjects([props.placeholder.componentId]);
     }
   }
@@ -81,10 +83,6 @@ watch(placeholderState, async () => {
   }
 });
 
-const shouldShowSelection = computed(() => {
-  return props.placeholder.id === getSelectedComponentPlaceholder.value?.id;
-});
-
 // Adjust so there is no jumping when component is loaded
 const adjustedPosition = computed(() => {
   return {
@@ -97,7 +95,7 @@ const adjustedPosition = computed(() => {
 
 <template>
   <NodeSelectionPlane
-    v-show="shouldShowSelection"
+    v-show="isComponentSelected"
     :show-selection="true"
     :position="adjustedPosition"
     :kind="Node.KindEnum.Component"

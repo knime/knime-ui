@@ -110,6 +110,12 @@ describe("ComponentPlaceholder", () => {
   it("should select the loaded component if selection state hasnt changed and state of placeholder is SUCCESS", async () => {
     const { wrapper, mockedStores } = doMount();
 
+    // @ts-expect-error
+    mockedStores.selectionStore.getSelectedComponentPlaceholder = {
+      id: defaultProps.placeholder.id,
+    };
+    await nextTick();
+
     await wrapper.setProps({
       placeholder: {
         ...defaultProps.placeholder,
