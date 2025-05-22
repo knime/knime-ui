@@ -30,6 +30,13 @@ export const maxZoomFactor = 5; // 500%
 export const padding = 20; // 20 canvas units
 export const zoomCacheLifespan = 1000; // 1 second
 
+export type CanvasLayerNames =
+  | "nodeSelectionPlane"
+  | "selectedNodes"
+  | "selectedPorts"
+  | "annotations"
+  | "annotationControls";
+
 const clampZoomFactor = (newFactor: number) =>
   Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
@@ -58,12 +65,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   });
   const pixiApplication = shallowRef<ApplicationInst | null>(null);
 
-  type CanvasLayerNames =
-    | "nodeSelectionPlane"
-    | "selectedNodes"
-    | "selectedPorts"
-    | "annotations"
-    | "annotationControls";
   type CanvasLayers = Record<CanvasLayerNames, IRenderLayer | undefined>;
   const canvasLayers: ShallowRef<CanvasLayers> = shallowRef({
     nodeSelectionPlane: undefined,
