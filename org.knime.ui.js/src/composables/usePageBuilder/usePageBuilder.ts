@@ -1,8 +1,8 @@
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { isBrowser, isDesktop } from "@/environment";
 
-import { promptConfirmationAndApply } from "./pageBuilderPromptApply";
 import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
+import { showPageBuilderUnsavedChangesDialog } from "./showPageBuilderUnsavedChangesDialog";
 
 export type PageBuilderControl = {
   mountShadowApp: (shadowRoot: ShadowRoot) => void;
@@ -51,7 +51,7 @@ export const clickAwayCompositeView = async (): Promise<boolean> => {
     return true;
   }
 
-  return promptConfirmationAndApply(activePageBuilder);
+  return showPageBuilderUnsavedChangesDialog(activePageBuilder);
 };
 
 /**

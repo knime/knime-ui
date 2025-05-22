@@ -19,10 +19,10 @@ vi.mock("../pageBuilderStore", () => ({
   pageBuilderApiVuexStoreConfig: { state: {}, actions: {} },
 }));
 
-const mockPromptApplyConfirmation = vi.hoisted(vi.fn);
+const showPageBuilderUnsavedChangesDialogMock = vi.hoisted(vi.fn);
 
-vi.mock("../pageBuilderPromptApply", () => ({
-  promptConfirmationAndApply: mockPromptApplyConfirmation,
+vi.mock("../showPageBuilderUnsavedChangesDialog", () => ({
+  showPageBuilderUnsavedChangesDialog: showPageBuilderUnsavedChangesDialogMock,
 }));
 
 const mockPageBuilderControl = {
@@ -77,7 +77,7 @@ describe("usePageBuilder", () => {
     await usePageBuilder("project-123", vi.fn());
 
     mockPageBuilderControl.isDirty.mockResolvedValueOnce(true);
-    mockPromptApplyConfirmation.mockResolvedValueOnce(false);
+    showPageBuilderUnsavedChangesDialogMock.mockResolvedValueOnce(false);
 
     const result = await clickAwayCompositeView();
     expect(result).toBeFalsy();
@@ -85,7 +85,7 @@ describe("usePageBuilder", () => {
 
   it("should continue if no active PageBuilder is set", async () => {
     mockPageBuilderControl.isDirty.mockResolvedValueOnce(true);
-    mockPromptApplyConfirmation.mockResolvedValueOnce(false);
+    showPageBuilderUnsavedChangesDialogMock.mockResolvedValueOnce(false);
 
     const result = await clickAwayCompositeView();
     expect(result).toBeTruthy();

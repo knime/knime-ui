@@ -5,7 +5,7 @@ import { createTestingPinia } from "@pinia/testing";
 import type { APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
 import { runInEnvironment } from "@/environment";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -15,6 +15,17 @@ import { createNativeNode, createWorkflow } from "@/test/factories";
 import { useNodeConfigurationStore } from "../nodeConfiguration";
 
 vi.mock("@/environment");
+
+let useUnsavedChangesDialogMock = vi.hoisted(() =>
+  vi.fn(() => Promise.resolve({ action: UnsavedChangesAction.CANCEL })),
+);
+vi.mock(
+  import("@/composables/useConfirmDialog/useUnsavedChangesDialog"),
+  async (importOriginal) => {
+    const mod = await importOriginal();
+    return { ...mod, useUnsavedChangesDialog: useUnsavedChangesDialogMock };
+  },
+);
 
 describe("nodeConfiguration", () => {
   const node1 = createNativeNode({
@@ -121,11 +132,15 @@ describe("nodeConfiguration", () => {
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
     });
 
+    afterEach(vi.restoreAllMocks);
+
     it("should handle accepting apply settings prompt", async () => {
       const { nodeConfiguration, selectionStore } = loadStore();
 
-      const { isActive, confirm: acceptConfirmDialog } = useConfirmDialog();
-      expect(isActive.value).toBe(false);
+      useUnsavedChangesDialogMock.mockResolvedValue({
+        action: UnsavedChangesAction.SAVE,
+      });
+      await useUnsavedChangesDialogMock();
 
       await selectionStore.deselectAllObjects([node1.id]);
       nodeConfiguration.setDirtyState(dirtyState);
@@ -135,11 +150,7 @@ describe("nodeConfiguration", () => {
       nodeConfiguration.autoApplySettings().then(done);
       await flushPromises();
 
-      expect(isActive.value).toBe(true);
       expect(done).not.toHaveBeenCalled();
-
-      acceptConfirmDialog();
-      await flushPromises();
 
       // emulate settings getting applied
       nodeConfiguration.setApplyComplete(true);
@@ -150,12 +161,13 @@ describe("nodeConfiguration", () => {
       expect(nodeConfiguration.applySettings).toHaveBeenCalled();
     });
 
-    it("should handle cancelling apply settings prompt", async () => {
+    it("should handle discarding apply settings prompt", async () => {
       const { nodeConfiguration, selectionStore } = loadStore();
 
-      const { isActive, cancel: cancelConfirmDialog } = useConfirmDialog();
-
-      expect(isActive.value).toBe(false);
+      useUnsavedChangesDialogMock.mockResolvedValue({
+        action: UnsavedChangesAction.DISCARD,
+      });
+      await useUnsavedChangesDialogMock();
 
       await selectionStore.selectNodes([node1.id]);
       await flushPromises();
@@ -167,10 +179,25 @@ describe("nodeConfiguration", () => {
 
       await flushPromises();
 
-      expect(isActive.value).toBe(true);
-      expect(done).not.toHaveBeenCalled();
+      expect(done).toHaveBeenCalledWith(true);
+      expect(selectionStore.selectedNodeIds).toStrictEqual([node1.id]);
 
-      cancelConfirmDialog();
+      expect(nodeConfiguration.applySettings).not.toHaveBeenCalled();
+    });
+
+    it("should handle cancelling apply settings prompt", async () => {
+      const { nodeConfiguration, selectionStore } = loadStore();
+
+      await useUnsavedChangesDialogMock();
+
+      await selectionStore.selectNodes([node1.id]);
+      await flushPromises();
+      nodeConfiguration.setDirtyState(dirtyState);
+
+      const done = vi.fn();
+
+      nodeConfiguration.autoApplySettings().then(done);
+
       await flushPromises();
 
       expect(done).toHaveBeenCalledWith(false);

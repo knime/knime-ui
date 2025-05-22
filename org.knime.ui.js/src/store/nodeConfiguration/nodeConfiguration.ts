@@ -13,7 +13,10 @@ import {
   NodeState,
 } from "@/api/gateway-api/generated-api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import {
+  UnsavedChangesAction,
+  useUnsavedChangesDialog,
+} from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
 import { runInEnvironment } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
@@ -27,57 +30,25 @@ import { isNativeNode, isNodeExecuting } from "@/util/nodeUtil";
 let unwrappedPromise = createUnwrappedPromise<boolean>();
 const $toast = getToastsProvider();
 
-const { show: showConfirmDialog } = useConfirmDialog();
+const showUnsavedChangesDialog = async (askToConfirm: boolean) => {
+  if (!askToConfirm) {
+    return UnsavedChangesAction.SAVE;
+  }
 
-const promptApplyConfirmation = async (
-  askToConfirm: boolean,
-): Promise<"apply" | "discard" | "cancel"> => {
-  let wasDiscarded = false;
-
-  const prompt = () =>
-    showConfirmDialog({
-      title: "Unsaved configuration changes",
-      message:
-        "You have unsaved changes in your node configuration. Do you want to apply them?",
-      doNotAskAgainText:
-        "Always apply and do not ask again. <br/> (You can still change this in the preferences)",
-
-      buttons: [
-        {
-          type: "cancel",
-          label: "Cancel",
-        },
-        {
-          type: "cancel",
-          label: "Discard",
-          flushRight: true,
-          customHandler: ({ cancel }) => {
-            wasDiscarded = true;
-            cancel();
-          },
-        },
-        {
-          type: "confirm",
-          label: "Apply",
-          flushRight: true,
-        },
-      ],
-    });
-
-  const { confirmed, doNotAskAgain } = askToConfirm
-    ? await prompt()
-    : { confirmed: true, doNotAskAgain: true };
+  const { action, doNotAskAgain } = await useUnsavedChangesDialog({
+    title: "Unsaved configuration changes",
+    message:
+      "You have unsaved changes in your node configuration. Do you want to save them?",
+    doNotAskAgainText:
+      "Always save and do not ask again. <br/> (You can still change this in the preferences)",
+  });
 
   // box was checked and setting is set to "ask"
   if (doNotAskAgain && askToConfirm) {
     await API.desktop.setConfirmNodeConfigChangesPreference(false);
   }
 
-  if (wasDiscarded) {
-    return "discard";
-  }
-
-  return confirmed ? "apply" : "cancel";
+  return action;
 };
 /**
  * Store used to synchronize / manage the shared state and actions
@@ -189,15 +160,15 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
 
       const canContinue = await runInEnvironment({
         DESKTOP: async () => {
-          const modalResult = await promptApplyConfirmation(
+          const modalResult = await showUnsavedChangesDialog(
             useApplicationStore().askToConfirmNodeConfigChanges,
           );
 
-          if (modalResult === "cancel") {
+          if (modalResult === UnsavedChangesAction.CANCEL) {
             return false;
           }
 
-          if (modalResult === "apply") {
+          if (modalResult === UnsavedChangesAction.SAVE) {
             const isApplied = await this.applySettings({
               nodeId: activeNode.id,
             });
