@@ -351,13 +351,15 @@ export const openPortView = ({
 export const saveProject = ({
   projectId,
   workflowPreviewSvg,
+  allowOverwritePrompt,
 }: {
   projectId: string;
   workflowPreviewSvg: string | null;
+  allowOverwritePrompt?: boolean;
 }) => {
   return callBrowserFunction(
     window.saveProject,
-    [projectId, workflowPreviewSvg],
+    [projectId, workflowPreviewSvg, allowOverwritePrompt],
     "Could not save workflow",
     true,
     { block: true },

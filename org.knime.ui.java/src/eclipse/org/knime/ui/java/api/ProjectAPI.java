@@ -139,14 +139,15 @@ final class ProjectAPI {
      * @return A boolean indicating whether the project was saved.
      */
     @API
-    static boolean saveProject(final String projectId, final String projectSVG) {
-        return SaveProject.saveProject(projectId, projectSVG, false);
+    static boolean saveProject(final String projectId, final String projectSVG, final Boolean allowOverwritePrompt) {
+        var allowPrompt = allowOverwritePrompt == null ? Boolean.TRUE : allowOverwritePrompt;
+        return SaveProject.saveProject(projectId, projectSVG, false, allowPrompt);
     }
 
     /**
-     * @param projectIdsAndSvgs array containing the project-ids and svgs of the projects to save. The very first
-     *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
-     *            by n svg-strings
+     * @param projectIdsAndSvgs array containing the project-ids and svgs of the projects to save. The very first entry
+     *            contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed by n
+     *            svg-strings
      */
     @API
     static void saveAndCloseProjects(final Object[] projectIdsAndSvgs) {
@@ -224,9 +225,9 @@ final class ProjectAPI {
     @API
     static void openWorkflowConfiguration(final String projectId) {
         final var projectWfm = DesktopAPI.getDeps(ProjectManager.class) //
-                .getProject(projectId) //
-                .flatMap(Project::getWorkflowManagerIfLoaded) //
-                .orElseThrow(() -> new NoSuchElementException("WorkflowManager of project is not loaded"));
+            .getProject(projectId) //
+            .flatMap(Project::getWorkflowManagerIfLoaded) //
+            .orElseThrow(() -> new NoSuchElementException("WorkflowManager of project is not loaded"));
         try {
             var dialog = new WrappedNodeDialog(Display.getDefault().getActiveShell(),
                 WorkflowManagerWrapper.wrap(projectWfm), null, null);
@@ -243,8 +244,8 @@ final class ProjectAPI {
     /**
      * Updates the list of most recently used projects and returns the updated list.
      * <p>
-     * The list needs to be explicitly updated here because projects in the Local space may have been
-     * removed by other means than via AP (e.g. through OS file explorer).
+     * The list needs to be explicitly updated here because projects in the Local space may have been removed by other
+     * means than via AP (e.g. through OS file explorer).
      *
      * @return json-serialized list of the recently used projects with the most recently used one at the bottom
      */

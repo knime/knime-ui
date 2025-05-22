@@ -88,6 +88,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     params: [
       ["projectId", "project1"],
       ["workflowPreviewSvg", "<svg></svg>"],
+      ["allowOverwritePrompt", false],
     ],
     returnValue: true,
     blocksUi: true,

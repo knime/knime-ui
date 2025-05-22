@@ -380,9 +380,13 @@ describe("workflow store: versions", () => {
     });
 
     it("createVersion", async () => {
-      const { workflowVersionsStore } = await setupStore();
+      const { workflowVersionsStore, workflowPreviewSnapshotsStore } =
+        await setupStore();
       const name = "mockName";
       const description = "Some mock description.";
+
+      workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot = () =>
+        Promise.resolve("ignored");
 
       mockedVersionsApi.createVersion.mockResolvedValueOnce({
         version,

@@ -29,6 +29,7 @@ import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots.ts";
 import { getCustomFetchOptionsForBrowser } from "@/store/spaces/common.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
@@ -172,6 +173,77 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
     const versionsApi = getVersionsApi();
 
+    const workflowPreviewSvg =
+      (await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()) ??
+      "";
+    const isDirty =
+      useDirtyProjectsTrackingStore().dirtyProjectsMap[activeProjectId];
+    type NextAction = "cancel" | "discard" | "apply";
+    let nextAction: NextAction = "cancel";
+    const getNextAction = (): NextAction => nextAction;
+    if (isDirty) {
+      if (isBrowser()) {
+        nextAction = "apply";
+        // TODO: NXT-3634 Use the returned task ID to subscribe to 'task events' and show progress
+        await API.workflow.saveProject({
+          projectId: activeProjectId,
+          workflowPreviewSvg,
+        });
+      } else {
+        // TODO: This dialog with three possible return values is hacky. Can we do better?
+        //       Perhaps we need a 'useConfirmOrDiscardDialog()' composable?
+        const { show } = useConfirmDialog();
+        await show({
+          title: "Unsaved changes",
+          message:
+            "This workflow has unsaved changes. Would you like to save them, discard them and proceed, or cancel this action?",
+          buttons: [
+            {
+              type: "cancel",
+              label: "Cancel",
+              customHandler: ({ cancel }) => {
+                nextAction = "cancel";
+                cancel();
+              },
+            },
+            {
+              type: "cancel",
+              label: "Discard changes",
+              flushRight: true,
+              customHandler: ({ cancel }) => {
+                nextAction = "discard";
+                cancel();
+              },
+            },
+            {
+              type: "confirm",
+              label: "Save changes",
+              flushRight: true,
+              customHandler: ({ confirm }) => {
+                nextAction = "apply";
+                confirm();
+              },
+            },
+          ],
+        });
+
+        if (getNextAction() === "cancel") {
+          // Do not create a version
+          return;
+        }
+
+        if (getNextAction() === "apply") {
+          // Save and upload
+          await API.desktop.saveProject({
+            projectId: activeProjectId,
+            workflowPreviewSvg,
+            allowOverwritePrompt: false,
+          });
+        }
+      }
+    }
+
+    // Create version based on state on Hub side
     const newVersion = await versionsApi.createVersion({
       itemId: activeProjectOrigin!.itemId,
       title: name,
@@ -183,6 +255,22 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         "WorkflowVersionsStore::createVersion -> No new version returned",
       );
       return;
+    }
+
+    if (isDirty && getNextAction() === "discard") {
+      await API.workflow.disposeVersion({
+        projectId: activeProjectId,
+        version: CURRENT_STATE_VERSION,
+      });
+
+      // Reload the current state from hub side
+      await $router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: activeProjectId },
+        query: {
+          version: CURRENT_STATE_VERSION,
+        },
+      });
     }
 
     consola.info(

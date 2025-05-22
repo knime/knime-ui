@@ -58,6 +58,7 @@ declare function openPortView(
 declare function saveProject(
   projectId: string,
   workflowPreviewSvg: string | null,
+  allowOverwritePrompt?: boolean,
 ): boolean;
 
 declare function openProject(

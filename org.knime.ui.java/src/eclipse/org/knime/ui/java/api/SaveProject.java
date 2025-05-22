@@ -102,14 +102,30 @@ final class SaveProject {
     }
 
     /**
+     * Override, see {@link this#saveProject(String, String, boolean, boolean)}
+     * 
+     * @param projectId -
+     * @param projectSVG -
+     * @param localOnly -
+     * @return -
+     */
+    static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
+        return saveProject(projectId, projectSVG, localOnly, true);
+    }
+
+    /**
      * Save the project workflow manager identified by a given project ID.
+     *
+     * TODO NXT-3634 de-duplicate with browser save logic (NOSONAR)
      *
      * @param projectId ID of the project
      * @param projectSVG SVG of the project, should not be {@code null}.
      * @param localOnly if {@code true}, the project is only saved locally even if it is a temporary copy from Hub
+     * @param allowOverwritePrompt -
      * @return A boolean indicating whether the project was saved.
      */
-    static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
+    static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly,
+        final boolean allowOverwritePrompt) {
         if (projectSVG == null) {
             LOGGER.warn("Saving the project without a workflow preview. This is unexpected and should not happen.");
         }
@@ -120,7 +136,7 @@ final class SaveProject {
             DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
             return false;
         } else {
-            var wasSaveSuccessful = saveProjectWithProgressBar(projectWfm, projectSVG, localOnly);
+            var wasSaveSuccessful = saveProjectWithProgressBar(projectWfm, projectSVG, localOnly, allowOverwritePrompt);
             // Emit a ProjectDirtyStateEvent
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             return wasSaveSuccessful;
@@ -133,11 +149,11 @@ final class SaveProject {
     }
 
     private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
-                                                      final boolean localOnly) {
+        final boolean localOnly, boolean allowOverwritePrompt) {
         var wasSaveSuccessful = new AtomicBoolean();
         try {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(
-                    monitor -> wasSaveSuccessful.set(saveProject(monitor, wfm, svg, localOnly)));
+                monitor -> wasSaveSuccessful.set(saveProject(monitor, wfm, svg, localOnly, allowOverwritePrompt)));
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
         } catch (InterruptedException e) {
@@ -149,11 +165,16 @@ final class SaveProject {
 
     static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
         final boolean localOnly) {
+        return saveProject(monitor, wfm, svg, localOnly, true);
+    }
+
+    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
+        final boolean localOnly, final boolean allowOverwritePrompt) {
         // use the flag and try/catch to make sure that the workflow is also set to dirty if any exception is thrown
         var success = false;
         try {
             if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo restInfo) {
-                success = saveBackToServerOrHub(monitor, wfm, restInfo, svg);
+                success = saveBackToServerOrHub(monitor, wfm, restInfo, svg, allowOverwritePrompt);
             } else {
                 success = saveLocalProject(monitor, wfm, svg);
             }
@@ -190,7 +211,7 @@ final class SaveProject {
      * Save regular workflow
      */
     private static boolean saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm,
-            final String svg) {
+        final String svg) {
         monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
         var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
 
@@ -232,7 +253,7 @@ final class SaveProject {
     }
 
     private static boolean saveBackToServerOrHub(final IProgressMonitor rootMonitor, final WorkflowManager wfm,
-        final RestLocationInfo remoteLocation, final String svg) {
+        final RestLocationInfo remoteLocation, final String svg, final boolean allowOverwritePrompt) {
         final var context = wfm.getContextV2();
         if (!context.isTemporyWorkflowCopyMode()) {
             throw new IllegalStateException("Can only save temporary copies to Server or Hub.");
@@ -251,7 +272,7 @@ final class SaveProject {
         final Space space;
         if (remoteLocation instanceof HubSpaceLocationInfo hubInfo) {
             space = spaceProvider.getSpace(hubInfo.getSpaceItemId());
-            preCheckResult = checkHubUpload(mountId, hubInfo, space);
+            preCheckResult = checkHubUpload(mountId, hubInfo, space, allowOverwritePrompt);
         } else {
             space = spaceProvider.getSpace(Space.ROOT_ITEM_ID);
             preCheckResult = checkServerUpload(remoteMountpointURI);
@@ -278,8 +299,8 @@ final class SaveProject {
     }
 
     private static boolean checkHubUpload(final String mountId, final HubSpaceLocationInfo hubInfo,
-        final Space hubSpace) {
-        if (hubItemExists(hubInfo, hubSpace)) {
+        final Space hubSpace, final boolean allowOverwritePrompt) {
+        if (allowOverwritePrompt && hubItemExists(hubInfo, hubSpace)) {
             final var resultRef = new AtomicReference<Pair<OverwriteRemotelyResult, String>>();
             Display.getDefault().syncExec(() -> resultRef.set(//
                 DesktopAPUtil.openOverwriteRemotelyDialog(mountId + ':' + hubInfo.getWorkflowPath(), null, "Hub")));
@@ -308,7 +329,7 @@ final class SaveProject {
             if (!fetchedInfo.isModifiable()) {
                 DesktopAPUtil.showError("Workflow not writable",
                     "You don't have permissions to overwrite the workflow. Use \"Save As...\" in order to save it to "
-                    + "a different location.");
+                        + "a different location.");
                 return false;
             }
 
@@ -328,7 +349,7 @@ final class SaveProject {
                     remoteStore.createSnapshot(dialogResult.getSecond());
                 } catch (final CoreException e) {
                     final var msg = "Unable to create snapshot before overwriting the workflow:\n" + e.getMessage()
-                            + "\n\nUpload was canceled.";
+                        + "\n\nUpload was canceled.";
                     DesktopAPUtil.showAndLogError("Server Error", msg, LOGGER, e);
                     return false;
                 }
