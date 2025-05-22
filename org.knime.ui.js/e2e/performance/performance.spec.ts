@@ -134,6 +134,7 @@ test.describe("pan performance", () => {
     page: Page,
     workflowFixturePath: string,
     expectedFps = 50,
+    zoom = false,
   ) => {
     await startApplication(page, { workflowFixturePath, waitForRender: false });
     const kanvasBox = await getKanvasBoundingBox(page);
@@ -142,27 +143,30 @@ test.describe("pan performance", () => {
       kanvasBox!.y + kanvasBox!.height / 2 + 20,
     );
 
-    // zoom in
-    await page.keyboard.down("ControlOrMeta");
-    for (let i = 0; i < 10; i++) {
-      await page.mouse.wheel(0, -1);
+    if (zoom) {
+      // zoom in
+      await page.keyboard.down("ControlOrMeta");
+      for (let i = 0; i < 10; i++) {
+        await page.mouse.wheel(0, -1);
+      }
+      await page.keyboard.up("ControlOrMeta");
     }
-    await page.keyboard.up("ControlOrMeta");
 
     // pan
     const { stop } = await startFpsMeasurement(page);
-    const panDistance = 100;
-    for (let i = 0; i < panDistance; i++) {
-      await page.mouse.wheel(0, -4);
+    const panIterations = 100;
+    const panStepSize = 20;
+    for (let i = 0; i < panIterations; i++) {
+      await page.mouse.wheel(0, panStepSize * -1);
     }
-    for (let i = 0; i < panDistance; i++) {
-      await page.mouse.wheel(0, 4);
+    for (let i = 0; i < panIterations; i++) {
+      await page.mouse.wheel(0, panStepSize);
     }
-    for (let i = 0; i < panDistance; i++) {
-      await page.mouse.wheel(4, 0);
+    for (let i = 0; i < panIterations; i++) {
+      await page.mouse.wheel(panStepSize, 0);
     }
-    for (let i = 0; i < panDistance; i++) {
-      await page.mouse.wheel(-4, 0);
+    for (let i = 0; i < panIterations; i++) {
+      await page.mouse.wheel(panStepSize * -1, 0);
     }
 
     const { averageFps } = await stop();
@@ -170,9 +174,19 @@ test.describe("pan performance", () => {
     expect(Number(averageFps)).toBeGreaterThanOrEqual(expectedFps);
   };
 
-  testWorkflows.forEach(({ name, file, expectedFps }) => {
-    test(name, async ({ page }) => {
-      await doTest(page, file, expectedFps);
+  test.describe("fill entire screen", () => {
+    testWorkflows.forEach(({ name, file, expectedFps }) => {
+      test(name, async ({ page }) => {
+        await doTest(page, file, expectedFps);
+      });
+    });
+  });
+
+  test.describe("zoomed in", () => {
+    testWorkflows.forEach(({ name, file, expectedFps }) => {
+      test(name, async ({ page }) => {
+        await doTest(page, file, expectedFps, true);
+      });
     });
   });
 });
