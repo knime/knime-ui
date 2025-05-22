@@ -26,6 +26,10 @@ import { promise } from "@knime/utils";
 
 import type { SpaceItemVersion } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import {
+  UnsavedChangesAction,
+  useUnsavedChangesDialog,
+} from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -178,61 +182,29 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       "";
     const isDirty =
       useDirtyProjectsTrackingStore().dirtyProjectsMap[activeProjectId];
-    type NextAction = "cancel" | "discard" | "apply";
-    let nextAction: NextAction = "cancel";
-    const getNextAction = (): NextAction => nextAction;
+    let nextAction = UnsavedChangesAction.CANCEL;
     if (isDirty) {
       if (isBrowser()) {
-        nextAction = "apply";
+        nextAction = UnsavedChangesAction.SAVE;
         // TODO: NXT-3634 Use the returned task ID to subscribe to 'task events' and show progress
         await API.workflow.saveProject({
           projectId: activeProjectId,
           workflowPreviewSvg,
         });
       } else {
-        // TODO: This dialog with three possible return values is hacky. Can we do better?
-        //       Perhaps we need a 'useConfirmOrDiscardDialog()' composable?
-        const { show } = useConfirmDialog();
-        await show({
+        const { action } = await useUnsavedChangesDialog({
           title: "Unsaved changes",
           message:
             "This workflow has unsaved changes. Would you like to save them, discard them and proceed, or cancel this action?",
-          buttons: [
-            {
-              type: "cancel",
-              label: "Cancel",
-              customHandler: ({ cancel }) => {
-                nextAction = "cancel";
-                cancel();
-              },
-            },
-            {
-              type: "cancel",
-              label: "Discard changes",
-              flushRight: true,
-              customHandler: ({ cancel }) => {
-                nextAction = "discard";
-                cancel();
-              },
-            },
-            {
-              type: "confirm",
-              label: "Save changes",
-              flushRight: true,
-              customHandler: ({ confirm }) => {
-                nextAction = "apply";
-                confirm();
-              },
-            },
-          ],
         });
+        nextAction = action;
 
-        if (getNextAction() === "cancel") {
+        if (nextAction === UnsavedChangesAction.CANCEL) {
           // Do not create a version
           return;
         }
 
-        if (getNextAction() === "apply") {
+        if (nextAction === UnsavedChangesAction.SAVE) {
           // Save and upload
           await API.desktop.saveProject({
             projectId: activeProjectId,
@@ -257,7 +229,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    if (isDirty && getNextAction() === "discard") {
+    if (isDirty && nextAction === UnsavedChangesAction.DISCARD) {
       await API.workflow.disposeVersion({
         projectId: activeProjectId,
         version: CURRENT_STATE_VERSION,
