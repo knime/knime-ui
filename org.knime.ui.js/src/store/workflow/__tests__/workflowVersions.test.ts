@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
-import { type Mocked, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach } from "vitest";
+import { type Mocked, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 import { useRouter } from "vue-router";
@@ -13,6 +14,7 @@ import {
 } from "@knime/hub-features/versions";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
@@ -86,6 +88,7 @@ const mockedVersionsApi: Mocked<ReturnType<typeof useVersionsApi>> = vi.hoisted(
     getAvatar: vi.fn(),
     loadSavepointMetadata: vi.fn(),
     fetchPermissions: vi.fn(),
+    discardUnversionedChanges: vi.fn(),
   }),
 );
 
@@ -110,8 +113,18 @@ vi.mock("@/composables/useConfirmDialog", () => ({
   }),
 }));
 
-const routerPush = vi.hoisted(() => vi.fn());
+let useUnsavedChangesDialogMock = vi.hoisted(() =>
+  vi.fn(() => Promise.resolve({ action: UnsavedChangesAction.CANCEL })),
+);
+vi.mock(
+  import("@/composables/useConfirmDialog/useUnsavedChangesDialog"),
+  async (importOriginal) => {
+    const mod = await importOriginal();
+    return { ...mod, useUnsavedChangesDialog: useUnsavedChangesDialogMock };
+  },
+);
 
+const routerPush = vi.hoisted(() => vi.fn());
 vi.mock("vue-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("vue-router")>()),
   useRouter: vi.fn(() => ({ push: routerPush })),
@@ -124,9 +137,37 @@ const version = 1;
 const projectId = "someMockProjectId";
 
 describe("workflow store: versions", () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-  });
+  const initialOpenProjects = [
+    {
+      name: "Mock Project",
+      projectId,
+      origin: {
+        providerId: "mockProviderId",
+        itemId: "mockItemId",
+        spaceId: "mockSpaceId",
+      },
+    },
+    {
+      name: "Mock Project 2",
+      projectId: "otherMockProjectId",
+      origin: {
+        providerId: "mockProviderId",
+        itemId: "mockItemId2",
+        spaceId: "mockSpaceId",
+      },
+    },
+  ];
+  const loadedVersion = {
+    author: "Max Mustermock",
+    avatar: { kind: "account" as const, name: "Max Mustermock" },
+    createdOn: "2025-01-01T00:00:00.000Z",
+    labels: [],
+    title: "V1",
+    version: 1,
+  };
+  const snapshot = "svg img data";
+
+  afterEach(vi.resetAllMocks);
 
   const setupStore = async () => {
     const stores = mockStores();
@@ -145,26 +186,7 @@ describe("workflow store: versions", () => {
         ],
       }),
     });
-    applicationStore.setOpenProjects([
-      {
-        name: "Mock Project",
-        projectId,
-        origin: {
-          providerId: "mockProviderId",
-          itemId: "mockItemId",
-          spaceId: "mockSpaceId",
-        },
-      },
-      {
-        name: "Mock Project 2",
-        projectId: "otherMockProjectId",
-        origin: {
-          providerId: "mockProviderId",
-          itemId: "mockItemId2",
-          spaceId: "mockSpaceId",
-        },
-      },
-    ]);
+    applicationStore.setOpenProjects(initialOpenProjects);
 
     applicationStore.setActiveProjectId(projectId);
     // Start tests with versionsmode active
@@ -259,19 +281,7 @@ describe("workflow store: versions", () => {
 
         const info2: typeof info1 = {
           hasLoadedAll: true,
-          loadedVersions: [
-            {
-              author: "Max Mustermock",
-              avatar: {
-                kind: "account",
-                name: "Max Mustermock",
-              },
-              createdOn: "2025-01-01T00:00:00.000Z",
-              labels: [],
-              title: "V1",
-              version: 1,
-            },
-          ],
+          loadedVersions: [loadedVersion],
           unversionedSavepoint: null,
           permissions: [],
         };
@@ -379,34 +389,172 @@ describe("workflow store: versions", () => {
       });
     });
 
-    it("createVersion", async () => {
-      const { workflowVersionsStore, workflowPreviewSnapshotsStore } =
-        await setupStore();
+    describe("createVersion", () => {
       const name = "mockName";
       const description = "Some mock description.";
+      const params = { itemId: "mockItemId", title: name, description };
+      const response = { version, author: "", createdOn: "", title: "" };
 
-      workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot = () =>
-        Promise.resolve("ignored");
+      it("in clean state, creates a new version", async () => {
+        const { workflowVersionsStore, workflowPreviewSnapshotsStore } =
+          await setupStore();
 
-      mockedVersionsApi.createVersion.mockResolvedValueOnce({
-        version,
-        author: "",
-        createdOn: "",
-        title: "",
-      });
-      await workflowVersionsStore.createVersion({
-        name,
-        description,
+        workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot = () =>
+          Promise.resolve("ignored");
+
+        mockedVersionsApi.createVersion.mockResolvedValueOnce(response);
+        const toast = mockedObject(getToastsProvider());
+        await workflowVersionsStore.createVersion({ name, description });
+
+        expect(mockedVersionsApi.createVersion).toHaveBeenCalledWith(params);
+        expect(
+          workflowVersionsStore.activeProjectVersionsModeInfo?.loadedVersions,
+        ).toContainEqual(expect.objectContaining({ version }));
+        expect(toast.show).not.toHaveBeenCalled();
       });
 
-      expect(mockedVersionsApi.createVersion).toHaveBeenCalledWith({
-        itemId: "mockItemId",
-        title: name,
-        description,
+      it("in dirty state, does nothing on cancel", async () => {
+        const {
+          workflowVersionsStore,
+          projectId,
+          workflowStore,
+          workflowPreviewSnapshotsStore,
+        } = await setupStore();
+
+        useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
+        vi.mocked(
+          workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+        ).mockResolvedValueOnce(snapshot);
+        workflowStore.activeWorkflow = createWorkflow({ projectId });
+        const toast = mockedObject(getToastsProvider());
+
+        await workflowVersionsStore.createVersion({ name, description });
+
+        expect(mockedVersionsApi.createVersion).not.toHaveBeenCalled();
+        expect(mockedAPI.workflow.disposeVersion).not.toHaveBeenCalled();
+        expect(mockedAPI.desktop.saveProject).not.toHaveBeenCalled();
+        expect(useRouter().push).not.toHaveBeenCalled();
+        expect(toast.show).not.toHaveBeenCalled();
       });
-      expect(
-        workflowVersionsStore.activeProjectVersionsModeInfo?.loadedVersions,
-      ).toContainEqual(expect.objectContaining({ version }));
+
+      it("in dirty state, discards unsaved changes, creates new version and redirects to it on discard", async () => {
+        const {
+          workflowVersionsStore,
+          projectId,
+          workflowStore,
+          workflowPreviewSnapshotsStore,
+          dirtyProjectsTrackingStore,
+        } = await setupStore();
+
+        useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
+        vi.mocked(
+          workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+        ).mockResolvedValueOnce(snapshot);
+        workflowStore.activeWorkflow = createWorkflow({ projectId });
+
+        mockedAPI.workflow.disposeVersion.mockResolvedValueOnce(true);
+        mockedVersionsApi.createVersion.mockResolvedValueOnce(response);
+        const toast = mockedObject(getToastsProvider());
+        useUnsavedChangesDialogMock.mockResolvedValue({
+          action: UnsavedChangesAction.DISCARD,
+        });
+        await workflowVersionsStore.createVersion({ name, description });
+
+        expect(mockedVersionsApi.createVersion).toHaveBeenCalledWith(params);
+        expect(mockedAPI.workflow.disposeVersion).toHaveBeenCalledWith({
+          projectId,
+          version: CURRENT_STATE_VERSION,
+        });
+        expect(
+          dirtyProjectsTrackingStore.updateDirtyProjectsMap,
+        ).toHaveBeenCalledWith({
+          [projectId]: false,
+        });
+        expect(mockedAPI.desktop.saveProject).not.toHaveBeenCalled();
+        expect(useRouter().push).toHaveBeenCalled();
+        expect(toast.show).not.toHaveBeenCalled();
+      });
+
+      it("in dirty state with successful saveProject, saves changes and creates new version on save", async () => {
+        const {
+          workflowVersionsStore,
+          projectId,
+          workflowStore,
+          workflowPreviewSnapshotsStore,
+        } = await setupStore();
+
+        useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
+        vi.mocked(
+          workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+        ).mockResolvedValueOnce(snapshot);
+        workflowStore.activeWorkflow = createWorkflow({ projectId });
+
+        mockedAPI.workflow.disposeVersion.mockResolvedValueOnce(true);
+        mockedAPI.desktop.saveProject.mockResolvedValueOnce(true);
+        mockedVersionsApi.createVersion.mockResolvedValueOnce(response);
+        const toast = mockedObject(getToastsProvider());
+        useUnsavedChangesDialogMock.mockResolvedValue({
+          action: UnsavedChangesAction.SAVE,
+        });
+        await workflowVersionsStore.createVersion({ name, description });
+
+        expect(mockedVersionsApi.createVersion).toHaveBeenCalledWith(params);
+        expect(mockedAPI.workflow.disposeVersion).not.toHaveBeenCalled();
+        expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith({
+          allowOverwritePrompt: false,
+          projectId,
+          workflowPreviewSvg: snapshot,
+        });
+        expect(useRouter().push).not.toHaveBeenCalled();
+        expect(toast.show).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        ["some error", "some error"],
+        [{}, "unknown"],
+      ])(
+        "in dirty state with unsuccessful saveProject, shows error toast on save",
+        async (rejectedValue, expectedErrorCause) => {
+          const {
+            workflowVersionsStore,
+            projectId,
+            workflowStore,
+            workflowPreviewSnapshotsStore,
+          } = await setupStore();
+
+          useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
+          vi.mocked(
+            workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+          ).mockResolvedValueOnce(snapshot);
+          workflowStore.activeWorkflow = createWorkflow({ projectId });
+
+          mockedAPI.workflow.disposeVersion.mockResolvedValueOnce(true);
+          mockedAPI.desktop.saveProject.mockRejectedValueOnce(rejectedValue);
+          mockedVersionsApi.createVersion.mockResolvedValueOnce(response);
+          const toast = mockedObject(getToastsProvider());
+          useUnsavedChangesDialogMock.mockResolvedValue({
+            action: UnsavedChangesAction.SAVE,
+          });
+          await workflowVersionsStore.createVersion({ name, description });
+
+          expect(mockedVersionsApi.createVersion).not.toHaveBeenCalled();
+          expect(mockedAPI.workflow.disposeVersion).not.toHaveBeenCalled();
+          expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith({
+            allowOverwritePrompt: false,
+            projectId,
+            workflowPreviewSvg: snapshot,
+          });
+          expect(useRouter().push).not.toHaveBeenCalled();
+          expect(toast.show).toHaveBeenCalledWith({
+            type: "warning",
+            deduplicationKey:
+              "workflowVersion.ts::saveProject::ProjectWasNotSaved",
+            headline: "Could not save workflow",
+            message: `Saving project failed. Cause: ${expectedErrorCause}`,
+            autoRemove: true,
+          });
+        },
+      );
     });
 
     it("deleteVersion", async () => {
@@ -421,8 +569,16 @@ describe("workflow store: versions", () => {
     });
 
     it("delete selected version", async () => {
-      const { workflowVersionsStore, projectId } = await setupStore();
+      const {
+        workflowPreviewSnapshotsStore,
+        workflowVersionsStore,
+        projectId,
+      } = await setupStore();
+
       workflowVersionsStore.activeProjectCurrentVersion = version;
+      vi.mocked(
+        workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+      ).mockResolvedValueOnce(snapshot);
 
       await workflowVersionsStore.deleteVersion(version);
 
@@ -474,27 +630,25 @@ describe("workflow store: versions", () => {
     });
 
     describe("switchVersion", () => {
+      afterEach(vi.resetAllMocks);
+
       it("in clean state sets new route, sets version on openProject.origin, and does not try to save project", async () => {
-        const { workflowVersionsStore, applicationStore, projectId } =
-          await setupStore();
+        const {
+          workflowPreviewSnapshotsStore,
+          workflowVersionsStore,
+          applicationStore,
+          projectId,
+        } = await setupStore();
+
+        vi.mocked(
+          workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+        ).mockResolvedValue(snapshot);
 
         const info: ReturnType<
           typeof workflowVersionsStore.versionsModeInfo.get
         > = {
           hasLoadedAll: false,
-          loadedVersions: [
-            {
-              author: "Max Mustermock",
-              avatar: {
-                kind: "account",
-                name: "Max Mustermock",
-              },
-              createdOn: "2025-01-01T00:00:00.000Z",
-              labels: [],
-              title: "V1",
-              version: 1,
-            },
-          ],
+          loadedVersions: [loadedVersion],
           unversionedSavepoint: null,
           permissions: [],
         };
@@ -509,34 +663,17 @@ describe("workflow store: versions", () => {
         expect(useRouter().push).toHaveBeenLastCalledWith({
           name: APP_ROUTES.WorkflowPage,
           params: { projectId },
-          query: {
-            version: version.toString(),
-          },
+          query: { version: version.toString() },
         });
 
-        // Should be handled by the backend
+        // Simulate setting openProjects in the backend
         applicationStore.setOpenProjects([
           {
-            name: "Mock Project",
-            projectId,
-            origin: {
-              providerId: "mockProviderId",
-              itemId: "mockItemId",
-              spaceId: "mockSpaceId",
-              versionId: "1",
-            },
+            ...initialOpenProjects[0],
+            origin: { ...initialOpenProjects[0].origin, versionId: "1" },
           },
-          {
-            name: "Mock Project 2",
-            projectId: "otherMockProjectId",
-            origin: {
-              providerId: "mockProviderId",
-              itemId: "mockItemId2",
-              spaceId: "mockSpaceId",
-            },
-          },
+          initialOpenProjects[1],
         ]);
-
         const openProjectAfter = applicationStore.openProjects.find(
           (openProject) => openProject.projectId === projectId,
         );
@@ -545,6 +682,7 @@ describe("workflow store: versions", () => {
           info.loadedVersions[0],
         );
 
+        // Switch back to draft
         await workflowVersionsStore.switchVersion(CURRENT_STATE_VERSION);
         expect(useRouter().push).toHaveBeenLastCalledWith({
           name: APP_ROUTES.WorkflowPage,
@@ -555,28 +693,8 @@ describe("workflow store: versions", () => {
         });
         expect(mockedAPI.desktop.saveProject).not.toHaveBeenCalled();
 
-        // Should be handled by the backend
-        applicationStore.setOpenProjects([
-          {
-            name: "Mock Project",
-            projectId,
-            origin: {
-              providerId: "mockProviderId",
-              itemId: "mockItemId",
-              spaceId: "mockSpaceId",
-            },
-          },
-          {
-            name: "Mock Project 2",
-            projectId: "otherMockProjectId",
-            origin: {
-              providerId: "mockProviderId",
-              itemId: "mockItemId2",
-              spaceId: "mockSpaceId",
-            },
-          },
-        ]);
-
+        // Simulate setting openProjects in the backend
+        applicationStore.setOpenProjects(initialOpenProjects);
         const openProjectAfterAfter = applicationStore.openProjects.find(
           (openProject) => openProject.projectId === projectId,
         );
@@ -584,26 +702,89 @@ describe("workflow store: versions", () => {
         expect(openProjectAfterAfter!.origin!.version).toBeUndefined();
       });
 
-      it("in dirty state with successful saveProject sets new route but does not show error toast", async () => {
+      it("in dirty state, does nothing on cancel", async () => {
         const {
           workflowVersionsStore,
           projectId,
           workflowStore,
           workflowPreviewSnapshotsStore,
         } = await setupStore();
+
         useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
         vi.mocked(
           workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
-        ).mockResolvedValueOnce("svg img data");
+        ).mockResolvedValueOnce(snapshot);
         workflowStore.activeWorkflow = createWorkflow({ projectId });
-        mockedAPI.desktop.saveProject.mockResolvedValueOnce(true);
         const toast = mockedObject(getToastsProvider());
 
         await workflowVersionsStore.switchVersion(version);
 
-        expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith({
+        expect(mockedAPI.desktop.saveProject).not.toHaveBeenCalled();
+        expect(useRouter().push).not.toHaveBeenCalled();
+        expect(toast.show).not.toHaveBeenCalled();
+      });
+
+      it("in dirty state, discards unsaved changes, sets new route, and does not try to save project on discard", async () => {
+        const {
+          workflowVersionsStore,
           projectId,
-          workflowPreviewSvg: "svg img data",
+          workflowStore,
+          workflowPreviewSnapshotsStore,
+          dirtyProjectsTrackingStore,
+        } = await setupStore();
+
+        useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
+        vi.mocked(
+          workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+        ).mockResolvedValueOnce(snapshot);
+        workflowStore.activeWorkflow = createWorkflow({ projectId });
+        const toast = mockedObject(getToastsProvider());
+        useUnsavedChangesDialogMock.mockResolvedValue({
+          action: UnsavedChangesAction.DISCARD,
+        });
+        mockedAPI.workflow.disposeVersion.mockResolvedValueOnce(true);
+
+        await workflowVersionsStore.switchVersion(version);
+
+        expect(mockedAPI.workflow.disposeVersion).toHaveBeenCalledWith({
+          projectId,
+          version: CURRENT_STATE_VERSION,
+        });
+        expect(
+          dirtyProjectsTrackingStore.updateDirtyProjectsMap,
+        ).toHaveBeenCalledWith({
+          [projectId]: false,
+        });
+        expect(mockedAPI.desktop.saveProject).not.toHaveBeenCalled();
+        expect(useRouter().push).toHaveBeenCalled();
+        expect(toast.show).not.toHaveBeenCalled();
+      });
+
+      it("in dirty state with successful saveProject sets new route but does not show error toast on save", async () => {
+        const {
+          workflowVersionsStore,
+          projectId,
+          workflowStore,
+          workflowPreviewSnapshotsStore,
+        } = await setupStore();
+
+        useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
+        vi.mocked(
+          workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
+        ).mockResolvedValueOnce(snapshot);
+        workflowStore.activeWorkflow = createWorkflow({ projectId });
+        mockedAPI.desktop.saveProject.mockResolvedValueOnce(true);
+        const toast = mockedObject(getToastsProvider());
+        useUnsavedChangesDialogMock.mockResolvedValue({
+          action: UnsavedChangesAction.SAVE,
+        });
+
+        await workflowVersionsStore.switchVersion(version);
+
+        expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith({
+          allowOverwritePrompt: false,
+          projectId,
+          workflowPreviewSvg: snapshot,
         });
         expect(useRouter().push).toHaveBeenCalled();
         expect(toast.show).not.toHaveBeenCalled();
@@ -613,7 +794,7 @@ describe("workflow store: versions", () => {
         ["some error", "some error"],
         [{}, "unknown"],
       ])(
-        "in dirty state with unsuccessful saveProject does not set new route but shows error toast",
+        "in dirty state with unsuccessful saveProject does not set new route but shows error toast on save",
         async (rejectedValue, expectedErrorCause) => {
           const {
             workflowVersionsStore,
@@ -624,22 +805,26 @@ describe("workflow store: versions", () => {
           useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId] = true;
           vi.mocked(
             workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,
-          ).mockResolvedValueOnce("svg img data");
+          ).mockResolvedValueOnce(snapshot);
           workflowStore.activeWorkflow = createWorkflow({ projectId });
           mockedAPI.desktop.saveProject.mockRejectedValueOnce(rejectedValue);
           const toast = mockedObject(getToastsProvider());
+          useUnsavedChangesDialogMock.mockResolvedValue({
+            action: UnsavedChangesAction.SAVE,
+          });
 
           await workflowVersionsStore.switchVersion(version);
 
           expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith({
+            allowOverwritePrompt: false,
             projectId,
-            workflowPreviewSvg: "svg img data",
+            workflowPreviewSvg: snapshot,
           });
           expect(useRouter().push).not.toHaveBeenCalled();
           expect(toast.show).toHaveBeenCalledWith({
             type: "warning",
             deduplicationKey:
-              "workflowVersion.ts::saveVersion::ProjectWasNotSaved",
+              "workflowVersion.ts::saveProject::ProjectWasNotSaved",
             headline: "Could not save workflow",
             message: `Saving project failed. Cause: ${expectedErrorCause}`,
             autoRemove: true,

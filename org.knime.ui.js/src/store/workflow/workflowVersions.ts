@@ -1,6 +1,8 @@
 /* eslint-disable no-undefined */
 /* eslint-disable no-use-before-define */
 /* eslint-disable func-style */
+// Split this file to avoid max-lines disable (NXT-3760)
+/* eslint-disable max-lines */
 import { computed, markRaw, ref } from "vue";
 import { API } from "@api";
 import { merge } from "lodash-es";
@@ -33,15 +35,14 @@ import {
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots.ts";
-import { getCustomFetchOptionsForBrowser } from "@/store/spaces/common.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
+import { useWorkflowPreviewSnapshotsStore } from "../application/workflowPreviewSnapshots.ts";
 import { useSelectionStore } from "../selection";
+import { getCustomFetchOptionsForBrowser } from "../spaces/common.ts";
 import { useSpaceProvidersStore } from "../spaces/providers";
 import { isHubProvider } from "../spaces/util";
 
-import { useDesktopInteractionsStore } from "./desktopInteractions";
 import { useWorkflowStore } from "./workflow";
 
 export type VersionsModeStatus = "active" | "inactive" | "promoteHub";
@@ -177,42 +178,10 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
     const versionsApi = getVersionsApi();
 
-    const workflowPreviewSvg =
-      (await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()) ??
-      "";
-    const isDirty =
-      useDirtyProjectsTrackingStore().dirtyProjectsMap[activeProjectId];
-    let nextAction = UnsavedChangesAction.CANCEL;
-    if (isDirty) {
-      if (isBrowser()) {
-        nextAction = UnsavedChangesAction.SAVE;
-        // TODO: NXT-3634 Use the returned task ID to subscribe to 'task events' and show progress
-        await API.workflow.saveProject({
-          projectId: activeProjectId,
-          workflowPreviewSvg,
-        });
-      } else {
-        const { action } = await useUnsavedChangesDialog({
-          title: "Unsaved changes",
-          message:
-            "This workflow has unsaved changes. Would you like to save them, discard them and proceed, or cancel this action?",
-        });
-        nextAction = action;
+    const nextAction = await getUserSelectedNextAction(activeProjectId);
 
-        if (nextAction === UnsavedChangesAction.CANCEL) {
-          // Do not create a version
-          return;
-        }
-
-        if (nextAction === UnsavedChangesAction.SAVE) {
-          // Save and upload
-          await API.desktop.saveProject({
-            projectId: activeProjectId,
-            workflowPreviewSvg,
-            allowOverwritePrompt: false,
-          });
-        }
-      }
+    if (nextAction === UnsavedChangesAction.CANCEL) {
+      return;
     }
 
     // Create version based on state on Hub side
@@ -229,11 +198,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    if (isDirty && nextAction === UnsavedChangesAction.DISCARD) {
-      await API.workflow.disposeVersion({
-        projectId: activeProjectId,
-        version: CURRENT_STATE_VERSION,
-      });
+    if (nextAction === UnsavedChangesAction.DISCARD) {
+      discardUnsavedChanges(activeProjectId, CURRENT_STATE_VERSION);
 
       // Reload the current state from hub side
       await $router.push({
@@ -312,7 +278,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   }
 
   async function restoreVersion(version: NamedItemVersion["version"]) {
-    const { show: showConfirmDialog } = useConfirmDialog();
     const { confirmed } = await showConfirmDialog({
       title: "Confirm version restore",
       message:
@@ -364,7 +329,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   }
 
   async function discardUnversionedChanges() {
-    const { show: showConfirmDialog } = useConfirmDialog();
     const { confirmed } = await showConfirmDialog({
       title: "Confirm discarding changes",
       message:
@@ -424,36 +388,23 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    let canSetNewRoute: boolean | null = true;
-    if (
-      activeProjectCurrentVersion.value === CURRENT_STATE_VERSION &&
-      useDirtyProjectsTrackingStore().dirtyProjectsMap[activeProjectId]
-    ) {
-      try {
-        canSetNewRoute = await useDesktopInteractionsStore().saveProject();
-      } catch (error) {
-        const errorMessage = typeof error === "string" ? error : "unknown"; // desktop-api.ts returns reject(DesktopAPIFunctionResultPayload.error)
-        canSetNewRoute = false;
-        getToastsProvider().show({
-          type: "warning",
-          deduplicationKey:
-            "workflowVersion.ts::saveVersion::ProjectWasNotSaved",
-          headline: "Could not save workflow",
-          message: `Saving project failed. Cause: ${errorMessage}`,
-          autoRemove: true,
-        });
-      }
+    const nextAction = await getUserSelectedNextAction(activeProjectId);
+
+    if (nextAction === UnsavedChangesAction.CANCEL) {
+      return;
     }
 
-    if (canSetNewRoute) {
-      await $router.push({
-        name: APP_ROUTES.WorkflowPage,
-        params: { projectId: activeProjectId },
-        query: {
-          version: version === CURRENT_STATE_VERSION ? null : String(version),
-        },
-      });
+    if (nextAction === UnsavedChangesAction.DISCARD) {
+      discardUnsavedChanges(activeProjectId, CURRENT_STATE_VERSION);
     }
+
+    await $router.push({
+      name: APP_ROUTES.WorkflowPage,
+      params: { projectId: activeProjectId },
+      query: {
+        version: version === CURRENT_STATE_VERSION ? null : String(version),
+      },
+    });
   }
 
   async function refreshData(
@@ -595,6 +546,67 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       query: { version: null },
     });
     setVersionsModeStatus(activeProjectId, "inactive");
+  }
+
+  async function getUserSelectedNextAction(projectId: string) {
+    const isDraft = activeProjectCurrentVersion.value === CURRENT_STATE_VERSION;
+    const isDirty = useDirtyProjectsTrackingStore().isDirtyActiveProject;
+    if (!isDraft || !isDirty) {
+      return null;
+    }
+
+    const workflowPreviewSvg =
+      await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot();
+
+    if (isBrowser()) {
+      try {
+        // TODO: NXT-3634 Use the returned task ID to subscribe to 'task events' and show progress
+        await API.workflow.saveProject({ projectId, workflowPreviewSvg });
+        return UnsavedChangesAction.SAVE;
+      } catch (error) {
+        handleSaveProjectError(error);
+        return UnsavedChangesAction.CANCEL;
+      }
+    }
+
+    const { action } = await useUnsavedChangesDialog({
+      title: "Unsaved changes",
+      message:
+        "This workflow has unsaved changes. Would you like to save them, discard them and proceed, or cancel this action?",
+    });
+
+    if (action === UnsavedChangesAction.SAVE) {
+      try {
+        await API.desktop.saveProject({
+          projectId,
+          workflowPreviewSvg,
+          allowOverwritePrompt: false,
+        });
+      } catch (error) {
+        handleSaveProjectError(error);
+        return UnsavedChangesAction.CANCEL;
+      }
+    }
+
+    return action;
+  }
+
+  function handleSaveProjectError(error: unknown) {
+    const errorMessage = typeof error === "string" ? error : "unknown"; // desktop-api.ts returns reject(DesktopAPIFunctionResultPayload.error)
+    getToastsProvider().show({
+      type: "warning",
+      deduplicationKey: "workflowVersion.ts::saveProject::ProjectWasNotSaved",
+      headline: "Could not save workflow",
+      message: `Saving project failed. Cause: ${errorMessage}`,
+      autoRemove: true,
+    });
+  }
+
+  async function discardUnsavedChanges(projectId: string, version: string) {
+    await API.workflow.disposeVersion({ projectId, version });
+    useDirtyProjectsTrackingStore().updateDirtyProjectsMap({
+      [projectId]: false,
+    });
   }
 
   return {
