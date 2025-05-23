@@ -87,11 +87,13 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
   const setFactor = (newFactor: number) => {
     useWorkflowStore().setTooltip(null);
-    zoomFactor.value = clampZoomFactor(newFactor);
+
+    const clampedFactor = clampZoomFactor(newFactor);
+    zoomFactor.value = clampedFactor;
 
     if (stage.value) {
-      stage.value.scale.x = newFactor;
-      stage.value.scale.y = newFactor;
+      stage.value.scale.x = clampedFactor;
+      stage.value.scale.y = clampedFactor;
     }
   };
 

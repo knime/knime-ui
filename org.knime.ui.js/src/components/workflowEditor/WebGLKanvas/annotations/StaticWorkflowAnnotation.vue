@@ -117,14 +117,33 @@ const translatedPosition = computed(() => {
       };
 });
 
+const renderable = computed(() => {
+  const intersect = geometry.utils.rectangleIntersection(
+    {
+      left: props.annotation.bounds.x,
+      top: props.annotation.bounds.y,
+      width: props.annotation.bounds.width,
+      height: props.annotation.bounds.height,
+    },
+    {
+      left: visibleArea.value.x,
+      top: visibleArea.value.y,
+      width: visibleArea.value.width,
+      height: visibleArea.value.height,
+    },
+  );
+
+  return Boolean(intersect);
+});
+
 const textRef = shallowRef<PIXI.HTMLText>();
 const { resolution } = useZoomAwareResolution();
 
 const autoUpdateResolution = () => {
   watch(
-    resolution,
+    [resolution, renderable],
     () => {
-      if (textRef.value) {
+      if (textRef.value && renderable.value) {
         textRef.value.resolution = resolution.value;
       }
     },
@@ -132,7 +151,11 @@ const autoUpdateResolution = () => {
   );
 };
 
-const updateAnnotationText = (nextValue: WorkflowAnnotation) => {
+const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
+  // do not update it if we are not rendered unless we are forced to
+  if (!renderable.value && !force) {
+    return;
+  }
   if (textRef.value) {
     annotationContainer.value!.removeChildAt(0);
     textRef.value = undefined;
@@ -170,7 +193,7 @@ watch(
 );
 
 onMounted(() => {
-  updateAnnotationText(props.annotation);
+  updateAnnotationText(props.annotation, true);
   autoUpdateResolution();
 });
 
@@ -182,25 +205,6 @@ const isStaticContent = computed(
 
 const { showFocus, showSelectionPlane, showTransformControls } =
   useAnnotationVisualStatus(toRef(props.annotation.id));
-
-const renderable = computed(() => {
-  const intersect = geometry.utils.rectangleIntersection(
-    {
-      left: props.annotation.bounds.x,
-      top: props.annotation.bounds.y,
-      width: props.annotation.bounds.width,
-      height: props.annotation.bounds.height,
-    },
-    {
-      left: visibleArea.value.x,
-      top: visibleArea.value.y,
-      width: visibleArea.value.width,
-      height: visibleArea.value.height,
-    },
-  );
-
-  return Boolean(intersect);
-});
 
 const onTransformChange = ({ bounds }: { bounds: Bounds }) => {
   activeTransform.value = {
@@ -292,7 +296,9 @@ const { canvasLayers } = storeToRefs(canvasStore);
     <Container
       ref="annotationContainer"
       label="AnnotationContentWrapper"
-      :renderable="activeTransform?.annotationId !== annotation.id"
+      :renderable="
+        renderable && activeTransform?.annotationId !== annotation.id
+      "
       :width="annotation.bounds.width"
       :height="annotation.bounds.height"
     />
