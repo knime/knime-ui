@@ -339,20 +339,20 @@ export const useApplicationStore = defineStore("application", {
     },
   },
   getters: {
-    activeProjectOrigin: (state): SpaceItemReference | null => {
-      if (!state.activeProjectId) {
+    activeProject(): Project | null {
+      if (!this.activeProjectId) {
         return null;
       }
 
-      const activeProject = state.openProjects.find(
-        (project) => project.projectId === state.activeProjectId,
+      return (
+        this.openProjects.find(
+          (project) => project.projectId === this.activeProjectId,
+        ) ?? null
       );
+    },
 
-      if (!activeProject) {
-        return null;
-      }
-
-      return activeProject.origin ?? null;
+    activeProjectOrigin(): SpaceItemReference | null {
+      return this.activeProject?.origin ?? null;
     },
 
     isUnknownProject: (state) => (projectId: string | null) => {

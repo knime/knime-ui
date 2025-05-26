@@ -218,17 +218,24 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
         return state.spaceProviders[spaceProviderId] || null;
       },
 
-    activeProjectProvider: (state) => {
-      const isUnknownProject: (projectId: string) => boolean =
-        useApplicationStore().isUnknownProject;
+    getProviderInfoFromActiveProject: (state) => () => {
+      const { activeProjectOrigin } = useApplicationStore();
+      const activeProjectProviderId = activeProjectOrigin?.providerId;
 
-      if (isUnknownProject(useApplicationStore().activeProjectId ?? "")) {
-        return null;
+      if (
+        activeProjectProviderId &&
+        state.spaceProviders?.hasOwnProperty(activeProjectProviderId)
+      ) {
+        return state.spaceProviders[activeProjectProviderId];
       }
+      return null;
+    },
 
-      const activeProjectOrigin = useApplicationStore().activeProjectOrigin;
+    activeProjectProvider: (state) => {
+      const { isUnknownProject, activeProjectId, activeProjectOrigin } =
+        useApplicationStore();
 
-      if (!activeProjectOrigin) {
+      if (isUnknownProject(activeProjectId ?? "") || !activeProjectOrigin) {
         return null;
       }
 

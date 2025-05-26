@@ -27,21 +27,40 @@ describe("application", () => {
     expect(applicationStore.dismissedUpdateBanner).toBe(false);
   });
 
-  it("returns the active project's origin", () => {
+  it("returns the active project", () => {
     const { applicationStore } = loadStore();
+    const project1 = createProject({
+      projectId: "foo",
+      origin: { itemId: "1", spaceId: "1", providerId: "1" },
+    });
     applicationStore.setOpenProjects([
-      createProject({
-        projectId: "foo",
-        origin: { itemId: "1", spaceId: "1", providerId: "1" },
-      }),
+      project1,
       createProject({ projectId: "bee" }),
     ]);
     applicationStore.setActiveProjectId("foo");
-    expect(applicationStore.activeProjectOrigin).toEqual({
-      itemId: "1",
-      spaceId: "1",
-      providerId: "1",
+    expect(applicationStore.activeProject).toEqual(project1);
+
+    applicationStore.setActiveProjectId("baz");
+    expect(applicationStore.activeProject).toBeNull();
+
+    applicationStore.setActiveProjectId(null);
+    expect(applicationStore.activeProject).toBeNull();
+  });
+
+  it("returns the active project's origin", () => {
+    const { applicationStore } = loadStore();
+
+    const origin1 = { itemId: "1", spaceId: "1", providerId: "1" };
+    const project1 = createProject({
+      projectId: "foo",
+      origin: origin1,
     });
+    applicationStore.setOpenProjects([
+      project1,
+      createProject({ projectId: "bee" }),
+    ]);
+    applicationStore.setActiveProjectId("foo");
+    expect(applicationStore.activeProjectOrigin).toEqual(origin1);
     applicationStore.setActiveProjectId("bee");
     expect(applicationStore.activeProjectOrigin).toBeNull();
     applicationStore.setActiveProjectId("baz");

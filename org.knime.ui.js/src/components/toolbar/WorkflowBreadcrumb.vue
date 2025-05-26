@@ -3,7 +3,7 @@
 import { computed, markRaw } from "vue";
 import { storeToRefs } from "pinia";
 
-import { LoadingIcon, type MenuItem, SubMenu } from "@knime/components";
+import { type MenuItem, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import HistoryIcon from "@knime/styles/img/icons/history.svg";
@@ -16,6 +16,7 @@ import { useSpaceIcons } from "@/components/spaces/useSpaceIcons";
 import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { findSpaceById } from "@/store/spaces/util";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
@@ -34,7 +35,11 @@ const { toastPresets } = getToastPresets();
 const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
   useApplicationStore(),
 );
-const { activeProjectProvider } = storeToRefs(useSpaceProvidersStore());
+const {
+  activeProjectProvider,
+  getProviderInfoFromActiveProject,
+  spaceProviders,
+} = storeToRefs(useSpaceProvidersStore());
 
 const getActiveProject = () =>
   openProjects.value.find(
@@ -126,21 +131,55 @@ const isInSublevel = computed(() => {
   return (props.workflow.parents?.length ?? 0) > 0;
 });
 
-const providerInfo = computed(() => {
-  if (!activeProjectProvider.value) {
-    return { icon: markRaw(LoadingIcon), providerText: "" };
+// details on provider state in case of fallback
+const logMatchedProviderStatus = (
+  provider: SpaceProviderNS.SpaceProvider | null,
+) => {
+  if (!provider) {
+    consola.debug("Couldn't match project to any provider.");
+    return;
   }
 
+  const spaceId = activeProjectOrigin.value?.spaceId;
+  const foundSpace =
+    spaceProviders.value && findSpaceById(spaceProviders.value, spaceId ?? "");
+  const spaceIdMismatchMessage =
+    provider.connected && !foundSpace
+      ? ` Space id ${spaceId} could not be matched.`
+      : "";
+
+  consola.debug(
+    `Matched project to ${provider.connected ? "" : "un"}connected provider "${
+      provider.name
+    }" with type ${provider.type}.${spaceIdMismatchMessage}`,
+  );
+};
+
+const providerText = computed(() => {
   const mapper: Record<SpaceProvider.TypeEnum, string> = {
     [SpaceProvider.TypeEnum.LOCAL]: "Local",
     [SpaceProvider.TypeEnum.HUB]: "Hub",
     [SpaceProvider.TypeEnum.SERVER]: "Server",
   };
 
-  return {
-    icon: markRaw(getSpaceProviderIcon(activeProjectProvider.value)),
-    providerText: mapper[activeProjectProvider.value.type],
-  };
+  let provider = activeProjectProvider.value;
+  if (!provider) {
+    provider = getProviderInfoFromActiveProject.value();
+    logMatchedProviderStatus(provider);
+  }
+
+  const providerType = provider?.type;
+  return providerType ? mapper[providerType] : "";
+});
+
+const providerIcon = computed(() => {
+  return markRaw(getSpaceProviderIcon(activeProjectProvider.value));
+});
+
+const breadcrumbText = computed(() => {
+  return providerText.value
+    ? `${providerText.value} — ${props.workflow.info.name}`
+    : props.workflow.info.name;
 });
 </script>
 
@@ -148,8 +187,8 @@ const providerInfo = computed(() => {
   <div class="breadcrumb-wrapper">
     <ComponentBreadcrumb v-if="isInSublevel" :workflow />
     <div v-else class="breadcrumb-root">
-      <Component :is="providerInfo.icon" class="breadcrumb-icon" />
-      <span> {{ `${providerInfo.providerText} — ${workflow.info.name}` }}</span>
+      <Component :is="providerIcon" class="breadcrumb-icon" />
+      <span> {{ breadcrumbText }}</span>
       <div class="space-selection-dropdown">
         <SubMenu
           compact
