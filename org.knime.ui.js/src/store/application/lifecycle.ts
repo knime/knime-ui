@@ -161,6 +161,11 @@ export const useLifecycleStore = defineStore("lifecycle", {
               return;
             }
 
+            consola.error(
+              "lifecycle:: $router.beforeEach error on navigation",
+              error,
+            );
+
             // for other errors simply navigate back to the previous page
             const previousWorkflow =
               "projectId" in from.params
@@ -169,6 +174,8 @@ export const useLifecycleStore = defineStore("lifecycle", {
                     ...from.params,
                   } as WorkflowNavigationParams)
                 : null;
+
+            consola.trace("lifecycle:: switch back to previous workflow");
 
             await this.switchWorkflow({ newWorkflow: previousWorkflow }).catch(
               (error) => {

@@ -2,8 +2,6 @@
 /* eslint-disable no-magic-numbers */
 import { Rectangle } from "pixi.js";
 
-import { sleep } from "@knime/utils";
-
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { generateSvgAsString } from "../../util/generateSvgAsString";
@@ -35,9 +33,6 @@ export const generateWorkflowPreview = async (isEmpty: boolean) => {
   // just required to prevent culling the extract system does not honor offset and scale
   webglCanvasStore.fitToScreen();
 
-  // wait until node icons are loaded
-  await sleep(10);
-
   // this is the real size including everything on the stage and with no scaling/offset
   const localBounds = app.stage.getLocalBounds();
 
@@ -61,11 +56,13 @@ export const generateWorkflowPreview = async (isEmpty: boolean) => {
     target: app.stage,
   });
 
-  webglCanvasStore.restoreScrollState(state);
   useSelectionStore().shouldHideSelection = false;
-
-  // start the regular app again
-  app.ticker.start();
+  // if the app is gone we do not restore any state
+  if (app.ticker) {
+    webglCanvasStore.restoreScrollState(state);
+    // start the regular app again
+    app.ticker?.start();
+  }
 
   const svgNS = "http://www.w3.org/2000/svg";
   const webGlImageEmbeddingSvg = document.createElementNS(svgNS, "svg");
