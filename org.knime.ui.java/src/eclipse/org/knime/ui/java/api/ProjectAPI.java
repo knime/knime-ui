@@ -75,6 +75,7 @@ import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -170,13 +171,18 @@ final class ProjectAPI {
 
         var project = projectManager.getProject(projectId).orElseThrow();
         var version = VersionId.parse(versionId);
+
+        // project already loaded
         if (project.getWorkflowManagerIfLoaded(version).isPresent()) {
             projectManager.setProjectActive(projectId, version);
             appStateUpdater.updateAppState(); // Since we changed the application state by setting the project active
             return true;
         }
 
+        // project not yet loaded, load
         var wfm = project.getFromCacheOrLoadWorkflowManager(version).orElse(null);
+
+        // cleanup if project cannot be loaded
         if (wfm == null) {
             projectManager.removeProject(projectId);
             NodeLogger.getLogger(ProjectAPI.class)
@@ -185,10 +191,31 @@ final class ProjectAPI {
             return false;
         }
 
-        NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
+        // project has just been loaded
+        // we understand "loading of current-state wfm" as an indication of a fresh open of a project. This could in principle
+        // also be triggered by switching between versions, but currently the current-state version is always and only loaded on project
+        // open and then cached indefinitely.
+        // TODO NXT-3636 de-duplicate project activation, loading, tracking (NOSONAR)
+        // TODO NXT-3762 make tracking calls unit-testable (NOSONAR)
+        if (version.isCurrentState() && project.getOrigin().isPresent()) {
+            var origin =
+                project.getOrigin().orElseThrow(() -> new IllegalStateException("No origin associated with project"));
+            var provider = DesktopAPI.getSpaceProvider(origin.providerId());
+            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, getWorkflowTypeToTrack(provider.getType()));
+        }
+
         projectManager.setProjectActive(projectId, version);
         appStateUpdater.updateAppState(); // Since we changed the application state by setting the project active
         return true;
+    }
+
+    static WorkflowType getWorkflowTypeToTrack(final SpaceProviderEnt.TypeEnum providerType) {
+        return switch (providerType) {
+            case HUB, SERVER -> WorkflowType.REMOTE;
+            case LOCAL -> WorkflowType.LOCAL;
+            // keep default branch in case other provider types are added in the future
+            default -> throw new IllegalArgumentException("Unknown provider type: " + providerType);
+        };
     }
 
     /**

@@ -54,7 +54,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.knime.core.node.workflow.NodeTimer;
-import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
@@ -254,8 +253,7 @@ final class OpenProject {
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
 
         project.getWorkflowManagerIfLoaded().ifPresent(wfm -> {
-            var wfType = providerType == SpaceProviderEnt.TypeEnum.LOCAL ? WorkflowType.LOCAL : WorkflowType.REMOTE;
-            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, wfType);
+            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, ProjectAPI.getWorkflowTypeToTrack(providerType));
         });
     }
 
