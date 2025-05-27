@@ -8,6 +8,7 @@ import type {
 import type { UIExtensionAPILayer } from "@knime/ui-extension-renderer/vue";
 
 import {
+  type ComponentNode,
   type NativeNode,
   Node,
   NodeState,
@@ -25,7 +26,11 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
-import { isNativeNode, isNodeExecuting } from "@/util/nodeUtil";
+import {
+  isNativeNode,
+  isNodeComponent,
+  isNodeExecuting,
+} from "@/util/nodeUtil";
 
 let unwrappedPromise = createUnwrappedPromise<boolean>();
 const $toast = getToastsProvider();
@@ -231,7 +236,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
       );
     },
 
-    activeNode: (_): NativeNode | null => {
+    activeNode: (_): NativeNode | ComponentNode | null => {
       const activeNodeId = useSelectionStore().singleSelectedNode?.id;
 
       if (!activeNodeId) {
@@ -240,7 +245,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
 
       const node = useWorkflowStore().activeWorkflow?.nodes?.[activeNodeId];
       return node &&
-        isNativeNode(node) &&
+        (isNativeNode(node) || isNodeComponent(node)) &&
         node.dialogType === Node.DialogTypeEnum.Web
         ? node
         : null;
@@ -253,7 +258,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
         return true;
       }
 
-      const activeNode: NativeNode | null = this.activeNode;
+      const activeNode: NativeNode | ComponentNode | null = this.activeNode;
       const { canConfigureNodes } = useUIControlsStore();
       const isActiveNodeExecuting = activeNode && isNodeExecuting(activeNode);
 

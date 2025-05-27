@@ -10,7 +10,10 @@ import {
 } from "@knime/ui-extension-renderer/vue";
 
 import { gatewayRpcClient } from "@/api/gateway-api";
-import type { NativeNode } from "@/api/gateway-api/generated-api";
+import type {
+  ComponentNode,
+  NativeNode,
+} from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useNotifyUIExtensionAlert } from "../common/useNotifyUIExtensionAlert";
@@ -24,7 +27,7 @@ interface Props {
   projectId: string;
   workflowId: string;
   versionId?: string;
-  selectedNode: NativeNode;
+  selectedNode: NativeNode | ComponentNode;
 }
 
 const props = defineProps<Props>();

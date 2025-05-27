@@ -5,13 +5,17 @@ import { Button, FunctionButton } from "@knime/components";
 import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
 import { type APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
-import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import {
+  type ComponentNode,
+  type NativeNode,
+  NodeState,
+} from "@/api/gateway-api/generated-api";
 import type { UIExtensionLoadingState } from "../common/types";
 
 import NodeConfigLoader from "./NodeConfigLoader.vue";
 
 type Props = {
-  activeNode: NativeNode;
+  activeNode: NativeNode | ComponentNode;
   projectId: string;
   workflowId: string;
   versionId?: string;
