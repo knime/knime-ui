@@ -10,6 +10,7 @@ import type {
   PortViewDescriptorMapping,
 } from "@/api/gateway-api/generated-api";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 
 type Props = {
@@ -24,7 +25,13 @@ const props = defineProps<Props>();
 
 const emit = defineEmits(["openViewInNewWindow"]);
 
+const workflowStore = useWorkflowStore();
 const uiControls = useUIControlsStore();
+const canOpenDetatchedWindow = computed(
+  () =>
+    uiControls.canDetachPortViews &&
+    !workflowStore.isActiveWorkflowFixedVersion,
+);
 
 const activeView = ref<number | null>(null);
 
@@ -63,16 +70,13 @@ const openInNewWindow = (item: { id: string } | null = null) => {
   <div class="tab-toggles">
     <ValueSwitch
       v-if="tabToggles.length > 1"
-      :class="[
-        'value-switch',
-        { 'has-detach-button': uiControls.canDetachPortViews },
-      ]"
+      :class="['value-switch', { 'has-detach-button': canOpenDetatchedWindow }]"
       compact
       :model-value="activeView === null ? undefined : activeView.toString()"
       :possible-values="tabToggles"
       @update:model-value="activeView = Number($event)"
     >
-      <template v-if="uiControls.canDetachPortViews" #default="{ item }">
+      <template v-if="canOpenDetatchedWindow" #default="{ item }">
         <Button
           class="open-window"
           :disabled="!item.canDetach || item.disabled"
@@ -84,7 +88,7 @@ const openInNewWindow = (item: { id: string } | null = null) => {
       </template>
     </ValueSwitch>
     <Button
-      v-if="tabToggles.length === 1 && uiControls.canDetachPortViews"
+      v-if="tabToggles.length === 1 && canOpenDetatchedWindow"
       with-border
       class="fallback-open-window"
       title="Open port view in new window"

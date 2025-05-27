@@ -545,7 +545,7 @@ export const useWorkflowStore = defineStore("workflow", {
     isWritable(): boolean {
       if (
         !useUIControlsStore().canEditWorkflow ||
-        this.activeWorkflow?.info.version
+        this.isActiveWorkflowFixedVersion
       ) {
         return false;
       }
@@ -571,6 +571,10 @@ export const useWorkflowStore = defineStore("workflow", {
 
       // TODO: document better under which conditions a workflow is not writable
       return !linkage && !isAiProcessingCurrentWorkflow;
+    },
+
+    isActiveWorkflowFixedVersion(): boolean {
+      return Boolean(this.activeWorkflow?.info.version);
     },
 
     isRemoteWorkflow: (state) => {

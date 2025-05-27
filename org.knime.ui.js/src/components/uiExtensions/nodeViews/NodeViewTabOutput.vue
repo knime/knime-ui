@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
 import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
@@ -9,6 +10,7 @@ import type { AvailablePortTypes } from "@/api/custom-types";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import {
   buildMiddleware,
   validateNodeConfigurationState,
@@ -60,6 +62,7 @@ type Props = {
 
 const props = defineProps<Props>();
 
+const { isActiveWorkflowFixedVersion } = storeToRefs(useWorkflowStore());
 const uiControls = useUIControlsStore();
 
 const emit = defineEmits<{
@@ -92,7 +95,11 @@ const openInNewWindow = () => {
 
 <template>
   <div
-    v-if="!nodeErrors && uiControls.canDetachNodeViews"
+    v-if="
+      !nodeErrors &&
+      uiControls.canDetachNodeViews &&
+      !isActiveWorkflowFixedVersion
+    "
     class="detach-button-wrapper"
   >
     <Button

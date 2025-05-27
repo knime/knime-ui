@@ -186,7 +186,7 @@ const { hoverSize, renderHoverArea } = useNodeHoverSize({
   nodeTopOffset: computed(
     () => nodeNameDimensions.value.height + $shapes.webGlNodeActionBarYOffset,
   ),
-  allowedActions: props.node.allowedActions!,
+  allowedActions: props.node.allowedActions,
   isDebugModeEnabled,
 });
 

@@ -67,10 +67,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.CanceledExecutionException;
+import org.knime.core.node.Node;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.NodeModel;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
+import org.knime.core.node.workflow.WorkflowManager.NodeModelFilter;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
 import org.knime.gateway.api.util.VersionId;
@@ -171,6 +174,7 @@ final class ProjectAPI {
 
         var project = projectManager.getProject(projectId).orElseThrow();
         var version = VersionId.parse(versionId);
+        closeAllOpenViewsIfSwitchingVersions(project, version);
 
         // project already loaded
         if (project.getWorkflowManagerIfLoaded(version).isPresent()) {
@@ -192,22 +196,44 @@ final class ProjectAPI {
         }
 
         // project has just been loaded
-        // we understand "loading of current-state wfm" as an indication of a fresh open of a project. This could in principle
-        // also be triggered by switching between versions, but currently the current-state version is always and only loaded on project
-        // open and then cached indefinitely.
-        // TODO NXT-3636 de-duplicate project activation, loading, tracking (NOSONAR)
-        // TODO NXT-3762 make tracking calls unit-testable (NOSONAR)
-        if (version.isCurrentState() && project.getOrigin().isPresent()) {
-            var origin =
-                project.getOrigin().orElseThrow(() -> new IllegalStateException("No origin associated with project"));
-            var provider = DesktopAPI.getSpaceProvider(origin.providerId());
-            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, getWorkflowTypeToTrack(provider.getType()));
-        }
-
+        trackWorkflowOpeningIfCurrentState(project, version);
         projectManager.setProjectActive(projectId, version);
         appStateUpdater.updateAppState(); // Since we changed the application state by setting the project active
         return true;
     }
+
+    /**
+     * We understand "loading of current-state wfm" as an indication of a fresh open of a project. This could in
+     * principle also be triggered by switching between versions, but currently the current-state version is always and
+     * only loaded on project open and then cached indefinitely.
+     *
+     * TODO NXT-3636 de-duplicate project activation, loading, tracking (NOSONAR)
+     * TODO NXT-3762 make tracking calls unit-testable (NOSONAR)
+     */
+    private static void trackWorkflowOpeningIfCurrentState(final Project project, final VersionId versionId) {
+        if (versionId.isCurrentState() && project.getOrigin().isPresent()) {
+            var origin = project.getOrigin().orElseThrow(); // Should never throw, we just checked
+            var provider = DesktopAPI.getSpaceProvider(origin.providerId());
+            var wfm = project.getWorkflowManagerIfLoaded().orElseThrow(); // Should never throw, we just checked
+            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, getWorkflowTypeToTrack(provider.getType()));
+        }
+    }
+
+    private static void closeAllOpenViewsIfSwitchingVersions(final Project project, final VersionId versionId) {
+        var pm = DesktopAPI.getDeps(ProjectManager.class);
+        var projectId = project.getID();
+        var switchingVersions = pm.isActiveProject(projectId) && !pm.isActiveProjectVersion(projectId, versionId);
+        if (switchingVersions) {
+            pm.getActiveVersionForProject(projectId) //
+                .flatMap(project::getWorkflowManagerIfLoaded) // Should be loaded, since the version is active
+                .ifPresent(wfm -> {
+                    var nodeIdsAndModels = wfm.findNodes(NodeModel.class, new NodeModelFilter<NodeModel>(), true, true);
+                    nodeIdsAndModels.values().forEach(Node::invokeNodeModelCloseViews);
+                });
+        }
+    }
+
+
 
     static WorkflowType getWorkflowTypeToTrack(final SpaceProviderEnt.TypeEnum providerType) {
         return switch (providerType) {
@@ -217,6 +243,7 @@ final class ProjectAPI {
             default -> throw new IllegalArgumentException("Unknown provider type: " + providerType);
         };
     }
+
 
     /**
      * @see SaveProjectCopy#saveCopyOf(String, String)

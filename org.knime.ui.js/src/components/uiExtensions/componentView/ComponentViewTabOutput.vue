@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
 import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
@@ -10,6 +11,7 @@ import ComponentViewLoader from "@/components/uiExtensions/componentView/Compone
 import { useReexecutingCompositeViewState } from "@/composables/usePageBuilder/useReexecutingCompositeViewState";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import {
   buildMiddleware,
   validateComponentNotBusyOrReexecuting,
@@ -52,6 +54,7 @@ type Props = {
 
 const props = defineProps<Props>();
 
+const { isActiveWorkflowFixedVersion } = storeToRefs(useWorkflowStore());
 const uiControls = useUIControlsStore();
 const pageBuilderHasPage = ref(false);
 
@@ -84,7 +87,12 @@ const openInNewWindow = () => {
 
 <template>
   <div
-    v-if="!nodeErrors && pageBuilderHasPage && uiControls.canDetachNodeViews"
+    v-if="
+      !nodeErrors &&
+      pageBuilderHasPage &&
+      uiControls.canDetachNodeViews &&
+      !isActiveWorkflowFixedVersion
+    "
     class="detach-button-wrapper"
   >
     <Button

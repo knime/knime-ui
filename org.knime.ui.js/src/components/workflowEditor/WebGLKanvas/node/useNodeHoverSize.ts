@@ -11,7 +11,7 @@ type UseNodeHoverSizeOptions = {
   nodeTopOffset: Ref<number>;
   dialogType: Node.DialogTypeEnum;
   isUsingEmbeddedDialogs: Ref<boolean>;
-  allowedActions: NonNullable<Node["allowedActions"]>;
+  allowedActions: Node["allowedActions"];
   isDebugModeEnabled?: Ref<boolean>;
 };
 
@@ -53,7 +53,7 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
     hoverBounds.top -= nodeTopOffset.value;
 
     if (isHovering.value) {
-      // buttons are shown as disabled if false, hidden if null
+      // buttons are shown as disabled if false, hidden if undefined
       let extraHorizontalSpace = 0;
 
       if (
@@ -64,7 +64,7 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
         extraHorizontalSpace += $shapes.nodeActionBarButtonSpread;
       }
 
-      if ("canOpenView" in allowedActions) {
+      if (allowedActions && "canOpenView" in allowedActions) {
         extraHorizontalSpace += $shapes.nodeActionBarButtonSpread;
       }
 

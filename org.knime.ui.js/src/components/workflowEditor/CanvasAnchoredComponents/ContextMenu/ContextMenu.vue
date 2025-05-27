@@ -21,6 +21,7 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 import {
@@ -144,6 +145,7 @@ const {
   singleSelectedAnnotation,
   isSelectionEmpty,
 } = storeToRefs(useSelectionStore());
+const { isActiveWorkflowFixedVersion } = storeToRefs(useWorkflowStore());
 
 const portViews = (): MenuItem[] => {
   const node = singleSelectedNode.value;
@@ -262,14 +264,14 @@ const setMenuItems = () => {
   );
 
   const isView = Boolean(
-    singleSelectedNode.value &&
-      "canOpenView" in singleSelectedNode.value.allowedActions!,
+    singleSelectedNode.value?.allowedActions &&
+      "canOpenView" in singleSelectedNode.value.allowedActions,
   );
 
   const hasLegacyFlowVariableDialog = Boolean(
-    singleSelectedNode.value &&
+    singleSelectedNode.value?.allowedActions &&
       "canOpenLegacyFlowVariableDialog" in
-        singleSelectedNode.value.allowedActions!,
+        singleSelectedNode.value.allowedActions,
   );
 
   const isMetanode = Boolean(
@@ -300,7 +302,9 @@ const setMenuItems = () => {
         text: "Open output port",
         children: portViewItems,
       },
-      portViewItems.length > 0 && uiControls.canDetachPortViews,
+      portViewItems.length > 0 &&
+        uiControls.canDetachPortViews &&
+        !isActiveWorkflowFixedVersion.value,
     ),
     // Loop nodes
     ...mapToShortcut([
