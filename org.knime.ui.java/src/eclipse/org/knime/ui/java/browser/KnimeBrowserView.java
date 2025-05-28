@@ -172,7 +172,6 @@ public class KnimeBrowserView {
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
         browser.addOpenWindowListener(KnimeBrowserView::cancelAndOpenInBrowser);
         browser.setMenu(new Menu(browser.getShell()));
-        CEFUtils.registerNodeLogger(LOGGER, browser);
 
         LifeCycle.get().create((name, function) -> new KnimeBrowserFunction(browser, name, function));
 

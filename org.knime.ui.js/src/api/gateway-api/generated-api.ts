@@ -5236,6 +5236,21 @@ const application = function(rpcClient: RPCClient) {
             
             return rpcClient.call('ApplicationService.getState', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
+        /**
+         * Pushes a line to the application log.
+         * @param {'error' | 'warn' | 'info' | 'debug'} params.loglevel log level enum
+         * @param {string} params.logline The content to be logged
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async log(
+        	params: { loglevel: 'error' | 'warn' | 'info' | 'debug',  logline: string  }
+        ): Promise<Response> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ApplicationService.log', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
     }
 };
 
