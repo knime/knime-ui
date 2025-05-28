@@ -51,6 +51,8 @@ package org.knime.ui.java.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.knime.ui.java.api.SaveProjectTest.assertWorkflowSaved;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -61,15 +63,16 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.progress.IProgressService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
+import org.knime.ui.java.api.SaveAndCloseProjects.SaveAndCloseProjectsException;
 
 /**
  * Tests methods in {@link SaveAndCloseProjects}.
@@ -78,6 +81,17 @@ import org.mockito.Mockito;
  */
 class SaveAndCloseProjectsTest {
 
+    private final IProgressService m_progressService = mock(IProgressService.class);
+
+    @BeforeEach
+    void setUp() throws Exception {
+        doAnswer(invocation -> {
+            var runnable = (IRunnableWithProgress)invocation.getArgument(0);
+            runnable.run(new NullProgressMonitor());
+            return null;
+        }).when(m_progressService).busyCursorWhile(any());
+    }
+
     @Test
     void testSaveAndCloseWorkflows() throws IOException, InvocationTargetException, InterruptedException {
         var wfm1 = WorkflowManagerUtil.createEmptyWorkflow();
@@ -85,6 +99,7 @@ class SaveAndCloseProjectsTest {
         var wfm3 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfms = List.of(wfm1, wfm2, wfm3);
         assertThat(wfm1.isDirty()).isTrue();
+
         var pm = ProjectManager.getInstance();
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
@@ -97,16 +112,9 @@ class SaveAndCloseProjectsTest {
             pm.addProject(project);
         }
 
-        var progressService = mock(IProgressService.class);
-        Mockito.doAnswer(invocation -> {
-            var runnable = (IRunnableWithProgress)invocation.getArgument(0);
-            runnable.run(new NullProgressMonitor());
-            return null;
-        }).when(progressService).busyCursorWhile(ArgumentMatchers.any());
-
         SaveAndCloseProjects.projectsSavedState.set(null);
         SaveAndCloseProjects.saveAndCloseProjects(
-            new Object[]{3.0, "projectId1", "projectId2", "projectId3", "svg1", "svg2", "svg3"}, progressService);
+            new Object[]{3.0, "projectId1", "projectId2", "projectId3", "svg1", "svg2", "svg3"}, m_progressService);
 
         for (int i = 1; i <= 3; i++) {
             assertWorkflowSaved(wfms.get(i - 1), "svg" + i);
@@ -121,8 +129,32 @@ class SaveAndCloseProjectsTest {
         assertThat(ProjectManager.getInstance().getProjectIds()).doesNotContain(projectId);
     }
 
+    @Test
+    void testSaveAndCloseWorkflowsWithError() throws Exception {
+        var appStateUpdater = new AppStateUpdater();
+        var pm = ProjectManager.getInstance();
+        DesktopAPI.injectDependency(pm);
+        DesktopAPI.injectDependency(appStateUpdater);
+
+        var wfm = WorkflowManagerUtil.createEmptyWorkflow();
+        var projectId = "projectId1";
+        var origin = new Origin("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+        var project = Project.builder() //
+            .setWfm(wfm.getParent()) // Since the parent is ROOT, which cannot be saved
+            .setOrigin(origin) //
+            .setId(projectId) //
+            .build();
+        pm.addProject(project);
+
+        SaveAndCloseProjects.projectsSavedState.set(null);
+        assertThatThrownBy(
+            () -> SaveAndCloseProjects.saveAndCloseProjects(new Object[]{1.0, "projectId1", "svg1"}, m_progressService))
+                .isInstanceOf(SaveAndCloseProjectsException.class);
+        assertThat(SaveAndCloseProjects.projectsSavedState.get()).isEqualTo(SaveAndCloseProjects.State.CANCEL_OR_FAIL);
+    }
+
     @AfterEach
-    void cleanUp() {
+    void tearDown() {
         var pm = ProjectManager.getInstance();
         pm.getProjectIds().forEach(pm::removeProject);
         DesktopAPI.disposeDependencies();
