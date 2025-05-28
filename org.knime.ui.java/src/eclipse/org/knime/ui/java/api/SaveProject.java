@@ -103,7 +103,7 @@ final class SaveProject {
 
     /**
      * Override, see {@link this#saveProject(String, String, boolean, boolean)}
-     * 
+     *
      * @param projectId -
      * @param projectSVG -
      * @param localOnly -
@@ -149,7 +149,7 @@ final class SaveProject {
     }
 
     private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
-        final boolean localOnly, boolean allowOverwritePrompt) {
+        final boolean localOnly, final boolean allowOverwritePrompt) {
         var wasSaveSuccessful = new AtomicBoolean();
         try {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(
@@ -178,12 +178,14 @@ final class SaveProject {
             } else {
                 success = saveLocalProject(monitor, wfm, svg);
             }
-            return success;
+        } catch(Throwable t) { // NOSONAR: Just to make sure no exception is missed
+            LOGGER.error("Error occured while saving the project", t);
         } finally {
             if (!success) {
                 wfm.setDirty();
             }
         }
+        return success; // To make sure we always return something
     }
 
     private static boolean saveLocalProject(final IProgressMonitor monitor, final WorkflowManager wfm,
