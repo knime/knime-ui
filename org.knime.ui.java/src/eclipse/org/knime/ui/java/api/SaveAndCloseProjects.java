@@ -51,6 +51,7 @@ package org.knime.ui.java.api;
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import static org.knime.ui.java.util.DesktopAPUtil.assertUiThread;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -95,25 +96,32 @@ public final class SaveAndCloseProjects {
      * Saves and closes the projects represented by the given project-ids. Project-ids that don't reference an opened
      * workflow will just be ignored.
      *
-     * @param projectIdsAndSvgs Array containing the project-ids and svgs of the projects to save. The very first
-     *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
-     *            by n svg-strings
+     * @param projectIdsAndSvgs Array containing the project-ids and svgs of the projects to save. The very first entry
+     *            contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed by n
+     *            svg-strings
      * @param progressService Displays the progress
+     * @throws SaveAndCloseProjectsException if the save and close process failed
      */
-    static void saveAndCloseProjects(final Object[] projectIdsAndSvgs, final IProgressService progressService) { // NOSONAR
-        var count = ((Double)projectIdsAndSvgs[0]).intValue();
-        var firstFailure = new AtomicReference<Optional<String>>();
-        var projectIds = Arrays.copyOfRange(projectIdsAndSvgs, 1, count + 1, String[].class);
-        var svgs = Arrays.copyOfRange(projectIdsAndSvgs, count + 1, count * 2 + 1, String[].class);
+    static void saveAndCloseProjects(final Object[] projectIdsAndSvgs, final IProgressService progressService)
+        throws SaveAndCloseProjectsException { // NOSONAR
+        final var count = ((Double)projectIdsAndSvgs[0]).intValue();
+        final var firstFailure = new AtomicReference<Optional<String>>();
+        final var projectIds = Arrays.copyOfRange(projectIdsAndSvgs, 1, count + 1, String[].class);
+        final var svgs = Arrays.copyOfRange(projectIdsAndSvgs, count + 1, count * 2 + 1, String[].class);
         saveProjectsWithProgressBar(projectIds, svgs, firstFailure, progressService);
 
         final var optFailure = firstFailure.get();
         if (optFailure != null && optFailure.isPresent()) { // NOSONAR
-            DesktopAPUtil.showWarning("Failed to save workflow", "Workflow could not be saved.\nSee log for details.");
+            final var projectId = optFailure.get();
+
             // Make the first project active which couldn't be saved
-            optFailure.ifPresent(projectId -> ProjectManager.getInstance().setProjectActive(projectId));
+            ProjectManager.getInstance().setProjectActive(projectId);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             projectsSavedState.set(State.CANCEL_OR_FAIL);
+
+            throw new SaveAndCloseProjectsException(
+                "Could not save and close projects <%s>, since at least saving and closing <%s> failed"
+                    .formatted(Arrays.asList(projectIds), projectId));
         } else {
             projectsSavedState.set(State.SUCCESS);
         }
@@ -316,6 +324,19 @@ public final class SaveAndCloseProjects {
             message.append("\nExecuting nodes are not saved! Close anyway?");
         }
         return MessageDialog.openQuestion(SWTUtilities.getActiveShell(), title, message.toString());
+    }
+
+    @SuppressWarnings("serial")
+    static final class SaveAndCloseProjectsException extends IOException {
+
+        private SaveAndCloseProjectsException(final String message, final Throwable cause) {
+            super(message, cause);
+
+        }
+
+        private SaveAndCloseProjectsException(final String message) {
+            super(message);
+        }
     }
 
 }
