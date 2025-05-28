@@ -53,7 +53,6 @@ import java.util.Collections;
 
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.service.events.EventConsumer;
 
 /**
  * Closes a project.
@@ -78,8 +77,7 @@ final class CloseProject {
     static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);
         projectManager.setProjectActive(nextProjectId);
-        var saveAndCloseState = saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose),
-            DesktopAPI.getDeps(EventConsumer.class));
+        var saveAndCloseState = saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose));
         var success = saveAndCloseState == SaveAndCloseProjects.State.SUCCESS;
         if (success) {
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();

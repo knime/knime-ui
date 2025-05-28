@@ -187,9 +187,9 @@ final class Init {
             kaiHandler, //
             codeKaiHandler, //
             nodeCollections, //
-
             nodeCategoryExtensions, //
             selectionEventBus);
+
         DesktopAPI.injectDependencies( //
             projectManager, //
             workflowMiddleware, //
@@ -217,7 +217,7 @@ final class Init {
             public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
                 return () -> {
                     var projectIds = projectManager.getProjectIds();
-                    return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds, eventConsumer);
+                    return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds);
                 };
             }
 

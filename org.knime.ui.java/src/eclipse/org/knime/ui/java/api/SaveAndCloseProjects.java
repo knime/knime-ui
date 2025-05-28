@@ -140,11 +140,9 @@ public final class SaveAndCloseProjects {
      * user aborts, nothing will be done.
      *
      * @param projectIds
-     * @param eventConsumer
      * @return The projects state from this function
      */
-    public static State saveAndCloseProjectsInteractively(final List<String> projectIds,
-        final EventConsumer eventConsumer) {
+    public static State saveAndCloseProjectsInteractively(final List<String> projectIds) {
         var projectManager = ProjectManager.getInstance();
         var dirtyProjectIds = projectIds.stream() //
             .filter(id -> projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded)
@@ -159,7 +157,7 @@ public final class SaveAndCloseProjects {
                 assertUiThread();
                 if (promptCancelExecution(dirtyWfms)) {
                     projectsSavedState.set(null);
-                    sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds, eventConsumer);
+                    sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds);
                     // wait to receive the FE call while running the event loop
                     yield DesktopAPUtil.runUiEventLoopUntilValueAvailable(Duration.ofMinutes(1),
                         projectsSavedState::get,
@@ -231,15 +229,12 @@ public final class SaveAndCloseProjects {
         return success;
     }
 
-    private static void sendSaveAndCloseProjectsEventToFrontend(final String[] dirtyProjectIds,
-        final EventConsumer eventConsumer) {
+    private static void sendSaveAndCloseProjectsEventToFrontend(final String[] dirtyProjectIds) {
         var projectIdsJson = MAPPER.createArrayNode();
         Arrays.stream(dirtyProjectIds).forEach(projectIdsJson::add);
-        var paramsJson = MAPPER.createArrayNode();
         var event = MAPPER.createObjectNode();
         event.set("projectIds", projectIdsJson);
-        event.set("params", paramsJson);
-        eventConsumer.accept("SaveAndCloseProjectsEvent", event);
+        DesktopAPI.getDeps(EventConsumer.class).accept("SaveAndCloseProjectsEvent", event);
     }
 
     /**

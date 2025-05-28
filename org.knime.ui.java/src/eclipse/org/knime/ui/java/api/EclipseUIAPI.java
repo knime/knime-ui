@@ -71,7 +71,6 @@ import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
-import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.ui.p2.actions.InvokeInstallSiteAction;
 import org.knime.workbench.ui.p2.actions.InvokeUpdateAction;
@@ -221,13 +220,9 @@ final class EclipseUIAPI {
         }
 
         // All the open workflow projects will be closed on perspective switch
-        final var saveAndCloseState = SaveAndCloseProjects.saveAndCloseProjectsInteractively( //
-            projectIds, //
-            DesktopAPI.getDeps(EventConsumer.class) //
-        );
+        final var saveAndCloseState = SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds);
         if (saveAndCloseState != SaveAndCloseProjects.State.SUCCESS) {
-            // abort perspective switch
-            return;
+            return; // Abort perspective switch
         }
 
         PerspectiveUtil.switchToJavaUI();

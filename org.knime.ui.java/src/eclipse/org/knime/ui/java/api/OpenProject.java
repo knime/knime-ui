@@ -229,7 +229,6 @@ final class OpenProject {
 
         private OpenProjectException(final String message, final Throwable cause) {
             super(message, cause);
-
         }
 
         private OpenProjectException(final String message) {

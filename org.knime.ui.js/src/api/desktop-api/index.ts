@@ -11,7 +11,6 @@ export type DesktopAPIFunctionResultPayload = {
 export interface DesktopEventHandlers {
   SaveAndCloseProjectsEvent(payload: {
     projectIds: Array<string>;
-    params: unknown[];
   }): void | Promise<any>;
 
   ImportURIEvent(payload: { x: number; y: number }): void;
