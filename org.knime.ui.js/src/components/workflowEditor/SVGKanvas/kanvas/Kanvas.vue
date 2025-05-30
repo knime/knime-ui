@@ -114,10 +114,14 @@ const onLeftControlClickOnMac = async (event: PointerEvent) => {
   }
 };
 
+const wasLastPointerDownOnSvg: Ref<boolean> = ref(false);
 const clickOnEmptyKanvas = async (event: MouseEvent) => {
-  const clickOnSvg = event.target === event.currentTarget;
+  const clickedSolelyOnSvg =
+    event.target === event.currentTarget && wasLastPointerDownOnSvg.value;
   const specialKey = event.ctrlKey || event.shiftKey || event.metaKey;
-  if (clickOnSvg && !specialKey) {
+
+  if (clickedSolelyOnSvg && !specialKey) {
+    wasLastPointerDownOnSvg.value = false;
     await selectionStore.deselectAllObjects();
   }
 };
@@ -162,7 +166,12 @@ const isTriggeredByAttachedElement = (event: Event) =>
       :height="canvasSize.height"
       :viewBox="viewBox.string"
       @click="clickOnEmptyKanvas"
-      @pointerdown.left.exact="$bus.emit('selection-pointerdown', $event)"
+      @pointerdown.left.exact="
+        (event) => {
+          wasLastPointerDownOnSvg = event.target === event.currentTarget;
+          $bus.emit('selection-pointerdown', event);
+        }
+      "
       @pointerdown.left="startRectangleSelection"
       @pointerup.left.stop="$bus.emit('selection-pointerup', $event)"
       @pointerdown.right="
