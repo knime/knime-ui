@@ -240,7 +240,6 @@ export const useClipboardInteractionsStore = defineStore(
         const selectionStore = useSelectionStore();
 
         const { wasAborted } = await selectionStore.deselectAllObjects();
-
         if (wasAborted) {
           return;
         }

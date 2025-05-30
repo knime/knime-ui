@@ -78,6 +78,7 @@ export const useObjectInteractions = (
     const abort = (event: KeyboardEvent) => {
       if (isDragging.value && event.key === "Escape") {
         movingStore.abortDrag();
+        event.preventDefault();
       }
     };
 

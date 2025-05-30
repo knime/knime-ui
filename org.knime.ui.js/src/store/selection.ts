@@ -161,6 +161,11 @@ export const useSelectionStore = defineStore("selection", () => {
         )
       : [];
   });
+  const singleSelectedAnnotation = computed(() => {
+    return getSelectedAnnotations.value.length === 1
+      ? getSelectedAnnotations.value[0]
+      : null;
+  });
 
   type MetanodePortBarType = "in" | "out";
   const selectedMetanodePortBars = ref<Record<string, boolean>>({});
@@ -192,12 +197,6 @@ export const useSelectionStore = defineStore("selection", () => {
   const focusedObject = ref<WorkflowObject | null>(null);
   const startedSelectionFromAnnotationId = ref<string | null>(null);
   const didStartRectangleSelection = ref(false);
-
-  const singleSelectedAnnotation = computed(() => {
-    return getSelectedAnnotations.value.length === 1
-      ? getSelectedAnnotations.value[0]
-      : null;
-  });
 
   const singleSelectedObject = computed(() => {
     if (
@@ -355,8 +354,10 @@ export const useSelectionStore = defineStore("selection", () => {
    *  Deselects all objects in the workflow. Can be interrupted by the user.
    *  @param preserveSelectionFor - the nodes will be except from deselecting avoiding unnecessary vue reactivity. In case they were not selected, they will be selected afterwards.
    */
-  const deselectAllObjects = async (preserveSelectionFor: string[] = []) => {
-    const { wasAborted } = await setNodeSelection(preserveSelectionFor);
+  const deselectAllObjects = async (
+    preserveNodeSelectionFor: string[] = [],
+  ) => {
+    const { wasAborted } = await setNodeSelection(preserveNodeSelectionFor);
     if (wasAborted) {
       return { wasAborted: true };
     }
@@ -372,7 +373,7 @@ export const useSelectionStore = defineStore("selection", () => {
     if (Object.keys(selectedBendpoints.value).length > 0) {
       selectedBendpoints.value = {};
     }
-    if (preserveSelectionFor.length > 1) {
+    if (preserveNodeSelectionFor.length > 1) {
       selectBendpointsBetweenSelectedNodes();
     }
     if (Object.keys(selectedMetanodePortBars.value).length > 0) {

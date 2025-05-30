@@ -66,10 +66,21 @@ export const useCanvasPanning = ({
     const stopPan = async (pointerUpEvent: PointerEvent) => {
       consola.debug("Kanvas::usePanning - stopPan", { pointerUpEvent });
 
+      // cleanup
+      isPanning.value = false;
+      panLastPosition.value = null;
+      canvas.removeEventListener("pointermove", onPan);
+      canvas.removeEventListener("pointerup", stopPan);
+      canvas.removeEventListener("lostpointercapture", stopPan);
+      if (eventTarget.hasPointerCapture(pointerDownEvent.pointerId)) {
+        eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
+      }
+
       const isUnhandledEvent = !pointerUpEvent.dataset;
       // show global context menu if we did not move
       // right click on other objects should prevent the event so its not getting here (see mousePan)
       if (!hasMoved.value && isUnhandledEvent) {
+        hasMoved.value = false;
         const [x, y] = useWebGLCanvasStore().toCanvasCoordinates([
           pointerUpEvent.offsetX,
           pointerUpEvent.offsetY,
@@ -78,20 +89,15 @@ export const useCanvasPanning = ({
           isOpen: true,
           anchor: { x, y },
         });
-        await useSelectionStore().deselectAllObjects();
+
+        const { wasAborted } = await useSelectionStore().deselectAllObjects();
+        if (wasAborted) {
+          return;
+        }
         await toggleContextMenu();
       }
 
-      // cleanup
-      isPanning.value = false;
       hasMoved.value = false;
-      panLastPosition.value = null;
-      canvas.removeEventListener("pointermove", onPan);
-      canvas.removeEventListener("pointerup", stopPan);
-      canvas.removeEventListener("lostpointercapture", stopPan);
-      if (eventTarget.hasPointerCapture(pointerDownEvent.pointerId)) {
-        eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
-      }
     };
 
     canvas.addEventListener("pointermove", onPan);

@@ -46,6 +46,8 @@ export default {
       // Close one item on the escape stack
       if (e.key === "Escape") {
         escapePressed();
+        //TODO (NXT-3761): This is a workaround to ensure the wanted behaviour.
+        e.preventDefault();
       }
 
       if (this.preventShortcuts(e)) {

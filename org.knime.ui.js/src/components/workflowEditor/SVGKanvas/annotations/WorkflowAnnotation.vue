@@ -66,9 +66,16 @@ const isRichTextAnnotation = computed(() => {
   return props.annotation.text.contentType === TypedText.ContentTypeEnum.Html;
 });
 
-const onLeftClick = (event: PointerEvent) => {
+const onLeftClick = async (event: PointerEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
+
+  if (!isMultiselect && !isSelected.value) {
+    const { wasAborted } = await selectionStore.deselectAllObjects();
+    if (wasAborted) {
+      return;
+    }
+  }
 
   selectionStore.toggleAnnotationSelection({
     annotationId: props.annotation.id,

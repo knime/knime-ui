@@ -180,7 +180,6 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
         nearestObject.type === "node" ? [nearestObject.id] : [];
 
       const { wasAborted } = await deselectAllObjects(preserveSelectionFor);
-
       if (wasAborted) {
         return;
       }

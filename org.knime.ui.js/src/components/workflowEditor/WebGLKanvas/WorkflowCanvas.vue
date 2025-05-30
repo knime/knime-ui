@@ -6,6 +6,7 @@ import {
   onUnmounted,
   useTemplateRef,
 } from "vue";
+import { flushPromises } from "@vue/test-utils";
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 
@@ -13,6 +14,7 @@ import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
 import WorkflowEmpty from "../SVGKanvas/WorkflowEmpty.vue";
@@ -141,6 +143,15 @@ const TAB_INDEX = 0;
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @pointerdown="onPointerDown"
+    @keydown.esc="
+      async (event) => {
+        // wait for dragging to be maybe canceled and skip de-delection if so
+        await flushPromises();
+        if (!event.defaultPrevented) {
+          await useSelectionStore().deselectAllObjects();
+        }
+      }
+    "
   >
     <Kanvas
       v-if="activeWorkflow && !isWorkflowEmpty"
