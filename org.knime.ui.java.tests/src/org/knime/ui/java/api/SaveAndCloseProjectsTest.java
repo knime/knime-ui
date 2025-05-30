@@ -56,7 +56,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -93,7 +92,7 @@ class SaveAndCloseProjectsTest {
     }
 
     @Test
-    void testSaveAndCloseWorkflows() throws IOException, InvocationTargetException, InterruptedException {
+    void testSaveAndCloseWorkflows() throws IOException {
         var wfm1 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm2 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm3 = WorkflowManagerUtil.createEmptyWorkflow();
@@ -150,7 +149,8 @@ class SaveAndCloseProjectsTest {
         assertThatThrownBy(
             () -> SaveAndCloseProjects.saveAndCloseProjects(new Object[]{1.0, "projectId1", "svg1"}, m_progressService))
                 .isInstanceOf(SaveAndCloseProjectsException.class);
-        assertThat(SaveAndCloseProjects.projectsSavedState.get()).isEqualTo(SaveAndCloseProjects.State.CANCEL_OR_FAIL);
+        assertThat(SaveAndCloseProjects.projectsSavedState.get()).as("correct operation state")
+                .isEqualTo(SaveAndCloseProjects.State.CANCEL_OR_FAIL);
     }
 
     @AfterEach

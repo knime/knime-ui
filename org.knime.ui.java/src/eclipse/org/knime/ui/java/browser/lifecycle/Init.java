@@ -143,7 +143,7 @@ final class Init {
             projectManager = ProjectManager.getInstance();
             state.loadedApplicationState().openProjectsToRestore().forEach(projectToRestore -> {
                 var project = CreateProject.createProjectFromOrigin(projectToRestore.origin(), progressReporter, //
-                        spaceProvidersManager.getSpaceProviders(SpaceProvidersManager.Key.defaultKey()) //
+                    spaceProvidersManager.getSpaceProviders(SpaceProvidersManager.Key.defaultKey()) //
                 );
                 projectManager.addProject(project);
                 if (projectToRestore.isActive()) {
@@ -198,7 +198,7 @@ final class Init {
             spaceProvidersManager, //
             updateStateProvider, //
             nodeRepository, //
-            mostRecentlyUsedProjects,
+            mostRecentlyUsedProjects, //
             toastService, //
             localSpace, //
             state.getWelcomeApEndpoint(), //
@@ -215,10 +215,7 @@ final class Init {
 
             @Override
             public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
-                return () -> {
-                    var projectIds = projectManager.getProjectIds();
-                    return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds);
-                };
+                return () -> SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectManager.getProjectIds());
             }
 
             @Override

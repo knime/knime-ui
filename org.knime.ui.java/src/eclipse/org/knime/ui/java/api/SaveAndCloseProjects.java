@@ -147,7 +147,7 @@ public final class SaveAndCloseProjects {
      * the user to cancel executing projects. If the user doesn't want to save the projects, it just closes them. If the
      * user aborts, nothing will be done.
      *
-     * @param projectIds
+     * @param projectIds list of projects to close
      * @return The projects state from this function
      */
     public static State saveAndCloseProjectsInteractively(final List<String> projectIds) {
@@ -328,11 +328,6 @@ public final class SaveAndCloseProjects {
 
     @SuppressWarnings("serial")
     static final class SaveAndCloseProjectsException extends IOException {
-
-        private SaveAndCloseProjectsException(final String message, final Throwable cause) {
-            super(message, cause);
-
-        }
 
         private SaveAndCloseProjectsException(final String message) {
             super(message);

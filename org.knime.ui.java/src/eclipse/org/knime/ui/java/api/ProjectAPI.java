@@ -229,7 +229,7 @@ final class ProjectAPI {
             pm.getActiveVersionForProject(projectId) //
                 .flatMap(project::getWorkflowManagerIfLoaded) // Should be loaded, since the version is active
                 .ifPresent(wfm -> {
-                    var nodeIdsAndModels = wfm.findNodes(NodeModel.class, new NodeModelFilter<NodeModel>(), true, true);
+                    var nodeIdsAndModels = wfm.findNodes(NodeModel.class, new NodeModelFilter<>(), true, true);
                     nodeIdsAndModels.values().forEach(Node::invokeNodeModelCloseViews);
                 });
         }
