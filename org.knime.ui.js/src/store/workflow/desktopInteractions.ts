@@ -1,3 +1,4 @@
+import { useEventBus } from "@vueuse/core";
 import { API } from "@api";
 import { defineStore } from "pinia";
 
@@ -27,7 +28,17 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
         (await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()) ??
         "";
 
-      return API.desktop.saveProject({ projectId, workflowPreviewSvg });
+      const result = await API.desktop.saveProject({
+        projectId,
+        workflowPreviewSvg,
+      });
+
+      if (result) {
+        const workflowSavedBus = useEventBus("workflow-saved");
+        workflowSavedBus.emit();
+      }
+
+      return result;
     },
 
     /* Tell the backend to unload this project from memory */

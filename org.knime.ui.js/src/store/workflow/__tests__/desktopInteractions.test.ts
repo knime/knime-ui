@@ -7,6 +7,7 @@ import {
   vi,
 } from "vitest";
 import { flushPromises } from "@vue/test-utils";
+import { useEventBus } from "@vueuse/core";
 import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
@@ -25,6 +26,19 @@ const mockedAPI = deepMocked(API);
 const mockedGenerateWorkflowPreview = generateWorkflowPreview as MockedFunction<
   typeof generateWorkflowPreview
 >;
+
+const emitSpy = vi.fn();
+vi.mock("@vueuse/core", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useEventBus: vi.fn(() => ({
+      emit: emitSpy,
+      on: vi.fn(),
+      off: vi.fn(),
+    })),
+  };
+});
 
 describe("workflow store: desktop interactions", () => {
   afterEach(() => {
@@ -473,6 +487,68 @@ describe("workflow store: desktop interactions", () => {
           workflowPreviewSvg: "mock svg preview",
         }),
       );
+    });
+  });
+
+  describe("saveProject event emission", () => {
+    it("should emit workflow-saved event after successful save", async () => {
+      const { desktopInteractionsStore, workflowStore } = mockStores();
+
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
+
+      mockedAPI.desktop.saveProject.mockResolvedValue(true);
+
+      await desktopInteractionsStore.saveProject();
+
+      expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
+        expect.objectContaining({ projectId: "foo" }),
+      );
+
+      expect(emitSpy).toHaveBeenCalledOnce();
+    });
+
+    it("should NOT emit workflow-saved event if save fails", async () => {
+      const { desktopInteractionsStore, workflowStore } = mockStores();
+
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
+
+      const workflowSavedBus = useEventBus("workflow-saved");
+      const emitSpy = vi.spyOn(workflowSavedBus, "emit");
+
+      mockedAPI.desktop.saveProject.mockRejectedValue(new Error("Save failed"));
+
+      await expect(
+        desktopInteractionsStore.saveProject(),
+      ).rejects.toThrowError();
+
+      expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it("should NOT emit workflow-saved event if save is aborted (result === false)", async () => {
+      const { desktopInteractionsStore, workflowStore } = mockStores();
+
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
+
+      mockedAPI.desktop.saveProject.mockResolvedValue(false);
+
+      await desktopInteractionsStore.saveProject();
+
+      expect(emitSpy).not.toHaveBeenCalled();
     });
   });
 });

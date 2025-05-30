@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { useEventBus } from "@vueuse/core";
 
 import type { Toast } from "@knime/components";
 import {
@@ -78,6 +79,24 @@ const getExpectedToastWithHeadline = (headline: string): Toast => {
 };
 const someError = new Error("someError");
 const toast = getToastsProvider();
+
+const eventHandlers: Set<Function> = new Set();
+
+vi.mock("@vueuse/core", async (importOriginal) => {
+  const actual = (await importOriginal()) as object;
+  return {
+    ...(actual as object),
+    useEventBus: vi.fn(() => ({
+      on: (handler: Function) => eventHandlers.add(handler),
+      off: (handler: Function) => eventHandlers.delete(handler),
+      emit: (...args: any[]) => {
+        for (const handler of eventHandlers) {
+          handler(...args);
+        }
+      },
+    })),
+  };
+});
 
 describe("ManageVersionsWrapper.vue", () => {
   beforeEach(() => {
@@ -331,6 +350,33 @@ describe("ManageVersionsWrapper.vue", () => {
       expect(toast.show).toHaveBeenCalledWith(
         getExpectedToastWithHeadline("Creation of the version failed"),
       );
+    });
+  });
+
+  describe("workflow save event listener", () => {
+    it("should call refreshData when workflow-saved event is emitted", async () => {
+      const store = useWorkflowVersionsStore();
+      const refreshDataSpy = vi.spyOn(store, "refreshData").mockResolvedValue();
+
+      const workflowSavedBus = useEventBus("workflow-saved");
+      workflowSavedBus.emit();
+
+      await nextTick();
+
+      expect(refreshDataSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("should handle multiple workflow-saved events", async () => {
+      const store = useWorkflowVersionsStore();
+      const refreshDataSpy = vi.spyOn(store, "refreshData").mockResolvedValue();
+
+      const workflowSavedBus = useEventBus("workflow-saved");
+      workflowSavedBus.emit();
+      workflowSavedBus.emit();
+
+      await nextTick();
+
+      expect(refreshDataSpy).toHaveBeenCalledTimes(2);
     });
   });
 });

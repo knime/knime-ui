@@ -8,6 +8,7 @@ import {
   type NamedItemVersion,
 } from "@knime/hub-features/versions";
 
+import { onWorkflowSaved } from "@/composables/useWorkflowSaveListener";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -38,6 +39,14 @@ const hasEditCapability = computed(
 const isCreatingVersion = ref(false);
 
 const { toastPresets } = getToastPresets();
+
+onWorkflowSaved(async () => {
+  try {
+    await versionsStore.refreshData();
+  } catch (error) {
+    consola.error("Failed to refresh version data after save", error);
+  }
+});
 
 const onClose = () => {
   versionsStore.deactivateVersionsMode();
