@@ -194,7 +194,7 @@ useAnimatePixiContainer({
     if (actionBarContainer.value!.x === 0) {
       animating.value = false;
     } else {
-      animating.value = true;
+      animating.value = props.selected;
     }
   },
   animateOut: true,

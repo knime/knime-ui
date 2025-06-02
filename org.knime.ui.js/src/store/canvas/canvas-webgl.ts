@@ -15,6 +15,7 @@ import { type IRenderLayer } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { clamp } from "@/util/clamp";
 import { geometry } from "@/util/geometry";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
@@ -38,7 +39,7 @@ export type CanvasLayerNames =
   | "annotationControls";
 
 const clampZoomFactor = (newFactor: number) =>
-  Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
+  clamp(newFactor, minZoomFactor, maxZoomFactor);
 
 /**
  * Canvas Store manages positioning, zooming, scrolling and

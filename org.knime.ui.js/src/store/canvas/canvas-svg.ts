@@ -10,6 +10,7 @@ import { defineStore } from "pinia";
 import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { clamp } from "@/util/clamp";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 export const zoomMultiplier = 1.09;
@@ -21,7 +22,7 @@ export const padding = 20; // 20 canvas units
 export const zoomCacheLifespan = 1000; // 1 second
 
 const clampZoomFactor = (newFactor: number) =>
-  Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
+  clamp(newFactor, minZoomFactor, maxZoomFactor);
 
 type CanvasState = {
   zoomFactor: number;

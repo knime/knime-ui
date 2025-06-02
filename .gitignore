@@ -119,3 +119,6 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+# other stuff
+.node_modules_backup/
+.pnpm-store/

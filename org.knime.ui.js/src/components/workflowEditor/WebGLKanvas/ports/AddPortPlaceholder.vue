@@ -1,12 +1,13 @@
 <!-- eslint-disable no-magic-numbers -->
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref, toRefs, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import type { NodePortGroups } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -29,12 +30,21 @@ type Props = {
   side: "input" | "output";
   portGroups?: NodePortGroups;
   targeted?: boolean;
+  selected: boolean;
 };
 
 const props = defineProps<Props>();
 const emit = defineEmits<{
   addPort: [{ typeId: string; portGroup?: string }];
+  deselect: [];
 }>();
+
+useEscapeStack({
+  onEscape() {
+    emit("deselect");
+  },
+});
+
 const webGLCanvasStore = useWebGLCanvasStore();
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
@@ -135,6 +145,7 @@ const isNodeSingleSelected = computed(
   () => singleSelectedNode.value?.id === props.nodeId,
 );
 
+const { selected } = toRefs(props);
 // node hover area enter animation -> port appears
 const isNodeHovered = ref(false);
 useAnimatePixiContainer<number>({
@@ -145,9 +156,10 @@ useAnimatePixiContainer<number>({
     () =>
       isMenuOpenOnParentNode.value ||
       isNodeHovered.value ||
-      isNodeSingleSelected.value,
+      isNodeSingleSelected.value ||
+      selected.value,
   ),
-  animationParams: { duration: 0.5 },
+  animationParams: { duration: 0.17 },
   onUpdate: (value) => {
     container.value!.alpha = value;
   },
@@ -164,12 +176,7 @@ useNodeHoverListener({
   },
 });
 
-const openMenu = (event: FederatedPointerEvent) => {
-  const [x, y] = webGLCanvasStore.toCanvasCoordinates([
-    event.global.x,
-    event.global.y,
-  ]);
-
+const openMenu = (x: number, y: number) => {
   canvasAnchoredComponentsStore.openPortTypeMenu({
     nodeId: props.nodeId,
     props: {
@@ -191,13 +198,7 @@ const openMenu = (event: FederatedPointerEvent) => {
   });
 };
 
-const onPointerdown = (event: FederatedPointerEvent) => {
-  markEventAsHandled(event, { initiator: "add-port-placeholder" });
-  if (isMenuOpenOnThisPort.value) {
-    canvasAnchoredComponentsStore.closePortTypeMenu();
-    return;
-  }
-
+const addPort = (x: number, y: number) => {
   const portGroups = Object.values(validPortGroups.value ?? {});
   if (portGroups.length === 1) {
     const { supportedPortTypeIds } = portGroups[0];
@@ -211,9 +212,34 @@ const onPointerdown = (event: FederatedPointerEvent) => {
       return;
     }
   }
-
-  openMenu(event);
+  openMenu(x, y);
 };
+
+const onPointerdown = (event: FederatedPointerEvent) => {
+  markEventAsHandled(event, { initiator: "add-port-placeholder" });
+  if (isMenuOpenOnThisPort.value) {
+    canvasAnchoredComponentsStore.closePortTypeMenu();
+    return;
+  }
+
+  const [x, y] = webGLCanvasStore.toCanvasCoordinates([
+    event.global.x,
+    event.global.y,
+  ]);
+
+  addPort(x, y);
+};
+
+const onKeydownEnter = () => {
+  const containerBounds = container.value!.getBounds();
+  const [x, y] = useWebGLCanvasStore().toCanvasCoordinates([
+    containerBounds.x + containerBounds.width / 2,
+    containerBounds.y + containerBounds.height / 2,
+  ]);
+  addPort(x, y);
+};
+
+defineExpose({ onKeydownEnter });
 </script>
 
 <template>
@@ -233,6 +259,6 @@ const onPointerdown = (event: FederatedPointerEvent) => {
       :key="previewPort.typeId"
       :port="previewPort"
     />
-    <PortPlaceholderIcon v-else />
+    <PortPlaceholderIcon v-else :selected="selected" />
   </Container>
 </template>

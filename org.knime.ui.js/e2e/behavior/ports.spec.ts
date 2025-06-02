@@ -14,7 +14,8 @@ import {
 import { WorkflowCommandFnMock } from "../utils/types";
 
 import {
-  addNodePort,
+  addCredentialPort,
+  addTablePort,
   removeNodePort,
 } from "./workflowCommandMocks/node-port-actions";
 
@@ -25,7 +26,7 @@ const NODE_IDS = {
   concat: "root:20",
 };
 
-const startWithPointerInteraction = (
+const startWithInteraction = (
   page: Page,
   workflowCommandFn: WorkflowCommandFnMock,
   workflowFixturePath: string,
@@ -73,7 +74,7 @@ test("inactive ports: render correctly", async ({ page }) => {
 describe("add/select/remove port", () => {
   const clickAwayOffset = 150;
   test("select and delete optional port concat node", async ({ page }) => {
-    await startWithPointerInteraction(
+    await startWithInteraction(
       page,
       removeNodePort,
       "ports/remove-optional-ports-concat.json",
@@ -97,9 +98,9 @@ describe("add/select/remove port", () => {
     await assertSnapshot(page);
   });
   test("add optional port patch request", async ({ page }) => {
-    await startWithPointerInteraction(
+    await startWithInteraction(
       page,
-      addNodePort,
+      addCredentialPort,
       "ports/remove-optional-ports-patch-req.json",
     );
     const [inX, inY] = await getAddPortPlaceholderPosition(
@@ -161,6 +162,48 @@ describe("add/select/remove port", () => {
         "output",
       )),
     );
+    await assertSnapshot(page);
+  });
+  test("use keyboard navigation", async ({ page }) => {
+    await startWithInteraction(
+      page,
+      addTablePort,
+      "ports/remove-optional-ports-concat.json",
+    );
+    const [x, y] = await getPortPosition(
+      page,
+      NODE_IDS.concat,
+      "in",
+      2, // 3rd in port
+    );
+
+    await page.mouse.click(x, y);
+    await page.mouse.move(0, 0); // move away to avoid tooltip in snapshots
+    await page.keyboard.press("ArrowUp");
+    await assertSnapshot(page);
+    await page.keyboard.press("ArrowRight");
+    await assertSnapshot(page);
+    await page.keyboard.press("ArrowLeft");
+    await assertSnapshot(page);
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await assertSnapshot(page);
+    await page.keyboard.press("ArrowDown");
+    await assertSnapshot(page);
+  });
+
+  test("open component port menu via keyboard navigation", async ({ page }) => {
+    await startApplication(page, {
+      workflowFixturePath: "ports/remove-optional-ports-component.json",
+    });
+    const [x, y] = await getPortPosition(page, NODE_IDS.component, "out", 0);
+
+    await page.mouse.click(x, y);
+    await page.mouse.move(0, 0); // move away to avoid tooltip
+
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
     await assertSnapshot(page);
   });
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, useTemplateRef } from "vue";
+import { computed, ref, toRefs, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { Container } from "pixi.js";
 
@@ -67,18 +67,29 @@ useAnimatePixiContainer<number>({
     }
   },
 });
-/* eslint-enable no-magic-numbers */
+const animatingSelection = ref<boolean>(false);
 const selectionContainer = useTemplateRef<ContainerInst>("selectionContainer");
 useAnimatePixiContainer<number>({
   initialValue: 0,
   targetValue: 1,
   targetDisplayObject: selectionContainer,
-  animationParams: { duration: 0.5 },
+  animationParams: { duration: 0.5, ease: "easeInOut" },
   changeTracker: computed(() => props.selected),
   onUpdate: (value) => {
-    selectionContainer.value!.alpha = value;
+    if (selected.value) {
+      selectionContainer.value!.alpha = value;
+      animatingSelection.value = true;
+    } else {
+      // delay removing the selection circle when quickly going through ports
+      selectionContainer.value!.alpha = 1 - value;
+      if (selectionContainer.value!.alpha < 0.5) {
+        animatingSelection.value = false;
+      }
+    }
   },
+  animateOut: true,
 });
+/* eslint-enable no-magic-numbers */
 const selectionOffset = () => {
   let offset = 0;
   if (portKind.value === "table") {
@@ -93,6 +104,7 @@ const selectionOffset = () => {
 
 /* eslint-disable no-magic-numbers */
 const renderSelectionCircle = (graphics: GraphicsInst) => {
+  graphics.clear();
   graphics
     .circle(selectionOffset(), 0, 9)
     .stroke({ color: $colors.CornflowerDark, width: 1 });
@@ -103,7 +115,10 @@ const renderSelectionCircle = (graphics: GraphicsInst) => {
 
 <template>
   <Container ref="selectionContainer">
-    <Graphics v-if="selected" @render="renderSelectionCircle" />
+    <Graphics
+      v-if="selected || animatingSelection"
+      @render="renderSelectionCircle"
+    />
   </Container>
   <Container ref="portContainer">
     <PortIcon :type="portKind" :color="portColor" :filled="shouldFill" />

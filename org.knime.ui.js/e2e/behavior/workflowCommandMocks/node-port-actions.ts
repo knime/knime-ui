@@ -1,4 +1,4 @@
-export const addNodePort = (messageObject: any) => {
+export const addCredentialPort = (messageObject: any) => {
   const matcher = () =>
     messageObject.params.workflowCommand.kind === "add_port";
 
@@ -42,15 +42,76 @@ export const addNodePort = (messageObject: any) => {
           snapshotId: "18",
         },
         {
-          shouldReplace: false,
-          dirtyProjectsMap: {
-            "remove_optional_ports_2e11987e-5bf4-43d0-b165-175b7d792011": true,
+          snapshotId: "3",
+          patch: {
+            ops: [
+              {
+                value: {
+                  name: "Additional tables to concatenate",
+                  index: 4,
+                  optional: false,
+                  typeId: "org.knime.core.node.BufferedDataTable",
+                  portGroupId: "input",
+                  canRemove: true,
+                  connectedVia: [],
+                },
+                path: "/nodes/root:20/inPorts/4",
+                op: "add",
+              },
+              {
+                value: 4,
+                path: "/nodes/root:20/portGroups/input/inputRange/1",
+                op: "replace",
+              },
+              { value: true, path: "/allowedActions/canUndo", op: "replace" },
+              { value: true, path: "/dirty", op: "replace" },
+            ],
           },
         },
       ],
     },
   });
 
+  return { matcher, response };
+};
+
+export const addTablePort = (messageObject: any) => {
+  const matcher = () =>
+    messageObject.params.workflowCommand.kind === "add_port";
+  const response = () => ({
+    eventType: "WorkflowChangedEvent:ProjectDirtyStateEvent",
+    payload: {
+      events: [
+        {
+          snapshotId: "3",
+          patch: {
+            ops: [
+              {
+                value: {
+                  name: "Additional tables to concatenate",
+                  index: 4,
+                  optional: false,
+                  typeId: "org.knime.core.node.BufferedDataTable",
+                  portGroupId: "input",
+                  canRemove: true,
+                  connectedVia: [],
+                },
+                path: "/nodes/root:20/inPorts/4",
+                op: "add",
+              },
+              {
+                value: 4,
+                path: "/nodes/root:20/portGroups/input/inputRange/1",
+                op: "replace",
+              },
+              { value: true, path: "/allowedActions/canUndo", op: "replace" },
+              { value: true, path: "/dirty", op: "replace" },
+            ],
+          },
+        },
+      ],
+    },
+  });
   return { matcher, response };
 };
 
@@ -88,12 +149,6 @@ export const removeNodePort = (messageObject: any) => {
             ],
           },
           snapshotId: "31",
-        },
-        {
-          shouldReplace: false,
-          dirtyProjectsMap: {
-            "remove_optional_ports_2e11987e-5bf4-43d0-b165-175b7d792011": true,
-          },
         },
       ],
     },

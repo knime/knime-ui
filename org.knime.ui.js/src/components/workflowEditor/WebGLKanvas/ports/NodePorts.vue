@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { type ComponentPublicInstance, computed, ref } from "vue";
 
 import type { NodePortGroups } from "@/api/custom-types";
 import {
@@ -18,6 +18,7 @@ import { usePortSelection } from "../../common/usePortSelection";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
 import NodePort from "./NodePort.vue";
+import { usePortKeyboardNavigation } from "./usePortKeyboardNavigation";
 
 interface Props {
   nodeId: string;
@@ -89,12 +90,41 @@ const {
   portSelectionState,
   clearSelection,
   selectPort,
+  updateSelection,
 } = usePortSelection({
   nodeId: props.nodeId,
   isEditable: props.isEditable,
   portGroups: props.portGroups,
 });
 
+type AddPortPlaceholderComponent = InstanceType<typeof AddPortPlaceholder>;
+
+const placeholderRefs = {
+  input: ref<AddPortPlaceholderComponent>(),
+  output: ref<AddPortPlaceholderComponent>(),
+};
+
+const assignPlaceholders = (
+  side: "input" | "output",
+  placeholder: Element | ComponentPublicInstance | null,
+) => {
+  if (placeholder) {
+    placeholderRefs[side].value = placeholder as AddPortPlaceholderComponent;
+  }
+};
+
+usePortKeyboardNavigation({
+  nodeId: props.nodeId,
+  canAddPort,
+  inPorts: props.inPorts,
+  outPorts: props.outPorts,
+  selectedPort: currentlySelectedPort,
+  updatePortSelection: updateSelection,
+  onKeydownEnterIn: computed(() => placeholderRefs.input.value?.onKeydownEnter),
+  onKeydownEnterOut: computed(
+    () => placeholderRefs.output.value?.onKeydownEnter,
+  ),
+});
 const nodeInteractionsStore = useNodeInteractionsStore();
 const nodeConfigurationStore = useNodeConfigurationStore();
 
@@ -181,6 +211,7 @@ const removePort = async (
     <template v-for="side in ['input', 'output'] as const" :key="side">
       <AddPortPlaceholder
         v-if="canAddPort[side]"
+        :ref="(el) => assignPlaceholders(side, el)"
         :position="{
           x: addPortPlaceholderPositions[side][0],
           y: addPortPlaceholderPositions[side][1],
@@ -188,9 +219,11 @@ const removePort = async (
         :node-id="nodeId"
         :side="side"
         :port-groups="portGroups"
+        :selected="currentlySelectedPort === `${side}-AddPort`"
         @add-port="
           addPort({ side, typeId: $event.typeId, portGroup: $event.portGroup })
         "
+        @deselect="clearSelection"
       />
     </template>
   </Container>

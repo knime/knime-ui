@@ -1,25 +1,16 @@
-import {
-  type ComputedRef,
-  type Ref,
-  computed,
-  onBeforeUnmount,
-  watch,
-} from "vue";
+import { type ComputedRef, computed, onBeforeUnmount, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { useSelectionStore } from "@/store/selection";
 import { clamp } from "@/util/clamp";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
 import {
   type SelectedPortContext,
   type SelectedPortIdentifier,
   getPortContext,
 } from "@/util/portSelection";
-import { useNodeInfo } from "../../../common/useNodeInfo";
-
-import type AddPortPlaceholder from "./AddPortPlaceholder.vue";
+import { useNodeInfo } from "../../common/useNodeInfo";
 
 type Direction = "up" | "right" | "down" | "left";
 
@@ -27,15 +18,11 @@ type UsePortKeyboardNavigationOptions = {
   nodeId: string;
   inPorts: KnimeNode["inPorts"];
   outPorts: KnimeNode["outPorts"];
-  inputAddPortPlaceholder: Ref<
-    [InstanceType<typeof AddPortPlaceholder>] | undefined
-  >;
-  outputAddPortPlaceholder: Ref<
-    [InstanceType<typeof AddPortPlaceholder>] | undefined
-  >;
   canAddPort: ComputedRef<{ input: boolean; output: boolean }>;
   selectedPort: ComputedRef<SelectedPortIdentifier | null>;
   updatePortSelection: (selectedPort: SelectedPortIdentifier) => void;
+  onKeydownEnterIn: ComputedRef<(() => void) | undefined> | undefined;
+  onKeydownEnterOut: ComputedRef<(() => void) | undefined> | undefined;
 };
 
 export const usePortKeyboardNavigation = (
@@ -61,12 +48,11 @@ export const usePortKeyboardNavigation = (
   };
 
   const triggerAddPortMenu = (side: "input" | "output") => {
-    const addPortRefs = {
-      inputAddPortPlaceholder: options.inputAddPortPlaceholder,
-      outputAddPortPlaceholder: options.outputAddPortPlaceholder,
-    };
-
-    addPortRefs[`${side}AddPortPlaceholder`].value?.at(0)?.onClick();
+    if (side === "input") {
+      options.onKeydownEnterIn?.value?.();
+    } else {
+      options.onKeydownEnterOut?.value?.();
+    }
   };
 
   const navigateDown = (current: SelectedPortContext) => {
@@ -176,16 +162,16 @@ export const usePortKeyboardNavigation = (
 
   watch(isActiveNodePortsInstance, (isActivated) => {
     if (hasKeydownListener) {
-      getKanvasDomElement()?.removeEventListener("keydown", onKeydown);
+      window.removeEventListener("keydown", onKeydown);
     }
 
     if (isActivated) {
-      getKanvasDomElement()?.addEventListener("keydown", onKeydown);
+      window.addEventListener("keydown", onKeydown);
       hasKeydownListener = true;
     }
   });
 
   onBeforeUnmount(() => {
-    getKanvasDomElement()?.removeEventListener("keydown", onKeydown);
+    window.removeEventListener("keydown", onKeydown);
   });
 };

@@ -1,8 +1,22 @@
 <script setup lang="ts">
 import { DashLine } from "@/util/pixiDashedLine";
+
+type Props = {
+  selected: boolean;
+};
+defineProps<Props>();
 </script>
 
 <template>
+  <Graphics
+    v-if="selected"
+    @render="
+      (graphics) => {
+        graphics.circle(0, 0, 9).stroke({ color: $colors.CornflowerDark });
+        graphics.circle(0, 0, 8.5).fill({ color: $colors.White });
+      }
+    "
+  />
   <Graphics
     @render="
       (graphics) => {
