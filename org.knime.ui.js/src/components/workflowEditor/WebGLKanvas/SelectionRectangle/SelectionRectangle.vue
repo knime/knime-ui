@@ -85,6 +85,7 @@ const updateSelectionPreview = () => {
   );
 
   selectionStore.setPreselectionMode(true);
+  canvasStore.setInteractionsEnabled(false);
   selectionStore.deselectAllPreselectedObjects();
   selectionStore.preselectNodes(calculateNodeSelection());
   selectionStore.preselectAnnotations(calculateAnnotationSelection());
@@ -146,6 +147,7 @@ const onSelectionStart = (event: PointerEvent) => {
   };
 
   selectionStore.setPreselectionMode(true);
+  canvasStore.setInteractionsEnabled(false);
 
   inverseMode.value = event.shiftKey || event.ctrlKey || event.metaKey;
   if (inverseMode.value) {
@@ -187,6 +189,7 @@ const onSelectionEnd = async (event: PointerEvent) => {
 
   selectionStore.deselectAllPreselectedObjects();
   selectionStore.setPreselectionMode(false);
+  canvasStore.setInteractionsEnabled(true);
 
   if (
     event.dataset?.skipGlobalSelection ||

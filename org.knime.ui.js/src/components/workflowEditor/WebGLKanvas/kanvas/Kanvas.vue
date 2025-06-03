@@ -29,6 +29,7 @@ const {
   isDebugModeEnabled: isCanvasDebugEnabled,
   canvasLayers,
   pixelRatio,
+  interactionsEnabled,
 } = storeToRefs(canvasStore);
 
 const isPixiAppInitialized = ref(false);
@@ -136,7 +137,10 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     @pointerdown.middle="mousePan"
     @init-complete="isPixiAppInitialized = true"
   >
-    <Container :label="MAIN_CONTAINER_LABEL">
+    <Container
+      :label="MAIN_CONTAINER_LABEL"
+      :event-mode="interactionsEnabled ? undefined : 'none'"
+    >
       <Debug v-if="isCanvasDebugEnabled" />
       <slot />
     </Container>
