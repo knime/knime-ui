@@ -128,7 +128,7 @@ describe("NodeConfigLoader.vue", () => {
     const { wrapper } = doMount();
     wrapper.unmount();
     await flushPromises();
-    expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledTimes(0);
+    expect(mockedAPI.node.deactivateNodeDataServices).not.toHaveBeenCalled();
 
     mockGetNodeDialog({
       deactivationRequired: true,
@@ -137,6 +137,35 @@ describe("NodeConfigLoader.vue", () => {
     await flushPromises();
     wrapper2.unmount();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
+      projectId,
+      workflowId,
+      versionId: CURRENT_STATE_VERSION,
+      nodeId,
+      extensionType: "dialog",
+    });
+  });
+
+  it("should conditionally deactivate data services if selected nodeId changes", async () => {
+    mockGetNodeDialog();
+    const { wrapper } = doMount();
+    const newNode = { ...dummyNode, id: "node2" };
+
+    await wrapper.setProps({
+      selectedNode: newNode,
+    });
+    expect(mockedAPI.node.deactivateNodeDataServices).not.toHaveBeenCalled();
+
+    mockGetNodeDialog({
+      deactivationRequired: true,
+    });
+    const { wrapper: wrapper2 } = doMount();
+    await nextTick();
+    await wrapper2.setProps({
+      selectedNode: newNode,
+    });
+    expect(
+      mockedAPI.node.deactivateNodeDataServices,
+    ).toHaveBeenCalledExactlyOnceWith({
       projectId,
       workflowId,
       versionId: CURRENT_STATE_VERSION,

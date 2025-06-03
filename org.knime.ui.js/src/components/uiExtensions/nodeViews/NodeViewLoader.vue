@@ -56,22 +56,24 @@ const { resourceLocation, resourceLocationResolver } = useResourceLocation({
 
 const loadExtensionConfig = async () => {
   try {
-    const nodeId = props.selectedNode.id;
+    // store the following in none-reactive variables to ensure deactivateNodeDataServices is called
+    // with the same values as getNodeView
+    const { projectId, workflowId, versionId, selectedNode } = props;
 
     const nodeView = await API.node.getNodeView({
-      projectId: props.projectId,
-      workflowId: props.workflowId,
-      versionId: props.versionId ?? CURRENT_STATE_VERSION,
-      nodeId,
+      projectId,
+      workflowId,
+      versionId: versionId ?? CURRENT_STATE_VERSION,
+      nodeId: selectedNode.id,
     });
 
     if (nodeView?.deactivationRequired) {
       deactivateDataServicesFn = () => {
         API.node.deactivateNodeDataServices({
-          projectId: props.projectId,
-          workflowId: props.workflowId,
-          versionId: props.versionId ?? CURRENT_STATE_VERSION,
-          nodeId,
+          projectId,
+          workflowId,
+          versionId: versionId ?? CURRENT_STATE_VERSION,
+          nodeId: selectedNode.id,
           extensionType: "view",
         });
       };
@@ -207,6 +209,7 @@ const hasToReexecute = computed(() => {
 watch(
   uniqueNodeViewId,
   async () => {
+    deactivateDataServicesFn?.();
     try {
       error.value = null;
       isLoadingConfig.value = true;

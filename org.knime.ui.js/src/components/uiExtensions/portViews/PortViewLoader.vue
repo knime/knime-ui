@@ -46,24 +46,34 @@ const { resourceLocation, resourceLocationResolver } = useResourceLocation({
 });
 
 const loadExtensionConfig = async () => {
+  // store the following in none-reactive variables to ensure deactivatePortDataServices is called
+  // with the same values as getPortView
+  const {
+    projectId,
+    workflowId,
+    versionId,
+    selectedNode,
+    selectedPortIndex: portIdx,
+    selectedViewIndex: viewIdx,
+  } = props;
   const portView = await API.port.getPortView({
-    projectId: props.projectId,
-    workflowId: props.workflowId,
-    versionId: props.versionId ?? CURRENT_STATE_VERSION,
-    nodeId: props.selectedNode.id,
-    portIdx: props.selectedPortIndex,
-    viewIdx: props.selectedViewIndex,
+    projectId,
+    workflowId,
+    versionId: versionId ?? CURRENT_STATE_VERSION,
+    nodeId: selectedNode.id,
+    portIdx,
+    viewIdx,
   });
 
   if (portView.deactivationRequired) {
     deactivateDataServicesFn = () => {
       API.port.deactivatePortDataServices({
-        projectId: props.projectId,
-        workflowId: props.workflowId,
-        versionId: props.versionId ?? CURRENT_STATE_VERSION,
-        nodeId: props.selectedNode.id,
-        portIdx: props.selectedPortIndex,
-        viewIdx: props.selectedViewIndex,
+        projectId,
+        workflowId,
+        versionId: versionId ?? CURRENT_STATE_VERSION,
+        nodeId: selectedNode.id,
+        portIdx,
+        viewIdx,
       });
     };
   }
@@ -164,6 +174,7 @@ watch(
   toRef(props, "uniquePortKey"),
   async () => {
     closeDataValueViewWithoutDelay();
+    deactivateDataServicesFn?.();
     try {
       error.value = null;
       isLoadingConfig.value = true;

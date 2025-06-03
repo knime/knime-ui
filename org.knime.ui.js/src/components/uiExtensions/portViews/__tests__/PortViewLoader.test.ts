@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
@@ -51,6 +52,7 @@ describe("PortViewLoader.vue", () => {
     },
     position: { x: 0, y: 0 },
     kind: Node.KindEnum.Node,
+    hasView: true,
   };
 
   const projectId = "project-id";
@@ -140,7 +142,7 @@ describe("PortViewLoader.vue", () => {
     mockGetPortView();
     const { wrapper } = doMount();
     wrapper.unmount();
-    expect(mockedAPI.port.deactivatePortDataServices).toHaveBeenCalledTimes(0);
+    expect(mockedAPI.port.deactivatePortDataServices).not.toHaveBeenCalled();
 
     mockGetPortView({
       deactivationRequired: true,
@@ -153,6 +155,38 @@ describe("PortViewLoader.vue", () => {
       workflowId: props.workflowId,
       versionId: CURRENT_STATE_VERSION,
       nodeId: props.selectedNode.id,
+      portIdx: props.selectedPortIndex,
+      viewIdx: props.selectedViewIndex,
+    });
+  });
+
+  it("should conditionally deactivate data services if uniquePortKey changes", async () => {
+    mockGetPortView();
+    const { wrapper } = doMount();
+    const newNode = { ...dummyNode, id: "node2" };
+
+    await wrapper.setProps({
+      selectedNode: newNode,
+      uniquePortKey: "key-that-changed",
+    });
+    expect(mockedAPI.port.deactivatePortDataServices).not.toHaveBeenCalled();
+
+    mockGetPortView({
+      deactivationRequired: true,
+    });
+    const { wrapper: wrapper2 } = doMount();
+    await nextTick();
+    await wrapper2.setProps({
+      selectedNode: newNode,
+      uniquePortKey: "key-that-changed",
+    });
+    expect(
+      mockedAPI.port.deactivatePortDataServices,
+    ).toHaveBeenCalledExactlyOnceWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION,
+      nodeId,
       portIdx: props.selectedPortIndex,
       viewIdx: props.selectedViewIndex,
     });

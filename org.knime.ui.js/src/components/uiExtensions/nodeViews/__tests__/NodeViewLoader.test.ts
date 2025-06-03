@@ -35,8 +35,9 @@ const mockGetNodeView = (additionalMocks?: object) => {
 };
 
 describe("NodeViewLoader.vue", () => {
+  const nodeId = "node1";
   const dummyNode = createNativeNode({
-    id: "node1",
+    id: nodeId,
     outPorts: [],
     allowedActions: {
       canExecute: false,
@@ -77,7 +78,7 @@ describe("NodeViewLoader.vue", () => {
       projectId: props.projectId,
       workflowId: props.workflowId,
       versionId: CURRENT_STATE_VERSION,
-      nodeId: props.selectedNode.id,
+      nodeId,
     });
   });
 
@@ -90,7 +91,7 @@ describe("NodeViewLoader.vue", () => {
       projectId: props.projectId,
       workflowId: props.workflowId,
       versionId,
-      nodeId: props.selectedNode.id,
+      nodeId,
     });
   });
 
@@ -102,7 +103,7 @@ describe("NodeViewLoader.vue", () => {
       data: { mock: "new-data" },
       projectId: "project-id",
       workflowId: "workflow-id",
-      nodeId: "node1",
+      nodeId,
       versionId: undefined,
     });
     const nodeViewLoaderInstance = wrapper.vm as any;
@@ -120,7 +121,7 @@ describe("NodeViewLoader.vue", () => {
       data: { mock: "new-data" },
       projectId: "project-id",
       workflowId: "workflow-id",
-      nodeId: "node1",
+      nodeId,
       versionId: "version-id",
     });
     await wrapper.setProps({ versionId: undefined });
@@ -150,7 +151,7 @@ describe("NodeViewLoader.vue", () => {
     const { wrapper } = doMount();
     wrapper.unmount();
     await flushPromises();
-    expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledTimes(0);
+    expect(mockedAPI.node.deactivateNodeDataServices).not.toHaveBeenCalled();
 
     mockGetNodeView({
       deactivationRequired: true,
@@ -162,7 +163,35 @@ describe("NodeViewLoader.vue", () => {
       projectId: props.projectId,
       workflowId: props.workflowId,
       versionId: CURRENT_STATE_VERSION,
-      nodeId: props.selectedNode.id,
+      nodeId,
+      extensionType: "view",
+    });
+  });
+
+  it("should conditionally deactivate data services if selected nodeId changes", async () => {
+    mockGetNodeView();
+    const { wrapper } = doMount();
+    const newNode = { ...dummyNode, id: "node2" };
+    await wrapper.setProps({
+      selectedNode: newNode,
+    });
+    expect(mockedAPI.node.deactivateNodeDataServices).not.toHaveBeenCalled();
+
+    mockGetNodeView({
+      deactivationRequired: true,
+    });
+    const { wrapper: wrapper2 } = doMount();
+    await nextTick();
+    await wrapper2.setProps({
+      selectedNode: newNode,
+    });
+    expect(
+      mockedAPI.node.deactivateNodeDataServices,
+    ).toHaveBeenCalledExactlyOnceWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      versionId: CURRENT_STATE_VERSION,
+      nodeId,
       extensionType: "view",
     });
   });
@@ -172,7 +201,7 @@ describe("NodeViewLoader.vue", () => {
     const { wrapper } = doMount();
     wrapper.unmount();
     await flushPromises();
-    expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledTimes(0);
+    expect(mockedAPI.node.deactivateNodeDataServices).not.toHaveBeenCalled();
 
     mockGetNodeView({
       deactivationRequired: true,
@@ -185,7 +214,7 @@ describe("NodeViewLoader.vue", () => {
       projectId: props.projectId,
       workflowId: props.workflowId,
       versionId,
-      nodeId: props.selectedNode.id,
+      nodeId,
       extensionType: "view",
     });
   });
@@ -253,7 +282,7 @@ describe("NodeViewLoader.vue", () => {
       expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
         dataServiceRequest: "request",
         extensionType: "view",
-        nodeId: "node1",
+        nodeId,
         projectId: "project-id",
         serviceType: "data",
         workflowId: "workflow-id",
@@ -284,7 +313,7 @@ describe("NodeViewLoader.vue", () => {
       expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
         dataServiceRequest: "request",
         extensionType: "view",
-        nodeId: "node1",
+        nodeId,
         projectId: "project-id",
         serviceType: "data",
         workflowId: "workflow-id",
@@ -331,7 +360,7 @@ describe("NodeViewLoader.vue", () => {
         data: { mock: "new-data" },
         projectId: "project-id",
         workflowId: "workflow-id",
-        nodeId: "node1",
+        nodeId,
       });
       await nextTick();
 
@@ -408,7 +437,7 @@ describe("NodeViewLoader.vue", () => {
       expect(result).toStrictEqual({ result: { something: true } });
 
       expect(mockedAPI.node.updateDataPointSelection).toHaveBeenCalledWith({
-        nodeId: "node1",
+        nodeId,
         projectId: "project-id",
         workflowId: "workflow-id",
         versionId: CURRENT_STATE_VERSION,
@@ -436,7 +465,7 @@ describe("NodeViewLoader.vue", () => {
       });
 
       expect(mockedAPI.node.updateDataPointSelection).toHaveBeenCalledWith({
-        nodeId: "node1",
+        nodeId,
         projectId: "project-id",
         workflowId: "workflow-id",
         versionId,

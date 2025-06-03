@@ -50,11 +50,14 @@ const { resourceLocation, resourceLocationResolver } = useResourceLocation({
 const areControlsVisible = ref(true);
 
 const loadExtensionConfig = async () => {
+  // store the following in none-reactive variables to ensure deactivateNodeDataServices is called
+  // with the same values as getNodeDialog
+  const { projectId, workflowId, versionId, selectedNode } = props;
   const _extensionConfig = await API.node.getNodeDialog({
-    projectId: projectId.value,
-    workflowId: workflowId.value,
-    versionId: versionId.value ?? CURRENT_STATE_VERSION,
-    nodeId: selectedNode.value.id,
+    projectId,
+    workflowId,
+    versionId: versionId ?? CURRENT_STATE_VERSION,
+    nodeId: selectedNode.id,
   });
 
   consola.info("NodeDialog :: extensionConfig", _extensionConfig);
@@ -62,10 +65,10 @@ const loadExtensionConfig = async () => {
   if (_extensionConfig.deactivationRequired) {
     deactivateDataServicesFn = () => {
       API.node.deactivateNodeDataServices({
-        projectId: projectId.value,
-        workflowId: workflowId.value,
-        versionId: versionId.value ?? CURRENT_STATE_VERSION,
-        nodeId: selectedNode.value.id,
+        projectId,
+        workflowId,
+        versionId: versionId ?? CURRENT_STATE_VERSION,
+        nodeId: selectedNode.id,
         extensionType: "dialog",
       });
     };
@@ -166,6 +169,7 @@ const apiLayer: UIExtensionAPILayer = {
 watch(
   uniqueNodeConfigId,
   async () => {
+    deactivateDataServicesFn?.();
     try {
       isConfigReady.value = false;
       nodeConfigurationStore.setActiveExtensionConfig(null);
