@@ -37,7 +37,7 @@ const emit = defineEmits<{
   height: 110px;
   inset: 0;
   margin: auto;
-  background: rgba(255 255 255 / 30%);
+  background: rgb(255 255 255 / 30%);
   backdrop-filter: blur(10px);
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
 

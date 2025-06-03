@@ -179,7 +179,7 @@ onMounted(() => {
   }
 
   &.fullscreen {
-    background: var(--global-loader-bg, rgba(255 255 255 / 70%));
+    background: var(--global-loader-bg, rgb(255 255 255 / 70%));
   }
 
   &.transparent {
@@ -188,7 +188,7 @@ onMounted(() => {
   }
 
   &.localized {
-    background: var(--global-loader-bg, rgba(255 255 255 / 70%));
+    background: var(--global-loader-bg, rgb(255 255 255 / 70%));
     position: absolute;
     min-height: var(--initial-height);
     width: var(--initial-width);
