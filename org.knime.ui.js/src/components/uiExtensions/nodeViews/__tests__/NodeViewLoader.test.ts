@@ -3,6 +3,7 @@ import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
+import { Button } from "@knime/components";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import type {
   Alert,
@@ -497,5 +498,23 @@ describe("NodeViewLoader.vue", () => {
       "Apply & execute",
     );
     expect(wrapper.findComponent(UIExtension).exists()).toBe(false);
+  });
+
+  it("calls applySettings with correct arguments when ExecuteButton is clicked", async () => {
+    mockGetNodeView();
+    const { wrapper, mockedStores } = doMount();
+
+    mockedStores.nodeConfigurationStore.setDirtyState({
+      apply: "configured",
+      view: "configured",
+    });
+    await flushPromises();
+
+    expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
+
+    await wrapper.findComponent(Button).trigger("click");
+    expect(
+      mockedStores.nodeConfigurationStore.applySettings,
+    ).toHaveBeenCalledExactlyOnceWith({ nodeId, execute: true });
   });
 });

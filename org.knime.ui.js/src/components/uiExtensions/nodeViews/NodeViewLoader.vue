@@ -247,7 +247,7 @@ onUnmounted(() => {
     v-if="!error && !isLoadingConfig && hasToReexecute"
     message="To preview the node, apply your changes and re-execute it."
     button-label="Apply & execute"
-    @execute-node="applySettings(selectedNode.id, true)"
+    @click="applySettings(selectedNode.id, true)"
   />
 
   <UIExtension
