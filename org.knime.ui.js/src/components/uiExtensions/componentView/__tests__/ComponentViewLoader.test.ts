@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import LoadingIndicator from "@/components/uiExtensions/LoadingIndicator.vue";
 import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
+import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
+
+const mockedAPI = deepMocked(API);
 
 const pageBuilderMountMock = vi.hoisted(() => vi.fn());
 const mockUnmountShadowApp = vi.hoisted(() => vi.fn());
@@ -96,6 +100,10 @@ describe("ComponentViewLoader.vue", () => {
     expect(pageBuilderMountMock).toHaveBeenCalled();
 
     wrapper.unmount();
+    await flushPromises();
+    expect(
+      mockedAPI.component.deactivateAllComponentDataServices,
+    ).toHaveBeenCalled();
     expect(mockUnmountShadowApp).toHaveBeenCalled();
   });
 
@@ -168,7 +176,29 @@ describe("ComponentViewLoader.vue", () => {
     await wrapper.setProps({ nodeId: "new-node-id" });
     await flushPromises();
 
+    expect(
+      mockedAPI.component.deactivateAllComponentDataServices,
+    ).toHaveBeenCalled();
     expect(mockUnmountShadowApp).toHaveBeenCalled();
     expect(pageBuilderMountMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("logs error when deactivating data services fails", async () => {
+    const error = new Error("Deactivation failed");
+    vi.spyOn(consola, "error").mockImplementation(() => {});
+    mockedAPI.component.deactivateAllComponentDataServices.mockImplementationOnce(
+      () => {
+        throw error;
+      },
+    );
+
+    const { wrapper } = await doMount();
+    wrapper.unmount();
+
+    expect(
+      mockedAPI.component.deactivateAllComponentDataServices,
+    ).toHaveBeenCalled();
+    expect(consola.error).toHaveBeenCalled();
+    expect(mockUnmountShadowApp).toHaveBeenCalled();
   });
 });

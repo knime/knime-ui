@@ -5249,6 +5249,23 @@ const component = function(rpcClient: RPCClient) {
             return rpcClient.call('ComponentService.cancelOrRetryComponentLoadJob', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
+         * Iterates over all data services of nodes in the component and deactivates them. If a component is nested in another component, the data services of the nested component are also recursively deactivated.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async deactivateAllComponentDataServices(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<Response> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentService.deactivateAllComponentDataServices', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
+        /**
          * Get a components description, will only work for component nodes.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.

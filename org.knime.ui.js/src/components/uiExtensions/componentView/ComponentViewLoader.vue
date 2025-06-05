@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { type Ref, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  type Ref,
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
+import { API } from "@api";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import LoadingIndicator from "@/components/uiExtensions/LoadingIndicator.vue";
 import type { UIExtensionLoadingState } from "@/components/uiExtensions/common/types";
+import type { Identifiers } from "@/composables/usePageBuilder/pageBuilderStore";
 import {
   type PageBuilderControl,
   usePageBuilder,
@@ -21,6 +30,12 @@ const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
   pagebuilderHasPage: [hasPage: boolean];
 }>();
+
+const currentIdentifier = computed<Identifiers>(() => ({
+  projectId: props.projectId,
+  workflowId: props.workflowId,
+  nodeId: props.nodeId,
+}));
 
 const shadowHost = ref<HTMLElement | null>(null);
 
@@ -64,8 +79,21 @@ onMounted(async () => {
   await mount();
 });
 
-const unmount = () => {
+const unmount = async (oldIdentifier?: Identifiers) => {
   if (shadowRoot.value) {
+    const deactivationTarget = oldIdentifier ?? props;
+
+    try {
+      await API.component.deactivateAllComponentDataServices(
+        deactivationTarget,
+      );
+    } catch (error) {
+      consola.error(
+        `Failed to deactivate component (${deactivationTarget.projectId}/${deactivationTarget.workflowId}/${deactivationTarget.nodeId}) data services.`,
+        error,
+      );
+    }
+
     pageBuilder.value?.unmountShadowApp();
     shadowRoot.value.replaceChildren();
   }
@@ -74,12 +102,13 @@ const unmount = () => {
 onBeforeUnmount(unmount);
 
 watch(
-  () => [props.projectId, props.workflowId, props.nodeId],
-  async () => {
-    unmount();
+  currentIdentifier,
+  async (_, oldIdentifier) => {
+    await unmount(oldIdentifier);
     pageBuilder.value = await getPageBuilder();
     await mount();
   },
+  { deep: true },
 );
 
 watch(
