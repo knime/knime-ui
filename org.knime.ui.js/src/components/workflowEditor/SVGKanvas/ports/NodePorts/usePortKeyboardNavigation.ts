@@ -19,20 +19,14 @@ import {
 } from "@/util/portSelection";
 import { useNodeInfo } from "../../../common/useNodeInfo";
 
-import type AddPortPlaceholder from "./AddPortPlaceholder.vue";
-
 type Direction = "up" | "right" | "down" | "left";
 
 type UsePortKeyboardNavigationOptions = {
   nodeId: string;
   inPorts: KnimeNode["inPorts"];
   outPorts: KnimeNode["outPorts"];
-  inputAddPortPlaceholder: Ref<
-    [InstanceType<typeof AddPortPlaceholder>] | undefined
-  >;
-  outputAddPortPlaceholder: Ref<
-    [InstanceType<typeof AddPortPlaceholder>] | undefined
-  >;
+  onAddPortInput: Ref<(() => void) | undefined>;
+  onAddPortOutput: Ref<(() => void) | undefined>;
   canAddPort: ComputedRef<{ input: boolean; output: boolean }>;
   selectedPort: ComputedRef<SelectedPortIdentifier | null>;
   updatePortSelection: (selectedPort: SelectedPortIdentifier) => void;
@@ -61,12 +55,11 @@ export const usePortKeyboardNavigation = (
   };
 
   const triggerAddPortMenu = (side: "input" | "output") => {
-    const addPortRefs = {
-      inputAddPortPlaceholder: options.inputAddPortPlaceholder,
-      outputAddPortPlaceholder: options.outputAddPortPlaceholder,
-    };
-
-    addPortRefs[`${side}AddPortPlaceholder`].value?.at(0)?.onClick();
+    if (side === "input") {
+      options.onAddPortInput?.value?.();
+    } else {
+      options.onAddPortOutput?.value?.();
+    }
   };
 
   const navigateDown = (current: SelectedPortContext) => {

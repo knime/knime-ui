@@ -114,18 +114,20 @@ const {
 
 /** Keyboard navigation */
 
-const inputAddPortPlaceholder =
-  ref<[InstanceType<typeof AddPortPlaceholder>]>();
-const outputAddPortPlaceholder =
-  ref<[InstanceType<typeof AddPortPlaceholder>]>();
+const inputAddPortPlaceholder = ref<InstanceType<
+  typeof AddPortPlaceholder
+> | null>(null);
+const outputAddPortPlaceholder = ref<InstanceType<
+  typeof AddPortPlaceholder
+> | null>(null);
 
 usePortKeyboardNavigation({
   nodeId: props.nodeId,
   canAddPort,
   inPorts: props.inPorts,
   outPorts: props.outPorts,
-  inputAddPortPlaceholder,
-  outputAddPortPlaceholder,
+  onAddPortInput: computed(() => inputAddPortPlaceholder.value?.onClick),
+  onAddPortOutput: computed(() => outputAddPortPlaceholder.value?.onClick),
   selectedPort: currentlySelectedPort,
   updatePortSelection: updateSelection,
 });
@@ -220,6 +222,17 @@ const isFirstRegularPort = (port: NodePortType) => {
 
   return port.index === 1;
 };
+
+const assignAddPortPlaceholderRef = (
+  ref: typeof inputAddPortPlaceholder.value,
+  side: "input" | "output",
+) => {
+  if (side === "input") {
+    inputAddPortPlaceholder.value = ref;
+  } else {
+    outputAddPortPlaceholder.value = ref;
+  }
+};
 </script>
 
 <template>
@@ -266,10 +279,16 @@ const isFirstRegularPort = (port: NodePortType) => {
       @deselect="clearSelection"
     />
 
-    <template v-for="side in ['input', 'output'] as const">
+    <template v-for="side in Object.freeze(['input', 'output'] as const)">
       <AddPortPlaceholder
         v-if="canAddPort[side]"
-        :ref="`${side}AddPortPlaceholder`"
+        :ref="
+          (ref) =>
+            assignAddPortPlaceholderRef(
+              ref as typeof inputAddPortPlaceholder,
+              side,
+            )
+        "
         :key="side"
         :side="side"
         :targeted="isPlaceholderPortTargeted(side)"
