@@ -83,9 +83,10 @@ describe("NodeConfigLoader.vue", () => {
     return { wrapper, mockedStores };
   };
 
-  it("should load nodeDialog on mount", () => {
+  it("should load nodeDialog on mount", async () => {
     mockGetNodeDialog();
     doMount();
+    await flushPromises();
 
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith({
       projectId,
@@ -95,11 +96,11 @@ describe("NodeConfigLoader.vue", () => {
     });
   });
 
-  it("should load nodeDialog on mount if versionId prop is set", () => {
+  it("should load nodeDialog on mount if versionId prop is set", async () => {
     mockGetNodeDialog();
     const versionId = "version-id";
     doMount({ props: { ...defaultProps, versionId }, slots: {} });
-
+    await flushPromises();
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith({
       projectId,
       workflowId,
@@ -420,5 +421,46 @@ describe("NodeConfigLoader.vue", () => {
         }),
       );
     });
+  });
+
+  it("does not render UIExtension until config is ready", async () => {
+    mockedAPI.node.getNodeDialog.mockResolvedValue({
+      resourceInfo: { type: "SHADOW_APP", baseUrl: "b/", path: "p" },
+    });
+    const { wrapper } = doMount();
+
+    expect(wrapper.findComponent({ name: "UIExtension" }).exists()).toBe(false);
+
+    await flushPromises();
+
+    expect(wrapper.findComponent({ name: "UIExtension" }).exists()).toBe(true);
+  });
+
+  it("logs a warning when deactivateNodeDataServices fails on watcher", async () => {
+    mockedAPI.node.getNodeDialog.mockResolvedValue({
+      resourceInfo: { type: "SHADOW_APP", baseUrl: "", path: "" },
+      deactivationRequired: true,
+    });
+    const error = new Error("fail deactivate");
+    mockedAPI.node.deactivateNodeDataServices.mockRejectedValue(error);
+
+    const logSpy = vi.spyOn(consola, "log").mockImplementation(() => {});
+
+    const { wrapper } = doMount();
+    await flushPromises();
+
+    const newNode = { ...dummyNode, id: "node2" };
+    await wrapper.setProps({ selectedNode: newNode });
+    await flushPromises();
+
+    expect(logSpy).toHaveBeenCalledWith(
+      "NodeConfigLoader :: deactivateNodeDataServices failed",
+      expect.objectContaining({
+        error,
+        nodeId: "node1",
+      }),
+    );
+
+    logSpy.mockRestore();
   });
 });

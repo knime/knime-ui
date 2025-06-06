@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useEventListener } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import { FunctionButton, ToastStack } from "@knime/components";
+import { Button, ToastStack } from "@knime/components";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
 import type { UIExtensionPushEvents } from "@knime/ui-extension-renderer/api";
 
@@ -54,7 +54,7 @@ watch(isLargeMode, () => {
   });
 });
 
-const onDialogCancel = () => {
+const exitLargeMode = () => {
   isLargeMode.value = false;
 };
 
@@ -64,7 +64,7 @@ const onExpandConfig = () => {
 
 useEventListener(panel, "click", (event) => {
   if (event.target === panel.value) {
-    onDialogCancel();
+    exitLargeMode();
   }
 });
 </script>
@@ -78,23 +78,29 @@ useEventListener(panel, "click", (event) => {
       large: isLargeMode,
       small: !isLargeMode,
     }"
-    @cancel="onDialogCancel"
+    @cancel="exitLargeMode"
   >
     <ToastStack v-if="isLargeMode" class="large-mode-toasts" />
     <div v-if="isLargeMode" class="title-bar">
       <h2>{{ nodeName }}</h2>
-      <FunctionButton
+      <Button
         v-if="activeNode && canBeEnlarged && isLargeMode"
+        on-dark
+        compact
+        class="collapse"
+        data-test-id="collapse"
         @click="isLargeMode = false"
       >
         <ArrowsCollapseIcon class="arrows-collapse-icon" />
-      </FunctionButton>
+        Back to canvas
+      </Button>
     </div>
 
     <NodeConfigWrapper
       class="content-wrapper"
       :is-large-mode="isLargeMode"
       @expand="onExpandConfig"
+      @collapse="exitLargeMode"
     >
       <template #inactive>
         <ManageVersionsWrapper
@@ -174,6 +180,14 @@ dialog {
         outline: none;
         color: var(--theme-button-function-foreground-color-hover);
         background-color: transparent;
+      }
+    }
+
+    & .collapse {
+      color: var(--knime-white);
+
+      &:hover {
+        background-color: var(--knime-black-semi);
       }
     }
   }

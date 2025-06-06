@@ -222,11 +222,6 @@ describe("NodeConfig", () => {
         ({ wrapper, mockedStores } = await doMountForLargeModeTesting(true));
       });
 
-      it("is in right mode and has close button", () => {
-        expectMode(wrapper, "large");
-        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
-      });
-
       it("can be toggled to small via store", async () => {
         mockedStores.nodeConfigurationStore.setIsLargeMode(false);
         await nextTick();
@@ -244,8 +239,27 @@ describe("NodeConfig", () => {
         expectEventDispatch("small");
       });
 
-      it("is toggled to small by close button", async () => {
-        await wrapper.findComponent(FunctionButton).trigger("click");
+      it("shows 'Back to canvas' button with styling", () => {
+        expectMode(wrapper, "large");
+
+        const backButton = wrapper.find('[data-test-id="collapse"]');
+
+        expect(backButton.exists()).toBe(true);
+        expect(backButton.text()).toContain("Back to canvas");
+        expect(backButton.classes()).toContain("collapse");
+      });
+
+      it("is toggled to small by 'Back to canvas' button click", async () => {
+        await wrapper.find('[data-test-id="collapse"]').trigger("click");
+
+        expect(closeModal).toHaveBeenCalledOnce();
+        expectMode(wrapper, "small");
+        expectEventDispatch("small");
+      });
+
+      it("handles collapse event from NodeConfigWrapper", async () => {
+        wrapper.findComponent(NodeConfigWrapper).vm.$emit("collapse");
+        await nextTick();
 
         expect(closeModal).toHaveBeenCalledOnce();
         expectMode(wrapper, "small");

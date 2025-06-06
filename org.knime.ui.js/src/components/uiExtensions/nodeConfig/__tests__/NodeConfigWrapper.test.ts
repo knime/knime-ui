@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
@@ -11,6 +11,10 @@ import NodeConfigWrapper from "../NodeConfigWrapper.vue";
 describe("NodeConfigWrapper.vue", () => {
   const projectId = "project1";
   const workflowId = "workflow1";
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
   const idleNode = createNativeNode({
     id: "root:1",
@@ -179,5 +183,38 @@ describe("NodeConfigWrapper.vue", () => {
     expect(
       mockedStores.nodeConfigurationStore.discardSettings,
     ).toHaveBeenCalled();
+  });
+
+  it("emits collapse when applySettings is called", async () => {
+    const { wrapper, mockedStores } = await doMount(configuredNode.id);
+
+    vi.mocked(
+      mockedStores.nodeConfigurationStore.applySettings,
+    ).mockResolvedValue(true);
+
+    wrapper.findComponent(NodeConfigLayout).vm.$emit("apply", false);
+    await flushPromises();
+
+    expect(wrapper.emitted()).toHaveProperty("collapse");
+    expect(wrapper.emitted("collapse")).toHaveLength(1);
+  });
+
+  it("emits collapse when discardSettings is called", async () => {
+    const { wrapper } = await doMount(configuredNode.id);
+
+    wrapper.findComponent(NodeConfigLayout).vm.$emit("discard");
+
+    expect(wrapper.emitted()).toHaveProperty("collapse");
+    expect(wrapper.emitted("collapse")).toHaveLength(1);
+  });
+
+  it("emits collapse when executeActiveNode is called", async () => {
+    const { wrapper } = await doMount(configuredNode.id);
+
+    wrapper.findComponent(NodeConfigLayout).vm.$emit("execute");
+    await flushPromises();
+
+    expect(wrapper.emitted()).toHaveProperty("collapse");
+    expect(wrapper.emitted("collapse")).toHaveLength(1);
   });
 });

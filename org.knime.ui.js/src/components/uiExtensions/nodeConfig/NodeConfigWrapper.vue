@@ -19,6 +19,7 @@ type Props = {
 const props = defineProps<Props>();
 const emit = defineEmits<{
   expand: [];
+  collapse: [];
 }>();
 
 const { activeProjectId: projectId } = storeToRefs(useApplicationStore());
@@ -43,16 +44,22 @@ const nodeName = computed<string>(() =>
     : "",
 );
 
-const applySettings = (nodeId: string, execute?: boolean) => {
-  nodeConfigurationStore.applySettings({ nodeId, execute });
+const applySettings = async (nodeId: string, execute?: boolean) => {
+  await nodeConfigurationStore.applySettings({
+    nodeId,
+    execute,
+  });
+  emit("collapse");
 };
 
 const discardSettings = () => {
   nodeConfigurationStore.discardSettings();
+  emit("collapse");
 };
 
 const executeActiveNode = async () => {
   await useExecutionStore().executeNodes([activeNode.value!.id]);
+  emit("collapse");
 };
 
 const { settings } = storeToRefs(useSettingsStore());

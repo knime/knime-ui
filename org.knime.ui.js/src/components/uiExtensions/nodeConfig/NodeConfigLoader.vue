@@ -40,7 +40,7 @@ const { notify } = useNotifyUIExtensionAlert();
 const { projectId, workflowId, versionId, selectedNode } = toRefs(props);
 const extensionConfig = ref<ExtensionConfig | null>(null);
 const isConfigReady = ref(false);
-let deactivateDataServicesFn: () => void;
+let deactivateDataServicesFn: () => Promise<void>;
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
@@ -66,14 +66,22 @@ const loadExtensionConfig = async () => {
   consola.info("NodeDialog :: extensionConfig", _extensionConfig);
 
   if (_extensionConfig.deactivationRequired) {
-    deactivateDataServicesFn = () => {
-      API.node.deactivateNodeDataServices({
-        projectId,
-        workflowId,
-        versionId: versionId ?? CURRENT_STATE_VERSION,
-        nodeId: selectedNode.id,
-        extensionType: "dialog",
-      });
+    deactivateDataServicesFn = async () => {
+      try {
+        await API.node.deactivateNodeDataServices({
+          projectId,
+          workflowId,
+          versionId: versionId ?? CURRENT_STATE_VERSION,
+          nodeId: selectedNode.id,
+          extensionType: "dialog",
+        });
+      } catch (error) {
+        consola.log("NodeConfigLoader :: deactivateNodeDataServices failed", {
+          error,
+          nodeId: selectedNode.id,
+        });
+        throw error;
+      }
     };
   }
 
@@ -172,8 +180,9 @@ const apiLayer: UIExtensionAPILayer = {
 watch(
   uniqueNodeConfigId,
   async () => {
-    deactivateDataServicesFn?.();
     try {
+      await deactivateDataServicesFn?.();
+
       isConfigReady.value = false;
       nodeConfigurationStore.setActiveExtensionConfig(null);
       nodeConfigurationStore.resetDirtyState();
@@ -205,9 +214,16 @@ watch(
   { immediate: true },
 );
 
-onUnmounted(() => {
+onUnmounted(async () => {
   nodeConfigurationStore.setActiveExtensionConfig(null);
-  deactivateDataServicesFn?.();
+  try {
+    await deactivateDataServicesFn?.();
+  } catch (error) {
+    consola.error(
+      "NodeConfigLoader :: Error during unmount deactivation",
+      error,
+    );
+  }
 });
 </script>
 
