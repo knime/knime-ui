@@ -117,19 +117,9 @@ public final class TestingUtil {
     private static void addToProjectManagerForTesting(final ProjectManager projectManager, final LocalSpace localSpace,
         final List<String> projectIds, final String activeProjectId) {
         projectIds.forEach(projectId -> {
-            var wfmLoader = new WorkflowManagerLoader() {
-                @Override
-                public WorkflowManager load(final VersionId version) {
-                    if (version.isCurrentState()) {
-                        return loadWorkflowForTesting(projectId);
-                    } else {
-                        throw new IllegalStateException("Only configured to load current-state workflows");
-                    }
-                }
-            };
             projectManager.addProject( //
                 Project.builder() //
-                    .setWfmLoader(wfmLoader) //
+                    .setWfmLoader(WorkflowManagerLoader.providingOnlyCurrentState(() -> loadWorkflowForTesting(projectId) )) //
                     .setName(projectId) //
                     .setId(projectId) //
                     .setOrigin(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpace)) //
