@@ -59,8 +59,10 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
+import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
@@ -90,8 +92,8 @@ public final class TestingUtil {
      * @param projectIds projects to be available as tabs
      * @param activeProjectId the active tab
      */
-    public static void initAppForTesting(final ProjectManager projectManager, final LocalSpace localSpace, final List<String> projectIds,
-        final String activeProjectId) {
+    public static void initAppForTesting(final ProjectManager projectManager, final LocalSpace localSpace,
+        final List<String> projectIds, final String activeProjectId) {
         clearAppForTesting(projectManager);
         KnimeBrowserView.initViewForTesting();
         addToProjectManagerForTesting(projectManager, localSpace, projectIds, activeProjectId);
@@ -114,13 +116,26 @@ public final class TestingUtil {
 
     private static void addToProjectManagerForTesting(final ProjectManager projectManager, final LocalSpace localSpace,
         final List<String> projectIds, final String activeProjectId) {
-        projectIds.forEach(projectId -> projectManager.addProject( //
-            Project.builder() //
-                .setWfmLoaderProvidingOnlyCurrentState(() -> loadWorkflowForTesting(projectId)) //
-                .setName(projectId) //
-                .setId(projectId) //
-                .setOrigin(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpace)) //
-                .build()));
+        projectIds.forEach(projectId -> {
+            var wfmLoader = new WorkflowManagerLoader() {
+                @Override
+                public WorkflowManager load(final VersionId version) {
+                    if (version.isCurrentState()) {
+                        return loadWorkflowForTesting(projectId);
+                    } else {
+                        throw new IllegalStateException("Only configured to load current-state workflows");
+                    }
+                }
+            };
+            projectManager.addProject( //
+                Project.builder() //
+                    .setWfmLoader(wfmLoader) //
+                    .setName(projectId) //
+                    .setId(projectId) //
+                    .setOrigin(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpace)) //
+                    .build() //
+            );
+        });
         if (activeProjectId != null) {
             projectManager.setProjectActive(activeProjectId);
         }
