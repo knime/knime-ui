@@ -56,7 +56,8 @@ const workflowVersionsStore = useWorkflowVersionsStore();
 const { activeProjectId, activeProjectOrigin, isUnknownProject } = storeToRefs(
   useApplicationStore(),
 );
-const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+const { activeWorkflow, isWorkflowEmpty, isActiveWorkflowFixedVersion } =
+  storeToRefs(useWorkflowStore());
 const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
 const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
@@ -191,6 +192,14 @@ const onCanvasModeUpdate = (
 const { devMode } = storeToRefs(useApplicationSettingsStore());
 const isFrontendDevMode = import.meta.env.DEV;
 const { currentRenderer: currentCanvasRenderer } = useCanvasRendererUtils();
+
+const isDeploymentButtonVisible = computed(
+  () =>
+    getCommunityHubInfo.value.isOnlyCommunityHubMounted &&
+    isHubWorkflow.value &&
+    !isUnknownProject.value(activeProjectId.value) &&
+    !isActiveWorkflowFixedVersion.value,
+);
 
 const onDeploymentButtonClick = () => {
   if (!activeProjectOrigin.value) {
@@ -352,11 +361,7 @@ const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
         Upload
       </ToolbarButtonWithHint>
       <ToolbarButton
-        v-else-if="
-          getCommunityHubInfo.isOnlyCommunityHubMounted &&
-          isHubWorkflow &&
-          !isUnknownProject(activeProjectId)
-        "
+        v-else-if="isDeploymentButtonVisible"
         class="toolbar-button"
         with-text
         title="Deploy on Hub"
