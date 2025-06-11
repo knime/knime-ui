@@ -54,6 +54,7 @@ import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
+import org.knime.workbench.ui.preferences.LabelField;
 
 /**
  * The preference page for the Modern UI.
@@ -94,7 +95,10 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         addField(scrollToZoomEditor);
 
+        final var spacer = new LabelField(getFieldEditorParent(), "")
+
         /// Close project confirmation on interface switch
+        addField(spacer);
         final var confirmCloseProjectsOnSwitchEditor =
             new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY,
                 "Ask for confirmation to close all open projects when switching between user interfaces",
@@ -107,6 +111,8 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
             "Always confirm node configuration changes", getFieldEditorParent()));
 
         /// Node configuration dialog mode
+        addField(spacer);
+
         final var nodeConfigurationModeOptions = new String[][]{ //
             new String[]{"Open in new window", KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED}, //
             new String[]{"Embedded inside application", KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED}, //
@@ -117,13 +123,16 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         addField(nodeDialogModeEditor);
 
+        /// Canvas renderer
+        addField(spacer);
+
         final var canvasRendererOptions = new String[][] {
-                new String[]{"Stable", AppStateEnt.CanvasRendererEnum.SVG.toString()},
-                new String[]{"Experimental", AppStateEnt.CanvasRendererEnum.WEBGL.toString()},
+            new String[]{"Stable", AppStateEnt.CanvasRendererEnum.SVG.toString()},
+            new String[]{"Experimental", AppStateEnt.CanvasRendererEnum.WEBGL.toString()},
         };
+
         final var canvasRendererEditor = new RadioGroupFieldEditor(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY,
                 "Canvas renderer", 1, canvasRendererOptions, getFieldEditorParent());
-        addField(canvasRendererEditor);
     }
 
     @Override

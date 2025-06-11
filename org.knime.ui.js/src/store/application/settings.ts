@@ -1,5 +1,10 @@
 import { defineStore } from "pinia";
 
+import {
+  type CanvasRendererType,
+  useCanvasRendererUtils,
+} from "@/components/workflowEditor/util/canvasRenderer";
+
 type ApplicationSettingsState = {
   /**
    * Indicates whether the browser has support (enabled) for the Clipboard API or not
@@ -40,6 +45,7 @@ type ApplicationSettingsState = {
    * Whether all K-AI-related features are enabled
    */
   isKaiEnabled: boolean;
+  activeCanvasRenderer: CanvasRendererType;
 };
 
 export const useApplicationSettingsStore = defineStore("applicationSettings", {
@@ -53,6 +59,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     isSubnodeLockingEnabled: false,
     useEmbeddedDialogs: true,
     isKaiEnabled: true,
+    activeCanvasRenderer: "SVG",
   }),
   actions: {
     setHasClipboardSupport(hasClipboardSupport: boolean) {
@@ -89,6 +96,11 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
 
     setIsKaiEnabled(isKaiEnabled: boolean) {
       this.isKaiEnabled = isKaiEnabled;
+    },
+
+    setActiveCanvasRenderer(renderer: CanvasRendererType) {
+      this.activeCanvasRenderer = renderer;
+      useCanvasRendererUtils().currentRenderer.value = renderer;
     },
   },
 });

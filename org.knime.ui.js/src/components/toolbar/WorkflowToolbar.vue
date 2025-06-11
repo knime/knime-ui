@@ -13,7 +13,6 @@ import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
-import { sleep } from "@knime/utils";
 
 import { API } from "@/api";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
@@ -41,12 +40,7 @@ import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteraction
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
-import { reloadApp } from "@/util/devTools";
-import {
-  type CanvasRendererType,
-  canvasRendererUtils,
-  useCanvasRendererUtils,
-} from "../workflowEditor/util/canvasRenderer";
+import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
 import FPSMeter from "./FPSMeter.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
@@ -195,6 +189,7 @@ const onCanvasModeUpdate = (
 
 // toggle renderer svg/webgl
 const { devMode } = storeToRefs(useApplicationSettingsStore());
+const isFrontendDevMode = import.meta.env.DEV;
 const { currentRenderer: currentCanvasRenderer } = useCanvasRendererUtils();
 
 const onDeploymentButtonClick = () => {
@@ -280,45 +275,8 @@ const ToolbarButtonWithHint = defineComponent(
   },
 );
 
-const rendererValueSwitchModel = ref<CanvasRendererType>(
-  canvasRendererUtils.getCurrentCanvasRenderer(),
-);
-
+const { currentRenderer } = useCanvasRendererUtils();
 const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
-
-const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
-  // just change it in dev mode, no questions asked nor reloaded
-  if (devMode.value) {
-    currentCanvasRenderer.value = nextRenderer;
-    rendererValueSwitchModel.value = nextRenderer;
-    return;
-  }
-
-  const { show } = useConfirmDialog();
-  const result = await show({
-    title: "Change canvas rendering engine",
-    message:
-      "Changing this setting will cause the application to reload, " +
-      "and any unsaved changes may be lost. Do you want to proceed?",
-    buttons: [
-      { type: "cancel", label: "Cancel" },
-      { type: "confirm", label: "Reload application", flushRight: true },
-    ],
-  });
-
-  // update the display model
-  rendererValueSwitchModel.value = nextRenderer;
-
-  if (result.confirmed) {
-    currentCanvasRenderer.value = nextRenderer;
-    reloadApp();
-    return;
-  }
-
-  // set switch back
-  await sleep(0);
-  rendererValueSwitchModel.value = nextRenderer === "WebGL" ? "SVG" : "WebGL";
-};
 </script>
 
 <template>
@@ -366,16 +324,16 @@ const requestCanvasRenderToggle = async (nextRenderer: CanvasRendererType) => {
       </template>
 
       <ValueSwitch
+        v-if="isFrontendDevMode"
+        v-model="currentRenderer"
         compact
         style="margin-right: var(--space-16)"
-        :model-value="rendererValueSwitchModel"
         :possible-values="
           Object.entries(canvasRendererNameMap).map(([id, text]) => ({
             id,
             text,
           }))
         "
-        @update:model-value="requestCanvasRenderToggle"
       />
 
       <ToolbarButtonWithHint
