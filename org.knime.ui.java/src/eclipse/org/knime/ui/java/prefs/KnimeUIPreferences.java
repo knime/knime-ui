@@ -58,6 +58,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.webui.node.dialog.SubNodeContainerDialogFactory;
 import org.knime.core.workbench.preferences.MountPointsPreferencesUtil;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.ui.java.UIPlugin;
@@ -89,6 +90,10 @@ public final class KnimeUIPreferences {
     static final String NODE_DIALOG_MODE_PREF_KEY = "nodeDialogMode";
 
     private static BiConsumer<String, String> nodeDialogModeChangeListener;
+
+    @SuppressWarnings("restriction")
+    static final String SUB_NODE_CONTAINER_UI_MODE_JS_PREF_KEY =
+        SubNodeContainerDialogFactory.SUB_NODE_CONTAINER_UI_MODE_JS_PREF_KEY;
 
     static final String CANVAS_RENDERER_PREF_KEY = "canvasRenderer";
 

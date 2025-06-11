@@ -121,6 +121,10 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         addField(nodeDialogModeEditor);
 
+        /// Web UI Component Dialogs
+        addField(new BooleanFieldEditor(KnimeUIPreferences.SUB_NODE_CONTAINER_UI_MODE_JS_PREF_KEY,
+            "Enable modern component dialogs", getFieldEditorParent()));
+
         /// Canvas renderer
         addField(new LabelField(getFieldEditorParent(), ""));
 
