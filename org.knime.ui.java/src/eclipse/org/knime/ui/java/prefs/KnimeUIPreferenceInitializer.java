@@ -49,6 +49,7 @@
 package org.knime.ui.java.prefs;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.knime.gateway.api.webui.entity.AppStateEnt;
 
 /**
  * Initializer for the preferences of the Modern UI.
@@ -67,5 +68,6 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
         store.setDefault(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, true);
         store.setDefault(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, true);
         store.setDefault(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY, KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED);
+        store.setDefault(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY, AppStateEnt.CanvasRendererEnum.SVG.toString());
     }
 }

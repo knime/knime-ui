@@ -625,6 +625,12 @@ export interface AppState {
      */
     useEmbeddedDialogs?: boolean;
     /**
+     * Specify which renderer to use.
+     * @type {string}
+     * @memberof AppState
+     */
+    canvasRenderer?: AppState.CanvasRendererEnum;
+    /**
      * Whether all K-AI-related features (chat sidebar, build mode, scripting assistance, etc.) are enabled.
      * @type {boolean}
      * @memberof AppState
@@ -695,6 +701,14 @@ export namespace AppState {
         Default = 'default',
         JobViewer = 'job-viewer',
         Playground = 'playground'
+    }
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum CanvasRendererEnum {
+        Webgl = 'webgl',
+        Svg = 'svg'
     }
 }
 /**

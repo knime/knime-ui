@@ -53,6 +53,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.knime.gateway.api.webui.entity.AppStateEnt;
 
 /**
  * The preference page for the Modern UI.
@@ -115,6 +116,14 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
             "Node configuration dialog mode", 1, nodeConfigurationModeOptions, getFieldEditorParent());
 
         addField(nodeDialogModeEditor);
+
+        final var canvasRendererOptions = new String[][] {
+                new String[]{"Stable", AppStateEnt.CanvasRendererEnum.SVG.toString()},
+                new String[]{"Experimental", AppStateEnt.CanvasRendererEnum.WEBGL.toString()},
+        };
+        final var canvasRendererEditor = new RadioGroupFieldEditor(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY,
+                "Canvas renderer", 1, canvasRendererOptions, getFieldEditorParent());
+        addField(canvasRendererEditor);
     }
 
     @Override

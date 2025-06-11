@@ -82,6 +82,8 @@ export interface ApplicationState {
 
   appMode: AppState.AppModeEnum;
 
+  canvasRenderer: AppState.CanvasRendererEnum;
+
   dismissedUpdateBanner: boolean; // Property to track banner dismissal
   dismissedHomePageTile: boolean;
   dismissedHubLoginBanner: boolean;
@@ -210,6 +212,10 @@ export const useApplicationStore = defineStore("application", {
       this.appMode = mode;
     },
 
+    setCanvasRenderer(renderer: AppState.CanvasRendererEnum) {
+      this.canvasRenderer = renderer;
+    },
+
     setDismissedUpdateBanner(dismissed: boolean) {
       this.dismissedUpdateBanner = dismissed;
     },
@@ -260,6 +266,10 @@ export const useApplicationStore = defineStore("application", {
       if (applicationState.appMode) {
         this.setAppMode(applicationState.appMode);
         useUIControlsStore().init();
+      }
+
+      if (applicationState.canvasRenderer) {
+        this.setCanvasRenderer(applicationState.canvasRenderer);
       }
 
       if (applicationState.openProjects) {

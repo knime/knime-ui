@@ -66,6 +66,7 @@ import org.knime.core.node.extension.ConfigurableNodeFactoryMapper;
 import org.knime.core.node.extension.NodeSpecCollectionProvider;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.util.auth.CouldNotAuthorizeException;
+import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
@@ -283,6 +284,12 @@ final class Init {
                 appStateUpdater.updateAppState();
             }
         });
+
+        KnimeUIPreferences.setCanvasRendererChangeListener((oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                appStateUpdater.updateAppState();
+            }
+        });
     }
 
     private static NodeRepository createNodeRepository(final NodeCollections nodeCollections) {
@@ -356,6 +363,11 @@ final class Init {
             @Override
             public boolean useEmbeddedDialogs() {
                 return KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED.equals(KnimeUIPreferences.getNodeDialogMode());
+            }
+
+            @Override
+            public AppStateEnt.CanvasRendererEnum canvasRenderer() {
+                return KnimeUIPreferences.getCanvasRenderer();
             }
 
         };

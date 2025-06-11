@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.prefs;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -58,6 +59,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.workbench.preferences.MountPointsPreferencesUtil;
+import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.osgi.service.prefs.BackingStoreException;
@@ -88,6 +90,10 @@ public final class KnimeUIPreferences {
 
     private static BiConsumer<String, String> nodeDialogModeChangeListener;
 
+    static final String CANVAS_RENDERER_PREF_KEY = "canvasRenderer";
+
+    private static BiConsumer<String, String> canvasRendererChangeListener;
+
     private static final String BUNDLE_NAME = UIPlugin.getContext().getBundle().getSymbolicName();
 
     static final IPersistentPreferenceStore PREF_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, BUNDLE_NAME);
@@ -113,6 +119,11 @@ public final class KnimeUIPreferences {
                 final var oldValue = (String)event.getOldValue();
                 final var newValue = (String)event.getNewValue();
                 nodeDialogModeChangeListener.accept(oldValue, newValue);
+            }
+            if (CANVAS_RENDERER_PREF_KEY.equals(event.getProperty()) && canvasRendererChangeListener != null) {
+                final var oldValue = (String)event.getOldValue();
+                final var newValue = (String)event.getNewValue();
+                canvasRendererChangeListener.accept(oldValue, newValue);
             }
         });
 
@@ -257,6 +268,27 @@ public final class KnimeUIPreferences {
      */
     public static void setExplorerMointPointChangeListener(final Runnable runnable) {
         explorerMountPointChangeListener = runnable;
+    }
+
+
+    /**
+     * -
+     * @return -
+     */
+    public static AppStateEnt.CanvasRendererEnum getCanvasRenderer() {
+        var saved = PREF_STORE.getString(CANVAS_RENDERER_PREF_KEY);
+        return Arrays.stream(AppStateEnt.CanvasRendererEnum.values()) //
+                .filter(r -> r.toString().equals(saved)) //
+                .findFirst() //
+                .orElse(AppStateEnt.CanvasRendererEnum.SVG); //
+    }
+
+    /**
+     * -
+     * @param listener -
+     */
+    public static void setCanvasRendererChangeListener(final BiConsumer<String, String> listener) {
+        canvasRendererChangeListener = listener;
     }
 
     /**
