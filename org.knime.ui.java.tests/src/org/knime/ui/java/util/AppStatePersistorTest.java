@@ -67,6 +67,7 @@ import org.knime.core.util.PathUtils;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
@@ -266,7 +267,7 @@ public class AppStatePersistorTest {
         var spaceId = isLocal ? LocalSpace.LOCAL_SPACE_ID : "other space id";
         var origin = new Origin(providerId, spaceId, itemId);
 
-        var project = Project.builder().setWfmLoaderProvidingOnlyCurrentState(() -> null).setName("relPath").setId("test_id")
+        var project = Project.builder().setWfmLoader(WorkflowManagerLoader.providingOnlyCurrentState(() -> null)).setName("relPath").setId("test_id")
             .setOrigin(origin).build();
         pm.addProject(project);
     }
