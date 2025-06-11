@@ -95,10 +95,8 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         addField(scrollToZoomEditor);
 
-        final var spacer = new LabelField(getFieldEditorParent(), "")
-
         /// Close project confirmation on interface switch
-        addField(spacer);
+        addField(new LabelField(getFieldEditorParent(), ""));
         final var confirmCloseProjectsOnSwitchEditor =
             new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY,
                 "Ask for confirmation to close all open projects when switching between user interfaces",
@@ -111,7 +109,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
             "Always confirm node configuration changes", getFieldEditorParent()));
 
         /// Node configuration dialog mode
-        addField(spacer);
+        addField(new LabelField(getFieldEditorParent(), ""));
 
         final var nodeConfigurationModeOptions = new String[][]{ //
             new String[]{"Open in new window", KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED}, //
@@ -124,7 +122,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         addField(nodeDialogModeEditor);
 
         /// Canvas renderer
-        addField(spacer);
+        addField(new LabelField(getFieldEditorParent(), ""));
 
         final var canvasRendererOptions = new String[][] {
             new String[]{"Stable", AppStateEnt.CanvasRendererEnum.SVG.toString()},
