@@ -707,8 +707,8 @@ export namespace AppState {
      * @enum {string}
      */
     export enum CanvasRendererEnum {
-        Webgl = 'webgl',
-        Svg = 'svg'
+        WebGL = 'WebGL',
+        SVG = 'SVG'
     }
 }
 /**
