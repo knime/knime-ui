@@ -3,6 +3,10 @@ import { isDesktop } from "@/environment";
 export const globalSpaceBrowserProjectId = "__SPACE_BROWSER_TAB__";
 export const cachedLocalSpaceProjectId = "__LOCAL_ROOT__";
 
+const additionalRequestHeadersAP = {
+  "KNIME-UI": "modern",
+};
+
 export const getCustomFetchOptionsForBrowser = () => {
   if (isDesktop()) {
     throw new Error(
@@ -15,6 +19,9 @@ export const getCustomFetchOptionsForBrowser = () => {
   if (import.meta.env.PROD) {
     return {
       baseURL: "/_/api/",
+      headers: {
+        ...additionalRequestHeadersAP,
+      },
     };
   }
 
@@ -26,6 +33,7 @@ export const getCustomFetchOptionsForBrowser = () => {
   return {
     headers: {
       Authorization: `Basic ${btoa(`${user}:${pass}`)}`,
+      ...additionalRequestHeadersAP,
     },
     baseURL: url,
   };

@@ -475,6 +475,7 @@ final class Init {
                 return;
             }
 
+            addInstrumentationHeaders(mutableRequest);
             authorizeSpaceProviderRequest(mutableRequest, spaceProvider);
         };
 
@@ -482,6 +483,10 @@ final class Init {
         spaceProvider.getServerAddress() //
             .map(URI::create) //
             .ifPresent(uri -> middleware.addRequestFilter(uri.getScheme(), uri.getHost(), requestFilter));
+    }
+
+    private static void addInstrumentationHeaders(final MutableRequest mutableRequest) {
+        mutableRequest.getHeaderMap().put("KNIME-UI", "modern");
     }
 
     private static void authorizeSpaceProviderRequest(final MutableRequest mutableRequest,
