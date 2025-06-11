@@ -211,7 +211,6 @@ const hitArea = new Polygon([
 
     <template v-else-if="executionState === 'EXECUTING'">
       <NodeStateProgress
-        event-mode="none"
         :progress="progress"
         :execution-state="executionState"
         :text-resolution="textResolution"

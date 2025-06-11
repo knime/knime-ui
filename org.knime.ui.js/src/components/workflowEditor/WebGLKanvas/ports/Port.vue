@@ -122,7 +122,7 @@ const renderSelectionCircle = (graphics: GraphicsInst) => {
   </Container>
   <Container ref="portContainer">
     <PortIcon :type="portKind" :color="portColor" :filled="shouldFill" />
-    <PortInactiveDecorator v-if="port.inactive" :port="port" />
+    <PortInactiveDecorator v-if="port.inactive" />
     <PortTrafficLightDecorator
       v-if="'nodeState' in port && port.nodeState"
       :node-state="port.nodeState"
