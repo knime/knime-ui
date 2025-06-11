@@ -135,6 +135,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         final var canvasRendererEditor = new RadioGroupFieldEditor(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY,
                 "Canvas renderer", 1, canvasRendererOptions, getFieldEditorParent());
+        addField(canvasRendererEditor);
     }
 
     @Override
