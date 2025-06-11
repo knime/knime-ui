@@ -367,6 +367,7 @@ const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
       </ToolbarButton>
 
       <SubMenu
+        v-if="currentCanvasRenderer !== 'WebGL'"
         class="control"
         :items="canvasModes"
         data-test-id="canvas-modes-selector"
