@@ -1,23 +1,71 @@
 import type { Ref } from "vue";
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
+import { isModifierKeyPressed } from "@knime/utils";
+
 import type { XY } from "@/api/gateway-api/generated-api";
+import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
+import { isInputElement } from "@/util/isInputElement";
 import { type ApplicationInst } from "@/vue3-pixi";
+
+const useHoldingDownSpace = () => {
+  const { isHoldingDownSpace, isPanning } = storeToRefs(useWebGLCanvasStore());
+
+  const onPressSpace = (event: KeyboardEvent) => {
+    if (isInputElement(event.target as HTMLElement) || isUIExtensionFocused()) {
+      return;
+    }
+
+    // do not handle space if a modifier is used
+    if (event.code !== "Space" || isModifierKeyPressed(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    isHoldingDownSpace.value = true;
+  };
+
+  const onReleaseKey = (event: KeyboardEvent) => {
+    if (event.code === "Space" || event.code === "Escape") {
+      // unset panning state
+      isPanning.value = false;
+      isHoldingDownSpace.value = false;
+    }
+  };
+
+  onMounted(() => {
+    document.addEventListener("keypress", onPressSpace);
+    document.addEventListener("keyup", onReleaseKey);
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener("keypress", onPressSpace);
+    document.removeEventListener("keyup", onReleaseKey);
+  });
+};
 
 export const useCanvasPanning = ({
   pixiApp,
 }: {
   pixiApp: Ref<ApplicationInst>;
 }) => {
-  const isPanning = ref(false);
+  const { isPanning, isHoldingDownSpace } = storeToRefs(useWebGLCanvasStore());
   const hasMoved = ref(false);
   const panLastPosition = ref<XY | null>({ x: 0, y: 0 });
+
+  useHoldingDownSpace();
+
+  const shouldShowMoveCursor = computed(() => {
+    return isPanning.value || isHoldingDownSpace.value;
+  });
 
   const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 
@@ -30,8 +78,7 @@ export const useCanvasPanning = ({
     consola.debug("Kanvas::usePanning - startPan", { pointerDownEvent });
     const { canvas } = pixiApp.value;
 
-    const isMouseLeftClick = pointerDownEvent.button === 0;
-    if (isMouseLeftClick || isDragging.value) {
+    if (isDragging.value) {
       return;
     }
 
@@ -125,5 +172,5 @@ export const useCanvasPanning = ({
     });
   });
 
-  return { mousePan, scrollPan };
+  return { mousePan, scrollPan, shouldShowMoveCursor };
 };

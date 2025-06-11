@@ -24,19 +24,20 @@ describe("useObjectInteractions", () => {
       move: XY;
       end: XY;
     },
-    modifiers: { shiftKey?: boolean; ctrlKey?: boolean } = {
+    options: { shiftKey?: boolean; ctrlKey?: boolean; button?: number } = {
       shiftKey: false,
       ctrlKey: false,
+      button: 0,
     },
   ) => {
     startInteractionHandler({
-      button: 0,
+      button: options.button ?? 0,
       // @ts-expect-error
       global: pointerPositions.start,
       // @ts-expect-error
-      shiftKey: modifiers.shiftKey,
+      shiftKey: options.shiftKey,
       // @ts-expect-error
-      ctrlKey: modifiers.ctrlKey,
+      ctrlKey: options.ctrlKey,
       nativeEvent: new PointerEvent("pointerdown"),
     });
     await flushPromises();
@@ -311,6 +312,40 @@ describe("useObjectInteractions", () => {
         canvas,
         handlePointerInteraction,
         pointerPositions,
+      );
+
+      expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
+      await flushPromises();
+      expect(onMoveEnd).not.toHaveBeenCalled();
+      expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
+    });
+
+    it("should not move any object if not left mouse click", async () => {
+      const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
+      const { getComposableResult, canvas, mockedStores, isSelected } = doMount(
+        {
+          onMoveEnd,
+        },
+      );
+
+      isSelected.value = true;
+
+      const { handlePointerInteraction } = getComposableResult();
+
+      const pointerPositions = {
+        start: { x: 10, y: 20 },
+        move: { x: 20, y: 30 },
+        end: { x: 20, y: 30 },
+      };
+
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+        {
+          button: 1,
+        },
       );
 
       expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();

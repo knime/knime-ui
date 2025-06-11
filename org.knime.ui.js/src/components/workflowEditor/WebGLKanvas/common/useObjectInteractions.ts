@@ -101,7 +101,9 @@ export const useObjectInteractions = (
 
   const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
-  const { zoomFactor, pixiApplication } = storeToRefs(useWebGLCanvasStore());
+  const { zoomFactor, pixiApplication, isHoldingDownSpace } = storeToRefs(
+    useWebGLCanvasStore(),
+  );
   const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 
   const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -293,6 +295,11 @@ export const useObjectInteractions = (
   const onPointerDown = async (
     pointerDownEvent: PIXI.FederatedPointerEvent,
   ) => {
+    const isMouseLeftClick = pointerDownEvent.button === 0;
+    if ((isMouseLeftClick && isHoldingDownSpace.value) || !isMouseLeftClick) {
+      return;
+    }
+
     // handle annotations differently only when they're not selected
     if (isAnnotation && !isObjectSelected()) {
       handleUnselectedAnnotation(pointerDownEvent);

@@ -51,6 +51,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const containerSize = ref({ width: 0, height: 0 });
   const interactionsEnabled = ref(true);
   const pixelRatio = ref(1);
+  const isPanning = ref(false);
+  const isHoldingDownSpace = ref(false);
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -625,5 +627,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     setPixelRatio,
     pixelRatio: getPixelRatio,
     findObjectFromScreenCordinates,
+    isPanning,
+    isHoldingDownSpace,
   };
 });

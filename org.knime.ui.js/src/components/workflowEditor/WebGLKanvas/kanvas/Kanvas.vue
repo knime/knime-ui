@@ -30,6 +30,7 @@ const {
   canvasLayers,
   pixelRatio,
   interactionsEnabled,
+  isHoldingDownSpace,
 } = storeToRefs(canvasStore);
 
 const isPixiAppInitialized = ref(false);
@@ -95,9 +96,19 @@ onUnmounted(() => {
   clearIconCache();
 });
 
-const { mousePan, scrollPan } = useCanvasPanning({
+const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
   pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
 });
+
+const onPointerDown = (event: PointerEvent) => {
+  const isMouseLeftClick = event.button === 0;
+  if (!isHoldingDownSpace.value && isMouseLeftClick) {
+    $bus.emit("selection-pointerdown", event);
+    return;
+  }
+
+  mousePan(event);
+};
 
 const { onMouseWheel } = useMouseWheel({ scrollPan });
 
@@ -128,13 +139,12 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     :resize-to="() => getKanvasDomElement()!"
     :auto-start="!performanceTracker.isCanvasPerfMode()"
     :on-before-mount="beforePixiMount"
+    :class="[{ panning: shouldShowMoveCursor }]"
     @wheel.prevent="onMouseWheel"
-    @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
     @pointermove="$bus.emit('selection-pointermove', $event)"
     @pointerup="$bus.emit('selection-pointerup', $event)"
     @contextmenu.prevent
-    @pointerdown.right="mousePan"
-    @pointerdown.middle="mousePan"
+    @pointerdown="onPointerDown"
     @init-complete="isPixiAppInitialized = true"
   >
     <Container
@@ -146,3 +156,9 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     </Container>
   </Application>
 </template>
+
+<style scoped lang="postcss">
+.panning {
+  cursor: move !important;
+}
+</style>
