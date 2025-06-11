@@ -71,9 +71,6 @@ export class DashLine {
   /** desired scale of line */
   scale = 1;
 
-  /** dash offset for animation */
-  // dashOffset: number = 0;
-
   // sanity check to ensure the strokeStyle is still in use
   private activeTexture: PIXI.Texture | undefined;
 

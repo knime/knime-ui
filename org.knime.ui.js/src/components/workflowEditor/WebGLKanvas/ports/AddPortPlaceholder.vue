@@ -135,10 +135,8 @@ useAnimatePixiContainer<number>({
   changeTracker: computed(() => isPlaceholderPortHovered.value),
   animationParams: { duration: 0.17, ease: [0.8, 2, 1, 2.5] },
   onUpdate: (value) => {
-    if (container.value) {
-      container.value.scale.x = value;
-      container.value.scale.y = value;
-    }
+    container.value!.scale.x = value;
+    container.value!.scale.y = value;
   },
 });
 
@@ -163,9 +161,7 @@ useAnimatePixiContainer<number>({
   ),
   animationParams: { duration: 0.17 },
   onUpdate: (value) => {
-    if (container.value) {
-      container.value.alpha = value;
-    }
+    container.value!.alpha = value;
   },
   animateOut: true,
 });
