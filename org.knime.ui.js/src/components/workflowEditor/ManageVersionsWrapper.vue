@@ -36,7 +36,9 @@ const hasEditCapability = computed(
     activeProjectVersionsModeInfo.value?.permissions.includes("EDIT") ?? false,
 );
 
-const isCreatingVersion = ref(false);
+const versionCreationState = ref<
+  "panel-hidden" | "panel-visible" | "pending" | "failed"
+>("panel-hidden");
 
 const { toastPresets } = getToastPresets();
 
@@ -83,14 +85,25 @@ const onRestore = (version: NamedItemVersion["version"]) => {
   );
 };
 
+const openVersionCreationPanel = () => {
+  versionCreationState.value = "panel-visible";
+};
+
+const closeVersionCreationPanel = () => {
+  versionCreationState.value = "panel-hidden";
+};
+
 const onCreate = async ({ name, description }) => {
   try {
+    versionCreationState.value = "pending";
     await versionsStore.createVersion({
       name,
       description,
     });
-    isCreatingVersion.value = false;
+
+    closeVersionCreationPanel();
   } catch (error) {
+    versionCreationState.value = "failed";
     toastPresets.api.hubActionError({
       error,
       headline: "Creation of the version failed",
@@ -129,12 +142,19 @@ const onDiscardCurrentState = () => {
     </div>
 
     <Transition name="slide">
-      <div v-if="isCreatingVersion" class="create-version-drawer">
+      <div
+        v-if="
+          versionCreationState === 'panel-visible' ||
+          versionCreationState === 'pending'
+        "
+        class="create-version-drawer"
+      >
         <div class="header">Create version</div>
 
         <CreateVersionForm
+          :is-creation-pending="versionCreationState === 'pending'"
           @create="onCreate"
-          @cancel="isCreatingVersion = false"
+          @cancel="closeVersionCreationPanel"
         />
       </div>
     </Transition>
@@ -158,7 +178,7 @@ const onDiscardCurrentState = () => {
       @load-all="onLoadAll"
       @delete="onDelete"
       @restore="onRestore"
-      @create="isCreatingVersion = true"
+      @create="openVersionCreationPanel"
       @discard-current-state="onDiscardCurrentState"
     />
   </div>
