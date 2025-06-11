@@ -1657,6 +1657,36 @@ export interface Extension {
 
 }
 
+
+/**
+ * Represents a thrown instance of x-knime-gateway-executor-exceptions i.e. GatewayException.
+ * @export
+ * @interface GatewayProblemDescription
+ */
+export interface GatewayProblemDescription {
+
+    /**
+     * Message of the thrown exception.
+     * @type {string}
+     * @memberof GatewayProblemDescription
+     */
+    title?: string;
+    /**
+     * Name of the thrown exception.
+     * @type {string}
+     * @memberof GatewayProblemDescription
+     */
+    code?: string;
+    /**
+     * Indicating whether error details can be copied by the user.
+     * @type {boolean}
+     * @memberof GatewayProblemDescription
+     */
+    canCopy?: boolean;
+
+}
+
+
 /**
  * Inserts a node on top of an existing connection
  * @export
