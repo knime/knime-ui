@@ -95,6 +95,8 @@ public final class KnimeUIPreferences {
     static final String SUB_NODE_CONTAINER_UI_MODE_JS_PREF_KEY =
         SubNodeContainerDialogFactory.SUB_NODE_CONTAINER_UI_MODE_JS_PREF_KEY;
 
+    private static BiConsumer<Boolean, Boolean> subNodeContainerUiModeJsChangeListener;
+
     static final String CANVAS_RENDERER_PREF_KEY = "canvasRenderer";
 
     private static BiConsumer<String, String> canvasRendererChangeListener;
@@ -124,6 +126,12 @@ public final class KnimeUIPreferences {
                 final var oldValue = (String)event.getOldValue();
                 final var newValue = (String)event.getNewValue();
                 nodeDialogModeChangeListener.accept(oldValue, newValue);
+            }
+            if (SUB_NODE_CONTAINER_UI_MODE_JS_PREF_KEY.equals(event.getProperty())
+                && subNodeContainerUiModeJsChangeListener != null) {
+                final var oldValue = (Boolean)event.getOldValue();
+                final var newValue = (Boolean)event.getNewValue();
+                subNodeContainerUiModeJsChangeListener.accept(oldValue, newValue);
             }
             if (CANVAS_RENDERER_PREF_KEY.equals(event.getProperty()) && canvasRendererChangeListener != null) {
                 final var oldValue = (String)event.getOldValue();
@@ -287,6 +295,11 @@ public final class KnimeUIPreferences {
                 .findFirst() //
                 .orElse(AppStateEnt.CanvasRendererEnum.SVG); //
     }
+
+    public static void setSubNodeContainerUiModeJsChangeListener(final BiConsumer<Boolean, Boolean> listener) {
+        subNodeContainerUiModeJsChangeListener = listener;
+    }
+
 
     /**
      * -

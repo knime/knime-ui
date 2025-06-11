@@ -284,6 +284,12 @@ final class Init {
                 appStateUpdater.updateAppState();
             }
         });
+        
+        KnimeUIPreferences.setSubNodeContainerUiModeJsChangeListener((oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                appStateUpdater.updateAppState();
+            }
+        });
 
         KnimeUIPreferences.setCanvasRendererChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
