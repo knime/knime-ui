@@ -43,6 +43,8 @@ const {
 } = storeToRefs(useSpaceProvidersStore());
 const uiControls = useUIControlsStore();
 
+const { getSpaceItemVersion } = useWorkflowVersionsStore();
+
 const getActiveProject = () =>
   openProjects.value.find(
     (project) => project.projectId === activeProjectId.value,
@@ -186,6 +188,13 @@ const breadcrumbText = computed(() => {
     ? `${providerText.value} — ${props.workflow.info.name}`
     : props.workflow.info.name;
 });
+
+const activeVersionTitle = computed(() => {
+  return getSpaceItemVersion(
+    props.workflow.projectId,
+    props.workflow.info.version,
+  )?.title;
+});
 </script>
 
 <template>
@@ -208,10 +217,8 @@ const breadcrumbText = computed(() => {
         </template>
       </SubMenu>
       <template v-if="props.workflow.info.version">
-        <span
-          class="workflow-versions-information"
-          :title="activeProjectOrigin?.version?.title"
-          >Version: "{{ activeProjectOrigin?.version?.title }}"</span
+        <span class="workflow-versions-information" :title="activeVersionTitle"
+          >Version: "{{ activeVersionTitle }}"</span
         >
         <ToolbarButton
           class="toolbar-button"
