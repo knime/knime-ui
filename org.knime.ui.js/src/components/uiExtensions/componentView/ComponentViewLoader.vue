@@ -84,7 +84,7 @@ const unmount = async (oldIdentifier?: Identifiers) => {
     const deactivationTarget = oldIdentifier ?? currentIdentifier.value;
 
     try {
-      await API.component.deactivateAllComponentDataServices(
+      await API.compositeview.deactivateAllCompositeViewDataServices(
         deactivationTarget,
       );
     } catch (error) {

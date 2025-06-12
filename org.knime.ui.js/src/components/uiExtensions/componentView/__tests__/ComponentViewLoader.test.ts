@@ -102,7 +102,7 @@ describe("ComponentViewLoader.vue", () => {
     wrapper.unmount();
     await flushPromises();
     expect(
-      mockedAPI.component.deactivateAllComponentDataServices,
+      mockedAPI.compositeview.deactivateAllCompositeViewDataServices,
     ).toHaveBeenCalled();
     expect(mockUnmountShadowApp).toHaveBeenCalled();
   });
@@ -177,7 +177,7 @@ describe("ComponentViewLoader.vue", () => {
     await flushPromises();
 
     expect(
-      mockedAPI.component.deactivateAllComponentDataServices,
+      mockedAPI.compositeview.deactivateAllCompositeViewDataServices,
     ).toHaveBeenCalled();
     expect(mockUnmountShadowApp).toHaveBeenCalled();
     expect(pageBuilderMountMock).toHaveBeenCalledTimes(2);
@@ -186,7 +186,7 @@ describe("ComponentViewLoader.vue", () => {
   it("logs error when deactivating data services fails", async () => {
     const error = new Error("Deactivation failed");
     vi.spyOn(consola, "error").mockImplementation(() => {});
-    mockedAPI.component.deactivateAllComponentDataServices.mockImplementationOnce(
+    mockedAPI.compositeview.deactivateAllCompositeViewDataServices.mockImplementationOnce(
       () => {
         throw error;
       },
@@ -196,7 +196,7 @@ describe("ComponentViewLoader.vue", () => {
     wrapper.unmount();
 
     expect(
-      mockedAPI.component.deactivateAllComponentDataServices,
+      mockedAPI.compositeview.deactivateAllCompositeViewDataServices,
     ).toHaveBeenCalled();
     expect(consola.error).toHaveBeenCalled();
     expect(mockUnmountShadowApp).toHaveBeenCalled();

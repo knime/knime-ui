@@ -306,7 +306,7 @@ const actions = {
       return;
     }
     try {
-      await API.component.setViewValuesAsNewDefault(viewValues);
+      await API.compositeview.setViewValuesAsNewDefault(viewValues);
     } catch (error) {
       handleError({
         caller: "applyAsDefault",
@@ -362,7 +362,7 @@ const actions = {
     const reexecution = async () => {
       try {
         const reexecutingPage =
-          (await API.component.triggerCompleteComponentReexecution(
+          (await API.compositeview.triggerCompleteComponentReexecution(
             viewValues,
           )) as unknown as ReexecutingPage;
 
@@ -402,7 +402,7 @@ const actions = {
   ) {
     if (!reexecutingPage) {
       reexecutingPage =
-        (await API.component.pollCompleteComponentReexecutionStatus(
+        (await API.compositeview.pollCompleteComponentReexecutionStatus(
           resolvedIdentifiers,
         )) as unknown as ReexecutingPage;
     }
@@ -419,7 +419,7 @@ const actions = {
       await sleep(pollingInformation.pollInterval);
 
       reexecutingPage =
-        (await API.component.pollCompleteComponentReexecutionStatus(
+        (await API.compositeview.pollCompleteComponentReexecutionStatus(
           resolvedIdentifiers,
         )) as unknown as ReexecutingPage;
     }
@@ -452,7 +452,7 @@ const actions = {
       () => useWorkflowStore().activeWorkflow!.info.version,
     );
 
-    const result = await API.component.getCompositeViewPage({
+    const result = await API.compositeview.getCompositeViewPage({
       projectId,
       workflowId,
       versionId: versionId.value ?? CURRENT_STATE_VERSION,
