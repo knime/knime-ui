@@ -3,12 +3,13 @@
 <script setup lang="ts">
 import {
   computed,
+  nextTick,
   onMounted,
-  shallowRef,
   toRef,
   useTemplateRef,
   watch,
 } from "vue";
+import { watchDebounced } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -137,18 +138,23 @@ const renderable = computed(() => {
   return Boolean(intersect);
 });
 
-const textRef = shallowRef<PIXI.HTMLText>();
+let textRef: PIXI.HTMLText | undefined;
 const { resolution } = useZoomAwareResolution();
 
 const autoUpdateResolution = () => {
-  watch(
+  // debounce because the resolution or renderable sources
+  // could change fast often. e.g resolution due to fast zoom in/out
+  // and renderable due to fast panning which culls out of view annotations
+  watchDebounced(
     [resolution, renderable],
     () => {
-      if (textRef.value && renderable.value) {
-        textRef.value.resolution = resolution.value;
-      }
+      requestAnimationFrame(() => {
+        if (textRef && renderable.value) {
+          textRef.resolution = resolution.value;
+        }
+      });
     },
-    { immediate: true },
+    { immediate: true, debounce: 600 },
   );
 };
 
@@ -157,9 +163,10 @@ const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
   if (!renderable.value && !force) {
     return;
   }
-  if (textRef.value) {
+
+  if (textRef) {
     annotationContainer.value!.removeChildAt(0);
-    textRef.value = undefined;
+    textRef = undefined;
   }
 
   const annotationTextWithStyles = getAnnotationStyles(
@@ -178,9 +185,13 @@ const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
   });
 
   text.roundPixels = true;
-  annotationContainer.value!.addChild(text);
   text.resolution = resolution.value;
-  textRef.value = text;
+  textRef = text;
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      annotationContainer.value!.addChild(text);
+    });
+  });
 };
 
 watch(

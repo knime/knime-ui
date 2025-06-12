@@ -412,7 +412,6 @@ const nodeLabelPosition = computed(() => {
     </Container>
 
     <NodePorts
-      v-if="renderable"
       :node-id="node.id"
       :node-kind="node.kind"
       :in-ports="node.inPorts"
