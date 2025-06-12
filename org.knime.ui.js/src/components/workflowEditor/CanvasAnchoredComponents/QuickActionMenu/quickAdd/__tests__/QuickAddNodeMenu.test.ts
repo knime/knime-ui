@@ -111,11 +111,11 @@ describe("QuickAddNodeMenu.vue", () => {
       projectId: "project0",
       nodes: {},
       metaInPorts: {
-        xPos: 100,
+        bounds: { x: 100 },
         ports: [defaultPortMock],
       },
       metaOutPorts: {
-        xPos: 702,
+        bounds: { x: 702 },
         ports: [defaultPortMock, defaultPortMock, defaultPortMock],
       },
     });

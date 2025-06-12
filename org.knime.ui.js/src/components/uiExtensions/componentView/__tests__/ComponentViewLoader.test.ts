@@ -20,40 +20,41 @@ const hasPageMock = vi.hoisted(() => vi.fn());
 const updateAndReexecuteMock = vi.hoisted(() => vi.fn());
 const onDirtyChangeCallback = vi.hoisted(() => vi.fn());
 
-// Mock usePageBuilder to capture the onDirty callback
-vi.mock("@/composables/usePageBuilder/usePageBuilder.ts", () => ({
-  usePageBuilder: vi.fn().mockImplementation((_, callback) => {
-    onDirtyChangeCallback.mockImplementation(callback);
-    return Promise.resolve({
-      mountShadowApp: pageBuilderMountMock,
-      loadPage: mockLoadPage,
-      isDirty: isDirtyMock,
-      isDefault: isDefaultMock,
-      hasPage: hasPageMock,
-      updateAndReexecute: updateAndReexecuteMock,
-      unmountShadowApp: mockUnmountShadowApp,
-    });
-  }),
-}));
-
-const mockIsReexecuting = vi
-  .fn()
-  .mockImplementation((nodeId) => nodeId === "node");
-vi.mock("@/composables/usePageBuilder/useReexecutingState", () => ({
-  useReexecutingCompositeViewState: () => ({
-    isReexecuting: mockIsReexecuting,
-  }),
-}));
-
 describe("ComponentViewLoader.vue", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  const doMount = async (
-    executionState = NodeState.ExecutionStateEnum.EXECUTED,
-  ) => {
+  type DoMountOptions = {
+    executionState?: NodeState.ExecutionStateEnum;
+    isReexecuting?: boolean;
+  };
+
+  const doMount = async (options: DoMountOptions = {}) => {
+    const {
+      executionState = NodeState.ExecutionStateEnum.EXECUTED,
+      isReexecuting = false,
+    } = options;
     const mockedStores = mockStores();
+
+    mockedStores.compositeViewStore.getPageBuilderControl.mockImplementation(
+      (_, callback) => {
+        onDirtyChangeCallback.mockImplementation(callback);
+        return Promise.resolve({
+          mountShadowApp: pageBuilderMountMock,
+          loadPage: mockLoadPage,
+          isDirty: isDirtyMock,
+          isDefault: isDefaultMock,
+          hasPage: hasPageMock,
+          updateAndReexecute: updateAndReexecuteMock,
+          unmountShadowApp: mockUnmountShadowApp,
+        });
+      },
+    );
+
+    mockedStores.compositeViewStore.isReexecuting.mockImplementation(
+      () => isReexecuting,
+    );
 
     const props = {
       projectId: "project",
@@ -84,12 +85,12 @@ describe("ComponentViewLoader.vue", () => {
     await nextTick();
     await flushPromises();
 
-    return { wrapper };
+    return { wrapper, compositeViewStore: mockedStores.compositeViewStore };
   };
 
   it("should mount componentView and initialize PageBuilder", async () => {
-    await doMount();
-    expect(pageBuilderMountMock).toHaveBeenCalled();
+    const { compositeViewStore } = await doMount();
+    expect(compositeViewStore.getPageBuilderControl).toHaveBeenCalled();
 
     expect(mockLoadPage).toHaveBeenCalled();
   });
@@ -108,7 +109,9 @@ describe("ComponentViewLoader.vue", () => {
   });
 
   it("should mount componentView and load page when node is executed", async () => {
-    const { wrapper } = await doMount(NodeState.ExecutionStateEnum.CONFIGURED);
+    const { wrapper } = await doMount({
+      executionState: NodeState.ExecutionStateEnum.CONFIGURED,
+    });
     expect(mockLoadPage).not.toHaveBeenCalled();
 
     await wrapper.setProps({
@@ -120,9 +123,8 @@ describe("ComponentViewLoader.vue", () => {
 
   it("shows LoadingIndicator when reexecuting and no page", async () => {
     hasPageMock.mockReturnValue(false);
-    mockIsReexecuting.mockImplementation((nodeId) => nodeId === "node");
 
-    const { wrapper } = await doMount();
+    const { wrapper } = await doMount({ isReexecuting: true });
 
     const loadingIndicator = wrapper.findComponent(LoadingIndicator);
     expect(loadingIndicator).toBeDefined();

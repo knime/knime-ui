@@ -8,7 +8,7 @@ import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg"
 import type { AvailablePortTypes } from "@/api/custom-types";
 import type { ComponentNode } from "@/api/gateway-api/generated-api";
 import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
-import { useReexecutingCompositeViewState } from "@/composables/usePageBuilder/useReexecutingCompositeViewState";
+import { useCompositeViewStore } from "@/store/component/compositeView";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -40,7 +40,7 @@ const runNodeValidationChecks = ({
   const result = validationMiddleware({
     selectedNode,
     portTypes,
-    isReexecuting: useReexecutingCompositeViewState().isReexecuting,
+    isReexecuting: useCompositeViewStore().isReexecuting,
   })();
   return Object.freeze(result);
 };

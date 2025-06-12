@@ -1,11 +1,12 @@
 import { API } from "@api";
 
-import type { PageBuilderControl } from "@/composables/usePageBuilder/usePageBuilder";
-import { useApplicationStore } from "@/store/application/application";
 import {
   UnsavedChangesAction,
   useUnsavedChangesDialog,
-} from "../useConfirmDialog/useUnsavedChangesDialog";
+} from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
+import { useApplicationStore } from "@/store/application/application";
+
+import type { PageBuilderControl } from "./compositeView";
 
 export const showPageBuilderUnsavedChangesDialog = async (
   activePageBuilder: PageBuilderControl,

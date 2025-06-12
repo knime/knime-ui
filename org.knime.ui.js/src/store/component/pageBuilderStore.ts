@@ -8,8 +8,8 @@ import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useNotifyUIExtensionAlert";
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
-import { useReexecutingCompositeViewState } from "@/composables/usePageBuilder/useReexecutingCompositeViewState";
 import { useApplicationStore } from "@/store/application/application";
+import { useCompositeViewStore } from "@/store/component/compositeView";
 import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -351,7 +351,7 @@ const actions = {
     }
 
     const addingResult =
-      useReexecutingCompositeViewState().addReexecutingNode(componentNodeId);
+      useCompositeViewStore().addReexecutingNode(componentNodeId);
 
     if (addingResult === "alreadyExists") {
       // svg kanvas fires multiple events when clicking on a node. As its a click and a pointerdown both will lead to
@@ -377,9 +377,7 @@ const actions = {
           },
         });
       } finally {
-        useReexecutingCompositeViewState().removeReexecutingNode(
-          componentNodeId,
-        );
+        useCompositeViewStore().removeReexecutingNode(componentNodeId);
       }
     };
 

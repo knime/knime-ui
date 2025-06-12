@@ -2,11 +2,8 @@ import { type Ref, computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
-import {
-  clickAwayCompositeView,
-  isComponentViewDirty,
-} from "@/composables/usePageBuilder/usePageBuilder";
 import { isBrowser } from "@/environment";
+import { useCompositeViewStore } from "@/store/component/compositeView";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId, parseBendpointId } from "@/util/connectorUtil";
@@ -51,7 +48,7 @@ export const useSelectionStore = defineStore("selection", () => {
       : null;
   });
 
-  const canDiscardCurrentSelection = async () => {
+  const canDiscardCurrentSelection = () => {
     // in the browser all operations to save
     // node configurations, etc are made on clickaway
     // without prompting the user, so we can always change the selection
@@ -59,10 +56,10 @@ export const useSelectionStore = defineStore("selection", () => {
       return true;
     }
 
-    const hasDirtyComponentView = await isComponentViewDirty();
-    const { isDirty: hasDirtyNodeConfiguration } = useNodeConfigurationStore();
-
-    return !hasDirtyComponentView && !hasDirtyNodeConfiguration;
+    return (
+      !useCompositeViewStore().isCompositeViewDirty &&
+      !useNodeConfigurationStore().isDirty
+    );
   };
 
   const preselectedNodes = ref<Record<string, boolean>>({});
@@ -82,7 +79,7 @@ export const useSelectionStore = defineStore("selection", () => {
         nodeIds.some((id) => id !== singleSelectedNode.value!.id))
     ) {
       const canContinue =
-        (await clickAwayCompositeView()) &&
+        (await useCompositeViewStore().clickAwayCompositeView()) &&
         (await useNodeConfigurationStore().autoApplySettings());
       if (!canContinue) {
         return { wasAborted: true };

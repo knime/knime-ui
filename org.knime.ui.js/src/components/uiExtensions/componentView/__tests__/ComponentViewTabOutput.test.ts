@@ -17,17 +17,6 @@ import { mockStores } from "@/test/utils/mockStores";
 
 const isReexecutingMock = vi.hoisted(() => vi.fn(() => false));
 
-vi.mock(
-  "@/composables/usePageBuilder/useReexecutingCompositeViewState",
-  () => ({
-    useReexecutingCompositeViewState: () => ({
-      isReexecuting: isReexecutingMock,
-      addReexecutingNode: vi.fn(),
-      removeReexecutingNode: vi.fn(),
-    }),
-  }),
-);
-
 describe("ComponentViewTabOutput.vue", () => {
   const dummyNode = createNativeNode({
     id: "node1",
@@ -88,6 +77,8 @@ describe("ComponentViewTabOutput.vue", () => {
 
   const doMount = ({ props = {} } = {}) => {
     const mockedStores = mockStores();
+
+    mockedStores.compositeViewStore.isReexecuting = isReexecutingMock;
     mockedStores.uiControlsStore.canDetachNodeViews = true;
 
     const wrapper = mount(ComponentViewTabOutput, {

@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
 import type { ComponentNode } from "@/api/gateway-api/generated-api";
-import {
-  applyAndExecute,
-  applyToDefaultAndExecute,
-  isCompositeViewDefault,
-  isCompositeViewDirty,
-  resetToDefaults,
-} from "@/composables/usePageBuilder/usePageBuilder";
+import { useCompositeViewStore } from "@/store/component/compositeView";
 
 const props = defineProps<{
   componentNode: ComponentNode;
 }>();
+
+const { applyAndExecute, applyToDefaultAndExecute, resetToDefaults } =
+  useCompositeViewStore();
+
+const { isCompositeViewDefault, isCompositeViewDirty } = storeToRefs(
+  useCompositeViewStore(),
+);
 
 const isExecuted = computed(() => {
   return props.componentNode.state?.executionState === "EXECUTED";
@@ -24,6 +26,10 @@ const isExecuted = computed(() => {
 const isDirtyAndExecuted = computed(() => {
   return isCompositeViewDirty.value && isExecuted.value;
 });
+
+const noAvailableOptions = computed(() => {
+  return isCompositeViewDefault.value && !isCompositeViewDirty.value;
+});
 </script>
 
 <template>
@@ -31,7 +37,7 @@ const isDirtyAndExecuted = computed(() => {
     <span
       class="unsaved-changes-indicator"
       :class="{ dirty: isDirtyAndExecuted }"
-      title="Unapplied temporary changes"
+      :title="isDirtyAndExecuted ? 'Unapplied temporary changes' : undefined"
     />
 
     <SubMenu
@@ -55,7 +61,9 @@ const isDirtyAndExecuted = computed(() => {
         },
       ]"
       :compact="true"
-      button-title="Data App View Actions"
+      :button-title="
+        noAvailableOptions ? 'Nothing to do' : 'Data App View Actions'
+      "
       orientation="top"
       :disabled="!isExecuted"
       class="action-button"

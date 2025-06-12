@@ -12,12 +12,11 @@ import { API } from "@api";
 import { NodeState } from "@/api/gateway-api/generated-api";
 import LoadingIndicator from "@/components/uiExtensions/LoadingIndicator.vue";
 import type { UIExtensionLoadingState } from "@/components/uiExtensions/common/types";
-import type { Identifiers } from "@/composables/usePageBuilder/pageBuilderStore";
 import {
   type PageBuilderControl,
-  usePageBuilder,
-} from "@/composables/usePageBuilder/usePageBuilder";
-import { useReexecutingCompositeViewState } from "@/composables/usePageBuilder/useReexecutingCompositeViewState";
+  useCompositeViewStore,
+} from "@/store/component/compositeView";
+import type { Identifiers } from "@/store/component/pageBuilderStore";
 
 const props = defineProps<{
   projectId: string;
@@ -39,7 +38,8 @@ const currentIdentifier = computed<Identifiers>(() => ({
 
 const shadowHost = ref<HTMLElement | null>(null);
 
-const getPageBuilder = () => usePageBuilder(props.projectId);
+const getPageBuilder = () =>
+  useCompositeViewStore().getPageBuilderControl(props.projectId);
 
 const pageBuilder: Ref<PageBuilderControl> = ref(await getPageBuilder());
 
@@ -121,7 +121,7 @@ watch(
   <LoadingIndicator
     v-if="
       !pageBuilder.hasPage() &&
-      useReexecutingCompositeViewState().isReexecuting(props.nodeId)
+      useCompositeViewStore().isReexecuting(props.nodeId)
     "
     :message="'Component is re-executing. Please wait.'"
   />

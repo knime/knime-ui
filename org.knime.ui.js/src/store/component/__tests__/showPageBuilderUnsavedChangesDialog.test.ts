@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { API } from "@/api/__mocks__";
 import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
-import type { PageBuilderControl } from "@/composables/usePageBuilder/usePageBuilder";
+import type { PageBuilderControl } from "../compositeView";
 import { showPageBuilderUnsavedChangesDialog } from "../showPageBuilderUnsavedChangesDialog";
 
 let useUnsavedChangesDialogMock = vi.hoisted(() =>
