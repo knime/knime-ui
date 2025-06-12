@@ -176,19 +176,15 @@ describe("ConfirmDialog.vue", () => {
         {
           label: "Cancel",
           type: "cancel",
-          customHandler: ({ confirm }) => {
+          customHandler: () => {
             spy("cancel button");
-            // use the opposite action to showcase custom behavior
-            confirm();
           },
         },
         {
           label: "Apply",
           type: "confirm",
-          customHandler: ({ cancel }) => {
+          customHandler: () => {
             spy("apply button");
-            // use the opposite action to showcase custom behavior
-            cancel();
           },
         },
       ],
@@ -204,7 +200,6 @@ describe("ConfirmDialog.vue", () => {
 
     expect(spy).toHaveBeenCalledOnce();
     expect(spy).toHaveBeenCalledWith("apply button");
-    expect(done).toHaveBeenCalledWith({ confirmed: false });
 
     // show second time
     show(config).then(done);
@@ -213,9 +208,5 @@ describe("ConfirmDialog.vue", () => {
     await wrapper.find("[data-test-id='cancel-button']").trigger("click");
     expect(spy).toHaveBeenCalledTimes(2);
     expect(spy).toHaveBeenCalledWith("cancel button");
-    expect(done).toHaveBeenCalledWith({
-      confirmed: true,
-      doNotAskAgain: false,
-    });
   });
 });

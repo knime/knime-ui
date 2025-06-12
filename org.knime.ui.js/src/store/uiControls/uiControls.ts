@@ -38,13 +38,17 @@ export interface UIControlsState {
    */
   canAccessSpaceExplorer: boolean;
   /**
-   * Whether user is open nodes' configuration
+   * Whether user can open nodes' configuration
    */
   canConfigureNodes: boolean;
   /**
    * Whether user is allowed to mutate the workflow in any way (e.g move nodes, create annotations, etc)
    */
   canEditWorkflow: boolean;
+  /**
+   * Whether user can view workflow version
+   */
+  canViewVersions: boolean;
   /**
    * Whether to display the remote workflow info bar at all (even in the case of a workflow with unknown origin)
    */
@@ -98,6 +102,7 @@ export const useUIControlsStore = defineStore("uiControls", {
     canAccessSpaceExplorer: false,
     canConfigureNodes: false,
     canEditWorkflow: false,
+    canViewVersions: false,
     shouldDisplayRemoteWorkflowInfoBar: false,
     shouldDisplayDownloadAPButton: false,
 
@@ -135,6 +140,7 @@ export const useUIControlsStore = defineStore("uiControls", {
         canAccessSpaceExplorer: isDefault,
         canConfigureNodes: isDefault || isPlayground,
         canEditWorkflow: isDefault || isPlayground,
+        canViewVersions: isDefault,
         shouldDisplayRemoteWorkflowInfoBar: isDesktop(),
         shouldDisplayDownloadAPButton:
           isBrowser() &&

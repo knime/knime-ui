@@ -9,7 +9,11 @@ import LocalSpaceIcon from "@knime/styles/img/icons/local-space.svg";
 import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 import UnknownSpaceIcon from "@knime/styles/img/icons/sign-warning.svg";
 
-import { SpaceProvider, WorkflowInfo } from "@/api/gateway-api/generated-api";
+import {
+  AppState,
+  SpaceProvider,
+  WorkflowInfo,
+} from "@/api/gateway-api/generated-api";
 import { isBrowser, isDesktop } from "@/environment";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -65,6 +69,7 @@ describe("WorkflowBreadcrumb.vue", () => {
       info: { name: workflowName },
     }),
     provider = LOCAL_PROVIDER,
+    appMode = AppState.AppModeEnum.Default,
   } = {}) => {
     const mockedStores = mockStores();
 
@@ -75,6 +80,8 @@ describe("WorkflowBreadcrumb.vue", () => {
 
     mockedStores.applicationStore.activeProjectId = activeProject.projectId;
     mockedStores.applicationStore.openProjects = [activeProject];
+    mockedStores.applicationStore.setAppMode(appMode);
+    mockedStores.uiControlsStore.init();
     // @ts-expect-error
     mockedStores.spaceProvidersStore.activeProjectProvider = provider;
     mockedStores.spaceProvidersStore.setSpaceProviders({
@@ -129,6 +136,22 @@ describe("WorkflowBreadcrumb.vue", () => {
     expect(menuItems).toEqual([
       expect.objectContaining({ text: "Version history" }),
     ]);
+  });
+
+  it("doesn't render dropdown in JobViewer mode", () => {
+    mockEnvironment("BROWSER", { isDesktop, isBrowser });
+
+    const { wrapper } = doMount({ appMode: AppState.AppModeEnum.JobViewer });
+
+    expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
+  });
+
+  it("doesn't render dropdown in Playground mode", () => {
+    mockEnvironment("BROWSER", { isDesktop, isBrowser });
+
+    const { wrapper } = doMount({ appMode: AppState.AppModeEnum.Playground });
+
+    expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
   });
 
   it('handles "Version history" dropdown item click', () => {

@@ -17,6 +17,7 @@ import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
@@ -40,6 +41,7 @@ const {
   getProviderInfoFromActiveProject,
   spaceProviders,
 } = storeToRefs(useSpaceProvidersStore());
+const uiControls = useUIControlsStore();
 
 const getActiveProject = () =>
   openProjects.value.find(
@@ -67,7 +69,10 @@ const handleRestoreVersion = () => {
 
 const dropdownItems = computed(() => {
   const items: Array<MenuItem> = [];
-  if (activeProjectProvider.value?.type !== SpaceProviderNS.TypeEnum.SERVER) {
+  if (
+    activeProjectProvider.value?.type !== SpaceProviderNS.TypeEnum.SERVER &&
+    uiControls.canViewVersions
+  ) {
     items.push({
       text: "Version history",
       icon: HistoryIcon,
@@ -189,20 +194,19 @@ const breadcrumbText = computed(() => {
     <div v-else class="breadcrumb-root">
       <Component :is="providerIcon" class="breadcrumb-icon" />
       <span> {{ breadcrumbText }}</span>
-      <div class="space-selection-dropdown">
-        <SubMenu
-          compact
-          :teleport-to-body="false"
-          :items="dropdownItems"
-          button-title="Workflow menu actions"
-          orientation="right"
-          @item-click="(_: MouseEvent, item) => item.metadata.handler()"
-        >
-          <template #default>
-            <DropdownIcon class="dropdown-icon" />
-          </template>
-        </SubMenu>
-      </div>
+      <SubMenu
+        v-if="dropdownItems.length"
+        compact
+        :teleport-to-body="false"
+        :items="dropdownItems"
+        button-title="Workflow menu actions"
+        orientation="right"
+        @item-click="(_: MouseEvent, item) => item.metadata.handler()"
+      >
+        <template #default>
+          <DropdownIcon class="dropdown-icon" />
+        </template>
+      </SubMenu>
       <template v-if="props.workflow.info.version">
         <span
           class="workflow-versions-information"
