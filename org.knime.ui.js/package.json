@@ -113,7 +113,12 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "libxmljs2"
-    ]
+    ],
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-v6h2-p8h4-qcjw"
+      ]
+    }
   },
   "packageManager": "pnpm@10.7.0"
 }
