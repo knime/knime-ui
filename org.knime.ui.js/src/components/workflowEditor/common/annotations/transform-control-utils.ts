@@ -13,9 +13,12 @@ type DirectionHandler = (
 ) => Bounds;
 
 const MIN_DIMENSIONS = { width: 0, height: 0 };
+const MAX_DIMENSIONS = { width: 6000, height: 6000 };
 
-const isValidHeight = (value: number) => value > MIN_DIMENSIONS.height;
-const isValidWidth = (value: number) => value > MIN_DIMENSIONS.width;
+const isValidHeight = (value: number) =>
+  value > MIN_DIMENSIONS.height && value <= MAX_DIMENSIONS.height;
+const isValidWidth = (value: number) =>
+  value > MIN_DIMENSIONS.width && value <= MAX_DIMENSIONS.width;
 
 /**
  *
