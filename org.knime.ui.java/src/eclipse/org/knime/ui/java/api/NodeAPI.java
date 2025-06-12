@@ -140,14 +140,16 @@ final class NodeAPI {
         checkIsNotNull(nc, projectId, nodeId);
 
         if (nc.getNodeContainerState().isExecuted()) {
-            task.run();
+            if (!nc.isInactive()) {
+                task.run();
+            }
             return;
         }
         nc.addNodeStateChangeListener(new NodeStateChangeListener() {
             @Override
             public void stateChanged(final NodeStateEvent event) {
                 var state = nc.getNodeContainerState();
-                if (event.getSource().equals(nc.getID()) && state.isExecuted()) {
+                if (event.getSource().equals(nc.getID()) && state.isExecuted() && !nc.isInactive()) {
                     Display.getDefault().asyncExec(task);
                 }
                 if (!state.isExecutionInProgress()) {
