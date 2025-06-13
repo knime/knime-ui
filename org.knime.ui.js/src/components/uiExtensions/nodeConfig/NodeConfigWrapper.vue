@@ -68,27 +68,25 @@ const rightPanelWidth = computed(() => settings.value.nodeDialogSize);
 </script>
 
 <template>
-  <div>
-    <NodeConfigLayout
-      v-if="activeNode"
-      :active-node="activeNode"
-      :project-id="projectId!"
-      :workflow-id="workflowId"
-      :version-id="versionId"
-      :disabled="isConfigurationDisabled"
-      :dirty-state="dirtyState"
-      :is-large-mode="props.isLargeMode"
-      :can-be-enlarged="canBeEnlarged"
-      :node-name="nodeName"
-      @apply="applySettings(activeNode.id, $event)"
-      @execute="executeActiveNode"
-      @discard="discardSettings"
-      @expand="emit('expand')"
-    >
-      <template #loading-skeleton>
-        <AppRightPanelSkeleton :width="rightPanelWidth" />
-      </template>
-    </NodeConfigLayout>
-    <slot v-if="!activeNode" name="inactive" />
-  </div>
+  <NodeConfigLayout
+    v-if="activeNode"
+    :active-node="activeNode"
+    :project-id="projectId!"
+    :workflow-id="workflowId"
+    :version-id="versionId"
+    :disabled="isConfigurationDisabled"
+    :dirty-state="dirtyState"
+    :is-large-mode="props.isLargeMode"
+    :can-be-enlarged="canBeEnlarged"
+    :node-name="nodeName"
+    @apply="applySettings(activeNode.id, $event)"
+    @execute="executeActiveNode"
+    @discard="discardSettings"
+    @expand="emit('expand')"
+  >
+    <template #loading-skeleton>
+      <AppRightPanelSkeleton :width="rightPanelWidth" />
+    </template>
+  </NodeConfigLayout>
+  <slot v-if="!activeNode" name="inactive" />
 </template>

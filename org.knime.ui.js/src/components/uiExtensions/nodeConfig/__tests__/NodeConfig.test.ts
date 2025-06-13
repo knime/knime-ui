@@ -135,11 +135,13 @@ describe("NodeConfig", () => {
   describe("large mode", () => {
     type ModeExpectation = "large" | "small";
 
+    const showNonModalDialog = vi.fn();
     const showModal = vi.fn();
     const closeModal = vi.fn();
     const pushEventDispatcher = vi.fn();
 
     beforeAll(() => {
+      HTMLDialogElement.prototype.show = showNonModalDialog;
       HTMLDialogElement.prototype.showModal = showModal;
       HTMLDialogElement.prototype.close = closeModal;
       vi.useFakeTimers();
@@ -232,7 +234,12 @@ describe("NodeConfig", () => {
       });
 
       it("is toggled to small by pressing escape", async () => {
-        await wrapper.find("dialog").trigger("cancel");
+        expectMode(wrapper, "large");
+
+        const dialog = wrapper.find("dialog");
+        expect(dialog.exists()).toBe(true);
+        await dialog.trigger("keydown", { key: "Escape" });
+        await nextTick();
 
         expect(closeModal).toHaveBeenCalledOnce();
         expectMode(wrapper, "small");

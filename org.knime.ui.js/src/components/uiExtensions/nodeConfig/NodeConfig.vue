@@ -42,10 +42,15 @@ const isLargeMode = computed<boolean>({
 
 watch(isLargeMode, () => {
   if (isLargeMode.value) {
+    panel.value!.close();
     panel.value!.showModal();
   } else {
     panel.value!.close();
+    panel.value!.show();
   }
+  // TODO: Should be removed once NXT-3761 is done.
+  // The dialog element shouldn't be focused, according to the specs.
+  panel.value!.focus();
 
   nodeConfigurationStore.pushEventDispatcher({
     eventType:
@@ -58,12 +63,21 @@ const exitLargeMode = () => {
   isLargeMode.value = false;
 };
 
-const onExpandConfig = () => {
+const enterLargeMode = () => {
   isLargeMode.value = true;
 };
 
 useEventListener(panel, "click", (event) => {
   if (event.target === panel.value) {
+    exitLargeMode();
+  }
+});
+
+// TODO: Should be removed once NXT-3761 is done.
+// This behavior should work by default (because of `@cancel="exitLargeMode"`)
+// once the global Escape keydown event is not prevented.
+useEventListener(panel, "keydown", (event) => {
+  if (event.key === "Escape") {
     exitLargeMode();
   }
 });
@@ -96,19 +110,20 @@ useEventListener(panel, "click", (event) => {
       </Button>
     </div>
 
-    <NodeConfigWrapper
-      class="content-wrapper"
-      :is-large-mode="isLargeMode"
-      @expand="onExpandConfig"
-      @collapse="exitLargeMode"
-    >
-      <template #inactive>
-        <ManageVersionsWrapper
-          v-if="versionsStore.isSidepanelOpen && !singleSelectedNode"
-        />
-        <IncompatibleNodeConfigPlaceholder v-else />
-      </template>
-    </NodeConfigWrapper>
+    <div class="content-wrapper">
+      <NodeConfigWrapper
+        :is-large-mode="isLargeMode"
+        @expand="enterLargeMode"
+        @collapse="exitLargeMode"
+      >
+        <template #inactive>
+          <ManageVersionsWrapper
+            v-if="versionsStore.isSidepanelOpen && !singleSelectedNode"
+          />
+          <IncompatibleNodeConfigPlaceholder v-else />
+        </template>
+      </NodeConfigWrapper>
+    </div>
   </dialog>
 </template>
 
