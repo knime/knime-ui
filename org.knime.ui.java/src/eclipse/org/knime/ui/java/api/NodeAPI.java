@@ -59,13 +59,12 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
-import org.knime.core.node.workflow.NodeStateChangeListener;
-import org.knime.core.node.workflow.NodeStateEvent;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.wrapper.NativeNodeContainerWrapper;
 import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.js.cef.nodeview.CEFNodeView;
@@ -129,38 +128,13 @@ final class NodeAPI {
         if (isInactive(projectId, nodeId)) {
             return;
         }
-        executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openNodeView(projectId, nodeId));
-    }
-
-    /**
-     * If the node is already executed, run the given task. If the node is not already executed, execute the workflow up
-     * to the node and attach a listener to run the given task once executed.
-     *
-     * @param projectId The project containing the workflow
-     * @param nodeId The node to act on
-     * @param task The task to run
-     */
-    static void executeNodeThenRun(final String projectId, final String nodeId, final Runnable task) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
-
-        if (nc.getNodeContainerState().isExecuted()) {
-            task.run();
-            return;
-        }
-        nc.addNodeStateChangeListener(new NodeStateChangeListener() {
-            @Override
-            public void stateChanged(final NodeStateEvent event) {
-                var state = nc.getNodeContainerState();
-                if (event.getSource().equals(nc.getID()) && state.isExecuted()) {
-                    Display.getDefault().asyncExec(task);
-                }
-                if (!state.isExecutionInProgress()) {
-                    nc.removeNodeStateChangeListener(this);
-                }
-            }
+        CoreUtil.executeThenRun(nc, () -> {
+            Display.getDefault().asyncExec(() -> {
+                NodeAPI.openNodeView(projectId, nodeId);
+            });
         });
-        nc.getParent().executeUpToHere(nc.getID());
     }
 
     /**

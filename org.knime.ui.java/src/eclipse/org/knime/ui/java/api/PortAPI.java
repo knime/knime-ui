@@ -55,10 +55,10 @@ import static org.knime.ui.java.api.NodeAPI.getAppBoundsAsAWTRec;
 import java.io.IOException;
 
 import org.eclipse.swt.widgets.Display;
-import org.knime.core.node.workflow.NodeOutPort;
 import org.knime.core.webui.node.port.PortViewManager;
 import org.knime.core.webui.node.port.PortViewManager.PortViewDescriptor;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.workbench.editor2.actions.OpenNodeViewAction;
@@ -116,7 +116,7 @@ final class PortAPI {
             port.openPortView(port.getPortName(), getAppBoundsAsAWTRec());
         };
         if (Boolean.TRUE.equals(execute)) {
-            NodeAPI.executeNodeThenRun(projectId, nodeId, openPortView);
+            CoreUtil.executeThenRun(nc, openPortView);
         } else {
             openPortView.run();
         }
