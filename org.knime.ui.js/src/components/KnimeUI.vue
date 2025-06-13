@@ -44,6 +44,7 @@ import { KANVAS_ID } from "@/util/getKanvasDomElement";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
+import DevTools from "./application/DevTools.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import DestinationPickerModal from "./spaces/DestinationPicker/DestinationPickerModal.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
@@ -74,6 +75,7 @@ const applicationStore = useApplicationStore();
 const globalLoaderStore = useGlobalLoaderStore();
 const lifecycleStore = useLifecycleStore();
 const applicationSettingsStore = useApplicationSettingsStore();
+const { devMode } = storeToRefs(applicationSettingsStore);
 const uiControls = useUIControlsStore();
 const spaceUploadsStore = useSpaceUploadsStore();
 const {
@@ -337,6 +339,8 @@ const onCloseError = () => {
     <HintProvider />
 
     <BlockUi />
+
+    <DevTools v-if="devMode" />
   </div>
 </template>
 

@@ -51,3 +51,9 @@ onMounted(() => {
     {{ lowestValue == Number.MAX_SAFE_INTEGER ? "-" : lowestValue }})
   </div>
 </template>
+
+<style lang="postcss" scoped>
+.fps-meter {
+  width: 200px;
+}
+</style>

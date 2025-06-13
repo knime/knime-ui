@@ -2,15 +2,8 @@
 import { computed, defineComponent, h, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import {
-  FunctionButton,
-  type MenuItem,
-  SubMenu,
-  ValueSwitch,
-  useHint,
-} from "@knime/components";
+import { type MenuItem, SubMenu, useHint } from "@knime/components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
-import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
@@ -31,8 +24,6 @@ import {
   useCanvasModesStore,
 } from "@/store/application/canvasModes";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
-import { useApplicationSettingsStore } from "@/store/application/settings";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -42,7 +33,6 @@ import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
-import FPSMeter from "./FPSMeter.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
@@ -66,8 +56,6 @@ const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const { activeProjectVersionsModeStatus } = storeToRefs(workflowVersionsStore);
 const { isDirtyActiveProject } = storeToRefs(useDirtyProjectsTrackingStore());
 const { uploadWorkflowAndOpenAsProject } = useUploadWorkflowToSpace();
-
-const webglCanvasStore = useWebGLCanvasStore();
 
 const isLocalWorkflow = computed(
   () =>
@@ -169,10 +157,6 @@ const toolbarButtons = computed<Array<ShortcutName>>(() => {
     cancelSelected: hasNodesSelected,
     resetSelected: hasNodesSelected,
 
-    // Workflow abstraction
-    createMetanode: hasNodesSelected,
-    createComponent: hasNodesSelected,
-
     openLayoutEditor: $shortcuts.isEnabled("openLayoutEditor"),
   };
 
@@ -187,11 +171,6 @@ const onCanvasModeUpdate = (
 ) => {
   canvasModesStore.switchCanvasMode(id);
 };
-
-// toggle renderer svg/webgl
-const { devMode } = storeToRefs(useApplicationSettingsStore());
-const isFrontendDevMode = import.meta.env.DEV;
-const { currentRenderer: currentCanvasRenderer } = useCanvasRendererUtils();
 
 const isDeploymentButtonVisible = computed(
   () =>
@@ -284,13 +263,12 @@ const ToolbarButtonWithHint = defineComponent(
   },
 );
 
-const { currentRenderer } = useCanvasRendererUtils();
-const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
+const { isSVGRenderer } = useCanvasRendererUtils();
 </script>
 
 <template>
   <div class="toolbar">
-    <transition-group tag="div" name="button-list" class="button-list-wrapper">
+    <transition-group tag="div" name="button-list">
       <!--
         setting :key="the list of all visible buttons",
         re-renders the whole list in a new div whenever buttons appear or disappear,
@@ -313,38 +291,7 @@ const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
       class="breadcrumb"
     />
 
-    <div class="control-list">
-      <template v-if="devMode">
-        <FPSMeter style="margin-right: var(--space-8)" />
-        <FunctionButton
-          :disabled="currentCanvasRenderer !== 'WebGL'"
-          style="margin-right: var(--space-8)"
-          class="header-button no-text control"
-          aria-label="Toggle canvas debug"
-          data-test-id="dev-mode-only"
-          title="Toggle canvas debug"
-          @click="
-            webglCanvasStore.isDebugModeEnabled =
-              !webglCanvasStore.isDebugModeEnabled
-          "
-        >
-          <ChartDotsIcon />
-        </FunctionButton>
-      </template>
-
-      <ValueSwitch
-        v-if="isFrontendDevMode"
-        v-model="currentRenderer"
-        compact
-        style="margin-right: var(--space-16)"
-        :possible-values="
-          Object.entries(canvasRendererNameMap).map(([id, text]) => ({
-            id,
-            text,
-          }))
-        "
-      />
-
+    <div class="toolbar-end">
       <ToolbarButtonWithHint
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocalWorkflow"
         ref="uploadButton"
@@ -360,6 +307,7 @@ const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
         <Component :is="CloudUploadIcon" />
         Upload
       </ToolbarButtonWithHint>
+
       <ToolbarButton
         v-else-if="isDeploymentButtonVisible"
         class="toolbar-button"
@@ -372,7 +320,7 @@ const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
       </ToolbarButton>
 
       <SubMenu
-        v-if="currentCanvasRenderer !== 'WebGL'"
+        v-if="isSVGRenderer"
         class="control"
         :items="canvasModes"
         data-test-id="canvas-modes-selector"
@@ -418,12 +366,24 @@ const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
   padding: 10px;
   background-color: var(--knime-gray-ultra-light);
   border-bottom: 1px solid var(--knime-silver-sand);
+  container: workflow-toolbar / inline-size;
 
-  & .button-list-wrapper {
-    flex: 1 1;
+  & .button-list {
+    transition: opacity 150ms ease-out;
+    flex-shrink: 0;
+    display: flex;
+    font-size: 14px;
+    user-select: none;
   }
 
-  & .control-list {
+  & .breadcrumb {
+    flex: 1 1;
+    display: flex;
+    text-align: center;
+    white-space: pre;
+  }
+
+  & .toolbar-end {
     --z-index-common-menu-items-expanded: v-bind(
       "$zIndices.layerExpandedMenus"
     );
@@ -431,11 +391,7 @@ const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
     display: flex;
     justify-content: end;
     align-items: center;
-    flex: 1 1;
-
-    & .control {
-      margin-right: 5px;
-    }
+    flex: 0 0;
   }
 }
 
@@ -446,19 +402,5 @@ const canvasRendererNameMap = { SVG: "Stable", WebGL: "Experimental" };
 
 .button-list-leave-active {
   position: absolute;
-}
-
-.button-list {
-  transition: opacity 150ms ease-out;
-  flex-shrink: 0;
-  display: flex;
-  font-size: 14px;
-  user-select: none;
-}
-
-.breadcrumb {
-  display: flex;
-  text-align: center;
-  white-space: pre;
 }
 </style>

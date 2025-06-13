@@ -388,27 +388,10 @@ describe("AppHeader.vue", () => {
     expect($shortcuts.dispatch).toHaveBeenCalledWith("createWorkflow");
   });
 
-  describe("right side buttons", () => {
-    it("allows opens preferences", async () => {
-      const { wrapper } = doMount();
-      await wrapper.find('[data-test-id="open-preferences"]').trigger("click");
-      expect(mockedAPI.desktop.openWebUIPreferencePage).toHaveBeenCalled();
-    });
-
-    it("hides all dev mode buttons if dev mode is disabled", async () => {
-      const { wrapper } = doMount();
-      expect(
-        wrapper.find('[data-test-id="dev-mode-only"]').exists(),
-      ).toBeFalsy();
-
-      useApplicationSettingsStore().devMode = true;
-
-      await nextTick();
-
-      expect(
-        wrapper.find('[data-test-id="dev-mode-only"]').exists(),
-      ).toBeTruthy();
-    });
+  it("allows opens preferences", async () => {
+    const { wrapper } = doMount();
+    await wrapper.find('[data-test-id="open-preferences"]').trigger("click");
+    expect(mockedAPI.desktop.openWebUIPreferencePage).toHaveBeenCalled();
   });
 
   describe("context menu", () => {

@@ -72,7 +72,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     :data-test-id="kebabCase(name)"
   >
     <ToolbarButton
-      class="toolbar-button"
+      :class="['toolbar-button', { responsive: !hasSubmenuItems }]"
       :with-text="withText && Boolean(shortcut.text)"
       :disabled="!enabled"
       :title="title"
@@ -85,8 +85,9 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
         aria-hidden="true"
         focusable="false"
       />
-      {{ withText ? shortcut.text : "" }}
+      <span class="text">{{ withText ? shortcut.text : "" }}</span>
     </ToolbarButton>
+
     <SubMenu
       v-if="hasSubmenuItems"
       ref="submenu"
@@ -111,6 +112,16 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+.toolbar-button.responsive {
+  @container workflow-toolbar (max-width: 1200px) {
+    padding-right: unset;
+
+    & .text {
+      display: none;
+    }
+  }
+}
 
 .split-button {
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");

@@ -10,6 +10,7 @@ import { createSpaceProvider } from "@/test/factories";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
+import DevTools from "../application/DevTools.vue";
 import ErrorOverlay from "../application/ErrorOverlay.vue";
 
 vi.mock("vue-router", async (importOriginal) => {
@@ -146,6 +147,17 @@ describe("KnimeUI.vue", () => {
       message: "error",
       stack: expect.anything(),
     });
+  });
+
+  it("hides devtools bar if dev mode is disabled", async () => {
+    const { wrapper, mockedStores } = await doShallowMount();
+    expect(wrapper.findComponent(DevTools).exists()).toBe(false);
+
+    mockedStores.applicationSettingsStore.devMode = true;
+
+    await nextTick();
+
+    expect(wrapper.findComponent(DevTools).exists()).toBe(true);
   });
 
   it("initiates", async () => {

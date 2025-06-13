@@ -6,11 +6,9 @@ import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
 import { Carousel, FunctionButton, useHint } from "@knime/components";
-import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 import HouseIcon from "@knime/styles/img/icons/house.svg";
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
-import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
 import { useTabDrag } from "@/composables/useTabDrag";
@@ -20,11 +18,9 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useLifecycleStore } from "@/store/application/lifecycle";
-import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { openInspector, reloadApp } from "@/util/devTools";
 
 import { AppHeaderContextMenu } from "./AppHeaderContextMenu";
 import AppHeaderTab from "./AppHeaderTab.vue";
@@ -54,8 +50,6 @@ const activeProjectTab = computed(() => {
 const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { openProjects, activeProjectId } = storeToRefs(useApplicationStore());
 const { dirtyProjectsMap } = storeToRefs(useDirtyProjectsTrackingStore());
-const { devMode } = storeToRefs(useApplicationSettingsStore());
-const devServer = import.meta.env.DEV;
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 
 const hasWorkflowLoadingError = computed(() =>
@@ -173,6 +167,7 @@ const helpMenu = ref<InstanceType<typeof HelpMenu>>();
 
 const { totalNodes } = storeToRefs(useWorkflowStore());
 
+// eslint-disable-next-line no-magic-numbers
 const helpIsVisibleCondition = computed(() => totalNodes.value >= 10);
 
 onMounted(() => {
@@ -286,26 +281,6 @@ const onMouseDown = (e: MouseEvent) => {
       </div>
 
       <div class="buttons">
-        <FunctionButton
-          v-if="devMode"
-          class="header-button no-text"
-          data-test-id="dev-mode-only"
-          title="Inspect Code (DEV MODE ONLY)"
-          @click="openInspector()"
-        >
-          <CodeHtmlIcon aria-hidden="true" focusable="false" />
-        </FunctionButton>
-
-        <FunctionButton
-          v-if="devMode && devServer"
-          class="header-button no-text"
-          data-test-id="dev-mode-only"
-          title="Reload App (DEV MODE ONLY)"
-          @click="reloadApp()"
-        >
-          <ReloadIcon aria-hidden="true" focusable="false" />
-        </FunctionButton>
-
         <HelpMenu ref="helpMenu" data-test-id="app-header-help-menu" />
 
         <FunctionButton
