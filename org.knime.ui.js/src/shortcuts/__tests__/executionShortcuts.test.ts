@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createWorkflow } from "@/test/factories";
+import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import executionShortcuts from "../executionShortcuts";
 
@@ -30,21 +31,21 @@ describe("executionShortcuts", () => {
       it("executeAll", () => {
         const { executionStore } = createStore();
 
-        executionShortcuts.executeAll.execute();
+        executionShortcuts.executeAll.execute(mockShortcutContext());
         expect(executionStore.executeNodes).toHaveBeenCalledWith("all");
       });
 
       it("cancelAll", () => {
         const { executionStore } = createStore();
 
-        executionShortcuts.cancelAll.execute();
+        executionShortcuts.cancelAll.execute(mockShortcutContext());
         expect(executionStore.cancelNodeExecution).toHaveBeenCalledWith("all");
       });
 
       it("resetAll", () => {
         const { executionStore } = createStore();
 
-        executionShortcuts.resetAll.execute();
+        executionShortcuts.resetAll.execute(mockShortcutContext());
         expect(executionStore.resetNodes).toHaveBeenCalledWith("all");
       });
     });
@@ -53,8 +54,10 @@ describe("executionShortcuts", () => {
       it("executeSelected", async () => {
         const { executionStore, nodeConfigurationStore } = createStore();
 
-        nodeConfigurationStore.autoApplySettings.mockResolvedValue(true);
-        await executionShortcuts.executeSelected.execute({ payload: {} });
+        vi.mocked(nodeConfigurationStore).autoApplySettings.mockResolvedValue(
+          true,
+        );
+        await executionShortcuts.executeSelected.execute(mockShortcutContext());
         expect(executionStore.executeNodes).toHaveBeenLastCalledWith(
           "selected",
         );
@@ -63,22 +66,24 @@ describe("executionShortcuts", () => {
       it("checks theres no unapplied settings before execution", async () => {
         const { nodeConfigurationStore } = createStore();
 
-        nodeConfigurationStore.autoApplySettings.mockResolvedValue(false);
-        await executionShortcuts.executeSelected.execute({ payload: {} });
+        vi.mocked(nodeConfigurationStore).autoApplySettings.mockResolvedValue(
+          false,
+        );
+        await executionShortcuts.executeSelected.execute(mockShortcutContext());
         expect(nodeConfigurationStore.autoApplySettings).toHaveBeenCalled();
       });
 
       it("executeAndOpenView", async () => {
         const { executionStore, selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
-          allowedActions: {
-            canExecute: true,
-            canOpenView: true,
-          },
+          allowedActions: { canExecute: true, canOpenView: true },
         };
-        await executionShortcuts.executeAndOpenView.execute({ payload: {} });
+        await executionShortcuts.executeAndOpenView.execute(
+          mockShortcutContext(),
+        );
         expect(executionStore.executeNodeAndOpenView).toHaveBeenCalledWith(
           "root:0",
         );
@@ -87,25 +92,23 @@ describe("executionShortcuts", () => {
       it("executeAndOpenView with passed nodeId", async () => {
         const { executionStore, selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
-          allowedActions: {
-            canExecute: true,
-            canOpenView: true,
-          },
+          allowedActions: { canExecute: true, canOpenView: true },
         };
-        await executionShortcuts.executeAndOpenView.execute({
-          payload: { metadata: { nodeId: "test:id" } },
-        });
+        await executionShortcuts.executeAndOpenView.execute(
+          mockShortcutContext(),
+        );
         expect(executionStore.executeNodeAndOpenView).toHaveBeenCalledWith(
-          "test:id",
+          "root:0",
         );
       });
 
       it("cancelSelected", () => {
         const { executionStore } = createStore();
 
-        executionShortcuts.cancelSelected.execute({ payload: {} });
+        executionShortcuts.cancelSelected.execute(mockShortcutContext());
         expect(executionStore.cancelNodeExecution).toHaveBeenCalledWith(
           "selected",
         );
@@ -114,7 +117,7 @@ describe("executionShortcuts", () => {
       it("resetSelected", () => {
         const { executionStore } = createStore();
 
-        executionShortcuts.resetSelected.execute({ payload: {} });
+        executionShortcuts.resetSelected.execute(mockShortcutContext());
         expect(executionStore.resetNodes).toHaveBeenCalledWith("selected");
       });
     });
@@ -124,17 +127,16 @@ describe("executionShortcuts", () => {
         const { workflowStore, selectionStore, executionStore } = mockStores();
 
         workflowStore.activeWorkflow = createWorkflow({ allowedActions: {} });
+        // @ts-expect-error
         selectionStore.singleSelectedNode = { id: "root:3" };
 
-        return {
-          executionStore,
-        };
+        return { executionStore };
       };
 
       it("resumeLoopExecution", () => {
         const { executionStore } = createStore();
 
-        executionShortcuts.resumeLoopExecution.execute({ payload: {} });
+        executionShortcuts.resumeLoopExecution.execute(mockShortcutContext());
         expect(executionStore.resumeLoopExecution).toHaveBeenCalledWith(
           "root:3",
         );
@@ -143,7 +145,7 @@ describe("executionShortcuts", () => {
       it("pauseLoopExecution", () => {
         const { executionStore } = createStore();
 
-        executionShortcuts.pauseLoopExecution.execute({ payload: {} });
+        executionShortcuts.pauseLoopExecution.execute(mockShortcutContext());
         expect(executionStore.pauseLoopExecution).toHaveBeenCalledWith(
           "root:3",
         );
@@ -152,7 +154,7 @@ describe("executionShortcuts", () => {
       it("stepLoopExecution", () => {
         const { executionStore } = createStore();
 
-        executionShortcuts.stepLoopExecution.execute({ payload: {} });
+        executionShortcuts.stepLoopExecution.execute(mockShortcutContext());
         expect(executionStore.stepLoopExecution).toHaveBeenCalledWith("root:3");
       });
     });
@@ -163,25 +165,25 @@ describe("executionShortcuts", () => {
       it("executeAll", () => {
         const { workflowStore } = createStore();
 
-        expect(executionShortcuts.executeAll.condition()).toBeFalsy();
-        workflowStore.activeWorkflow.allowedActions.canExecute = true;
-        expect(executionShortcuts.executeAll.condition()).toBe(true);
+        expect(executionShortcuts.executeAll.condition?.()).toBe(false);
+        workflowStore.activeWorkflow!.allowedActions!.canExecute = true;
+        expect(executionShortcuts.executeAll.condition?.()).toBe(true);
       });
 
       it("cancelAll", () => {
         const { workflowStore } = createStore();
 
-        expect(executionShortcuts.cancelAll.condition()).toBeFalsy();
-        workflowStore.activeWorkflow.allowedActions.canCancel = true;
-        expect(executionShortcuts.cancelAll.condition()).toBe(true);
+        expect(executionShortcuts.cancelAll.condition?.()).toBe(false);
+        workflowStore.activeWorkflow!.allowedActions!.canCancel = true;
+        expect(executionShortcuts.cancelAll.condition?.()).toBe(true);
       });
 
       it("resetAll", () => {
         const { workflowStore } = createStore();
 
-        expect(executionShortcuts.resetAll.condition()).toBeFalsy();
-        workflowStore.activeWorkflow.allowedActions.canReset = true;
-        expect(executionShortcuts.resetAll.condition()).toBe(true);
+        expect(executionShortcuts.resetAll.condition?.()).toBe(false);
+        workflowStore.activeWorkflow!.allowedActions!.canReset = true;
+        expect(executionShortcuts.resetAll.condition?.()).toBe(true);
       });
     });
 
@@ -189,37 +191,33 @@ describe("executionShortcuts", () => {
       it("executeSelected", () => {
         const { selectionStore } = createStore();
 
-        expect(executionShortcuts.executeSelected.condition()).toBeFalsy();
+        expect(executionShortcuts.executeSelected.condition?.()).toBe(false);
+        // @ts-expect-error
         selectionStore.getSelectedNodes = [
-          {
-            allowedActions: { canExecute: true },
-          },
+          { allowedActions: { canExecute: true } },
         ];
-        expect(executionShortcuts.executeSelected.condition()).toBe(true);
+        expect(executionShortcuts.executeSelected.condition?.()).toBe(true);
       });
 
       it("cancelSelected", () => {
         const { selectionStore } = createStore();
 
-        expect(executionShortcuts.cancelSelected.condition()).toBeFalsy();
+        expect(executionShortcuts.cancelSelected.condition?.()).toBe(false);
+        // @ts-expect-error
         selectionStore.getSelectedNodes = [
-          {
-            allowedActions: { canCancel: true },
-          },
+          { allowedActions: { canCancel: true } },
         ];
-        expect(executionShortcuts.cancelSelected.condition()).toBe(true);
+        expect(executionShortcuts.cancelSelected.condition?.()).toBe(true);
       });
 
       it("resetSelected", () => {
         const { selectionStore } = createStore();
-
-        expect(executionShortcuts.resetSelected.condition()).toBeFalsy();
+        expect(executionShortcuts.resetSelected.condition?.()).toBe(false);
+        // @ts-expect-error
         selectionStore.getSelectedNodes = [
-          {
-            allowedActions: { canReset: true },
-          },
+          { allowedActions: { canReset: true } },
         ];
-        expect(executionShortcuts.resetSelected.condition()).toBe(true);
+        expect(executionShortcuts.resetSelected.condition?.()).toBe(true);
       });
     });
 
@@ -227,46 +225,37 @@ describe("executionShortcuts", () => {
       it("resumeLoopExecution", () => {
         const { selectionStore } = createStore();
 
-        expect(executionShortcuts.resumeLoopExecution.condition()).toBeFalsy();
+        expect(executionShortcuts.resumeLoopExecution.condition?.()).toBe(
+          false,
+        );
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           kind: "node",
-          loopInfo: {
-            allowedActions: {
-              canResume: true,
-            },
-          },
+          loopInfo: { allowedActions: { canResume: true } },
         };
-        expect(executionShortcuts.resumeLoopExecution.condition()).toBe(true);
+        expect(executionShortcuts.resumeLoopExecution.condition?.()).toBe(true);
       });
 
       it("pauseLoopExecution", () => {
         const { selectionStore } = createStore();
-
-        expect(executionShortcuts.pauseLoopExecution.condition()).toBeFalsy();
+        expect(executionShortcuts.pauseLoopExecution.condition?.()).toBe(false);
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           kind: "node",
-          loopInfo: {
-            allowedActions: {
-              canPause: true,
-            },
-          },
+          loopInfo: { allowedActions: { canPause: true } },
         };
-        expect(executionShortcuts.pauseLoopExecution.condition()).toBe(true);
+        expect(executionShortcuts.pauseLoopExecution.condition?.()).toBe(true);
       });
 
       it("stepLoopExecution", () => {
         const { selectionStore } = createStore();
-
-        expect(executionShortcuts.stepLoopExecution.condition()).toBeFalsy();
+        expect(executionShortcuts.stepLoopExecution.condition?.()).toBe(false);
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           kind: "node",
-          loopInfo: {
-            allowedActions: {
-              canStep: true,
-            },
-          },
+          loopInfo: { allowedActions: { canStep: true } },
         };
-        expect(executionShortcuts.stepLoopExecution.condition()).toBe(true);
+        expect(executionShortcuts.stepLoopExecution.condition?.()).toBe(true);
       });
     });
   });

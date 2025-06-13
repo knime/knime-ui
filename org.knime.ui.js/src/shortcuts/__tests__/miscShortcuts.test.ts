@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { createWorkflow } from "@/test/factories";
+import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import { selectionShortcuts, sidePanelShortcuts } from "../miscShortcuts";
 
@@ -8,7 +10,7 @@ describe("miscShortcuts", () => {
     it("execute toggleSidePanel", () => {
       const { panelStore } = mockStores();
 
-      sidePanelShortcuts.toggleSidePanel.execute();
+      sidePanelShortcuts.toggleSidePanel.execute(mockShortcutContext());
       expect(panelStore.toggleExpanded).toHaveBeenCalled();
     });
   });
@@ -17,18 +19,18 @@ describe("miscShortcuts", () => {
     it("execute selectAll", () => {
       const { selectionStore, workflowStore } = mockStores();
 
-      workflowStore.activeWorkflow = {
-        nodes: [],
+      workflowStore.activeWorkflow = createWorkflow({
+        nodes: {},
         workflowAnnotations: [],
-      };
-      selectionShortcuts.selectAll.execute();
+      });
+      selectionShortcuts.selectAll.execute(mockShortcutContext());
       expect(selectionStore.selectAllObjects).toHaveBeenCalled();
     });
 
     it("execute deselectAll", async () => {
       const { selectionStore } = mockStores();
 
-      await selectionShortcuts.deselectAll.execute();
+      await selectionShortcuts.deselectAll.execute(mockShortcutContext());
       expect(selectionStore.deselectAllObjects).toHaveBeenCalled();
     });
   });

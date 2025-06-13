@@ -5,9 +5,12 @@ import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
 } from "@/store/spaces/common";
-import { createWorkflow } from "@/test/factories";
+import { createProject, createWorkflow } from "@/test/factories";
+import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import applicationShortcuts from "../applicationShortcuts";
+
+const mockPathTriplet = { spaceId: "1", spaceProviderId: "2", itemId: "3" };
 
 describe("applicationShortcuts", () => {
   const createStore = () => {
@@ -22,7 +25,7 @@ describe("applicationShortcuts", () => {
     applicationStore.activeProjectId = "project1";
     workflowStore.activeWorkflow = createWorkflow();
     spaceCachingStore.projectPath = {};
-    // @ts-expect-error: Getter is read only
+    // @ts-expect-error
     applicationStore.isUnknownProject = () => false;
 
     return {
@@ -38,7 +41,7 @@ describe("applicationShortcuts", () => {
     it("should work when project is open", () => {
       const { spacesStore } = createStore();
 
-      applicationShortcuts.createWorkflow.execute();
+      applicationShortcuts.createWorkflow.execute(mockShortcutContext());
 
       expect(spacesStore.setCreateWorkflowModalConfig).toHaveBeenCalledWith({
         isOpen: true,
@@ -50,9 +53,12 @@ describe("applicationShortcuts", () => {
       const { applicationStore, spacesStore, spaceCachingStore } =
         createStore();
 
-      spaceCachingStore.projectPath = { [cachedLocalSpaceProjectId]: {} };
+      spaceCachingStore.projectPath = {
+        [cachedLocalSpaceProjectId]: mockPathTriplet,
+      };
+      // @ts-expect-error
       applicationStore.isUnknownProject = () => true;
-      applicationShortcuts.createWorkflow.execute();
+      applicationShortcuts.createWorkflow.execute(mockShortcutContext());
 
       expect(spacesStore.setCreateWorkflowModalConfig).toHaveBeenCalledWith({
         isOpen: true,
@@ -64,9 +70,11 @@ describe("applicationShortcuts", () => {
       const { applicationStore, spacesStore, spaceCachingStore } =
         createStore();
 
-      spaceCachingStore.projectPath = { [globalSpaceBrowserProjectId]: {} };
+      spaceCachingStore.projectPath = {
+        [globalSpaceBrowserProjectId]: mockPathTriplet,
+      };
       applicationStore.activeProjectId = null;
-      applicationShortcuts.createWorkflow.execute();
+      applicationShortcuts.createWorkflow.execute(mockShortcutContext());
 
       expect(spacesStore.setCreateWorkflowModalConfig).toHaveBeenCalledWith({
         isOpen: true,
@@ -78,9 +86,11 @@ describe("applicationShortcuts", () => {
       const { applicationStore, spacesStore, spaceCachingStore } =
         createStore();
 
-      spaceCachingStore.projectPath = { [cachedLocalSpaceProjectId]: {} };
+      spaceCachingStore.projectPath = {
+        [cachedLocalSpaceProjectId]: mockPathTriplet,
+      };
       applicationStore.activeProjectId = null;
-      applicationShortcuts.createWorkflow.execute();
+      applicationShortcuts.createWorkflow.execute(mockShortcutContext());
 
       expect(spacesStore.setCreateWorkflowModalConfig).toHaveBeenCalledWith({
         isOpen: true,
@@ -93,7 +103,7 @@ describe("applicationShortcuts", () => {
     it("execute", () => {
       const { desktopInteractionsStore } = createStore();
 
-      applicationShortcuts.closeProject.execute();
+      applicationShortcuts.closeProject.execute(mockShortcutContext());
       expect(desktopInteractionsStore.closeProject).toHaveBeenCalledWith(
         "project1",
       );
@@ -102,13 +112,24 @@ describe("applicationShortcuts", () => {
     it("condition", () => {
       const { workflowStore } = createStore();
 
-      expect(applicationShortcuts.closeProject.condition()).toBe(true);
+      expect(applicationShortcuts.closeProject.condition?.()).toBe(true);
+      // @ts-expect-error
       workflowStore.activeWorkflow.projectId = null;
-      expect(applicationShortcuts.closeProject.condition()).toBeFalsy();
+      expect(applicationShortcuts.closeProject.condition?.()).toBe(false);
     });
   });
 
   describe("switchTabs", () => {
+    const initialOpenProjects = [
+      createProject({ projectId: "A", name: "A" }),
+      createProject({ projectId: "B", name: "B" }),
+      createProject({ projectId: "C", name: "C" }),
+    ];
+    const getRoute = (projectId: string | null) => ({
+      name: projectId ? APP_ROUTES.WorkflowPage : APP_ROUTES.Home.GetStarted,
+      params: projectId ? { projectId, workflowId: "root" } : undefined,
+    });
+
     it.each([
       [null, "A"],
       ["A", "B"],
@@ -120,31 +141,14 @@ describe("applicationShortcuts", () => {
         const { applicationStore } = createStore();
         const $router = { push: vi.fn() };
 
-        applicationStore.openProjects = [
-          { projectId: "A" },
-          { projectId: "B" },
-          { projectId: "C" },
-        ];
+        applicationStore.openProjects = initialOpenProjects;
         applicationStore.activeProjectId = activeProjectId;
-        applicationShortcuts.switchToNextWorkflow.execute({ $router });
+        applicationShortcuts.switchToNextWorkflow.execute(
+          mockShortcutContext({ $router }),
+        );
 
-        const routeName =
-          expectedProjectId === null
-            ? APP_ROUTES.Home.GetStarted
-            : APP_ROUTES.WorkflowPage;
-
-        const routeParams =
-          expectedProjectId === null
-            ? undefined
-            : {
-                projectId: expectedProjectId,
-                workflowId: "root",
-              };
-
-        expect($router.push).toHaveBeenNthCalledWith(1, {
-          name: routeName,
-          params: routeParams,
-        });
+        const { name, params } = getRoute(expectedProjectId);
+        expect($router.push).toHaveBeenNthCalledWith(1, { name, params });
       },
     );
 
@@ -159,33 +163,14 @@ describe("applicationShortcuts", () => {
         const { applicationStore } = createStore();
         const $router = { push: vi.fn() };
 
-        applicationStore.openProjects = [
-          { projectId: "A" },
-          { projectId: "B" },
-          { projectId: "C" },
-        ];
+        applicationStore.openProjects = initialOpenProjects;
         applicationStore.activeProjectId = activeProjectId;
-        applicationShortcuts.switchToPreviousWorkflow.execute({
-          $router,
-        });
+        applicationShortcuts.switchToPreviousWorkflow.execute(
+          mockShortcutContext({ $router }),
+        );
 
-        const routeName =
-          expectedProjectId === null
-            ? APP_ROUTES.Home.GetStarted
-            : APP_ROUTES.WorkflowPage;
-
-        const routeParams =
-          expectedProjectId === null
-            ? undefined
-            : {
-                projectId: expectedProjectId,
-                workflowId: "root",
-              };
-
-        expect($router.push).toHaveBeenNthCalledWith(1, {
-          name: routeName,
-          params: routeParams,
-        });
+        const { name, params } = getRoute(expectedProjectId);
+        expect($router.push).toHaveBeenNthCalledWith(1, { name, params });
       },
     );
   });

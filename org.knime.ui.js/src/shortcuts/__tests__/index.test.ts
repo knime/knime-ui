@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import shortcuts, { conditionGroup } from "..";
+import shortcuts, { type UnionToShortcutRegistry, conditionGroup } from "..";
 import canvasShortcutsMock from "../canvasShortcuts";
 import { selectionShortcuts as selectionShortcutsMocks } from "../miscShortcuts";
 import workflowShortcutsMock from "../workflowShortcuts";
@@ -22,30 +23,35 @@ vi.mock("@/shortcuts/canvasShortcuts", () => ({
   },
 }));
 
+type MockShortcuts = UnionToShortcutRegistry<"noCondition" | "withCondition">;
+declare module "../index" {
+  interface ShortcutsRegistry extends MockShortcuts {}
+}
+
 describe("Shortcuts", () => {
   describe("condition group", () => {
-    let shortcuts;
-
-    beforeEach(() => {
-      shortcuts = {
-        noCondition: { name: "c1" },
-        withCondition: {
-          name: "c2",
-          condition: vi.fn().mockImplementation(({ age } = {}) => age >= 18),
-        },
-      };
+    const age = 10;
+    const createShortcuts = () => ({
+      noCondition: { title: "c1", execute: vi.fn() },
+      withCondition: {
+        title: "c2",
+        execute: vi.fn(),
+        condition: vi.fn(() => age >= 18),
+      },
     });
 
     it("group condition true", () => {
-      let group = conditionGroup(() => true, shortcuts);
-      expect(group.noCondition.condition({ age: 10 })).toBe(true);
-      expect(group.withCondition.condition({ age: 10 })).toBe(false);
+      const mockShortcuts = createShortcuts();
+      let group = conditionGroup(() => true, mockShortcuts);
+      expect(group.noCondition.condition?.()).toBe(true);
+      expect(group.withCondition.condition?.()).toBe(false);
     });
 
     it("group condition false", () => {
-      let group = conditionGroup(() => false, shortcuts);
-      expect(group.noCondition.condition({ age: 10 })).toBe(false);
-      expect(group.withCondition.condition({ age: 10 })).toBe(false);
+      const mockShortcuts = createShortcuts();
+      let group = conditionGroup(() => false, mockShortcuts);
+      expect(group.noCondition.condition?.()).toBe(false);
+      expect(group.withCondition.condition?.()).toBe(false);
     });
   });
 
@@ -54,13 +60,9 @@ describe("Shortcuts", () => {
       const { workflowStore, canvasStore } = mockStores();
 
       workflowStore.activeWorkflow = null;
-      workflowStore.isWorkflowEmpty = false;
-      canvasStore.interactionsEnabled = null;
+      canvasStore.interactionsEnabled = false;
 
-      return {
-        workflowStore,
-        canvasStore,
-      };
+      return { workflowStore, canvasStore };
     };
 
     it("adds workflow shortcuts if workflow is present", () => {
@@ -80,7 +82,7 @@ describe("Shortcuts", () => {
         expect.arrayContaining(["save", "undo"]),
       );
 
-      workflowStore.activeWorkflow = {};
+      workflowStore.activeWorkflow = createWorkflow();
       const resultWithWorkflow = Object.keys(workflowShortcuts).filter((c) =>
         workflowShortcuts[c].condition(),
       );
@@ -100,8 +102,7 @@ describe("Shortcuts", () => {
         {},
       );
 
-      // we need workflow and interactions
-      workflowStore.activeWorkflow = {};
+      workflowStore.activeWorkflow = createWorkflow();
       const resultNoInteractions = Object.keys(canvasShortcuts).filter((c) =>
         canvasShortcuts[c].condition(),
       );
@@ -129,8 +130,7 @@ describe("Shortcuts", () => {
         {},
       );
 
-      // we need workflow and interactions
-      workflowStore.activeWorkflow = {};
+      workflowStore.activeWorkflow = createWorkflow();
       const resultNoInteractions = Object.keys(selectionShortcuts).filter((c) =>
         selectionShortcuts[c].condition(),
       );

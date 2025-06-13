@@ -2,21 +2,22 @@
 import { describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
-import { Node } from "@/api/gateway-api/generated-api";
+import { Node, PortType, WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
 import { isBrowser, isDesktop } from "@/environment";
-import { createNativeNode, createWorkflow } from "@/test/factories";
+import { createNativeNode, createPort, createWorkflow } from "@/test/factories";
+import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { deepMocked } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { getNextSelectedPort } from "@/util/portSelection";
 import workflowShortcuts from "../workflowShortcuts";
 
 vi.mock("@/environment");
 
+const getNextSelectedPortMock = vi.hoisted(() => vi.fn());
 vi.mock("@/util/portSelection", () => {
   return {
-    getNextSelectedPort: vi.fn(),
+    getNextSelectedPort: getNextSelectedPortMock,
   };
 });
 
@@ -43,37 +44,36 @@ describe("workflowShortcuts", () => {
     } = mockStores({ stubActions: true });
 
     applicationSettingsStore.hasClipboardSupport = true;
+    // @ts-expect-error
     applicationStore.activeProjectOrigin = {
       providerId: "some-provider",
       spaceId: "some-space",
     };
+    // @ts-expect-error
     workflowStore.isWritable = true;
     workflowStore.activeWorkflow = createWorkflow({
       projectId: "activeTestProjectId",
-      allowedActions: {
-        canUndo: false,
-      },
+      allowedActions: { canUndo: false },
       info: {
         containerId: "testWorkflow",
-        containerType: "project",
+        containerType: WorkflowInfo.ContainerTypeEnum.Project,
       },
       parents: [
-        {
-          containerId: "root:parent",
-        },
-        {
-          containerId: "direct:parent:id",
-        },
+        { containerId: "root:parent" },
+        { containerId: "direct:parent:id" },
       ],
     });
     canvasAnchoredComponentsStore.quickActionMenu = {
       isOpen: false,
+      // @ts-expect-error
       props: {},
     };
+    // @ts-expect-error
     selectionStore.singleSelectedNode = {
       id: "root:0",
       allowedActions: {},
     };
+    // @ts-expect-error
     canvasStore.getVisibleFrame = {
       left: -500,
       top: -500,
@@ -104,8 +104,9 @@ describe("workflowShortcuts", () => {
     it("executes", () => {
       const { applicationStore, desktopInteractionsStore } = createStore();
 
+      // @ts-expect-error
       applicationStore.isUnknownProject = () => false;
-      workflowShortcuts.save.execute();
+      workflowShortcuts.save.execute(mockShortcutContext());
       expect(desktopInteractionsStore.saveProject).toHaveBeenCalled();
       expect(desktopInteractionsStore.saveProjectAs).not.toHaveBeenCalled();
     });
@@ -113,9 +114,11 @@ describe("workflowShortcuts", () => {
     it("executes when project without origin is open", () => {
       const { applicationStore, desktopInteractionsStore } = createStore();
 
+      // @ts-expect-error
       applicationStore.isUnknownProject = () => true;
+      // @ts-expect-error
       applicationStore.activeProjectOrigin = null;
-      workflowShortcuts.save.execute();
+      workflowShortcuts.save.execute(mockShortcutContext());
       expect(desktopInteractionsStore.saveProject).not.toHaveBeenCalled();
       expect(desktopInteractionsStore.saveProjectAs).toHaveBeenCalled();
     });
@@ -124,19 +127,22 @@ describe("workflowShortcuts", () => {
       const { applicationStore, uiControlsStore, dirtyProjectsTrackingStore } =
         createStore();
 
+      // @ts-expect-error
       applicationStore.activeProjectOrigin = "origin";
-      expect(workflowShortcuts.save.condition()).toBeFalsy();
+      expect(workflowShortcuts.save.condition?.()).toBe(false);
 
+      // @ts-expect-error
       dirtyProjectsTrackingStore.isDirtyActiveProject = true;
       uiControlsStore.isLocalSaveSupported = false;
-      expect(workflowShortcuts.save.condition()).toBe(false);
+      expect(workflowShortcuts.save.condition?.()).toBe(false);
 
       uiControlsStore.isLocalSaveSupported = true;
       applicationStore.activeProjectId = "knownProjectId";
-      expect(workflowShortcuts.save.condition()).toBe(true);
+      expect(workflowShortcuts.save.condition?.()).toBe(true);
 
+      // @ts-expect-error
       dirtyProjectsTrackingStore.isDirtyActiveProject = false;
-      expect(workflowShortcuts.save.condition()).toBe(false);
+      expect(workflowShortcuts.save.condition?.()).toBe(false);
     });
   });
 
@@ -144,31 +150,33 @@ describe("workflowShortcuts", () => {
     it("executes undo", () => {
       const { workflowStore } = createStore();
 
-      workflowShortcuts.undo.execute();
+      workflowShortcuts.undo.execute(mockShortcutContext());
       expect(workflowStore.undo).toHaveBeenCalled();
     });
 
     it("executes redo", () => {
       const { workflowStore } = createStore();
 
-      workflowShortcuts.redo.execute();
+      workflowShortcuts.redo.execute(mockShortcutContext());
       expect(workflowStore.redo).toHaveBeenCalled();
     });
 
     it("checks undo condition", () => {
       const { workflowStore } = createStore();
 
-      expect(workflowShortcuts.undo.condition()).toBeFalsy();
+      expect(workflowShortcuts.undo.condition?.()).toBe(false);
+      // @ts-expect-error
       workflowStore.activeWorkflow.allowedActions.canUndo = true;
-      expect(workflowShortcuts.undo.condition()).toBe(true);
+      expect(workflowShortcuts.undo.condition?.()).toBe(true);
     });
 
     it("checks redo condition", () => {
       const { workflowStore } = createStore();
 
-      expect(workflowShortcuts.redo.condition()).toBeFalsy();
+      expect(workflowShortcuts.redo.condition?.()).toBe(false);
+      // @ts-expect-error
       workflowStore.activeWorkflow.allowedActions.canRedo = true;
-      expect(workflowShortcuts.redo.condition()).toBe(true);
+      expect(workflowShortcuts.redo.condition?.()).toBe(true);
     });
   });
 
@@ -176,10 +184,10 @@ describe("workflowShortcuts", () => {
     it("executes export action", () => {
       const { spaceOperationsStore, applicationStore } = createStore();
 
-      workflowShortcuts.export.execute();
+      workflowShortcuts.export.execute(mockShortcutContext());
       expect(spaceOperationsStore.exportSpaceItem).toHaveBeenCalledWith({
         projectId: applicationStore.activeProjectId,
-        itemId: applicationStore.activeProjectOrigin.itemId,
+        itemId: applicationStore.activeProjectOrigin!.itemId,
       });
     });
 
@@ -187,9 +195,9 @@ describe("workflowShortcuts", () => {
       const { applicationStore } = createStore();
 
       applicationStore.activeProjectId = "ExampleProjectId";
-      expect(workflowShortcuts.export.condition()).toBe(true);
+      expect(workflowShortcuts.export.condition?.()).toBe(true);
       applicationStore.activeProjectId = null;
-      expect(workflowShortcuts.export.condition()).toBe(false);
+      expect(workflowShortcuts.export.condition?.()).toBe(false);
     });
   });
 
@@ -197,7 +205,7 @@ describe("workflowShortcuts", () => {
     it("executes", () => {
       const { desktopInteractionsStore } = createStore();
 
-      workflowShortcuts.configureNode.execute({});
+      workflowShortcuts.configureNode.execute(mockShortcutContext());
       expect(
         desktopInteractionsStore.openNodeConfiguration,
       ).toHaveBeenCalledWith("root:0");
@@ -210,19 +218,21 @@ describe("workflowShortcuts", () => {
       uiControlsStore.canConfigureNodes = true;
       applicationSettingsStore.useEmbeddedDialogs = false;
       // check for web dialogs
+      // @ts-expect-error
       selectionStore.singleSelectedNode = createNativeNode({
-        dialogType: "web",
+        dialogType: Node.DialogTypeEnum.Web,
       });
-      expect(workflowShortcuts.configureNode.condition()).toBe(true);
+      expect(workflowShortcuts.configureNode.condition?.()).toBe(true);
 
       // check for swing dialogs
+      // @ts-expect-error
       selectionStore.singleSelectedNode = createNativeNode({
-        dialogType: "swing",
+        dialogType: Node.DialogTypeEnum.Swing,
       });
-      expect(workflowShortcuts.configureNode.condition()).toBe(true);
+      expect(workflowShortcuts.configureNode.condition?.()).toBe(true);
 
       uiControlsStore.canConfigureNodes = false;
-      expect(workflowShortcuts.configureNode.condition()).toBe(false);
+      expect(workflowShortcuts.configureNode.condition?.()).toBe(false);
     });
 
     it("checks condition for embedded dialogs", () => {
@@ -232,33 +242,31 @@ describe("workflowShortcuts", () => {
       uiControlsStore.canConfigureNodes = true;
       applicationSettingsStore.useEmbeddedDialogs = true;
       // check for web dialogs
+      // @ts-expect-error
       selectionStore.singleSelectedNode = createNativeNode({
-        dialogType: "web",
+        dialogType: Node.DialogTypeEnum.Web,
       });
-      expect(workflowShortcuts.configureNode.condition()).toBe(false);
+      expect(workflowShortcuts.configureNode.condition?.()).toBe(false);
 
       // check for swing dialogs
+      // @ts-expect-error
       selectionStore.singleSelectedNode = createNativeNode({
-        dialogType: "swing",
+        dialogType: Node.DialogTypeEnum.Swing,
       });
-      expect(workflowShortcuts.configureNode.condition()).toBe(true);
+      expect(workflowShortcuts.configureNode.condition?.()).toBe(true);
 
       uiControlsStore.canConfigureNodes = false;
-      expect(workflowShortcuts.configureNode.condition()).toBe(false);
+      expect(workflowShortcuts.configureNode.condition?.()).toBe(false);
     });
 
     it("checks condition for null dialogTypes", () => {
-      const { uiControlsStore, selectionStore, applicationSettingsStore } =
-        createStore();
+      const { uiControlsStore, applicationSettingsStore } = createStore();
 
       uiControlsStore.canConfigureNodes = true;
       applicationSettingsStore.useEmbeddedDialogs = true;
-      selectionStore.singleSelectedNode = createNativeNode({
-        dialogType: null,
-      });
-      expect(workflowShortcuts.configureNode.condition()).toBe(false);
+      expect(workflowShortcuts.configureNode.condition?.()).toBe(false);
       applicationSettingsStore.useEmbeddedDialogs = false;
-      expect(workflowShortcuts.configureNode.condition()).toBe(false);
+      expect(workflowShortcuts.configureNode.condition?.()).toBe(false);
     });
   });
 
@@ -266,7 +274,7 @@ describe("workflowShortcuts", () => {
     it("executes", () => {
       const { desktopInteractionsStore } = createStore();
 
-      workflowShortcuts.configureFlowVariables.execute();
+      workflowShortcuts.configureFlowVariables.execute(mockShortcutContext());
       expect(
         desktopInteractionsStore.openFlowVariableConfiguration,
       ).toHaveBeenCalledWith("root:0");
@@ -276,15 +284,20 @@ describe("workflowShortcuts", () => {
       const { uiControlsStore, selectionStore } = createStore();
 
       uiControlsStore.canConfigureFlowVariables = true;
-      expect(workflowShortcuts.configureFlowVariables.condition()).toBeFalsy();
+      expect(workflowShortcuts.configureFlowVariables.condition?.()).toBe(
+        false,
+      );
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode.allowedActions = {
         canOpenLegacyFlowVariableDialog: true,
       };
-      expect(workflowShortcuts.configureFlowVariables.condition()).toBe(true);
+      expect(workflowShortcuts.configureFlowVariables.condition?.()).toBe(true);
 
       uiControlsStore.canConfigureFlowVariables = false;
-      expect(workflowShortcuts.configureFlowVariables.condition()).toBe(false);
+      expect(workflowShortcuts.configureFlowVariables.condition?.()).toBe(
+        false,
+      );
     });
   });
 
@@ -318,77 +331,84 @@ describe("workflowShortcuts", () => {
         // mock selected node with 4 dummy ports
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {},
           outPorts: [{}, {}, {}, {}],
         };
-        workflowShortcuts.activateOutputPort.execute({
-          payload: { event: eventShiftDigit1 },
-        });
+        workflowShortcuts.activateOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit1 } }),
+        );
         expect(selectionStore.activePortTab).toBe("1");
 
-        workflowShortcuts.activateOutputPort.execute({
-          payload: { event: eventShiftDigit3 },
-        });
+        workflowShortcuts.activateOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
+        );
         expect(selectionStore.activePortTab).toBe("3");
 
         // handle metanodes
+        // @ts-expect-error
         selectionStore.singleSelectedNode.kind = Node.KindEnum.Metanode;
-        workflowShortcuts.activateOutputPort.execute({
-          payload: { event: eventShiftDigit1 },
-        });
+        workflowShortcuts.activateOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit1 } }),
+        );
         expect(selectionStore.activePortTab).toBe("0");
 
-        workflowShortcuts.activateOutputPort.execute({
-          payload: { event: eventShiftDigit3 },
-        });
+        workflowShortcuts.activateOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
+        );
         expect(selectionStore.activePortTab).toBe("2");
       });
 
       it("handles too few outPorts", () => {
         const { selectionStore } = createStore();
+        // @ts-expect-error
         selectionStore.singleSelectedNode.outPorts = [{}, {}];
-        workflowShortcuts.activateOutputPort.execute({
-          payload: { event: eventShiftDigit3 },
-        });
+        workflowShortcuts.activateOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
+        );
         expect(selectionStore.activePortTab).toBeNull();
       });
 
       it("handles views", () => {
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {},
           hasView: true,
           outPorts: [{}, {}],
         };
-        workflowShortcuts.activateOutputPort.execute({
-          payload: { event: eventShiftDigit1 },
-        });
+        workflowShortcuts.activateOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit1 } }),
+        );
         expect(selectionStore.activePortTab).toBe("view");
       });
 
       it("checks condition", () => {
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = null;
-        expect(workflowShortcuts.activateOutputPort.condition()).toBeFalsy(); // no selected node
+        expect(workflowShortcuts.activateOutputPort.condition?.()).toBe(false); // no selected node
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {},
           outPorts: [],
         };
-        expect(workflowShortcuts.activateOutputPort.condition()).toBeFalsy(); // no output port
+        expect(workflowShortcuts.activateOutputPort.condition?.()).toBe(false); // no output port
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {},
           outPorts: [{}],
         };
-        expect(workflowShortcuts.activateOutputPort.condition()).toBeTruthy();
+        expect(workflowShortcuts.activateOutputPort.condition?.()).toBeTruthy();
       });
     });
 
@@ -396,30 +416,40 @@ describe("workflowShortcuts", () => {
       it("executes", () => {
         const { selectionStore } = createStore();
 
-        workflowShortcuts.activateFlowVarPort.execute({});
+        workflowShortcuts.activateFlowVarPort.execute(mockShortcutContext());
         expect(selectionStore.activePortTab).toBe("0");
       });
 
       it("checks condition", () => {
         const { selectionStore, applicationStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = null;
         applicationStore.availablePortTypes = {
-          mockTypeId: { kind: "not a flowvar" },
+          mockTypeId: {
+            name: "notAFlowVarPort",
+            kind: PortType.KindEnum.Other,
+          },
         };
-        expect(workflowShortcuts.activateFlowVarPort.condition()).toBeFalsy(); // no node selected
+        expect(workflowShortcuts.activateFlowVarPort.condition?.()).toBe(false); // no node selected
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {},
           outPorts: [{ typeId: "mockTypeId" }],
         };
-        expect(workflowShortcuts.activateFlowVarPort.condition()).toBeFalsy(); // not a flowvar port
+        expect(workflowShortcuts.activateFlowVarPort.condition?.()).toBe(false); // not a flowvar port
 
         applicationStore.availablePortTypes = {
-          mockTypeId: { kind: "flowVariable" },
+          mockTypeId: {
+            name: "flowVarPort",
+            kind: PortType.KindEnum.FlowVariable,
+          },
         };
-        expect(workflowShortcuts.activateFlowVarPort.condition()).toBeTruthy();
+        expect(
+          workflowShortcuts.activateFlowVarPort.condition?.(),
+        ).toBeTruthy();
       });
     });
 
@@ -432,46 +462,50 @@ describe("workflowShortcuts", () => {
           allowedActions: {},
           outPorts: [{}, {}, {}, {}],
         };
+        // @ts-expect-error
         selectionStore.singleSelectedNode = node;
-        workflowShortcuts.detachOutputPort.execute({
-          payload: { event: eventShiftAltDigit1 },
-        });
+        workflowShortcuts.detachOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftAltDigit1 } }),
+        );
         expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "1",
         });
 
-        workflowShortcuts.detachOutputPort.execute({
-          payload: { event: eventShiftAltDigit3 },
-        });
+        workflowShortcuts.detachOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftAltDigit3 } }),
+        );
         expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "3",
         });
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode.hasView = true;
-        workflowShortcuts.detachOutputPort.execute({
-          payload: { event: eventShiftAltDigit1 },
-        });
+        workflowShortcuts.detachOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftAltDigit1 } }),
+        );
         expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "view",
         });
 
         // handle metanodes
+        // @ts-expect-error
         selectionStore.singleSelectedNode.hasView = false;
+        // @ts-expect-error
         selectionStore.singleSelectedNode.kind = Node.KindEnum.Metanode;
-        workflowShortcuts.detachOutputPort.execute({
-          payload: { event: eventShiftDigit1 },
-        });
+        workflowShortcuts.detachOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit1 } }),
+        );
         expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "0",
         });
 
-        workflowShortcuts.detachOutputPort.execute({
-          payload: { event: eventShiftDigit3 },
-        });
+        workflowShortcuts.detachOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
+        );
         expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "2",
@@ -479,39 +513,43 @@ describe("workflowShortcuts", () => {
 
         // handle too few outPorts
         vi.clearAllMocks();
+        // @ts-expect-error
         selectionStore.singleSelectedNode.outPorts = [{}, {}];
-        workflowShortcuts.detachOutputPort.execute({
-          payload: { event: eventShiftDigit3 },
-        });
+        workflowShortcuts.detachOutputPort.execute(
+          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
+        );
         expect(executionStore.openPortView).not.toBeCalled();
       });
 
       it("checks condition", () => {
         mockEnvironment("DESKTOP", { isBrowser, isDesktop });
         const { selectionStore } = createStore();
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {},
           outPorts: [{}],
         };
-        expect(workflowShortcuts.detachOutputPort.condition()).toBeTruthy();
+        expect(workflowShortcuts.detachOutputPort.condition?.()).toBeTruthy();
 
         // detach only on desktop
         mockEnvironment("BROWSER", { isBrowser, isDesktop });
-        expect(workflowShortcuts.detachOutputPort.condition()).toBeFalsy();
+        expect(workflowShortcuts.detachOutputPort.condition?.()).toBe(false);
 
         // no selected node
         mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+        // @ts-expect-error
         selectionStore.singleSelectedNode = null;
-        expect(workflowShortcuts.detachOutputPort.condition()).toBeFalsy();
+        expect(workflowShortcuts.detachOutputPort.condition?.()).toBe(false);
 
         // no output ports
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {},
           outPorts: [],
         };
-        expect(workflowShortcuts.detachOutputPort.condition()).toBeFalsy();
+        expect(workflowShortcuts.detachOutputPort.condition?.()).toBe(false);
       });
     });
 
@@ -527,12 +565,14 @@ describe("workflowShortcuts", () => {
             executionState: "IDLE",
           },
         };
+        // @ts-expect-error
         selectionStore.singleSelectedNode = node;
-        workflowShortcuts.detachFlowVarPort.execute({});
+        workflowShortcuts.detachFlowVarPort.execute(mockShortcutContext());
         expect(executionStore.openPortView).not.toBeCalled();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode.state.executionState = "EXECUTED";
-        workflowShortcuts.detachFlowVarPort.execute({});
+        workflowShortcuts.detachFlowVarPort.execute(mockShortcutContext());
         expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "0",
@@ -548,31 +588,36 @@ describe("workflowShortcuts", () => {
           outPorts: [{ typeId: "mockTypeId" }],
         };
         mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+        // @ts-expect-error
         selectionStore.singleSelectedNode = node;
         applicationStore.availablePortTypes = {
           mockTypeId: {
-            kind: "flowVariable",
+            name: "flowVariablePort",
+            kind: PortType.KindEnum.FlowVariable,
           },
         };
-        expect(workflowShortcuts.detachFlowVarPort.condition()).toBeTruthy();
+        expect(workflowShortcuts.detachFlowVarPort.condition?.()).toBeTruthy();
 
         // detach only on desktop
         mockEnvironment("BROWSER", { isBrowser, isDesktop });
-        expect(workflowShortcuts.detachFlowVarPort.condition()).toBeFalsy();
+        expect(workflowShortcuts.detachFlowVarPort.condition?.()).toBe(false);
 
         // no selected node
         mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+        // @ts-expect-error
         selectionStore.singleSelectedNode = null;
-        expect(workflowShortcuts.detachFlowVarPort.condition()).toBeFalsy();
+        expect(workflowShortcuts.detachFlowVarPort.condition?.()).toBe(false);
 
         // no flowVariable port
+        // @ts-expect-error
         selectionStore.singleSelectedNode = node;
         applicationStore.availablePortTypes = {
           mockTypeId: {
-            kind: "not a flowVariable",
+            name: "notAFlowVariablePort",
+            kind: PortType.KindEnum.Other,
           },
         };
-        expect(workflowShortcuts.detachFlowVarPort.condition()).toBeFalsy();
+        expect(workflowShortcuts.detachFlowVarPort.condition?.()).toBe(false);
       });
     });
 
@@ -582,7 +627,7 @@ describe("workflowShortcuts", () => {
 
         selectionStore.activePortTab = "42";
         const node = selectionStore.singleSelectedNode;
-        workflowShortcuts.detachActiveOutputPort.execute({});
+        workflowShortcuts.detachActiveOutputPort.execute(mockShortcutContext());
         expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "42",
@@ -592,28 +637,30 @@ describe("workflowShortcuts", () => {
       it("checks condition", () => {
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = null;
         expect(
-          workflowShortcuts.detachActiveOutputPort.condition(),
+          workflowShortcuts.detachActiveOutputPort.condition?.(),
         ).toBeFalsy();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {},
         };
         mockEnvironment("BROWSER", { isBrowser, isDesktop });
         expect(
-          workflowShortcuts.detachActiveOutputPort.condition(),
+          workflowShortcuts.detachActiveOutputPort.condition?.(),
         ).toBeFalsy();
 
         mockEnvironment("DESKTOP", { isBrowser, isDesktop });
         expect(
-          workflowShortcuts.detachActiveOutputPort.condition(),
+          workflowShortcuts.detachActiveOutputPort.condition?.(),
         ).toBeFalsy();
 
         selectionStore.activePortTab = "1";
         expect(
-          workflowShortcuts.detachActiveOutputPort.condition(),
+          workflowShortcuts.detachActiveOutputPort.condition?.(),
         ).toBeTruthy();
       });
     });
@@ -623,7 +670,7 @@ describe("workflowShortcuts", () => {
     it("executes", () => {
       const { nodeInteractionsStore } = createStore();
 
-      workflowShortcuts.editNodeComment.execute();
+      workflowShortcuts.editNodeComment.execute(mockShortcutContext());
       expect(nodeInteractionsStore.openLabelEditor).toHaveBeenCalledWith(
         "root:0",
       );
@@ -632,16 +679,19 @@ describe("workflowShortcuts", () => {
     it("cannot edit label if no node is selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
-      expect(workflowShortcuts.editNodeComment.condition()).toBeFalsy();
+      expect(workflowShortcuts.editNodeComment.condition?.()).toBe(false);
     });
 
     it("cannot edit label when workflow is not writable", () => {
       const { selectionStore, workflowStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = { kind: "node", id: "node1" };
+      // @ts-expect-error
       workflowStore.isWritable = false;
-      expect(workflowShortcuts.editNodeComment.condition()).toBe(false);
+      expect(workflowShortcuts.editNodeComment.condition?.()).toBe(false);
     });
   });
 
@@ -649,8 +699,9 @@ describe("workflowShortcuts", () => {
     it("executes", () => {
       const { selectionStore, annotationInteractionsStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedAnnotation = { id: "annotationId1" };
-      workflowShortcuts.editAnnotation.execute();
+      workflowShortcuts.editAnnotation.execute(mockShortcutContext());
       expect(
         annotationInteractionsStore.setEditableAnnotationId,
       ).toHaveBeenCalledWith("annotationId1");
@@ -661,7 +712,7 @@ describe("workflowShortcuts", () => {
     it("executes copy", () => {
       const { clipboardInteractionsStore } = createStore();
 
-      workflowShortcuts.copy.execute();
+      workflowShortcuts.copy.execute(mockShortcutContext());
       expect(
         clipboardInteractionsStore.copyOrCutWorkflowParts,
       ).toHaveBeenCalledWith({ command: "copy" });
@@ -670,7 +721,7 @@ describe("workflowShortcuts", () => {
     it("executes cut", () => {
       const { clipboardInteractionsStore } = createStore();
 
-      workflowShortcuts.cut.execute();
+      workflowShortcuts.cut.execute(mockShortcutContext());
       expect(
         clipboardInteractionsStore.copyOrCutWorkflowParts,
       ).toHaveBeenCalledWith({ command: "cut" });
@@ -679,7 +730,7 @@ describe("workflowShortcuts", () => {
     it("executes paste", () => {
       const { clipboardInteractionsStore } = createStore();
 
-      workflowShortcuts.paste.execute({});
+      workflowShortcuts.paste.execute(mockShortcutContext());
       expect(
         clipboardInteractionsStore.pasteWorkflowParts,
       ).toHaveBeenCalledWith(expect.anything());
@@ -702,52 +753,58 @@ describe("workflowShortcuts", () => {
 
       const { selectionStore, applicationSettingsStore } = createStore();
 
-      expect(workflowShortcuts.copy.condition()).toBe(false);
+      expect(workflowShortcuts.copy.condition?.()).toBe(false);
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [{ allowedActions: {} }];
-      expect(workflowShortcuts.copy.condition()).toBe(true);
+      expect(workflowShortcuts.copy.condition?.()).toBe(true);
 
       bottomPanel.focus();
       expect(document.activeElement).toBe(bottomPanel);
-      expect(workflowShortcuts.copy.condition()).toBe(false);
+      expect(workflowShortcuts.copy.condition?.()).toBe(false);
 
       kanvasElement.focus();
       applicationSettingsStore.hasClipboardSupport = false;
-      expect(workflowShortcuts.copy.condition()).toBe(false);
+      expect(workflowShortcuts.copy.condition?.()).toBe(false);
 
       kanvasElement.remove();
-      expect(workflowShortcuts.copy.condition()).toBe(false);
+      expect(workflowShortcuts.copy.condition?.()).toBe(false);
     });
 
     describe("cut condition checks", () => {
       it("nothing selected, writeable -> disabled", () => {
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.getSelectedNodes = [];
-        expect(workflowShortcuts.cut.condition()).toBeFalsy();
+        expect(workflowShortcuts.cut.condition?.()).toBe(false);
       });
 
       it("nodes selected, not writeable -> disabled", () => {
         const { selectionStore, workflowStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.getSelectedNodes = [{ allowedActions: {} }];
+        // @ts-expect-error
         workflowStore.isWritable = false;
-        expect(workflowShortcuts.cut.condition()).toBeFalsy();
+        expect(workflowShortcuts.cut.condition?.()).toBe(false);
       });
 
       it("nodes selected, writeable -> enabled", () => {
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.getSelectedNodes = [{ allowedActions: {} }];
-        expect(workflowShortcuts.cut.condition()).toBe(true);
+        expect(workflowShortcuts.cut.condition?.()).toBe(true);
       });
 
       it("nodes selected, writeable but no clipboard permission -> disabled", () => {
         const { selectionStore, applicationSettingsStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.getSelectedNodes = [{ allowedActions: {} }];
         applicationSettingsStore.hasClipboardSupport = false;
-        expect(workflowShortcuts.cut.condition()).toBeFalsy();
+        expect(workflowShortcuts.cut.condition?.()).toBe(false);
       });
     });
 
@@ -755,15 +812,18 @@ describe("workflowShortcuts", () => {
       const { selectionStore, workflowStore, applicationSettingsStore } =
         createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [{ allowedActions: {} }];
+      // @ts-expect-error
       workflowStore.isWritable = false;
-      expect(workflowShortcuts.paste.condition()).toBeFalsy();
+      expect(workflowShortcuts.paste.condition?.()).toBe(false);
 
+      // @ts-expect-error
       workflowStore.isWritable = true;
-      expect(workflowShortcuts.paste.condition()).toBe(true);
+      expect(workflowShortcuts.paste.condition?.()).toBe(true);
 
       applicationSettingsStore.hasClipboardSupport = false;
-      expect(workflowShortcuts.paste.condition()).toBeFalsy();
+      expect(workflowShortcuts.paste.condition?.()).toBe(false);
     });
   });
 
@@ -771,110 +831,130 @@ describe("workflowShortcuts", () => {
     it("execute: delete selected objects", () => {
       const { workflowStore } = createStore();
 
-      workflowShortcuts.deleteSelected.execute();
+      workflowShortcuts.deleteSelected.execute(mockShortcutContext());
       expect(workflowStore.deleteSelectedObjects).toHaveBeenCalled();
     });
 
     it("execute: delete selected port", () => {
       const { workflowStore, selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.activeNodePorts = {
         nodeId: "someid",
         selectedPort: "some-port",
       };
-      workflowShortcuts.deleteSelected.execute();
+      workflowShortcuts.deleteSelected.execute(mockShortcutContext());
       expect(workflowStore.deleteSelectedPort).toHaveBeenCalled();
     });
 
     it("condition checks when workflow is not writeable", () => {
       const { workflowStore, selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
+      // @ts-expect-error
       workflowStore.isWritable = false;
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(false);
     });
 
     it("condition checks when nothing selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [];
+      // @ts-expect-error
       selectionStore.getSelectedConnections = [];
+      // @ts-expect-error
       selectionStore.getSelectedBendpointIds = [];
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(false);
 
       // port is selected -> shortcut active...
       selectionStore.activeNodePorts.selectedPort = "some-port";
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(true);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(true);
       // ... unless a modification is already in progress
       selectionStore.activeNodePorts.isModificationInProgress = true;
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(false);
     });
 
     it("condition checks when one node is not deletable", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         { allowedActions: { canDelete: true } },
         { allowedActions: { canDelete: false } },
       ];
+      // @ts-expect-error
       selectionStore.getSelectedConnections = [
         { allowedActions: { canDelete: true } },
       ];
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(false);
     });
 
     it("checks when one connection is not deletable", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         { allowedActions: { canDelete: true } },
         { allowedActions: { canDelete: true } },
       ];
+      // @ts-expect-error
       selectionStore.getSelectedConnections = [
         { allowedActions: { canDelete: false } },
       ];
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(false);
     });
 
     it("condition checks when all selected are deletable", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         { allowedActions: { canDelete: true } },
         { allowedActions: { canDelete: true } },
       ];
+      // @ts-expect-error
       selectionStore.getSelectedConnections = [
         { allowedActions: { canDelete: true } },
         { allowedActions: { canDelete: true } },
       ];
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(true);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(true);
     });
 
     it("condition checks when only nodes are selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         { allowedActions: { canDelete: true } },
         { allowedActions: { canDelete: true } },
       ];
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(true);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(true);
     });
 
     it("condition checks when dragging", () => {
       const { selectionStore, movingStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         { allowedActions: { canDelete: true } },
         { allowedActions: { canDelete: true } },
       ];
       movingStore.isDragging = true;
-      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
+      expect(workflowShortcuts.deleteSelected.condition?.()).toBe(false);
     });
   });
 
@@ -885,16 +965,19 @@ describe("workflowShortcuts", () => {
     ])("%s menu if workflow is writeable or not", (_, cond) => {
       const { selectionStore, workflowStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
+      // @ts-expect-error
       workflowStore.isWritable = cond;
-      expect(workflowShortcuts.quickActionMenu.condition()).toBe(cond);
+      expect(workflowShortcuts.quickActionMenu.condition?.()).toBe(cond);
     });
 
     it("opens quick add node menu in global mode if no node is selected", () => {
       const { selectionStore, canvasAnchoredComponentsStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
-      workflowShortcuts.quickActionMenu.execute({});
+      workflowShortcuts.quickActionMenu.execute(mockShortcutContext());
       expect(
         canvasAnchoredComponentsStore.openQuickActionMenu,
       ).toHaveBeenCalledWith({
@@ -917,8 +1000,9 @@ describe("workflowShortcuts", () => {
     it("opens quick add node menu on the mickey mouse ports if no others are available", () => {
       const { selectionStore, canvasAnchoredComponentsStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = mockNodeTemplate(1);
-      workflowShortcuts.quickActionMenu.execute({});
+      workflowShortcuts.quickActionMenu.execute(mockShortcutContext());
       expect(
         canvasAnchoredComponentsStore.openQuickActionMenu,
       ).toHaveBeenCalledWith({
@@ -935,8 +1019,9 @@ describe("workflowShortcuts", () => {
     it("opens quick add node menu on first none mickey mouse ports", () => {
       const { selectionStore, canvasAnchoredComponentsStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = mockNodeTemplate(3);
-      workflowShortcuts.quickActionMenu.execute({});
+      workflowShortcuts.quickActionMenu.execute(mockShortcutContext());
       expect(
         canvasAnchoredComponentsStore.openQuickActionMenu,
       ).toHaveBeenCalledWith({
@@ -965,20 +1050,21 @@ describe("workflowShortcuts", () => {
           { index: 2, typeId: "some.type" },
         ],
       });
+      // @ts-expect-error
       selectionStore.singleSelectedNode = node;
+      // @ts-expect-error
       nodeInteractionsStore.getNodeById = vi.fn().mockReturnValue(node);
+      // @ts-expect-error
       canvasAnchoredComponentsStore.quickActionMenu = {
         isOpen: true,
         props: {
           nodeId: "root:4",
-          port: {
-            index: 1,
-          },
+          port: createPort({ index: 1 }),
           position: { x: 5, y: 8 },
           nodeRelation: "SUCCESSORS",
         },
       };
-      workflowShortcuts.quickActionMenu.execute({});
+      workflowShortcuts.quickActionMenu.execute(mockShortcutContext());
       expect(
         canvasAnchoredComponentsStore.openQuickActionMenu,
       ).toHaveBeenCalledWith({
@@ -997,9 +1083,11 @@ describe("workflowShortcuts", () => {
       const { selectionStore } = createStore();
 
       const nodes = [createNativeNode(), createNativeNode()];
+      // @ts-expect-error
       selectionStore.getSelectedNodes = nodes;
+      // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
-      workflowShortcuts.autoConnectNodesDefault.execute();
+      workflowShortcuts.autoConnectNodesDefault.execute(mockShortcutContext());
       expect(mockedAPI.workflowCommand.AutoConnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
@@ -1014,9 +1102,11 @@ describe("workflowShortcuts", () => {
       const { selectionStore } = createStore();
 
       const nodes = [createNativeNode(), createNativeNode()];
+      // @ts-expect-error
       selectionStore.getSelectedNodes = nodes;
+      // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
-      workflowShortcuts.autoConnectNodesFlowVar.execute();
+      workflowShortcuts.autoConnectNodesFlowVar.execute(mockShortcutContext());
       expect(mockedAPI.workflowCommand.AutoConnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
@@ -1030,37 +1120,58 @@ describe("workflowShortcuts", () => {
     it("should not work when no node is selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [];
-      expect(workflowShortcuts.autoConnectNodesDefault.condition()).toBe(false);
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(false);
+      expect(workflowShortcuts.autoConnectNodesDefault.condition?.()).toBe(
+        false,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        false,
+      );
     });
 
     it("should not work when only single node is selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [createNativeNode()];
-      expect(workflowShortcuts.autoConnectNodesDefault.condition()).toBe(false);
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(false);
+      expect(workflowShortcuts.autoConnectNodesDefault.condition?.()).toBe(
+        false,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        false,
+      );
     });
 
     it("should work when single node is selected and a port bar is selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [createNativeNode()];
+      // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
-      expect(workflowShortcuts.autoConnectNodesDefault.condition()).toBe(true);
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(true);
+      expect(workflowShortcuts.autoConnectNodesDefault.condition?.()).toBe(
+        true,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        true,
+      );
     });
 
     it("should work when multiple nodes are selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         createNativeNode(),
         createNativeNode(),
       ];
-      expect(workflowShortcuts.autoConnectNodesDefault.condition()).toBe(true);
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(true);
+      expect(workflowShortcuts.autoConnectNodesDefault.condition?.()).toBe(
+        true,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        true,
+      );
     });
   });
 
@@ -1069,11 +1180,13 @@ describe("workflowShortcuts", () => {
       const { selectionStore } = createStore();
 
       const nodes = [createNativeNode(), createNativeNode()];
+      // @ts-expect-error
       selectionStore.getSelectedNodes = nodes;
+      // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
-      workflowShortcuts.autoDisconnectNodesDefault.execute({
-        payload: { event: { key: "l" } },
-      });
+      workflowShortcuts.autoDisconnectNodesDefault.execute(
+        mockShortcutContext({ payload: { event: { key: "l" } } }),
+      );
       expect(mockedAPI.workflowCommand.AutoDisconnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
@@ -1088,9 +1201,13 @@ describe("workflowShortcuts", () => {
       const { selectionStore } = createStore();
 
       const nodes = [createNativeNode(), createNativeNode()];
+      // @ts-expect-error
       selectionStore.getSelectedNodes = nodes;
+      // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
-      workflowShortcuts.autoDisconnectNodesFlowVar.execute();
+      workflowShortcuts.autoDisconnectNodesFlowVar.execute(
+        mockShortcutContext(),
+      );
       expect(mockedAPI.workflowCommand.AutoDisconnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
@@ -1104,45 +1221,58 @@ describe("workflowShortcuts", () => {
     it("should not work when no node is selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [];
-      expect(workflowShortcuts.autoDisconnectNodesDefault.condition()).toBe(
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
         false,
       );
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(false);
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        false,
+      );
     });
 
     it("should not work when only single node is selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [createNativeNode()];
-      expect(workflowShortcuts.autoDisconnectNodesDefault.condition()).toBe(
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
         false,
       );
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(false);
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        false,
+      );
     });
 
     it("should work when single node is selected and a port bar is selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [createNativeNode()];
+      // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
-      expect(workflowShortcuts.autoDisconnectNodesDefault.condition()).toBe(
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
         true,
       );
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(true);
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        true,
+      );
     });
 
     it("should work when multiple nodes are selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         createNativeNode(),
         createNativeNode(),
       ];
-      expect(workflowShortcuts.autoDisconnectNodesDefault.condition()).toBe(
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
         true,
       );
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(true);
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        true,
+      );
     });
   });
 
@@ -1150,10 +1280,10 @@ describe("workflowShortcuts", () => {
     it("executes:", () => {
       const { selectionStore } = createStore();
 
-      getNextSelectedPort.mockReturnValueOnce("someSelectedPortIdentifier");
-      workflowShortcuts.shuffleSelectedPort.execute();
+      getNextSelectedPortMock.mockReturnValueOnce("someSelectedPortIdentifier");
+      workflowShortcuts.shuffleSelectedPort.execute(mockShortcutContext());
       expect(selectionStore.updateActiveNodePorts).toHaveBeenLastCalledWith({
-        nodeId: selectionStore.singleSelectedNode.id,
+        nodeId: selectionStore.singleSelectedNode!.id,
         selectedPort: "someSelectedPortIdentifier",
       });
     });
@@ -1162,19 +1292,22 @@ describe("workflowShortcuts", () => {
       // ideal condition
       const { selectionStore, workflowStore } = createStore();
 
-      expect(workflowShortcuts.shuffleSelectedPort.condition()).toBe(true);
+      expect(workflowShortcuts.shuffleSelectedPort.condition?.()).toBe(true);
 
       // no single node selected
+      // @ts-expect-error
       selectionStore.singleSelectedNode = null;
-      expect(workflowShortcuts.shuffleSelectedPort.condition()).toBe(false);
+      expect(workflowShortcuts.shuffleSelectedPort.condition?.()).toBe(false);
 
       // workflow read-only
+      // @ts-expect-error
       selectionStore.singleSelectedNode = {
         id: "root:0",
         allowedActions: {},
       };
+      // @ts-expect-error
       workflowStore.isWritable = false;
-      expect(workflowShortcuts.shuffleSelectedPort.condition()).toBe(false);
+      expect(workflowShortcuts.shuffleSelectedPort.condition?.()).toBe(false);
     });
   });
 });

@@ -31,16 +31,12 @@ export type Shortcut = {
    * Action that executes when the shortcut is triggered. Will receive a context object
    * that contains the store instance, the router instance, and optionally a MouseEvent
    * in case there's mouse action that triggers this shortcut
-   * @param context
-   * @returns
    */
   execute: (context: ShortcutExecuteContext) => void | Promise<any>;
 
   /**
    * Shortcut can only execute if the result of this function is `true`. If not provided defaults to
    * true
-   * @param payload
-   * @returns
    */
   condition?: () => boolean;
 

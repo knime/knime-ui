@@ -1,15 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
+import { capitalize } from "lodash-es";
 
+import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
   createComponentNode,
   createComponentPlaceholder,
   createMetanode,
+  createWorkflow,
 } from "@/test/factories";
+import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import componentOrMetanodeShortcuts from "../componentOrMetanodeShortcuts";
-
-const capitalize = (str) => str.charAt(0).toUpperCase().concat(str.slice(1));
 
 describe("componentOrMetanodeShortcuts", () => {
   const createStore = () => {
@@ -24,19 +26,14 @@ describe("componentOrMetanodeShortcuts", () => {
     } = mockStores();
 
     applicationStore.activeProjectId = "activeTestProjectId";
-    workflowStore.activeWorkflow = {
-      info: {
-        containerType: "project",
-      },
+    workflowStore.activeWorkflow = createWorkflow({
+      info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
       parents: [
-        {
-          containerId: "root:parent",
-        },
-        {
-          containerId: "direct:parent:id",
-        },
+        { containerId: "root:parent" },
+        { containerId: "direct:parent:id" },
       ],
-    };
+    });
+    // @ts-expect-error
     selectionStore.singleSelectedNode = createMetanode({ id: "root:0" });
 
     return {
@@ -52,10 +49,7 @@ describe("componentOrMetanodeShortcuts", () => {
 
   const createRouter = () => {
     const mockPush = vi.fn();
-    const $router = {
-      push: mockPush,
-    };
-
+    const $router = { push: mockPush };
     return { mockPush, $router };
   };
 
@@ -63,7 +57,9 @@ describe("componentOrMetanodeShortcuts", () => {
     it("create metanode", () => {
       const { workflowStore } = createStore();
 
-      componentOrMetanodeShortcuts.createMetanode.execute();
+      componentOrMetanodeShortcuts.createMetanode.execute(
+        mockShortcutContext(),
+      );
       expect(workflowStore.collapseToContainer).toHaveBeenCalledWith({
         containerType: "metanode",
       });
@@ -72,7 +68,9 @@ describe("componentOrMetanodeShortcuts", () => {
     it("create component", () => {
       const { workflowStore } = createStore();
 
-      componentOrMetanodeShortcuts.createComponent.execute();
+      componentOrMetanodeShortcuts.createComponent.execute(
+        mockShortcutContext(),
+      );
       expect(workflowStore.collapseToContainer).toHaveBeenCalledWith({
         containerType: "component",
       });
@@ -81,9 +79,9 @@ describe("componentOrMetanodeShortcuts", () => {
     it("open component or metanode", () => {
       const { mockPush, $router } = createRouter();
 
-      componentOrMetanodeShortcuts.openComponentOrMetanode.execute({
-        $router,
-      });
+      componentOrMetanodeShortcuts.openComponentOrMetanode.execute(
+        mockShortcutContext({ $router }),
+      );
       expect(mockPush).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: {
@@ -97,15 +95,18 @@ describe("componentOrMetanodeShortcuts", () => {
       const { mockPush, $router } = createRouter();
       const { selectionStore, componentInteractionsStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = createMetanode({
         id: "root:0",
         isLocked: true,
       });
       // success unlock
-      componentInteractionsStore.unlockSubnode.mockResolvedValue(true);
-      await componentOrMetanodeShortcuts.openComponentOrMetanode.execute({
-        $router,
-      });
+      componentInteractionsStore.unlockSubnode = vi
+        .fn()
+        .mockResolvedValue(true);
+      await componentOrMetanodeShortcuts.openComponentOrMetanode.execute(
+        mockShortcutContext({ $router }),
+      );
       expect(componentInteractionsStore.unlockSubnode).toHaveBeenCalledWith({
         nodeId: "root:0",
       });
@@ -123,15 +124,18 @@ describe("componentOrMetanodeShortcuts", () => {
       const { mockPush, $router } = createRouter();
       const { selectionStore, componentInteractionsStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = createMetanode({
         id: "root:0",
         isLocked: true,
       });
       // fails/cancel unlock
-      componentInteractionsStore.unlockSubnode.mockResolvedValue(false);
-      componentOrMetanodeShortcuts.openComponentOrMetanode.execute({
-        $router,
-      });
+      componentInteractionsStore.unlockSubnode = vi
+        .fn()
+        .mockResolvedValue(false);
+      componentOrMetanodeShortcuts.openComponentOrMetanode.execute(
+        mockShortcutContext({ $router }),
+      );
 
       expect(componentInteractionsStore.unlockSubnode).toHaveBeenCalledWith({
         nodeId: "root:0",
@@ -143,9 +147,9 @@ describe("componentOrMetanodeShortcuts", () => {
     it("open parent workflow", () => {
       const { mockPush, $router } = createRouter();
 
-      componentOrMetanodeShortcuts.openParentWorkflow.execute({
-        $router,
-      });
+      componentOrMetanodeShortcuts.openParentWorkflow.execute(
+        mockShortcutContext({ $router }),
+      );
       expect(mockPush).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: {
@@ -160,21 +164,25 @@ describe("componentOrMetanodeShortcuts", () => {
     it("expand container node", () => {
       const { workflowStore } = createStore();
 
-      componentOrMetanodeShortcuts.expandMetanode.execute();
+      componentOrMetanodeShortcuts.expandMetanode.execute(
+        mockShortcutContext(),
+      );
       expect(workflowStore.expandContainerNode).toHaveBeenCalled();
     });
 
     it("open layout editor", () => {
       const { desktopInteractionsStore } = createStore();
 
-      componentOrMetanodeShortcuts.openLayoutEditor.execute();
+      componentOrMetanodeShortcuts.openLayoutEditor.execute(
+        mockShortcutContext(),
+      );
       expect(desktopInteractionsStore.openLayoutEditor).toHaveBeenCalled();
     });
 
     it("can lock a subnode", () => {
       const { componentInteractionsStore } = createStore();
 
-      componentOrMetanodeShortcuts.lockSubnode.execute();
+      componentOrMetanodeShortcuts.lockSubnode.execute(mockShortcutContext());
       expect(componentInteractionsStore.lockSubnode).toHaveBeenCalledWith({
         nodeId: "root:0",
       });
@@ -183,20 +191,21 @@ describe("componentOrMetanodeShortcuts", () => {
     it("disables lock when subnode is already locked", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = createMetanode({
         id: "root:0",
         isLocked: true,
       });
-      expect(
-        componentOrMetanodeShortcuts.lockSubnode.condition({}),
-      ).toBeFalsy();
+      expect(componentOrMetanodeShortcuts.lockSubnode.condition?.()).toBe(
+        false,
+      );
     });
 
     describe("editName", () => {
       it("opens the name editor", () => {
         const { nodeInteractionsStore } = createStore();
 
-        componentOrMetanodeShortcuts.editName.execute();
+        componentOrMetanodeShortcuts.editName.execute(mockShortcutContext());
         expect(nodeInteractionsStore.openNameEditor).toHaveBeenCalledWith(
           "root:0",
         );
@@ -205,8 +214,9 @@ describe("componentOrMetanodeShortcuts", () => {
       it("cannot rename when workflow is not writable", () => {
         const { workflowStore } = createStore();
 
+        // @ts-expect-error
         workflowStore.isWritable = false;
-        expect(componentOrMetanodeShortcuts.editName.condition()).toBe(false);
+        expect(componentOrMetanodeShortcuts.editName.condition?.()).toBe(false);
       });
 
       it.each([
@@ -218,8 +228,12 @@ describe("componentOrMetanodeShortcuts", () => {
         (kind, conditionValue) => {
           const { selectionStore } = createStore();
 
-          selectionStore.singleSelectedNode.kind = kind;
-          expect(componentOrMetanodeShortcuts.editName.condition()).toBe(
+          // @ts-expect-error
+          selectionStore.singleSelectedNode = {
+            ...createMetanode({ id: "root:0" }),
+            kind,
+          };
+          expect(componentOrMetanodeShortcuts.editName.condition?.()).toBe(
             conditionValue,
           );
         },
@@ -234,8 +248,9 @@ describe("componentOrMetanodeShortcuts", () => {
       ])("cannot rename if the %s is linked", (_, node) => {
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = node;
-        expect(componentOrMetanodeShortcuts.editName.condition()).toBe(false);
+        expect(componentOrMetanodeShortcuts.editName.condition?.()).toBe(false);
       });
     });
 
@@ -243,198 +258,206 @@ describe("componentOrMetanodeShortcuts", () => {
       it("has not a component selected, button disabled", () => {
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode.kind = "nothing";
         expect(
-          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({}),
-        ).toBeFalsy();
+          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition?.(),
+        ).toBe(false);
       });
 
       it("has a component selected, button enabled", () => {
         const { selectionStore, uiControlsStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = createComponentNode({
           id: "root:0",
         });
         uiControlsStore.canOpenComponentLayoutEditor = false;
         expect(
-          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({}),
-        ).toBeFalsy();
+          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition?.(),
+        ).toBe(false);
 
         uiControlsStore.canOpenComponentLayoutEditor = true;
         expect(
-          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({}),
-        ).toBeTruthy();
+          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition?.(),
+        ).toBe(true);
       });
 
       it("has a linked component selected, button disabled", () => {
         const { selectionStore } = createStore();
 
+        // @ts-expect-error
         selectionStore.singleSelectedNode = createComponentNode({
           id: "root:0",
-          link: "random-link",
+          link: { url: "random-link" },
         });
         expect(
-          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({}),
-        ).toBeFalsy();
+          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition?.(),
+        ).toBe(false);
       });
     });
   });
 
-  describe.each([["component"], ["metanode"]])("create %s", (nodeKind) => {
+  describe.each(["component", "metanode"])("create %s", (nodeKind) => {
     const shortcut = `create${capitalize(nodeKind)}`;
 
     it(`it can not create ${nodeKind} when canCollapse is false`, () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         { allowedActions: { canCollapse: "true" } },
       ];
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(true);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(true);
 
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         { allowedActions: { canCollapse: "false" } },
       ];
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(false);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
     });
 
     it(`it can not create ${nodeKind} when workflow is not writable`, () => {
       const { selectionStore, workflowStore } = createStore();
 
+      // @ts-expect-error
       workflowStore.isWritable = false;
+      // @ts-expect-error
       selectionStore.getSelectedNodes = [
         { allowedActions: { canCollapse: "true" } },
       ];
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(false);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
     });
 
     it(`it can not create ${nodeKind} when no node is selected`, () => {
       const { workflowStore } = createStore();
 
+      // @ts-expect-error
       workflowStore.isWritable = false;
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(false);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
     });
   });
 
-  describe.each([["component"], ["metanode"]])("expand %s", (nodeKind) => {
+  describe.each(["component", "metanode"])("expand %s", (nodeKind) => {
     const shortcut = `expand${capitalize(nodeKind)}`;
 
     it(`it allows to expand if a ${nodeKind} is selected and canExpand is true`, () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = {
         kind: nodeKind,
-        allowedActions: {
-          canExpand: "false",
-        },
+        allowedActions: { canExpand: "false" },
       };
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(false);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = {
         kind: nodeKind,
-        allowedActions: {
-          canExpand: "true",
-        },
+        allowedActions: { canExpand: "true" },
       };
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(true);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(true);
     });
 
     it(`it can not expand ${nodeKind} when workflow is not writable`, () => {
       const { selectionStore, workflowStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = {
         kind: nodeKind,
-        allowedActions: {
-          canExpand: "true",
-        },
+        allowedActions: { canExpand: "true" },
       };
+      // @ts-expect-error
       workflowStore.isWritable = false;
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(false);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
     });
 
     it(`it can not expand ${nodeKind} when it is linked`, () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.singleSelectedNode = {
         kind: nodeKind,
-        link: "random-link",
-        allowedActions: {
-          canExpand: "true",
-        },
+        link: { url: "random-link" },
+        allowedActions: { canExpand: "true" },
       };
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(false);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
     });
 
     it(`it can not expand ${nodeKind} when it is locked`, () => {
       const { selectionStore } = createStore();
 
-      selectionStore.singleSelectedNode = {
-        kind: nodeKind,
-        isLocked: true,
-      };
-
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(false);
+      // @ts-expect-error
+      selectionStore.singleSelectedNode = { kind: nodeKind, isLocked: true };
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
     });
   });
 
   describe("openLayoutEditor", () => {
     it("is not a component, button disabled", () => {
-      expect(
-        componentOrMetanodeShortcuts.openLayoutEditor.condition(),
-      ).toBeFalsy();
+      expect(componentOrMetanodeShortcuts.openLayoutEditor.condition?.()).toBe(
+        false,
+      );
     });
 
     it("is not a writable component, button disabled", () => {
       const { workflowStore } = createStore();
 
+      // @ts-expect-error
       workflowStore.isWritable = false;
-      workflowStore.activeWorkflow.info.containerType = "component";
-      expect(
-        componentOrMetanodeShortcuts.openLayoutEditor.condition(),
-      ).toBeFalsy();
+      workflowStore.activeWorkflow!.info.containerType =
+        WorkflowInfo.ContainerTypeEnum.Component;
+      expect(componentOrMetanodeShortcuts.openLayoutEditor.condition?.()).toBe(
+        false,
+      );
     });
 
     it("is a writable component, button enabled", () => {
       const { workflowStore, uiControlsStore } = createStore();
 
-      workflowStore.activeWorkflow.info.containerType = "component";
+      workflowStore.activeWorkflow!.info.containerType =
+        WorkflowInfo.ContainerTypeEnum.Component;
       uiControlsStore.canOpenComponentLayoutEditor = false;
-      expect(componentOrMetanodeShortcuts.openLayoutEditor.condition()).toBe(
+      expect(componentOrMetanodeShortcuts.openLayoutEditor.condition?.()).toBe(
         false,
       );
 
       uiControlsStore.canOpenComponentLayoutEditor = true;
-      expect(componentOrMetanodeShortcuts.openLayoutEditor.condition()).toBe(
+      expect(componentOrMetanodeShortcuts.openLayoutEditor.condition?.()).toBe(
         true,
       );
     });
   });
 
   describe.each([
-    ["deleteComponentPlaceholder"],
-    ["retryComponentPlaceholderLoading"],
-    ["cancelComponentPlaceholderLoading"],
+    "deleteComponentPlaceholder",
+    "retryComponentPlaceholderLoading",
+    "cancelComponentPlaceholderLoading",
   ])("%s", (shortcut) => {
     it("is disabled if component placeholder isn't selected", () => {
       createStore();
 
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBeFalsy();
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
     });
 
     it("is disabled if workflow isn't writable", () => {
       const { workflowStore, selectionStore } = createStore();
 
+      // @ts-expect-error
       workflowStore.isWritable = false;
+      // @ts-expect-error
       selectionStore.getSelectedComponentPlaceholder =
         createComponentPlaceholder();
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBeFalsy();
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(false);
     });
 
     it("is enabled when component placeholder is selected", () => {
       const { selectionStore } = createStore();
 
+      // @ts-expect-error
       selectionStore.getSelectedComponentPlaceholder =
         createComponentPlaceholder();
-      expect(componentOrMetanodeShortcuts[shortcut].condition()).toBe(true);
+      expect(componentOrMetanodeShortcuts[shortcut].condition?.()).toBe(true);
     });
   });
 });

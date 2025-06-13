@@ -54,9 +54,11 @@ describe("nodeAlignShortcuts", () => {
 
         expect(nodeAlignShortcuts[shortcutName].condition()).toBe(true);
 
+        // @ts-expect-error
         workflowStore.isWritable = false;
         expect(nodeAlignShortcuts[shortcutName].condition()).toBe(false);
 
+        // @ts-expect-error
         workflowStore.isWritable = true;
 
         await selectionStore.deselectAllObjects([node1.id]);
