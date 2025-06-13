@@ -106,16 +106,19 @@ final class PortAPI {
     @API
     static void openLegacyPortView(final String projectId, final String nodeId, final Double portIdx,
         final Boolean execute) {
-        Runnable action = () -> {
-            final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-            checkIsNotNull(nc, projectId, nodeId);
-            NodeOutPort port = nc.getOutPort(portIdx.intValue());
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        checkIsNotNull(nc, projectId, nodeId);
+        if (nc.isInactive()) {
+            return;
+        }
+        Runnable openPortView = () -> {
+            var port = nc.getOutPort(portIdx.intValue());
             port.openPortView(port.getPortName(), getAppBoundsAsAWTRec());
         };
         if (Boolean.TRUE.equals(execute)) {
-            NodeAPI.executeNodeThenRun(projectId, nodeId, action);
+            NodeAPI.executeNodeThenRun(projectId, nodeId, openPortView);
         } else {
-            action.run();
+            openPortView.run();
         }
     }
 }

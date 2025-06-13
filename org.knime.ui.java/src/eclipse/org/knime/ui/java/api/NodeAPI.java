@@ -118,12 +118,17 @@ final class NodeAPI {
 
     /**
      * Executes the node and opens the node view as soon as the node is executed.
+     * <p>
+     * See org.knime.gateway.api.webui.util.WorkflowEntityFactory#hasAndCanOpenNodeView(NodeContainer)
      *
-     * @param projectId
-     * @param nodeId
+     * @param projectId -
+     * @param nodeId -
      */
     @API
     static void executeNodeAndOpenView(final String projectId, final String nodeId) {
+        if (isInactive(projectId, nodeId)) {
+            return;
+        }
         executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openNodeView(projectId, nodeId));
     }
 
@@ -140,16 +145,14 @@ final class NodeAPI {
         checkIsNotNull(nc, projectId, nodeId);
 
         if (nc.getNodeContainerState().isExecuted()) {
-            if (!nc.isInactive()) {
-                task.run();
-            }
+            task.run();
             return;
         }
         nc.addNodeStateChangeListener(new NodeStateChangeListener() {
             @Override
             public void stateChanged(final NodeStateEvent event) {
                 var state = nc.getNodeContainerState();
-                if (event.getSource().equals(nc.getID()) && state.isExecuted() && !nc.isInactive()) {
+                if (event.getSource().equals(nc.getID()) && state.isExecuted()) {
                     Display.getDefault().asyncExec(task);
                 }
                 if (!state.isExecutionInProgress()) {
@@ -236,5 +239,11 @@ final class NodeAPI {
 
     static void checkIsNotNull(final NodeContainer nc, final String projectId, final String nodeId) {
         CheckUtils.checkArgument(nc != null, "Node with id '%s' not found in workflow with id '%s'", projectId, nodeId);
+    }
+
+    private static boolean isInactive(final String projectId, final String nodeId) {
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        checkIsNotNull(nc, projectId, nodeId);
+        return nc.isInactive();
     }
 }
