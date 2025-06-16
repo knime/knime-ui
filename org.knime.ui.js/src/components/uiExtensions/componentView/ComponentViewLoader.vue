@@ -81,7 +81,7 @@ onMounted(async () => {
 
 const unmount = async (oldIdentifier?: Identifiers) => {
   if (shadowRoot.value) {
-    const deactivationTarget = oldIdentifier ?? props;
+    const deactivationTarget = oldIdentifier ?? currentIdentifier.value;
 
     try {
       await API.component.deactivateAllComponentDataServices(
