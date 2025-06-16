@@ -17,6 +17,9 @@ interface ImportMetaEnv {
   readonly VITE_HUB_API_URL: string;
   readonly VITE_HUB_AUTH_USER: string;
   readonly VITE_HUB_AUTH_PASS: string;
+
+  readonly VITE_USE_LOCAL_PAGEBUILDER: string;
+  readonly VITE_LOCAL_PAGEBUILDER_RELATIVE_PATH: string;
 }
 
 interface ImportMeta {

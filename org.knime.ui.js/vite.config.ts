@@ -9,6 +9,8 @@ import svgLoader from "vite-svg-loader";
 // @ts-expect-error (please add error description)
 import { svgoConfig } from "@knime/styles/config/svgo.config";
 
+import { pagebuilderProxyVitePlugin } from "./pagebuilder-proxy-vite-plugin.js";
+
 // TODO: replace with app.component calls
 // @ts-expect-error (please add error description)
 import { isCustomElement } from "./src/vue3-pixi/index";
@@ -49,7 +51,12 @@ export default defineConfig(({ mode }) => {
         includeWellKnown: false,
         generateSerial: true,
       }),
-    ],
+      mode === "development" &&
+        process.env.VITE_USE_LOCAL_PAGEBUILDER === "true" &&
+        pagebuilderProxyVitePlugin(
+          process.env.VITE_LOCAL_PAGEBUILDER_RELATIVE_PATH,
+        ),
+    ].filter(Boolean),
 
     build: {
       target: "esnext",
