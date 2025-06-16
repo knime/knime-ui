@@ -149,6 +149,19 @@ describe("NodeViewLoader.vue", () => {
     );
   });
 
+  it("should reset the `activeNodeViewNeedsExecution` flag when reloading view", async () => {
+    mockGetNodeView();
+    const { wrapper, mockedStores } = doMount();
+    mockedStores.nodeConfigurationStore.activeNodeViewNeedsExecution = true;
+    const newNode = { ...dummyNode, id: "node2" };
+
+    await wrapper.setProps({ selectedNode: newNode });
+
+    expect(
+      mockedStores.nodeConfigurationStore.activeNodeViewNeedsExecution,
+    ).toBe(false);
+  });
+
   it("should conditionally deactivate data services on unmount", async () => {
     mockGetNodeView();
     const { wrapper } = doMount();

@@ -101,6 +101,13 @@ describe("nodeConfiguration", () => {
 
     const done = vi.fn();
 
+    const dirtyState = {
+      apply: "configured",
+      view: "configured",
+    } satisfies APILayerDirtyState;
+    nodeConfiguration.setDirtyState(dirtyState);
+    expect(nodeConfiguration.activeNodeViewNeedsExecution).toBe(false);
+
     nodeConfiguration
       .applySettings({
         nodeId: "root:1",
@@ -116,6 +123,7 @@ describe("nodeConfiguration", () => {
 
     await flushPromises();
 
+    expect(nodeConfiguration.activeNodeViewNeedsExecution).toBe(true);
     expect(done).toHaveBeenCalledWith(true);
     expect(executionStore.executeNodes).toHaveBeenCalledWith(["root:1"]);
   });

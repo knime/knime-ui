@@ -78,6 +78,7 @@ export interface NodeConfigurationState {
   pushEventDispatcher: UIExtensionPushEventDispatcher;
   timestamp: number | null;
   isLargeMode: boolean;
+  activeNodeViewNeedsExecution: boolean;
 }
 
 export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
@@ -91,6 +92,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     pushEventDispatcher: () => {},
     timestamp: null,
     isLargeMode: false,
+    activeNodeViewNeedsExecution: false,
   }),
   actions: {
     setIsLargeMode(value: boolean) {
@@ -143,6 +145,14 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
         // changes have been applied (when `setApplyComplete` is called)
         return unwrappedPromise.promise;
       };
+
+      // when applying settings, if this node's view needs execution then
+      // we set this flag to stop the view from rendering until the changes
+      // from the backend are applied (node state changes, etc)
+      if (this.dirtyState.view === "configured") {
+        this.activeNodeViewNeedsExecution = true;
+      }
+
       const isApplied = await dispatchApplySettings();
 
       if (isApplied && execute) {

@@ -77,11 +77,17 @@ const loadExtensionConfig = async () => {
 };
 const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));
 
+const { latestPublishedData, dirtyState, activeNodeViewNeedsExecution } =
+  storeToRefs(nodeConfigurationStore);
+
 const { extensionConfig, isLoadingConfig, error } = useUIExtensionLifecycle({
   renderKey: uniqueNodeViewId,
   configLoader: loadExtensionConfig,
   onExtensionLoadingStateChange: (state) => emit("loadingStateChange", state),
   onBeforeLoadUIExtension: () => {
+    // reset pending execution state on a new load
+    activeNodeViewNeedsExecution.value = false;
+
     // clear any existing alert emitted from a previous render or view
     emit("alert", null);
   },
@@ -172,8 +178,6 @@ const apiLayer: UIExtensionAPILayer = {
   closeDataValueView: noop,
 };
 
-const { latestPublishedData, dirtyState } = storeToRefs(nodeConfigurationStore);
-
 const latestPublishedDataForThisNode = computed(() => {
   if (latestPublishedData.value === null) {
     return null;
@@ -205,23 +209,27 @@ watch(
   { deep: true },
 );
 
-const hasToReexecute = computed(() => {
+const isNodeConfigurationDirty = computed(() => {
   // when receiving dirty state we check whether
   // the view can be displayed based on said dirty state
-  return dirtyState.value.view === "configured";
+  return (
+    dirtyState.value.view === "configured" || activeNodeViewNeedsExecution.value
+  );
 });
 </script>
 
 <template>
   <ExecuteButton
-    v-if="!error && !isLoadingConfig && hasToReexecute"
+    v-if="!error && !isLoadingConfig && isNodeConfigurationDirty"
     message="To preview the node, apply your changes and re-execute it."
     button-label="Apply & execute"
     @click="applySettings(selectedNode.id, true)"
   />
 
   <UIExtension
-    v-if="!error && !isLoadingConfig && !hasToReexecute && extensionConfig"
+    v-if="
+      !error && !isLoadingConfig && extensionConfig && !isNodeConfigurationDirty
+    "
     :extension-config="extensionConfig"
     :initial-shared-data="latestPublishedDataForThisNode"
     :shadow-app-style="{ height: '100%' }"
