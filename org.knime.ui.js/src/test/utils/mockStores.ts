@@ -13,7 +13,7 @@ import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPr
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
-import { useCompositeViewStore } from "@/store/component/compositeView";
+import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";

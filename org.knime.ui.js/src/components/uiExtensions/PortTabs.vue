@@ -4,7 +4,7 @@ import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 import Eye from "@knime/styles/img/icons/eye.svg";
 
 import portIcon from "@/components/common/PortIconRenderer";
-import { useCompositeViewActions } from "@/components/uiExtensions/componentView/useCompositeViewActions";
+import { useCompositeViewActions } from "@/components/uiExtensions/compositeView/useCompositeViewActions";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 
 export const portIconSize = 9;

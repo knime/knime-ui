@@ -130,11 +130,8 @@ final class NodeAPI {
         }
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
-        CoreUtil.executeThenRun(nc, () -> {
-            Display.getDefault().asyncExec(() -> {
-                NodeAPI.openNodeView(projectId, nodeId);
-            });
-        });
+        CoreUtil.executeThenRun(nc,
+            () -> Display.getDefault().asyncExec(() -> NodeAPI.openNodeView(projectId, nodeId)));
     }
 
     /**

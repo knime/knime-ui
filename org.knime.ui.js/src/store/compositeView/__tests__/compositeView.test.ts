@@ -8,10 +8,7 @@ import {
   createWorkflowAnnotation,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import {
-  type PageBuilderControl,
-  useCompositeViewStore,
-} from "../compositeView";
+import { type PageBuilderApi, useCompositeViewStore } from "../compositeView";
 
 const mockUrl = vi.hoisted(() => "mocked-url");
 
@@ -23,19 +20,19 @@ vi.mock("../pageBuilderStore", () => ({
   pageBuilderApiVuexStoreConfig: { state: {}, actions: {} },
 }));
 
-const mockPageBuilderControl: PageBuilderControl = vi.hoisted(() => ({
+const mockPageBuilder: PageBuilderApi = vi.hoisted(() => ({
   mountShadowApp: vi.fn(),
   loadPage: vi.fn(() => Promise.resolve()),
   isDirty: vi.fn(() => Promise.resolve(false)),
   isDefault: vi.fn(() => Promise.resolve(true)),
   hasPage: vi.fn(() => false),
-  updateAndReexecute: vi.fn(() => Promise.resolve()),
+  applyAndExecute: vi.fn(() => Promise.resolve()),
   applyToDefaultAndExecute: vi.fn(() => Promise.resolve()),
   unmountShadowApp: vi.fn(),
 }));
 
 const mockCreatePageBuilder = vi.hoisted(() =>
-  vi.fn(() => Promise.resolve(mockPageBuilderControl)),
+  vi.fn(() => Promise.resolve(mockPageBuilder)),
 );
 
 vi.mock(mockUrl, () => ({
@@ -60,7 +57,7 @@ describe("composite view store", () => {
     });
 
     it("should initialize PageBuilder with correct environment and settings", async () => {
-      await useCompositeViewStore().getPageBuilderControl(someProjectId);
+      await useCompositeViewStore().getPageBuilder(someProjectId);
       expect(mockCreatePageBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           state: {
@@ -77,22 +74,21 @@ describe("composite view store", () => {
     });
 
     it("mounts and unmounts the PageBuilder app correctly", async () => {
-      const { getPageBuilderControl, isCompositeViewDirty } =
-        useCompositeViewStore();
-      const control = await getPageBuilderControl(someProjectId);
-      await control.mountShadowApp("mock-shadow-root" as unknown as ShadowRoot);
-      expect(mockPageBuilderControl.mountShadowApp).toHaveBeenCalled();
+      const { getPageBuilder, isCompositeViewDirty } = useCompositeViewStore();
+      const pageBuilder = await getPageBuilder(someProjectId);
+      await pageBuilder.mountShadowApp("mock-shadow-root" as unknown as ShadowRoot);
+      expect(mockPageBuilder.mountShadowApp).toHaveBeenCalled();
       expect(isCompositeViewDirty).toBe(false);
-      expect(mockPageBuilderControl.hasPage()).toBe(false);
-      control.unmountShadowApp();
-      expect(mockPageBuilderControl.unmountShadowApp).toHaveBeenCalled();
+      expect(mockPageBuilder.hasPage()).toBe(false);
+      pageBuilder.unmountShadowApp();
+      expect(mockPageBuilder.unmountShadowApp).toHaveBeenCalled();
     });
 
     it("should handle dirty state through UI interactions", async () => {
-      const { getPageBuilderControl, clickAwayCompositeView } =
+      const { getPageBuilder, clickAwayCompositeView } =
         useCompositeViewStore();
-      await getPageBuilderControl(someProjectId);
-      mockPageBuilderControl.isDirty.mockResolvedValueOnce(true);
+      await getPageBuilder(someProjectId);
+      mockPageBuilder.isDirty.mockResolvedValueOnce(true);
       showPageBuilderUnsavedChangesDialogMock.mockResolvedValueOnce(false);
       const result = await clickAwayCompositeView();
       expect(result).toBeFalsy();
@@ -101,14 +97,14 @@ describe("composite view store", () => {
     it("should continue if no active PageBuilder is set", async () => {
       const { clickAwayCompositeView, applyAndExecute, resetToDefaults } =
         useCompositeViewStore();
-      mockPageBuilderControl.isDirty.mockResolvedValueOnce(true);
+      mockPageBuilder.isDirty.mockResolvedValueOnce(true);
       showPageBuilderUnsavedChangesDialogMock.mockResolvedValueOnce(false);
 
       const clickawayResult = await clickAwayCompositeView();
       expect(clickawayResult).toBeTruthy();
 
       await applyAndExecute();
-      expect(mockPageBuilderControl.updateAndReexecute).not.toHaveBeenCalled();
+      expect(mockPageBuilder.applyAndExecute).not.toHaveBeenCalled();
 
       await resetToDefaults(someNodeId);
       expect(useExecutionStore().executeNodes).not.toHaveBeenCalled();
@@ -116,46 +112,42 @@ describe("composite view store", () => {
 
     it("should allow continuation when not dirty", async () => {
       const { clickAwayCompositeView } = useCompositeViewStore();
-      mockPageBuilderControl.isDirty.mockResolvedValueOnce(false);
+      mockPageBuilder.isDirty.mockResolvedValueOnce(false);
       const result = await clickAwayCompositeView();
       expect(result).toBeTruthy();
     });
 
     it("should not execute when PageBuilder is not mounted", async () => {
-      const { applyAndExecute, getPageBuilderControl } =
-        useCompositeViewStore();
-      await getPageBuilderControl(someProjectId);
+      const { applyAndExecute, getPageBuilder } = useCompositeViewStore();
+      await getPageBuilder(someProjectId);
       await applyAndExecute();
-      expect(mockPageBuilderControl.updateAndReexecute).not.toHaveBeenCalled();
+      expect(mockPageBuilder.applyAndExecute).not.toHaveBeenCalled();
     });
 
     it("should not execute when not dirty", async () => {
-      const { applyAndExecute, getPageBuilderControl } =
-        useCompositeViewStore();
-      await getPageBuilderControl(someProjectId);
-      mockPageBuilderControl.isDirty.mockResolvedValue(false);
+      const { applyAndExecute, getPageBuilder } = useCompositeViewStore();
+      await getPageBuilder(someProjectId);
+      mockPageBuilder.isDirty.mockResolvedValue(false);
       await applyAndExecute();
-      expect(mockPageBuilderControl.updateAndReexecute).not.toHaveBeenCalled();
+      expect(mockPageBuilder.applyAndExecute).not.toHaveBeenCalled();
     });
 
     it("should not execute when no page exists", async () => {
-      const { applyAndExecute, getPageBuilderControl } =
-        useCompositeViewStore();
-      await getPageBuilderControl(someProjectId);
-      mockPageBuilderControl.isDirty.mockResolvedValue(true);
-      mockPageBuilderControl.hasPage.mockReturnValue(false);
+      const { applyAndExecute, getPageBuilder } = useCompositeViewStore();
+      await getPageBuilder(someProjectId);
+      mockPageBuilder.isDirty.mockResolvedValue(true);
+      mockPageBuilder.hasPage.mockReturnValue(false);
       await applyAndExecute();
-      expect(mockPageBuilderControl.updateAndReexecute).not.toHaveBeenCalled();
+      expect(mockPageBuilder.applyAndExecute).not.toHaveBeenCalled();
     });
 
     it("should execute when conditions are met", async () => {
-      const { applyAndExecute, getPageBuilderControl } =
-        useCompositeViewStore();
-      await getPageBuilderControl(someProjectId);
-      mockPageBuilderControl.isDirty.mockResolvedValue(true);
-      mockPageBuilderControl.hasPage.mockReturnValue(true);
+      const { applyAndExecute, getPageBuilder } = useCompositeViewStore();
+      await getPageBuilder(someProjectId);
+      mockPageBuilder.isDirty.mockResolvedValue(true);
+      mockPageBuilder.hasPage.mockReturnValue(true);
       await applyAndExecute();
-      expect(mockPageBuilderControl.updateAndReexecute).toHaveBeenCalled();
+      expect(mockPageBuilder.applyAndExecute).toHaveBeenCalled();
     });
 
     it("should not execute when PageBuilder not ready", async () => {
@@ -165,10 +157,10 @@ describe("composite view store", () => {
     });
 
     it("should apply as default and execute when conditions are met", async () => {
-      const { applyToDefaultAndExecute, getPageBuilderControl } =
+      const { applyToDefaultAndExecute, getPageBuilder } =
         useCompositeViewStore();
-      await getPageBuilderControl(someProjectId);
-      mockPageBuilderControl.hasPage.mockReturnValue(true);
+      await getPageBuilder(someProjectId);
+      mockPageBuilder.hasPage.mockReturnValue(true);
       await applyToDefaultAndExecute(someNodeId);
       expect(useExecutionStore().executeNodes).toHaveBeenCalledWith([
         someNodeId,
@@ -176,9 +168,8 @@ describe("composite view store", () => {
     });
 
     it("should reset node when PageBuilder is active", async () => {
-      const { resetToDefaults, getPageBuilderControl } =
-        useCompositeViewStore();
-      await getPageBuilderControl(someProjectId);
+      const { resetToDefaults, getPageBuilder } = useCompositeViewStore();
+      await getPageBuilder(someProjectId);
       await resetToDefaults(someNodeId);
       expect(useExecutionStore().changeNodeState).toHaveBeenCalledWith({
         action: "reset",
@@ -228,20 +219,6 @@ describe("composite view store", () => {
       };
     };
 
-    it("removes old node ID when single selection changes", async () => {
-      const { selectionStore, node1 } = createWorkflowContext();
-
-      const { addReexecutingNode, isReexecuting } = useCompositeViewStore();
-
-      await selectionStore.selectNodes([node1.id]);
-      addReexecutingNode(node1.id);
-
-      expect(isReexecuting(node1.id)).toBe(true);
-
-      await selectionStore.deselectAllObjects();
-      expect(isReexecuting(node1.id)).toBe(false);
-    });
-
     it("handles multiple selections gracefully", async () => {
       const { selectionStore, node1, node2 } = createWorkflowContext();
       const { isReexecuting } = useCompositeViewStore();
@@ -256,20 +233,18 @@ describe("composite view store", () => {
       const { node1 } = createWorkflowContext();
       const { addReexecutingNode, isReexecuting } = useCompositeViewStore();
 
-      const result = addReexecutingNode(node1.id);
+      addReexecutingNode(node1.id);
 
-      expect(result).toBe("added");
       expect(isReexecuting(node1.id)).toBe(true);
     });
 
-    it("returns 'alreadyExists' when adding an existing node ID", () => {
+    it("silently accepts when adding an existing node ID", () => {
       const { node1 } = createWorkflowContext();
       const { addReexecutingNode, isReexecuting } = useCompositeViewStore();
 
       addReexecutingNode(node1.id);
-      const result = addReexecutingNode(node1.id);
+      addReexecutingNode(node1.id);
 
-      expect(result).toBe("alreadyExists");
       expect(isReexecuting(node1.id)).toBe(true);
     });
 

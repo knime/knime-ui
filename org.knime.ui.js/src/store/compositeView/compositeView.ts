@@ -1,16 +1,18 @@
-import { ref, watch } from "vue";
-import { debounce } from "lodash-es";
+import { ref } from "vue";
 import { defineStore } from "pinia";
 
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { isDesktop } from "@/environment";
-import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 
 import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
 import { showPageBuilderUnsavedChangesDialog } from "./showPageBuilderUnsavedChangesDialog";
 
-export type PageBuilderControl = {
+const PAGEBUILDER_BASE_URL_FOR_DESKTOP = "https://org.knime.js.pagebuilder/";
+const PATH_TO_PAGEBUILDER_SHADOW_APP_MODULE =
+  "org/knime/core/ui/pagebuilder/shadowAppLib/PageBuilderShadowApp.esm.js";
+
+export type PageBuilderApi = {
   mountShadowApp: (shadowRoot: ShadowRoot) => Promise<void>;
   loadPage: (
     projectId: string,
@@ -21,11 +23,11 @@ export type PageBuilderControl = {
   isDefault: () => Promise<boolean>;
   hasPage: () => boolean;
   applyToDefaultAndExecute: () => Promise<void>;
-  updateAndReexecute: () => Promise<void>;
+  applyAndExecute: () => Promise<void>;
   unmountShadowApp: () => void;
 };
 
-const fallbackCreatePageBuilder: PageBuilderControl = {
+const fallbackPageBuilderApi: PageBuilderApi = {
   mountShadowApp: () => {
     consola.error("PageBuilder failed to mount. Fallback active.");
     return Promise.resolve();
@@ -35,7 +37,7 @@ const fallbackCreatePageBuilder: PageBuilderControl = {
   isDefault: () => Promise.resolve(true),
   hasPage: () => false,
   applyToDefaultAndExecute: () => Promise.resolve(),
-  updateAndReexecute: () => Promise.resolve(),
+  applyAndExecute: () => Promise.resolve(),
   unmountShadowApp: () => {
     consola.error("PageBuilder failed to unmount. Fallback active.");
   },
@@ -45,7 +47,7 @@ export const useCompositeViewStore = defineStore("component", () => {
   const PageBuilderModule = ref<{ createPageBuilderApp: Function } | null>(
     null,
   );
-  const activePageBuilder = ref<PageBuilderControl | null>(null);
+  const activePageBuilder = ref<PageBuilderApi | null>(null);
 
   const isCompositeViewDirty = ref(false);
   const isCompositeViewDefault = ref(true);
@@ -53,30 +55,25 @@ export const useCompositeViewStore = defineStore("component", () => {
 
   const reexecutingNodes = ref(new Set<string>());
 
-  const DEBOUNCE_DELAY_ON_CHANGE = 100;
-  const onPagebuilderStateChange = debounce(
-    (isDirty: boolean, isDefault: boolean) => {
-      isCompositeViewDirty.value = isDirty;
-      isCompositeViewDefault.value = isDefault;
-    },
-    DEBOUNCE_DELAY_ON_CHANGE,
-  );
+  const onPagebuilderStateChange = (isDirty: boolean, isDefault: boolean) => {
+    isCompositeViewDirty.value = isDirty;
+    isCompositeViewDefault.value = isDefault;
+  };
 
-  const getPageBuilderControl = async (
-    projectId: string,
-  ): Promise<PageBuilderControl> => {
+  const getPageBuilder = async (projectId: string): Promise<PageBuilderApi> => {
     const pageBuilderBaseUrl =
       // eslint-disable-next-line no-undefined
-      isDesktop() ? "https://org.knime.js.pagebuilder/" : undefined;
+      isDesktop() ? PAGEBUILDER_BASE_URL_FOR_DESKTOP : undefined;
 
     if (PageBuilderModule.value === null) {
       // the pageBuilder module will access the NODE_ENV to determine if it is in development mode
       (window as any).process = { env: { NODE_ENV: import.meta.env.MODE } };
 
       PageBuilderModule.value = await import(
+        /* @vite-ignore */
         resourceLocationResolver(
           projectId,
-          "org/knime/core/ui/pagebuilder/shadowAppLib/PageBuilderShadowApp.esm.js",
+          PATH_TO_PAGEBUILDER_SHADOW_APP_MODULE,
           pageBuilderBaseUrl,
         )
       );
@@ -99,7 +96,7 @@ export const useCompositeViewStore = defineStore("component", () => {
           },
         },
         resourceLocationResolver(projectId, "", pageBuilderBaseUrl),
-      ) ?? fallbackCreatePageBuilder);
+      ) ?? fallbackPageBuilderApi);
 
     activePageBuilder.value = {
       ...createdPageBuilder,
@@ -135,7 +132,7 @@ export const useCompositeViewStore = defineStore("component", () => {
       return;
     }
 
-    await activePageBuilder.value.updateAndReexecute();
+    await activePageBuilder.value.applyAndExecute();
   };
 
   const applyToDefaultAndExecute = async (
@@ -178,40 +175,13 @@ export const useCompositeViewStore = defineStore("component", () => {
     return showPageBuilderUnsavedChangesDialog(activePageBuilder.value);
   };
 
-  const isReexecuting = (nodeId: string) => {
-    return reexecutingNodes.value.has(nodeId);
-  };
+  const isReexecuting = (nodeId: string) => reexecutingNodes.value.has(nodeId);
 
-  const removeReexecutingNode = (nodeId: string) => {
-    if (!isReexecuting(nodeId)) {
-      return;
-    }
+  const removeReexecutingNode = (nodeId: string) =>
     reexecutingNodes.value.delete(nodeId);
-  };
 
-  let isWatcherActive = false;
-  const addReexecutingNode = (nodeId: string): "added" | "alreadyExists" => {
-    // Watch for changes in the single selected node and remove it from reexecuting nodes if it changes.
-    // This is to ensure that we do not keep reexecuting nodes that are no longer selected.
-
-    if (!isWatcherActive) {
-      watch(
-        () => useSelectionStore().singleSelectedNode,
-        (_, oldNode) => {
-          if (oldNode) {
-            removeReexecutingNode(oldNode?.id);
-          }
-        },
-      );
-      isWatcherActive = true;
-    }
-
-    if (isReexecuting(nodeId)) {
-      return "alreadyExists";
-    }
+  const addReexecutingNode = (nodeId: string) =>
     reexecutingNodes.value.add(nodeId);
-    return "added";
-  };
 
   return {
     isCompositeViewDirty,
@@ -219,7 +189,7 @@ export const useCompositeViewStore = defineStore("component", () => {
     hasPage,
 
     /*
-     * PageBuilder Control: methods to control the PageBuilder.
+     * Methods to control the PageBuilder app.
      *
      *  - `mountShadowApp(shadowRoot: ShadowRoot)`: Mounts the PageBuilder into the provided shadow root.
      *                                              Do not mount the PageBuilder after it was unmounted.
@@ -229,13 +199,13 @@ export const useCompositeViewStore = defineStore("component", () => {
      *  - `hasPage()`: Checks if the PageBuilder has a page loaded.
      *  - `applyToDefaultAndExecute()`: Applies the current state as default and executes the PageBuilder.
      *                                  Does not check requirements. Use the top level `applyToDefaultAndExecute` function instead.
-     *  - `updateAndReexecute()`: Updates the PageBuilder and re-executes it. Does not check requirements.
+     *  - `applyAndExecute()`: Updates the PageBuilder and re-executes it. Does not check requirements.
      *                            Use the top level `applyAndExecute` function instead.
      *  - `unmountShadowApp()`: Unmounts the PageBuilder from the shadow root. Do not mount the PageBuilder after it was unmounted.
      *
-     * @returns {PageBuilderControl} The control object for the PageBuilder.
+     * @returns {PageBuilderApi}.
      */
-    getPageBuilderControl,
+    getPageBuilder,
     applyAndExecute,
     applyToDefaultAndExecute,
     resetToDefaults,

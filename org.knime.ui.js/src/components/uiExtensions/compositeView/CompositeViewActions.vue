@@ -6,7 +6,7 @@ import { SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
 import type { ComponentNode } from "@/api/gateway-api/generated-api";
-import { useCompositeViewStore } from "@/store/component/compositeView";
+import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 
 const props = defineProps<{
   componentNode: ComponentNode;
@@ -27,8 +27,8 @@ const isDirtyAndExecuted = computed(() => {
   return isCompositeViewDirty.value && isExecuted.value;
 });
 
-const noAvailableOptions = computed(() => {
-  return isCompositeViewDefault.value && !isCompositeViewDirty.value;
+const hasAvailableOptions = computed(() => {
+  return !isCompositeViewDefault.value || isCompositeViewDirty.value;
 });
 </script>
 
@@ -62,7 +62,7 @@ const noAvailableOptions = computed(() => {
       ]"
       :compact="true"
       :button-title="
-        noAvailableOptions ? 'Nothing to do' : 'Data App View Actions'
+        hasAvailableOptions ? 'Data App View Actions' : 'Nothing to do'
       "
       orientation="top"
       :disabled="!isExecuted"

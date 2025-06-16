@@ -36,7 +36,7 @@ export const pagebuilderProxyVitePlugin = (
 
       if (!fs.existsSync(filePath)) {
         pluginLog(
-          `File not found: ${filePath}. Have you build the pagebuilder module?`,
+          `File not found: ${filePath}. Have you built the pagebuilder module?`,
         );
         res.statusCode = 404;
         res.end("Not Found");

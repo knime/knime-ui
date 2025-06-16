@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import { isBrowser } from "@/environment";
-import { useCompositeViewStore } from "@/store/component/compositeView";
+import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId, parseBendpointId } from "@/util/connectorUtil";

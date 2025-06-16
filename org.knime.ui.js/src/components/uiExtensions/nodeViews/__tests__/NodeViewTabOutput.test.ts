@@ -64,6 +64,7 @@ describe("NodeViewTabOutput.vue", () => {
     selectedNode: dummyNode,
     availablePortTypes,
     timestamp: new Date("2022-01-01T00:00:00Z").getTime(),
+    isTabSelected: true,
   };
 
   const doMount = ({ props = {} } = {}) => {

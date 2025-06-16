@@ -5,22 +5,22 @@ import { API } from "@api";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import LoadingIndicator from "@/components/uiExtensions/LoadingIndicator.vue";
-import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
+import CompositeViewLoader from "@/components/uiExtensions/compositeView/CompositeViewLoader.vue";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
-const pageBuilderMountMock = vi.hoisted(() => vi.fn());
-const mockUnmountShadowApp = vi.hoisted(() => vi.fn());
-const mockLoadPage = vi.hoisted(() => vi.fn());
-const isDirtyMock = vi.hoisted(() => vi.fn());
-const isDefaultMock = vi.hoisted(() => vi.fn());
-const hasPageMock = vi.hoisted(() => vi.fn());
-const updateAndReexecuteMock = vi.hoisted(() => vi.fn());
-const onDirtyChangeCallback = vi.hoisted(() => vi.fn());
+const pageBuilderMountMock = vi.fn();
+const mockUnmountShadowApp = vi.fn();
+const mockLoadPage = vi.fn();
+const isDirtyMock = vi.fn();
+const isDefaultMock = vi.fn();
+const hasPageMock = vi.fn();
+const updateAndReexecuteMock = vi.fn();
+const onDirtyChangeCallback = vi.fn();
 
-describe("ComponentViewLoader.vue", () => {
+describe("CompositeViewLoader.vue", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -37,7 +37,7 @@ describe("ComponentViewLoader.vue", () => {
     } = options;
     const mockedStores = mockStores();
 
-    mockedStores.compositeViewStore.getPageBuilderControl.mockImplementation(
+    mockedStores.compositeViewStore.getPageBuilder.mockImplementation(
       (_, callback) => {
         onDirtyChangeCallback.mockImplementation(callback);
         return Promise.resolve({
@@ -66,12 +66,12 @@ describe("ComponentViewLoader.vue", () => {
     const TestComponent = {
       template: `
         <Suspense>
-          <ComponentViewLoader
+          <CompositeViewLoader
             v-bind="$props"
           />
         </Suspense>
       `,
-      components: { ComponentViewLoader },
+      components: { CompositeViewLoader },
       props,
     };
 
@@ -90,7 +90,7 @@ describe("ComponentViewLoader.vue", () => {
 
   it("should mount componentView and initialize PageBuilder", async () => {
     const { compositeViewStore } = await doMount();
-    expect(compositeViewStore.getPageBuilderControl).toHaveBeenCalled();
+    expect(compositeViewStore.getPageBuilder).toHaveBeenCalled();
 
     expect(mockLoadPage).toHaveBeenCalled();
   });
@@ -137,9 +137,9 @@ describe("ComponentViewLoader.vue", () => {
     });
     const { wrapper } = await doMount();
 
-    const componentViewLoader = wrapper.findComponent(ComponentViewLoader);
+    const compositeViewLoader = wrapper.findComponent(CompositeViewLoader);
 
-    expect(componentViewLoader.emitted("loadingStateChange")).toContainEqual([
+    expect(compositeViewLoader.emitted("loadingStateChange")).toContainEqual([
       {
         value: "error",
         message: `Failed to initialize PageBuilder: ${errorMessage}`,
@@ -150,9 +150,9 @@ describe("ComponentViewLoader.vue", () => {
   it("emits loading states correctly during mount", async () => {
     const { wrapper } = await doMount();
 
-    const componentViewLoader = wrapper.findComponent(ComponentViewLoader);
+    const compositeViewLoader = wrapper.findComponent(CompositeViewLoader);
 
-    expect(componentViewLoader.emitted("loadingStateChange")).toEqual([
+    expect(compositeViewLoader.emitted("loadingStateChange")).toEqual([
       [{ value: "loading", message: "Loading page" }],
       [{ value: "ready" }],
       [{ value: "loading", message: "Loading view" }],
@@ -164,9 +164,9 @@ describe("ComponentViewLoader.vue", () => {
     hasPageMock.mockReturnValue(false);
     const { wrapper } = await doMount();
 
-    const componentViewLoader = wrapper.findComponent(ComponentViewLoader);
+    const compositeViewLoader = wrapper.findComponent(CompositeViewLoader);
 
-    expect(componentViewLoader.emitted("pagebuilderHasPage")).toEqual([
+    expect(compositeViewLoader.emitted("pagebuilderHasPage")).toEqual([
       [false],
     ]);
   });

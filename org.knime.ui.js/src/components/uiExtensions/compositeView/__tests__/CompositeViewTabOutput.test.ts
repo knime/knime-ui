@@ -5,8 +5,8 @@ import { mount } from "@vue/test-utils";
 import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
 
 import { NodeState, PortType } from "@/api/gateway-api/generated-api";
-import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
-import ComponentViewTabOutput from "@/components/uiExtensions/componentView/ComponentViewTabOutput.vue";
+import CompositeViewLoader from "@/components/uiExtensions/compositeView/CompositeViewLoader.vue";
+import CompositeViewTabOutput from "@/components/uiExtensions/compositeView/CompositeViewTabOutput.vue";
 import { useExecutionStore } from "@/store/workflow/execution";
 import {
   createAvailablePortTypes,
@@ -15,7 +15,7 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 
-const isReexecutingMock = vi.hoisted(() => vi.fn(() => false));
+const isReexecutingMock = vi.fn(() => false);
 
 describe("ComponentViewTabOutput.vue", () => {
   const dummyNode = createNativeNode({
@@ -73,6 +73,7 @@ describe("ComponentViewTabOutput.vue", () => {
     workflowId: "workflow-1",
     selectedNode: createComponentNode({ ...dummyNode }),
     availablePortTypes,
+    isTabSelected: true,
   };
 
   const doMount = ({ props = {} } = {}) => {
@@ -81,10 +82,10 @@ describe("ComponentViewTabOutput.vue", () => {
     mockedStores.compositeViewStore.isReexecuting = isReexecutingMock;
     mockedStores.uiControlsStore.canDetachNodeViews = true;
 
-    const wrapper = mount(ComponentViewTabOutput, {
+    const wrapper = mount(CompositeViewTabOutput, {
       props: { ...defaultProps, ...props },
       global: {
-        stubs: { ComponentViewLoader: true },
+        stubs: { CompositeViewLoader: true },
         plugins: [mockedStores.testingPinia],
       },
     });
@@ -160,9 +161,8 @@ describe("ComponentViewTabOutput.vue", () => {
       },
     });
 
-    // Simulate ComponentViewLoader reporting page existence
     wrapper
-      .findComponent(ComponentViewLoader)
+      .findComponent(CompositeViewLoader)
       .vm.$emit("pagebuilder-has-page", true);
     await nextTick();
 
@@ -186,7 +186,7 @@ describe("ComponentViewTabOutput.vue", () => {
       .mockImplementation(() => Promise.resolve());
 
     wrapper
-      .findComponent(ComponentViewLoader)
+      .findComponent(CompositeViewLoader)
       .vm.$emit("pagebuilder-has-page", true);
     await nextTick();
 
@@ -209,7 +209,7 @@ describe("ComponentViewTabOutput.vue", () => {
     mockedStores.uiControlsStore.canDetachNodeViews = false;
 
     wrapper
-      .findComponent(ComponentViewLoader)
+      .findComponent(CompositeViewLoader)
       .vm.$emit("pagebuilder-has-page", true);
     await nextTick();
 
@@ -228,16 +228,15 @@ describe("ComponentViewTabOutput.vue", () => {
       },
     });
 
-    // ComponentViewLoader reports no page
     wrapper
-      .findComponent(ComponentViewLoader)
+      .findComponent(CompositeViewLoader)
       .vm.$emit("pagebuilder-has-page", false);
     await nextTick();
 
     expect(wrapper.find(".detach-view").exists()).toBe(false);
   });
 
-  it("renders ComponentViewLoader when valid", () => {
+  it("renders CompositeViewLoader when valid", () => {
     const { wrapper } = doMount({
       props: {
         selectedNode: createComponentNode({
@@ -249,18 +248,18 @@ describe("ComponentViewTabOutput.vue", () => {
       },
     });
 
-    expect(wrapper.findComponent(ComponentViewLoader).exists()).toBe(true);
+    expect(wrapper.findComponent(CompositeViewLoader).exists()).toBe(true);
     expect(
-      wrapper.findComponent(ComponentViewLoader).props("executionState"),
+      wrapper.findComponent(CompositeViewLoader).props("executionState"),
     ).toEqual(NodeState.ExecutionStateEnum.EXECUTED);
   });
 
-  it("doesn't render ComponentViewLoader when validation fails", () => {
-    const { wrapper } = doMount(); // Default node is unconfigured
-    expect(wrapper.findComponent(ComponentViewLoader).exists()).toBe(false);
+  it("doesn't render CompositeViewLoader when validation fails", () => {
+    const { wrapper } = doMount();
+    expect(wrapper.findComponent(CompositeViewLoader).exists()).toBe(false);
   });
 
-  it("should forward loadingStateChange events from the ComponentViewLoader", async () => {
+  it("should forward loadingStateChange events from the CompositeViewLoader", async () => {
     const { wrapper } = doMount({
       props: {
         selectedNode: {
@@ -274,7 +273,7 @@ describe("ComponentViewTabOutput.vue", () => {
 
     const eventPayload = { value: "loading", message: "Something" };
     wrapper
-      .findComponent(ComponentViewLoader)
+      .findComponent(CompositeViewLoader)
       .vm.$emit("loadingStateChange", eventPayload);
 
     const eventsEmitted = wrapper.emitted("loadingStateChange")![0];

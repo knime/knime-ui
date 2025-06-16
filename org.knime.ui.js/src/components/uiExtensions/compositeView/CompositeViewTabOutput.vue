@@ -7,8 +7,8 @@ import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg"
 
 import type { AvailablePortTypes } from "@/api/custom-types";
 import type { ComponentNode } from "@/api/gateway-api/generated-api";
-import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
-import { useCompositeViewStore } from "@/store/component/compositeView";
+import CompositeViewLoader from "@/components/uiExtensions/compositeView/CompositeViewLoader.vue";
+import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -108,7 +108,7 @@ const openInNewWindow = () => {
 
   <div v-if="!nodeErrors" class="node-view-wrapper">
     <Suspense>
-      <ComponentViewLoader
+      <CompositeViewLoader
         :project-id="projectId"
         :workflow-id="workflowId"
         :node-id="selectedNode.id"

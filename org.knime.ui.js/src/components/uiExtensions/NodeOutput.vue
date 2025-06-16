@@ -10,7 +10,7 @@ import type {
   ComponentNode,
   NativeNode,
 } from "@/api/gateway-api/generated-api";
-import ComponentViewTabOutput from "@/components/uiExtensions/componentView/ComponentViewTabOutput.vue";
+import CompositeViewTabOutput from "@/components/uiExtensions/compositeView/CompositeViewTabOutput.vue";
 import NodeViewTabOutput from "@/components/uiExtensions/nodeViews/NodeViewTabOutput.vue";
 import { HINTS } from "@/hints/hints.config";
 import { useApplicationStore } from "@/store/application/application";
@@ -251,7 +251,7 @@ const onPortViewLoadingState = async (
           @validation-error="currentValidationError = $event"
         />
 
-        <ComponentViewTabOutput
+        <CompositeViewTabOutput
           v-if="isViewTabSelected && singleSelectedNode.kind === 'component'"
           :project-id="projectId!"
           :workflow-id="workflowId"

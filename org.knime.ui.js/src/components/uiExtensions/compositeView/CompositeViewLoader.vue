@@ -1,22 +1,15 @@
 <script setup lang="ts">
-import {
-  type Ref,
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { API } from "@api";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import LoadingIndicator from "@/components/uiExtensions/LoadingIndicator.vue";
 import type { UIExtensionLoadingState } from "@/components/uiExtensions/common/types";
 import {
-  type PageBuilderControl,
+  type PageBuilderApi,
   useCompositeViewStore,
-} from "@/store/component/compositeView";
-import type { Identifiers } from "@/store/component/pageBuilderStore";
+} from "@/store/compositeView/compositeView";
+import type { Identifiers } from "@/store/compositeView/pageBuilderStore";
 
 const props = defineProps<{
   projectId: string;
@@ -39,9 +32,9 @@ const currentIdentifier = computed<Identifiers>(() => ({
 const shadowHost = ref<HTMLElement | null>(null);
 
 const getPageBuilder = () =>
-  useCompositeViewStore().getPageBuilderControl(props.projectId);
+  useCompositeViewStore().getPageBuilder(props.projectId);
 
-const pageBuilder: Ref<PageBuilderControl> = ref(await getPageBuilder());
+const pageBuilder = ref<PageBuilderApi>(await getPageBuilder());
 
 const loadPage = async () => {
   if (props.executionState === NodeState.ExecutionStateEnum.EXECUTED) {

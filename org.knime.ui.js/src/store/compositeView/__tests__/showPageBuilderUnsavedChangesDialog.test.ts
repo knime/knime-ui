@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { API } from "@/api/__mocks__";
 import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
-import type { PageBuilderControl } from "../compositeView";
+import type { PageBuilderApi } from "../compositeView";
 import { showPageBuilderUnsavedChangesDialog } from "../showPageBuilderUnsavedChangesDialog";
 
 let useUnsavedChangesDialogMock = vi.hoisted(() =>
@@ -33,8 +33,8 @@ API.desktop.setConfirmNodeConfigChangesPreference.mockImplementation(
 );
 
 const activePageBuilder = {
-  updateAndReexecute: vi.fn(() => Promise.resolve()),
-} as unknown as PageBuilderControl;
+  applyAndExecute: vi.fn(() => Promise.resolve()),
+} as unknown as PageBuilderApi;
 
 describe("showPageBuilderUnsavedChangesDialog", () => {
   beforeEach(() => {
@@ -47,7 +47,7 @@ describe("showPageBuilderUnsavedChangesDialog", () => {
 
     expect(result).toBeTruthy();
     expect(useUnsavedChangesDialogMock).not.toHaveBeenCalled();
-    expect(activePageBuilder.updateAndReexecute).toHaveBeenCalled();
+    expect(activePageBuilder.applyAndExecute).toHaveBeenCalled();
     expect(
       API.desktop.setConfirmNodeConfigChangesPreference,
     ).not.toHaveBeenCalled();
@@ -69,7 +69,7 @@ describe("showPageBuilderUnsavedChangesDialog", () => {
     const result = await showPageBuilderUnsavedChangesDialog(activePageBuilder);
 
     expect(result).toBeTruthy();
-    expect(activePageBuilder.updateAndReexecute).toHaveBeenCalled();
+    expect(activePageBuilder.applyAndExecute).toHaveBeenCalled();
     expect(
       API.desktop.setConfirmNodeConfigChangesPreference,
     ).not.toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe("showPageBuilderUnsavedChangesDialog", () => {
     expect(
       API.desktop.setConfirmNodeConfigChangesPreference,
     ).toHaveBeenCalledWith(false);
-    expect(activePageBuilder.updateAndReexecute).toHaveBeenCalled();
+    expect(activePageBuilder.applyAndExecute).toHaveBeenCalled();
   });
 
   it("returns 'canContinue' without saving when user discards changes", async () => {
@@ -99,13 +99,13 @@ describe("showPageBuilderUnsavedChangesDialog", () => {
     const result = await showPageBuilderUnsavedChangesDialog(activePageBuilder);
 
     expect(result).toBeTruthy();
-    expect(activePageBuilder.updateAndReexecute).not.toHaveBeenCalled();
+    expect(activePageBuilder.applyAndExecute).not.toHaveBeenCalled();
   });
 
   it("returns 'abort' when user cancels the dialog", async () => {
     const result = await showPageBuilderUnsavedChangesDialog(activePageBuilder);
 
     expect(result).toBeFalsy();
-    expect(activePageBuilder.updateAndReexecute).not.toHaveBeenCalled();
+    expect(activePageBuilder.applyAndExecute).not.toHaveBeenCalled();
   });
 });

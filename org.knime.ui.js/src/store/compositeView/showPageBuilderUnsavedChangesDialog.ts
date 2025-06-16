@@ -6,15 +6,15 @@ import {
 } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
 import { useApplicationStore } from "@/store/application/application";
 
-import type { PageBuilderControl } from "./compositeView";
+import type { PageBuilderApi } from "./compositeView";
 
 export const showPageBuilderUnsavedChangesDialog = async (
-  activePageBuilder: PageBuilderControl,
+  activePageBuilder: PageBuilderApi,
 ): Promise<boolean> => {
   const askToConfirm = useApplicationStore().askToConfirmNodeConfigChanges;
 
   if (!askToConfirm) {
-    await activePageBuilder.updateAndReexecute();
+    await activePageBuilder.applyAndExecute();
     return true;
   }
 
@@ -35,7 +35,7 @@ export const showPageBuilderUnsavedChangesDialog = async (
   }
 
   if (action === UnsavedChangesAction.SAVE) {
-    await activePageBuilder.updateAndReexecute();
+    await activePageBuilder.applyAndExecute();
     return true;
   }
 

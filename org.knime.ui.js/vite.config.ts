@@ -10,7 +10,6 @@ import svgLoader from "vite-svg-loader";
 import { svgoConfig } from "@knime/styles/config/svgo.config";
 
 import { pagebuilderProxyVitePlugin } from "./pagebuilder-proxy-vite-plugin.js";
-
 // TODO: replace with app.component calls
 // @ts-expect-error (please add error description)
 import { isCustomElement } from "./src/vue3-pixi/index";

@@ -9,7 +9,7 @@ import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useN
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { useApplicationStore } from "@/store/application/application";
-import { useCompositeViewStore } from "@/store/component/compositeView";
+import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -327,11 +327,30 @@ const actions = {
    * @returns {undefined}
    */
   async triggerReExecution({ dispatch }, { nodeId: resetNodeIdSuffix }) {
+    const viewValuesAndResolvedIdentifier = await dispatch(
+      "getViewValuesAndResolvedIdentifiers",
+      true, // only dirty nodes
+    );
+    if (
+      !viewValuesAndResolvedIdentifier?.viewValues
+    ) {
+      handleError({
+        caller: "triggerReExecution",
+        error: `No view values available for re-execution. ${viewValuesAndResolvedIdentifier}`,
+        nodeId: resetNodeIdSuffix,
+      });
+      return;
+    }
+
     consola.debug(
       "KNIME-UI pageBuilderStore: trigger re-execution due to node",
       resetNodeIdSuffix
-        ? `"${resetNodeIdSuffix}"`
+        ? resetNodeIdSuffix
         : "none (complete re-execution)",
+      {
+        componentIdentifier : viewValuesAndResolvedIdentifier.resolvedIdentifiers,
+        viewValues: viewValuesAndResolvedIdentifier.viewValues,
+      }
     );
 
     const viewValues = await dispatch("getViewValues");
@@ -350,17 +369,10 @@ const actions = {
       return;
     }
 
-    const addingResult =
-      useCompositeViewStore().addReexecutingNode(componentNodeId);
-
-    if (addingResult === "alreadyExists") {
-      // svg kanvas fires multiple events when clicking on a node. As its a click and a pointerdown both will lead to
-      // the same re-execution. We need to check if the node is already re-executing and if so, we need to ignore the event.
-      return;
-    }
-
     const reexecution = async () => {
       try {
+        useCompositeViewStore().addReexecutingNode(componentNodeId);
+
         const reexecutingPage =
           (await API.compositeview.triggerCompleteComponentReexecution(
             viewValues,

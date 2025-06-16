@@ -45,12 +45,6 @@ const runNodeValidationChecks = ({
   return Object.freeze(result);
 };
 
-/**
- * Validates and renders the PortViewLoader. It ensures the conditions are right for the PortView to be loaded
- * via several validation constraints. It yields back information about said validations as well as information
- * about the loading state of the PortView
- */
-
 type Props = {
   projectId: string;
   workflowId: string;
