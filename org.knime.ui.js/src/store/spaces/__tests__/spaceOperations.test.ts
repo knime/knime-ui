@@ -4,7 +4,6 @@ import { API } from "@api";
 
 import {
   CollisionException,
-  IOException,
   ServiceCallException,
 } from "@/api/gateway-api/generated-exceptions";
 import { isBrowser, isDesktop } from "@/environment";
@@ -694,7 +693,7 @@ describe("spaces::spaceOperations", () => {
       const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
         setUp();
       mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
-        new IOException({ message: "Whoops" }),
+        new ServiceCallException({ message: "Whoops" }),
       );
       await expect(() =>
         checkForCollisionsAndMove(structuredClone(params)),
