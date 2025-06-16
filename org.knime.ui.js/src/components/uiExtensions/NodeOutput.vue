@@ -238,30 +238,28 @@ const onPortViewLoadingState = async (
       />
 
       <template v-if="!selectionValidationError && singleSelectedNode">
-        <span v-show="isViewTabSelected">
-          <NodeViewTabOutput
-            v-if="singleSelectedNode.kind === 'node'"
-            :project-id="projectId!"
-            :workflow-id="workflowId"
-            :version-id="versionId"
-            :selected-node="singleSelectedNode as NativeNode"
-            :timestamp="timestamp || 0"
-            :available-port-types="availablePortTypes"
-            @alert="currentNodeViewAlert = $event"
-            @loading-state-change="loadingState = $event"
-            @validation-error="currentValidationError = $event"
-          />
+        <NodeViewTabOutput
+          v-if="isViewTabSelected && singleSelectedNode.kind === 'node'"
+          :project-id="projectId!"
+          :workflow-id="workflowId"
+          :version-id="versionId"
+          :selected-node="singleSelectedNode as NativeNode"
+          :timestamp="timestamp || 0"
+          :available-port-types="availablePortTypes"
+          @alert="currentNodeViewAlert = $event"
+          @loading-state-change="loadingState = $event"
+          @validation-error="currentValidationError = $event"
+        />
 
-          <ComponentViewTabOutput
-            v-if="singleSelectedNode.kind === 'component'"
-            :project-id="projectId!"
-            :workflow-id="workflowId"
-            :selected-node="singleSelectedNode as ComponentNode"
-            :available-port-types="availablePortTypes"
-            @loading-state-change="loadingState = $event"
-            @validation-error="currentValidationError = $event"
-          />
-        </span>
+        <ComponentViewTabOutput
+          v-if="isViewTabSelected && singleSelectedNode.kind === 'component'"
+          :project-id="projectId!"
+          :workflow-id="workflowId"
+          :selected-node="singleSelectedNode as ComponentNode"
+          :available-port-types="availablePortTypes"
+          @loading-state-change="loadingState = $event"
+          @validation-error="currentValidationError = $event"
+        />
 
         <PortViewTabOutput
           v-if="!isViewTabSelected"

@@ -1,4 +1,4 @@
-/* eslint-disable max-params */
+/* eslint-disable max-lines */
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
@@ -7,6 +7,7 @@ import { Button } from "@knime/components";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { Node, NodeState, PortType } from "@/api/gateway-api/generated-api";
+import ComponentViewTabOutput from "@/components/uiExtensions/componentView/ComponentViewTabOutput.vue";
 import type { NodeOutputTabIdentifier } from "@/store/selection";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
@@ -488,6 +489,7 @@ describe("NodeOutput.vue", () => {
           1,
           0,
         ],
+        // eslint-disable-next-line max-params
       ])("switch from %s", async (_, getNode1, getNode2, fromPort, toPort) => {
         const node1 = getNode1();
         const node2 = getNode2();
@@ -589,6 +591,52 @@ describe("NodeOutput.vue", () => {
           wrapper.findComponent(PortViewTabOutput).props("versionId"),
         ).toBe(versionId);
       }
+    },
+  );
+
+  it("renders NodeViewTabOutput but not ComponentViewTabOutput if native node is selected activePortTab is 'view'", async () => {
+    const mockedStores = await createStores();
+    const { wrapper } = await doMount(mockedStores);
+
+    mockedStores.selectionStore.activePortTab = "view";
+    await nextTick();
+
+    expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBeTruthy();
+    expect(wrapper.findComponent(ComponentViewTabOutput).exists()).toBeFalsy();
+  });
+
+  it("renders ComponentViewTabOutput but not NodeViewTabOutput if component node is selected activePortTab is 'view'", async () => {
+    const mockedStores = await createStores({
+      nodes: {
+        node1: createComponentNode({
+          id: "node1",
+        }),
+      },
+      selectedNodeIds: ["node1"],
+    });
+    const { wrapper } = await doMount(mockedStores);
+
+    mockedStores.selectionStore.activePortTab = "view";
+    await nextTick();
+
+    expect(wrapper.findComponent(ComponentViewTabOutput).exists()).toBeTruthy();
+    expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBeFalsy();
+  });
+
+  it.each([[undefined], ["0"]])(
+    "does neither render NodeViewTabOutput nor ComponentViewTabOutput if activePortTab is %s",
+    async (activePortTab) => {
+      const mockedStores = await createStores();
+      const { wrapper } = await doMount(mockedStores);
+
+      mockedStores.selectionStore.activePortTab =
+        activePortTab as NodeOutputTabIdentifier;
+      await nextTick();
+
+      expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBeFalsy();
+      expect(
+        wrapper.findComponent(ComponentViewTabOutput).exists(),
+      ).toBeFalsy();
     },
   );
 });
