@@ -71,10 +71,11 @@ describe("NodeViewLoader.vue", () => {
     return { wrapper, mockedStores };
   };
 
-  it("should load nodeView on mount", () => {
+  it("should load nodeView on mount", async () => {
     mockGetNodeView();
     doMount();
 
+    await flushPromises();
     expect(mockedAPI.node.getNodeView).toBeCalledWith({
       projectId: props.projectId,
       workflowId: props.workflowId,
@@ -83,11 +84,12 @@ describe("NodeViewLoader.vue", () => {
     });
   });
 
-  it("should load nodeView on mount if versionId prop is set", () => {
+  it("should load nodeView on mount if versionId prop is set", async () => {
     mockGetNodeView();
     const versionId = "version-id";
     doMount(versionId);
 
+    await flushPromises();
     expect(mockedAPI.node.getNodeView).toBeCalledWith({
       projectId: props.projectId,
       workflowId: props.workflowId,

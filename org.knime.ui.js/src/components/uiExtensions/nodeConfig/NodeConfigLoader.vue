@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref, toRefs, watch } from "vue";
+import { ref, toRefs } from "vue";
 import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
@@ -15,9 +15,10 @@ import type {
   NativeNode,
 } from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
-import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
+import type { UIExtensionLoadingState } from "../common/types";
 import { useNotifyUIExtensionAlert } from "../common/useNotifyUIExtensionAlert";
 import { useResourceLocation } from "../common/useResourceLocation";
+import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
 /**
@@ -38,35 +39,30 @@ const nodeConfigurationStore = useNodeConfigurationStore();
 const { notify } = useNotifyUIExtensionAlert();
 
 const { projectId, workflowId, versionId, selectedNode } = toRefs(props);
-const extensionConfig = ref<ExtensionConfig | null>(null);
-const isConfigReady = ref(false);
-let deactivateDataServicesFn: () => Promise<void>;
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
 }>();
 
-const { resourceLocation, resourceLocationResolver } = useResourceLocation({
-  extensionConfig,
-});
-
 const areControlsVisible = ref(true);
 
 const loadExtensionConfig = async () => {
+  let deactivateDataServices: (() => Promise<any>) | undefined;
+
   // store the following in none-reactive variables to ensure deactivateNodeDataServices is called
   // with the same values as getNodeDialog
   const { projectId, workflowId, versionId, selectedNode } = props;
-  const _extensionConfig = await API.node.getNodeDialog({
+  const extensionConfig = await API.node.getNodeDialog({
     projectId,
     workflowId,
     versionId: versionId ?? CURRENT_STATE_VERSION,
     nodeId: selectedNode.id,
   });
 
-  consola.info("NodeDialog :: extensionConfig", _extensionConfig);
+  consola.info("NodeDialog :: extensionConfig", extensionConfig);
 
-  if (_extensionConfig.deactivationRequired) {
-    deactivateDataServicesFn = async () => {
+  if (extensionConfig.deactivationRequired) {
+    deactivateDataServices = async () => {
       try {
         await API.node.deactivateNodeDataServices({
           projectId,
@@ -85,12 +81,23 @@ const loadExtensionConfig = async () => {
     };
   }
 
-  extensionConfig.value = { ..._extensionConfig, startEnlarged: false };
+  extensionConfig.startEnlarged = false;
+  nodeConfigurationStore.setActiveExtensionConfig(extensionConfig);
 
-  nodeConfigurationStore.setActiveExtensionConfig(extensionConfig.value);
+  return { extensionConfig, deactivateDataServices };
 };
 
 const { uniqueNodeConfigId } = useUniqueNodeStateId(toRefs(props));
+
+const { extensionConfig, isLoadingConfig } = useUIExtensionLifecycle({
+  renderKey: uniqueNodeConfigId,
+  configLoader: loadExtensionConfig,
+  onExtensionLoadingStateChange: (state) => emit("loadingStateChange", state),
+});
+
+const { resourceLocation, resourceLocationResolver } = useResourceLocation({
+  extensionConfig,
+});
 
 const noop = () => {}; // NOSONAR
 
@@ -176,62 +183,13 @@ const apiLayer: UIExtensionAPILayer = {
   showDataValueView: noop,
   closeDataValueView: noop,
 };
-
-watch(
-  uniqueNodeConfigId,
-  async () => {
-    try {
-      await deactivateDataServicesFn?.();
-
-      isConfigReady.value = false;
-      nodeConfigurationStore.setActiveExtensionConfig(null);
-      nodeConfigurationStore.resetDirtyState();
-
-      emit("loadingStateChange", {
-        value: "loading",
-        message: "Loading dialog",
-      });
-
-      await loadExtensionConfig();
-
-      isConfigReady.value = true;
-      emit("loadingStateChange", { value: "ready" });
-    } catch (error) {
-      isConfigReady.value = false;
-
-      consola.error("NodeConfigLoader :: failed to initialize", {
-        error,
-        uniqueNodeConfigId: uniqueNodeConfigId.value,
-      });
-
-      emit("loadingStateChange", {
-        value: "error",
-        message: error as string,
-        error,
-      });
-    }
-  },
-  { immediate: true },
-);
-
-onUnmounted(async () => {
-  nodeConfigurationStore.setActiveExtensionConfig(null);
-  try {
-    await deactivateDataServicesFn?.();
-  } catch (error) {
-    consola.error(
-      "NodeConfigLoader :: Error during unmount deactivation",
-      error,
-    );
-  }
-});
 </script>
 
 <template>
   <slot name="header" />
   <UIExtension
-    v-if="isConfigReady"
-    :extension-config="extensionConfig!"
+    v-if="!isLoadingConfig && extensionConfig"
+    :extension-config="extensionConfig"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
     :shadow-app-style="{ width: '100%', zIndex: 0, height: '100%' }"

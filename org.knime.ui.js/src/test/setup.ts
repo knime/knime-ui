@@ -96,3 +96,8 @@ vi.mock("@/plugins/toasts", () => {
 class MockWorker {}
 // @ts-expect-error
 window.Worker = MockWorker;
+
+// Mute consola during tests
+const noop = () => {};
+const methods = ["error", "info", "debug", "log", "trace", "warn"];
+methods.forEach((method) => (window.consola[method] = noop));

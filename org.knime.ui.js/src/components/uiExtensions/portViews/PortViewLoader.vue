@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref, toRef, watch } from "vue";
+import { toRef } from "vue";
 import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
@@ -9,9 +9,10 @@ import {
 } from "@knime/ui-extension-renderer/vue";
 
 import type { KnimeNode } from "@/api/custom-types";
-import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
+import type { UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
+import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 import { getMessage } from "../common/utils/uiExtensionAlert";
 import DataValueViewWrapper from "../dataValueViews/DataValueViewWrapper.vue";
 import { useDataValueView } from "../dataValueViews/useDataValueView";
@@ -35,17 +36,9 @@ const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
 }>();
 
-const error = ref<any>(null);
-const extensionConfig = ref<ExtensionConfig | null>(null);
-const isLoadingConfig = ref(false);
-
-let deactivateDataServicesFn: () => void;
-
-const { resourceLocation, resourceLocationResolver } = useResourceLocation({
-  extensionConfig,
-});
-
 const loadExtensionConfig = async () => {
+  let deactivateDataServicesFn: (() => Promise<any>) | undefined;
+
   // store the following in none-reactive variables to ensure deactivatePortDataServices is called
   // with the same values as getPortView
   const {
@@ -56,6 +49,7 @@ const loadExtensionConfig = async () => {
     selectedPortIndex: portIdx,
     selectedViewIndex: viewIdx,
   } = props;
+
   const portView = await API.port.getPortView({
     projectId,
     workflowId,
@@ -66,7 +60,7 @@ const loadExtensionConfig = async () => {
   });
 
   if (portView.deactivationRequired) {
-    deactivateDataServicesFn = () => {
+    deactivateDataServicesFn = () =>
       API.port.deactivatePortDataServices({
         projectId,
         workflowId,
@@ -75,13 +69,13 @@ const loadExtensionConfig = async () => {
         portIdx,
         viewIdx,
       });
-    };
   }
 
-  extensionConfig.value = portView;
+  return {
+    extensionConfig: portView,
+    deactivateDataServices: deactivateDataServicesFn,
+  };
 };
-
-const noop = () => {}; // NOSONAR
 
 const {
   open: showDataValueView,
@@ -94,6 +88,22 @@ const {
 
 const closeDataValueViewWithoutDelay = () =>
   closeDataValueView({ withoutDelay: true });
+
+const { extensionConfig, isLoadingConfig, error } = useUIExtensionLifecycle({
+  renderKey: toRef(props, "uniquePortKey"),
+  configLoader: loadExtensionConfig,
+  onExtensionLoadingStateChange: (state) => emit("loadingStateChange", state),
+  onBeforeLoadUIExtension: () => {
+    closeDataValueViewWithoutDelay();
+  },
+});
+
+const { resourceLocation, resourceLocationResolver } = useResourceLocation({
+  extensionConfig,
+});
+
+const noop = () => {}; // NOSONAR
+
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
     return Promise.resolve(
@@ -169,49 +179,12 @@ const apiLayer: UIExtensionAPILayer = {
   onApplied: noop,
   setControlsVisibility: noop,
 };
-
-watch(
-  toRef(props, "uniquePortKey"),
-  async () => {
-    closeDataValueViewWithoutDelay();
-    deactivateDataServicesFn?.();
-    try {
-      error.value = null;
-      isLoadingConfig.value = true;
-
-      emit("loadingStateChange", {
-        value: "loading",
-        message: "Loading port view data",
-      });
-
-      await loadExtensionConfig();
-
-      isLoadingConfig.value = false;
-
-      emit("loadingStateChange", { value: "ready" });
-    } catch (_error) {
-      error.value = _error;
-      isLoadingConfig.value = false;
-
-      emit("loadingStateChange", {
-        value: "error",
-        message: _error as string,
-        error: _error,
-      });
-    }
-  },
-  { immediate: true },
-);
-
-onUnmounted(() => {
-  deactivateDataServicesFn?.();
-});
 </script>
 
 <template>
   <UIExtension
-    v-if="!error && !isLoadingConfig"
-    :extension-config="extensionConfig!"
+    v-if="!error && !isLoadingConfig && extensionConfig"
+    :extension-config="extensionConfig"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"

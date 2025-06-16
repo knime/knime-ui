@@ -109,10 +109,11 @@ describe("PortViewLoader.vue", () => {
     return { wrapper, mockedStores };
   };
 
-  it("should load port view on mount if versionId is not set as prop", () => {
+  it("should load port view on mount if versionId is not set as prop", async () => {
     mockGetPortView();
     doMount();
 
+    await flushPromises();
     expect(mockedAPI.port.getPortView).toBeCalledWith({
       projectId: props.projectId,
       workflowId: props.workflowId,
@@ -123,11 +124,12 @@ describe("PortViewLoader.vue", () => {
     });
   });
 
-  it("should load port view on mount if versionId is set as prop", () => {
+  it("should load port view on mount if versionId is set as prop", async () => {
     mockGetPortView();
     const versionId = "version-id";
     doMount({ versionId });
 
+    await flushPromises();
     expect(mockedAPI.port.getPortView).toBeCalledWith({
       projectId: props.projectId,
       workflowId: props.workflowId,
@@ -632,7 +634,7 @@ describe("PortViewLoader.vue", () => {
       expect(emittedEvents![emittedEvents!.length - 1][0]).toEqual(
         expect.objectContaining({
           value: "loading",
-          message: "Loading port view data",
+          message: "Loading data",
         }),
       );
     });

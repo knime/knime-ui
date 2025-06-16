@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, toRaw, toRefs, watch } from "vue";
+import { computed, toRaw, toRefs, watch } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 
@@ -16,9 +16,10 @@ import {
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import ExecuteButton from "../ExecuteButton.vue";
-import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
+import type { UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
+import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
 /**
@@ -44,47 +45,51 @@ const emit = defineEmits<{
   alert: [{ alert: Alert; nodeName?: string } | null];
 }>();
 
-const error = ref<any>(null);
-const isLoadingConfig = ref(false);
-const extensionConfig = ref<ExtensionConfig | null>(null);
+const loadExtensionConfig = async () => {
+  let deactivateDataServicesFn: (() => Promise<any>) | undefined;
 
-let deactivateDataServicesFn: () => void;
+  // store the following in none-reactive variables to ensure deactivateNodeDataServices is called
+  // with the same values as getNodeView
+  const { projectId, workflowId, versionId, selectedNode } = props;
+
+  const nodeView = await API.node.getNodeView({
+    projectId,
+    workflowId,
+    versionId: versionId ?? CURRENT_STATE_VERSION,
+    nodeId: selectedNode.id,
+  });
+
+  if (nodeView?.deactivationRequired) {
+    deactivateDataServicesFn = () =>
+      API.node.deactivateNodeDataServices({
+        projectId,
+        workflowId,
+        versionId: versionId ?? CURRENT_STATE_VERSION,
+        nodeId: selectedNode.id,
+        extensionType: "view",
+      });
+  }
+
+  return {
+    extensionConfig: nodeView,
+    deactivateDataServices: deactivateDataServicesFn,
+  };
+};
+const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));
+
+const { extensionConfig, isLoadingConfig, error } = useUIExtensionLifecycle({
+  renderKey: uniqueNodeViewId,
+  configLoader: loadExtensionConfig,
+  onExtensionLoadingStateChange: (state) => emit("loadingStateChange", state),
+  onBeforeLoadUIExtension: () => {
+    // clear any existing alert emitted from a previous render or view
+    emit("alert", null);
+  },
+});
 
 const { resourceLocation, resourceLocationResolver } = useResourceLocation({
   extensionConfig,
 });
-
-const loadExtensionConfig = async () => {
-  try {
-    // store the following in none-reactive variables to ensure deactivateNodeDataServices is called
-    // with the same values as getNodeView
-    const { projectId, workflowId, versionId, selectedNode } = props;
-
-    const nodeView = await API.node.getNodeView({
-      projectId,
-      workflowId,
-      versionId: versionId ?? CURRENT_STATE_VERSION,
-      nodeId: selectedNode.id,
-    });
-
-    if (nodeView?.deactivationRequired) {
-      deactivateDataServicesFn = () => {
-        API.node.deactivateNodeDataServices({
-          projectId,
-          workflowId,
-          versionId: versionId ?? CURRENT_STATE_VERSION,
-          nodeId: selectedNode.id,
-          extensionType: "view",
-        });
-      };
-    }
-
-    extensionConfig.value = nodeView;
-  } catch (error) {
-    consola.log("Error loading view content", error);
-    throw error;
-  }
-};
 
 const noop = () => {};
 
@@ -128,7 +133,7 @@ const apiLayer: UIExtensionAPILayer = {
   },
 
   sendAlert: (alert) => {
-    consola.log("Alert received for NodeView :>> ", alert);
+    consola.debug("Alert received for NodeView :>> ", alert);
     emit("alert", {
       alert,
       nodeName: extensionConfig.value?.nodeInfo?.nodeName,
@@ -167,16 +172,16 @@ const apiLayer: UIExtensionAPILayer = {
   closeDataValueView: noop,
 };
 
-const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));
-
 const { latestPublishedData, dirtyState } = storeToRefs(nodeConfigurationStore);
 
 const latestPublishedDataForThisNode = computed(() => {
   if (latestPublishedData.value === null) {
     return null;
   }
+
   const { projectId, workflowId, nodeId, versionId, data } =
     latestPublishedData.value;
+
   if (
     projectId !== props.projectId ||
     workflowId !== props.workflowId ||
@@ -205,41 +210,6 @@ const hasToReexecute = computed(() => {
   // the view can be displayed based on said dirty state
   return dirtyState.value.view === "configured";
 });
-
-watch(
-  uniqueNodeViewId,
-  async () => {
-    deactivateDataServicesFn?.();
-    try {
-      error.value = null;
-      isLoadingConfig.value = true;
-      // clear any existing alert emitted from a previous render or view
-      emit("alert", null);
-
-      emit("loadingStateChange", { value: "loading", message: "Loading view" });
-
-      await loadExtensionConfig();
-
-      isLoadingConfig.value = false;
-
-      emit("loadingStateChange", { value: "ready" });
-    } catch (_error) {
-      error.value = _error;
-      isLoadingConfig.value = false;
-
-      emit("loadingStateChange", {
-        value: "error",
-        message: _error as string,
-        error: _error,
-      });
-    }
-  },
-  { immediate: true, deep: true },
-);
-
-onUnmounted(() => {
-  deactivateDataServicesFn?.();
-});
 </script>
 
 <template>
@@ -251,8 +221,8 @@ onUnmounted(() => {
   />
 
   <UIExtension
-    v-if="!error && !isLoadingConfig && !hasToReexecute"
-    :extension-config="extensionConfig!"
+    v-if="!error && !isLoadingConfig && !hasToReexecute && extensionConfig"
+    :extension-config="extensionConfig"
     :initial-shared-data="latestPublishedDataForThisNode"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
