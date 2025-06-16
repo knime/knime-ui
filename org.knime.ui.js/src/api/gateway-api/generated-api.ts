@@ -6214,7 +6214,7 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
@@ -6234,8 +6234,8 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {boolean} [params.includeInteractionInfo] Whether to enclose information that is required when the user is interacting with the returned workflow. E.g. the allowed actions (reset, execute, cancel) for contained nodes and the entire workflow itself.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
          * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getWorkflow(
         	params: { projectId: string,  workflowId: string,  versionId: string,  includeInteractionInfo?: boolean  }
