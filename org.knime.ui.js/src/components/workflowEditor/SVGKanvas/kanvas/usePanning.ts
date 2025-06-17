@@ -130,6 +130,9 @@ export const usePanning = (options: UsePanningOptions) => {
       isHoldingDownSpace.value ||
       hasPanModeEnabled.value
     ) {
+      event.preventDefault();
+      event.stopPropagation();
+
       isPanning.value = true;
       shouldShowMoveCursor.value = true;
       panningOffset.value = [event.screenX, event.screenY];
