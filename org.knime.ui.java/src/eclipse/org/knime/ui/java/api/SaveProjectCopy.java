@@ -71,7 +71,6 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
-import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
@@ -82,9 +81,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
-import org.knime.ui.java.util.CreateProject;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.ProgressReporter;
 
 /**
  * Helper class to save a copy of a project, for instance
@@ -112,13 +109,13 @@ final class SaveProjectCopy {
      * @param projectSVG The project SVG
      */
     static void saveCopyOf(final String sourceProjectId, final String projectSVG) {
-        final var project = DesktopAPI.getDeps(ProjectManager.class)//
+        final var originalProject = DesktopAPI.getDeps(ProjectManager.class)//
             .getProject(sourceProjectId) //
             .orElseThrow(() -> {
                 final var message = String.format("Project <%s> does not exist", sourceProjectId);
                 return new NoSuchElementException(message);
             });
-        final var sourceWfm = project.getWorkflowManagerIfLoaded() //
+        final var sourceWfm = originalProject.getWorkflowManagerIfLoaded() //
             .orElseThrow(() -> new NoSuchElementException("Project is not loaded"));
         final var oldContext = CheckUtils.checkArgumentNotNull(sourceWfm.getContextV2());
         try {
@@ -132,16 +129,20 @@ final class SaveProjectCopy {
                 return;
             }
 
-            var savedWfm = withCleanup(oldContext, newContext, monitor -> {
+            var updatedWfm = withCleanup(oldContext, newContext, monitor -> {
                 if (sourceWfm.isComponentProjectWFM()) {
-                    return saveComponentCopy(monitor, sourceWfm, newContext);
+                    return componentSaveAs(monitor, sourceWfm, newContext);
                 } else {
-                    return saveWorkflowCopy(newContext, monitor, sourceWfm, projectSVG);
+                    return workflowSaveAs(newContext, monitor, sourceWfm, projectSVG);
                 }
             });
-            var projectForCopy = createProjectForCopiedWfm(savedWfm, newContext, sourceProjectId);
+            var updatedProject = Project.of( //
+                originalProject, //
+                updatedWfm.getName(), //
+                Origin.of(updatedWfm, DesktopAPI.getSpaceProviders()) //
+            );
             // Provider type can only be Local here
-            OpenProject.registerProjectAndSetActive(projectForCopy, SpaceProviderEnt.TypeEnum.LOCAL);
+            OpenProject.registerProjectAndSetActive(updatedProject, SpaceProviderEnt.TypeEnum.LOCAL);
         } catch (Exception ex) {
             LOGGER.error(ex);
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Save Error",
@@ -238,19 +239,18 @@ final class SaveProjectCopy {
     }
 
     /**
-     * Save regular workflow as copy
+     * Perform Save-As on the given workflow. This will change the state of the given instance.
      *
      * @param context The context with the information about the new workflow
      * @param monitor The monitor to show the progress of this operation
-     * @param wfm The Workflowmanager that will save the workflow
+     * @param wfm The same instance, potentially modified.
      * @param svg workflow SVG
      *
      * @return The saved workflow manager or {@code null} if the save operation failed
      */
-    private static WorkflowManager saveWorkflowCopy(final WorkflowContextV2 context, final IProgressMonitor monitor,
+    private static WorkflowManager workflowSaveAs(final WorkflowContextV2 context, final IProgressMonitor monitor,
         final WorkflowManager wfm, final String svg) {
         monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
-
         try {
             wfm.saveAs(context, DesktopAPUtil.toExecutionMonitor(monitor));
         } catch (final IOException | CanceledExecutionException | LockFailedException e) {
@@ -265,7 +265,7 @@ final class SaveProjectCopy {
     }
 
     /**
-     * Save component template as copy
+     * Perform Save-As on the given component.
      *
      * @param newContext The context with the information about the new component
      * @param monitor The monitor to show the progress of this operation
@@ -273,7 +273,7 @@ final class SaveProjectCopy {
      *
      * @return The saved workflow manager or {@code null} if the save operation failed
      */
-    private static WorkflowManager saveComponentCopy(final IProgressMonitor monitor, final WorkflowManager wfm,
+    private static WorkflowManager componentSaveAs(final IProgressMonitor monitor, final WorkflowManager wfm,
         final WorkflowContextV2 newContext) {
         monitor.beginTask("Saving a component template", IProgressMonitor.UNKNOWN);
         try {
@@ -314,14 +314,4 @@ final class SaveProjectCopy {
         return savedWfm.orElseThrow();
     }
 
-    private static Project createProjectForCopiedWfm(final WorkflowManager wfm, final WorkflowContextV2 context,
-        final String projectId) {
-        final var type = wfm.isComponentProjectWFM() ? ProjectTypeEnum.COMPONENT : ProjectTypeEnum.WORKFLOW;
-        final var itemId =
-            DesktopAPI.getDeps(LocalSpace.class).getItemId(context.getExecutorInfo().getLocalWorkflowPath());
-        final var origin = new Origin(SpaceProvider.LOCAL_SPACE_PROVIDER_ID, LocalSpace.LOCAL_SPACE_ID, itemId, type);
-        final var projectName = context.getExecutorInfo().getLocalWorkflowPath().toFile().getName();
-        return CreateProject.createProjectFromOrigin(projectId, projectName, origin,
-                DesktopAPI.getDeps(ProgressReporter.class), DesktopAPI.getSpaceProviders());
-    }
 }
