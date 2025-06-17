@@ -366,7 +366,6 @@ const { isSVGRenderer } = useCanvasRendererUtils();
   padding: 10px;
   background-color: var(--knime-gray-ultra-light);
   border-bottom: 1px solid var(--knime-silver-sand);
-  container: workflow-toolbar / inline-size;
 
   & .button-list {
     transition: opacity 150ms ease-out;

@@ -114,7 +114,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 @import url("@/assets/mixins.css");
 
 .toolbar-button.responsive {
-  @container workflow-toolbar (max-width: 1200px) {
+  @media (max-width: 1200px) {
     padding-right: unset;
 
     & .text {
