@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,7 +66,6 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviderFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -77,39 +77,66 @@ class SpaceAPITest {
 
     @Test
     void testConnectSpaceProvider() throws JsonProcessingException {
-        var connectedSpaceProvider = mock(SpaceProvider.class);
-        when(connectedSpaceProvider.getId()).thenReturn("1");
-        when(connectedSpaceProvider.getName()).thenReturn("Connected Provider");
-        when(connectedSpaceProvider.getType()).thenReturn(TypeEnum.HUB);
-        when(connectedSpaceProvider.getConnection(false)).thenReturn(Optional.of(mock(SpaceProviderConnection.class)));
+        final var alreadyConnected = mock(SpaceProvider.class);
+        when(alreadyConnected.getId()).thenReturn("1");
+        when(alreadyConnected.getName()).thenReturn("Connected Provider");
+        when(alreadyConnected.getType()).thenReturn(TypeEnum.HUB);
+        when(alreadyConnected.getConnection(false)).thenReturn(Optional.of(mock(SpaceProviderConnection.class)));
 
-        var disconnectedSpaceProvider = mock(SpaceProvider.class);
-        when(disconnectedSpaceProvider.getId()).thenReturn("2");
-        when(disconnectedSpaceProvider.getName()).thenReturn("Disconnected Provider");
-        when(disconnectedSpaceProvider.getType()).thenReturn(TypeEnum.HUB);
-        when(disconnectedSpaceProvider.getConnection(false)).thenReturn(Optional.empty());
-        var connection = mock(SpaceProviderConnection.class);
-        when(connection.getUsername()).thenReturn("blub");
-        when(disconnectedSpaceProvider.getConnection(true)).thenReturn(Optional.of(connection));
+        final var connectable = mock(SpaceProvider.class);
+        when(connectable.getId()).thenReturn("2");
+        when(connectable.getName()).thenReturn("Connectable Provider");
+        when(connectable.getType()).thenReturn(TypeEnum.HUB);
+        when(connectable.getConnection(false)).thenReturn(Optional.empty());
+        var newConnection = mock(SpaceProviderConnection.class);
+        when(newConnection.getUsername()).thenReturn("blub");
+        when(connectable.getConnection(true)).thenReturn(Optional.of(newConnection));
 
-        DesktopAPI.injectDependency(createSpaceProvidersManager(connectedSpaceProvider, disconnectedSpaceProvider));
+        final var notConnectable = mock(SpaceProvider.class);
+        when(notConnectable.getId()).thenReturn("3");
+        when(notConnectable.getName()).thenReturn("Not Connectable Provider");
+        when(notConnectable.getType()).thenReturn(TypeEnum.HUB);
+        when(notConnectable.getConnection(anyBoolean())).thenReturn(Optional.empty());
+
+        DesktopAPI.injectDependency(createSpaceProvidersManager(alreadyConnected, connectable, notConnectable));
 
         ObjectMapper mapper = new ObjectMapper();
-        String actualConnectedJson = SpaceAPI.connectSpaceProvider("1");
-        JsonNode actualConnectedNode = mapper.readTree(actualConnectedJson);
-        JsonNode expectedConnectedNode = mapper.readTree(
-            """
-            {"connected":true,"name":"Connected Provider","id":"1","type":"HUB","connectionMode":"AUTHENTICATED"}"""
-        );
-        assertThat(actualConnectedNode).isEqualTo(expectedConnectedNode);
 
-        String actualDisconnectedJson = SpaceAPI.connectSpaceProvider("2");
-        JsonNode actualDisconnectedNode = mapper.readTree(actualDisconnectedJson);
-        JsonNode expectedDisconnectedNode = mapper.readTree(
-            """
-            {"username":"blub","connected":false,"name":"Disconnected Provider","id":"2","type":"HUB","connectionMode":"AUTHENTICATED"}"""
-        );
-        assertThat(actualDisconnectedNode).isEqualTo(expectedDisconnectedNode);
+        // already connected, connecting does nothing
+        assertJsonEqual(mapper, SpaceAPI.connectSpaceProvider("1"), """
+            {
+                "id":"1",
+                "name":"Connected Provider",
+                "type":"HUB",
+                "connected":true,
+                "connectionMode":"AUTHENTICATED"
+            }""");
+
+        // disconnected, connection is established in the call
+        assertJsonEqual(mapper, SpaceAPI.connectSpaceProvider("2"), """
+            {
+                "id":"2",
+                "name":"Connectable Provider",
+                "type":"HUB",
+                "connected":true,
+                "connectionMode":"AUTHENTICATED",
+                "username":"blub"
+            }""");
+
+        // disconnected and can't be connected
+        assertJsonEqual(mapper, SpaceAPI.connectSpaceProvider("3"), """
+            {
+                "id":"3",
+                "name":"Not Connectable Provider",
+                "type":"HUB",
+                "connected":false,
+                "connectionMode":"AUTHENTICATED"
+            }""");
+    }
+
+    private static void assertJsonEqual(final ObjectMapper mapper, final String actualJson, final String expectedJson)
+        throws JsonProcessingException {
+        assertThat(mapper.readTree(actualJson)).isEqualTo(mapper.readTree(expectedJson));
     }
 
     @Test
