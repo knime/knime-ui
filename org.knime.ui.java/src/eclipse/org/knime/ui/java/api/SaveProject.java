@@ -179,7 +179,7 @@ final class SaveProject {
             } else {
                 success = saveLocalProject(monitor, wfm, svg);
             }
-        } catch(Throwable t) { // NOSONAR: Just to make sure no exception is missed
+        } catch (Throwable t) { // NOSONAR: Just to make sure no exception is missed
             LOGGER.error("Error occured while saving the project", t);
         } finally {
             if (!success) {
@@ -293,7 +293,10 @@ final class SaveProject {
             subMonitor.setTaskName(
                 "Uploading workflow to " + (context.getLocationType() == LocationType.HUB_SPACE ? "Hub" : "Server"));
             final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
-            final var excludeData = spaceProvider.getResetOnUploadMode() == ResetOnUploadEnum.MANDATORY;
+            final var excludeData = spaceProvider.getConnection(false) //
+                .map(SpaceProvider.SpaceProviderConnection::getResetOnUploadMode) //
+                .map(ResetOnUploadEnum.MANDATORY::equals) //
+                .orElse(false);
             return space.saveBackTo(workflowPath, remoteMountpointURI, excludeData, subMonitor);
         } catch (Exception e) { // NOSONAR
             final var message = "Failed to upload the workflow to its remote location\n(" + e.getMessage() + ")";
