@@ -236,7 +236,7 @@ describe("SVG canvas store", () => {
         canvasStore.initScrollContainerElement(scrollContainer);
         canvasStore.setFactor(3);
 
-        expect(canvasStore.getCanvasScrollState).toEqual({
+        expect(canvasStore.getCanvasScrollState()).toEqual({
           zoomFactor: 3,
           scrollLeft: 200,
           scrollTop: 200,

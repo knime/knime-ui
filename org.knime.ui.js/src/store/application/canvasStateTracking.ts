@@ -1,7 +1,10 @@
 import { defineStore } from "pinia";
 
+import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
+import { useSVGCanvasStore } from "../canvas/canvas-svg";
+import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
@@ -77,7 +80,13 @@ export const useCanvasStateTrackingStore = defineStore("canvasStateTracking", {
     saveCanvasState() {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
-      const scrollState = useCurrentCanvasStore().value.getCanvasScrollState;
+      // A workaround to get correct scrollState regardless of the canvas type.
+      // This way, SVG store getter re-evaluates the element scroll position,
+      // and WebGL store getter can still cache the return value properly.
+      const { isSVGRenderer } = useCanvasRendererUtils();
+      const scrollState = isSVGRenderer
+        ? useSVGCanvasStore().getCanvasScrollState()
+        : useWebGLCanvasStore().getCanvasScrollState;
       this.setSavedCanvasStates({
         ...scrollState,
         project: projectId,

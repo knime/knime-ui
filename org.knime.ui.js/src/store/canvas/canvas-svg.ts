@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 /**
  * Canvas Store manages positioning, zooming, scrolling and
  * coordinate transformations for the Kanvas component.
@@ -383,23 +382,19 @@ export const useSVGCanvasStore = defineStore("canvasSVG", {
   },
 
   getters: {
-    getCanvasScrollState(): {
-      scrollLeft: number;
-      scrollTop: number;
-      scrollWidth: number;
-      scrollHeight: number;
-      zoomFactor: number;
-    } {
-      const kanvas = getKanvasDomElement()!;
+    getCanvasScrollState() {
+      return () => {
+        const kanvas = getKanvasDomElement()!;
 
-      const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = kanvas;
+        const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = kanvas;
 
-      return {
-        scrollLeft,
-        scrollTop,
-        scrollWidth,
-        scrollHeight,
-        zoomFactor: this.zoomFactor,
+        return {
+          scrollLeft,
+          scrollTop,
+          scrollWidth,
+          scrollHeight,
+          zoomFactor: this.zoomFactor,
+        };
       };
     },
 
