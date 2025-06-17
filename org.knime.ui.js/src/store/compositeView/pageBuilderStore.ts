@@ -1,9 +1,9 @@
 import { computed } from "vue";
+import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { sleep } from "@knime/utils";
 
-import { API } from "@/api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useNotifyUIExtensionAlert";
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
@@ -317,8 +317,9 @@ const actions = {
   },
 
   /**
-   * Triggers a partial re-execution of the composite view. This consists of the following steps: validation, value
-   * retrieval and page update or polling.
+   * Triggers a re-execution of the composite view. This consists of the following steps: validation, value
+   * retrieval and page update or polling. If the `nodeId` is provided, it will only re-execute the
+   * specified node and its down-stream nodes.
    *
    * @async
    * @param {Object} context - Vuex context.

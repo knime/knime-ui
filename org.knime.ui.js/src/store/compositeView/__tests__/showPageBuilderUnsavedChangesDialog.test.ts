@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api/__mocks__";
 import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
+import { deepMocked } from "@/test/utils";
 import type { PageBuilderApi } from "../compositeView";
 import { showPageBuilderUnsavedChangesDialog } from "../showPageBuilderUnsavedChangesDialog";
 
@@ -28,7 +29,9 @@ vi.mock("@/store/application/application", () => ({
   }),
 }));
 
-API.desktop.setConfirmNodeConfigChangesPreference.mockImplementation(
+const mockedAPI = deepMocked(API);
+
+mockedAPI.desktop.setConfirmNodeConfigChangesPreference.mockImplementation(
   vi.fn(() => Promise.resolve()),
 );
 
@@ -37,8 +40,8 @@ const activePageBuilder = {
 } as unknown as PageBuilderApi;
 
 describe("showPageBuilderUnsavedChangesDialog", () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   it("auto-saves and returns 'canContinue' when askToConfirm is false", async () => {
@@ -103,6 +106,11 @@ describe("showPageBuilderUnsavedChangesDialog", () => {
   });
 
   it("returns 'abort' when user cancels the dialog", async () => {
+    useUnsavedChangesDialogMock.mockResolvedValue({
+      action: UnsavedChangesAction.CANCEL,
+      doNotAskAgain: false,
+    });
+
     const result = await showPageBuilderUnsavedChangesDialog(activePageBuilder);
 
     expect(result).toBeFalsy();
