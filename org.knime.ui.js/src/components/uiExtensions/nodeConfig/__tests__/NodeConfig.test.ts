@@ -76,13 +76,26 @@ describe("NodeConfig", () => {
     );
   });
 
-  it("shows different placeholder text when node without dialog is selected", () => {
+  it("shows different placeholder text when node without a web dialog is selected", () => {
     const { wrapper } = doMount({
-      singleSelectedNodeMock: createNativeNode({ id: "2" }),
+      singleSelectedNodeMock: createNativeNode({
+        id: "2",
+        dialogType: Node.DialogTypeEnum.Swing,
+      }),
     });
 
     expect(wrapper.find(".placeholder-text").text()).toBe(
       "This node dialog is not supported here.",
+    );
+  });
+
+  it("shows different placeholder text when node without any dialog is selected", () => {
+    const singleSelectedNodeMock = createNativeNode({ id: "2" });
+    singleSelectedNodeMock.dialogType = undefined;
+    const { wrapper } = doMount({ singleSelectedNodeMock });
+
+    expect(wrapper.find(".placeholder-text").text()).toBe(
+      "This node has no dialog.",
     );
   });
 

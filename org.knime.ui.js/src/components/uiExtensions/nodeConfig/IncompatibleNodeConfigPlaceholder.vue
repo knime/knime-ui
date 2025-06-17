@@ -27,7 +27,11 @@ const isMetanode = computed(
   () => selectedNode.value && isNodeMetaNode(selectedNode.value),
 );
 
-const shouldDisplayOpenDialog = computed(
+const hasNoDialog = computed(
+  () => selectedNode.value && !selectedNode.value.dialogType,
+);
+
+const isLegacyDialog = computed(
   () => hasLegacyDialog.value && isDesktop() && !isMetanode.value,
 );
 
@@ -50,8 +54,12 @@ const openNodeConfiguration = () => {
 
 <template>
   <div class="placeholder full-height">
+    <template v-if="hasNoDialog">
+      <div class="placeholder-text">This node has no dialog.</div>
+    </template>
+
     <!-- Show placeholder text and "Open dialog" button -->
-    <template v-if="shouldDisplayOpenDialog">
+    <template v-else-if="isLegacyDialog">
       <span class="placeholder-text">
         This node dialog is not supported here.
       </span>
