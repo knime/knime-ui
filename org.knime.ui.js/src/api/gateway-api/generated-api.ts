@@ -5541,7 +5541,7 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} [params.dataServiceRequest] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async callNodeDataService(
@@ -5561,7 +5561,7 @@ const node = function(rpcClient: RPCClient) {
          * @param {'pause' | 'resume' | 'step'} [params.action] The action (pause, resume, step) to be performed in order to change the loop state.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         async changeLoopState(
@@ -5581,7 +5581,7 @@ const node = function(rpcClient: RPCClient) {
          * @param {'reset' | 'cancel' | 'execute'} [params.action] The action (reset, cancel, execute) to be performed in order to change the node&#39;s state.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         async changeNodeStates(
@@ -5603,7 +5603,7 @@ const node = function(rpcClient: RPCClient) {
          * @param {'dialog' | 'view'} params.extensionType The node ui-extension-type, i.e. dialog or view.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async deactivateNodeDataServices(
@@ -5619,7 +5619,6 @@ const node = function(rpcClient: RPCClient) {
          * @param {NodeFactoryKey} params.nodeFactoryKey The key identifying the node.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getNodeDescription(
@@ -5638,7 +5637,7 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getNodeDialog(
@@ -5657,7 +5656,7 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getNodeView(
@@ -5678,7 +5677,7 @@ const node = function(rpcClient: RPCClient) {
          * @param {Array<string>} [params.selection] A list of strings that are translated to the row keys affected by the data point selection modification.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async updateDataPointSelection(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  mode: 'add' | 'remove' | 'replace',  selection?: Array<string>  }
@@ -5826,7 +5825,7 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} [params.dataServiceRequest] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async callPortDataService(
@@ -5848,7 +5847,7 @@ const port = function(rpcClient: RPCClient) {
          * @param {number} params.viewIdx The index of the specific port view to obtain
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async deactivatePortDataServices(
@@ -5870,7 +5869,7 @@ const port = function(rpcClient: RPCClient) {
          * @param {number} params.colIdx The column index to be used.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getDataValueView(
@@ -5891,7 +5890,7 @@ const port = function(rpcClient: RPCClient) {
          * @param {number} params.viewIdx The index of the specific port view to obtain
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getPortView(
@@ -5914,7 +5913,7 @@ const port = function(rpcClient: RPCClient) {
          * @param {Array<string>} [params.selection] A list of strings that are translated to the row keys affected by the data point selection modification.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async updateDataPointSelection(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  mode: 'add' | 'remove' | 'replace',  selection?: Array<string>  }
@@ -6215,7 +6214,6 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getUpdatableLinkedComponents(
@@ -6234,7 +6232,6 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {boolean} [params.includeInteractionInfo] Whether to enclose information that is required when the user is interacting with the returned workflow. E.g. the allowed actions (reset, execute, cancel) for contained nodes and the entire workflow itself.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getWorkflow(

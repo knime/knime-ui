@@ -58,7 +58,6 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.util.CoreUtil.ContainerType;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
@@ -111,7 +110,7 @@ final class ComponentAPI {
     @API
     static void openChangeComponentLinkTypeDialog(final String projectId, final String rootWorkflowId,
         final String nodeId)
-        throws OperationNotAllowedException, NodeNotFoundException, ServiceCallException {
+        throws OperationNotAllowedException, ServiceCallException {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentLinkTypeDialog(component, wfKey);
@@ -132,7 +131,7 @@ final class ComponentAPI {
     @API
     static void openChangeComponentHubItemVersionDialog(final String projectId, final String rootWorkflowId,
         final String nodeId)
-        throws OperationNotAllowedException, NodeNotFoundException, ServiceCallException {
+        throws OperationNotAllowedException, ServiceCallException {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentHubItemVersionDialog(component, wfKey);
