@@ -59,7 +59,7 @@ describe("NodeName", () => {
       const { wrapper } = doShallowMount();
       wrapper.findComponent(NodeNameText).vm.$emit(eventName, payload);
 
-      expect(wrapper.emitted(eventName)[0][0]).toEqual(payload);
+      expect(wrapper.emitted(eventName)?.[0][0]).toEqual(payload);
     });
 
     it("should handle a name change request", () => {
@@ -119,7 +119,7 @@ describe("NodeName", () => {
       });
       wrapper.findComponent(NodeNameEditor).vm.$emit(eventName, payload);
 
-      expect(wrapper.emitted(eventName)[0][0]).toEqual(payload);
+      expect(wrapper.emitted(eventName)?.[0][0]).toEqual(payload);
     });
 
     it("should handle saving the name", async () => {

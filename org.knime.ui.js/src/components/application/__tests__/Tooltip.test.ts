@@ -1,69 +1,53 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import * as $shapes from "@/style/shapes";
 import Tooltip from "../Tooltip.vue";
 
 describe("Tooltip", () => {
-  let mocks, doShallowMount, props, wrapper;
+  type ComponentProps = InstanceType<typeof Tooltip>["$props"];
 
-  beforeEach(() => {
-    wrapper = null;
-    props = {};
-    mocks = { $shapes };
-    doShallowMount = () => {
-      wrapper = shallowMount(Tooltip, { props, global: { mocks } });
-    };
-  });
+  const doShallowMount = (props?: ComponentProps) =>
+    shallowMount(Tooltip, { props, global: { mocks: { $shapes } } });
 
   it("renders", () => {
-    doShallowMount();
+    const wrapper = doShallowMount();
     expect(wrapper.find("div").exists()).toBeTruthy();
   });
 
   it("displays text", () => {
-    props = {
-      text: "foo",
-    };
-    doShallowMount();
+    const wrapper = doShallowMount({ text: "foo" });
     expect(wrapper.find("p").text()).toBe("foo");
     expect(wrapper.find(".title").exists()).toBe(false);
   });
 
   it("displays title", () => {
-    props = {
-      title: "bar",
-    };
-    doShallowMount();
+    const wrapper = doShallowMount({ title: "bar" });
     expect(wrapper.find(".title").text()).toBe("bar");
     expect(wrapper.find("p").exists()).toBe(false);
   });
 
   it("respects type", () => {
-    doShallowMount();
+    const wrapper = doShallowMount();
     expect(wrapper.find(".tooltip").classes()).not.toContain("error");
 
-    props.type = "error";
-    doShallowMount();
-    expect(wrapper.find(".tooltip").classes()).toContain("error");
+    const errorWrapper = doShallowMount({ type: "error" });
+    expect(errorWrapper.find(".tooltip").classes()).toContain("error");
   });
 
   it("respects orientation - default bottom", () => {
-    doShallowMount();
+    const wrapper = doShallowMount();
     expect(wrapper.find(".tooltip").classes()).not.toContain("top");
     expect(wrapper.find(".tooltip").classes()).toContain("bottom");
 
-    props.orientation = "top";
-    doShallowMount();
-    expect(wrapper.find(".tooltip").classes()).toContain("top");
-    expect(wrapper.find(".tooltip").classes()).not.toContain("bottom");
+    const topWrapper = doShallowMount({ orientation: "top" });
+    expect(topWrapper.find(".tooltip").classes()).toContain("top");
+    expect(topWrapper.find(".tooltip").classes()).not.toContain("bottom");
   });
 
   it("allows positioning", () => {
-    props.x = 123;
-    props.y = 345;
-    props.gap = 10;
-    doShallowMount();
+    const props = { x: 123, y: 345, gap: 10 };
+    const wrapper = doShallowMount(props);
 
     let gap = props.gap + Math.SQRT1_2 * $shapes.tooltipArrowSize;
     expect(wrapper.attributes("style")).toContain("left: 123px;");
@@ -75,7 +59,7 @@ describe("Tooltip", () => {
   });
 
   it("sets maximum size", () => {
-    doShallowMount();
+    const wrapper = doShallowMount();
     expect(wrapper.attributes("style")).toContain(
       `max-width: ${$shapes.tooltipMaxWidth}`,
     );
@@ -86,15 +70,12 @@ describe("Tooltip", () => {
 
   describe("hoverable", () => {
     it("should have the `hoverable` class when the prop is set", () => {
-      props.hoverable = true;
-      doShallowMount();
-
+      const wrapper = doShallowMount({ hoverable: true });
       expect(wrapper.classes()).toContain("hoverable");
     });
 
     it("should not have the `hoverable` class when the prop is set", () => {
-      doShallowMount();
-
+      const wrapper = doShallowMount();
       expect(wrapper.classes()).not.toContain("hoverable");
     });
   });

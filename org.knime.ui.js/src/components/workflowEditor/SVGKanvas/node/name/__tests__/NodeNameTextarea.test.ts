@@ -1,12 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { type VueWrapper, shallowMount } from "@vue/test-utils";
 
 import * as $shapes from "@/style/shapes";
 import NodeNameTextarea from "../NodeNameTextarea.vue";
 
 describe("NodeNameTextarea", () => {
-  const doShallowMount = (opts = { props: { value: "" } }) => {
+  type ComponentProps = InstanceType<typeof NodeNameTextarea>["$props"];
+
+  const doShallowMount = (
+    opts: {
+      attachTo?: HTMLElement;
+      props?: ComponentProps;
+    } = {
+      props: { modelValue: "" },
+    },
+  ) => {
     const wrapper = shallowMount(NodeNameTextarea, {
       ...opts,
       global: {
@@ -51,11 +60,12 @@ describe("NodeNameTextarea", () => {
       const wrapper = doShallowMount();
 
       const emittedValue = 100;
-      wrapper
-        .findComponent("#node-name-stub")
-        .vm.$emit(eventName, emittedValue);
+      (wrapper.findComponent("#node-name-stub") as VueWrapper).vm.$emit(
+        eventName,
+        emittedValue,
+      );
 
-      expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
+      expect(wrapper.emitted(eventName)?.[0][0]).toBe(emittedValue);
     },
   );
 
@@ -67,7 +77,7 @@ describe("NodeNameTextarea", () => {
     wrapper.find("textarea").setValue(emittedValue);
     wrapper.find("textarea").trigger("input");
 
-    expect(wrapper.emitted("update:modelValue")[0][0]).toBe(emittedValue);
+    expect(wrapper.emitted("update:modelValue")?.[0][0]).toBe(emittedValue);
   });
 
   it("should focus textarea on mount", async () => {
@@ -102,7 +112,7 @@ describe("NodeNameTextarea", () => {
 
   it("should not allow illegal characters", () => {
     const wrapper = doShallowMount({
-      props: { value: "", invalidCharacters: /[*?#:"<>%~|/\\]/g },
+      props: { modelValue: "", invalidCharacters: /[*?#:"<>%~|/\\]/g },
     });
 
     const emittedValue = "*New name!*?-test_12(#)";
@@ -111,14 +121,14 @@ describe("NodeNameTextarea", () => {
     wrapper.find("textarea").trigger("input");
 
     expect(wrapper.emitted("invalidInput")).toBeDefined();
-    expect(wrapper.emitted("update:modelValue")[0][0]).toBe(
+    expect(wrapper.emitted("update:modelValue")?.[0][0]).toBe(
       "New name!-test_12()",
     );
   });
 
   it("should not allow illegal character on keydown", () => {
     const wrapper = doShallowMount({
-      props: { value: "", invalidCharacters: /[*?#:"<>%~|/\\]/g },
+      props: { modelValue: "", invalidCharacters: /[*?#:"<>%~|/\\]/g },
     });
 
     const event = {

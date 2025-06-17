@@ -18,6 +18,7 @@ describe("NodeNameEditor", () => {
   const doMount = () => {
     const mockedStores = mockStores();
 
+    // @ts-expect-error
     mockedStores.canvasStore.viewBox = { left: 0, top: 0 };
 
     const wrapper = mount(NodeNameEditor, {
@@ -82,7 +83,7 @@ describe("NodeNameEditor", () => {
     wrapper.findComponent(NodeNameTextarea).vm.$emit("save");
     rect.trigger("click");
 
-    expect(wrapper.emitted("save")[0][0]).toEqual(
+    expect(wrapper.emitted("save")?.[0][0]).toEqual(
       expect.objectContaining({
         newName: "new value",
       }),
@@ -104,13 +105,13 @@ describe("NodeNameEditor", () => {
         .findComponent(NodeNameTextarea)
         .vm.$emit("update:modelValue", "new value");
 
-      wrapper.findAll(".action-button").at(0).trigger("click");
+      wrapper.findAll(".action-button")[0].trigger("click");
       expect(wrapper.emitted("save")).toBeDefined();
     });
 
     it("should emit a cancel event when clicking the cancel button", () => {
       const wrapper = doMount();
-      wrapper.findAll(".action-button").at(1).trigger("click");
+      wrapper.findAll(".action-button")[1].trigger("click");
 
       expect(wrapper.emitted("cancel")).toBeDefined();
     });
@@ -125,7 +126,7 @@ describe("NodeNameEditor", () => {
         wrapper
           .findComponent(NodeNameTextarea)
           .vm.$emit(eventName, emittedValue);
-        expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
+        expect(wrapper.emitted(eventName)?.[0][0]).toBe(emittedValue);
       },
     );
 
@@ -165,7 +166,7 @@ describe("NodeNameEditor", () => {
       .vm.$emit("update:modelValue", emittedValue);
     wrapper.findComponent(NodeNameTextarea).vm.$emit("save");
 
-    expect(wrapper.emitted("save")[0][0]).toEqual(
+    expect(wrapper.emitted("save")?.[0][0]).toEqual(
       expect.objectContaining({
         newName: emittedValue.trim(),
       }),
@@ -201,7 +202,7 @@ describe("NodeNameEditor", () => {
       .vm.$emit("update:modelValue", "new value");
     wrapper.findComponent(NodeNameTextarea).vm.$emit("save");
 
-    expect(wrapper.emitted("save")[0][0]).toEqual(
+    expect(wrapper.emitted("save")?.[0][0]).toEqual(
       expect.objectContaining({
         dimensionsOnClose: { width: emittedWidth, height: emittedHeight },
       }),

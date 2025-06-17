@@ -10,14 +10,17 @@ import CloseButton from "@/components/common/CloseButton.vue";
 import AppHeaderTab from "../AppHeaderTab.vue";
 
 describe("AppHeaderTab.vue", () => {
-  const doMount = (props = {}) => {
-    const defaultProps = {
+  type ComponentProps = InstanceType<typeof AppHeaderTab>["$props"];
+
+  const doMount = (props: Partial<ComponentProps> = {}) => {
+    const defaultProps: ComponentProps = {
       name: "MockTab",
       projectId: "1",
       isActive: false,
       windowWidth: 1024,
       projectType: "Workflow",
       provider: "local",
+      version: 0,
     };
 
     return shallowMount(AppHeaderTab, { props: { ...defaultProps, ...props } });
@@ -33,7 +36,7 @@ describe("AppHeaderTab.vue", () => {
       const wrapper = doMount({ projectId: "1" });
 
       wrapper.find(".tab-item").trigger("click");
-      expect(wrapper.emitted("switchWorkflow")[0][0]).toBe("1");
+      expect(wrapper.emitted("switchWorkflow")?.[0][0]).toBe("1");
     });
 
     it("should not emit a switchWorkflow event when the tab is active", () => {
@@ -49,7 +52,7 @@ describe("AppHeaderTab.vue", () => {
 
     // testing click with middle click works best with triggering mouseup
     await wrapper.find(".tab-item").trigger("mouseup", { button: 1 });
-    expect(wrapper.emitted("closeProject")[0][0]).toBe("1");
+    expect(wrapper.emitted("closeProject")?.[0][0]).toBe("1");
   });
 
   it("should emit a close-workflow event if the close button is pressed", async () => {
@@ -61,7 +64,7 @@ describe("AppHeaderTab.vue", () => {
       .vm.$emit("close", { stopPropagation });
 
     expect(stopPropagation).toHaveBeenCalled();
-    expect(wrapper.emitted("closeProject")[0][0]).toBe("1");
+    expect(wrapper.emitted("closeProject")?.[0][0]).toBe("1");
   });
 
   describe("truncates the workflow name", () => {

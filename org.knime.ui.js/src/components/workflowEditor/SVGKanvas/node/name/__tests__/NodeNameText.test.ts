@@ -93,7 +93,7 @@ describe("NodeNameText.vue", () => {
       wrapper
         .findComponent(AutoSizeForeignObject)
         .vm.$emit(eventName, emittedValue);
-      expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
+      expect(wrapper.emitted(eventName)?.[0][0]).toBe(emittedValue);
     },
   );
 });
