@@ -33,6 +33,13 @@ export const useFloatingMenuClickaway = (options: UseFloatingMenuClickaway) => {
   };
 
   onMounted(async () => {
+    // Focus trap needs to be activated before the sleep call
+    // in order to register the correct element to return the focus to
+    if (focusTrap.value) {
+      await nextTick();
+      activateFocusTrap();
+    }
+
     // make a brief pause before registering the click outside handler,
     // to avoid closing immediately after opening
     await sleep(CLICKAWAY_REGISTER_DELAY_MS);
@@ -47,11 +54,6 @@ export const useFloatingMenuClickaway = (options: UseFloatingMenuClickaway) => {
       },
       { capture: true, ignore: [kanvas] },
     );
-
-    if (focusTrap.value) {
-      await nextTick();
-      activateFocusTrap();
-    }
   });
 
   onBeforeUnmount(() => {

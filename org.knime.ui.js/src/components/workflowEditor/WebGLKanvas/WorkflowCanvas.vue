@@ -53,6 +53,8 @@ const { isPointerDownDoubleClick } = usePointerDownDoubleClick({
 
 const onPointerDown = (event: PointerEvent) => {
   if (isPointerDownDoubleClick(event)) {
+    // Prevent the kanvas from stealing focus from quick action menu
+    event.preventDefault();
     openQuickActionMenu(event);
   }
 };
