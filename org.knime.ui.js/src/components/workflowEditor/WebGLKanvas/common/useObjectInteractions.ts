@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
+import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -295,6 +296,10 @@ export const useObjectInteractions = (
   const onPointerDown = async (
     pointerDownEvent: PIXI.FederatedPointerEvent,
   ) => {
+    if (useCanvasModesStore().hasPanModeEnabled) {
+      return;
+    }
+
     const isMouseLeftClick = pointerDownEvent.button === 0;
     if ((isMouseLeftClick && isHoldingDownSpace.value) || !isMouseLeftClick) {
       return;

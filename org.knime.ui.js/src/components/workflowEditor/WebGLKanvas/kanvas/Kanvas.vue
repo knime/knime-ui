@@ -6,6 +6,7 @@ import { RenderLayer } from "pixi.js";
 
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
@@ -96,13 +97,19 @@ onUnmounted(() => {
   clearIconCache();
 });
 
+const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
 const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
   pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
 });
 
 const onPointerDown = (event: PointerEvent) => {
   const isMouseLeftClick = event.button === 0;
-  if (!isHoldingDownSpace.value && isMouseLeftClick) {
+
+  if (
+    !isHoldingDownSpace.value &&
+    isMouseLeftClick &&
+    !hasPanModeEnabled.value
+  ) {
     $bus.emit("selection-pointerdown", event);
     return;
   }
@@ -139,12 +146,12 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     :resize-to="() => getKanvasDomElement()!"
     :auto-start="!performanceTracker.isCanvasPerfMode()"
     :on-before-mount="beforePixiMount"
-    :class="[{ panning: shouldShowMoveCursor }]"
+    :class="[{ panning: shouldShowMoveCursor || hasPanModeEnabled }]"
     @wheel.prevent="onMouseWheel"
+    @pointerdown="onPointerDown"
     @pointermove="$bus.emit('selection-pointermove', $event)"
     @pointerup="$bus.emit('selection-pointerup', $event)"
     @contextmenu.prevent
-    @pointerdown="onPointerDown"
     @init-complete="isPixiAppInitialized = true"
   >
     <Container
