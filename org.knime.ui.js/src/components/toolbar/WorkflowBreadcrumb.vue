@@ -33,7 +33,7 @@ const { revealItemInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
 const { getSpaceProviderIcon } = useSpaceIcons();
 const { toastPresets } = getToastPresets();
 
-const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
+const { activeProjectOrigin, activeProjectId, activeProject } = storeToRefs(
   useApplicationStore(),
 );
 const {
@@ -44,11 +44,6 @@ const {
 const uiControls = useUIControlsStore();
 
 const { getSpaceItemVersion } = useWorkflowVersionsStore();
-
-const getActiveProject = () =>
-  openProjects.value.find(
-    (project) => project.projectId === activeProjectId.value,
-  );
 
 const handleRestoreVersion = () => {
   const activeVersion = props.workflow.info.version;
@@ -63,8 +58,7 @@ const handleRestoreVersion = () => {
     toastPresets.api.hubActionError({
       error,
       headline: "Restoring project version failed",
-      message: `Error restoring '${getActiveProject()
-        ?.name}' to version '${activeVersion}'.`,
+      message: `Error restoring '${activeProject.value?.name}' to version '${activeVersion}'.`,
     });
   }
 };
@@ -91,8 +85,7 @@ const dropdownItems = computed(() => {
             toastPresets.api.hubActionError({
               error,
               headline: "Opening version history failed",
-              message: `Error fetching version information for project '${getActiveProject()
-                ?.name}'.`,
+              message: `Error fetching version information for project '${activeProject.value?.name}'.`,
             });
           }
         },
@@ -109,9 +102,7 @@ const dropdownItems = computed(() => {
       icon: ListIcon,
       metadata: {
         handler: async () => {
-          const projectName = openProjects.value.find(
-            (project) => project.projectId === activeProjectId.value,
-          )!.name;
+          const projectName = activeProject.value!.name;
 
           await revealItemInSpaceExplorer(
             activeProjectOrigin.value!,
@@ -193,10 +184,13 @@ const breadcrumbText = computed(() => {
 });
 
 const activeVersionTitle = computed(() => {
-  return getSpaceItemVersion(
-    props.workflow.projectId,
-    props.workflow.info.version,
-  )?.title;
+  const {
+    projectId,
+    info: { version },
+  } = props.workflow;
+  const spaceItemVersion = getSpaceItemVersion(projectId, version);
+
+  return spaceItemVersion?.title ?? activeProject.value?.origin?.version?.title;
 });
 </script>
 
