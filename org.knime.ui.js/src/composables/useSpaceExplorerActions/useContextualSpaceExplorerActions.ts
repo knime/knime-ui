@@ -105,8 +105,8 @@ export const useContextualSpaceExplorerActions = (
       ...valueOrEmpty(isLocal.value, uploadToHub.value),
       ...valueOrEmpty(isHub.value && isDesktop(), downloadToLocalSpace.value),
       ...valueOrEmpty(isHub.value && isBrowser(), downloadInBrowser.value),
-      ...valueOrEmpty(isHub.value, moveToSpace.value),
-      ...valueOrEmpty(isHub.value, copyToSpace.value),
+      ...valueOrEmpty(isHub.value || isServer.value, moveToSpace.value),
+      ...valueOrEmpty(isHub.value || isServer.value, copyToSpace.value),
       ...valueOrEmpty(
         isServer.value && isWorkflowSelected.value,
         openAPIDefinitionAction.value,
@@ -121,8 +121,14 @@ export const useContextualSpaceExplorerActions = (
       deleteItem.value,
       duplicateItem.value,
       ...valueOrEmpty(isLocal.value, exportItem.value),
-      ...valueOrEmpty(isLocal.value || isHub.value, moveToSpace.value),
-      ...valueOrEmpty(isLocal.value || isHub.value, copyToSpace.value),
+      ...valueOrEmpty(
+        isLocal.value || isHub.value || isServer.value,
+        moveToSpace.value,
+      ),
+      ...valueOrEmpty(
+        isLocal.value || isHub.value || isServer.value,
+        copyToSpace.value,
+      ),
       ...valueOrEmpty(isLocal.value, uploadToHub.value),
       ...valueOrEmpty(
         (isHub.value || (isServer.value && doesSelectionContainWorkflow)) &&
