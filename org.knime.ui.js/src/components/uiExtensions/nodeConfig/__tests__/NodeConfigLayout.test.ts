@@ -93,9 +93,9 @@ describe("NodeConfigLayout.vue", () => {
         props: { canBeEnlarged: true, isLargeMode: false },
       });
 
-      expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
-      await wrapper.findComponent(FunctionButton).trigger("click");
-
+      const expandButton = wrapper.find('[data-test-id="expand-dialog-btn"]');
+      expect(expandButton.exists()).toBe(true);
+      await expandButton.trigger("click");
       expect(wrapper.emitted("expand")).toBeDefined();
     });
 

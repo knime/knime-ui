@@ -48,6 +48,7 @@ export const getHintConfiguration = (
       side: "right",
       align: "center",
     },
+
     [HINTS.NODE_MONITOR]: {
       title: "View the results of data tasks",
       description:
@@ -57,6 +58,7 @@ export const getHintConfiguration = (
       side: "top",
       align: "start",
     },
+
     [HINTS.HIGHLIGHTED_OUTPUT_PORT]: {
       title: "Add and connect nodes to perform actions on data",
       description:
@@ -82,6 +84,7 @@ export const getHintConfiguration = (
       dependsOn: [HINTS.HIGHLIGHTED_OUTPUT_PORT],
       hideButtons: true,
     },
+
     [HINTS.UPLOAD_BUTTON]: {
       title: "KNIME Community Hub - Versioning",
       description:

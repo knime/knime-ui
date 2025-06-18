@@ -2,8 +2,6 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
-import { FunctionButton } from "@knime/components";
-
 import type { KnimeNode } from "@/api/custom-types";
 import { Node, WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { isBrowser, isDesktop } from "@/environment";
@@ -219,7 +217,9 @@ describe("NodeConfig", () => {
     it("if starting small can be toggled to large via store", async () => {
       const { wrapper, mockedStores } = await doMountForLargeModeTesting();
 
-      expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+      expect(wrapper.find('[data-test-id="expand-dialog-btn"]').exists()).toBe(
+        true,
+      );
       expectMode(wrapper, "small");
 
       mockedStores.nodeConfigurationStore.setIsLargeMode(true);

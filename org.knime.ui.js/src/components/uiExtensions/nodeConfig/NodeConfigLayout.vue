@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { Button, FunctionButton } from "@knime/components";
+import { Button } from "@knime/components";
 import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
 import { type APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
@@ -93,9 +93,16 @@ const onDiscard = () => {
       <template #header>
         <div v-if="!isLargeMode" class="header">
           <h6>{{ nodeName }}</h6>
-          <FunctionButton v-if="canBeEnlarged" @click="emit('expand')">
+          <Button
+            v-if="canBeEnlarged"
+            title="Expand into a more advanced configuration view"
+            data-test-id="expand-dialog-btn"
+            compact
+            @click="emit('expand')"
+          >
             <ArrowsExpandIcon />
-          </FunctionButton>
+            Expand
+          </Button>
         </div>
       </template>
       <template #controls>

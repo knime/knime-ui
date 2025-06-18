@@ -95,6 +95,7 @@ useEventListener(panel, "keydown", (event) => {
     @cancel="exitLargeMode"
   >
     <ToastStack v-if="isLargeMode" class="large-mode-toasts" />
+
     <div v-if="isLargeMode" class="title-bar">
       <h2>{{ nodeName }}</h2>
       <Button
