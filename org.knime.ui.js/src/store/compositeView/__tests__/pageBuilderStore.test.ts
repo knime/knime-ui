@@ -50,7 +50,7 @@ const mockedValidationCheck = vi
 describe("Re-execution and polling logic", () => {
   const mockContext = {
     dispatch: vi.fn((action) => {
-      if (action === "getViewValues") {
+      if (action === "getViewValuesAndResolvedIdentifiers") {
         return mockedViewValues();
       }
       if (action === "pagebuilder/getValidity") {

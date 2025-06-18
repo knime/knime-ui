@@ -134,9 +134,8 @@ const testValidityOfPage = async ({ dispatch }, nodeId?: string) => {
 
 /*
  * This generator is used to determine the polling interval for the re-execution of the composite view.
- * The initial polling interval, i.e., the first call, is 100ms, after that it is 500ms.
  */
-const INITIAL_POLLING_INTERVAL = 100;
+const INITIAL_POLLING_INTERVAL = 1;
 const POLLING_INTERVAL = 500;
 const intervalGenerator = function* () {
   yield INITIAL_POLLING_INTERVAL;
@@ -182,7 +181,7 @@ const checkIfUpdatesAreNeeded = (
 
   if (resetNodes.every((nodeId) => reexecutedNodes?.includes(nodeId))) {
     // If all nodes have executed, but page isn't ready, don't wait or update- just fetch page.
-    return { shouldPoll: true, pollInterval: 1 };
+    return { shouldPoll: true, pollInterval: INITIAL_POLLING_INTERVAL };
   }
 
   dispatch(
@@ -253,29 +252,40 @@ const actions = {
     await dispatch("api/onChange", { isDirty, isDefault }, { root: true });
   },
 
-  async getViewValues({
-    dispatch,
-  }): Promise<(Identifiers & { viewValues: Record<string, string> }) | null> {
-    consola.debug("KNIME-UI pageBuilderStore: getViewValues");
+  async getViewValuesAndResolvedIdentifiers(
+    { dispatch },
+    onlyDirty = false,
+  ): Promise<
+    (Identifiers & { viewValues: Record<string, string> }) | undefined
+  > {
+    consola.debug(
+      `KNIME-UI pageBuilderStore: getViewValues from ${
+        onlyDirty ? "only dirty nodes" : "all nodes"
+      }`,
+    );
 
     const resolvedIdentifiers = getSelectedNodeIdentifierFromStore();
     if (resolvedIdentifiers === null) {
-      return null;
+      return;
     }
 
     const { nodeId: componentNodeId } = resolvedIdentifiers;
 
     try {
-      const viewValues = await dispatch("pagebuilder/getViewValues", null, {
-        root: true,
-      });
+      const getViewValues = () => {
+        if (onlyDirty) {
+          return dispatch("pagebuilder/getDirtyNodes", null, { root: true });
+        }
+        // param true will result in stringified view values
+        return dispatch("pagebuilder/getViewValues", true, { root: true });
+      };
 
+      const viewValues = await getViewValues();
+
+      // eslint-disable-next-line consistent-return
       return {
         ...resolvedIdentifiers,
-        viewValues: Object.keys(viewValues).reduce((accumulator, nodeId) => {
-          accumulator[nodeId] = JSON.stringify(viewValues[nodeId]);
-          return accumulator;
-        }, {}),
+        viewValues,
       };
     } catch (error) {
       handleError({
@@ -283,7 +293,6 @@ const actions = {
         error,
         nodeId: componentNodeId,
       });
-      return null;
     }
   },
 
@@ -296,22 +305,27 @@ const actions = {
    * @returns {undefined}
    */
   async applyAsDefault({ dispatch }) {
-    consola.debug("KNIME-UI pageBuilderStore: applyAsDefault");
-
-    const viewValues = await dispatch("getViewValues");
-    if (viewValues === null) {
+    const viewValuesAndResolvedIdentifier = await dispatch(
+      "getViewValuesAndResolvedIdentifiers",
+    );
+    if (!viewValuesAndResolvedIdentifier) {
       consola.debug(
         "KNIME-UI pageBuilderStore: applyAsDefault failed. No view values available.",
       );
       return;
     }
     try {
-      await API.compositeview.setViewValuesAsNewDefault(viewValues);
+      consola.debug("KNIME-UI pageBuilderStore: applyAsDefault: ", {
+        viewValuesAndResolvedIdentifier,
+      });
+      await API.compositeview.setViewValuesAsNewDefault(
+        viewValuesAndResolvedIdentifier,
+      );
     } catch (error) {
       handleError({
         caller: "applyAsDefault",
         error,
-        nodeId: viewValues.nodeId,
+        nodeId: viewValuesAndResolvedIdentifier.nodeId,
       });
     }
   },
@@ -332,9 +346,7 @@ const actions = {
       "getViewValuesAndResolvedIdentifiers",
       true, // only dirty nodes
     );
-    if (
-      !viewValuesAndResolvedIdentifier?.viewValues
-    ) {
+    if (!viewValuesAndResolvedIdentifier?.viewValues) {
       handleError({
         caller: "triggerReExecution",
         error: `No view values available for re-execution. ${viewValuesAndResolvedIdentifier}`,
@@ -345,24 +357,15 @@ const actions = {
 
     consola.debug(
       "KNIME-UI pageBuilderStore: trigger re-execution due to node",
-      resetNodeIdSuffix
-        ? resetNodeIdSuffix
-        : "none (complete re-execution)",
+      resetNodeIdSuffix ? resetNodeIdSuffix : "none (complete re-execution)",
       {
-        componentIdentifier : viewValuesAndResolvedIdentifier.resolvedIdentifiers,
+        componentIdentifier:
+          viewValuesAndResolvedIdentifier.resolvedIdentifiers,
         viewValues: viewValuesAndResolvedIdentifier.viewValues,
-      }
+      },
     );
 
-    const viewValues = await dispatch("getViewValues");
-    if (viewValues === null) {
-      consola.debug(
-        "KNIME-UI pageBuilderStore: triggerReExecution failed. No view values available.",
-      );
-      return;
-    }
-
-    const { nodeId: componentNodeId } = viewValues;
+    const { nodeId: componentNodeId } = viewValuesAndResolvedIdentifier;
 
     if (
       (await testValidityOfPage({ dispatch }, componentNodeId)) === "invalid"
@@ -376,7 +379,7 @@ const actions = {
 
         const reexecutingPage =
           (await API.compositeview.triggerCompleteComponentReexecution(
-            viewValues,
+            viewValuesAndResolvedIdentifier,
           )) as unknown as ReexecutingPage;
 
         await dispatch("resetOnChangeState");
@@ -384,9 +387,9 @@ const actions = {
         await dispatch("pollReExecution", {
           reexecutingPage,
           resolvedIdentifiers: {
-            projectId: viewValues.projectId,
-            workflowId: viewValues.workflowId,
-            nodeId: viewValues.nodeId,
+            projectId: viewValuesAndResolvedIdentifier.projectId,
+            workflowId: viewValuesAndResolvedIdentifier.workflowId,
+            nodeId: viewValuesAndResolvedIdentifier.nodeId,
           },
         });
       } finally {

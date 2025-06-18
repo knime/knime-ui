@@ -76,7 +76,9 @@ describe("composite view store", () => {
     it("mounts and unmounts the PageBuilder app correctly", async () => {
       const { getPageBuilder, isCompositeViewDirty } = useCompositeViewStore();
       const pageBuilder = await getPageBuilder(someProjectId);
-      await pageBuilder.mountShadowApp("mock-shadow-root" as unknown as ShadowRoot);
+      await pageBuilder.mountShadowApp(
+        "mock-shadow-root" as unknown as ShadowRoot,
+      );
       expect(mockPageBuilder.mountShadowApp).toHaveBeenCalled();
       expect(isCompositeViewDirty).toBe(false);
       expect(mockPageBuilder.hasPage()).toBe(false);
