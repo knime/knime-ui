@@ -384,7 +384,21 @@ export const useSVGCanvasStore = defineStore("canvasSVG", {
   getters: {
     getCanvasScrollState() {
       return () => {
-        const kanvas = getKanvasDomElement()!;
+        const kanvas = getKanvasDomElement();
+
+        if (!kanvas) {
+          consola.warn(
+            "getCanvasScrollState:: Tried to access kanvas element too early",
+          );
+
+          return {
+            scrollLeft: 0,
+            scrollTop: 0,
+            scrollWidth: 0,
+            scrollHeight: 0,
+            zoomFactor: this.zoomFactor,
+          };
+        }
 
         const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = kanvas;
 

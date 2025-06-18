@@ -84,9 +84,11 @@ export const useCanvasStateTrackingStore = defineStore("canvasStateTracking", {
       // This way, SVG store getter re-evaluates the element scroll position,
       // and WebGL store getter can still cache the return value properly.
       const { isSVGRenderer } = useCanvasRendererUtils();
-      const scrollState = isSVGRenderer
+
+      const scrollState = isSVGRenderer.value
         ? useSVGCanvasStore().getCanvasScrollState()
         : useWebGLCanvasStore().getCanvasScrollState;
+
       this.setSavedCanvasStates({
         ...scrollState,
         project: projectId,
