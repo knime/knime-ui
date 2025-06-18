@@ -17,8 +17,17 @@ export const knimeExternalUrls = {
   MODERN_UI_HUB_HOME_URL: `https://knime.com/modern-ui-hub-home-link${modernUISource}`,
   KNIME_DOWNLOADS_URL: `https://www.knime.com/downloads${modernUISource}`,
   KNIME_HUB_SEARCH_URL: `https://hub.knime.com/search?q=%s&type=all&${modernUISource}`,
-  KNIME_HUB_HOME_HOSTNAME: "hub.knime.com",
+  KNIME_HUB_HOME_HOSTNAME: "api.hub.knime.com",
   KNIME_HUB_DEV_HOSTNAME: "hubdev.knime.com",
+};
+
+/**
+ * Extracts hostname from a URL string by removing protocol and path
+ * @param url - The URL string to extract hostname from
+ * @returns The hostname without protocol, or the original string if no protocol found
+ */
+export const extractHostname = (url: string): string => {
+  return url.replace(/^https?:\/\//, "").split("/")[0];
 };
 
 const init: PluginInitFunction = ({ app }) => {

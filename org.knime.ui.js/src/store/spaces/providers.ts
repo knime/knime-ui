@@ -3,7 +3,10 @@ import { defineStore } from "pinia";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceProvider } from "@/api/gateway-api/generated-api";
-import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+import {
+  extractHostname,
+  knimeExternalUrls,
+} from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
 import { isLocalProvider } from "@/store/spaces/util";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
@@ -249,7 +252,9 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       const communityHubProvider = Object.values(
         state.spaceProviders ?? {},
       ).find(
-        (provider) => provider.hostname?.includes(KNIME_HUB_HOME_HOSTNAME),
+        (provider) =>
+          provider.hostname &&
+          extractHostname(provider.hostname) === KNIME_HUB_HOME_HOSTNAME,
       );
       const isCommunityHubMounted = Boolean(communityHubProvider);
       const isCommunityHubConnected = communityHubProvider?.connected ?? false;

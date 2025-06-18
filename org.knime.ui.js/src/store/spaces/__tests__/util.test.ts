@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { Project } from "@/api/gateway-api/generated-api";
 import { isBrowser, isDesktop } from "@/environment";
-import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+import {
+  extractHostname,
+  knimeExternalUrls,
+} from "@/plugins/knimeExternalUrls";
 import {
   createProject,
   createSpace,
@@ -16,6 +19,7 @@ import {
   findSpaceById,
   findSpaceGroupFromSpaceId,
   formatSpaceProviderName,
+  isCommunityHubProvider,
   isHubProvider,
   isLocalProvider,
   isProjectOpen,
@@ -356,5 +360,105 @@ describe("spaces::util", () => {
 
     const formattedName = formatSpaceProviderName(provider);
     expect(formattedName).toBe("KNIME Community Hub (DEV)");
+  });
+
+  describe("isCommunityHubProvider", () => {
+    it("returns true for connected community hub provider with correct hostname", () => {
+      const provider = createSpaceProvider({
+        id: "community-hub-id",
+        name: "KNIME Community Hub",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        hostname: `https://${knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME}`,
+      });
+
+      expect(isCommunityHubProvider(provider)).toBe(true);
+      expect(provider.hostname).toBeDefined();
+      expect(extractHostname(provider.hostname as string)).toBe(
+        knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME,
+      );
+    });
+
+    it("returns true for connected community hub provider with hostname without protocol", () => {
+      const provider = createSpaceProvider({
+        id: "community-hub-id",
+        name: "KNIME Community Hub",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        hostname: knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME,
+      });
+
+      expect(isCommunityHubProvider(provider)).toBe(true);
+      expect(provider.hostname).toBeDefined();
+      expect(extractHostname(provider.hostname as string)).toBe(
+        knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME,
+      );
+    });
+
+    it("returns false for disconnected community hub provider", () => {
+      const provider = createSpaceProvider({
+        id: "community-hub-id",
+        name: "KNIME Community Hub",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: false,
+        hostname: `https://${knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME}`,
+      });
+
+      expect(isCommunityHubProvider(provider)).toBe(false);
+      expect(provider.hostname).toBeDefined();
+      expect(extractHostname(provider.hostname as string)).toBe(
+        knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME,
+      );
+    });
+
+    it("returns false for provider with different hostname", () => {
+      const provider = createSpaceProvider({
+        id: "other-hub-id",
+        name: "Other Hub",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        hostname: "https://datahub.knime.com",
+      });
+
+      expect(isCommunityHubProvider(provider)).toBe(false);
+      expect(provider.hostname).toBeDefined();
+      expect(extractHostname(provider.hostname as string)).toBe(
+        "datahub.knime.com",
+      );
+      expect(extractHostname(provider.hostname as string)).not.toBe(
+        knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME,
+      );
+    });
+
+    it("returns false for provider with no hostname", () => {
+      const provider = createSpaceProvider({
+        id: "local-provider-id",
+        name: "Local Provider",
+        type: SpaceProviderNS.TypeEnum.LOCAL,
+        connected: true,
+        hostname: undefined,
+      });
+
+      expect(isCommunityHubProvider(provider)).toBe(false);
+    });
+
+    it("returns false for provider that would match with old includes logic (datahub.knime.com)", () => {
+      const provider = createSpaceProvider({
+        id: "datahub-id",
+        name: "Data Hub",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        hostname: "https://datahub.knime.com",
+      });
+
+      expect(isCommunityHubProvider(provider)).toBe(false);
+      expect(provider.hostname).toBeDefined();
+      expect(extractHostname(provider.hostname as string)).toBe(
+        "datahub.knime.com",
+      );
+      expect(extractHostname(provider.hostname as string)).not.toBe(
+        knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME,
+      );
+    });
   });
 });

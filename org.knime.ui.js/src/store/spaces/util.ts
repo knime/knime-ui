@@ -5,7 +5,10 @@ import { SpaceProviderNS, type WorkflowOrigin } from "@/api/custom-types";
 import type { Project } from "@/api/gateway-api/generated-api";
 import MovingItemsTemplate from "@/components/spaces/useMovingItems/MovingItemsTemplate.vue";
 import { isBrowser } from "@/environment";
-import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+import {
+  extractHostname,
+  knimeExternalUrls,
+} from "@/plugins/knimeExternalUrls";
 import { getToastPresets } from "@/toastPresets";
 import { useApplicationStore } from "../application/application";
 
@@ -131,5 +134,8 @@ export const formatSpaceProviderName = (
 export const isCommunityHubProvider = (
   provider: SpaceProviderNS.SpaceProvider,
 ) =>
-  provider.connected &&
-  (provider.hostname?.includes(KNIME_HUB_HOME_HOSTNAME) ?? false);
+  Boolean(
+    provider.connected &&
+      provider.hostname &&
+      extractHostname(provider.hostname) === KNIME_HUB_HOME_HOSTNAME,
+  );

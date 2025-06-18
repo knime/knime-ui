@@ -358,7 +358,7 @@ describe("spaces::providers", () => {
         connected: true,
         id: "project1",
         name: "community-hub",
-        hostname: KNIME_HUB_HOME_HOSTNAME,
+        hostname: `https://${KNIME_HUB_HOME_HOSTNAME}`,
         spaceGroups: [
           {
             id: "space-group1",
@@ -389,7 +389,7 @@ describe("spaces::providers", () => {
         connected: true,
         id: "project1",
         name: "community-hub",
-        hostname: KNIME_HUB_HOME_HOSTNAME,
+        hostname: `https://${KNIME_HUB_HOME_HOSTNAME}`,
         spaceGroups: [
           {
             id: "space-group1",
