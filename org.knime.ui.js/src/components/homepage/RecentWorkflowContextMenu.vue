@@ -22,7 +22,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
-const { revealItemInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
+const { revealItemInSpaceExplorer, canProviderRevealItem } =
+  useRevealInSpaceExplorer();
 
 const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
   if (item.execute) {
@@ -52,7 +53,7 @@ const recentWorkflowContextMenuItems = computed(() => {
 
   const menuItems: Array<MenuItem> = [
     ...valueOrEmpty(
-      canRevealItem(recentWorkflow.origin?.providerId),
+      canProviderRevealItem(recentWorkflow.origin?.providerId),
       revealInSpaceOption,
     ),
   ] as ActionMenuItem[];

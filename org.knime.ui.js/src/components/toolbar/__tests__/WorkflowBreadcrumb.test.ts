@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { computed, ref } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
@@ -30,6 +31,7 @@ import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 vi.mock("@/environment");
 
 const revealInSpaceExplorerSpy = vi.fn();
+let canRevealProjectMock = ref<null | boolean>(null);
 
 vi.mock(
   "@/components/spaces/useRevealInSpaceExplorer",
@@ -46,6 +48,29 @@ vi.mock(
   },
 );
 
+vi.mock("@/composables/useRevealProject", async (importOriginal) => {
+  const original = await importOriginal<
+    typeof import("@/composables/useRevealProject")
+  >();
+  return {
+    useRevealProject: (
+      ...args: Parameters<typeof original.useRevealProject>
+    ): ReturnType<typeof original.useRevealProject> => {
+      const originalComposable = original.useRevealProject(...args);
+      // the returned mock is identical to the orignal, but the
+      // canRevealProject computed can be optionally overriden
+      return {
+        ...originalComposable,
+        canRevealProject: computed(() =>
+          canRevealProjectMock.value === null
+            ? originalComposable.canRevealProject.value
+            : canRevealProjectMock.value,
+        ),
+      };
+    },
+  };
+});
+
 const LOCAL_PROVIDER = createSpaceProvider({
   type: SpaceProvider.TypeEnum.LOCAL,
 });
@@ -60,6 +85,7 @@ describe("WorkflowBreadcrumb.vue", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockEnvironment("DESKTOP", { isDesktop, isBrowser });
+    canRevealProjectMock.value = null;
   });
 
   const workflowName = "dummy workflow";
@@ -117,12 +143,24 @@ describe("WorkflowBreadcrumb.vue", () => {
   });
 
   it("renders dropdown items in DESKTOP", () => {
+    canRevealProjectMock.value = true;
     const { wrapper } = doMount();
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
     expect(menuItems).toEqual([
       expect.objectContaining({ text: "Version history" }),
       expect.objectContaining({ text: "Reveal in space explorer" }),
+      expect.objectContaining({ text: "Close project" }),
+    ]);
+  });
+
+  it("renders dropdown items in DESKTOP (can't reveal project)", () => {
+    canRevealProjectMock.value = false;
+    const { wrapper } = doMount();
+    const menuItems = wrapper.findComponent(SubMenu).props("items");
+
+    expect(menuItems).toEqual([
+      expect.objectContaining({ text: "Version history" }),
       expect.objectContaining({ text: "Close project" }),
     ]);
   });
@@ -169,6 +207,7 @@ describe("WorkflowBreadcrumb.vue", () => {
   });
 
   it('handles "Reveal in space explorer" dropdown item click', () => {
+    canRevealProjectMock.value = true;
     const { wrapper } = doMount();
 
     const revealInSpaceExplorerItem = wrapper

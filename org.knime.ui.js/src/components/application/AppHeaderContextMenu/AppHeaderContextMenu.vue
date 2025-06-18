@@ -4,9 +4,8 @@ import { computed, toRef } from "vue";
 import { type MenuItem, MenuItems } from "@knime/components";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useRevealProject } from "@/composables/useRevealProject";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-
-import { useRevealProject } from "./useRevealProject";
 
 type Props = {
   projectId: string;

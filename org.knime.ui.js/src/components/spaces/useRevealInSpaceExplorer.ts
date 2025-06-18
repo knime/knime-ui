@@ -40,7 +40,7 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
 
   const { toastPresets } = getToastPresets();
 
-  const canRevealItem = (providerId: string): boolean => {
+  const canProviderRevealItem = (providerId: string): boolean => {
     const provider = spaceProviders.value?.[providerId];
 
     if (
@@ -193,7 +193,7 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     ancestorItemIds?: Array<string>;
   }) => {
     try {
-      if (!canRevealItem(providerId)) {
+      if (!canProviderRevealItem(providerId)) {
         resetSelectedItemAndShowError();
         return;
       }
@@ -257,6 +257,6 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
   return {
     revealInSpaceExplorer,
     revealItemInSpaceExplorer,
-    canRevealItem,
+    canProviderRevealItem,
   };
 };

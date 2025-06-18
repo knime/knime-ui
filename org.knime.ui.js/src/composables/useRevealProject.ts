@@ -3,15 +3,14 @@ import { storeToRefs } from "pinia";
 
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useApplicationStore } from "@/store/application/application";
-
-import type { AppHeaderContextMenuItem } from "./types";
+import type { AppHeaderContextMenuItem } from "../components/application/AppHeaderContextMenu/types";
 
 type UseRevealProject = {
   projectId: MaybeRefOrGetter<string | null>;
 };
 
 export const useRevealProject = (options: UseRevealProject) => {
-  const { canRevealItem, revealItemInSpaceExplorer } =
+  const { canProviderRevealItem, revealItemInSpaceExplorer } =
     useRevealInSpaceExplorer();
 
   const { openProjects, isUnknownProject } = storeToRefs(useApplicationStore());
@@ -26,7 +25,7 @@ export const useRevealProject = (options: UseRevealProject) => {
       return false;
     }
 
-    return canRevealItem(foundProject.origin!.providerId);
+    return canProviderRevealItem(foundProject.origin!.providerId);
   });
 
   const menuItem: AppHeaderContextMenuItem = {
@@ -61,5 +60,5 @@ export const useRevealProject = (options: UseRevealProject) => {
     return canRevealProject.value ? [menuItem] : [];
   });
 
-  return { revealProjectMenuOption };
+  return { revealProjectMenuOption, canRevealProject };
 };

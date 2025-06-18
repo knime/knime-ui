@@ -13,6 +13,7 @@ import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
 import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useSpaceIcons } from "@/components/spaces/useSpaceIcons";
+import { useRevealProject } from "@/composables/useRevealProject";
 import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -29,13 +30,14 @@ type Props = {
   workflow: Workflow;
 };
 const props = defineProps<Props>();
-const { revealItemInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
+const { revealItemInSpaceExplorer } = useRevealInSpaceExplorer();
 const { getSpaceProviderIcon } = useSpaceIcons();
 const { toastPresets } = getToastPresets();
 
 const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
   useApplicationStore(),
 );
+const { canRevealProject } = useRevealProject({ projectId: activeProjectId });
 const {
   activeProjectProvider,
   getProviderInfoFromActiveProject,
@@ -97,10 +99,7 @@ const dropdownItems = computed(() => {
     });
   }
 
-  if (
-    activeProjectOrigin.value &&
-    canRevealItem(activeProjectOrigin.value.providerId)
-  ) {
+  if (activeProjectOrigin.value && canRevealProject.value) {
     items.push({
       text: "Reveal in space explorer",
       icon: ListIcon,
