@@ -121,14 +121,8 @@ export const useContextualSpaceExplorerActions = (
       deleteItem.value,
       duplicateItem.value,
       ...valueOrEmpty(isLocal.value, exportItem.value),
-      ...valueOrEmpty(
-        isLocal.value || isHub.value || isServer.value,
-        moveToSpace.value,
-      ),
-      ...valueOrEmpty(
-        isLocal.value || isHub.value || isServer.value,
-        copyToSpace.value,
-      ),
+      moveToSpace.value,
+      copyToSpace.value,
       ...valueOrEmpty(isLocal.value, uploadToHub.value),
       ...valueOrEmpty(
         (isHub.value || (isServer.value && doesSelectionContainWorkflow)) &&
