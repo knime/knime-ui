@@ -269,7 +269,7 @@ describe("application", () => {
         query: {
           version: null,
         },
-        force: true,
+        force: false,
       });
     });
 

@@ -39,7 +39,13 @@ const $router = useRouter();
 const $route = useRoute();
 const $shortcuts = useShortcuts();
 
+const projectWithPendingNavigation = ref<string>();
+
 const activeProjectTab = computed(() => {
+  if (projectWithPendingNavigation.value) {
+    return projectWithPendingNavigation.value;
+  }
+
   if ($route.name === APP_ROUTES.WorkflowPage) {
     return $route.params.projectId;
   }
@@ -93,13 +99,19 @@ const setGetStartedPageTab = () => {
 };
 
 const onProjectTabChange = (projectId: string, version: number | null) => {
-  $router.push({
-    name: APP_ROUTES.WorkflowPage,
-    params: { projectId, workflowId: "root" },
-    query: {
-      version: version === null ? null : String(version),
-    },
-  });
+  projectWithPendingNavigation.value = projectId;
+  $router
+    .push({
+      name: APP_ROUTES.WorkflowPage,
+      params: { projectId, workflowId: "root" },
+      query: {
+        version: version === null ? null : String(version),
+      },
+    })
+    .finally(() => {
+      // eslint-disable-next-line no-undefined
+      projectWithPendingNavigation.value = undefined;
+    });
 };
 
 const openKnimeUIPreferencePage = () => {

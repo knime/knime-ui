@@ -8,7 +8,7 @@ import {
   vi,
 } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 import { useRoute } from "vue-router";
 
@@ -34,7 +34,7 @@ import AppHeaderTab from "../AppHeaderTab.vue";
 
 const mockedAPI = deepMocked(API);
 
-const routerPush = vi.fn();
+const routerPush = vi.fn().mockImplementation(() => Promise.resolve());
 Element.prototype.scrollIntoView = vi.fn();
 
 vi.mock("vue-router", async (importOriginal) => {
@@ -138,6 +138,7 @@ describe("AppHeader.vue", () => {
       $route,
       $shortcuts,
       openProjects,
+      mockedStores,
     };
   };
 
@@ -213,16 +214,30 @@ describe("AppHeader.vue", () => {
     });
 
     it("scrolls into active tab", async () => {
+      const params = { projectId: "2" };
+
       // @ts-expect-error
       useRoute.mockReturnValueOnce({
         name: APP_ROUTES.WorkflowPage,
-        params: { projectId: "2" },
+        params,
       });
-      const { wrapper } = doMount();
-      await wrapper.findAll(".tab-item").at(2)!.trigger("click");
-      const activeDiv = wrapper.find(".active").element;
 
-      expect(activeDiv.scrollIntoView).toHaveBeenCalledOnce();
+      const { wrapper } = doMount();
+      const getActiveElement = () => wrapper.find(".active").element;
+
+      await flushPromises();
+      expect(getActiveElement().scrollIntoView).toHaveBeenCalledOnce();
+
+      routerPush.mockImplementationOnce(() => {
+        params.projectId = "3";
+        return Promise.resolve();
+      });
+
+      // navigate to project with id "3"
+      await wrapper.findAll(".tab-item").at(2)!.trigger("click");
+
+      await flushPromises();
+      expect(getActiveElement().scrollIntoView).toHaveBeenCalledTimes(2);
     });
 
     describe("drag and drop", () => {

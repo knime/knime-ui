@@ -1,4 +1,12 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
@@ -8,13 +16,16 @@ import {
   ShowToastEvent,
   SpaceProvider,
 } from "@/api/gateway-api/generated-api";
+import { isBrowser, isDesktop } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { deepMocked } from "@/test/utils";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import { notifyPatch } from "@/util/event-syncer";
 import eventsPlugin from "../events";
 
 vi.mock("@/util/event-syncer");
+vi.mock("@/environment");
 
 const registeredHandlers: Partial<EventHandlers & DesktopEventHandlers> = {};
 
@@ -63,6 +74,10 @@ describe("Event Plugin", () => {
   });
 
   describe("events", () => {
+    beforeEach(() => {
+      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+    });
+
     afterEach(() => {
       notifyPatchMock.mockClear();
     });
@@ -228,6 +243,49 @@ describe("Event Plugin", () => {
         expect(
           mockedStores.lifecycleStore.setActiveProject,
         ).toHaveBeenCalledWith({ $router: routerMock });
+      });
+
+      it("does not call setActiveProject when there's a pending workflow navigation", () => {
+        const { mockedStores } = loadPlugin();
+
+        mockedStores.lifecycleStore.pendingWorkflowNavigation = {
+          projectId: "foo",
+          workflowId: "bar",
+        };
+
+        registeredHandlers.AppStateChangedEvent!({
+          // @ts-expect-error
+          appState: { openProjects: [{ id: "mock" }] },
+        });
+
+        expect(
+          mockedStores.applicationStore.replaceApplicationState,
+        ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
+        expect(
+          mockedStores.lifecycleStore.setActiveProject,
+        ).not.toHaveBeenCalled();
+      });
+
+      it("does not call setActiveProject on the browser", () => {
+        mockEnvironment("BROWSER", { isBrowser, isDesktop });
+        const { mockedStores } = loadPlugin();
+
+        mockedStores.lifecycleStore.pendingWorkflowNavigation = {
+          projectId: "foo",
+          workflowId: "bar",
+        };
+
+        registeredHandlers.AppStateChangedEvent!({
+          // @ts-expect-error
+          appState: { openProjects: [{ id: "mock" }] },
+        });
+
+        expect(
+          mockedStores.applicationStore.replaceApplicationState,
+        ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
+        expect(
+          mockedStores.lifecycleStore.setActiveProject,
+        ).not.toHaveBeenCalled();
       });
 
       // TODO NXT-1437

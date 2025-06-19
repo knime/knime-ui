@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";
@@ -55,6 +56,20 @@ type LifecycleState = {
   isChangingProject: boolean;
 
   isLoadingApp: boolean;
+
+  /**
+   * Temporary state used to deduplicate navigation events between user interactions
+   * and AppState-driven updates.
+   *
+   * When a user triggers a navigation (e.g. by clicking a tab), this causes a project/workflow
+   * switch and eventually leads to an AppState update (e.g. `openProjects` changed). Without deduplication,
+   * this would result in a redundant second navigation when the AppState update is processed.
+   *
+   * In contrast, there are other cases (such as creating or opening a workflow) where the frontend
+   * does not yet know the target `projectId` or `workflowId`. In these cases, we rely entirely
+   * on AppState-driven navigation to determine the active workflow.
+   */
+  pendingWorkflowNavigation: { projectId: string; workflowId: string } | null;
 };
 
 export const useLifecycleStore = defineStore("lifecycle", {
@@ -62,6 +77,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
     isLoadingWorkflow: false,
     isChangingProject: false,
     isLoadingApp: false,
+    pendingWorkflowNavigation: null,
   }),
   actions: {
     setIsLoadingWorkflow(isLoadingWorkflow: boolean) {
@@ -149,6 +165,12 @@ export const useLifecycleStore = defineStore("lifecycle", {
             ...to.query,
             ...to.params,
           } as WorkflowNavigationParams;
+
+          this.pendingWorkflowNavigation = {
+            projectId: newWorkflow.projectId,
+            workflowId: newWorkflow.workflowId ?? "root",
+          };
+
           try {
             await this.switchWorkflow({ newWorkflow });
             next();
@@ -188,6 +210,8 @@ export const useLifecycleStore = defineStore("lifecycle", {
             );
             next(from);
             return;
+          } finally {
+            this.pendingWorkflowNavigation = null;
           }
         }
 
@@ -206,7 +230,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       consola.info("lifecycle::Application state", { applicationState });
       useApplicationStore().replaceApplicationState(applicationState);
-      await this.setActiveProject({ $router });
+      await this.setActiveProject({ $router, isInitialization: true });
 
       if (useApplicationSettingsStore().isKaiEnabled) {
         kaiFetchUiStrings();
@@ -310,7 +334,13 @@ export const useLifecycleStore = defineStore("lifecycle", {
       });
     },
 
-    async setActiveProject({ $router }: { $router: Router }) {
+    async setActiveProject({
+      $router,
+      isInitialization = false,
+    }: {
+      $router: Router;
+      isInitialization?: boolean;
+    }) {
       const { openProjects } = useApplicationStore();
       consola.trace("action::setActiveProject");
 
@@ -320,13 +350,15 @@ export const useLifecycleStore = defineStore("lifecycle", {
           !currentRoute.value.name ||
           currentRoute.value.name === APP_ROUTES.WorkflowPage
         ) {
-          $router.push({ name: APP_ROUTES.Home.GetStarted });
+          return $router.push({ name: APP_ROUTES.Home.GetStarted });
         }
+
+        return Promise.resolve();
       };
 
       if (openProjects.length === 0) {
         consola.trace("action::setActiveProject -> No workflows opened");
-        await runInEnvironment({ DESKTOP: goHomeIfNoActiveProject });
+        await goHomeIfNoActiveProject();
 
         return;
       }
@@ -338,7 +370,8 @@ export const useLifecycleStore = defineStore("lifecycle", {
         consola.trace(
           "action::setActiveProject -> No active project set. Redirecting home",
         );
-        await runInEnvironment({ DESKTOP: goHomeIfNoActiveProject });
+        await goHomeIfNoActiveProject();
+
         return;
       }
 
@@ -370,7 +403,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
         query: {
           version: version === CURRENT_STATE_VERSION ? null : String(version),
         },
-        force: true,
+        force: isInitialization,
       });
     },
 

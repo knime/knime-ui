@@ -7,6 +7,7 @@ import {
   it,
   vi,
 } from "vitest";
+import { watch } from "vue";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 import { createRouter, createWebHistory } from "vue-router";
@@ -87,6 +88,7 @@ describe("application::lifecycle", () => {
 
       expect(lifecycleStore.setActiveProject).toHaveBeenCalledWith({
         $router: router,
+        isInitialization: true,
       });
       expect(setupHints).toHaveBeenCalled();
     });
@@ -116,6 +118,7 @@ describe("application::lifecycle", () => {
 
       expect(lifecycleStore.setActiveProject).toHaveBeenCalledWith({
         $router: router,
+        isInitialization: true,
       });
       expect(setupHints).toHaveBeenCalled();
     });
@@ -464,15 +467,11 @@ describe("application::lifecycle", () => {
 
     it("should load a workflow when entering the worklow page", async () => {
       const router = getRouter();
-      await router.push({
-        name: APP_ROUTES.Home.GetStarted,
-      });
+      await router.push({ name: APP_ROUTES.Home.GetStarted });
 
       const { lifecycleStore } = loadStore();
 
-      await lifecycleStore.initializeApplication({
-        $router: router,
-      });
+      await lifecycleStore.initializeApplication({ $router: router });
 
       await router.push({
         name: APP_ROUTES.WorkflowPage,
@@ -484,6 +483,33 @@ describe("application::lifecycle", () => {
       });
 
       expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
+    });
+
+    it("should set the pending navigation state when entering the worklow page", async () => {
+      const router = getRouter();
+      await router.push({ name: APP_ROUTES.Home.GetStarted });
+
+      const { lifecycleStore } = loadStore();
+
+      const stateSpy = vi.fn();
+      watch(
+        () => lifecycleStore.pendingWorkflowNavigation,
+        (next) => stateSpy(next),
+      );
+
+      await lifecycleStore.initializeApplication({ $router: router });
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "foo", workflowId: "bar" },
+      });
+
+      expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
+      expect(stateSpy).toHaveBeenNthCalledWith(1, {
+        projectId: "foo",
+        workflowId: "bar",
+      });
+      expect(stateSpy).toHaveBeenNthCalledWith(2, null);
     });
 
     it("should navigate to previous page when a ProjectActivationError occurs", async () => {

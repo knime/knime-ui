@@ -2,6 +2,7 @@ import { API } from "@api";
 
 import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
+import { isDesktop } from "@/environment";
 import {
   type AiAssistantEvent,
   useAIAssistantStore,
@@ -145,8 +146,17 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
 
       const applicationStore = useApplicationStore();
       applicationStore.replaceApplicationState(appState);
-      if (appState.openProjects) {
-        useLifecycleStore().setActiveProject({ $router });
+
+      // setting the active project from the AppState can only happen in desktop.
+      // In the browser the user only views a single workflow: the one in their browser tab
+      if (appState.openProjects && isDesktop()) {
+        const lifecycleStore = useLifecycleStore();
+
+        // there was no explicit user navigation, therefore we should
+        // update the active project which will navigate to it
+        if (!lifecycleStore.pendingWorkflowNavigation) {
+          await lifecycleStore.setActiveProject({ $router });
+        }
       }
 
       useSpaceCachingStore().syncPathWithOpenProjects({
