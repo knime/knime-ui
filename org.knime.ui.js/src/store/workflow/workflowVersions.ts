@@ -35,6 +35,7 @@ import {
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useLifecycleStore } from "@/store/application/lifecycle.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
 import { useWorkflowPreviewSnapshotsStore } from "../application/workflowPreviewSnapshots.ts";
@@ -177,6 +178,10 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
     const versionsApi = getVersionsApi();
+
+    // Hack to provide some kind of progress/busy indication until the API calls can do that (NXT-3634)
+    // This will be unset when we switch to the loaded workflow
+    useLifecycleStore().setIsLoadingWorkflow(true);
 
     const nextAction = await getUserSelectedNextAction(activeProjectId);
 
@@ -387,6 +392,10 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     if (!activeProjectId) {
       return;
     }
+
+    // Hack to provide some kind of progress/busy indication until the API calls can do that (NXT-3634)
+    // This will be unset when we switch to the loaded workflow
+    useLifecycleStore().setIsLoadingWorkflow(true);
 
     const nextAction = await getUserSelectedNextAction(activeProjectId);
 
