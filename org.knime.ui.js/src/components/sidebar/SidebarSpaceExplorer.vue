@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onUnmounted, ref } from "vue";
+import { onUnmounted, ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
@@ -12,6 +12,8 @@ import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 const { activeProjectId } = storeToRefs(useApplicationStore());
 const spaceOperationsStore = useSpaceOperationsStore();
 const { currentSelectedItemIds } = storeToRefs(spaceOperationsStore);
+
+const actions = useTemplateRef("actions");
 
 onUnmounted(() => {
   spaceOperationsStore.setCurrentSelectedItemIds([]);
@@ -43,12 +45,12 @@ const changeDirectory = (pathId: string) => {
       />
     </template>
     <SpaceExplorer
-      v-if="activeProjectId"
+      v-if="activeProjectId && actions?.$el"
       mode="mini"
       :filter-query="filterQuery"
       :project-id="activeProjectId"
       :selected-item-ids="currentSelectedItemIds"
-      :click-outside-exception="$refs.actions as any"
+      :click-outside-exceptions="[actions?.$el as any]"
       @change-directory="changeDirectory"
       @update:selected-item-ids="
         spaceOperationsStore.setCurrentSelectedItemIds($event)

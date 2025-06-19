@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
@@ -26,6 +26,8 @@ const { setCurrentSelectedItemIds, renameSpace } = useSpaceOperationsStore();
 const { setProjectPath } = useSpaceCachingStore();
 const $route = useRoute();
 const $router = useRouter();
+
+const actions = useTemplateRef("actions");
 
 const { activeSpaceProvider, activeSpaceGroup, activeSpace } =
   useActiveRouteData();
@@ -149,10 +151,11 @@ const onRenameSpace = (name: string) => {
 
     <template #content>
       <SpaceExplorer
+        v-if="actions?.$el"
         :project-id="globalSpaceBrowserProjectId"
         :selected-item-ids="currentSelectedItemIds"
         :filter-query="filterQuery"
-        :click-outside-exception="$refs.actions as any"
+        :click-outside-exceptions="[actions?.$el as any]"
         @change-directory="changeDirectory"
         @update:selected-item-ids="setCurrentSelectedItemIds($event)"
       />

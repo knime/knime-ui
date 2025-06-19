@@ -1,37 +1,35 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import SpaceExplorer from "@/components/spaces/SpaceExplorer.vue";
 import { mockStores } from "@/test/utils/mockStores";
 import SidebarSpaceExplorer from "../SidebarSpaceExplorer.vue";
 
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+  // @ts-expect-error
+  return { ...actual, useToasts: vi.fn() };
+});
+
 describe("SidebarSpaceExplorer.vue", () => {
   const doMount = ({ activeProjectId = "proj1" } = {}) => {
-    const {
-      testingPinia,
-      applicationStore,
-      spacesStore,
-      spaceOperationsStore,
-    } = mockStores();
+    const { testingPinia, applicationStore, spaceOperationsStore } =
+      mockStores();
 
     applicationStore.setActiveProjectId(activeProjectId);
 
-    const wrapper = shallowMount(SidebarSpaceExplorer, {
-      global: {
-        plugins: [testingPinia],
-      },
+    const wrapper = mount(SidebarSpaceExplorer, {
+      global: { plugins: [testingPinia] },
     });
 
-    return {
-      wrapper,
-      spacesStore,
-      spaceOperationsStore,
-    };
+    return { wrapper, spaceOperationsStore };
   };
 
-  it("passes the active project to the SpaceExplorer", () => {
+  it("passes the active project to the SpaceExplorer", async () => {
     const { wrapper } = doMount();
+
+    await flushPromises();
 
     expect(wrapper.findComponent(SpaceExplorer).props().projectId).toBe(
       "proj1",
@@ -40,6 +38,8 @@ describe("SidebarSpaceExplorer.vue", () => {
 
   it("should handle `currentSelectedItemIds`", async () => {
     const { wrapper, spaceOperationsStore } = doMount();
+
+    await flushPromises();
 
     expect(
       wrapper.findComponent(SpaceExplorer).props("selectedItemIds"),
@@ -65,6 +65,8 @@ describe("SidebarSpaceExplorer.vue", () => {
 
   it("handle change of directory", async () => {
     const { wrapper, spaceOperationsStore } = doMount();
+
+    await flushPromises();
 
     wrapper
       .findComponent(SpaceExplorer)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRef, watch } from "vue";
+import { type Ref, computed, ref, toRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
@@ -34,14 +34,14 @@ interface Props {
   mode?: "normal" | "mini";
   virtual?: boolean;
   selectedItemIds: string[];
-  clickOutsideException?: HTMLElement | null;
+  clickOutsideExceptions?: Array<Ref<HTMLElement | null>>;
   filterQuery?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: "normal",
   virtual: true,
-  clickOutsideException: null,
+  clickOutsideExceptions: () => [],
   filterQuery: "",
 });
 
@@ -234,7 +234,7 @@ watch(isLoadingContent, () => {
         :is-root-folder="activeWorkflowGroup.path.length === 0"
         :full-path="fullPath"
         :active-renamed-item-id="activeRenamedItemId"
-        :click-outside-exception="clickOutsideException"
+        :click-outside-exceptions="clickOutsideExceptions"
         dragging-animation-mode="manual"
         @update:selected-item-ids="$emit('update:selectedItemIds', $event)"
         @change-directory="onChangeDirectory"
