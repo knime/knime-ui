@@ -1,20 +1,37 @@
 import { URL, fileURLToPath } from "node:url";
 
-import { defineConfig, loadEnv } from "vite";
+import { ProxyOptions, defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { ViteUserConfig } from "vitest/config";
 import sbom from "rollup-plugin-sbom";
 import svgLoader from "vite-svg-loader";
 
+// @ts-expect-error (please add error description)
 import { svgoConfig } from "@knime/styles/config/svgo.config";
 
 // TODO: replace with app.component calls
-import { isCustomElement } from "./src/vue3-pixi/index";
-
 // @ts-expect-error (please add error description)
+import { isCustomElement } from "./src/vue3-pixi/index";
 
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+
+  const canSetupDevProxy =
+    process.env.VITE_HUB_AUTH_USER &&
+    process.env.VITE_HUB_AUTH_PASS &&
+    process.env.VITE_HUB_API_URL;
+
+  const devServerHubApiProxy = canSetupDevProxy
+    ? ({
+        "/_/api": {
+          target: process.env.VITE_HUB_API_URL,
+          changeOrigin: true,
+          auth: `${process.env.VITE_HUB_AUTH_USER}:${process.env.VITE_HUB_AUTH_PASS}`,
+          rewrite: (path) => path.replace(/^\/_\/api/, ""),
+        },
+      } satisfies Record<string, ProxyOptions>)
+    : // eslint-disable-next-line no-undefined
+      undefined;
 
   const config: ViteUserConfig = {
     plugins: [
@@ -53,6 +70,7 @@ export default defineConfig(({ mode }) => {
       watch: {
         ignored: ["**/test-results/**"],
       },
+      proxy: devServerHubApiProxy,
     },
 
     base: "./",

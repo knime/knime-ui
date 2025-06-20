@@ -130,7 +130,8 @@ Obtain an application password and ID via
 
 For the frontend, set the environment variables `VITE_HUB_API_URL`,
 `VITE_HUB_AUTH_USER` and `VITE_HUB_AUTH_PASS` in `org.knime.js/.env`. See
-the provided `.env.example` file for an example.
+the provided `.env.example` file for an example. This will setup a local vite
+server proxy that can easily make requests to the hub without running into CORS issues.
 
 ### Configure and start the websocket server to provide the backend
 
