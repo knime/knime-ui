@@ -463,4 +463,49 @@ describe("NodeConfigLoader.vue", () => {
 
     logSpy.mockRestore();
   });
+
+  it("should reset nodeConfigurationStore on mount", () => {
+    mockGetNodeDialog();
+    const { mockedStores } = doMount();
+
+    expect(
+      mockedStores.nodeConfigurationStore.setActiveExtensionConfig,
+    ).toHaveBeenCalledExactlyOnceWith(null);
+    expect(
+      mockedStores.nodeConfigurationStore.resetDirtyState,
+    ).toHaveBeenCalledTimes(1);
+  });
+
+  it("should reset nodeConfigurationStore on unmount", () => {
+    mockGetNodeDialog();
+    const { wrapper, mockedStores } = doMount();
+    wrapper.unmount();
+    expect(
+      mockedStores.nodeConfigurationStore.setActiveExtensionConfig,
+    ).toHaveBeenCalledTimes(2);
+    expect(
+      mockedStores.nodeConfigurationStore.setActiveExtensionConfig,
+    ).toHaveBeenNthCalledWith(2, null);
+    expect(
+      mockedStores.nodeConfigurationStore.resetDirtyState,
+    ).toHaveBeenCalledTimes(2);
+  });
+
+  it("should reset nodeConfigurationStore if selected nodeId changes", async () => {
+    mockGetNodeDialog();
+    const { wrapper, mockedStores } = doMount();
+    const newNode = { ...dummyNode, id: "node2" };
+    await wrapper.setProps({
+      selectedNode: newNode,
+    });
+    expect(
+      mockedStores.nodeConfigurationStore.setActiveExtensionConfig,
+    ).toHaveBeenCalledTimes(3); // load 1st node, resetting, load 2nd node
+    expect(
+      mockedStores.nodeConfigurationStore.setActiveExtensionConfig,
+    ).toHaveBeenNthCalledWith(2, null);
+    expect(
+      mockedStores.nodeConfigurationStore.resetDirtyState,
+    ).toHaveBeenCalledTimes(2);
+  });
 });

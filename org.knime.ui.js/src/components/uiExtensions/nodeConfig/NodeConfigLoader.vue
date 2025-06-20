@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRefs } from "vue";
+import { onUnmounted, ref, toRefs } from "vue";
 import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
@@ -89,10 +89,20 @@ const loadExtensionConfig = async () => {
 
 const { uniqueNodeConfigId } = useUniqueNodeStateId(toRefs(props));
 
+const resetState = () => {
+  nodeConfigurationStore.setActiveExtensionConfig(null);
+  nodeConfigurationStore.resetDirtyState();
+};
+
 const { extensionConfig, isLoadingConfig } = useUIExtensionLifecycle({
   renderKey: uniqueNodeConfigId,
   configLoader: loadExtensionConfig,
+  onBeforeLoadUIExtension: resetState,
   onExtensionLoadingStateChange: (state) => emit("loadingStateChange", state),
+});
+
+onUnmounted(() => {
+  resetState();
 });
 
 const { resourceLocation, resourceLocationResolver } = useResourceLocation({
