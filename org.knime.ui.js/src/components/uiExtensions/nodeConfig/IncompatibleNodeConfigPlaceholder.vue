@@ -32,7 +32,7 @@ const hasNoDialog = computed(
 );
 
 const isLegacyDialog = computed(
-  () => hasLegacyDialog.value && isDesktop() && !isMetanode.value,
+  () => hasLegacyDialog.value && !isMetanode.value,
 );
 
 const shouldDisplayDownload = computed(
@@ -58,18 +58,6 @@ const openNodeConfiguration = () => {
       <div class="placeholder-text">This node has no dialog.</div>
     </template>
 
-    <!-- Show placeholder text and "Open dialog" button -->
-    <template v-else-if="isLegacyDialog">
-      <span class="placeholder-text">
-        This node dialog is not supported here.
-      </span>
-
-      <Button with-border compact class="button" @click="openNodeConfiguration">
-        <CogIcon />
-        <span>Open dialog</span>
-      </Button>
-    </template>
-
     <!-- Show placeholder text and "Download AP" button -->
     <template v-else-if="shouldDisplayDownload">
       <span class="placeholder-text">
@@ -78,6 +66,24 @@ const openNodeConfiguration = () => {
       </span>
 
       <DownloadAPButton compact src="node-configuration-panel" />
+    </template>
+
+    <!-- Show placeholder text and "Open dialog" button -->
+    <template v-else-if="isLegacyDialog">
+      <span class="placeholder-text">
+        This node dialog is not supported here.
+      </span>
+
+      <Button
+        v-if="isDesktop()"
+        with-border
+        compact
+        class="button"
+        @click="openNodeConfiguration"
+      >
+        <CogIcon />
+        <span>Open dialog</span>
+      </Button>
     </template>
 
     <!-- Show nothing but a placeholder text if no buttons are needed -->
