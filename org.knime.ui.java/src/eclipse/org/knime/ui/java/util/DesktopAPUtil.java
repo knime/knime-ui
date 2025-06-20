@@ -56,6 +56,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -65,6 +66,7 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
+import org.apache.commons.lang3.function.FailableSupplier;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -693,6 +695,43 @@ public final class DesktopAPUtil {
             }
         }
         return Optional.ofNullable(value);
+    }
+
+    /**
+     * Retries the given operation up to {@code maxRetries} times, with a delay of {@code delayMillis} milliseconds
+     * between attempts. If the operation succeeds, it returns an {@link Optional} containing the result; if it fails
+     * after all retries, it returns an empty {@link Optional}.
+     *
+     * @param <T> the type of the result
+     * @param <E> the type of exception that can be thrown by the operation
+     * @param operation the operation to retry
+     * @param maxRetries the maximum number of retries
+     * @param delayMillis the delay in milliseconds between retries
+     * @return an {@link Optional} containing the result if successful, or empty if all retries failed
+     * @throws E if the operation fails with an exception that is not of type {@code retryOnException}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, E extends Exception> Optional<T> retryWithDelay(final FailableSupplier<T, E> operation,
+        final int maxRetries, final int delayMillis) throws E {
+        var attempt = 0;
+        while (attempt < maxRetries) {
+            try {
+                return Optional.ofNullable(operation.get());
+            } catch (Exception e) {
+                attempt++;
+                if (attempt >= maxRetries) {
+                    throw (E)e;
+                }
+
+                try {
+                    TimeUnit.MILLISECONDS.sleep(delayMillis);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return Optional.empty();
+                }
+            }
+        }
+        return Optional.empty();
     }
 
 }
