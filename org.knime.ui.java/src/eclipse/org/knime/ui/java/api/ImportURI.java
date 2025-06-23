@@ -94,7 +94,6 @@ import org.knime.gateway.impl.webui.repo.NodeRepository;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
-import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.ExtensionImport;
 import org.knime.workbench.core.imports.ImportForbiddenException;
@@ -203,15 +202,11 @@ public final class ImportURI {
         }
 
         try {
-            // Retry this 3 times before giving up, since logging into the Hub might take some time
-            return DesktopAPUtil.retryWithDelay(() -> {
-                var knimeURI = repoObjectImport.getKnimeURI();
-                var itemVersions = ResolverUtil.getHubItemVersionList(knimeURI);
-                return itemVersions.stream()//
+            var knimeURI = repoObjectImport.getKnimeURI();
+            var itemVersions = ResolverUtil.getHubItemVersionList(knimeURI);
+            return itemVersions.stream()//
                     .filter(version -> version.version() == itemVersion.getAsInt())//
-                    .findFirst()//
-                    .orElse(null);
-            }, 3, 1024);
+                    .findFirst();
         } catch (ResourceAccessException e) {
             LOGGER.warn("Failed to retrieve version information", e);
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.WARNING,
