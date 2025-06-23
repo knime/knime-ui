@@ -101,7 +101,10 @@ useAnimatePixiContainer<number>({
       "
     />
 
-    <Container :mask="$refs.textMask as any">
+    <Container
+      :mask="$refs.textMask as any"
+      :renderable="progressDisplayPercentage > 1"
+    >
       <Graphics
         ref="textMask"
         event-mode="none"
@@ -116,7 +119,7 @@ useAnimatePixiContainer<number>({
               $shapes.nodeStatusHeight,
               1,
             );
-            graphics.fill(0xffffff);
+            graphics.fill($colors.White);
           }
         "
       />
@@ -127,7 +130,7 @@ useAnimatePixiContainer<number>({
         :x="$shapes.nodeSize / 2"
         :y="1"
         :anchor="{ x: 0.5, y: 0 }"
-        :style="{ ...nodeStateText.styles, fill: 'white' }"
+        :style="{ ...nodeStateText.styles, fill: $colors.White }"
         :resolution="textResolution"
       >
         {{ progressDisplayPercentage }}%
