@@ -5562,7 +5562,6 @@ const node = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         async changeLoopState(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  action?: 'pause' | 'resume' | 'step'  }
@@ -5582,7 +5581,6 @@ const node = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         async changeNodeStates(
         	params: { projectId: string,  workflowId: string,  nodeIds?: Array<string>,  action?: 'reset' | 'cancel' | 'execute'  }
@@ -5723,7 +5721,7 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {boolean} [params.fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getNodeRecommendations(
         	params: { projectId: string,  workflowId: string,  nodeId?: string,  portIdx?: number,  nodesLimit?: number,  nodeRelation?: 'PREDECESSORS' | 'SUCCESSORS',  fullTemplateInfo?: boolean  }

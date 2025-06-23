@@ -58,7 +58,6 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.util.CoreUtil.ContainerType;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.WorkflowKey;
@@ -86,11 +85,11 @@ final class ComponentAPI {
      * @param nodeId
      *
      * @return {@true} if the operation was successful, {@code false} otherwise
-     * @throws OperationNotAllowedException
+     * @throws ServiceCallException
      */
     @API
     static boolean openLinkComponentDialog(final String projectId, final String rootWorkflowId, final String nodeId)
-        throws OperationNotAllowedException {
+        throws ServiceCallException {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         return ManipulateComponents.openLinkComponentDialog(component);
     }
@@ -102,15 +101,12 @@ final class ComponentAPI {
      * @param rootWorkflowId
      * @param nodeId
      *
-     * @throws OperationNotAllowedException
-     * @throws NotASubWorkflowException
-     * @throws NodeNotFoundException
      * @throws ServiceCallException
      */
     @API
     static void openChangeComponentLinkTypeDialog(final String projectId, final String rootWorkflowId,
         final String nodeId)
-        throws OperationNotAllowedException, ServiceCallException {
+        throws ServiceCallException {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentLinkTypeDialog(component, wfKey);
@@ -123,15 +119,12 @@ final class ComponentAPI {
      * @param rootWorkflowId
      * @param nodeId
      *
-     * @throws OperationNotAllowedException
-     * @throws NotASubWorkflowException
-     * @throws NodeNotFoundException
      * @throws ServiceCallException
      */
     @API
     static void openChangeComponentHubItemVersionDialog(final String projectId, final String rootWorkflowId,
         final String nodeId)
-        throws OperationNotAllowedException, ServiceCallException {
+        throws ServiceCallException {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentHubItemVersionDialog(component, wfKey);
@@ -143,13 +136,13 @@ final class ComponentAPI {
      * @param projectId
      * @param nodeId
      *
-     * @throws OperationNotAllowedException
+     * @throws ServiceCallException
      */
     @API
-    static void openLockSubnodeDialog(final String projectId, final String nodeId) throws OperationNotAllowedException {
+    static void openLockSubnodeDialog(final String projectId, final String nodeId) throws ServiceCallException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        final var containerTypeAndWfm = CoreUtil.getTypeAndContainedWfm(nc).orElseThrow(
-            () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
+        final var containerTypeAndWfm = CoreUtil.getTypeAndContainedWfm(nc).orElseThrow(() -> new ServiceCallException(
+            "Operation not allowed. Not a component nor a metanode: " + nc.getNameWithID()));
         final var containerType = containerTypeAndWfm.getFirst();
         final var wfm = containerTypeAndWfm.getSecond();
 
@@ -181,28 +174,28 @@ final class ComponentAPI {
      * @param projectId
      * @param nodeId
      *
-     * @throws OperationNotAllowedException
+     * @throws ServiceCallException
      */
     @API
-    static boolean unlockSubnode(final String projectId, final String nodeId) throws OperationNotAllowedException {
+    static boolean unlockSubnode(final String projectId, final String nodeId) throws ServiceCallException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         return CoreUtil.getTypeAndContainedWfm(nc)
             .map(containerTypeAndWfm -> containerTypeAndWfm.getSecond()
                 .unlock(new GUIWorkflowCipherPrompt(containerTypeAndWfm.getFirst() == ContainerType.COMPONENT)))
-            .orElseThrow(
-                () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
+            .orElseThrow(() -> new ServiceCallException(
+                "Operation not allowed. Not a component nor a metanode: " + nc.getNameWithID()));
     }
 
     private static SubNodeContainer assertIsWritableAndGetComponent(final String projectId, final String nodeId)
-        throws OperationNotAllowedException {
+        throws ServiceCallException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         final var wfm = nc.getParent();
         if (wfm.isWriteProtected()) {
-            throw new OperationNotAllowedException("Container is read-only.");
+            throw new ServiceCallException("Operation not allowed. Container is read-only.");
         }
 
         if (!(nc instanceof SubNodeContainer)) {
-            throw new OperationNotAllowedException("Not a component: " + nodeId);
+            throw new ServiceCallException("Operation not allowed. Not a component: " + nodeId);
         }
         return (SubNodeContainer)nc;
     }

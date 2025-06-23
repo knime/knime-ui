@@ -85,7 +85,6 @@ import org.knime.core.util.urlresolve.KnimeUrlResolver.IdAndPath;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
 import org.knime.core.util.urlresolve.URLResolverUtil;
 import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
@@ -119,7 +118,7 @@ final class ManipulateComponents {
         // Stateless
     }
 
-    static boolean openLinkComponentDialog(final SubNodeContainer component) throws OperationNotAllowedException {
+    static boolean openLinkComponentDialog(final SubNodeContainer component) throws ServiceCallException {
         assertLinkedComponent(component, false);
 
         final var validMountPoints = getAllValidMountPoint(ExplorerMountTable.getMountedContent());
@@ -136,15 +135,15 @@ final class ManipulateComponents {
     }
 
     static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, ServiceCallException {
+        throws ServiceCallException {
         assertLinkedComponent(component, true);
 
         final var templateInfo = component.getTemplateInformation();
         final var sourceURI = templateInfo.getSourceURI();
         final var optLinkVariant = KnimeUrlVariant.getVariant(sourceURI);
         if (optLinkVariant.isEmpty()) {
-            throw new OperationNotAllowedException(
-                "Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.");
+            throw new ServiceCallException(
+                "Operation not allowed. Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.");
         }
 
         final var linkVariant = optLinkVariant.get();
@@ -200,15 +199,14 @@ final class ManipulateComponents {
      * This will not be callable from the FE until NXT-2038 is solved.
      */
     static void openChangeComponentHubItemVersionDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, ServiceCallException {
+        throws ServiceCallException {
         assertLinkedComponent(component, true);
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
         if (queryHubInfo(srcUri).isEmpty()) {
-            throw new OperationNotAllowedException("""
-                    Changing item version is not possible, since the source of this component is not located on a
-                    mountpoint that supports item versioning.
-                    """);
+            throw new ServiceCallException(
+                "Operation not allowed. Changing item version is not possible, "
+                + "since the source of this component is not located on a mountpoint that supports item versioning.");
         }
 
         final var shell = SWTUtilities.getActiveShell();
@@ -242,15 +240,16 @@ final class ManipulateComponents {
     }
 
     private static void assertLinkedComponent(final SubNodeContainer component, final boolean isLinked)
-        throws OperationNotAllowedException {
+        throws ServiceCallException {
         final BiPredicate<Role, Role> predicate = (left, right) -> isLinked ? (left == right) : (left != right);
         if (!predicate.test(component.getTemplateInformation().getRole(), Role.Link)) {
-            throw new OperationNotAllowedException("The component is " + (isLinked ? "not " : "") + "linked.");
+            throw new ServiceCallException(
+                "Operation not allowed. The component is " + (isLinked ? "not " : "") + "linked.");
         }
     }
 
     private static String[] getAllValidMountPoint(final Map<String, AbstractContentProvider> contentProviders)
-        throws OperationNotAllowedException {
+        throws ServiceCallException {
         List<String> list = new ArrayList<>();
         for (final var entry : contentProviders.entrySet()) {
             final var contentProvider = entry.getValue();
@@ -261,7 +260,7 @@ final class ManipulateComponents {
 
         if (list.isEmpty()) {
             // Hard to imagine when this would happen, since `LOCAL` is always an option
-            throw new OperationNotAllowedException("None of your spaces can host shared components.");
+            throw new ServiceCallException("Operation not allowed. None of your spaces can host shared components.");
         }
 
         return list.toArray(new String[0]);

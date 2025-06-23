@@ -73,7 +73,7 @@ import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
@@ -256,7 +256,7 @@ final class SpaceAPI {
         if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
             try {
                 return performAsyncHubUpload(sources, destination, excludeData);
-            } catch (OperationNotAllowedException e) { // NOSONAR
+            } catch (ServiceCallException e) { // NOSONAR
                 // fall through to the default upload
             } catch (Exception ex) { // NOSONAR
                 LOGGER.error("Upload error: " + ex.getMessage(), ex);
@@ -270,7 +270,7 @@ final class SpaceAPI {
     }
 
     private static boolean performAsyncHubDownload(final Locator.Siblings sources,
-        final Locator.Destination destination) throws OperationNotAllowedException {
+        final Locator.Destination destination) throws ServiceCallException {
         final TransferResult result = sources.space().downloadInto( //
             sources.itemIds(), //
             (LocalSpace)destination.space(), //
@@ -284,7 +284,7 @@ final class SpaceAPI {
     }
 
     private static List<String> performAsyncHubUpload(final Locator.Siblings sources,
-        final Locator.Destination destination, final boolean excludeData) throws OperationNotAllowedException {
+        final Locator.Destination destination, final boolean excludeData) throws ServiceCallException {
         var uploadDeclined = !showUploadWarning(destination);
         if (uploadDeclined) {
             return List.of();

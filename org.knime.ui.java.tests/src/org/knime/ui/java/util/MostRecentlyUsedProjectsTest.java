@@ -55,9 +55,10 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.knime.core.ui.node.workflow.async.OperationNotAllowedException;
 import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
@@ -136,7 +137,7 @@ public class MostRecentlyUsedProjectsTest {
      * @throws OperationNotAllowedException
      */
     @Test
-    void testUpdateOriginAndName() throws IOException, OperationNotAllowedException {
+    void testUpdateOriginAndName() throws IOException, ServiceCallException {
         var localSpace = new LocalSpace(FileUtil.createTempDir("testUpdateOriginAndName").toPath());
         var wfId = localSpace.createWorkflow("root", "simple").getId();
         var groupId = localSpace.createWorkflowGroup("root").getId();
