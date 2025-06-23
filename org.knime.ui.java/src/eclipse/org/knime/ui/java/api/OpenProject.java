@@ -174,11 +174,7 @@ final class OpenProject {
             .map(HubSpaceLocationInfo.class::cast)//
             .orElse(null);
         final var origin = findOrigin(locationInfo, wfm, selectedVersion).orElse(null);
-        final var project = CreateProject.createProjectFromOrigin( //
-                origin, //
-                DesktopAPI.getDeps(ProgressReporter.class), //
-                DesktopAPI.getSpaceProviders() //
-        );
+        final var project = Project.builder().setWfm(wfm).setOrigin(origin).build();
         // Provider type can only be Hub here
         registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.HUB);
 
