@@ -64,17 +64,20 @@ describe("WorkflowBreadcrumb.vue", () => {
 
   const workflowName = "dummy workflow";
 
-  const doMount = ({
-    workflow = createWorkflow({
-      info: { name: workflowName },
-    }),
-    provider = LOCAL_PROVIDER,
-    appMode = AppState.AppModeEnum.Default,
-  } = {}) => {
+  const doMount = (
+    {
+      workflow = createWorkflow({
+        info: { name: workflowName },
+      }),
+      provider = LOCAL_PROVIDER,
+      appMode = AppState.AppModeEnum.Default,
+    } = {},
+    spaceId?: string,
+  ) => {
     const mockedStores = mockStores();
 
     const activeProject = createProject({
-      origin: { providerId: provider.id },
+      origin: { providerId: provider.id, spaceId },
       projectId: "123456578",
     });
 
@@ -116,8 +119,8 @@ describe("WorkflowBreadcrumb.vue", () => {
     expect(wrapper.findComponent(ComponentBreadcrumb).exists()).toBe(true);
   });
 
-  it("renders dropdown items in DESKTOP", () => {
-    const { wrapper } = doMount();
+  it("renders dropdown items in DESKTOP if project is known", () => {
+    const { wrapper } = doMount({}, "space1");
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
     expect(menuItems).toEqual([
@@ -127,15 +130,31 @@ describe("WorkflowBreadcrumb.vue", () => {
     ]);
   });
 
-  it("renders dropdown items in BROWSER", () => {
+  it("renders dropdown items in DESKTOP if project is unknown", () => {
+    const { wrapper } = doMount();
+    const menuItems = wrapper.findComponent(SubMenu).props("items");
+
+    expect(menuItems).toEqual([
+      expect.objectContaining({ text: "Close project" }),
+    ]);
+  });
+
+  it("renders dropdown items in BROWSER if project is known", () => {
     mockEnvironment("BROWSER", { isDesktop, isBrowser });
 
-    const { wrapper } = doMount();
+    const { wrapper } = doMount({}, "space1");
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
     expect(menuItems).toEqual([
       expect.objectContaining({ text: "Version history" }),
     ]);
+  });
+
+  it("renders no dropdown items in BROWSER if project is unknown", () => {
+    mockEnvironment("BROWSER", { isDesktop, isBrowser });
+    const { wrapper } = doMount();
+
+    expect(wrapper.findComponent(SubMenu).exists()).toBeFalsy();
   });
 
   it("doesn't render dropdown in JobViewer mode", () => {
@@ -155,7 +174,7 @@ describe("WorkflowBreadcrumb.vue", () => {
   });
 
   it('handles "Version history" dropdown item click', () => {
-    const { wrapper } = doMount();
+    const { wrapper } = doMount({}, "space1");
     const versionsStore = useWorkflowVersionsStore();
     vi.mocked(versionsStore.activateVersionsMode).mockImplementation(vi.fn());
 
@@ -169,7 +188,7 @@ describe("WorkflowBreadcrumb.vue", () => {
   });
 
   it('handles "Reveal in space explorer" dropdown item click', () => {
-    const { wrapper } = doMount();
+    const { wrapper } = doMount({}, "space1");
 
     const revealInSpaceExplorerItem = wrapper
       .findComponent(SubMenu)

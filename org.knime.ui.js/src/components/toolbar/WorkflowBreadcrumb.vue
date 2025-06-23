@@ -71,9 +71,12 @@ const handleRestoreVersion = () => {
 
 const dropdownItems = computed(() => {
   const items: Array<MenuItem> = [];
+  const { isUnknownProject } = useApplicationStore();
+
   if (
     activeProjectProvider.value?.type !== SpaceProviderNS.TypeEnum.SERVER &&
-    uiControls.canViewVersions
+    uiControls.canViewVersions &&
+    !isUnknownProject(activeProjectId.value)
   ) {
     items.push({
       text: "Version history",
@@ -96,9 +99,9 @@ const dropdownItems = computed(() => {
       },
     });
   }
-
   if (
     activeProjectOrigin.value &&
+    !isUnknownProject(activeProjectId.value) &&
     canRevealItem(activeProjectOrigin.value.providerId)
   ) {
     items.push({
