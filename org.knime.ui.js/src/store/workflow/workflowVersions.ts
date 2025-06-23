@@ -10,18 +10,18 @@ import { defineStore } from "pinia";
 import { useRouter } from "vue-router";
 
 import { rfcErrors } from "@knime/hub-features";
-import {
-  CURRENT_STATE_VERSION,
-  MOST_RECENT_VERSION,
-  VERSION_DEFAULT_LIMIT,
-  useVersionsApi,
-} from "@knime/hub-features/versions";
 import type {
   ItemPermission,
   ItemSavepoint,
   NamedItemVersion,
   WithAvatar,
   WithLabels,
+} from "@knime/hub-features/versions";
+import {
+  CURRENT_STATE_VERSION,
+  MOST_RECENT_VERSION,
+  VERSION_DEFAULT_LIMIT,
+  useVersionsApi,
 } from "@knime/hub-features/versions";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import { promise } from "@knime/utils";
@@ -178,10 +178,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
     const versionsApi = getVersionsApi();
-
-    // Hack to provide some kind of progress/busy indication until the API calls can do that (NXT-3634)
-    // This will be unset when we switch to the loaded workflow
-    useLifecycleStore().setIsLoadingWorkflow(true);
 
     const nextAction = await getUserSelectedNextAction(activeProjectId);
 
@@ -569,11 +565,15 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
 
     if (isBrowser()) {
       try {
+        // Hack to provide some kind of progress/busy indication until the API calls can do that (NXT-3634)
+        // This will be unset when we switch to the loaded workflow
+        useLifecycleStore().setIsLoadingWorkflow(true);
         // TODO: NXT-3634 Use the returned task ID to subscribe to 'task events' and show progress
         await API.workflow.saveProject({ projectId, workflowPreviewSvg });
         return UnsavedChangesAction.SAVE;
       } catch (error) {
         handleSaveProjectError(error);
+        useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.CANCEL;
       }
     }
@@ -586,6 +586,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
 
     if (action === UnsavedChangesAction.SAVE) {
       try {
+        useLifecycleStore().setIsLoadingWorkflow(true);
         await API.desktop.saveProject({
           projectId,
           workflowPreviewSvg,
@@ -593,6 +594,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         });
       } catch (error) {
         handleSaveProjectError(error);
+        useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.CANCEL;
       }
     }
