@@ -120,7 +120,7 @@ public final class CreateProject {
      * @param spaceProviders -
      * @return A loader instance that can be called to load the {@link WorkflowManager}
      */
-    private static WorkflowManagerLoader fromOriginWithProgressReporter(final Origin origin,
+    public static WorkflowManagerLoader fromOriginWithProgressReporter(final Origin origin,
         final ProgressReporter progressReporter, final SpaceProviders spaceProviders) {
         return version -> progressReporter.getWithProgress( // NOSONAR
             WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, //

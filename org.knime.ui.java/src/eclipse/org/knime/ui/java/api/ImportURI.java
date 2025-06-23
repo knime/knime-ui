@@ -208,13 +208,10 @@ public final class ImportURI {
                     .filter(version -> version.version() == itemVersion.getAsInt())//
                     .findFirst();
         } catch (ResourceAccessException e) {
-            LOGGER.warn("Failed to retrieve version information", e);
-            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.WARNING,
-                "Workflow Version Unavailable",
-                "Could not retrieve version information for the selected workflow. Please log in. "
-                    + "If you are already logged in, the requested version may no longer exist "
-                    + "or you may not have permission to access it.",
-                false);
+            LOGGER.info("Failed to retrieve version information", e);
+            // We should not even run in here because for "unknown" projects this is not needed (can not offer the version feature anyway).
+            // TODO NXT-3701 avoid calling this (NOSONAR).
+            // If the project is known, this doesnt throw
             return Optional.empty();
         }
     }

@@ -164,17 +164,43 @@ final class OpenProject {
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion) {
+        // TODO NXT-3636 progress for loading (NOSONAR)
         final var wfm = loadWorkflowWithProgress(repoObjectImport);
         if (wfm == null) {
             return false;
         }
-
         final var locationInfo = repoObjectImport.locationInfo()//
             .filter(HubSpaceLocationInfo.class::isInstance)//
             .map(HubSpaceLocationInfo.class::cast)//
             .orElse(null);
         final var origin = findOrigin(locationInfo, wfm, selectedVersion).orElse(null);
-        final var project = Project.builder().setWfm(wfm).setOrigin(origin).build();
+
+        try {
+            ProviderUtil.connectProvider(origin.providerId());
+        } catch (NoSuchElementException e) {
+            // okay
+        }
+        final Project project;
+        if (ProviderUtil.isUnknownProject(origin.providerId(), origin.spaceId())) {
+            // We do not have access to the space containing this project and are also not able to fetch
+            // the version list or version metadata for it. Best we can do is fetch and load the wfm
+            // of the requested version, but not offer any versioning features (breadcrumb, panel, ...)
+            // TODO hasn't this shown a blue bar in the editor at some point?
+            project = Project.builder().setWfm(wfm).setOrigin(origin).build();
+        } else {
+            // If we do have full access to the Space, we want to offer versioning features. 
+            // This is facilitated though 
+            // (a) providing a properly configured loader that is able to fetch other versions, too; and
+            // (b) several workarounds frontend-side to still consider Origin#itemVersion in order to
+            //     have the UI select the dropped version after import (TODO NXT-3701 NOSONAR)
+            project = Project.builder().setWfm(wfm).setOrigin(origin).build();
+            // TODO NXT-3607: hack to initialise with both already-loaded wfm and loader (NOSONAR)
+            // This can be avoided if we can avoid having to load the wfm to determine the provider ID.
+            project.setWfmLoader(CreateProject.fromOriginWithProgressReporter(origin, //
+                DesktopAPI.getDeps(ProgressReporter.class), //
+                DesktopAPI.getSpaceProviders() //
+            ));
+        }
         // Provider type can only be Hub here
         registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.HUB);
 
