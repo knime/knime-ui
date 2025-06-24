@@ -27,7 +27,7 @@ import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import ConfirmDialog from "@/composables/useConfirmDialog/ConfirmDialog.vue";
-import { DynamicEnvRenderer, isDesktop } from "@/environment";
+import { DynamicEnvRenderer, isBrowser, isDesktop } from "@/environment";
 import { performanceTracker } from "@/performanceTracker";
 import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
@@ -48,6 +48,7 @@ import DevTools from "./application/DevTools.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import DestinationPickerModal from "./spaces/DestinationPicker/DestinationPickerModal.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
+import { useIdleUserTracking } from "./useIdleUserTracking";
 
 /**
  * Main page and entry point of KNIME AP Next
@@ -234,6 +235,10 @@ onMounted(() => {
   document.addEventListener("wheel", preventBrowserZooming, { passive: false });
   checkClipboardSupport();
 });
+
+if (isBrowser()) {
+  useIdleUserTracking();
+}
 
 onBeforeUnmount(async () => {
   document.removeEventListener("wheel", preventBrowserZooming);

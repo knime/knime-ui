@@ -8,9 +8,9 @@ interface ImportMetaEnv {
   readonly VITE_APP_PORT: string;
   readonly VITE_LOG_LEVEL: string;
 
-  readonly VITE_BROWSER_DEV_MODE: string;
   readonly VITE_BROWSER_DEV_MODE_EMBEDDED: string;
   readonly VITE_BROWSER_DEV_WS_URL: string;
+  readonly VITE_BROWSER_DEV_HTTP_URL: string;
 
   readonly VITE_CANVAS_DEBUG: string;
 

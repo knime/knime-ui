@@ -139,8 +139,6 @@ Instruct the frontend where to reach the websocket server:
 
 - Adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url
   and port of the running websocket server.
-- Set `VITE_BROWSER_DEV_MODE` to `true`, otherwise the
-  `VITE_BROWSER_DEV_WS_URL` variable will have no effect.
 
 Configure and start the websocket server: see instructions at [com.knime.
 gateway.executor/README.md](https://bitbucket.org/KNIME/knime-com-gateway/src/master/com.knime.gateway.executor/README.md)

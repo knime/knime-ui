@@ -56,7 +56,7 @@ describe("rpc client initialization", () => {
         return initJSONRPCClient("DESKTOP", {
           url: "",
           restApiBaseUrl: "",
-          sessionId: "",
+          userIdleTimeout: 1000,
         });
       }).rejects.toThrow("Could not access EquoComm service. Aborting");
     });
@@ -84,7 +84,7 @@ describe("rpc client initialization", () => {
       await initJSONRPCClient("DESKTOP", {
         url: "",
         restApiBaseUrl: "",
-        sessionId: "",
+        userIdleTimeout: 1000,
       });
 
       expect(EquoCommService.on).toHaveBeenCalledWith(
@@ -101,11 +101,11 @@ describe("rpc client initialization", () => {
   });
 
   describe("browser", () => {
-    it("should check for connection info", async () => {
+    it("should check for browser session context", async () => {
       const { initJSONRPCClient } = await import("../index");
       await expect(() => {
         return initJSONRPCClient("BROWSER", null);
-      }).rejects.toThrow("Missing connection info");
+      }).rejects.toThrow("Missing browser session context");
     });
 
     it("should attach listeners for connection loss", async () => {
@@ -125,7 +125,7 @@ describe("rpc client initialization", () => {
       await initJSONRPCClient("BROWSER", {
         url: "wss://localhost:1000",
         restApiBaseUrl: "",
-        sessionId: "",
+        userIdleTimeout: 1000,
       });
 
       expect(addEventListener).toHaveBeenCalledWith(

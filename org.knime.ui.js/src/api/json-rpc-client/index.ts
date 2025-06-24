@@ -1,5 +1,7 @@
 import { Client, RequestManager } from "@open-rpc/client-js";
 
+import type { Environment } from "@/environment";
+import type { BrowserSessionContext } from "@/environment/browserEmbedding";
 import { $bus } from "@/plugins/event-bus";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { getToastPresets } from "@/toastPresets";
@@ -13,12 +15,6 @@ import {
 } from "./server-events";
 
 let jsonRPCClient: Client;
-
-export type ConnectionInfo = {
-  url: string;
-  restApiBaseUrl: string;
-  sessionId: string;
-};
 
 const { toastPresets } = getToastPresets();
 
@@ -130,11 +126,11 @@ const setupActivityHeartbeat = (ws: WebSocket) => {
   });
 };
 
-const initBrowserClient = (connectionInfo: ConnectionInfo) =>
+const initBrowserClient = (context: BrowserSessionContext) =>
   new Promise((resolve, reject) => {
     try {
-      if (!connectionInfo) {
-        reject(new Error("Missing connection info"));
+      if (!context) {
+        reject(new Error("Missing browser session context"));
         return;
       }
 
@@ -143,7 +139,7 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
         return;
       }
 
-      const transport = new WebSocketTransport(connectionInfo.url);
+      const transport = new WebSocketTransport(context.url);
 
       const connection: WebSocket = transport.connection;
 
@@ -170,14 +166,12 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
 const getRPCClientInstance = () => jsonRPCClient;
 
 const initJSONRPCClient = async (
-  mode: "BROWSER" | "DESKTOP",
-  connectionInfo: ConnectionInfo | null,
+  mode: Environment,
+  context: BrowserSessionContext | null,
 ) => {
   try {
     const clientInitializer =
-      mode === "DESKTOP"
-        ? initDesktopClient()
-        : initBrowserClient(connectionInfo!);
+      mode === "DESKTOP" ? initDesktopClient() : initBrowserClient(context!);
 
     await clientInitializer;
 
