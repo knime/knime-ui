@@ -89,6 +89,7 @@ import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.WorkflowCommandEnt.KindEnum;
 import org.knime.gateway.api.webui.entity.XYEnt.XYEntBuilder;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.repo.NodeRepository;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
@@ -202,8 +203,9 @@ public final class ImportURI {
         }
 
         try {
-            var knimeURI = repoObjectImport.getKnimeURI();
+            var knimeURI = repoObjectImport.getKnimeURI(); //wrap these three lines in retry
             var itemVersions = ResolverUtil.getHubItemVersionList(knimeURI);
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState(); // since app state changed if Hub provider was connected
             return itemVersions.stream()//
                     .filter(version -> version.version() == itemVersion.getAsInt())//
                     .findFirst();
