@@ -95,6 +95,7 @@ import org.knime.gateway.impl.webui.repo.NodeRepository;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
+import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.ExtensionImport;
 import org.knime.workbench.core.imports.ImportForbiddenException;
@@ -105,6 +106,7 @@ import org.knime.workbench.core.imports.URIImporter;
 import org.knime.workbench.core.imports.URIImporterFinder;
 import org.knime.workbench.core.imports.UpdateSiteInfo;
 import org.knime.workbench.editor2.InstallMissingNodesJob;
+import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.ui.p2.actions.AbstractP2Action;
 
 /**
@@ -204,7 +206,7 @@ public final class ImportURI {
 
         try {
             var knimeURI = repoObjectImport.getKnimeURI(); //wrap these three lines in retry
-            var itemVersions = ResolverUtil.getHubItemVersionList(knimeURI);
+            var itemVersions = fetchHubItemVersions(knimeURI);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState(); // since app state changed if Hub provider was connected
             return itemVersions.stream()//
                     .filter(version -> version.version() == itemVersion.getAsInt())//
@@ -212,10 +214,15 @@ public final class ImportURI {
         } catch (ResourceAccessException e) {
             LOGGER.info("Failed to retrieve version information", e);
             // We should not even run in here because for "unknown" projects this is not needed (can not offer the version feature anyway).
-            // TODO NXT-3701 avoid calling this (NOSONAR).
+            // TODO NXT-3701 avoid calling this in case of drop (NOSONAR).
             // If the project is known, this doesnt throw
             return Optional.empty();
         }
+    }
+
+    private static List<NamedItemVersion> fetchHubItemVersions(final URI knimeURI) throws ResourceAccessException {
+        DesktopAPUtil.waitForMountpointToFinishFetching(ExplorerFileSystem.INSTANCE.getStore(knimeURI));
+        return ResolverUtil.getHubItemVersionList(knimeURI);
     }
 
     private static FailableSupplier<EntityImport, ImportForbiddenException>
