@@ -5429,7 +5429,7 @@ const event = function(rpcClient: RPCClient) {
          * @param {EventType} [params.eventType] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async addEventListener(
         	params: { eventType?: EventType  }
@@ -5542,7 +5542,6 @@ const node = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async callNodeDataService(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  extensionType: 'dialog' | 'view',  serviceType: 'initial_data' | 'data' | 'apply_data',  dataServiceRequest?: string  }
@@ -5602,7 +5601,6 @@ const node = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async deactivateNodeDataServices(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  extensionType: 'dialog' | 'view'  }
@@ -5636,7 +5634,6 @@ const node = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getNodeDialog(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string  }
@@ -5655,7 +5652,6 @@ const node = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getNodeView(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string  }
@@ -5784,7 +5780,7 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {'PREDECESSORS' | 'SUCCESSORS'} [params.nodeRelation] The relation between connected nodes, either predecessors or successors
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async searchNodes(
         	params: { q?: string,  tags?: Array<string>,  allTagsMatch?: boolean,  offset?: number,  limit?: number,  fullTemplateInfo?: boolean,  portTypeId?: string,  nodeRelation?: 'PREDECESSORS' | 'SUCCESSORS'  }
@@ -5824,7 +5820,6 @@ const port = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async callPortDataService(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
@@ -5846,7 +5841,6 @@ const port = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async deactivatePortDataServices(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
@@ -5868,7 +5862,6 @@ const port = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getDataValueView(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  rowIdx: number,  colIdx: number  }
@@ -5889,7 +5882,6 @@ const port = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getPortView(
         	params: { projectId: string,  workflowId: string,  versionId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
@@ -6212,7 +6204,6 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         async getUpdatableLinkedComponents(
         	params: { projectId: string,  workflowId: string  }
