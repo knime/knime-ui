@@ -164,21 +164,27 @@ final class OpenProject {
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion) {
-        // TODO NXT-3636 progress for loading (NOSONAR)
-        final var wfm = loadWorkflowWithProgress(repoObjectImport);
-        if (wfm == null) {
-            return false;
-        }
         final var locationInfo = repoObjectImport.locationInfo()//
             .filter(HubSpaceLocationInfo.class::isInstance)//
             .map(HubSpaceLocationInfo.class::cast)//
-            .orElse(null);
-        final var origin = findOrigin(locationInfo, wfm, selectedVersion).orElse(null);
+            .orElseThrow();
+
+        final Optional<SpaceItemVersionEnt> itemVersion = selectedVersion == null ? //
+            Optional.empty() : //
+            Optional.of(buildVersionInfo(selectedVersion));
+        var origin = new Origin( //
+            repoObjectImport.getKnimeURI().getHost(), //
+            locationInfo.getSpaceItemId(), //
+            locationInfo.getWorkflowItemId(), //
+            Optional.of(mapType(repoObjectImport.getType())), //
+            null, // TODO not relevant for d&d usecase right now but should be unified
+            itemVersion // TODO remove this field
+        );
 
         try {
             ProviderUtil.connectProvider(origin.providerId());
         } catch (NoSuchElementException e) {
-            // okay
+            // okay -- provider not known
         }
         final Project project;
         if (ProviderUtil.isUnknownProject(origin.providerId(), origin.spaceId())) {
@@ -186,6 +192,10 @@ final class OpenProject {
             // the version list or version metadata for it. Best we can do is fetch and load the wfm
             // of the requested version, but not offer any versioning features (breadcrumb, panel, ...)
             // TODO hasn't this shown a blue bar in the editor at some point?
+            final var wfm = loadWorkflowWithProgress(repoObjectImport);
+            if (wfm == null) {
+                return false;
+            }
             project = Project.builder().setWfm(wfm).setOrigin(origin).build();
         } else {
             // If we do have full access to the Space, we want to offer versioning features. 
@@ -193,18 +203,24 @@ final class OpenProject {
             // (a) providing a properly configured loader that is able to fetch other versions, too; and
             // (b) several workarounds frontend-side to still consider Origin#itemVersion in order to
             //     have the UI select the dropped version after import (TODO NXT-3701 NOSONAR)
-            project = Project.builder().setWfm(wfm).setOrigin(origin).build();
-            // TODO NXT-3607: hack to initialise with both already-loaded wfm and loader (NOSONAR)
-            // This can be avoided if we can avoid having to load the wfm to determine the provider ID.
-            project.setWfmLoader(CreateProject.fromOriginWithProgressReporter(origin, //
+            project = CreateProject.createProjectFromOrigin( //
+                origin, //
                 DesktopAPI.getDeps(ProgressReporter.class), //
                 DesktopAPI.getSpaceProviders() //
-            ));
+            );
         }
         // Provider type can only be Hub here
         registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.HUB);
 
         return true;
+    }
+
+    private static ProjectTypeEnum mapType(RepoObjectImport.RepoObjectType type) {
+        return switch (type) {
+            case Workflow -> ProjectTypeEnum.WORKFLOW;
+            case WorkflowTemplate -> ProjectTypeEnum.COMPONENT;
+            default -> throw new IllegalArgumentException("Unsupported type: " + type);
+        };
     }
 
     /**
