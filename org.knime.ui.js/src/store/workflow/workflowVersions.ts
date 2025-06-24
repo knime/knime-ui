@@ -389,10 +389,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    // Hack to provide some kind of progress/busy indication until the API calls can do that (NXT-3634)
-    // This will be unset when we switch to the loaded workflow
-    useLifecycleStore().setIsLoadingWorkflow(true);
-
     const nextAction = await getUserSelectedNextAction(activeProjectId);
 
     if (nextAction === UnsavedChangesAction.CANCEL) {
