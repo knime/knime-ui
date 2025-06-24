@@ -132,8 +132,7 @@ export const useApplicationStore = defineStore("application", {
 
         const projectId = project.projectId;
         const versionId = project.origin.versionId;
-        const version =
-          getSpaceItemVersion(projectId, versionId) ?? project.origin.version;
+        const version = getSpaceItemVersion(projectId, versionId);
         const origin = { ...project.origin, version };
         return { ...project, origin };
       });
@@ -288,7 +287,7 @@ export const useApplicationStore = defineStore("application", {
 
       if (applicationState.canvasRenderer) {
         applicationSettingsStore.setActiveCanvasRenderer(
-          applicationState.canvasRenderer,
+          applicationState.canvasRenderer!,
         );
       }
 
