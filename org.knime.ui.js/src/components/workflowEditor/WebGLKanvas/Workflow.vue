@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef } from "vue";
+import { computed, onMounted, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
 
@@ -18,6 +18,7 @@ import Connector from "./connectors/Connector.vue";
 import ConnectorLabel from "./connectors/ConnectorLabel.vue";
 import FloatingConnector from "./floatingConnector/FloatingConnector.vue";
 import Node from "./node/Node.vue";
+import ComponentPlaceholder from "./node/placeholder/ComponentPlaceholder.vue";
 import MetanodePortBars from "./portbars/MetanodePortBars.vue";
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
@@ -31,12 +32,15 @@ const { canvasLayers } = storeToRefs(canvasStore);
 const selectedNodesLayerContainer = useTemplateRef<ContainerInst>(
   "selectedNodesLayerContainer",
 );
-
 const selectedPortsLayerContainer = useTemplateRef<ContainerInst>(
   "selectedPortsLayerContainer",
 );
 const annotationControlsLayerContainer = useTemplateRef<ContainerInst>(
   "annotationControlsLayerContainer",
+);
+
+const componentPlaceholders = computed(
+  () => activeWorkflow.value?.componentPlaceholders ?? [],
 );
 
 const createRenderLayer = (
@@ -86,6 +90,12 @@ onMounted(() => {
         activeWorkflow!.info.containerType ===
         WorkflowInfo.ContainerTypeEnum.Metanode
       "
+    />
+
+    <ComponentPlaceholder
+      v-for="componentPlaceholder of componentPlaceholders"
+      :key="`placeholder-${componentPlaceholder.id}`"
+      :placeholder="componentPlaceholder"
     />
 
     <Node

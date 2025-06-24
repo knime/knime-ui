@@ -2,11 +2,9 @@
 import { computed } from "vue";
 
 import * as $shapes from "@/style/shapes";
-import NodeNameText from "../name/NodeNameText.vue";
 
 type Props = {
   progress?: number;
-  name?: string;
 };
 
 const props = defineProps<Props>();
@@ -33,8 +31,6 @@ const borderOffset = computed(() => {
 
 <template>
   <g>
-    <NodeNameText :editable="false" :value="name" />
-
     <text :x="$shapes.nodeSize / 2" :y="$shapes.nodeSize / 2" class="progress">
       {{ progressPercentile }}</text
     >

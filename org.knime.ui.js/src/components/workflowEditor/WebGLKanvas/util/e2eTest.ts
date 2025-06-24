@@ -201,6 +201,26 @@ export const initE2ETestUtils = (app: Application) => {
     },
 
     /**
+     * Returns the position of component placeholder.
+     */
+    getComponentPlaceholder: (componentPlaceholderId: string) => {
+      updateKanvasBox();
+      const componentPlaceholderIdLabel = `ComponentPlaceholder__${componentPlaceholderId}`;
+
+      const bounds = getPixiContainerBounds([componentPlaceholderIdLabel]);
+
+      if (!bounds) {
+        throw new Error(
+          `getComponentPlaceholder: couldn't find component placeholder ${componentPlaceholderIdLabel}`,
+        );
+      }
+
+      return {
+        ...bounds,
+      };
+    },
+
+    /**
      * Returns the bounds and text of a workflow annotation.
      */
     getAnnotation: (annotationId: string) => {

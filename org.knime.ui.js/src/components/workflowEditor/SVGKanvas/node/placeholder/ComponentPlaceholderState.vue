@@ -2,9 +2,12 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
+import { getMetaOrCtrlKey } from "@knime/utils";
+
 import { ComponentPlaceholder, type XY } from "@/api/gateway-api/generated-api";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
+import NodeNameText from "../name/NodeNameText.vue";
 
 import ComponentError from "./ComponentError.vue";
 import ComponentFloatingOptions from "./ComponentFloatingOptions.vue";
@@ -32,9 +35,11 @@ const isComponentPlaceholderSelected = computed(
   () => props.id === getSelectedComponentPlaceholder.value?.id,
 );
 
-const onClick = () => {
+const onPointerDown = (event: PointerEvent) => {
+  const metaOrCtrlKey = getMetaOrCtrlKey();
+  const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
   // TODO: NXT-3389 prompt about unsaved changes in node configuration
-  if (isComponentPlaceholderSelected.value) {
+  if (isComponentPlaceholderSelected.value && isMultiselect) {
     return deselectComponentPlaceholder();
   }
   return selectComponentPlaceholder(props.id);
@@ -55,16 +60,17 @@ const onContextMenu = async (event) => {
     :data-placeholder-id="id"
     @mouseenter="isHovering = true"
     @mouseleave="isHovering = false"
-    @pointerdown.left.stop="onClick"
+    @pointerdown.left.stop="onPointerDown"
     @pointerdown.right.stop="onContextMenu"
   >
+    <NodeNameText :editable="false" :value="name" />
+
     <ComponentLoading
       v-if="state === ComponentPlaceholder.StateEnum.LOADING"
       :progress="progress"
-      :name="name"
     />
 
-    <ComponentError v-else :name="name" />
+    <ComponentError v-else />
 
     <!-- Transparent hitbox -->
     <rect

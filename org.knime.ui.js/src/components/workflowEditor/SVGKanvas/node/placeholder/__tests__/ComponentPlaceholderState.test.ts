@@ -5,6 +5,7 @@ import { ComponentPlaceholder } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 import { createComponentPlaceholder } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
+import NodeNameText from "../../name/NodeNameText.vue";
 import ComponentError from "../ComponentError.vue";
 import ComponentFloatingOptions from "../ComponentFloatingOptions.vue";
 import ComponentLoading from "../ComponentLoading.vue";
@@ -33,6 +34,17 @@ describe("ComponentPlaceholderState", () => {
       mockedStores,
     };
   };
+
+  it("should show name of the placeholder", () => {
+    const { wrapper } = doMount();
+
+    expect(wrapper.findComponent(NodeNameText).props()).toEqual(
+      expect.objectContaining({
+        value: "Component Placeholder",
+        editable: false,
+      }),
+    );
+  });
 
   it("should render ComponentLoading if state is LOADING", () => {
     const { wrapper } = doMount();
@@ -71,7 +83,7 @@ describe("ComponentPlaceholderState", () => {
     ).toBeCalledWith(defaultProps.id);
   });
 
-  it("should deselect component placeholder if already selected", async () => {
+  it("should deselect component placeholder if already selected and isMultiselect", async () => {
     const { wrapper, mockedStores } = doMount();
     // @ts-expect-error
     mockedStores.selectionStore.getSelectedComponentPlaceholder = {
@@ -80,6 +92,7 @@ describe("ComponentPlaceholderState", () => {
 
     await wrapper.find("g").trigger("pointerdown", {
       button: 0,
+      shiftKey: true,
     });
 
     expect(

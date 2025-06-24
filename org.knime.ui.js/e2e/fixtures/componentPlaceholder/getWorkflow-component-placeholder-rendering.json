@@ -1,0 +1,62 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "0",
+    "workflow": {
+      "info": {
+        "name": "EmptyWorkflow",
+        "containerType": "project",
+        "containerId": "root",
+        "providerType": "HUB",
+        "containsLinkedComponents": true
+      },
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": false,
+        "canReset": false,
+        "canUndo": true,
+        "canRedo": false
+      },
+      "nodeTemplates": {},
+      "metadata": {
+        "metadataType": "project",
+        "lastEdit": "2025-04-28T16:25:20.158+02:00",
+        "description": {
+          "value": "",
+          "contentType": "text/plain"
+        },
+        "tags": [],
+        "links": []
+      },
+      "connections": {},
+      "workflowAnnotations": [],
+      "nodes": {},
+      "componentPlaceholders": [
+        {
+          "name": "Future version",
+          "id": "componentPlaceholder-1",
+          "state": "ERROR",
+          "position": {
+            "x": 20,
+            "y": 50
+          },
+          "message": "Component could not be loaded",
+          "details": "The component could not be created because the component version is incompatible. Unable to load template, it was created with a future version of KNIME (6.5.0.qualifier). You are running 5.5.0.v202505211704."
+        },
+        {
+          "name": "2.1 Buildings",
+          "id": "componentPlaceholder-2",
+          "state": "LOADING",
+          "position": {
+            "x": 160,
+            "y": 50
+          },
+          "message": "Downloading...",
+          "progress": 0.65
+        }
+      ],
+      "dirty": false
+    }
+  }
+}

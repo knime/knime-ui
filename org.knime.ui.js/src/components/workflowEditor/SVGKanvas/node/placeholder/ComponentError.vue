@@ -2,21 +2,12 @@
 import CircleCloseFilledIcon from "@knime/styles/img/icons/circle-close_filled.svg";
 
 import * as $shapes from "@/style/shapes";
-import NodeNameText from "../name/NodeNameText.vue";
-
-type Props = {
-  name?: string;
-};
-
-defineProps<Props>();
 
 const errorIconSize = 15;
 </script>
 
 <template>
   <g>
-    <NodeNameText :editable="false" :value="name" />
-
     <CircleCloseFilledIcon
       :x="($shapes.nodeSize - errorIconSize) / 2"
       :y="($shapes.nodeSize - errorIconSize) / 2"

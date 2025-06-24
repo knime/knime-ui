@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import CloseIcon from "@knime/styles/img/icons/cancel-execution.svg";
-import ReExecutionIcon from "@knime/styles/img/icons/reexecution.svg";
-import TrashIcon from "@knime/styles/img/icons/trash.svg";
+import CloseIcon from "@knime/styles/img/icons/cancel-execution.svg?raw";
+import ReExecutionIcon from "@knime/styles/img/icons/reexecution.svg?raw";
+import TrashIcon from "@knime/styles/img/icons/trash.svg?raw";
 
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import * as $shapes from "@/style/shapes";
+import { loadSvgInGraphicsContext } from "../../util/loadSvgInGraphicsContext";
 
 import ComponentFloatingButton from "./ComponentFloatingButton.vue";
 
@@ -18,7 +19,7 @@ const props = defineProps<Props>();
 const { cancelOrRetryComponentLoading, deleteComponentPlaceholder } =
   useComponentInteractionsStore();
 
-const onClick = async () => {
+const onPointerDown = async () => {
   const action = props.isError ? "retry" : "cancel";
 
   try {
@@ -41,28 +42,30 @@ const onDelete = async () => {
 </script>
 
 <template>
-  <g
-    :transform="`translate(${$shapes.nodeSize / 2}, ${-(
-      $shapes.nodeSize + $shapes.nodeNameMargin
-    )})`"
+  <Container
+    label="PlaceholderFloatingOptions"
+    :position="{
+      x: $shapes.nodeSize / 2,
+      y: -($shapes.nodeSize + $shapes.nodeNameMargin),
+    }"
   >
-    <template v-if="isError">
+    <Container v-if="isError">
       <ComponentFloatingButton
-        :icon="ReExecutionIcon"
-        :x="-13"
-        @click.left.stop="onClick"
+        :icon="loadSvgInGraphicsContext(ReExecutionIcon)"
+        :x="-14"
+        @pointerdown.self="onPointerDown"
       />
       <ComponentFloatingButton
-        :icon="TrashIcon"
-        :x="13"
-        @click.left.stop="onDelete"
+        :icon="loadSvgInGraphicsContext(TrashIcon)"
+        :x="12"
+        @pointerdown.self="onDelete"
       />
-    </template>
+    </Container>
 
-    <template v-else>
-      <ComponentFloatingButton :icon="CloseIcon" @click.left.stop="onClick" />
-    </template>
-  </g>
+    <ComponentFloatingButton
+      v-else
+      :icon="loadSvgInGraphicsContext(CloseIcon)"
+      @pointerdown.self="onPointerDown"
+    />
+  </Container>
 </template>
-
-<style lang="postcss" scoped></style>

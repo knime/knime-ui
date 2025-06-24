@@ -125,6 +125,16 @@ export const getAnnotation = async (page: Page, id: string) => {
   return annotation;
 };
 
+export const getComponentPlaceholder = async (page: Page, id: string) => {
+  const componentPlaceholder = await page.evaluate(
+    ({ id }) => {
+      return window.__E2E_TEST__.getComponentPlaceholder(id);
+    },
+    { id },
+  );
+  return componentPlaceholder;
+};
+
 export const getAddPortPlaceholder = async (
   page: Page,
   id: string,

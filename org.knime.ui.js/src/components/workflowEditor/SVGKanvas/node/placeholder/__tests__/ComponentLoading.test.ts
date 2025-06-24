@@ -3,7 +3,6 @@ import { shallowMount } from "@vue/test-utils";
 
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import NodeNameText from "../../name/NodeNameText.vue";
 import ComponentLoading from "../ComponentLoading.vue";
 
 describe("ComponentLoading", () => {
@@ -14,7 +13,6 @@ describe("ComponentLoading", () => {
   const doMount = (props = {}) => {
     const defaultProps = {
       progress: 0,
-      name: "Placeholder name",
     };
 
     const wrapper = shallowMount(ComponentLoading, {
@@ -29,15 +27,9 @@ describe("ComponentLoading", () => {
     };
   };
 
-  it("should show name and correct progress", () => {
+  it("should show correct progress", () => {
     const { wrapper } = doMount();
 
-    expect(wrapper.findComponent(NodeNameText).props()).toEqual(
-      expect.objectContaining({
-        value: "Placeholder name",
-        editable: false,
-      }),
-    );
     expect(wrapper.find(".progress").text()).toBe("0%");
   });
 

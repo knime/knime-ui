@@ -63,3 +63,12 @@ export const connectorLabelText: TextStylePreset = {
     fill: $colors.White,
   },
 };
+
+export const placeholderProgressText: TextStylePreset = {
+  styles: {
+    ...defaultTextStyles,
+    fontSize: 10,
+    align: "center",
+    textBaseline: "middle",
+  },
+};
