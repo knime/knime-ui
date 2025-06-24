@@ -76,6 +76,7 @@ import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -156,7 +157,10 @@ final class SpaceAPI {
         var spaceProvider = DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey())
             .getSpaceProvider(spaceProviderId);
         if (spaceProvider != null) {
-            spaceProvider.getConnection(false).ifPresent(SpaceProviderConnection::disconnect);
+            spaceProvider.getConnection(false).ifPresent(connection -> {
+                connection.disconnect();
+                DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            });
         }
     }
 
