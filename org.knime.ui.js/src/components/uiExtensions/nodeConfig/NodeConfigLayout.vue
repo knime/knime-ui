@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import { Button } from "@knime/components";
 import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
@@ -77,6 +77,21 @@ const onDiscard = () => {
 
   emit("discard");
 };
+
+watch(
+  () => props.dirtyState,
+  (dirtyState, oldDirtyState) => {
+    // If the settings are discarded by other means than the discard button
+    // we need to re-mount the component to reset the internal state
+    if (
+      dirtyState.apply === "clean" &&
+      dirtyState.view === "clean" &&
+      (oldDirtyState.apply !== "clean" || oldDirtyState.view !== "clean")
+    ) {
+      mountKey.value++;
+    }
+  },
+);
 </script>
 
 <template>
