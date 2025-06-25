@@ -103,7 +103,7 @@ useAnimatePixiContainer<number>({
 
     <Container
       :mask="$refs.textMask as any"
-      :renderable="progressDisplayPercentage > 1"
+      :renderable="progressDisplayPercentage > 25"
     >
       <Graphics
         ref="textMask"
