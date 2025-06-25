@@ -9,7 +9,6 @@ import {
 } from "vitest";
 import { version } from "vue";
 
-import { UnknownGatewayException } from "@/api/gateway-api/generated-exceptions";
 import { copyErrorReportToClipboard } from "../copyErrorReportToClipboard";
 
 describe("copyErrorReportToClipboard", () => {
@@ -43,7 +42,7 @@ describe("copyErrorReportToClipboard", () => {
   it("serializes error objects", async () => {
     const testError = new Error("mock error") as Error & { data: object };
     testError.data = { testdataProp: "mocked" };
-    const testData = { test1: new UnknownGatewayException(testError) };
+    const testData = { test1: testError };
     await copyErrorReportToClipboard(testData);
 
     const writeTextMock = navigator.clipboard.writeText as Mock;
@@ -52,16 +51,11 @@ describe("copyErrorReportToClipboard", () => {
       app: "KnimeUI",
       vueVersion: version,
       timestamp: mockDate.toISOString(),
-      test1: expect.objectContaining({
-        cause: expect.objectContaining({
-          data: testError.data,
-          message: "mock error",
-          stack: expect.any(String),
-        }),
+      test1: {
         data: testError.data,
         message: "mock error",
         stack: expect.any(String),
-      }),
+      },
     });
   });
 });

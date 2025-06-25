@@ -2,11 +2,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
-import {
-  CollisionException,
-  IOException,
-  ServiceCallException,
-} from "@/api/gateway-api/generated-exceptions";
 import { isBrowser, isDesktop } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -122,14 +117,14 @@ describe("spaces::spaceOperations", () => {
       );
 
       mockedAPI.space.listWorkflowGroup
-        .mockRejectedValueOnce(new Error("Error fetching content first time"))
-        .mockRejectedValueOnce(new Error("Error fetching content second time"));
+        .mockRejectedValueOnce(new Error("error message"))
+        .mockRejectedValueOnce(new Error("error message"));
 
       await expect(() =>
         spaceOperationsStore.fetchWorkflowGroupContent({
           projectId: "myProject1",
         }),
-      ).rejects.toThrow("Error fetching content second time");
+      ).rejects.toThrow("Error trying to fetch workflow group content");
     });
 
     it("should forward errors when trying to connect `NetworkException`s", async () => {
@@ -226,6 +221,16 @@ describe("spaces::spaceOperations", () => {
   });
 
   describe("createFolder", () => {
+    const serviceCallExceptionFromBE = {
+      code: -32600,
+      data: {
+        code: "ServiceCallException",
+        title: "error message",
+        canCopy: false,
+        message: "error message",
+      },
+    };
+
     it("should create a new folder", async () => {
       const { spaceOperationsStore, spaceCachingStore } = loadStore();
       mockedAPI.space.createWorkflowGroup.mockResolvedValue({
@@ -252,11 +257,10 @@ describe("spaces::spaceOperations", () => {
     it("should throw StoreActionException if folder fails to create", async () => {
       const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      const ioErr = new ServiceCallException({
-        message: "something failed with IO",
-      });
       mockedAPI.space.getSpaceGroups.mockResolvedValueOnce([{}]);
-      mockedAPI.space.createWorkflowGroup.mockRejectedValueOnce(ioErr);
+      mockedAPI.space.createWorkflowGroup.mockRejectedValueOnce(
+        serviceCallExceptionFromBE,
+      );
 
       spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
@@ -266,7 +270,11 @@ describe("spaces::spaceOperations", () => {
 
       await expect(() =>
         spaceOperationsStore.createFolder({ projectId: "project2" }),
-      ).rejects.toThrow(ioErr);
+      ).rejects.toThrow(
+        Error("Error while creating folder", {
+          cause: serviceCallExceptionFromBE,
+        }),
+      );
     });
 
     it("should throw StoreActionException if content refresh fails after folder is created", async () => {
@@ -275,15 +283,14 @@ describe("spaces::spaceOperations", () => {
       );
       const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      const ioErr = new ServiceCallException({
-        message: "something failed with IO",
-      });
       mockedAPI.space.createWorkflowGroup.mockResolvedValue({
         id: "NewFolder",
         type: "WorkflowGroup",
       });
 
-      mockedAPI.space.listWorkflowGroup.mockRejectedValue(ioErr);
+      mockedAPI.space.listWorkflowGroup.mockRejectedValue(
+        serviceCallExceptionFromBE,
+      );
 
       spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
@@ -293,7 +300,11 @@ describe("spaces::spaceOperations", () => {
 
       await expect(() =>
         spaceOperationsStore.createFolder({ projectId: "project2" }),
-      ).rejects.toThrow(ioErr);
+      ).rejects.toThrow(
+        Error("Error trying to fetch workflow group content", {
+          cause: serviceCallExceptionFromBE,
+        }),
+      );
     });
   });
 
@@ -628,6 +639,16 @@ describe("spaces::spaceOperations", () => {
       collisionHandling: "AUTORENAME",
     } as const;
 
+    const collisionExceptionFromBE = {
+      code: -32600,
+      data: {
+        code: "CollisionException",
+        title: "error message",
+        canCopy: false,
+        message: "error message",
+      },
+    };
+
     it("uses provided params", async () => {
       const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
         setUp();
@@ -644,7 +665,7 @@ describe("spaces::spaceOperations", () => {
       const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
         setUp();
       mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
-        new CollisionException({ message: "Whoops" }),
+        collisionExceptionFromBE,
       );
       await expect(() =>
         checkForCollisionsAndMove(structuredClone(paramsWithCollisionHandling)),
@@ -659,7 +680,7 @@ describe("spaces::spaceOperations", () => {
         setUp();
       promptCollisionStrategiesMock.mockResolvedValue("OVERWRITE");
       mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
-        new CollisionException({ message: "Collision" }),
+        collisionExceptionFromBE,
       );
 
       await checkForCollisionsAndMove(params);
@@ -681,7 +702,7 @@ describe("spaces::spaceOperations", () => {
         setUp();
       promptCollisionStrategiesMock.mockResolvedValue("CANCEL");
       mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
-        new CollisionException({ message: "Collision" }),
+        collisionExceptionFromBE,
       );
 
       await checkForCollisionsAndMove(params);
@@ -693,9 +714,17 @@ describe("spaces::spaceOperations", () => {
     it("will re-trow error if it is not a CollisionException", async () => {
       const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
         setUp();
-      mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
-        new IOException({ message: "Whoops" }),
-      );
+      const IOExceptionFromBE = {
+        code: -32600,
+        data: {
+          code: "IOException",
+          title: "error message",
+          canCopy: false,
+          message: "error message",
+        },
+      };
+
+      mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(IOExceptionFromBE);
       await expect(() =>
         checkForCollisionsAndMove(structuredClone(params)),
       ).rejects.toThrowError();

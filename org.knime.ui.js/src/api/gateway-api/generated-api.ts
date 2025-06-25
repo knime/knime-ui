@@ -1,6 +1,5 @@
 import type { Configuration } from './configuration';
 import type { RPCClient } from './rpc-client';
-import { mapToExceptionClass } from './generated-exceptions';
 
 /**
  *
@@ -5234,7 +5233,7 @@ const application = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('ApplicationService.getState', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('ApplicationService.getState', { ...defaultParams, ...params });
         },
     }
 };
@@ -5261,7 +5260,7 @@ const component = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('ComponentService.cancelOrRetryComponentLoadJob', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('ComponentService.cancelOrRetryComponentLoadJob', { ...defaultParams, ...params });
         },
         /**
          * Get a components description, will only work for component nodes.
@@ -5279,7 +5278,7 @@ const component = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('ComponentService.getComponentDescription', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('ComponentService.getComponentDescription', { ...defaultParams, ...params });
         },
     }
 };
@@ -5304,8 +5303,8 @@ const compositeview = function(rpcClient: RPCClient) {
         ): Promise<Response> {
             const defaultParams = { 
             }
-
-            return rpcClient.call('CompositeViewService.deactivateAllCompositeViewDataServices', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            
+            return rpcClient.call('CompositeViewService.deactivateAllCompositeViewDataServices', { ...defaultParams, ...params });
         },
         /**
          * Returns all the information on a node view required to render it.
@@ -5323,7 +5322,7 @@ const compositeview = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('CompositeViewService.getCompositeViewPage', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('CompositeViewService.getCompositeViewPage', { ...defaultParams, ...params });
         },
         /**
          * Query the current page while reexecuting
@@ -5340,7 +5339,7 @@ const compositeview = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('CompositeViewService.pollCompleteComponentReexecutionStatus', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('CompositeViewService.pollCompleteComponentReexecutionStatus', { ...defaultParams, ...params });
         },
         /**
          * Query the current page while reexecuting
@@ -5358,7 +5357,7 @@ const compositeview = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('CompositeViewService.pollComponentReexecutionStatus', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('CompositeViewService.pollComponentReexecutionStatus', { ...defaultParams, ...params });
         },
         /**
          * Applies viewValues as new default.  First the viewValues will be validated, then applied and when necessary the component will be executed.
@@ -5376,7 +5375,7 @@ const compositeview = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('CompositeViewService.setViewValuesAsNewDefault', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('CompositeViewService.setViewValuesAsNewDefault', { ...defaultParams, ...params });
         },
         /**
          * Triggers the re-execution process (and updates the viewValues) for the whole component, i.e.,  every containing node will be re-executed. If a specific node has triggered the re-execution process use  'trigger-reexecution/{resetNodeIdSuffix}' to only re-execute that node together  with every down-stream node of it.
@@ -5394,7 +5393,7 @@ const compositeview = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('CompositeViewService.triggerCompleteComponentReexecution', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('CompositeViewService.triggerCompleteComponentReexecution', { ...defaultParams, ...params });
         },
         /**
          * Triggers the re-execution process (and updates the viewValues).
@@ -5413,7 +5412,7 @@ const compositeview = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('CompositeViewService.triggerComponentReexecution', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('CompositeViewService.triggerComponentReexecution', { ...defaultParams, ...params });
         },
     }
 };
@@ -5438,7 +5437,7 @@ const event = function(rpcClient: RPCClient) {
                 eventType: null,
             }
             
-            return rpcClient.call('EventService.addEventListener', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('EventService.addEventListener', { ...defaultParams, ...params });
         },
         /**
          * Unregisters event listeners.
@@ -5453,7 +5452,7 @@ const event = function(rpcClient: RPCClient) {
                 eventType: null,
             }
             
-            return rpcClient.call('EventService.removeEventListener', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('EventService.removeEventListener', { ...defaultParams, ...params });
         },
     }
 };
@@ -5476,7 +5475,7 @@ const kai = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('KaiService.abortAiRequest', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('KaiService.abortAiRequest', { ...defaultParams, ...params });
         },
         /**
          * Fetches the disclaimer and welcome messages displayed in K-AI's chat interface.
@@ -5489,7 +5488,7 @@ const kai = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('KaiService.getUiStrings', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('KaiService.getUiStrings', { ...defaultParams, ...params });
         },
         /**
          * Sends a request to a chain.
@@ -5504,7 +5503,7 @@ const kai = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('KaiService.makeAiRequest', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('KaiService.makeAiRequest', { ...defaultParams, ...params });
         },
         /**
          * Submits feedback for a chain.
@@ -5519,7 +5518,7 @@ const kai = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('KaiService.submitFeedback', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('KaiService.submitFeedback', { ...defaultParams, ...params });
         },
     }
 };
@@ -5551,7 +5550,7 @@ const node = function(rpcClient: RPCClient) {
                 dataServiceRequest: null,
             }
             
-            return rpcClient.call('NodeService.callNodeDataService', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeService.callNodeDataService', { ...defaultParams, ...params });
         },
         /**
          * Changes state of a loop. The provided node-id must reference a loop-end node.
@@ -5571,7 +5570,7 @@ const node = function(rpcClient: RPCClient) {
                 action: null,
             }
             
-            return rpcClient.call('NodeService.changeLoopState', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeService.changeLoopState', { ...defaultParams, ...params });
         },
         /**
          * Changes the node state of multiple nodes represented by a list of node-ids.
@@ -5592,7 +5591,7 @@ const node = function(rpcClient: RPCClient) {
                 action: null,
             }
             
-            return rpcClient.call('NodeService.changeNodeStates', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeService.changeNodeStates', { ...defaultParams, ...params });
         },
         /**
          * De-activates all the data service associated with the specified ui-extension.
@@ -5612,7 +5611,7 @@ const node = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('NodeService.deactivateNodeDataServices', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeService.deactivateNodeDataServices', { ...defaultParams, ...params });
         },
         /**
          * Obtain the description of a given node.
@@ -5628,7 +5627,7 @@ const node = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('NodeService.getNodeDescription', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeService.getNodeDescription', { ...defaultParams, ...params });
         },
         /**
          * Returns all the information on a node dialog required to render it.
@@ -5647,7 +5646,7 @@ const node = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('NodeService.getNodeDialog', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeService.getNodeDialog', { ...defaultParams, ...params });
         },
         /**
          * Returns all the information on a node view required to render it.
@@ -5666,7 +5665,7 @@ const node = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('NodeService.getNodeView', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeService.getNodeView', { ...defaultParams, ...params });
         },
         /**
          * Updates the data point selection (aka hiliting) for a single node as specified.
@@ -5687,7 +5686,7 @@ const node = function(rpcClient: RPCClient) {
                 selection: null,
             }
             
-            return rpcClient.call('NodeService.updateDataPointSelection', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeService.updateDataPointSelection', { ...defaultParams, ...params });
         },
     }
 };
@@ -5711,7 +5710,7 @@ const noderepository = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('NodeRepositoryService.getNodeCategory', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeRepositoryService.getNodeCategory', { ...defaultParams, ...params });
         },
         /**
          * Given a node, a port and a node-relation it recommends a certain number of compatible nodes the user might want to add next to its workflow. If queried with no node, no port and no node-relation, it recommends the most relevant source nodes, that naturally have no predecessor.
@@ -5737,7 +5736,7 @@ const noderepository = function(rpcClient: RPCClient) {
                 fullTemplateInfo: null,
             }
             
-            return rpcClient.call('NodeRepositoryService.getNodeRecommendations', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeRepositoryService.getNodeRecommendations', { ...defaultParams, ...params });
         },
         /**
          * Compiles a list of node templates (with complete information, i.e. including icons, etc.). It doesn't actually change any state or create a new resource (despite the 'post').
@@ -5752,7 +5751,7 @@ const noderepository = function(rpcClient: RPCClient) {
                 nodeTemplateIds: null,
             }
             
-            return rpcClient.call('NodeRepositoryService.getNodeTemplates', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeRepositoryService.getNodeTemplates', { ...defaultParams, ...params });
         },
         /**
          * Returns a pre-defined set of groups (defined by tags) and nodes per group (the most frequently used ones in that group).
@@ -5773,7 +5772,7 @@ const noderepository = function(rpcClient: RPCClient) {
                 fullTemplateInfo: null,
             }
             
-            return rpcClient.call('NodeRepositoryService.getNodesGroupedByTags', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeRepositoryService.getNodesGroupedByTags', { ...defaultParams, ...params });
         },
         /**
          * Searches for nodes (and components) in the node repository.
@@ -5803,7 +5802,7 @@ const noderepository = function(rpcClient: RPCClient) {
                 nodeRelation: null,
             }
             
-            return rpcClient.call('NodeRepositoryService.searchNodes', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('NodeRepositoryService.searchNodes', { ...defaultParams, ...params });
         },
     }
 };
@@ -5836,7 +5835,7 @@ const port = function(rpcClient: RPCClient) {
                 dataServiceRequest: null,
             }
             
-            return rpcClient.call('PortService.callPortDataService', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('PortService.callPortDataService', { ...defaultParams, ...params });
         },
         /**
          * De-activates all data services associated with the port view.
@@ -5857,7 +5856,7 @@ const port = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('PortService.deactivatePortDataServices', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('PortService.deactivatePortDataServices', { ...defaultParams, ...params });
         },
         /**
          * Returns all the information on a port data value view required to render it.
@@ -5879,7 +5878,7 @@ const port = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('PortService.getDataValueView', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('PortService.getDataValueView', { ...defaultParams, ...params });
         },
         /**
          * Returns all the information on a port view required to render it.
@@ -5900,7 +5899,7 @@ const port = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('PortService.getPortView', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('PortService.getPortView', { ...defaultParams, ...params });
         },
         /**
          * Updates the data point selection (aka hiliting) for a single port as specified.
@@ -5923,7 +5922,7 @@ const port = function(rpcClient: RPCClient) {
                 selection: null,
             }
             
-            return rpcClient.call('PortService.updateDataPointSelection', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('PortService.updateDataPointSelection', { ...defaultParams, ...params });
         },
     }
 };
@@ -5948,7 +5947,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.createSpace', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.createSpace', { ...defaultParams, ...params });
         },
         /**
          * Create a new workflow within a given workflow group.
@@ -5966,7 +5965,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.createWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.createWorkflow', { ...defaultParams, ...params });
         },
         /**
          * Create a new workflow group within a given workflow group.
@@ -5983,7 +5982,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.createWorkflowGroup', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.createWorkflowGroup', { ...defaultParams, ...params });
         },
         /**
          * Deletes items from the space.
@@ -6002,7 +6001,7 @@ const space = function(rpcClient: RPCClient) {
                 softDelete: null,
             }
             
-            return rpcClient.call('SpaceService.deleteItems', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.deleteItems', { ...defaultParams, ...params });
         },
         /**
          * Deletes job from the space.
@@ -6020,7 +6019,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.deleteJobsForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.deleteJobsForWorkflow', { ...defaultParams, ...params });
         },
         /**
          * Deletes schedule from the space.
@@ -6038,7 +6037,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.deleteSchedulesForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.deleteSchedulesForWorkflow', { ...defaultParams, ...params });
         },
         /**
          * Returns the spaces provided by this space-provider.
@@ -6054,7 +6053,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.getSpaceGroups', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.getSpaceGroups', { ...defaultParams, ...params });
         },
         /**
          * Lists the available jobs for the given workflow.
@@ -6071,7 +6070,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.listJobsForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.listJobsForWorkflow', { ...defaultParams, ...params });
         },
         /**
          * Lists the available schedules for the given workflow.
@@ -6088,7 +6087,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.listSchedulesForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.listSchedulesForWorkflow', { ...defaultParams, ...params });
         },
         /**
          * Get shallow list of workflows, components and data-files within a given workflow group.
@@ -6106,7 +6105,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.listWorkflowGroup', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.listWorkflowGroup', { ...defaultParams, ...params });
         },
         /**
          * Move or copy space items to a different workflow group within its space.
@@ -6129,7 +6128,7 @@ const space = function(rpcClient: RPCClient) {
                 collisionHandling: null,
             }
             
-            return rpcClient.call('SpaceService.moveOrCopyItems', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.moveOrCopyItems', { ...defaultParams, ...params });
         },
         /**
          * Rename a space Item
@@ -6147,7 +6146,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.renameItem', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.renameItem', { ...defaultParams, ...params });
         },
         /**
          * Rename a space
@@ -6164,7 +6163,7 @@ const space = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('SpaceService.renameSpace', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('SpaceService.renameSpace', { ...defaultParams, ...params });
         },
     }
 };
@@ -6189,7 +6188,7 @@ const workflow = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('WorkflowService.disposeVersion', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('WorkflowService.disposeVersion', { ...defaultParams, ...params });
         },
         /**
          * Executed a command on the referenced workflow. Every request with the same operation is idempotent.
@@ -6206,7 +6205,7 @@ const workflow = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('WorkflowService.executeWorkflowCommand', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('WorkflowService.executeWorkflowCommand', { ...defaultParams, ...params });
         },
         /**
          * Returns the node IDs of all updatable linked components present on a workflow, even if they are deeply nested.
@@ -6224,7 +6223,7 @@ const workflow = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('WorkflowService.getUpdatableLinkedComponents', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('WorkflowService.getUpdatableLinkedComponents', { ...defaultParams, ...params });
         },
         /**
          * Retrieves the complete structure (sub-)workflows.
@@ -6244,7 +6243,7 @@ const workflow = function(rpcClient: RPCClient) {
                 includeInteractionInfo: null,
             }
             
-            return rpcClient.call('WorkflowService.getWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('WorkflowService.getWorkflow', { ...defaultParams, ...params });
         },
         /**
          * Returns the current state of the workflow monitor.
@@ -6258,7 +6257,7 @@ const workflow = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('WorkflowService.getWorkflowMonitorState', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('WorkflowService.getWorkflowMonitorState', { ...defaultParams, ...params });
         },
         /**
          * Re-does the last command from the redo-stack.
@@ -6274,7 +6273,7 @@ const workflow = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('WorkflowService.redoWorkflowCommand', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('WorkflowService.redoWorkflowCommand', { ...defaultParams, ...params });
         },
         /**
          * Save a project. This is a temporary service endpoint to offer saving a project in the browser environment, i.e. without any progress indication. In the desktop environment, this endpoint will not be called and instead the corresponding one from the Desktop API. Projects are usually only saved on session close in the browser environment, so the only other current use-case is saving before creating a version. We leave the call to the Catalog service to create the version to the Frontend for the time being. This means the code paths diverge only on save-and-upload. Otherwise, we would (a) have to parameterise the Gateway endpoint by some `doSave`, which is equivalent to `isBrowser` and (b) implement capability for the backend to make the Catalog call. As soon as we can provide Browser-compatible (i.e. Web-UI) progress indication (NXT-3634), the two endpoints and their backing duplicated logic can be unified and `createVersion` can become a single Gateway endpoint, also performing the hub service call (if desired).
@@ -6291,7 +6290,7 @@ const workflow = function(rpcClient: RPCClient) {
                 workflowPreviewSvg: null,
             }
             
-            return rpcClient.call('WorkflowService.saveProject', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('WorkflowService.saveProject', { ...defaultParams, ...params });
         },
         /**
          * Un-does the last command from the undo-stack.
@@ -6307,7 +6306,7 @@ const workflow = function(rpcClient: RPCClient) {
             const defaultParams = { 
             }
             
-            return rpcClient.call('WorkflowService.undoWorkflowCommand', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+            return rpcClient.call('WorkflowService.undoWorkflowCommand', { ...defaultParams, ...params });
         },
     }
 };

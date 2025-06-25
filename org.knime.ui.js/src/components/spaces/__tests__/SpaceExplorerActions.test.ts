@@ -6,7 +6,6 @@ import { API } from "@api";
 import { SubMenu } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import { ServiceCallException } from "@/api/gateway-api/generated-exceptions";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
@@ -379,9 +378,15 @@ describe("SpaceExplorerActions.vue", () => {
           SpaceProviderNS.TypeEnum.LOCAL,
         );
 
-        mockedStores.spaceOperationsStore[storeAction].mockRejectedValueOnce(
-          new ServiceCallException({ message: "IO issue" }),
-        );
+        mockedStores.spaceOperationsStore[storeAction].mockRejectedValueOnce({
+          code: -32600,
+          data: {
+            code: "ServiceCallException",
+            title: "error message",
+            canCopy: false,
+            message: "error message",
+          },
+        });
 
         const subMenu = wrapper.findComponent(SubMenu);
         const item = subMenu

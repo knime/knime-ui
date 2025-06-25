@@ -9,7 +9,7 @@ import {
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-import { CollisionException } from "@/api/gateway-api/generated-exceptions";
+import { isApiErrorType } from "@/api/gateway-api/generated-exceptions";
 import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling";
 import { isBrowser } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
@@ -85,7 +85,9 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
           consola.error("Error trying to fetch workflow group content", {
             error: dataFetchError,
           });
-          throw dataFetchError;
+          throw new Error("Error trying to fetch workflow group content", {
+            cause: dataFetchError,
+          });
         }
       } finally {
         this.setIsLoadingContent(false);
@@ -276,7 +278,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         .catch((error) => {
           this.setIsLoadingContent(false);
           consola.error("Error while creating folder", { error });
-          throw error;
+          throw new Error("Error while creating folder", { cause: error });
         });
 
       // Clears loading, might also throw but we let the exception bubble up
@@ -575,7 +577,10 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         await API.space.moveOrCopyItems(params);
       } catch (error) {
         // retry with collision strategy if there is a collision
-        if (!params?.collisionHandling && error instanceof CollisionException) {
+        if (
+          !params?.collisionHandling &&
+          isApiErrorType(error, "CollisionException")
+        ) {
           const collisionHandling = await promptCollisionStrategies();
           if (collisionHandling === "CANCEL") {
             return;

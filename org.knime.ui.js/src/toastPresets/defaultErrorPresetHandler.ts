@@ -1,7 +1,7 @@
 import type { Toast, ToastServiceProvider } from "@knime/components";
 import { rfcErrors } from "@knime/hub-features";
 
-import { UnknownGatewayException } from "@/api/gateway-api/generated-exceptions";
+import { isUnknownApiError } from "@/api/gateway-api/generated-exceptions";
 import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
 
 /**
@@ -19,11 +19,11 @@ export const defaultErrorPresetHandler = (
 ) => {
   const genericHeadline = "An unexpected error occurred";
 
-  if (error instanceof UnknownGatewayException) {
+  if (isUnknownApiError(error)) {
     return showProblemDetailsErrorToast({
       headline: payload.headline ?? genericHeadline,
       problemDetails: {
-        title: error.message,
+        title: error.data.title,
         details: [],
       },
       error,

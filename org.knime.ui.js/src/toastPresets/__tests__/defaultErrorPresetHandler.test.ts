@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { UnknownGatewayException } from "@/api/gateway-api/generated-exceptions";
 import { getToastsProvider } from "@/plugins/toasts";
 import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
 import { defaultErrorPresetHandler } from "../defaultErrorPresetHandler";
@@ -14,22 +13,27 @@ vi.mock("@/util/showProblemDetailsErrorToast", () => {
 describe("defaultErrorPresetHandler", () => {
   it("should handle UnknownGatewayException", () => {
     const message = "~~~~ not known ~~~~";
-    const unknownGatewayException = new UnknownGatewayException({
-      message,
-      data: {},
-    });
+    const unknownGatewayException = {
+      code: -32601,
+      data: {
+        code: "UnknownException",
+        title: message,
+        canCopy: true,
+        message,
+      },
+    };
     const $toast = getToastsProvider();
     defaultErrorPresetHandler($toast, unknownGatewayException, {});
 
-    expect(showProblemDetailsErrorToast).toBeCalledWith(
-      expect.objectContaining({
-        headline: "An unexpected error occurred",
-        problemDetails: {
-          details: [],
-          title: "~~~~ not known ~~~~",
-        },
-      }),
-    );
+    expect(showProblemDetailsErrorToast).toBeCalledWith({
+      headline: "An unexpected error occurred",
+      problemDetails: {
+        details: [],
+        title: "~~~~ not known ~~~~",
+      },
+      error: unknownGatewayException,
+      copyToClipboard: true,
+    });
   });
 
   it("add message from an error class to toast if no message provided in payload", () => {
