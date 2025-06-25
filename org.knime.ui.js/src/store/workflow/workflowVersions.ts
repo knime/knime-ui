@@ -562,10 +562,10 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     if (isBrowser()) {
       try {
         // Hack to provide some kind of progress/busy indication until the API calls can do that (NXT-3634)
-        // This will be unset when we switch to the loaded workflow
         useLifecycleStore().setIsLoadingWorkflow(true);
         // TODO: NXT-3634 Use the returned task ID to subscribe to 'task events' and show progress
         await API.workflow.saveProject({ projectId, workflowPreviewSvg });
+        useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.SAVE;
       } catch (error) {
         handleSaveProjectError(error);
@@ -588,6 +588,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
           workflowPreviewSvg,
           allowOverwritePrompt: false,
         });
+        useLifecycleStore().setIsLoadingWorkflow(false);
       } catch (error) {
         handleSaveProjectError(error);
         useLifecycleStore().setIsLoadingWorkflow(false);
