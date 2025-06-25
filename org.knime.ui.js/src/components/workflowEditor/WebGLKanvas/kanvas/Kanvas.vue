@@ -2,7 +2,7 @@
 import { type Ref, onUnmounted, ref, watch } from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { RenderLayer } from "pixi.js";
+import { Container, RenderLayer } from "pixi.js";
 
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
@@ -14,6 +14,7 @@ import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
 import { initE2ETestUtils } from "../util/e2eTest";
 
+import Scrollbars from "./Scrollbars.vue";
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
 
@@ -71,7 +72,7 @@ watch(
     }
 
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
-    canvasStore.stage = app.stage;
+    canvasStore.stage = app.stage.getChildByLabel(MAIN_CONTAINER_LABEL);
 
     // used by e2e tests in this repo and by QA
     globalThis.__E2E_TEST__ = initE2ETestUtils(app);
@@ -154,6 +155,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
       <Debug v-if="isCanvasDebugEnabled" />
       <slot />
     </Container>
+    <Scrollbars />
   </Application>
 </template>
 
