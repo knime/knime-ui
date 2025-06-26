@@ -5284,6 +5284,121 @@ const component = function(rpcClient: RPCClient) {
 };
 
 /**
+ * componenteditor - functional programming interface
+ * @export
+ */
+const componenteditor = function(rpcClient: RPCClient) {
+    return {
+        /**
+         * Gets configuration layout for the component editor.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async getConfigurationLayout(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<string> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentEditorService.getConfigurationLayout', { ...defaultParams, ...params });
+        },
+        /**
+         * Gets configuration nodes for the component editor.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async getConfigurationNodes(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<string> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentEditorService.getConfigurationNodes', { ...defaultParams, ...params });
+        },
+        /**
+         * Gets view layout for the component editor.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async getViewLayout(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<string> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentEditorService.getViewLayout', { ...defaultParams, ...params });
+        },
+        /**
+         * Gets view nodes for the component editor.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async getViewNodes(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<string> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentEditorService.getViewNodes', { ...defaultParams, ...params });
+        },
+        /**
+         * Sets configuration layout for the component editor.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {string} [params.componentConfigurationLayout] 
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async setConfigurationLayout(
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  componentConfigurationLayout?: string  }
+        ): Promise<Response> {
+            const defaultParams = { 
+                componentConfigurationLayout: null,
+            }
+            
+            return rpcClient.call('ComponentEditorService.setConfigurationLayout', { ...defaultParams, ...params });
+        },
+        /**
+         * Sets view layout for the component view editor.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {string} [params.componentViewLayout] 
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async setViewLayout(
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  componentViewLayout?: string  }
+        ): Promise<Response> {
+            const defaultParams = { 
+                componentViewLayout: null,
+            }
+            
+            return rpcClient.call('ComponentEditorService.setViewLayout', { ...defaultParams, ...params });
+        },
+    }
+};
+
+/**
  * compositeview - functional programming interface
  * @export
  */
@@ -6818,6 +6933,7 @@ export const createAPI = (configuration: Configuration) => {
     const api = { 
         application: application(rpcClient),
         component: component(rpcClient),
+        componenteditor: componenteditor(rpcClient),
         compositeview: compositeview(rpcClient),
         event: event(rpcClient),
         kai: kai(rpcClient),
