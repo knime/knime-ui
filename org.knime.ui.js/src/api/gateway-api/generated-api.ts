@@ -5304,7 +5304,7 @@ const compositeview = function(rpcClient: RPCClient) {
         ): Promise<Response> {
             const defaultParams = { 
             }
-
+            
             return rpcClient.call('CompositeViewService.deactivateAllCompositeViewDataServices', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
@@ -5696,7 +5696,7 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {Array<string>} params.categoryPath 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NoSuchElementException} The requested element was not found.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getNodeCategory(
         	params: { categoryPath: Array<string>  }

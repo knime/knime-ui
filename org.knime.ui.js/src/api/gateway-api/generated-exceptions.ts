@@ -1,4 +1,4 @@
-export const KNOWN_EXECUTOR_EXCEPTIONS = ["ServiceCallException", "NetworkException", "NoSuchElementException", "CollisionException", ] as const;
+export const KNOWN_EXECUTOR_EXCEPTIONS = ["ServiceCallException", "NetworkException", "CollisionException", ] as const;
 export type KnownExecutorExceptions = (typeof KNOWN_EXECUTOR_EXCEPTIONS)[number];
 
 export class GatewayException extends Error {}
@@ -17,7 +17,6 @@ export class UnknownGatewayException extends GatewayException {
 export class RequiredError extends KnownGatewayException {}
 export class ServiceCallException extends KnownGatewayException {}
 export class NetworkException extends KnownGatewayException {}
-export class NoSuchElementException extends KnownGatewayException {}
 export class CollisionException extends KnownGatewayException {}
 
 function isKnownGatewayException(e: unknown): e is { message: string, data: { code: KnownExecutorExceptions} } {
@@ -51,7 +50,6 @@ function isUnknownGatewayException(e: unknown): e is { message: string, data: Ob
 const exceptionClassMapping = {
     ServiceCallException,
     NetworkException,
-    NoSuchElementException,
     CollisionException,
 } as const;
 
