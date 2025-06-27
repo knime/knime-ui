@@ -39,7 +39,7 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
    * otherwise the title is returned
    */
   const hoverTitle = (title: string, hotkeyText?: string) => {
-    return options.isNodeSelected && hotkeyText
+    return options.isNodeSelected.value && hotkeyText
       ? `${title} - ${hotkeyText}`
       : title;
   };

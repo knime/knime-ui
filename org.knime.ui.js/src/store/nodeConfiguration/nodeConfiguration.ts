@@ -31,6 +31,7 @@ import {
   isNodeComponent,
   isNodeExecuting,
 } from "@/util/nodeUtil";
+import { useMovingStore } from "../workflow/moving";
 
 let unwrappedPromise = createUnwrappedPromise<boolean>();
 const $toast = getToastsProvider();
@@ -248,8 +249,9 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
 
     activeNode: (_): NativeNode | ComponentNode | null => {
       const activeNodeId = useSelectionStore().singleSelectedNode?.id;
+      const { isSelectionDelayedUntilDragCompletes } = useMovingStore();
 
-      if (!activeNodeId) {
+      if (!activeNodeId || isSelectionDelayedUntilDragCompletes) {
         return null;
       }
 

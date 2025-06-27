@@ -35,8 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const { getSelectedComponentPlaceholder } = storeToRefs(useSelectionStore());
-const { selectComponentPlaceholder, deselectComponentPlaceholder } =
-  useSelectionStore();
+const { selectComponentPlaceholder } = useSelectionStore();
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const canvasStore = useWebGLCanvasStore();
 const {
@@ -82,15 +81,7 @@ const onRightClick = async (event: FederatedPointerEvent) => {
 };
 
 const { handlePointerInteraction } = useObjectInteractions({
-  objectId: props.id,
-  isObjectSelected: () => isComponentPlaceholderSelected.value,
-  selectObject: async () => {
-    await selectComponentPlaceholder(props.id);
-  },
-  deselectObject: () => {
-    deselectComponentPlaceholder();
-    return Promise.resolve();
-  },
+  objectMetadata: { type: "componentPlaceholder", placeholderId: props.id },
   onMoveEnd: () => Promise.resolve({ shouldMove: false }),
 });
 

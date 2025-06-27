@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ref } from "vue";
 import { flushPromises } from "@vue/test-utils";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { createNativeNode, createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
 import { markEventAsHandled } from "../../util/interaction";
@@ -66,16 +66,6 @@ describe("useObjectInteractions", () => {
   };
 
   const doMount = (options: MountOpts = {}) => {
-    const isSelected = ref(false);
-    const selectSpy = vi.fn(() => {
-      isSelected.value = true;
-      return Promise.resolve();
-    });
-    const deselectSpy = vi.fn(() => {
-      isSelected.value = false;
-      return Promise.resolve();
-    });
-
     const setPointerCapture = vi.fn();
     const releasePointerCapture = vi.fn();
     HTMLElement.prototype.setPointerCapture = setPointerCapture;
@@ -88,16 +78,16 @@ describe("useObjectInteractions", () => {
     // @ts-expect-error
     mockedStores.webglCanvasStore.pixiApplication = { canvas };
 
+    const node = createNativeNode();
+    const workflow = createWorkflow({ nodes: { [node.id]: node } });
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
+
     const result = mountComposable({
       composable: useObjectInteractions,
       composableProps: {
-        objectId: "root:1",
-        isObjectSelected: () => isSelected.value,
-        selectObject: selectSpy,
-        deselectObject: deselectSpy,
+        objectMetadata: { type: "node", nodeId: node.id },
         onMoveEnd: options.onMoveEnd,
         onDoubleClick: options.onDoubleClick,
-        isAnnotation: options.isAnnotation,
       },
       mockedStores,
     });
@@ -108,9 +98,9 @@ describe("useObjectInteractions", () => {
       addEventSpy,
       removeEventSpy,
       canvas,
-      selectSpy,
-      deselectSpy,
-      isSelected,
+      selectSpy: vi.mocked(mockedStores.selectionStore.selectNodes),
+      deselectSpy: vi.mocked(mockedStores.selectionStore.deselectNodes),
+      node,
     };
   };
 
@@ -218,9 +208,7 @@ describe("useObjectInteractions", () => {
 
       vi.mocked(
         mockedStores.selectionStore,
-      ).canDiscardCurrentSelection.mockImplementation(() =>
-        Promise.resolve(false),
-      );
+      ).canDiscardCurrentSelection.mockImplementation(() => false);
 
       const { handlePointerInteraction } = getComposableResult();
 
@@ -246,23 +234,15 @@ describe("useObjectInteractions", () => {
 
     it("should move object in single-select mode when selected even if current selection cannot be discarded", async () => {
       const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
-      const {
-        getComposableResult,
-        canvas,
-        selectSpy,
-        mockedStores,
-        isSelected,
-      } = doMount({
+      const { getComposableResult, canvas, mockedStores, node } = doMount({
         onMoveEnd,
       });
 
       vi.mocked(
         mockedStores.selectionStore,
-      ).canDiscardCurrentSelection.mockImplementation(() =>
-        Promise.resolve(false),
-      );
+      ).canDiscardCurrentSelection.mockImplementation(() => false);
 
-      isSelected.value = true;
+      mockedStores.selectionStore.selectNodes([node.id]);
 
       const { handlePointerInteraction } = getComposableResult();
 
@@ -279,7 +259,6 @@ describe("useObjectInteractions", () => {
       );
       await flushPromises();
 
-      expect(selectSpy).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.setIsDragging).toHaveBeenCalled();
       expect(mockedStores.movingStore.setMovePreview).toHaveBeenCalled();
       expect(onMoveEnd).toHaveBeenCalled();
@@ -288,15 +267,13 @@ describe("useObjectInteractions", () => {
 
     it("should not move any object if workflow is not writable", async () => {
       const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
-      const { getComposableResult, canvas, mockedStores, isSelected } = doMount(
-        {
-          onMoveEnd,
-        },
-      );
+      const { getComposableResult, canvas, mockedStores, node } = doMount({
+        onMoveEnd,
+      });
 
       // @ts-expect-error - mock getter
       mockedStores.workflowStore.isWritable = false;
-      isSelected.value = true;
+      mockedStores.selectionStore.selectNodes([node.id]);
 
       const { handlePointerInteraction } = getComposableResult();
 
@@ -321,13 +298,11 @@ describe("useObjectInteractions", () => {
 
     it("should not move any object if not left mouse click", async () => {
       const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
-      const { getComposableResult, canvas, mockedStores, isSelected } = doMount(
-        {
-          onMoveEnd,
-        },
-      );
+      const { getComposableResult, canvas, mockedStores, node } = doMount({
+        onMoveEnd,
+      });
 
-      isSelected.value = true;
+      mockedStores.selectionStore.selectNodes([node.id]);
 
       const { handlePointerInteraction } = getComposableResult();
 
@@ -388,7 +363,7 @@ describe("useObjectInteractions", () => {
   describe("double click", () => {
     it("handles double clicks", async () => {
       const onDoubleClick = vi.fn();
-      const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
+      const { getComposableResult, canvas, mockedStores } = doMount({
         onDoubleClick,
       });
 
@@ -411,7 +386,6 @@ describe("useObjectInteractions", () => {
         pointerPositions,
       );
       expect(onDoubleClick).toHaveBeenCalledOnce();
-      expect(selectSpy).toHaveBeenCalledOnce();
       expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();

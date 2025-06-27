@@ -111,14 +111,7 @@ const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
 const { handlePointerInteraction, isDraggingThisObject } =
   useObjectInteractions({
-    objectId: props.node.id,
-    isObjectSelected: () => isNodeSelected(props.node.id),
-    selectObject: async () => {
-      await selectionStore.selectNodes([props.node.id]);
-    },
-    deselectObject: async () => {
-      await selectionStore.deselectNodes([props.node.id]);
-    },
+    objectMetadata: { type: "node", nodeId: props.node.id },
     onDoubleClick: onNodeLeftDoubleClick,
     onMoveStart: () => {
       if (singleSelectedNode.value) {

@@ -52,11 +52,7 @@ const halfPortSize = $shapes.portSize / 2;
 const isOutgoing = computed(() => props.type === "out");
 
 const selectionStore = useSelectionStore();
-const {
-  isMetaNodePortBarSelected,
-  selectMetanodePortBar,
-  deselectMetanodePortBar,
-} = selectionStore;
+const { isMetaNodePortBarSelected } = selectionStore;
 const { isDebugModeEnabled } = storeToRefs(useWebGLCanvasStore());
 
 const isSelected = computed(() => isMetaNodePortBarSelected(props.type));
@@ -157,10 +153,11 @@ const onNodeHoverAreaPointerLeave = () => {
 };
 
 const { handlePointerInteraction } = useObjectInteractions({
-  objectId: props.containerId,
-  selectObject: () => Promise.resolve(selectMetanodePortBar(props.type)),
-  deselectObject: () => Promise.resolve(deselectMetanodePortBar(props.type)),
-  isObjectSelected: () => isMetaNodePortBarSelected(props.type),
+  objectMetadata: {
+    type: "portbar",
+    containerId: props.containerId,
+    side: props.type,
+  },
   onMoveEnd: async () => {
     // we need to set this on the first move as the backend has no data to translate otherwise
     // only send if we have really moved

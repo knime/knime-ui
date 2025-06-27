@@ -13,15 +13,24 @@ type MovingState = {
   hasAbortedDrag: boolean;
   movePreviewDelta: XY;
   dragInitiatorId: string | undefined;
+  /**
+   * A drag interaction always makes a selection of the object being dragged, this
+   * selection happens immediately as soon as the drag interaction starts.
+   * However, in some cases we want to delay this selection so that it's considered
+   * "done" only after the drag interaction ends. One such case is when loading
+   * node/port views, which can be heavy since it loads and renders an iframe whose
+   * content could slow down the main thread thus making the drag interaction sluggish.
+   */
+  isSelectionDelayedUntilDragCompletes: boolean;
 };
 
 export const useMovingStore = defineStore("moving", {
   state: (): MovingState => ({
     isDragging: false,
     hasAbortedDrag: false,
-    // TODO: rename to `translationDelta`
     movePreviewDelta: { x: 0, y: 0 },
     dragInitiatorId: undefined,
+    isSelectionDelayedUntilDragCompletes: false,
   }),
   actions: {
     // Shifts the position of the node for the provided amount

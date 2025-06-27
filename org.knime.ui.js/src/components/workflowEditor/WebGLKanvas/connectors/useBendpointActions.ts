@@ -22,12 +22,7 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
   const { connectionId, isConnectionHighlighted, isConnectionHovered } =
     options;
 
-  const {
-    isConnectionSelected,
-    isBendpointSelected,
-    selectBendpoints,
-    deselectBendpoints,
-  } = useSelectionStore();
+  const { isConnectionSelected, selectBendpoints } = useSelectionStore();
 
   const virtualBendpoint = ref<{ index: number; position: XY } | null>(null);
   const { addVirtualBendpoint, addBendpoint } =
@@ -52,10 +47,7 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     const bendpointId = getBendpointId(connectionId, index - 1);
 
     const { handlePointerInteraction } = useObjectInteractions({
-      objectId: bendpointId,
-      isObjectSelected: () => isBendpointSelected(bendpointId),
-      selectObject: () => Promise.resolve(selectBendpoints(bendpointId)),
-      deselectObject: () => Promise.resolve(deselectBendpoints(bendpointId)),
+      objectMetadata: { type: "bendpoint", bendpointId },
       onMoveEnd: () => {
         if (virtualBendpoint.value) {
           addBendpoint({

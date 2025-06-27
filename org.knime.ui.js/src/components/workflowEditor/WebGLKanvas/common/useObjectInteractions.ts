@@ -1,3 +1,4 @@
+/* eslint-disable func-style */
 /* eslint-disable no-undefined */
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
@@ -16,23 +17,102 @@ import { usePointerDownDoubleClick } from "./usePointerDownDoubleClick";
 
 const MIN_MOVE_THRESHOLD = $shapes.gridSize.x;
 
+type ObjectMetadata =
+  | { type: "node"; nodeId: string }
+  | { type: "componentPlaceholder"; placeholderId: string }
+  | { type: "annotation"; annotationId: string }
+  | { type: "bendpoint"; bendpointId: string }
+  | { type: "portbar"; containerId: string; side: "in" | "out" };
+
+const useObjectHandler = (objectMetadata: ObjectMetadata) => {
+  const selectionStore = useSelectionStore();
+
+  type HandlersApi = {
+    getObjectId: () => string;
+    isObjectSelected: () => boolean;
+    selectObject: () => void;
+    deselectObject: () => void;
+  };
+
+  function assertUnreachable(_: never): never {
+    throw new Error("Exhaustive check not met");
+  }
+
+  // eslint-disable-next-line consistent-return
+  const setup = (): HandlersApi => {
+    switch (objectMetadata.type) {
+      case "node": {
+        return {
+          getObjectId: () => objectMetadata.nodeId,
+          isObjectSelected: () =>
+            selectionStore.isNodeSelected(objectMetadata.nodeId),
+          selectObject: () =>
+            selectionStore.selectNodes([objectMetadata.nodeId]),
+          deselectObject: () =>
+            selectionStore.deselectNodes([objectMetadata.nodeId]),
+        };
+      }
+
+      case "annotation": {
+        return {
+          getObjectId: () => objectMetadata.annotationId,
+          isObjectSelected: () =>
+            selectionStore.isAnnotationSelected(objectMetadata.annotationId),
+          selectObject: () =>
+            selectionStore.selectAnnotations([objectMetadata.annotationId]),
+          deselectObject: () =>
+            selectionStore.deselectAnnotations([objectMetadata.annotationId]),
+        };
+      }
+
+      case "bendpoint": {
+        return {
+          getObjectId: () => objectMetadata.bendpointId,
+          isObjectSelected: () =>
+            selectionStore.isBendpointSelected(objectMetadata.bendpointId),
+          selectObject: () =>
+            selectionStore.selectBendpoints(objectMetadata.bendpointId),
+          deselectObject: () =>
+            selectionStore.deselectBendpoints(objectMetadata.bendpointId),
+        };
+      }
+
+      case "componentPlaceholder": {
+        return {
+          getObjectId: () => objectMetadata.placeholderId,
+          isObjectSelected: () =>
+            selectionStore.getSelectedComponentPlaceholder?.id ===
+            objectMetadata.placeholderId,
+          selectObject: () =>
+            selectionStore.selectComponentPlaceholder(
+              objectMetadata.placeholderId,
+            ),
+          deselectObject: () => selectionStore.deselectComponentPlaceholder(),
+        };
+      }
+
+      case "portbar": {
+        return {
+          getObjectId: () => objectMetadata.containerId,
+          isObjectSelected: () =>
+            selectionStore.isMetaNodePortBarSelected(objectMetadata.side),
+          selectObject: () =>
+            selectionStore.selectMetanodePortBar(objectMetadata.side),
+          deselectObject: () =>
+            selectionStore.deselectMetanodePortBar(objectMetadata.side),
+        };
+      }
+
+      default:
+        assertUnreachable(objectMetadata);
+    }
+  };
+
+  return setup();
+};
+
 type UseObjectInteractionsOptions = {
-  /**
-   * The id of the object for the interaction
-   */
-  objectId: string;
-  /**
-   * A function that checks if the object is selected
-   */
-  isObjectSelected: () => boolean;
-  /**
-   * A function to perform a selection for this object
-   */
-  selectObject: () => Promise<void>;
-  /**
-   * A function to perform a deselection for this object
-   */
-  deselectObject: () => Promise<void>;
+  objectMetadata: ObjectMetadata;
   /**
    * Optional handler to run when the move interaction starts
    */
@@ -49,13 +129,6 @@ type UseObjectInteractionsOptions = {
    * Optional handler to run when the user fires off a double click
    */
   onDoubleClick?: (event: PointerEvent) => void;
-  /**
-   * Annotations are handled slighlty different when not selected, by making the
-   * selection only if the user performs a pointerdown and a pointerup without moving their mouse.
-   * Otherwise, provided they do move, this interaction will be ignored and the annotation will be neither selected
-   * nor moved. When the annotation is already selected, the behavior is the same as for other objects.
-   */
-  isAnnotation?: boolean;
 };
 
 /**
@@ -88,17 +161,18 @@ export const useObjectInteractions = (
   options: UseObjectInteractionsOptions,
 ) => {
   const {
-    isObjectSelected,
-    selectObject,
-    deselectObject,
+    objectMetadata,
     onMoveEnd = () => Promise.resolve({ shouldMove: true }),
-    isAnnotation = false,
   } = options;
 
   const selectionStore = useSelectionStore();
   const movingStore = useMovingStore();
-  const { dragInitiatorId, hasAbortedDrag, isDragging } =
-    storeToRefs(movingStore);
+  const {
+    dragInitiatorId,
+    hasAbortedDrag,
+    isDragging,
+    isSelectionDelayedUntilDragCompletes,
+  } = storeToRefs(movingStore);
 
   const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
@@ -106,8 +180,9 @@ export const useObjectInteractions = (
   const { pixiApplication, isHoldingDownSpace } = storeToRefs(canvasStore);
   const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 
-  const startPosition = ref<XY>({ x: 0, y: 0 });
+  const objectHandler = useObjectHandler(objectMetadata);
 
+  const startPosition = ref<XY>({ x: 0, y: 0 });
   const setStartPosition = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
     const { clientX, clientY } = pointerDownEvent;
     const [x, y] = canvasStore.screenToCanvasCoordinates([clientX, clientY]);
@@ -151,6 +226,12 @@ export const useObjectInteractions = (
     return { isSignificantMove, deltaX, deltaY };
   };
 
+  /**
+   * Annotations are handled slighlty different when not selected, by making the
+   * selection only if the user performs a pointerdown and a pointerup without moving their mouse.
+   * Otherwise, provided they do move, this interaction will be ignored and the annotation will be neither selected
+   * nor moved. When the annotation is already selected, the behavior is the same as for other objects.
+   */
   const handleUnselectedAnnotation = (
     pointerDownEvent: PIXI.FederatedPointerEvent,
   ) => {
@@ -185,14 +266,15 @@ export const useObjectInteractions = (
       didMove = true;
     };
 
-    const onUp = async () => {
+    const onUp = () => {
       // mark interaction and do selection on pointer up instead of pointerdown
       // but only if the user didn't move the mouse between the pointerdown and the pointerup
       if (!didMove) {
         markEventAsHandled(pointerDownEvent, {
           initiator: "object-interaction",
         });
-        await selectObject();
+
+        objectHandler.selectObject();
       }
 
       canvas.releasePointerCapture(pointerDownEvent.pointerId);
@@ -210,40 +292,76 @@ export const useObjectInteractions = (
     consola.trace("object interaction", { pointerDownEvent });
     markEventAsHandled(pointerDownEvent, { initiator: "object-interaction" });
 
-    // check for double clicks
     if (options.onDoubleClick && isPointerDownDoubleClick(pointerDownEvent)) {
+      consola.debug("object interactions:: handling double-click", {
+        objectMetadata,
+      });
+
       options.onDoubleClick(pointerDownEvent);
       return;
     }
 
-    setStartPosition(pointerDownEvent);
+    const selectionStore = useSelectionStore();
 
-    const wasSelectedOnStart = isObjectSelected();
+    const canDiscardSelection = selectionStore.canDiscardCurrentSelection();
+
+    if (
+      !canDiscardSelection &&
+      selectionStore.singleSelectedObject?.id !== objectHandler.getObjectId()
+    ) {
+      const { wasAborted } = await selectionStore.tryDiscardCurrentSelection();
+
+      if (!wasAborted) {
+        consola.debug(
+          "object interaction:: selection context was cleaned. Selecting next object",
+          { objectMetadata },
+        );
+        await selectionStore.deselectAllObjects();
+        objectHandler.selectObject();
+      }
+
+      consola.debug(
+        "object interaction:: selection cannot be discarded and user aborted interaction",
+      );
+      // when selection can't be discarded then no other interaction will happen
+      //  because the application would have shown a prompt dialog to the user
+      return;
+    }
+
+    const wasSelectedOnStart = objectHandler.isObjectSelected();
     const isMultiselect = isMultiselectEvent(pointerDownEvent);
 
-    let canMove =
-      (await selectionStore.canDiscardCurrentSelection()) &&
-      isWorkflowWritable.value;
-
     if (isMultiselect) {
-      const action = isObjectSelected() ? deselectObject : selectObject;
-      await action();
+      consola.debug("object interaction:: handling multiselect", {
+        objectMetadata,
+      });
 
-      // forbid move on multi select
+      // since multiselection means no drag will be made, we can
+      // immadiately make the real selection
+      const action = objectHandler.isObjectSelected()
+        ? objectHandler.deselectObject
+        : objectHandler.selectObject;
+
+      action();
+
       return;
-    } else if (isObjectSelected()) {
-      // nothing to do, even if one cannot discard the current selection
-      canMove = isWorkflowWritable.value;
-    } else {
-      // immediate selection feedback for non-selected objects
+    } else if (!objectHandler.isObjectSelected()) {
+      consola.debug(
+        "object interaction:: handling previously unselected object",
+        { objectMetadata },
+      );
+
+      isSelectionDelayedUntilDragCompletes.value = isWorkflowWritable.value;
       await selectionStore.deselectAllObjects();
-      await selectObject();
+      objectHandler.selectObject();
     }
 
-    if (!canMove) {
+    // we exit here to allow selection on non-writable workflows but not movement
+    if (!isWorkflowWritable.value) {
       return;
     }
 
+    setStartPosition(pointerDownEvent);
     const canvas = pixiApplication.value!.canvas;
     canvas.setPointerCapture(pointerDownEvent.pointerId);
     const removeDragAbortListener = registerDragAbort();
@@ -261,7 +379,7 @@ export const useObjectInteractions = (
         return;
       }
 
-      dragInitiatorId.value = options.objectId;
+      dragInitiatorId.value = objectHandler.getObjectId();
       didDrag = true;
       if (hasAbortedDrag.value) {
         return;
@@ -272,19 +390,47 @@ export const useObjectInteractions = (
       movingStore.setMovePreview({ deltaX, deltaY });
     };
 
-    const onUp = () => {
-      onMoveEnd().then(async ({ shouldMove }) => {
-        if (shouldMove && didDrag) {
-          await movingStore.moveObjects();
-          dragInitiatorId.value = undefined;
-        } else if (wasSelectedOnStart) {
-          // if a drag did not occur then an interaction on a previously
-          // selected object should prioritize a selection on that object alone upon
-          // a pointer up
+    const onUp = async () => {
+      if (didDrag) {
+        consola.debug("object interaction:: drag completed", {
+          objectMetadata,
+        });
+
+        objectHandler.selectObject();
+
+        onMoveEnd().then(async ({ shouldMove }) => {
+          if (shouldMove) {
+            await movingStore.moveObjects();
+            dragInitiatorId.value = undefined;
+          }
+        });
+      } else if (wasSelectedOnStart) {
+        consola.debug(
+          "object interaction:: drag did not occur, handling previously selected object",
+          { objectMetadata },
+        );
+
+        const isNode = options.objectMetadata.type === "node";
+
+        if (isNode) {
+          // skip deselecting -> re-selecting the same node
+          await selectionStore.deselectAllObjects([
+            objectHandler.getObjectId(),
+          ]);
+        } else {
           await selectionStore.deselectAllObjects();
-          await selectObject();
+          objectHandler.selectObject();
         }
-      });
+      } else {
+        consola.debug(
+          "object interaction:: drag did not occur, handling previously unselected object",
+          { objectMetadata },
+        );
+
+        objectHandler.selectObject();
+      }
+
+      isSelectionDelayedUntilDragCompletes.value = false;
       removeDragAbortListener();
       canvas.releasePointerCapture(pointerDownEvent.pointerId);
       canvas.removeEventListener("pointermove", onMove);
@@ -303,8 +449,10 @@ export const useObjectInteractions = (
       return;
     }
 
+    const isAnnotation = options.objectMetadata.type === "annotation";
+
     // handle annotations differently only when they're not selected
-    if (isAnnotation && !isObjectSelected()) {
+    if (isAnnotation && !objectHandler.isObjectSelected()) {
       handleUnselectedAnnotation(pointerDownEvent);
       return;
     }
@@ -315,7 +463,7 @@ export const useObjectInteractions = (
   return {
     handlePointerInteraction: onPointerDown,
     isDraggingThisObject: computed(
-      () => options.objectId === dragInitiatorId.value,
+      () => objectHandler.getObjectId() === dragInitiatorId.value,
     ),
   };
 };

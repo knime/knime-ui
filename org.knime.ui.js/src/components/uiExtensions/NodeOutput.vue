@@ -20,6 +20,7 @@ import {
   useSelectionStore,
 } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 
@@ -70,6 +71,7 @@ const { timestamp } = storeToRefs(useNodeConfigurationStore());
 const { singleSelectedNode, getSelectedNodes: selectedNodes } = storeToRefs(
   useSelectionStore(),
 );
+const { isSelectionDelayedUntilDragCompletes } = storeToRefs(useMovingStore());
 
 const { activePortTab } = storeToRefs(useSelectionStore());
 
@@ -212,7 +214,11 @@ const onPortViewLoadingState = async (
 <template>
   <div class="output-container">
     <PortTabs
-      v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
+      v-if="
+        !isSelectionDelayedUntilDragCompletes &&
+        singleSelectedNode &&
+        singleSelectedNode.outPorts.length
+      "
       v-model="selectedTab"
       class="tabs"
       :has-view-tab="hasViewTab"
@@ -237,7 +243,13 @@ const onPortViewLoadingState = async (
         :selected-port-index="selectedPortIndex"
       />
 
-      <template v-if="!selectionValidationError && singleSelectedNode">
+      <template
+        v-if="
+          !selectionValidationError &&
+          singleSelectedNode &&
+          !isSelectionDelayedUntilDragCompletes
+        "
+      >
         <NodeViewTabOutput
           v-if="isViewTabSelected && singleSelectedNode.kind === 'node'"
           :project-id="projectId!"

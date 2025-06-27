@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { type Ref, computed, ref } from "vue";
 import { defineStore } from "pinia";
 
@@ -30,14 +31,16 @@ const selectionRemover =
 
 export const useSelectionStore = defineStore("selection", () => {
   const selectedNodes = ref<Record<string, boolean>>({});
+  const workflowStore = useWorkflowStore();
+
   const getSelectedNodes = computed(() => {
-    const workflowStore = useWorkflowStore();
     return workflowStore.activeWorkflow
       ? Object.keys(selectedNodes.value)
           .map((id) => workflowStore.activeWorkflow!.nodes[id])
           .filter(Boolean)
       : [];
   });
+
   const selectedNodeIds = computed(() =>
     getSelectedNodes.value.map(({ id }) => id),
   );
@@ -48,6 +51,13 @@ export const useSelectionStore = defineStore("selection", () => {
       : null;
   });
 
+  /**
+   * Checks whether the active selection's context can be changed. For example
+   * changing from one node to another, which would not be possible if the node
+   * has an unsaved configuration.
+   *
+   * @returns whether the selection can be discarded or not.
+   */
   const canDiscardCurrentSelection = () => {
     // in the browser all operations to save
     // node configurations, etc are made on clickaway
@@ -60,6 +70,26 @@ export const useSelectionStore = defineStore("selection", () => {
       !useCompositeViewStore().isCompositeViewDirty &&
       !useNodeConfigurationStore().isDirty
     );
+  };
+
+  /**
+   * Attempts to discard the current selection by switching to another context.
+   * Will show a prompt to the user in case the selection cannot be immediately discarded.
+   *
+   * @returns Whether the user aborted the selection context switch or not
+   */
+  const tryDiscardCurrentSelection = async () => {
+    const canDiscardSelection = canDiscardCurrentSelection();
+
+    if (canDiscardSelection) {
+      return { wasAborted: false };
+    }
+
+    const canContinue =
+      (await useCompositeViewStore().clickAwayCompositeView()) &&
+      (await useNodeConfigurationStore().autoApplySettings());
+
+    return { wasAborted: !canContinue };
   };
 
   const preselectedNodes = ref<Record<string, boolean>>({});
@@ -78,17 +108,16 @@ export const useSelectionStore = defineStore("selection", () => {
       (nodeIds.length === 0 ||
         nodeIds.some((id) => id !== singleSelectedNode.value!.id))
     ) {
-      const canContinue =
-        (await useCompositeViewStore().clickAwayCompositeView()) &&
-        (await useNodeConfigurationStore().autoApplySettings());
-      if (!canContinue) {
+      const { wasAborted } = await tryDiscardCurrentSelection();
+
+      if (wasAborted) {
         return { wasAborted: true };
       }
     }
-    const newSelected = {};
-    nodeIds.forEach((id) => {
-      newSelected[id] = true;
-    });
+
+    const newSelected: Record<string, boolean> = Object.fromEntries(
+      nodeIds.map((id) => [id, true]),
+    );
 
     if (
       Object.keys(newSelected).length !==
@@ -97,12 +126,11 @@ export const useSelectionStore = defineStore("selection", () => {
     ) {
       selectedNodes.value = newSelected;
     }
+
     return { wasAborted: false };
   };
 
   const getSelectedComponentPlaceholder = computed(() => {
-    const workflowStore = useWorkflowStore();
-
     if (!selectedComponentPlaceholder.value) {
       return null;
     }
@@ -116,13 +144,15 @@ export const useSelectionStore = defineStore("selection", () => {
 
   const selectedConnections = ref<Record<string, boolean>>({});
   const getSelectedConnections = computed(() => {
-    const workflowStore = useWorkflowStore();
-    return workflowStore.activeWorkflow
+    const { activeWorkflow } = workflowStore;
+
+    return activeWorkflow
       ? Object.keys(selectedConnections.value)
-          .map((id) => workflowStore.activeWorkflow!.connections[id])
+          .map((id) => activeWorkflow.connections[id])
           .filter(Boolean)
       : [];
   });
+
   const selectedConnectionIds = computed(() =>
     getSelectedConnections.value.map(({ id }) => id),
   );
@@ -131,10 +161,12 @@ export const useSelectionStore = defineStore("selection", () => {
   const selectedBendpointIds = computed(() =>
     Object.keys(selectedBendpoints.value),
   );
+
   const getSelectedBendpoints = computed(() => {
-    if (!useWorkflowStore().activeWorkflow) {
+    if (!workflowStore.activeWorkflow) {
       return {};
     }
+
     const result: Record<string, number[]> = {};
     Object.keys(selectedBendpoints.value).forEach((bendpointId) => {
       const { connectionId, index } = parseBendpointId(bendpointId);
@@ -143,6 +175,7 @@ export const useSelectionStore = defineStore("selection", () => {
       }
       result[connectionId].push(index);
     });
+
     return result;
   });
 
@@ -150,14 +183,15 @@ export const useSelectionStore = defineStore("selection", () => {
   const selectedAnnotationIds = computed(() =>
     Object.keys(selectedAnnotations.value),
   );
+
   const getSelectedAnnotations = computed(() => {
-    const workflowStore = useWorkflowStore();
     return workflowStore.activeWorkflow
       ? workflowStore.activeWorkflow.workflowAnnotations.filter(
           ({ id }) => selectedAnnotations.value[id],
         )
       : [];
   });
+
   const singleSelectedAnnotation = computed(() => {
     return getSelectedAnnotations.value.length === 1
       ? getSelectedAnnotations.value[0]
@@ -178,14 +212,19 @@ export const useSelectionStore = defineStore("selection", () => {
     selectedPort: null as any,
     isModificationInProgress: false,
   });
-  const updateActiveNodePorts = (options) => {
-    if ("nodeId" in options) {
+
+  const updateActiveNodePorts = (options: {
+    nodeId?: string | null;
+    selectedPort?: string | null;
+    isModificationInProgress?: boolean;
+  }) => {
+    if (options.nodeId !== undefined) {
       activeNodePorts.value.nodeId = options.nodeId;
     }
-    if ("selectedPort" in options) {
+    if (options.selectedPort !== undefined) {
       activeNodePorts.value.selectedPort = options.selectedPort;
     }
-    if ("isModificationInProgress" in options) {
+    if (options.isModificationInProgress !== undefined) {
       activeNodePorts.value.isModificationInProgress =
         options.isModificationInProgress;
     }
@@ -214,6 +253,7 @@ export const useSelectionStore = defineStore("selection", () => {
         type: "node",
       } as const as WorkflowObject;
     }
+
     if (
       singleSelectedAnnotation.value &&
       !singleSelectedNode.value &&
@@ -225,6 +265,7 @@ export const useSelectionStore = defineStore("selection", () => {
         ...singleSelectedAnnotation.value.bounds,
       } as const as WorkflowObject;
     }
+
     if (
       getSelectedComponentPlaceholder.value &&
       !singleSelectedAnnotation.value &&
@@ -236,6 +277,7 @@ export const useSelectionStore = defineStore("selection", () => {
         ...getSelectedComponentPlaceholder.value.position,
       } as const as WorkflowObject;
     }
+
     return null;
   });
 
@@ -274,7 +316,7 @@ export const useSelectionStore = defineStore("selection", () => {
     if (!focusedObject.value) {
       return null;
     }
-    const workflowStore = useWorkflowStore();
+
     const { activeWorkflow } = workflowStore;
     if (!activeWorkflow) {
       return null;
@@ -327,11 +369,13 @@ export const useSelectionStore = defineStore("selection", () => {
   };
 
   const connectionsBetweenSelectedNodes = computed(() => {
-    const workflow = useWorkflowStore().activeWorkflow;
-    if (!workflow) {
+    const { activeWorkflow } = workflowStore;
+
+    if (!activeWorkflow) {
       return [];
     }
-    return Object.values(workflow.connections).filter(
+
+    return Object.values(activeWorkflow.connections).filter(
       (conn) =>
         selectedNodes.value[conn.sourceNode] &&
         selectedNodes.value[conn.destNode],
@@ -392,7 +436,7 @@ export const useSelectionStore = defineStore("selection", () => {
 
   const selectAllObjects = async () => {
     const { wasAborted } = await setNodeSelection(
-      Object.keys(useWorkflowStore().activeWorkflow!.nodes),
+      Object.keys(workflowStore.activeWorkflow!.nodes),
     );
 
     if (wasAborted) {
@@ -403,7 +447,7 @@ export const useSelectionStore = defineStore("selection", () => {
       selectedComponentPlaceholder.value = null;
     }
 
-    useWorkflowStore().activeWorkflow!.workflowAnnotations.forEach(
+    workflowStore.activeWorkflow!.workflowAnnotations.forEach(
       ({ id }) => (selectedAnnotations.value[id] = true),
     );
 
@@ -500,8 +544,13 @@ export const useSelectionStore = defineStore("selection", () => {
       preselectedAnnotations.value = {};
     },
 
-    selectMetanodePortBar: selectionAdder(selectedMetanodePortBars),
-    deselectMetanodePortBar: selectionRemover(selectedMetanodePortBars),
+    tryDiscardCurrentSelection,
+
+    selectMetanodePortBar: (type: "in" | "out" | Array<"in" | "out">) =>
+      selectionAdder(selectedMetanodePortBars)(type),
+
+    deselectMetanodePortBar: (type: "in" | "out" | Array<"in" | "out">) =>
+      selectionRemover(selectedMetanodePortBars)(type),
 
     selectAnnotations: selectionAdder(selectedAnnotations),
     deselectAnnotations: selectionRemover(selectedAnnotations),
