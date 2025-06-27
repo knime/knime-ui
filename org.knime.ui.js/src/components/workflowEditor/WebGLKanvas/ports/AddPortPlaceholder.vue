@@ -252,7 +252,7 @@ defineExpose({ onKeydownEnter });
     cursor="pointer"
     @pointerenter="isPlaceholderPortHovered = true"
     @pointerleave="isPlaceholderPortHovered = false"
-    @pointerdown.stop="onPointerdown"
+    @pointerdown.stop.prevent="onPointerdown"
   >
     <Port
       v-if="previewPort && previewPort.typeId"
