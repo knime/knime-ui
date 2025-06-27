@@ -189,7 +189,7 @@ const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
   textRef = text;
   nextTick(() => {
     requestAnimationFrame(() => {
-      annotationContainer.value!.addChild(text);
+      annotationContainer.value?.addChild(text);
     });
   });
 };

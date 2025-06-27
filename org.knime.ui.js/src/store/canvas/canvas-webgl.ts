@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-undefined */
 /* eslint-disable no-magic-numbers */
 
@@ -29,6 +30,7 @@ export const minZoomFactor = 0.05; // 5%
 export const maxZoomFactor = 5; // 500%
 
 export const padding = 20; // 20 canvas units
+export const scrollPadding = 250;
 export const zoomCacheLifespan = 1000; // 1 second
 
 export type CanvasLayerNames =
@@ -168,9 +170,15 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     });
   };
 
-  const contentBounds = computed(() => {
-    let { left, top, right, bottom } = useWorkflowStore().workflowBounds;
-
+  const claculateBounds = (
+    {
+      left,
+      top,
+      right,
+      bottom,
+    }: { left: number; top: number; right: number; bottom: number },
+    padding: number,
+  ) => {
     left -= padding;
     right += padding;
     top -= padding;
@@ -192,7 +200,15 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       centerX,
       centerY,
     };
-  });
+  };
+
+  const paddedScrollBounds = computed(() =>
+    claculateBounds(useWorkflowStore().workflowBounds, scrollPadding),
+  );
+
+  const contentBounds = computed(() =>
+    claculateBounds(useWorkflowStore().workflowBounds, padding),
+  );
 
   const fitToScreenZoomFactor = computed(() => {
     const { width: containerWidth, height: containerHeight } =
@@ -325,9 +341,13 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
   // returns the currently visible area of the workflow
   const visibleArea = computed(() => {
-    const OFFSET_BUFFER = 100;
+    const OFFSET_BUFFER = 0;
 
     return calculateVisibleArea(OFFSET_BUFFER);
+  });
+
+  const viewBox = computed(() => {
+    return calculateVisibleArea(0);
   });
 
   const getVisibleFrame = computed(() => {
@@ -629,5 +649,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     findObjectFromScreenCordinates,
     isPanning,
     isHoldingDownSpace,
+    paddedScrollBounds,
+    viewBox,
   };
 });
