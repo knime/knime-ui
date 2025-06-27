@@ -32,8 +32,8 @@ describe("useObjectInteractions", () => {
   ) => {
     startInteractionHandler({
       button: options.button ?? 0,
-      // @ts-expect-error
-      global: pointerPositions.start,
+      clientX: pointerPositions.start.x,
+      clientY: pointerPositions.start.y,
       // @ts-expect-error
       shiftKey: options.shiftKey,
       // @ts-expect-error
@@ -44,17 +44,15 @@ describe("useObjectInteractions", () => {
 
     canvas.dispatchEvent(
       new PointerEvent("pointermove", {
-        // @ts-expect-error
-        offsetX: pointerPositions.move.x,
-        offsetY: pointerPositions.move.y,
+        clientX: pointerPositions.move.x,
+        clientY: pointerPositions.move.y,
       }),
     );
 
     canvas.dispatchEvent(
       new PointerEvent("pointerup", {
-        // @ts-expect-error
-        offsetX: pointerPositions.end.x,
-        offsetY: pointerPositions.end.y,
+        clientX: pointerPositions.end.x,
+        clientY: pointerPositions.end.y,
       }),
     );
 

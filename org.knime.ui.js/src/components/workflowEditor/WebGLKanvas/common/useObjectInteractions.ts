@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
+import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -101,12 +102,17 @@ export const useObjectInteractions = (
 
   const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
-  const { zoomFactor, pixiApplication, isHoldingDownSpace } = storeToRefs(
-    useWebGLCanvasStore(),
-  );
+  const canvasStore = useWebGLCanvasStore();
+  const { pixiApplication, isHoldingDownSpace } = storeToRefs(canvasStore);
   const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 
-  const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+  const startPosition = ref<XY>({ x: 0, y: 0 });
+
+  const setStartPosition = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
+    const { clientX, clientY } = pointerDownEvent;
+    const [x, y] = canvasStore.screenToCanvasCoordinates([clientX, clientY]);
+    startPosition.value = { x, y };
+  };
 
   const registerDragAbort = () => {
     const abort = (event: KeyboardEvent) => {
@@ -130,10 +136,13 @@ export const useObjectInteractions = (
   };
 
   const calculateMoveDeltas = (pointerMoveEvent: PointerEvent) => {
-    const deltaX =
-      (pointerMoveEvent.offsetX - startPos.value.x) / zoomFactor.value;
-    const deltaY =
-      (pointerMoveEvent.offsetY - startPos.value.y) / zoomFactor.value;
+    const [moveX, moveY] = canvasStore.screenToCanvasCoordinates([
+      pointerMoveEvent.clientX,
+      pointerMoveEvent.clientY,
+    ]);
+
+    const deltaX = moveX - startPosition.value.x;
+    const deltaY = moveY - startPosition.value.y;
 
     const isSignificantMove =
       Math.abs(deltaX) >= MIN_MOVE_THRESHOLD ||
@@ -154,10 +163,7 @@ export const useObjectInteractions = (
       return;
     }
 
-    startPos.value = {
-      x: pointerDownEvent.global.x,
-      y: pointerDownEvent.global.y,
-    };
+    setStartPosition(pointerDownEvent);
 
     // check for double clicks
     if (options.onDoubleClick && isPointerDownDoubleClick(pointerDownEvent)) {
@@ -210,10 +216,7 @@ export const useObjectInteractions = (
       return;
     }
 
-    startPos.value = {
-      x: pointerDownEvent.global.x,
-      y: pointerDownEvent.global.y,
-    };
+    setStartPosition(pointerDownEvent);
 
     const wasSelectedOnStart = isObjectSelected();
     const isMultiselect = isMultiselectEvent(pointerDownEvent);

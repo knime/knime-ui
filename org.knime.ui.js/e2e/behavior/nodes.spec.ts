@@ -162,6 +162,29 @@ test.describe("dragging", () => {
     await assertSnapshot(page);
   });
 
+  test("from selected node with zoom", async ({ page }) => {
+    await startForPointerInteractions(page);
+
+    const [n1x, n1y] = await getNodePosition(page, IDS.node1);
+
+    // first select
+    await page.mouse.click(n1x, n1y);
+
+    // then move
+    await page.mouse.down();
+    await page.mouse.move(n1x + 100, n1y - 100);
+
+    await page.keyboard.down("ControlOrMeta");
+    for (let i = 0; i < 10; i++) {
+      await page.mouse.wheel(0, -1);
+    }
+    await page.keyboard.up("ControlOrMeta");
+
+    await page.mouse.move(n1x + 200, n1y - 200);
+
+    await assertSnapshot(page);
+  });
+
   test("will replace selection when dragging from unselected node", async ({
     page,
   }) => {
