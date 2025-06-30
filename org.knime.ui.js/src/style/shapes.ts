@@ -84,6 +84,7 @@ export const metaNodeBarHorizontalPadding = 13;
 export const defaultMetaNodeBarHeight = 500;
 
 export const gridSize = { x: 5, y: 5 };
+export const layoutEditorGridSize = 12;
 
 export const selectedItemBorderRadius = 4;
 export const selectedNodeStrokeWidth = 1;

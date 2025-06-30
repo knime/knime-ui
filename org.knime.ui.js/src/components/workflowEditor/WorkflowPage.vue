@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 
 import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import SplitPanel from "@/components/common/SplitPanel.vue";
+import LayoutEditorDialog from "@/components/layoutEditor/LayoutEditorDialog.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
@@ -55,6 +56,8 @@ const savedSecondarySize = computed({
         </template>
       </SplitPanel>
     </main>
+
+    <LayoutEditorDialog />
   </div>
 </template>
 

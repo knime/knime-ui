@@ -23,6 +23,7 @@ describe("componentOrMetanodeShortcuts", () => {
       desktopInteractionsStore,
       nodeInteractionsStore,
       uiControlsStore,
+      layoutEditorStore,
     } = mockStores();
 
     applicationStore.activeProjectId = "activeTestProjectId";
@@ -44,6 +45,7 @@ describe("componentOrMetanodeShortcuts", () => {
       desktopInteractionsStore,
       nodeInteractionsStore,
       uiControlsStore,
+      layoutEditorStore,
     };
   };
 
@@ -171,12 +173,21 @@ describe("componentOrMetanodeShortcuts", () => {
     });
 
     it("open layout editor", () => {
-      const { desktopInteractionsStore } = createStore();
+      const { layoutEditorStore } = createStore();
 
       componentOrMetanodeShortcuts.openLayoutEditor.execute(
         mockShortcutContext(),
       );
-      expect(desktopInteractionsStore.openLayoutEditor).toHaveBeenCalled();
+      expect(layoutEditorStore.setLayoutContext).toHaveBeenCalled();
+    });
+
+    it("open layout editor by node ID", () => {
+      const { layoutEditorStore } = createStore();
+
+      componentOrMetanodeShortcuts.openLayoutEditorByNodeId.execute(
+        mockShortcutContext(),
+      );
+      expect(layoutEditorStore.setLayoutContext).toHaveBeenCalled();
     });
 
     it("can lock a subnode", () => {
@@ -272,12 +283,12 @@ describe("componentOrMetanodeShortcuts", () => {
         selectionStore.singleSelectedNode = createComponentNode({
           id: "root:0",
         });
-        uiControlsStore.canOpenComponentLayoutEditor = false;
+        uiControlsStore.canOpenLayoutEditor = false;
         expect(
           componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition?.(),
         ).toBe(false);
 
-        uiControlsStore.canOpenComponentLayoutEditor = true;
+        uiControlsStore.canOpenLayoutEditor = true;
         expect(
           componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition?.(),
         ).toBe(true);
@@ -417,12 +428,12 @@ describe("componentOrMetanodeShortcuts", () => {
 
       workflowStore.activeWorkflow!.info.containerType =
         WorkflowInfo.ContainerTypeEnum.Component;
-      uiControlsStore.canOpenComponentLayoutEditor = false;
+      uiControlsStore.canOpenLayoutEditor = false;
       expect(componentOrMetanodeShortcuts.openLayoutEditor.condition?.()).toBe(
         false,
       );
 
-      uiControlsStore.canOpenComponentLayoutEditor = true;
+      uiControlsStore.canOpenLayoutEditor = true;
       expect(componentOrMetanodeShortcuts.openLayoutEditor.condition?.()).toBe(
         true,
       );

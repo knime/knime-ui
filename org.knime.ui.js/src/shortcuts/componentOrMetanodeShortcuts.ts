@@ -10,10 +10,10 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
-import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
@@ -400,7 +400,21 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
-    execute: () => useDesktopInteractionsStore().openLayoutEditor(),
+    execute: () => {
+      // We are opening the component editor from within the component here,
+      // so the workflowId is the nodeId of the component we want to show the editors for
+      const { projectId, workflowId: nodeId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
+
+      const activeWorkflow = useWorkflowStore().activeWorkflow;
+      const parents = activeWorkflow?.parents?.at(0);
+
+      useLayoutEditorStore().setLayoutContext({
+        projectId,
+        workflowId: parents?.containerId || nodeId,
+        nodeId,
+      });
+    },
     condition: () => {
       const workflow = useWorkflowStore().activeWorkflow!;
       const isWritable = useWorkflowStore().isWritable;
@@ -408,7 +422,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       return (
         isWritable &&
         Boolean(isComponentProjectOrWorkflow(workflow)) &&
-        useUIControlsStore().canOpenComponentLayoutEditor
+        useUIControlsStore().canOpenLayoutEditor
       );
     },
   },
@@ -421,8 +435,14 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     icon: LayoutIcon,
     execute: () => {
       const nodeId = useSelectionStore().singleSelectedNode?.id ?? "";
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
 
-      useDesktopInteractionsStore().openLayoutEditorByNodeId({ nodeId });
+      useLayoutEditorStore().setLayoutContext({
+        projectId,
+        workflowId,
+        nodeId,
+      });
     },
     condition: () => {
       const selectedNode = useSelectionStore().singleSelectedNode;
@@ -437,7 +457,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         isComponent(selectedNode) &&
         !selectedNode?.isLocked &&
         !isLinked(selectedNode) &&
-        useUIControlsStore().canOpenComponentLayoutEditor
+        useUIControlsStore().canOpenLayoutEditor
       );
     },
   },

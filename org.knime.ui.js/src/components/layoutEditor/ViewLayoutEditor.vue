@@ -1,0 +1,196 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
+import Draggable from "vuedraggable";
+
+import { Button, InlineMessage } from "@knime/components";
+import InfoIcon from "@knime/styles/img/icons/circle-info.svg";
+
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
+import { layoutEditorGridSize } from "@/style/shapes";
+
+import AvailableNodesAndElements from "./AvailableNodesAndElements.vue";
+import Row from "./layout/Row.vue";
+
+const layoutEditorStore = useLayoutEditorStore();
+const { layout, availableNodes, isLegacyModeOutOfSync, isWrappingLayout } =
+  storeToRefs(layoutEditorStore);
+
+const rows = computed({
+  get() {
+    return layout.value.rows;
+  },
+  set(value) {
+    layoutEditorStore.updateFirstLevelRows(value);
+  },
+});
+
+const onLegacyModeToggle = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  layoutEditorStore.setUseLegacyMode(target.checked);
+};
+</script>
+
+<template>
+  <div class="container">
+    <div class="sidebar">
+      <div class="controls">
+        <Button
+          compact
+          with-border
+          title="remove all views and rows"
+          @click="layoutEditorStore.clearLayout()"
+        >
+          clear layout
+        </Button>
+        <Button
+          compact
+          with-border
+          title="revert to initial state"
+          @click="layoutEditorStore.resetLayout()"
+        >
+          reset layout
+        </Button>
+      </div>
+
+      <AvailableNodesAndElements />
+
+      <label title="Enable legacy styling for supported views">
+        <input
+          :checked="layout.parentLayoutLegacyMode"
+          type="checkbox"
+          @change="onLegacyModeToggle"
+        />
+        Use legacy mode
+      </label>
+      <button
+        v-if="isLegacyModeOutOfSync"
+        title="Legacy mode for some view may not match this setting"
+        class="legacy-info"
+        disabled="true"
+      >
+        <InfoIcon />
+      </button>
+    </div>
+
+    <div class="layout">
+      <InlineMessage
+        v-if="availableNodes.length"
+        class="alert"
+        variant="warning"
+        title="Warning"
+        description="Views not added into the layout and not disabled in Tab 'Node Usage' will be shown below layout. To circumvent unexpected behavior, add all views into the layout."
+      />
+
+      <InlineMessage
+        v-if="isWrappingLayout"
+        class="alert"
+        variant="warning"
+        title="Warning"
+        :description="`Your layout has rows with a total column width larger than ${layoutEditorGridSize}, therefore the columns will wrap. The visual editor doesn't support wrapping layouts yet. Please use advanced editor instead.`"
+      />
+
+      <InlineMessage
+        v-if="isLegacyModeOutOfSync"
+        class="alert"
+        variant="warning"
+        title="Warning"
+        description='The legacy mode setting of some views in the layout do not match parent layout legacy mode setting. This may have been caused by changes made in the advanced layout editor. If this was intentional, you can ignore this warning. Otherwise, toggle the "Use legacy mode" option to synchronize the settings.'
+      />
+
+      <Draggable
+        v-model="rows"
+        group="content"
+        class="layout-preview"
+        :component-data="{ isFirstLevel: true }"
+        item-key="id"
+        @start="layoutEditorStore.setIsDragging(true)"
+        @end="layoutEditorStore.setIsDragging(false)"
+      >
+        <template #item="{ element, index }">
+          <Row :key="index" :row="element" :deletable="rows.length > 1" />
+        </template>
+      </Draggable>
+    </div>
+  </div>
+</template>
+
+<style lang="postcss">
+/* when dragging from available nodes/elements over layout,
+  this list element will temporarily be added to the layout */
+.layout-preview li.sortable-ghost {
+  list-style: none;
+  background-color: var(--knime-aquamarine);
+  border-radius: 3px;
+  margin: 5px 0;
+  width: 100%;
+  height: 50px;
+  color: transparent;
+
+  &.quickform,
+  &.configuration {
+    background-color: var(--knime-avocado);
+  }
+
+  &.row {
+    border: 4px solid var(--knime-silver-sand);
+    background-color: transparent;
+    min-height: 68px;
+  }
+
+  & * {
+    display: none; /* for now we just hide the content, maybe there is a better way to render the ghost */
+  }
+}
+</style>
+
+<style lang="postcss" scoped>
+.container {
+  background-color: var(--knime-white);
+  display: flex;
+  height: 100%;
+}
+
+.sidebar {
+  background-color: var(--knime-gray-light-semi);
+  height: 100%;
+  padding: var(--space-12) var(--space-12) 0 var(--space-16);
+  max-width: 250px;
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-y: auto;
+  height: 100%;
+  padding: 0 var(--space-16);
+  flex: 1;
+}
+
+.layout-preview {
+  flex: 1;
+
+  /* hide buttons of dragging element and it's children */
+  & .sortable-drag button:not(.resize-handle) {
+    visibility: hidden;
+  }
+}
+
+.alert {
+  margin-bottom: var(--space-8);
+}
+
+.legacy-info {
+  border: none;
+  background-color: var(--knime-carrot);
+  height: 14px;
+  width: 14px;
+  padding: 0;
+}
+</style>

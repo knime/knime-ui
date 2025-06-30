@@ -13,12 +13,18 @@ type replacementOperation = {
   insertOnConnection: ToastPresetErrorHandler;
 };
 
+type LayoutEditorToastPresets = {
+  loadLayoutAndNodes: ToastPresetErrorHandler;
+  setLayout: ToastPresetErrorHandler;
+};
+
 export type WorkflowToastPresets = {
   commands: WorkflowCommandsToastPresets;
   componentLoadedWithWarning: ToastPresetErrorHandler;
   componentLoadingFailed: ToastPresetErrorHandler;
   addNodeToCanvas: ToastPresetErrorHandler;
   replacementOperation: replacementOperation;
+  layoutEditor: LayoutEditorToastPresets;
 };
 
 export const getPresets = (
@@ -74,6 +80,19 @@ export const getPresets = (
         defaultErrorPresetHandler($toast, error, {
           type: "error",
           headline: "Failed to insert node on connection",
+        }),
+    },
+
+    layoutEditor: {
+      loadLayoutAndNodes: ({ error }) =>
+        defaultErrorPresetHandler($toast, error, {
+          type: "error",
+          headline: "Failed to load layout and nodes",
+        }),
+      setLayout: ({ error }) =>
+        defaultErrorPresetHandler($toast, error, {
+          type: "error",
+          headline: "Failed to save layout",
         }),
     },
   };

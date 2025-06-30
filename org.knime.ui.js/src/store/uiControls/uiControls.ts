@@ -84,7 +84,7 @@ export interface UIControlsState {
    */
   canLockAndUnlockSubnodes: boolean;
 
-  canOpenComponentLayoutEditor: boolean;
+  canOpenLayoutEditor: boolean;
   /**
    * Whether K-AI is supported
    */
@@ -120,7 +120,7 @@ export const useUIControlsStore = defineStore("uiControls", {
 
     canLockAndUnlockSubnodes: false,
 
-    canOpenComponentLayoutEditor: false,
+    canOpenLayoutEditor: false,
   }),
   actions: {
     updateControls(value: UIControlsState) {
@@ -159,7 +159,7 @@ export const useUIControlsStore = defineStore("uiControls", {
         isLocalSaveSupported: isDesktop(),
         canOpenLegacyPortViews: isDesktop(),
         canLockAndUnlockSubnodes: isDesktop(),
-        canOpenComponentLayoutEditor: isDesktop(),
+        canOpenLayoutEditor: isDesktop(),
       };
 
       this.updateControls(uiControls);

@@ -15,6 +15,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -57,6 +58,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const dirtyProjectsTrackingStore =
     useDirtyProjectsTrackingStore(testingPinia);
   const globalLoaderStore = useGlobalLoaderStore(testingPinia);
+  const layoutEditorStore = useLayoutEditorStore(testingPinia);
   const lifecycleStore = useLifecycleStore(testingPinia);
   const workflowPreviewSnapshotsStore =
     useWorkflowPreviewSnapshotsStore(testingPinia);
@@ -120,6 +122,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     canvasStateTrackingStore,
     dirtyProjectsTrackingStore,
     globalLoaderStore,
+    layoutEditorStore,
     lifecycleStore,
     workflowPreviewSnapshotsStore,
     nodeConfigurationStore,
