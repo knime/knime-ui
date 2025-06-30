@@ -42,6 +42,7 @@ import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { preloadFontsAsBase64 } from "@/util/font";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
 
+import ComponentLayoutEditorDialog from "./ComponentLayoutEditorDialog.vue";
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
 import DevTools from "./application/DevTools.vue";
@@ -335,6 +336,8 @@ const onCloseError = () => {
     <ConfirmDialog />
 
     <CreateWorkflowModal />
+
+    <ComponentLayoutEditorDialog />
 
     <ShortcutsOverviewDialog />
 

@@ -400,7 +400,10 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
-    execute: () => useDesktopInteractionsStore().openLayoutEditor(),
+    execute: () => {
+      useApplicationStore().setIsComponentLayoutEditorDialogOpen(true);
+      // useDesktopInteractionsStore().openLayoutEditor();
+    },
     condition: () => {
       const workflow = useWorkflowStore().activeWorkflow!;
       const isWritable = useWorkflowStore().isWritable;
