@@ -1,44 +1,36 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
+import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
 import { Button } from "@knime/components";
 
-import { useComponentLayoutEditor } from "@/composables/useComponentLayoutEditor";
+import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
 
 import AvailableNodesAndElements from "./AvailableNodesAndElements.vue";
+import Row from "./layout/Row.vue";
 
-const {
-  getAvailableNodes,
-  layout,
-  setLayout,
-  clearLayout,
-  resetLayout,
-  setDragging,
-} = useComponentLayoutEditor();
-
-const availableNodes = ref(getAvailableNodes());
-
-console.log(layout);
+const componentLayoutEditorStore = useComponentLayoutEditorStore();
+const { layout, availableNodes } = storeToRefs(componentLayoutEditorStore);
 
 const onClear = () => {
-  clearLayout();
+  componentLayoutEditorStore.clearLayout();
 };
 
 const onReset = () => {
-  resetLayout();
+  componentLayoutEditorStore.resetLayout();
 };
 
 const handleDragStart = () => {
-  setDragging(true);
+  componentLayoutEditorStore.setIsDragging(true);
 };
 
 const handleDragEnd = () => {
-  setDragging(false);
+  componentLayoutEditorStore.setIsDragging(false);
 };
 
 onMounted(() => {
-  setLayout({
+  componentLayoutEditorStore.setLayout({
     rows: [
       {
         type: "row",
@@ -244,15 +236,18 @@ onMounted(() => {
       <Draggable
         v-model:list="layout.rows"
         group="content"
+        class="layout-preview"
         :is-first-level="true"
         item-key="id"
         @start="handleDragStart"
         @end="handleDragEnd"
       >
         <template #item="{ element, index }">
-          <div :key="index" :style="{ border: '1px solid red' }">
-            {{ element.type }}
-          </div>
+          <Row
+            :key="index"
+            :row="element"
+            :deletable="layout.rows.length > 1"
+          />
         </template>
       </Draggable>
     </div>
@@ -261,12 +256,34 @@ onMounted(() => {
 
 <style lang="postcss" scoped>
 .container {
+  background-color: var(--knime-white);
   display: flex;
 }
 
+.controls {
+  background-color: var(--knime-gray-light-semi);
+  height: 50vh;
+  padding: var(--space-12) var(--space-12) 0 var(--space-16);
+}
+
 .layout {
+  overflow-y: auto;
+  height: 50vh;
   min-height: 100px;
-  padding-top: var(--space-8);
+  padding: var(--space-12) var(--space-16) 0 var(--space-16);
+}
+
+.layout-preview {
+  /* fill height to be a drag zone on first level */
+  min-height: calc(100% - 50px);
+  padding-bottom: 20px;
+  margin-bottom: 10px;
+
+  /* hide buttons of dragging element and it's children */
+  /* stylelint-disable-next-line selector-class-pattern */
+  & .sortable-drag button:not(.resizeHandle) {
+    visibility: hidden;
+  }
 }
 
 .alert {

@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 
 import { Button, LoadingIcon, Modal } from "@knime/components";
 
-import { useApplicationStore } from "@/store/application/application";
+import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
 
 import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
 
@@ -12,16 +12,15 @@ import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
 
 const isSubmitted = ref(false);
 
-const applicationStore = useApplicationStore();
-const { isComponentLayoutEditorDialogOpen: isOpen } =
-  storeToRefs(applicationStore);
+const componentLayoutEditorStore = useComponentLayoutEditorStore();
+const { isOpen } = storeToRefs(componentLayoutEditorStore);
 
 const closeModal = () => {
   if (isSubmitted.value) {
     return;
   }
 
-  applicationStore.setIsComponentLayoutEditorDialogOpen(false);
+  componentLayoutEditorStore.setIsOpen(false);
 };
 
 const onSubmit = () => {

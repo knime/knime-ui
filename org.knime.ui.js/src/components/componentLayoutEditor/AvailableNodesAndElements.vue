@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
-import { useComponentLayoutEditor } from "@/composables/useComponentLayoutEditor";
+import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
 
-const { getAvailableNodes, elements, setDragging } = useComponentLayoutEditor();
-
-const availableNodes = ref(getAvailableNodes());
+const componentLayoutEditorStore = useComponentLayoutEditorStore();
+const { elements, availableNodes } = storeToRefs(componentLayoutEditorStore);
 
 const handleDragStart = () => {
-  setDragging(true);
+  componentLayoutEditorStore.setIsDragging(true);
 };
 
 const handleDragEnd = () => {
-  setDragging(false);
+  componentLayoutEditorStore.setIsDragging(false);
 };
 
 const handleCloneNode = () => {

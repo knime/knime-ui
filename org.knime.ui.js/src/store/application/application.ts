@@ -68,11 +68,6 @@ export interface ApplicationState {
    */
   isShortcutsOverviewDialogOpen: boolean;
   /**
-   * TODO: Move?
-   * Show the component layout editor dialog
-   */
-  isComponentLayoutEditorDialogOpen: boolean;
-  /**
    * KNIME AP download link
    */
   analyticsPlatformDownloadURL: string | null;
@@ -110,7 +105,6 @@ export const useApplicationStore = defineStore("application", {
     nodeRepositoryLoaded: false,
     nodeRepositoryLoadingProgress: null,
     isShortcutsOverviewDialogOpen: false,
-    isComponentLayoutEditorDialogOpen: false,
     analyticsPlatformDownloadURL: null,
     askToConfirmNodeConfigChanges: true,
     customHelpMenuEntries: {},
@@ -196,13 +190,6 @@ export const useApplicationStore = defineStore("application", {
 
     setIsShortcutsOverviewDialogOpen(isShortcutsOverviewDialogOpen: boolean) {
       this.isShortcutsOverviewDialogOpen = isShortcutsOverviewDialogOpen;
-    },
-
-    setIsComponentLayoutEditorDialogOpen(
-      isComponentLayoutEditorDialogOpen: boolean,
-    ) {
-      this.isComponentLayoutEditorDialogOpen =
-        isComponentLayoutEditorDialogOpen;
     },
 
     setAnalyticsPlatformDownloadURL(analyticsPlatformDownloadURL: string) {

@@ -1,0 +1,107 @@
+<script setup lang="ts">
+import { computed } from "vue";
+
+import PlusSmallIcon from "@knime/styles/img/icons/plus-small.svg";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
+
+import { GRID_SIZE } from "@/store/componentLayoutEditor/const";
+import type {
+  ComponentLayoutColumn,
+  ComponentLayoutRow,
+} from "@/store/componentLayoutEditor/types";
+
+import Column from "./Column.vue";
+import EditButton from "./EditButton.vue";
+
+interface Props {
+  row: ComponentLayoutRow;
+  deletable?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  deletable: true,
+});
+
+const columns = computed(() => props.row.columns);
+const canAddColumn = computed(() => columns.value.length < GRID_SIZE);
+const isRowDeletable = computed(() => {
+  // make sure only empty rows (= 1 empty column) can be deleted
+  const isEmpty =
+    columns.value.length === 1 && columns.value[0].content.length === 0;
+  return props.deletable && isEmpty;
+});
+
+const isColumnDeletable = (column: ComponentLayoutColumn) => {
+  // make sure the only column in a row can't be deleted
+  if (columns.value.length === 1) {
+    return false;
+  }
+
+  // make sure only empty columns can be deleted
+  return column.content.length === 0;
+};
+
+const handleAddColumn = () => {
+  console.log("handleAddColumn");
+};
+
+const handleRowDelete = () => {
+  console.log("handleRowDelete");
+};
+</script>
+
+<template>
+  <div class="row">
+    <Column
+      v-for="(column, index) in columns"
+      :key="index"
+      :resizable="columns.length > 1 && column != columns[columns.length - 1]"
+      :deletable="isColumnDeletable(column)"
+      :column="column"
+    />
+
+    <EditButton
+      v-if="canAddColumn"
+      class="add-column-button"
+      title="Add column"
+      @click.prevent.stop="handleAddColumn"
+    >
+      <PlusSmallIcon />
+    </EditButton>
+    <EditButton
+      v-if="isRowDeletable"
+      title="Delete row"
+      @click.prevent.stop="handleRowDelete"
+    >
+      <TrashIcon />
+    </EditButton>
+  </div>
+</template>
+
+<style lang="postcss">
+/* when dragging from available elements over layout,
+  this list element will temporarily be added to the layout */
+/* stylelint-disable-next-line selector-class-pattern */
+.layoutPreview li.sortable-ghost.row {
+  border: 4px solid var(--knime-silver-sand);
+  background-color: transparent;
+  min-height: 68px;
+}
+</style>
+
+<style lang="postcss" scoped>
+.row {
+  border: 4px solid var(--knime-silver-sand);
+  border-radius: 3px;
+  position: relative; /* needed for delete handle positioning */
+  cursor: grab;
+
+  &:not(:last-of-type) {
+    margin-bottom: 5px;
+  }
+
+  & .add-column-button {
+    top: calc((60px / 2) - 14px / 2);
+  }
+}
+</style>

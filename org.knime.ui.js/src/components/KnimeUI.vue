@@ -42,11 +42,11 @@ import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { preloadFontsAsBase64 } from "@/util/font";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
 
-import ComponentLayoutEditorDialog from "./ComponentLayoutEditorDialog.vue";
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
 import DevTools from "./application/DevTools.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
+import ComponentLayoutEditorDialog from "./componentLayoutEditor/ComponentLayoutEditorDialog.vue";
 import DestinationPickerModal from "./spaces/DestinationPicker/DestinationPickerModal.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
 import { useIdleUserTracking } from "./useIdleUserTracking";
@@ -330,9 +330,8 @@ const onCloseError = () => {
           @close="spaceUploadsStore.closeUploadsPanel()"
           @cancel="spaceUploadsStore.cancelUpload($event.id)"
         />
-      </div>
-    </Transition>
-
+      </div> </Transition
+    >g
     <ConfirmDialog />
 
     <CreateWorkflowModal />
