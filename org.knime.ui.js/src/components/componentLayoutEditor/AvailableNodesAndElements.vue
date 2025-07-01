@@ -2,62 +2,37 @@
 import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
-import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
+import {
+  checkMove,
+  createViewFromNode,
+  createViewFromRowTemplate,
+} from "@/store/layoutEditor/utils";
 
-const componentLayoutEditorStore = useComponentLayoutEditorStore();
-const { elements, availableNodes } = storeToRefs(componentLayoutEditorStore);
-
-const handleDragStart = () => {
-  componentLayoutEditorStore.setIsDragging(true);
-};
-
-const handleDragEnd = () => {
-  componentLayoutEditorStore.setIsDragging(false);
-};
-
-const handleCloneNode = () => {
-  console.log("handleCloneNode");
-};
-
-const handleMoveNode = () => {
-  console.log("handleMoveNode");
-};
-
-const handleNodeClick = (node: unknown) => {
-  console.log("handleNodeClick", node);
-};
-
-const handleCloneElement = () => {
-  console.log("handleCloneElement");
-};
-
-const handleElementClick = (element: unknown) => {
-  console.log("handleElementClick", element);
-};
+const layoutEditorStore = useLayoutEditorStore();
+const { elements, availableNodes } = storeToRefs(layoutEditorStore);
 </script>
 
 <template>
   <h4>Views <small class="text-muted">drag into layout or click</small></h4>
   <Draggable
-    v-model:list="availableNodes"
-    :options="{
-      group: { name: 'content', pull: 'clone', put: false },
-      sort: false,
-      draggable: '.item',
-    }"
-    :clone="handleCloneNode"
-    :move="handleMoveNode"
-    element="ul"
+    v-model="availableNodes"
+    :group="{ name: 'content', pull: 'clone', put: false }"
+    :sort="false"
+    draggable=".item"
+    :clone="createViewFromNode"
+    :move="checkMove"
+    tag="ul"
     class="available-nodes"
     item-key="id"
-    @start="handleDragStart"
-    @end="handleDragEnd"
+    @start="layoutEditorStore.setIsDragging(true)"
+    @end="layoutEditorStore.setIsDragging(false)"
   >
     <template #item="{ element, index }">
       <li
         :key="index"
         :class="['item', element.type]"
-        @click.prevent="handleNodeClick(element)"
+        @click.prevent="layoutEditorStore.addNode(element)"
       >
         <div class="name">
           <img :src="element.icon" />
@@ -84,24 +59,24 @@ const handleElementClick = (element: unknown) => {
 
   <h4>Rows <small class="text-muted">drag into layout or click</small></h4>
   <Draggable
-    v-model:list="elements"
-    :options="{
-      group: { name: 'content', pull: 'clone', put: false },
-      sort: false,
-    }"
-    :clone="handleCloneElement"
-    element="ul"
+    v-model="elements"
+    :group="{ name: 'content', pull: 'clone', put: false }"
+    :sort="false"
+    :clone="createViewFromRowTemplate"
+    tag="ul"
     class="available-elements"
     item-key="name"
-    @start="handleDragStart"
-    @end="handleDragEnd"
+    @start="layoutEditorStore.setIsDragging(true)"
+    @end="layoutEditorStore.setIsDragging(false)"
   >
     <template #item="{ element, index }">
       <li
         :key="index"
         :title="element.name"
         class="item row"
-        @click.prevent="handleElementClick(element)"
+        @click.prevent="
+          layoutEditorStore.addElement(createViewFromRowTemplate(element))
+        "
       >
         <div
           v-for="(_, colIndex) in element.data.columns"

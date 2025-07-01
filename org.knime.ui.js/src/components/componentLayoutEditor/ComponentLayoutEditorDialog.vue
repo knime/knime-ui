@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 
 import { Button, LoadingIcon, Modal } from "@knime/components";
 
-import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
 
@@ -12,15 +12,15 @@ import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
 
 const isSubmitted = ref(false);
 
-const componentLayoutEditorStore = useComponentLayoutEditorStore();
-const { isOpen } = storeToRefs(componentLayoutEditorStore);
+const layoutEditorStore = useLayoutEditorStore();
+const { isOpen } = storeToRefs(layoutEditorStore);
 
 const closeModal = () => {
   if (isSubmitted.value) {
     return;
   }
 
-  componentLayoutEditorStore.setIsOpen(false);
+  layoutEditorStore.setIsOpen(false);
 };
 
 const onSubmit = () => {
@@ -38,7 +38,7 @@ const onSubmit = () => {
     class="modal"
     @cancel="closeModal"
   >
-    <template #notice>
+    <template #confirmation>
       <ComponentLayoutEditor />
     </template>
 

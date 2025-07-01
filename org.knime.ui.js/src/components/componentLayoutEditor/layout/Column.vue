@@ -5,8 +5,10 @@ import Draggable from "vuedraggable";
 
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
-import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
-import type { ComponentLayoutColumn } from "@/store/componentLayoutEditor/types";
+import { GRID_SIZE } from "@/store/layoutEditor/const";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
+import type { ComponentLayoutColumn } from "@/store/layoutEditor/types";
+import { checkMove } from "@/store/layoutEditor/utils";
 
 import ColumnContent from "./ColumnContent.vue";
 import EditButton from "./EditButton.vue";
@@ -22,10 +24,8 @@ const props = withDefaults(defineProps<Props>(), {
   deletable: false,
 });
 
-const componentLayoutEditorStore = useComponentLayoutEditorStore();
-const { resizeColumnInfo } = storeToRefs(componentLayoutEditorStore);
-
-const columnClasses = computed(() => ["col", `col-${props.column.widthXS}`]);
+const layoutEditorStore = useLayoutEditorStore();
+const { resizeColumnInfo } = storeToRefs(layoutEditorStore);
 
 const content = computed({
   get() {
@@ -44,7 +44,7 @@ const content = computed({
           changedItem = true;
         }
       });
-    componentLayoutEditorStore.updateColumnContent({
+    layoutEditorStore.updateColumnContent({
       column: props.column,
       newContent,
     });
@@ -55,75 +55,71 @@ const isCurrentColumnResizing = computed(
   () => resizeColumnInfo.value?.column === props.column,
 );
 
-const handleMove = () => {
-  console.log("handleMove");
+const handleColumnResizeMouseDown = (event) => {
+  const containerWidth = event.target.parentNode.parentNode.offsetWidth;
+  layoutEditorStore.setResizeColumnInfo({
+    column: props.column,
+    clientX: event.clientX,
+    gridStepWidth: containerWidth / GRID_SIZE,
+    originalWidthXS: props.column.widthXS,
+  });
 };
 
-const handleDragStart = () => {
-  componentLayoutEditorStore.setIsDragging(true);
-};
-
-const handleDragEnd = () => {
-  componentLayoutEditorStore.setIsDragging(false);
-};
-
-const handleColumnDelete = () => {
-  console.log("handleColumnDelete");
-};
-
-const handleColumnResizeMouseDown = () => {
-  console.log("handleColumnResizeMouseDown");
-};
-
-const handleColumnResizeMouseUp = () => {
-  console.log("handleColumnResizeMouseUp");
-};
-
-const handleColumnResizeMouseMove = () => {
-  console.log("handleColumnResizeMouseMove");
+const handleColumnResizeMouseMove = (event) => {
+  if (resizeColumnInfo.value) {
+    const moveDelta = event.clientX - resizeColumnInfo.value.clientX;
+    const gridDelta = Math.round(
+      moveDelta / resizeColumnInfo.value.gridStepWidth,
+    );
+    let newWidth = resizeColumnInfo.value.originalWidthXS + gridDelta;
+    layoutEditorStore.resizeColumn(newWidth);
+  }
 };
 </script>
 
 <template>
   <Draggable
     v-model="content"
-    :options="{ group: 'content', draggable: '.draggable' }"
-    :class="[columnClasses, { resizable }]"
+    group="content"
+    draggable=".draggable"
+    :class="['column', { resizable }]"
     item-key="itemID"
-    :move="handleMove"
-    @start="handleDragStart"
-    @end="handleDragEnd"
+    :move="checkMove"
+    @start="layoutEditorStore.setIsDragging(true)"
+    @end="layoutEditorStore.setIsDragging(false)"
   >
     <template #item="{ element, index }">
       <ColumnContent :key="index" :item="element" class="draggable" />
     </template>
 
-    <button
-      v-if="resizable"
-      :class="['resizeHandle', { active: isCurrentColumnResizing }]"
-      title="Drag to resize"
-      @mousedown.prevent.stop="handleColumnResizeMouseDown"
-    />
-    <EditButton
-      v-if="deletable"
-      class="delete-button"
-      title="Delete column"
-      @click.prevent.stop="handleColumnDelete"
-    >
-      <TrashIcon />
-    </EditButton>
-    <button
-      v-if="isCurrentColumnResizing"
-      class="resize-overlay"
-      @mouseup="handleColumnResizeMouseUp"
-      @mouseout="handleColumnResizeMouseUp"
-      @mousemove.stop="handleColumnResizeMouseMove"
-    />
+    <template #header>
+      <button
+        v-if="resizable"
+        :class="['resizeHandle', { active: isCurrentColumnResizing }]"
+        title="Drag to resize"
+        @mousedown.prevent.stop="handleColumnResizeMouseDown"
+      />
+      <EditButton
+        v-if="deletable"
+        class="delete-button"
+        title="Delete column"
+        @click.prevent.stop="layoutEditorStore.deleteColumn(column)"
+      >
+        <TrashIcon />
+      </EditButton>
+      <button
+        v-if="isCurrentColumnResizing"
+        class="resize-overlay"
+        @mouseup="layoutEditorStore.setResizeColumnInfo(null)"
+        @mouseout="layoutEditorStore.setResizeColumnInfo(null)"
+        @mousemove.stop="handleColumnResizeMouseMove"
+      />
+    </template>
   </Draggable>
 </template>
 
 <style lang="postcss" scoped>
-.col {
+.column {
   --resize-width: 14px;
   --resize-line-width: 2px;
   --resize-border-width: calc(
@@ -137,11 +133,7 @@ const handleColumnResizeMouseMove = () => {
   background-color: var(--knime-white);
   padding: calc(var(--resize-width) / 2);
   min-height: 60px;
-
-  & .draggable {
-    cursor: move; /* for IE11 */
-    cursor: grab;
-  }
+  position: relative;
 
   /* stylelint-disable-next-line selector-class-pattern */
   & .resizeHandle {

@@ -10,7 +10,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
-import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
@@ -402,7 +402,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     group: "componentAndMetanode",
     icon: LayoutIcon,
     execute: () => {
-      useComponentLayoutEditorStore().setIsOpen(true);
+      useLayoutEditorStore().setIsOpen(true);
       // useDesktopInteractionsStore().openLayoutEditor();
     },
     condition: () => {

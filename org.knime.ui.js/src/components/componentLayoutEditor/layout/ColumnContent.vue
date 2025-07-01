@@ -1,22 +1,24 @@
 <script setup lang="ts">
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
+import type {
+  ComponentLayoutEditorNodeLayout,
+  ComponentLayoutRow,
+} from "@/store/layoutEditor/types";
+
 import EditButton from "./EditButton.vue";
 import KnimeView from "./KnimeView.vue";
 import Row from "./Row.vue";
 
 // TODO: Fix type
 interface Props {
-  item: {
-    type: string;
-  };
+  item: ComponentLayoutEditorNodeLayout | ComponentLayoutRow;
 }
 
 defineProps<Props>();
 
-const handleContentItemDelete = () => {
-  console.log("handleContentItemDelete");
-};
+const layoutEditorStore = useLayoutEditorStore();
 </script>
 
 <template>
@@ -29,14 +31,14 @@ const handleContentItemDelete = () => {
       "
       :view="item"
     />
-    <Row v-else-if="item.type === 'row'" :row="item" />
+    <Row v-else-if="item.type === 'row'" :row="item as ComponentLayoutRow" />
     <div v-else-if="item.type === 'html'">HTML</div>
 
     <EditButton
       v-if="item.type !== 'row'"
       class="delete-button"
       title="Delete"
-      @click.prevent.stop="handleContentItemDelete"
+      @click.prevent.stop="layoutEditorStore.deleteContentItem(item)"
     >
       <TrashIcon />
     </EditButton>

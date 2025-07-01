@@ -1,11 +1,13 @@
 import { reactive } from "vue";
 
-import { GRID_SIZE } from "@/store/componentLayoutEditor/const";
+import { GRID_SIZE } from "@/store/layoutEditor/const";
 import type {
   ComponentLayout,
   ComponentLayoutColumn,
+  ComponentLayoutEditorNode,
   ComponentLayoutRow,
-} from "@/store/componentLayoutEditor/types";
+  RowTemplate,
+} from "@/store/layoutEditor/types";
 
 export const getEmptyLayout = (): ComponentLayout => {
   const column = reactive<ComponentLayoutColumn>({
@@ -63,7 +65,7 @@ export const getAllContentArrays = function (layout: ComponentLayoutRow[]) {
   return allContentArrays;
 };
 
-export const generateRowTemplates = () => {
+export const generateRowTemplates = (): RowTemplate[] => {
   const rowColumns = [1, 2, 3, 4]; // eslint-disable-line no-magic-numbers
 
   return rowColumns.map((numberOfColumns) => {
@@ -128,4 +130,22 @@ export const cleanLayout = function (layout: ComponentLayout) {
   };
 
   return { rows: recursiveClean(layout.rows) };
+};
+
+export const createViewFromNode = ({ layout }: ComponentLayoutEditorNode) =>
+  JSON.parse(JSON.stringify(layout));
+
+export const createViewFromRowTemplate = ({ data }: RowTemplate) =>
+  JSON.parse(JSON.stringify(data));
+
+export const checkMove = (event) => {
+  // only allow rows to be dropped in first level
+  const targetComponent = event.relatedContext.component;
+  if (targetComponent?.options?.isFirstLevel) {
+    if (event.draggedContext.element.type === "row") {
+      return true;
+    }
+    return false;
+  }
+  return true;
 };

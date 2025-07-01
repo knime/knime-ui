@@ -4,11 +4,12 @@ import { computed } from "vue";
 import PlusSmallIcon from "@knime/styles/img/icons/plus-small.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
-import { GRID_SIZE } from "@/store/componentLayoutEditor/const";
+import { GRID_SIZE } from "@/store/layoutEditor/const";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import type {
   ComponentLayoutColumn,
   ComponentLayoutRow,
-} from "@/store/componentLayoutEditor/types";
+} from "@/store/layoutEditor/types";
 
 import Column from "./Column.vue";
 import EditButton from "./EditButton.vue";
@@ -22,8 +23,16 @@ const props = withDefaults(defineProps<Props>(), {
   deletable: true,
 });
 
+const layoutEditorStore = useLayoutEditorStore();
+
 const columns = computed(() => props.row.columns);
+
+const gridColumns = computed(() =>
+  columns.value.map(({ widthXS }) => `${widthXS}fr`).join(" "),
+);
+
 const canAddColumn = computed(() => columns.value.length < GRID_SIZE);
+
 const isRowDeletable = computed(() => {
   // make sure only empty rows (= 1 empty column) can be deleted
   const isEmpty =
@@ -40,18 +49,10 @@ const isColumnDeletable = (column: ComponentLayoutColumn) => {
   // make sure only empty columns can be deleted
   return column.content.length === 0;
 };
-
-const handleAddColumn = () => {
-  console.log("handleAddColumn");
-};
-
-const handleRowDelete = () => {
-  console.log("handleRowDelete");
-};
 </script>
 
 <template>
-  <div class="row">
+  <div class="row" :style="{ gridTemplateColumns: gridColumns }">
     <Column
       v-for="(column, index) in columns"
       :key="index"
@@ -64,14 +65,14 @@ const handleRowDelete = () => {
       v-if="canAddColumn"
       class="add-column-button"
       title="Add column"
-      @click.prevent.stop="handleAddColumn"
+      @click.prevent.stop="layoutEditorStore.addColumn(row)"
     >
       <PlusSmallIcon />
     </EditButton>
     <EditButton
       v-if="isRowDeletable"
       title="Delete row"
-      @click.prevent.stop="handleRowDelete"
+      @click.prevent.stop="layoutEditorStore.deleteContentItem(row)"
     >
       <TrashIcon />
     </EditButton>
@@ -95,6 +96,8 @@ const handleRowDelete = () => {
   border-radius: 3px;
   position: relative; /* needed for delete handle positioning */
   cursor: grab;
+  display: grid;
+  grid-auto-rows: 1fr;
 
   &:not(:last-of-type) {
     margin-bottom: 5px;

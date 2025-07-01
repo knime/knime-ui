@@ -2,8 +2,8 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
-import type { ComponentLayoutEditorNodeLayout } from "@/store/componentLayoutEditor/types";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
+import type { ComponentLayoutEditorNodeLayout } from "@/store/layoutEditor/types";
 
 // TODO: Fix type
 interface Props {
@@ -12,8 +12,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const componentLayoutEditorStore = useComponentLayoutEditorStore();
-const { nodes } = storeToRefs(componentLayoutEditorStore);
+const layoutEditorStore = useLayoutEditorStore();
+const { nodes } = storeToRefs(layoutEditorStore);
 
 const node = computed(() =>
   nodes.value.find((node) => node.nodeID === props.view.nodeID),

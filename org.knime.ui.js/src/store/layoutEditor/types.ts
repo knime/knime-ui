@@ -47,3 +47,8 @@ export interface ComponentLayoutRow {
 export interface ComponentLayout {
   rows: ComponentLayoutRow[];
 }
+
+export interface RowTemplate {
+  name: string;
+  data: { type: string; columns: ComponentLayoutColumn[] };
+}

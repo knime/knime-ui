@@ -5,41 +5,41 @@ import Draggable from "vuedraggable";
 
 import { Button } from "@knime/components";
 
-import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 import AvailableNodesAndElements from "./AvailableNodesAndElements.vue";
 import Row from "./layout/Row.vue";
 
-const componentLayoutEditorStore = useComponentLayoutEditorStore();
-const { layout, availableNodes } = storeToRefs(componentLayoutEditorStore);
+const layoutEditorStore = useLayoutEditorStore();
+const { layout, availableNodes } = storeToRefs(layoutEditorStore);
 
 const rows = computed({
   get() {
     return layout.value.rows;
   },
   set(value) {
-    componentLayoutEditorStore.updateFirstLevelRows(value);
+    layoutEditorStore.updateFirstLevelRows(value);
   },
 });
 
 const onClear = () => {
-  componentLayoutEditorStore.clearLayout();
+  layoutEditorStore.clearLayout();
 };
 
 const onReset = () => {
-  componentLayoutEditorStore.resetLayout();
+  layoutEditorStore.resetLayout();
 };
 
 const handleDragStart = () => {
-  componentLayoutEditorStore.setIsDragging(true);
+  layoutEditorStore.setIsDragging(true);
 };
 
 const handleDragEnd = () => {
-  componentLayoutEditorStore.setIsDragging(false);
+  layoutEditorStore.setIsDragging(false);
 };
 
 onMounted(() => {
-  componentLayoutEditorStore.setLayout({
+  layoutEditorStore.setLayout({
     rows: [
       {
         type: "row",
@@ -243,7 +243,7 @@ onMounted(() => {
       </div>
 
       <Draggable
-        v-model:list="rows"
+        v-model="rows"
         group="content"
         class="layout-preview"
         :is-first-level="true"
@@ -276,6 +276,7 @@ onMounted(() => {
   height: 50vh;
   min-height: 100px;
   padding: var(--space-12) var(--space-16) 0 var(--space-16);
+  flex: 1;
 }
 
 .layout-preview {

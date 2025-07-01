@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 
-import { useComponentLayoutEditorStore } from "@/store/componentLayoutEditor/componentLayoutEditor";
+import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
-const componentLayoutEditorStore = useComponentLayoutEditorStore();
-const { isDragging } = storeToRefs(componentLayoutEditorStore);
+const layoutEditorStore = useLayoutEditorStore();
+const { isDragging } = storeToRefs(layoutEditorStore);
 </script>
 
 <template>
