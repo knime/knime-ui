@@ -1,0 +1,90 @@
+<script setup lang="ts">
+import { storeToRefs } from "pinia";
+
+import { FunctionButton } from "@knime/components";
+import HandIcon from "@knime/styles/img/icons/hand.svg";
+import MapIcon from "@knime/styles/img/icons/map.svg";
+import LenseMinusIcon from "@knime/styles/img/icons/minus-small.svg";
+import LensePlusIcon from "@knime/styles/img/icons/plus-small.svg";
+
+import { useShortcuts } from "@/plugins/shortcuts";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+
+import ZoomMenu from "./ZoomMenu.vue";
+
+const $shortcuts = useShortcuts();
+const minimapShortcut = $shortcuts.get("toggleMinimap");
+const { isMinimapVisible } = storeToRefs(useWebGLCanvasStore());
+
+const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
+  useCanvasModesStore(),
+);
+</script>
+
+<template>
+  <div class="canvas-tools" @pointerdown.stop>
+    <FunctionButton
+      :title="`Toggle pan mode - ${
+        $shortcuts.get('switchToPanMode').hotkeyText
+      }`"
+      :active="isPanModeActive"
+      data-test-id="canvas-tool-pan-mode"
+      @pointerdown="$shortcuts.dispatch('switchToPanMode')"
+    >
+      <HandIcon />
+    </FunctionButton>
+
+    <FunctionButton
+      :title="`${minimapShortcut.text} - ${minimapShortcut.hotkeyText}`"
+      class="minimap-toggle"
+      :active="isMinimapVisible"
+      data-test-id="canvas-tool-minimap-toggle"
+      @pointerdown="$shortcuts.dispatch('toggleMinimap')"
+    >
+      <MapIcon />
+    </FunctionButton>
+
+    <FunctionButton
+      title="Zoom out"
+      data-test-id="canvas-tool-zoom-out"
+      @pointerdown="$shortcuts.dispatch('zoomOut')"
+    >
+      <LenseMinusIcon />
+    </FunctionButton>
+
+    <ZoomMenu />
+
+    <FunctionButton
+      title="Zoom in"
+      data-test-id="canvas-tool-zoom-in"
+      @pointerdown="$shortcuts.dispatch('zoomIn')"
+    >
+      <LensePlusIcon />
+    </FunctionButton>
+  </div>
+</template>
+
+<style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
+.canvas-tools {
+  position: absolute;
+  max-height: calc(v-bind("$shapes.floatingCanvasToolsSize") * 1px);
+  bottom: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
+  right: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
+  display: flex;
+  align-items: center;
+  background: var(--knime-white);
+  border: 1px solid var(--knime-gray-ultra-light);
+  border-radius: 8px;
+  box-shadow: var(--shadow-elevation-1);
+  z-index: v-bind("$zIndices.layerCanvasDecorations");
+  padding: var(--space-4);
+}
+
+.minimap-toggle {
+  margin-left: 2px;
+  margin-right: var(--space-6);
+}
+</style>

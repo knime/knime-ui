@@ -69,6 +69,6 @@ const style = computed(() => {
 <style lang="postcss" scoped>
 .floating-menu-portal {
   position: fixed;
-  z-index: v-bind("$zIndices.webGlCanvasFloatingMenus");
+  z-index: v-bind("$zIndices.layerExpandedMenus");
 }
 </style>

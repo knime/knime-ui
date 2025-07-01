@@ -80,6 +80,7 @@ test.describe("editing", () => {
     await expect(page.getByRole("paragraph")).toContainText(
       "This is the new content",
     );
+    await assertSnapshot(page, maxDiffPixels);
 
     // esc aborts edit
     await page.keyboard.press("Escape");
@@ -175,8 +176,8 @@ test("can be ordered", async ({ page }) => {
   });
 
   const annotation = await getAnnotation(page, "root_0");
-  await page.mouse.move(...getCenter(annotation));
   await page.mouse.click(...getCenter(annotation));
+  await page.mouse.move(...getCenter(annotation));
   await page.mouse.down({ button: "left", clickCount: 1 });
   await page.mouse.move(annotation.center.x + 300, annotation.center.y + 100);
   await page.mouse.up();

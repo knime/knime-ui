@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { type Ref, onUnmounted, ref, watch } from "vue";
+import { type Ref, onUnmounted, ref, useTemplateRef, watch } from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { RenderLayer } from "pixi.js";
+import { Container, RenderLayer } from "pixi.js";
 
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
@@ -14,6 +15,7 @@ import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
 import { initE2ETestUtils } from "../util/e2eTest";
 
+import Minimap from "./Minimap.vue";
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
 
@@ -25,6 +27,7 @@ const emit = defineEmits<{
 
 const canvasStore = useWebGLCanvasStore();
 const {
+  isMinimapVisible,
   containerSize,
   isDebugModeEnabled: isCanvasDebugEnabled,
   canvasLayers,
@@ -56,6 +59,8 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
   canvasLayers.value.nodeSelectionPlane = nodeSelectionPlaneRenderLayer;
 };
 
+const mainContainer = useTemplateRef<Container>("mainContainer");
+
 watch(
   isPixiAppInitialized,
   () => {
@@ -71,7 +76,7 @@ watch(
     }
 
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
-    canvasStore.stage = app.stage;
+    canvasStore.stage = mainContainer.value;
 
     // used by e2e tests in this repo and by QA
     globalThis.__E2E_TEST__ = initE2ETestUtils(app);
@@ -96,18 +101,35 @@ onUnmounted(() => {
   clearIconCache();
 });
 
+const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
 const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
   pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
 });
 
+const isGrabbing = ref(false);
 const onPointerDown = (event: PointerEvent) => {
   const isMouseLeftClick = event.button === 0;
-  if (!isHoldingDownSpace.value && isMouseLeftClick) {
+
+  if (
+    !isHoldingDownSpace.value &&
+    isMouseLeftClick &&
+    !hasPanModeEnabled.value
+  ) {
     $bus.emit("selection-pointerdown", event);
     return;
   }
 
+  if (event.dataset) {
+    return;
+  }
+
+  isGrabbing.value = true;
   mousePan(event);
+};
+
+const onPointerUp = (event: PointerEvent) => {
+  isGrabbing.value = false;
+  $bus.emit("selection-pointerup", event);
 };
 
 const { onMouseWheel } = useMouseWheel({ scrollPan });
@@ -139,26 +161,43 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     :resize-to="() => getKanvasDomElement()!"
     :auto-start="!performanceTracker.isCanvasPerfMode()"
     :on-before-mount="beforePixiMount"
-    :class="[{ panning: shouldShowMoveCursor }]"
+    :class="[
+      {
+        panning: shouldShowMoveCursor || hasPanModeEnabled,
+        grabbing: isGrabbing,
+      },
+    ]"
     @wheel.prevent="onMouseWheel"
-    @pointermove="$bus.emit('selection-pointermove', $event)"
-    @pointerup="$bus.emit('selection-pointerup', $event)"
-    @contextmenu.prevent
     @pointerdown="onPointerDown"
+    @pointermove="$bus.emit('selection-pointermove', $event)"
+    @pointerup="onPointerUp"
+    @contextmenu.prevent
     @init-complete="isPixiAppInitialized = true"
   >
     <Container
+      ref="mainContainer"
       :label="MAIN_CONTAINER_LABEL"
       :event-mode="interactionsEnabled ? undefined : 'none'"
     >
       <Debug v-if="isCanvasDebugEnabled" />
       <slot />
     </Container>
+
+    <Minimap v-if="isMinimapVisible" />
   </Application>
 </template>
 
 <style scoped lang="postcss">
-.panning {
-  cursor: move !important;
+/*
+  Pixi sets an inline style for the cursor property which we have no control
+  over. So we have to bypass CSS specificity with an !important, for both panning
+  states
+*/
+.panning:not(.grabbing) {
+  cursor: grab !important;
+}
+
+.grabbing {
+  cursor: grabbing !important;
 }
 </style>

@@ -4,6 +4,7 @@ import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import { Node } from "@/api/gateway-api/generated-api";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSelectionStore } from "@/store/selection";
@@ -102,7 +103,7 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
   },
 
   switchToSelectionMode: {
-    hotkey: ["V"],
+    hotkey: ["Shift", "V"],
     text: "Selection mode",
     description: "Selection mode (default)",
     group: "workflowEditorModes",
@@ -112,12 +113,22 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
     },
   },
   switchToPanMode: {
-    hotkey: ["P"],
+    hotkey: ["Shift", "P"],
     text: "Pan mode",
     group: "workflowEditorModes",
     icon: ArrowMoveIcon,
     execute: () => {
-      useCanvasModesStore().switchCanvasMode("pan");
+      const canvasModesStore = useCanvasModesStore();
+      if (canvasRendererUtils.isWebGLRenderer()) {
+        const action =
+          canvasModesStore.canvasMode === "pan"
+            ? ("selection" as const)
+            : ("pan" as const);
+
+        canvasModesStore.switchCanvasMode(action);
+      } else {
+        canvasModesStore.switchCanvasMode("pan");
+      }
     },
     condition: () => !useWorkflowStore().isWorkflowEmpty,
   },

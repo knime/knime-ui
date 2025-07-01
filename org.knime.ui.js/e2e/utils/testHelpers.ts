@@ -160,3 +160,7 @@ export const getPortActionButton = async (
 
   return actionButton;
 };
+
+export const getMinimapCoordinates = (page: Page) => {
+  return page.evaluate(() => window.__E2E_TEST__.getMinimapCoordinates());
+};

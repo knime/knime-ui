@@ -1,5 +1,7 @@
 import throttle from "raf-throttle";
 
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 
 import type { UnionToShortcutRegistry } from "./types";
@@ -13,6 +15,7 @@ type CanvasShortcuts = UnionToShortcutRegistry<
   | "zoomTo100"
   | "zoomTo125"
   | "zoomTo150"
+  | "toggleMinimap"
 >;
 
 declare module "./index" {
@@ -66,6 +69,15 @@ const canvasShortcuts: CanvasShortcuts = {
   zoomTo150: {
     text: "Zoom to 150%",
     execute: () => useCurrentCanvasStore().value.zoomCentered({ factor: 1.5 }),
+  },
+  toggleMinimap: {
+    hotkey: ["CtrlOrCmd", "M"],
+    text: "Hide or show minimap",
+    execute: () => {
+      useWebGLCanvasStore().isMinimapVisible =
+        !useWebGLCanvasStore().isMinimapVisible;
+    },
+    condition: () => canvasRendererUtils.isWebGLRenderer(),
   },
 };
 

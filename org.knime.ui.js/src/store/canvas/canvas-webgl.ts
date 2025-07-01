@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-undefined */
 /* eslint-disable no-magic-numbers */
 
@@ -15,6 +16,7 @@ import { type IRenderLayer } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { canvasMinimapAspectRatio } from "@/style/shapes";
 import { clamp } from "@/util/clamp";
 import { geometry } from "@/util/geometry";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
@@ -48,11 +50,13 @@ const clampZoomFactor = (newFactor: number) =>
 
 export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const zoomFactor = ref(defaultZoomFactor);
+  /** Size of the element that contains the <canvas> */
   const containerSize = ref({ width: 0, height: 0 });
   const interactionsEnabled = ref(true);
   const pixelRatio = ref(1);
   const isPanning = ref(false);
   const isHoldingDownSpace = ref(false);
+  const isMinimapVisible = ref(true);
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -128,17 +132,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     isMoveLocked.value = locked;
   };
 
-  const setCanvasOffset = (value: XY) => {
-    useWorkflowStore().setTooltip(null);
-    if (stage.value) {
-      stage.value.x = value.x;
-      stage.value.y = value.y;
-    }
-
-    canvasOffset.value.x = value.x;
-    canvasOffset.value.y = value.y;
-  };
-
   const setCanvasAnchor = (anchor: UnwrapRef<typeof canvasAnchor>) => {
     canvasAnchor.value.isOpen = anchor.isOpen;
     canvasAnchor.value.anchor = anchor.anchor;
@@ -168,6 +161,56 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     });
   };
 
+  type Bounds = {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+    width: number;
+    height: number;
+  };
+
+  const calculateContentPaddingWithAspectRatio = (
+    bounds: Bounds,
+    padding: XY,
+    targetAspectRatio: number,
+  ): Bounds => {
+    let newWidth = bounds.width + 2 * padding.x;
+    let newHeight = bounds.height + 2 * padding.y;
+
+    const currentAspectRatio = newWidth / newHeight;
+
+    // Adjust width or height to match the target aspect ratio
+    if (currentAspectRatio < targetAspectRatio) {
+      // Too tall, increase width
+      newWidth = newHeight * targetAspectRatio;
+    } else if (currentAspectRatio > targetAspectRatio) {
+      // Too wide, increase height
+      newHeight = newWidth / targetAspectRatio;
+    }
+
+    const extraWidth = newWidth - bounds.width;
+    const extraHeight = newHeight - bounds.height;
+
+    const newLeft = bounds.left - extraWidth / 2;
+    const newTop = bounds.top - extraHeight / 2;
+
+    return {
+      left: newLeft,
+      top: newTop,
+      width: newWidth,
+      height: newHeight,
+      right: newLeft + newWidth,
+      bottom: newTop + newHeight,
+    };
+  };
+
+  /**
+   * Minimum bounds of the canvas world content. It's defined as the minimum rectangle
+   * that can contain all the objects added to the canvas (plus some small padding).
+   * This is useful when determining the position of content in the canvas, such as when
+   * first placing the camera near where the objects are so that the users can see something
+   */
   const contentBounds = computed(() => {
     let { left, top, right, bottom } = useWorkflowStore().workflowBounds;
 
@@ -193,6 +236,78 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       centerY,
     };
   });
+
+  /**
+   * Maximum bounds of the canvas world content after which panning is not possible.
+   * These grow with the content added to the canvas, thus still providing an
+   * "infinite canvas" feeling, while also providing some measurements
+   * which can be used to constraint panning which is necessary for a predictable
+   * minimap behavior. These bounds keep an aspect ratio of 4:3
+   */
+  const maxWorldContentBounds = computed(() => {
+    const { workflowBounds } = useWorkflowStore();
+
+    const horizontalPadding = containerSize.value.width / zoomFactor.value;
+    const verticalPadding = containerSize.value.height / zoomFactor.value;
+
+    return calculateContentPaddingWithAspectRatio(
+      workflowBounds,
+      { x: horizontalPadding, y: verticalPadding },
+      canvasMinimapAspectRatio,
+    );
+  });
+
+  const setCanvasOffset = (value: XY) => {
+    useWorkflowStore().setTooltip(null);
+
+    const minX = maxWorldContentBounds.value.left * zoomFactor.value;
+    const minY = maxWorldContentBounds.value.top * zoomFactor.value;
+
+    const maxX =
+      (maxWorldContentBounds.value.right -
+        containerSize.value.width / zoomFactor.value) *
+      zoomFactor.value;
+
+    const maxY =
+      (maxWorldContentBounds.value.bottom -
+        containerSize.value.height / zoomFactor.value) *
+      zoomFactor.value;
+
+    // make sure panning is not possible outside the max content bounds
+    // to ensure consistent and predictable minimap coordinate mapping
+
+    const newX = (() => {
+      if (-value.x <= minX) {
+        return -minX;
+      }
+
+      if (-value.x >= maxX) {
+        return -maxX;
+      }
+
+      return value.x;
+    })();
+
+    const newY = (() => {
+      if (-value.y <= minY) {
+        return -minY;
+      }
+
+      if (-value.y >= maxY) {
+        return -maxY;
+      }
+
+      return value.y;
+    })();
+
+    if (stage.value) {
+      stage.value.x = newX;
+      stage.value.y = newY;
+    }
+
+    canvasOffset.value.x = newX;
+    canvasOffset.value.y = newY;
+  };
 
   const fitToScreenZoomFactor = computed(() => {
     const { width: containerWidth, height: containerHeight } =
@@ -584,8 +699,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     interactionsEnabled,
     isMoveLocked,
     fitToScreenZoomFactor,
-    contentBounds,
-    canvasSize,
     getCanvasScrollState,
     getVisibleFrame,
     getCenterOfScrollContainer, // TODO NXT-3439 rename to something more fitting: getPositionOnCanvas and remove default
@@ -611,8 +724,14 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     scroll,
     isOutsideKanvasView,
     contentBoundsChanged,
+    canvasSize,
+    // TODO NXT-3439 this should not be returned after the SVG canvas is removed,
+    // but the computed value itself will still be used, though its name should be
+    // changed to `minWorldContentBounds`
+    contentBounds,
 
     // webgl only
+    isMinimapVisible,
     canvasAnchor,
     pixiApplication,
     canvasLayers,
@@ -629,5 +748,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     findObjectFromScreenCordinates,
     isPanning,
     isHoldingDownSpace,
+    maxWorldContentBounds,
   };
 });

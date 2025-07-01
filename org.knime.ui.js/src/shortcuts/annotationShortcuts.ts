@@ -26,7 +26,7 @@ declare module "./index" {
 
 const annotationShortcuts: AnnotationShortcuts = {
   switchToAnnotationMode: {
-    hotkey: ["T"],
+    hotkey: ["Shift", "T"],
     group: "workflowEditorModes",
     text: "Annotation mode",
     icon: AnnotationModeIcon,

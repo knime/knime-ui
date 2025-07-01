@@ -74,7 +74,7 @@ const style = computed(() => {
 <style lang="postcss" scoped>
 .canvas-floating-html {
   position: absolute;
-  z-index: v-bind("$zIndices.webGlCanvasFloatingMenus");
+  z-index: v-bind("$zIndices.layerExpandedMenus");
   transform: scale(v-bind(zoomFactor));
   transform-origin: top left;
 }

@@ -4,12 +4,12 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
-import type { MenuItem } from "@knime/components";
-import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import { type MenuItem, SubMenu } from "@knime/components";
 import HubIcon from "@knime/styles/img/icons/cloud-knime.svg";
 import DocsIcon from "@knime/styles/img/icons/file-text.svg";
 import ForumIcon from "@knime/styles/img/icons/forum.svg";
 import GraduateHatIcon from "@knime/styles/img/icons/graduate-hat.svg";
+import HelpIcon from "@knime/styles/img/icons/help.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 import GettingStartedIcon from "@knime/styles/img/icons/rocket.svg";
 import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
@@ -18,7 +18,6 @@ import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
 import TeamPlan from "@knime/styles/img/icons/team-group.svg";
 
 import InfoIcon from "@/assets/info.svg";
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -71,100 +70,96 @@ const addConditionalMenuEntry = (condition: boolean, item: MenuItem) => {
   return condition ? [item] : [];
 };
 
-const helpMenuItem = computed<MenuItem>(() => ({
-  text: "Help",
-  icon: HelpIcon,
-  children: [
+const menuItems = computed(() => [
+  {
+    text: "Show keyboard shortcuts",
+    description: "",
+    separator: true,
+    icon: ShortcutsIcon,
+    metadata: {
+      handler: () => applicationStore.setIsShortcutsOverviewDialogOpen(true),
+    },
+  },
+  {
+    text: "KNIME Getting Started Guide",
+    icon: GettingStartedIcon,
+    href: buildExternalUrl(GETTING_STARTED_URL),
+  },
+  {
+    text: "KNIME Self-paced Courses",
+    icon: GraduateHatIcon,
+    href: buildExternalUrl(SELF_PACED_COURSES_URL),
+  },
+  {
+    text: "KNIME Cheat Sheets",
+    icon: CheatSheetsIcon,
+    href: buildExternalUrl(CHEAT_SHEETS_URL),
+  },
+  {
+    text: "KNIME Documentation",
+    icon: DocsIcon,
+    href: buildExternalUrl(DOCUMENTATION_URL),
+  },
+  {
+    text: "Get help from the KNIME Community",
+    icon: ForumIcon,
+    href: buildExternalUrl(COMMUNITY_FORUM_URL),
+  },
+  {
+    text: "KNIME Hub",
+    separator: true,
+    icon: HubIcon,
+    href: buildExternalUrl(KNIME_HUB_HOME_URL),
+  },
+  ...addConditionalMenuEntry(
+    getCommunityHubInfo.value.isOnlyCommunityHubMounted,
     {
-      text: "Show keyboard shortcuts",
-      description: "",
+      text: "Learn more about the KNIME Team Plan",
       separator: true,
-      icon: ShortcutsIcon,
-      metadata: {
-        handler: () => applicationStore.setIsShortcutsOverviewDialogOpen(true),
-      },
+      icon: TeamPlan,
+      href: `${TEAM_PLAN_URL}&alt=helpmenubutton`,
     },
-    {
-      text: "KNIME Getting Started Guide",
-      icon: GettingStartedIcon,
-      href: buildExternalUrl(GETTING_STARTED_URL),
-    },
-    {
-      text: "KNIME Self-paced Courses",
-      icon: GraduateHatIcon,
-      href: buildExternalUrl(SELF_PACED_COURSES_URL),
-    },
-    {
-      text: "KNIME Cheat Sheets",
-      icon: CheatSheetsIcon,
-      href: buildExternalUrl(CHEAT_SHEETS_URL),
-    },
-    {
-      text: "KNIME Documentation",
-      icon: DocsIcon,
-      href: buildExternalUrl(DOCUMENTATION_URL),
-    },
-    {
-      text: "Get help from the KNIME Community",
-      icon: ForumIcon,
-      href: buildExternalUrl(COMMUNITY_FORUM_URL),
-    },
-    {
-      text: "KNIME Hub",
-      separator: true,
-      icon: HubIcon,
-      href: buildExternalUrl(KNIME_HUB_HOME_URL),
-    },
-    ...addConditionalMenuEntry(
-      getCommunityHubInfo.value.isOnlyCommunityHubMounted,
-      {
-        text: "Learn more about the KNIME Team Plan",
-        separator: true,
-        icon: TeamPlan,
-        href: `${TEAM_PLAN_URL}&alt=helpmenubutton`,
-      },
-    ),
+  ),
 
-    // Add custom help menu entries if present
-    ...customHelpMenuEntries.value,
+  // Add custom help menu entries if present
+  ...customHelpMenuEntries.value,
 
-    {
-      text: "About KNIME Analytics Platform",
-      icon: InfoIcon,
-      metadata: {
-        handler: () => API.desktop.openAboutDialog(),
-      },
+  {
+    text: "About KNIME Analytics Platform",
+    icon: InfoIcon,
+    metadata: {
+      handler: () => API.desktop.openAboutDialog(),
     },
-    {
-      text: "Additional credits",
-      icon: InfoIcon,
-      separator: hasDismissedExamples.value && hasExampleWorkflows.value,
-      metadata: {
-        handler: () => (creditsModalActive.value = true),
-      },
+  },
+  {
+    text: "Additional credits",
+    icon: InfoIcon,
+    separator: hasDismissedExamples.value && hasExampleWorkflows.value,
+    metadata: {
+      handler: () => (creditsModalActive.value = true),
     },
-    ...addConditionalMenuEntry(
-      hasDismissedExamples.value && hasExampleWorkflows.value,
-      {
-        text: "Restore examples on home tab",
-        icon: Steps123Icon,
-        metadata: {
-          handler: () => {
-            settingsStore.updateSetting({
-              key: "shouldShowExampleWorkflows",
-              value: true,
-            });
+  },
+  ...addConditionalMenuEntry(
+    hasDismissedExamples.value && hasExampleWorkflows.value,
+    {
+      text: "Restore examples on home tab",
+      icon: Steps123Icon,
+      metadata: {
+        handler: () => {
+          settingsStore.updateSetting({
+            key: "shouldShowExampleWorkflows",
+            value: true,
+          });
 
-            $router.push({
-              name: APP_ROUTES.Home.GetStarted,
-              query: { skipLastVisitedPage: "true" },
-            });
-          },
+          $router.push({
+            name: APP_ROUTES.Home.GetStarted,
+            query: { skipLastVisitedPage: "true" },
+          });
         },
       },
-    ),
-  ],
-}));
+    },
+  ),
+]);
 
 const onItemClick = (_: MouseEvent, item: MenuItem) =>
   item.metadata?.handler?.();
@@ -172,12 +167,17 @@ const onItemClick = (_: MouseEvent, item: MenuItem) =>
 
 <template>
   <div>
-    <OptionalSubMenuActionButton
+    <SubMenu
+      :teleport-to-body="false"
+      orientation="left"
       class="help-menu"
-      hide-dropdown
-      :item="helpMenuItem"
+      aria-label="Help"
+      :items="menuItems"
       @item-click="onItemClick"
-    />
+    >
+      <HelpIcon />
+    </SubMenu>
+
     <OpenSourceCreditsModal
       :active="creditsModalActive"
       @update:active="creditsModalActive = false"
@@ -191,5 +191,9 @@ const onItemClick = (_: MouseEvent, item: MenuItem) =>
   --z-index-common-menu-items-expanded: v-bind(
     "$zIndices.layerPriorityElevation"
   );
+
+  &:deep(button.submenu-toggle) {
+    border: 1px solid var(--knime-silver-sand);
+  }
 }
 </style>

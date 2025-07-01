@@ -22,6 +22,7 @@ import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 
 import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
+import FloatingCanvasTools from "./canvasTools/FloatingCanvasTools.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
@@ -61,7 +62,7 @@ const onPointerDown = (event: PointerEvent) => {
 
 let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
 const canvasStore = useWebGLCanvasStore();
-const { containerSize } = storeToRefs(canvasStore);
+const { containerSize, isMinimapVisible } = storeToRefs(canvasStore);
 
 let onCanvasReady: () => void;
 
@@ -92,6 +93,7 @@ onMounted(() => {
 
 const rootEl = useTemplateRef("rootEl");
 const initResizeObserver = () => {
+  let minimapVisibilityTimeout: number;
   if (!rootEl.value) {
     return;
   }
@@ -103,9 +105,22 @@ const initResizeObserver = () => {
 
   resizeObserver = new ResizeObserver((entries) => {
     const containerEl = entries.find(({ target }) => target === rootEl.value);
-    if (containerEl) {
-      updateContainerSize();
+    if (!containerEl) {
+      return;
     }
+
+    isMinimapVisible.value = false;
+
+    if (minimapVisibilityTimeout) {
+      clearTimeout(minimapVisibilityTimeout);
+    }
+
+    minimapVisibilityTimeout = window.setTimeout(() => {
+      isMinimapVisible.value = true;
+      // eslint-disable-next-line no-magic-numbers
+    }, 300);
+
+    updateContainerSize();
   });
 
   stopResizeObserver = () => {
@@ -167,6 +182,8 @@ const TAB_INDEX = 0;
     <NodeNameEditor />
 
     <NodeLabelEditor />
+
+    <FloatingCanvasTools v-if="!isWorkflowEmpty" />
 
     <svg
       v-if="activeWorkflow && isWorkflowEmpty"

@@ -46,7 +46,6 @@ const { selectedNodeIds } = useSelectionStore();
 const { hasAnnotationModeEnabled } = useCanvasModesStore();
 
 const activeWorkflowId = computed(() => activeWorkflow.value!.info.containerId);
-
 const { currentRenderer } = useCanvasRendererUtils();
 
 const WorkflowCanvas = computed(() =>

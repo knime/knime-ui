@@ -31,6 +31,7 @@ import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteraction
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
+import HelpMenu from "../application/HelpMenu.vue";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
@@ -347,11 +348,13 @@ const { isSVGRenderer } = useCanvasRendererUtils();
       </SubMenu>
 
       <ZoomMenu
-        v-if="activeWorkflow"
+        v-if="activeWorkflow && isSVGRenderer"
         data-test-id="zoom-menu"
         :disabled="isWorkflowEmpty"
         aria-label="Zoom Menu"
       />
+
+      <HelpMenu ref="helpMenu" data-test-id="app-header-help-menu" />
     </div>
   </div>
 </template>

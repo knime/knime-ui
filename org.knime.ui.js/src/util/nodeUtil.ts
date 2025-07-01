@@ -4,9 +4,11 @@ import {
   type MetaNode,
   MetaNodePort,
   type NativeNode,
+  NativeNodeInvariants,
   Node,
   NodeState,
 } from "@/api/gateway-api/generated-api";
+import { HibiscusDark, nodeBackgroundColors } from "@/style/colors";
 
 export const isNativeNode = (node: KnimeNode): node is NativeNode =>
   node.kind === Node.KindEnum.Node;
@@ -44,4 +46,18 @@ export const isNodeExecuting = (node: KnimeNode) => {
     node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
     node.state?.executionState === NodeState.ExecutionStateEnum.QUEUED
   );
+};
+
+export const nodeBackgroundColor = ({
+  kind,
+  type,
+}: {
+  kind: Node.KindEnum;
+  type: NativeNodeInvariants.TypeEnum | null;
+}) => {
+  if (kind === Node.KindEnum.Component) {
+    return nodeBackgroundColors.Component;
+  }
+  // In case of unknown type, use Hibiscus Dark
+  return type ? nodeBackgroundColors[type] : HibiscusDark;
 };

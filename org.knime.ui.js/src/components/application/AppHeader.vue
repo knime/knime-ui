@@ -293,8 +293,6 @@ const onMouseDown = (e: MouseEvent) => {
       </div>
 
       <div class="buttons">
-        <HelpMenu ref="helpMenu" data-test-id="app-header-help-menu" />
-
         <FunctionButton
           class="header-button"
           title="Open preferences"

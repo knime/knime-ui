@@ -87,7 +87,12 @@ export const layerStaticPanels = 15;
 /**
  * Layer for basic floating elements that provide information. e.g info bar
  */
-export const layerCanvasInfo = 10;
+export const layerCanvasInfo = 12;
+
+/**
+ * Layer for items that sit atop the canvas and provide some interactive elements
+ */
+export const layerCanvasDecorations = 10;
 
 /**
  * Layer for tooltips inside the canvas. e.g for node errors
@@ -100,13 +105,3 @@ export const layerCanvasTooltips = 5;
  * Layer for minimally elevated items
  */
 export const layerMinorElevation = 2;
-
-/* --------------------------**** WEBGL CANVAS ****-------------------------------------- */
-
-export const webGlCanvasNodeSelectionPlane = 10;
-
-export const webGlCanvasSelectedNode = 20;
-
-export const webGlCanvasConnections = 30;
-
-export const webGlCanvasFloatingMenus = layerExpandedMenus;

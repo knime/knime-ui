@@ -245,6 +245,18 @@ export const initE2ETestUtils = (app: Application) => {
         text,
       };
     },
+
+    getMinimapCoordinates: () => {
+      updateKanvasBox();
+
+      const minimapBounds = getPixiContainerBounds(["Minimap"]);
+      const cameraBounds = getPixiContainerBounds(["MinimapCamera"]);
+
+      return {
+        minimap: minimapBounds,
+        camera: cameraBounds,
+      };
+    },
   };
 };
 
