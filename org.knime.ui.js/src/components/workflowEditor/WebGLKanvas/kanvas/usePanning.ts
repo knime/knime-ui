@@ -92,6 +92,13 @@ export const useCanvasPanning = ({
     eventTarget.setPointerCapture(pointerDownEvent.pointerId);
 
     const onPan = throttle((ptrMoveEvent: PointerEvent) => {
+      if (!stage.value) {
+        consola.warn(
+          "usePanning:: tried to access stage but was not available",
+        );
+        return;
+      }
+
       if (isPanning.value) {
         hasMoved.value = true;
         canvasStore.setCanvasOffset({
