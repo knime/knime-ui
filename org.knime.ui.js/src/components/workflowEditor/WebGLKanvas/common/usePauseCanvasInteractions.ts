@@ -1,4 +1,4 @@
-import { computed, onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted } from "vue";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 
@@ -8,13 +8,12 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
  */
 export const usePauseCanvasInteractions = () => {
   const canvasStore = useWebGLCanvasStore();
-  const pixiApplication = computed(() => canvasStore.pixiApplication!.app);
 
   onMounted(() => {
-    pixiApplication.value.stage.eventMode = "none";
+    canvasStore.stage!.eventMode = "none";
   });
 
   onUnmounted(() => {
-    pixiApplication.value.stage.eventMode = "passive";
+    canvasStore.stage!.eventMode = "passive";
   });
 };

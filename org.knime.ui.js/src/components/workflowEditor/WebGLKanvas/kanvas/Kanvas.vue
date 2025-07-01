@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { type Ref, onUnmounted, ref, watch } from "vue";
+import { type Ref, onUnmounted, ref, useTemplateRef, watch } from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { RenderLayer } from "pixi.js";
+import { Container, RenderLayer } from "pixi.js";
 
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
@@ -14,6 +14,7 @@ import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
 import { initE2ETestUtils } from "../util/e2eTest";
 
+import Minimap from "./Minimap.vue";
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
 
@@ -56,6 +57,8 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
   canvasLayers.value.nodeSelectionPlane = nodeSelectionPlaneRenderLayer;
 };
 
+const mainContainer = useTemplateRef<Container>("mainContainer");
+
 watch(
   isPixiAppInitialized,
   () => {
@@ -71,7 +74,7 @@ watch(
     }
 
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
-    canvasStore.stage = app.stage;
+    canvasStore.stage = mainContainer.value;
 
     // used by e2e tests in this repo and by QA
     globalThis.__E2E_TEST__ = initE2ETestUtils(app);
@@ -148,12 +151,15 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     @init-complete="isPixiAppInitialized = true"
   >
     <Container
+      ref="mainContainer"
       :label="MAIN_CONTAINER_LABEL"
       :event-mode="interactionsEnabled ? undefined : 'none'"
     >
       <Debug v-if="isCanvasDebugEnabled" />
       <slot />
     </Container>
+
+    <Minimap />
   </Application>
 </template>
 

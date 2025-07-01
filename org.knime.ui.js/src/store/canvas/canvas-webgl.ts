@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-undefined */
 /* eslint-disable no-magic-numbers */
 
@@ -128,17 +129,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     isMoveLocked.value = locked;
   };
 
-  const setCanvasOffset = (value: XY) => {
-    useWorkflowStore().setTooltip(null);
-    if (stage.value) {
-      stage.value.x = value.x;
-      stage.value.y = value.y;
-    }
-
-    canvasOffset.value.x = value.x;
-    canvasOffset.value.y = value.y;
-  };
-
   const setCanvasAnchor = (anchor: UnwrapRef<typeof canvasAnchor>) => {
     canvasAnchor.value.isOpen = anchor.isOpen;
     canvasAnchor.value.anchor = anchor.anchor;
@@ -168,31 +158,124 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     });
   };
 
-  const contentBounds = computed(() => {
-    let { left, top, right, bottom } = useWorkflowStore().workflowBounds;
+  const calculateContentBoundsWithPadding = (
+    bounds: {
+      left: number;
+      top: number;
+      right: number;
+      bottom: number;
+      width: number;
+      height: number;
+    },
+    paddings: { x: number; y: number },
+  ) => {
+    let { left, top, right, bottom } = bounds;
 
-    left -= padding;
-    right += padding;
-    top -= padding;
-    bottom += padding;
+    const paddedLeft = left - paddings.x;
+    const paddedRight = right + paddings.x;
+    const paddedTop = top - paddings.y;
+    const paddedBottom = bottom + paddings.y;
 
-    const width = right - left;
-    const height = bottom - top;
+    const width = paddedRight - paddedLeft;
+    const height = paddedBottom - paddedTop;
 
-    const centerX = left + width / 2;
-    const centerY = top + height / 2;
+    const centerX = paddedLeft + width / 2;
+    const centerY = paddedTop + height / 2;
 
     return {
-      left,
-      top,
-      right,
-      bottom,
+      left: paddedLeft,
+      top: paddedTop,
+      right: paddedRight,
+      bottom: paddedBottom,
       width,
       height,
       centerX,
       centerY,
     };
+  };
+
+  /**
+   * Minimum bounds of the canvas world content. It's defined as the minimum rectangle
+   * that can contain all the objects added to the canvas (plus some small padding).
+   * This is useful when determining the position of content in the canvas, such as when
+   * first placing the camera near where the objects are so that the users can see something
+   */
+  const contentBounds = computed(() => {
+    const { workflowBounds } = useWorkflowStore();
+
+    return calculateContentBoundsWithPadding(workflowBounds, {
+      x: padding,
+      y: padding,
+    });
   });
+
+  /**
+   * Maximum bounds of the canvas world content after which panning is not possible.
+   * These grow with the content added to the canvas, thus still providing an
+   * "infinite canvas" feeling, while also providing some measurements
+   * which can be used to constraint panning which is necessary for a predictable
+   * minimap behavior
+   */
+  const maxWorldContentBounds = computed(() => {
+    const { workflowBounds } = useWorkflowStore();
+
+    const horizontalPadding = containerSize.value.width / zoomFactor.value;
+    const verticalPadding = containerSize.value.height / zoomFactor.value;
+
+    return calculateContentBoundsWithPadding(workflowBounds, {
+      x: horizontalPadding,
+      y: verticalPadding,
+    });
+  });
+
+  const setCanvasOffset = (value: XY) => {
+    useWorkflowStore().setTooltip(null);
+
+    const minX = maxWorldContentBounds.value.left * zoomFactor.value;
+    const minY = maxWorldContentBounds.value.top * zoomFactor.value;
+
+    const maxX =
+      (maxWorldContentBounds.value.right -
+        containerSize.value.width / zoomFactor.value) *
+      zoomFactor.value;
+
+    const maxY =
+      (maxWorldContentBounds.value.bottom -
+        containerSize.value.height / zoomFactor.value) *
+      zoomFactor.value;
+
+    const newX = (() => {
+      if (-value.x <= minX) {
+        return -minX;
+      }
+
+      if (-value.x >= maxX) {
+        return -maxX;
+      }
+
+      return value.x;
+    })();
+
+    const newY = (() => {
+      if (-value.y <= minY) {
+        return -minY;
+      }
+
+      if (-value.y >= maxY) {
+        return -maxY;
+      }
+
+      return value.y;
+    })();
+
+    if (stage.value) {
+      stage.value.x = newX;
+      stage.value.y = newY;
+    }
+
+    canvasOffset.value.x = newX;
+    canvasOffset.value.y = newY;
+  };
 
   const fitToScreenZoomFactor = computed(() => {
     const { width: containerWidth, height: containerHeight } =
@@ -240,6 +323,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
+  // TODO: used?
   // canvas size is always larger than container
   const canvasSize = computed(() => {
     return {
@@ -584,8 +668,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     interactionsEnabled,
     isMoveLocked,
     fitToScreenZoomFactor,
-    contentBounds,
     canvasSize,
+    paddedBounds,
     getCanvasScrollState,
     getVisibleFrame,
     getCenterOfScrollContainer, // TODO NXT-3439 rename to something more fitting: getPositionOnCanvas and remove default
@@ -611,6 +695,9 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     scroll,
     isOutsideKanvasView,
     contentBoundsChanged,
+    // returning this will be removed when the SVG canvas is removed,
+    // but the computed value itself will still be used
+    contentBounds,
 
     // webgl only
     canvasAnchor,
@@ -629,5 +716,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     findObjectFromScreenCordinates,
     isPanning,
     isHoldingDownSpace,
+    contentBounds2: maxWorldContentBounds,
   };
 });

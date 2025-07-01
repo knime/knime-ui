@@ -70,7 +70,7 @@ export const useCanvasPanning = ({
   const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 
   const canvasStore = useWebGLCanvasStore();
-  const stage = computed(() => pixiApp.value.app.stage);
+  const stage = computed(() => canvasStore.stage);
 
   const { isDragging } = storeToRefs(useMovingStore());
 
