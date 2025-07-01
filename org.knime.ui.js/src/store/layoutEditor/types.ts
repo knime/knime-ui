@@ -4,7 +4,7 @@
 
 // type ComponentLayoutEditorNodeLayoutResizeMethod = "aspectRatio16by9";
 
-export interface ComponentLayoutEditorNodeLayout {
+export type ComponentLayoutEditorNodeLayout = {
   nodeID: string;
   type: string;
   resizeMethod?: string;
@@ -20,9 +20,9 @@ export interface ComponentLayoutEditorNodeLayout {
   minWidth?: null;
   additionalClasses?: string[];
   additionalStyles?: string[];
-}
+};
 
-export interface ComponentLayoutEditorNode {
+export type ComponentLayoutEditorNode = {
   nodeID: string;
   preview: null;
   availableInView: boolean;
@@ -32,23 +32,39 @@ export interface ComponentLayoutEditorNode {
   type: string;
   layout: ComponentLayoutEditorNodeLayout;
   name: string;
-}
+};
 
-export interface ComponentLayoutColumn {
-  content: unknown[];
+export type ComponentLayoutView = {
+  nodeID: string;
+  type: string;
+  scrolling?: boolean;
+  useLegacyMode?: boolean;
+  resizeMethod?: string;
+  autoResize?: boolean;
+  sizeHeight?: boolean;
+  sizeWidth?: boolean;
+};
+
+export type ComponentLayoutColumnContent =
+  | ComponentLayoutView
+  // eslint-disable-next-line no-use-before-define
+  | ComponentLayoutRow;
+
+export type ComponentLayoutColumn = {
+  content: Array<ComponentLayoutColumnContent>;
   widthXS: number;
-}
+};
 
-export interface ComponentLayoutRow {
+export type ComponentLayoutRow = {
   type: "row";
   columns: ComponentLayoutColumn[];
-}
+};
 
-export interface ComponentLayout {
+export type ComponentLayout = {
   rows: ComponentLayoutRow[];
-}
+};
 
-export interface RowTemplate {
+export type RowTemplate = {
   name: string;
-  data: { type: string; columns: ComponentLayoutColumn[] };
-}
+  data: ComponentLayoutRow;
+};

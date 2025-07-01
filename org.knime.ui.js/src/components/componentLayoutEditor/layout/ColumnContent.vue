@@ -3,17 +3,16 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import type {
-  ComponentLayoutEditorNodeLayout,
   ComponentLayoutRow,
+  ComponentLayoutView,
 } from "@/store/layoutEditor/types";
 
 import EditButton from "./EditButton.vue";
 import KnimeView from "./KnimeView.vue";
 import Row from "./Row.vue";
 
-// TODO: Fix type
 interface Props {
-  item: ComponentLayoutEditorNodeLayout | ComponentLayoutRow;
+  item: ComponentLayoutView | ComponentLayoutRow;
 }
 
 defineProps<Props>();

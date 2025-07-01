@@ -8,8 +8,6 @@ import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
 
-// TODO: Rename and move component
-
 const isSubmitted = ref(false);
 
 const layoutEditorStore = useLayoutEditorStore();

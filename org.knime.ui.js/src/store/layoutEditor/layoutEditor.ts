@@ -6,8 +6,10 @@ import { nodesMock } from "./mocks";
 import type {
   ComponentLayout,
   ComponentLayoutColumn,
+  ComponentLayoutColumnContent,
   ComponentLayoutEditorNode,
   ComponentLayoutRow,
+  ComponentLayoutView,
 } from "./types";
 import {
   cleanLayout,
@@ -65,8 +67,10 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
   };
 
-  // TODO: Type
-  const updateColumnContent = (data) => {
+  const updateColumnContent = (data: {
+    column: ComponentLayoutColumn;
+    newContent: ComponentLayoutColumnContent[];
+  }) => {
     // TODO: Reach into state?
     data.column.content = data.newContent;
   };
@@ -75,8 +79,9 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     layout.value.rows = rows;
   };
 
-  // TODO: Type
-  const deleteContentItem = (itemToDelete) => {
+  const deleteContentItem = (
+    itemToDelete: ComponentLayoutView | ComponentLayoutRow,
+  ) => {
     const allContentArrays = getAllContentArrays(layout.value.rows);
 
     for (let contentArray of allContentArrays) {
@@ -96,13 +101,10 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
   const nodeIdsInLayout = computed(() => {
     const allContentArrays = getAllContentArrays(layout.value.rows);
-    return (
-      allContentArrays
-        .flat(1)
-        .filter((item) => item.hasOwnProperty("nodeID"))
-        // TODO: Fix types
-        .map((item) => (item as unknown as ComponentLayoutEditorNode).nodeID)
-    );
+    return allContentArrays
+      .flat(1)
+      .filter((item) => item.hasOwnProperty("nodeID"))
+      .map((item) => (item as ComponentLayoutView).nodeID);
   });
 
   const availableNodes = computed(() => {
@@ -138,8 +140,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
    */
   const elements = ref(generateRowTemplates());
 
-  // TODO: Type
-  const addElement = (element) => {
+  const addElement = (element: ComponentLayoutRow) => {
     layout.value.rows.push(element);
   };
 

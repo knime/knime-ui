@@ -4,10 +4,16 @@ import { GRID_SIZE } from "@/store/layoutEditor/const";
 import type {
   ComponentLayout,
   ComponentLayoutColumn,
+  ComponentLayoutColumnContent,
   ComponentLayoutEditorNode,
   ComponentLayoutRow,
   RowTemplate,
 } from "@/store/layoutEditor/types";
+
+export const isRow = (
+  layout: ComponentLayoutColumnContent,
+): layout is ComponentLayoutRow =>
+  Boolean((layout as ComponentLayoutRow).columns);
 
 export const getEmptyLayout = (): ComponentLayout => {
   const column = reactive<ComponentLayoutColumn>({
@@ -20,7 +26,6 @@ export const getEmptyLayout = (): ComponentLayout => {
   };
 };
 
-// TODO: Fix types
 export const getAllColumnArrays = function (layout: ComponentLayoutRow[]) {
   return layout.reduce((result: ComponentLayoutColumn[][], item) => {
     if (
@@ -41,17 +46,13 @@ export const getAllColumnArrays = function (layout: ComponentLayoutRow[]) {
   }, []);
 };
 
-// TODO: Fix types
 export const getAllContentArrays = function (layout: ComponentLayoutRow[]) {
   const allColumnArrays = getAllColumnArrays(layout);
   const allContentArrays = allColumnArrays.reduce(
-    (
-      result: Array<ComponentLayoutRow[] | ComponentLayoutColumn[]>,
-      columns,
-    ) => {
+    (result: Array<ComponentLayoutColumnContent[]>, columns) => {
       columns.forEach((column) => {
         if (Array.isArray(column.content) && column.content.length) {
-          result.push(column.content as ComponentLayoutColumn[]);
+          result.push(column.content);
         }
       });
       return result;
@@ -87,11 +88,13 @@ export const generateRowTemplates = (): RowTemplate[] => {
 // - add missing widthXS
 // - remove duplicate widths if equal
 export const cleanLayout = function (layout: ComponentLayout) {
-  const nodeIDs = [];
+  const nodeIDs: string[] = [];
 
-  const recursiveClean = function (layout: ComponentLayoutRow[]) {
+  const recursiveClean = function (
+    layout: Array<ComponentLayoutColumnContent>,
+  ) {
     const newLayout = layout.filter((item) => {
-      if (item.type === "row") {
+      if (isRow(item)) {
         if (Array.isArray(item.columns)) {
           item.columns = item.columns.filter((column) => {
             if (Array.isArray(column.content)) {
@@ -135,8 +138,9 @@ export const cleanLayout = function (layout: ComponentLayout) {
 export const createViewFromNode = ({ layout }: ComponentLayoutEditorNode) =>
   JSON.parse(JSON.stringify(layout));
 
-export const createViewFromRowTemplate = ({ data }: RowTemplate) =>
-  JSON.parse(JSON.stringify(data));
+export const createViewFromRowTemplate = ({
+  data,
+}: RowTemplate): ComponentLayoutRow => JSON.parse(JSON.stringify(data));
 
 export const checkMove = (event) => {
   // only allow rows to be dropped in first level

@@ -5,7 +5,6 @@ import { storeToRefs } from "pinia";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import type { ComponentLayoutEditorNodeLayout } from "@/store/layoutEditor/types";
 
-// TODO: Fix type
 interface Props {
   view: ComponentLayoutEditorNodeLayout;
 }
