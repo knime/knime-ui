@@ -6,6 +6,7 @@ import type {
   ComponentLayout,
   ComponentLayoutColumn,
   ComponentLayoutEditorNode,
+  ComponentLayoutRow,
 } from "./types";
 import {
   cleanLayout,
@@ -62,6 +63,16 @@ export const useComponentLayoutEditorStore = defineStore(
       if (initialLayout.value !== null) {
         layout.value = JSON.parse(initialLayout.value);
       }
+    };
+
+    // TODO: Type
+    const updateColumnContent = (data) => {
+      // TODO: Reach into state?
+      data.column.content = data.newContent;
+    };
+
+    const updateFirstLevelRows = (rows: ComponentLayoutRow[]) => {
+      layout.value.rows = rows;
     };
 
     /**
@@ -152,6 +163,8 @@ export const useComponentLayoutEditorStore = defineStore(
       setLayout,
       clearLayout,
       resetLayout,
+      updateColumnContent,
+      updateFirstLevelRows,
 
       // Nodes
       nodes,

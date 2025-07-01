@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
@@ -12,6 +12,15 @@ import Row from "./layout/Row.vue";
 
 const componentLayoutEditorStore = useComponentLayoutEditorStore();
 const { layout, availableNodes } = storeToRefs(componentLayoutEditorStore);
+
+const rows = computed({
+  get() {
+    return layout.value.rows;
+  },
+  set(value) {
+    componentLayoutEditorStore.updateFirstLevelRows(value);
+  },
+});
 
 const onClear = () => {
   componentLayoutEditorStore.clearLayout();
@@ -38,7 +47,7 @@ onMounted(() => {
           {
             content: [
               {
-                type: "view",
+                type: "view", // HERE IS A VIEW
                 scrolling: false,
                 nodeID: "1",
                 useLegacyMode: false,
@@ -53,7 +62,7 @@ onMounted(() => {
                   {
                     content: [
                       {
-                        type: "view",
+                        type: "view", // HERE IS A VIEW
                         scrolling: false,
                         nodeID: "2",
                         useLegacyMode: true,
@@ -63,7 +72,7 @@ onMounted(() => {
                         sizeWidth: false,
                       },
                       {
-                        type: "view",
+                        type: "view", // HERE IS A VIEW
                         scrolling: false,
                         nodeID: "3",
                         useLegacyMode: true,
@@ -73,7 +82,7 @@ onMounted(() => {
                         sizeWidth: false,
                       },
                       {
-                        type: "view",
+                        type: "view", // HERE IS A VIEW
                         scrolling: false,
                         nodeID: "4",
                         useLegacyMode: true,
@@ -93,7 +102,7 @@ onMounted(() => {
                           {
                             content: [
                               {
-                                type: "view",
+                                type: "view", // HERE IS A VIEW
                                 scrolling: false,
                                 nodeID: "7",
                                 useLegacyMode: true,
@@ -113,7 +122,7 @@ onMounted(() => {
                           {
                             content: [
                               {
-                                type: "view",
+                                type: "view", // HERE IS A VIEW
                                 scrolling: false,
                                 nodeID: "3",
                                 useLegacyMode: true,
@@ -128,7 +137,7 @@ onMounted(() => {
                           {
                             content: [
                               {
-                                type: "view",
+                                type: "view", // HERE IS A VIEW
                                 scrolling: false,
                                 nodeID: "2",
                                 useLegacyMode: true,
@@ -153,7 +162,7 @@ onMounted(() => {
           {
             content: [
               {
-                type: "view",
+                type: "view", // HERE IS A VIEW
                 scrolling: false,
                 nodeID: "1",
                 useLegacyMode: true,
@@ -173,7 +182,7 @@ onMounted(() => {
           {
             content: [
               {
-                type: "view",
+                type: "view", // HERE IS A VIEW
                 scrolling: false,
                 nodeID: "1",
                 useLegacyMode: true,
@@ -183,7 +192,7 @@ onMounted(() => {
                 sizeWidth: false,
               },
               {
-                type: "view",
+                type: "view", // HERE IS A VIEW
                 scrolling: false,
                 nodeID: "100",
                 useLegacyMode: true,
@@ -234,7 +243,7 @@ onMounted(() => {
       </div>
 
       <Draggable
-        v-model:list="layout.rows"
+        v-model:list="rows"
         group="content"
         class="layout-preview"
         :is-first-level="true"
@@ -243,11 +252,7 @@ onMounted(() => {
         @end="handleDragEnd"
       >
         <template #item="{ element, index }">
-          <Row
-            :key="index"
-            :row="element"
-            :deletable="layout.rows.length > 1"
-          />
+          <Row :key="index" :row="element" :deletable="rows.length > 1" />
         </template>
       </Draggable>
     </div>

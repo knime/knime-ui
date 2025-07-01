@@ -44,8 +44,10 @@ const content = computed({
           changedItem = true;
         }
       });
-    // TODO: Replace with real store call
-    console.log("commit to store -> updateColumnContent");
+    componentLayoutEditorStore.updateColumnContent({
+      column: props.column,
+      newContent,
+    });
   },
 });
 
