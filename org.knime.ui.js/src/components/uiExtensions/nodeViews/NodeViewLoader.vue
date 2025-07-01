@@ -13,6 +13,7 @@ import {
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer/vue";
 
+import { gatewayRpcClient } from "@/api/gateway-api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import ExecuteButton from "../ExecuteButton.vue";
@@ -123,6 +124,11 @@ const apiLayer: UIExtensionAPILayer = {
       dataServiceRequest,
     });
     return { result };
+  },
+
+  callKnimeUiApi: async (method: string, params: any) => {
+    const response = await gatewayRpcClient.call(method, params);
+    return { isSome: true, result: response };
   },
 
   updateDataPointSelection: async (params) => {
