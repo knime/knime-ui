@@ -330,8 +330,8 @@ const onCloseError = () => {
           @close="spaceUploadsStore.closeUploadsPanel()"
           @cancel="spaceUploadsStore.cancelUpload($event.id)"
         />
-      </div> </Transition
-    >g
+      </div>
+    </Transition>
     <ConfirmDialog />
 
     <CreateWorkflowModal />

@@ -7,7 +7,7 @@ import type {
   ComponentLayout,
   ComponentLayoutColumn,
   ComponentLayoutColumnContent,
-  ComponentLayoutEditorNode,
+  ComponentLayoutNode,
   ComponentLayoutRow,
   ComponentLayoutView,
 } from "./types";
@@ -71,7 +71,6 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     column: ComponentLayoutColumn;
     newContent: ComponentLayoutColumnContent[];
   }) => {
-    // TODO: Reach into state?
     data.column.content = data.newContent;
   };
 
@@ -97,7 +96,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   /**
    * Nodes
    */
-  const nodes = ref<ComponentLayoutEditorNode[]>(nodesMock);
+  const nodes = ref<ComponentLayoutNode[]>(nodesMock);
 
   const nodeIdsInLayout = computed(() => {
     const allContentArrays = getAllContentArrays(layout.value.rows);
@@ -113,11 +112,11 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     );
   });
 
-  const setNodes = (newNodes: ComponentLayoutEditorNode[]) => {
+  const setNodes = (newNodes: ComponentLayoutNode[]) => {
     nodes.value = newNodes;
   };
 
-  const addNode = (node: ComponentLayoutEditorNode) => {
+  const addNode = (node: ComponentLayoutNode) => {
     const view = createViewFromNode(node);
 
     // find last row
@@ -283,6 +282,32 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
   };
 
+  // TODO: Type
+  const updateContentItemConfig = (data) => {
+    const item = data.item;
+
+    // if set to auto, get default resizeMethod from node
+    if (data.config.resizeMethod === "auto") {
+      const defaultNode = nodes.value.find(
+        (node) => node.nodeID === data.item.nodeID,
+      );
+      data.config.resizeMethod =
+        defaultNode && defaultNode.layout.resizeMethod?.indexOf("view") === 0
+          ? defaultNode.layout.resizeMethod
+          : "viewLowestElement";
+    }
+
+    // apply new config; delete unset props
+    for (let prop in data.config) {
+      const value = data.config[prop];
+      if (value) {
+        item[prop] = value;
+      } else {
+        delete item[prop];
+      }
+    }
+  };
+
   return {
     // Modal
     isOpen,
@@ -319,5 +344,8 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     resizeColumnInfo,
     setResizeColumnInfo,
     resizeColumn,
+
+    // Not sure yet
+    updateContentItemConfig,
   };
 });

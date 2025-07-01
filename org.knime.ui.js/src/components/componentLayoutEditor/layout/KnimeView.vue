@@ -3,10 +3,10 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
-import type { ComponentLayoutEditorNodeLayout } from "@/store/layoutEditor/types";
+import type { ComponentLayoutView } from "@/store/layoutEditor/types";
 
 interface Props {
-  view: ComponentLayoutEditorNodeLayout;
+  view: ComponentLayoutView;
 }
 
 const props = defineProps<Props>();

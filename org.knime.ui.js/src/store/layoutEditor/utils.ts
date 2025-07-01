@@ -5,7 +5,7 @@ import type {
   ComponentLayout,
   ComponentLayoutColumn,
   ComponentLayoutColumnContent,
-  ComponentLayoutEditorNode,
+  ComponentLayoutNode,
   ComponentLayoutRow,
   RowTemplate,
 } from "@/store/layoutEditor/types";
@@ -135,7 +135,7 @@ export const cleanLayout = function (layout: ComponentLayout) {
   return { rows: recursiveClean(layout.rows) };
 };
 
-export const createViewFromNode = ({ layout }: ComponentLayoutEditorNode) =>
+export const createViewFromNode = ({ layout }: ComponentLayoutNode) =>
   JSON.parse(JSON.stringify(layout));
 
 export const createViewFromRowTemplate = ({

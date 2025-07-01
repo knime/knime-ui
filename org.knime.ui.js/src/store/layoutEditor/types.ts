@@ -1,10 +1,10 @@
-// type ComponentLayoutEditorNodeType = "view";
+// type ComponentLayoutNodeType = "view";
 
-// type ComponentLayoutEditorNodeLayoutType = "view";
+// type ComponentLayoutViewType = "view";
 
-// type ComponentLayoutEditorNodeLayoutResizeMethod = "aspectRatio16by9";
+// type ComponentLayoutViewResizeMethod = "aspectRatio16by9";
 
-export type ComponentLayoutEditorNodeLayout = {
+export type ComponentLayoutView = {
   nodeID: string;
   type: string;
   resizeMethod?: string;
@@ -22,7 +22,7 @@ export type ComponentLayoutEditorNodeLayout = {
   additionalStyles?: string[];
 };
 
-export type ComponentLayoutEditorNode = {
+export type ComponentLayoutNode = {
   nodeID: string;
   preview: null;
   availableInView: boolean;
@@ -30,19 +30,8 @@ export type ComponentLayoutEditorNode = {
   description: string | null;
   icon: Base64URLString;
   type: string;
-  layout: ComponentLayoutEditorNodeLayout;
+  layout: ComponentLayoutView;
   name: string;
-};
-
-export type ComponentLayoutView = {
-  nodeID: string;
-  type: string;
-  scrolling?: boolean;
-  useLegacyMode?: boolean;
-  resizeMethod?: string;
-  autoResize?: boolean;
-  sizeHeight?: boolean;
-  sizeWidth?: boolean;
 };
 
 export type ComponentLayoutColumnContent =
