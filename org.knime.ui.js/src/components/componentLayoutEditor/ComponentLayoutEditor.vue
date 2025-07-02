@@ -259,6 +259,35 @@ onMounted(() => {
   </div>
 </template>
 
+<style lang="postcss">
+/* when dragging from available nodes/elements over layout,
+  this list element will temporarily be added to the layout */
+.layout-preview li.sortable-ghost {
+  list-style: none;
+  background-color: var(--knime-aquamarine);
+  border-radius: 3px;
+  margin: 5px 0;
+  width: 100%;
+  height: 50px;
+  color: transparent;
+
+  &.quickform,
+  &.configuration {
+    background-color: var(--knime-avocado);
+  }
+
+  &.row {
+    border: 4px solid var(--knime-silver-sand);
+    background-color: transparent;
+    min-height: 68px;
+  }
+
+  & * {
+    display: none; /* for now we just hide the content, maybe there is a better way to render the ghost */
+  }
+}
+</style>
+
 <style lang="postcss" scoped>
 .container {
   background-color: var(--knime-white);
@@ -286,8 +315,7 @@ onMounted(() => {
   margin-bottom: 10px;
 
   /* hide buttons of dragging element and it's children */
-  /* stylelint-disable-next-line selector-class-pattern */
-  & .sortable-drag button:not(.resizeHandle) {
+  & .sortable-drag button:not(.resize-handle) {
     visibility: hidden;
   }
 }

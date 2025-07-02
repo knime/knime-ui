@@ -257,6 +257,9 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     if (resizeInfo === null) {
       return;
     }
+    if (newWidth === resizeInfo.column.widthXS) {
+      return;
+    }
 
     // min size for column
     if (newWidth < 1) {
@@ -266,7 +269,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     // calc size of next sibling to prevent wrapping
     const currentWidth = resizeInfo.column.widthXS;
     let delta = currentWidth - newWidth;
-    let newSiblingWidth = resizeInfo.nextSibling?.widthXS ?? 0 + delta;
+    let newSiblingWidth = (resizeInfo.nextSibling?.widthXS ?? 0) + delta;
     if (newSiblingWidth < 1) {
       newSiblingWidth = 1;
     }

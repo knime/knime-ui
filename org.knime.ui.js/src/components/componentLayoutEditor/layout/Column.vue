@@ -83,6 +83,7 @@ const handleColumnResizeMouseMove = (event) => {
     group="content"
     draggable=".draggable"
     :class="['column', { resizable }]"
+    :style="{ gridColumn: `span ${column.widthXS}` }"
     item-key="itemID"
     :move="checkMove"
     @start="layoutEditorStore.setIsDragging(true)"
@@ -95,7 +96,7 @@ const handleColumnResizeMouseMove = (event) => {
     <template #header>
       <button
         v-if="resizable"
-        :class="['resizeHandle', { active: isCurrentColumnResizing }]"
+        :class="['resize-handle', { active: isCurrentColumnResizing }]"
         title="Drag to resize"
         @mousedown.prevent.stop="handleColumnResizeMouseDown"
       />
@@ -135,8 +136,7 @@ const handleColumnResizeMouseMove = (event) => {
   min-height: 60px;
   position: relative;
 
-  /* stylelint-disable-next-line selector-class-pattern */
-  & .resizeHandle {
+  & .resize-handle {
     cursor: col-resize;
     margin: 0;
     padding: 0;

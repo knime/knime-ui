@@ -34,7 +34,21 @@ const disabledOrMissing = computed(() => {
 
 const typeClass = computed(() => node.value?.type);
 const resizeClass = computed(() => props.view.resizeMethod ?? null);
-const style = computed(() => {
+
+const aspectRatioMap = {
+  aspectRatio16by9: "16 / 9",
+  aspectRatio4by3: "4 / 3",
+  aspectRatio1by1: "1 / 1",
+};
+
+const aspectRatioClass = computed(() => {
+  if (!props.view.resizeMethod) {
+    return {};
+  }
+  return { aspectRatio: aspectRatioMap[props.view.resizeMethod] };
+});
+
+const autoSizeClass = computed(() => {
   const styleProps = ["minWidth", "maxWidth", "minHeight", "maxHeight"];
 
   // extract style props
@@ -62,7 +76,7 @@ const style = computed(() => {
       resizeClass,
       { missing: disabledOrMissing },
     ]"
-    :style="style"
+    :style="{ ...aspectRatioClass, ...autoSizeClass }"
   >
     <div v-if="node" :title="node.name" class="knime-view-container">
       <main>
@@ -89,6 +103,7 @@ const style = computed(() => {
 
 <style lang="postcss" scoped>
 .knime-view {
+  box-sizing: unset;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,21 +112,17 @@ const style = computed(() => {
   overflow: hidden;
   text-align: center;
   padding: 10px;
+  container-type: inline-size;
 
   & .knime-view-container {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-size: clamp(0.8rem, 7cqi, 1.5rem);
   }
 
   &.missing {
     opacity: 0.4;
-  }
-
-  &.view,
-  /* stylelint-disable-next-line selector-class-pattern */
-  &.nestedLayout {
-    min-height: 150px;
   }
 
   &.sortable-drag {
@@ -125,40 +136,6 @@ const style = computed(() => {
     &.sortable-drag {
       background-color: var(--knime-avocado-light);
     }
-  }
-
-  /* stylelint-disable-next-line selector-class-pattern */
-  &.aspectRatio16by9,
-  /* stylelint-disable-next-line selector-class-pattern */
-  &.aspectRatio4by3,
-  /* stylelint-disable-next-line selector-class-pattern */
-  &.aspectRatio1by1 {
-    position: relative;
-    width: 100%;
-    height: 0;
-
-    & > :first-child {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      left: 0;
-      top: 0;
-    }
-  }
-
-  /* stylelint-disable-next-line selector-class-pattern */
-  &.aspectRatio16by9 {
-    padding-bottom: calc(100% / (16 / 9));
-  }
-
-  /* stylelint-disable-next-line selector-class-pattern */
-  &.aspectRatio4by3 {
-    padding-bottom: calc(100% / (4 / 3));
-  }
-
-  /* stylelint-disable-next-line selector-class-pattern */
-  &.aspectRatio1by1 {
-    padding-bottom: 100%;
   }
 
   & main {

@@ -26,12 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
 const layoutEditorStore = useLayoutEditorStore();
 
 const columns = computed(() => props.row.columns);
-
-const gridColumns = computed(() =>
-  columns.value.map(({ widthXS }) => `${widthXS}fr`).join(" "),
-);
-
 const canAddColumn = computed(() => columns.value.length < GRID_SIZE);
+const gridTemplateColumns = computed(() => `repeat(${GRID_SIZE}, 1fr)`);
 
 const isRowDeletable = computed(() => {
   // make sure only empty rows (= 1 empty column) can be deleted
@@ -52,7 +48,7 @@ const isColumnDeletable = (column: ComponentLayoutColumn) => {
 </script>
 
 <template>
-  <div class="row" :style="{ gridTemplateColumns: gridColumns }">
+  <div class="row" :style="{ gridTemplateColumns }">
     <Column
       v-for="(column, index) in columns"
       :key="index"
@@ -79,17 +75,6 @@ const isColumnDeletable = (column: ComponentLayoutColumn) => {
   </div>
 </template>
 
-<style lang="postcss">
-/* when dragging from available elements over layout,
-  this list element will temporarily be added to the layout */
-/* stylelint-disable-next-line selector-class-pattern */
-.layoutPreview li.sortable-ghost.row {
-  border: 4px solid var(--knime-silver-sand);
-  background-color: transparent;
-  min-height: 68px;
-}
-</style>
-
 <style lang="postcss" scoped>
 .row {
   border: 4px solid var(--knime-silver-sand);
@@ -97,7 +82,6 @@ const isColumnDeletable = (column: ComponentLayoutColumn) => {
   position: relative; /* needed for delete handle positioning */
   cursor: grab;
   display: grid;
-  grid-auto-rows: 1fr;
 
   &:not(:last-of-type) {
     margin-bottom: 5px;
