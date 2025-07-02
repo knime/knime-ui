@@ -49,6 +49,7 @@ const clampZoomFactor = (newFactor: number) =>
 
 export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const zoomFactor = ref(defaultZoomFactor);
+  /** Size of the element that contains the <canvas> */
   const containerSize = ref({ width: 0, height: 0 });
   const interactionsEnabled = ref(true);
   const pixelRatio = ref(1);
@@ -195,6 +196,16 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   };
 
+  const CONTENT_BOUNDS_ASPECT_RATIO = 4 / 3;
+  const aspectRatioContainer = computed(() => {
+    const { height } = containerSize.value;
+
+    return {
+      width: height * CONTENT_BOUNDS_ASPECT_RATIO,
+      height,
+    };
+  });
+
   /**
    * Minimum bounds of the canvas world content. It's defined as the minimum rectangle
    * that can contain all the objects added to the canvas (plus some small padding).
@@ -220,8 +231,10 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const maxWorldContentBounds = computed(() => {
     const { workflowBounds } = useWorkflowStore();
 
-    const horizontalPadding = containerSize.value.width / zoomFactor.value;
-    const verticalPadding = containerSize.value.height / zoomFactor.value;
+    const horizontalPadding =
+      aspectRatioContainer.value.width / zoomFactor.value;
+    const verticalPadding =
+      aspectRatioContainer.value.height / zoomFactor.value;
 
     return calculateContentBoundsWithPadding(workflowBounds, {
       x: horizontalPadding,
@@ -237,13 +250,16 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
     const maxX =
       (maxWorldContentBounds.value.right -
-        containerSize.value.width / zoomFactor.value) *
+        aspectRatioContainer.value.width / zoomFactor.value) *
       zoomFactor.value;
 
     const maxY =
       (maxWorldContentBounds.value.bottom -
-        containerSize.value.height / zoomFactor.value) *
+        aspectRatioContainer.value.height / zoomFactor.value) *
       zoomFactor.value;
+
+    // make sure panning is not possible outside the max content bounds
+    // to ensure consistent and predictable minimap coordinate mapping
 
     const newX = (() => {
       if (-value.x <= minX) {
@@ -324,7 +340,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
-  // TODO: used?
   // canvas size is always larger than container
   const canvasSize = computed(() => {
     return {
@@ -669,7 +684,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     interactionsEnabled,
     isMoveLocked,
     fitToScreenZoomFactor,
-    canvasSize,
     paddedBounds,
     getCanvasScrollState,
     getVisibleFrame,
@@ -696,8 +710,10 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     scroll,
     isOutsideKanvasView,
     contentBoundsChanged,
-    // returning this will be removed when the SVG canvas is removed,
-    // but the computed value itself will still be used
+    canvasSize,
+    // TODO NXT-3439 this should not be returned after the SVG canvas is removed,
+    // but the computed value itself will still be used, though its name should be
+    // changed to `minWorldContentBounds`
     contentBounds,
 
     // webgl only
@@ -719,5 +735,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     isPanning,
     isHoldingDownSpace,
     maxWorldContentBounds,
+    aspectRatioContainer,
   };
 });

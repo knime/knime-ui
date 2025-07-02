@@ -21,17 +21,22 @@ const bottomOffset =
 
 const canvasStore = useWebGLCanvasStore();
 
-const { containerSize, canvasOffset, zoomFactor, maxWorldContentBounds } =
-  storeToRefs(canvasStore);
+const {
+  aspectRatioContainer,
+  containerSize,
+  canvasOffset,
+  zoomFactor,
+  maxWorldContentBounds,
+} = storeToRefs(canvasStore);
 
 const worldBounds = computed(() => maxWorldContentBounds.value);
 
 const minimapBounds = computed(() => {
-  const containerWidth = containerSize.value.width;
-  const containerHeight = containerSize.value.height;
+  const { width: containerWidth, height: containerHeight } =
+    containerSize.value;
 
-  const width = containerWidth * sizeRatio;
-  const height = containerHeight * sizeRatio;
+  const width = aspectRatioContainer.value.width * sizeRatio;
+  const height = aspectRatioContainer.value.height * sizeRatio;
 
   return {
     x: containerWidth - width - rightOffset,
@@ -54,8 +59,8 @@ const minimapTransform = computed(() => ({
 }));
 
 const camera = computed(() => {
-  const viewWidth = containerSize.value.width / zoomFactor.value;
-  const viewHeight = containerSize.value.height / zoomFactor.value;
+  const viewWidth = aspectRatioContainer.value.width / zoomFactor.value;
+  const viewHeight = aspectRatioContainer.value.height / zoomFactor.value;
   const cameraWorldX = -canvasOffset.value.x / zoomFactor.value;
   const cameraWorldY = -canvasOffset.value.y / zoomFactor.value;
 
