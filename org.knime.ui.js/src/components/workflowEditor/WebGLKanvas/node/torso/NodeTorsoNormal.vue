@@ -7,8 +7,7 @@ import {
   type NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
-import * as $colors from "@/style/colors";
-import { nodeBackgroundColors } from "@/style/colors";
+import { nodeBackgroundColor } from "@/util/nodeUtil";
 import type { GraphicsInst } from "@/vue3-pixi";
 
 import { torsoDrawUtils } from "./drawUtils";
@@ -27,8 +26,8 @@ const props = defineProps<Props>();
 const isComponent = computed(() => props.kind === Node.KindEnum.Component);
 
 const backgroundColor = computed(() => {
-  // In case of unknown type, use Hibiscus Dark
-  return props.type ? nodeBackgroundColors[props.type] : $colors.HibiscusDark;
+  const { type, kind } = props;
+  return nodeBackgroundColor({ type, kind });
 });
 
 const renderFunctionMapper = {
@@ -97,12 +96,7 @@ onUnmounted(() => {
   <Container event-mode="none">
     <Graphics
       event-mode="none"
-      @render="
-        renderTorso(
-          $event,
-          isComponent ? nodeBackgroundColors.Component : backgroundColor,
-        )
-      "
+      @render="renderTorso($event, backgroundColor)"
     />
 
     <Graphics

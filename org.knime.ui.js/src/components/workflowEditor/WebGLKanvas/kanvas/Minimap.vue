@@ -9,6 +9,8 @@ import * as $shapes from "@/style/shapes";
 import { clamp } from "@/util/clamp";
 import { markEventAsHandled } from "../util/interaction";
 
+import MiniPreview from "./MiniPreview.vue";
+
 const sizeRatio = 0.15;
 const padding = 4;
 const rightOffset = $shapes.floatingCanvasToolsBottomOffset;
@@ -40,9 +42,15 @@ const minimapBounds = computed(() => {
   };
 });
 
-const minimapScaling = computed(() => ({
-  x: minimapBounds.value.width / worldBounds.value.width,
-  y: minimapBounds.value.height / worldBounds.value.height,
+const minimapTransform = computed(() => ({
+  scale: {
+    x: minimapBounds.value.width / worldBounds.value.width,
+    y: minimapBounds.value.height / worldBounds.value.height,
+  },
+  translate: {
+    x: worldBounds.value.left,
+    y: worldBounds.value.top,
+  },
 }));
 
 const camera = computed(() => {
@@ -51,13 +59,15 @@ const camera = computed(() => {
   const cameraWorldX = -canvasOffset.value.x / zoomFactor.value;
   const cameraWorldY = -canvasOffset.value.y / zoomFactor.value;
 
-  const rectWidth = viewWidth * minimapScaling.value.x;
-  const rectHeight = viewHeight * minimapScaling.value.y;
+  const rectWidth = viewWidth * minimapTransform.value.scale.x;
+  const rectHeight = viewHeight * minimapTransform.value.scale.y;
 
   const offsetX =
-    (cameraWorldX - worldBounds.value.left) * minimapScaling.value.x;
+    (cameraWorldX - minimapTransform.value.translate.x) *
+    minimapTransform.value.scale.x;
   const offsetY =
-    (cameraWorldY - worldBounds.value.top) * minimapScaling.value.y;
+    (cameraWorldY - minimapTransform.value.translate.y) *
+    minimapTransform.value.scale.y;
 
   const miniCameraRect = {
     x: clamp(offsetX, 0, minimapBounds.value.width - rectWidth),
@@ -105,10 +115,10 @@ const onCameraPointerdown = (pointerdown: FederatedPointerEvent) => {
     }
 
     const deltaX =
-      ((pointermove.clientX - lastPan.x) / minimapScaling.value.x) *
+      ((pointermove.clientX - lastPan.x) / minimapTransform.value.scale.x) *
       zoomFactor.value;
     const deltaY =
-      ((pointermove.clientY - lastPan.y) / minimapScaling.value.y) *
+      ((pointermove.clientY - lastPan.y) / minimapTransform.value.scale.y) *
       zoomFactor.value;
 
     canvasStore.setCanvasOffset({
@@ -132,7 +142,7 @@ const onCameraPointerdown = (pointerdown: FederatedPointerEvent) => {
         (graphics) => {
           graphics.clear();
           graphics.rect(0, 0, minimapBounds.width, minimapBounds.height);
-          graphics.stroke({ width: 1, color: 0x000000 });
+          graphics.stroke({ width: 1, color: $colors.Black });
           graphics.fill('white');
         }
       "
@@ -146,10 +156,11 @@ const onCameraPointerdown = (pointerdown: FederatedPointerEvent) => {
         (graphics) => {
           graphics.clear();
           graphics.rect(camera.x, camera.y, camera.width, camera.height);
-          graphics.stroke({ width: 1, color: 'blue' });
+          graphics.stroke({ width: 1, color: $colors.Cornflower });
           graphics.fill({ alpha: 0 });
         }
       "
     />
+    <MiniPreview :minimap-transform="minimapTransform" />
   </Container>
 </template>

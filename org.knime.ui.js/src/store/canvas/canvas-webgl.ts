@@ -54,7 +54,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const pixelRatio = ref(1);
   const isPanning = ref(false);
   const isHoldingDownSpace = ref(false);
-  const isMinimapVisible = ref(false);
+  const isMinimapVisible = ref(true);
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
