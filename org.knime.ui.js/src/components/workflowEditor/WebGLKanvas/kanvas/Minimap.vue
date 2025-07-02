@@ -5,22 +5,24 @@ import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent, Graphics } from "pixi.js";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import * as $shapes from "@/style/shapes";
 import { clamp } from "@/util/clamp";
 import { markEventAsHandled } from "../util/interaction";
 
 const sizeRatio = 0.15;
-const edgeOffset = 20;
+const padding = 4;
+const rightOffset = $shapes.floatingCanvasToolsBottomOffset;
+const bottomOffset =
+  $shapes.floatingCanvasToolsBottomOffset +
+  $shapes.floatingCanvasToolsSize +
+  padding;
 
 const canvasStore = useWebGLCanvasStore();
 
-const {
-  containerSize,
-  canvasOffset,
-  zoomFactor,
-  contentBounds2: contentBounds,
-} = storeToRefs(canvasStore);
+const { containerSize, canvasOffset, zoomFactor, maxWorldContentBounds } =
+  storeToRefs(canvasStore);
 
-const worldBounds = computed(() => contentBounds.value);
+const worldBounds = computed(() => maxWorldContentBounds.value);
 
 const minimapBounds = computed(() => {
   const containerWidth = containerSize.value.width;
@@ -30,8 +32,8 @@ const minimapBounds = computed(() => {
   const height = containerHeight * sizeRatio;
 
   return {
-    x: containerWidth - width - edgeOffset,
-    y: containerHeight - height - edgeOffset,
+    x: containerWidth - width - rightOffset,
+    y: containerHeight - height - bottomOffset,
 
     width,
     height,

@@ -31,11 +31,11 @@ import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteraction
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
+import HelpMenu from "../application/HelpMenu.vue";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
-import ZoomMenu from "./ZoomMenu.vue";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -346,12 +346,14 @@ const { isSVGRenderer } = useCanvasRendererUtils();
         />
       </SubMenu>
 
-      <ZoomMenu
+      <HelpMenu ref="helpMenu" data-test-id="app-header-help-menu" />
+
+      <!-- <ZoomMenu
         v-if="activeWorkflow"
         data-test-id="zoom-menu"
         :disabled="isWorkflowEmpty"
         aria-label="Zoom Menu"
-      />
+      /> -->
     </div>
   </div>
 </template>

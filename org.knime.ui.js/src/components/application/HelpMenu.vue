@@ -4,7 +4,7 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
-import type { MenuItem } from "@knime/components";
+import { type MenuItem, SubMenu } from "@knime/components";
 import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import HubIcon from "@knime/styles/img/icons/cloud-knime.svg";
 import DocsIcon from "@knime/styles/img/icons/file-text.svg";
@@ -18,7 +18,6 @@ import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
 import TeamPlan from "@knime/styles/img/icons/team-group.svg";
 
 import InfoIcon from "@/assets/info.svg";
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -172,12 +171,18 @@ const onItemClick = (_: MouseEvent, item: MenuItem) =>
 
 <template>
   <div>
-    <OptionalSubMenuActionButton
-      class="help-menu"
-      hide-dropdown
-      :item="helpMenuItem"
+    <SubMenu
+      :teleport-to-body="false"
+      orientation="left"
+      class="submenu-button"
+      :disabled="helpMenuItem.disabled"
+      :aria-label="helpMenuItem.title ?? helpMenuItem.text"
+      :items="helpMenuItem.children"
       @item-click="onItemClick"
-    />
+    >
+      <Component :is="helpMenuItem.icon" class="icon" />
+    </SubMenu>
+
     <OpenSourceCreditsModal
       :active="creditsModalActive"
       @update:active="creditsModalActive = false"

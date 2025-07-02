@@ -22,6 +22,7 @@ import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 
 import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
+import FloatingCanvasTools from "./canvasTools/FloatingCanvasTools.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
@@ -167,6 +168,8 @@ const TAB_INDEX = 0;
     <NodeNameEditor />
 
     <NodeLabelEditor />
+
+    <FloatingCanvasTools />
 
     <svg
       v-if="activeWorkflow && isWorkflowEmpty"

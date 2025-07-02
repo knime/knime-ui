@@ -54,6 +54,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const pixelRatio = ref(1);
   const isPanning = ref(false);
   const isHoldingDownSpace = ref(false);
+  const isMinimapVisible = ref(false);
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -700,6 +701,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     contentBounds,
 
     // webgl only
+    isMinimapVisible,
     canvasAnchor,
     pixiApplication,
     canvasLayers,
@@ -716,6 +718,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     findObjectFromScreenCordinates,
     isPanning,
     isHoldingDownSpace,
-    contentBounds2: maxWorldContentBounds,
+    maxWorldContentBounds,
   };
 });

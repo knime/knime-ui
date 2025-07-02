@@ -5,7 +5,9 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { type GraphicsInst } from "@/vue3-pixi";
 
-const { visibleArea, contentBounds2 } = storeToRefs(useWebGLCanvasStore());
+const { visibleArea, maxWorldContentBounds } = storeToRefs(
+  useWebGLCanvasStore(),
+);
 
 const { workflowBounds } = storeToRefs(useWorkflowStore());
 </script>
@@ -24,14 +26,18 @@ const { workflowBounds } = storeToRefs(useWorkflowStore());
       "
     />
 
-    <!-- BOUNDS2 -->
     <Graphics
-      :x="contentBounds2.left"
-      :y="contentBounds2.top"
+      :x="maxWorldContentBounds.left"
+      :y="maxWorldContentBounds.top"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
-          graphics.rect(0, 0, contentBounds2.width, contentBounds2.height);
+          graphics.rect(
+            0,
+            0,
+            maxWorldContentBounds.width,
+            maxWorldContentBounds.height,
+          );
           graphics.fill($colors.AvocadoDark);
         }
       "
