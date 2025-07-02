@@ -352,8 +352,6 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     resizeColumnInfo,
     setResizeColumnInfo,
     resizeColumn,
-
-    // Not sure yet
     updateContentItemConfig,
   };
 });

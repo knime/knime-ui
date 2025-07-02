@@ -298,6 +298,7 @@ onMounted(() => {
   background-color: var(--knime-gray-light-semi);
   height: 50vh;
   padding: var(--space-12) var(--space-12) 0 var(--space-16);
+  max-width: 250px;
 }
 
 .layout {
