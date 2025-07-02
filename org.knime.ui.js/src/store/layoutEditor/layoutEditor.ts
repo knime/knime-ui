@@ -155,6 +155,10 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       widthXS: width,
     });
 
+    row.columns.forEach((column) => {
+      column.widthXS = width;
+    });
+
     const totalWidth = width * newNumberOfColumns;
     if (totalWidth < GRID_SIZE) {
       const delta = GRID_SIZE - totalWidth;
