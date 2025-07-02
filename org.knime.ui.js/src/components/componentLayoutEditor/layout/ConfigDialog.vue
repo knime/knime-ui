@@ -4,7 +4,10 @@ import { onMounted, onUnmounted, ref, watch } from "vue";
 import { InputField, Label, ValueSwitch } from "@knime/components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
-import type { ComponentLayoutView } from "@/store/layoutEditor/types";
+import type {
+  ComponentLayoutView,
+  ComponentLayoutViewConfig,
+} from "@/store/layoutEditor/types";
 
 interface Props {
   item: ComponentLayoutView;
@@ -15,7 +18,7 @@ const emit = defineEmits(["close"]);
 
 const layoutEditorStore = useLayoutEditorStore();
 
-const initialItemConfig = {
+const initialItemConfig: ComponentLayoutViewConfig = {
   resizeMethod: props.item.resizeMethod,
   minWidth: props.item.minWidth,
   maxWidth: props.item.maxWidth,
@@ -37,12 +40,14 @@ const handleKeyUp = (event: KeyboardEvent) => {
   }
 };
 
+// TODO: Escape currently closes the whole modal, not just config dialog
+// But it's not a regression, so not urgent
 onMounted(() => {
-  window.addEventListener("keyup", handleKeyUp);
+  window.addEventListener("keypress", handleKeyUp);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("keyup", handleKeyUp);
+  window.removeEventListener("keypress", handleKeyUp);
 });
 
 watch(resizeMode, (newResizeMode) => {
@@ -63,12 +68,16 @@ watch(resizeMode, (newResizeMode) => {
   }
 });
 
-watch(itemConfig, () => {
-  layoutEditorStore.updateContentItemConfig({
-    item: props.item,
-    config: itemConfig.value,
-  });
-});
+watch(
+  itemConfig,
+  () => {
+    layoutEditorStore.updateContentItemConfig({
+      item: props.item,
+      config: itemConfig.value,
+    });
+  },
+  { deep: true },
+);
 </script>
 
 <template>

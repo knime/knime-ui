@@ -146,7 +146,7 @@ const handleColumnResizeMouseMove = (event) => {
     background-color: var(--resize-color);
     position: absolute;
     right: calc(var(--resize-width) / 2 * -1);
-    z-index: 100;
+    z-index: 10;
     bottom: 0;
     border-style: solid;
     border-width: 10px var(--resize-border-width) 10px

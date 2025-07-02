@@ -10,6 +10,7 @@ import type {
   ComponentLayoutNode,
   ComponentLayoutRow,
   ComponentLayoutView,
+  ComponentLayoutViewConfig,
 } from "./types";
 import {
   cleanLayout,
@@ -282,10 +283,10 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
   };
 
-  // TODO: Type
-  const updateContentItemConfig = (data) => {
-    const item = data.item;
-
+  const updateContentItemConfig = (data: {
+    config: ComponentLayoutViewConfig;
+    item: ComponentLayoutView;
+  }) => {
     // if set to auto, get default resizeMethod from node
     if (data.config.resizeMethod === "auto") {
       const defaultNode = nodes.value.find(
@@ -301,9 +302,9 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     for (let prop in data.config) {
       const value = data.config[prop];
       if (value) {
-        item[prop] = value;
+        data.item[prop] = value;
       } else {
-        delete item[prop];
+        delete data.item[prop];
       }
     }
   };

@@ -7,6 +7,7 @@ import type {
   ComponentLayoutColumnContent,
   ComponentLayoutNode,
   ComponentLayoutRow,
+  ComponentLayoutView,
   RowTemplate,
 } from "@/store/layoutEditor/types";
 
@@ -14,6 +15,14 @@ export const isRow = (
   layout: ComponentLayoutColumnContent,
 ): layout is ComponentLayoutRow =>
   Boolean((layout as ComponentLayoutRow).columns);
+
+export const isView = (
+  layout: ComponentLayoutColumnContent,
+): layout is ComponentLayoutView =>
+  Boolean(
+    (layout as ComponentLayoutView).type === "view" ||
+      (layout as ComponentLayoutView).type === "quickform",
+  );
 
 export const getEmptyLayout = (): ComponentLayout => {
   const column = reactive<ComponentLayoutColumn>({

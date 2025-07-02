@@ -22,6 +22,11 @@ export type ComponentLayoutView = {
   additionalStyles?: string[];
 };
 
+export type ComponentLayoutViewConfig = Pick<
+  ComponentLayoutView,
+  "resizeMethod" | "minWidth" | "maxWidth" | "minHeight" | "maxHeight"
+>;
+
 export type ComponentLayoutNode = {
   nodeID: string;
   preview: null;

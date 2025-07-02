@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useFloating } from "@floating-ui/vue";
+import { computed, ref } from "vue";
+import { onClickOutside } from "@vueuse/core";
+import { autoUpdate, useFloating } from "@floating-ui/vue";
 
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
@@ -10,6 +11,7 @@ import type {
   ComponentLayoutRow,
   ComponentLayoutView,
 } from "@/store/layoutEditor/types";
+import { isRow, isView } from "@/store/layoutEditor/utils";
 
 import ConfigDialog from "./ConfigDialog.vue";
 import EditButton from "./EditButton.vue";
@@ -20,15 +22,20 @@ interface Props {
   item: ComponentLayoutView | ComponentLayoutRow;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const layoutEditorStore = useLayoutEditorStore();
 
+const itemAsView = computed(() => (isView(props.item) ? props.item : null));
 const showConfigDialog = ref(false);
 const reference = ref(null);
 const floating = ref(null);
 const { floatingStyles } = useFloating(reference, floating, {
   strategy: "fixed",
+  whileElementsMounted: autoUpdate,
+});
+onClickOutside(floating, () => {
+  showConfigDialog.value = false;
 });
 </script>
 
@@ -42,7 +49,7 @@ const { floatingStyles } = useFloating(reference, floating, {
       "
       :view="item"
     />
-    <Row v-else-if="item.type === 'row'" :row="item as ComponentLayoutRow" />
+    <Row v-else-if="isRow(item)" :row="item" />
     <div v-else-if="item.type === 'html'">HTML</div>
 
     <EditButton
@@ -54,25 +61,22 @@ const { floatingStyles } = useFloating(reference, floating, {
       <TrashIcon />
     </EditButton>
 
-    <!-- TODO: Figure out how to replace popperjs -->
-    <template v-if="item.type === 'view' || item.type === 'quickform'">
-      <EditButton
-        ref="reference"
-        :class="['config-button', { active: showConfigDialog }]"
-        title="Configure size"
-        @click="showConfigDialog = !showConfigDialog"
-      >
-        <CogIcon />
-      </EditButton>
+    <EditButton
+      v-if="itemAsView"
+      ref="reference"
+      :class="['config-button', { active: showConfigDialog }]"
+      title="Configure size"
+      @click="showConfigDialog = !showConfigDialog"
+    >
+      <CogIcon />
+    </EditButton>
 
-      <Teleport v-if="showConfigDialog" to="body">
-        <ConfigDialog
-          ref="floating"
-          :item="item as ComponentLayoutView"
-          :style="floatingStyles"
-        />
-      </Teleport>
-    </template>
+    <ConfigDialog
+      v-if="itemAsView && showConfigDialog"
+      ref="floating"
+      :item="itemAsView"
+      :style="floatingStyles"
+    />
   </div>
 </template>
 
