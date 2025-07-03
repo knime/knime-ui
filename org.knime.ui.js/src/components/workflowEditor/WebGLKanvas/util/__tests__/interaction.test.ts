@@ -1,0 +1,95 @@
+import { describe, expect, it } from "vitest";
+import type { FederatedPointerEvent } from "pixi.js";
+
+import { markEventAsHandled } from "../interaction";
+
+describe("interaction utils", () => {
+  describe("markEventAsHandled", () => {
+    it("should mark a DOM PointerEvent as handled", () => {
+      const nativeEvent = new PointerEvent("pointerdown");
+      const dataset = {
+        initiator: "text-editing",
+        skipGlobalSelection: true,
+      };
+
+      markEventAsHandled(nativeEvent, dataset);
+
+      expect(nativeEvent.dataset).toEqual({
+        initiator: "text-editing",
+        skipGlobalSelection: true,
+      });
+    });
+
+    it("mark a FederatedPointerEvent as handled", () => {
+      const nativeEvent = new PointerEvent("pointerdown");
+      const federatedEvent = {
+        nativeEvent,
+      } as FederatedPointerEvent;
+
+      const dataset = {
+        initiator: "node-interaction",
+        skipGlobalSelection: true,
+      };
+
+      markEventAsHandled(federatedEvent, dataset);
+
+      expect(nativeEvent.dataset).toEqual({
+        initiator: "node-interaction",
+        skipGlobalSelection: true,
+      });
+    });
+
+    it("should always set skipGlobalSelection to true", () => {
+      const nativeEvent = new PointerEvent("pointerdown");
+      const dataset = {
+        initiator: "test-initiator",
+        skipGlobalSelection: false, // This should be overridden
+      };
+
+      markEventAsHandled(nativeEvent, dataset);
+
+      expect(nativeEvent.dataset).toEqual({
+        initiator: "test-initiator",
+        skipGlobalSelection: true,
+      });
+    });
+
+    it("should handle events with custom dataset properties", () => {
+      const nativeEvent = new PointerEvent("pointerdown");
+      const dataset = {
+        initiator: "custom-handler",
+        customProperty: "custom-value",
+      };
+
+      markEventAsHandled(nativeEvent, dataset);
+
+      expect(nativeEvent.dataset).toEqual({
+        initiator: "custom-handler",
+        customProperty: "custom-value",
+        skipGlobalSelection: true,
+      });
+    });
+
+    it("should distinguish between DOM PointerEvent and FederatedPointerEvent", () => {
+      const domEvent = new PointerEvent("pointerdown");
+      const federatedNativeEvent = new PointerEvent("pointerdown");
+      const federatedEvent = {
+        nativeEvent: federatedNativeEvent,
+      } as FederatedPointerEvent;
+
+      const dataset = {
+        initiator: "type-test",
+        skipGlobalSelection: true,
+      };
+
+      // Test DOM event
+      markEventAsHandled(domEvent, dataset);
+      expect(domEvent.dataset).toEqual(dataset);
+
+      // Test Federated event
+      markEventAsHandled(federatedEvent, dataset);
+      expect(federatedNativeEvent.dataset).toEqual(dataset);
+      expect(federatedEvent.nativeEvent.dataset).toEqual(dataset);
+    });
+  });
+});

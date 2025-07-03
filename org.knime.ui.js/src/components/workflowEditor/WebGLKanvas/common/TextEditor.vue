@@ -6,6 +6,8 @@ import { isNumber } from "lodash-es";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
 
+import { markEventAsHandled } from "../util/interaction";
+
 import { usePauseCanvasInteractions } from "./usePauseCanvasInteractions";
 
 type Props = {
@@ -109,6 +111,14 @@ const onEnterKey = (event: KeyboardEvent) => {
   event.preventDefault();
   emit("save");
 };
+
+const onPointerDown = (event: PointerEvent) => {
+  // Mark this event as handled to prevent other canvas interactions while text editing is active
+  markEventAsHandled(event, {
+    initiator: "text-editing",
+    skipGlobalSelection: true,
+  });
+};
 </script>
 
 <template>
@@ -122,7 +132,7 @@ const onEnterKey = (event: KeyboardEvent) => {
       @keydown.esc.stop.prevent="$emit('cancel')"
       @input="onInput"
       @keydown.enter="onEnterKey"
-      @pointerdown.stop
+      @pointerdown="onPointerDown"
     />
   </div>
 </template>
