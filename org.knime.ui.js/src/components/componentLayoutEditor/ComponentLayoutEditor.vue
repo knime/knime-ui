@@ -136,6 +136,7 @@ onMounted(async () => {
 
       <Draggable
         v-model="rows"
+        force-fallback="true"
         group="content"
         class="layout-preview"
         :component-data="{ isFirstLevel: true }"
@@ -194,6 +195,7 @@ onMounted(async () => {
 }
 
 .layout {
+  position: relative;
   overflow-y: auto;
   height: 50vh;
   min-height: 100px;
