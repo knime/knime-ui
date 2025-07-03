@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { onClickOutside } from "@vueuse/core";
 import { autoUpdate, useFloating } from "@floating-ui/vue";
 
 import CogIcon from "@knime/styles/img/icons/cog.svg";
@@ -33,9 +32,6 @@ const floating = ref(null);
 const { floatingStyles } = useFloating(reference, floating, {
   strategy: "fixed",
   whileElementsMounted: autoUpdate,
-});
-onClickOutside(floating, () => {
-  showConfigDialog.value = false;
 });
 </script>
 
@@ -77,6 +73,13 @@ onClickOutside(floating, () => {
       :item="itemAsView"
       :style="floatingStyles"
     />
+
+    <button
+      v-if="showConfigDialog"
+      class="dialog-overlay"
+      @click.self.stop.prevent="showConfigDialog = false"
+      @mousedown.prevent
+    />
   </div>
 </template>
 
@@ -96,5 +99,17 @@ onClickOutside(floating, () => {
   & .config-button {
     right: 20px;
   }
+}
+
+/* full window overlay to prevent other actions while popover is open */
+.dialog-overlay {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background-color: transparent;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
 }
 </style>
