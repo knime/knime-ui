@@ -5,13 +5,15 @@ import Draggable from "vuedraggable";
 
 import { Button } from "@knime/components";
 
+import { API } from "@/api";
+import { useApplicationStore } from "@/store/application/application";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 import AvailableNodesAndElements from "./AvailableNodesAndElements.vue";
 import Row from "./layout/Row.vue";
 
 const layoutEditorStore = useLayoutEditorStore();
-const { layout, availableNodes } = storeToRefs(layoutEditorStore);
+const { openWorkflow, layout, availableNodes } = storeToRefs(layoutEditorStore);
 
 const rows = computed({
   get() {
@@ -38,176 +40,29 @@ const handleDragEnd = () => {
   layoutEditorStore.setIsDragging(false);
 };
 
-onMounted(() => {
-  layoutEditorStore.setLayout({
-    rows: [
-      {
-        type: "row",
-        columns: [
-          {
-            content: [
-              {
-                type: "view", // HERE IS A VIEW
-                scrolling: false,
-                nodeID: "1",
-                useLegacyMode: false,
-                resizeMethod: "aspectRatio4by3",
-                autoResize: true,
-                sizeHeight: true,
-                sizeWidth: false,
-              },
-              {
-                type: "row",
-                columns: [
-                  {
-                    content: [
-                      {
-                        type: "view", // HERE IS A VIEW
-                        scrolling: false,
-                        nodeID: "2",
-                        useLegacyMode: true,
-                        resizeMethod: "aspectRatio16by9",
-                        autoResize: true,
-                        sizeHeight: true,
-                        sizeWidth: false,
-                      },
-                      {
-                        type: "view", // HERE IS A VIEW
-                        scrolling: false,
-                        nodeID: "3",
-                        useLegacyMode: true,
-                        resizeMethod: "aspectRatio16by9",
-                        autoResize: true,
-                        sizeHeight: true,
-                        sizeWidth: false,
-                      },
-                      {
-                        type: "view", // HERE IS A VIEW
-                        scrolling: false,
-                        nodeID: "4",
-                        useLegacyMode: true,
-                        resizeMethod: "viewLowestElement",
-                        autoResize: true,
-                        sizeHeight: true,
-                        sizeWidth: false,
-                      },
-                    ],
-                    widthXS: 6,
-                  },
-                  {
-                    content: [
-                      {
-                        type: "row",
-                        columns: [
-                          {
-                            content: [
-                              {
-                                type: "view", // HERE IS A VIEW
-                                scrolling: false,
-                                nodeID: "7",
-                                useLegacyMode: true,
-                                resizeMethod: "viewLowestElement",
-                                autoResize: true,
-                                sizeHeight: true,
-                                sizeWidth: false,
-                              },
-                            ],
-                            widthXS: 12,
-                          },
-                        ],
-                      },
-                      {
-                        type: "row",
-                        columns: [
-                          {
-                            content: [
-                              {
-                                type: "view", // HERE IS A VIEW
-                                scrolling: false,
-                                nodeID: "3",
-                                useLegacyMode: true,
-                                resizeMethod: "aspectRatio16by9",
-                                autoResize: true,
-                                sizeHeight: true,
-                                sizeWidth: false,
-                              },
-                            ],
-                            widthXS: 6,
-                          },
-                          {
-                            content: [
-                              {
-                                type: "view", // HERE IS A VIEW
-                                scrolling: false,
-                                nodeID: "2",
-                                useLegacyMode: true,
-                                resizeMethod: "aspectRatio16by9",
-                                autoResize: true,
-                                sizeHeight: true,
-                                sizeWidth: false,
-                              },
-                            ],
-                            widthXS: 6,
-                          },
-                        ],
-                      },
-                    ],
-                    widthXS: 6,
-                  },
-                ],
-              },
-            ],
-            widthXS: 6,
-          },
-          {
-            content: [
-              {
-                type: "view", // HERE IS A VIEW
-                scrolling: false,
-                nodeID: "1",
-                useLegacyMode: true,
-                resizeMethod: "aspectRatio16by9",
-                autoResize: true,
-                sizeHeight: true,
-                sizeWidth: false,
-              },
-            ],
-            widthXS: 6,
-          },
-        ],
-      },
-      {
-        type: "row",
-        columns: [
-          {
-            content: [
-              {
-                type: "view", // HERE IS A VIEW
-                scrolling: false,
-                nodeID: "1",
-                useLegacyMode: true,
-                resizeMethod: "aspectRatio16by9",
-                autoResize: true,
-                sizeHeight: true,
-                sizeWidth: false,
-              },
-              {
-                type: "view", // HERE IS A VIEW
-                scrolling: false,
-                nodeID: "100",
-                useLegacyMode: true,
-                resizeMethod: "aspectRatio16by9",
-                autoResize: true,
-                sizeHeight: true,
-                sizeWidth: false,
-              },
-            ],
-            widthXS: 12,
-          },
-        ],
-      },
-    ],
-  });
+onMounted(async () => {
+  const projectId = useApplicationStore().activeProjectId!;
+  const workflowId = "root";
+  const nodeId = openWorkflow.value?.workflowId;
+
+  const initialLayout = JSON.parse(
+    await API.componenteditor.getViewLayout({
+      projectId,
+      workflowId,
+      nodeId,
+    }),
+  );
+
+  const initialNodes = JSON.parse(
+    await API.componenteditor.getViewNodes({
+      projectId,
+      workflowId,
+      nodeId,
+    }),
+  );
+
+  layoutEditorStore.setLayout(initialLayout);
+  layoutEditorStore.setNodes(initialNodes);
 });
 </script>
 

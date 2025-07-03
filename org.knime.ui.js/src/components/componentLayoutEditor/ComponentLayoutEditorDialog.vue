@@ -4,6 +4,8 @@ import { storeToRefs } from "pinia";
 
 import { Button, LoadingIcon, Modal } from "@knime/components";
 
+import { API } from "@/api";
+import { useApplicationStore } from "@/store/application/application";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
@@ -11,7 +13,7 @@ import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
 const isSubmitted = ref(false);
 
 const layoutEditorStore = useLayoutEditorStore();
-const { openWorkflow } = storeToRefs(layoutEditorStore);
+const { openWorkflow, layout } = storeToRefs(layoutEditorStore);
 
 const closeModal = () => {
   if (isSubmitted.value) {
@@ -21,8 +23,19 @@ const closeModal = () => {
   layoutEditorStore.setOpenWorkflow(null);
 };
 
-const onSubmit = () => {
-  console.log("Close modal and save");
+const onSubmit = async () => {
+  const projectId = useApplicationStore().activeProjectId!;
+  const workflowId = "root";
+  const nodeId = openWorkflow.value?.workflowId;
+
+  // TODO: Error handling
+  await API.componenteditor.pushViewLayout({
+    projectId,
+    workflowId,
+    nodeId,
+    componentViewLayout: JSON.stringify(layout.value),
+  });
+  openWorkflow.value = null;
 };
 </script>
 

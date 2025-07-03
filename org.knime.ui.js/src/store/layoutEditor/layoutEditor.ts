@@ -2,7 +2,6 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import { GRID_SIZE } from "./const";
-import { nodesMock } from "./mocks";
 import type {
   ComponentLayout,
   ComponentLayoutColumn,
@@ -45,6 +44,11 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   const initialLayout = ref<string | null>(null);
 
   const setLayout = (value: ComponentLayout) => {
+    if (!value.rows) {
+      layout.value = getEmptyLayout();
+      return;
+    }
+
     const cleanedLayout = cleanLayout(value);
 
     const layoutAsString = JSON.stringify(cleanedLayout);
@@ -95,7 +99,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   /**
    * Nodes
    */
-  const nodes = ref<ComponentLayoutNode[]>(nodesMock);
+  const nodes = ref<ComponentLayoutNode[]>([]);
 
   const nodeIdsInLayout = computed(() => {
     const allContentArrays = getAllContentArrays(layout.value.rows);
