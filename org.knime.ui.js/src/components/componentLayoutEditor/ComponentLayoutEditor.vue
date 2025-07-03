@@ -7,15 +7,20 @@ import { Button } from "@knime/components";
 import InfoIcon from "@knime/styles/img/icons/circle-info.svg";
 
 import { API } from "@/api";
-import { useApplicationStore } from "@/store/application/application";
+import { GRID_SIZE } from "@/store/layoutEditor/const";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 import AvailableNodesAndElements from "./AvailableNodesAndElements.vue";
 import Row from "./layout/Row.vue";
 
 const layoutEditorStore = useLayoutEditorStore();
-const { openWorkflow, layout, availableNodes, isLegacyModeOutOfSync } =
-  storeToRefs(layoutEditorStore);
+const {
+  openWorkflow,
+  layout,
+  availableNodes,
+  isLegacyModeOutOfSync,
+  isWrappingLayout,
+} = storeToRefs(layoutEditorStore);
 
 const rows = computed({
   get() {
@@ -112,6 +117,13 @@ onMounted(async () => {
         Views not added into the layout and not disabled in Tab 'Node Usage'
         will be shown below layout. To circumvent unexpected behavior, add all
         views into the layout.
+      </div>
+
+      <div v-if="isWrappingLayout" class="alert" role="alert">
+        Your layout has rows with a total column width larger than
+        {{ GRID_SIZE }}, therefore the columns will wrap. The visual editor
+        doesn't support wrapping layouts yet. Please use advanced editor
+        instead.
       </div>
 
       <div v-if="isLegacyModeOutOfSync" class="alert" role="alert">

@@ -319,6 +319,18 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
   };
 
+  const isWrappingLayout = computed(() => {
+    const allColumnArrays = getAllColumnArrays(layout.value.rows);
+    const firstWrappingRow = allColumnArrays.find((columns) => {
+      const totalWidth = columns.reduce(
+        (total, column) => total + column.widthXS,
+        0,
+      );
+      return totalWidth > GRID_SIZE;
+    });
+    return Boolean(firstWrappingRow);
+  });
+
   /**
    * Legacy mode
    */
@@ -382,6 +394,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     setResizeColumnInfo,
     resizeColumn,
     updateContentItemConfig,
+    isWrappingLayout,
 
     // Legacy mode
     setUseLegacyMode,
