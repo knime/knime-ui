@@ -11,14 +11,14 @@ import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
 const isSubmitted = ref(false);
 
 const layoutEditorStore = useLayoutEditorStore();
-const { isOpen } = storeToRefs(layoutEditorStore);
+const { openWorkflow } = storeToRefs(layoutEditorStore);
 
 const closeModal = () => {
   if (isSubmitted.value) {
     return;
   }
 
-  layoutEditorStore.setIsOpen(false);
+  layoutEditorStore.setOpenWorkflow(null);
 };
 
 const onSubmit = () => {
@@ -28,9 +28,7 @@ const onSubmit = () => {
 
 <template>
   <Modal
-    v-show="isOpen"
-    ref="modalRef"
-    :active="isOpen"
+    :active="openWorkflow !== null"
     title="Create a new workflow"
     style-type="info"
     class="modal"

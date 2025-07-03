@@ -62,3 +62,5 @@ export type RowTemplate = {
   name: string;
   data: ComponentLayoutRow;
 };
+
+export type OpenWorkflow = null | { projectId: string; workflowId: string };

@@ -402,8 +402,8 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     group: "componentAndMetanode",
     icon: LayoutIcon,
     execute: () => {
-      useLayoutEditorStore().setIsOpen(true);
-      // useDesktopInteractionsStore().openLayoutEditor();
+      const identifiers = useWorkflowStore().getProjectAndWorkflowIds;
+      useLayoutEditorStore().setOpenWorkflow(identifiers);
     },
     condition: () => {
       const workflow = useWorkflowStore().activeWorkflow!;

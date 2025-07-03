@@ -11,6 +11,7 @@ import type {
   ComponentLayoutRow,
   ComponentLayoutView,
   ComponentLayoutViewConfig,
+  OpenWorkflow,
 } from "./types";
 import {
   cleanLayout,
@@ -22,13 +23,10 @@ import {
 } from "./utils";
 
 export const useLayoutEditorStore = defineStore("layoutEditor", () => {
-  /**
-   * Modal
-   */
-  const isOpen = ref<boolean>(false);
+  const openWorkflow = ref<OpenWorkflow>(null);
 
-  const setIsOpen = (value: boolean) => {
-    isOpen.value = value;
+  const setOpenWorkflow = (value: OpenWorkflow) => {
+    openWorkflow.value = value;
   };
 
   /**
@@ -317,9 +315,8 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   };
 
   return {
-    // Modal
-    isOpen,
-    setIsOpen,
+    openWorkflow,
+    setOpenWorkflow,
 
     // Dragging state
     isDragging,
