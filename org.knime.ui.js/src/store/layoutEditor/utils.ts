@@ -154,7 +154,7 @@ export const createViewFromRowTemplate = ({
 export const checkMove = (event) => {
   // only allow rows to be dropped in first level
   const targetComponent = event.relatedContext.component;
-  if (targetComponent?.options?.isFirstLevel) {
+  if (targetComponent?.componentData?.isFirstLevel) {
     if (event.draggedContext.element.type === "row") {
       return true;
     }
