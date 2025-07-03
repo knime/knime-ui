@@ -83,6 +83,7 @@ const handleColumnResizeMouseMove = (event) => {
     v-model="content"
     group="content"
     draggable=".draggable"
+    filter=".config-dialog, .legacy-info"
     :class="['column', { resizable }]"
     :style="{ gridColumn: `span ${column.widthXS}` }"
     item-key="itemID"

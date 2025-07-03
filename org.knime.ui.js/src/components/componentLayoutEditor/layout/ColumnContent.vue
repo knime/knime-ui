@@ -157,6 +157,7 @@ const closeDialogs = () => {
 .legacy-info {
   background-color: var(--knime-white);
   box-shadow: var(--shadow-elevation-2);
+  cursor: default;
   padding: var(--space-8);
   width: 360px;
   z-index: 100;

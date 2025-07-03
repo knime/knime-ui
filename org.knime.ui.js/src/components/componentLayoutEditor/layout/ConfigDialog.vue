@@ -176,6 +176,7 @@ watch(
   color: inherit;
   text-align: left;
   border: none;
+  cursor: default;
   font-size: inherit;
   background: var(--knime-white);
   padding: var(--space-8);
