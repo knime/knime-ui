@@ -402,8 +402,23 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     group: "componentAndMetanode",
     icon: LayoutIcon,
     execute: () => {
-      const identifiers = useWorkflowStore().getProjectAndWorkflowIds;
-      useLayoutEditorStore().setOpenWorkflow(identifiers);
+      // We are opening the component editor from within the component here,
+      // so the workflowId is the nodeId of the component we want to show the editors for
+      const { projectId , workflowId : nodeId } = useWorkflowStore().getProjectAndWorkflowIds;
+
+      const activeWorkflow = useWorkflowStore().activeWorkflow;
+      const parents = activeWorkflow?.parents?.at(0);
+
+      if(!parents?.containerId) {
+        consola.debug("No containerId found in parent of active workflow when trying to open layout editor. " +
+          "Defaulting to nodeId assuming its a component project, which is: ", nodeId, );
+      }
+
+      useLayoutEditorStore().setOpenWorkflow({
+        projectId,
+        workflowId : parents?.containerId || nodeId,
+        nodeId
+      });
     },
     condition: () => {
       const workflow = useWorkflowStore().activeWorkflow!;

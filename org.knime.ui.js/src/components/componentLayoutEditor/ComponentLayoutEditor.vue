@@ -41,24 +41,17 @@ const handleDragEnd = () => {
 };
 
 onMounted(async () => {
-  const projectId = useApplicationStore().activeProjectId!;
-  const workflowId = "root";
-  const nodeId = openWorkflow.value?.workflowId;
+  if (openWorkflow.value === null) {
+    consola.warn("No workflow is currently open for editing.");
+    return;
+  }
 
   const initialLayout = JSON.parse(
-    await API.componenteditor.getViewLayout({
-      projectId,
-      workflowId,
-      nodeId,
-    }),
+    await API.componenteditor.getViewLayout(openWorkflow.value),
   );
 
   const initialNodes = JSON.parse(
-    await API.componenteditor.getViewNodes({
-      projectId,
-      workflowId,
-      nodeId,
-    }),
+    await API.componenteditor.getViewNodes(openWorkflow.value),
   );
 
   layoutEditorStore.setLayout(initialLayout);

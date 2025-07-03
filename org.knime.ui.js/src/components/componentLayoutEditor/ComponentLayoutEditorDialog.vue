@@ -24,15 +24,14 @@ const closeModal = () => {
 };
 
 const onSubmit = async () => {
-  const projectId = useApplicationStore().activeProjectId!;
-  const workflowId = "root";
-  const nodeId = openWorkflow.value?.workflowId;
+  if (openWorkflow.value === null) {
+    consola.warn("No workflow is currently open for editing.");
+    return;
+  }
 
   // TODO: Error handling
   await API.componenteditor.pushViewLayout({
-    projectId,
-    workflowId,
-    nodeId,
+    ...openWorkflow.value,
     componentViewLayout: JSON.stringify(layout.value),
   });
   openWorkflow.value = null;
