@@ -19,6 +19,7 @@ import {
   getAllColumnArrays,
   getAllContentArrays,
   getEmptyLayout,
+  isView,
 } from "./utils";
 
 export const useLayoutEditorStore = defineStore("layoutEditor", () => {
@@ -318,6 +319,33 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
   };
 
+  /**
+   * Legacy mode
+   */
+  const setUseLegacyMode = (value) => {
+    // set parent layout legacy mode
+    layout.value.parentLayoutLegacyMode = value;
+    // set view legacy mode
+    getAllContentArrays(layout.value.rows).forEach((contentArray) => {
+      contentArray.forEach((content) => {
+        if (isView(content) && typeof content.useLegacyMode === "undefined") {
+          content.useLegacyMode = value;
+        }
+      });
+    });
+  };
+
+  const isLegacyModeOutOfSync = computed(() => {
+    return getAllContentArrays(layout.value.rows).some((contentArray) =>
+      contentArray.some((content) => {
+        if (isView(content) && typeof content.useLegacyMode === "undefined") {
+          return content.useLegacyMode !== layout.value.parentLayoutLegacyMode;
+        }
+        return false;
+      }),
+    );
+  });
+
   return {
     openWorkflow,
     setOpenWorkflow,
@@ -354,5 +382,9 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     setResizeColumnInfo,
     resizeColumn,
     updateContentItemConfig,
+
+    // Legacy mode
+    setUseLegacyMode,
+    isLegacyModeOutOfSync,
   };
 });

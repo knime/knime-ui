@@ -8,7 +8,7 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import { GRID_SIZE } from "@/store/layoutEditor/const";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import type { ComponentLayoutColumn } from "@/store/layoutEditor/types";
-import { checkMove } from "@/store/layoutEditor/utils";
+import { checkMove, isView } from "@/store/layoutEditor/utils";
 
 import ColumnContent from "./ColumnContent.vue";
 import EditButton from "./EditButton.vue";
@@ -25,7 +25,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const layoutEditorStore = useLayoutEditorStore();
-const { resizeColumnInfo } = storeToRefs(layoutEditorStore);
+const { layout, resizeColumnInfo } = storeToRefs(layoutEditorStore);
 
 const content = computed({
   get() {
@@ -35,13 +35,14 @@ const content = computed({
     let changedItem = false;
     // ensure newly added nodes respect the current legacy mode settings
     newContent
-      .filter((item) => item.type === "view")
+      .filter((item) => isView(item))
       .forEach((item, itemIndex) => {
         if (
           !changedItem &&
           JSON.stringify(item) !== JSON.stringify(content.value[itemIndex])
         ) {
           changedItem = true;
+          item.useLegacyMode = layout.value.parentLayoutLegacyMode;
         }
       });
     layoutEditorStore.updateColumnContent({

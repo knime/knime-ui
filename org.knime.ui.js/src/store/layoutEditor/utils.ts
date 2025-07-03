@@ -32,6 +32,8 @@ export const getEmptyLayout = (): ComponentLayout => {
 
   return {
     rows: [{ type: "row", columns: [column] }],
+    // when the layout is cleared, disable legacy mode by default
+    parentLayoutLegacyMode: false,
   };
 };
 
@@ -99,10 +101,8 @@ export const generateRowTemplates = (): RowTemplate[] => {
 export const cleanLayout = function (layout: ComponentLayout) {
   const nodeIDs: string[] = [];
 
-  const recursiveClean = function (
-    layout: Array<ComponentLayoutColumnContent>,
-  ) {
-    const newLayout = layout.filter((item) => {
+  const recursiveClean = function (rows: Array<ComponentLayoutColumnContent>) {
+    const newLayout = rows.filter((item) => {
       if (isRow(item)) {
         if (Array.isArray(item.columns)) {
           item.columns = item.columns.filter((column) => {
@@ -126,6 +126,10 @@ export const cleanLayout = function (layout: ComponentLayout) {
           return false;
         }
       } else if (item.hasOwnProperty("nodeID")) {
+        // if nodes are loaded without legacy mode, ensure they respect the current settings
+        if (isView(item) && typeof item.useLegacyMode === "undefined") {
+          item.useLegacyMode = layout.parentLayoutLegacyMode;
+        }
         if (nodeIDs.includes(item.nodeID)) {
           // remove duplicate nodes
           return false;
@@ -141,7 +145,10 @@ export const cleanLayout = function (layout: ComponentLayout) {
     return newLayout;
   };
 
-  return { rows: recursiveClean(layout.rows) };
+  return {
+    rows: recursiveClean(layout.rows),
+    parentLayoutLegacyMode: layout.parentLayoutLegacyMode,
+  };
 };
 
 export const createViewFromNode = ({ layout }: ComponentLayoutNode) =>

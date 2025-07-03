@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
 import { Button } from "@knime/components";
+import InfoIcon from "@knime/styles/img/icons/circle-info.svg";
 
 import { API } from "@/api";
 import { useApplicationStore } from "@/store/application/application";
@@ -13,7 +14,8 @@ import AvailableNodesAndElements from "./AvailableNodesAndElements.vue";
 import Row from "./layout/Row.vue";
 
 const layoutEditorStore = useLayoutEditorStore();
-const { openWorkflow, layout, availableNodes } = storeToRefs(layoutEditorStore);
+const { openWorkflow, layout, availableNodes, isLegacyModeOutOfSync } =
+  storeToRefs(layoutEditorStore);
 
 const rows = computed({
   get() {
@@ -38,6 +40,11 @@ const handleDragStart = () => {
 
 const handleDragEnd = () => {
   layoutEditorStore.setIsDragging(false);
+};
+
+const handleLegacyModeToggle = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  layoutEditorStore.setUseLegacyMode(target.checked);
 };
 
 onMounted(async () => {
@@ -81,6 +88,23 @@ onMounted(async () => {
       </Button>
 
       <AvailableNodesAndElements />
+
+      <label title="Enable legacy styling for supported views">
+        <input
+          :checked="layout.parentLayoutLegacyMode"
+          type="checkbox"
+          @change="handleLegacyModeToggle"
+        />
+        Use legacy mode
+      </label>
+      <button
+        v-if="true"
+        title="Legacy mode for some view may not match this setting"
+        class="legacy-info"
+        disabled="true"
+      >
+        <InfoIcon />
+      </button>
     </div>
 
     <div class="layout">
@@ -88,6 +112,14 @@ onMounted(async () => {
         Views not added into the layout and not disabled in Tab 'Node Usage'
         will be shown below layout. To circumvent unexpected behavior, add all
         views into the layout.
+      </div>
+
+      <div v-if="isLegacyModeOutOfSync" class="alert" role="alert">
+        The legacy mode setting of some views in the layout do not match parent
+        layout legacy mode setting. This may have been caused by changes made in
+        the advanced layout editor. If this was intentional, you can ignore this
+        warning. Otherwise, toggle the "Use legacy mode" option to synchronize
+        the settings.
       </div>
 
       <Draggable
@@ -171,5 +203,12 @@ onMounted(async () => {
 
 .alert {
   color: var(--knime-carrot);
+}
+
+.legacy-info {
+  border: none;
+  height: 14px;
+  width: 14px;
+  padding: 0;
 }
 </style>

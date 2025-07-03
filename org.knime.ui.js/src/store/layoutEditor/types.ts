@@ -7,6 +7,7 @@
 export type ComponentLayoutView = {
   nodeID: string;
   type: string;
+  useLegacyMode?: boolean;
   resizeMethod?: string;
   resizeInterval?: null;
   resizeTolerance?: null;
@@ -37,6 +38,7 @@ export type ComponentLayoutNode = {
   type: string;
   layout: ComponentLayoutView;
   name: string;
+  containerLegacyModeEnabled?: boolean;
 };
 
 export type ComponentLayoutColumnContent =
@@ -56,6 +58,7 @@ export type ComponentLayoutRow = {
 
 export type ComponentLayout = {
   rows: ComponentLayoutRow[];
+  parentLayoutLegacyMode: boolean;
 };
 
 export type RowTemplate = {
