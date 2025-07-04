@@ -34,6 +34,8 @@ export const nodeLabelText: TextStylePreset = {
     // fixes slight cut off of some chars
     padding: 2,
     align: "center",
+    wordWrapWidth: 300,
+    wordWrap: true,
   },
 };
 

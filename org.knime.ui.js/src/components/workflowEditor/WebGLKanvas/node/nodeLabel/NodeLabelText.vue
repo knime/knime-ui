@@ -14,6 +14,8 @@ import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
 import { markEventAsHandled } from "../../util/interaction";
 import { nodeLabelText } from "../../util/textStyles";
 
+import { getNodeLabelTopOffset } from "./getNodeLabelTopOffset";
+
 const props = defineProps<{
   nodeId: string;
   isNodeSelected: boolean;
@@ -45,7 +47,9 @@ const showEmptyState = computed(
 );
 
 const label = computed(() =>
-  showEmptyState.value ? "Add comment" : props.label!,
+  showEmptyState.value
+    ? "Add comment"
+    : props.label?.replaceAll("\r\n", "\n") ?? "",
 );
 
 const labelMeasures = computed(() => {
@@ -53,7 +57,7 @@ const labelMeasures = computed(() => {
     label.value,
     new TextStyle(nodeLabelText.styles),
     undefined,
-    false,
+    Boolean(nodeLabelText.styles.wordWrap),
   );
 });
 
@@ -73,11 +77,11 @@ const renderBorder = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics.rect(
     -labelMeasures.value.width / 2 - borderPadding,
-    0,
+    getNodeLabelTopOffset(props.nodeId),
     labelMeasures.value.width + borderPadding * 2,
-    labelMeasures.value.height,
+    labelMeasures.value.height + 3,
   );
-  graphics.stroke($colors.SilverSand);
+  graphics.stroke({ color: $colors.SilverSand, width: 1.3 });
 };
 </script>
 
@@ -89,6 +93,7 @@ const renderBorder = (graphics: GraphicsInst) => {
       :style="textStyle"
       :round-pixels="true"
       :x="-labelMeasures.width / 2 + 1"
+      :y="getNodeLabelTopOffset(nodeId) + 0.5"
       event-mode="static"
       @pointerenter="hover = true"
       @pointerleave="hover = false"

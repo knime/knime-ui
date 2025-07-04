@@ -16,6 +16,9 @@ import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";
 import TextEditor from "../../common/TextEditor.vue";
+import { nodeLabelText } from "../../util/textStyles";
+
+import { getNodeLabelTopOffset } from "./getNodeLabelTopOffset";
 
 const nodeInteractionsStore = useNodeInteractionsStore();
 const { labelEditorNodeId } = storeToRefs(nodeInteractionsStore);
@@ -73,21 +76,23 @@ const onSave = async () => {
 };
 
 const actionBarStyle = computed(() => {
-  const top =
-    editedNode.value && isNodeMetaNode(editedNode.value) ? "20px" : "43px";
+  const top = editedNode.value && isNodeMetaNode(editedNode.value) ? 20 : 43;
 
   return {
-    top,
+    top: `${top + getNodeLabelTopOffset(editedNode.value!.id)}px`,
     left: "-13.5px",
   };
 });
 
 const textEditorStyle = computed(() => {
   const xOffset = nodeSize / 2;
-  const yOffset =
+
+  const baseYOffset =
     editedNode.value && isNodeMetaNode(editedNode.value)
       ? nodeSize + 12
       : nodeSize * 2;
+
+  const yOffset = baseYOffset + getNodeLabelTopOffset(editedNode.value!.id) + 1;
 
   return {
     transform: `translateX(calc(-50% + ${xOffset}px)) translateY(${yOffset}px)`,
@@ -127,6 +132,8 @@ onClickOutside(textEditorWrapper, onSave);
       <TextEditor
         :style="textEditorStyle"
         :width-offset="2"
+        :max-width="nodeLabelText.styles.wordWrapWidth"
+        :min-width="2"
         :value="editedNode?.annotation?.text.value ?? ''"
         class="label-text-editor"
         :max-length="$characterLimits.nodeLabel"
@@ -151,7 +158,7 @@ onClickOutside(textEditorWrapper, onSave);
   text-align: center;
   font-weight: normal;
   border: 1.5px solid var(--knime-silver-sand);
-  line-height: 1.31;
+  line-height: 1.3;
   padding: 1px;
 
   &:focus-within {
