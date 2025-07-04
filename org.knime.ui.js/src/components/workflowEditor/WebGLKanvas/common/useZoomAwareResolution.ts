@@ -15,6 +15,9 @@ const getRandomInt = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
+// Clamp resolution to prevent extreme values that cause PIXI.HTMLText rendering issues
+const MAX_RESOLUTION = 3;
+
 const zoomToResolution = (zoomFactor: number) => {
   if (zoomFactor > 3.5) {
     return 5;
@@ -37,7 +40,10 @@ export const useZoomAwareResolution = () => {
   watchThrottled(
     [zoomFactor, pixelRatio],
     ([zoomFactor, pixelRatio]) => {
-      const targetResolution = round(zoomToResolution(zoomFactor) * pixelRatio);
+      const baseResolution = zoomToResolution(zoomFactor);
+      const targetResolution = round(
+        Math.min(MAX_RESOLUTION, baseResolution * pixelRatio),
+      );
 
       // only update if we have a change
       if (targetResolution !== resolution.value) {
@@ -47,11 +53,7 @@ export const useZoomAwareResolution = () => {
           "to",
           targetResolution,
         );
-        if (targetResolution > resolution.value) {
-          resolution.value = targetResolution;
-        } else {
-          resolution.value = targetResolution;
-        }
+        resolution.value = targetResolution;
       }
     },
     { immediate: true, throttle: throttleMs },
