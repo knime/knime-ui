@@ -490,6 +490,9 @@ export const useLifecycleStore = defineStore("lifecycle", {
               newWorkflow.version === undefined
                 ? activeWorkflow?.info.version
                 : newWorkflow.version,
+            // If the version switch failed, we want to fallback to the previous version
+            fallbackVersionId:
+              activeWorkflow?.info.version ?? CURRENT_STATE_VERSION,
           });
         }
       }
@@ -501,23 +504,45 @@ export const useLifecycleStore = defineStore("lifecycle", {
       projectId,
       workflowId = "root",
       versionId = null,
+      fallbackVersionId = null,
     }: {
       projectId: string;
       workflowId?: string;
       versionId?: string | null;
+      fallbackVersionId?: string | null;
     }) {
+      let loadedVersion; // To track the version that was successfully loaded
       if (isDesktop()) {
-        // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
+        // Ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
         const projectActivationError = new ProjectActivationError(
           `Failed to set active project ${projectId}`,
         );
         try {
-          const isProjectLoadedInAppState =
+          // (1) If a fallback version is provided, we don't remove the project on failure
+          // TODO NXT-3867 solution will be replaced by workflow load error handling
+          const removeProjectIfNotLoaded = !fallbackVersionId;
+          let isProjectLoadedInAppState =
             await API.desktop.setProjectActiveAndEnsureItsLoaded({
               projectId,
               versionId: versionId ?? CURRENT_STATE_VERSION,
+              removeProjectIfNotLoaded,
             });
+          loadedVersion = versionId;
 
+          // (2) If the project is not loaded, we try to load the fallback version
+          if (!isProjectLoadedInAppState) {
+            if (fallbackVersionId) {
+              isProjectLoadedInAppState =
+                await API.desktop.setProjectActiveAndEnsureItsLoaded({
+                  projectId,
+                  versionId: fallbackVersionId ?? CURRENT_STATE_VERSION,
+                  removeProjectIfNotLoaded: true,
+                });
+              loadedVersion = fallbackVersionId;
+            }
+          }
+
+          // (3) If the project is still not loaded, we throw an error
           if (!isProjectLoadedInAppState) {
             throw projectActivationError;
           }
@@ -530,7 +555,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
         {
           projectId,
           workflowId,
-          versionId: versionId ?? CURRENT_STATE_VERSION,
+          versionId: loadedVersion, // To make sure the correct project version is fetched
           includeInteractionInfo: true,
         };
 

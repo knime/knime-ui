@@ -167,10 +167,14 @@ final class ProjectAPI {
      *
      * @param projectId The project ID
      * @param versionId The version ID, can be {@code null} meaning current state.
+     * @param removeProjectIfNotLoaded If {@code true}, the project will be removed from the {@link ProjectManager} if
+     *            it could not be loaded. This is helpful in case of version switches: we might try to re-load the
+     *            previously loaded version before we removing the project entirely.
      * @return Whether the project is or has been loaded successfully
      */
     @API
-    static boolean setProjectActiveAndEnsureItsLoaded(final String projectId, final String versionId) {
+    static boolean setProjectActiveAndEnsureItsLoaded(final String projectId, final String versionId,
+        final boolean removeProjectIfNotLoaded) {
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);
         var appStateUpdater = DesktopAPI.getDeps(AppStateUpdater.class);
 
@@ -178,29 +182,31 @@ final class ProjectAPI {
         var version = VersionId.parse(versionId);
         closeAllOpenViewsIfSwitchingVersions(project, version);
 
-        // project already loaded
+        // Project already loaded
         if (project.getWorkflowManagerIfLoaded(version).isPresent()) {
             projectManager.setProjectActive(projectId, version);
-            appStateUpdater.updateAppState(); // Since we changed the application state by setting the project active
+            appStateUpdater.updateAppState();
             return true;
         }
 
-        // project not yet loaded, load
+        // Project not yet loaded, load
         var wfm = project.getFromCacheOrLoadWorkflowManager(version).orElse(null);
-
-        // cleanup if project cannot be loaded
         if (wfm == null) {
-            projectManager.removeProject(projectId);
+            // TODO NXT-3867: solution will be superseded by workflow load error handling
+            if (removeProjectIfNotLoaded) {
+                // Cleanup if project cannot be loaded
+                projectManager.removeProject(projectId);
+                appStateUpdater.updateAppState();
+            }
             NodeLogger.getLogger(ProjectAPI.class)
                 .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
-            appStateUpdater.updateAppState();
             return false;
         }
 
-        // project has just been loaded
+        // Project has just been loaded
         trackWorkflowOpeningIfCurrentState(project, version);
         projectManager.setProjectActive(projectId, version);
-        appStateUpdater.updateAppState(); // Since we changed the application state by setting the project active
+        appStateUpdater.updateAppState();
         return true;
     }
 

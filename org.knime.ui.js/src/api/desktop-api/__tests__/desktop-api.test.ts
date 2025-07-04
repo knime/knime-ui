@@ -121,6 +121,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     params: [
       ["projectId", "1"],
       ["versionId", "current-state"],
+      ["removeProjectIfNotLoaded", "true"],
     ],
     blocksUi: true,
   },

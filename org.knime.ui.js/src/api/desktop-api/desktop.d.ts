@@ -77,6 +77,8 @@ declare function forceCloseProjects(...args: string[]): void;
 declare function setProjectActiveAndEnsureItsLoaded(
   projectId: string,
   versionId: string,
+  // TODO NXT-3867: solution will be superseded by workflow load error handling
+  removeProjectIfNotLoaded: boolean,
 ): boolean;
 
 declare function openLayoutEditor(

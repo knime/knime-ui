@@ -178,6 +178,7 @@ describe("application::lifecycle", () => {
       ).toHaveBeenCalledWith({
         projectId: mockWorkflow.projectId,
         versionId: CURRENT_STATE_VERSION,
+        removeProjectIfNotLoaded: true,
       });
       expect(workflowStore.activeWorkflow).toStrictEqual(mockWorkflow);
       expect(workflowStore.activeSnapshotId).toBe("snap");
@@ -221,6 +222,7 @@ describe("application::lifecycle", () => {
       ).toHaveBeenCalledWith({
         projectId: mockWorkflow.projectId,
         versionId,
+        removeProjectIfNotLoaded: true,
       });
       expect(workflowStore.activeWorkflow).toStrictEqual(mockWorkflow);
       expect(workflowStore.activeSnapshotId).toBe("snap");
@@ -256,6 +258,7 @@ describe("application::lifecycle", () => {
       ).toHaveBeenCalledWith({
         projectId: mockWorkflow.projectId,
         versionId: CURRENT_STATE_VERSION,
+        removeProjectIfNotLoaded: true,
       });
       expect(onWorkflowLoaded).not.toHaveBeenCalled();
       expect(mockedAPI.workflow.getWorkflow).not.toHaveBeenCalled();
@@ -281,6 +284,7 @@ describe("application::lifecycle", () => {
       await expect(() =>
         lifecycleStore.loadWorkflow({
           projectId: mockWorkflow.projectId,
+          versionId: CURRENT_STATE_VERSION,
         }),
       ).rejects.toBeInstanceOf(ProjectDataLoadError);
       expect(workflowStore.setWorkflowLoadingError).toHaveBeenCalledWith(error);
@@ -290,6 +294,7 @@ describe("application::lifecycle", () => {
       ).toHaveBeenCalledWith({
         projectId: mockWorkflow.projectId,
         versionId: CURRENT_STATE_VERSION,
+        removeProjectIfNotLoaded: true,
       });
       expect(onWorkflowLoaded).not.toHaveBeenCalled();
       expect(lifecycleStore.afterSetActivateWorkflow).not.toHaveBeenCalled();
