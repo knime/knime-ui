@@ -56,7 +56,7 @@ import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.webui.WebUIUtil;
-import org.knime.js.cef.CEFSystemProperties;
+import org.knime.js.cef.CEFUtils;
 import org.knime.js.cef.CEFZoomSync;
 import org.knime.ui.java.api.ImportURI;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
@@ -82,7 +82,7 @@ public class KnimeBrowserLocationListener implements LocationListener {
     public void changing(final LocationEvent event) {
         if (isCEFMiddlewareResource(event.location)) {
             // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isDevToolsPage(event.location)) {
+        } else if (CEFUtils.isDevToolsPage(event.location)) {
             // Allow location change to dev tools page.
         } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
             // Allow location change, but run the reload life-cycle state transition
@@ -127,15 +127,6 @@ public class KnimeBrowserLocationListener implements LocationListener {
     private static boolean isDevPage(final String url) {
         var devUrl = System.getProperty(KnimeBrowserView.DEV_URL_PROP);
         return devUrl != null && url.startsWith(devUrl);
-    }
-
-    static boolean isDevToolsPage(final String url) {
-        var remoteDebuggingPort = CEFSystemProperties.getRemoteDebuggingPort();
-        if (remoteDebuggingPort == null) {
-            return false;
-        } else {
-            return url.startsWith("http://localhost:" + remoteDebuggingPort + "/devtools/inspector.html");
-        }
     }
 
 }

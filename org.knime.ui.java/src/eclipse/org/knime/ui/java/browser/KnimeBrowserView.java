@@ -45,7 +45,6 @@
  */
 package org.knime.ui.java.browser;
 
-import static org.knime.ui.java.browser.KnimeBrowserLocationListener.isDevToolsPage;
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.util.Optional;
@@ -58,15 +57,13 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.webui.WebUIUtil;
+import org.knime.js.cef.CEFBrowserWindow;
 import org.knime.js.cef.CEFUtils;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
 import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.WindowEvent;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -107,8 +104,6 @@ public class KnimeBrowserView {
     private static KnimeBrowserHealthChecker healthChecker;
 
     static boolean isInitialized;
-
-    private static Shell devToolsShell;
 
     /**
      * Activates the view initializer that will be executed as soon as this view becomes finally visible (again). Once
@@ -170,7 +165,7 @@ public class KnimeBrowserView {
 
         browser = new Browser(parent, SWT.NONE); // NOSONAR
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
-        browser.addOpenWindowListener(KnimeBrowserView::cancelAndOpenInBrowser);
+        browser.addOpenWindowListener(e -> CEFBrowserWindow.open(e, browser));
         browser.setMenu(new Menu(browser.getShell()));
         CEFUtils.registerNodeLogger(LOGGER, browser);
 
@@ -180,46 +175,6 @@ public class KnimeBrowserView {
             viewInitializer = () -> initView(false, true);
         }
 
-    }
-
-    private static void cancelAndOpenInBrowser(final WindowEvent windowEvent) {
-        cancelNavigation(windowEvent);
-        if (windowEvent.data instanceof String location) {
-            if (isDevToolsPage(location)) {
-                // open dev tools in a separate application window
-                if (devToolsShell == null) {
-                    devToolsShell = CEFUtils.openAndGetBrowserWindow(location);
-                    devToolsShell.addDisposeListener(e -> KnimeBrowserView.devToolsShell = null);
-                } else {
-                    devToolsShell.setFocus();
-                }
-                return;
-            }
-            openBrowserWindow(location);
-        } else {
-            LOGGER.warnWithFormat("Event payload %s is not a valid navigation target -- must be a string",
-                windowEvent.data);
-        }
-    }
-
-    private static void cancelNavigation(final WindowEvent windowEvent) {
-        windowEvent.required = true;
-        windowEvent.browser = null;
-    }
-
-    /**
-     * Open a new browser window.
-     *
-     * @param location The location to navigate the new window to.
-     */
-    @SuppressWarnings("restriction")
-    private static void openBrowserWindow(final String location) {
-        if (Boolean.getBoolean("org.knime.ui.java.use_cef_browser_for_external_links")) {
-            // For testing purposes only!
-            CEFUtils.openBrowserWindow(location);
-        } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(location, KnimeBrowserView.class);
-        }
     }
 
     @Inject
