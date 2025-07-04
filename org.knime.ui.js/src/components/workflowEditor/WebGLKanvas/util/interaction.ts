@@ -24,8 +24,9 @@ export const markEventAsHandled = (
     );
   }
 
+  const { initiator, skipGlobalSelection = true } = dataset;
   nativeEvent.dataset = {
-    ...dataset,
-    skipGlobalSelection: true,
+    initiator,
+    skipGlobalSelection,
   };
 };

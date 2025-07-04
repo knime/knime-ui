@@ -9,7 +9,6 @@ describe("interaction utils", () => {
       const nativeEvent = new PointerEvent("pointerdown");
       const dataset = {
         initiator: "text-editing",
-        skipGlobalSelection: true,
       };
 
       markEventAsHandled(nativeEvent, dataset);
@@ -28,7 +27,6 @@ describe("interaction utils", () => {
 
       const dataset = {
         initiator: "node-interaction",
-        skipGlobalSelection: true,
       };
 
       markEventAsHandled(federatedEvent, dataset);
@@ -39,34 +37,18 @@ describe("interaction utils", () => {
       });
     });
 
-    it("should always set skipGlobalSelection to true", () => {
+    it("should override the skipGlobalSelection default", () => {
       const nativeEvent = new PointerEvent("pointerdown");
       const dataset = {
         initiator: "test-initiator",
-        skipGlobalSelection: false, // This should be overridden
+        skipGlobalSelection: false,
       };
 
       markEventAsHandled(nativeEvent, dataset);
 
       expect(nativeEvent.dataset).toEqual({
         initiator: "test-initiator",
-        skipGlobalSelection: true,
-      });
-    });
-
-    it("should handle events with custom dataset properties", () => {
-      const nativeEvent = new PointerEvent("pointerdown");
-      const dataset = {
-        initiator: "custom-handler",
-        customProperty: "custom-value",
-      };
-
-      markEventAsHandled(nativeEvent, dataset);
-
-      expect(nativeEvent.dataset).toEqual({
-        initiator: "custom-handler",
-        customProperty: "custom-value",
-        skipGlobalSelection: true,
+        skipGlobalSelection: false,
       });
     });
 
