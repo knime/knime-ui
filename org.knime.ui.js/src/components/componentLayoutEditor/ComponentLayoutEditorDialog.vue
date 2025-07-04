@@ -1,19 +1,34 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import { Button, LoadingIcon, Modal } from "@knime/components";
+import { Button, LoadingIcon, Modal, TabBar } from "@knime/components";
 
 import { API } from "@/api";
-import { useApplicationStore } from "@/store/application/application";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 import ComponentLayoutEditor from "./ComponentLayoutEditor.vue";
 
 const isSubmitted = ref(false);
+const activeTab = ref("componentLayoutEditor");
 
 const layoutEditorStore = useLayoutEditorStore();
 const { openWorkflow, layout } = storeToRefs(layoutEditorStore);
+
+const possibleTabValues = computed(() => [
+  {
+    value: "componentLayoutEditor",
+    label: "Composite View Layout",
+  },
+  {
+    value: "advancedComponentLayoutEditor",
+    label: "Advanced Composite View Layout",
+  },
+  {
+    value: "configurationLayout",
+    label: "Configuration Dialog Layout",
+  },
+]);
 
 const closeModal = () => {
   if (isSubmitted.value) {
@@ -30,7 +45,7 @@ const onSubmit = async () => {
   }
 
   // TODO: Error handling
-  await API.componenteditor.pushViewLayout({
+  await API.componenteditor.setViewLayout({
     ...openWorkflow.value,
     componentViewLayout: JSON.stringify(layout.value),
   });
@@ -47,7 +62,13 @@ const onSubmit = async () => {
     @cancel="closeModal"
   >
     <template #confirmation>
-      <ComponentLayoutEditor />
+      <TabBar
+        v-model="activeTab"
+        :possible-values="possibleTabValues"
+        :disabled="false"
+      />
+
+      <ComponentLayoutEditor v-if="activeTab === 'componentLayoutEditor'" />
     </template>
 
     <template #controls>
