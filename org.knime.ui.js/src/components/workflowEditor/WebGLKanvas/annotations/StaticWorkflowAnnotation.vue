@@ -5,11 +5,12 @@ import {
   computed,
   nextTick,
   onMounted,
+  ref,
   toRef,
   useTemplateRef,
   watch,
 } from "vue";
-import { watchDebounced } from "@vueuse/core";
+import { useMagicKeys, watchDebounced } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -26,6 +27,7 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
+import { gridSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { FLOATING_HTML_FADE_DELAY_MS } from "../common/constants";
@@ -35,6 +37,9 @@ import { markEventAsHandled } from "../util/interaction";
 
 import TransformControls from "./TransformControls.vue";
 import { getAnnotationStyles } from "./annotationStyles";
+
+const ANNOTATION_MIN_HEIGHT_PX = 30;
+const ANNOTATION_MIN_WIDTH_PX = 30;
 
 const ANNOTATION_STROKE_SIZE = 1.5;
 type Props = {
@@ -213,6 +218,10 @@ const { showFocus, showSelectionPlane, showTransformControls } =
   useAnnotationVisualStatus(toRef(props.annotation.id));
 
 const onTransformChange = ({ bounds }: { bounds: Bounds }) => {
+  // minimum size
+  bounds.width = Math.max(ANNOTATION_MIN_WIDTH_PX, bounds.width);
+  bounds.height = Math.max(ANNOTATION_MIN_HEIGHT_PX, bounds.height);
+
   activeTransform.value = {
     bounds,
     annotationId: props.annotation.id,
@@ -233,6 +242,67 @@ const onTransformEnd = (bounds: Bounds) => {
     activeTransform.value = undefined;
   }, FLOATING_HTML_FADE_DELAY_MS);
 };
+
+const keyboardTransformActive = ref(false);
+useMagicKeys({
+  onEventFired: (event) => {
+    const keys = [
+      event.key === "ArrowUp",
+      event.key === "ArrowDown",
+      event.key === "ArrowLeft",
+      event.key === "ArrowRight",
+    ];
+
+    if (
+      event.type === "keyup" &&
+      event.key === "Alt" &&
+      keyboardTransformActive.value
+    ) {
+      keyboardTransformActive.value = false;
+      onTransformEnd(activeTransform.value!.bounds);
+      return;
+    }
+
+    if (
+      event.type !== "keydown" ||
+      !isSelected.value ||
+      !showTransformControls.value ||
+      !event.altKey
+    ) {
+      return;
+    }
+
+    if (!keys.includes(true)) {
+      return;
+    }
+
+    const [isUp, isDown, isLeft, isRight] = keys;
+
+    const TRANSFORM_AMOUNT = gridSize.x * 2;
+    const delta = isUp || isLeft ? -1 : 1;
+    const isXAxis = isLeft || isRight;
+    const isYAxis = isUp || isDown;
+
+    const width =
+      activeTransform.value?.bounds.width ?? props.annotation.bounds.width;
+    const height =
+      activeTransform.value?.bounds.height ?? props.annotation.bounds.height;
+
+    const nextWidth = Math.max(width + TRANSFORM_AMOUNT * delta, 0);
+    const nextHeight = Math.max(height + TRANSFORM_AMOUNT * delta, 0);
+
+    const nextBounds: Bounds = {
+      x: props.annotation.bounds.x,
+      y: props.annotation.bounds.y,
+      width: isXAxis ? nextWidth : width,
+      height: isYAxis ? nextHeight : height,
+    };
+
+    onTransformChange({ bounds: nextBounds });
+    keyboardTransformActive.value = true;
+  },
+});
+
 const { canvasLayers } = storeToRefs(canvasStore);
 </script>
 
@@ -254,7 +324,9 @@ const { canvasLayers } = storeToRefs(canvasStore);
       "
     >
       <TransformControls
-        :initial-value="annotation.bounds"
+        :initial-value="
+          keyboardTransformActive ? activeTransform?.bounds : annotation.bounds
+        "
         :show-transform-controls="showTransformControls"
         :show-focus="showFocus"
         :show-selection="showSelectionPlane"
