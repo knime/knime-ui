@@ -112,6 +112,25 @@ test("can be transformed", async ({ page }) => {
   await assertSnapshot(page, maxDiffPixels);
 });
 
+test("can be transformed via keyboard", async ({ page }) => {
+  await startApplication(page, {
+    workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
+  });
+
+  const annotation = await getAnnotation(page, "root_0");
+
+  await page.mouse.click(...getCenter(annotation));
+
+  await assertSnapshot(page, maxDiffPixels);
+
+  await page.keyboard.press("Alt+ArrowLeft");
+  await page.keyboard.press("Alt+ArrowLeft");
+  await page.keyboard.press("Alt+ArrowUp");
+  await page.keyboard.press("Alt+ArrowUp");
+
+  await assertSnapshot(page, maxDiffPixels);
+});
+
 test("can be dragged", async ({ page }) => {
   await startApplication(page, {
     workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
