@@ -4,6 +4,7 @@ import { API } from "@api";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { sleep } from "@knime/utils";
 
+import { gatewayRpcClient } from "@/api/gateway-api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useNotifyUIExtensionAlert";
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
@@ -231,6 +232,10 @@ const actions = {
       });
     }
     return { result: JSON.parse(result) };
+  },
+
+  callKnimeUiApi(_: any, { method, params }: { method: string; params: any }) {
+    return gatewayRpcClient.call(method, params);
   },
 
   registerService(
