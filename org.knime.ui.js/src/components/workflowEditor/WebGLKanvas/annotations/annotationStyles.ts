@@ -42,9 +42,11 @@ export const getAnnotationStyles = (
 
     .wrapper {
       width: ${workflowAnnotation.bounds.width}px;
-      height: ${workflowAnnotation.bounds.height}px;
+      max-height: ${workflowAnnotation.bounds.height}px;
+      height: auto;
       padding: ${WRAPPER_PADDING + annotationStrokeSize}px;
       font-size: 13px;
+      line-height: ${BASE_LINE_HEIGHT};
     }
 
     p {

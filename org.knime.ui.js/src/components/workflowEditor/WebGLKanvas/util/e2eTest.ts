@@ -227,21 +227,23 @@ export const initE2ETestUtils = (app: Application) => {
       updateKanvasBox();
       const annotationIdLabel = `StaticWorkflowAnnotation__${annotationId}`;
 
-      const bounds = getPixiContainerBounds([
+      const annotation = getPixiContainerBounds([annotationIdLabel]);
+
+      const annotationText = getPixiContainerBounds([
         annotationIdLabel,
         "AnnotationText",
       ]);
 
-      if (!bounds) {
+      if (!annotationText || !annotation) {
         throw new Error(
           `getAnnotation: couldn't find annotation ${annotationId}`,
         );
       }
 
-      const text = removeAnnotationStyles(bounds.text!);
+      const text = removeAnnotationStyles(annotationText.text!);
 
       return {
-        ...bounds,
+        ...annotation,
         text,
       };
     },
