@@ -20,7 +20,7 @@ export const characterLimits = Object.freeze({
       portDescription: 500,
     },
   },
-  kai: 300,
+  kai: 5000,
   searchFields: 300,
 });
 
