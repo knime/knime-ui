@@ -62,7 +62,7 @@ const onPointerDown = (event: PointerEvent) => {
 
 let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
 const canvasStore = useWebGLCanvasStore();
-const { containerSize, isMinimapVisible } = storeToRefs(canvasStore);
+const { containerSize, shouldHideMiniMap } = storeToRefs(canvasStore);
 
 let onCanvasReady: () => void;
 
@@ -109,14 +109,14 @@ const initResizeObserver = () => {
       return;
     }
 
-    isMinimapVisible.value = false;
+    shouldHideMiniMap.value = true;
 
     if (minimapVisibilityTimeout) {
       clearTimeout(minimapVisibilityTimeout);
     }
 
     minimapVisibilityTimeout = window.setTimeout(() => {
-      isMinimapVisible.value = true;
+      shouldHideMiniMap.value = false;
       // eslint-disable-next-line no-magic-numbers
     }, 300);
 

@@ -56,7 +56,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const pixelRatio = ref(1);
   const isPanning = ref(false);
   const isHoldingDownSpace = ref(false);
-  const isMinimapVisible = ref(true);
+  const shouldHideMiniMap = ref(false);
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -731,7 +731,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     contentBounds,
 
     // webgl only
-    isMinimapVisible,
+    shouldHideMiniMap,
     canvasAnchor,
     pixiApplication,
     canvasLayers,

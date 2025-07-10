@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { type Ref, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import {
+  type Ref,
+  computed,
+  onUnmounted,
+  ref,
+  useTemplateRef,
+  watch,
+} from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { Container, RenderLayer } from "pixi.js";
@@ -9,6 +16,7 @@ import { $bus } from "@/plugins/event-bus";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useSettingsStore } from "@/store/settings";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
@@ -27,7 +35,7 @@ const emit = defineEmits<{
 
 const canvasStore = useWebGLCanvasStore();
 const {
-  isMinimapVisible,
+  shouldHideMiniMap,
   containerSize,
   isDebugModeEnabled: isCanvasDebugEnabled,
   canvasLayers,
@@ -35,6 +43,10 @@ const {
   interactionsEnabled,
   isHoldingDownSpace,
 } = storeToRefs(canvasStore);
+
+const isMinimapVisible = computed(
+  () => useSettingsStore().settings.isMinimapVisible,
+);
 
 const isPixiAppInitialized = ref(false);
 
@@ -183,7 +195,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
       <slot />
     </Container>
 
-    <Minimap v-if="isMinimapVisible" />
+    <Minimap v-if="isMinimapVisible && !shouldHideMiniMap" />
   </Application>
 </template>
 

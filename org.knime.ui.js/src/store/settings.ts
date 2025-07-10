@@ -20,6 +20,7 @@ export const ratioToZoomLevel = (ratio: number) =>
 export interface SettingsState {
   settings: {
     nodeOutputSize: number;
+    isMinimapVisible: boolean;
     nodeRepositoryDisplayMode: NodeRepositoryDisplayModesType;
     nodeDialogSize: number;
     uiScale: number;
@@ -31,6 +32,7 @@ export interface SettingsState {
 const defaults: SettingsState["settings"] = {
   nodeOutputSize: 40, // %
   nodeDialogSize: 400, // px
+  isMinimapVisible: true,
   nodeRepositoryDisplayMode: "icon",
   uiScale: 1.0,
   askBeforeAutoApplyNodeConfigChanges: true,

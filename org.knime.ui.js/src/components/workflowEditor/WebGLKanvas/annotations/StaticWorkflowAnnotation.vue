@@ -188,7 +188,8 @@ const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
   textRef = text;
   nextTick(() => {
     requestAnimationFrame(() => {
-      annotationContainer.value!.addChild(text);
+      // as this is async the container might be already gone
+      annotationContainer.value?.addChild(text);
     });
   });
 };

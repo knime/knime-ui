@@ -1,8 +1,8 @@
 import throttle from "raf-throttle";
 
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
+import { useSettingsStore } from "@/store/settings";
 
 import type { UnionToShortcutRegistry } from "./types";
 
@@ -74,8 +74,10 @@ const canvasShortcuts: CanvasShortcuts = {
     hotkey: ["CtrlOrCmd", "M"],
     text: "Hide or show minimap",
     execute: () => {
-      useWebGLCanvasStore().isMinimapVisible =
-        !useWebGLCanvasStore().isMinimapVisible;
+      useSettingsStore().updateSetting({
+        key: "isMinimapVisible",
+        value: !useSettingsStore().settings.isMinimapVisible,
+      });
     },
     condition: () => canvasRendererUtils.isWebGLRenderer(),
   },

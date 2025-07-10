@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { FunctionButton } from "@knime/components";
@@ -9,13 +10,15 @@ import LensePlusIcon from "@knime/styles/img/icons/plus-small.svg";
 
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useSettingsStore } from "@/store/settings";
 
 import ZoomMenu from "./ZoomMenu.vue";
 
 const $shortcuts = useShortcuts();
 const minimapShortcut = $shortcuts.get("toggleMinimap");
-const { isMinimapVisible } = storeToRefs(useWebGLCanvasStore());
+const isMinimapVisible = computed(
+  () => useSettingsStore().settings.isMinimapVisible,
+);
 
 const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
   useCanvasModesStore(),
@@ -25,7 +28,7 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
 <template>
   <div class="canvas-tools" @pointerdown.stop>
     <FunctionButton
-      :title="`Toggle pan mode - ${
+      :title="`Toggle pan mode – ${
         $shortcuts.get('switchToPanMode').hotkeyText
       }`"
       :active="isPanModeActive"
@@ -36,7 +39,7 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
     </FunctionButton>
 
     <FunctionButton
-      :title="`${minimapShortcut.text} - ${minimapShortcut.hotkeyText}`"
+      :title="`${minimapShortcut.text} – ${minimapShortcut.hotkeyText}`"
       class="minimap-toggle"
       :active="isMinimapVisible"
       data-test-id="canvas-tool-minimap-toggle"
@@ -46,7 +49,7 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
     </FunctionButton>
 
     <FunctionButton
-      title="Zoom out"
+      :title="`Zoom out – ${$shortcuts.get('zoomOut').hotkeyText}`"
       data-test-id="canvas-tool-zoom-out"
       @pointerdown="$shortcuts.dispatch('zoomOut')"
     >
@@ -56,7 +59,7 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
     <ZoomMenu />
 
     <FunctionButton
-      title="Zoom in"
+      :title="`Zoom in – ${$shortcuts.get('zoomIn').hotkeyText}`"
       data-test-id="canvas-tool-zoom-in"
       @pointerdown="$shortcuts.dispatch('zoomIn')"
     >

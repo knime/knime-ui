@@ -1,5 +1,6 @@
 /* eslint-disable no-undefined */
 /* eslint-disable no-magic-numbers */
+import { nextTick } from "vue";
 import { Rectangle } from "pixi.js";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -23,12 +24,15 @@ export const generateWorkflowPreview = async (isEmpty: boolean) => {
     return null;
   }
 
+  // change state for the snapshot
+  webglCanvasStore.shouldHideMiniMap = true;
+  useSelectionStore().shouldHideSelection = true;
+  await nextTick();
+
   // stop update the visible app
   const app = webglCanvasStore.pixiApplication.app;
   app.ticker.stop();
 
-  // change state for the snapshot
-  useSelectionStore().shouldHideSelection = true;
   const state = webglCanvasStore.getCanvasScrollState;
   // just required to prevent culling the extract system does not honor offset and scale
   webglCanvasStore.fitToScreen();
@@ -57,6 +61,7 @@ export const generateWorkflowPreview = async (isEmpty: boolean) => {
   });
 
   useSelectionStore().shouldHideSelection = false;
+  webglCanvasStore.shouldHideMiniMap = false;
   // if the app is gone we do not restore any state
   if (app.ticker) {
     webglCanvasStore.restoreScrollState(state);
