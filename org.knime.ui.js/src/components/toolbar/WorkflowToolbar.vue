@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
+import BulbIcon from "@knime/styles/img/icons/bulb.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
@@ -18,6 +19,7 @@ import { isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
+import { useAIAssistantStore } from "@/store/aiAssistant";
 import { useApplicationStore } from "@/store/application/application";
 import {
   type CanvasMode,
@@ -57,6 +59,7 @@ const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const { activeProjectVersionsModeStatus } = storeToRefs(workflowVersionsStore);
 const { isDirtyActiveProject } = storeToRefs(useDirtyProjectsTrackingStore());
 const { uploadWorkflowAndOpenAsProject } = useUploadWorkflowToSpace();
+const { makeAiRequest } = useAIAssistantStore();
 
 const isLocalWorkflow = computed(
   () =>
@@ -265,6 +268,17 @@ const ToolbarButtonWithHint = defineComponent(
 );
 
 const { isSVGRenderer } = useCanvasRendererUtils();
+
+const onExplainWorkflow = async () => {
+  const croppedWorkflow = { ...activeWorkflow.value };
+  delete croppedWorkflow.nodeTemplates;
+  const activeWorkflowString = JSON.stringify(croppedWorkflow);
+  const message = `Please explain the current workflow using only a few concice English sentences. Here is a workflow representation as a JSON object:\n${activeWorkflowString}`;
+  await makeAiRequest({
+    chainType: "qa",
+    message,
+  });
+};
 </script>
 
 <template>
@@ -293,6 +307,14 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     />
 
     <div class="toolbar-end">
+      <ToolbarButton
+        class="toolbar-button"
+        title="Explain workflow"
+        @click="onExplainWorkflow"
+      >
+        <BulbIcon />
+      </ToolbarButton>
+
       <ToolbarButtonWithHint
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocalWorkflow"
         ref="uploadButton"
@@ -319,7 +341,6 @@ const { isSVGRenderer } = useCanvasRendererUtils();
         <DeploymentIcon />
         Deploy on Hub
       </ToolbarButton>
-
       <SubMenu
         v-if="isSVGRenderer"
         class="control"
