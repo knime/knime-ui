@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, toRef, useTemplateRef, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  ref,
+  toRef,
+  useTemplateRef,
+  watch,
+} from "vue";
 import { storeToRefs } from "pinia";
 
 import { MenuItems, SearchInput } from "@knime/components";
@@ -184,6 +192,15 @@ const onSearchBarKeyDown = (event: KeyboardEvent) => {
   }
 };
 
+// put the focus in the menu if there is no search bar
+onMounted(async () => {
+  if (!shouldDisplaySearchBar.value) {
+    await nextTick();
+    searchResultsRef.value?.$el.focus();
+    searchResultsRef.value?.focusIndex(0);
+  }
+});
+
 const setActiveDescendant = (
   id: string | null,
   item: MenuItemWithPort | null,
@@ -239,6 +256,7 @@ const setActiveDescendant = (
         class="search-results"
         menu-aria-label="Port Type Menu"
         disable-space-to-click
+        :register-keydown="!shouldDisplaySearchBar"
         @close="$emit('menuClose')"
         @item-click="onMenuItemClick"
         @item-hovered="$emit('itemActive', $event as MenuItemWithPort)"
