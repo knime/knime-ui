@@ -19,7 +19,6 @@ defineEmits(["close", "upload"]);
         alt="List of versions"
         class="version-list"
       />
-      <div class="version-list-gradient" />
     </div>
     <p class="description">
       To use the version history, connect and upload your workflow to the KNIME
@@ -64,19 +63,6 @@ defineEmits(["close", "upload"]);
 
     & .version-list {
       width: 100%;
-    }
-
-    & .version-list-gradient {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        to bottom,
-        rgb(248 249 250 / 0%) 0%,
-        rgb(248 249 250 / 100%) 100%
-      );
     }
   }
 
