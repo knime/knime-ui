@@ -117,6 +117,7 @@ describe("DraggableNodeTemplate", () => {
         clientHeight: 1080,
         scrollLeft: 10,
         scrollTop: 10,
+        focus: vi.fn(),
       }));
     });
 
