@@ -79,8 +79,8 @@ onMounted(() => {
 
 const activateSection = (tabName: TabValues) => {
   const isAlreadyActive = panelStore.isTabActive(tabName);
-  if (isAlreadyActive && panelStore.expanded) {
-    panelStore.closePanel();
+  if (isAlreadyActive && panelStore.isLeftPanelExpanded) {
+    panelStore.closeLeftPanel();
   } else {
     panelStore.setCurrentProjectActiveTab(tabName);
   }
@@ -103,7 +103,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       title: "Info",
       icon: MetainfoIcon,
       isActive: panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
-      isExpanded: panelStore.expanded,
+      isExpanded: panelStore.isLeftPanelExpanded,
       onClick: () => activateSection(TABS.CONTEXT_AWARE_DESCRIPTION),
     },
 
@@ -112,7 +112,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       title: "Nodes",
       icon: PlusIcon,
       isActive: panelStore.isTabActive(TABS.NODE_REPOSITORY),
-      isExpanded: panelStore.expanded,
+      isExpanded: panelStore.isLeftPanelExpanded,
       onClick: () => activateSection(TABS.NODE_REPOSITORY),
     }),
 
@@ -121,7 +121,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       title: "Explorer",
       icon: CubeIcon,
       isActive: panelStore.isTabActive(TABS.SPACE_EXPLORER),
-      isExpanded: panelStore.expanded,
+      isExpanded: panelStore.isLeftPanelExpanded,
       onClick: () => activateSection(TABS.SPACE_EXPLORER),
     }),
 
@@ -133,7 +133,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         icon: AiIcon,
         classes: ["k-ai-tab"],
         isActive: panelStore.isTabActive(TABS.KAI),
-        isExpanded: panelStore.expanded,
+        isExpanded: panelStore.isLeftPanelExpanded,
         onClick: () => activateSection(TABS.KAI),
       },
     ),
@@ -143,7 +143,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       title: "Monitor",
       icon: WorkflowMonitorIcon,
       isActive: panelStore.isTabActive(TABS.WORKFLOW_MONITOR),
-      isExpanded: panelStore.expanded,
+      isExpanded: panelStore.isLeftPanelExpanded,
       onClick: () => activateSection(TABS.WORKFLOW_MONITOR),
     },
   ];
@@ -189,9 +189,9 @@ const hasSection = (name: TabValues) => {
       id="left-panel"
       width="360px"
       title="Open sidebar"
-      :expanded="panelStore.expanded"
+      :expanded="panelStore.isLeftPanelExpanded"
       :disabled="panelStore.isExtensionPanelOpen"
-      @toggle-expand="panelStore.toggleExpanded()"
+      @toggle-expand="panelStore.toggleLeftPanel()"
     >
       <span>
         <ContextAwareDescription

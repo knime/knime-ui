@@ -36,8 +36,8 @@ importers:
         specifier: ^1.4.15
         version: 1.4.15(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@knime/styles':
-        specifier: ^1.8.0
-        version: 1.8.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
+        specifier: ^1.9.0
+        version: 1.9.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
       '@knime/ui-extension-renderer':
         specifier: 2.0.45
         version: 2.0.45(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
@@ -1232,8 +1232,8 @@ packages:
       '@fontsource/roboto': 4.x
       '@fontsource/roboto-mono': 4.x
 
-  '@knime/styles@1.8.0':
-    resolution: {integrity: sha512-B+ZHUKC1q+8mRhiAfhL/UijHTLvMebXymW9rwSI3nS996AU44sP6nfYDw1SZUfKbRt3b1gI8xYk0THesl/sJVQ==}
+  '@knime/styles@1.9.0':
+    resolution: {integrity: sha512-BxWc/vEsv6FA17ZobAnO6TctjwjgRgXlKlbQ3iTpFTOOiZd8JyGv+WQKoEwlmp42pw6aWFpj+d6zcyDNcw6nrQ==}
     peerDependencies:
       '@fontsource/roboto': 4.x
       '@fontsource/roboto-mono': 4.x
@@ -7095,7 +7095,7 @@ snapshots:
       postcss-preset-env: 10.0.5(postcss@8.4.47)
       postcss-url: 10.1.3(postcss@8.4.47)
 
-  '@knime/styles@1.8.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)':
+  '@knime/styles@1.9.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)':
     dependencies:
       '@fontsource/roboto': 4.5.8
       '@fontsource/roboto-mono': 4.5.10

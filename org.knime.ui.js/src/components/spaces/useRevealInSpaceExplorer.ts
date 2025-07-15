@@ -32,8 +32,7 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     useSpaceProvidersStore(),
   );
   const { activeTab } = storeToRefs(usePanelStore());
-  const { setCurrentProjectActiveTab, expanded, toggleExpanded } =
-    usePanelStore();
+  const panelStore = usePanelStore();
   const { projectPath } = storeToRefs(useSpaceCachingStore());
   const { setProjectPath } = useSpaceCachingStore();
   const { connectProvider } = useSpaceAuthStore();
@@ -136,7 +135,7 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     }
 
     if (activeTab.value[activeProjectId.value] !== TABS.SPACE_EXPLORER) {
-      setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
+      panelStore.setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
     }
 
     const { providerId, spaceId } = origin;
@@ -213,11 +212,11 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
         }
       }
 
-      if (!expanded) {
-        toggleExpanded();
+      if (!panelStore.isLeftPanelExpanded) {
+        panelStore.toggleLeftPanel();
       }
 
-      setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
+      panelStore.setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
 
       if (!activeProjectId.value) {
         // No active project, navigate to Space Browsing Page

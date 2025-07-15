@@ -10,6 +10,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -75,6 +76,8 @@ const closeContextMenu = (event?: MouseEvent) => {
     canvasAnchoredComponentsStore.toggleContextMenu({ event });
   }
 };
+
+const panelStore = usePanelStore();
 </script>
 
 <template>
@@ -117,11 +120,12 @@ const closeContextMenu = (event?: MouseEvent) => {
     <SplitPanel
       v-if="useEmbeddedDialogs || versionsStore.isSidepanelOpen"
       v-model:secondary-size="nodeDialogSize"
+      v-model:expanded="panelStore.isRightPanelExpanded"
       splitter-id="node-config-split-panel"
       direction="right"
       use-pixel
-      :secondary-snap-size="360"
-      :secondary-max-size="900"
+      :secondary-min-size="360"
+      :secondary-max-size="960"
       style="--splitter-background-color: var(--knime-gray-ultra-light)"
       keep-element-on-close
     >

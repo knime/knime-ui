@@ -557,7 +557,6 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
-          { metadata: { shortcutName: "configureNode" } },
           {
             text: "Open output port",
             children: expect.anything(),

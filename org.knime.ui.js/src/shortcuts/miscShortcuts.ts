@@ -39,10 +39,10 @@ export const selectionShortcuts: SelectionShortcuts = {
 
 export const sidePanelShortcuts: SidePanelShortcuts = {
   toggleSidePanel: {
-    text: "Hide or show side panel",
+    text: "Hide or show left side panel",
     group: "panelNavigation",
     hotkey: ["CtrlOrCmd", "P"],
-    execute: () => usePanelStore().toggleExpanded(),
+    execute: () => usePanelStore().toggleLeftPanel(),
   },
 };
 

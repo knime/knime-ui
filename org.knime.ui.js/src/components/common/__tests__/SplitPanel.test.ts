@@ -6,16 +6,17 @@ import SplitPanel from "../SplitPanel.vue";
 import Splitter from "../Splitter.vue";
 
 describe("SplitPanel", () => {
-  const doMount = (propsOverride = {}) => {
-    const props = {
+  type ComponentProps = InstanceType<typeof SplitPanel>["$props"];
+
+  const doMount = (propsOverride: ComponentProps = {}) => {
+    const props: ComponentProps = {
       direction: "down",
       secondarySize: 45,
       secondaryMinSize: 15,
-      showSecondaryPanel: true,
       ...propsOverride,
     };
+
     const wrapper = mount(SplitPanel, {
-      // @ts-expect-error
       props,
       slots: {
         default: "<p>main content</p>",
@@ -45,6 +46,7 @@ describe("SplitPanel", () => {
 
       return { styles, gridTemplate };
     };
+
     const dragSplitter = async (x: number, y: number) => {
       const pointerId = -1;
       const splitter = wrapper.find(".splitter");
@@ -84,7 +86,19 @@ describe("SplitPanel", () => {
     return { wrapper, expectSecondarySize, dragSplitter };
   };
 
-  it("sets the size correctly", () => {
+  it("sets state from model props", async () => {
+    const { wrapper, expectSecondarySize } = doMount({
+      expanded: false,
+      secondarySize: 35,
+    });
+
+    expectSecondarySize(0);
+
+    await wrapper.setProps({ expanded: true });
+    expectSecondarySize(35);
+  });
+
+  it("sets the initial size correctly", () => {
     const { expectSecondarySize } = doMount();
 
     expectSecondarySize(45);
@@ -99,23 +113,18 @@ describe("SplitPanel", () => {
     expectSecondarySize(320);
   });
 
-  it("closes panel on click", async () => {
-    const { wrapper, expectSecondarySize } = doMount();
+  it("closes panel on click", () => {
+    const { wrapper } = doMount();
 
-    expectSecondarySize(45);
-    await wrapper.find(".splitter").trigger("click");
-    expectSecondarySize(0);
+    wrapper.findComponent(Splitter).vm.$emit("splitterClick");
+    expect(wrapper.emitted("update:expanded")![0][0]).toBe(false);
   });
 
-  it("opens panel on click", async () => {
-    const { wrapper, expectSecondarySize } = doMount();
-    expectSecondarySize(45);
+  it("opens panel on click", () => {
+    const { wrapper } = doMount({ expanded: false });
 
-    await wrapper.find(".splitter").trigger("click");
-    expectSecondarySize(0);
-
-    await wrapper.find(".splitter").trigger("click");
-    expectSecondarySize(45);
+    wrapper.findComponent(Splitter).vm.$emit("splitterClick");
+    expect(wrapper.emitted("update:expanded")![0][0]).toBe(true);
   });
 
   it("snaps to close", async () => {
@@ -150,12 +159,10 @@ describe("SplitPanel", () => {
     expectSecondarySize(34.84);
   });
 
-  it.each(["down", "up", "left", "right"])(
+  it.each(["down" as const, "up" as const, "left" as const, "right" as const])(
     "opens to last resized size for direction=%s",
-    async (direction: string) => {
-      const { wrapper, expectSecondarySize } = doMount({
-        direction,
-      });
+    async (direction) => {
+      const { wrapper, expectSecondarySize } = doMount({ direction });
 
       const splitter = wrapper.findComponent(Splitter);
 
@@ -165,28 +172,13 @@ describe("SplitPanel", () => {
       await nextTick();
 
       // close
-      await wrapper.find(".splitter").trigger("click");
-      expectSecondarySize(0);
+      wrapper.findComponent(Splitter).vm.$emit("splitterClick");
+      await wrapper.setProps({ expanded: false });
 
       // open
-      await wrapper.find(".splitter").trigger("click");
+      wrapper.findComponent(Splitter).vm.$emit("splitterClick");
+      await wrapper.setProps({ expanded: true });
       expectSecondarySize(42);
     },
   );
-
-  it("shows or hides the secondary panel with the show prop", async () => {
-    const { wrapper, expectSecondarySize } = doMount({
-      secondarySize: 32,
-      showSecondaryPanel: false,
-    });
-    const secondaryWrapper = wrapper.find(".secondary-wrapper").element;
-
-    expectSecondarySize(0);
-    expect(secondaryWrapper.childElementCount).toBe(0);
-
-    await wrapper.setProps({ showSecondaryPanel: true });
-
-    expectSecondarySize(32);
-    expect(secondaryWrapper.childElementCount).toBe(1);
-  });
 });

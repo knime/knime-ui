@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import SplitPanel from "@/components/common/SplitPanel.vue";
@@ -16,6 +16,7 @@ import WorkflowPanel from "./WorkflowPanel.vue";
  */
 const workflowStore = useWorkflowStore();
 const settingsStore = useSettingsStore();
+const expanded = ref(true);
 
 const savedSecondarySize = computed({
   get() {
@@ -41,6 +42,7 @@ const savedSecondarySize = computed({
 
     <main class="workflow-area">
       <SplitPanel
+        v-model:expanded="expanded"
         v-model:secondary-size="savedSecondarySize"
         splitter-id="node-output-split-panel"
         direction="down"

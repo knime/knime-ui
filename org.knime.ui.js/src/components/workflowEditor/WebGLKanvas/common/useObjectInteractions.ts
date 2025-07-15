@@ -7,6 +7,7 @@ import * as PIXI from "pixi.js";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -166,6 +167,7 @@ export const useObjectInteractions = (
     onMoveEnd = () => Promise.resolve({ shouldMove: true }),
   } = options;
 
+  const panelStore = usePanelStore();
   const selectionStore = useSelectionStore();
   const movingStore = useMovingStore();
   const {
@@ -176,6 +178,12 @@ export const useObjectInteractions = (
   } = storeToRefs(movingStore);
 
   const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
+
+  const openRightPanelForNodes = () => {
+    if (!panelStore.isRightPanelExpanded) {
+      panelStore.isRightPanelExpanded = objectMetadata.type === "node";
+    }
+  };
 
   const canvasStore = useWebGLCanvasStore();
   const { pixiApplication, isHoldingDownSpace } = storeToRefs(canvasStore);
@@ -298,6 +306,7 @@ export const useObjectInteractions = (
         objectMetadata,
       });
 
+      openRightPanelForNodes();
       options.onDoubleClick(pointerDownEvent);
       return;
     }
@@ -319,6 +328,8 @@ export const useObjectInteractions = (
         );
         await selectionStore.deselectAllObjects();
         objectHandler.selectObject();
+
+        openRightPanelForNodes();
       }
 
       consola.debug(
@@ -352,7 +363,9 @@ export const useObjectInteractions = (
         { objectMetadata },
       );
 
+      // a drag is not possible when the WF is not writable, so we can assume the same value
       isSelectionDelayedUntilDragCompletes.value = isWorkflowWritable.value;
+
       await selectionStore.deselectAllObjects();
       objectHandler.selectObject();
     }
@@ -413,6 +426,8 @@ export const useObjectInteractions = (
 
         const isNode = options.objectMetadata.type === "node";
 
+        openRightPanelForNodes();
+
         if (isNode) {
           // skip deselecting -> re-selecting the same node
           await selectionStore.deselectAllObjects([
@@ -428,6 +443,7 @@ export const useObjectInteractions = (
           { objectMetadata },
         );
 
+        openRightPanelForNodes();
         objectHandler.selectObject();
       }
 

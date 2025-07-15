@@ -14,6 +14,7 @@ import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
+import { usePanelStore } from "../panel";
 import { useSpaceOperationsStore } from "../spaces/spaceOperations";
 
 import { useMovingStore } from "./moving";
@@ -226,6 +227,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       if (selectionMode !== "none") {
         if (selectionMode === "new-only") {
           await selectionStore.selectNodes([newNodeId]);
+          usePanelStore().isRightPanelExpanded = true;
         } else {
           await selectionStore.selectNodes([...currentSelection, newNodeId]);
         }

@@ -262,13 +262,7 @@ const allAllowedActions = computed(() => {
     ...loopInfo?.allowedActions,
   };
 
-  let canConfigure = false;
-
-  if (props.node.dialogType) {
-    canConfigure = useEmbeddedDialogs.value
-      ? props.node.dialogType === Node.DialogTypeEnum.Swing
-      : true;
-  }
+  const canConfigure = !useEmbeddedDialogs.value;
 
   return { ...baseConfig, canConfigure };
 });

@@ -55,7 +55,7 @@ describe("NodeConfigLoader.vue", () => {
 
   type MountOpts = Pick<
     ComponentMountingOptions<typeof NodeConfigLoader>,
-    "props" | "slots"
+    "props"
   >;
 
   const projectId = "project-id";
@@ -68,7 +68,7 @@ describe("NodeConfigLoader.vue", () => {
     selectedNode: dummyNode,
   };
 
-  const doMount = ({ props, slots }: MountOpts = {}) => {
+  const doMount = ({ props }: MountOpts = {}) => {
     const mockedStores = mockStores();
 
     const wrapper = mount(NodeConfigLoader, {
@@ -77,7 +77,6 @@ describe("NodeConfigLoader.vue", () => {
         plugins: [mockedStores.testingPinia],
         stubs: { UIExtension: true },
       },
-      slots,
     });
 
     return { wrapper, mockedStores };
@@ -99,7 +98,7 @@ describe("NodeConfigLoader.vue", () => {
   it("should load nodeDialog on mount if versionId prop is set", async () => {
     mockGetNodeDialog();
     const versionId = "version-id";
-    doMount({ props: { ...defaultProps, versionId }, slots: {} });
+    doMount({ props: { ...defaultProps, versionId } });
     await flushPromises();
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith({
       projectId,
@@ -180,10 +179,7 @@ describe("NodeConfigLoader.vue", () => {
       deactivationRequired: true,
     });
     const versionId = "version-id";
-    const { wrapper } = doMount({
-      props: { ...defaultProps, versionId },
-      slots: {},
-    });
+    const { wrapper } = doMount({ props: { ...defaultProps, versionId } });
     await flushPromises();
     wrapper.unmount();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
@@ -278,10 +274,7 @@ describe("NodeConfigLoader.vue", () => {
     it("callNodeDataService calls API with versionId if provided as prop", async () => {
       mockGetNodeDialog();
       const versionId = "version-id";
-      const { wrapper } = doMount({
-        props: { ...defaultProps, versionId },
-        slots: {},
-      });
+      const { wrapper } = doMount({ props: { ...defaultProps, versionId } });
       await flushPromises();
 
       const apiLayer = getApiLayer(wrapper);
@@ -311,7 +304,6 @@ describe("NodeConfigLoader.vue", () => {
       const versionId = "version-id";
       const { wrapper, mockedStores } = doMount({
         props: { ...defaultProps, versionId },
-        slots: {},
       });
 
       await flushPromises();
@@ -386,20 +378,17 @@ describe("NodeConfigLoader.vue", () => {
 
     it("implements setControlsVisibility", async () => {
       mockGetNodeDialog();
-      const { wrapper } = doMount({
-        slots: { controls: { template: '<div id="slotted-ctrls" />' } },
-      });
+      const { wrapper } = doMount();
       await flushPromises();
 
-      expect(wrapper.find("#slotted-ctrls").exists()).toBe(true);
+      expect(wrapper.emitted("controlsVisibilityChange")).toBeUndefined();
 
       const apiLayer = getApiLayer(wrapper);
 
       apiLayer.setControlsVisibility({ shouldBeVisible: false });
 
       await nextTick();
-
-      expect(wrapper.find("#slotted-ctrls").exists()).toBe(false);
+      expect(wrapper.emitted("controlsVisibilityChange")![0][0]).toBe(false);
     });
 
     it("implements sendAlert", async () => {

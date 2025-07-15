@@ -78,6 +78,7 @@ const notifyNodeDraggingListeners = (x: number, y: number) => {
 const position = toRef(props, "position");
 
 const { createPointerDownHandler } = useMoveObject({
+  isNode: true,
   objectElement: dragContainer,
 
   onMoveCallback: (ptrMoveEvent) => {

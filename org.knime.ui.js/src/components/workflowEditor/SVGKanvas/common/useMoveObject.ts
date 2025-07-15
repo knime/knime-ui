@@ -4,6 +4,7 @@ import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
+import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -13,6 +14,7 @@ import { geometry } from "@/util/geometry";
 interface UseMoveObjectOptions {
   objectElement?: ComputedRef<HTMLElement | null>;
   useGridSnapping?: boolean;
+  isNode?: boolean;
   onMoveStartCallback?: (event: PointerEvent) => any;
   onMoveCallback?: (event: PointerEvent) => any;
   onMoveEndCallback?: (event: PointerEvent) => Promise<boolean>;
@@ -20,6 +22,7 @@ interface UseMoveObjectOptions {
 
 const defaultOptions: Required<Omit<UseMoveObjectOptions, "objectElement">> = {
   useGridSnapping: true,
+  isNode: false,
   onMoveStartCallback: () => {},
   onMoveCallback: () => {},
   onMoveEndCallback: () => Promise.resolve(true),
@@ -66,6 +69,8 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
     (initialPosition: Ref<XY>) =>
     (pointerDownEvent: PointerEvent, eventTarget: HTMLElement) => {
       pointerDownEvent.stopPropagation();
+
+      let didDrag = false;
 
       if (!isWritable.value || isMoveLocked.value) {
         return;
@@ -142,6 +147,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           return;
         }
 
+        didDrag = true;
         onMoveCallback(pointerMoveEvent);
 
         if (!shouldHideSelection.value) {
@@ -175,6 +181,10 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         // from callback which should return void
         const handler = async () => {
           hasReleased = true;
+
+          if (!didDrag && options.isNode) {
+            usePanelStore().isRightPanelExpanded = true;
+          }
 
           const shouldMove = await onMoveEndCallback(pointerUpEvent);
           try {

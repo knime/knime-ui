@@ -8,7 +8,7 @@
 // * added splitterSize prop
 // * added ability to define the panel for which the size will be set (important for pixel mode)
 // * use pointer events instead of mouse and touch events
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -41,11 +41,11 @@ const props = withDefaults(
 const splitter = ref<HTMLElement>();
 
 const emit = defineEmits<{
-  (event: "update:percent", value: number): void;
-  (event: "update:pixel", value: number): void;
-  (event: "drag-start"): void;
-  (event: "drag-end"): void;
-  (event: "splitter-click"): void;
+  "update:percent": [value: number];
+  "update:pixel": [value: number];
+  dragStart: [];
+  dragEnd: [];
+  splitterClick: [];
 }>();
 
 const isActive = ref(false);
@@ -98,12 +98,6 @@ const gridTemplate = computed(() =>
 );
 const userSelect = computed(() => (isActive.value ? "none" : "auto"));
 
-const onSplitterClick = () => {
-  if (!hasMoved.value) {
-    emit("splitter-click");
-  }
-};
-
 const calculateSplitterPercent = (e: PointerEvent) => {
   let offset = dragOffset.value;
   let target = containerRef.value as HTMLElement;
@@ -141,42 +135,54 @@ const calculateSplitterPercent = (e: PointerEvent) => {
     modelPixel.value = sizeLastPane
       ? containerOffset - pixel - props.splitterSize
       : pixel;
+
     hasMoved.value = true;
   }
 };
 
-const onWindowPointerMove = (e: PointerEvent) => {
-  if (e.buttons && e.buttons === 0) {
-    isActive.value = false;
-    window.removeEventListener("pointermove", onWindowPointerMove);
-  }
-  if (isActive.value) {
-    calculateSplitterPercent(e);
-  }
-};
+const onSplitterPointerDown = (pointerdown: PointerEvent) => {
+  splitter.value?.setPointerCapture(pointerdown.pointerId);
+  dragOffset.value = props.isHorizontal
+    ? pointerdown.offsetY
+    : pointerdown.offsetX;
 
-const onWindowUp = (e: PointerEvent) => {
-  splitter.value?.releasePointerCapture(e.pointerId);
-  emit("drag-end");
-  isActive.value = false;
-  window.removeEventListener("pointermove", onWindowPointerMove);
-};
-
-const addWindowListeners = () => {
-  window.addEventListener("pointermove", onWindowPointerMove);
-  window.addEventListener("pointerup", onWindowUp, {
-    once: true,
-    capture: true,
-  });
-};
-
-const onSplitterPointerDown = (e: PointerEvent) => {
-  splitter.value?.setPointerCapture(e.pointerId);
-  dragOffset.value = props.isHorizontal ? e.offsetY : e.offsetX;
-  emit("drag-start");
   isActive.value = true;
   hasMoved.value = false;
-  addWindowListeners();
+
+  // only emit start once drag has actually been made
+  watch(hasMoved, () => emit("dragStart"), { once: true });
+
+  const onMove = (pointermove: PointerEvent) => {
+    const hasNoButtonsPressed =
+      pointermove.buttons && pointermove.buttons === 0;
+
+    if (hasNoButtonsPressed) {
+      isActive.value = false;
+      window.removeEventListener("pointermove", onMove);
+    }
+
+    if (!isActive.value) {
+      return;
+    }
+
+    calculateSplitterPercent(pointermove);
+  };
+
+  const onUp = (pointerup: PointerEvent) => {
+    splitter.value?.releasePointerCapture(pointerup.pointerId);
+
+    if (hasMoved.value) {
+      emit("dragEnd");
+    } else {
+      emit("splitterClick");
+    }
+
+    isActive.value = false;
+    window.removeEventListener("pointermove", onMove);
+  };
+
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp, { once: true, capture: true });
 };
 </script>
 
@@ -199,8 +205,7 @@ const onSplitterPointerDown = (e: PointerEvent) => {
       :title="splitterTitle"
       aria-label="Resize panel"
       @pointerdown="onSplitterPointerDown"
-      @click="onSplitterClick"
-      @keydown.enter="onSplitterClick"
+      @keydown.enter="!hasMoved && emit('splitterClick')"
     >
       <slot name="splitter" />
     </div>

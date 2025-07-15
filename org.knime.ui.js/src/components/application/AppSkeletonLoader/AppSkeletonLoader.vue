@@ -67,7 +67,7 @@ const isSidebarTransparent = computed(() => {
   );
 });
 
-const isLeftPanelOpen = computed(() => usePanelStore().expanded);
+const isLeftPanelOpen = computed(() => usePanelStore().isLeftPanelExpanded);
 
 const isLogoShown = ref(false);
 const setLogoVisible = createStaggeredLoader({

@@ -15,7 +15,7 @@ import WorkflowMetadata from "../workflowMetadata/WorkflowMetadata.vue";
  */
 
 const panelStore = usePanelStore();
-const { expanded: isSidebarExpanded } = storeToRefs(panelStore);
+const { isLeftPanelExpanded } = storeToRefs(panelStore);
 
 const isNodeDescriptionTabActive = computed<boolean>(() =>
   panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
@@ -55,7 +55,7 @@ const selectedNode = computed(() => {
     v-if="showNodeDescription"
     class="node-description"
     :params="selectedNode"
-    :is-visible="isNodeDescriptionTabActive && isSidebarExpanded"
+    :is-visible="isNodeDescriptionTabActive && isLeftPanelExpanded"
   />
   <WorkflowMetadata v-else key="workflow-metadata" />
 </template>

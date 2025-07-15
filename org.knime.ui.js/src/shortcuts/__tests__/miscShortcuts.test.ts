@@ -11,7 +11,7 @@ describe("miscShortcuts", () => {
       const { panelStore } = mockStores();
 
       sidePanelShortcuts.toggleSidePanel.execute(mockShortcutContext());
-      expect(panelStore.toggleExpanded).toHaveBeenCalled();
+      expect(panelStore.toggleLeftPanel).toHaveBeenCalled();
     });
   });
 
