@@ -92,12 +92,12 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Alt", "ArrowLeft"],
+    hotkey: ["Alt", "ArrowRight"],
     description: "Increase width",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Alt", "ArrowRight"],
+    hotkey: ["Alt", "ArrowLeft"],
     description: "Decrease width",
     group: "workflowAnnotations",
   },
