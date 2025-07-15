@@ -75,6 +75,39 @@ export const addCredentialPort = (messageObject: any) => {
   return { matcher, response };
 };
 
+export const addRecursionDataPort = (messageObject: any) => {
+  const matcher = () =>
+    messageObject.params.workflowCommand.kind === "add_port";
+  const response = () => ({
+    eventType: "WorkflowChangedEvent",
+    payload: {
+      patch: {
+        ops: [
+          {
+            value: {
+              name: "Recursion data",
+              index: 3,
+              optional: false,
+              typeId: "org.knime.core.node.BufferedDataTable",
+              connectedVia: [],
+              portGroupId: "Recursion",
+              canRemove: true,
+            },
+            path: "/nodes/root:137/inPorts/3",
+            op: "add",
+          },
+          {
+            value: 3,
+            path: "/nodes/root:137/portGroups/Recursion/inputRange/1",
+            op: "replace",
+          },
+        ],
+      },
+    },
+  });
+  return { matcher, response };
+};
+
 export const addTablePort = (messageObject: any) => {
   const matcher = () =>
     messageObject.params.workflowCommand.kind === "add_port";

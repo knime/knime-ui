@@ -4,7 +4,7 @@ To obtain data for the fixtures, **you can either log the API calls from the AP 
 
 ### Logging API calls from AP in dev mode
 
-In `store/application/lifecycle.ts` you can log the return values of API calls. E.g. to create a fixture log the return value `project` after `API.workflow.getWorkflow()` in the `loadWorkflow` method. The value will be the `result` field of the JSON RPC object, so in the fxture file make sure to wrap it in
+In `store/application/lifecycle.ts` you can log the return values of API calls. E.g. to create a fixture log the return value `project` after `API.workflow.getWorkflow()` in the `loadWorkflow` method. The value will be the `result` field of the JSON RPC object, so in the fixture file make sure to wrap it in
 
 ```
 {

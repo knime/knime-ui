@@ -8,6 +8,7 @@ import {
   getCenter,
   getNode,
   getPortActionButton,
+  pointToArray,
   startApplication,
   testSimpleScreenshot,
 } from "../utils";
@@ -15,6 +16,7 @@ import { WorkflowCommandFnMock } from "../utils/types";
 
 import {
   addCredentialPort,
+  addRecursionDataPort,
   addTablePort,
   removeNodePort,
 } from "./workflowCommandMocks/node-port-actions";
@@ -204,6 +206,34 @@ describe("add/select/remove port", () => {
 
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
+    await assertSnapshot(page);
+  });
+
+  test("open port group menu (the one without the search bar) via keyboard navigation", async ({
+    page,
+  }) => {
+    await startApplication(page, {
+      workflowFixturePath: "ports/getWorkflow-port-group-choose-menu.json",
+      workflowCommandFn: addRecursionDataPort,
+    });
+
+    const node = await getNode(page, "root:137");
+    const [x, y] = pointToArray(node.torso.center);
+
+    await page.mouse.click(x, y);
+    await page.mouse.move(0, 0); // move away to avoid tooltip
+
+    await page.keyboard.press("Alt+P");
+    await page.keyboard.press("Alt+P");
+    await page.keyboard.press("Alt+P");
+    await page.keyboard.press("Alt+P");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("ArrowDown");
+
+    await assertSnapshot(page);
+
+    await page.keyboard.press("Enter");
+
     await assertSnapshot(page);
   });
 });

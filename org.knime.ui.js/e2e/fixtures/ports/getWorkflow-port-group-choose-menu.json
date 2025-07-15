@@ -1,0 +1,143 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "workflow": {
+      "dirty": false,
+      "connections": {},
+      "metadata": {
+        "tags": [],
+        "description": {
+          "value": "",
+          "contentType": "text/plain"
+        },
+        "links": [],
+        "metadataType": "project",
+        "lastEdit": "2025-07-15T07:53:45.193385291+02:00"
+      },
+      "nodes": {
+        "root:137": {
+          "annotation": {
+            "text": {
+              "value": "Some text",
+              "contentType": "text/plain"
+            },
+            "styleRanges": [],
+            "textAlign": "center"
+          },
+          "id": "root:137",
+          "state": {
+            "executionState": "IDLE"
+          },
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Collecting data",
+              "index": 1,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": [],
+              "portGroupId": "Collector",
+              "canRemove": false
+            },
+            {
+              "name": "Recursion data",
+              "index": 2,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": [],
+              "portGroupId": "Recursion",
+              "canRemove": false
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Collected data",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": [],
+              "portGroupId": "Collector",
+              "canRemove": false
+            }
+          ],
+          "hasView": false,
+          "dialogType": "swing",
+          "kind": "node",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canCollapse": "true",
+            "canDelete": true,
+            "canReset": false
+          },
+          "templateId": "org.knime.base.node.meta.looper.recursive.RecursiveLoopEndDynamicNodeFactory",
+          "loopInfo": {
+            "status": "FINISHED",
+            "allowedActions": {
+              "canStep": false,
+              "canResume": false,
+              "canPause": false
+            }
+          },
+          "portGroups": {
+            "Collector": {
+              "inputRange": [1, 1],
+              "outputRange": [1, 1],
+              "canAddInPort": true,
+              "supportedPortTypeIds": ["org.knime.core.node.BufferedDataTable"]
+            },
+            "Recursion": {
+              "inputRange": [2, 2],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": ["org.knime.core.node.BufferedDataTable"]
+            }
+          },
+          "position": {
+            "x": 435,
+            "y": 204
+          }
+        }
+      },
+      "workflowAnnotations": [],
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": false,
+        "canReset": false,
+        "canUndo": true,
+        "canRedo": false
+      },
+      "nodeTemplates": {
+        "org.knime.base.node.meta.looper.recursive.RecursiveLoopEndDynamicNodeFactory": {
+          "name": "Recursive Loop End",
+          "type": "LoopEnd",
+          "nodeFactory": {
+            "className": "org.knime.base.node.meta.looper.recursive.RecursiveLoopEndDynamicNodeFactory"
+          },
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RkMzNjlEQzU4NDlCMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RkMzNjlEQzQ4NDlCMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo4MkZFNkZENzQ1QzcxMUU1QUM2QkE3NzQyQjhFM0EyRCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo4MkZFNkZEODQ1QzcxMUU1QUM2QkE3NzQyQjhFM0EyRCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pq66ZKoAAAEKSURBVHjaYmRAAs/8/C2A1FQg1gViVqjwbyC+DMTZUps2noCp/f//P5hmRNK8AEjFQ7kvgPg2lK0KxBJQ9kKgIQkYBiBpfgfE3sg2IblsKxALwQyBGwCVPA7VLA2U/MGABQDVcQCpp1BDLCU3bgBbwrjP2fW/BjcXQ+LV6wyXP39lwKr51VNGJJeALDsHNMAYLPk8KPj/i3iQi7ADKTHp/0hm/UfHTP///GFgkZJkIBcwMVAImBhZWBj+PHtOvgFX3n9g+Pf+PYO5iCgDIyMjBgYGIF4DSIlGHiD1BIj5kaORCZpoFkLj9ynUQHTN9kiaFyInNGKSshoQi+NNyhRlJhiDXECxAQABBgAWr547GUFO3wAAAABJRU5ErkJggg=="
+        }
+      },
+      "info": {
+        "name": "Focus on Port Group Menu",
+        "containerType": "project",
+        "providerType": "LOCAL",
+        "containerId": "root"
+      }
+    },
+    "snapshotId": "10"
+  }
+}
