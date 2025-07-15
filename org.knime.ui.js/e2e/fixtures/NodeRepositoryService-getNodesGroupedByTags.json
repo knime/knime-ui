@@ -1,0 +1,1436 @@
+{
+  "jsonrpc": "2.0",
+  "id": "5",
+  "result": {
+    "groups": [
+      {
+        "tag": "IO",
+        "nodes": [
+          {
+            "name": "Excel Reader",
+            "id": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory",
+            "type": "Source",
+            "extension": {
+              "name": "KNIME Excel Support",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADPSURBVHgBtVFBDoIwEByIiSfrA2xAH0A8C1E+4l+Es+EXHrkazsTg3fAAhfABevOEQFISlNImxEmazna3050uMBHa2jBO9e5J6rxXnvsigQoKqAW0oXOdk2eWtUsUizDjZGtZeKQpzkEAVFV3JkPPAqUUtyRp+d5xUBRFV2jQ1XgH3yCE9OL4+P6pcS/zvkDzehiGYGWJaxS1FhhjULLAP2xjmhiKRRaUx8gFXcdGnNw73ozRl11ekoUwp4kSB3un1BnGBDjGuI6J+J8FVXwArGpkXrM0Y1EAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory"
+            },
+            "inPorts": [],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Excel Writer",
+            "id": "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory",
+            "type": "Sink",
+            "extension": {
+              "name": "KNIME Excel Support",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADUSURBVHgBpZFLDoIwEIYH7RrUA4AegOhWiOJZ5CK4NtyES6AB14YDGIxuNfQCSJuU1KSvpN+inWmnM/NPASxx9tG2Nwm81DdHdI7IUs4XysfJ9yO9m4AlSFfBKEFZ1dRJ4mi0N2EIHcZj4NL3RbPKpBL4xwoy6S88X2+6P9qW7qsgEPpSCSxgPUi5Nw2c8xyg78czBgINeJCyi2O4VhX1iY05eYhVZvC2CNd1/3xHFshPneguigJw18ExTakE1oU2gW6IRh2omMouZp5Hkh9AzQls+QHI9FBAzPdfuAAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "Microsoft Authenticator",
+            "id": "org.knime.ext.microsoft.authentication.node.MicrosoftAuthenticatorNodeFactory",
+            "type": "Source",
+            "extension": {
+              "name": "Microsoft authentication extension for KNIME Workbench",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAQCAYAAADu+KTsAAAACXBIWXMAAAK+AAACvgEk+CLQAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAeBJREFUOI21lT9oU1EUxn/fTSJBHBTBycF/xCWDcN+jQxcXB5tJ6i66S8Wh6CBuooMIWRzdnVoHEQpSaCn43rsJCA5ObkrdWmrVau5xSCMhtE2oz7Ndvu/yOx/3XI7MjEFNTU2d7PV6d4BrwBlgE1gF2kVRrFJyaQBP03TazF4Cp/bwmZk963Q692y42zLgaZo2zWwFODbG/7goigdlwZ0kF2N8MQEYYN5770uDe++vSro0qR+4Xxa8ClwfOm+b2bKkBnBhrwuSWkmSvDskb8c5dzfLshxA3vuPwDngl6TpPM+7SZLUzGxR0pVDQg6qbeBGURQL8t5vAEfNbCmEMDNwpGk6Y2aL/wEOEIH5KvAvX+ebmX2VVANOj2hfzOyHpOPAiWHBzEzSjgPWASRdHkxys9k8EmO8PY4s6U0IoRFjbI1qzrlbIYQG0B6RtiTNFkXxvAqs0X/zmqS33vvler1+ETi/D/M38H43wSeAWq32vdfrdUbSbe42+NnMBtpPSXN5nnehP3AtYGFcyqG0r/I8n53Uf1C5EMJrM+tO6I8xxkdlgAGcmVmlUrkJbE3gfxJCCKXBAbIs++Cca5nZ+j4+A56GEB6WBYahrQZ/V+oc/ZV6FtiQtCKpnWXZWplggD+g9svk3pHFTAAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.ext.microsoft.authentication.node.MicrosoftAuthenticatorNodeFactory"
+            },
+            "inPorts": [],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.credentials.base.CredentialPortObject"
+              }
+            ]
+          },
+          {
+            "name": "Google Authenticator",
+            "id": "org.knime.google.api.nodes.authenticator.GoogleAuthenticatorNodeFactory",
+            "type": "Source",
+            "extension": {
+              "name": "KNIME Google API Nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAQCAYAAADu+KTsAAAACXBIWXMAAAK+AAACvgEk+CLQAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAeBJREFUOI21lT9oU1EUxn/fTSJBHBTBycF/xCWDcN+jQxcXB5tJ6i66S8Wh6CBuooMIWRzdnVoHEQpSaCn43rsJCA5ObkrdWmrVau5xSCMhtE2oz7Ndvu/yOx/3XI7MjEFNTU2d7PV6d4BrwBlgE1gF2kVRrFJyaQBP03TazF4Cp/bwmZk963Q692y42zLgaZo2zWwFODbG/7goigdlwZ0kF2N8MQEYYN5770uDe++vSro0qR+4Xxa8ClwfOm+b2bKkBnBhrwuSWkmSvDskb8c5dzfLshxA3vuPwDngl6TpPM+7SZLUzGxR0pVDQg6qbeBGURQL8t5vAEfNbCmEMDNwpGk6Y2aL/wEOEIH5KvAvX+ebmX2VVANOj2hfzOyHpOPAiWHBzEzSjgPWASRdHkxys9k8EmO8PY4s6U0IoRFjbI1qzrlbIYQG0B6RtiTNFkXxvAqs0X/zmqS33vvler1+ETi/D/M38H43wSeAWq32vdfrdUbSbe42+NnMBtpPSXN5nnehP3AtYGFcyqG0r/I8n53Uf1C5EMJrM+tO6I8xxkdlgAGcmVmlUrkJbE3gfxJCCKXBAbIs++Cca5nZ+j4+A56GEB6WBYahrQZ/V+oc/ZV6FtiQtCKpnWXZWplggD+g9svk3pHFTAAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.google.api.nodes.authenticator.GoogleAuthenticatorNodeFactory"
+            },
+            "inPorts": [],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.credentials.base.CredentialPortObject"
+              }
+            ]
+          },
+          {
+            "name": "Google Sheets Reader",
+            "id": "org.knime.google.api.sheets.nodes.reader.GoogleSheetsReaderFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Google API Nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAQOFAAEDhQGlVDz+AAAAB3RJTUUH4QgVDwseVNwtfgAABBtJREFUOBEBEATv+wEEmFD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAD7Z68AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFmVEAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAWZUQAAAAAAAAAAAPtnrwAFmVEAAAAAAAAAAAAAAAAAAAAAAAAAAAD7Z68AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAD7Z68AAAAAAAAAAAAAAAAA+2evAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAABZlRAAAAAAAAAAAA+2evAAWZUQAAAAAAAAAAAAAAAAAAAAAAAAAAAPtnrwAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAPtnrwAAAAAAAAAAAAAAAAD7Z68AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBJhQ/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaVgbQ+WvbE4AAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.google.api.sheets.nodes.reader.GoogleSheetsReaderFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.google.api.sheets.data.GoogleSheetsConnectionPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Google Sheets Writer",
+            "id": "org.knime.google.api.sheets.nodes.spreadsheetwriter.GoogleSpreadsheetWriterFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Google API Nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAQOFAAEDhQGlVDz+AAAAB3RJTUUH4QgVDwseVNwtfgAABBtJREFUOBEBEATv+wEEmFD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAD7Z68AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFmVEAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAWZUQAAAAAAAAAAAPtnrwAFmVEAAAAAAAAAAAAAAAAAAAAAAAAAAAD7Z68AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAD7Z68AAAAAAAAAAAAAAAAA+2evAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAABZlRAAAAAAAAAAAA+2evAAWZUQAAAAAAAAAAAAAAAAAAAAAAAAAAAPtnrwAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAPtnrwAAAAAAAAAAAAAAAAD7Z68AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBJhQ/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaVgbQ+WvbE4AAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.google.api.sheets.nodes.spreadsheetwriter.GoogleSpreadsheetWriterFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.google.api.sheets.data.GoogleSheetsConnectionPortObject"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "CSV Reader",
+            "id": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory",
+            "type": "Source",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RkRBRThDOTU3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RkRBRThDOTQ3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2MjZBQjAxMDJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2MjZBQjAxMTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pr5h9h8AAABuSURBVHjaYmRgYPjPQAT4//8/IzZxkOD/j5Ot8Wrmzz2K0wAmBgoBI6VegMpBAD8/P1Y2VA0DNozihT9//mBlDyEvDEgsMEJciMN0RkZ0Q2Bi/2F68RqAx+D/cCYBFxA0nbYGUOwFAgaAQxMgwAD1CJc+ReyqcgAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory"
+            },
+            "inPorts": [],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "CSV Writer",
+            "id": "org.knime.base.node.io.filehandling.csv.writer.CSVWriter2NodeFactory",
+            "type": "Sink",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6ODg4N0UyMUU3RjI2MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6ODg4N0UyMUQ3RjI2MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo3OUNEOEJBOTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo3OUNEOEJBQTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PjkRNtEAAABpSURBVHjaYvz//z8DNsDIyIhdAg2w4JP8ONkar2b+3KMMTAwUAkZKvYDXBSDDQZifnx8rm6ABMPDnzx+s7CHkBZrGAoYBII1AwEisC5gosR2sFhRWeAKRkaJYIDsMiLUdpwtICUSAAAMA1LZTh55TvMQAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.io.filehandling.csv.writer.CSVWriter2NodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          }
+        ]
+      },
+      {
+        "tag": "Manipulation",
+        "nodes": [
+          {
+            "name": "Row Filter",
+            "id": "org.knime.base.node.preproc.filter.row3.RowFilterNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Rjk3QThFRUE0NDFDMTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Rjk3QThFRTk0NDFDMTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNmRiZTRmOC00Yzc3LTQyZGUtOGI5NC00ZGExNTM3Y2Q1M2YiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+JOw8vQAAAJVJREFUeNqkUgEKwCAI9KL/f9ll6BCntrGDkEhPu3MwM8WzwBrTuz+DCgDYRStShymJHYmElqBIMNK+/cJo3lBN5b81TZyQdGeoDpFMSNCK6BwwUkpIjiKeJOBBPyEa4EtBmBjzxZiUCW0uVS7sBbI33UpvBtI9kATvYLg/iqVB64JuJLpvpSIaaRg71aMUMSvOcAkwALIaZjL1MMxxAAAAAElFTkSuQmCC",
+            "nodeFactory": {
+              "className": "org.knime.base.node.preproc.filter.row3.RowFilterNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Column Filter",
+            "id": "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDIyRjAxMjk0NDI1MTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDIyRjAxMjg0NDI1MTFFNUI4QUY5RjNFOUEzQTE4QjIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNmRiZTRmOC00Yzc3LTQyZGUtOGI5NC00ZGExNTM3Y2Q1M2YiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+vcE10QAAAGFJREFUeNrcUkEKwCAMa4L//7LCwA3bVYPztJxKDUlaS3tQLaJO+hdoH/EDgeKW1Gsk/MDlCxkTw8Cle4CQeuBSdE6TlORQlB3cAlvOR79xGdP1sEqAEyNAFabolqZqAgwA4/EMMjThx3gAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Concatenate",
+            "id": "org.knime.base.node.preproc.append.row.AppendedRowsNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QzRBNDVGN0E4NjNBMTFFNUE1MkU5NUMxRjMyOENFRTgiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QzRBNDVGNzk4NjNBMTFFNUE1MkU5NUMxRjMyOENFRTgiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowREYyMzc5QTE2OEQxMUU1QkQ5NUExQjU5MUVDNkZCQiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowREYyMzc5QjE2OEQxMUU1QkQ5NUExQjU5MUVDNkZCQiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PokpslcAAAFRSURBVHjaYvz//z8DJYCJgULAwsjISLRi74X784FUKxD/BeJZeh/utjGToDkPSE0E4s1A3A3EaS85hMRZgAyCgcAnp8Lw/98/BkYmprlAbt7WeMdvQAOFQQaB3P8fOSBBXkIP2C03nzLcf/eFYeft5y+A3BNAnAvEu4D4J85ABBny5ttPsPN4WFkY9t17CRIG2XoQash3IHZnwab55ptPDF2HroHZNvJiDGuvPmLgZGVm+P2XIQUoVAvEm4C4FOiVr4zoYSCqa8pgnNfM8O3VMwZeGcU2oFAVED8H4kCghpMY0QjyNrKzfRYdeAJkvgNqtgPSrkC8GogPA3E2EJ8kJiHxAvFVoG0fgBik+QwQTwLi01gTEhaxCiCeAoymX0CaA4jDgLjR9unJNVuxKGZED3lQNAI1pwG57VD5fMdX57aXlBa/weYCxgHPTBQbABBgAMjKdxgbj1UQAAAAAElFTkSuQmCC",
+            "nodeFactory": {
+              "className": "org.knime.base.node.preproc.append.row.AppendedRowsNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Value Lookup",
+            "id": "org.knime.base.node.preproc.valuelookup.ValueLookupNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACBSURBVHgBxZKBCcAgDAQTcRVdxqHUoZzPNgrShFgUoT2IwqOveYIAUOEAS0ut3AMRlzUDh3xnIL+/ZZBzbjv1/CzCrryWUup6CEzHUgD7+TpeeCN5D9E5ZrAVopaDkQe0ImKM7QcTY47U7stDl8UyGL0pU6exNYmzgP8f5ZYBHHABScBlsHhHpdwAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.preproc.valuelookup.ValueLookupNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Row Aggregator",
+            "id": "org.knime.base.node.preproc.rowagg.RowAggregatorNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAA2klEQVQ4EZWTMQ7CMAxFKerAKSqOwFAGGLgGI0dpOAoj12CAAQaOgHoKNsi3+NGXhWnJEie1X/631WqzXr0mbp3Ol8pdhccaXxbtsiTcb1eL501j4Eff/4RNS6ULhgqZbgr4Ki//2UMLYyGhBQdI7lyOoyzkhna5JyhKfmqDFjgNgZSpoXehBRZyGnnfQwFk6AotsBDJvlinZoDZblugz8PRYlUg8hM+Mh+5oQUqIAiQXGsAQLhMAV/lpe4AASI2Os0PLThIaaD/0UILlP4BJQVqHFpgDzT5W/wG0QVpJhug6rwAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.preproc.rowagg.RowAggregatorNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Joiner",
+            "id": "org.knime.base.node.preproc.joiner3.Joiner3NodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6REFGNjAwRjM4OUU2MTFFNTkyQzJBQjlCNTFCMUUyMzIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6REFGNjAwRjI4OUU2MTFFNTkyQzJBQjlCNTFCMUUyMzIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpEOTJFN0JGRjE4MzQxMUU1ODEzQUUwRDBBNzRDODlBMiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpEOTJFN0MwMDE4MzQxMUU1ODEzQUUwRDBBNzRDODlBMiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PkwM/E0AAACrSURBVHjaYnzm5/+fARUwSm3ayIALeC3Yh6KeBaQBif+fgTgA18PEQCFgQXYu0DtEa9yW4EQdFzBCbcbmd3hg/v//n8F74X6sapjQAwUbn5GREacaJiya0GPlPz41YAOQAhIuIblxA9ZAQ1azNd4R4QLk2MCVkJAMQWFjBaCAw+IFDDWUJyRsBiOFPLYkjiLBhMVZjHicjCGHYQCOOIdKYQozEWMbPlcBBBgA7QM5HuYXQOwAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.preproc.joiner3.Joiner3NodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "String Cleaner",
+            "id": "org.knime.base.node.preproc.stringcleaner.StringCleanerNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAwnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjabVBbDgMhCPznFD0CArp4HLdrk96gxy8u2KxtJ3EcHhkR6K/nA24DlAQkb1pqKWiQKpWaCUVHOzmhnBwBTrHk4VMgS7Hd7KGW6J/5hItTaqbyxUjvUdjXQpXw1y8j8ovHREMfYVTDiMkLKQyafwtL1e36hb3jCvUDg0TXsX/izbZ3ZHuHiTonRmNm8QF4HAZuJurJxRoTZ9Nibc30nMQW8m9PE/AG1sBZDulvNPQAAAGFaUNDUElDQyBwcm9maWxlAAB4nH2RPUjDQBzFX1u1Ki0OdhBxyFDFwYKoiGOtQhEqhFqhVQeTSz+EJg1Jiouj4Fpw8GOx6uDirKuDqyAIfoC4ujgpukiJ/0sKLWI8OO7Hu3uPu3eAv15mqtkRB1TNMtLJhJDNrQjBV/SgC2GMYlxipj4riil4jq97+Ph6F+NZ3uf+HGElbzLAJxDHmW5YxOvE05uWznmfOMJKkkJ8Tjxm0AWJH7kuu/zGueiwn2dGjEx6jjhCLBTbWG5jVjJU4iniqKJqlO/Puqxw3uKslquseU/+wlBeW17iOs0hJLGARYgQIKOKDZRhIUarRoqJNO0nPPyDjl8kl0yuDTByzKMCFZLjB/+D392ahckJNymUADpfbPtjGAjuAo2abX8f23bjBAg8A1day1+pAzOfpNdaWvQI6NsGLq5bmrwHXO4AA0+6ZEiOFKDpLxSA9zP6phzQfwv0rrq9Nfdx+gBkqKvUDXBwCIwUKXvN493d7b39e6bZ3w+8uHLEfPzy8wAADXhpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDQuNC4wLUV4aXYyIj4KIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIKICAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIKICAgIHhtbG5zOkdJTVA9Imh0dHA6Ly93d3cuZ2ltcC5vcmcveG1wLyIKICAgIHhtbG5zOnRpZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIgogICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICB4bXBNTTpEb2N1bWVudElEPSJnaW1wOmRvY2lkOmdpbXA6MWVhZGQ3ODEtODlkNy00ODcxLThiMTItMWQzODQ5OTQ2NDZmIgogICB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOmZlY2RkOTNhLTg4NjAtNGY5My1hZTVlLTVlNjI2ODFlOWE0MiIKICAgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOjgwZDBkMWUxLWJhOTMtNDkzMS1hYWY5LTNiOTJhZmZmOTViZCIKICAgZGM6Rm9ybWF0PSJpbWFnZS9wbmciCiAgIEdJTVA6QVBJPSIyLjAiCiAgIEdJTVA6UGxhdGZvcm09IkxpbnV4IgogICBHSU1QOlRpbWVTdGFtcD0iMTY5NDAwNzc5NTYzNTA1NiIKICAgR0lNUDpWZXJzaW9uPSIyLjEwLjM0IgogICB0aWZmOk9yaWVudGF0aW9uPSIxIgogICB4bXA6Q3JlYXRvclRvb2w9IkdJTVAgMi4xMCIKICAgeG1wOk1ldGFkYXRhRGF0ZT0iMjAyMzowOTowNlQxNTo0MzoxNCswMjowMCIKICAgeG1wOk1vZGlmeURhdGU9IjIwMjM6MDk6MDZUMTU6NDM6MTQrMDI6MDAiPgogICA8eG1wTU06SGlzdG9yeT4KICAgIDxyZGY6U2VxPgogICAgIDxyZGY6bGkKICAgICAgc3RFdnQ6YWN0aW9uPSJzYXZlZCIKICAgICAgc3RFdnQ6Y2hhbmdlZD0iLyIKICAgICAgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDowNWY1OWMxNC1hNWU2LTQ1NzAtOTUxMC05OWY3YzcyMThjZTEiCiAgICAgIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkdpbXAgMi4xMCAoTGludXgpIgogICAgICBzdEV2dDp3aGVuPSIyMDIzLTA5LTA2VDE1OjQzOjE1KzAyOjAwIi8+CiAgICA8L3JkZjpTZXE+CiAgIDwveG1wTU06SGlzdG9yeT4KICA8L3JkZjpEZXNjcmlwdGlvbj4KIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAKPD94cGFja2V0IGVuZD0idyI/Pnd45coAAAAGYktHRAD/AP8A/6C9p5MAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnCQYNKw8B+c+cAAAAuElEQVQ4y8WTzRGCMBBGn5ECLCElwM0blGAH0gF2IF14tgNLoAPTgXTgWAFevszs4IABD34zb5Ld/G02G5hWDTxFzUJVwADcxCBfslotihrk+5DjR/1/g0ytB47GX6o9j3zWvgJ9NHolagkPUrL87ZWymRDnVFrDrwg/4p2psALYJFJoTe6AXEZQvzHRHUTUSXMC8IqHB6CbKOHOjI2T3QH3LXDRM3rt6M2HqoCdqMx1vdjbU9fQvgH+I0zGnWD0bQAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.base.node.preproc.stringcleaner.StringCleanerNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "GroupBy",
+            "id": "org.knime.base.node.preproc.groupby.GroupByNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RTJBODlBQ0UxNjhDMTFFNUJEOTVBMUI1OTFFQzZGQkIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RTJBODlBQ0QxNjhDMTFFNUJEOTVBMUI1OTFFQzZGQkIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDplYjRlYWE5NS1mMzM5LTQzZTctYmY1Yy0yNzFmOThkY2ZiMmIiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+YgCPzAAAAEBJREFUeNpiYGBg+E8AP2DAA5gYKAQDbwALEDNiEf9PNxcw/v+PaRkjI+P/EWQAA8gAdEzXlMhCknOHZ14ACDAAHBMtwUKLErMAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.preproc.groupby.GroupByNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tag": "Views",
+        "nodes": [
+          {
+            "name": "Bar Chart",
+            "id": "org.knime.base.views.node.barchart.BarChartNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Views",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABOSURBVHgB1ZOxDQAgCATRQYhzaOH+U2ksbDBG4G242pwHCVSYB0ImkECC3qpOcHsIF7gFr6J/BdbZDwFcINEWuQv2B2aBLIN3kNY5E8AEUbpDhI+Lz+AAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.views.node.barchart.BarChartNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "Line Plot",
+            "id": "org.knime.base.views.node.lineplot.LinePlotNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Views",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEWSURBVHgBpZG9TgJBFIUP7JazwXJpiA2xFTuN2drQiQlvYUJHYmWi8SlcXTu1dhdLhdoZnmJnapdScmUmLP8kO/B1dyY595xzcVir0T6UsSdWAr0kwVCIpTcXFnwmMZRSCKMIjHl2DpSSUFLiPAjwHD7NP4qW+HB/R734g7Iso3brkgTn5r2QgJQpBWenJNPUzIL/UPuqNRH7Xb/CaJSt2Rdc4KLZhF+tmvm4cTKPsupAW9XqSRybzRo959tz8ijualFDznHd6WDQ7yMKH8E8D77vz7bnMMYm13hZdqA36aIW0fPg+2trPzOB97dXuul2yRYjoLNuylkE56BSuXXKJTSmzVpzVK+bNnelpCO4joO/8Ri78A862PqEai1KCQAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.base.views.node.lineplot.LinePlotNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "Pie Chart",
+            "id": "org.knime.base.views.node.piechart.PieChartNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Views",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJSSURBVHgBjVNLTxNRFD4zfZs+prjpA2sbmqiAMkYXY9JppjE24KbAQnDpD1AbjC5FEw1rdm5Kt4ISda+xGJAxIemIiZsKjLSFIj7QaVoKdMZ7r7RWqOiXTO6dc+/3ncc9h4I9EEKcoKpUL9rG0OcnRoqSNA2kbVW9K4qi3HhfVycKAuPzukdMpkMP+Mh5rn/gMjM7/QqmZl4Dz4ddHR3t7NKHTPww42QCweAbWZY3iXaNrG5tvTx95izbE4uB2Wwhordv3SACNRSLRUiOJeDx+IREG42RVCq1QeMDdbsyfC7Es30Dg3VyM1itVrh67Tp0X+xh1UplGNtogeP8DNMSj0Sj8L/gw2EcezzEcYJepeBO5EL0QM+/U1AgmRiDJ5OTYLXZoKgovXqg6C63x/NPcjKBcn80gYh2aD91EqrVKryfn4/pATTW5fH+lSil0zBy/x4poC8QAKPRROw6nR4vfvogr4yzBW4ODYHV7oDgseN1ciNo0EDe+Pa1qUDfpUGy4nz3olwqkQBpVM1n6bm5pgKBtjbwtLZCYSW/X6BcQr4piVZV7SnuuM1yualIP+qN9bU1UrQaqjs7UMivAG5t3XIuJ3vdLqeiKNyJzs59AmaLBTQ0CIuZDNgdDmJbzedA+fF9dGZWfKj7FWpQXM1lu1EUriO+o6A3GP4Qwc889eI5GIwG+FQowJf1z6iVTVfwPBABvEH5jmeXFi3v3koc9opbzbZbPPyE2eWPIC8s4OKNYjKeA4DdYWoEbm3cnWiEu9AvS4zopXCxcb2mRTHVeP8nqQ7lgr5IUUEAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.views.node.piechart.PieChartNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "Stacked Area Chart",
+            "id": "org.knime.base.views.node.stackedareachart.StackedAreaChartNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Views",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJgSURBVHgBlVFdSJNhFH724+bchG1R1lDb1yb9zISgAkUEjbqwKOqiRn8MJEy0HEWU7EYIL6KwH0qTzKUtlbqIbjZUmBQUxYyNbcFqky7aloZ8E7aVIVu97zs2GTOwAx8f7znnec5znoOGuto/a41UKkW+dF5OiDVGIhFHZ0cHOi+0Y27uey5fQBAKBeGw2xEKBnM5CmgxmaDlOBgMOxmRx+1mNQFd4fXbd7lGWtxhqIbf54VQKIRer4fH44Hx5CnI5XJsKCujMNztvYXmg4dWCKhEOqWxaR+Mp88wwh/z8/B7vQxUXVODc6azSCaSuPOgj9XHbE9XCCxd16BWr0NL6/lVPRh7ZkMgEMAmjQaBT3703LjJFDEPrEOPEYlEGDiZTBaAqZJxMq1p/wHU1jdAqVRjcKCf1USbKyq6o9Eouq/3QK5QYMQ6hP779xi7grxpbnDgIbS6Kmwn3tDgdDpMOuwgV8ys8OjJCNvTOTWJYasVR48b4fnowtfZWajUKsT4GC51WfJULcZ49N3uzRC8ckwwmeb2NrReNEOpUuca3TMuFMtkbDolpMBdu/ew2tLSL4izjZarV7C3rj4PTCPbvMjzePl8HD+JR9NEaSPxg9aYBxAI8Ht5Gc2Hj+BfMTpspecHp69COp2G2+XCzIf3GYLwtzCOnTCSXXm8GLWxCVS2rFjG/tNTEwh9+YxKbgsjk5WUYD3xTFxUlPGgzXyZ3NaHN04nNpI70wZ+YQGJeBya8nJEw2Hot22FRCItUMYI6N70JJWcFiKROK+BEkmkUihKS1ddTZw9CQ2fO4b/jb81nCn3Oj3D4wAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.base.views.node.stackedareachart.StackedAreaChartNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "Scatter Plot",
+            "id": "org.knime.base.views.node.scatterplot.ScatterPlotNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Views",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABSSURBVHgBxZNLCgAgCAVfHSS6X0H3XxUtamGYgUqzVXTwg5xS1xBBaLXgxhE3M1iVOQMa33nfDPxmIE3fz4DrKOJ2idJW7A1op+ef0BqEWQAKBuVdBT9PJfc5AAAAAElFTkSuQmCC",
+            "nodeFactory": {
+              "className": "org.knime.base.views.node.scatterplot.ScatterPlotNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "Statistics View",
+            "id": "org.knime.base.views.node.statistics.StatisticsNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Views",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACkSURBVHgBtZNLCoMwEIZj6SEkPUEphS7aRS1UXOg5RG/iUvAIUa/iQje68BIGb+EjoBB14iP4wUAmGf75ySRK04EkuCBJrtCB/tO4PEkztNvB6/1hsepgazdQYOjWUxY5WByHhMttx4XvYImIEKRizNY1pesCNa1meyq+jQI9QoH748kVLyGcgmFaLESc95AgplPa7cDzAxaHBaZICyh/7Sv1nVu4Rikj7WDljQAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.base.views.node.statistics.StatisticsNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "Heatmap",
+            "id": "org.knime.base.views.node.heatmap.HeatmapNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Views",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABdSURBVHgB3VMxCsAgEDtLn9PSDgqtg49wEN/jKPgyHfyR4uq5qctluCE5QgiEKfmXlwvokVNE3OjvgEkQMDjb0cYiYVTilgRUSvwER4LzAXHPfcHyBAQMWJszTKAC92wNRf4EF3oAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.views.node.heatmap.HeatmapNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          },
+          {
+            "name": "Histogram",
+            "id": "org.knime.base.views.node.histogram.HistogramNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Views",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABMSURBVHgB1ZNBCgAgCAStX2VQ/39V0aFLYGlbB/eqjKMgFU5tl1M9EhhHgJoZA5gNpIlqAGzwDbCu9t5AezwRABtcA6zqsz+MdyUgHX3XQS5kIg7PAAAAAElFTkSuQmCC",
+            "nodeFactory": {
+              "className": "org.knime.base.views.node.histogram.HistogramNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": []
+          }
+        ]
+      },
+      {
+        "tag": "Analytics",
+        "nodes": [
+          {
+            "name": "Decision Tree Predictor",
+            "id": "org.knime.base.node.mine.decisiontree2.predictor2.DecTreePredictorNodeFactory",
+            "type": "Predictor",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NTNFRDUyQUQ4NEE1MTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NTNFRDUyQUM4NEE1MTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoxM0I0QUVGRDM4NEExMUU1OTk3MThDMzA3QzdERDI0QyIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoxM0I0QUVGRTM4NEExMUU1OTk3MThDMzA3QzdERDI0QyIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqFfWUMAAAGzSURBVHjaYmJAAjKS0v+V5OWvSolLyzOggv9QjAGYkDn//jEwKKiwarGyMd6XlpBeDDSIhYEAYEIXKG8SZSiuFWMUFmWJ4eRk/go0JJ0kA0DAyJyTYdICaYbASD42oGtmyMtIM7CysCJ75QMMM+EymYWFkSEggp9hykIZBjMbHgZJcXEGMWFRBiYmsBZ+GGYi5EdBYWaG/EoRhvoeCQZFFV4GeVnpv0BvNcLkGZEVAyX+z18nx8DNg93c/0DH793+mWHJ7PfgAH/67BUDQRcgA0agdS5evAzdM6QYgGHDICoswsBCigEgF+wDumAx1AWv374BG/CBGM03r/1kmDXhHcOrF7///vzxr+XZy6cN4MCGhiZO8P7tX4ZFs94znDz8FeSJ3X/+/AsCav4Cjy2E8/4zSkvIwJPrnz//Gbas+cSweskHUEj/ff7yJfPvP7/dMKIbm63nTn5nmDP5LcPXz/9//f71Pw9oYyZQWB9rwMIyCcwFGjqcDHdv/fj/5/f/pcBASwRq/gOUvgA1gBGvC0CJ7MGd39eAtnoBNT4kJnBRDHjy/Ckj/mj8D0wLqEoAAgwACfqfX1Qyyo8AAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.mine.decisiontree2.predictor2.DecTreePredictorNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.port.pmml.PMMLPortObject"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Decision Tree Learner",
+            "id": "org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3",
+            "type": "Learner",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDAxMjlBQ0YzODRBMTFFNTk5NzE4QzMwN0M3REQyNEMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDAxMjlBQ0UzODRBMTFFNTk5NzE4QzMwN0M3REQyNEMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpjODMzMDUzNC01ZmNjLTQ3YmEtOGMwMy0wNjM3MzViNjFjY2EiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+SVPr5wAAAG1JREFUeNpiYCAO/AdhIGAgF9DOAEYMlUBFjIyMH4BMfjwGfiRkAAVuhTjzPxQT9BZZBuBVQ3cDQIH4AU2eDYg50UMbqlEAGMAY0fifhABmRDcAJZHAMBbn3seXEolJphdwqWFioBAMvAEAAQYAIjxiWrRMhuUAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.port.pmml.PMMLPortObject"
+              }
+            ]
+          },
+          {
+            "name": "Regression Predictor",
+            "id": "org.knime.base.node.mine.regression.predict3.RegressionPredictorNodeFactory2",
+            "type": "Predictor",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NEYzNEM5NEM4NEFBMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NEYzNEM5NEI4NEFBMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpCMTRGODdBQTM3OTkxMUU1QUEwNEEzNDQxMEQ0QjlGNiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpCMTRGODdBQjM3OTkxMUU1QUEwNEEzNDQxMEQ0QjlGNiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqVpz8gAAAF8SURBVHjaYmJgYPjPgARkJKX/K8nLX5USl5ZnIAIwoQv8+8fAoKDCqsXKxnhfWkJ6MdAgFiz6/uM0AATKm0QZimvFGIVFWWI4OZm/Ag1JJ9oFMGBkzskwaYE0Q2AkHxvQNTPkZaT/Aw0yJNoAEGBhYWQIiOBnmLJQhsHMhgfEPycnLbuLiYmJOANgQFCYmSG/UoShvkeCQVKG1VVeVvov0DUNIDlGaIAwwhQDJf7PXyfHwM2D3ez/QNV7t39mWDL7Pcj+j0S5ABkwAq1y8eJl6J4hxcDM8p+fBT1aCAGQC/YBXbAY6AJQlMMMYMQWx+jg5rWfDLMmvGN49eL3358//rU8e/m0gYUYW9+//cuwaNZ7hpOHv4Ls2v3nz78goOYv4JjCp/HPn/8MW9Z8Yli95APY7X/+MBg9e/nkPEpU49J87uR3hjmT3zJ8/fz/1+9f//OANs4ACp9nwJeuYdHo5KzyX15W5h9yXpASk+bEGbCU5EZGUqIQGwAIMACat36TE/lQ7wAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.base.node.mine.regression.predict3.RegressionPredictorNodeFactory2"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.port.pmml.PMMLPortObject"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Linear Regression Learner",
+            "id": "org.knime.base.node.mine.regression.linear2.learner.LinReg2LearnerNodeFactory2",
+            "type": "Learner",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QkNFMzBEQUEzNzk5MTFFNUFBMDRBMzQ0MTBENEI5RjYiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QkNFMzBEQTkzNzk5MTFFNUFBMDRBMzQ0MTBENEI5RjYiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo3YjBjYWNiOC1jYTk4LTQ4MjItODI4YS00NGEwMTA3Mzk2MDYiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+XUKVSwAAAH9JREFUeNqcUtsNgDAIBNJZTLTRWXT/YWr5qBJsqXBflMdxJZcAoFQgBICIhSAIHq64knMAdUyzoV5uW/L7tm6gt7a87HfdYF+P75KRgraRazLWffTneFadZgMzj4R9YBLoP1squgQea5PnYCaBNE1PxdBsXPPKFjgfgihuAQYA1hdLtRx/MTkAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.mine.regression.linear2.learner.LinReg2LearnerNodeFactory2"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.port.pmml.PMMLPortObject"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Scorer",
+            "id": "org.knime.base.node.mine.scorer.accuracy.AccuracyScorer2NodeFactory",
+            "type": "Other",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDVFM0ZBRkM4NEFEMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDVFM0ZBRkI4NEFEMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo1Q0I0MzlENDM4NEUxMUU1OTk3MThDMzA3QzdERDI0QyIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo1Q0I0MzlENTM4NEUxMUU1OTk3MThDMzA3QzdERDI0QyIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PtQlBdkAAAHFSURBVHjalFNNSxtRFD1vMt+Tj0niUEsExUV3sdAGjWDR0mXzC+pPUPEHuNZ/IC7VbddSty5LR+gii0JBstCAEE0TYzpmJsnteyOzkGQ0PXDhwXv3cO657zAAtLxcRhyCIIDrnrO4e3FBHLEEGTsLVZHRaDTGkkh4BoLY8zz4QR+O49B/E0SISNJpmwzd+MkYQ1RyXFPlcwWrq2u479xBkiTU63W8Lb6BnBgUxygdxfqXdSGZnLxBW5tbVHidpfkZRrrGaCIC13WJK6S9bUZzBYk+vGP0+0QKSVNWKhc1x45QKpXg5E1MT3m4+MbX2X9cwqs8w82fzq2TU3tBIP8aa2K73canjytotT0k+AtuATT1sa7PGE72Gf56vjYY+sWREY4Oj8hOa2QZoNMDRlSVntTxLiNVAeVs65yPYo8oqNVqWFh4DzuTRGUDmF4j9HyENRwCA16WqQTNVrfU6XZasSYKNJvN0DRhnjBxtsBCU4W5STO19OwWIuiaFK5vhq9RVVTKpmVf9Bi6+XWin6ipMu4fkvj+o8p/o4/+wNAtw9rhHNmJFJQXy3R1eRWe7YxNY9NomhZPnPJiJroiE72HJ6n8J8AAvPxD0AaF8cEAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.base.node.mine.scorer.accuracy.AccuracyScorer2NodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "k-Means",
+            "id": "org.knime.base.node.mine.cluster.kmeans.ClusterNodeFactory2",
+            "type": "Learner",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QjdDNkI0QTEzODQ5MTFFNTk5NzE4QzMwN0M3REQyNEMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QjdDNkI0QTAzODQ5MTFFNTk5NzE4QzMwN0M3REQyNEMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpjODMzMDUzNC01ZmNjLTQ3YmEtOGMwMy0wNjM3MzViNjFjY2EiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8++UydmQAAAOlJREFUeNpiYGBg+C8lJh3EgB38R+YA1fGii4EEDaGG1AMxI5pcOxrfBsMAqIQ41JC1QMzDgBuA1ExFFmACEc9ePX0JlGAHMt8B2Z+BbAU8hpxjwAeAmrOhzsSKgfJGQGyB4hWgAB9UUgvmVHSAZoghzAAmZK8AARtOzwPNgJgD9vJ5mDgjbvUQxYyMjCiGQPmM+Az4D1OMDaAbgBwOAsj+xAWwJSQufKGOIyb80J0MElTBk5yRNdtAaVGYCziweIcdiAug8Y0rRa7Dl5g4oYo8cMizQ+Xj8CXK/wRSrAFIDSOu6CIWAAQYABv4izrhpmEwAAAAAElFTkSuQmCC",
+            "nodeFactory": {
+              "className": "org.knime.base.node.mine.cluster.kmeans.ClusterNodeFactory2"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.port.pmml.PMMLPortObject"
+              }
+            ]
+          },
+          {
+            "name": "Statistics",
+            "id": "org.knime.base.node.stats.viz.extended.ExtendedStatisticsNodeFactory",
+            "type": "Visualizer",
+            "extension": {
+              "name": "KNIME Statistics Nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MzEyNjA2NjY4MjQ2MTFFNUIwNzZBNjc5RjFCMTFDMjgiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MzEyNjA2NjU4MjQ2MTFFNUIwNzZBNjc5RjFCMTFDMjgiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpBOUQ4QUYyMzM3OTkxMUU1QUEwNEEzNDQxMEQ0QjlGNiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpBOUQ4QUYyNDM3OTkxMUU1QUEwNEEzNDQxMEQ0QjlGNiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PhcOv8kAAABfSURBVHjaYvz//z8DJYCJgULAgk2QkZER7iygCxnJcoGUmPQAegEXwOY1il1APS8gO49sFxAb8iQFIiGX4QyDZ6+eEpU2sLrg3fc/cLYQJwttY4GgASDXwDBNXAAQYAC33hxkyms0fQAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.base.node.stats.viz.extended.ExtendedStatisticsNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Logistic Regression Predictor",
+            "id": "org.knime.base.node.mine.regression.logistic.predictor.LogisticRegressionPredictorNodeFactory",
+            "type": "Predictor",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NEYzNEM5NEM4NEFBMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NEYzNEM5NEI4NEFBMTFFNTlCODZDMzA0NTY3MzY5QkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpCMTRGODdBQTM3OTkxMUU1QUEwNEEzNDQxMEQ0QjlGNiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpCMTRGODdBQjM3OTkxMUU1QUEwNEEzNDQxMEQ0QjlGNiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqVpz8gAAAF8SURBVHjaYmJgYPjPgARkJKX/K8nLX5USl5ZnIAIwoQv8+8fAoKDCqsXKxnhfWkJ6MdAgFiz6/uM0AATKm0QZimvFGIVFWWI4OZm/Ag1JJ9oFMGBkzskwaYE0Q2AkHxvQNTPkZaT/Aw0yJNoAEGBhYWQIiOBnmLJQhsHMhgfEPycnLbuLiYmJOANgQFCYmSG/UoShvkeCQVKG1VVeVvov0DUNIDlGaIAwwhQDJf7PXyfHwM2D3ez/QNV7t39mWDL7Pcj+j0S5ABkwAq1y8eJl6J4hxcDM8p+fBT1aCAGQC/YBXbAY6AJQlMMMYMQWx+jg5rWfDLMmvGN49eL3358//rU8e/m0gYUYW9+//cuwaNZ7hpOHv4Ls2v3nz78goOYv4JjCp/HPn/8MW9Z8Yli95APY7X/+MBg9e/nkPEpU49J87uR3hjmT3zJ8/fz/1+9f//OANs4ACp9nwJeuYdHo5KzyX15W5h9yXpASk+bEGbCU5EZGUqIQGwAIMACat36TE/lQ7wAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.base.node.mine.regression.logistic.predictor.LogisticRegressionPredictorNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.port.pmml.PMMLPortObject"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tag": "DB",
+        "nodes": [
+          {
+            "name": "DB Reader",
+            "id": "org.knime.database.node.io.reader.DBReadNodeFactory",
+            "type": "Source",
+            "extension": {
+              "name": "KNIME Database",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Njg1OUE1QjA4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Njg1OUE1QUY4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo5M0Y0RDE3MDgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo5M0Y0RDE3MTgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PveG+TsAAACuSURBVHjaYmZgYLgNxI5ALALE94H4GwOJ4D8SBmlOoMQAEP5CimYmLGLdpLrgNxCfA+I+INYlVTMLELMD8T8yvM0I8wKyZlUgbiXBELAp6UCsB41KTagkI7pCUmLhLQF5FIweC3uB2BZNjBELhsuBArEFiK8A8TEgfkxCQDLiktAjNRoFoJqcgdgPiA3wmY7NgPdoYv8oSco/gLiEVC/cggbicSBeBsTPSDEAIMAAE9kvjpoezx8AAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.database.node.io.reader.DBReadNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "DB Query Reader",
+            "id": "org.knime.database.node.io.reader.query.DBQueryReaderNodeFactory",
+            "type": "Source",
+            "extension": {
+              "name": "KNIME Database",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Njg1OUE1QjA4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Njg1OUE1QUY4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo5M0Y0RDE3MDgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo5M0Y0RDE3MTgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PveG+TsAAACuSURBVHjaYmZgYLgNxI5ALALE94H4GwOJ4D8SBmlOoMQAEP5CimYmLGLdpLrgNxCfA+I+INYlVTMLELMD8T8yvM0I8wKyZlUgbiXBELAp6UCsB41KTagkI7pCUmLhLQF5FIweC3uB2BZNjBELhsuBArEFiK8A8TEgfkxCQDLiktAjNRoFoJqcgdgPiA3wmY7NgPdoYv8oSco/gLiEVC/cggbicSBeBsTPSDEAIMAAE9kvjpoezx8AAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.database.node.io.reader.query.DBQueryReaderNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBSessionPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "DB Table Selector",
+            "id": "org.knime.database.node.utility.tableselector.DBTableSelectNodeFactory",
+            "type": "Source",
+            "extension": {
+              "name": "KNIME Database",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6ODc1QzREQkI4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6ODc1QzREQkE4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFMUNDOEYxNzgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFMUNDOEYxODgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PgunuAIAAADaSURBVHjaYmRgYLgNxJeBeC8Qr/z///8bBhLBfyT8DYgTgIYwEIsZoRqRwVegBA+5LgDhenRbgOA8EF8FYhUscgy/gfgcEPcBsS42ZwLBJajht4BYDd0AJkL+BAJFIL4INeQGEGvC5dAUqgJxKw5DVID4AtQQkHc0YC5IB+KpQHwNFg54XCILdQHYJTAD0APxLSUG7AFiLSK8cA3ZC81AHA4yneJAhCrWIzUaBYDYDogboQnmPykJCVtS/geUYCY3KX8H4kJSM9NNIL4CxMeBeBlQ8BkptgMEGACiYoogFsgNkgAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.database.node.utility.tableselector.DBTableSelectNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBSessionPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ]
+          },
+          {
+            "name": "DB Query",
+            "id": "org.knime.database.node.manipulation.query.DBSQLQueryNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Database",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Njg1OUE1QjQ4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Njg1OUE1QjM4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo5M0Y0RDE3NDgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo5M0Y0RDE3NTgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pg+5GtAAAADzSURBVHjaYmJgYLgNxOuAOBuIRRgwAScQdwLxXyD+D8RLgVgIWcF/JPwNiBPQDCiAyr0B4ltQ9nRcBoDwFzQDQGLbgdgJiA2B+CsQP4RJsmBxcjcanxGJ3QDEXED8GVnBbyA+B8R9QKzLgBs0QDX+R5dgYiAOvMGl+R8SXxWIW3EYIAzEP7FJpAPxVCC+hhSQJAH0WHhLQB1e/+8FYltSbAdFYwsQXwHiY0D8GI9aRmIN1SM1DASA2A6IG4H4PJGB+B+aLsDOQtcAilZmNMU4AXog/gDiEix+R8cMUBczskBzGCgQjwPxMiB+RoQX4AEKEGAAwNE/ATcYfzEAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.database.node.manipulation.query.DBSQLQueryNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ]
+          },
+          {
+            "name": "DB Joiner",
+            "id": "org.knime.database.node.manipulation.joiner.DBJoinNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Database",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NzNDNzJDNjE4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NzNDNzJDNjA4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpBNzRGQkEwMTgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpBNzRGQkEwMjgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PoKCI7cAAADNSURBVHjaYmZgYLgNxI5ALALE94H4GwOJ4D8SBmlOwCKHTx+KASD8BYtCXAYwMGGR6CbF+SxA/AeILwPxASCeD2WTZAA7EP9jIBMwoWlWBeJWLP7/jyNcwHQ6EE8F4mtYQr0Bym9AMwBFHD0W3uKJhf+EYmEvENuiiTHi8D4jLBBbgPgKEB8D4scMVAB6BFItRjQKQDU5A7EfEBvgcDZyyDPiygsg/BeH7bhiBEXzdyAuxJPo/kNpFMFb0EA8DsTLgPgZDgP+YPMaQIABAGhHRtSVuiNlAAAAAElFTkSuQmCC",
+            "nodeFactory": {
+              "className": "org.knime.database.node.manipulation.joiner.DBJoinNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ]
+          },
+          {
+            "name": "DB GroupBy",
+            "id": "org.knime.database.node.manipulation.groupby.DBGroupByNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Database",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAELSURBVDiNpdO/LkRREAbw33ATIpuIjo1GIYoVUXoLCq/hRbZU8QIqnVCptpNIJAqFQoGGRCJCPYq9y811/NmYZIqZnJnv+2bmRGb6jwUucVX7eWaejNskW36Ymf7qURc17QGLmEG/ADjIzIMSgyccoVfPZb7ALrHXZFBhCxeZedtCesRCI+7h9OsAhmhR097BGWbbWrFeZBARN+hiqu75hpeC9pFtR8TGKKiw1HpwnD8fx4zhfD5V4NnwDvqYK63rWwnoZObbqFtETEfEZD2X1QbQSolOhSoi1rCMTcOtdNHBxQ9SPho8t3IPmfkaERPYL9QM2on2oeyOc8oVrnGHexzj8DfaTYv/fud3dxPNYobHWEwAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.database.node.manipulation.groupby.DBGroupByNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ]
+          },
+          {
+            "name": "DB Row Filter",
+            "id": "org.knime.database.node.manipulation.filter.row.DBFilterRowNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Database",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NUE3RDA5QTc4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NUE3RDA5QTY4RjgyMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo3ODRGNThCQjgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo3ODRGNThCQzgyMzcxMUU1QjA3NkE2NzlGMUIxMUMyOCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PpWKOHAAAACtSURBVHjaYmZgYLgNxI5ALALE94H4GwOJ4D8SBmlOwKMOGxvFABD+gkfuPzEG1JPqgt9AfA6I+4BYl4EMwESGnv+4JFSBuJWEgAeDdCCeCsTX0CVwBCIM/4CpRZd4S4kBe4BYi1QvNANxOBDLEtDESEwggoAeqVEiAMR2QNwIxOfxmI41ITFi0fAPiJnxOBWmhxFbSH8H4kJSXXATiK8A8XEgXgbEz0jxP0CAAQAAFVaJJa/S8gAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.database.node.manipulation.filter.row.DBFilterRowNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ]
+          },
+          {
+            "name": "DB Writer",
+            "id": "org.knime.database.node.io.write.DBWriteNodeFactory",
+            "type": "Sink",
+            "extension": {
+              "name": "KNIME Database",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAADLSURBVDiNpdE9ToJBFIXhhwIJCSixomMD7sA10Fi5AK2pcScUNtSUIGuwJHSoiTGx00ISEqygQJPJfDME+G5yi5lz5p37Q8moYIEvzDH+y03CuwneFIQwpylToGeF//xB/RTALya42gOPE9ziGs0DqksC2PXcQQ/PaB3TwgvWgWGl5BCfUqZDAO8YoJ0BZOMSZ8G5jmrkqeEuB7iwW90NhliiEehdvOIzB4hn8B1oDwm9sMr44jH6oIuPfRW8YYYR7hX7h3P0c4BSsQW8wViZrjsMmQAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.database.node.io.write.DBWriteNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBSessionPortObject"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": false,
+                "typeId": "org.knime.database.port.DBDataPortObject"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tag": "Other Data Types",
+        "nodes": [
+          {
+            "name": "Date&Time Part Extractor",
+            "id": "org.knime.time.node.extract.datetime.ExtractDateTimeFieldsNodeFactory2",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAHESURBVDiNhZPBqxJRFMZ/M81IpjiGPDB44qJoF2RELQraRS3EVVDbB0mBf0Grt3LbykVBG2nnppjdEyIIJnn0LKKSF25GKigQSSak0bmnhSPNmxz74HAv557vO9+9nKvxFzpwE7gCmMAb4Bnwmw3QwnXbMIyntVpNqtVqUSllOI7zrd1uZ3zf3wHebxI5kUqlnH6/PxQRsW1bWq2WiIiMRqMfmUzmLXAqiawD95vNplQqldPxw1KptNXpdEzgQWJ70zT3fN/3JUTUwQq5XO51Et/IZrPHTdM0G40Gg8GA8XhMvV4/UmRZlj6dTg1g8Y9COp1+KSKilJIgCCQIAomjUCgkOtBns9lBt9v9oGkauq6j6/qRAtd1v0wmEzfxDYDtfD6/73meF++8WCzm5XL5FXB+kwDAdcuyDmzbfqeUUiIivV7vU7FYdIA7wDngDHAsTlwNUha4AVw1DOOCpmnafD7/CDwEDoG7wGOWU/k5zB0C+1GxXWCH5WzEm1wDfgESCQXcihZuAd+BIfAEeMTyL3wNCcOYwO66t7gIuLHCVXiR/fOVU22NSAa4DVwCTgLT8K428CLkXAZ+rnPwP9wDzkYTfwC6teFcRJe3HwAAAABJRU5ErkJggg==",
+            "nodeFactory": {
+              "className": "org.knime.time.node.extract.datetime.ExtractDateTimeFieldsNodeFactory2"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Date&Time-based Row Filter",
+            "id": "org.knime.time.node.filter.datetimebasedrowfilter.DateTimeBasedRowFilterNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Base nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAATxJREFUOI2dUjFLw0AYfel5UEpMF0M7WRGcrashQ8bDfyDExd25GRT3/IGMLt2dhFKRBIJ/wcElLuLFKQXJEvI5SGo8Ehr7pvvu7r3vfY8P+AHhL9S6Fb1tSKpAnfhvkR4ArVZrbR83od5Za7jbWnSjiNaxk5rVGjsd3fQACAAnAFYAHgC8Vg7aXFUddznn90KI/nQ6PRoMBlkQBB9JkoQAbipSW4iMc/4Yx/EnEdFsNiMpJREROY4TA7isj0D4XazqfCaE6FuWtafaXC6Xp8Ph8EsNp1TqY9d19+fzOTzPQxRF6wfGmGaaJm+auXKgAbjyff8lyzKSUpKUksqypArj8fi5KYO6wOFkMgmpAYvF4p0xdqeO1oRr27bDoijKOtkwjCcAB113/0LX9fPRaNTP85zSNH0riuIWQPINE8WZ5oaA08AAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.time.node.filter.datetimebasedrowfilter.DateTimeBasedRowFilterNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Strings to Document",
+            "id": "org.knime.ext.textprocessing.nodes.transformation.stringstodocument.StringsToDocumentNodeFactory2",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Textprocessing",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,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",
+            "nodeFactory": {
+              "className": "org.knime.ext.textprocessing.nodes.transformation.stringstodocument.StringsToDocumentNodeFactory2"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Moving Aggregator",
+            "id": "org.knime.timeseries.node.movagg.MovingAggregationNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Timeseries nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6REIyM0U4OEI4RkEwMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6REIyM0U4OEE4RkEwMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpERTIxNzg1RTQ1QzYxMUU1QUM2QkE3NzQyQjhFM0EyRCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpERTIxNzg1RjQ1QzYxMUU1QUM2QkE3NzQyQjhFM0EyRCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PticdVYAAAFySURBVHjaYmFAA8/8/BmB1BMGLEBq00ZpdDEmBgoBxQaw4JIAOlcKzWvPiHbB979/QeHAYCUi8rNaS+sjDjuSgDgF3QBZmc2b0jiYmRnmmJq9O/bmDXusvMI3NNvZgHgBEM8F4hnIBgQC8cX////PeP/rl7CHhMQvBzGxH903b/AiqRED4n1AHA/lN4IM4ADiqUC8DogFQaK///1je/vrl2i9ts7Xuffu8bz6+ZMJKMYKlDoFxNZA/AOIo4C4GRSI+4HYAmpiJwsT0xomRsYT//7/Z9787KmQvoDAH14WFrZ3v36BDAeFzQsg9ocaBo4FUGi/BuIYIN710MeXEaj59d2vX4T7bt5kXWRuzvLp928hqAXngdgPOaGBDNCGsr/Ao4aR8R9Q8x9PSUkmXX4B5km3bzHwsbL+AUrZAPE39Gj8gqwZBjY+fcopzs7xfeXjR9/n37/PUK6h+QpdM96EBAILHtznITsl4kp5gy8zAQQYAP3ofUilh2cvAAAAAElFTkSuQmCC",
+            "nodeFactory": {
+              "className": "org.knime.timeseries.node.movagg.MovingAggregationNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Bag Of Words Creator",
+            "id": "org.knime.ext.textprocessing.nodes.transformation.bow.BagOfWordsNodeFactory2",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Textprocessing",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,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",
+            "nodeFactory": {
+              "className": "org.knime.ext.textprocessing.nodes.transformation.bow.BagOfWordsNodeFactory2"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Stop Word Filter",
+            "id": "org.knime.ext.textprocessing.nodes.preprocessing.stopwordfilter.StopWordFilterNodeFactory3",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Textprocessing",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGOfPtRkwAAACBjSFJNAACHDwAAjA8AAP1SAACBQAAAfXkAAOmLAAA85QAAGcxzPIV3AAAKOWlDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAEjHnZZ3VFTXFofPvXd6oc0w0hl6ky4wgPQuIB0EURhmBhjKAMMMTWyIqEBEEREBRZCggAGjoUisiGIhKKhgD0gQUGIwiqioZEbWSnx5ee/l5ffHvd/aZ+9z99l7n7UuACRPHy4vBZYCIJkn4Ad6ONNXhUfQsf0ABniAAaYAMFnpqb5B7sFAJC83F3q6yAn8i94MAUj8vmXo6U+ng/9P0qxUvgAAyF/E5mxOOkvE+SJOyhSkiu0zIqbGJIoZRomZL0pQxHJijlvkpZ99FtlRzOxkHlvE4pxT2clsMfeIeHuGkCNixEfEBRlcTqaIb4tYM0mYzBXxW3FsMoeZDgCKJLYLOKx4EZuImMQPDnQR8XIAcKS4LzjmCxZwsgTiQ7mkpGbzuXHxArouS49uam3NoHtyMpM4AoGhP5OVyOSz6S4pyalMXjYAi2f+LBlxbemiIluaWltaGpoZmX5RqP+6+Dcl7u0ivQr43DOI1veH7a/8UuoAYMyKarPrD1vMfgA6tgIgd/8Pm+YhACRFfWu/8cV5aOJ5iRcIUm2MjTMzM424HJaRuKC/6386/A198T0j8Xa/l4fuyollCpMEdHHdWClJKUI+PT2VyeLQDf88xP848K/zWBrIieXwOTxRRKhoyri8OFG7eWyugJvCo3N5/6mJ/zDsT1qca5Eo9Z8ANcoISN2gAuTnPoCiEAESeVDc9d/75oMPBeKbF6Y6sTj3nwX9+65wifiRzo37HOcSGExnCfkZi2viawnQgAAkARXIAxWgAXSBITADVsAWOAI3sAL4gWAQDtYCFogHyYAPMkEu2AwKQBHYBfaCSlAD6kEjaAEnQAc4DS6Ay+A6uAnugAdgBIyD52AGvAHzEARhITJEgeQhVUgLMoDMIAZkD7lBPlAgFA5FQ3EQDxJCudAWqAgqhSqhWqgR+hY6BV2ArkID0D1oFJqCfoXewwhMgqmwMqwNG8MM2An2hoPhNXAcnAbnwPnwTrgCroOPwe3wBfg6fAcegZ/DswhAiAgNUUMMEQbigvghEUgswkc2IIVIOVKHtCBdSC9yCxlBppF3KAyKgqKjDFG2KE9UCIqFSkNtQBWjKlFHUe2oHtQt1ChqBvUJTUYroQ3QNmgv9Cp0HDoTXYAuRzeg29CX0HfQ4+g3GAyGhtHBWGE8MeGYBMw6TDHmAKYVcx4zgBnDzGKxWHmsAdYO64dlYgXYAux+7DHsOewgdhz7FkfEqeLMcO64CBwPl4crxzXhzuIGcRO4ebwUXgtvg/fDs/HZ+BJ8Pb4LfwM/jp8nSBN0CHaEYEICYTOhgtBCuER4SHhFJBLVidbEACKXuIlYQTxOvEIcJb4jyZD0SS6kSJKQtJN0hHSedI/0ikwma5MdyRFkAXknuZF8kfyY/FaCImEk4SXBltgoUSXRLjEo8UISL6kl6SS5VjJHslzypOQNyWkpvJS2lIsUU2qDVJXUKalhqVlpirSptJ90snSxdJP0VelJGayMtoybDFsmX+awzEWZMQpC0aC4UFiULZR6yiXKOBVD1aF6UROoRdRvqP3UGVkZ2WWyobJZslWyZ2RHaAhNm+ZFS6KV0E7QhmjvlygvcVrCWbJjScuSwSVzcopyjnIcuUK5Vrk7cu/l6fJu8onyu+U75B8poBT0FQIUMhUOKlxSmFakKtoqshQLFU8o3leClfSVApXWKR1W6lOaVVZR9lBOVd6vfFF5WoWm4qiSoFKmclZlSpWiaq/KVS1TPaf6jC5Ld6In0SvoPfQZNSU1TzWhWq1av9q8uo56iHqeeqv6Iw2CBkMjVqNMo1tjRlNV01czV7NZ874WXouhFa+1T6tXa05bRztMe5t2h/akjpyOl06OTrPOQ12yroNumm6d7m09jB5DL1HvgN5NfVjfQj9ev0r/hgFsYGnANThgMLAUvdR6KW9p3dJhQ5Khk2GGYbPhqBHNyMcoz6jD6IWxpnGE8W7jXuNPJhYmSSb1Jg9MZUxXmOaZdpn+aqZvxjKrMrttTjZ3N99o3mn+cpnBMs6yg8vuWlAsfC22WXRbfLS0suRbtlhOWWlaRVtVWw0zqAx/RjHjijXa2tl6o/Vp63c2ljYCmxM2v9ga2ibaNtlOLtdZzllev3zMTt2OaVdrN2JPt4+2P2Q/4qDmwHSoc3jiqOHIdmxwnHDSc0pwOub0wtnEme/c5jznYuOy3uW8K+Lq4Vro2u8m4xbiVun22F3dPc692X3Gw8Jjncd5T7Snt+duz2EvZS+WV6PXzAqrFetX9HiTvIO8K72f+Oj78H26fGHfFb57fB+u1FrJW9nhB/y8/Pb4PfLX8U/z/z4AE+AfUBXwNNA0MDewN4gSFBXUFPQm2Dm4JPhBiG6IMKQ7VDI0MrQxdC7MNaw0bGSV8ar1q66HK4RzwzsjsBGhEQ0Rs6vdVu9dPR5pEVkQObRGZ03WmqtrFdYmrT0TJRnFjDoZjY4Oi26K/sD0Y9YxZ2O8YqpjZlgurH2s52xHdhl7imPHKeVMxNrFlsZOxtnF7YmbineIL4+f5rpwK7kvEzwTahLmEv0SjyQuJIUltSbjkqOTT/FkeIm8nhSVlKyUgVSD1ILUkTSbtL1pM3xvfkM6lL4mvVNAFf1M9Ql1hVuFoxn2GVUZbzNDM09mSWfxsvqy9bN3ZE/kuOd8vQ61jrWuO1ctd3Pu6Hqn9bUboA0xG7o3amzM3zi+yWPT0c2EzYmbf8gzySvNe70lbEtXvnL+pvyxrR5bmwskCvgFw9tst9VsR23nbu/fYb5j/45PhezCa0UmReVFH4pZxde+Mv2q4quFnbE7+0ssSw7uwuzi7Rra7bD7aKl0aU7p2B7fPe1l9LLCstd7o/ZeLV9WXrOPsE+4b6TCp6Jzv+b+Xfs/VMZX3qlyrmqtVqreUT13gH1g8KDjwZYa5ZqimveHuIfu1nrUttdp15UfxhzOOPy0PrS+92vG140NCg1FDR+P8I6MHA082tNo1djYpNRU0gw3C5unjkUeu/mN6zedLYYtta201qLj4Ljw+LNvo78dOuF9ovsk42TLd1rfVbdR2grbofbs9pmO+I6RzvDOgVMrTnV32Xa1fW/0/ZHTaqerzsieKTlLOJt/duFczrnZ86nnpy/EXRjrjup+cHHVxds9AT39l7wvXbnsfvlir1PvuSt2V05ftbl66hrjWsd1y+vtfRZ9bT9Y/NDWb9nffsPqRudN65tdA8sHzg46DF645Xrr8m2v29fvrLwzMBQydHc4cnjkLvvu5L2key/vZ9yff7DpIfph4SOpR+WPlR7X/aj3Y+uI5ciZUdfRvidBTx6Mscae/5T+04fx/Kfkp+UTqhONk2aTp6fcp24+W/1s/Hnq8/npgp+lf65+ofviu18cf+mbWTUz/pL/cuHX4lfyr468Xva6e9Z/9vGb5Dfzc4Vv5d8efcd41/s+7P3EfOYH7IeKj3ofuz55f3q4kLyw8Bv3hPP74uYdwgAAAAlwSFlzAAALEgAACxIB0t1+/AAAABh0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjM2qefiJQAAANRJREFUOE+NU0sOQiEMhLjBnTtu4Fqv6wXduHFj4g/sENoMfcHQpIHXz3To5IUQQp34WeJLBgC2Z//4yHmihA769oGWUoC7RK7ihZpuDkRTw1DPAJPZkGcmyA09oAQDg4f4SxwgOOEMgPulx/QMbzfRf+JJjUGMcZ9ztqWXUo5MB1NRDEa6qEOP2RPQlFICyK7Wivz4Hjd+SWIU+enMgjFnEk+3sCyxl1IRVyRutVzI9xWJNwCmr2RWJDaA2cZR8E/izQKZwWw32sT/jQH5fcwkblL/AGA8fZbGOxYvAAAAAElFTkSuQmCC",
+            "nodeFactory": {
+              "className": "org.knime.ext.textprocessing.nodes.preprocessing.stopwordfilter.StopWordFilterNodeFactory3"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              },
+              {
+                "optional": true,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "String to Date/Time (legacy)",
+            "id": "org.knime.timeseries.node.stringtotimestamp.String2DateNodeFactory",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Timeseries nodes",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NTY2OTA3MDI4RkExMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NTY2OTA3MDE4RkExMTFFNTg1NzhENEEzQzA5OUQ0MUMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFMkREOENENTQ1QzYxMUU1QUM2QkE3NzQyQjhFM0EyRCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFMkREOENENjQ1QzYxMUU1QUM2QkE3NzQyQjhFM0EyRCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PkKVlekAAACrSURBVHjarFJBCoQwDGxA8LwXF6p/cp9Uf7T7qT36hdhAp8RYbdk1EKiZZJxMS8zs7ojgh5El41kyCHEi50K6jKMpDj8A2CadwHKvLVbioAIEIanIK5jBXvcB1wRut1dBkeorryAeNBJ0utaNz0nMW2Ku8QxssX8jooMhUqOzd5AG+Du/Th31n7ejBtcvo0ogCiEfauUb9SYCOwSyZoJbFfxE8JeC2i1sAgwAdo2t4VQOxAsAAAAASUVORK5CYII=",
+            "nodeFactory": {
+              "className": "org.knime.timeseries.node.stringtotimestamp.String2DateNodeFactory"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          },
+          {
+            "name": "Punctuation Erasure",
+            "id": "org.knime.ext.textprocessing.nodes.preprocessing.puncterasure.PunctuationErasureNodeFactory2",
+            "type": "Manipulator",
+            "extension": {
+              "name": "KNIME Textprocessing",
+              "vendor": {
+                "name": "KNIME AG, Zurich, Switzerland",
+                "isKNIME": true
+              }
+            },
+            "component": false,
+            "icon": "data:image/png;base64,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",
+            "nodeFactory": {
+              "className": "org.knime.ext.textprocessing.nodes.preprocessing.puncterasure.PunctuationErasureNodeFactory2"
+            },
+            "inPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ],
+            "outPorts": [
+              {
+                "optional": false,
+                "typeId": "org.knime.core.node.BufferedDataTable"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "totalNumGroups": 14
+  }
+}

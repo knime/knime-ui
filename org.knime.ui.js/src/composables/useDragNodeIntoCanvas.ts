@@ -11,7 +11,6 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
@@ -159,7 +158,7 @@ export const useDragNodeIntoCanvas = () => {
     nodeTemplatesStore.setDraggingNodeTemplate(null);
 
     // put the focus on the canvas
-    getKanvasDomElement()?.focus();
+    useCurrentCanvasStore().value.focus();
 
     // ending with dropEffect none indicates that dragging has been aborted
     const wasAborted = event.dataTransfer!.dropEffect === "none";

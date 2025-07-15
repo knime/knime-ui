@@ -27,6 +27,7 @@ export type WorkflowUndoCommandMock = {
 export type WorkflowCommandFnMock = (payload: any) => {
   matcher: () => boolean;
   response: () => any;
+  commandResult?: () => any;
 };
 
 export type MockWebsocketOptions = {

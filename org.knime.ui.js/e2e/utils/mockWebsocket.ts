@@ -1,4 +1,3 @@
-/* eslint-disable func-style */
 /* eslint-disable no-console */
 import fs from "node:fs";
 import path from "node:path";
@@ -11,17 +10,6 @@ import { MockWebsocketOptions } from "./types";
 const parseJSONFile = (path: string) =>
   JSON.parse(fs.readFileSync(path, "utf-8"));
 
-function* snapshotIdGenerator() {
-  let snapshotId = 0;
-  while (true) {
-    yield ++snapshotId;
-  }
-}
-const getSnapshotId = (() => {
-  const g = snapshotIdGenerator();
-  return () => g.next().value;
-})();
-
 export const mockWebsocket = async (
   page: Page,
   options: MockWebsocketOptions,
@@ -33,6 +21,10 @@ export const mockWebsocket = async (
 
   await page.routeWebSocket(websocketUrl, (ws) => {
     ws.onMessage((message) => {
+      // omit "keep alive" empty messages if we run that long
+      if (!message) {
+        return;
+      }
       const messageObject = JSON.parse(message.toString());
       const answer = (payload: any) =>
         ws.send(
@@ -73,7 +65,6 @@ export const mockWebsocket = async (
         }
 
         case "WorkflowService.undoWorkflowCommand": {
-          console.log("WorkflowService.undoWorkflowCommand");
           if (!workflowUndoCommand) {
             return;
           }
@@ -82,13 +73,12 @@ export const mockWebsocket = async (
             messageObject,
             workflowUndoCommand.data,
           );
-          const id = getSnapshotId();
 
           // resolve command itself
-          answer({ result: null, snapshotId: id });
+          answer({ result: null });
 
           // send server event associated to this command
-          answer({ ...response(), snapshotId: id });
+          answer(response());
           return;
         }
 
@@ -98,16 +88,18 @@ export const mockWebsocket = async (
           }
 
           try {
-            const { matcher, response } = workflowCommandFn(messageObject);
+            const {
+              matcher,
+              response,
+              commandResult = () => null,
+            } = workflowCommandFn(messageObject);
 
             if (matcher()) {
-              const id = getSnapshotId();
-
               // resolve command itself
-              answer({ result: null, snapshotId: id });
+              answer({ result: commandResult() });
 
               // send server event associated to this command
-              answer({ ...response(), snapshotId: id });
+              answer(response());
             }
           } catch (error) {
             console.error("Failed to handle fixture for workflow command", {
@@ -115,6 +107,16 @@ export const mockWebsocket = async (
             });
           }
 
+          return;
+        }
+
+        case "NodeRepositoryService.getNodesGroupedByTags": {
+          answerFromFile(
+            path.resolve(
+              import.meta.dirname,
+              "../fixtures/NodeRepositoryService-getNodesGroupedByTags.json",
+            ),
+          );
           return;
         }
 
