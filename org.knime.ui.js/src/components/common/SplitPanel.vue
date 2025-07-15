@@ -1,40 +1,39 @@
 <script setup lang="ts">
 // Offers a primary and a secondary slot that are split horizontal or vertical. Percent or pixel based sizes
 // which can be limited. Click to the splitter will hide the secondary panel.
-import { computed, ref, toRef, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 import SwitchIcon from "@knime/styles/img/icons/arrow-prev.svg";
 
 import Splitter from "./Splitter.vue";
 
-interface Props {
+type Props = {
   direction?: "left" | "right" | "down" | "up";
-  secondarySize?: number;
   secondaryMinSize?: number;
   secondarySnapSize?: number;
   secondaryMaxSize?: number;
   usePixel?: boolean;
-  showSecondaryPanel?: boolean;
   keepElementOnClose?: boolean;
   splitterId?: string;
-}
+};
 
 const props = withDefaults(defineProps<Props>(), {
-  secondarySize: 40,
   secondarySnapSize: 0,
   secondaryMinSize: 0,
-  secondaryMaxSize: Infinity,
+  secondaryMaxSize: 1200,
   usePixel: false,
   direction: "left",
-  showSecondaryPanel: true,
   removeElementOnClose: false,
   splitterId: "",
 });
 
-interface Emits {
-  (e: "update:secondarySize", size: number): void;
-}
-const emit = defineEmits<Emits>();
+const expanded = defineModel<boolean>("expanded", { default: true });
+const secondarySize = defineModel<number>("secondarySize", { default: 40 });
+
+const emit = defineEmits<{
+  "update:secondarySize": [size: number];
+  "update:expanded": [value: boolean];
+}>();
 
 // min max to bounds given by props, but allow 0 (hide)
 const minMax = (value: number) =>
@@ -43,8 +42,8 @@ const minMax = (value: number) =>
     : Math.max(props.secondaryMinSize, Math.min(props.secondaryMaxSize, value));
 
 // current size live updated while resize
-const percentSize = ref(props.secondarySize);
-const pixelSize = ref(props.secondarySize);
+const percentSize = ref(secondarySize.value);
+const pixelSize = ref(secondarySize.value);
 
 // mapping of direction
 const isHorizontal = computed(() => ["down", "up"].includes(props.direction));
@@ -61,7 +60,7 @@ const isSecondaryReverse = computed(() =>
 
 // the last really defined size (which is never 0 for hidden)
 // start with secondary size to ensure that we open closed ones to a nice size
-const previousSecondarySize = ref(props.secondarySize);
+const previousSecondarySize = ref(secondarySize.value);
 
 const willSnap = computed(() => {
   if (props.usePixel) {
@@ -109,15 +108,6 @@ const currentSecondarySize = computed({
   },
 });
 
-// computed states
-const isClosed = computed(() => currentSecondarySize.value === 0);
-
-const closePanel = () => {
-  // remember current size on a regular close
-  previousSecondarySize.value = currentSecondarySize.value;
-  currentSecondarySize.value = 0;
-};
-
 const showPanel = () => {
   currentSecondarySize.value = Math.max(
     props.secondaryMinSize,
@@ -126,29 +116,33 @@ const showPanel = () => {
   );
 };
 
+const closePanel = () => {
+  // remember current size on a regular close
+  previousSecondarySize.value = currentSecondarySize.value;
+  currentSecondarySize.value = 0;
+};
+
 const onDragEnd = () => {
   if (willSnap.value) {
     pixelSize.value = 0;
     percentSize.value = 0;
+    emit("update:expanded", false);
   } else {
     // remember last size if we did not snap
     previousSecondarySize.value = currentSecondarySize.value;
+    emit("update:expanded", true);
   }
 };
 
 // hide or show on click
 const onSplitterClick = () => {
-  if (isClosed.value) {
-    showPanel();
-  } else {
-    closePanel();
-  }
+  emit("update:expanded", !expanded.value);
 };
 
 watch(
-  toRef(props, "showSecondaryPanel"),
-  (show) => {
-    if (show) {
+  expanded,
+  () => {
+    if (expanded.value) {
       showPanel();
     } else {
       closePanel();
@@ -170,15 +164,15 @@ watch(
     :class="[
       'splitter-root',
       `direction-${direction}`,
-      { 'will-snap': willSnap, closed: isClosed },
+      { 'will-snap': willSnap, closed: !expanded },
     ]"
-    :splitter-title="`Click to ${isClosed ? 'open' : 'close'}`"
+    :splitter-title="`Click to ${expanded ? 'close' : 'open'}`"
     @splitter-click="onSplitterClick"
     @drag-end="onDragEnd"
   >
     <template v-if="isSecondaryReverse" #left-pane>
       <div class="secondary-wrapper" :class="{ 'will-snap': willSnap }">
-        <slot v-if="isClosed ? keepElementOnClose : true" name="secondary" />
+        <slot v-if="expanded || keepElementOnClose" name="secondary" />
       </div>
     </template>
     <template v-else #left-pane>
@@ -187,7 +181,7 @@ watch(
     <template #splitter>
       <SwitchIcon
         class="switch-icon"
-        :class="[`direction-${direction}`, { closed: isClosed }]"
+        :class="[`direction-${direction}`, { closed: !expanded }]"
       />
     </template>
     <template v-if="isSecondaryReverse" #right-pane>
@@ -195,7 +189,7 @@ watch(
     </template>
     <template v-else #right-pane>
       <div class="secondary-wrapper" :class="{ 'will-snap': willSnap }">
-        <slot v-if="isClosed ? keepElementOnClose : true" name="secondary" />
+        <slot v-if="expanded || keepElementOnClose" name="secondary" />
       </div>
     </template>
   </Splitter>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref, toRefs } from "vue";
+import { onUnmounted, toRefs } from "vue";
 import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
@@ -42,9 +42,8 @@ const { projectId, workflowId, versionId, selectedNode } = toRefs(props);
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
+  controlsVisibilityChange: [value: boolean];
 }>();
-
-const areControlsVisible = ref(true);
 
 const loadExtensionConfig = async () => {
   let deactivateDataServices: (() => Promise<any>) | undefined;
@@ -174,7 +173,7 @@ const apiLayer: UIExtensionAPILayer = {
     nodeConfigurationStore.setApplyComplete(payload.isApplied),
 
   setControlsVisibility: ({ shouldBeVisible }) => {
-    areControlsVisible.value = shouldBeVisible;
+    emit("controlsVisibilityChange", shouldBeVisible);
   },
 
   sendAlert: (alert: Alert) => {
@@ -196,7 +195,6 @@ const apiLayer: UIExtensionAPILayer = {
 </script>
 
 <template>
-  <slot name="header" />
   <UIExtension
     v-if="!isLoadingConfig && extensionConfig"
     :extension-config="extensionConfig"
@@ -204,5 +202,4 @@ const apiLayer: UIExtensionAPILayer = {
     :api-layer="apiLayer!"
     :shadow-app-style="{ width: '100%', zIndex: 0, height: '100%' }"
   />
-  <slot v-if="areControlsVisible" name="controls" />
 </template>

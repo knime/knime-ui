@@ -9,7 +9,7 @@ describe("miscShortcuts", () => {
       const { panelStore } = mockStores();
 
       sidePanelShortcuts.toggleSidePanel.execute();
-      expect(panelStore.toggleExpanded).toHaveBeenCalled();
+      expect(panelStore.toggleLeftPanel).toHaveBeenCalled();
     });
   });
 

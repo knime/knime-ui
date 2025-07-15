@@ -4,12 +4,12 @@ import { TABS } from "@/store/panel";
 import { mockStores } from "@/test/utils/mockStores";
 
 describe("panel store", () => {
-  it("toggles expanded", () => {
+  it("toggles left panel", () => {
     const { panelStore } = mockStores();
 
-    expect(panelStore.expanded).toBe(true);
-    panelStore.toggleExpanded();
-    expect(panelStore.expanded).toBe(false);
+    expect(panelStore.isLeftPanelExpanded).toBe(true);
+    panelStore.toggleLeftPanel();
+    expect(panelStore.isLeftPanelExpanded).toBe(false);
   });
 
   it("sets activeTab", () => {
@@ -21,28 +21,28 @@ describe("panel store", () => {
       projectId,
       activeTab: TABS.NODE_DIALOG,
     });
-    expect(panelStore.expanded).toBe(true);
+    expect(panelStore.isLeftPanelExpanded).toBe(true);
     expect(panelStore.activeTab[projectId]).not.toBe("description");
 
     panelStore.setActiveTab({
       projectId,
       activeTab: TABS.CONTEXT_AWARE_DESCRIPTION,
     });
-    expect(panelStore.expanded).toBe(true);
+    expect(panelStore.isLeftPanelExpanded).toBe(true);
     expect(panelStore.activeTab[projectId]).toBe("description");
 
     panelStore.setActiveTab({
       projectId,
       activeTab: TABS.NODE_REPOSITORY,
     });
-    expect(panelStore.expanded).toBe(true);
+    expect(panelStore.isLeftPanelExpanded).toBe(true);
     expect(panelStore.activeTab[projectId]).toBe("nodeRepository");
 
     panelStore.setActiveTab({
       projectId: anotherProject,
       activeTab: TABS.SPACE_EXPLORER,
     });
-    expect(panelStore.expanded).toBe(true);
+    expect(panelStore.isLeftPanelExpanded).toBe(true);
     expect(panelStore.activeTab[anotherProject]).toBe("spaceExplorer");
     expect(panelStore.activeTab[projectId]).toBe("nodeRepository");
   });
@@ -59,9 +59,9 @@ describe("panel store", () => {
   it("closes the panel", () => {
     const { panelStore } = mockStores();
 
-    panelStore.expanded = true;
-    panelStore.closePanel();
+    panelStore.isLeftPanelExpanded = true;
+    panelStore.closeLeftPanel();
 
-    expect(panelStore.expanded).toBe(false);
+    expect(panelStore.isLeftPanelExpanded).toBe(false);
   });
 });

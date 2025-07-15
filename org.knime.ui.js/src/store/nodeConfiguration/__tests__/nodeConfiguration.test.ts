@@ -11,7 +11,11 @@ import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { createNativeNode, createWorkflow } from "@/test/factories";
+import {
+  createComponentNode,
+  createNativeNode,
+  createWorkflow,
+} from "@/test/factories";
 import { useNodeConfigurationStore } from "../nodeConfiguration";
 
 vi.mock("@/environment");
@@ -28,29 +32,39 @@ vi.mock(
 );
 
 describe("nodeConfiguration", () => {
-  const node1 = createNativeNode({
+  const configuredEmbeddableNode = createNativeNode({
     id: "root:1",
     dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
   });
-  const node2 = createNativeNode({
+
+  const executedEmbeddableNode = createNativeNode({
     id: "root:2",
     dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
     allowedActions: { canReset: false },
   });
-  const node3 = createNativeNode({
+
+  const executingEmbeddable = createNativeNode({
     id: "root:3",
-  });
-  const node4 = createNativeNode({
-    id: "root:4",
-    kind: Node.KindEnum.Component,
-  });
-  const node5 = createNativeNode({
-    id: "root:5",
     dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTING },
     allowedActions: { canReset: false },
+  });
+
+  const nonEmbeddableNode = createNativeNode({
+    id: "root:4",
+    dialogType: Node.DialogTypeEnum.Swing,
+  });
+
+  const embeddableComponent = createComponentNode({
+    id: "root:5",
+    dialogType: Node.DialogTypeEnum.Web,
+  });
+
+  const nonEmbeddableComponent = createComponentNode({
+    id: "root:6",
+    dialogType: Node.DialogTypeEnum.Swing,
   });
 
   afterEach(() => {
@@ -77,11 +91,12 @@ describe("nodeConfiguration", () => {
 
     const workflow = createWorkflow({
       nodes: {
-        [node1.id]: node1,
-        [node2.id]: node2,
-        [node3.id]: node3,
-        [node4.id]: node4,
-        [node5.id]: node5,
+        [configuredEmbeddableNode.id]: configuredEmbeddableNode,
+        [executedEmbeddableNode.id]: executedEmbeddableNode,
+        [nonEmbeddableNode.id]: nonEmbeddableNode,
+        [embeddableComponent.id]: embeddableComponent,
+        [executingEmbeddable.id]: executingEmbeddable,
+        [nonEmbeddableComponent.id]: nonEmbeddableComponent,
       },
     });
 
@@ -150,7 +165,7 @@ describe("nodeConfiguration", () => {
       });
       await useUnsavedChangesDialogMock();
 
-      await selectionStore.deselectAllObjects([node1.id]);
+      await selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
       nodeConfiguration.setDirtyState(dirtyState);
 
       const done = vi.fn();
@@ -177,7 +192,7 @@ describe("nodeConfiguration", () => {
       });
       await useUnsavedChangesDialogMock();
 
-      await selectionStore.selectNodes([node1.id]);
+      await selectionStore.selectNodes([configuredEmbeddableNode.id]);
       await flushPromises();
       nodeConfiguration.setDirtyState(dirtyState);
 
@@ -188,7 +203,9 @@ describe("nodeConfiguration", () => {
       await flushPromises();
 
       expect(done).toHaveBeenCalledWith(true);
-      expect(selectionStore.selectedNodeIds).toStrictEqual([node1.id]);
+      expect(selectionStore.selectedNodeIds).toStrictEqual([
+        configuredEmbeddableNode.id,
+      ]);
 
       expect(nodeConfiguration.applySettings).not.toHaveBeenCalled();
     });
@@ -198,7 +215,7 @@ describe("nodeConfiguration", () => {
 
       await useUnsavedChangesDialogMock();
 
-      await selectionStore.selectNodes([node1.id]);
+      await selectionStore.selectNodes([configuredEmbeddableNode.id]);
       await flushPromises();
       nodeConfiguration.setDirtyState(dirtyState);
 
@@ -209,7 +226,9 @@ describe("nodeConfiguration", () => {
       await flushPromises();
 
       expect(done).toHaveBeenCalledWith(false);
-      expect(selectionStore.selectedNodeIds).toStrictEqual([node1.id]);
+      expect(selectionStore.selectedNodeIds).toStrictEqual([
+        configuredEmbeddableNode.id,
+      ]);
 
       expect(nodeConfiguration.applySettings).not.toHaveBeenCalled();
     });
@@ -230,7 +249,7 @@ describe("nodeConfiguration", () => {
     it("should handle auto apply configuration changes", async () => {
       const { nodeConfiguration, selectionStore } = loadStore();
 
-      await selectionStore.deselectAllObjects([node1.id]);
+      await selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
       nodeConfiguration.setDirtyState(dirtyState);
 
       const done = vi.fn();
@@ -256,38 +275,56 @@ describe("nodeConfiguration", () => {
     it("activeNode", async () => {
       const { nodeConfiguration, selectionStore } = loadStore();
 
-      expect(nodeConfiguration.activeNode).toBeNull();
+      expect(nodeConfiguration.activeContext).toBeNull();
 
-      await selectionStore.deselectAllObjects([node1.id]);
-      expect(nodeConfiguration.activeNode).toEqual(node1);
+      await selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
+      expect(nodeConfiguration.activeContext).toEqual({
+        node: configuredEmbeddableNode,
+        isEmbeddable: true,
+      });
 
-      await selectionStore.deselectAllObjects([node2.id]);
-      expect(nodeConfiguration.activeNode).toEqual(node2);
+      await selectionStore.deselectAllObjects([executedEmbeddableNode.id]);
+      expect(nodeConfiguration.activeContext).toEqual({
+        isEmbeddable: true,
+        node: executedEmbeddableNode,
+      });
 
-      await selectionStore.deselectAllObjects([node3.id]);
-      expect(nodeConfiguration.activeNode).toBeNull();
+      await selectionStore.deselectAllObjects([nonEmbeddableNode.id]);
+      expect(nodeConfiguration.activeContext).toEqual({
+        isEmbeddable: false,
+        node: nonEmbeddableNode,
+      });
 
-      await selectionStore.deselectAllObjects([node4.id]);
-      expect(nodeConfiguration.activeNode).toBeNull();
+      await selectionStore.deselectAllObjects([embeddableComponent.id]);
+      expect(nodeConfiguration.activeContext).toEqual({
+        isEmbeddable: true,
+        node: embeddableComponent,
+      });
+
+      await selectionStore.deselectAllObjects([nonEmbeddableComponent.id]);
+      expect(nodeConfiguration.activeContext).toEqual({
+        isEmbeddable: false,
+        node: nonEmbeddableComponent,
+      });
     });
 
     it("isConfigurationDisabled", async () => {
       const { nodeConfiguration, selectionStore } = loadStore();
       const isDisabled = () => nodeConfiguration.isConfigurationDisabled;
 
-      await selectionStore.deselectAllObjects([node1.id]);
+      await selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
       expect(isDisabled()).toBe(false);
 
-      await selectionStore.deselectAllObjects([node2.id]);
+      await selectionStore.deselectAllObjects([executedEmbeddableNode.id]);
       expect(isDisabled()).toBe(true);
 
-      await selectionStore.deselectAllObjects([node3.id]);
+      await selectionStore.deselectAllObjects([nonEmbeddableNode.id]);
       expect(isDisabled()).toBe(true);
 
-      await selectionStore.deselectAllObjects([node4.id]);
-      expect(isDisabled()).toBe(true);
+      await selectionStore.deselectAllObjects([embeddableComponent.id]);
+      expect(isDisabled()).toBe(false);
 
-      await selectionStore.deselectAllObjects([node5.id]);
+      await selectionStore.deselectAllObjects([executingEmbeddable.id]);
       expect(isDisabled()).toBe(true);
     });
 
@@ -295,19 +332,19 @@ describe("nodeConfiguration", () => {
       const { nodeConfiguration, selectionStore } = loadStore(false);
       const isDisabled = () => nodeConfiguration.isConfigurationDisabled;
 
-      await selectionStore.deselectAllObjects([node1.id]);
+      await selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
       expect(isDisabled()).toBe(true);
 
-      await selectionStore.deselectAllObjects([node2.id]);
+      await selectionStore.deselectAllObjects([executedEmbeddableNode.id]);
       expect(isDisabled()).toBe(true);
 
-      await selectionStore.deselectAllObjects([node3.id]);
+      await selectionStore.deselectAllObjects([nonEmbeddableNode.id]);
       expect(isDisabled()).toBe(true);
 
-      await selectionStore.deselectAllObjects([node4.id]);
+      await selectionStore.deselectAllObjects([embeddableComponent.id]);
       expect(isDisabled()).toBe(true);
 
-      await selectionStore.deselectAllObjects([node5.id]);
+      await selectionStore.deselectAllObjects([executingEmbeddable.id]);
       expect(isDisabled()).toBe(true);
     });
   });

@@ -3,9 +3,12 @@ import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
+import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
 import { createNativeNode, createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import NodeConfigLayout from "../NodeConfigLayout.vue";
+import type { ExtensionConfig } from "../../common/types";
+import NodeConfigButtons from "../NodeConfigButtons.vue";
+import NodeConfigLoader from "../NodeConfigLoader.vue";
 import NodeConfigWrapper from "../NodeConfigWrapper.vue";
 
 describe("NodeConfigWrapper.vue", () => {
@@ -36,6 +39,11 @@ describe("NodeConfigWrapper.vue", () => {
     dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTING },
   });
+  const nonEmbeddableNode = createNativeNode({
+    id: "root:5",
+    dialogType: Node.DialogTypeEnum.Swing,
+    state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+  });
 
   const createStores = async (initiallySelectedNode?: string) => {
     const mockedStores = mockStores();
@@ -51,12 +59,14 @@ describe("NodeConfigWrapper.vue", () => {
         [configuredNode.id]: configuredNode,
         [executedNode.id]: executedNode,
         [executingNode.id]: executingNode,
+        [nonEmbeddableNode.id]: nonEmbeddableNode,
       },
       nodeTemplates: {
         [idleNode.templateId]: { name: "template" },
         [configuredNode.templateId]: { name: "template" },
         [executedNode.templateId]: { name: "template" },
         [executingNode.templateId]: { name: "template" },
+        [nonEmbeddableNode.templateId]: { name: "template" },
       },
     });
 
@@ -69,152 +79,224 @@ describe("NodeConfigWrapper.vue", () => {
     return mockedStores;
   };
 
-  const doMount = async (initiallySelectedNode?: string) => {
+  type MountOpts = {
+    initiallySelectedNode?: string;
+    slots?: any;
+  };
+
+  const doMount = async ({ initiallySelectedNode, slots }: MountOpts = {}) => {
     const mockedStores = await createStores(initiallySelectedNode);
 
     const wrapper = mount(NodeConfigWrapper, {
-      props: { isLargeMode: false },
       global: {
         plugins: [mockedStores.testingPinia],
       },
+      slots,
     });
 
     return { wrapper, mockedStores };
   };
 
-  const selectNextNode = async (
-    mockedStores: ReturnType<typeof mockStores>,
-    nodeId: string,
-  ) => {
-    await mockedStores.selectionStore.deselectAllObjects([nodeId]);
-    await flushPromises();
-    await nextTick();
-  };
+  describe("title-bar", () => {
+    it("has title bar on large mode", async () => {
+      const { wrapper, mockedStores } = await doMount();
 
-  it("sets NodeConfigLayout props", async () => {
+      expect(wrapper.find(".title-bar").exists()).toBe(false);
+
+      mockedStores.nodeConfigurationStore.setIsLargeMode(true);
+      mockedStores.nodeConfigurationStore.activeExtensionConfig = {
+        canBeEnlarged: true,
+      } as ExtensionConfig;
+
+      await nextTick();
+      expect(wrapper.find(".title-bar").exists()).toBe(true);
+
+      const minimizeButton = wrapper.find('[data-test-id="exit-large-mode"]');
+      expect(minimizeButton.exists()).toBe(true);
+      await minimizeButton.trigger("click");
+
+      expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
+    });
+  });
+
+  describe("header", () => {
+    it("should show header button on small dialogs and toggle large", async () => {
+      const { wrapper, mockedStores } = await doMount();
+
+      mockedStores.nodeConfigurationStore.activeExtensionConfig = {
+        canBeEnlarged: true,
+      } as ExtensionConfig;
+      await nextTick();
+
+      const expandButton = wrapper.find('[data-test-id="expand-dialog-btn"]');
+      expect(expandButton.exists()).toBe(true);
+      await expandButton.trigger("click");
+      expect(
+        vi.mocked(mockedStores.nodeConfigurationStore.setIsLargeMode),
+      ).toHaveBeenCalledWith(true);
+    });
+
+    it("should not show header on large dialogs", async () => {
+      const { wrapper, mockedStores } = await doMount();
+      mockedStores.nodeConfigurationStore.setIsLargeMode(true);
+      await nextTick();
+
+      mockedStores.nodeConfigurationStore.activeExtensionConfig = {
+        canBeEnlarged: false,
+      } as ExtensionConfig;
+      await nextTick();
+
+      expect(wrapper.find(".header").exists()).toBe(false);
+      const expandButton = wrapper.find('[data-test-id="expand-dialog-btn"]');
+      expect(expandButton.exists()).toBe(false);
+    });
+
+    it("should not show enlarge dialog button on dialogs that cannot be enlarged", async () => {
+      const { wrapper, mockedStores } = await doMount();
+      mockedStores.nodeConfigurationStore.activeExtensionConfig = {
+        canBeEnlarged: false,
+      } as ExtensionConfig;
+      await nextTick();
+
+      expect(wrapper.find(".header").exists()).toBe(true);
+      const expandButton = wrapper.find('[data-test-id="expand-dialog-btn"]');
+      expect(expandButton.exists()).toBe(false);
+    });
+  });
+
+  it("renders a loading skeleton when UIExtension is loading", async () => {
     const { wrapper } = await doMount();
+    wrapper
+      .findComponent(NodeConfigLoader)
+      .vm.$emit("loadingStateChange", { value: "loading", message: "" });
 
-    const nodeConfigLayout = wrapper.findComponent(NodeConfigLayout);
-    expect(nodeConfigLayout.exists()).toBe(true);
-    expect(nodeConfigLayout.props()).toEqual(
-      expect.objectContaining({
-        projectId,
-        workflowId,
-        disabled: false,
-        versionId: undefined,
-      }),
-    );
-  });
-
-  it("sets NodeConfigLayout props including versionId if given", async () => {
-    const { wrapper, mockedStores } = await doMount();
-
-    const versionId = "versionId";
-    mockedStores.workflowStore.activeWorkflow!.info.version = versionId;
     await nextTick();
-
-    const nodeConfigLayout = wrapper.findComponent(NodeConfigLayout);
-
-    expect(nodeConfigLayout.exists()).toBe(true);
-    expect(nodeConfigLayout.props()).toEqual(
-      expect.objectContaining({
-        projectId,
-        workflowId,
-        disabled: true,
-        versionId,
-      }),
-    );
+    expect(wrapper.findComponent(AppRightPanelSkeleton).exists()).toBe(true);
   });
 
-  it("should set the next active node when there is no dirty config state", async () => {
-    const { wrapper, mockedStores } = await doMount();
+  describe("dialog buttons", () => {
+    const mountWithButtons = async (opts: MountOpts = {}) => {
+      const result = await doMount({
+        ...opts,
+        initiallySelectedNode: configuredNode.id,
+      });
 
-    expect(wrapper.findComponent(NodeConfigLayout).props("dirtyState")).toEqual(
-      mockedStores.nodeConfigurationStore.dirtyState,
-    );
+      result.wrapper
+        .findComponent(NodeConfigLoader)
+        .vm.$emit("controlsVisibilityChange", true);
+      result.wrapper
+        .findComponent(NodeConfigLoader)
+        .vm.$emit("loadingStateChange", { value: "ready" });
 
-    await selectNextNode(mockedStores, configuredNode.id);
+      return result;
+    };
 
-    const activeNode = mockedStores.nodeConfigurationStore.activeNode;
-    expect(activeNode?.id).toBe(configuredNode.id);
-  });
+    it("handles apply", async () => {
+      const { wrapper, mockedStores } = await mountWithButtons();
 
-  it("handles apply", async () => {
-    const { wrapper, mockedStores } = await doMount(configuredNode.id);
+      wrapper.findComponent(NodeConfigButtons).vm.$emit("apply", false);
 
-    wrapper.findComponent(NodeConfigLayout).vm.$emit("apply", false);
+      expect(
+        mockedStores.nodeConfigurationStore.applySettings,
+      ).toHaveBeenCalledWith({
+        nodeId: configuredNode.id,
+        execute: false,
+      });
+    });
 
-    expect(
-      mockedStores.nodeConfigurationStore.applySettings,
-    ).toHaveBeenCalledWith({
-      nodeId: configuredNode.id,
-      execute: false,
+    it("handles apply and execute", async () => {
+      const { wrapper, mockedStores } = await mountWithButtons();
+
+      wrapper.findComponent(NodeConfigButtons).vm.$emit("apply", true);
+
+      expect(
+        mockedStores.nodeConfigurationStore.applySettings,
+      ).toHaveBeenCalledWith({
+        nodeId: configuredNode.id,
+        execute: true,
+      });
+    });
+
+    it("handles execute", async () => {
+      const { wrapper, mockedStores } = await mountWithButtons();
+
+      wrapper.findComponent(NodeConfigButtons).vm.$emit("execute");
+
+      expect(mockedStores.executionStore.executeNodes).toHaveBeenCalledWith([
+        configuredNode.id,
+      ]);
+    });
+
+    it("handles discard", async () => {
+      const { wrapper, mockedStores } = await mountWithButtons();
+
+      wrapper.findComponent(NodeConfigButtons).vm.$emit("discard");
+
+      expect(
+        mockedStores.nodeConfigurationStore.discardSettings,
+      ).toHaveBeenCalled();
+    });
+
+    it("minimizes large mode when applySettings is called", async () => {
+      const { wrapper, mockedStores } = await mountWithButtons();
+
+      mockedStores.nodeConfigurationStore.setIsLargeMode(true);
+      vi.mocked(
+        mockedStores.nodeConfigurationStore.applySettings,
+      ).mockResolvedValue(true);
+
+      wrapper.findComponent(NodeConfigButtons).vm.$emit("apply", false);
+      await flushPromises();
+
+      expect(
+        vi.mocked(mockedStores.nodeConfigurationStore).setIsLargeMode,
+      ).toHaveBeenCalledWith(false);
+    });
+
+    it("minimizes large mode when discardSettings is called", async () => {
+      const { wrapper, mockedStores } = await mountWithButtons();
+      mockedStores.nodeConfigurationStore.setIsLargeMode(true);
+
+      wrapper.findComponent(NodeConfigButtons).vm.$emit("discard");
+
+      expect(
+        vi.mocked(mockedStores.nodeConfigurationStore).setIsLargeMode,
+      ).toHaveBeenLastCalledWith(false);
+    });
+
+    it("minimizes large mode when executeActiveNode is called", async () => {
+      const { wrapper, mockedStores } = await mountWithButtons();
+      mockedStores.nodeConfigurationStore.setIsLargeMode(true);
+
+      wrapper.findComponent(NodeConfigButtons).vm.$emit("execute");
+      await flushPromises();
+
+      expect(
+        vi.mocked(mockedStores.nodeConfigurationStore).setIsLargeMode,
+      ).toHaveBeenCalledWith(false);
     });
   });
 
-  it("handles apply and execute", async () => {
-    const { wrapper, mockedStores } = await doMount(configuredNode.id);
-
-    wrapper.findComponent(NodeConfigLayout).vm.$emit("apply", true);
-
-    expect(
-      mockedStores.nodeConfigurationStore.applySettings,
-    ).toHaveBeenCalledWith({
-      nodeId: configuredNode.id,
-      execute: true,
+  it("renders inactive slot when nothing is selected", async () => {
+    const { wrapper, mockedStores } = await doMount({
+      slots: { inactive: { template: '<div id="slotted" />' } },
     });
-  });
-
-  it("handles execute", async () => {
-    const { wrapper, mockedStores } = await doMount(configuredNode.id);
-
-    wrapper.findComponent(NodeConfigLayout).vm.$emit("execute");
-
-    expect(mockedStores.executionStore.executeNodes).toHaveBeenCalledWith([
-      configuredNode.id,
-    ]);
-  });
-
-  it("handles discard", async () => {
-    const { wrapper, mockedStores } = await doMount(configuredNode.id);
-
-    wrapper.findComponent(NodeConfigLayout).vm.$emit("discard");
-
-    expect(
-      mockedStores.nodeConfigurationStore.discardSettings,
-    ).toHaveBeenCalled();
-  });
-
-  it("emits collapse when applySettings is called", async () => {
-    const { wrapper, mockedStores } = await doMount(configuredNode.id);
-
-    vi.mocked(
-      mockedStores.nodeConfigurationStore.applySettings,
-    ).mockResolvedValue(true);
-
-    wrapper.findComponent(NodeConfigLayout).vm.$emit("apply", false);
     await flushPromises();
 
-    expect(wrapper.emitted()).toHaveProperty("collapse");
-    expect(wrapper.emitted("collapse")).toHaveLength(1);
+    expect(wrapper.find("#slotted").exists()).toBe(false);
+
+    await mockedStores.selectionStore.deselectAllObjects();
+
+    expect(wrapper.find("#slotted").exists()).toBe(true);
   });
 
-  it("emits collapse when discardSettings is called", async () => {
-    const { wrapper } = await doMount(configuredNode.id);
-
-    wrapper.findComponent(NodeConfigLayout).vm.$emit("discard");
-
-    expect(wrapper.emitted()).toHaveProperty("collapse");
-    expect(wrapper.emitted("collapse")).toHaveLength(1);
-  });
-
-  it("emits collapse when executeActiveNode is called", async () => {
-    const { wrapper } = await doMount(configuredNode.id);
-
-    wrapper.findComponent(NodeConfigLayout).vm.$emit("execute");
+  it("renders inactive slot when node is not embeddable", async () => {
+    const { wrapper } = await doMount({
+      initiallySelectedNode: nonEmbeddableNode.id,
+      slots: { inactive: { template: '<div id="slotted" />' } },
+    });
     await flushPromises();
 
-    expect(wrapper.emitted()).toHaveProperty("collapse");
-    expect(wrapper.emitted("collapse")).toHaveLength(1);
+    expect(wrapper.find("#slotted").exists()).toBe(true);
   });
 });

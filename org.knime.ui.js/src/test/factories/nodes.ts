@@ -133,6 +133,7 @@ export const createMetanode = (data: DeepPartial<MetaNode> = {}): MetaNode => {
     state: {
       executionState: MetaNodeState.ExecutionStateEnum.EXECUTED,
     },
+    dialogType: undefined,
   };
 
   return merge(metanode, data);

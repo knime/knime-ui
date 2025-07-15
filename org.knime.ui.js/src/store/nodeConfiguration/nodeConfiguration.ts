@@ -9,6 +9,7 @@ import type { UIExtensionAPILayer } from "@knime/ui-extension-renderer/vue";
 
 import {
   type ComponentNode,
+  type MetaNode,
   type NativeNode,
   Node,
   NodeState,
@@ -26,11 +27,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
-import {
-  isNativeNode,
-  isNodeComponent,
-  isNodeExecuting,
-} from "@/util/nodeUtil";
+import { isNodeExecuting, isNodeMetaNode } from "@/util/nodeUtil";
 
 let unwrappedPromise = createUnwrappedPromise<boolean>();
 const $toast = getToastsProvider();
@@ -81,6 +78,11 @@ export interface NodeConfigurationState {
   activeNodeViewNeedsExecution: boolean;
 }
 
+type ActiveContext =
+  | { node: NativeNode | ComponentNode; isEmbeddable: boolean }
+  | { node: MetaNode; isEmbeddable: false }
+  | null;
+
 export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
   state: (): NodeConfigurationState => ({
     activeExtensionConfig: null,
@@ -97,6 +99,19 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
   actions: {
     setIsLargeMode(value: boolean) {
       this.isLargeMode = value;
+
+      if (!this.pushEventDispatcher) {
+        consola.warn(
+          "Tried to toggle large mode but push event dispached is not available",
+        );
+        return;
+      }
+
+      this.pushEventDispatcher({
+        eventType:
+          "DisplayModeEvent" satisfies UIExtensionPushEvents.KnownEventType,
+        payload: { mode: this.isLargeMode ? "large" : "small" },
+      });
     },
 
     setPushEventDispatcher(
@@ -163,9 +178,9 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     },
 
     async autoApplySettings() {
-      const activeNode = useNodeConfigurationStore().activeNode;
+      const { activeContext } = useNodeConfigurationStore();
 
-      if (!activeNode) {
+      if (!activeContext) {
         return true;
       }
 
@@ -185,7 +200,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
 
           if (modalResult === UnsavedChangesAction.SAVE) {
             const isApplied = await this.applySettings({
-              nodeId: activeNode.id,
+              nodeId: activeContext.node.id,
             });
 
             if (!isApplied) {
@@ -205,8 +220,8 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
         },
 
         BROWSER: async () => {
-          if (activeNode) {
-            await this.applySettings({ nodeId: activeNode.id });
+          if (activeContext) {
+            await this.applySettings({ nodeId: activeContext.node.id });
           }
 
           return Promise.resolve(true);
@@ -246,7 +261,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
       );
     },
 
-    activeNode: (_): NativeNode | ComponentNode | null => {
+    activeContext: (_): ActiveContext => {
       const activeNodeId = useSelectionStore().singleSelectedNode?.id;
 
       if (!activeNodeId) {
@@ -254,25 +269,40 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
       }
 
       const node = useWorkflowStore().activeWorkflow?.nodes?.[activeNodeId];
-      return node &&
-        (isNativeNode(node) || isNodeComponent(node)) &&
-        node.dialogType === Node.DialogTypeEnum.Web
-        ? node
-        : null;
+
+      if (!node) {
+        return null;
+      }
+
+      if (isNodeMetaNode(node)) {
+        return { node, isEmbeddable: false };
+      }
+
+      return {
+        node,
+        isEmbeddable: node.dialogType === Node.DialogTypeEnum.Web,
+      };
     },
 
     isConfigurationDisabled() {
       const isWritable = useWorkflowStore().isWritable;
 
-      if (!isWritable) {
+      if (!isWritable || !this.activeContext) {
         return true;
       }
 
-      const activeNode: NativeNode | ComponentNode | null = this.activeNode;
-      const { canConfigureNodes } = useUIControlsStore();
-      const isActiveNodeExecuting = activeNode && isNodeExecuting(activeNode);
+      const { node: activeNode } = this
+        .activeContext as NonNullable<ActiveContext>;
 
-      if (isActiveNodeExecuting || !canConfigureNodes || !activeNode) {
+      const { canConfigureNodes } = useUIControlsStore();
+      const isActiveNodeExecuting = isNodeExecuting(activeNode);
+
+      if (
+        isActiveNodeExecuting ||
+        !canConfigureNodes ||
+        !this.activeContext.isEmbeddable ||
+        !this.activeContext
+      ) {
         return true;
       }
 

@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -94,6 +95,7 @@ export const useObjectInteractions = (
     isAnnotation = false,
   } = options;
 
+  const panelStore = usePanelStore();
   const selectionStore = useSelectionStore();
   const movingStore = useMovingStore();
   const { dragInitiatorId, hasAbortedDrag, isDragging } =
@@ -101,9 +103,15 @@ export const useObjectInteractions = (
 
   const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
-  const { zoomFactor, pixiApplication, isHoldingDownSpace } = storeToRefs(
-    useWebGLCanvasStore(),
-  );
+  const openRightPanelForNodes = () => {
+    if (!panelStore.isRightPanelExpanded) {
+      panelStore.isRightPanelExpanded = !isAnnotation;
+    }
+  };
+
+  const canvasStore = useWebGLCanvasStore();
+  const { pixiApplication, isHoldingDownSpace, zoomFactor } =
+    storeToRefs(canvasStore);
   const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 
   const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -206,6 +214,7 @@ export const useObjectInteractions = (
 
     // check for double clicks
     if (options.onDoubleClick && isPointerDownDoubleClick(pointerDownEvent)) {
+      openRightPanelForNodes();
       options.onDoubleClick(pointerDownEvent);
       return;
     }
@@ -275,11 +284,14 @@ export const useObjectInteractions = (
           await movingStore.moveObjects();
           dragInitiatorId.value = undefined;
         } else if (wasSelectedOnStart) {
+          openRightPanelForNodes();
           // if a drag did not occur then an interaction on a previously
           // selected object should prioritize a selection on that object alone upon
           // a pointer up
           await selectionStore.deselectAllObjects();
           await selectObject();
+        } else {
+          openRightPanelForNodes();
         }
       });
       removeDragAbortListener();

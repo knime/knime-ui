@@ -36,8 +36,9 @@ test("isHorizontal true style", () => {
 test("splitter-click event on click", async () => {
   const comp = mount(Splitter, { props: { isHorizontal: false } });
   const elDragger = comp.get(".splitter");
-  await elDragger.trigger("click");
-  expect(comp.emitted("splitter-click")).length(1);
+  await elDragger.trigger("pointerdown");
+  window.dispatchEvent(new PointerEvent("pointerup"));
+  expect(comp.emitted("splitterClick")).length(1);
 });
 
 test("moving the splitter should set the class to active", async () => {

@@ -209,6 +209,28 @@ describe("useObjectInteractions", () => {
       expect(selectSpy).not.toHaveBeenCalled();
       expect(deselectSpy).toHaveBeenCalled();
     });
+
+    it("should open right panel (if collapsed)", async () => {
+      const { getComposableResult, canvas, mockedStores } = doMount();
+
+      mockedStores.panelStore.isRightPanelExpanded = false;
+
+      const { handlePointerInteraction } = getComposableResult();
+
+      const pointerPositions = {
+        start: { x: 10, y: 20 },
+        move: { x: 11, y: 21 },
+        end: { x: 11, y: 21 },
+      };
+
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
+
+      expect(mockedStores.panelStore.isRightPanelExpanded).toBe(true);
+    });
   });
 
   describe("drag & drop", () => {

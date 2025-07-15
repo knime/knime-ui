@@ -102,12 +102,16 @@ describe("Node", () => {
 
   beforeEach(() => {
     mockedStores = mockStores();
+    // @ts-expect-error
     mockedStores.canvasModesStore.hasAnnotationModeEnabled = false;
     mockedStores.applicationStore.activeProjectId = "projectId";
     mockedStores.selectionStore.isNodeSelected = vi.fn();
+    // @ts-expect-error
     mockedStores.workflowStore.isWritable = true;
+    // @ts-expect-error
     mockedStores.nodeConfigurationStore.canBeEnlarged = true;
     mockedStores.desktopInteractionsStore.openNodeConfiguration = vi.fn();
+    mockedStores.applicationSettingsStore.useEmbeddedDialogs = false;
 
     document.elementFromPoint = vi.fn();
   });
@@ -272,6 +276,7 @@ describe("Node", () => {
     };
 
     const { wrapper, mockedStores } = doMount({ props });
+    mockedStores.applicationSettingsStore.useEmbeddedDialogs = true;
     expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
 
     await wrapper.findComponent(NodeTorso).trigger("dblclick");
@@ -289,6 +294,7 @@ describe("Node", () => {
     };
 
     const { wrapper, mockedStores } = doMount({ props });
+    // @ts-expect-error
     mockedStores.nodeConfigurationStore.canBeEnlarged = false;
     await nextTick();
 
@@ -742,7 +748,7 @@ describe("Node", () => {
 
         expect(actionBar.props()).toEqual(
           expect.objectContaining({
-            canConfigure: true,
+            canConfigure: false,
           }),
         );
 

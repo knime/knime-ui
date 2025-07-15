@@ -14,7 +14,15 @@ export function setObjectProperty(
       inst[`__vp_scope_${key}`]?.stop();
     }
     for (const [setKey, value] of Object.entries(nextValue)) {
-      inst[key][setKey as any] = value;
+      if (inst[key]) {
+        inst[key][setKey as any] = value;
+      } else {
+        consola.warn("Vue Pixi renderer:: Failed trying to set property", {
+          inst,
+          key,
+          value,
+        });
+      }
     }
   }
   scope.run(() => {

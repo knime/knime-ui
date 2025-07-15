@@ -8,31 +8,30 @@ import CogIcon from "@knime/styles/img/icons/cog.svg";
 import { Node } from "@/api/gateway-api/generated-api";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import { isDesktop } from "@/environment";
-import { useSelectionStore } from "@/store/selection";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 
 const { shouldDisplayDownloadAPButton } = storeToRefs(useUIControlsStore());
-const { singleSelectedNode: selectedNode } = storeToRefs(useSelectionStore());
+const { activeContext } = storeToRefs(useNodeConfigurationStore());
 
-const hasLegacyDialog = computed(() =>
-  Boolean(
-    selectedNode.value &&
-      selectedNode.value.dialogType === Node.DialogTypeEnum.Swing,
-  ),
-);
+const selectedNode = computed(() => activeContext.value?.node ?? null);
 
 const isMetanode = computed(
   () => selectedNode.value && isNodeMetaNode(selectedNode.value),
 );
 
 const hasNoDialog = computed(
-  () => selectedNode.value && !selectedNode.value.dialogType,
+  () =>
+    selectedNode.value && !selectedNode.value.dialogType && !isMetanode.value,
 );
 
-const isLegacyDialog = computed(
-  () => hasLegacyDialog.value && !isMetanode.value,
+const hasLegacyDialog = computed(() =>
+  Boolean(
+    selectedNode.value &&
+      selectedNode.value.dialogType === Node.DialogTypeEnum.Swing,
+  ),
 );
 
 const shouldDisplayDownload = computed(
@@ -54,48 +53,51 @@ const openNodeConfiguration = () => {
 
 <template>
   <div class="placeholder full-height">
+    <template v-if="isMetanode">
+      <div class="placeholder-text">
+        Configuration is not available for metanodes.
+      </div>
+    </template>
+
     <template v-if="hasNoDialog">
       <div class="placeholder-text">This node has no dialog.</div>
     </template>
 
-    <!-- Show placeholder text and "Download AP" button -->
-    <template v-else-if="shouldDisplayDownload">
-      <span class="placeholder-text">
-        To configure nodes with a classic dialog, download the KNIME Analytics
-        Platform.
-      </span>
+    <template v-if="hasLegacyDialog">
+      <!-- Show placeholder text and "Download AP" button -->
+      <template v-if="shouldDisplayDownload">
+        <span class="placeholder-text">
+          To configure nodes with a classic dialog, download the KNIME Analytics
+          Platform.
+        </span>
 
-      <DownloadAPButton compact src="node-configuration-panel" />
+        <DownloadAPButton compact src="node-configuration-panel" />
+      </template>
+
+      <!-- Show placeholder text and "Open dialog" button -->
+      <template v-else>
+        <span class="placeholder-text">
+          This node dialog is not supported here.
+        </span>
+
+        <Button
+          v-if="isDesktop()"
+          with-border
+          compact
+          class="button"
+          data-test-id="open-legacy-config-btn"
+          @click="openNodeConfiguration"
+        >
+          <CogIcon />
+          <span>Open dialog</span>
+        </Button>
+      </template>
     </template>
 
-    <!-- Show placeholder text and "Open dialog" button -->
-    <template v-else-if="isLegacyDialog">
-      <span class="placeholder-text">
-        This node dialog is not supported here.
-      </span>
-
-      <Button
-        v-if="isDesktop()"
-        with-border
-        compact
-        class="button"
-        @click="openNodeConfiguration"
-      >
-        <CogIcon />
-        <span>Open dialog</span>
-      </Button>
-    </template>
-
-    <!-- Show nothing but a placeholder text if no buttons are needed -->
-    <template v-else>
-      <span v-if="isMetanode" class="placeholder-text">
-        Configuration is not available for metanodes.<br />
-        Select a node to show its dialog.
-      </span>
-      <span v-else class="placeholder-text">
-        Select a node to show its dialog.
-      </span>
-    </template>
+    <!-- Show a placeholder text if nothing is selected -->
+    <span v-if="!selectedNode" class="placeholder-text">
+      Select a node to show its dialog.
+    </span>
   </div>
 </template>
 

@@ -269,13 +269,7 @@ export default {
         ...this.loopInfo.allowedActions,
       };
 
-      let canConfigure = false;
-
-      if (this.dialogType) {
-        canConfigure = this.useEmbeddedDialogs
-          ? this.dialogType === "swing"
-          : true;
-      }
+      const canConfigure = !this.useEmbeddedDialogs;
 
       return { ...baseConfig, canConfigure };
     },

@@ -18,16 +18,18 @@ export const TABS = {
 type TabKeys = keyof typeof TABS;
 export type TabValues = (typeof TABS)[TabKeys];
 export interface PanelState {
-  expanded: boolean;
   activeTab: Record<string, TabValues>;
+  isLeftPanelExpanded: boolean;
   isExtensionPanelOpen: boolean;
+  isRightPanelExpanded: boolean;
 }
 
 export const usePanelStore = defineStore("panel", {
   state: (): PanelState => ({
-    expanded: true,
     activeTab: {},
+    isLeftPanelExpanded: true,
     isExtensionPanelOpen: false,
+    isRightPanelExpanded: true,
   }),
   actions: {
     setActiveTab({
@@ -41,15 +43,15 @@ export const usePanelStore = defineStore("panel", {
         ...this.activeTab,
         [projectId]: activeTab,
       };
-      this.expanded = true;
+      this.isLeftPanelExpanded = true;
     },
 
-    toggleExpanded() {
-      this.expanded = !this.expanded;
+    toggleLeftPanel() {
+      this.isLeftPanelExpanded = !this.isLeftPanelExpanded;
     },
 
-    closePanel() {
-      this.expanded = false;
+    closeLeftPanel() {
+      this.isLeftPanelExpanded = false;
     },
 
     setCurrentProjectActiveTab(activeTab: TabValues) {
