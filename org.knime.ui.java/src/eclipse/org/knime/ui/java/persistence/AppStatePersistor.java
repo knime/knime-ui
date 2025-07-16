@@ -247,7 +247,13 @@ public final class AppStatePersistor {
         var projectId = LocalSpaceUtil.getUniqueProjectId(name);
         var origin = deserializeOrigin(projectJson.get(ORIGIN), localSpace);
         var absolutePath = localSpace.getLocalRootPath().resolve(origin.getRelativePath().orElseThrow());
+        return buildLazyLocalProject(localSpace, name, projectId, origin, absolutePath);
+    }
+
+    private static Project buildLazyLocalProject(final LocalWorkspace localSpace, final String name, final String projectId, final Origin origin, final Path absolutePath) {
         return new Project() { // NOSONAR
+
+            private WorkflowManager m_wfm;
 
             @Override
             public String getName() {
@@ -268,17 +274,23 @@ public final class AppStatePersistor {
             public WorkflowManager loadWorkflowManager() {
                 if (!Files.exists(absolutePath)) {
                     DesktopAPUtil.showWarning("No workflow project found",
-                        "No workflow project found at " + absolutePath);
+                            "No workflow project found at " + absolutePath);
                     return null;
                 }
-                return DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
+                m_wfm = DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
                     var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, origin.getItemId(), monitor);
                     if (wfm == null) {
                         DesktopAPUtil.showWarning("Failed to load workflow",
-                            "The workflow at '" + absolutePath + "' couldn't be loaded.");
+                                "The workflow at '" + absolutePath + "' couldn't be loaded.");
                     }
                     return wfm;
                 }).orElse(null);
+                return m_wfm;
+            }
+
+            @Override
+            public Optional<WorkflowManager> getWorkflowManager() {
+                return Optional.ofNullable(m_wfm);
             }
         };
     }

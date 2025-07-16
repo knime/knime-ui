@@ -116,7 +116,12 @@ final class SaveProjectCopy {
                 final var message = String.format("No local workflow path found for <%s>", projectId);
                 return new NoSuchElementException(message);
             });
-        final var wfm = project.loadWorkflowManager();
+        final var wfm = project.getWorkflowManager().orElse(null);
+        if (wfm == null) {
+            LOGGER.error("WorkflowManager of project is not yet loaded");
+            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Saving Failed",
+                   "Try saving the project normally." , false);
+        }
         final var oldContext = CheckUtils.checkArgumentNotNull(wfm.getContextV2());
         try {
             final var newContext = pickDestinationAndGetNewContext(oldContext);
@@ -139,7 +144,7 @@ final class SaveProjectCopy {
             }
         } catch (Exception ex) {
             LOGGER.error(ex);
-            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Save Error",
+            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Saving Failed",
                 ex.getMessage(), false);
         }
     }
