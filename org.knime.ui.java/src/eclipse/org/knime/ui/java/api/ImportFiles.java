@@ -61,7 +61,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
@@ -99,9 +99,10 @@ class ImportFiles extends AbstractImportItems {
                 return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId,
                     nameCollisions, UsageContext.IMPORT);
             }
-        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being propagated
-            e.pushContext("Failed to import workflow(s)", null);
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) {
+            final var sce = new ServiceCallException("Failed to import workflow(s)", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
@@ -112,9 +113,11 @@ class ImportFiles extends AbstractImportItems {
         final String name;
         try {
             name = space instanceof LocalSpace local ? local.getItemName(workflowGroupItemId) : space.getName();
-        } catch (ContextfulServiceCallException e) { // NOSONAR
-            e.pushContext("Failed to import file%s".formatted(srcPaths.size() == 1 ? "" : "s"), null);
-            throw e.toGatewayException();
+        } catch (MutableServiceCallException e) { // NOSONAR
+            final var sce =
+                new ServiceCallException("Failed to import file%s".formatted(srcPaths.size() == 1 ? "" : "s"), e);
+            e.copyContextTo(sce);
+            throw sce;
         }
 
         monitor.beginTask(String.format("Importing %d files into \"%s\"", srcPaths.size(), name),
@@ -127,8 +130,8 @@ class ImportFiles extends AbstractImportItems {
             } catch (GatewayException e) { // TODO urgh
                 LOGGER.error(String.format("Could not import <%s>", srcPath), e);
                 return null;
-            } catch (ContextfulServiceCallException e) {
-                LOGGER.error(String.format("Could not import <%s>", srcPath), e.toGatewayException());
+            } catch (MutableServiceCallException e) {
+                LOGGER.error(String.format("Could not import <%s>", srcPath), e.toGatewayException("Import failed"));
                 return null;
             }
 

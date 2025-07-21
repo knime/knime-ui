@@ -62,7 +62,7 @@ import java.util.function.Consumer;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
@@ -156,8 +156,10 @@ public final class DesktopAPI {
         final var spaceProvider = getSpaceProvider(spaceProviderId);
         try {
             return spaceProvider.getSpace(spaceId);
-        } catch (ContextfulServiceCallException e) { // NOSONAR
-            throw e.toGatewayException();
+        } catch (MutableServiceCallException e) {
+            final var sce = new ServiceCallException("Failed to fetch space", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
@@ -391,9 +393,19 @@ public final class DesktopAPI {
         for (Class<?> clazz : classes) {
             for (Method m : clazz.getDeclaredMethods()) {
                 if (m.isAnnotationPresent(API.class)) {
+                    checkExceptions(m);
                     var apiAnno = m.getAnnotation(API.class);
                     res.add(new APIMethod(m, apiAnno.runInUIThread()));
                 }
+            }
+        }
+    }
+
+    private static void checkExceptions(final Method m) {
+        for (final var exClass : m.getExceptionTypes()) {
+            if (exClass != GatewayException.class) {
+                LOGGER.coding(
+                    () -> "Unexpected `throws` declaration for `%s`: '%s".formatted(m, exClass.getSimpleName()));
             }
         }
     }

@@ -64,7 +64,7 @@ import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceItemVersionEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
@@ -121,9 +121,10 @@ final class OpenProject {
                     "The item for id " + itemId + " is neither a workflow- nor a component-project")));
         } catch (NoSuchElementException e) {
             throw new OpenProjectException("The project could not be found.", e);
-        } catch (ContextfulServiceCallException e) { // NOSONAR
-            e.pushContext("Failed to open project", null);
-            throw e.toGatewayException();
+        } catch (MutableServiceCallException e) {
+            final var sce = new ServiceCallException("Failed to open project", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
 
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);

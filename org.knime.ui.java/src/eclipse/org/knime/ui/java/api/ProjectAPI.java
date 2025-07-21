@@ -80,9 +80,10 @@ import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -349,7 +350,7 @@ final class ProjectAPI {
             try {
                 return localSpace.toLocalAbsolutePath(null, origin.itemId()).isEmpty();
             } catch (CanceledExecutionException | NetworkException // NOSONAR: We don't care about these exceptions
-                    | LoggedOutException | ContextfulServiceCallException ex) {
+                    | LoggedOutException | MutableServiceCallException ex) {
                 return true;
             }
         } else {
@@ -365,8 +366,10 @@ final class ProjectAPI {
             var res = MAPPER.createArrayNode();
             try {
                 localSpace.getAncestorItemIds(origin.itemId()).forEach(res::add);
-            } catch (final ContextfulServiceCallException e) { // TODO
-                throw new IllegalStateException("Could not create ancestors", e.toGatewayException());
+            } catch (final MutableServiceCallException e) { // TODO
+                final var sce = new ServiceCallException("Could not create ancestors", e);
+                e.copyContextTo(sce);
+                throw new IllegalStateException("Could not create ancestors", sce);
             }
             return res;
         } else {

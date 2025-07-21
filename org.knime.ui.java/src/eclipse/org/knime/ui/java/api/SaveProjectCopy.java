@@ -71,10 +71,11 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -147,9 +148,10 @@ final class SaveProjectCopy {
             );
             // Provider type can only be Local here
             OpenProject.registerProjectAndSetActive(updatedProject, SpaceProviderEnt.TypeEnum.LOCAL);
-        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being promoted
-            e.pushContext("Failed to save workflow copy", null);
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) { // NOSONAR exception is being promoted
+            final var sce = new ServiceCallException("Failed to save workflow copy", e);
+            e.copyContextTo(sce);
+            throw sce;
         } catch (GatewayException e) {
             throw e;
         } catch (Exception ex) {
@@ -164,7 +166,7 @@ final class SaveProjectCopy {
      *         {@code null} if something went wrong with the destination selection.
      */
     private static WorkflowContextV2 pickDestinationAndGetNewContext(final WorkflowContextV2 oldContext)
-        throws NetworkException, LoggedOutException, OperationNotAllowedException, ContextfulServiceCallException {
+        throws NetworkException, LoggedOutException, OperationNotAllowedException, MutableServiceCallException {
 
         final var srcPath = oldContext.getExecutorInfo().getLocalWorkflowPath();
         final var projectName = srcPath.getFileName().toString();
@@ -235,7 +237,7 @@ final class SaveProjectCopy {
 
     private static NameCollisionHandling getNameCollisionStrategy(final String fileName,
         final String workflowGroupItemId, final LocalSpace localSpace)
-        throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+        throws NetworkException, LoggedOutException, MutableServiceCallException {
 
         if (localSpace.containsItemWithName(workflowGroupItemId, fileName)) {
             return NameCollisionChecker.openDialogToSelectCollisionHandling(localSpace, workflowGroupItemId,

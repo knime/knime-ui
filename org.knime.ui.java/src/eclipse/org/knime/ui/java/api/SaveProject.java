@@ -54,7 +54,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -79,9 +78,10 @@ import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.ResetOnUploadEnum;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -158,7 +158,7 @@ final class SaveProject {
     }
 
     private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
-        final boolean localOnly, boolean allowOverwritePrompt) throws GatewayException {
+        final boolean localOnly, final boolean allowOverwritePrompt) throws GatewayException {
 
         var wasSaveSuccessful = new AtomicBoolean();
         final var gatewayExceptionRef = new AtomicReference<GatewayException>();
@@ -308,9 +308,11 @@ final class SaveProject {
                 space = spaceProvider.getSpace(Space.ROOT_ITEM_ID);
                 preCheckResult = checkServerUpload(remoteMountpointURI);
             }
-        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being promoted
-            e.pushContext("Failed to upload item(s)", List.of("Pre-check for upload failed"));
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) {
+            e.addDetails("Pre-check for upload failed");
+            final var sce = new ServiceCallException("Failed to upload item(s)", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
 
         if (!preCheckResult) {
@@ -352,14 +354,15 @@ final class SaveProject {
                 }
             }
             return true;
-        } catch (final ContextfulServiceCallException e) { // NOSONAR
-            e.pushContext("Failed to upload item(s)", null);
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) {
+            final var sce = new ServiceCallException("Failed to upload item(s)", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
     private static boolean hubItemExists(final HubSpaceLocationInfo hubInfo, final Space space)
-        throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+        throws NetworkException, LoggedOutException, MutableServiceCallException {
         try {
             space.getItemType(hubInfo.getWorkflowItemId());
             return true;

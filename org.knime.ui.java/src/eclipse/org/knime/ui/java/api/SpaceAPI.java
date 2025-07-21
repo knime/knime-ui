@@ -74,10 +74,11 @@ import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
@@ -185,15 +186,16 @@ final class SpaceAPI {
             return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId, usageContext) //
                 .map(NameCollisionHandling::toString) //
                 .orElse("CANCEL");
-        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being propagated
-            e.pushContext("Failed to determine name collision strategy", null);
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) {
+            final var sce = new ServiceCallException("Failed to determine name collision strategy", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
     private static Optional<NameCollisionHandling> determineNameCollisionHandling(final Space space,
         final Object[] itemIds, final String destWorkflowGroupItemId, final UsageContext context)
-        throws GatewayException, ContextfulServiceCallException {
+        throws GatewayException, MutableServiceCallException {
         final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
         return nameCollisions.isEmpty() ? Optional.of(Space.NameCollisionHandling.NOOP) : NameCollisionChecker //
             .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions, context);
@@ -223,10 +225,12 @@ final class SpaceAPI {
         } catch (OperationNotAllowedException e) {
             LOGGER.error("Download error: " + e.getMessage(), e);
             throw new IllegalStateException("Failed to download items: " + e.getMessage(), e);
-        } catch (ContextfulServiceCallException e) { // NOSONAR
+        } catch (MutableServiceCallException e) { // NOSONAR
             LOGGER.error(e);
-            e.pushContext("Failed to download item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"), null);
-            throw e.toGatewayException();
+            final var sce = new ServiceCallException(
+                "Failed to download item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"), e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
@@ -255,9 +259,10 @@ final class SpaceAPI {
             final LocalSpace localSpace;
             try {
                 localSpace = (LocalSpace)sources.space();
-            } catch (final ContextfulServiceCallException e) { // NOSONAR
-                e.pushContext("Failed to upload item(s)", null);
-                throw e.toGatewayException();
+            } catch (final MutableServiceCallException e) {
+                final var sce = new ServiceCallException("Failed to upload item(s)", e);
+                e.copyContextTo(sce);
+                throw sce;
             }
             final var opened = findDirtyOpenedWorkflows(localSpace, sources.itemIds());
             if (!opened.isEmpty()) {
@@ -268,14 +273,16 @@ final class SpaceAPI {
 
         try {
             return performUpload(sources, destination, excludeData);
-        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is thrown (in other form)
-            e.pushContext("Failed to upload item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"), null);
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) {
+            final var sce = new ServiceCallException(
+                "Failed to upload item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"), e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
     private static List<String> performUpload(final Locator.Siblings sources, final Locator.Destination destination,
-        final boolean excludeData) throws GatewayException, ContextfulServiceCallException {
+        final boolean excludeData) throws GatewayException, MutableServiceCallException {
         final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
         if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
             try {
@@ -290,7 +297,7 @@ final class SpaceAPI {
     }
 
     private static boolean performAsyncHubDownload(final Locator.Siblings sources,
-        final Locator.Destination destination) throws GatewayException, ContextfulServiceCallException {
+        final Locator.Destination destination) throws GatewayException, MutableServiceCallException {
         final var remoteSpace = sources.space();
         final var localSpace = (LocalSpace)destination.space();
         final TransferResult result = remoteSpace.downloadInto(sources.itemIds(), localSpace, destination.itemId());
@@ -303,7 +310,7 @@ final class SpaceAPI {
 
     private static List<String> performAsyncHubUpload(final Locator.Siblings sources,
         final Locator.Destination destination, final boolean excludeData)
-        throws GatewayException, ContextfulServiceCallException {
+        throws GatewayException, MutableServiceCallException {
 
         var uploadDeclined = !showUploadWarning(destination);
         if (uploadDeclined) {
@@ -329,7 +336,7 @@ final class SpaceAPI {
     }
 
     private static boolean showUploadWarning(final Locator.Destination destination)
-        throws GatewayException, ContextfulServiceCallException {
+        throws GatewayException, MutableServiceCallException {
 
         final var remoteTargetSpace = destination.space();
         if (remoteTargetSpace.toEntity().isPrivate().booleanValue()) {
@@ -349,7 +356,7 @@ final class SpaceAPI {
     }
 
     private static List<String> itemNamesToItemIds(final Locator.Destination destination, final List<String> itemNames)
-        throws GatewayException, ContextfulServiceCallException {
+        throws GatewayException, MutableServiceCallException {
 
         var destinationWfGroup = destination.space().listWorkflowGroup(destination.itemId());
         return destinationWfGroup.getItems().stream() //
@@ -396,7 +403,7 @@ final class SpaceAPI {
     }
 
     private static boolean legacyCopyBetweenSpaces(final Siblings sources, final Locator.Destination destination,
-        final boolean excludeData) throws GatewayException, ContextfulServiceCallException {
+        final boolean excludeData) throws GatewayException, MutableServiceCallException {
         final var space = sources.space();
         final var sourceFileStores = sources.itemIds().stream() //
             .map(itemId -> ExplorerMountTable.getFileSystem().getStore(space.toKnimeUrl(itemId))).toList();
@@ -429,16 +436,17 @@ final class SpaceAPI {
             // Explorer" and display a notification.
             final var itemName = space.getItemName(itemId);
             return buildAncestorInfo(ancestorItemIds, itemName).toString();
-        } catch (ContextfulServiceCallException e) { // NOSONAR
+        } catch (MutableServiceCallException e) { // NOSONAR
             // The project name may have changed on the remote side, so for an informative message, the name as
             // currently known by the application is used.
             final var projectName = DesktopAPI.getDeps(ProjectManager.class) //
                     .getProject(providerId, spaceId, itemId) //
                     .map(Project::getName) //
                     .orElse("the project");
-            e.pushContext("Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName),
-                null);
-            throw e.toGatewayException();
+            final var sce = new ServiceCallException(
+                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName), e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
@@ -482,9 +490,10 @@ final class SpaceAPI {
             showErrorToast("Could not show item page in browser", "Check that the item still exists.", true);
             LOGGER.error("Could not open in browser", e);
             throw new IllegalStateException(e);
-        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being propagated
-            e.pushContext("Could not show item page in browser", null);
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) { // NOSONAR exception is being propagated
+            final var sce = new ServiceCallException("Could not show item page in browser", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
@@ -506,9 +515,10 @@ final class SpaceAPI {
             final var url = sourceSpace.getAPIDefinitionUrl(itemId)
                 .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url.toString(), EclipseUIAPI.class);
-        } catch (ContextfulServiceCallException e) { // NOSONAR
-            e.pushContext("Could not show item in browser", null);
-            throw e.toGatewayException();
+        } catch (MutableServiceCallException e) { // NOSONAR
+            final var sce = new ServiceCallException("Could not show item in browser", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 
@@ -567,8 +577,10 @@ final class SpaceAPI {
         String workflowGroupItemId;
         try {
             workflowGroupItemId = space.getItemIdByURI(destinationFileStore.toURI()).orElseThrow();
-        } catch (ContextfulServiceCallException e) { // NOSONAR
-            throw e.toGatewayException();
+        } catch (MutableServiceCallException e) { // NOSONAR
+            final var sce = new ServiceCallException("Failed to save job", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
 
         final var groupPath = IPath.forPosix(destinationFileStore.getFullName());
@@ -578,9 +590,10 @@ final class SpaceAPI {
             if (nameCollisions.isEmpty()) {
                 return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
             }
-        } catch (final ContextfulServiceCallException e) { // NOSONAR exception is being propagated
-            e.pushContext("Failed to check for name collisions", null);
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) { // NOSONAR exception is being propagated
+            final var sce = new ServiceCallException("Failed to check for name collisions", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
 
         final var collisionHandlingStrategyRef = new AtomicReference<NameCollisionHandling>();
@@ -592,9 +605,10 @@ final class SpaceAPI {
                     .ifPresent(collisionHandlingStrategyRef::set);
             } catch (GatewayException e) {
                 gatewayExceptionRef.set(e);
-            } catch (ContextfulServiceCallException e) { // NOSONAR exception is being propagated
-                gatewayExceptionRef
-                    .set(e.pushContext("Failed to determine collision handling strategy", null).toGatewayException());
+            } catch (MutableServiceCallException e) {
+                final var sce = new ServiceCallException("Failed to determine collision handling strategy", e);
+                e.copyContextTo(sce);
+                gatewayExceptionRef.set(sce);
             }
         });
 
@@ -616,10 +630,11 @@ final class SpaceAPI {
         final Predicate<String> taken = testName -> {
             try {
                 return space.containsItemWithName(workflowGroupItemId, testName);
-            } catch (NetworkException | LoggedOutException | ContextfulServiceCallException e) {
+            } catch (NetworkException | LoggedOutException | MutableServiceCallException e) {
                 // this is safe here because the surrounding method declared all of these exceptions
                 final GatewayException ge =
-                    e instanceof ContextfulServiceCallException csce ? csce.toGatewayException() : (GatewayException)e;
+                    e instanceof MutableServiceCallException csce
+                        ? csce.toGatewayException("Failed to check folder for collisions") : (GatewayException)e;
                 throw ExceptionUtils.asRuntimeException(ge);
             }
         };
@@ -680,9 +695,10 @@ final class SpaceAPI {
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         try {
             return space.editScheduleInfo(itemId, scheduleId);
-        } catch (ContextfulServiceCallException e) { // NOSONAR
-            e.pushContext("Failed to edit schedule", null);
-            throw e.toGatewayException();
+        } catch (MutableServiceCallException e) {
+            final var sce = new ServiceCallException("Failed to edit schedule", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 

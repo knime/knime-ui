@@ -69,7 +69,7 @@ import org.knime.core.util.auth.CouldNotAuthorizeException;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
@@ -261,8 +261,10 @@ final class Init {
         throws NetworkException, LoggedOutException, ServiceCallException {
         try {
             return spaceProviders.getSpace(origin.providerId(), origin.spaceId());
-        } catch (final ContextfulServiceCallException e) {
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) {
+            final var sce = new ServiceCallException("Failed to load space", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
     }
 

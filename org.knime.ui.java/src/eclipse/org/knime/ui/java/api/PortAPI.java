@@ -60,6 +60,7 @@ import org.knime.core.webui.node.port.PortViewManager.PortViewDescriptor;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.workbench.editor2.actions.OpenNodeViewAction;
@@ -87,9 +88,14 @@ final class PortAPI {
      */
     @API
     static void openPortView(final String projectId, final String nodeId, final Double portIdx, final Double viewIdx)
-        throws IOException, GatewayException {
-        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        var view = new CEFNodeView(nc, portIdx.intValue(), viewIdx.intValue());
+        throws GatewayException {
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final CEFNodeView view;
+        try {
+            view = new CEFNodeView(nc, portIdx.intValue(), viewIdx.intValue());
+        } catch (IOException e) {
+            throw new ServiceCallException("Failed to create node view", e);
+        }
         var port = nc.getOutPort(portIdx.intValue());
         var viewName = PortViewManager.getPortViewDescriptor(port.getPortType(), viewIdx.intValue())
             .map(PortViewDescriptor::label).orElse(null);

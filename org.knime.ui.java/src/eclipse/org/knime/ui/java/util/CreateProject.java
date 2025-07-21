@@ -57,7 +57,7 @@ import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.api.util.VersionId;
-import org.knime.gateway.api.webui.service.util.ContextfulServiceCallException;
+import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
@@ -93,9 +93,10 @@ public final class CreateProject {
         String name;
         try {
             name = space.getItemName(origin.itemId());
-        } catch (final ContextfulServiceCallException e) { // NOSONAR
-            e.pushContext("Failed to open project", null);
-            throw e.toGatewayException();
+        } catch (final MutableServiceCallException e) {
+            final var sce = new ServiceCallException("Failed to open project", e);
+            e.copyContextTo(sce);
+            throw sce;
         }
         var projectId = Project.getUniqueProjectId(name);
         return createProjectFromOrigin(projectId, name, origin, progressReporter, space);
@@ -152,14 +153,16 @@ public final class CreateProject {
                     final var workflowContext = createWorkflowContext(space, origin.itemId(), path.get(), version);
                     monitor.subTask("Loading workflow from disk");
                     return DesktopAPUtil.loadWorkflowManager(subMonitor.slice(0), path.get(), workflowContext, version);
-                } catch (final ContextfulServiceCallException e) { // NOSONAR
-                    throw e.toGatewayException();
+                } catch (final MutableServiceCallException e) {
+                    final var sce = new ServiceCallException("Failed to load workflow", e);
+                    e.copyContextTo(sce);
+                    throw sce;
                 }
             }).orElse(null);
     }
 
     private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path,
-        final VersionId version) throws NetworkException, LoggedOutException, ContextfulServiceCallException {
+        final VersionId version) throws NetworkException, LoggedOutException, MutableServiceCallException {
         final var mountId = space.toKnimeUrl(itemId).getAuthority();
         final var location = space.getLocationInfo(itemId, version);
         // TODO A local space root makes no sense for remote mountpoints
