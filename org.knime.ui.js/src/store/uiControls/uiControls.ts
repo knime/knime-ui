@@ -159,7 +159,7 @@ export const useUIControlsStore = defineStore("uiControls", {
         isLocalSaveSupported: isDesktop(),
         canOpenLegacyPortViews: isDesktop(),
         canLockAndUnlockSubnodes: isDesktop(),
-        canOpenLayoutEditor: isDesktop(),
+        canOpenLayoutEditor: isDesktop() || (isBrowser() && isDefault),
       };
 
       this.updateControls(uiControls);

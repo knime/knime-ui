@@ -173,7 +173,19 @@ describe("componentOrMetanodeShortcuts", () => {
     });
 
     it("open layout editor", () => {
-      const { layoutEditorStore } = createStore();
+      const { desktopInteractionsStore } = createStore();
+
+      componentOrMetanodeShortcuts.openLayoutEditor.execute(
+        mockShortcutContext(),
+      );
+      expect(desktopInteractionsStore.openLayoutEditor).toHaveBeenCalled();
+    });
+
+    it("open modern layout editor if feature flag present", () => {
+      const { applicationStore, layoutEditorStore } = createStore();
+      applicationStore.featureFlags[
+        "org.knime.ui.feature.modern_layout_editor_feature"
+      ] = true;
 
       componentOrMetanodeShortcuts.openLayoutEditor.execute(
         mockShortcutContext(),
@@ -182,7 +194,21 @@ describe("componentOrMetanodeShortcuts", () => {
     });
 
     it("open layout editor by node ID", () => {
-      const { layoutEditorStore } = createStore();
+      const { desktopInteractionsStore } = createStore();
+
+      componentOrMetanodeShortcuts.openLayoutEditorByNodeId.execute(
+        mockShortcutContext(),
+      );
+      expect(
+        desktopInteractionsStore.openLayoutEditorByNodeId,
+      ).toHaveBeenCalled();
+    });
+
+    it("open modern layout editor by node ID if feature flag present", () => {
+      const { applicationStore, layoutEditorStore } = createStore();
+      applicationStore.featureFlags[
+        "org.knime.ui.feature.modern_layout_editor_feature"
+      ] = true;
 
       componentOrMetanodeShortcuts.openLayoutEditorByNodeId.execute(
         mockShortcutContext(),

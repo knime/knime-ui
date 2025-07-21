@@ -8,12 +8,14 @@ import {
   type ComponentNode,
   type MetaNode,
 } from "@/api/gateway-api/generated-api";
+import { useFeatures } from "@/plugins/feature-flags";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
@@ -401,6 +403,12 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     group: "componentAndMetanode",
     icon: LayoutIcon,
     execute: () => {
+      const { isModernLayoutEditor } = useFeatures();
+      if (!isModernLayoutEditor()) {
+        useDesktopInteractionsStore().openLayoutEditor();
+        return;
+      }
+
       // We are opening the component editor from within the component here,
       // so the workflowId is the nodeId of the component we want to show the editors for
       const { projectId, workflowId: nodeId } =
@@ -435,6 +443,13 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     icon: LayoutIcon,
     execute: () => {
       const nodeId = useSelectionStore().singleSelectedNode?.id ?? "";
+
+      const { isModernLayoutEditor } = useFeatures();
+      if (!isModernLayoutEditor()) {
+        useDesktopInteractionsStore().openLayoutEditorByNodeId({ nodeId });
+        return;
+      }
+
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
 
