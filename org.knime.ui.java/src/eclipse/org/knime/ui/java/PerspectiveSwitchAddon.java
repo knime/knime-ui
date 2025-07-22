@@ -46,8 +46,6 @@
  */
 package org.knime.ui.java;
 
-import javax.inject.Inject;
-
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
@@ -73,6 +71,8 @@ import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.explorer.view.actions.OpenKnimeUrlAction;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.osgi.service.event.Event;
+
+import jakarta.inject.Inject;
 
 /**
  * Registered as fragment with the application model. Listens to perspective switch events in order to remove/add stuff
