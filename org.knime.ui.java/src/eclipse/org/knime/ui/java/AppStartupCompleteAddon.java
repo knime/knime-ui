@@ -52,8 +52,6 @@ import static org.knime.ui.java.util.PerspectiveUtil.WEB_UI_PERSPECTIVE_ID;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
@@ -69,6 +67,8 @@ import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.swt.widgets.Display;
 import org.osgi.service.event.Event;
+
+import jakarta.inject.Inject;
 
 /**
  * Registered as fragment with the application model and called as soon as the startup is completed.
