@@ -26,6 +26,7 @@ import { useComponentInteractionsStore } from "@/store/workflow/componentInterac
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
+import { setProjectActiveOrThrow } from "@/util/projectUtil";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";
 
@@ -173,7 +174,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
           try {
             await this.switchWorkflow({ newWorkflow });
-            next();
+            next(); // Resolves the navigation
             return;
           } catch (error) {
             // for this type of error, the navigation can continue
@@ -490,9 +491,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
               newWorkflow.version === undefined
                 ? activeWorkflow?.info.version
                 : newWorkflow.version,
-            // If the version switch failed, we want to fallback to the previous version
-            fallbackVersionId:
-              activeWorkflow?.info.version ?? CURRENT_STATE_VERSION,
+            removeOnFailure: false,
           });
         }
       }
@@ -504,58 +503,29 @@ export const useLifecycleStore = defineStore("lifecycle", {
       projectId,
       workflowId = "root",
       versionId = null,
-      fallbackVersionId = null,
+      removeOnFailure = true,
     }: {
       projectId: string;
       workflowId?: string;
       versionId?: string | null;
-      fallbackVersionId?: string | null;
+      removeOnFailure?: boolean;
     }) {
-      let loadedVersion; // To track the version that was successfully loaded
       if (isDesktop()) {
-        // Ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
-        const projectActivationError = new ProjectActivationError(
-          `Failed to set active project ${projectId}`,
+        // Throwing an error here propagates everything one level up.
+        // In case of a version switch, re-activating the previously active
+        // version is handled by the caller correctly.
+        await setProjectActiveOrThrow(
+          projectId,
+          versionId ?? CURRENT_STATE_VERSION,
+          removeOnFailure,
         );
-        try {
-          // (1) If a fallback version is provided, we don't remove the project on failure
-          // TODO NXT-3867 solution will be replaced by workflow load error handling
-          const removeProjectIfNotLoaded = !fallbackVersionId;
-          let isProjectLoadedInAppState =
-            await API.desktop.setProjectActiveAndEnsureItsLoaded({
-              projectId,
-              versionId: versionId ?? CURRENT_STATE_VERSION,
-              removeProjectIfNotLoaded,
-            });
-          loadedVersion = versionId;
-
-          // (2) If the project is not loaded, we try to load the fallback version
-          if (!isProjectLoadedInAppState) {
-            if (fallbackVersionId) {
-              isProjectLoadedInAppState =
-                await API.desktop.setProjectActiveAndEnsureItsLoaded({
-                  projectId,
-                  versionId: fallbackVersionId ?? CURRENT_STATE_VERSION,
-                  removeProjectIfNotLoaded: true,
-                });
-              loadedVersion = fallbackVersionId;
-            }
-          }
-
-          // (3) If the project is still not loaded, we throw an error
-          if (!isProjectLoadedInAppState) {
-            throw projectActivationError;
-          }
-        } catch (_error) {
-          throw projectActivationError;
-        }
       }
 
       const getWorkflowParams: Parameters<typeof API.workflow.getWorkflow>[0] =
         {
           projectId,
           workflowId,
-          versionId: loadedVersion, // To make sure the correct project version is fetched
+          versionId: versionId ?? CURRENT_STATE_VERSION,
           includeInteractionInfo: true,
         };
 

@@ -1,9 +1,13 @@
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
+
+import { API } from "@/api";
 import type { ComponentMetadata, Workflow } from "@/api/custom-types";
 import {
   EditableMetadata,
   type ProjectMetadata,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
+import { ProjectActivationError } from "@/store/application/lifecycle";
 
 const isWorkflowProjectType = (containerType: WorkflowInfo["containerType"]) =>
   containerType === WorkflowInfo.ContainerTypeEnum.Project;
@@ -36,4 +40,26 @@ export const isComponentProjectOrWorkflow = (workflow: Workflow) => {
     isNestedComponent ||
     (isComponentProject && isComponentMetadata(workflow.metadata))
   );
+};
+
+/**
+ * Try to set a project (version) as active and ensure it is loaded.
+ */
+export const setProjectActiveOrThrow = async (
+  projectId: string,
+  versionId: string = CURRENT_STATE_VERSION,
+  removeOnFailure: boolean = true,
+) => {
+  const didLoadNewVersion =
+    await API.desktop.setProjectActiveAndEnsureItsLoaded({
+      projectId,
+      versionId,
+      removeProjectIfNotLoaded: removeOnFailure,
+    });
+
+  if (!didLoadNewVersion) {
+    throw new ProjectActivationError(
+      `Failed to set active project ${projectId} with version ${versionId}`,
+    );
+  }
 };
