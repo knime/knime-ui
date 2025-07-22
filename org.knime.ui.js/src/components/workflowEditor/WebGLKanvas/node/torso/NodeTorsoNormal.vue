@@ -7,7 +7,7 @@ import {
   type NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
-import { nodeBackgroundColor } from "@/util/nodeUtil";
+import { nodeBackgroundColor, nodeColorFromType } from "@/util/nodeUtil";
 import type { GraphicsInst } from "@/vue3-pixi";
 
 import { torsoDrawUtils } from "./drawUtils";
@@ -24,11 +24,6 @@ type Props = {
 const props = defineProps<Props>();
 
 const isComponent = computed(() => props.kind === Node.KindEnum.Component);
-
-const backgroundColor = computed(() => {
-  const { type, kind } = props;
-  return nodeBackgroundColor({ type, kind });
-});
 
 const renderFunctionMapper = {
   LoopStart: torsoDrawUtils.drawLoopStart,
@@ -96,7 +91,7 @@ onUnmounted(() => {
   <Container event-mode="none">
     <Graphics
       event-mode="none"
-      @render="renderTorso($event, backgroundColor)"
+      @render="renderTorso($event, nodeBackgroundColor({ kind, type }))"
     />
 
     <Graphics
@@ -105,7 +100,7 @@ onUnmounted(() => {
       :scale="componentBackgroundPortion"
       :x="4"
       :y="4"
-      @render="renderTorso($event, backgroundColor)"
+      @render="renderTorso($event, nodeColorFromType(type))"
     />
 
     <Sprite

@@ -19,11 +19,14 @@ const { activeWorkflow } = storeToRefs(workflowStore);
 
 const { getNodeType } = useNodeInteractionsStore();
 
-const backgroundColor = (nodeId: string) => {
+const backgroundColor = (nodeId: string): string | undefined => {
   const node = activeWorkflow.value?.nodes[nodeId];
+
   if (!node) {
-    return null;
+    // eslint-disable-next-line no-undefined
+    return undefined;
   }
+
   const type = getNodeType(nodeId);
   return nodeBackgroundColor({ kind: node.kind, type });
 };
