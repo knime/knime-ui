@@ -269,7 +269,7 @@ export default {
         ...this.loopInfo.allowedActions,
       };
 
-      const canConfigure = !this.useEmbeddedDialogs;
+      const canConfigure = !this.useEmbeddedDialogs && this.dialogType !== null;
 
       return { ...baseConfig, canConfigure };
     },

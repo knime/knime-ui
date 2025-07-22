@@ -263,7 +263,8 @@ const allAllowedActions = computed(() => {
     ...loopInfo?.allowedActions,
   };
 
-  const canConfigure = !useEmbeddedDialogs.value;
+  const canConfigure =
+    !useEmbeddedDialogs.value && props.node.dialogType !== undefined;
 
   return { ...baseConfig, canConfigure };
 });

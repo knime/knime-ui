@@ -763,6 +763,36 @@ describe("Node", () => {
           }),
         );
       });
+
+      it("should handle configure button for dialogs without settings", async () => {
+        const { wrapper, mockedStores } = doMount({
+          props: { ...props, dialogType: null },
+        });
+
+        mockedStores.applicationSettingsStore.useEmbeddedDialogs = true;
+        await nextTick();
+
+        await triggerHover(wrapper, true);
+
+        const actionBar = wrapper.findComponent(NodeActionBar);
+
+        expect(actionBar.props()).toEqual(
+          expect.objectContaining({
+            canConfigure: false,
+          }),
+        );
+
+        mockedStores.applicationSettingsStore.useEmbeddedDialogs = false;
+        await nextTick();
+
+        await triggerHover(wrapper, true);
+
+        expect(actionBar.props()).toEqual(
+          expect.objectContaining({
+            canConfigure: false,
+          }),
+        );
+      });
     });
 
     it("enlargens the hover area to include ports", async () => {
