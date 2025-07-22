@@ -49,8 +49,6 @@ import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.util.Optional;
 
-import javax.inject.Inject;
-
 import org.eclipse.e4.core.contexts.Active;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -67,6 +65,7 @@ import com.equo.chromium.swt.Browser;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
 
 /**
  * Simple view containing a browser initialized with the knime-ui webapp (or a
