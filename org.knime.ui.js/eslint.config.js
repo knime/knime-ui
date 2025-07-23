@@ -24,6 +24,20 @@ export default [
     },
     rules: {
       "new-cap": ["warn", { capIsNewExceptionPattern: "^API\\.." }],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              // This import is restricted because for testing we
+              // replace the api import with one that mocks all api functions automatically
+              // but this requires a path alias import in order to work. See vitest.config.ts
+              name: "@/api",
+              message: 'Use "@api" instead of "@/api"',
+            },
+          ],
+        },
+      ],
     },
     settings: {
       "import-x/resolver": {

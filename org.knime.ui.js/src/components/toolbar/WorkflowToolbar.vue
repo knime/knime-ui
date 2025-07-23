@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineComponent, h, onMounted, ref } from "vue";
+import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
@@ -7,7 +8,6 @@ import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
-import { API } from "@/api";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";

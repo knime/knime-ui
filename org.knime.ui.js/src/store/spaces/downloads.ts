@@ -1,11 +1,11 @@
 import { computed, ref } from "vue";
+import { API } from "@api";
 import { defineStore } from "pinia";
 
 import { type DownloadItem, useAutoCloseOnCompletion } from "@knime/components";
 import { rfcErrors, useDownloadArtifact } from "@knime/hub-features";
 import type { NamedItemVersion } from "@knime/hub-features/versions";
 
-import { API } from "@/api";
 import { useDestinationPicker } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";

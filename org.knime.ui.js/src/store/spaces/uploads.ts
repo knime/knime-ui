@@ -1,5 +1,6 @@
 import { computed, ref } from "vue";
 import { useFileDialog } from "@vueuse/core";
+import { API } from "@api";
 import { defineStore, storeToRefs } from "pinia";
 
 import {
@@ -9,7 +10,6 @@ import {
 import { rfcErrors, useFileUpload } from "@knime/hub-features";
 import { knimeFileFormats } from "@knime/utils";
 
-import { API } from "@/api";
 import { useDestinationPicker } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
