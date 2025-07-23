@@ -1,6 +1,7 @@
+import { API } from "@api";
+
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
-import { API } from "@/api";
 import type { ComponentMetadata, Workflow } from "@/api/custom-types";
 import {
   EditableMetadata,
@@ -43,7 +44,10 @@ export const isComponentProjectOrWorkflow = (workflow: Workflow) => {
 };
 
 /**
- * Try to set a project (version) as active and ensure it is loaded.
+ * Try to set a project (version) as active and ensure it is loaded, throws on failure.
+ * Throwing an error here propagates everything one level up. In case of a version
+ * switch, re-activating the previously active version is handled by the caller
+ * correctly.
  */
 export const setProjectActiveOrThrow = async (
   projectId: string,

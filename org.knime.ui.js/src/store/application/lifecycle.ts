@@ -174,7 +174,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
           try {
             await this.switchWorkflow({ newWorkflow });
-            next(); // Resolves the navigation
+            next();
             return;
           } catch (error) {
             // for this type of error, the navigation can continue
@@ -511,9 +511,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
       removeOnFailure?: boolean;
     }) {
       if (isDesktop()) {
-        // Throwing an error here propagates everything one level up.
-        // In case of a version switch, re-activating the previously active
-        // version is handled by the caller correctly.
         await setProjectActiveOrThrow(
           projectId,
           versionId ?? CURRENT_STATE_VERSION,
