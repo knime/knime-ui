@@ -135,7 +135,7 @@ public final class CreateProject {
      */
     private static WorkflowManagerLoader fromOriginWithProgressReporter(final Origin origin,
         final ProgressReporter progressReporter, final Space space) {
-        return version -> progressReporter.<WorkflowManager>getWithProgress( // NOSONAR
+        return version -> progressReporter.getWithProgress( // NOSONAR
             WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, //
             NodeLogger.getLogger(CreateProject.class), //
             monitor -> { // NOSONAR

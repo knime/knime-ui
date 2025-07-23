@@ -49,8 +49,8 @@
 package org.knime.ui.java.api;
 
 import org.knime.core.node.util.CheckUtils;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
-import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.service.commands.WorkflowCommand;
 import org.knime.workbench.editor2.commands.AbstractKNIMECommand;
 

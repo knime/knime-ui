@@ -60,7 +60,7 @@ import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.util.CoreUtil.ContainerType;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
-import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.workbench.editor2.actions.LockMetaNodeDialog;
 import org.knime.workbench.editor2.editparts.GUIWorkflowCipherPrompt;
@@ -91,7 +91,6 @@ final class ComponentAPI {
     @API
     static boolean openLinkComponentDialog(final String projectId, final String rootWorkflowId, final String nodeId)
         throws GatewayException {
-
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         return ManipulateComponents.openLinkComponentDialog(component);
     }
@@ -108,7 +107,6 @@ final class ComponentAPI {
     @API
     static void openChangeComponentLinkTypeDialog(final String projectId, final String rootWorkflowId,
         final String nodeId) throws GatewayException {
-
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentLinkTypeDialog(component, wfKey);
@@ -126,7 +124,6 @@ final class ComponentAPI {
     @API
     static void openChangeComponentHubItemVersionDialog(final String projectId, final String rootWorkflowId,
         final String nodeId) throws GatewayException {
-
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentHubItemVersionDialog(component, wfKey);
@@ -142,7 +139,7 @@ final class ComponentAPI {
      */
     @API
     static void openLockSubnodeDialog(final String projectId, final String nodeId) throws GatewayException {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final var nc = ProjectManager.getInstance().getProject(projectId).orElseThrow().getNodeContainer(new NodeIDEnt(nodeId)).orElseThrow();
         final var containerTypeAndWfm = CoreUtil.getTypeAndContainedWfm(nc).orElseThrow(
             () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
         final var containerType = containerTypeAndWfm.getFirst();
@@ -180,7 +177,7 @@ final class ComponentAPI {
      */
     @API
     static boolean unlockSubnode(final String projectId, final String nodeId) throws GatewayException {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final var nc = ProjectManager.getInstance().getProject(projectId).orElseThrow().getNodeContainer(new NodeIDEnt(nodeId)).orElseThrow();
         return CoreUtil.getTypeAndContainedWfm(nc)
             .map(containerTypeAndWfm -> containerTypeAndWfm.getSecond()
                 .unlock(new GUIWorkflowCipherPrompt(containerTypeAndWfm.getFirst() == ContainerType.COMPONENT)))
@@ -190,7 +187,7 @@ final class ComponentAPI {
 
     private static SubNodeContainer assertIsWritableAndGetComponent(final String projectId, final String nodeId)
         throws GatewayException {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final var nc = ProjectManager.getInstance().getProject(projectId).orElseThrow().getNodeContainer(new NodeIDEnt(nodeId)).orElseThrow();
         final var wfm = nc.getParent();
         if (wfm.isWriteProtected()) {
             throw new OperationNotAllowedException("Container is read-only.");

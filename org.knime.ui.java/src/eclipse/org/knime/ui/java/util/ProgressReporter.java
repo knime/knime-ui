@@ -81,6 +81,7 @@ public interface ProgressReporter {
      */
     <R> Optional<R> getWithProgress(String name, NodeLogger logger, FunctionWithProgress<R> task)
             throws ServiceCallException, LoggedOutException, NetworkException;
+    // ~todo this should be progress-related exceptions (could also be Cancellation), can give LoggedOut etc as cause
 
     /**
      * Implementation of {@link ProgressReporter} for the Eclipse Workbench environment. Delegates progress reporting to

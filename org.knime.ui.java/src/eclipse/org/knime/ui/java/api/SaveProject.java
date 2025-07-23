@@ -75,14 +75,13 @@ import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
-import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.ResetOnUploadEnum;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
-import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -139,8 +138,8 @@ final class SaveProject {
             LOGGER.warn("Saving the project without a workflow preview. This is unexpected and should not happen.");
         }
 
-        var projectWfm = WorkflowManagerResolver.get(projectId, NodeIDEnt.getRootID());
-        if (isExecutionInProgress(projectWfm)) {
+        final var wfm = DesktopAPI.getDeps(ProjectManager.class).getProject(projectId).orElseThrow().getWorkflowManager().orElseThrow();
+        if (isExecutionInProgress(wfm)) {
             // Show a warning otherwise
             DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
             return false;

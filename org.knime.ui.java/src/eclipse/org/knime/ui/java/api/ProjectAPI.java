@@ -193,14 +193,14 @@ final class ProjectAPI {
         closeAllOpenViewsIfSwitchingVersions(project, version);
 
         // project already loaded
-        if (project.getWorkflowManagerIfLoaded(version).isPresent()) {
+        if (project.getWorkflowManager(version).isPresent()) {
             projectManager.setProjectActive(projectId, version);
             appStateUpdater.updateAppState(); // Since we changed the application state by setting the project active
             return true;
         }
 
         // project not yet loaded, load
-        var wfm = project.getFromCacheOrLoadWorkflowManager(version).orElse(null);
+        var wfm = project.loadWorkflowManager(version);
 
         // cleanup if project cannot be loaded
         if (wfm == null) {
@@ -230,7 +230,7 @@ final class ProjectAPI {
         if (versionId.isCurrentState() && project.getOrigin().isPresent()) {
             var origin = project.getOrigin().orElseThrow(); // Should never throw, we just checked
             var provider = DesktopAPI.getSpaceProvider(origin.providerId());
-            var wfm = project.getWorkflowManagerIfLoaded().orElseThrow(); // Should never throw, we just checked
+            var wfm = project.getWorkflowManager().orElseThrow(); // Should never throw, we just checked
             NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, getWorkflowTypeToTrack(provider.getType()));
         }
     }
@@ -239,16 +239,15 @@ final class ProjectAPI {
         var pm = DesktopAPI.getDeps(ProjectManager.class);
         var projectId = project.getID();
         var switchingVersions = pm.isActiveProject(projectId) && !pm.isActiveProjectVersion(projectId, versionId);
-        if (switchingVersions) {
-            final var activeVersion = pm.getActiveVersionForProject(projectId).orElse(null);
-            if (activeVersion != null) {
-                final var optWfm = project.getWorkflowManagerIfLoaded(activeVersion);
-                if (optWfm.isPresent()) { // Should be loaded, since the version is active
-                    var nodeIdsAndModels = optWfm.get().findNodes(NodeModel.class, new NodeModelFilter<>(), true, true);
-                    nodeIdsAndModels.values().forEach(Node::invokeNodeModelCloseViews);
-                }
-            }
+        if (!switchingVersions) {
+            return;
         }
+        pm.getActiveVersionForProject(projectId) //
+            .flatMap(project::getWorkflowManager) //
+            .ifPresent(wfm -> { //
+                var nodeIdsAndModels = wfm.findNodes(NodeModel.class, new NodeModelFilter<>(), true, true);
+                nodeIdsAndModels.values().forEach(Node::invokeNodeModelCloseViews);
+            });
     }
 
     static WorkflowType getWorkflowTypeToTrack(final SpaceProviderEnt.TypeEnum providerType) {
@@ -296,8 +295,7 @@ final class ProjectAPI {
      */
     @API
     static void openWorkflowConfiguration(final String projectId) {
-        final var projectWfm = getProject(projectId).getWorkflowManagerIfLoaded() //
-            .orElseThrow(() -> new NoSuchElementException("WorkflowManager of project is not loaded"));
+        final var projectWfm = getProject(projectId).getWorkflowManager().orElseThrow(); //
         try {
             var dialog = new WrappedNodeDialog(Display.getDefault().getActiveShell(),
                 WorkflowManagerWrapper.wrap(projectWfm), null, null);

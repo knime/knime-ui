@@ -61,7 +61,7 @@ import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
-import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.workbench.editor2.actions.OpenNodeViewAction;
 
@@ -71,6 +71,8 @@ import org.knime.workbench.editor2.actions.OpenNodeViewAction;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 final class PortAPI {
+
+    private final ProjectManager m_projectManager = DesktopAPI.getDeps(ProjectManager.class);
 
     private PortAPI() {
         // stateless
@@ -89,7 +91,8 @@ final class PortAPI {
     @API
     static void openPortView(final String projectId, final String nodeId, final Double portIdx, final Double viewIdx)
         throws GatewayException {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final NodeIDEnt nodeId1 = new NodeIDEnt(nodeId);
+        final var nc = m_projectManager.getProject(projectId).orElseThrow().getNodeContainer(nodeId1).orElseThrow();
         final CEFNodeView view;
         try {
             view = new CEFNodeView(nc, portIdx.intValue(), viewIdx.intValue());
@@ -115,7 +118,8 @@ final class PortAPI {
     @API
     static void openLegacyPortView(final String projectId, final String nodeId, final Double portIdx,
         final Boolean execute) throws GatewayException {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final NodeIDEnt nodeId1 = new NodeIDEnt(nodeId);
+        final var nc = m_projectManager.getProject(projectId).orElseThrow().getNodeContainer(nodeId1).orElseThrow();
         checkIsNotNull(nc, projectId, nodeId);
         if (nc.isInactive()) {
             return;

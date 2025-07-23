@@ -157,7 +157,7 @@ public final class SaveAndCloseProjects {
         final List<String> dirtyProjectIdsList = new ArrayList<>();
         final List<WorkflowManager> dirtyWfmsList = new ArrayList<>();
         for (final var id : projectIds) {
-            projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded).ifPresent(wfm -> {
+            projectManager.getProject(id).flatMap(Project::getWorkflowManager).ifPresent(wfm -> {
                 if (wfm.isDirty()) {
                     dirtyProjectIdsList.add(id);
                     dirtyWfmsList.add(wfm);
@@ -229,7 +229,7 @@ public final class SaveAndCloseProjects {
             var projectSVG = svgs[i];
             final var projectManager = ProjectManager.getInstance();
             final var project = projectManager.getProject(projectId).orElse(null);
-            var projectWfm = project == null ? null : project.getWorkflowManagerIfLoaded().orElse(null);
+            var projectWfm = project == null ? null : project.getWorkflowManager().orElse(null);
             var success = saveAndCloseProject(monitor, projectId, projectSVG, projectWfm, projectManager);
             if (!success) {
                 firstFailure.compareAndExchange(null, Optional.of(projectId));

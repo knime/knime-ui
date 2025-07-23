@@ -120,7 +120,7 @@ final class SaveProjectCopy {
                 final var message = String.format("Project <%s> does not exist", sourceProjectId);
                 return new NoSuchElementException(message);
             });
-        final var sourceWfm = originalProject.getWorkflowManagerIfLoaded() //
+        final var sourceWfm = originalProject.getWorkflowManager() //
             .orElseThrow(() -> new NoSuchElementException("Project is not loaded"));
         final var oldContext = CheckUtils.checkArgumentNotNull(sourceWfm.getContextV2());
         try {

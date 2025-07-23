@@ -139,14 +139,14 @@ final class OpenProject {
             project = CreateProject.createProjectFromOrigin(origin, DesktopAPI.getDeps(ProgressReporter.class), space);
         }
 
-        // already trigger loading of wfm here because we want to abort and not register the project if this fails
-        var loadedWfm = project.getFromCacheOrLoadWorkflowManager(VersionId.currentState());
-        if (loadedWfm.isEmpty()) {
+        try{
+            // already trigger loading of wfm here because we want to abort and not register the project if this fails
+            project.loadWorkflowManager(VersionId.currentState());
+        } catch (ServiceCallException | NetworkException | LoggedOutException e) {
             throw new OpenProjectException("Could not load workflow");
-        } else {
-            final var providerType = spaceProviders.getProviderTypes().get(spaceProviderId);
-            registerProjectAndSetActive(project, providerType);
         }
+        final var providerType = spaceProviders.getProviderTypes().get(spaceProviderId);
+        registerProjectAndSetActive(project, providerType);
     }
 
     /**
@@ -264,7 +264,7 @@ final class OpenProject {
 
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
 
-        project.getWorkflowManagerIfLoaded().ifPresent(wfm -> {
+        project.getWorkflowManager().ifPresent(wfm -> {
             NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, ProjectAPI.getWorkflowTypeToTrack(providerType));
         });
     }

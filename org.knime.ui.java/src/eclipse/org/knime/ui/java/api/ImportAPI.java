@@ -49,18 +49,16 @@
 package org.knime.ui.java.api;
 
 import java.net.URI;
+import java.util.function.Supplier;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
-import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.commands.WorkflowCommand;
@@ -117,6 +115,7 @@ final class ImportAPI {
     /**
      * Imports a URI at a certain position in the workflow canvas (i.e. usually imported as a new node). If a node is to
      * be imported and the node isn't installed yet, it will ask the user whether to install the respective extension.
+     * 
      * @throws GatewayException -
      */
     @API
@@ -162,20 +161,13 @@ final class ImportAPI {
         final boolean isRemoteLocation, final double x, final double y) throws GatewayException {
 
         var workflowIdEnt = new NodeIDEnt(workflowId);
-        AddComponentCommand.GatewaySupplier<WorkflowManager> wfmSupplier =
-            () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
-        AddComponentCommand.GatewaySupplier<NodeID> command = () -> {
-            try {
-                return Display.getDefault().syncCall(() -> {
-                    final var wfm = wfmSupplier.get();
-                    var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y,
-                        isRemoteLocation, false);
-                    return snc == null ? null : snc.getID();
-                });
-            } catch (GatewayException e) {
-                throw ExceptionUtils.asRuntimeException(e);
-            }
-        };
+        var wfm = DesktopAPI.getDeps(ProjectManager.class).getProject(projectId).orElseThrow()
+            .getWorkflowManager(workflowIdEnt).orElseThrow();
+        Supplier<NodeID> command = () -> Display.getDefault().syncCall(() -> {
+            var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y,
+                isRemoteLocation, false);
+            return snc == null ? null : snc.getID();
+        });
         var componentId = command.get();
         if (componentId == null) {
             return null;
@@ -183,7 +175,7 @@ final class ImportAPI {
 
         // execute pseudo-command to enable undo and redo
         var commands = DesktopAPI.getDeps(WorkflowMiddleware.class).getCommands();
-        commands.setCommandToExecute(new AddComponentCommand(wfmSupplier, componentId, command));
+        commands.setCommandToExecute(new AddComponentCommand(wfm, componentId, command));
         try {
             commands.execute(new WorkflowKey(projectId, workflowIdEnt), null);
         } catch (ServiceCallException e) { // NOSONAR
@@ -198,18 +190,14 @@ final class ImportAPI {
      */
     private static class AddComponentCommand implements WorkflowCommand {
 
-        interface GatewaySupplier<T> {
-            T get() throws ServiceCallException, LoggedOutException, NetworkException;
-        }
-
         private NodeID m_componentId;
 
-        private final GatewaySupplier<NodeID> m_redo;
+        private final Supplier<NodeID> m_redo;
 
-        private final GatewaySupplier<WorkflowManager> m_wfm;
+        private WorkflowManager m_wfm;
 
-        AddComponentCommand(final GatewaySupplier<WorkflowManager> wfmSupplier, final NodeID componentId,
-            final GatewaySupplier<NodeID> command) {
+        AddComponentCommand(final WorkflowManager wfmSupplier, final NodeID componentId,
+                            final Supplier<NodeID> command) {
             m_wfm = wfmSupplier;
             m_componentId = componentId;
             m_redo = command;
@@ -221,13 +209,13 @@ final class ImportAPI {
         }
 
         @Override
-        public boolean canUndo() throws ServiceCallException, LoggedOutException, NetworkException {
-            return m_wfm.get().canRemoveNode(m_componentId);
+        public boolean canUndo() {
+            return m_wfm.canRemoveNode(m_componentId);
         }
 
         @Override
-        public void undo() throws ServiceCallException, LoggedOutException, NetworkException {
-            m_wfm.get().removeNode(m_componentId);
+        public void undo() {
+            m_wfm.removeNode(m_componentId);
             m_componentId = null;
         }
 
@@ -237,8 +225,14 @@ final class ImportAPI {
         }
 
         @Override
-        public void redo() throws ServiceCallException, LoggedOutException, NetworkException {
+        public void redo() {
             m_componentId = m_redo.get();
+        }
+
+        // TODO remove
+        @Override
+        public void setWorkflowManager(WorkflowManager wfm) {
+            m_wfm = wfm;
         }
 
     }
