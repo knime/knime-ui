@@ -1665,7 +1665,7 @@ export interface Extension {
 export interface GatewayProblemDescription {
 
     /**
-     * Message of the thrown exception.
+     * Title of the problem (non instance-specific).
      * @type {string}
      * @memberof GatewayProblemDescription
      */
@@ -1676,6 +1676,12 @@ export interface GatewayProblemDescription {
      * @memberof GatewayProblemDescription
      */
     code?: string;
+    /**
+     * List of details (\&quot;user-facing stack trace\&quot;) of the problem.
+     * @type {Array<string>}
+     * @memberof GatewayProblemDescription
+     */
+    details?: Array<string>;
     /**
      * Indicating whether error details can be copied by the user.
      * @type {boolean}

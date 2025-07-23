@@ -59,9 +59,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.entity.EntityBuilderManager;
 import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.webui.entity.GatewayProblemDescriptionEnt;
+import org.knime.gateway.api.webui.entity.GatewayProblemDescriptionEnt.GatewayProblemDescriptionEntBuilder;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
@@ -78,12 +82,14 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProgressReporter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -198,12 +204,12 @@ public final class DesktopAPI {
                     try {
                         var res = invokeMethod(method, args);
                         event.set("result", MAPPER.valueToTree(res));
-                    } catch (GatewayException e) {  // TODO handle better error messages
+                    } catch (GatewayException e) {
                         LOGGER.debug("Desktop API function call failed with `GatewayException` for '" + name + "'", e);
-                        event.put("error", e.getMessage());
-                    } catch (Throwable e) {  // NOSONAR
+                        event.put("error", throwableToJsonString(e));
+                    } catch (Throwable e) {
                         LOGGER.debug("Desktop API function call failed for '" + name + "'", e);
-                        event.put("error", e.getMessage());
+                        event.put("error", throwableToJsonString(e));
                     }
                     var eventConsumer = getDeps(EventConsumer.class);
                     if (eventConsumer != null) {
@@ -219,6 +225,42 @@ public final class DesktopAPI {
                 }
             });
         }
+    }
+
+    private static String throwableToJsonString(final Throwable thrw) {
+        final var objectMapper = ObjectMapperUtil.getInstance().getObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(
+                thrw instanceof GatewayException ge ? knownToEntity(ge) : unknownToEntity(thrw));
+        } catch (final JsonProcessingException e) {
+            e.addSuppressed(thrw);
+            LOGGER.error("Could not serialize problem: " + e.getMessage(), e);
+            return "{}";
+        }
+    }
+
+    private static GatewayProblemDescriptionEnt knownToEntity(final GatewayException gatewayException) {
+        final var details = gatewayException.getDetails();
+        return EntityBuilderManager.builder(GatewayProblemDescriptionEntBuilder.class) //
+            .setTitle(gatewayException.getTitle()) //
+            .setCode(gatewayException.getClass().getSimpleName()) //
+            .setDetails(details == null || details.isEmpty() ? null : details) //
+            .setCanCopy(gatewayException.isCanCopy()) //
+            .setAdditionalProperties(gatewayException.getAdditionalProperties()) //
+            .build();
+    }
+
+    private static GatewayProblemDescriptionEnt unknownToEntity(final Throwable throwable) {
+        return EntityBuilderManager.builder(GatewayProblemDescriptionEntBuilder.class) //
+            .setTitle("An unexpected error occurred") //
+            .setCode(throwable.getClass().getSimpleName()) //
+            .setDetails(List.of(throwable.getClass().getSimpleName() + ": " + throwable.getMessage())) //
+            .setCanCopy(true) //
+            .setAdditionalProperties(Map.of( //
+                "message", throwable.getMessage(), //
+                "stackTrace", ExceptionUtils.getStackTrace(throwable)//
+            )) //
+            .build();
     }
 
     @SuppressWarnings("java:S112") // generic exception reasonable here
