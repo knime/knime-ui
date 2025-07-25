@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useMoveObject } from "@/components/workflowEditor/SVGKanvas/common/useMoveObject";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
@@ -83,16 +82,6 @@ const onPointerDown = async (event: PointerEvent) => {
 
   createPointerDownHandler(initialPosition)(event, eventTarget);
 };
-
-useEscapeStack({
-  group: "OBJECT_DRAG",
-  alwaysActive: true,
-  onEscape: () => {
-    if (isDragging.value) {
-      movingStore.abortDrag();
-    }
-  },
-});
 </script>
 
 <template>

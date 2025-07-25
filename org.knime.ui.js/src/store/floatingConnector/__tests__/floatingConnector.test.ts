@@ -4,7 +4,7 @@ import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { markEventAsHandled } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
+import { markPointerEventAsHandled } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
 import { PORT_TYPE_IDS, createPort, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
@@ -109,7 +109,7 @@ describe("floatingConnector store", () => {
       mockedStores.floatingConnectorStore.floatingConnector,
     ).toBeUndefined();
     expect(pointerDown.stopPropagation).toHaveBeenCalled();
-    expect(markEventAsHandled).toHaveBeenCalled();
+    expect(markPointerEventAsHandled).toHaveBeenCalled();
     expect(pointerDown.originalEvent.stopPropagation).toHaveBeenCalled();
 
     pointerMove(canvas);

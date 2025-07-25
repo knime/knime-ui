@@ -17,7 +17,7 @@ import { getBendpointId } from "@/util/connectorUtil";
 import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
 import type { AbsolutePointXY, ConnectorProps } from "../../types";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
-import { markEventAsHandled } from "../util/interaction";
+import { markPointerEventAsHandled } from "../util/interaction";
 
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import ConnectorPathSegment from "./ConnectorPathSegment.vue";
@@ -142,7 +142,7 @@ const isTargetForReplacement = computed(() => {
 });
 
 const onConnectionPointerdown = async (event: FederatedPointerEvent) => {
-  markEventAsHandled(event, { initiator: "connection-select" });
+  markPointerEventAsHandled(event, { initiator: "connection-select" });
   if (!isMultiselectEvent(event)) {
     const { wasAborted } = await selectionStore.deselectAllObjects();
     if (wasAborted) {

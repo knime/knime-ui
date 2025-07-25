@@ -12,7 +12,7 @@ import * as $colors from "@/style/colors";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { useTooltip } from "../../common/useTooltip";
 import type { ActionButtonConfig, TooltipDefinition } from "../../types";
-import { markEventAsHandled } from "../util/interaction";
+import { markPointerEventAsHandled } from "../util/interaction";
 
 const buttonRadius = 9;
 const buttonStroke = 1;
@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const onClick = (event: FederatedPointerEvent) => {
   if (!props.disabled) {
-    markEventAsHandled(event, { initiator: "action-button" });
+    markPointerEventAsHandled(event, { initiator: "action-button" });
     props.onClick();
   }
 };

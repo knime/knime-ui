@@ -310,6 +310,7 @@ const assignAddPortPlaceholderRef = (
         @add-port="
           addPort({ side, typeId: $event.typeId, portGroup: $event.portGroup })
         "
+        @deselect="clearSelection"
       />
     </template>
   </g>

@@ -48,15 +48,6 @@ useEventListener(panel, "click", (event) => {
     exitLargeMode();
   }
 });
-
-// TODO: Should be removed once NXT-3761 is done.
-// This behavior should work by default (because of `@cancel="exitLargeMode"`)
-// once the global Escape keydown event is not prevented.
-useEventListener(panel, "keydown", (event) => {
-  if (event.key === "Escape") {
-    exitLargeMode();
-  }
-});
 </script>
 
 <template>

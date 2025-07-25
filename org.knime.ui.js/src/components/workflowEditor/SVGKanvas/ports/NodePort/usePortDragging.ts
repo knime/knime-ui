@@ -1,9 +1,9 @@
 import { ref } from "vue";
+import { useEventListener } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { $bus } from "@/plugins/event-bus";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -79,10 +79,12 @@ export const usePortDragging = (params: Params) => {
   const didDragToCompatibleTarget = ref(false);
   const hasAbortedDrag = ref(false);
 
-  useEscapeStack({
-    group: "PORT_DRAG",
-    alwaysActive: true,
-    onEscape: () => {
+  useEventListener(
+    "keydown",
+    (event) => {
+      if (event.key !== "Escape") {
+        return;
+      }
       // if we have a connector active trigger the callback in the params
       // to determine whether we should remove the connector or not
       if (dragConnector.value) {
@@ -93,10 +95,13 @@ export const usePortDragging = (params: Params) => {
         if (removeConnector) {
           dragConnector.value = null;
           hasAbortedDrag.value = true;
+          event.preventDefault();
         }
       }
     },
-  });
+    // this enables us to get the event before the Kanvas does so we can prevent the deselect of objects
+    { capture: true },
+  );
 
   const { shouldPortSnap } = usePortSnapping();
 

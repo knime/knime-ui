@@ -37,6 +37,11 @@ type CommonConfig = {
    * - cancellation -> negative result out from the dialog
    */
   buttons?: Array<ConfirmDialogButton>;
+
+  /**
+   * Index of the button that should have focus after the dialog is shown.
+   */
+  focusButton?: number;
 };
 
 export type PropertyBasedConfig = CommonConfig & {

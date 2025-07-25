@@ -1,24 +1,11 @@
-/* eslint-disable func-style */
 import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import Port from "@/components/common/Port.vue";
 import ActionButton from "@/components/workflowEditor/common/svgActionBar/ActionButton.vue";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import * as $shapes from "@/style/shapes";
 import NodePortActions from "../NodePortActions.vue";
-
-vi.mock("@/composables/useEscapeStack", () => {
-  function useEscapeStack({ onEscape }) {
-    // @ts-expect-error
-    useEscapeStack.onEscape = onEscape;
-    return {
-      /* empty mixin */
-    };
-  }
-
-  return { useEscapeStack };
-});
 
 describe("NodePortActions.vue", () => {
   const defaultProps = {
@@ -134,10 +121,11 @@ describe("NodePortActions.vue", () => {
     expect(actionButton.props("disabled")).toBe(true);
   });
 
-  it("should close on escape", () => {
+  it("should close on escape", async () => {
     const wrapper = doShallowMount();
     expect(wrapper.emitted("close")).toBeFalsy();
-    useEscapeStack.onEscape();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await nextTick();
     expect(wrapper.emitted("close")).toBeTruthy();
   });
 });

@@ -6,7 +6,10 @@ import throttle from "raf-throttle";
 
 import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
-import { markEventAsHandled } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
+import {
+  markEscapeAsHandled,
+  markPointerEventAsHandled,
+} from "@/components/workflowEditor/WebGLKanvas/util/interaction";
 import * as shapes from "@/style/shapes";
 import {
   type Direction,
@@ -83,6 +86,7 @@ export const useFloatingConnectorStore = defineStore(
       floatingConnector.value = undefined;
     };
 
+    let escapeAbortHandlerCleanup: (() => void) | undefined;
     const didMove = ref(false);
     const pointerDown = ref(false);
     const pointerMoveAbsoluteCoords = ref<XY | undefined>();
@@ -162,10 +166,18 @@ export const useFloatingConnectorStore = defineStore(
           resetState();
           removeActiveConnector();
           runListenerTeardown?.();
-          window.removeEventListener("keydown", onEscape);
+          markEscapeAsHandled(event, {
+            initiator: "floating-connector::onEscape",
+          });
         }
       };
-      window.addEventListener("keydown", onEscape);
+      window.addEventListener("keydown", onEscape, {
+        capture: true,
+        once: true,
+      });
+      return () => {
+        window.removeEventListener("keydown", onEscape);
+      };
     };
 
     const createConnectorFromPointerEvent = (
@@ -193,7 +205,9 @@ export const useFloatingConnectorStore = defineStore(
       // doesn't go up to the Node component
       pointerDownEvent.stopPropagation();
       pointerDownEvent.originalEvent.stopPropagation();
-      markEventAsHandled(pointerDownEvent, { initiator: "floating-connector" });
+      markPointerEventAsHandled(pointerDownEvent, {
+        initiator: "floating-connector",
+      });
 
       pointerDown.value = true;
       startPosition = {
@@ -234,6 +248,8 @@ export const useFloatingConnectorStore = defineStore(
         pointerDown.value = false;
         didMove.value = false;
         isDragging.value = false;
+        escapeAbortHandlerCleanup?.();
+        escapeAbortHandlerCleanup = undefined;
         runListenerTeardown?.();
 
         if (!floatingConnector.value) {
@@ -280,7 +296,7 @@ export const useFloatingConnectorStore = defineStore(
       canvas.addEventListener("pointerup", onPointerUp);
       canvas.addEventListener("lostPointerCapture", onPointerUp);
 
-      setupAbortListener();
+      escapeAbortHandlerCleanup = setupAbortListener();
     };
 
     const createDecorationOnly = (position: XY) => {

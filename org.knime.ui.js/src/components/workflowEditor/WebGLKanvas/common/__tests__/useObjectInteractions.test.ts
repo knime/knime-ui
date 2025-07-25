@@ -6,7 +6,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { createNativeNode, createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
-import { markEventAsHandled } from "../../util/interaction";
+import { markPointerEventAsHandled } from "../../util/interaction";
 import { useObjectInteractions } from "../useObjectInteractions";
 
 vi.mock("../../util/interaction");
@@ -129,7 +129,7 @@ describe("useObjectInteractions", () => {
         pointerPositions,
       );
 
-      expect(markEventAsHandled).toHaveBeenCalled();
+      expect(markPointerEventAsHandled).toHaveBeenCalled();
 
       expect(addEventSpy).toHaveBeenCalledWith(
         "pointermove",

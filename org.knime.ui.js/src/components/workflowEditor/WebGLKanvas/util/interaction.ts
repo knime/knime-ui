@@ -1,8 +1,9 @@
 import type { FederatedPointerEvent } from "pixi.js";
 
-export type CustomPointerEventDataset = {
+export type CustomUIEventDataset = {
   initiator: string;
   skipGlobalSelection?: boolean;
+  skipDeselectByKeyboard?: boolean;
 };
 
 /**
@@ -12,9 +13,9 @@ export type CustomPointerEventDataset = {
  * element where other events could potentially be listening for interactions
  * on the "empty" parts of the canvas (e.g rectangle selection, quick action menu)
  */
-export const markEventAsHandled = (
+export const markPointerEventAsHandled = (
   event: FederatedPointerEvent | PointerEvent,
-  dataset: CustomPointerEventDataset,
+  dataset: CustomUIEventDataset,
 ) => {
   const nativeEvent = event instanceof PointerEvent ? event : event.nativeEvent;
 
@@ -28,5 +29,26 @@ export const markEventAsHandled = (
   nativeEvent.dataset = {
     initiator,
     skipGlobalSelection,
+  };
+};
+
+/**
+ * This is used to stop the default escape handler that deselects the nodes from running.
+ * This is more verbose then the use of preventDefault.
+ */
+export const markEscapeAsHandled = (
+  event: KeyboardEvent,
+  dataset: CustomUIEventDataset,
+) => {
+  if (event.dataset) {
+    consola.warn(
+      `Tried to mark event as handled for "${dataset.initiator}" but was already marked by "${event.dataset.initiator}"`,
+    );
+  }
+
+  const { initiator, skipDeselectByKeyboard = true } = dataset;
+  event.dataset = {
+    initiator,
+    skipDeselectByKeyboard,
   };
 };

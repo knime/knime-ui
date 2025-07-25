@@ -1,4 +1,3 @@
-/* eslint-disable func-style */
 /* eslint-disable max-lines */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
@@ -6,7 +5,6 @@ import { mount } from "@vue/test-utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
@@ -25,18 +23,6 @@ const detectConnectionCircleSpy = vi
   .mockReturnValue(new Set());
 
 vi.mock("@/plugins/event-bus");
-
-vi.mock("@/composables/useEscapeStack", () => {
-  function useEscapeStack({ onEscape }) {
-    // @ts-expect-error
-    useEscapeStack.onEscape = onEscape;
-    return {
-      /* empty mixin */
-    };
-  }
-
-  return { useEscapeStack };
-});
 
 const mockBus = deepMocked($bus);
 
@@ -1128,7 +1114,7 @@ describe("NodePort", () => {
     it("should abort dragging a port when Esc is pressed", async () => {
       const { wrapper } = doMount();
       await startDragging({ wrapper });
-      (useEscapeStack as any).onEscape.call(wrapper.vm);
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
       await nextTick();
       expect(wrapper.findComponent(Connector).exists()).toBe(false);
       const dispatchEventSpy = vi.spyOn(wrapper.element, "dispatchEvent");

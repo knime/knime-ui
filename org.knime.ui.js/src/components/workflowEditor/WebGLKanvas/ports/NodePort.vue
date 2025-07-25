@@ -125,6 +125,9 @@ const onPointerDown = (event: FederatedPointerEvent) => {
       return { removeConnector: false };
     },
   });
+};
+
+const onPointerUp = () => {
   if (!floatingConnectorStore.didMove) {
     emit("selectPort");
   }
@@ -229,6 +232,7 @@ useAnimatePixiContainer({
       :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
       event-mode="static"
       @pointerdown="onPointerDown"
+      @pointerup="onPointerUp"
     >
       <Graphics
         v-if="isCanvasDebugEnabled"

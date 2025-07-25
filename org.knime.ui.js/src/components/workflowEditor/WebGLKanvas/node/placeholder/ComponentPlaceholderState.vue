@@ -11,7 +11,7 @@ import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { useObjectInteractions } from "../../common/useObjectInteractions";
-import { markEventAsHandled } from "../../util/interaction";
+import { markPointerEventAsHandled } from "../../util/interaction";
 import NodeName from "../nodeName/NodeName.vue";
 import { useNodeNameTextMetrics } from "../useNodeNameTextMetrics";
 
@@ -65,7 +65,7 @@ const { metrics: nodeNameDimensions } = useNodeNameTextMetrics({
 });
 
 const onRightClick = async (event: FederatedPointerEvent) => {
-  markEventAsHandled(event, { initiator: "placeholder-ctx-menu" });
+  markPointerEventAsHandled(event, { initiator: "placeholder-ctx-menu" });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({

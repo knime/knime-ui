@@ -382,8 +382,11 @@ export const useCanvasAnchoredComponentsStore = defineStore(
           // when closing an active menu, we could optionally receive a native event
           // e.g. the menu is getting closed by right-clicking again
           event.preventDefault();
-          useSVGCanvasStore().focus();
         }
+
+        nextTick(() => {
+          useSVGCanvasStore().focus();
+        });
 
         if (canvasRendererUtils.isWebGLRenderer()) {
           useWebGLCanvasStore().clearCanvasAnchor();

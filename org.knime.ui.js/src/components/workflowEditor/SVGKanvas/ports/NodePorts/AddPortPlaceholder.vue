@@ -1,5 +1,6 @@
 <script lang="ts">
 import { type PropType, defineComponent, nextTick } from "vue";
+import { useEventListener } from "@vueuse/core";
 import { mapActions, mapState } from "pinia";
 
 import type { NodePortGroups } from "@/api/custom-types";
@@ -63,7 +64,20 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ["addPort"],
+  emits: ["addPort", "deselect"],
+  setup(props, { emit }) {
+    useEventListener(
+      "keydown",
+      (event) => {
+        if (event.key !== "Escape" || !props.selected) {
+          return;
+        }
+        event.preventDefault();
+        emit("deselect");
+      },
+      { capture: true },
+    );
+  },
   // TODO NXT-3304 Migrate file to sfc setup (expose seems to suddenly cause type issues)
   // expose: ["isMenuOpen", "onClick"],
 

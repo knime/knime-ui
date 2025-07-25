@@ -1,6 +1,5 @@
 <script>
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { escapePressed } from "@/composables/useEscapeStack";
 import { isInputElement } from "@/util/isInputElement";
 
 /**
@@ -38,16 +37,10 @@ export default {
         e.key === "Control" ||
         e.key === "Shift" ||
         e.key === "Meta" ||
-        e.key === "Alt"
+        e.key === "Alt" ||
+        e.key === "Escape"
       ) {
         return;
-      }
-
-      // Close one item on the escape stack
-      if (e.key === "Escape") {
-        escapePressed();
-        // TODO (NXT-3761): This is a workaround to ensure the wanted behaviour.
-        e.preventDefault();
       }
 
       if (this.preventShortcuts(e)) {

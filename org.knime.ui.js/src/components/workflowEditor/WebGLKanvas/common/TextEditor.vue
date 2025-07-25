@@ -6,7 +6,7 @@ import { isNumber } from "lodash-es";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
 
-import { markEventAsHandled } from "../util/interaction";
+import { markPointerEventAsHandled } from "../util/interaction";
 
 import { usePauseCanvasInteractions } from "./usePauseCanvasInteractions";
 
@@ -114,7 +114,7 @@ const onEnterKey = (event: KeyboardEvent) => {
 
 const onPointerDown = (event: PointerEvent) => {
   // Mark this event as handled to prevent other canvas interactions while text editing is active
-  markEventAsHandled(event, {
+  markPointerEventAsHandled(event, {
     initiator: "text-editing",
     skipGlobalSelection: true,
   });

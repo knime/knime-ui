@@ -1,41 +1,29 @@
-/* eslint-disable func-style */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick, ref } from "vue";
 
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
 import { useCanvasFloatingContainer } from "../useCanvasFloatingContainer";
 
-vi.mock("@/composables/useEscapeStack", () => {
-  function useEscapeStack({ onEscape }) {
-    // @ts-expect-error
-    useEscapeStack.onEscape = onEscape;
-    return {
-      /* empty mixin */
-    };
-  }
-
-  return { useEscapeStack };
-});
-
 describe("useCanvasFloatingContainer", () => {
   const doMount = ({ disableInteractions = false } = {}) => {
     const mockedStores = mockStores();
+
+    const rootEl = ref(document.createElement("div"));
 
     const closeMenu = vi.fn();
     const mountResult = mountComposable({
       composable: useCanvasFloatingContainer,
       composableProps: {
         closeMenu,
-        rootEl: ref(document.createElement("div")),
+        rootEl,
         disableInteractions,
         canvasStore: mockedStores.canvasStore,
       },
       mockedStores,
     });
 
-    return { closeMenu, mockedStores, ...mountResult };
+    return { closeMenu, mockedStores, ...mountResult, rootEl };
   };
 
   afterEach(() => {
@@ -43,9 +31,8 @@ describe("useCanvasFloatingContainer", () => {
   });
 
   it("closes menu on escape key", () => {
-    const { closeMenu } = doMount();
-    // @ts-expect-error
-    useEscapeStack.onEscape();
+    const { closeMenu, rootEl } = doMount();
+    rootEl.value.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(closeMenu).toHaveBeenCalled();
   });
 

@@ -1,10 +1,8 @@
-/* eslint-disable func-style */
 import { type Mock, afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { mockStores } from "@/test/utils/mockStores";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import FloatingMenu from "../FloatingMenu.vue";
@@ -13,18 +11,6 @@ const useFocusTrapMock = {
   activate: vi.fn(),
   deactivate: vi.fn(),
 };
-
-vi.mock("@/composables/useEscapeStack", () => {
-  function useEscapeStack({ onEscape }) {
-    // @ts-expect-error
-    useEscapeStack.onEscape = onEscape;
-    return {
-      /* empty mixin */
-    };
-  }
-
-  return { useEscapeStack };
-});
 
 vi.mock("@vueuse/integrations/useFocusTrap", () => {
   return {
@@ -122,12 +108,6 @@ describe("FloatingMenu.vue", () => {
   });
 
   describe("close menu", () => {
-    it("closes menu on escape key", () => {
-      const { wrapper } = doMount();
-      useEscapeStack.onEscape();
-      expect(wrapper.emitted("menuClose")).toBeDefined();
-    });
-
     it("uses focus trap if prop is true", async () => {
       vi.useFakeTimers();
       doMount({

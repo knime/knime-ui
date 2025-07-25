@@ -1,20 +1,10 @@
 <script lang="ts" setup>
 import { storeToRefs } from "pinia";
 
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { usePanelStore } from "@/store/panel";
 
 const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
-
-useEscapeStack({
-  onEscape() {
-    if (isExtensionPanelOpen.value) {
-      panelStore.closeExtensionPanel();
-    }
-  },
-  alwaysActive: true,
-});
 </script>
 
 <template>

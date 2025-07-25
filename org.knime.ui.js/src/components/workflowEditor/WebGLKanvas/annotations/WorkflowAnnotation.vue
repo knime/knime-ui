@@ -7,13 +7,12 @@ import {
   useTemplateRef,
   watch,
 } from "vue";
-import { onClickOutside, useMagicKeys } from "@vueuse/core";
+import { onClickOutside, onKeyDown, useMagicKeys } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
 import { navigatorUtils, sleep } from "@knime/utils";
 
 import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import RichTextAnnotation from "../../common/annotations/RichTextAnnotation.vue";
 import { useAnnotationDataEditing } from "../../common/annotations/useAnnotationDataEditing";
@@ -55,20 +54,22 @@ watch(saveAnnotationKeys, ([wasPressed]) => {
   }
 });
 
-useEscapeStack({
-  onEscape: () => {
+const richTextAnnotationRef =
+  useTemplateRef<ComponentPublicInstance<typeof RichTextAnnotation>>(
+    "richTextAnnotation",
+  );
+
+onKeyDown(
+  "Escape",
+  () => {
     hasEdited.value = false;
 
     if (isEditing.value) {
       toggleEdit();
     }
   },
-});
-
-const richTextAnnotationRef =
-  useTemplateRef<ComponentPublicInstance<typeof RichTextAnnotation>>(
-    "richTextAnnotation",
-  );
+  { target: () => richTextAnnotationRef.value?.$el },
+);
 
 onMounted(async () => {
   // make a brief pause before registering the click outside handler,

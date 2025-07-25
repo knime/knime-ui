@@ -11,7 +11,7 @@ import * as $colors from "@/style/colors";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
 import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
-import { markEventAsHandled } from "../../util/interaction";
+import { markPointerEventAsHandled } from "../../util/interaction";
 import { nodeLabelText } from "../../util/textStyles";
 
 import { getNodeLabelTopOffset } from "./getNodeLabelTopOffset";
@@ -31,7 +31,7 @@ const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 const onPointerdown = async (event: FederatedPointerEvent) => {
   // label is positioned outside the node interaction container, so we need to
   // mark it as handled always
-  markEventAsHandled(event, { initiator: "node-label-edit" });
+  markPointerEventAsHandled(event, { initiator: "node-label-edit" });
   if (isPointerDownDoubleClick(event)) {
     // make a brief pause before registering the click outside handler,
     // to avoid closing immediately after opening

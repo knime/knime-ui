@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, watch } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  onMounted,
+  useTemplateRef,
+  watch,
+} from "vue";
 import type { Component } from "vue";
+import { onKeyDown } from "@vueuse/core";
 
 import { useHint } from "@knime/components";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
@@ -149,13 +156,24 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
   ];
 });
 
+const sidebarRoot = useTemplateRef("sidebarRoot");
+onKeyDown(
+  "Escape",
+  () => {
+    if (panelStore.isExtensionPanelOpen) {
+      panelStore.closeExtensionPanel();
+    }
+  },
+  { target: sidebarRoot },
+);
+
 const hasSection = (name: TabValues) => {
   return sidebarSections.value.find((section) => section.name === name);
 };
 </script>
 
 <template>
-  <div id="sidebar" class="sidebar-wrapper">
+  <div id="sidebar" ref="sidebarRoot" class="sidebar-wrapper" tabindex="-1">
     <nav>
       <div>
         <label
@@ -230,6 +248,10 @@ const hasSection = (name: TabValues) => {
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+#sidebar:focus {
+  outline: none;
+}
 
 .sidebar-wrapper {
   display: flex;

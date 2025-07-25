@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, unref } from "vue";
+import { nextTick, ref, unref, useTemplateRef, watch } from "vue";
 
 import { Button, Checkbox, Modal } from "@knime/components";
 
@@ -35,6 +35,15 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
   const handler = button.type === "confirm" ? onConfirm : onCancel;
   handler();
 };
+
+const buttons = useTemplateRef("buttons");
+watch(isActive, async (active) => {
+  // eslint-disable-next-line no-undefined
+  if (active && config.value?.focusButton !== undefined) {
+    await nextTick();
+    buttons.value?.at(config.value?.focusButton)?.$el.focus();
+  }
+});
 </script>
 
 <template>
@@ -72,6 +81,7 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
     <template v-if="config" #controls>
       <Button
         v-for="(button, index) in config.buttons"
+        ref="buttons"
         :key="index"
         compact
         :data-test-id="`${button.type}-button`"

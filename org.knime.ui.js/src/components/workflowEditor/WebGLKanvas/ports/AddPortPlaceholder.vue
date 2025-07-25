@@ -2,12 +2,12 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, ref, toRefs, useTemplateRef } from "vue";
+import { useEventListener } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import type { NodePortGroups } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -19,7 +19,10 @@ import { useSelectionStore } from "@/store/selection";
 import type { ContainerInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useNodeHoverListener } from "../common/useNodeHoverState";
-import { markEventAsHandled } from "../util/interaction";
+import {
+  markEscapeAsHandled,
+  markPointerEventAsHandled,
+} from "../util/interaction";
 
 import Port from "./Port.vue";
 import PortPlaceholderIcon from "./PortPlaceholderIcon.vue";
@@ -39,11 +42,17 @@ const emit = defineEmits<{
   deselect: [];
 }>();
 
-useEscapeStack({
-  onEscape() {
+useEventListener(
+  "keydown",
+  (event) => {
+    if (event.key !== "Escape" || !props.selected) {
+      return;
+    }
+    markEscapeAsHandled(event, { initiator: "webgl/AddPortPlaceholder" });
     emit("deselect");
   },
-});
+  { capture: true },
+);
 
 const webGLCanvasStore = useWebGLCanvasStore();
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
@@ -216,7 +225,7 @@ const addPort = (x: number, y: number) => {
 };
 
 const onPointerdown = (event: FederatedPointerEvent) => {
-  markEventAsHandled(event, { initiator: "add-port-placeholder" });
+  markPointerEventAsHandled(event, { initiator: "add-port-placeholder" });
   if (isMenuOpenOnThisPort.value) {
     canvasAnchoredComponentsStore.closePortTypeMenu();
     return;

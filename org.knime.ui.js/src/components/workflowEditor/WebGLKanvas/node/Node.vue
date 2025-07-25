@@ -29,7 +29,7 @@ import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrIns
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import NodePorts from "../ports/NodePorts.vue";
-import { markEventAsHandled } from "../util/interaction";
+import { markPointerEventAsHandled } from "../util/interaction";
 
 import NodeActionBar from "./NodeActionBar.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
@@ -288,7 +288,7 @@ const actionBarPosition = computed(() => {
 });
 
 const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
-  markEventAsHandled(event, { initiator: "node-ctx-menu" });
+  markPointerEventAsHandled(event, { initiator: "node-ctx-menu" });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({

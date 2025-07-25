@@ -33,7 +33,7 @@ import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { FLOATING_HTML_FADE_DELAY_MS } from "../common/constants";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
-import { markEventAsHandled } from "../util/interaction";
+import { markPointerEventAsHandled } from "../util/interaction";
 
 import TransformControls from "./TransformControls.vue";
 import { getAnnotationStyles } from "./annotationStyles";
@@ -63,7 +63,7 @@ const canvasStore = useWebGLCanvasStore();
 const { toCanvasCoordinates, visibleArea } = storeToRefs(canvasStore);
 
 const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
-  markEventAsHandled(event, { initiator: "annotation-ctx-menu" });
+  markPointerEventAsHandled(event, { initiator: "annotation-ctx-menu" });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({

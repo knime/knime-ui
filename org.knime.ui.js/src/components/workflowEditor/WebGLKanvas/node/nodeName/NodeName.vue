@@ -13,7 +13,7 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type { ContainerInst } from "@/vue3-pixi";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
 import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
-import { markEventAsHandled } from "../../util/interaction";
+import { markPointerEventAsHandled } from "../../util/interaction";
 import { nodeNameText } from "../../util/textStyles";
 
 const props = defineProps<{
@@ -42,7 +42,7 @@ const onPointerdown = async (event: FederatedPointerEvent) => {
     // e.g opening a metanode
     event.stopPropagation();
 
-    markEventAsHandled(event, { initiator: "node-name-edit" });
+    markPointerEventAsHandled(event, { initiator: "node-name-edit" });
 
     // make a brief pause before registering the click outside handler,
     // to avoid closing immediately after opening

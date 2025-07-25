@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { FederatedPointerEvent } from "pixi.js";
 
-import { markEventAsHandled } from "../interaction";
+import { markPointerEventAsHandled } from "../interaction";
 
 describe("interaction utils", () => {
-  describe("markEventAsHandled", () => {
+  describe("markPointerEventAsHandled", () => {
     it("should mark a DOM PointerEvent as handled", () => {
       const nativeEvent = new PointerEvent("pointerdown");
       const dataset = {
         initiator: "text-editing",
       };
 
-      markEventAsHandled(nativeEvent, dataset);
+      markPointerEventAsHandled(nativeEvent, dataset);
 
       expect(nativeEvent.dataset).toEqual({
         initiator: "text-editing",
@@ -29,7 +29,7 @@ describe("interaction utils", () => {
         initiator: "node-interaction",
       };
 
-      markEventAsHandled(federatedEvent, dataset);
+      markPointerEventAsHandled(federatedEvent, dataset);
 
       expect(nativeEvent.dataset).toEqual({
         initiator: "node-interaction",
@@ -44,7 +44,7 @@ describe("interaction utils", () => {
         skipGlobalSelection: false,
       };
 
-      markEventAsHandled(nativeEvent, dataset);
+      markPointerEventAsHandled(nativeEvent, dataset);
 
       expect(nativeEvent.dataset).toEqual({
         initiator: "test-initiator",
@@ -65,11 +65,11 @@ describe("interaction utils", () => {
       };
 
       // Test DOM event
-      markEventAsHandled(domEvent, dataset);
+      markPointerEventAsHandled(domEvent, dataset);
       expect(domEvent.dataset).toEqual(dataset);
 
       // Test Federated event
-      markEventAsHandled(federatedEvent, dataset);
+      markPointerEventAsHandled(federatedEvent, dataset);
       expect(federatedNativeEvent.dataset).toEqual(dataset);
       expect(federatedEvent.nativeEvent.dataset).toEqual(dataset);
     });

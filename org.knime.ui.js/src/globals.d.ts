@@ -1,6 +1,6 @@
 import { Entries } from "type-fest";
 
-import type { CustomPointerEventDataset } from "./components/workflowEditor/WebGLKanvas/util/interaction";
+import type { CustomUIEventDataset } from "./components/workflowEditor/WebGLKanvas/util/interaction";
 
 declare global {
   interface Window {
@@ -23,9 +23,9 @@ declare global {
   }
 
   interface UIEvent {
-    dataset?: CustomPointerEventDataset;
+    dataset?: CustomUIEventDataset;
   }
   interface Touch {
-    dataset?: CustomPointerEventDataset;
+    dataset?: CustomUIEventDataset;
   }
 }

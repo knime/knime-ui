@@ -20,6 +20,7 @@ export const useUnsavedChangesDialog = async (
 
   const { confirmed, doNotAskAgain } = await showConfirmDialog({
     ...config,
+    focusButton: 0,
     buttons: [
       { type: "cancel", label: "Cancel" },
       {

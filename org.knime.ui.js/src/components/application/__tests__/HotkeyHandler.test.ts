@@ -2,13 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { escapePressed as expressPressedMock } from "@/composables/useEscapeStack";
 import { mockStores } from "@/test/utils/mockStores";
 import HotkeyHandler from "../HotkeyHandler.vue";
-
-vi.mock("@/composables/useEscapeStack", () => ({
-  escapePressed: vi.fn(),
-}));
 
 const expectEventHandled = () => {
   expect(KeyboardEvent.prototype.stopPropagation).toHaveBeenCalled();
@@ -46,13 +41,6 @@ describe("HotKeys", () => {
 
     return { wrapper, mockedStores, $shortcuts };
   };
-
-  it("escape triggers event", () => {
-    doShallowMount();
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-
-    expect(expressPressedMock).toHaveBeenCalled();
-  });
 
   it("shortcut found and is enabled", () => {
     const { $shortcuts } = doShallowMount();

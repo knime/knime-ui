@@ -92,7 +92,7 @@ describe("NodeConfig", () => {
 
     const dialog = wrapper.find("dialog");
     expect(dialog.exists()).toBe(true);
-    await dialog.trigger("keydown", { key: "Escape" });
+    await dialog.trigger("cancel");
     await nextTick();
 
     assertLargeModeClosed();

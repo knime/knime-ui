@@ -13,7 +13,10 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
-import { markEventAsHandled } from "../util/interaction";
+import {
+  markEscapeAsHandled,
+  markPointerEventAsHandled,
+} from "../util/interaction";
 
 import { usePointerDownDoubleClick } from "./usePointerDownDoubleClick";
 
@@ -202,7 +205,9 @@ export const useObjectInteractions = (
     const abort = (event: KeyboardEvent) => {
       if (isDragging.value && event.key === "Escape") {
         movingStore.abortDrag();
-        event.preventDefault();
+        markEscapeAsHandled(event, {
+          initiator: "object-interaction::escapeKey",
+        });
       }
     };
 
@@ -211,7 +216,7 @@ export const useObjectInteractions = (
         movingStore.resetAbortDrag();
       }
 
-      window.removeEventListener("keydown", abort);
+      window.removeEventListener("keydown", abort, { capture: true });
     };
 
     window.addEventListener("keydown", abort);
@@ -279,7 +284,7 @@ export const useObjectInteractions = (
       // mark interaction and do selection on pointer up instead of pointerdown
       // but only if the user didn't move the mouse between the pointerdown and the pointerup
       if (!didMove) {
-        markEventAsHandled(pointerDownEvent, {
+        markPointerEventAsHandled(pointerDownEvent, {
           initiator: "object-interaction",
         });
 
@@ -299,7 +304,9 @@ export const useObjectInteractions = (
     pointerDownEvent: PIXI.FederatedPointerEvent,
   ) => {
     consola.trace("object interaction", { pointerDownEvent });
-    markEventAsHandled(pointerDownEvent, { initiator: "object-interaction" });
+    markPointerEventAsHandled(pointerDownEvent, {
+      initiator: "object-interaction",
+    });
 
     if (options.onDoubleClick && isPointerDownDoubleClick(pointerDownEvent)) {
       consola.debug("object interactions:: handling double-click", {

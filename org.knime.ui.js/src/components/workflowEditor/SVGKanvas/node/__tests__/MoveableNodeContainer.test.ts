@@ -1,10 +1,8 @@
-/* eslint-disable func-style */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 import { API } from "@api";
 
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import * as $shapes from "@/style/shapes";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked, mockBoundingRect } from "@/test/utils";
@@ -12,18 +10,6 @@ import { mockStores } from "@/test/utils/mockStores";
 import MoveableNodeContainer from "../MoveableNodeContainer.vue";
 
 const mockedAPI = deepMocked(API);
-
-vi.mock("@/composables/useEscapeStack", () => {
-  function useEscapeStack({ onEscape }) {
-    // @ts-expect-error
-    useEscapeStack.onEscape = onEscape;
-    return {
-      /* empty */
-    };
-  }
-
-  return { useEscapeStack };
-});
 
 describe("MoveableNodeContainer", () => {
   const doMount = ({
@@ -195,32 +181,6 @@ describe("MoveableNodeContainer", () => {
     });
   });
 
-  it("should abort moving a node when Esc is pressed", async () => {
-    const mockTarget = document.createElement("div");
-    mockTarget.dispatchEvent = vi.fn();
-    window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
-    const { wrapper, mockedStores } = doMount({
-      isDragging: true,
-    });
-    const rect = { left: 5, top: 8, right: 20, bottom: 20 };
-    mockBoundingRect(rect);
-    await startNodeDrag(wrapper, { clientX: 10, clientY: 10 });
-    moveNodeTo({ clientX: 250, clientY: 250 });
-    await nextTick();
-    expect(mockedStores.movingStore.movePreviewDelta).not.toEqual({
-      x: 0,
-      y: 0,
-    });
-    (useEscapeStack as any).onEscape();
-    expect(mockedStores.movingStore.movePreviewDelta).toEqual({ x: 0, y: 0 });
-    expect(mockedStores.movingStore.hasAbortedDrag).toBe(true);
-    expect(mockedStores.movingStore.isDragging).toBe(false);
-    // drag was aborted, so the move preview cannot be updated
-    expect(mockedStores.movingStore.movePreviewDelta).toEqual({ x: 0, y: 0 });
-    await endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
-    expect(mockedStores.movingStore.hasAbortedDrag).toBe(false);
-  });
-
   describe("node dragging notification", () => {
     const doMountWithHitTarget = async () => {
       const mockTarget = document.createElement("div");
@@ -269,18 +229,6 @@ describe("MoveableNodeContainer", () => {
       );
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
         expect.objectContaining({ type: "node-dragging-end" }),
-      );
-    });
-
-    it("aborts dragging", async () => {
-      const { mockTarget, wrapper } = await doMountWithHitTarget();
-      (useEscapeStack as any).onEscape();
-      endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
-      expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-enter" }),
-      );
-      expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "node-dragging-leave" }),
       );
     });
   });

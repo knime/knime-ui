@@ -1,8 +1,7 @@
 import { onBeforeUnmount, onMounted, watch } from "vue";
-import { type MaybeElementRef } from "@vueuse/core";
+import { type MaybeElementRef, onKeyDown } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import type { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
@@ -75,7 +74,13 @@ export const useCanvasFloatingContainer = (
   });
 
   if (closeOnEscape) {
-    useEscapeStack({ onEscape: closeMenu });
+    onKeyDown(
+      "Escape",
+      () => {
+        closeMenu();
+      },
+      { target: options.rootEl },
+    );
   }
 
   onBeforeUnmount(() => {

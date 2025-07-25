@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useMoveObject } from "@/components/workflowEditor/SVGKanvas/common/useMoveObject";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -57,16 +56,6 @@ const onPointerDown = async (event: PointerEvent) => {
 
   createPointerDownHandler(initialPosition)(event, currentTarget);
 };
-
-useEscapeStack({
-  group: "OBJECT_DRAG",
-  alwaysActive: true,
-  onEscape: () => {
-    if (isDragging) {
-      movingStore.abortDrag();
-    }
-  },
-});
 </script>
 
 <template>

@@ -9,7 +9,7 @@ import {
   type Directions,
 } from "../../common/annotations/transform-control-utils";
 import { useTransformControls } from "../../common/annotations/useTransformControls";
-import { markEventAsHandled } from "../util/interaction";
+import { markPointerEventAsHandled } from "../util/interaction";
 
 type Props = {
   initialValue?: Bounds;
@@ -51,7 +51,7 @@ const onControlPointerDown = (params: {
   direction: Directions;
   pointerDownEvent: FederatedPointerEvent;
 }) => {
-  markEventAsHandled(params.pointerDownEvent, {
+  markPointerEventAsHandled(params.pointerDownEvent, {
     initiator: "annotation-transform",
   });
   startTransform(params);

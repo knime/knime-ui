@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { useEventListener } from "@vueuse/core";
+
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg?raw";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import type { ActionButtonConfig } from "../../types";
 import ActionBar from "../common/ActionBar.vue";
+import { markEscapeAsHandled } from "../util/interaction";
 import { loadSvgInGraphicsContext } from "../util/loadSvgInGraphicsContext";
 
 type Props = {
@@ -18,11 +20,17 @@ const emit = defineEmits<{
   "action:remove": [];
 }>();
 
-useEscapeStack({
-  onEscape() {
+useEventListener(
+  "keydown",
+  (event) => {
+    if (event.key !== "Escape") {
+      return;
+    }
+    markEscapeAsHandled(event, { initiator: "webgl/NodePortActions" });
     emit("close");
   },
-});
+  { capture: true },
+);
 
 const actions: ActionButtonConfig[] = [
   {

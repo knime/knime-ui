@@ -13,6 +13,7 @@ import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
 import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
@@ -128,6 +129,20 @@ const clickOnEmptyKanvas = async (event: MouseEvent) => {
 
 const isTriggeredByAttachedElement = (event: Event) =>
   event.target === event.currentTarget;
+
+const movingStore = useMovingStore();
+const onEscapeKey = (event: KeyboardEvent) => {
+  // abort any drag of objects (nodes, annotations) in the svg canvas
+  if (movingStore.isDragging) {
+    movingStore.abortDrag();
+    return;
+  }
+
+  // de-select objects
+  if (isTriggeredByAttachedElement(event) && !event.defaultPrevented) {
+    selectionStore.deselectAllObjects();
+  }
+};
 </script>
 
 <template>
@@ -155,10 +170,7 @@ const isTriggeredByAttachedElement = (event: Event) =>
     @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
     @focusin="() => hasKeyboardFocus && doInitialSelection()"
-    @keydown.esc="
-      isTriggeredByAttachedElement($event) &&
-        selectionStore.deselectAllObjects()
-    "
+    @keydown.esc="onEscapeKey"
   >
     <svg
       ref="svg"

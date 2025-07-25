@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { type ComponentPublicInstance, computed, ref, toRef, watch } from "vue";
-import { onClickOutside, useMagicKeys } from "@vueuse/core";
+import {
+  type ComponentPublicInstance,
+  computed,
+  toRef,
+  useTemplateRef,
+  watch,
+} from "vue";
+import { onClickOutside, onKeyDown, useMagicKeys } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
@@ -11,7 +17,6 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { TypedText } from "@/api/gateway-api/generated-api";
 import { useAnnotationVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -106,9 +111,9 @@ const transformAnnotation = (bounds: Bounds) => {
   });
 };
 
-const transformControlsRef = ref<ComponentPublicInstance<
-  typeof TransformControls
-> | null>(null);
+const transformControlsRef = useTemplateRef<
+  ComponentPublicInstance<typeof TransformControls>
+>("transformControlsRef");
 
 onClickOutside(transformControlsRef, saveContent, {
   ignore: [".editor-toolbar[data-ignore-click-outside]"],
@@ -126,20 +131,12 @@ watch(saveAnnotationKeys, ([wasPressed]) => {
   }
 });
 
-useMagicKeys({
-  passive: false,
-  onEventFired: (event) => {
-    const keys = [
-      event.key === "ArrowUp",
-      event.key === "ArrowDown",
-      event.key === "ArrowLeft",
-      event.key === "ArrowRight",
-    ];
-
+const moveKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+onKeyDown(
+  moveKeys,
+  (event) => {
     if (
-      event.type !== "keydown" ||
       !event.altKey ||
-      !keys.includes(true) ||
       isEditing.value ||
       !isSelected.value ||
       !singleSelectedAnnotation.value ||
@@ -150,7 +147,9 @@ useMagicKeys({
 
     event.preventDefault();
 
-    const [isUp, isDown, isLeft, isRight] = keys;
+    const [isUp, isDown, isLeft, isRight] = moveKeys.map(
+      (key) => event.key === key,
+    );
 
     const TRANSFORM_AMOUNT = gridSize.x * 2;
     const delta = isUp || isLeft ? -1 : 1;
@@ -175,17 +174,20 @@ useMagicKeys({
 
     transformAnnotation(nextBounds);
   },
-});
+  { passive: false },
+);
 
-useEscapeStack({
-  onEscape: () => {
+onKeyDown(
+  "Escape",
+  () => {
     hasEdited.value = false;
 
     if (isEditing.value) {
       toggleEdit();
     }
   },
-});
+  { target: () => transformControlsRef.value?.$el },
+);
 </script>
 
 <template>

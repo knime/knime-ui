@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useEventListener } from "@vueuse/core";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import Port from "@/components/common/Port.vue";
 import ActionButton from "@/components/workflowEditor/common/svgActionBar/ActionButton.vue";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import * as $shapes from "@/style/shapes";
 
 type Props = {
@@ -24,12 +24,6 @@ const emit = defineEmits<{
   "action:remove": [];
 }>();
 
-useEscapeStack({
-  onEscape() {
-    emit("close");
-  },
-});
-
 const actions = computed(() => [
   {
     id: "remove",
@@ -38,6 +32,18 @@ const actions = computed(() => [
     eventName: "action:remove" as const,
   },
 ]);
+
+useEventListener(
+  "keydown",
+  (event) => {
+    if (event.key !== "Escape") {
+      return;
+    }
+    event.preventDefault();
+    emit("close");
+  },
+  { capture: true },
+);
 
 const selectedPortPosition = computed(() => {
   const [x, y] = props.relativePosition;

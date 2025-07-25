@@ -6,9 +6,10 @@ import {
   onUnmounted,
   useTemplateRef,
 } from "vue";
-import { flushPromises } from "@vue/test-utils";
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
+
+import { sleep } from "@knime/utils";
 
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
@@ -149,6 +150,21 @@ onUnmounted(() => {
 
 // Canvas div needs to be focusable to receive keyboard events for navigation, moving objects, Escape handling, etc.
 const TAB_INDEX = 0;
+
+const onEscape = async (event: KeyboardEvent) => {
+  // wait for dragging to be maybe canceled and skip de-selection if so
+  await sleep(0);
+
+  consola.debug(
+    "webgl/WorlfkowCanvas onEscape deselect of all objects",
+    event.dataset,
+  );
+
+  if (!event.dataset?.skipDeselectByKeyboard) {
+    event.stopPropagation();
+    useSelectionStore().deselectAllObjects();
+  }
+};
 </script>
 
 <template>
@@ -160,15 +176,7 @@ const TAB_INDEX = 0;
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @pointerdown="onPointerDown"
-    @keydown.esc="
-      async (event) => {
-        // wait for dragging to be maybe canceled and skip de-delection if so
-        await flushPromises();
-        if (!event.defaultPrevented) {
-          await useSelectionStore().deselectAllObjects();
-        }
-      }
-    "
+    @keydown.esc="onEscape"
   >
     <Kanvas
       v-if="activeWorkflow && !isWorkflowEmpty"

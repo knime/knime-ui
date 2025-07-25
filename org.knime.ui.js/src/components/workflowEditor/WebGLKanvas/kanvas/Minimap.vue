@@ -7,7 +7,7 @@ import { BlurFilter, type FederatedPointerEvent, type Graphics } from "pixi.js";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $shapes from "@/style/shapes";
 import { clamp } from "@/util/clamp";
-import { markEventAsHandled } from "../util/interaction";
+import { markPointerEventAsHandled } from "../util/interaction";
 
 import MiniPreview from "./MiniPreview.vue";
 
@@ -87,7 +87,7 @@ const minimapDeltaToCanvasDelta = (value: number, isXAxis = true) => {
 };
 
 const onCameraPointerdown = (pointerdown: FederatedPointerEvent) => {
-  markEventAsHandled(pointerdown, { initiator: "minimap-pan" });
+  markPointerEventAsHandled(pointerdown, { initiator: "minimap-pan" });
 
   const isOutOfBounds = (move: PointerEvent) => {
     return (
