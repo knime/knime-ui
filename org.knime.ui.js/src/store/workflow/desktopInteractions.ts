@@ -6,7 +6,6 @@ import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
-import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
@@ -24,13 +23,8 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
     async saveProject() {
       const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
 
-      const workflowPreviewSvg =
-        (await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()) ??
-        "";
-
       const result = await API.desktop.saveProject({
         projectId,
-        workflowPreviewSvg,
       });
 
       if (result) {
@@ -65,9 +59,6 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
         projectId: closingProjectId,
       });
       useCanvasStateTrackingStore().removeCanvasState(closingProjectId);
-      useWorkflowPreviewSnapshotsStore().removeFromRootWorkflowSnapshots({
-        projectId: closingProjectId,
-      });
     },
 
     async forceCloseProjects({ projectIds }: { projectIds: string[] }) {
@@ -122,11 +113,7 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
     async saveProjectAs() {
       const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
 
-      const workflowPreviewSvg =
-        (await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()) ??
-        "";
-
-      await API.desktop.saveProjectAs({ projectId, workflowPreviewSvg });
+      await API.desktop.saveProjectAs({ projectId });
       // refresh space after save workflow
       useSpaceOperationsStore().fetchWorkflowGroupContent({
         projectId: useApplicationStore().activeProjectId!,

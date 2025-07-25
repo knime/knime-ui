@@ -1,31 +1,19 @@
-import {
-  type MockedFunction,
-  afterEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { useEventBus } from "@vueuse/core";
 import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
-import { generateWorkflowPreview } from "@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 
-vi.mock("@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({
   encodeString: (value: string) => value,
 }));
 
 const mockedAPI = deepMocked(API);
-const mockedGenerateWorkflowPreview = generateWorkflowPreview as MockedFunction<
-  typeof generateWorkflowPreview
->;
 
 const emitSpy = vi.fn();
 vi.mock("@vueuse/core", async (importOriginal) => {
@@ -43,7 +31,6 @@ vi.mock("@vueuse/core", async (importOriginal) => {
 describe("workflow store: desktop interactions", () => {
   afterEach(() => {
     vi.clearAllMocks();
-    mockedGenerateWorkflowPreview.mockReset();
   });
 
   describe("actions", () => {
@@ -217,8 +204,6 @@ describe("workflow store: desktop interactions", () => {
       it("sends the correct workflow preview for a root workflow", async () => {
         const { workflowStore, desktopInteractionsStore } = mockStores();
 
-        mockedGenerateWorkflowPreview.mockResolvedValue("mock svg preview");
-
         workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId: "foo",
@@ -230,32 +215,17 @@ describe("workflow store: desktop interactions", () => {
 
         expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
           expect.objectContaining({
-            workflowPreviewSvg: "mock svg preview",
+            projectId: "foo",
           }),
         );
       });
 
       it("sends the correct workflow preview for a nested workflow", async () => {
-        const {
-          workflowStore,
-          desktopInteractionsStore,
-          workflowPreviewSnapshotsStore,
-        } = mockStores();
+        const { workflowStore, desktopInteractionsStore } = mockStores();
 
         const projectId = "project1";
         // 'root:1' to mimic being inside component/metanode
         const workflowId = "root:1";
-        // set the snapshot on the store
-        const dummyEl = document.createElement("div");
-        workflowPreviewSnapshotsStore.rootWorkflowSnapshots.set(
-          `${projectId}--root`,
-          dummyEl.outerHTML,
-        );
-
-        mockedGenerateWorkflowPreview.mockImplementation(
-          (input) => input.outerHTML,
-        );
-
         workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId,
@@ -267,7 +237,7 @@ describe("workflow store: desktop interactions", () => {
 
         expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
           expect.objectContaining({
-            workflowPreviewSvg: dummyEl.outerHTML,
+            projectId: "project1",
           }),
         );
       });
@@ -287,7 +257,6 @@ describe("workflow store: desktop interactions", () => {
           workflowStore,
           applicationStore,
           desktopInteractionsStore,
-          workflowPreviewSnapshotsStore,
           canvasStateTrackingStore,
           componentInteractionsStore,
         } = mockStores();
@@ -305,11 +274,6 @@ describe("workflow store: desktop interactions", () => {
         expect(mockedAPI.desktop.closeProject).toHaveBeenCalledWith({
           closingProjectId,
           nextProjectId: null,
-        });
-        expect(
-          workflowPreviewSnapshotsStore.removeFromRootWorkflowSnapshots,
-        ).toHaveBeenCalledWith({
-          projectId: closingProjectId,
         });
         expect(canvasStateTrackingStore.removeCanvasState).toHaveBeenCalledWith(
           closingProjectId,
@@ -471,8 +435,6 @@ describe("workflow store: desktop interactions", () => {
     it("sends the correct workflow preview for a root workflow when saved locally", async () => {
       const { workflowStore, desktopInteractionsStore } = mockStores();
 
-      mockedGenerateWorkflowPreview.mockResolvedValue("mock svg preview");
-
       workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
@@ -484,7 +446,7 @@ describe("workflow store: desktop interactions", () => {
 
       expect(mockedAPI.desktop.saveProjectAs).toHaveBeenCalledWith(
         expect.objectContaining({
-          workflowPreviewSvg: "mock svg preview",
+          projectId: "foo",
         }),
       );
     });

@@ -48,8 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import static org.knime.ui.java.api.SaveProject.saveWorkflowSvg;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
@@ -108,7 +106,7 @@ final class SaveProjectCopy {
      * @param sourceProjectId The ID identifying the project to save
      * @param projectSVG The project SVG
      */
-    static void saveCopyOf(final String sourceProjectId, final String projectSVG) {
+    static void saveCopyOf(final String sourceProjectId) {
         final var originalProject = DesktopAPI.getDeps(ProjectManager.class)//
             .getProject(sourceProjectId) //
             .orElseThrow(() -> {
@@ -125,7 +123,7 @@ final class SaveProjectCopy {
                 return;
             }
             if (newContext.equals(oldContext)) { // Simply overwrite the old project
-                SaveProject.saveProject(sourceProjectId, projectSVG, false);
+                SaveProject.saveProject(sourceProjectId, false);
                 return;
             }
 
@@ -133,7 +131,7 @@ final class SaveProjectCopy {
                 if (sourceWfm.isComponentProjectWFM()) {
                     return componentSaveAs(monitor, sourceWfm, newContext);
                 } else {
-                    return workflowSaveAs(newContext, monitor, sourceWfm, projectSVG);
+                    return workflowSaveAs(newContext, monitor, sourceWfm);
                 }
             });
             var updatedProject = Project.of( //
@@ -244,12 +242,11 @@ final class SaveProjectCopy {
      * @param context The context with the information about the new workflow
      * @param monitor The monitor to show the progress of this operation
      * @param wfm The same instance, potentially modified.
-     * @param svg workflow SVG
      *
      * @return The saved workflow manager or {@code null} if the save operation failed
      */
     private static WorkflowManager workflowSaveAs(final WorkflowContextV2 context, final IProgressMonitor monitor,
-        final WorkflowManager wfm, final String svg) {
+        final WorkflowManager wfm) {
         monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
         try {
             wfm.saveAs(context, DesktopAPUtil.toExecutionMonitor(monitor));
@@ -259,7 +256,6 @@ final class SaveProjectCopy {
             monitor.done();
             return null;
         }
-        saveWorkflowSvg(wfm.getName(), svg, context.getExecutorInfo().getLocalWorkflowPath());
         monitor.done();
         return wfm;
     }

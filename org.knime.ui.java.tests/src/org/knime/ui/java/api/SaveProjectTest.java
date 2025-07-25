@@ -75,8 +75,8 @@ class SaveProjectTest {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         WorkflowManagerUtil.createAndAddNode(m_wfm, new PortObjectInNodeFactory());
 
-        var result = SaveProject.saveProject(new NullProgressMonitor(), m_wfm, "svg img data", true);
-        assertWorkflowSaved(m_wfm, "svg img data");
+        var result = SaveProject.saveProject(new NullProgressMonitor(), m_wfm, true);
+        assertWorkflowSaved(m_wfm);
         assertThat(result).as("true is returned if save was successful").isTrue();
     }
 
@@ -85,12 +85,12 @@ class SaveProjectTest {
         WorkflowManagerUtil.disposeWorkflow(m_wfm);
     }
 
-    static void assertWorkflowSaved(final WorkflowManager wfm, final String expectedSvgContent) throws IOException {
+    static void assertWorkflowSaved(final WorkflowManager wfm) throws IOException {
         assertThat(wfm.isDirty()).isFalse();
         var svgFile =
             wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath().resolve(WorkflowPersistor.SVG_WORKFLOW_FILE);
         assertThat(Files.exists(svgFile)).isTrue();
-        assertThat(Files.readString(svgFile)).isEqualTo(expectedSvgContent);
+        assertThat(Files.readString(svgFile)).startsWith("<?xml");
     }
 
 }

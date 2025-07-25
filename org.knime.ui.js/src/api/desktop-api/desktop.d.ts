@@ -57,7 +57,6 @@ declare function openPortView(
 
 declare function saveProject(
   projectId: string,
-  workflowPreviewSvg: string | null,
   allowOverwritePrompt?: boolean,
 ): boolean;
 
@@ -149,15 +148,7 @@ declare function openAPIDefinition(
   itemId: string,
 ): void;
 
-declare function saveProjectAs(
-  projectId: string,
-  workflowPreviewSvg: string | null,
-): void;
-
-declare function saveAndCloseProjects(
-  totalProjects: number,
-  ...args: unknown[]
-): unknown;
+declare function saveProjectAs(projectId: string): void;
 
 declare function importURIAtWorkflowCanvas(
   uri: string | null,

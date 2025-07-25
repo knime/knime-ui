@@ -292,15 +292,6 @@ describe("Event Plugin", () => {
       it.todo("should clear the application busy state");
     });
 
-    // TODO NXT-1437
-    describe("saveAndCloseProjectsEvent", () => {
-      it.todo("should set the application busy state");
-
-      it.todo("should generate all unsaved project snapshots");
-
-      it.todo("should call the browser function with the correct parameters");
-    });
-
     describe("updateAvailable event", () => {
       it("replaces availableUpdates state", () => {
         const { mockedStores } = loadPlugin();

@@ -156,7 +156,7 @@ final class KnimeBrowserHealthChecker {
         var svgs = new String[projectIds.length];
         Arrays.fill(svgs, EMPTY_SVG);
         var progressService = PlatformUI.getWorkbench().getProgressService();
-        SaveAndCloseProjects.saveProjectsWithProgressBar(projectIds, svgs, new AtomicReference<>(), progressService);
+        SaveAndCloseProjects.saveProjectsWithProgressBar(projectIds, new AtomicReference<>(), progressService);
     }
 
     private static MessageDialog createMessageDialog() {

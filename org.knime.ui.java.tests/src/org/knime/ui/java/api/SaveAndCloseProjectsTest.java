@@ -111,15 +111,13 @@ class SaveAndCloseProjectsTest {
             pm.addProject(project);
         }
 
-        SaveAndCloseProjects.projectsSavedState.set(null);
-        SaveAndCloseProjects.saveAndCloseProjects(
-            new Object[]{3.0, "projectId1", "projectId2", "projectId3", "svg1", "svg2", "svg3"}, m_progressService);
+        SaveAndCloseProjects.saveAndCloseProjects(new String[]{"projectId1", "projectId2", "projectId3"},
+            m_progressService);
 
         for (int i = 1; i <= 3; i++) {
-            assertWorkflowSaved(wfms.get(i - 1), "svg" + i);
+            assertWorkflowSaved(wfms.get(i - 1));
             assertWorkflowClosed(wfms.get(i - 1), "projectId" + i);
         }
-        assertThat(SaveAndCloseProjects.projectsSavedState.get()).isEqualTo(SaveAndCloseProjects.State.SUCCESS);
     }
 
     private static void assertWorkflowClosed(final WorkflowManager wfm, final String projectId) {
@@ -145,12 +143,9 @@ class SaveAndCloseProjectsTest {
             .build();
         pm.addProject(project);
 
-        SaveAndCloseProjects.projectsSavedState.set(null);
         assertThatThrownBy(
-            () -> SaveAndCloseProjects.saveAndCloseProjects(new Object[]{1.0, "projectId1", "svg1"}, m_progressService))
+            () -> SaveAndCloseProjects.saveAndCloseProjects(new String[]{"projectId1"}, m_progressService))
                 .isInstanceOf(SaveAndCloseProjectsException.class);
-        assertThat(SaveAndCloseProjects.projectsSavedState.get()).as("correct operation state")
-                .isEqualTo(SaveAndCloseProjects.State.CANCEL_OR_FAIL);
     }
 
     @AfterEach

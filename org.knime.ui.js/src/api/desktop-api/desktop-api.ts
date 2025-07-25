@@ -350,16 +350,14 @@ export const openPortView = ({
 
 export const saveProject = ({
   projectId,
-  workflowPreviewSvg,
   allowOverwritePrompt,
 }: {
   projectId: string;
-  workflowPreviewSvg: string | null;
   allowOverwritePrompt?: boolean;
 }) => {
   return callBrowserFunction(
     window.saveProject,
-    [projectId, workflowPreviewSvg, allowOverwritePrompt],
+    [projectId, allowOverwritePrompt],
     "Could not save workflow",
     true,
     { block: true },
@@ -638,37 +636,13 @@ export const openAPIDefinition = ({
   );
 };
 
-export const saveProjectAs = ({
-  projectId,
-  workflowPreviewSvg,
-}: {
-  projectId: string;
-  workflowPreviewSvg: string | null;
-}) => {
+export const saveProjectAs = ({ projectId }: { projectId: string }) => {
   return callBrowserFunction(
     window.saveProjectAs,
-    [projectId, workflowPreviewSvg],
+    [projectId],
     "Could not save workflow locally",
     false,
     { block: true, darkenBackground: true },
-  );
-};
-
-export const saveAndCloseProjects = ({
-  totalProjects,
-  projectIds,
-  svgSnapshots,
-}: {
-  totalProjects: number;
-  projectIds: string[];
-  svgSnapshots: Array<string | null>;
-}) => {
-  return callBrowserFunction(
-    window.saveAndCloseProjects,
-    [totalProjects, ...projectIds, ...svgSnapshots],
-    "Could not save and close all workflows",
-    false,
-    { block: true },
   );
 };
 

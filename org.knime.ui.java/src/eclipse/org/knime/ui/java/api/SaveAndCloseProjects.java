@@ -48,12 +48,10 @@
  */
 package org.knime.ui.java.api;
 
-import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import static org.knime.ui.java.util.DesktopAPUtil.assertUiThread;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -64,6 +62,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -71,22 +70,13 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.service.events.EventConsumer;
-import org.knime.ui.java.util.DesktopAPUtil;
 
 /**
- * Called to 'headlessly' (i.e. without any user-interaction) save and close all the projects specified as parameter.
- * <p>
- * The call of this browser function is usually indirectly triggered by an event sent from the Backend (see
- * {@link #saveAndCloseProjectsInteractively(List, EventConsumer)} ). The event being sent to
- * the Frontend instructs it to generate all the project-svg images of the passed projects (projectIds). Once done,
- * the Frontend calls this browser function with all the generated svg-images and project-ids.
+ * Called save and close all the projects specified as parameter.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class SaveAndCloseProjects {
-
-    static final AtomicReference<State> projectsSavedState = new AtomicReference<>();
 
     private SaveAndCloseProjects() {
         // utility
@@ -96,19 +86,14 @@ public final class SaveAndCloseProjects {
      * Saves and closes the projects represented by the given project-ids. Project-ids that don't reference an opened
      * workflow will just be ignored.
      *
-     * @param projectIdsAndSvgs Array containing the project-ids and svgs of the projects to save. The very first entry
-     *            contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed by n
-     *            svg-strings
+     * @param projectIds Array containing the project-ids of the projects to save
      * @param progressService Displays the progress
      * @throws SaveAndCloseProjectsException if the save and close process failed
      */
-    static void saveAndCloseProjects(final Object[] projectIdsAndSvgs, final IProgressService progressService)
+    static void saveAndCloseProjects(final String[] projectIds, final IProgressService progressService)
         throws SaveAndCloseProjectsException { // NOSONAR
-        final var count = ((Double)projectIdsAndSvgs[0]).intValue();
         final var firstFailure = new AtomicReference<Optional<String>>();
-        final var projectIds = Arrays.copyOfRange(projectIdsAndSvgs, 1, count + 1, String[].class);
-        final var svgs = Arrays.copyOfRange(projectIdsAndSvgs, count + 1, count * 2 + 1, String[].class);
-        saveProjectsWithProgressBar(projectIds, svgs, firstFailure, progressService);
+        saveProjectsWithProgressBar(projectIds, firstFailure, progressService);
 
         final var optFailure = firstFailure.get();
         if (optFailure != null && optFailure.isPresent()) { // NOSONAR
@@ -117,15 +102,11 @@ public final class SaveAndCloseProjects {
             // Make the first project active which couldn't be saved
             ProjectManager.getInstance().setProjectActive(projectId);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-            projectsSavedState.set(State.CANCEL_OR_FAIL);
-
             throw new SaveAndCloseProjectsException(
                 "Could not save and close projects <%s>, since at least saving and closing <%s> failed"
                     .formatted(Arrays.asList(projectIds), projectId));
-        } else {
-            projectsSavedState.set(State.SUCCESS);
         }
-    }
+     }
 
     /**
      * Resulting state of a save-and-close process.
@@ -164,15 +145,14 @@ public final class SaveAndCloseProjects {
             case YES -> { // NOSONAR
                 assertUiThread();
                 if (promptCancelExecution(dirtyWfms)) {
-                    projectsSavedState.set(null);
-                    sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds);
-                    // wait to receive the FE call while running the event loop
-                    yield DesktopAPUtil.runUiEventLoopUntilValueAvailable(Duration.ofMinutes(1),
-                        projectsSavedState::get,
-                        e -> NodeLogger.getLogger(SaveAndCloseProjects.class).error("Error while saving project(s)", e))
-                        .orElse(State.CANCEL_OR_FAIL);
+                    var progressService = PlatformUI.getWorkbench().getProgressService();
+                    try {
+                        saveAndCloseProjects(projectIds.toArray(String[]::new), progressService);
+                    } catch (SaveAndCloseProjectsException e) {
+                        yield State.CANCEL_OR_FAIL;
+                    }
                 }
-                yield projectsSavedState.get();
+                yield State.SUCCESS;
             }
             case NO -> {
                 CloseProject.closeProjects(projectIds);
@@ -186,13 +166,12 @@ public final class SaveAndCloseProjects {
      * Saves all projects for the given ids.
      *
      * @param projectIds id of the projects to save
-     * @param svgs the project preview svgs
      * @param firstFailure the first id of the project that couldn't be saved
      * @param progressService
      */
-    public static void saveProjectsWithProgressBar(final String[] projectIds, final String[] svgs,
+    public static void saveProjectsWithProgressBar(final String[] projectIds,
         final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService) {
-        IRunnableWithProgress saveRunnable = monitor -> saveProjects(projectIds, svgs, firstFailure, monitor);
+        IRunnableWithProgress saveRunnable = monitor -> saveProjects(projectIds, firstFailure, monitor);
         try {
             progressService.busyCursorWhile(saveRunnable);
         } catch (InvocationTargetException e) {
@@ -205,16 +184,15 @@ public final class SaveAndCloseProjects {
         }
     }
 
-    private static void saveProjects(final String[] projectIds, final String[] svgs,
-        final AtomicReference<Optional<String>> firstFailure, final IProgressMonitor monitor) {
+    private static void saveProjects(final String[] projectIds, final AtomicReference<Optional<String>> firstFailure,
+        final IProgressMonitor monitor) {
         monitor.beginTask("Saving " + projectIds.length + " projects", projectIds.length);
         for (var i = 0; i < projectIds.length; i++) {
             var projectId = projectIds[i];
-            var projectSVG = svgs[i];
             var projectManager = ProjectManager.getInstance();
             var projectWfm =
                 projectManager.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded).orElse(null);
-            var success = saveAndCloseProject(monitor, projectId, projectSVG, projectWfm, projectManager);
+            var success = saveAndCloseProject(monitor, projectId, projectWfm, projectManager);
             if (!success) {
                 firstFailure.compareAndExchange(null, Optional.of(projectId));
             }
@@ -222,27 +200,19 @@ public final class SaveAndCloseProjects {
     }
 
     private static boolean saveAndCloseProject(final IProgressMonitor monitor, final String projectId,
-        final String projectSVG, final WorkflowManager projectWfm, final ProjectManager projectManager) {
+        final WorkflowManager projectWfm, final ProjectManager projectManager) {
         monitor.subTask("Saving '" + projectId + "'");
 
         // the actual saving should not contribute progress
         final var subMonitor = monitor.slice(0);
 
         // workflow not loaded -> nothing to save
-        final var success = (projectWfm == null || SaveProject.saveProject(subMonitor, projectWfm, projectSVG, false));
+        final var success = (projectWfm == null || SaveProject.saveProject(subMonitor, projectWfm, false));
         if (success) {
             projectManager.removeProject(projectId);
         }
         monitor.worked(1);
         return success;
-    }
-
-    private static void sendSaveAndCloseProjectsEventToFrontend(final String[] dirtyProjectIds) {
-        var projectIdsJson = MAPPER.createArrayNode();
-        Arrays.stream(dirtyProjectIds).forEach(projectIdsJson::add);
-        var event = MAPPER.createObjectNode();
-        event.set("projectIds", projectIdsJson);
-        DesktopAPI.getDeps(EventConsumer.class).accept("SaveAndCloseProjectsEvent", event);
     }
 
     /**

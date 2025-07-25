@@ -35,7 +35,6 @@ import { useCanvasModesStore } from "./canvasModes";
 import { useCanvasStateTrackingStore } from "./canvasStateTracking";
 import { lifecycleBus } from "./lifecycle-events";
 import { useApplicationSettingsStore } from "./settings";
-import { useWorkflowPreviewSnapshotsStore } from "./workflowPreviewSnapshots";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
@@ -425,15 +424,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
       const activeWorkflow = useWorkflowStore()?.activeWorkflow;
       const isChangingProject =
         activeWorkflow?.projectId !== newWorkflow?.projectId;
-
-      // no previews for the browser
-      if (isDesktop()) {
-        await useWorkflowPreviewSnapshotsStore().updatePreviewSnapshot({
-          isChangingProject,
-          newWorkflow,
-        });
-      }
-
       this.setIsChangingProject(isChangingProject);
 
       // only activate the app loader if we're going to switch to a workflow; skip it

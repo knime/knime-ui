@@ -65,7 +65,6 @@ import java.util.stream.Collector;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.Node;
 import org.knime.core.node.NodeLogger;
@@ -86,7 +85,6 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
-import org.knime.ui.java.api.SaveAndCloseProjects.SaveAndCloseProjectsException;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -140,25 +138,12 @@ final class ProjectAPI {
      * Save the project workflow manager identified by a given project ID.
      *
      * @param projectId ID of the project
-     * @param projectSVG SVG of the project, should not be {@code null}.
      * @return A boolean indicating whether the project was saved.
      */
     @API
-    static boolean saveProject(final String projectId, final String projectSVG, final Boolean allowOverwritePrompt) {
+    static boolean saveProject(final String projectId, final Boolean allowOverwritePrompt) {
         var allowPrompt = allowOverwritePrompt == null ? Boolean.TRUE : allowOverwritePrompt;
-        return SaveProject.saveProject(projectId, projectSVG, false, allowPrompt);
-    }
-
-    /**
-     * @param projectIdsAndSvgs array containing the project-ids and svgs of the projects to save. The very first entry
-     *            contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed by n
-     *            svg-strings
-     * @throws SaveAndCloseProjectsException if saving or closing any of the projects fails
-     */
-    @API
-    static void saveAndCloseProjects(final Object[] projectIdsAndSvgs) throws SaveAndCloseProjectsException {
-        var progressService = PlatformUI.getWorkbench().getProgressService();
-        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgs, progressService);
+        return SaveProject.saveProject(projectId, false, allowPrompt);
     }
 
     /**
@@ -260,8 +245,8 @@ final class ProjectAPI {
      * @throws IOException if moving the workflow fails
      */
     @API
-    static void saveProjectAs(final String projectId, final String workflowSvg) {
-        SaveProjectCopy.saveCopyOf(projectId, workflowSvg);
+    static void saveProjectAs(final String projectId) {
+        SaveProjectCopy.saveCopyOf(projectId);
     }
 
     /**

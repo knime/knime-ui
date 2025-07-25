@@ -5301,9 +5301,9 @@ const componenteditor = function(rpcClient: RPCClient) {
         async getConfigurationLayout(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<string> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentEditorService.getConfigurationLayout', { ...defaultParams, ...params });
         },
         /**
@@ -5318,9 +5318,9 @@ const componenteditor = function(rpcClient: RPCClient) {
         async getConfigurationNodes(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<string> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentEditorService.getConfigurationNodes', { ...defaultParams, ...params });
         },
         /**
@@ -5335,9 +5335,9 @@ const componenteditor = function(rpcClient: RPCClient) {
         async getViewLayout(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<string> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentEditorService.getViewLayout', { ...defaultParams, ...params });
         },
         /**
@@ -5352,9 +5352,9 @@ const componenteditor = function(rpcClient: RPCClient) {
         async getViewNodes(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<string> {
-            const defaultParams = {
+            const defaultParams = { 
             }
-
+            
             return rpcClient.call('ComponentEditorService.getViewNodes', { ...defaultParams, ...params });
         },
         /**
@@ -5362,7 +5362,7 @@ const componenteditor = function(rpcClient: RPCClient) {
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {string} [params.componentConfigurationLayout]
+         * @param {string} [params.componentConfigurationLayout] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
@@ -5370,10 +5370,10 @@ const componenteditor = function(rpcClient: RPCClient) {
         async setConfigurationLayout(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  componentConfigurationLayout?: string  }
         ): Promise<Response> {
-            const defaultParams = {
+            const defaultParams = { 
                 componentConfigurationLayout: null,
             }
-
+            
             return rpcClient.call('ComponentEditorService.setConfigurationLayout', { ...defaultParams, ...params });
         },
         /**
@@ -5381,7 +5381,7 @@ const componenteditor = function(rpcClient: RPCClient) {
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {string} [params.componentViewLayout]
+         * @param {string} [params.componentViewLayout] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
@@ -5389,10 +5389,10 @@ const componenteditor = function(rpcClient: RPCClient) {
         async setViewLayout(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  componentViewLayout?: string  }
         ): Promise<Response> {
-            const defaultParams = {
+            const defaultParams = { 
                 componentViewLayout: null,
             }
-
+            
             return rpcClient.call('ComponentEditorService.setViewLayout', { ...defaultParams, ...params });
         },
     }
@@ -6393,16 +6393,14 @@ const workflow = function(rpcClient: RPCClient) {
         /**
          * Save a project. This is a temporary service endpoint to offer saving a project in the browser environment, i.e. without any progress indication. In the desktop environment, this endpoint will not be called and instead the corresponding one from the Desktop API. Projects are usually only saved on session close in the browser environment, so the only other current use-case is saving before creating a version. We leave the call to the Catalog service to create the version to the Frontend for the time being. This means the code paths diverge only on save-and-upload. Otherwise, we would (a) have to parameterise the Gateway endpoint by some `doSave`, which is equivalent to `isBrowser` and (b) implement capability for the backend to make the Catalog call. As soon as we can provide Browser-compatible (i.e. Web-UI) progress indication (NXT-3634), the two endpoints and their backing duplicated logic can be unified and `createVersion` can become a single Gateway endpoint, also performing the hub service call (if desired).
          * @param {string} params.projectId ID of the workflow-project.
-         * @param {string} [params.workflowPreviewSvg] The workflow SVG to save with the workflow
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async saveProject(
-        	params: { projectId: string,  workflowPreviewSvg?: string  }
+        	params: { projectId: string  }
         ): Promise<Response> {
             const defaultParams = { 
-                workflowPreviewSvg: null,
             }
             
             return rpcClient.call('WorkflowService.saveProject', { ...defaultParams, ...params });

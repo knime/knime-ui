@@ -87,7 +87,6 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     name: "saveProject",
     params: [
       ["projectId", "project1"],
-      ["workflowPreviewSvg", "<svg></svg>"],
       ["allowOverwritePrompt", false],
     ],
     returnValue: true,
@@ -225,10 +224,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   },
   {
     name: "saveProjectAs",
-    params: [
-      ["projectId", "project1"],
-      ["workflowPreviewSvg", "<svg></svg>"],
-    ],
+    params: [["projectId", "project1"]],
     blocksUi: true,
   },
   {
@@ -242,17 +238,6 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["x", 10],
       ["y", 10],
     ],
-    blocksUi: true,
-  },
-  {
-    name: "saveAndCloseProjects",
-    params: [
-      ["totalProjects", 2],
-      ["projectIds", ["project1", "project2"]],
-      ["svgSnapshots", ["<svg>1</svg>", "<svg>2</svg>"]],
-      ["params", []],
-    ],
-    flattenParams: true,
     blocksUi: true,
   },
   {

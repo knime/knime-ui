@@ -38,7 +38,6 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { useLifecycleStore } from "@/store/application/lifecycle.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
-import { useWorkflowPreviewSnapshotsStore } from "../application/workflowPreviewSnapshots.ts";
 import { useSelectionStore } from "../selection";
 import { getCustomFetchOptionsForBrowser } from "../spaces/common.ts";
 import { useSpaceProvidersStore } from "../spaces/providers";
@@ -556,15 +555,12 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return null;
     }
 
-    const workflowPreviewSvg =
-      await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot();
-
     if (isBrowser()) {
       try {
         // Hack to provide some kind of progress/busy indication until the API calls can do that (NXT-3634)
         useLifecycleStore().setIsLoadingWorkflow(true);
         // TODO: NXT-3634 Use the returned task ID to subscribe to 'task events' and show progress
-        await API.workflow.saveProject({ projectId, workflowPreviewSvg });
+        await API.workflow.saveProject({ projectId });
         useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.SAVE;
       } catch (error) {
@@ -585,7 +581,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         useLifecycleStore().setIsLoadingWorkflow(true);
         await API.desktop.saveProject({
           projectId,
-          workflowPreviewSvg,
           allowOverwritePrompt: false,
         });
         useLifecycleStore().setIsLoadingWorkflow(false);

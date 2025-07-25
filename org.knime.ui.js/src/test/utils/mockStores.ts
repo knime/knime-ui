@@ -9,7 +9,6 @@ import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjects
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
-import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -60,8 +59,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const globalLoaderStore = useGlobalLoaderStore(testingPinia);
   const layoutEditorStore = useLayoutEditorStore(testingPinia);
   const lifecycleStore = useLifecycleStore(testingPinia);
-  const workflowPreviewSnapshotsStore =
-    useWorkflowPreviewSnapshotsStore(testingPinia);
   const nodeConfigurationStore = useNodeConfigurationStore(testingPinia);
   const nodeDescriptionStore = useNodeDescriptionStore(testingPinia);
   const nodeTemplatesStore = useNodeTemplatesStore(testingPinia);
@@ -124,7 +121,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
     globalLoaderStore,
     layoutEditorStore,
     lifecycleStore,
-    workflowPreviewSnapshotsStore,
     nodeConfigurationStore,
     nodeDescriptionStore,
     nodeTemplatesStore,

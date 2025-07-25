@@ -8,11 +8,9 @@ import {
   useAIAssistantStore,
 } from "@/store/aiAssistant";
 import { useApplicationStore } from "@/store/application/application";
-import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
-import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -218,91 +216,6 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
   });
 
   API.desktop.registerEventHandlers({
-    async SaveAndCloseProjectsEvent({ projectIds }) {
-      consola.info("events::SaveAndCloseProjectsEvent", { projectIds });
-
-      useGlobalLoaderStore().updateGlobalLoader({
-        loading: true,
-      });
-
-      const resolveSnapshot = async (
-        projectId: string,
-        activeProjectId: string | undefined,
-      ): Promise<string | null> => {
-        try {
-          return projectId === activeProjectId
-            ? await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()
-            : useWorkflowPreviewSnapshotsStore().getRootWorkflowSnapshotByProjectId(
-                { projectId },
-              );
-        } catch (error) {
-          consola.error(
-            "SaveAndCloseProjectsEvent:: Error resolving workflow SVG snapshot",
-            error,
-          );
-          // null values will trigger a validation on the BE which will cause
-          // a warning to be shown to the user
-          return null;
-        }
-      };
-
-      const activeProjectId = useWorkflowStore().activeWorkflow?.projectId;
-
-      const svgSnapshotResolvePromises = projectIds.map((projectId) =>
-        resolveSnapshot(projectId, activeProjectId),
-      );
-
-      try {
-        const svgSnapshots = await Promise.all(svgSnapshotResolvePromises);
-        const totalProjects = projectIds.length;
-
-        await API.desktop.saveAndCloseProjects({
-          totalProjects,
-          projectIds,
-          svgSnapshots,
-        });
-      } catch (error) {
-        consola.error(
-          "SaveAndCloseProjectsEvent:: Error calling API.desktop.saveAndCloseProjects",
-          error,
-        );
-
-        // if BE fails we're back in control in the UI, so we should remove the
-        // loader overlay which blocks user interaction
-        useGlobalLoaderStore().updateGlobalLoader({
-          loading: false,
-        });
-
-        $toast.show({
-          headline: "Error saving your work",
-          type: "error",
-          message:
-            "There was a problem saving one of the workflows. Try again or save them individually.",
-        });
-      }
-
-      try {
-        for (const closingProjectId of projectIds) {
-          useCanvasStateTrackingStore().removeCanvasState(closingProjectId);
-
-          useWorkflowPreviewSnapshotsStore().removeFromRootWorkflowSnapshots({
-            projectId: closingProjectId,
-          });
-        }
-      } catch (error) {
-        // since this event fires when the user is either shutting down the AP or
-        // switching perspective then this error is not super relevant since
-        // will only cause a bit of extra data leftover which will be cleaned up
-        // anyway after the app is shutdown
-        consola.error(
-          "SaveAndCloseProjectsEvent:: Error tearing down canvas or workflow snapshot state",
-          {
-            error,
-          },
-        );
-      }
-    },
-
     ImportURIEvent({ x, y }) {
       consola.info("events::ImportURIEvent", { x, y });
 

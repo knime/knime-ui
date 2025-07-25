@@ -51,9 +51,6 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,7 +66,6 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
@@ -106,12 +102,11 @@ final class SaveProject {
      * Override, see {@link this#saveProject(String, String, boolean, boolean)}
      *
      * @param projectId -
-     * @param projectSVG -
      * @param localOnly -
      * @return -
      */
-    static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
-        return saveProject(projectId, projectSVG, localOnly, true);
+    static boolean saveProject(final String projectId, final boolean localOnly) {
+        return saveProject(projectId, localOnly, true);
     }
 
     /**
@@ -120,24 +115,19 @@ final class SaveProject {
      * TODO NXT-3634 de-duplicate with browser save logic (NOSONAR)
      *
      * @param projectId ID of the project
-     * @param projectSVG SVG of the project, should not be {@code null}.
      * @param localOnly if {@code true}, the project is only saved locally even if it is a temporary copy from Hub
      * @param allowOverwritePrompt -
      * @return A boolean indicating whether the project was saved.
      */
-    static boolean saveProject(final String projectId, final String projectSVG, final boolean localOnly,
+    static boolean saveProject(final String projectId, final boolean localOnly,
         final boolean allowOverwritePrompt) {
-        if (projectSVG == null) {
-            LOGGER.warn("Saving the project without a workflow preview. This is unexpected and should not happen.");
-        }
-
         var projectWfm = WorkflowManagerResolver.get(projectId, NodeIDEnt.getRootID());
         if (isExecutionInProgress(projectWfm)) {
             // Show a warning otherwise
             DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
             return false;
         } else {
-            var wasSaveSuccessful = saveProjectWithProgressBar(projectWfm, projectSVG, localOnly, allowOverwritePrompt);
+            var wasSaveSuccessful = saveProjectWithProgressBar(projectWfm, localOnly, allowOverwritePrompt);
             // Emit a ProjectDirtyStateEvent
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             return wasSaveSuccessful;
@@ -149,12 +139,12 @@ final class SaveProject {
         return state.isExecutionInProgress() || state.isExecutingRemotely();
     }
 
-    private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
-        final boolean localOnly, final boolean allowOverwritePrompt) {
+    private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final boolean localOnly,
+        final boolean allowOverwritePrompt) {
         var wasSaveSuccessful = new AtomicBoolean();
         try {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(
-                monitor -> wasSaveSuccessful.set(saveProject(monitor, wfm, svg, localOnly, allowOverwritePrompt)));
+                monitor -> wasSaveSuccessful.set(saveProject(monitor, wfm, localOnly, allowOverwritePrompt)));
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
         } catch (InterruptedException e) {
@@ -164,20 +154,19 @@ final class SaveProject {
         return wasSaveSuccessful.get();
     }
 
-    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
-        final boolean localOnly) {
-        return saveProject(monitor, wfm, svg, localOnly, true);
+    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly) {
+        return saveProject(monitor, wfm, localOnly, true);
     }
 
-    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
-        final boolean localOnly, final boolean allowOverwritePrompt) {
+    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly,
+        final boolean allowOverwritePrompt) {
         // use the flag and try/catch to make sure that the workflow is also set to dirty if any exception is thrown
         var success = false;
         try {
             if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo restInfo) {
-                success = saveBackToServerOrHub(monitor, wfm, restInfo, svg, allowOverwritePrompt);
+                success = saveBackToServerOrHub(monitor, wfm, restInfo, allowOverwritePrompt);
             } else {
-                success = saveLocalProject(monitor, wfm, svg);
+                success = saveLocalProject(monitor, wfm);
             }
         } catch (Throwable t) { // NOSONAR: Just to make sure no exception is missed
             LOGGER.error("Error occured while saving the project", t);
@@ -189,12 +178,11 @@ final class SaveProject {
         return success; // To make sure we always return something
     }
 
-    private static boolean saveLocalProject(final IProgressMonitor monitor, final WorkflowManager wfm,
-        final String svg) {
+    private static boolean saveLocalProject(final IProgressMonitor monitor, final WorkflowManager wfm) {
         if (wfm.isComponentProjectWFM()) {
             return saveComponentTemplate(monitor, wfm);
         } else {
-            return saveRegularWorkflow(monitor, wfm, svg);
+            return saveRegularWorkflow(monitor, wfm);
         }
     }
 
@@ -213,8 +201,7 @@ final class SaveProject {
     /**
      * Save regular workflow
      */
-    private static boolean saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm,
-        final String svg) {
+    private static boolean saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm) {
         monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
         var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
 
@@ -228,35 +215,12 @@ final class SaveProject {
             return false; // Abort if saving the workflow fails
         }
 
-        saveWorkflowSvg(wfm.getName(), svg, workflowPath);
         monitor.done();
         return true;
     }
 
-    /**
-     * Saves the workflow SVG to the workflow's directory.
-     *
-     * @param name workflow name
-     * @param svg workflow SVG
-     * @param workflowPath workflow path
-     */
-    public static void saveWorkflowSvg(final String name, final String svg, final Path workflowPath) {
-        if (svg == null) {
-            DesktopAPUtil.showWarning("Failed to save workflow preview",
-                String.format("The workflow preview (svg) couldn't be saved for workflow %s", name));
-        } else {
-            try {
-                Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg,
-                    StandardCharsets.UTF_8);
-            } catch (IllegalArgumentException | IOException | UnsupportedOperationException | SecurityException e) {
-                Display.getDefault().syncExec(() -> DesktopAPUtil.showWarningAndLogError("SVG save attempt",
-                    "Saving the SVG didn't work", LOGGER, e));
-            }
-        }
-    }
-
     private static boolean saveBackToServerOrHub(final IProgressMonitor rootMonitor, final WorkflowManager wfm,
-        final RestLocationInfo remoteLocation, final String svg, final boolean allowOverwritePrompt) {
+        final RestLocationInfo remoteLocation, final boolean allowOverwritePrompt) {
         final var context = wfm.getContextV2();
         if (!context.isTemporyWorkflowCopyMode()) {
             throw new IllegalStateException("Can only save temporary copies to Server or Hub.");
@@ -287,7 +251,7 @@ final class SaveProject {
 
         // selected a remote location: save + upload
         subMonitor.setTaskName("Saving local workflow");
-        saveLocalProject(subMonitor.newChild(0), wfm, svg);
+        saveLocalProject(subMonitor.newChild(0), wfm);
 
         try {
             subMonitor.setTaskName(
