@@ -13,8 +13,8 @@ import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import type { MenuItemWithHandler } from "../common/types";
-import { useSpaceProviderAuth } from "../spaces/useSpaceProviderAuth";
+import type { MenuItemWithHandler } from "../../common/types";
+import { useSpaceProviderAuth } from "../../spaces/useSpaceProviderAuth";
 
 const $router = useRouter();
 const $route = useRoute();
@@ -109,26 +109,3 @@ const onItemClick = (_: MouseEvent, item: MenuItem) =>
     Sign in
   </FunctionButton>
 </template>
-
-<style lang="postcss" scoped>
-@import url("@/assets/mixins.css");
-
-& .header-button {
-  border: 1px solid var(--knime-dove-gray);
-  display: flex;
-  margin-left: 0;
-  margin-right: var(--space-4);
-  align-items: center;
-  justify-content: center;
-  color: var(--knime-white);
-  height: var(--header-button-height);
-  padding: 10px;
-
-  & svg {
-    @mixin svg-icon-size 16;
-
-    margin-right: var(--space-4);
-    stroke: var(--knime-white);
-  }
-}
-</style>

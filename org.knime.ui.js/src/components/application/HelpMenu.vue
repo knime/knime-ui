@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  onMounted,
+  ref,
+  useTemplateRef,
+} from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
-import { type MenuItem, SubMenu } from "@knime/components";
+import { type MenuItem, SubMenu, useHint } from "@knime/components";
 import HubIcon from "@knime/styles/img/icons/cloud-knime.svg";
 import DocsIcon from "@knime/styles/img/icons/file-text.svg";
 import ForumIcon from "@knime/styles/img/icons/forum.svg";
@@ -18,11 +24,13 @@ import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
 import TeamPlan from "@knime/styles/img/icons/team-group.svg";
 
 import InfoIcon from "@/assets/info.svg";
+import { HINTS } from "@/hints/hints.config";
 import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useSettingsStore } from "@/store/settings";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { MenuItemWithHandler } from "../common/types";
 
 const OpenSourceCreditsModal = defineAsyncComponent(
@@ -35,6 +43,7 @@ const buildExternalUrl = (url: string) => {
 
 const applicationStore = useApplicationStore();
 const settingsStore = useSettingsStore();
+const { totalNodes } = storeToRefs(useWorkflowStore());
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const $router = useRouter();
 
@@ -164,10 +173,24 @@ const menuItems = computed(() => [
 
 const onItemClick = (_: MouseEvent, item: MenuItem) =>
   (item as MenuItemWithHandler).metadata?.handler?.();
+
+const { createHint } = useHint();
+const helpMenu = useTemplateRef("helpMenu");
+
+// eslint-disable-next-line no-magic-numbers
+const helpIsVisibleCondition = computed(() => totalNodes.value >= 10);
+
+onMounted(() => {
+  createHint({
+    hintId: HINTS.HELP,
+    referenceElement: helpMenu,
+    isVisibleCondition: helpIsVisibleCondition,
+  });
+});
 </script>
 
 <template>
-  <div>
+  <div ref="helpMenu">
     <SubMenu
       :teleport-to-body="false"
       orientation="left"
@@ -185,16 +208,3 @@ const onItemClick = (_: MouseEvent, item: MenuItem) =>
     />
   </div>
 </template>
-
-<style lang="postcss" scoped>
-.help-menu {
-  /* make sure opening this menu is prioritized over app skeleton */
-  --z-index-common-menu-items-expanded: v-bind(
-    "$zIndices.layerPriorityElevation"
-  );
-
-  &:deep(button.submenu-toggle) {
-    border: 1px solid var(--knime-silver-sand);
-  }
-}
-</style>

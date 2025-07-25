@@ -14,7 +14,7 @@ import SelectionModeIcon from "@/assets/selection-mode.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
-import { isDesktop } from "@/environment";
+import { isBrowser, isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
@@ -296,7 +296,6 @@ const { isSVGRenderer } = useCanvasRendererUtils();
       <ToolbarButtonWithHint
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocalWorkflow"
         ref="uploadButton"
-        class="toolbar-button"
         with-text
         title="Upload"
         :create-hint-options="{
@@ -311,7 +310,6 @@ const { isSVGRenderer } = useCanvasRendererUtils();
 
       <ToolbarButton
         v-else-if="isDeploymentButtonVisible"
-        class="toolbar-button"
         with-text
         title="Deploy on Hub"
         @click="onDeploymentButtonClick"
@@ -354,7 +352,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
         aria-label="Zoom Menu"
       />
 
-      <HelpMenu ref="helpMenu" data-test-id="app-header-help-menu" />
+      <HelpMenu v-if="isBrowser()" class="help-menu" />
     </div>
   </div>
 </template>
@@ -394,6 +392,10 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     justify-content: end;
     align-items: center;
     flex: 0 0;
+
+    & .help-menu:deep(button.submenu-toggle) {
+      border: 1px solid var(--knime-silver-sand);
+    }
   }
 }
 

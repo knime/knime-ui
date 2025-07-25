@@ -12,10 +12,10 @@ import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import SwitchIcon from "@knime/styles/img/icons/switch.svg";
 
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+import type { MenuItemWithHandler } from "@/components/common/types";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
 import { useSettingsStore } from "@/store/settings";
-import type { MenuItemWithHandler } from "../common/types";
 
 const $shortcuts = useShortcuts();
 
@@ -110,12 +110,3 @@ const onItemClick = (_: MouseEvent, item: MenuItem) =>
     />
   </div>
 </template>
-
-<style lang="postcss" scoped>
-.app-menu {
-  /* make sure opening this menu is prioritized over app skeleton */
-  --z-index-common-menu-items-expanded: v-bind(
-    "$zIndices.layerPriorityElevation"
-  );
-}
-</style>

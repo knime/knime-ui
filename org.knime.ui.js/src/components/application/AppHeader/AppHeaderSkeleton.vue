@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SkeletonItem from "../common/skeleton-loader/SkeletonItem.vue";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 </script>
 
 <template>

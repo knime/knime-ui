@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
-import { Carousel, FunctionButton, useHint } from "@knime/components";
+import { Carousel, FunctionButton } from "@knime/components";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 import HouseIcon from "@knime/styles/img/icons/house.svg";
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 
 import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
 import { useTabDrag } from "@/composables/useTabDrag";
-import { HINTS } from "@/hints/hints.config";
+import { isDesktop } from "@/environment";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -21,12 +21,12 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import HelpMenu from "../HelpMenu.vue";
 
 import { AppHeaderContextMenu } from "./AppHeaderContextMenu";
 import AppHeaderTab from "./AppHeaderTab.vue";
 import AppMenu from "./AppMenu.vue";
 import CommunityHubSignButton from "./CommunityHubSignButton.vue";
-import HelpMenu from "./HelpMenu.vue";
 
 /**
  * Header Bar containing Home, Open project tabs, and the 3 buttons Help, Preferences and Menu
@@ -173,23 +173,6 @@ watch(
   { immediate: true },
 );
 
-const { createHint } = useHint();
-
-const helpMenu = ref<InstanceType<typeof HelpMenu>>();
-
-const { totalNodes } = storeToRefs(useWorkflowStore());
-
-// eslint-disable-next-line no-magic-numbers
-const helpIsVisibleCondition = computed(() => totalNodes.value >= 10);
-
-onMounted(() => {
-  createHint({
-    hintId: HINTS.HELP,
-    referenceElement: helpMenu,
-    isVisibleCondition: helpIsVisibleCondition,
-  });
-});
-
 const { onDragStart, onDrag, onDragEnd } = useTabDrag(tabWrapper, openProjects);
 
 // overwrite drag handling from Carousel,
@@ -293,8 +276,14 @@ const onMouseDown = (e: MouseEvent) => {
       </div>
 
       <div class="buttons">
+        <HelpMenu
+          v-if="isDesktop()"
+          class="help-menu"
+          data-test-id="app-header-help-menu"
+        />
+
         <FunctionButton
-          class="header-button"
+          class="classic-ui-prefs"
           title="Open preferences"
           data-test-id="open-preferences"
           @click="openKnimeUIPreferencePage"
@@ -303,10 +292,14 @@ const onMouseDown = (e: MouseEvent) => {
           Preferences
         </FunctionButton>
 
-        <AppMenu data-test-id="app-header-app-menu" />
+        <AppMenu
+          class="header-dropdown-btn"
+          data-test-id="app-header-app-menu"
+        />
 
         <CommunityHubSignButton
           v-if="getCommunityHubInfo.isOnlyCommunityHubMounted"
+          class="header-dropdown-btn"
         />
       </div>
     </div>
@@ -329,7 +322,6 @@ header {
   padding: initial;
 
   /* smallish dark spacer */
-
   &::after {
     content: "";
     position: absolute;
@@ -450,20 +442,42 @@ header {
     }
 
     /* right button bar: help, preferences and menu */
-
     & .buttons {
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       margin-left: 15px;
+      gap: var(--space-4);
 
-      & .header-button,
-      &:deep(.submenu-toggle) {
+      /* make sure opening dropdown menus are prioritized over app skeleton */
+      --z-index-common-menu-items-expanded: v-bind(
+        "$zIndices.layerPriorityElevation"
+      );
+
+      & .help-menu {
+        border: 1px solid var(--knime-dove-gray);
+        border-radius: 50%;
+        width: var(--header-button-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--knime-white);
+        height: var(--header-button-height);
+        padding: 10px;
+
+        & :deep(svg) {
+          @mixin svg-icon-size 16;
+
+          stroke: var(--knime-white);
+        }
+      }
+
+      & .classic-ui-prefs,
+      & .header-dropdown-btn:deep(.submenu-toggle) {
         border: 1px solid var(--knime-dove-gray);
         display: flex;
         margin-left: 0;
-        margin-right: 5px;
         align-items: center;
         justify-content: center;
         color: var(--knime-white);
@@ -473,17 +487,8 @@ header {
         & svg {
           @mixin svg-icon-size 16;
 
-          margin-right: 5px;
+          margin-right: var(--space-4);
           stroke: var(--knime-white);
-        }
-
-        &.no-text {
-          width: 26px;
-          padding: 4px;
-
-          & svg {
-            margin: 0;
-          }
         }
       }
     }
