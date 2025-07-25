@@ -42,18 +42,20 @@ const breadcrumbItems = computed<Array<BreadcrumbItem>>(() => {
   const lastPathIndex = path.length - 1;
 
   return [rootBreadcrumb].concat(
-    path.map((pathItem, index) => ({
-      icon: null,
-      text: pathItem.name,
-      id: pathItem.id,
-      clickable: index !== lastPathIndex,
-      title: pathItem.name,
-    })),
+    path.map(
+      (pathItem, index) =>
+        ({
+          text: pathItem.name,
+          id: pathItem.id,
+          clickable: index !== lastPathIndex,
+          title: pathItem.name,
+        }) satisfies BreadcrumbItem,
+    ),
   );
 });
 
 const onBreadcrumbClick = ({ id }: BreadcrumbItem) => {
-  emit("click", id);
+  emit("click", id as string);
 };
 </script>
 

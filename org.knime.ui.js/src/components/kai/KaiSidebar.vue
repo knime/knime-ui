@@ -22,14 +22,14 @@ const deleteChatMenuItem = {
   text: "Clear chat",
   icon: TrashIcon,
   metadata: {
-    handler: () =>
-      clearConversation({
-        chainType: chainType.value,
-      }),
+    handler: () => clearConversation({ chainType: chainType.value }),
   },
 };
+
+type MenuItemWithHandler = MenuItem<{ handler?: () => void }>;
+
 const onItemClick = (_: MouseEvent, item: MenuItem) =>
-  item.metadata?.handler?.();
+  (item as MenuItemWithHandler).metadata?.handler?.();
 
 const { panelComponent } = useKaiPanels();
 const showChatControls = computed(() => !panelComponent.value);

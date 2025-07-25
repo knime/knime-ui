@@ -23,6 +23,11 @@ import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefi
 import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
 import type { NavigationKey } from "./NodeList.vue";
 
+type ExtendedTreeNodeOptions = TreeNodeOptions & {
+  nodeTemplate?: NodeTemplateWithExtendedPorts;
+};
+type ExtendedBaseTreeNode = BaseTreeNode & { origin: ExtendedTreeNodeOptions };
+
 const mapCategoryToTreeNode = (
   category: CategoryMetadata,
 ): TreeNodeOptions => ({
@@ -33,7 +38,7 @@ const mapCategoryToTreeNode = (
 
 const mapNodeToTreeNode = (
   node: NodeTemplateWithExtendedPorts,
-): TreeNodeOptions => ({
+): ExtendedTreeNodeOptions => ({
   nodeKey: `node_${node.id}`,
   name: node.name,
   nodeTemplate: node,
@@ -149,7 +154,7 @@ const loadTreeLevel = async (
 };
 
 const onShowNodeDescription = (treeNode: BaseTreeNode) => {
-  const { nodeTemplate } = treeNode.origin;
+  const { nodeTemplate } = treeNode.origin as ExtendedTreeNodeOptions;
   if (nodeTemplate) {
     emit("showNodeDescription", {
       nodeTemplate,
@@ -160,7 +165,9 @@ const onShowNodeDescription = (treeNode: BaseTreeNode) => {
 
 const addNodeToWorkflow = useAddNodeToWorkflow();
 const addTreeNodeToWorkflow = (treeNode: BaseTreeNode) => {
-  const nodeFactory = treeNode.origin?.nodeTemplate?.nodeFactory;
+  const nodeFactory = (treeNode.origin as ExtendedTreeNodeOptions)?.nodeTemplate
+    ?.nodeFactory;
+
   if (nodeFactory) {
     addNodeToWorkflow({ nodeFactory });
   }
@@ -194,14 +201,14 @@ defineExpose({ focusFirst });
     @expand-change="onExpandChange"
     @keydown="onTreeKeydown"
   >
-    <template #leaf="{ treeNode }: { treeNode: BaseTreeNode }">
+    <template #leaf="{ treeNode }: { treeNode: ExtendedBaseTreeNode }">
       <DraggableNodeTemplate
         class="node-template-component"
-        :node-template="treeNode.origin.nodeTemplate"
+        :node-template="treeNode.origin.nodeTemplate!"
         :is-highlighted="false"
         :is-selected="false"
         :is-description-active="
-          showDescriptionForNode?.id === treeNode.origin.nodeTemplate.id
+          showDescriptionForNode?.id === treeNode.origin.nodeTemplate!.id
         "
         display-mode="tree"
         @show-node-description="onShowNodeDescription(treeNode)"

@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 import type {
-  FileExplorerContextMenu,
+  CreateDefaultMenuOption,
   FileExplorerItem,
   MenuItem,
 } from "@knime/components";
@@ -50,8 +50,8 @@ export const useSpaceExplorerActions = (
   selectedItemIds: Ref<string[]>,
   options: {
     mode?: string;
-    createRenameOption?: FileExplorerContextMenu.CreateDefaultMenuOption;
-    createDeleteOption?: FileExplorerContextMenu.CreateDefaultMenuOption;
+    createRenameOption?: CreateDefaultMenuOption;
+    createDeleteOption?: CreateDefaultMenuOption;
     anchorItem?: FileExplorerItem;
     providerInfo?: SpaceProviderNS.SpaceProvider | null;
   },

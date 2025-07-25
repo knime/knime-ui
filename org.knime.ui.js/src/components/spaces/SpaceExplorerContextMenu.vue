@@ -2,7 +2,8 @@
 import { toRefs } from "vue";
 
 import {
-  type FileExplorerContextMenu,
+  type Anchor,
+  type CreateDefaultMenuOption,
   type MenuItem,
   MenuItems,
 } from "@knime/components";
@@ -13,9 +14,9 @@ import {
 } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
 
 interface Props {
-  createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption;
-  createDeleteOption: FileExplorerContextMenu.CreateDefaultMenuOption;
-  anchor: FileExplorerContextMenu.Anchor;
+  createRenameOption: CreateDefaultMenuOption;
+  createDeleteOption: CreateDefaultMenuOption;
+  anchor: Anchor;
   isMultipleSelectionActive: boolean;
   onItemClick: (item: MenuItem) => void;
   closeContextMenu: () => void;

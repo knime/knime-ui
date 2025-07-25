@@ -191,6 +191,8 @@ export const useSpaceSelectionMenuItems = (
     });
   });
 
+  // type Foo = Array<MenuItem<AllMetadata>
+
   const spaceSelectionItems = computed<Array<MenuItem<AllMetadata>>>(() => {
     const providers = Object.values(spaceProvidersGroupedByOwner.value ?? {});
 
@@ -226,7 +228,7 @@ export const useSpaceSelectionMenuItems = (
 
     const getProviderMenuEntries = (
       provider: SpaceProviderNS.SpaceProvider,
-    ): MenuItem[] => {
+    ): MenuItem<AllMetadata>[] => {
       const isLoading =
         isConnectingToProvider.value === provider.id ||
         loadingProviderSpacesData.value[provider.id];
@@ -273,7 +275,9 @@ export const useSpaceSelectionMenuItems = (
       const headline = getHeadline(provider);
 
       return headline
-        ? [headline].concat(getProviderMenuEntries(provider))
+        ? ([headline].concat(
+            getProviderMenuEntries(provider),
+          ) as MenuItem<AllMetadata>[])
         : getProviderMenuEntries(provider);
     });
   });

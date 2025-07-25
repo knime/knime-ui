@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import type { FunctionalComponent, SVGAttributes } from "vue";
+import type { Component } from "vue";
 
 import type { FileExplorerItem } from "@knime/components";
 
 interface Props {
   items: FileExplorerItem[];
-  itemIconRenderer: (
-    item: FileExplorerItem,
-  ) => FunctionalComponent<SVGAttributes>;
+  itemIconRenderer: (item: FileExplorerItem) => Component;
 }
 
 defineProps<Props>();

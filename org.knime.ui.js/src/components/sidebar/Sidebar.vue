@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, watch } from "vue";
-import type { FunctionalComponent, SVGAttributes } from "vue";
+import type { Component } from "vue";
 
 import { useHint } from "@knime/components";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
@@ -22,7 +22,7 @@ import SidebarExtensionPanel from "./SidebarExtensionPanel.vue";
 type SidebarSection = {
   name: TabValues;
   title: string;
-  icon: FunctionalComponent<SVGAttributes>;
+  icon: Component;
   classes?: string[];
   isActive: boolean;
   isExpanded: boolean;

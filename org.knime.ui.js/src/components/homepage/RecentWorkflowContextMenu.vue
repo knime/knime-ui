@@ -2,20 +2,17 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import {
-  type FileExplorerContextMenu,
-  type MenuItem,
-  MenuItems,
-} from "@knime/components";
+import { type Anchor, type MenuItem, MenuItems } from "@knime/components";
 import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 
+import type { RecentWorkflow } from "@/api/custom-types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { type ActionMenuItem } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { valueOrEmpty } from "@/util/valueOrEmpty";
 
 interface Props {
-  anchor: FileExplorerContextMenu.Anchor;
+  anchor: Anchor;
   onItemClick: (item: MenuItem) => void;
   closeContextMenu: () => void;
 }
@@ -34,7 +31,9 @@ const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
 };
 
 const recentWorkflowContextMenuItems = computed(() => {
-  const recentWorkflow = props.anchor.item.meta?.recentWorkflow;
+  const recentWorkflow = props.anchor.item.meta!
+    .recentWorkflow as RecentWorkflow;
+
   const provider = spaceProviders.value?.[recentWorkflow.origin.providerId];
   const isConnected = provider?.connected;
 

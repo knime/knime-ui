@@ -1,8 +1,8 @@
-import type { FunctionalComponent, SVGAttributes } from "vue";
+import type { Component } from "vue";
 import type { Router } from "vue-router";
 
 import type { ToastService } from "@knime/components";
-import type { HotkeysNS } from "@knime/utils";
+import type { Hotkey } from "@knime/utils";
 
 import type { ShortcutsRegistry } from ".";
 
@@ -18,7 +18,7 @@ export type ShortcutGroups =
   | "workflowEditor";
 
 export type HotkeyText = { text: string };
-export type Hotkeys = Array<HotkeysNS.Hotkey | HotkeyText>;
+export type Hotkeys = Array<Hotkey | HotkeyText>;
 
 export type ShortcutExecuteContext = {
   $router: Router;
@@ -83,7 +83,7 @@ export type Shortcut = {
   /**
    * Wether to use an icon
    */
-  icon?: FunctionalComponent<SVGAttributes>;
+  icon?: Component;
 
   /**
    * Determines if the shortcut will allow the default browser behavior, for example Ctrl+C -> Copy

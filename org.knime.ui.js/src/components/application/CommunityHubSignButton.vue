@@ -13,6 +13,7 @@ import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import type { MenuItemWithHandler } from "../common/types";
 import { useSpaceProviderAuth } from "../spaces/useSpaceProviderAuth";
 
 const $router = useRouter();
@@ -76,16 +77,17 @@ const signMenuItem = computed<MenuItem>(() => {
 
 const onSignInButtonClick = () => {
   if ($route.name === APP_ROUTES.WorkflowPage) {
-    return connectProvider({
+    connectProvider({
       spaceProviderId: getCommunityHubInfo.value.communityHubProvider!.id,
     });
+    return;
   }
 
   connectAndNavigate(getCommunityHubInfo.value.communityHubProvider!);
 };
 
 const onItemClick = (_: MouseEvent, item: MenuItem) =>
-  item.metadata?.handler?.();
+  (item as MenuItemWithHandler).metadata?.handler?.();
 </script>
 
 <template>

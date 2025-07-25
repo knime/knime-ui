@@ -58,7 +58,7 @@ const onWheel = throttle(function (e: WheelEvent) {
     class="action-breadcrumb"
     v-bind="$attrs"
     :items="breadcrumbItems"
-    @click-item="emit('click', { id: $event.id })"
+    @click-item="emit('click', { id: $event.id as string })"
     @wheel="onWheel"
   />
 </template>

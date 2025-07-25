@@ -15,6 +15,7 @@ import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActi
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
 import { useSettingsStore } from "@/store/settings";
+import type { MenuItemWithHandler } from "../common/types";
 
 const $shortcuts = useShortcuts();
 
@@ -96,7 +97,7 @@ const menuItem = computed<MenuItem>(() => {
 });
 
 const onItemClick = (_: MouseEvent, item: MenuItem) =>
-  item.metadata?.handler?.();
+  (item as MenuItemWithHandler).metadata?.handler?.();
 </script>
 
 <template>

@@ -6,7 +6,7 @@ import { storeToRefs } from "pinia";
 import { Modal, SearchInput } from "@knime/components";
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
 import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
-import { type HotkeysNS, hotkeys } from "@knime/utils";
+import { type Hotkey, hotkeys } from "@knime/utils";
 
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
 import shortcuts from "@/shortcuts";
@@ -35,7 +35,7 @@ const getText = (shortcut: FormattedShortcut) => {
 const allShortcuts = [...boundShortcuts, ...otherHotkeys].map((shortcut) => ({
   ...shortcut,
   hotkeyText: shortcut.hotkey
-    ? hotkeys.formatHotkeys(shortcut.hotkey as HotkeysNS.Hotkey[])
+    ? hotkeys.formatHotkeys(shortcut.hotkey as Hotkey[])
     : "",
   displayText: getText(shortcut as FormattedShortcut),
 })) as ShortcutItemData[];

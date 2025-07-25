@@ -8,7 +8,7 @@ import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
 import type { EditorTools } from "@knime/rich-text-editor";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import MoreActionsIcon from "@knime/styles/img/icons/menu-options.svg";
-import { type HotkeysNS, hotkeys } from "@knime/utils";
+import { type Hotkey, hotkeys } from "@knime/utils";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
@@ -50,9 +50,7 @@ const secondaryToolsMenuItems = computed(() =>
   secondaryTools.value.map((tool) => ({
     text: tool.name,
     disabled: tool.disabled?.(),
-    hotkeyText: hotkeys.formatHotkeys(
-      (tool.hotkey as HotkeysNS.Hotkey[]) ?? [],
-    ),
+    hotkeyText: hotkeys.formatHotkeys((tool.hotkey as Hotkey[]) ?? []),
     icon: tool.icon,
     id: tool.id,
   })),

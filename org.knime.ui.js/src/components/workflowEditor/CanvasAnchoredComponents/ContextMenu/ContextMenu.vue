@@ -494,15 +494,21 @@ watch(
   { immediate: true },
 );
 
+type ContextMenuItem = MenuItem<{
+  handler?: () => void;
+  shortcutName: ShortcutName;
+}>;
+
 const onItemClick = (event: MouseEvent, item: MenuItem) => {
   emit("menuClose");
 
-  if (typeof item.metadata.handler === "function") {
-    item.metadata.handler();
+  const contextMenuItem = item as ContextMenuItem;
+  if (typeof contextMenuItem.metadata?.handler === "function") {
+    contextMenuItem.metadata.handler();
     return;
   }
 
-  const shortcutName = item.metadata?.shortcutName;
+  const shortcutName = contextMenuItem.metadata?.shortcutName;
 
   // do nothing if we don't have a shortcut name
   if (!shortcutName) {

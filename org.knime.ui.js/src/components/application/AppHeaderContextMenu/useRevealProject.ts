@@ -1,10 +1,9 @@
 import { type MaybeRefOrGetter, computed, toValue } from "vue";
 import { storeToRefs } from "pinia";
 
+import type { MenuItemWithHandler } from "@/components/common/types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useApplicationStore } from "@/store/application/application";
-
-import type { AppHeaderContextMenuItem } from "./types";
 
 type UseRevealProject = {
   projectId: MaybeRefOrGetter<string | null>;
@@ -29,10 +28,10 @@ export const useRevealProject = (options: UseRevealProject) => {
     return canRevealItem(foundProject.origin!.providerId);
   });
 
-  const menuItem: AppHeaderContextMenuItem = {
+  const menuItem: MenuItemWithHandler = {
     text: "Show in explorer",
     metadata: {
-      onClick: async () => {
+      handler: async () => {
         if (!toValue(options.projectId)) {
           consola.error("Unexpected error. Project ID not provided");
           return;

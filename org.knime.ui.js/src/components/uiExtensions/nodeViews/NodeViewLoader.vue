@@ -1,13 +1,11 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, toRaw, toRefs, watch } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
-import type {
-  Alert,
-  UIExtensionPushEvents,
-} from "@knime/ui-extension-renderer/api";
+import type { Alert, KnownEventType } from "@knime/ui-extension-renderer/api";
 import {
   UIExtension,
   type UIExtensionAPILayer,
@@ -157,7 +155,7 @@ const apiLayer: UIExtensionAPILayer = {
     // function that updates the data of this UIExtension (NodeView in this case)
     updateViewData = (data) =>
       dispatchPushEvent({
-        eventType: "DataEvent" satisfies UIExtensionPushEvents.KnownEventType,
+        eventType: "DataEvent" satisfies KnownEventType,
         payload: toRaw(data),
       });
 
@@ -186,7 +184,7 @@ const apiLayer: UIExtensionAPILayer = {
 
 const latestPublishedDataForThisNode = computed(() => {
   if (latestPublishedData.value === null) {
-    return null;
+    return undefined;
   }
 
   const { projectId, workflowId, nodeId, versionId, data } =
@@ -198,9 +196,13 @@ const latestPublishedDataForThisNode = computed(() => {
     nodeId !== props.selectedNode.id ||
     versionId !== props.versionId
   ) {
-    return null;
+    return undefined;
   }
-  return data;
+  return data as {
+    result?: string | object;
+    userError?: object;
+    internalError?: object;
+  };
 });
 
 const applySettings = (nodeId: string, execute?: boolean) => {

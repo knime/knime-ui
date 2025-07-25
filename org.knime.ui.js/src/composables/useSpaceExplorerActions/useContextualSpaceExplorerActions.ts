@@ -2,7 +2,7 @@ import { type Ref, computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import {
-  type FileExplorerContextMenu,
+  type CreateDefaultMenuOption,
   type FileExplorerItem,
   type MenuItem,
 } from "@knime/components";
@@ -29,8 +29,8 @@ export const useContextualSpaceExplorerActions = (
   selectedItemIds: Ref<string[]>,
   options: {
     mode?: string;
-    createRenameOption?: FileExplorerContextMenu.CreateDefaultMenuOption;
-    createDeleteOption?: FileExplorerContextMenu.CreateDefaultMenuOption;
+    createRenameOption?: CreateDefaultMenuOption;
+    createDeleteOption?: CreateDefaultMenuOption;
     anchorItem?: FileExplorerItem;
     isMultipleSelectionActive?: boolean;
   },

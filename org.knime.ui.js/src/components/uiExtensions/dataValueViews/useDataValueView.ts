@@ -18,7 +18,9 @@ import {
 
 import {
   type DataValueViewConfig,
-  type UIExtensionPushEvents,
+  type EventType,
+  type KnownEventType,
+  type PushEvent,
 } from "@knime/ui-extension-renderer/api";
 
 type MaybeElement = HTMLElement | null | ComponentPublicInstance;
@@ -182,16 +184,13 @@ const useOpenClose = () => {
   };
 
   const addListener = (
-    listener: <T extends UIExtensionPushEvents.EventType>(
-      event: UIExtensionPushEvents.PushEvent<T>,
-    ) => void,
+    listener: <T extends EventType>(event: PushEvent<T>) => void,
   ) =>
     watch(
       () => config.value !== null,
       (isShown) => {
         listener({
-          eventType:
-            "DataValueViewShownEvent" satisfies UIExtensionPushEvents.KnownEventType,
+          eventType: "DataValueViewShownEvent" satisfies KnownEventType,
           payload: isShown,
         });
       },

@@ -202,7 +202,9 @@ const createWorkflowLocally = async () => {
         </template>
 
         <template #itemIcon="{ item }">
-          <Component :is="getIcon(item.meta!.recentWorkflow)" />
+          <Component
+            :is="getIcon(item.meta!.recentWorkflow as RecentWorkflow)"
+          />
         </template>
 
         <template #itemContent="{ item }">
@@ -214,11 +216,19 @@ const createWorkflowLocally = async () => {
                 class="provider-name"
                 data-test-id="recent-workflow-provider"
               >
-                {{ getSpaceProviderName(item.meta!.recentWorkflow) }}
+                {{
+                  getSpaceProviderName(
+                    item.meta!.recentWorkflow as RecentWorkflow,
+                  )
+                }}
               </span>
               <span data-test-id="recent-workflow-time">
                 {{
-                  formatTimeAgo(new Date(item.meta!.recentWorkflow.timeUsed))
+                  formatTimeAgo(
+                    new Date(
+                      (item.meta!.recentWorkflow as RecentWorkflow).timeUsed,
+                    ),
+                  )
                 }}
               </span>
             </div>

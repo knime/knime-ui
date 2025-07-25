@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { type ComputedRef, computed, markRaw, nextTick, ref } from "vue";
+import { uniqueId } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import { Button, Pill } from "@knime/components";
@@ -112,7 +113,7 @@ const mapSpaceItemToTree = (
 const mapSpaceToTree = (
   space: SpaceProviderNS.Space,
   { spaceProviderId }: { spaceProviderId: string },
-) => ({
+): TreeNodeOptions & SpaceTreeItem => ({
   type: "item",
   nodeKey: `space_${spaceProviderId}_${space.id}`,
   name: truncate(space.name),
@@ -121,12 +122,13 @@ const mapSpaceToTree = (
   itemId: "root",
   spaceProviderId,
   hasChildren: true,
+  isWorkflowContainer: false,
 });
 
 const mapSpaceGroupToTree = (
   spaceGroup: SpaceProviderNS.SpaceGroup,
   { spaceProviderId }: { spaceProviderId: string },
-) => ({
+): TreeNodeOptions & SpaceTreeGroup => ({
   type: "group",
   nodeKey: `group_${spaceProviderId}_${spaceGroup.id}`,
   name: truncate(spaceGroup.name),
@@ -149,7 +151,7 @@ const mapSpaceGroupToTree = (
 
 const mapSpaceProviderToTree = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
-): TreeNodeOptions => {
+): TreeNodeOptions & (SpaceTreeProvider | SpaceTreeItem) => {
   if (isLocalProvider(spaceProvider)) {
     return mapSpaceToTree(spaceProvider.spaceGroups[0].spaces[0], {
       spaceProviderId: spaceProvider.id,
@@ -188,30 +190,34 @@ const filteredSpaceGroups = computed(() => ({
   spaceProviderId: filteredSpaceProviders.value?.[0]?.id,
 }));
 
-const treeSource: ComputedRef<TreeNodeOptions[]> = computed(() => {
+type ExtendedTreeNodeOptions = TreeNodeOptions &
+  (SpaceTreeProvider | SpaceTreeItem | SpaceTreeGroup);
+
+const treeSource: ComputedRef<Array<ExtendedTreeNodeOptions>> = computed(() => {
   if (isBrowser() && filteredSpaceProviders.value?.length === 1) {
     const { spaceGroups, spaceProviderId } = filteredSpaceGroups.value;
     return spaceGroups.map((group) =>
       mapSpaceGroupToTree(group, { spaceProviderId }),
     );
   }
-  return filteredSpaceProviders.value?.map(mapSpaceProviderToTree) ?? [];
+  return filteredSpaceProviders.value.map(mapSpaceProviderToTree) ?? [];
 });
 
 const tree = ref<InstanceType<typeof Tree>>();
 
 const autoExpandTree = () => {
   nextTick(() => {
-    // If there is a single (already authenticated) root item ...
-    if (
+    const [item] = treeSource.value;
+
+    const hasSingleAuthenticatedRootItem =
       treeSource.value.length === 1 &&
-      (treeSource.value[0].type !== "provider" ||
-        isProviderConnected(treeSource.value[0].spaceProviderId))
-    ) {
+      (item.type !== "provider" || isProviderConnected(item.spaceProviderId));
+
+    if (hasSingleAuthenticatedRootItem) {
       // ... automatically expand it
       tree.value?.toggleExpand(
         // This also works in the case of 'node.type !== "provider"' (e.g. local)
-        treeSource.value[0].nodeKey,
+        item.nodeKey,
         true,
       );
     }
@@ -360,21 +366,25 @@ const loadTreeLevel = (
   treeNode: BaseTreeNode,
   addToTree: AddToTreeCallback,
 ) => {
-  const { spaceProviderId, spaceId, itemId } = treeNode.origin;
+  const treenodeOptions = treeNode.origin as ExtendedTreeNodeOptions;
 
-  if (itemId && spaceId && spaceProviderId) {
+  if (treenodeOptions.type === "item") {
+    const { spaceProviderId, spaceId, itemId } = treenodeOptions;
     loadWorkflowGroup({ spaceProviderId, spaceId, itemId }, addToTree);
     return;
   }
 
-  if (spaceProviderId) {
+  if (treenodeOptions.type === "provider") {
+    const { spaceProviderId } = treenodeOptions;
     loadProvider(spaceProviderId, addToTree);
     return;
   }
 
+  const id = uniqueId(treeNode.origin.nodeKey.toString());
+
   addToTree([
     {
-      nodeKey: `error_loadWorkflowGroup_${spaceProviderId}${spaceId}${itemId}`,
+      nodeKey: `error_loadWorkflowGroup_${treeNode.name}_${id}`,
       name: "Error loading contents",
       customSlot: "info",
     },
@@ -402,10 +412,12 @@ const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
     return;
   }
 
-  const { type, itemId, spaceId, spaceProviderId, groupData, hasChildren } =
-    node.origin;
+  const treenodeOptions = node.origin as ExtendedTreeNodeOptions;
 
-  if (type === "item") {
+  if (treenodeOptions.type === "item") {
+    const { type, itemId, spaceId, spaceProviderId, hasChildren } =
+      treenodeOptions;
+
     emit("selectChange", {
       type,
       itemId,
@@ -417,12 +429,14 @@ const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
     return;
   }
 
-  if (type === "group") {
+  if (treenodeOptions.type === "group") {
+    const { type, groupData } = treenodeOptions;
     emit("selectChange", { type, groupData });
     return;
   }
 
-  if (type === "provider") {
+  if (treenodeOptions.type === "provider") {
+    const { type, spaceProviderId } = treenodeOptions;
     emit("selectChange", { type, spaceProviderId });
   }
 

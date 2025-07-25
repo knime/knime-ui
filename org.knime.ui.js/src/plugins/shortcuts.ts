@@ -1,7 +1,7 @@
 import { type Router, useRouter } from "vue-router";
 
 import { type ToastService, useToasts } from "@knime/components";
-import { type HotkeysNS, hotkeys, navigatorUtils } from "@knime/utils";
+import { type Hotkey, hotkeys, navigatorUtils } from "@knime/utils";
 
 import shortcuts, { type ShortcutsRegistry } from "@/shortcuts";
 import type {
@@ -26,10 +26,7 @@ Object.entries(shortcuts).forEach(([name, shortcut]) => {
 });
 Object.freeze(shortcuts);
 
-const isDigitKeyInRange = (
-  keyCode: string,
-  hotkey: HotkeysNS.Hotkey | "",
-): boolean => {
+const isDigitKeyInRange = (keyCode: string, hotkey: Hotkey | ""): boolean => {
   // Digit keys exist from 0 to 9, so valid ranges always have length 3
   const digitRangeLength = 3;
   if (hotkey.length !== digitRangeLength || !keyCode?.startsWith("Digit")) {
@@ -69,7 +66,7 @@ export const createShortcutsService = ({
   }) => {
     const checkHotkey = (hotkey: Hotkeys) => {
       const modifiers = hotkey.filter(
-        (key): key is HotkeysNS.Hotkey => typeof key === "string",
+        (key): key is Hotkey => typeof key === "string",
       );
       const character = modifiers.pop() ?? "";
 

@@ -7,7 +7,7 @@ import { formatSpaceProviderName, isHubProvider } from "@/store/spaces/util";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { useSpaceIcons } from "./useSpaceIcons";
 
-export type BreadcrumbItem = {
+export type ClickableBreadcrumbItem = {
   text: string;
   icon?: any;
   clickable?: boolean;
@@ -27,10 +27,10 @@ export const usePageBreadcrumbs = () => {
 
   const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
-  const breadcrumbs = computed<Array<BreadcrumbItem>>(() => {
+  const breadcrumbs = computed<Array<ClickableBreadcrumbItem>>(() => {
     const isHub = isHubProvider(activeSpaceProvider.value);
 
-    const spaceProviderBreadcrumbItem: BreadcrumbItem = {
+    const spaceProviderBreadcrumbItem: ClickableBreadcrumbItem = {
       text: formatSpaceProviderName(activeSpaceProvider.value),
       icon: getSpaceProviderIcon(activeSpaceProvider.value),
       clickable: isHub,
@@ -53,7 +53,7 @@ export const usePageBreadcrumbs = () => {
 
     const { spaceId } = $route.params;
 
-    const spaceGroupBreadcrumbItem: BreadcrumbItem = {
+    const spaceGroupBreadcrumbItem: ClickableBreadcrumbItem = {
       text: activeSpaceGroup.value?.name ?? "",
       // if spaceId is not found, then this will be the last item
       clickable: Boolean(spaceId),
@@ -71,7 +71,7 @@ export const usePageBreadcrumbs = () => {
       },
     };
 
-    const spaceBreadcrumbItem: BreadcrumbItem = {
+    const spaceBreadcrumbItem: ClickableBreadcrumbItem = {
       text: activeSpace.value?.name ?? "",
     };
 

@@ -117,7 +117,9 @@ describe("NodeViewLoader.vue", () => {
 
     const versionId = "version-id";
     await wrapper.setProps({ versionId });
-    expect(nodeViewLoaderInstance.latestPublishedDataForThisNode).toBeNull();
+    expect(
+      nodeViewLoaderInstance.latestPublishedDataForThisNode,
+    ).toBeUndefined();
 
     // 2. versionId in latestPublishedData
     mockedStores.nodeConfigurationStore.setLatestPublishedData({
@@ -128,10 +130,14 @@ describe("NodeViewLoader.vue", () => {
       versionId: "version-id",
     });
     await wrapper.setProps({ versionId: undefined });
-    expect(nodeViewLoaderInstance.latestPublishedDataForThisNode).toBeNull();
+    expect(
+      nodeViewLoaderInstance.latestPublishedDataForThisNode,
+    ).toBeUndefined();
 
     await wrapper.setProps({ versionId: "other-version-id" });
-    expect(nodeViewLoaderInstance.latestPublishedDataForThisNode).toBeNull();
+    expect(
+      nodeViewLoaderInstance.latestPublishedDataForThisNode,
+    ).toBeUndefined();
   });
 
   it("should load the node view when the selected node changes and the new node has a view", async () => {

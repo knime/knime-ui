@@ -1,4 +1,4 @@
-import { type FunctionalComponent, type Ref, computed } from "vue";
+import { type Component, type Ref, computed } from "vue";
 import type { GraphicsContext } from "pixi.js";
 
 import type { Node } from "@/api/gateway-api/generated-api";
@@ -29,7 +29,7 @@ type UseNodeActionBarOptions = {
   canPause: Ref<boolean | null>;
   canResume: Ref<boolean | null>;
   canOpenView: Ref<boolean | null>;
-  icons: Record<IconKeys, GraphicsContext | FunctionalComponent<any>>;
+  icons: Record<IconKeys, GraphicsContext | Component>;
 };
 export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
   const $shortcuts = useShortcuts();

@@ -4,16 +4,17 @@ import { onClickOutside } from "@vueuse/core";
 
 import {
   Breadcrumb,
-  type BreadcrumbItem,
   FunctionButton,
   useNameValidator,
 } from "@knime/components";
 import SaveIcon from "@knime/styles/img/icons/check.svg";
 import CancelIcon from "@knime/styles/img/icons/close.svg";
 
+import type { ClickableBreadcrumbItem } from "./usePageBreadcrumbs";
+
 type Props = {
   title: string;
-  breadcrumbs: Array<BreadcrumbItem>;
+  breadcrumbs: Array<ClickableBreadcrumbItem>;
   isEditable: boolean;
   blacklistedNames?: Array<string>;
   error?: string;
@@ -86,7 +87,7 @@ onClickOutside(h2Ref, () => {
   <Breadcrumb
     class="breadcrumbs"
     :items="breadcrumbs"
-    @click-item="(item: BreadcrumbItem) => item.onClick?.()"
+    @click-item="(item) => (item as ClickableBreadcrumbItem).onClick?.()"
   />
 
   <h2 ref="h2Ref" class="title-container">

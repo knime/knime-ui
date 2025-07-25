@@ -1,9 +1,9 @@
-import type { UIExtensionPushEvents } from "@knime/ui-extension-renderer/api";
+import type { PushEvent } from "@knime/ui-extension-renderer/api";
 
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
 
 type SelectionEventListener = (
-  event: UIExtensionPushEvents.PushEvent<"SelectionEvent", SelectionEvent>,
+  event: PushEvent<"SelectionEvent", SelectionEvent>,
 ) => void;
 
 type SelectionEventId = {

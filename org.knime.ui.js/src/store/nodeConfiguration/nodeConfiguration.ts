@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 
 import type {
   APILayerDirtyState,
-  UIExtensionPushEvents,
+  KnownEventType,
 } from "@knime/ui-extension-renderer/api";
 import type { UIExtensionAPILayer } from "@knime/ui-extension-renderer/vue";
 
@@ -109,8 +109,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
       }
 
       this.pushEventDispatcher({
-        eventType:
-          "DisplayModeEvent" satisfies UIExtensionPushEvents.KnownEventType,
+        eventType: "DisplayModeEvent" satisfies KnownEventType,
         payload: { mode: this.isLargeMode ? "large" : "small" },
       });
     },
@@ -153,8 +152,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     }) {
       const dispatchApplySettings = () => {
         this.pushEventDispatcher({
-          eventType:
-            "ApplyDataEvent" satisfies UIExtensionPushEvents.KnownEventType,
+          eventType: "ApplyDataEvent" satisfies KnownEventType,
         });
 
         // Return a promise that will resolve once the configuration

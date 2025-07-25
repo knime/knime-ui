@@ -19,13 +19,11 @@ const $toast = getToastsProvider();
 
 const showFallbackToast = (clipboardContent: string) => {
   const fallbackToast = $toast.show({
-    id: "COPY_FALLBACK",
     headline: "Data copied to clipboard",
     message:
       "If you want to paste the data into a different Analytics Platform you need to copy the data in JSON format.",
     buttons: [
       {
-        // @ts-expect-error (please add error description)
         icon: shallowRef(CopyIcon),
         text: " Copy data in JSON format",
         callback: () => {

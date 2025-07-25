@@ -4,6 +4,7 @@ import { computed, toRef } from "vue";
 import { type MenuItem, MenuItems } from "@knime/components";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import type { MenuItemWithHandler } from "@/components/common/types";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 
 import { useRevealProject } from "./useRevealProject";
@@ -15,12 +16,8 @@ type Props = {
 
 const props = defineProps<Props>();
 
-type AppHeaderContextMenuItem = MenuItem & {
-  metadata?: { onClick: () => void };
-};
-
 const emit = defineEmits<{
-  itemClick: [item: AppHeaderContextMenuItem];
+  itemClick: [item: MenuItemWithHandler];
 }>();
 
 const { revealProjectMenuOption } = useRevealProject({
@@ -32,21 +29,22 @@ const contextMenuItems = computed(() => [
   {
     text: "Close",
     metadata: {
-      onClick: () => {
+      handler: () => {
         useDesktopInteractionsStore().closeProject(props.projectId);
       },
     },
-  },
+  } satisfies MenuItemWithHandler,
 ]);
 
-const onMenuItemClick = (item: AppHeaderContextMenuItem) => {
+const onMenuItemClick = (item: MenuItem) => {
   if (!props.projectId) {
     return;
   }
 
-  item.metadata.onClick();
+  const contextMenuItem = item as MenuItemWithHandler;
+  contextMenuItem.metadata!.handler?.();
 
-  emit("itemClick", item);
+  emit("itemClick", contextMenuItem);
 };
 </script>
 
@@ -56,9 +54,7 @@ const onMenuItemClick = (item: AppHeaderContextMenuItem) => {
     class="context-menu"
     menu-aria-label="Tab context menu"
     :items="contextMenuItems"
-    @item-click="
-      (_: MouseEvent, item: AppHeaderContextMenuItem) => onMenuItemClick(item)
-    "
+    @item-click="(_: MouseEvent, item: MenuItem) => onMenuItemClick(item)"
   />
 </template>
 

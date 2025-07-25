@@ -250,9 +250,7 @@ describe("workflow::clipboardInteractions", () => {
     });
 
     // toast
-    expect(toast.show).toBeCalledWith(
-      expect.objectContaining({ id: "COPY_FALLBACK" }),
-    );
+    expect(toast.show).toHaveBeenCalledOnce();
   });
 
   describe("executes paste command", () => {
