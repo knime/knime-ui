@@ -75,11 +75,11 @@ final class CloseProject {
      * @return A boolean indicating whether an editor has been closed.
      */
     static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
-        var projectManager = DesktopAPI.getDeps(ProjectManager.class);
-        projectManager.setProjectActive(nextProjectId);
         var saveAndCloseState = saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose));
         var success = saveAndCloseState == SaveAndCloseProjects.State.SUCCESS;
         if (success) {
+            var projectManager = DesktopAPI.getDeps(ProjectManager.class);
+            projectManager.setProjectActive(nextProjectId);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
         return success;
