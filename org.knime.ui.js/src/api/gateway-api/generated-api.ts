@@ -1682,6 +1682,12 @@ export interface GatewayProblemDescription {
      */
     code?: string;
     /**
+     * HTTP response status code (if applicable).
+     * @type {number}
+     * @memberof GatewayProblemDescription
+     */
+    status?: number;
+    /**
      * List of details (\&quot;user-facing stack trace\&quot;) of the problem.
      * @type {Array<string>}
      * @memberof GatewayProblemDescription
