@@ -40,12 +40,24 @@ export type ApiErrorData = {
   date?: string;
   status?: number;
   "x-request-id"?: string;
-}
+};
 
 type FormattedApiError = {
   code: ExpectedExceptionCode | UnexpectedExceptionCode;
   data: ApiErrorData;
 };
+
+export function isApiErrorData(data: unknown): data is ApiErrorData {
+  return (
+    isObject(data) &&
+    "code" in data &&
+    typeof data.code === "string" &&
+    "title" in data &&
+    typeof data.title === "string" &&
+    "message" in data &&
+    typeof data.message === "string"
+  );
+}
 
 export function isApiError(e: unknown): e is FormattedApiError {
   return (
@@ -54,13 +66,7 @@ export function isApiError(e: unknown): e is FormattedApiError {
     typeof e.code === "number" &&
     [EXPECTED_EXCEPTION_CODE, UNEXPECTED_EXCEPTION_CODE].includes(e.code) &&
     "data" in e &&
-    isObject(e.data) &&
-    "code" in e.data &&
-    typeof e.data.code === "string" &&
-    "title" in e.data &&
-    typeof e.data.title === "string" &&
-    "message" in e.data &&
-    typeof e.data.message === "string"
+    isApiErrorData(e.data)
   );
 }
 

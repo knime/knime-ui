@@ -2,6 +2,7 @@
 import type { Toast, ToastServiceProvider } from "@knime/components";
 import { rfcErrors } from "@knime/hub-features";
 
+import { isDesktopApiError } from "@/api/desktop-api";
 import { isApiError } from "@/api/gateway-api/generated-exceptions";
 import { isValidDate } from "@/util/date-time";
 
@@ -20,7 +21,7 @@ export const defaultErrorPresetHandler = (
 ) => {
   const genericHeadline = "An unexpected error occurred";
 
-  if (isApiError(error)) {
+  if (isApiError(error) || isDesktopApiError(error)) {
     const { data } = error;
     const date =
       data.date && isValidDate(data.date) ? new Date(data.date) : undefined;

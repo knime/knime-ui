@@ -1,12 +1,12 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
+import { rfcErrors } from "@knime/hub-features";
 import LoadIcon from "@knime/styles/img/icons/load.svg";
 
 import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
 
 import { useWorkflowStore } from "./workflow";
 
@@ -220,16 +220,23 @@ export const useComponentInteractionsStore = defineStore(
         $toast.remove(updateStartedToastId);
 
         if (result.status === UpdateLinkedComponentsResult.StatusEnum.Error) {
-          const toastId = showProblemDetailsErrorToast({
-            headline: TOAST_HEADLINE,
-            problemDetails: {
-              title: `Could not update the linked ${pluralize(
-                "component",
-                nodeIds.length,
-              )}. Try again later.`,
-              details: result.details,
-            },
+          const title = `Could not update the linked ${pluralize(
+            "component",
+            nodeIds.length,
+          )}.`;
+
+          const rfcError = new rfcErrors.RFCError({
+            title,
+            details: result.details,
           });
+
+          const toastId = $toast.show(
+            rfcErrors.toToast({
+              headline: TOAST_HEADLINE,
+              rfcError,
+            }),
+          );
+
           addToastId(workflowId, toastId);
         } else {
           const message =
