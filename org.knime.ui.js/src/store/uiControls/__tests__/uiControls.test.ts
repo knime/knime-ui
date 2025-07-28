@@ -39,6 +39,7 @@ describe("uiControls", () => {
         isKAISupported: true,
         isLocalSaveSupported: true,
         shouldDisplayDownloadAPButton: false,
+        canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: true,
       });
     });
@@ -65,6 +66,7 @@ describe("uiControls", () => {
         isKAISupported: true,
         isLocalSaveSupported: false,
         shouldDisplayDownloadAPButton: false,
+        canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: false,
       });
     });
@@ -97,6 +99,7 @@ describe("uiControls", () => {
         isKAISupported: false,
         isLocalSaveSupported: false,
         shouldDisplayDownloadAPButton: true,
+        canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: false,
       });
     });
@@ -127,6 +130,7 @@ describe("uiControls", () => {
         isKAISupported: false,
         isLocalSaveSupported: false,
         shouldDisplayDownloadAPButton: false,
+        canReExecuteCompositeViews: false,
         shouldDisplayRemoteWorkflowInfoBar: false,
       });
     });

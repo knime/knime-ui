@@ -6,15 +6,20 @@ import { TabBar } from "@knime/components";
 import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
 import portIcon from "@/components/common/PortIconRenderer";
+import { mockStores } from "@/test/utils/mockStores";
 import PortTabs, { portIconSize } from "../PortTabs.vue";
 
 vi.mock("@/components/common/PortIconRenderer", () => ({ default: vi.fn() }));
 
 describe("PortTabs.vue", () => {
-  const doShallowMount = (props = {}) =>
-    shallowMount(PortTabs, {
+  const doShallowMount = (props = {}) => {
+    const mockedStores = mockStores();
+
+    return shallowMount(PortTabs, {
+      global: { plugins: [mockedStores.testingPinia] },
       props,
     });
+  };
 
   afterEach(() => {
     vi.clearAllMocks();

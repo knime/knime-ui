@@ -73,14 +73,15 @@ describe("ComponentViewTabOutput.vue", () => {
     workflowId: "workflow-1",
     selectedNode: createComponentNode({ ...dummyNode }),
     availablePortTypes,
-    isTabSelected: true,
   };
 
-  const doMount = ({ props = {} } = {}) => {
+  const doMount = ({ props = {}, isReadOnly = false } = {}) => {
     const mockedStores = mockStores();
 
     mockedStores.compositeViewStore.isReexecuting = isReexecutingMock;
     mockedStores.uiControlsStore.canDetachNodeViews = true;
+    // @ts-expect-error
+    mockedStores.workflowStore.isActiveWorkflowFixedVersion = isReadOnly;
 
     const wrapper = mount(CompositeViewTabOutput, {
       props: { ...defaultProps, ...props },
@@ -132,6 +133,22 @@ describe("ComponentViewTabOutput.vue", () => {
         code: "NODE_UNCONFIGURED",
       }),
     );
+  });
+
+  it("should show fixed version notification when workflow is fixed version", () => {
+    const { wrapper } = doMount({
+      props: {
+        selectedNode: createComponentNode({
+          ...dummyNode,
+          state: {
+            executionState: NodeState.ExecutionStateEnum.EXECUTED,
+          },
+        }),
+      },
+      isReadOnly: true,
+    });
+
+    expect(wrapper.find(".workflow-info").exists()).toBe(true);
   });
 
   it("should bypass validation when node is executing due to re-executing", () => {

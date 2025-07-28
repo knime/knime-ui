@@ -106,6 +106,11 @@ const openInNewWindow = () => {
     </Button>
   </div>
 
+  <div v-if="isActiveWorkflowFixedVersion" class="workflow-info">
+    This is a read-only preview. Interactive elements are disabled because a
+    specific version is selected.
+  </div>
+
   <div v-if="!nodeErrors" class="node-view-wrapper">
     <Suspense>
       <CompositeViewLoader
@@ -122,6 +127,16 @@ const openInNewWindow = () => {
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+.workflow-info {
+  background: v-bind("$colors.notifications.info");
+  min-height: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 var(--space-8);
+}
 
 .node-view-wrapper {
   height: 100%;

@@ -58,6 +58,10 @@ export interface UIControlsState {
    */
   shouldDisplayDownloadAPButton: boolean;
   /**
+   * Whether to allow re-execution of composite views (enable widgets in composite views)
+   */
+  canReExecuteCompositeViews: boolean;
+  /**
    * Whether flow variables can be configured via their *legacy* dialog
    */
   canConfigureFlowVariables: boolean;
@@ -105,6 +109,7 @@ export const useUIControlsStore = defineStore("uiControls", {
     canViewVersions: false,
     shouldDisplayRemoteWorkflowInfoBar: false,
     shouldDisplayDownloadAPButton: false,
+    canReExecuteCompositeViews: false,
 
     canConfigureFlowVariables: false,
 
@@ -147,6 +152,7 @@ export const useUIControlsStore = defineStore("uiControls", {
           isPlayground &&
           Boolean(useApplicationStore().analyticsPlatformDownloadURL),
         isKAISupported: isDesktop() || (isBrowser() && isDefault),
+        canReExecuteCompositeViews: isDefault || isPlayground,
 
         /**
          * The following properties reference features that are

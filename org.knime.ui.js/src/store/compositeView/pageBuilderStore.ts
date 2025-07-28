@@ -14,6 +14,7 @@ import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useUIControlsStore } from "../uiControls/uiControls";
 
 type ServiceRequestParams = {
   extensionConfig: ExtensionConfig;
@@ -467,8 +468,11 @@ const actions = {
       nodeId,
     );
 
+    const workflowStore = useWorkflowStore();
+    const uiControlsStore = useUIControlsStore();
+
     const versionId = computed(
-      () => useWorkflowStore().activeWorkflow!.info.version,
+      () => workflowStore.activeWorkflow!.info.version,
     );
 
     const result = await API.compositeview.getCompositeViewPage({
@@ -483,6 +487,9 @@ const actions = {
       wizardExecutionState: "INTERACTION_REQUIRED",
       hasPreviousPage: false,
       wizardPageContent: JSON.parse(result),
+      disableWidgets:
+        workflowStore.isActiveWorkflowFixedVersion ||
+        !uiControlsStore.canReExecuteCompositeViews,
     };
 
     commit("setProjectId", projectId);
