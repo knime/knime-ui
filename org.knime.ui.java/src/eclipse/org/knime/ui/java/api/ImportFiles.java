@@ -127,7 +127,7 @@ class ImportFiles extends AbstractImportItems {
         for (final var srcPath : srcPaths) {
             try {
                 importedSpaceItems.add(space.importFile(srcPath, workflowGroupItemId, collisionHandling, monitor));
-            } catch (GatewayException e) { // TODO urgh
+            } catch (GatewayException e) { // TODO NXT-3938 react to workflow load exceptions
                 LOGGER.error(String.format("Could not import <%s>", srcPath), e);
                 return null;
             } catch (MutableServiceCallException e) {

@@ -227,14 +227,14 @@ public final class DesktopAPI {
         }
     }
 
-    private static String throwableToJsonString(final Throwable thrw) {
+    private static String throwableToJsonString(final Throwable throwable) {
         final var objectMapper = ObjectMapperUtil.getInstance().getObjectMapper();
         try {
             return objectMapper.writeValueAsString(
-                thrw instanceof GatewayException ge ? knownToEntity(ge) : unknownToEntity(thrw));
-        } catch (final JsonProcessingException e) {
-            e.addSuppressed(thrw);
-            LOGGER.error("Could not serialize problem: " + e.getMessage(), e);
+                throwable instanceof GatewayException gatewayException ? knownToEntity(gatewayException) : unknownToEntity(throwable));
+        } catch (final JsonProcessingException jsonProcessingException) {
+            jsonProcessingException.addSuppressed(throwable);
+            LOGGER.error("Could not serialize problem: " + jsonProcessingException.getMessage(), jsonProcessingException);
             return "{}";
         }
     }

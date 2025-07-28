@@ -103,7 +103,7 @@ abstract class AbstractImportItems {
         // Attempt to import files
         var importedSpaceItems = DesktopAPUtil.runWithProgress(itemId, LOGGER, //
             monitor -> {
-                try { // TODO
+                try { // TODO NXT-3938 React to workflow load exceptions
                     return importItems(monitor, space, itemId, srcPaths, collisionHandling);
                 } catch (CanceledExecutionException e) { // NOSONAR
                     throw new InterruptedException();

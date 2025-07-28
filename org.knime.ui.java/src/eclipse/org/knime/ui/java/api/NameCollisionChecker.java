@@ -209,24 +209,6 @@ final class NameCollisionChecker {
     }
 
     /**
-     * Checks for name collisions before something is written to the destination workflow group.
-     *
-     * @param space surrounding space
-     * @param fileName The filename as it appears on the directory
-     * @param destWorkflowGroupItemId The destination workflow group ID
-     *
-     * @return {@code true} if an item with that name already exists in the workflow group, {@code false} otherwise
-     * @throws LoggedOutException
-     * @throws NetworkException
-     * @throws MutableServiceCallException
-     */
-    static boolean checkForNameCollisionInDir(final Space space, final String fileName,
-        final String destWorkflowGroupItemId)
-        throws NetworkException, LoggedOutException, MutableServiceCallException {
-        return space.containsItemWithName(destWorkflowGroupItemId, fileName);
-    }
-
-    /**
      * Shows dialog to select name collision handling dialog before something is written to the destination workflow
      * group.
      *

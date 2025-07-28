@@ -60,7 +60,6 @@ import java.util.stream.Stream;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -77,8 +76,6 @@ import com.equo.chromium.swt.Browser;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 final class KnimeBrowserHealthChecker {
-
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(KnimeBrowserHealthChecker.class);
 
     private static final String EMPTY_SVG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" height=\"1\"/>";
@@ -140,11 +137,7 @@ final class KnimeBrowserHealthChecker {
             var returnCode = dialog.open();
             // return code is implied by order of buttons
             if (returnCode == SAVE_AND_RESTART.returnCode()) {
-                try {
-                    saveAndRestart();
-                } catch (GatewayException ge) {
-                    LOGGER.error(ge); // TODO
-                }
+                saveAndRestart();
                 return false;
             } else {
                 return true;
@@ -152,12 +145,12 @@ final class KnimeBrowserHealthChecker {
         });
     }
 
-    private static void saveAndRestart() throws GatewayException {
+    private static void saveAndRestart()  {
         saveAndCloseProjects();
         PlatformUI.getWorkbench().restart();
     }
 
-    private static void saveAndCloseProjects() throws GatewayException {
+    private static void saveAndCloseProjects() {
         var projectIds = ProjectManager.getInstance().getDirtyProjectsMap().entrySet().stream()
             .filter(Entry::getValue).map(Entry::getKey).toArray(String[]::new);
         // save and close projects

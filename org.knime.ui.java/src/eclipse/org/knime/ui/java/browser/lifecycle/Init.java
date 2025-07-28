@@ -163,7 +163,7 @@ final class Init {
                         projectManager.setProjectActive(project.getID());
                     }
                 } catch (NetworkException | LoggedOutException | ServiceCallException e) {
-                    // TODO Auto-generated catch block
+                    // TODO NXT-3938 react to workflow load exceptions
                 }
             });
         }

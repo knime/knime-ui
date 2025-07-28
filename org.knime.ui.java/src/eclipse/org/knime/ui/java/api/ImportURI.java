@@ -167,7 +167,7 @@ public final class ImportURI {
                     try {
                         OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null));
                     } catch (GatewayException ge) {
-                        LOGGER.error(ge); // TODO
+                        LOGGER.error(ge); // TODO NXT-3938 react to workflow load exceptions
                     }
                 });
             } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
