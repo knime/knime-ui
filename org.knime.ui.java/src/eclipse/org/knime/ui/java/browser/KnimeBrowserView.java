@@ -165,7 +165,8 @@ public class KnimeBrowserView {
 
         browser = new Browser(parent, SWT.NONE); // NOSONAR
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
-        browser.addOpenWindowListener(e -> CEFBrowserWindow.open(e, browser));
+        browser.addOpenWindowListener(e -> CEFBrowserWindow.open(e, browser,
+            !Boolean.getBoolean("org.knime.ui.java.use_cef_browser_for_external_links")));
         browser.setMenu(new Menu(browser.getShell()));
         CEFUtils.registerNodeLogger(LOGGER, browser);
 
