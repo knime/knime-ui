@@ -175,7 +175,7 @@ const onItemClick = (_: MouseEvent, item: MenuItem) =>
   (item as MenuItemWithHandler).metadata?.handler?.();
 
 const { createHint } = useHint();
-const helpMenu = useTemplateRef("helpMenu");
+const helpMenuRef = useTemplateRef("helpMenuRef");
 
 // eslint-disable-next-line no-magic-numbers
 const helpIsVisibleCondition = computed(() => totalNodes.value >= 10);
@@ -183,14 +183,14 @@ const helpIsVisibleCondition = computed(() => totalNodes.value >= 10);
 onMounted(() => {
   createHint({
     hintId: HINTS.HELP,
-    referenceElement: helpMenu,
+    referenceElement: helpMenuRef,
     isVisibleCondition: helpIsVisibleCondition,
   });
 });
 </script>
 
 <template>
-  <div ref="helpMenu">
+  <div ref="helpMenuRef">
     <SubMenu
       :teleport-to-body="false"
       orientation="left"

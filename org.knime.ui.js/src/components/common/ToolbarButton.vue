@@ -34,7 +34,6 @@ button {
   background: transparent;
   outline: none;
   padding: 0;
-  margin-right: 5px;
   line-height: 1;
 
   &.with-text {

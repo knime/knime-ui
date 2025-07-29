@@ -11,7 +11,7 @@ import PerspectiveSwitchIcon from "@knime/styles/img/icons/perspective-switch.sv
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import SwitchIcon from "@knime/styles/img/icons/switch.svg";
 
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+import AppHeaderButton from "@/components/application/AppHeader/AppHeaderButton.vue";
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
@@ -96,17 +96,10 @@ const menuItem = computed<MenuItem>(() => {
   };
 });
 
-const onItemClick = (_: MouseEvent, item: MenuItem) =>
+const onItemClick = (item: MenuItem) =>
   (item as MenuItemWithHandler).metadata?.handler?.();
 </script>
 
 <template>
-  <div>
-    <OptionalSubMenuActionButton
-      class="app-menu"
-      hide-dropdown
-      :item="menuItem"
-      @item-click="onItemClick"
-    />
-  </div>
+  <AppHeaderButton :item="menuItem" @click="onItemClick" />
 </template>

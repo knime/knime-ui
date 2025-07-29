@@ -14,7 +14,7 @@ import SelectionModeIcon from "@/assets/selection-mode.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
-import { isBrowser, isDesktop } from "@/environment";
+import { isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
@@ -352,7 +352,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
         aria-label="Zoom Menu"
       />
 
-      <HelpMenu v-if="isBrowser()" class="help-menu" />
+      <HelpMenu class="help-menu" />
     </div>
   </div>
 </template>
@@ -374,6 +374,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     display: flex;
     font-size: 14px;
     user-select: none;
+    gap: var(--space-4);
   }
 
   & .breadcrumb {
@@ -392,6 +393,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     justify-content: end;
     align-items: center;
     flex: 0 0;
+    gap: var(--space-4);
 
     & .help-menu:deep(button.submenu-toggle) {
       border: 1px solid var(--knime-silver-sand);

@@ -1,14 +1,15 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
-import { FunctionButton, type MenuItem } from "@knime/components";
+import { type MenuItem } from "@knime/components";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
 import LeaveIcon from "@knime/styles/img/icons/leave.svg";
 import UserIcon from "@knime/styles/img/icons/user.svg";
 
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+import AppHeaderButton from "@/components/application/AppHeader/AppHeaderButton.vue";
 import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
@@ -46,66 +47,55 @@ const redirectToCommunityHubSpaces = () =>
 
 const signMenuItem = computed<MenuItem>(() => {
   return {
-    text: userName.value,
+    text: getCommunityHubInfo.value.isCommunityHubConnected
+      ? userName.value
+      : "Sign in",
     icon: UserIcon,
-    children: [
-      {
-        text: "Hub Spaces",
-        icon: CubeIcon,
-        metadata: {
-          handler: () => redirectToCommunityHubSpaces(),
-        },
+    metadata: {
+      handler: () => {
+        if ($route.name === APP_ROUTES.WorkflowPage) {
+          connectProvider({
+            spaceProviderId: getCommunityHubInfo.value.communityHubProvider!.id,
+          });
+          return;
+        }
+
+        connectAndNavigate(getCommunityHubInfo.value.communityHubProvider!);
       },
-      {
-        text: "Profile",
-        icon: UserIcon,
-        metadata: {
-          handler: () => openUserHubProfile(),
-        },
-      },
-      {
-        text: "Logout",
-        icon: LeaveIcon,
-        metadata: {
-          handler: () =>
-            logout(getCommunityHubInfo.value.communityHubProvider!),
-        },
-      },
-    ],
+    },
+    children: getCommunityHubInfo.value.isCommunityHubConnected
+      ? [
+          {
+            text: "Hub Spaces",
+            icon: CubeIcon,
+            metadata: {
+              handler: () => redirectToCommunityHubSpaces(),
+            },
+          },
+          {
+            text: "Profile",
+            icon: UserIcon,
+            metadata: {
+              handler: () => openUserHubProfile(),
+            },
+          },
+          {
+            text: "Logout",
+            icon: LeaveIcon,
+            metadata: {
+              handler: () =>
+                logout(getCommunityHubInfo.value.communityHubProvider!),
+            },
+          },
+        ]
+      : undefined,
   };
 });
 
-const onSignInButtonClick = () => {
-  if ($route.name === APP_ROUTES.WorkflowPage) {
-    connectProvider({
-      spaceProviderId: getCommunityHubInfo.value.communityHubProvider!.id,
-    });
-    return;
-  }
-
-  connectAndNavigate(getCommunityHubInfo.value.communityHubProvider!);
-};
-
-const onItemClick = (_: MouseEvent, item: MenuItem) =>
+const onItemClick = (item: MenuItem) =>
   (item as MenuItemWithHandler).metadata?.handler?.();
 </script>
 
 <template>
-  <OptionalSubMenuActionButton
-    v-if="getCommunityHubInfo.isCommunityHubConnected"
-    class="sign-menu"
-    hide-dropdown
-    :item="signMenuItem"
-    @item-click="onItemClick"
-  />
-
-  <FunctionButton
-    v-else
-    class="header-button"
-    title="Sign in"
-    @click="onSignInButtonClick"
-  >
-    <UserIcon />
-    Sign in
-  </FunctionButton>
+  <AppHeaderButton :item="signMenuItem" @click="onItemClick" />
 </template>

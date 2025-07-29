@@ -7,7 +7,6 @@ import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import SearchButton from "@/components/common/SearchButton.vue";
 import {
   type ActionMenuItem,
@@ -16,6 +15,7 @@ import {
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 
+import SpaceExplorerActionButton from "./SpaceExplorerActionButton.vue";
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 
 type DisplayModes = "normal" | "mini";
@@ -60,7 +60,7 @@ const createWorkflowButtonTitle = computed(() => {
   return `${text} (${hotkeyText})`;
 });
 
-const filteredActions = (hideItems: string[]) =>
+const filteredActions = (hideItems: string[]): ActionMenuItem[] =>
   spaceExplorerActionsItems.value.filter(
     (item) => !hideItems.includes(item.id),
   );
@@ -76,14 +76,13 @@ const filteredActions = (hideItems: string[]) =>
           data-test-id="space-filter-btn"
           @update:model-value="emit('update:filterQuery', $event)"
         />
-        <OptionalSubMenuActionButton
+
+        <SpaceExplorerActionButton
           v-for="action in filteredActions(['createWorkflow', 'connectToHub'])"
-          :id="action.id"
           :key="action.id"
-          :disabled="isLoadingContent"
           :item="action"
           :data-test-id="`space-${kebabCase(action.id)}-btn`"
-          @click="(item) => (item as ActionMenuItem).execute?.()"
+          :disabled="action.disabled || isLoadingContent"
         />
 
         <SpaceExplorerFloatingButton
@@ -137,9 +136,6 @@ const filteredActions = (hideItems: string[]) =>
     display: flex;
     position: relative;
     gap: var(--space-4);
-
-    --theme-button-function-foreground-color-hover: var(--knime-white);
-    --theme-button-function-background-color-hover: var(--knime-masala);
   }
 
   & .toolbar-actions-mini {

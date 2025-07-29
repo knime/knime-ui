@@ -4,11 +4,11 @@ import { mount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
 
-import OptionalSubMenuActionButton from "../OptionalSubMenuActionButton.vue";
+import AppHeaderButton from "../AppHeaderButton.vue";
 
-describe("OptionalSubMenuActionButton.vue", () => {
+describe("AppHeaderButton.vue", () => {
   const doMount = ({ props = {} } = {}) => {
-    const wrapper = mount(OptionalSubMenuActionButton, {
+    const wrapper = mount(AppHeaderButton, {
       props,
     });
 

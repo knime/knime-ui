@@ -6,11 +6,11 @@ import { API } from "@api";
 import { SubMenu } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import { getToastPresets } from "@/toastPresets";
+import SpaceExplorerActionButton from "../SpaceExplorerActionButton.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 
@@ -118,9 +118,9 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.findComponent(SpaceExplorerFloatingButton).exists()).toBe(
         true,
       );
-      expect(
-        wrapper.findAllComponents(OptionalSubMenuActionButton).length,
-      ).toBe(5);
+      expect(wrapper.findAllComponents(SpaceExplorerActionButton).length).toBe(
+        5,
+      );
     });
 
     it("should render actions for hub", async () => {
@@ -146,9 +146,9 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.findComponent(SpaceExplorerFloatingButton).exists()).toBe(
         true,
       );
-      expect(
-        wrapper.findAllComponents(OptionalSubMenuActionButton).length,
-      ).toBe(7);
+      expect(wrapper.findAllComponents(SpaceExplorerActionButton).length).toBe(
+        7,
+      );
     });
 
     it("should disable actions that require selected items", async () => {

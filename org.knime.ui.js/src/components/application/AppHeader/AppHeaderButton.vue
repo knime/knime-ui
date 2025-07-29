@@ -4,21 +4,17 @@
  */
 import { Button, SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
-import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
 type Props = {
   item: MenuItem;
-  hideDropdown?: boolean;
 };
 
 type Emits = {
   click: [item: MenuItem];
 };
 
+defineProps<Props>();
 defineEmits<Emits>();
-withDefaults(defineProps<Props>(), {
-  hideDropdown: false,
-});
 </script>
 
 <template>
@@ -37,16 +33,9 @@ withDefaults(defineProps<Props>(), {
         item.disabled ? null : $emit('click', item)
     "
   >
-    <template #default="{ expanded }">
+    <template #default>
       <Component :is="item.icon" class="icon" />
       <span class="text">{{ item.text }}</span>
-      <DropdownIcon
-        v-if="!hideDropdown"
-        class="dropdown-icon"
-        :class="{ flip: expanded }"
-        aria-hidden="true"
-        focusable="false"
-      />
     </template>
   </SubMenu>
   <Button
@@ -72,65 +61,27 @@ withDefaults(defineProps<Props>(), {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.submenu-button {
-  & .dropdown-icon {
-    margin-left: 5px;
-    margin-top: 3px;
-
-    @mixin svg-icon-size 12;
-
-    stroke: var(--knime-masala);
-
-    &.flip {
-      transform: scaleY(-1);
-    }
-  }
+.button.item-button {
+  --theme-button-small-foreground-color-hover: var(--knime-white);
+  --theme-button-small-background-color-hover: var(--knime-dove-gray);
 }
 
 .button.item-button,
 .submenu-button :deep(.submenu-toggle) {
-  margin-left: 5px;
-  border: 1px solid var(--knime-silver-sand);
-  padding: 5px 14px;
-  color: var(--knime-masala);
+  border: 1px solid var(--knime-dove-gray);
+  display: flex;
+  margin-left: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--knime-white);
+  height: var(--header-button-height);
+  padding: 10px;
 
-  & svg:not(.dropdown-icon) {
-    @mixin svg-icon-size 18;
+  & svg {
+    @mixin svg-icon-size 16;
 
-    stroke: var(--knime-masala);
-    margin-right: 4px;
-  }
-
-  &:hover,
-  &:active,
-  &:focus,
-  &.expanded {
-    cursor: pointer;
-    border-color: var(--theme-button-function-background-color-hover);
-    color: var(--theme-button-function-foreground-color-hover);
-    background-color: var(--theme-button-function-background-color-hover);
-
-    & svg {
-      stroke: var(--knime-white);
-    }
-  }
-
-  &[aria-disabled] {
-    cursor: default;
-    opacity: 0.6;
-
-    &:hover,
-    &:active,
-    &:focus {
-      border-color: var(--knime-silver-sand-semi);
-      color: var(--knime-masala);
-      background-color: transparent;
-      cursor: default;
-    }
-
-    & svg.icon {
-      stroke: var(--knime-masala);
-    }
+    margin-right: var(--space-4);
+    stroke: var(--knime-white);
   }
 }
 </style>

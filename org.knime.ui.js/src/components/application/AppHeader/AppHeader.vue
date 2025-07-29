@@ -23,6 +23,7 @@ import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteraction
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import HelpMenu from "../HelpMenu.vue";
 
+import AppHeaderButton from "./AppHeaderButton.vue";
 import { AppHeaderContextMenu } from "./AppHeaderContextMenu";
 import AppHeaderTab from "./AppHeaderTab.vue";
 import AppMenu from "./AppMenu.vue";
@@ -282,15 +283,14 @@ const onMouseDown = (e: MouseEvent) => {
           data-test-id="app-header-help-menu"
         />
 
-        <FunctionButton
-          class="classic-ui-prefs"
-          title="Open preferences"
+        <AppHeaderButton
           data-test-id="open-preferences"
-          @click="openKnimeUIPreferencePage"
-        >
-          <CogIcon aria-hidden="true" focusable="false" />
-          Preferences
-        </FunctionButton>
+          :item="{
+            text: 'Preferences',
+            icon: CogIcon,
+          }"
+          @click="openKnimeUIPreferencePage()"
+        />
 
         <AppMenu
           class="header-dropdown-btn"
@@ -447,7 +447,8 @@ header {
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      margin-left: 15px;
+      margin-left: var(--space-16);
+      margin-right: var(--space-8);
       gap: var(--space-4);
 
       /* make sure opening dropdown menus are prioritized over app skeleton */
@@ -455,7 +456,7 @@ header {
         "$zIndices.layerPriorityElevation"
       );
 
-      & .help-menu {
+      & .help-menu:deep(.function-button) {
         border: 1px solid var(--knime-dove-gray);
         border-radius: 50%;
         width: var(--header-button-height);
@@ -464,30 +465,10 @@ header {
         justify-content: center;
         color: var(--knime-white);
         height: var(--header-button-height);
-        padding: 10px;
 
-        & :deep(svg) {
+        & > svg {
           @mixin svg-icon-size 16;
 
-          stroke: var(--knime-white);
-        }
-      }
-
-      & .classic-ui-prefs,
-      & .header-dropdown-btn:deep(.submenu-toggle) {
-        border: 1px solid var(--knime-dove-gray);
-        display: flex;
-        margin-left: 0;
-        align-items: center;
-        justify-content: center;
-        color: var(--knime-white);
-        height: var(--header-button-height);
-        padding: 10px;
-
-        & svg {
-          @mixin svg-icon-size 16;
-
-          margin-right: var(--space-4);
           stroke: var(--knime-white);
         }
       }
