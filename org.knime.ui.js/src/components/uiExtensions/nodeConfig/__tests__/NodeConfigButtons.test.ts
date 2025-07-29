@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
 import type { APILayerDirtyState } from "@knime/ui-extension-renderer/api";
@@ -177,6 +178,24 @@ describe("NodeConfigButtons.vue", () => {
 
     const applyAndExecuteButton = getButton(wrapper, "apply-execute");
     await applyAndExecuteButton.trigger("click");
+
+    expect(wrapper.emitted("apply")![0][0]).toBe(true);
+  });
+
+  it("should trigger apply & execute on [Ctrl+Enter]", async () => {
+    const { wrapper } = doMount({ props: { activeNode: executedNode } });
+
+    await setDirtyState(wrapper, {
+      apply: "configured",
+      view: "configured",
+    });
+
+    expect(wrapper.emitted("apply")).toBeUndefined();
+
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true }),
+    );
+    await nextTick();
 
     expect(wrapper.emitted("apply")![0][0]).toBe(true);
   });

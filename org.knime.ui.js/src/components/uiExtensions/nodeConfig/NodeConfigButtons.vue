@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { onKeyDown } from "@vueuse/core";
 
 import { Button } from "@knime/components";
 import type { APILayerDirtyState } from "@knime/ui-extension-renderer/api";
+import { getMetaOrCtrlKey } from "@knime/utils";
 
 import {
   type ComponentNode,
@@ -50,6 +52,14 @@ const canApplyAndExecute = computed(() => {
       return false;
     }
   }
+});
+
+onKeyDown("Enter", (event) => {
+  if (!event[getMetaOrCtrlKey()] || !canApplyAndExecute.value) {
+    return;
+  }
+
+  emit("apply", true);
 });
 </script>
 
