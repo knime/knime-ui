@@ -99,7 +99,7 @@ class ProjectAPITest {
         var appStateUpdater = new AppStateUpdater();
         DesktopAPI.injectDependency(appStateUpdater);
 
-        ProjectAPI.setProjectActiveAndEnsureItsLoaded(projectId, VersionId.currentState().toString());
+        ProjectAPI.setProjectActiveAndEnsureItsLoaded(projectId, VersionId.currentState().toString(), Boolean.TRUE);
 
         assertThat(projectManager.getProject(projectId)).isNotEmpty();
         assertThat(projectManager.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded)).isNotEmpty();

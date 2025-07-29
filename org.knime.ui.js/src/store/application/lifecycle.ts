@@ -26,6 +26,7 @@ import { useComponentInteractionsStore } from "@/store/workflow/componentInterac
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
+import { setProjectActiveOrThrow } from "@/util/projectUtil";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";
 
@@ -490,6 +491,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
               newWorkflow.version === undefined
                 ? activeWorkflow?.info.version
                 : newWorkflow.version,
+            removeOnFailure: false,
           });
         }
       }
@@ -501,29 +503,19 @@ export const useLifecycleStore = defineStore("lifecycle", {
       projectId,
       workflowId = "root",
       versionId = null,
+      removeOnFailure = true,
     }: {
       projectId: string;
       workflowId?: string;
       versionId?: string | null;
+      removeOnFailure?: boolean;
     }) {
       if (isDesktop()) {
-        // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
-        const projectActivationError = new ProjectActivationError(
-          `Failed to set active project ${projectId}`,
+        await setProjectActiveOrThrow(
+          projectId,
+          versionId ?? CURRENT_STATE_VERSION,
+          removeOnFailure,
         );
-        try {
-          const isProjectLoadedInAppState =
-            await API.desktop.setProjectActiveAndEnsureItsLoaded({
-              projectId,
-              versionId: versionId ?? CURRENT_STATE_VERSION,
-            });
-
-          if (!isProjectLoadedInAppState) {
-            throw projectActivationError;
-          }
-        } catch (_error) {
-          throw projectActivationError;
-        }
       }
 
       const getWorkflowParams: Parameters<typeof API.workflow.getWorkflow>[0] =

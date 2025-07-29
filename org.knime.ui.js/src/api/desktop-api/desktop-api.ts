@@ -413,13 +413,15 @@ export const forceCloseProjects = ({
 export const setProjectActiveAndEnsureItsLoaded = ({
   projectId,
   versionId,
+  removeProjectIfNotLoaded = true,
 }: {
   projectId: string;
   versionId: string;
+  removeProjectIfNotLoaded: boolean;
 }) => {
   return callBrowserFunction(
     window.setProjectActiveAndEnsureItsLoaded,
-    [projectId, versionId],
+    [projectId, versionId, removeProjectIfNotLoaded],
     "Failed to set project as active in the backend",
     true,
     { block: true },
