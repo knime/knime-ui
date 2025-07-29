@@ -34,9 +34,6 @@ watch(isLargeMode, () => {
     panel.value!.close();
     panel.value!.show();
   }
-  // TODO: Should be removed once NXT-3761 is done.
-  // The dialog element shouldn't be focused, according to the specs.
-  panel.value!.focus();
 });
 
 const exitLargeMode = () => {
@@ -63,7 +60,7 @@ useEventListener(panel, "click", (event) => {
   >
     <ToastStack v-if="isLargeMode" class="large-mode-toasts" />
 
-    <NodeConfigWrapper>
+    <NodeConfigWrapper @escape-pressed="exitLargeMode">
       <template #inactive>
         <ManageVersionsWrapper
           v-if="versionsStore.isSidepanelOpen && !singleSelectedNode"

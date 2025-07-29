@@ -29,8 +29,8 @@ importers:
         specifier: 4.x
         version: 4.5.10
       '@knime/components':
-        specifier: ^1.33.0
-        version: 1.33.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+        specifier: ^1.33.1
+        version: 1.33.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@knime/hub-features':
         specifier: ^1.11.4
         version: 1.11.4(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
@@ -38,20 +38,20 @@ importers:
         specifier: 0.5.22
         version: 0.5.22(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@knime/rich-text-editor':
-        specifier: ^1.6.1
-        version: 1.6.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+        specifier: ^1.6.2
+        version: 1.6.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@knime/styles':
         specifier: ^1.10.0
         version: 1.10.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
       '@knime/ui-extension-renderer':
-        specifier: 2.2.1
-        version: 2.2.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+        specifier: 2.2.3
+        version: 2.2.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@knime/utils':
         specifier: ^1.5.3
         version: 1.5.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.2.3)
       '@knime/virtual-tree':
-        specifier: ^1.5.1
-        version: 1.5.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+        specifier: ^1.5.2
+        version: 1.5.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@open-rpc/client-js':
         specifier: ^1.8.1
         version: 1.8.1(encoding@0.1.13)
@@ -1170,6 +1170,13 @@ packages:
       consola: 3.x
       vue: '>=3.5.0'
 
+  '@knime/components@1.33.1':
+    resolution: {integrity: sha512-K+D7zmZbVpKQMfJn5g0D19pU0dcPBqi3v9TtRdQiut9XaK9Ao+YusS9rC54dWk6uLbL14nTApnMH40cIBIn3+w==}
+    engines: {node: 22.x}
+    peerDependencies:
+      consola: 3.x
+      vue: '>=3.5.0'
+
   '@knime/eslint-config@9.0.2':
     resolution: {integrity: sha512-f6+DqAEcMwV5NWP2bFFmvl26y8aD/7ZAbQQOlr0ueSPvm69LbiZidiGGdDyxYNZAWiFbw3dE/n4jvm72yONc7w==}
     engines: {node: 22.x}
@@ -1195,8 +1202,8 @@ packages:
     resolution: {integrity: sha512-7BictAMNarfTJc8dwozm9dCkAt7zFvqLSQiIypvWMLwHM38mZfWlYkmu4AgiN3x0OLxq7TZbZ3DKsOwW/geOgg==}
     hasBin: true
 
-  '@knime/rich-text-editor@1.6.1':
-    resolution: {integrity: sha512-khrKfBHGhfj9dLX1aWt2Vls32ziY3OvIE4x2/QbSlyH504mPti0vO44ch3p2I8wFL54UAjd9JzbJ6Cxojd5CGg==}
+  '@knime/rich-text-editor@1.6.2':
+    resolution: {integrity: sha512-rG22qB3mWUK3FwBK7MWF+vmcEe43CQPNtT86ddCYEaGP/d2t6aGXbt5g+b1XN9ZeZXAhGQ5m33Df7tJzhrc4gA==}
     peerDependencies:
       consola: 3.x
       vue: '>=3.5.0'
@@ -1213,8 +1220,8 @@ packages:
       '@fontsource/roboto': 4.x
       '@fontsource/roboto-mono': 4.x
 
-  '@knime/ui-extension-renderer@2.2.1':
-    resolution: {integrity: sha512-Ol4HYfnNvYZTwTegXVbKy2t9lacYQp+nTwPO8kj7Ar3aur8OleSTextFZd5Xj4nMszlE7152kemCYhJxhF5WfQ==}
+  '@knime/ui-extension-renderer@2.2.3':
+    resolution: {integrity: sha512-/+F286FmVVyZCyMyplFwHyLeHJopJXBAUHdAYasiHDsDDpfwvcX20vY37zbAPaUBNsRCFfZScV9O5nB6v5yAUw==}
     peerDependencies:
       consola: 3.x
       vue: '>=3.5.0'
@@ -1227,8 +1234,8 @@ packages:
     peerDependencies:
       consola: 3.x
 
-  '@knime/virtual-tree@1.5.1':
-    resolution: {integrity: sha512-lgQphIsBHr6vemIM9UFj9/lM/nI8zLA2RBpmumIMHYvwl61Jn/KBFBV/Gi/QQXWgU5cgRAX3GH0B5UbPgsRaSw==}
+  '@knime/virtual-tree@1.5.2':
+    resolution: {integrity: sha512-j8UgRzXhz+2MO26mpgpDy1NmOkrexfDG6I/94DmAq3nE3Pn1Liqt0sEgwK4EOL08f/GBYtTFP2SsU5eejGGZfQ==}
     peerDependencies:
       consola: 3.x
       vue: '>=3.5.0'
@@ -5550,6 +5557,10 @@ packages:
   util-extend@1.0.3:
     resolution: {integrity: sha512-mLs5zAK+ctllYBj+iAQvlDCwoxU/WDOUaJkcFudeiAX6OajC6BKXJUa9a+tbtkC11dz2Ufb7h0lyvIOVn4LADA==}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
@@ -6826,6 +6837,37 @@ snapshots:
       - react
       - react-dom
 
+  '@knime/components@1.33.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
+    dependencies:
+      '@floating-ui/vue': 1.1.5(vue@3.5.13(typescript@5.8.3))
+      '@knime/styles': 1.10.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
+      '@knime/utils': 1.5.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.2.3)
+      '@knime/vue-headless-virtual-scroller': 0.1.2(vue@3.5.13(typescript@5.8.3))
+      '@vueuse/components': 10.11.1(vue@3.5.13(typescript@5.8.3))
+      '@vueuse/core': 10.11.1(vue@3.5.13(typescript@5.8.3))
+      '@vueuse/shared': 10.11.1(vue@3.5.13(typescript@5.8.3))
+      color-hash: 2.0.2
+      consola: 3.2.3
+      date-fns: 2.30.0
+      date-fns-tz: 2.0.0(date-fns@2.30.0)
+      filesize: 10.0.6
+      focus-trap-vue: 4.0.2(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+      lodash-es: 4.17.21
+      motion: 12.5.0
+      typescript: 5.8.3
+      uuid: 11.1.0
+      v-calendar: https://bitbucket.org/KNIME/v-calendar/get/31f97bfb0854e28c87f35ee28c8f332181c22e8f.tar.gz(@popperjs/core@2.11.8)(vue@3.5.13(typescript@5.8.3))
+      vue: 3.5.13(typescript@5.8.3)
+    transitivePeerDependencies:
+      - '@emotion/is-prop-valid'
+      - '@fontsource/roboto'
+      - '@fontsource/roboto-mono'
+      - '@popperjs/core'
+      - '@vue/composition-api'
+      - focus-trap
+      - react
+      - react-dom
+
   '@knime/eslint-config@9.0.2(@vue/compiler-sfc@3.5.13)(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.33.1(eslint@9.22.0)(typescript@5.8.3))(eslint@9.22.0))(eslint@9.22.0)(postcss-html@1.8.0)(prettier@3.0.1)(stylelint@16.18.0(typescript@5.8.3))(typescript@5.8.3)(vitest@3.1.1(@types/node@22.13.10)(jsdom@24.1.3)(sugarss@4.0.1(postcss@8.4.47))(yaml@2.7.1))(vue-eslint-parser@10.1.3(eslint@9.22.0))':
     dependencies:
       '@eslint/js': 9.28.0
@@ -6914,9 +6956,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@knime/rich-text-editor@1.6.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
+  '@knime/rich-text-editor@1.6.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
-      '@knime/components': 1.33.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+      '@knime/components': 1.33.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@knime/styles': 1.10.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
       '@knime/utils': 1.5.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.2.3)
       '@tiptap/core': 2.12.0(@tiptap/pm@2.12.0)
@@ -6964,9 +7006,9 @@ snapshots:
       postcss-preset-env: 10.0.5(postcss@8.4.47)
       postcss-url: 10.1.3(postcss@8.4.47)
 
-  '@knime/ui-extension-renderer@2.2.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
+  '@knime/ui-extension-renderer@2.2.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
-      '@knime/components': 1.33.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+      '@knime/components': 1.33.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@knime/styles': 1.10.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
       '@vueuse/shared': 10.11.1(vue@3.5.13(typescript@5.8.3))
       consola: 3.2.3
@@ -7001,9 +7043,9 @@ snapshots:
       - '@fontsource/roboto'
       - '@fontsource/roboto-mono'
 
-  '@knime/virtual-tree@1.5.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
+  '@knime/virtual-tree@1.5.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
-      '@knime/components': 1.33.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+      '@knime/components': 1.33.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
       '@knime/styles': 1.10.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
       '@knime/utils': 1.5.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.2.3)
       '@knime/vue-headless-virtual-scroller': 0.1.2(vue@3.5.13(typescript@5.8.3))
@@ -11900,6 +11942,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   util-extend@1.0.3: {}
+
+  uuid@11.1.0: {}
 
   uuid@9.0.1: {}
 

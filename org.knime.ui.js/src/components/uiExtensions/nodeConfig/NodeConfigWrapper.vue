@@ -43,6 +43,10 @@ const canBeEnlarged = computed(
   () => activeExtensionConfig.value?.canBeEnlarged ?? false,
 );
 
+defineEmits<{
+  escapePressed: [];
+}>();
+
 const nodeName = computed<string>(() =>
   activeContext.value
     ? useNodeInteractionsStore().getNodeName(activeContext.value.node.id)
@@ -147,6 +151,7 @@ const discardSettings = () => {
           :selected-node="activeContext.node"
           @loading-state-change="loadingState = $event"
           @controls-visibility-change="areControlsVisible = $event"
+          @escape-pressed="$emit('escapePressed')"
         />
         <NodeConfigButtons
           v-if="areControlsVisible && isUIExtensionReady"
