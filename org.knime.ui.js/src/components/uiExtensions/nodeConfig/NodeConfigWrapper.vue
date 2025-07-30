@@ -170,6 +170,8 @@ const discardSettings = () => {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .node-configuration {
   --title-bar-height: var(--space-32);
 
@@ -179,6 +181,7 @@ const discardSettings = () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--space-8);
     color: var(--knime-white);
     background-color: var(--knime-masala);
     max-width: 100%;
@@ -189,12 +192,16 @@ const discardSettings = () => {
       margin: 0;
       font-size: 18px;
       line-height: var(--title-bar-height);
+      flex: 1;
+
+      @mixin truncate;
     }
 
     & .minimize-btn {
       color: var(--knime-white);
       margin-bottom: 1px;
       padding: var(--space-4) var(--space-8);
+      white-space: nowrap;
 
       &:hover,
       &:focus {
@@ -232,6 +239,8 @@ const discardSettings = () => {
         font-size: 16px;
         line-height: 1.44;
         margin-right: auto;
+
+        @mixin truncate;
       }
     }
   }

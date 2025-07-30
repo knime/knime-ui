@@ -78,6 +78,7 @@ useEventListener(panel, "click", (event) => {
 dialog {
   border: none;
   padding: 0;
+  color: var(--knime-masala);
 
   &:focus-visible {
     outline: none;

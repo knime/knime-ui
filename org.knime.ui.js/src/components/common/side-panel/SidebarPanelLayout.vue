@@ -9,6 +9,8 @@
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .panel-layout {
   --padding: var(--sidebar-panel-padding);
 
@@ -32,6 +34,8 @@
       font-size: 18px;
       line-height: 36px;
       margin-right: auto;
+
+      @mixin truncate;
     }
   }
 
