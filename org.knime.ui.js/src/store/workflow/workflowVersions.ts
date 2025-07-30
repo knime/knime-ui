@@ -300,15 +300,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       );
       return;
     }
-    await getVersionsApi().restoreVersion({
-      itemId: activeProjectOrigin.itemId,
-      version,
-    });
 
     await Promise.all([
-      API.workflow.disposeVersion({
+      API.workflow.restoreVersion({
         projectId: activeProjectId,
-        version: CURRENT_STATE_VERSION,
+        version: version.toString(),
       }),
       refreshData(),
     ]);

@@ -562,13 +562,9 @@ describe("workflow store: versions", () => {
 
       await workflowVersionsStore.restoreVersion(1);
 
-      expect(mockedVersionsApi.restoreVersion).toHaveBeenCalledWith({
-        itemId: "mockItemId",
-        version: 1,
-      });
-      expect(mockedAPI.workflow.disposeVersion).toHaveBeenCalledWith({
+      expect(mockedAPI.workflow.restoreVersion).toHaveBeenCalledWith({
         projectId,
-        version: CURRENT_STATE_VERSION,
+        version: "1",
       });
       expect(mockedVersionsApi.fetchItemSavepoints).toHaveBeenLastCalledWith(
         expect.objectContaining({
