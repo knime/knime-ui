@@ -83,9 +83,17 @@
             "canOpenLegacyFlowVariableDialog": true
           },
           "templateId": "org.knime.base.node.preproc.filter.row3.RowFilterNodeFactory",
+          "annotation": {
+            "text": {
+              "value": "The standard Lorem Ipsum passage, used since the 1500s. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. The standard Lorem Ipsum passage, used since the 1500s. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+              "contentType": "text/plain"
+            },
+            "textAlign": "center",
+            "styleRanges": []
+          },
           "position": {
             "x": 1217,
-            "y": 888
+            "y": 800
           },
           "inPorts": [
             {
@@ -125,6 +133,7 @@
         },
         "root:4": {
           "name": "Metanode",
+
           "id": "root:4",
           "state": {
             "executionState": "IDLE"

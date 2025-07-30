@@ -13,7 +13,7 @@ import type { GraphicsInst } from "@/vue3-pixi";
 import { useObjectInteractions } from "../../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import NodeName from "../nodeName/NodeName.vue";
-import { useNodeNameTextMetrics } from "../useNodeNameTextMetrics";
+import { useNodeNameShorting } from "../useTextShortening";
 
 import ComponentError from "./ComponentError.vue";
 import ComponentFloatingOptions from "./ComponentFloatingOptions.vue";
@@ -59,10 +59,9 @@ const nodeNamePosition = computed(() => {
   };
 });
 
-const { metrics: nodeNameDimensions } = useNodeNameTextMetrics({
-  nodeName: computed(() => props.name),
-  shortenName: false,
-});
+const { metrics: nodeNameDimensions } = useNodeNameShorting(
+  computed(() => props.name),
+);
 
 const onRightClick = async (event: FederatedPointerEvent) => {
   markPointerEventAsHandled(event, {

@@ -10,8 +10,8 @@ import * as $shapes from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
 import { geometry } from "@/util/geometry";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
-import { useNodeNameTextMetrics } from "../useNodeNameTextMetrics";
 import { useNodeSelectionPlaneMeasures } from "../useNodeSelectionPlaneMeasures";
+import { useNodeNameShorting } from "../useTextShortening";
 
 import ComponentPlaceholderState from "./ComponentPlaceholderState.vue";
 
@@ -100,10 +100,9 @@ const adjustedPosition = computed(() => {
   };
 });
 
-const { metrics: nodeNameDimensions } = useNodeNameTextMetrics({
-  nodeName: computed(() => props.placeholder.name ?? ""),
-  shortenName: false,
-});
+const { metrics: nodeNameDimensions } = useNodeNameShorting(
+  computed(() => props.placeholder.name ?? ""),
+);
 
 const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
   extraHeight: () => nodeNameDimensions.value.height,

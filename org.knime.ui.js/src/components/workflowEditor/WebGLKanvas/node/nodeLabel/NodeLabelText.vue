@@ -2,7 +2,7 @@
 <!-- eslint-disable no-undefined -->
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { CanvasTextMetrics, FederatedPointerEvent, TextStyle } from "pixi.js";
+import { FederatedPointerEvent, TextStyle } from "pixi.js";
 
 import { sleep } from "@knime/utils";
 
@@ -13,6 +13,7 @@ import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClic
 import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import { nodeLabelText } from "../../util/textStyles";
+import { useNodeLabelShortening } from "../useTextShortening";
 
 import { getNodeLabelTopOffset } from "./getNodeLabelTopOffset";
 
@@ -62,14 +63,8 @@ const label = computed(() =>
     : props.label?.replaceAll("\r\n", "\n") ?? "",
 );
 
-const labelMeasures = computed(() => {
-  return CanvasTextMetrics.measureText(
-    label.value,
-    new TextStyle(nodeLabelText.styles),
-    undefined,
-    Boolean(nodeLabelText.styles.wordWrap),
-  );
-});
+const { metrics: labelMeasures, shortenedText: shortenedNodeLabel } =
+  useNodeLabelShortening(label);
 
 const textStyle = computed<Partial<TextStyle>>(() => {
   if (showEmptyState.value) {
@@ -110,7 +105,7 @@ const renderBorder = (graphics: GraphicsInst) => {
       @pointerleave="hover = false"
       @pointerdown.stop.prevent="onPointerdown"
     >
-      {{ label }}
+      {{ shortenedNodeLabel }}
     </Text>
     <Graphics :renderable="hover" @render="renderBorder" />
   </Container>

@@ -182,7 +182,11 @@ onContextMenuOutside(textEditorWrapper, onSave);
 
 .name-text-editor {
   margin: auto;
-  text-align: center;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: calc(v-bind("nodeNameText.styles.fontSize") * 1px);
+  font-weight: v-bind("nodeNameText.styles.fontWeight");
+  text-align: v-bind("nodeNameText.styles.align");
+  line-height: v-bind("nodeNameText.lineHeight");
 }
 
 .invalid-chars-error {

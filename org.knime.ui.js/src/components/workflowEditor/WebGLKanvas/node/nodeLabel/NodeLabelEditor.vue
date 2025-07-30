@@ -134,8 +134,8 @@ onContextMenuOutside(textEditorWrapper, onSave);
       <TextEditor
         :style="textEditorStyle"
         :width-offset="2"
-        :max-width="nodeLabelText.styles.wordWrapWidth"
         :min-width="2"
+        :max-width="nodeLabelText.styles.wordWrapWidth"
         :value="editedNode?.annotation?.text.value ?? ''"
         class="label-text-editor"
         :max-length="$characterLimits.nodeLabel"
@@ -157,10 +157,12 @@ onContextMenuOutside(textEditorWrapper, onSave);
 
 .label-text-editor {
   margin: auto;
-  text-align: center;
-  font-weight: normal;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: calc(v-bind("nodeLabelText.styles.fontSize") * 1px);
+  text-align: v-bind("nodeLabelText.styles.align");
+  font-weight: v-bind("nodeLabelText.styles.fontWeight");
   border: 1.5px solid var(--knime-silver-sand);
-  line-height: 1.3;
+  line-height: v-bind("nodeLabelText.lineHeight");
   padding: 1px;
 
   &:focus-within {

@@ -2,7 +2,7 @@ import type { TextStyle } from "pixi.js";
 
 import * as $colors from "@/style/colors";
 
-type TextStylePreset = {
+type TextStylePreset<T extends Record<string, any> = any> = T & {
   styles: Partial<TextStyle> | TextStyle;
 };
 
@@ -11,31 +11,48 @@ const defaultTextStyles: Partial<TextStyle> | TextStyle = {
   fill: $colors.text.default,
 };
 
-export const nodeNameText: TextStylePreset = {
+const nodeFontSize = 12;
+const nodeLineHeight = 1.15;
+
+export const nodeNameText: TextStylePreset<{
+  fontSize: number;
+  lineHeight: number;
+  maxLines: number;
+}> = {
+  fontSize: nodeFontSize,
+  lineHeight: nodeLineHeight,
+  maxLines: 3,
   styles: {
     ...defaultTextStyles,
-    fontSize: 12,
+    fontSize: nodeFontSize,
     fontWeight: "bold",
+    lineHeight: nodeFontSize * nodeLineHeight,
     wordWrap: true,
+    wordWrapWidth: 90,
     breakWords: true,
     // fixes slight cut off of some chars
     padding: 2,
-    wordWrapWidth: 90,
     align: "center",
   },
 };
 
-export const nodeLabelText: TextStylePreset = {
+export const nodeLabelText: TextStylePreset<{
+  lineHeight: number;
+  maxLines: number;
+}> = {
+  lineHeight: nodeLineHeight,
+  maxLines: 8,
   styles: {
     ...defaultTextStyles,
-    fontSize: 12,
+    fontSize: nodeFontSize,
     fontWeight: "normal",
-    whiteSpace: "pre",
+    lineHeight: nodeFontSize * nodeLineHeight,
+    wordWrap: true,
+    wordWrapWidth: 150,
+    breakWords: true,
     // fixes slight cut off of some chars
     padding: 2,
     align: "center",
-    wordWrapWidth: 300,
-    wordWrap: true,
   },
 };
 

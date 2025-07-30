@@ -141,15 +141,9 @@ const onPointerDown = (event: PointerEvent) => {
 .text-editor {
   border: 1px solid var(--knime-silver-sand);
   background-color: var(--knime-white);
-  font-family: "Roboto Condensed", sans-serif;
-  font-style: normal;
-  font-weight: 700;
-  font-size: calc(v-bind("$shapes.nodeNameFontSize") * 1px);
   margin: 0;
   text-align: inherit;
-  -webkit-font-smoothing: antialiased;
   width: fit-content;
-  line-height: 1.26;
 
   &:focus-within {
     border: 1px solid var(--knime-masala);
