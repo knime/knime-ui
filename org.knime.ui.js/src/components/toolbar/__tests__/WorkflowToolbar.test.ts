@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
@@ -6,7 +6,9 @@ import { SubMenu } from "@knime/components";
 
 import { type Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import HelpMenu from "@/components/application/HelpMenu.vue";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
+import { isBrowser, isDesktop } from "@/environment";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import { router } from "@/router/router";
 import {
@@ -16,6 +18,7 @@ import {
   createSpaceProvider,
   createWorkflow,
 } from "@/test/factories";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import ToolbarShortcutButton from "../ToolbarShortcutButton.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
@@ -40,7 +43,13 @@ vi.mock("@/composables/useConfirmDialog", () => ({
   useConfirmDialog: () => ({ show: showConfirmDialogMock }),
 }));
 
+vi.mock("@/environment");
+
 describe("WorkflowToolbar.vue", () => {
+  beforeEach(() => {
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+  });
+
   afterEach(vi.restoreAllMocks);
 
   const doMount = ({
@@ -521,6 +530,24 @@ describe("WorkflowToolbar.vue", () => {
 
       expect(deployButton?.exists()).toBe(true);
       expect(deployButton?.attributes("title")).toBe("Deploy on Hub");
+    });
+  });
+
+  describe("help menu", () => {
+    it("shows on the browser", () => {
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+
+      const { wrapper } = doMount();
+
+      expect(wrapper.findComponent(HelpMenu).exists()).toBe(true);
+    });
+
+    it("does not show on the desktop", () => {
+      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+
+      const { wrapper } = doMount();
+
+      expect(wrapper.findComponent(HelpMenu).exists()).toBe(false);
     });
   });
 });
