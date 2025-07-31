@@ -112,7 +112,9 @@
   },
   "pnpm": {
     "overrides": {
-      "@knime/knime-ui-table@0.5.22>@knime/components": "1.33.0"
+      "@knime/knime-ui-table@0.5.22>@knime/components": "1.33.0",
+      "brace-expansion@>=1.0.0 <=1.1.11": ">=1.1.12",
+      "linkifyjs@<4.3.2": ">=4.3.2"
     },
     "onlyBuiltDependencies": [
       "esbuild",
