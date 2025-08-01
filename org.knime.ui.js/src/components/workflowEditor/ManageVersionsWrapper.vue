@@ -59,30 +59,21 @@ const onSelect = (version: NamedItemVersion["version"]) => {
 };
 
 const onLoadAll = () => {
-  versionsStore.refreshData({ loadAll: true }).catch((error) =>
-    toastPresets.api.hubActionError({
-      error,
-      headline: "Loading all versions failed",
-    }),
-  );
+  versionsStore
+    .refreshData({ loadAll: true })
+    .catch((error) => toastPresets.versions.fetchAllFailed({ error }));
 };
 
 const onDelete = (version: NamedItemVersion["version"]) => {
-  versionsStore.deleteVersion(version).catch((error) =>
-    toastPresets.api.hubActionError({
-      error,
-      headline: "Deletion of the version failed",
-    }),
-  );
+  versionsStore
+    .deleteVersion(version)
+    .catch((error) => toastPresets.versions.deleteFailed({ error }));
 };
 
 const onRestore = (version: NamedItemVersion["version"]) => {
-  versionsStore.restoreVersion(version).catch((error) =>
-    toastPresets.api.hubActionError({
-      error,
-      headline: "Restoring of the version failed",
-    }),
-  );
+  versionsStore
+    .restoreVersion(version)
+    .catch((error) => toastPresets.versions.restoreFailed({ error }));
 };
 
 const openVersionCreationPanel = () => {
@@ -104,10 +95,7 @@ const onCreate = async ({ name, description }) => {
     closeVersionCreationPanel();
   } catch (error) {
     versionCreationState.value = "failed";
-    toastPresets.api.hubActionError({
-      error,
-      headline: "Creation of the version failed",
-    });
+    toastPresets.versions.createFailed({ error });
   }
 };
 
@@ -126,12 +114,9 @@ const onUpload = async () => {
 };
 
 const onDiscardCurrentState = () => {
-  versionsStore.discardUnversionedChanges().catch((error) =>
-    toastPresets.api.hubActionError({
-      error,
-      headline: "Discarding unversioned changes failed",
-    }),
-  );
+  versionsStore
+    .discardUnversionedChanges()
+    .catch((error) => toastPresets.versions.discardFailed({ error }));
 };
 </script>
 

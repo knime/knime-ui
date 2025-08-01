@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { h } from "vue";
 
-import { rfcErrors } from "@knime/hub-features";
-
 import { getToastsProvider } from "@/plugins/toasts";
 import { getToastPresets } from "..";
 
@@ -33,19 +31,6 @@ describe("toastPresets", () => {
   });
 
   describe("connectivity", () => {
-    it("should show networkProblem toast", () => {
-      const { toastPresets, $toast } = toastSetup();
-      toastPresets.connectivity.networkProblem();
-
-      expect($toast.show).toBeCalledWith(
-        expect.objectContaining({
-          headline: "Connectivity problem",
-          message: "Check you network connection.",
-          type: "error",
-        }),
-      );
-    });
-
     it("should show hubSessionExpired toast", () => {
       const { toastPresets, $toast } = toastSetup();
       toastPresets.connectivity.hubSessionExpired();
@@ -177,48 +162,6 @@ describe("toastPresets", () => {
           headline: "Could not move items",
           component: h("div"),
           type: "warning",
-        });
-      });
-    });
-  });
-
-  describe("api", () => {
-    describe("hubActionError", () => {
-      it("works for RFCError", () => {
-        const { toastPresets, $toast } = toastSetup();
-        const headline = "some headline";
-
-        toastPresets.api.hubActionError({
-          error: new rfcErrors.RFCError({
-            title: "some title",
-            status: 0,
-            date: new Date(),
-            requestId: "requestId",
-          }),
-          headline,
-        });
-
-        expect($toast.show).toHaveBeenCalledWith({
-          type: "error",
-          headline,
-          component: expect.any(Object),
-          autoRemove: false,
-        });
-      });
-
-      it("works for other errors", () => {
-        const { toastPresets, $toast } = toastSetup();
-        const headline = "some headline";
-        const error = new Error("someError");
-
-        toastPresets.api.hubActionError({ error, headline });
-
-        expect($toast.show).toHaveBeenCalledWith({
-          headline,
-          autoRemove: false,
-          buttons: expect.any(Array),
-          message: expect.any(String),
-          type: "error",
         });
       });
     });

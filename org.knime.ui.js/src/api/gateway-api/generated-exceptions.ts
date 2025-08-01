@@ -31,7 +31,6 @@ type UnexpectedExceptionCode = typeof UNEXPECTED_EXCEPTION_CODE;
 export type ApiErrorData = {
   code: string;
   title: string;
-  message: string;
   canCopy: boolean;
   stackTrace?: string;
   details?: string[];
@@ -53,9 +52,7 @@ export function isApiErrorData(data: unknown): data is ApiErrorData {
     "code" in data &&
     typeof data.code === "string" &&
     "title" in data &&
-    typeof data.title === "string" &&
-    "message" in data &&
-    typeof data.message === "string"
+    typeof data.title === "string"
   );
 }
 

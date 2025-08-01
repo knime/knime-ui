@@ -2,7 +2,7 @@ import type { VNode } from "vue";
 
 import type { ToastServiceProvider } from "@knime/components";
 
-import { defaultErrorPresetHandler } from "./defaultErrorPresetHandler";
+import { defaultAPIErrorHandler } from "./defaultAPIErrorHandler";
 import { type ToastPresetErrorHandler, type ToastPresetHandler } from "./types";
 import { removeAllToastsByIds } from "./utils";
 
@@ -60,7 +60,7 @@ export const getPresets = (
   return {
     auth: {
       connectFailed: ({ error, providerName }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: `Could not connect to ${providerName ?? "remote"}`,
         }),
@@ -68,12 +68,12 @@ export const getPresets = (
 
     crud: {
       createWorkflowFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error creating workflow",
         }),
       deleteItemsFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error deleting items",
         }),
@@ -90,41 +90,41 @@ export const getPresets = (
         } else {
           error = param.error;
         }
-        return defaultErrorPresetHandler($toast, error, {
+        return defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error fetching provider space groups",
         });
       },
       reloadProviderSpacesFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error fetching provider spaces",
         }),
 
       fetchWorkflowGroupFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error while fetching workflow group content",
         }),
 
       createSpaceFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error while creating space",
         }),
       createFolderFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Create folder failed",
           message: "Error while creating folder",
         }),
       moveItemsFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error moving items", // "There was a problem moving your files"
         }),
       copyItemsFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error copying items",
         }),
@@ -135,7 +135,7 @@ export const getPresets = (
           component,
         }),
       renameItemFailed: ({ error, newName }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Rename failed",
           message: `Could not rename the selected item with the new name "${newName}". ${
@@ -143,7 +143,7 @@ export const getPresets = (
           }`,
         }),
       renameSpaceFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+        defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Error while renaming space",
         }),
@@ -152,7 +152,7 @@ export const getPresets = (
       revealProjectFailed: ({ error }) => {
         removeAllToastsByIds($toast, toastIds);
         toastIds.clear();
-        return defaultErrorPresetHandler($toast, error, {
+        return defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Project not found",
           message: "Could not reveal project in Space Explorer.",

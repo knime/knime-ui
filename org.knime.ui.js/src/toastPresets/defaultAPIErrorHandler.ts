@@ -2,19 +2,23 @@
 import type { Toast, ToastServiceProvider } from "@knime/components";
 import { rfcErrors } from "@knime/hub-features";
 
-import { isDesktopApiError } from "@/api/desktop-api";
+import { isDesktopApiError } from "@/api/desktop-api/exceptions";
 import { isApiError } from "@/api/gateway-api/generated-exceptions";
 import { isValidDate } from "@/util/date-time";
 
 /**
- * Offers specialized handling for instances of UnknownGatewayException and RFCError. In other cases the toast payload is used
- * and filled with the error message if no message was given.
+ * Offers specialized handling for instances of API Gateway errors (both expected and unexpected),
+ * Desktop API errors and Hub API RFCError (e.g requests made directly o the Hub API while in the browser).
+ * It will format and display the information inside the error object appropriately in a toast
+ * given that the contents match the structure of an RFC-9457 error. Failing to parse the error
+ * as such, it simply shows a basic toast with the error's message property
+ *
  * @param $toast
  * @param error
  * @param payload
  * @returns toast id
  */
-export const defaultErrorPresetHandler = (
+export const defaultAPIErrorHandler = (
   $toast: ToastServiceProvider,
   error: unknown,
   payload: Toast,

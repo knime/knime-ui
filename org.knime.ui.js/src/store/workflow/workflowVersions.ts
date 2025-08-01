@@ -468,10 +468,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     };
 
     try {
-      const newData = await promise.retryPromise({
-        fn: doLoadData,
-        retryCount: 1,
-      });
+      const newData = await doLoadData();
 
       // Atomically apply new data
       versionsModeInfo.value.set(activeProjectId, newData);

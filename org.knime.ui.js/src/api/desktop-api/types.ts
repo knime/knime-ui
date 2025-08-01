@@ -1,5 +1,3 @@
-import type { ApiErrorData } from "../gateway-api/generated-exceptions";
-
 export type DesktopAPIFunctionResultPayload = {
   name: string;
   result: boolean | string | null;
@@ -26,5 +24,3 @@ export interface DesktopEventHandlers {
 
   DesktopAPIFunctionResultEvent(payload: DesktopAPIFunctionResultPayload): void;
 }
-
-export type DesktopApiError = { code: number; data: ApiErrorData };

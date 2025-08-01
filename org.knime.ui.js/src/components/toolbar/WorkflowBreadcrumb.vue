@@ -60,12 +60,7 @@ const handleRestoreVersion = () => {
   try {
     useWorkflowVersionsStore().restoreVersion(Number(activeVersion));
   } catch (error) {
-    toastPresets.api.hubActionError({
-      error,
-      headline: "Restoring project version failed",
-      message: `Error restoring '${getActiveProject()
-        ?.name}' to version '${activeVersion}'.`,
-    });
+    toastPresets.versions.restoreFailed({ error });
   }
 };
 
@@ -85,12 +80,7 @@ const dropdownItems = computed(() => {
           try {
             await useWorkflowVersionsStore().activateVersionsMode();
           } catch (error) {
-            toastPresets.api.hubActionError({
-              error,
-              headline: "Opening version history failed",
-              message: `Error fetching version information for project '${getActiveProject()
-                ?.name}'.`,
-            });
+            toastPresets.versions.activateModeFailed({ error });
           }
         },
       },
