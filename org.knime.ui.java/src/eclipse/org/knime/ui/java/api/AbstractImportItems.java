@@ -57,7 +57,6 @@ import java.util.Optional;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.FileDialog;
-import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
@@ -78,9 +77,6 @@ abstract class AbstractImportItems {
 
     /**
      * @return the ids of the imported items or {@code null} if the import failed
-     * @throws ServiceCallException
-     * @throws LoggedOutException
-     * @throws NetworkException
      */
     String[] importItems(final Space space, final String itemId)
         throws NetworkException, LoggedOutException, ServiceCallException {
@@ -130,9 +126,6 @@ abstract class AbstractImportItems {
      *
      * @return Can be one of {@link NameCollisionHandling}, or an empty optional if no collision handling strategy is
      *         provided
-     * @throws LoggedOutException
-     * @throws NetworkException
-     * @throws ServiceCallException
      */
     protected abstract Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(Space space,
         final String workflowGroupItemId, final List<Path> srcPaths)
@@ -153,8 +146,6 @@ abstract class AbstractImportItems {
      * @param collisionHandling The name collision handling to use
      *
      * @return A list of space item entities that were imported
-     * @throws ServiceCallException
-     * @throws CanceledExecutionException
      */
     protected abstract List<SpaceItemEnt> importItems(IProgressMonitor monitor, Space space, String workflowGroupItemId,
         List<Path> srcPaths, final NameCollisionHandling collisionHandling);
