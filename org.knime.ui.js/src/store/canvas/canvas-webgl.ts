@@ -8,8 +8,10 @@ import {
   computed,
   ref,
   shallowRef,
+  toRef,
 } from "vue";
-import { isNumber } from "lodash-es";
+import { refDebounced } from "@vueuse/core";
+import { isNumber, round } from "lodash-es";
 import { animate } from "motion";
 import { defineStore } from "pinia";
 import { type IRenderLayer } from "pixi.js";
@@ -17,9 +19,9 @@ import { type IRenderLayer } from "pixi.js";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
-import { clamp } from "@/util/clamp";
 import { geometry } from "@/util/geometry";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { clamp } from "@/util/math";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 
@@ -43,6 +45,16 @@ export type CanvasLayerNames =
 const clampZoomFactor = (newFactor: number) =>
   clamp(newFactor, minZoomFactor, maxZoomFactor);
 
+const zoomToResolution = (zoomFactor: number) => {
+  if (zoomFactor > 3.5) {
+    return 5;
+  } else if (zoomFactor > 1.5) {
+    return 3;
+  } else {
+    return 1.25;
+  }
+};
+
 /**
  * Canvas Store manages positioning, zooming, scrolling and
  * coordinate transformations for the Kanvas component.
@@ -57,6 +69,17 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isPanning = ref(false);
   const isHoldingDownSpace = ref(false);
   const shouldHideMiniMap = ref(false);
+
+  const zoomAwareResolution = refDebounced(
+    toRef(() => {
+      const targetResolution = round(
+        zoomToResolution(zoomFactor.value) * pixelRatio.value,
+      );
+
+      return targetResolution;
+    }),
+    300,
+  );
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -749,5 +772,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     isPanning,
     isHoldingDownSpace,
     maxWorldContentBounds,
+    zoomAwareResolution,
   };
 });

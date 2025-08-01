@@ -32,7 +32,6 @@ import { geometry } from "@/util/geometry";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { FLOATING_HTML_FADE_DELAY_MS } from "../common/constants";
 import { useObjectInteractions } from "../common/useObjectInteractions";
-import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import { markPointerEventAsHandled } from "../util/interaction";
 
 import TransformControls from "./TransformControls.vue";
@@ -60,7 +59,8 @@ const { isAnnotationSelected } = selectionStore;
 const isSelected = computed(() => isAnnotationSelected(props.annotation.id));
 
 const canvasStore = useWebGLCanvasStore();
-const { toCanvasCoordinates, visibleArea } = storeToRefs(canvasStore);
+const { toCanvasCoordinates, visibleArea, zoomAwareResolution } =
+  storeToRefs(canvasStore);
 
 const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
   markPointerEventAsHandled(event, {
@@ -140,18 +140,17 @@ const renderable = computed(() => {
 });
 
 let textRef: PIXI.HTMLText | undefined;
-const { resolution } = useZoomAwareResolution();
 
 const autoUpdateResolution = () => {
   // debounce because the resolution or renderable sources
   // could change fast often. e.g resolution due to fast zoom in/out
   // and renderable due to fast panning which culls out of view annotations
   watchDebounced(
-    [resolution, renderable],
+    [zoomAwareResolution, renderable],
     () => {
       requestAnimationFrame(() => {
         if (textRef && renderable.value) {
-          textRef.resolution = resolution.value;
+          textRef.resolution = zoomAwareResolution.value;
         }
       });
     },
@@ -186,7 +185,7 @@ const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
   });
 
   text.roundPixels = true;
-  text.resolution = resolution.value;
+  text.resolution = zoomAwareResolution.value;
   textRef = text;
   nextTick(() => {
     requestAnimationFrame(() => {

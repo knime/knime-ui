@@ -3,6 +3,7 @@ import { computed, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import * as $colors from "@/style/colors";
@@ -10,7 +11,6 @@ import { geometry } from "@/util/geometry";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
 import type { AbsolutePointTuple, ConnectorProps } from "../../types";
-import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import { measureText } from "../util/measureText";
 import { connectorLabelText } from "../util/textStyles";
 
@@ -162,7 +162,7 @@ const halfWayPosition = computed(() => {
   );
 });
 
-const { resolution } = useZoomAwareResolution();
+const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
 
 const renderLabelBackground = (graphics: GraphicsInst) => {
   const padding = 5;
@@ -190,7 +190,7 @@ const renderLabelBackground = (graphics: GraphicsInst) => {
       ref="tooltipRef"
       label="ConnectorLabelText"
       :round-pixels="true"
-      :resolution="resolution"
+      :resolution="zoomAwareResolution"
       :style="connectorLabelText.styles"
       :x="halfWayPosition.x"
       :y="halfWayPosition.y"
