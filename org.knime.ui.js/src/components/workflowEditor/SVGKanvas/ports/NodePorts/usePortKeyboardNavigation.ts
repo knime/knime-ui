@@ -9,9 +9,9 @@ import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { useSelectionStore } from "@/store/selection";
-import { clamp } from "@/util/clamp";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
+import { clamp } from "@/util/math";
 import {
   type SelectedPortContext,
   type SelectedPortIdentifier,

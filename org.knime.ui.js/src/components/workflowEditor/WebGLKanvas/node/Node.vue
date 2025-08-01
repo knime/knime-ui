@@ -27,7 +27,6 @@ import type { PortPositions } from "../../common/usePortPositions";
 import { useNodeHoverProvider } from "../common/useNodeHoverState";
 import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";
 import { useObjectInteractions } from "../common/useObjectInteractions";
-import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import NodePorts from "../ports/NodePorts.vue";
 import { markPointerEventAsHandled } from "../util/interaction";
 
@@ -63,8 +62,13 @@ const isComponent = computed(() => isNodeComponent(props.node));
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
 const canvasStore = useWebGLCanvasStore();
-const { isDebugModeEnabled, visibleArea, toCanvasCoordinates, canvasLayers } =
-  storeToRefs(canvasStore);
+const {
+  isDebugModeEnabled,
+  visibleArea,
+  toCanvasCoordinates,
+  canvasLayers,
+  zoomAwareResolution,
+} = storeToRefs(canvasStore);
 
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
@@ -308,8 +312,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
   await canvasAnchoredComponentsStore.toggleContextMenu();
 };
 
-const { resolution } = useZoomAwareResolution();
-
 const nodeLabelPosition = computed(() => {
   const yOffset = 8;
   return {
@@ -363,7 +365,8 @@ const nodeLabelPosition = computed(() => {
     />
 
     <NodeName
-      v-if="renderable"
+      :renderable="renderable"
+      :visible="renderable"
       :node-id="node.id"
       :name="shortenedNodeName"
       :full-name="name"
@@ -374,7 +377,8 @@ const nodeLabelPosition = computed(() => {
 
     <Container label="NodeTorsoContainer">
       <NodeTorso
-        v-if="renderable"
+        :renderable="renderable"
+        :visible="renderable"
         label="NodeTorso"
         :node-id="node.id"
         :kind="node.kind"
@@ -389,12 +393,19 @@ const nodeLabelPosition = computed(() => {
         "
       />
 
-      <NodeDecorators v-if="renderable" :type="type" v-bind="node" />
+      <NodeDecorators
+        :renderable="renderable"
+        :visible="renderable"
+        :type="type"
+        v-bind="node"
+      />
 
       <NodeState
-        v-if="!isMetanode && renderable"
+        v-if="!isMetanode"
+        :renderable="renderable"
+        :visible="renderable"
         v-bind="node.state"
-        :text-resolution="resolution"
+        :text-resolution="zoomAwareResolution"
       />
     </Container>
 
@@ -410,7 +421,8 @@ const nodeLabelPosition = computed(() => {
   </Container>
 
   <NodeLabel
-    v-if="renderable"
+    :renderable="renderable"
+    :visible="renderable"
     :node-id="node.id"
     :label="node.annotation?.text.value"
     :position="nodeLabelPosition"

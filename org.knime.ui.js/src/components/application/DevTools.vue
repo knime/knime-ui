@@ -9,8 +9,8 @@ import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { isDesktop } from "@/environment";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { clamp } from "@/util/clamp";
 import { openInspector, reloadApp } from "@/util/devTools";
+import { clamp } from "@/util/math";
 import FPSMeter from "../toolbar/FPSMeter.vue";
 import {
   type CanvasRendererType,

@@ -9,8 +9,8 @@ import { defineStore } from "pinia";
 import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { clamp } from "@/util/clamp";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { clamp } from "@/util/math";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;

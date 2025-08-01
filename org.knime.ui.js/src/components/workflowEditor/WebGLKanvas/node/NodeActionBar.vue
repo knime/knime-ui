@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { toRefs } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { Node } from "@/api/gateway-api/generated-api";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeActionBar } from "../../common/useNodeActionBar";
 import ActionBar from "../common/ActionBar.vue";
 import { getIcons } from "../common/iconCache";
-import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import { nodeIdText } from "../util/textStyles";
 
 /**
@@ -65,7 +66,7 @@ const { visibleActions } = useNodeActionBar({
   icons: getIcons(),
 });
 
-const { resolution } = useZoomAwareResolution();
+const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
 </script>
 
 <template>
@@ -76,7 +77,7 @@ const { resolution } = useZoomAwareResolution();
       label="NodeId"
       :anchor-x="0.5"
       :position-y="-$shapes.nodeIdMargin - 8"
-      :resolution="resolution"
+      :resolution="zoomAwareResolution"
       :style="nodeIdText.styles"
       :round-pixels="true"
     >

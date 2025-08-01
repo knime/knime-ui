@@ -9,10 +9,10 @@ import { sleep } from "@knime/utils";
 
 import { useTooltip } from "@/components/workflowEditor/common/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type { ContainerInst } from "@/vue3-pixi";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
-import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import { nodeNameText } from "../../util/textStyles";
 
@@ -24,7 +24,7 @@ const props = defineProps<{
   metrics: CanvasTextMetrics;
 }>();
 
-const { resolution } = useZoomAwareResolution();
+const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
 
 const nodeInteractionsStore = useNodeInteractionsStore();
 const { nameEditorNodeId } = storeToRefs(nodeInteractionsStore);
@@ -87,7 +87,7 @@ useTooltip({ tooltip, element: useTemplateRef<ContainerInst>("tooltipRef") });
       ref="tooltipRef"
       event-mode="static"
       label="NodeNameText"
-      :resolution="resolution"
+      :resolution="zoomAwareResolution"
       :style="nodeNameText.styles"
       :alpha="alpha"
       :round-pixels="true"

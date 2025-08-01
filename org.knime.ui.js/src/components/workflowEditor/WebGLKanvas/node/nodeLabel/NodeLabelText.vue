@@ -2,15 +2,16 @@
 <!-- eslint-disable no-undefined -->
 <script lang="ts" setup>
 import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 import { CanvasTextMetrics, FederatedPointerEvent, TextStyle } from "pixi.js";
 
 import { sleep } from "@knime/utils";
 
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $colors from "@/style/colors";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
-import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import { nodeLabelText } from "../../util/textStyles";
 
@@ -27,7 +28,7 @@ const props = defineProps<{
   label?: string;
 }>();
 
-const { resolution } = useZoomAwareResolution();
+const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
 
 const nodeInteractionsStore = useNodeInteractionsStore();
 
@@ -99,7 +100,7 @@ const renderBorder = (graphics: GraphicsInst) => {
   <Container :label="`NodeLabel__${nodeId}`">
     <Text
       label="NodeLabelText"
-      :resolution="resolution"
+      :resolution="zoomAwareResolution"
       :style="textStyle"
       :round-pixels="true"
       :x="-labelMeasures.width / 2 + 1"
