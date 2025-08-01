@@ -52,7 +52,6 @@ import static org.knime.ui.java.util.DesktopAPUtil.assertUiThread;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,7 +62,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
@@ -156,7 +154,7 @@ public final class SaveAndCloseProjects {
                     var progressService = PlatformUI.getWorkbench().getProgressService();
                     try {
                         saveAndCloseProjects(projectIds.toArray(String[]::new), progressService);
-                    } catch (SaveAndCloseProjectsException e) {
+                    } catch (SaveAndCloseProjectsException | GatewayException e) {
                         yield State.CANCEL_OR_FAIL;
                     }
                 }
@@ -180,11 +178,10 @@ public final class SaveAndCloseProjects {
      */
     public static void saveProjectsWithProgressBar(final String[] projectIds,
         final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService) throws GatewayException{
-        IRunnableWithProgress saveRunnable = monitor -> saveProjects(projectIds, firstFailure, monitor);
         try {
             progressService.busyCursorWhile(monitor -> {
                 try {
-                    saveProjects(projectIds, svgs, firstFailure, monitor);
+                    saveProjects(projectIds, firstFailure, monitor);
                 } catch (GatewayException e) {
                     throw new InvocationTargetException(e);
                 }

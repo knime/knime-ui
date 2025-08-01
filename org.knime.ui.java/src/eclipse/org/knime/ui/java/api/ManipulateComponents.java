@@ -270,16 +270,19 @@ final class ManipulateComponents {
 
     /**
      * @return The data of the component, can be {@code null}.
-     * @throws GatewayException
      */
     private static PortObject[] getDataFromComponent(final boolean isIncludeInputData, final SubNodeContainer component,
-        final Shell shell) throws GatewayException {
+        final Shell shell) {
         PortObject[] data = null;
         if (isIncludeInputData) {
             //fetch input data
             final var optData = DesktopAPUtil.runWithProgress("Executing upstream nodes ...", LOGGER, mon -> {
                 // since 5.5, the "fetchInputDataFromParent" method is not executing the workflow anymore
-                component.getParent().executePredecessorsAndWait(component.getID());
+                try {
+                    component.getParent().executePredecessorsAndWait(component.getID());
+                } catch (InterruptedException e) {// NOSONAR: cancellation is handled
+                    return null;
+                }
                 return component.fetchInputDataFromParent();
             });
             if (optData.isEmpty()) {

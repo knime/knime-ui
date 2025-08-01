@@ -393,8 +393,7 @@ public final class DesktopAPUtil {
          * @return computed result
          * @throws InterruptedException if the invocation was interrupted
          */
-        R invoke(IProgressMonitor progressMonitor)
-            throws ServiceCallException, LoggedOutException, NetworkException, InterruptedException;
+        R invoke(IProgressMonitor progressMonitor);
     }
 
     /**
@@ -409,8 +408,7 @@ public final class DesktopAPUtil {
      * @throws LoggedOutException
      * @throws ServiceCallException
      */
-    public static <R> Optional<R> runWithProgress(final String name, final NodeLogger logger,
-        final FunctionWithProgress<R> task) throws ServiceCallException, LoggedOutException, NetworkException {
+    public static <R> Optional<R> runWithProgress(final String name, final NodeLogger logger, final FunctionWithProgress<R> task)  {
         return composedRunWithProgress(name, logger, task,
             cause -> showWarningAndLogError(name + " failed", cause.getMessage(), logger, cause));
     }
@@ -428,7 +426,7 @@ public final class DesktopAPUtil {
      * @throws ServiceCallException
      */
     public static <R> Optional<R> runWithProgressWithoutWarnings(final String name, final NodeLogger logger,
-        final FunctionWithProgress<R> task) throws ServiceCallException, LoggedOutException, NetworkException {
+        final FunctionWithProgress<R> task)  {
         return composedRunWithProgress(name, logger, task,
             cause -> logger.error("%s failed: %s".formatted(name, cause.getMessage())));
     }
@@ -446,18 +444,14 @@ public final class DesktopAPUtil {
      */
     private static <R> Optional<R> composedRunWithProgress(final String name, final NodeLogger logger,
         final FunctionWithProgress<R> task, final Consumer<Throwable> errorHandler)
-        throws ServiceCallException, LoggedOutException, NetworkException {
+         {
 
         final var result = new AtomicReference<R>();
         final var gatewayExceptionRef = new AtomicReference<GatewayException>();
         Display.getDefault().syncExec(() -> { // NOSONAR
             try {
                 PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
-                    try {
-                        result.set(task.invoke(monitor));
-                    } catch (final ServiceCallException | LoggedOutException | NetworkException e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    result.set(task.invoke(monitor));
                 });
             } catch (InvocationTargetException e) {
                 // `InvocationTargetException` doesn't have value itself (and often no message), report cause instead
@@ -476,11 +470,11 @@ public final class DesktopAPUtil {
         final var ge = gatewayExceptionRef.get();
         if (ge != null) {
             if (ge instanceof ServiceCallException sce) {
-                throw sce;
+                return Optional.empty();
             } else if (ge instanceof LoggedOutException loe) {
-                throw loe;
+                return Optional.empty();
             } else {
-                throw (NetworkException)ge;
+                return Optional.empty();
             }
         }
         return Optional.ofNullable(result.get());

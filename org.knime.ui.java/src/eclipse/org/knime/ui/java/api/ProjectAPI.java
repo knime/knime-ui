@@ -90,7 +90,6 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
-import org.knime.ui.java.api.SaveAndCloseProjects.SaveAndCloseProjectsException;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -114,7 +113,7 @@ final class ProjectAPI {
      */
     @API
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
-        throws OpenProjectException, GatewayException {
+        throws OpenProject.OpenProjectException, GatewayException {
         OpenProject.openProject(spaceId, itemId, spaceProviderId);
     }
 

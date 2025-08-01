@@ -50,15 +50,12 @@ package org.knime.ui.java.api;
 
 import java.net.URI;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.WorkflowKey;
@@ -165,16 +162,12 @@ final class ImportAPI {
         AddComponentCommand.GatewaySupplier<WorkflowManager> wfmSupplier =
             () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
         AddComponentCommand.GatewaySupplier<NodeID> command = () -> {
-            try {
-                return Display.getDefault().syncCall(() -> {
-                    final var wfm = wfmSupplier.get();
-                    var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y,
-                        isRemoteLocation, false);
-                    return snc == null ? null : snc.getID();
-                });
-            } catch (GatewayException e) {
-                throw ExceptionUtils.asRuntimeException(e);
-            }
+            return Display.getDefault().syncCall(() -> {
+                final var wfm = wfmSupplier.get();
+                var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y,
+                    isRemoteLocation, false);
+                return snc == null ? null : snc.getID();
+            });
         };
         var componentId = command.get();
         if (componentId == null) {
@@ -199,7 +192,7 @@ final class ImportAPI {
     private static class AddComponentCommand implements WorkflowCommand {
 
         interface GatewaySupplier<T> {
-            T get() throws ServiceCallException, LoggedOutException, NetworkException;
+            T get();
         }
 
         private NodeID m_componentId;
@@ -221,12 +214,12 @@ final class ImportAPI {
         }
 
         @Override
-        public boolean canUndo() throws ServiceCallException, LoggedOutException, NetworkException {
+        public boolean canUndo() {
             return m_wfm.get().canRemoveNode(m_componentId);
         }
 
         @Override
-        public void undo() throws ServiceCallException, LoggedOutException, NetworkException {
+        public void undo() {
             m_wfm.get().removeNode(m_componentId);
             m_componentId = null;
         }
@@ -237,7 +230,7 @@ final class ImportAPI {
         }
 
         @Override
-        public void redo() throws ServiceCallException, LoggedOutException, NetworkException {
+        public void redo() {
             m_componentId = m_redo.get();
         }
 

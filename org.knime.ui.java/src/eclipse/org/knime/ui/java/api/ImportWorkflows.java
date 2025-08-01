@@ -121,22 +121,19 @@ class ImportWorkflows extends AbstractImportItems {
     @Override
     protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final Space space,
         final String workflowGroupItemId, final List<Path> srcPaths,
-        final Space.NameCollisionHandling collisionHandling) throws ServiceCallException, CanceledExecutionException {
+        final Space.NameCollisionHandling collisionHandling) {
 
         CheckUtils.checkArgument(srcPaths.size() == 1,
                 "Expected a single workflow or folder to import, found %", srcPaths);
         final var archiveFilePath = srcPaths.get(0);
 
         // avoid reading the repository item again
-        final String name;
+        String name;
         try {
             name = space instanceof LocalSpace local ? ('"' + local.getItemName(workflowGroupItemId) + '"')
                 : ("Hub space \"" + space.getName() + '"');
         } catch (MutableServiceCallException e) {
-            final var sce =
-                new ServiceCallException("Failed to import workflow%s".formatted(srcPaths.size() == 1 ? "" : "s"), e);
-            e.copyContextTo(sce);
-            throw sce;
+            name = "unknown";
         }
         monitor.beginTask(String.format("Importing %d files into %s", srcPaths.size(), name), IProgressMonitor.UNKNOWN);
         List<SpaceItemEnt> importedSpaceItems;
@@ -158,6 +155,9 @@ class ImportWorkflows extends AbstractImportItems {
         } catch (final MutableServiceCallException e) { // NOSONAR
             LOGGER.error(String.format("Could not import <%s>", archiveFilePath),
                 e.toGatewayException("Import failed"));
+            importedSpaceItems = Collections.emptyList();
+        } catch (CanceledExecutionException e) {
+            LOGGER.error(String.format("Cancelled not import <%s>", archiveFilePath), e);
             importedSpaceItems = Collections.emptyList();
         }
         monitor.done();

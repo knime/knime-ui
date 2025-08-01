@@ -56,6 +56,7 @@ import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.ProgressMonitorAdapter;
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
@@ -135,7 +136,7 @@ public final class CreateProject {
      */
     private static WorkflowManagerLoader fromOriginWithProgressReporter(final Origin origin,
         final ProgressReporter progressReporter, final Space space) {
-        return version -> progressReporter.<WorkflowManager>getWithProgress( // NOSONAR
+        return version -> progressReporter.getWithProgress( // NOSONAR
             WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, //
             NodeLogger.getLogger(CreateProject.class), //
             monitor -> { // NOSONAR
@@ -153,10 +154,8 @@ public final class CreateProject {
                     final var workflowContext = createWorkflowContext(space, origin.itemId(), path.get(), version);
                     monitor.subTask("Loading workflow from disk");
                     return DesktopAPUtil.loadWorkflowManager(subMonitor.slice(0), path.get(), workflowContext, version);
-                } catch (final MutableServiceCallException e) {
-                    final var sce = new ServiceCallException("Failed to load workflow", e);
-                    e.copyContextTo(sce);
-                    throw sce;
+                } catch (final GatewayException | MutableServiceCallException e) {
+                    return null;
                 }
             }).orElse(null);
     }

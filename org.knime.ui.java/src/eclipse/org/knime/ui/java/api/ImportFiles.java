@@ -109,15 +109,12 @@ class ImportFiles extends AbstractImportItems {
     @Override
     protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final Space space,
         final String workflowGroupItemId, final List<Path> srcPaths,
-        final Space.NameCollisionHandling collisionHandling) throws ServiceCallException, CanceledExecutionException {
-        final String name;
+        final Space.NameCollisionHandling collisionHandling) {
+        String name;
         try {
             name = space instanceof LocalSpace local ? local.getItemName(workflowGroupItemId) : space.getName();
         } catch (MutableServiceCallException e) { // NOSONAR
-            final var sce =
-                new ServiceCallException("Failed to import file%s".formatted(srcPaths.size() == 1 ? "" : "s"), e);
-            e.copyContextTo(sce);
-            throw sce;
+            name = "unknown";
         }
 
         monitor.beginTask(String.format("Importing %d files into \"%s\"", srcPaths.size(), name),
@@ -132,6 +129,9 @@ class ImportFiles extends AbstractImportItems {
                 return null;
             } catch (MutableServiceCallException e) {
                 LOGGER.error(String.format("Could not import <%s>", srcPath), e.toGatewayException("Import failed"));
+                return null;
+            } catch (CanceledExecutionException e) {
+                LOGGER.error(String.format("Canceled not import <%s>", srcPath), e);
                 return null;
             }
 

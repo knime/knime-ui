@@ -79,8 +79,7 @@ public interface ProgressReporter {
      * @throws LoggedOutException
      * @throws NetworkException
      */
-    <R> Optional<R> getWithProgress(String name, NodeLogger logger, FunctionWithProgress<R> task)
-            throws ServiceCallException, LoggedOutException, NetworkException;
+    <R> Optional<R> getWithProgress(String name, NodeLogger logger, FunctionWithProgress<R> task);
 
     /**
      * Implementation of {@link ProgressReporter} for the Eclipse Workbench environment. Delegates progress reporting to
@@ -91,7 +90,7 @@ public interface ProgressReporter {
 
         @Override
         public <R> Optional<R> getWithProgress(final String name, final NodeLogger logger,
-            final FunctionWithProgress<R> task) throws ServiceCallException, LoggedOutException, NetworkException {
+            final FunctionWithProgress<R> task) {
             return DesktopAPUtil.runWithProgress(name, logger, task);
         }
     }
@@ -103,12 +102,8 @@ public interface ProgressReporter {
 
         @Override
         public <R> Optional<R> getWithProgress(final String name, final NodeLogger logger,
-            final FunctionWithProgress<R> task) throws ServiceCallException, LoggedOutException, NetworkException {
-            try {
-                return Optional.ofNullable(task.invoke(new NullProgressMonitor()));
-            } catch (InterruptedException e) {
-                return Optional.empty();
-            }
+            final FunctionWithProgress<R> task) {
+            return Optional.ofNullable(task.invoke(new NullProgressMonitor()));
         }
     }
 

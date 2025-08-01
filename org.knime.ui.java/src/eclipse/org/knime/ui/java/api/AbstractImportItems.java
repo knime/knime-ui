@@ -103,11 +103,8 @@ abstract class AbstractImportItems {
         // Attempt to import files
         var importedSpaceItems = DesktopAPUtil.runWithProgress(itemId, LOGGER, //
             monitor -> {
-                try { // TODO NXT-3938 React to workflow load exceptions
-                    return importItems(monitor, space, itemId, srcPaths, collisionHandling);
-                } catch (CanceledExecutionException e) { // NOSONAR
-                    throw new InterruptedException();
-                }
+                // TODO NXT-3938 React to workflow load exceptions
+                return importItems(monitor, space, itemId, srcPaths, collisionHandling);
             }) //
             .orElse(Collections.emptyList());
 
@@ -160,6 +157,5 @@ abstract class AbstractImportItems {
      * @throws CanceledExecutionException
      */
     protected abstract List<SpaceItemEnt> importItems(IProgressMonitor monitor, Space space, String workflowGroupItemId,
-        List<Path> srcPaths, final NameCollisionHandling collisionHandling)
-        throws ServiceCallException, CanceledExecutionException;
+        List<Path> srcPaths, final NameCollisionHandling collisionHandling);
 }
