@@ -120,6 +120,10 @@ const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
 
 const isGrabbing = ref(false);
 const onPointerDown = (event: PointerEvent) => {
+  if (!interactionsEnabled.value) {
+    return;
+  }
+
   const isMouseLeftClick = event.button === 0;
 
   if (

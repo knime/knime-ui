@@ -414,5 +414,7 @@ const nodeLabelPosition = computed(() => {
     :node-id="node.id"
     :label="node.annotation?.text.value"
     :position="nodeLabelPosition"
+    @rightclick="onRightClick"
+    @pointerdown="handlePointerInteraction"
   />
 </template>

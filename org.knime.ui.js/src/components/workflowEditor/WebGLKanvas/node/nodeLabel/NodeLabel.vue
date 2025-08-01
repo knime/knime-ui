@@ -2,6 +2,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import type { FederatedPointerEvent } from "pixi.js";
 
 import { sleep } from "@knime/utils";
 
@@ -9,6 +10,11 @@ import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 import NodeLabelText from "./NodeLabelText.vue";
+
+const emit = defineEmits<{
+  rightclick: [FederatedPointerEvent];
+  pointerdown: [FederatedPointerEvent];
+}>();
 
 const props = defineProps<{
   nodeId: string;
@@ -48,5 +54,7 @@ watch(isEditing, async () => {
     :label="label"
     :node-id="nodeId"
     :is-node-selected="isSelected"
+    @rightclick="emit('rightclick', $event)"
+    @pointerdown="emit('pointerdown', $event)"
   />
 </template>

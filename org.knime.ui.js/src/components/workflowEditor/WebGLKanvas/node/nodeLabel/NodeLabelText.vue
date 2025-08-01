@@ -16,6 +16,11 @@ import { nodeLabelText } from "../../util/textStyles";
 
 import { getNodeLabelTopOffset } from "./getNodeLabelTopOffset";
 
+const emit = defineEmits<{
+  rightclick: [FederatedPointerEvent];
+  pointerdown: [FederatedPointerEvent];
+}>();
+
 const props = defineProps<{
   nodeId: string;
   isNodeSelected: boolean;
@@ -29,14 +34,19 @@ const nodeInteractionsStore = useNodeInteractionsStore();
 const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
 const onPointerdown = async (event: FederatedPointerEvent) => {
-  // label is positioned outside the node interaction container, so we need to
-  // mark it as handled always
-  markPointerEventAsHandled(event, { initiator: "node-label-edit" });
-  if (isPointerDownDoubleClick(event)) {
+  const isDoubleClick = isPointerDownDoubleClick(event);
+  if (isDoubleClick) {
+    // label is positioned outside the node interaction container, so we need to
+    // mark it as handled always
+    markPointerEventAsHandled(event, { initiator: "node-label-edit" });
     // make a brief pause before registering the click outside handler,
     // to avoid closing immediately after opening
     await sleep(50);
     nodeInteractionsStore.openLabelEditor(props.nodeId);
+  } else {
+    // however, if it's a simple click, we emit it to the Node and it will be
+    // marked as handled there
+    emit("pointerdown", event);
   }
 };
 
@@ -95,6 +105,7 @@ const renderBorder = (graphics: GraphicsInst) => {
       :x="-labelMeasures.width / 2 + 1"
       :y="getNodeLabelTopOffset(nodeId) + 0.5"
       event-mode="static"
+      @rightclick="emit('rightclick', $event)"
       @pointerenter="hover = true"
       @pointerleave="hover = false"
       @pointerdown.stop.prevent="onPointerdown"

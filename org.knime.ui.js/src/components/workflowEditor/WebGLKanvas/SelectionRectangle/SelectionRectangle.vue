@@ -126,7 +126,11 @@ const onSelectionStart = (event: PointerEvent) => {
 
   // Interactions originated from canvas objects can signal that the
   // global selection should be skipped.
-  if (event.dataset?.skipGlobalSelection || isDragging.value) {
+  if (
+    event.dataset?.skipGlobalSelection ||
+    isDragging.value ||
+    !canvasStore.interactionsEnabled
+  ) {
     isSelectionVisible.value = false;
     return;
   }

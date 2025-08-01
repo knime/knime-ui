@@ -16,6 +16,7 @@ import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";
 import TextEditor from "../../common/TextEditor.vue";
+import { onContextMenuOutside } from "../../common/onContextMenuOutside";
 import { nodeLabelText } from "../../util/textStyles";
 
 import { getNodeLabelTopOffset } from "./getNodeLabelTopOffset";
@@ -118,6 +119,7 @@ const actions: ActionButtonConfig[] = [
 
 const textEditorWrapper = useTemplateRef("textEditorWrapper");
 onClickOutside(textEditorWrapper, onSave);
+onContextMenuOutside(textEditorWrapper, onSave);
 </script>
 
 <template>

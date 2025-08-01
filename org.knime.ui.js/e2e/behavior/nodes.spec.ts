@@ -500,7 +500,6 @@ test.describe("node label editing", () => {
 
   test("can edit label with dblclick->Ctrl+enter", async ({ page }) => {
     await startForLabelChange(page);
-    await selectNode(page);
 
     // start edit
     const [metanodeX, metanodeY] = getCenter(await getNodeLabel(page));
