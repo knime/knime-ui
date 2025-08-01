@@ -147,6 +147,20 @@ test("can be dragged", async ({ page }) => {
   await assertSnapshot(page, maxDiffPixels);
 });
 
+test("panning with right click doesn't open ctx menu", async ({ page }) => {
+  await startApplication(page, {
+    workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
+  });
+
+  const { x, y } = await getAnnotation(page, "root_0");
+
+  await page.mouse.move(x, y);
+  await page.mouse.down({ button: "right" });
+  await page.mouse.move(x + 300, y - 300);
+  await page.mouse.up();
+  await assertSnapshot(page);
+});
+
 test("ignores interaction and does rectangle selection when not selected", async ({
   page,
 }) => {

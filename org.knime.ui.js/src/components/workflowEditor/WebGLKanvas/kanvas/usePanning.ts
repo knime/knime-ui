@@ -101,6 +101,9 @@ export const useCanvasPanning = ({
 
       if (isPanning.value) {
         hasMoved.value = true;
+
+        // prevent interaction with other canvas objects while in the panning state
+        canvasStore.setInteractionsEnabled(false);
         canvasStore.setCanvasOffset({
           x:
             stage.value.x +
@@ -151,6 +154,7 @@ export const useCanvasPanning = ({
         await toggleContextMenu();
       }
 
+      canvasStore.setInteractionsEnabled(true);
       hasMoved.value = false;
     };
 

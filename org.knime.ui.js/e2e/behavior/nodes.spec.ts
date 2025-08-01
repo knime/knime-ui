@@ -45,6 +45,18 @@ const executeUndo = async (page) => {
   await page.waitForTimeout(500);
 };
 
+test("panning with right click doesn't open ctx menu", async ({ page }) => {
+  await startForPointerInteractions(page);
+
+  const [n1x, n1y] = await getNodePosition(page, IDS.node1);
+
+  await page.mouse.move(n1x, n1y);
+  await page.mouse.down({ button: "right" });
+  await page.mouse.move(n1x + 300, n1y - 300);
+  await page.mouse.up();
+  await assertSnapshot(page);
+});
+
 test.describe("selection", () => {
   test("selects only 1 node", async ({ page }) => {
     await startForPointerInteractions(page);
