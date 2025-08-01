@@ -80,7 +80,6 @@ import org.knime.gateway.api.webui.entity.SpaceProviderEnt.ResetOnUploadEnum;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -272,9 +271,7 @@ final class SaveProject {
             }
         } catch (final MutableServiceCallException e) {
             e.addDetails("Pre-check for upload failed");
-            final var sce = new ServiceCallException("Failed to upload item(s)", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to upload item(s)");
         }
 
         if (!preCheckResult) {
@@ -317,9 +314,7 @@ final class SaveProject {
             }
             return true;
         } catch (final MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to upload item(s)", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to upload item(s)");
         }
     }
 

@@ -74,6 +74,8 @@ import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
  */
 public final class CreateProject {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(CreateProject.class);
+
     private CreateProject() {
 
     }
@@ -95,9 +97,7 @@ public final class CreateProject {
         try {
             name = space.getItemName(origin.itemId());
         } catch (final MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to open project", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to open project");
         }
         var projectId = Project.getUniqueProjectId(name);
         return createProjectFromOrigin(projectId, name, origin, progressReporter, space);
@@ -138,7 +138,7 @@ public final class CreateProject {
         final ProgressReporter progressReporter, final Space space) {
         return version -> progressReporter.getWithProgress( // NOSONAR
             WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, //
-            NodeLogger.getLogger(CreateProject.class), //
+            LOGGER, //
             monitor -> { // NOSONAR
                 final var subMonitor =
                     SubMonitor.convert(monitor, WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, 100);
@@ -146,7 +146,7 @@ public final class CreateProject {
                 final var execMon = new ExecutionMonitor(new ProgressMonitorAdapter(subMonitor)); // one tick/percent
                 var path = WorkflowManagerLoader.fetch(origin, version, space, execMon);
                 if (path.isEmpty()) {
-                    NodeLogger.getLogger(CreateProject.class).error("Could not fetch workflow from origin " + origin);
+                    LOGGER.error("Could not fetch workflow from origin " + origin);
                     return null;
                 }
 
@@ -155,6 +155,7 @@ public final class CreateProject {
                     monitor.subTask("Loading workflow from disk");
                     return DesktopAPUtil.loadWorkflowManager(subMonitor.slice(0), path.get(), workflowContext, version);
                 } catch (final GatewayException | MutableServiceCallException e) {
+                    LOGGER.error(e);
                     return null;
                 }
             }).orElse(null);

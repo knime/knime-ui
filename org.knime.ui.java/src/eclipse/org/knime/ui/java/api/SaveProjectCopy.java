@@ -73,7 +73,6 @@ import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -147,9 +146,7 @@ final class SaveProjectCopy {
             // Provider type can only be Local here
             OpenProject.registerProjectAndSetActive(updatedProject, SpaceProviderEnt.TypeEnum.LOCAL);
         } catch (final MutableServiceCallException e) { // NOSONAR exception is being promoted
-            final var sce = new ServiceCallException("Failed to save workflow copy", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to save workflow copy");
         } catch (GatewayException e) {
             throw e;
         } catch (Exception ex) {
@@ -202,8 +199,11 @@ final class SaveProjectCopy {
                 localSpace.getItemId(path) //
             );
             if (openProject.isPresent()) {
-                throw new OperationNotAllowedException(
-                    "Project <%s> is opened and can't be overwritten.".formatted(fileName));
+                throw OperationNotAllowedException.builder() //
+                    .withTitle("Failed to overwrite project") //
+                    .withDetails("Project <%s> is opened and can't be overwritten.".formatted(fileName)) //
+                    .canCopy(false) //
+                    .build();
             }
         }
 

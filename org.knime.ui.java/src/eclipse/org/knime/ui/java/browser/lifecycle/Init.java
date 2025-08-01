@@ -261,10 +261,8 @@ final class Init {
         throws NetworkException, LoggedOutException, ServiceCallException {
         try {
             return spaceProviders.getSpace(origin.providerId(), origin.spaceId());
-        } catch (final MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to load space", e);
-            e.copyContextTo(sce);
-            throw sce;
+        } catch (final MutableServiceCallException e) { // NOSONAR
+            throw e.toGatewayException("Failed to load space");
         }
     }
 

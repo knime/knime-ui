@@ -144,7 +144,11 @@ final class ComponentAPI {
     static void openLockSubnodeDialog(final String projectId, final String nodeId) throws GatewayException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         final var containerTypeAndWfm = CoreUtil.getTypeAndContainedWfm(nc).orElseThrow(
-            () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
+            () -> OperationNotAllowedException.builder() //
+                .withTitle("Failed to open dialog") //
+                .withDetails("Not a component nor a metanode: " + nc.getNameWithID()) //
+                .canCopy(false) //
+                .build());
         final var containerType = containerTypeAndWfm.getFirst();
         final var wfm = containerTypeAndWfm.getSecond();
 
@@ -184,8 +188,11 @@ final class ComponentAPI {
         return CoreUtil.getTypeAndContainedWfm(nc)
             .map(containerTypeAndWfm -> containerTypeAndWfm.getSecond()
                 .unlock(new GUIWorkflowCipherPrompt(containerTypeAndWfm.getFirst() == ContainerType.COMPONENT)))
-            .orElseThrow(
-                () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
+            .orElseThrow(() -> OperationNotAllowedException.builder() //
+                .withTitle("Failed to unlock") //
+                .withDetails("Not a component nor a metanode: " + nc.getNameWithID()) //
+                .canCopy(false) //
+                .build());
     }
 
     private static SubNodeContainer assertIsWritableAndGetComponent(final String projectId, final String nodeId)
@@ -193,11 +200,19 @@ final class ComponentAPI {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         final var wfm = nc.getParent();
         if (wfm.isWriteProtected()) {
-            throw new OperationNotAllowedException("Container is read-only.");
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Operation not allowed") //
+                .withDetails("Container is read-only: " + nc.getNameWithID()) //
+                .canCopy(false) //
+                .build();
         }
 
         if (!(nc instanceof SubNodeContainer)) {
-            throw new OperationNotAllowedException("Not a component: " + nodeId);
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Operation not allowed") //
+                .withDetails("Not a component: " + nc.getNameWithID()) //
+                .canCopy(false) //
+                .build();
         }
         return (SubNodeContainer)nc;
     }

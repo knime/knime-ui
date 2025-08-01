@@ -51,6 +51,7 @@ import static org.knime.ui.java.api.SaveAndCloseProjects.saveAndCloseProjectsInt
 import java.util.Collection;
 import java.util.Collections;
 
+import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 
@@ -73,8 +74,9 @@ final class CloseProject {
      * @param nextProjectId The ID of the project to make active after the current one has been closed. Can be null or
      *            omitted if there is no next project ID (e.g. when closing the last tab).
      * @return A boolean indicating whether an editor has been closed.
+     * @throws GatewayException -
      */
-    static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
+    static boolean closeProject(final String projectIdToClose, final String nextProjectId) throws GatewayException {
         var saveAndCloseState = saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose));
         var success = saveAndCloseState == SaveAndCloseProjects.State.SUCCESS;
         if (success) {

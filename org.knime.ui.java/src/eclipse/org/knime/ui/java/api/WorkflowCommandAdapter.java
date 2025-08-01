@@ -91,7 +91,11 @@ final class WorkflowCommandAdapter implements WorkflowCommand {
     @Override
     public void undo() throws ServiceCallException {
         if (!canUndo()) {
-            throw new ServiceCallException("Cannot undo wrapped command.");
+            throw ServiceCallException.builder() //
+                .withTitle("Failed to undo operation") //
+                .withDetails("Cannot undo wrapped command.") //
+                .canCopy(false) //
+                .build();
         }
         m_delegate.undo();
     }
@@ -99,7 +103,11 @@ final class WorkflowCommandAdapter implements WorkflowCommand {
     @Override
     public void redo() throws ServiceCallException {
         if (!canRedo()) {
-            throw new ServiceCallException("Cannot redo wrapped command.");
+            throw ServiceCallException.builder() //
+            .withTitle("Failed to redo operation") //
+            .withDetails("Cannot redo wrapped command.") //
+            .canCopy(false) //
+            .build();
         }
         m_delegate.redo();
     }

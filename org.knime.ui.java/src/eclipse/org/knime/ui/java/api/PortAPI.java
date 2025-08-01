@@ -94,7 +94,12 @@ final class PortAPI {
         try {
             view = new CEFNodeView(nc, portIdx.intValue(), viewIdx.intValue());
         } catch (IOException e) {
-            throw new ServiceCallException("Failed to create node view", e);
+            throw ServiceCallException.builder() //
+                .withTitle("Failed to create node view") //
+                .withDetails("Error: " + e.getMessage()) //
+                .canCopy(true) //
+                .withCause(e) //
+                .build();
         }
         var port = nc.getOutPort(portIdx.intValue());
         var viewName = PortViewManager.getPortViewDescriptor(port.getPortType(), viewIdx.intValue())

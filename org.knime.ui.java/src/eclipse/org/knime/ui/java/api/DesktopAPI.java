@@ -80,6 +80,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.ExampleProjects;
@@ -160,9 +161,7 @@ public final class DesktopAPI {
         try {
             return spaceProvider.getSpace(spaceId);
         } catch (final MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to fetch space", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to fetch space");
         }
     }
 
@@ -222,7 +221,8 @@ public final class DesktopAPI {
 
     private static String problemToString(final GatewayProblemDescriptionEnt problemDesc) {
         try {
-            return MAPPER.writeValueAsString(problemDesc);
+            // we have to use this mapper because it contains special mixins for Gateway entities
+            return ObjectMapperUtil.getInstance().getObjectMapper().writeValueAsString(problemDesc);
         } catch (final JsonProcessingException e) {
             throw new IllegalStateException(e);
         }

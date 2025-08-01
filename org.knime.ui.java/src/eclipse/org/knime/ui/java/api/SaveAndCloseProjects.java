@@ -79,6 +79,8 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
  */
 public final class SaveAndCloseProjects {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveAndCloseProjects.class);
+
     private SaveAndCloseProjects() {
         // utility
     }
@@ -89,11 +91,11 @@ public final class SaveAndCloseProjects {
      *
      * @param projectIds Array containing the project-ids of the projects to save
      * @param progressService Displays the progress
-     * @throws GatewayException
-     * @throws SaveAndCloseProjectsException
+     * @throws GatewayException -
+     * @throws SaveAndCloseProjectsException -
      */
     static void saveAndCloseProjects(final String[] projectIds, final IProgressService progressService)
-        throws GatewayException, SaveAndCloseProjectsException { // NOSONAR
+        throws SaveAndCloseProjectsException, GatewayException { // NOSONAR
         final var firstFailure = new AtomicReference<Optional<String>>();
         saveProjectsWithProgressBar(projectIds, firstFailure, progressService);
 
@@ -155,6 +157,7 @@ public final class SaveAndCloseProjects {
                     try {
                         saveAndCloseProjects(projectIds.toArray(String[]::new), progressService);
                     } catch (SaveAndCloseProjectsException | GatewayException e) {
+                        LOGGER.error(e);
                         yield State.CANCEL_OR_FAIL;
                     }
                 }
@@ -174,10 +177,11 @@ public final class SaveAndCloseProjects {
      * @param projectIds id of the projects to save
      * @param firstFailure the first id of the project that couldn't be saved
      * @param progressService
-     * @throws GatewayException
+     * @throws GatewayException -
      */
     public static void saveProjectsWithProgressBar(final String[] projectIds,
-        final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService) throws GatewayException{
+        final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService)
+        throws GatewayException {
         try {
             progressService.busyCursorWhile(monitor -> {
                 try {
@@ -190,10 +194,10 @@ public final class SaveAndCloseProjects {
             if (e.getCause() instanceof GatewayException ge) {
                 throw ge;
             }
-            NodeLogger.getLogger(SaveAndCloseProjects.class).error("Saving workflow failed", e);
+            LOGGER.error("Saving workflow failed", e);
             firstFailure.compareAndExchange(null, Optional.empty());
         } catch (InterruptedException e) {
-            NodeLogger.getLogger(SaveAndCloseProjects.class).warn("Saving process was interrupted", e);
+            LOGGER.warn("Saving process was interrupted", e);
             Thread.currentThread().interrupt();
             firstFailure.compareAndExchange(null, Optional.empty());
         }
@@ -215,8 +219,7 @@ public final class SaveAndCloseProjects {
     }
 
     private static boolean saveAndCloseProject(final IProgressMonitor monitor, final String projectId,
-        final WorkflowManager projectWfm, final ProjectManager projectManager)
-        throws GatewayException {
+        final WorkflowManager projectWfm, final ProjectManager projectManager) throws GatewayException {
         monitor.subTask("Saving '" + projectId + "'");
 
         // the actual saving should not contribute progress

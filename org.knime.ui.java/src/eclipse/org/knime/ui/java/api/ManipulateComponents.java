@@ -143,8 +143,11 @@ final class ManipulateComponents {
         final var sourceURI = templateInfo.getSourceURI();
         final var optLinkVariant = KnimeUrlVariant.getVariant(sourceURI);
         if (optLinkVariant.isEmpty()) {
-            throw new OperationNotAllowedException(
-                "Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.");
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Not a KNIME URL") //
+                .withDetails("Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.") //
+                .canCopy(true) //
+                .build();
         }
 
         final var linkVariant = optLinkVariant.get();
@@ -206,10 +209,11 @@ final class ManipulateComponents {
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
         if (queryHubInfo(srcUri).isEmpty()) {
-            throw new OperationNotAllowedException("""
-                    Changing item version is not possible, since the source of this component is not located on a
-                    mountpoint that supports item versioning.
-                    """);
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Cannot change Hub item version") //
+                .withDetails("This component is not located on a mountpoint that supports item versioning.")
+                .canCopy(false) //
+                .build();
         }
 
         final var shell = SWTUtilities.getActiveShell();
@@ -246,7 +250,12 @@ final class ManipulateComponents {
         throws OperationNotAllowedException {
         final BiPredicate<Role, Role> predicate = (left, right) -> isLinked ? (left == right) : (left != right);
         if (!predicate.test(component.getTemplateInformation().getRole(), Role.Link)) {
-            throw new OperationNotAllowedException("The component is " + (isLinked ? "not " : "") + "linked.");
+            throw OperationNotAllowedException.builder() //
+                .withTitle("Component in unexpected state") //
+                .withDetails(
+                    "The component %s is %slinked.".formatted(component.getNameWithID(), isLinked ? "not " : "")) //
+                .canCopy(false) //
+                .build();
         }
     }
 
@@ -262,7 +271,11 @@ final class ManipulateComponents {
 
         if (list.isEmpty()) {
             // Hard to imagine when this would happen, since `LOCAL` is always an option
-            throw new OperationNotAllowedException("None of your spaces can host shared components.");
+            throw OperationNotAllowedException.builder() //
+                .withTitle("No valid mountpoint found") //
+                .withDetails("None of your spaces can host shared components.") //
+                .canCopy(false) //
+                .build();
         }
 
         return list.toArray(new String[0]);

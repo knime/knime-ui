@@ -100,9 +100,7 @@ class ImportFiles extends AbstractImportItems {
                     nameCollisions, UsageContext.IMPORT);
             }
         } catch (final MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to import workflow(s)", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to import workflow(s)");
         }
     }
 
@@ -113,7 +111,8 @@ class ImportFiles extends AbstractImportItems {
         String name;
         try {
             name = space instanceof LocalSpace local ? local.getItemName(workflowGroupItemId) : space.getName();
-        } catch (MutableServiceCallException e) { // NOSONAR
+        } catch (MutableServiceCallException e) {
+            LOGGER.error(e);
             name = "unknown";
         }
 

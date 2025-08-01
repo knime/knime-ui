@@ -122,9 +122,7 @@ final class OpenProject {
         } catch (NoSuchElementException e) {
             throw new OpenProjectException("The project could not be found.", e);
         } catch (MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to open project", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to open project");
         }
 
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);

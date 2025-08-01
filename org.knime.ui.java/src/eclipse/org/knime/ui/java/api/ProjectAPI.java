@@ -82,7 +82,6 @@ import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -90,6 +89,7 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.ui.java.api.OpenProject.OpenProjectException;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -124,9 +124,10 @@ final class ProjectAPI {
      * @param nextProjectId The ID of the project to make active after the current one has been closed. Can be null or
      *            omitted if there is no next project ID (e.g. when closing the last tab).
      * @return A boolean indicating whether an editor has been closed.
+     * @throws GatewayException -
      */
     @API
-    static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
+    static boolean closeProject(final String projectIdToClose, final String nextProjectId) throws GatewayException {
         return CloseProject.closeProject(projectIdToClose, nextProjectId);
     }
 
@@ -352,9 +353,8 @@ final class ProjectAPI {
             try {
                 localSpace.getAncestorItemIds(origin.itemId()).forEach(res::add);
             } catch (final MutableServiceCallException e) { // TODO
-                final var sce = new ServiceCallException("Could not create ancestors", e);
-                e.copyContextTo(sce);
-                throw new IllegalStateException("Could not create ancestors", sce);
+                throw new IllegalStateException("Could not create ancestors",
+                    e.toGatewayException("Could not create ancestors"));
             }
             return res;
         } else {

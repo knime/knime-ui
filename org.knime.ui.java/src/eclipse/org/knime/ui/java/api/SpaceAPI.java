@@ -78,7 +78,6 @@ import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
@@ -187,9 +186,7 @@ final class SpaceAPI {
                 .map(NameCollisionHandling::toString) //
                 .orElse("CANCEL");
         } catch (final MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to determine name collision strategy", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to determine name collision strategy");
         }
     }
 
@@ -226,11 +223,8 @@ final class SpaceAPI {
             LOGGER.error("Download error: " + e.getMessage(), e);
             throw new IllegalStateException("Failed to download items: " + e.getMessage(), e);
         } catch (MutableServiceCallException e) { // NOSONAR
-            LOGGER.error(e);
-            final var sce = new ServiceCallException(
-                "Failed to download item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"), e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException( //
+                "Failed to download item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"));
         }
     }
 
@@ -260,9 +254,7 @@ final class SpaceAPI {
             try {
                 localSpace = (LocalSpace)sources.space();
             } catch (final MutableServiceCallException e) {
-                final var sce = new ServiceCallException("Failed to upload item(s)", e);
-                e.copyContextTo(sce);
-                throw sce;
+                throw e.toGatewayException("Failed to upload item(s)");
             }
             final var opened = findDirtyOpenedWorkflows(localSpace, sources.itemIds());
             if (!opened.isEmpty()) {
@@ -274,10 +266,7 @@ final class SpaceAPI {
         try {
             return performUpload(sources, destination, excludeData);
         } catch (final MutableServiceCallException e) {
-            final var sce = new ServiceCallException(
-                "Failed to upload item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"), e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to upload item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"));
         }
     }
 
@@ -443,10 +432,8 @@ final class SpaceAPI {
                     .getProject(providerId, spaceId, itemId) //
                     .map(Project::getName) //
                     .orElse("the project");
-            final var sce = new ServiceCallException(
-                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName), e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException( //
+                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName));
         }
     }
 
@@ -491,9 +478,7 @@ final class SpaceAPI {
             LOGGER.error("Could not open in browser", e);
             throw new IllegalStateException(e);
         } catch (final MutableServiceCallException e) { // NOSONAR exception is being propagated
-            final var sce = new ServiceCallException("Could not show item page in browser", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Could not show item page in browser");
         }
     }
 
@@ -516,9 +501,7 @@ final class SpaceAPI {
                 .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url.toString(), EclipseUIAPI.class);
         } catch (MutableServiceCallException e) { // NOSONAR
-            final var sce = new ServiceCallException("Could not show item in browser", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Could not show item in browser");
         }
     }
 
@@ -578,9 +561,7 @@ final class SpaceAPI {
         try {
             workflowGroupItemId = space.getItemIdByURI(destinationFileStore.toURI()).orElseThrow();
         } catch (MutableServiceCallException e) { // NOSONAR
-            final var sce = new ServiceCallException("Failed to save job", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to save job");
         }
 
         final var groupPath = IPath.forPosix(destinationFileStore.getFullName());
@@ -591,9 +572,7 @@ final class SpaceAPI {
                 return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
             }
         } catch (final MutableServiceCallException e) { // NOSONAR exception is being propagated
-            final var sce = new ServiceCallException("Failed to check for name collisions", e);
-            e.copyContextTo(sce);
-            throw sce;
+            throw e.toGatewayException("Failed to check for name collisions");
         }
 
         final var collisionHandlingStrategyRef = new AtomicReference<NameCollisionHandling>();
@@ -606,9 +585,7 @@ final class SpaceAPI {
             } catch (GatewayException e) {
                 gatewayExceptionRef.set(e);
             } catch (MutableServiceCallException e) {
-                final var sce = new ServiceCallException("Failed to determine collision handling strategy", e);
-                e.copyContextTo(sce);
-                gatewayExceptionRef.set(sce);
+                gatewayExceptionRef.set(e.toGatewayException("Failed to determine collision handling strategy"));
             }
         });
 
@@ -695,10 +672,8 @@ final class SpaceAPI {
         final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         try {
             return space.editScheduleInfo(itemId, scheduleId);
-        } catch (MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to edit schedule", e);
-            e.copyContextTo(sce);
-            throw sce;
+        } catch (MutableServiceCallException e) { // NOSONAR
+            throw e.toGatewayException("Failed to edit schedule");
         }
     }
 

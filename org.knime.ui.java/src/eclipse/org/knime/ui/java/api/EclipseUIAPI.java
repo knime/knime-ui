@@ -210,9 +210,10 @@ final class EclipseUIAPI {
 
     /**
      * Function to allow the Web UI to switch back to the classic KNIME perspective.
+     * @throws GatewayException -
      */
     @API
-    static void switchToJavaUI() {
+    static void switchToJavaUI() throws GatewayException {
         final var projectIds = ProjectManager.getInstance().getProjectIds();
         final var doProcced = PerspectiveUtil.showDialogCloseAllProjectsOnSwitch(() -> !projectIds.isEmpty());
         if (!doProcced) {

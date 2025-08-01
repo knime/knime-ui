@@ -111,10 +111,8 @@ class ImportWorkflows extends AbstractImportItems {
             var nameCollisions = Collections.singletonList(nameCollision.get());
             return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions,
                 UsageContext.IMPORT);
-        } catch (final MutableServiceCallException e) {
-            final var sce = new ServiceCallException("Failed to import workflow(s)", e);
-            e.copyContextTo(sce);
-            throw sce;
+        } catch (final MutableServiceCallException e) { // NOSONAR
+            throw e.toGatewayException("Failed to import workflow(s)");
         }
     }
 
@@ -133,6 +131,7 @@ class ImportWorkflows extends AbstractImportItems {
             name = space instanceof LocalSpace local ? ('"' + local.getItemName(workflowGroupItemId) + '"')
                 : ("Hub space \"" + space.getName() + '"');
         } catch (MutableServiceCallException e) {
+            LOGGER.error(e);
             name = "unknown";
         }
         monitor.beginTask(String.format("Importing %d files into %s", srcPaths.size(), name), IProgressMonitor.UNKNOWN);
