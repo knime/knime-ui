@@ -39,6 +39,7 @@ export type ApiErrorData = {
   date?: string;
   status?: number;
   "x-request-id"?: string;
+  "x-error-id"?: string;
 };
 
 type FormattedApiError = {

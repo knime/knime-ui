@@ -38,7 +38,7 @@
     "@fontsource/roboto-condensed": "4.x",
     "@fontsource/roboto-mono": "4.x",
     "@knime/components": "^1.33.1",
-    "@knime/hub-features": "^1.11.4",
+    "@knime/hub-features": "^1.11.7",
     "@knime/knime-ui-table": "0.5.22",
     "@knime/rich-text-editor": "^1.6.2",
     "@knime/styles": "^1.10.0",

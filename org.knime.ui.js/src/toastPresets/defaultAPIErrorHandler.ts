@@ -31,11 +31,13 @@ export const defaultAPIErrorHandler = (
       data.date && isValidDate(data.date) ? new Date(data.date) : undefined;
 
     const rfcError = new rfcErrors.RFCError({
-      title: data.title,
+      title: data.title ?? "",
       date,
-      requestId: data["x-request-id"],
       status: data.status ?? error.code,
       details: data.details,
+      requestId: data["x-request-id"],
+      errorId: data["x-error-id"],
+      stacktrace: data.stackTrace,
     });
 
     return $toast.show(
