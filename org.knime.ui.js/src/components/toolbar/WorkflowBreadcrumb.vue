@@ -45,11 +45,6 @@ const uiControls = useUIControlsStore();
 
 const { getSpaceItemVersion } = useWorkflowVersionsStore();
 
-const getActiveProject = () =>
-  openProjects.value.find(
-    (project) => project.projectId === activeProjectId.value,
-  );
-
 const handleRestoreVersion = () => {
   const activeVersion = props.workflow.info.version;
 

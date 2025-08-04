@@ -8,7 +8,6 @@ import { ComponentPlaceholder, Node } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
-import { getToastPresets } from "@/toastPresets";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 
 import ComponentPlaceholderState from "./ComponentPlaceholderState.vue";
@@ -19,7 +18,6 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const { toastPresets } = getToastPresets();
 const { getSelectedComponentPlaceholder } = storeToRefs(useSelectionStore());
 const { deselectAllObjects } = useSelectionStore();
 const {
