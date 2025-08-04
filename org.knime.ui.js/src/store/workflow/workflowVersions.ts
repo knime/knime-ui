@@ -562,7 +562,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.SAVE;
       } catch (error) {
-        // handleSaveProjectError(error);
         toastPresets.app.saveProjectFailed({ error });
         useLifecycleStore().setIsLoadingWorkflow(false);
         return UnsavedChangesAction.CANCEL;

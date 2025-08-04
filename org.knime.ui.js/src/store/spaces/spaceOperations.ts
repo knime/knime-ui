@@ -91,7 +91,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
 
     async fetchWorkflowGroupContent({
       projectId,
-      retry = false,
+      retry = true,
     }: {
       projectId: string;
       retry?: boolean;
