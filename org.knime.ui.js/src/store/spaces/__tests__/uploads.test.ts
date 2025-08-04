@@ -155,7 +155,7 @@ describe("space::uploads", () => {
   };
 
   const triggerFileSelection = () => {
-    activeOnChangeCallback([file1, file2]);
+    activeOnChangeCallback([file1, file2] as unknown as FileList);
   };
 
   afterEach(() => {
@@ -274,6 +274,7 @@ describe("space::uploads", () => {
     expect(toastTemplateComponent.props).toEqual({
       headline: "There was a problem preparing your upload",
       ...mockError.data,
+      canCopyToClipboard: true,
     });
   });
 
