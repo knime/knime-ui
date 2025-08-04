@@ -70,20 +70,31 @@ onMounted(() => {
     annotationControlsLayerContainer.value!,
   );
 });
+
+// we need to keep the order of the annotations stable
+// otherwise the order will be broken when the backend re-sorts stuff
+// because vue-pixi will then reshuffle things which we do not want
+// to get the proper order we use a render layer with sortableChildren: true and z-index
+// TODO: remove when NXT-3660 is done
+const annotations = computed(
+  () =>
+    activeWorkflow.value?.workflowAnnotations
+      .map((value, index) => ({ ...value, order: index }))
+      .toSorted((a, b) => (a.id < b.id ? -1 : 1)),
+);
 </script>
 
 <template>
   <template v-if="activeWorkflow">
-    <template
-      v-for="(annotation, index) in activeWorkflow!.workflowAnnotations"
-      :key="annotation.id"
-    >
+    <Container label="AnnotationsContainer">
       <StaticWorkflowAnnotation
+        v-for="annotation in annotations"
+        :key="annotation.id"
         :annotation="annotation"
         :layer="canvasLayers.annotations"
-        :z-index="index"
+        :z-index="annotation.order"
       />
-    </template>
+    </Container>
 
     <MetanodePortBars
       v-if="
