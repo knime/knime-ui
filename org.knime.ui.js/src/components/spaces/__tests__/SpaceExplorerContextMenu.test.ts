@@ -5,6 +5,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { MenuItems } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import type { MenuItemWithHandler } from "@/components/common/types";
 import { isBrowser, isDesktop } from "@/environment";
 import {
   createSpace,
@@ -252,7 +253,9 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
-    const uploadToHub = items.find((item) => item.id === "upload");
+    const uploadToHub = items.find(
+      (item) => (item as MenuItemWithHandler).metadata?.id === "upload",
+    );
     menuItems.vm.$emit("item-click", null, uploadToHub);
     await nextTick();
 
