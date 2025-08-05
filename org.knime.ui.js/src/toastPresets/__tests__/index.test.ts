@@ -1,8 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { h } from "vue";
 
+import { rfcErrors } from "@knime/hub-features";
+
 import { getToastsProvider } from "@/plugins/toasts";
 import { getToastPresets } from "..";
+
+vi.mock("@knime/hub-features", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-expect-error
+    ...actual,
+    rfcErrors: {
+      // @ts-expect-error
+      ...actual.rfcErrors,
+      toToast: vi.fn(),
+    },
+  };
+});
 
 describe("toastPresets", () => {
   const toastSetup = () => {
@@ -109,11 +125,6 @@ describe("toastPresets", () => {
           "actual deleteItemsFailed error",
         ],
         [
-          "fetchProviderSpaceGroupsFailed",
-          "Error fetching provider space groups",
-          "actual fetchProviderSpaceGroupsFailed error",
-        ],
-        [
           "fetchWorkflowGroupFailed",
           "Error while fetching workflow group content",
           "actual fetchWorkflowGroupFailed error",
@@ -138,7 +149,7 @@ describe("toastPresets", () => {
           "Error while renaming space",
           "actual renameSpaceFailed error",
         ],
-      ])("show show %s toast", (method, headline, message) => {
+      ])("show %s toast", (method, headline, message) => {
         const { toastPresets, $toast } = toastSetup();
         toastPresets.spaces.crud[method]({
           error: new Error(`actual ${method} error`),
@@ -149,6 +160,51 @@ describe("toastPresets", () => {
           message,
           type: "error",
         });
+      });
+
+      it("handles fetchProviderSpaceGroupsFailed", () => {
+        const { toastPresets } = toastSetup();
+        const failedProviders = [
+          {
+            name: "Provider1",
+            error: {
+              code: -32600,
+              data: {
+                code: "SomeException",
+                title: "",
+                details: ["problem 1", "problem 2"],
+              },
+            },
+          },
+          {
+            name: "Provider2",
+            error: {
+              code: -32600,
+              data: {
+                code: "SomeException",
+                title: "",
+                details: ["problem 3"],
+              },
+            },
+          },
+        ];
+
+        toastPresets.spaces.crud.fetchProviderSpaceGroupsFailed({
+          failedProviders,
+        });
+
+        const expectedRfcError = new rfcErrors.RFCError({
+          title: "Could not load spaces for:\n- Provider1\n- Provider2",
+          details: ["problem 1", "problem 2", "problem 3"],
+        });
+
+        expect(rfcErrors.toToast).toHaveBeenCalledWith(
+          expect.objectContaining({
+            headline: "Error fetching provider space groups",
+            rfcError: expectedRfcError,
+            canCopyToClipboard: true,
+          }),
+        );
       });
 
       it("should show moveOrCopyOpenItemsWarning", () => {

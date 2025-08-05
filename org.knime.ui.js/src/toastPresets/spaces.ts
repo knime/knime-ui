@@ -1,6 +1,9 @@
 import type { VNode } from "vue";
 
 import type { ToastServiceProvider } from "@knime/components";
+import { rfcErrors } from "@knime/hub-features";
+
+import { isApiError } from "@/api/gateway-api/generated-exceptions";
 
 import { defaultAPIErrorHandler } from "./defaultAPIErrorHandler";
 import { type ToastPresetErrorHandler, type ToastPresetHandler } from "./types";
@@ -20,7 +23,10 @@ type SpacesCrudToastPresets = {
   deleteItemsFailed: ToastPresetErrorHandler;
 
   fetchWorkflowGroupFailed: ToastPresetErrorHandler;
-  fetchProviderSpaceGroupsFailed: ToastPresetErrorHandler;
+  fetchProviderSpaceGroupsFailed: ToastPresetErrorHandler<{
+    error?: never;
+    failedProviders: Array<{ name: string; error: unknown }>;
+  }>;
   reloadProviderSpacesFailed: ToastPresetErrorHandler;
   moveItemsFailed: ToastPresetErrorHandler;
   copyItemsFailed: ToastPresetErrorHandler;
@@ -45,11 +51,6 @@ export type SpacesToastPresets = {
   auth: SpacesAuthToastPresets;
   crud: SpacesCrudToastPresets;
   reveal: SpacesRevealToastPresets;
-};
-
-type FetchProviderSpacesFailedParam = {
-  error?: unknown;
-  failedProviderNames?: string[];
 };
 
 const toastIds = new Set<string>();
@@ -77,20 +78,26 @@ export const getPresets = (
           type: "error",
           headline: "Error deleting items",
         }),
-      fetchProviderSpaceGroupsFailed: (
-        param: FetchProviderSpacesFailedParam,
-      ) => {
-        let error: unknown;
-        if (param.failedProviderNames) {
-          error = new Error(
-            `Could not load spaces for:\n${param.failedProviderNames
-              .map((providerName) => `- ${providerName}`)
-              .join("\n")}`,
-          );
-        } else {
-          error = param.error;
-        }
-        return defaultAPIErrorHandler($toast, error, {
+
+      fetchProviderSpaceGroupsFailed: ({ failedProviders }) => {
+        const failedProviderNames = `Could not load spaces for:\n${failedProviders
+          .map(({ name }) => `- ${name}`)
+          .join("\n")}`;
+
+        const details = failedProviders.flatMap(({ error }) => {
+          if (isApiError(error)) {
+            return error.data.details ?? [];
+          }
+
+          return (error as Error).message;
+        });
+
+        const rfcError = new rfcErrors.RFCError({
+          title: failedProviderNames,
+          details,
+        });
+
+        return defaultAPIErrorHandler($toast, rfcError, {
           type: "error",
           headline: "Error fetching provider space groups",
         });
