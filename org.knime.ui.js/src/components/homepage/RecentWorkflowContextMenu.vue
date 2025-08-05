@@ -7,9 +7,9 @@ import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 
 import type { RecentWorkflow } from "@/api/custom-types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
-import { type ActionMenuItem } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { valueOrEmpty } from "@/util/valueOrEmpty";
+import type { MenuItemWithHandler } from "../common/types";
 
 interface Props {
   anchor: Anchor;
@@ -21,9 +21,9 @@ const props = defineProps<Props>();
 const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
 const { revealItemInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
 
-const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
-  if (item.execute) {
-    item.execute();
+const handleItemClick = (item: MenuItemWithHandler) => {
+  if (item.metadata?.handler) {
+    item.metadata.handler();
     props.closeContextMenu();
     return;
   }
@@ -37,15 +37,17 @@ const recentWorkflowContextMenuItems = computed(() => {
   const provider = spaceProviders.value?.[recentWorkflow.origin.providerId];
   const isConnected = provider?.connected;
 
-  const revealInSpaceOption: ActionMenuItem = {
-    id: "revealInSpaceExplorer",
+  const revealInSpaceOption: MenuItemWithHandler = {
     text: isConnected ? "Show in explorer" : "Connect and show in explorer",
     icon: RevealInSpaceIcon,
-    execute: async () => {
-      await revealItemInSpaceExplorer(
-        recentWorkflow.origin,
-        recentWorkflow.name,
-      );
+    metadata: {
+      id: "revealInSpaceExplorer",
+      handler: async () => {
+        await revealItemInSpaceExplorer(
+          recentWorkflow.origin,
+          recentWorkflow.name,
+        );
+      },
     },
   };
 
@@ -54,7 +56,7 @@ const recentWorkflowContextMenuItems = computed(() => {
       canRevealItem(recentWorkflow.origin?.providerId),
       revealInSpaceOption,
     ),
-  ] as ActionMenuItem[];
+  ] as MenuItemWithHandler[];
 
   return menuItems;
 });
@@ -67,7 +69,7 @@ const recentWorkflowContextMenuItems = computed(() => {
     class="menu-items"
     register-keydown
     menu-aria-label="Recent Workflow Context Menu"
-    @item-click="(_, item) => handleItemClick(item)"
+    @item-click="(_, item) => handleItemClick(item as MenuItemWithHandler)"
     @close="closeContextMenu"
   />
 </template>

@@ -8,10 +8,8 @@ import {
   MenuItems,
 } from "@knime/components";
 
-import {
-  type ActionMenuItem,
-  useContextualSpaceExplorerActions,
-} from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
+import { useContextualSpaceExplorerActions } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
+import type { MenuItemWithHandler } from "../common/types";
 
 interface Props {
   createRenameOption: CreateDefaultMenuOption;
@@ -44,9 +42,9 @@ const { spaceExplorerContextMenuItems } = useContextualSpaceExplorerActions(
   },
 );
 
-const handleItemClick = (item: ActionMenuItem) => {
-  if (item.execute) {
-    item.execute();
+const handleItemClick = (item: MenuItemWithHandler) => {
+  if (item.metadata?.handler) {
+    item.metadata.handler();
     props.closeContextMenu();
     return;
   }
@@ -63,6 +61,8 @@ const handleItemClick = (item: ActionMenuItem) => {
     register-keydown
     :items="spaceExplorerContextMenuItems"
     @close="closeContextMenu"
-    @item-click="(_: MouseEvent, item: ActionMenuItem) => handleItemClick(item)"
+    @item-click="
+      (_: MouseEvent, item) => handleItemClick(item as MenuItemWithHandler)
+    "
   />
 </template>

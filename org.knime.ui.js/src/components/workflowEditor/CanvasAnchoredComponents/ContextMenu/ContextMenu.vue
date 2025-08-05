@@ -24,6 +24,7 @@ import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
 import {
   getNodeState,
   isNativeNode,
@@ -36,46 +37,6 @@ import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
 
 const { FloatingMenu } = getFloatingMenuComponent();
-
-/**
- * Helper fn that enables easily creating separators between the different context menu action groups
- */
-const menuGroups = function () {
-  let currItems: Array<MenuItem> = [];
-
-  const isEnabled = (item: MenuItem) => !item.disabled;
-
-  const removeInvalidItems = (items: Array<MenuItem>): Array<MenuItem> => {
-    return (
-      items
-        .filter(isEnabled)
-        .map((item) =>
-          item.children
-            ? { ...item, children: removeInvalidItems(item.children) }
-            : item,
-        )
-        // also remove items whose children were all filtered out
-        .filter((item) => (item.children ? item.children.length > 0 : true))
-    );
-  };
-
-  return {
-    append(groupItems: Array<MenuItem>) {
-      const newItems = removeInvalidItems(groupItems);
-
-      if (currItems.length !== 0 && newItems.length > 0) {
-        // add separator to last item of previous group
-        currItems.at(-1)!.separator = true;
-      }
-
-      currItems = currItems.concat(newItems);
-
-      return this;
-    },
-
-    value: () => currItems,
-  };
-};
 
 const filterItemVisibility = <T,>(item: T, isVisible: boolean) => {
   if (!isVisible) {
@@ -458,7 +419,7 @@ const setMenuItems = () => {
     ),
   ];
 
-  visibleItems.value = menuGroups()
+  visibleItems.value = menuGroupsBuilder()
     .append(basicOperationsGroup)
     .append(
       mapToShortcut({
@@ -479,7 +440,7 @@ const setMenuItems = () => {
     .append(nodeAlignmentGroup)
     .append(metanodeAndComponentGroup)
     .append(componentPlaceholderGroup)
-    .value();
+    .build();
 };
 
 const menuItems = ref<InstanceType<typeof MenuItems>>();

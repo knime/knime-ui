@@ -4,9 +4,9 @@ import { storeToRefs } from "pinia";
 import {
   type CreateDefaultMenuOption,
   type FileExplorerItem,
-  type MenuItem,
 } from "@knime/components";
 
+import type { MenuItemWithHandler } from "@/components/common/types";
 import { isBrowser, isDesktop } from "@/environment";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
@@ -15,15 +15,15 @@ import {
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
+import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
 import { valueOrEmpty } from "@/util/valueOrEmpty";
 
 import { useSpaceExplorerActions } from "./useSpaceExplorerActions";
 
-export type ActionMenuItem = MenuItem & {
-  id?: string;
-  execute?: (() => void) | null;
-};
-
+/**
+ * Get the actions that can be made on the Space Explorer, based
+ * on different sets of constraints (e.g environment, selection, current space, etc).
+ */
 export const useContextualSpaceExplorerActions = (
   projectId: Ref<string>,
   selectedItemIds: Ref<string[]>,
@@ -56,16 +56,16 @@ export const useContextualSpaceExplorerActions = (
     deleteItem,
     createWorkflow,
     downloadToLocalSpace,
-    downloadInBrowser,
+    downloadFromHubInBrowser,
     moveToSpace,
     copyToSpace,
-    uploadToHub,
+    uploadToHubFromLocalSpace,
     openInBrowserAction,
     openAPIDefinitionAction,
     openPermissionsDialogAction,
     displayDeploymentsAction,
     executeWorkflowAction,
-    uploadAction,
+    uploadToHubInBrowser,
   } = useSpaceExplorerActions(projectId, selectedItemIds, {
     mode: options.mode,
     createRenameOption: options.createRenameOption,
@@ -95,63 +95,91 @@ export const useContextualSpaceExplorerActions = (
     selectedItemIds.value,
   );
 
-  const spaceExplorerActionsItems = computed(() => {
-    return [
-      ...valueOrEmpty(isDesktop(), createWorkflow.value),
-      createFolderAction.value,
-      ...valueOrEmpty(isBrowser(), uploadAction.value),
-      ...valueOrEmpty(isDesktop(), importWorkflow.value),
-      ...valueOrEmpty(isDesktop(), importFiles.value),
-      ...valueOrEmpty(isLocal.value, uploadToHub.value),
-      ...valueOrEmpty(isHub.value && isDesktop(), downloadToLocalSpace.value),
-      ...valueOrEmpty(isHub.value && isBrowser(), downloadInBrowser.value),
-      ...valueOrEmpty(isHub.value || isServer.value, moveToSpace.value),
-      ...valueOrEmpty(isHub.value || isServer.value, copyToSpace.value),
-      ...valueOrEmpty(
-        isServer.value && isWorkflowSelected.value,
-        openAPIDefinitionAction.value,
-      ),
-      reloadAction.value,
-    ];
+  const spaceExplorerActionsItems = computed<MenuItemWithHandler[]>(() => {
+    return menuGroupsBuilder<MenuItemWithHandler>({
+      removeDisabledItems: false,
+    })
+      .append([
+        ...valueOrEmpty(isDesktop(), createWorkflow.value),
+        createFolderAction.value,
+      ])
+      .append([
+        ...valueOrEmpty(
+          isDesktop() && isLocal.value,
+          uploadToHubFromLocalSpace.value,
+        ),
+        ...valueOrEmpty(isBrowser(), uploadToHubInBrowser.value),
+        ...valueOrEmpty(isDesktop(), importWorkflow.value),
+        ...valueOrEmpty(isDesktop(), importFiles.value),
+      ])
+      .append([
+        ...valueOrEmpty(isDesktop() && isHub.value, downloadToLocalSpace.value),
+        ...valueOrEmpty(
+          isBrowser() && isHub.value,
+          downloadFromHubInBrowser.value,
+        ),
+      ])
+      .append([
+        ...valueOrEmpty(isHub.value || isServer.value, moveToSpace.value),
+        ...valueOrEmpty(isHub.value || isServer.value, copyToSpace.value),
+      ])
+      .append([
+        ...valueOrEmpty(
+          isServer.value && isWorkflowSelected.value,
+          openAPIDefinitionAction.value,
+        ),
+        reloadAction.value,
+      ])
+      .build();
   });
 
-  const spaceExplorerContextMenuItems = computed(() => {
-    return [
-      ...valueOrEmpty(!options.isMultipleSelectionActive, renameItem.value),
-      deleteItem.value,
-      duplicateItem.value,
-      ...valueOrEmpty(isLocal.value, exportItem.value),
-      moveToSpace.value,
-      copyToSpace.value,
-      ...valueOrEmpty(isLocal.value, uploadToHub.value),
-      ...valueOrEmpty(
-        (isHub.value || (isServer.value && doesSelectionContainWorkflow)) &&
-          isDesktop(),
-        downloadToLocalSpace.value,
-      ),
-      ...valueOrEmpty(
-        !options.isMultipleSelectionActive && isHub.value && isBrowser(),
-        downloadInBrowser.value,
-      ),
-      ...valueOrEmpty(
-        ((isHub.value && !doesSelectionContainFile) || isServer.value) &&
-          isDesktop(),
-        openInBrowserAction.value,
-      ),
-      ...valueOrEmpty(
-        isServer.value && doesSelectionContainWorkflow,
-        executeWorkflowAction.value,
-      ),
-      ...valueOrEmpty(
-        isServer.value && doesSelectionContainWorkflow,
-        displayDeploymentsAction.value,
-      ),
-      ...valueOrEmpty(
-        isServer.value && doesSelectionContainWorkflow,
-        openAPIDefinitionAction.value,
-      ),
-      ...valueOrEmpty(isServer.value, openPermissionsDialogAction.value),
-    ];
+  const spaceExplorerContextMenuItems = computed<MenuItemWithHandler[]>(() => {
+    const { isMultipleSelectionActive } = options;
+
+    return menuGroupsBuilder<MenuItemWithHandler>({
+      removeDisabledItems: false,
+    })
+      .append([
+        ...valueOrEmpty(!isMultipleSelectionActive, renameItem.value),
+        deleteItem.value,
+        duplicateItem.value,
+        ...valueOrEmpty(isLocal.value, exportItem.value),
+        moveToSpace.value,
+        copyToSpace.value,
+      ])
+      .append([
+        ...valueOrEmpty(isLocal.value, uploadToHubFromLocalSpace.value),
+        ...valueOrEmpty(
+          (isHub.value || (isServer.value && doesSelectionContainWorkflow)) &&
+            isDesktop(),
+          downloadToLocalSpace.value,
+        ),
+        ...valueOrEmpty(
+          !isMultipleSelectionActive && isHub.value && isBrowser(),
+          downloadFromHubInBrowser.value,
+        ),
+      ])
+      .append([
+        ...valueOrEmpty(
+          ((isHub.value && !doesSelectionContainFile) || isServer.value) &&
+            isDesktop(),
+          openInBrowserAction.value,
+        ),
+        ...valueOrEmpty(
+          isServer.value && doesSelectionContainWorkflow,
+          executeWorkflowAction.value,
+        ),
+        ...valueOrEmpty(
+          isServer.value && doesSelectionContainWorkflow,
+          displayDeploymentsAction.value,
+        ),
+        ...valueOrEmpty(
+          isServer.value && doesSelectionContainWorkflow,
+          openAPIDefinitionAction.value,
+        ),
+        ...valueOrEmpty(isServer.value, openPermissionsDialogAction.value),
+      ])
+      .build();
   });
 
   return {
