@@ -109,8 +109,7 @@ final class SaveProject {
      * @param localOnly -
      * @return -
      */
-    static boolean saveProject(final String projectId, final boolean localOnly)
-         {
+    static boolean saveProject(final String projectId, final boolean localOnly) {
         return saveProject(projectId, localOnly, true);
     }
 
@@ -125,8 +124,7 @@ final class SaveProject {
      * @return A boolean indicating whether the project was saved.
      * @throws GatewayException
      */
-    static boolean saveProject(final String projectId, final boolean localOnly,
-        final boolean allowOverwritePrompt)  {
+    static boolean saveProject(final String projectId, final boolean localOnly, final boolean allowOverwritePrompt) {
         var projectWfm = WorkflowManagerResolver.get(projectId, NodeIDEnt.getRootID());
         if (isExecutionInProgress(projectWfm)) {
             // Show a warning otherwise
@@ -145,7 +143,8 @@ final class SaveProject {
         return state.isExecutionInProgress() || state.isExecutingRemotely();
     }
 
-    private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final  boolean localOnly, final boolean allowOverwritePrompt)  {
+    private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final boolean localOnly,
+        final boolean allowOverwritePrompt) {
         var wasSaveSuccessful = new AtomicBoolean();
         try {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
@@ -165,12 +164,12 @@ final class SaveProject {
         return false;
     }
 
-    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly)  {
+    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly) {
         return saveProject(monitor, wfm, localOnly, true);
     }
 
     static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly,
-        final boolean allowOverwritePrompt)  {
+        final boolean allowOverwritePrompt) {
         // use the flag and try/catch to make sure that the workflow is also set to dirty if any exception is thrown
         var success = false;
         try {
@@ -231,8 +230,7 @@ final class SaveProject {
     }
 
     private static boolean saveBackToServerOrHub(final IProgressMonitor rootMonitor, final WorkflowManager wfm,
-        final RestLocationInfo remoteLocation, final boolean allowOverwritePrompt)
-        throws GatewayException {
+        final RestLocationInfo remoteLocation, final boolean allowOverwritePrompt) throws GatewayException {
         final var context = wfm.getContextV2();
         if (!context.isTemporyWorkflowCopyMode()) {
             throw new IllegalStateException("Can only save temporary copies to Server or Hub.");

@@ -144,20 +144,19 @@ final class KnimeBrowserHealthChecker {
         });
     }
 
-    private static void saveAndRestart()  {
+    private static void saveAndRestart() {
         saveAndCloseProjects();
         PlatformUI.getWorkbench().restart();
     }
 
     private static void saveAndCloseProjects() {
-        var projectIds = ProjectManager.getInstance().getDirtyProjectsMap().entrySet().stream()
-            .filter(Entry::getValue).map(Entry::getKey).toArray(String[]::new);
+        var projectIds = ProjectManager.getInstance().getDirtyProjectsMap().entrySet().stream().filter(Entry::getValue)
+            .map(Entry::getKey).toArray(String[]::new);
         // save and close projects
         var svgs = new String[projectIds.length];
         Arrays.fill(svgs, EMPTY_SVG);
         var progressService = PlatformUI.getWorkbench().getProgressService();
-        SaveAndCloseProjects.saveProjectsWithProgressBar(projectIds, new AtomicReference<>(),
-            progressService);
+        SaveAndCloseProjects.saveProjectsWithProgressBar(projectIds, new AtomicReference<>(), progressService);
     }
 
     private static MessageDialog createMessageDialog() {

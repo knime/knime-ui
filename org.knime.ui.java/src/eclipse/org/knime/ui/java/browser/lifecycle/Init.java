@@ -163,6 +163,7 @@ final class Init {
                         projectManager.setProjectActive(project.getID());
                     }
                 } catch (NetworkException | LoggedOutException | ServiceCallException e) {
+                    LOGGER.error("Could not restore projects from state", e);
                     // TODO NXT-3938 react to workflow load exceptions
                 }
             });

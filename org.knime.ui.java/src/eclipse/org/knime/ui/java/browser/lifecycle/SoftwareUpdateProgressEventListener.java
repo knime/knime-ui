@@ -159,7 +159,7 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
             createAndSendProgressEvent(m_eventConsumer, job.getName(), null, Status.STARTED, 0.0);
             var listener = new JobProgressMonitor(job.getName());
             // Adds progress listener to job monitor
-            m_addProgressListener.accept(job,  listener);
+            m_addProgressListener.accept(job, listener);
             // Locally keeps track of the progress listener s.t. it can be removed when done
             m_progressListener.put(job.getName(), listener);
 
@@ -223,7 +223,7 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
     }
 
     private static void createAndSendProgressEvent(final EventConsumer eventConsumer, final String task,
-        final String subTask, final Status status, final double progress)  {
+        final String subTask, final Status status, final double progress) {
         var progressEvent = MAPPER.createObjectNode();
 
         progressEvent.put("task", task);
@@ -253,7 +253,7 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
             m_task = task;
         }
 
-        private void createAndSendEvent()  {
+        private void createAndSendEvent() {
             if (m_totalWork > 0 && m_worked > 0) {
                 var progress = m_worked / m_totalWork * 100;
                 createAndSendProgressEvent(m_eventConsumer, m_task, m_subTask, progress);
