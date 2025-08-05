@@ -56,7 +56,6 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.lang3.function.FailableRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +64,6 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
-import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Origin;
@@ -85,14 +83,14 @@ class CloseProjectTest {
 
     private List<WorkflowManager> m_wfms;
 
-    private FailableRunnable<GatewayException> m_appStateUpdateListener;
+    private Runnable m_appStateUpdateListener;
 
     @BeforeEach
     void setup() throws IOException, InvalidSettingsException, CanceledExecutionException,
         UnsupportedWorkflowVersionException, LockFailedException {
         var eventConsumer = mock(EventConsumer.class);
         var appStateUpdater = new AppStateUpdater();
-        m_appStateUpdateListener = mock(FailableRunnable.class);
+        m_appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(m_appStateUpdateListener);
         var pm = ProjectManager.getInstance();
         DesktopAPI.injectDependency(pm);
