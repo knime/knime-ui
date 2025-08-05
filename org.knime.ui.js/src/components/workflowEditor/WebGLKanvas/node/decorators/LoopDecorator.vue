@@ -17,7 +17,7 @@ type Props = {
 defineProps<Props>();
 
 const backgroundColor = $colors.nodeBackgroundColors.Loop;
-const stroke: StrokeInput = { color: $colors.Masala, width: 1, join: "round" };
+const stroke: StrokeInput = { color: $colors.Black, width: 1, join: "round" };
 
 /* eslint-disable no-magic-numbers */
 const renderBackground = (graphics: Graphics) => {

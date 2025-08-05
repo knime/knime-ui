@@ -54,7 +54,7 @@ export const trafficLight = {
 export const darkeningMask = "hsla(0, 0%, 0%, 33.3%)";
 
 export const nodeProgressBar = knimeColors.Cornflower;
-export const metanodeState = knimeColors.Masala;
+export const metanodeState = knimeColors.Black;
 
 export const error = trafficLight.red;
 export const warning = knimeColors.Yellow;
