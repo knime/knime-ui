@@ -100,7 +100,7 @@ class ImportFiles extends AbstractImportItems {
                     nameCollisions, UsageContext.IMPORT);
             }
         } catch (final MutableServiceCallException e) {
-            throw e.toGatewayException("Failed to import workflow(s)");
+            throw e.toGatewayException("Failed to import file(s)");
         }
     }
 

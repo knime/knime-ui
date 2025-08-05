@@ -83,7 +83,6 @@ import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.hub.NamedItemVersion;
 import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.entity.AddNodeCommandEnt.AddNodeCommandEntBuilder;
 import org.knime.gateway.api.webui.entity.NodeFactoryKeyEnt;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
@@ -155,8 +154,8 @@ public final class ImportURI {
             } catch (ImportForbiddenException e) { // NOSONAR
                 DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Import error",
                     "It looks like you do not have permissions to open this workflow or component. "
-                            + "Are you logged in to the correct KNIME Hub?",
-                            false);
+                        + "Are you logged in to the correct KNIME Hub?",
+                    false);
             }
 
             if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
@@ -164,11 +163,7 @@ public final class ImportURI {
                 var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
                 var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
                 runInDisplayThread(() -> {
-                    try {
-                        OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null));
-                    } catch (GatewayException ge) {
-                        LOGGER.error(ge); // TODO NXT-3938 react to workflow load exceptions
-                    }
+                    OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null));
                 });
             } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
                 runInDisplayThread(() -> checkAndInstallExtension(extensionImport));
@@ -212,16 +207,16 @@ public final class ImportURI {
             var knimeURI = repoObjectImport.getKnimeURI();
             var itemVersions = ResolverUtil.getHubItemVersionList(knimeURI);
             return itemVersions.stream()//
-                    .filter(version -> version.version() == itemVersion.getAsInt())//
-                    .findFirst();
+                .filter(version -> version.version() == itemVersion.getAsInt())//
+                .findFirst();
         } catch (ResourceAccessException e) {
             LOGGER.warn("Failed to retrieve version information", e);
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.WARNING,
                 "Workflow Version Unavailable",
                 "Could not retrieve version information for the selected workflow. Please log in. "
-                        + "If you are already logged in, the requested version may no longer exist "
-                        + "or you may not have permission to access it.",
-                        false);
+                    + "If you are already logged in, the requested version may no longer exist "
+                    + "or you may not have permission to access it.",
+                false);
             return Optional.empty();
         }
     }
@@ -311,10 +306,9 @@ public final class ImportURI {
      * @param workflowId
      * @param canvasX
      * @param canvasY
-     * @throws GatewayException -
      */
     static void importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
-        final int canvasX, final int canvasY) throws GatewayException {
+        final int canvasX, final int canvasY) {
         EntityImport entityImport;
         if (uri == null) {
             entityImport = entityImportInProgress;
@@ -349,8 +343,8 @@ public final class ImportURI {
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
             OpenProject.openProjectCopy(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
-            importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId,
-                canvasX, canvasY);
+            importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId, canvasX,
+                canvasY);
         }
     }
 
@@ -443,7 +437,7 @@ public final class ImportURI {
     }
 
     private static boolean importNodeFromFileURI(final String uri, final String projectId, final String workflowId,
-        final int canvasX, final int canvasY) throws GatewayException {
+        final int canvasX, final int canvasY) {
         var nodeFactory = ConfigurableNodeFactoryMapper.getNodeFactory(uri);
         if (nodeFactory == null) {
             return false;
@@ -452,7 +446,7 @@ public final class ImportURI {
     }
 
     private static boolean importNode(final NodeFactoryKeyEnt nodeFactoryKey, final String url, final String projectId,
-        final String workflowId, final int canvasX, final int canvasY) throws GatewayException {
+        final String workflowId, final int canvasX, final int canvasY) {
         var addNodeCommand = builder(AddNodeCommandEntBuilder.class) //
             .setKind(KindEnum.ADD_NODE) //
             .setNodeFactory(nodeFactoryKey) //

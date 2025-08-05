@@ -89,7 +89,6 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
-import org.knime.ui.java.api.OpenProject.OpenProjectException;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -124,10 +123,9 @@ final class ProjectAPI {
      * @param nextProjectId The ID of the project to make active after the current one has been closed. Can be null or
      *            omitted if there is no next project ID (e.g. when closing the last tab).
      * @return A boolean indicating whether an editor has been closed.
-     * @throws GatewayException -
      */
     @API
-    static boolean closeProject(final String projectIdToClose, final String nextProjectId) throws GatewayException {
+    static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
         return CloseProject.closeProject(projectIdToClose, nextProjectId);
     }
 
@@ -145,11 +143,9 @@ final class ProjectAPI {
      *
      * @param projectId ID of the project
      * @return A boolean indicating whether the project was saved.
-     * @throws GatewayException -
      */
     @API
-    static boolean saveProject(final String projectId, final Boolean allowOverwritePrompt)
-        throws GatewayException {
+    static boolean saveProject(final String projectId, final Boolean allowOverwritePrompt) {
         var allowPrompt = allowOverwritePrompt == null ? Boolean.TRUE : allowOverwritePrompt;
         return SaveProject.saveProject(projectId, false, allowPrompt);
     }
@@ -164,11 +160,10 @@ final class ProjectAPI {
      *            it could not be loaded. This is helpful in case of version switches: we might try to re-load the
      *            previously loaded version before we removing the project entirely.
      * @return Whether the project is or has been loaded successfully
-     * @throws GatewayException -
      */
     @API
     static boolean setProjectActiveAndEnsureItsLoaded(final String projectId, final String versionId,
-        final boolean removeProjectIfNotLoaded) throws GatewayException {
+        final boolean removeProjectIfNotLoaded) {
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);
         var appStateUpdater = DesktopAPI.getDeps(AppStateUpdater.class);
 
@@ -352,7 +347,7 @@ final class ProjectAPI {
             var res = MAPPER.createArrayNode();
             try {
                 localSpace.getAncestorItemIds(origin.itemId()).forEach(res::add);
-            } catch (final MutableServiceCallException e) { // TODO
+            } catch (final MutableServiceCallException e) {
                 throw new IllegalStateException("Could not create ancestors",
                     e.toGatewayException("Could not create ancestors"));
             }

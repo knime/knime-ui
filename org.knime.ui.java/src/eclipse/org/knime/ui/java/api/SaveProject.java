@@ -51,9 +51,6 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -113,7 +110,7 @@ final class SaveProject {
      * @return -
      */
     static boolean saveProject(final String projectId, final boolean localOnly)
-        throws GatewayException {
+         {
         return saveProject(projectId, localOnly, true);
     }
 
@@ -129,7 +126,7 @@ final class SaveProject {
      * @throws GatewayException
      */
     static boolean saveProject(final String projectId, final boolean localOnly,
-        final boolean allowOverwritePrompt) throws GatewayException {
+        final boolean allowOverwritePrompt)  {
         var projectWfm = WorkflowManagerResolver.get(projectId, NodeIDEnt.getRootID());
         if (isExecutionInProgress(projectWfm)) {
             // Show a warning otherwise
@@ -148,16 +145,11 @@ final class SaveProject {
         return state.isExecutionInProgress() || state.isExecutingRemotely();
     }
 
-    private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final  boolean localOnly, final boolean allowOverwritePrompt) throws GatewayException {
+    private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final  boolean localOnly, final boolean allowOverwritePrompt)  {
         var wasSaveSuccessful = new AtomicBoolean();
-        final var gatewayExceptionRef = new AtomicReference<GatewayException>();
         try {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
-                try {
-                    wasSaveSuccessful.set(saveProject(monitor, wfm, localOnly, allowOverwritePrompt));
-                } catch (GatewayException ge) {
-                    gatewayExceptionRef.set(ge);
-                }
+                wasSaveSuccessful.set(saveProject(monitor, wfm, localOnly, allowOverwritePrompt));
             });
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
@@ -170,19 +162,15 @@ final class SaveProject {
             return true;
         }
 
-        if (gatewayExceptionRef.get() != null) {
-            throw gatewayExceptionRef.get();
-        }
-
         return false;
     }
 
-    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly) throws GatewayException {
+    static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly)  {
         return saveProject(monitor, wfm, localOnly, true);
     }
 
     static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly,
-        final boolean allowOverwritePrompt) throws GatewayException {
+        final boolean allowOverwritePrompt)  {
         // use the flag and try/catch to make sure that the workflow is also set to dirty if any exception is thrown
         var success = false;
         try {

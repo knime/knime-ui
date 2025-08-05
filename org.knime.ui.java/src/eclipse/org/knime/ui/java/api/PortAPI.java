@@ -115,11 +115,10 @@ final class PortAPI {
      * @param nodeId
      * @param portIdx
      * @param execute whether to execute and wait until the node is executed before opening the legacy port view
-     * @throws GatewayException
      */
     @API
     static void openLegacyPortView(final String projectId, final String nodeId, final Double portIdx,
-        final Boolean execute) throws GatewayException {
+        final Boolean execute) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         if (nc.isInactive()) {

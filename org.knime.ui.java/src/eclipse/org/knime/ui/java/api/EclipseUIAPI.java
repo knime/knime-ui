@@ -56,7 +56,6 @@ import java.util.stream.Stream;
 
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.swt.program.Program;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -210,13 +209,12 @@ final class EclipseUIAPI {
 
     /**
      * Function to allow the Web UI to switch back to the classic KNIME perspective.
-     * @throws GatewayException -
      */
     @API
-    static void switchToJavaUI() throws GatewayException {
+    static void switchToJavaUI() {
         final var projectIds = ProjectManager.getInstance().getProjectIds();
-        final var doProcced = PerspectiveUtil.showDialogCloseAllProjectsOnSwitch(() -> !projectIds.isEmpty());
-        if (!doProcced) {
+        final var doProceed = PerspectiveUtil.showDialogCloseAllProjectsOnSwitch(() -> !projectIds.isEmpty());
+        if (!doProceed) {
             return; // Skips perspective switch
         }
 
@@ -234,7 +232,7 @@ final class EclipseUIAPI {
      */
     @API
     static void switchWorkspace() {
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         new OpenWorkspaceAction(window).run();
     }
 

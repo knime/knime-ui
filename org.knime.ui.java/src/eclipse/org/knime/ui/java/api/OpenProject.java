@@ -126,6 +126,7 @@ final class OpenProject {
         }
 
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);
+
         final var optProject = projectManager //
             .getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType);
 
@@ -154,9 +155,8 @@ final class OpenProject {
      *          these two cases is different w.r.t. interaction with the space explorer, opening and saving.
      * @param repoObjectImport The source of the project
      * @return Whether the project could be fetched and opened
-     * @throws GatewayException
      */
-    static boolean openProjectCopy(final RepoObjectImport repoObjectImport) throws GatewayException {
+    static boolean openProjectCopy(final RepoObjectImport repoObjectImport) {
         return openProjectCopy(repoObjectImport, null);
     }
 
@@ -171,7 +171,7 @@ final class OpenProject {
      * @throws GatewayException
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion)
-        throws GatewayException {
+         {
 
         final var wfm = loadWorkflowWithProgress(repoObjectImport);
         if (wfm == null) {
@@ -267,8 +267,7 @@ final class OpenProject {
         });
     }
 
-    private static WorkflowManager loadWorkflowWithProgress(final RepoObjectImport repoObjectImport)
-        throws GatewayException {
+    private static WorkflowManager loadWorkflowWithProgress(final RepoObjectImport repoObjectImport) {
 
         final var fileStore =
             (RemoteExplorerFileStore)ExplorerMountTable.getFileSystem().getStore(repoObjectImport.getKnimeURI());

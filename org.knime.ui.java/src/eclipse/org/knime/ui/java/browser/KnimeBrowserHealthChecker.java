@@ -61,7 +61,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.js.cef.CEFUtils;
 import org.knime.ui.java.api.SaveAndCloseProjects;
@@ -156,13 +155,9 @@ final class KnimeBrowserHealthChecker {
         // save and close projects
         var svgs = new String[projectIds.length];
         Arrays.fill(svgs, EMPTY_SVG);
-        try {
-            var progressService = PlatformUI.getWorkbench().getProgressService();
-            SaveAndCloseProjects.saveProjectsWithProgressBar(projectIds, new AtomicReference<>(),
-                progressService);
-        } catch (GatewayException e) {
-            // TODO Auto-generated catch block
-        }
+        var progressService = PlatformUI.getWorkbench().getProgressService();
+        SaveAndCloseProjects.saveProjectsWithProgressBar(projectIds, new AtomicReference<>(),
+            progressService);
     }
 
     private static MessageDialog createMessageDialog() {

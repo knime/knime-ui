@@ -6424,11 +6424,8 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {InvalidRequestException} If the request is invalid for a reason.
-         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
-         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
-         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async getUpdatableLinkedComponents(
         	params: { projectId: string,  workflowId: string  }

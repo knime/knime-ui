@@ -193,9 +193,12 @@ public final class DesktopAPI {
     public static void forEachAPIFunction(final BiConsumer<String, Consumer<Object[]>> functionCaller) {
         for (final APIMethod apiMethod : METHODS) {
             final var method = apiMethod.method;
-            functionCaller.accept(method.getName(),
-                apiMethod.runInUIThread ? (args -> Display.getDefault().asyncExec(() -> invoke(method, args)))
-                    : (args -> CompletableFuture.runAsync(() -> invoke(method, args))));
+            functionCaller.accept( //
+                method.getName(), //
+                apiMethod.runInUIThread //
+                    ? (args -> Display.getDefault().asyncExec(() -> invoke(method, args))) //
+                    : (args -> CompletableFuture.runAsync(() -> invoke(method, args))) //
+            );
         }
     }
 
@@ -279,8 +282,7 @@ public final class DesktopAPI {
         final LocalSpace localSpace, //
         final WelcomeAPEndpoint welcomeAPEndpoint, //
         final ExampleProjects exampleProjects, //
-        final UserProfile userProfile,
-        final ProgressReporter progressReporter) {
+        final UserProfile userProfile, final ProgressReporter progressReporter) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }

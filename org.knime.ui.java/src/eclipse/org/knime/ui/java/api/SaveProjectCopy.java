@@ -300,7 +300,7 @@ final class SaveProjectCopy {
 
     private static WorkflowManager withCleanup(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
         final FunctionWithProgress<WorkflowManager> saveLogic)
-        throws NoSuchElementException, GatewayException {
+        throws NoSuchElementException  {
         final Consumer<WorkflowManager> successHandler = wfm -> {
             if (oldContext.isTemporyWorkflowCopyMode()) { // If saved from a yellow bar editor
                 final var execInfo = oldContext.getExecutorInfo();

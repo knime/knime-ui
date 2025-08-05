@@ -71,9 +71,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.IShellProvider;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.explorer.ExplorerActivator;
@@ -140,7 +137,7 @@ final class ClassicAPCopyLogic {
     public static boolean copy(final IShellProvider shellProvider, final SpaceProvider sourceSpaceProvider,
         final List<AbstractExplorerFileStore> sources, final SpaceProvider targetSpaceProvider,
         final AbstractExplorerFileStore target, final String targetSpaceId,
-        final boolean excludeData) throws ServiceCallException, LoggedOutException, NetworkException {
+        final boolean excludeData)  {
 
         // make sure that the target provider is finished loading
         DesktopAPUtil.waitForMountpointToFinishFetching(target);
@@ -177,7 +174,7 @@ final class ClassicAPCopyLogic {
         }
     }
 
-    private boolean run() throws ServiceCallException, LoggedOutException, NetworkException {
+    private boolean run() {
         // collect the necessary information
         final var destChecker =
             new DestinationChecker<>(m_shellProvider.getShell(), "Copy", m_sources.size() > 1, true);
@@ -309,12 +306,8 @@ final class ClassicAPCopyLogic {
      *
      * @param sources the selected content providers
      * @return true if the operation is possible, false otherwise
-     * @throws NetworkException -
-     * @throws LoggedOutException -
-     * @throws ServiceCallException -
      */
-    private static boolean isCopyPossible(final Collection<AbstractExplorerFileStore> sources)
-        throws ServiceCallException, LoggedOutException, NetworkException {
+    private static boolean isCopyPossible(final Collection<AbstractExplorerFileStore> sources) {
         // group sources by providers
         final var sourceProviders = new HashMap<AbstractContentProvider, List<AbstractExplorerFileStore>>();
         for (final var source : sources) {

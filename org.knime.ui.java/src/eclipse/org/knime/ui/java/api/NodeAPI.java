@@ -50,11 +50,8 @@ package org.knime.ui.java.api;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
-import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.*;
 
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.lang3.function.FailableRunnable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.Node;
@@ -67,7 +64,6 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.wrapper.NativeNodeContainerWrapper;
 import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
@@ -98,12 +94,9 @@ final class NodeAPI {
      * @param versionId
      * @param nodeId
      * @return whether the node settings have changed
-     * @throws GatewayException
      */
     @API
-    static boolean openNodeDialog(final String projectId, final String versionId, final String nodeId)
-        throws GatewayException {
-
+    static boolean openNodeDialog(final String projectId, final String versionId, final String nodeId) {
         var version = VersionId.parse(versionId);
         var nodeIdEnt = new NodeIDEnt(nodeId);
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, version, nodeIdEnt);
@@ -129,10 +122,9 @@ final class NodeAPI {
      *
      * @param projectId -
      * @param nodeId -
-     * @throws GatewayException
      */
     @API
-    static void executeNodeAndOpenView(final String projectId, final String nodeId) throws GatewayException {
+    static void executeNodeAndOpenView(final String projectId, final String nodeId) {
         executeNodeThenRun(projectId, nodeId, () -> NodeAPI.openNodeView(projectId, nodeId));
     }
 
@@ -143,30 +135,18 @@ final class NodeAPI {
      * @param projectId The project containing the workflow
      * @param nodeId The node to act on
      * @param task The task to run
-     * @throws GatewayException
      */
-    static void executeNodeThenRun(final String projectId, final String nodeId,
-        final FailableRunnable<GatewayException> task) throws GatewayException {
+    private static void executeNodeThenRun(final String projectId, final String nodeId, final Runnable task) {
         if (isInactive(projectId, nodeId)) {
             return;
         }
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
 
-        final var gatewayExceptionRef = new AtomicReference<GatewayException>();
         CoreUtil.executeThenRun(nc, () -> {
-            Display.getDefault().asyncExec(() -> {
-                try {
-                    task.run();
-                } catch (final GatewayException e) { // NOSONAR
-                    gatewayExceptionRef.set(e);
-                }
-            });
+            Display.getDefault().asyncExec(task);
         });
 
-        if (gatewayExceptionRef.get() != null) {
-            throw gatewayExceptionRef.get();
-        }
     }
 
     /**
@@ -174,9 +154,8 @@ final class NodeAPI {
      *
      * @param projectId
      * @param nodeId
-     * @throws GatewayException
      */
-    private static void openNodeView(final String projectId, final String nodeId) throws GatewayException {
+    private static void openNodeView(final String projectId, final String nodeId) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         if (nc instanceof SubNodeContainer snc) {
@@ -211,10 +190,10 @@ final class NodeAPI {
 
     /**
      * Opens the swing dialog or CEF-based dialog of a node.
-     * @throws GatewayException
+     *
      */
     @API
-    static void openLegacyFlowVariableDialog(final String projectId, final String nodeId) throws GatewayException {
+    static void openLegacyFlowVariableDialog(final String projectId, final String nodeId) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         NodeContainerEditPart.openDialog(wrap(nc), null);
@@ -227,10 +206,9 @@ final class NodeAPI {
      * @param projectId
      * @param nodeId
      * @return
-     * @throws GatewayException
      */
     @API
-    static String openLayoutEditor(final String projectId, final String nodeId) throws GatewayException {
+    static String openLayoutEditor(final String projectId, final String nodeId) {
         var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         if (nc instanceof WorkflowManager wfm && wfm.isComponentProjectWFM()) {
@@ -250,7 +228,7 @@ final class NodeAPI {
         CheckUtils.checkArgument(nc != null, "Node with id '%s' not found in workflow with id '%s'", projectId, nodeId);
     }
 
-    private static boolean isInactive(final String projectId, final String nodeId) throws GatewayException {
+    private static boolean isInactive(final String projectId, final String nodeId) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         return nc.isInactive();

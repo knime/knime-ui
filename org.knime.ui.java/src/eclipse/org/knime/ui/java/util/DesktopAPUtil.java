@@ -74,10 +74,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
@@ -101,7 +98,6 @@ import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.LoadMetaNodeTemplateRunnable;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
-import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.editor2.editparts.GUIWorkflowCipherPrompt;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
@@ -138,9 +134,7 @@ public final class DesktopAPUtil {
      * @return The optional workflow manager that has been loaded.
      * @throws GatewayException
      */
-    public static Optional<WorkflowManager> loadWorkflowManagerWithProgress(final WorkflowContextV2 ctx)
-        throws GatewayException {
-
+    public static Optional<WorkflowManager> loadWorkflowManagerWithProgress(final WorkflowContextV2 ctx) {
         return runWithProgress(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> loadWorkflowManager(progress, ctx.getExecutorInfo().getLocalWorkflowPath(), ctx,
                 VersionId.currentState()));
@@ -523,7 +517,7 @@ public final class DesktopAPUtil {
      */
     public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgress(
         final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo)
-        throws ServiceCallException, LoggedOutException, NetworkException {
+         {
 
         return runWithProgress(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
@@ -541,7 +535,7 @@ public final class DesktopAPUtil {
      */
     public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgressWithoutWarnings(
         final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo)
-        throws ServiceCallException, LoggedOutException, NetworkException {
+         {
 
         return runWithProgressWithoutWarnings(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
@@ -638,7 +632,7 @@ public final class DesktopAPUtil {
      * @throws ServiceCallException
      */
     public static boolean waitForMountpointToFinishFetching(final AbstractExplorerFileStore fileStore)
-        throws ServiceCallException, LoggedOutException, NetworkException {
+         {
 
         final var provider = fileStore.getContentProvider();
         if (fileStore instanceof RemoteExplorerFileStore && isMountpointFetching(provider, fileStore)) {
@@ -690,37 +684,6 @@ public final class DesktopAPUtil {
         final var children = provider.getChildren(filestore);
         return children.length == 1 && children[0] instanceof MessageFileStore msg
                 && "Fetching content...".equals(msg.getName());
-    }
-
-    /**
-     * Open an editor for the given file store in the shared editor area.
-     *
-     * @param fileStore The file store for the editor.
-     * @param locationInfo if {@code null} it will be inferred from 'fileStore'
-     * @return A boolean indicating whether the project has been opened successfully or not.
-     * @throws PartInitException If the editor part could not be initialized.
-     * @throws NetworkException
-     * @throws LoggedOutException
-     * @throws ServiceCallException
-     */
-    public static boolean openEditor(final AbstractExplorerFileStore fileStore, final HubSpaceLocationInfo locationInfo)
-        throws PartInitException, ServiceCallException, LoggedOutException, NetworkException {
-        final IEditorInput input;
-        if (fileStore instanceof RemoteExplorerFileStore remoteFileStore) {
-            final var tempInput = downloadWorkflowWithProgressWithoutWarnings(remoteFileStore, locationInfo);
-
-            if (tempInput.isEmpty()) {
-                return false; // Since an empty optional means downloading failed
-            }
-
-            input = tempInput.get();
-        } else {
-            input = new FileStoreEditorInput(fileStore.getChild(WorkflowPersistor.WORKFLOW_FILE));
-        }
-        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        page.openEditor(input, WorkflowEditor.ID, false);
-
-        return true;
     }
 
     /**

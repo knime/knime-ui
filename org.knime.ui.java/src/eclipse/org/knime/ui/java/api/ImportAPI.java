@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import java.net.URI;
+import java.util.function.Supplier;
 
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.workflow.NodeID;
@@ -114,11 +115,10 @@ final class ImportAPI {
     /**
      * Imports a URI at a certain position in the workflow canvas (i.e. usually imported as a new node). If a node is to
      * be imported and the node isn't installed yet, it will ask the user whether to install the respective extension.
-     * @throws GatewayException -
      */
     @API
     static void importURIAtWorkflowCanvas(final String uri, final String projectId, final String workflowId,
-        final double canvasX, final double canvasY) throws GatewayException {
+        final double canvasX, final double canvasY) {
         ImportURI.importURIAtWorkflowCanvas(uri, projectId, workflowId, (int)canvasX, (int)canvasY);
     }
 
@@ -153,15 +153,14 @@ final class ImportAPI {
      * @param x X-Position to place the component in the workflow canvas
      * @param y Y-Position to place the component in the workflow canvas
      * @return the node-id of the new component or {@code null} if the import failed
-     * @throws GatewayException -
      */
     static String importComponent(final String projectId, final String workflowId, final URI uri,
-        final boolean isRemoteLocation, final double x, final double y) throws GatewayException {
+        final boolean isRemoteLocation, final double x, final double y) {
 
         var workflowIdEnt = new NodeIDEnt(workflowId);
-        AddComponentCommand.GatewaySupplier<WorkflowManager> wfmSupplier =
+        Supplier<WorkflowManager> wfmSupplier =
             () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
-        AddComponentCommand.GatewaySupplier<NodeID> command = () -> {
+        Supplier<NodeID> command = () -> {
             return Display.getDefault().syncCall(() -> {
                 final var wfm = wfmSupplier.get();
                 var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y,
@@ -191,18 +190,14 @@ final class ImportAPI {
      */
     private static class AddComponentCommand implements WorkflowCommand {
 
-        interface GatewaySupplier<T> {
-            T get();
-        }
-
         private NodeID m_componentId;
 
-        private final GatewaySupplier<NodeID> m_redo;
+        private final Supplier<NodeID> m_redo;
 
-        private final GatewaySupplier<WorkflowManager> m_wfm;
+        private final Supplier<WorkflowManager> m_wfm;
 
-        AddComponentCommand(final GatewaySupplier<WorkflowManager> wfmSupplier, final NodeID componentId,
-            final GatewaySupplier<NodeID> command) {
+        AddComponentCommand(final Supplier<WorkflowManager> wfmSupplier, final NodeID componentId,
+            final Supplier<NodeID> command) {
             m_wfm = wfmSupplier;
             m_componentId = componentId;
             m_redo = command;
