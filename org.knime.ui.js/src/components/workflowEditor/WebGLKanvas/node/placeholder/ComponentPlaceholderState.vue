@@ -65,7 +65,9 @@ const { metrics: nodeNameDimensions } = useNodeNameTextMetrics({
 });
 
 const onRightClick = async (event: FederatedPointerEvent) => {
-  markPointerEventAsHandled(event, { initiator: "placeholder-ctx-menu" });
+  markPointerEventAsHandled(event, {
+    initiator: "component-placeholder::onContextMenu",
+  });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({

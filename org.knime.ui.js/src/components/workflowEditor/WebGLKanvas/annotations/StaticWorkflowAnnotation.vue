@@ -63,7 +63,9 @@ const canvasStore = useWebGLCanvasStore();
 const { toCanvasCoordinates, visibleArea } = storeToRefs(canvasStore);
 
 const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
-  markPointerEventAsHandled(event, { initiator: "annotation-ctx-menu" });
+  markPointerEventAsHandled(event, {
+    initiator: "annotation::onContextMenu",
+  });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({

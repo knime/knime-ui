@@ -206,7 +206,7 @@ export const useObjectInteractions = (
       if (isDragging.value && event.key === "Escape") {
         movingStore.abortDrag();
         markEscapeAsHandled(event, {
-          initiator: "object-interaction::escapeKey",
+          initiator: "object-interaction::onEscape",
         });
       }
     };

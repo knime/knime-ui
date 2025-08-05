@@ -288,7 +288,9 @@ const actionBarPosition = computed(() => {
 });
 
 const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
-  markPointerEventAsHandled(event, { initiator: "node-ctx-menu" });
+  markPointerEventAsHandled(event, {
+    initiator: "node::onContextMenu",
+  });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({

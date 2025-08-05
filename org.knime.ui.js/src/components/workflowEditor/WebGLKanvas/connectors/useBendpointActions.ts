@@ -78,7 +78,9 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     event: FederatedPointerEvent,
     index: number,
   ) => {
-    markPointerEventAsHandled(event, { initiator: "bendpoint-ctx-menu" });
+    markPointerEventAsHandled(event, {
+      initiator: "bendpoint::onContextMenu",
+    });
     const bendpointId = getBendpointId(connectionId, index);
     hoveredBendpoint.value = index;
     selectBendpoints(bendpointId);

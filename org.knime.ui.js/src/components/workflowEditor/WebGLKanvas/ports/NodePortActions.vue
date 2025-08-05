@@ -26,7 +26,7 @@ useEventListener(
     if (event.key !== "Escape") {
       return;
     }
-    markEscapeAsHandled(event, { initiator: "webgl/NodePortActions" });
+    markEscapeAsHandled(event, { initiator: "node-port::onEscape" });
     emit("close");
   },
   { capture: true },

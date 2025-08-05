@@ -142,7 +142,7 @@ describe("useCanvasClickOutside", () => {
     vi.useFakeTimers();
     const { onClickOutsideCallback } = doMount({
       ignoreCanvasEvents: (event) =>
-        event.dataset?.initiator === "ignored-initiator",
+        event.dataset?.initiator === "annotation-transform",
     });
 
     vi.runAllTimers();
@@ -152,7 +152,7 @@ describe("useCanvasClickOutside", () => {
     mockCanvasAnchorWrapper.appendChild(mockEventTarget);
 
     const event = new PointerEvent("pointerdown");
-    event.dataset = { initiator: "ignored-initiator" };
+    event.dataset = { initiator: "annotation-transform" };
     kanvas.dispatchEvent(event);
 
     expect(onClickOutsideCallback).not.toHaveBeenCalled();

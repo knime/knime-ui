@@ -8,7 +8,7 @@ describe("interaction utils", () => {
     it("should mark a DOM PointerEvent as handled", () => {
       const nativeEvent = new PointerEvent("pointerdown");
       const dataset = {
-        initiator: "text-editing",
+        initiator: "text-editing" as const,
       };
 
       markPointerEventAsHandled(nativeEvent, dataset);
@@ -26,13 +26,13 @@ describe("interaction utils", () => {
       } as FederatedPointerEvent;
 
       const dataset = {
-        initiator: "node-interaction",
+        initiator: "object-interaction" as const,
       };
 
       markPointerEventAsHandled(federatedEvent, dataset);
 
       expect(nativeEvent.dataset).toEqual({
-        initiator: "node-interaction",
+        initiator: "object-interaction",
         skipGlobalSelection: true,
       });
     });
@@ -40,14 +40,14 @@ describe("interaction utils", () => {
     it("should override the skipGlobalSelection default", () => {
       const nativeEvent = new PointerEvent("pointerdown");
       const dataset = {
-        initiator: "test-initiator",
+        initiator: "object-interaction" as const,
         skipGlobalSelection: false,
       };
 
       markPointerEventAsHandled(nativeEvent, dataset);
 
       expect(nativeEvent.dataset).toEqual({
-        initiator: "test-initiator",
+        initiator: "object-interaction",
         skipGlobalSelection: false,
       });
     });
@@ -60,7 +60,7 @@ describe("interaction utils", () => {
       } as FederatedPointerEvent;
 
       const dataset = {
-        initiator: "type-test",
+        initiator: "object-interaction" as const,
         skipGlobalSelection: true,
       };
 
