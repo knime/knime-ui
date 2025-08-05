@@ -229,7 +229,6 @@ export const useComponentInteractionsStore = defineStore(
             title,
             details: result.details,
           });
-          console.log("result :>> ", result);
 
           const toastId = $toast.show(
             rfcErrors.toToast({

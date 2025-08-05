@@ -3,7 +3,6 @@ import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { useEventBus } from "@vueuse/core";
 
-import type { Toast } from "@knime/components";
 import {
   CreateVersionForm,
   ManageVersions,
@@ -69,15 +68,6 @@ const mockVersionsModeInfo: ReturnType<
   permissions: ["EDIT", "DELETE"],
 };
 
-const getExpectedToastWithHeadline = (headline: string): Toast => {
-  return {
-    headline,
-    autoRemove: false,
-    buttons: expect.any(Array),
-    message: expect.any(String),
-    type: "error",
-  };
-};
 class BackendError extends Error {
   code: number;
   data: any;
