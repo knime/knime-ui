@@ -2,20 +2,21 @@
 <script setup lang="ts">
 import {
   type ComponentPublicInstance,
-  onMounted,
+  ref,
   toRef,
   useTemplateRef,
   watch,
 } from "vue";
-import { onClickOutside, onKeyDown, useMagicKeys } from "@vueuse/core";
+import { onKeyDown, useMagicKeys } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import { navigatorUtils, sleep } from "@knime/utils";
+import { navigatorUtils } from "@knime/utils";
 
 import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import RichTextAnnotation from "../../common/annotations/RichTextAnnotation.vue";
 import { useAnnotationDataEditing } from "../../common/annotations/useAnnotationDataEditing";
+import { useCanvasClickOutside } from "../common/useCanvasClickOutside";
 
 defineOptions({ inheritAttrs: false });
 
@@ -71,20 +72,17 @@ onKeyDown(
   { target: () => richTextAnnotationRef.value?.$el },
 );
 
-onMounted(async () => {
-  // make a brief pause before registering the click outside handler,
-  // to avoid closing immediately after opening
-  // eslint-disable-next-line no-magic-numbers
-  await sleep(300);
-
-  onClickOutside(richTextAnnotationRef, saveContent, {
-    ignore: [
-      ".editor-toolbar[data-ignore-click-outside]",
-      // the link modal is still portalled
-      "#annotation-editor-toolbar",
-    ],
-    capture: true,
-  });
+useCanvasClickOutside({
+  rootEl: richTextAnnotationRef,
+  focusTrap: ref(false),
+  ignoreCssSelectors: [
+    ".editor-toolbar[data-ignore-click-outside]",
+    // The portal target is using this as an ID for the toolbar
+    "#annotation-editor-toolbar",
+  ],
+  ignoreCanvasEvents: (event) =>
+    event.dataset?.initiator === "annotation-transform",
+  onClickOutside: saveContent,
 });
 </script>
 

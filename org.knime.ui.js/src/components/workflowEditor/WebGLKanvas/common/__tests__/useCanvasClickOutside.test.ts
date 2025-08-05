@@ -4,7 +4,7 @@ import { onClickOutside } from "@vueuse/core";
 
 import { CANVAS_ANCHOR_WRAPPER_ID } from "@/components/workflowEditor/CanvasAnchoredComponents";
 import { mountComposable } from "@/test/utils/mountComposable";
-import { useFloatingMenuClickaway } from "../useFloatingMenuClickaway";
+import { useCanvasClickOutside } from "../useCanvasClickOutside";
 
 let triggerClickOutside: (() => void) | undefined;
 
@@ -40,20 +40,30 @@ vi.mock("@vueuse/integrations/useFocusTrap", () => {
   };
 });
 
-describe("useFloatingMenuClickaway", () => {
-  const doMount = ({ focusTrap }: { focusTrap?: boolean } = {}) => {
+describe("useCanvasClickOutside", () => {
+  const doMount = ({
+    focusTrap,
+    ignoreCssSelectors,
+    ignoreCanvasEvents,
+  }: {
+    focusTrap?: boolean;
+    ignoreCssSelectors?: Array<string>;
+    ignoreCanvasEvents?: (event: PointerEvent) => boolean;
+  } = {}) => {
     const mockRootEl = ref(document.createElement("div"));
-    const onClickaway = vi.fn();
+    const onClickOutside = vi.fn();
     const result = mountComposable({
-      composable: useFloatingMenuClickaway,
+      composable: useCanvasClickOutside,
       composableProps: {
-        focusTrap: ref(focusTrap ?? false),
-        onClickaway,
         rootEl: mockRootEl,
+        focusTrap: ref(focusTrap ?? false),
+        ignoreCssSelectors,
+        ignoreCanvasEvents,
+        onClickOutside,
       },
     });
 
-    return { ...result, mockRootEl, onClickawayCallback: onClickaway };
+    return { ...result, mockRootEl, onClickOutsideCallback: onClickOutside };
   };
 
   afterEach(() => {
@@ -61,9 +71,9 @@ describe("useFloatingMenuClickaway", () => {
     vi.clearAllMocks();
   });
 
-  it("should register clickaway", async () => {
+  it("should register a click outside", async () => {
     vi.useFakeTimers();
-    const { lifeCycle, mockRootEl, onClickawayCallback } = doMount();
+    const { lifeCycle, mockRootEl, onClickOutsideCallback } = doMount();
 
     expect(vi.mocked(onClickOutside)).not.toHaveBeenCalled();
 
@@ -75,17 +85,17 @@ describe("useFloatingMenuClickaway", () => {
       expect.any(Function),
       { ignore: [kanvas], capture: true },
     );
-    expect(onClickawayCallback).not.toHaveBeenCalled();
+    expect(onClickOutsideCallback).not.toHaveBeenCalled();
 
     triggerClickOutside?.();
-    expect(onClickawayCallback).toHaveBeenCalled();
+    expect(onClickOutsideCallback).toHaveBeenCalled();
 
     lifeCycle.unmount();
   });
 
-  it("should handle canvas as a special clickaway target", async () => {
+  it("should handle canvas as a special click outside target", async () => {
     vi.useFakeTimers();
-    const { onClickawayCallback } = doMount();
+    const { onClickOutsideCallback } = doMount();
 
     vi.runAllTimers();
     await nextTick();
@@ -99,13 +109,53 @@ describe("useFloatingMenuClickaway", () => {
     kanvas.dispatchEvent(event1);
 
     // ignores children of the anchored container
-    expect(onClickawayCallback).not.toHaveBeenCalled();
+    expect(onClickOutsideCallback).not.toHaveBeenCalled();
 
     const event2 = new PointerEvent("pointerdown");
     kanvas.dispatchEvent(event2);
 
-    // clickaway for anything else
-    expect(onClickawayCallback).toHaveBeenCalled();
+    // click outside for anything else
+    expect(onClickOutsideCallback).toHaveBeenCalled();
+  });
+
+  it("should pass the list of ignored elements to onClickOutside", async () => {
+    vi.useFakeTimers();
+    const { lifeCycle, mockRootEl } = doMount({
+      ignoreCssSelectors: [".ignored-element"],
+    });
+
+    expect(vi.mocked(onClickOutside)).not.toHaveBeenCalled();
+
+    vi.runAllTimers();
+    await nextTick();
+
+    expect(vi.mocked(onClickOutside)).toHaveBeenCalledWith(
+      mockRootEl,
+      expect.any(Function),
+      { ignore: [kanvas, ".ignored-element"], capture: true },
+    );
+
+    lifeCycle.unmount();
+  });
+
+  it("should ignore canvas events based on initiator", async () => {
+    vi.useFakeTimers();
+    const { onClickOutsideCallback } = doMount({
+      ignoreCanvasEvents: (event) =>
+        event.dataset?.initiator === "ignored-initiator",
+    });
+
+    vi.runAllTimers();
+    await nextTick();
+
+    const mockEventTarget = document.createElement("span");
+    mockCanvasAnchorWrapper.appendChild(mockEventTarget);
+
+    const event = new PointerEvent("pointerdown");
+    event.dataset = { initiator: "ignored-initiator" };
+    kanvas.dispatchEvent(event);
+
+    expect(onClickOutsideCallback).not.toHaveBeenCalled();
   });
 
   it("uses focus trap if prop is true", async () => {

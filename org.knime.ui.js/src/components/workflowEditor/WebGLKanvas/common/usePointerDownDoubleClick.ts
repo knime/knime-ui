@@ -29,7 +29,7 @@ export const usePointerDownDoubleClick = (
     }
 
     // do nothing when event is marked as "handled", this way we can communicate from the pixi events that an object
-    // in the canvas already used this interation, so that outer listeners (to the <canvas>/<div> wrapper elements)
+    // in the canvas already used this interaction, so that outer listeners (to the <canvas>/<div> wrapper elements)
     // are ignored
     if (options.eventHandledChecker?.(pointerDownEvent)) {
       return false;

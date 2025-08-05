@@ -7,13 +7,37 @@ import { sleep } from "@knime/utils";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { CANVAS_ANCHOR_WRAPPER_ID } from "../../CanvasAnchoredComponents";
 
-type UseFloatingMenuClickaway = {
-  rootEl: MaybeElementRef<HTMLElement | undefined>;
+/**
+ * This hook is an extension of the VueUse `onClickOutside` sensor. It adds
+ * the possibility to attach a focus trap, or to ignore certain canvas events.
+ */
+type UseCanvasClickOutside = {
+  /**
+   * Element to detect clicks outside of.
+   */
+  rootEl: MaybeElementRef;
+  /**
+   * Whether to activate focus trap on the rootEl.
+   */
   focusTrap: Ref<boolean>;
-  onClickaway: () => void;
+  /**
+   * CSS selectors of elements to ignore when detecting outside clicks.
+   */
+  ignoreCssSelectors?: Array<string>;
+  /**
+   * Function to determine if canvas events should be ignored.
+   * @param event - The pointer event
+   * @returns true if the event should be ignored
+   * @example (event) => event.dataset?.initiator === "ignored-initiator"
+   */
+  ignoreCanvasEvents?: (event: PointerEvent) => boolean;
+  /**
+   * Callback fired when clicking outside the rootEl.
+   */
+  onClickOutside: () => void;
 };
 
-export const useFloatingMenuClickaway = (options: UseFloatingMenuClickaway) => {
+export const useCanvasClickOutside = (options: UseCanvasClickOutside) => {
   const CLICKAWAY_REGISTER_DELAY_MS = 300;
   const { rootEl, focusTrap } = options;
 
@@ -29,7 +53,11 @@ export const useFloatingMenuClickaway = (options: UseFloatingMenuClickaway) => {
       return;
     }
 
-    options.onClickaway();
+    if (options.ignoreCanvasEvents?.(event)) {
+      return;
+    }
+
+    options.onClickOutside();
   };
 
   onMounted(async () => {
@@ -50,9 +78,12 @@ export const useFloatingMenuClickaway = (options: UseFloatingMenuClickaway) => {
       rootEl,
       () => {
         deactivateFocusTrap();
-        options.onClickaway();
+        options.onClickOutside();
       },
-      { capture: true, ignore: [kanvas] },
+      {
+        capture: true,
+        ignore: [kanvas, ...(options.ignoreCssSelectors || [])],
+      },
     );
   });
 
