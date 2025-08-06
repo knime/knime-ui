@@ -76,28 +76,26 @@ const onSave = async () => {
   nodeInteractionsStore.closeLabelEditor();
 };
 
-const actionBarStyle = computed(() => {
-  const top = editedNode.value && isNodeMetaNode(editedNode.value) ? 20 : 43;
+const borderWidth = 1;
+const nodeStateOffset = 20;
 
-  return {
-    top: `${top + getNodeLabelTopOffset(editedNode.value!.id)}px`,
-    left: "-13.5px",
-  };
-});
-
-const textEditorStyle = computed(() => {
-  const xOffset = nodeSize / 2;
-
+const transformOffsets = computed(() => {
+  const lineHeightPX =
+    nodeLabelText.baseFontSize * nodeLabelText.baseLineHeight;
   const baseYOffset =
     editedNode.value && isNodeMetaNode(editedNode.value)
-      ? nodeSize + 12
-      : nodeSize * 2;
+      ? nodeSize + lineHeightPX
+      : nodeSize + nodeStateOffset + lineHeightPX;
 
-  const yOffset = baseYOffset + getNodeLabelTopOffset(editedNode.value!.id) + 1;
+  const y = editedNode.value
+    ? (`${
+        baseYOffset + getNodeLabelTopOffset(editedNode.value!.id)
+      }px` as const)
+    : ("0px" as const);
 
   return {
-    transform: `translateX(calc(-50% + ${xOffset}px)) translateY(${yOffset}px)`,
-    transformOrigin: "top",
+    x: `calc(-50% + ${nodeSize / 2 - borderWidth}px)` as const,
+    y,
   };
 });
 
@@ -123,16 +121,17 @@ onContextMenuOutside(textEditorWrapper, onSave);
 </script>
 
 <template>
-  <FloatingHTML :active="Boolean(editedNode)" :canvas-position="position">
-    <div ref="textEditorWrapper">
-      <svg class="action-bar" :style="actionBarStyle">
-        <ActionBar
-          transform="scale(0.95) translate(31, 10)"
-          :actions="actions"
-        />
+  <FloatingHTML
+    :active="Boolean(editedNode)"
+    :canvas-position="position"
+    :transform-offsets="transformOffsets"
+  >
+    <div ref="textEditorWrapper" class="editor-wrapper">
+      <svg class="action-bar" viewBox="-24.5 -12 49 24">
+        <ActionBar :actions="actions" />
       </svg>
+
       <TextEditor
-        :style="textEditorStyle"
         :width-offset="2"
         :min-width="2"
         :max-width="nodeLabelText.styles.wordWrapWidth"
@@ -148,25 +147,33 @@ onContextMenuOutside(textEditorWrapper, onSave);
 </template>
 
 <style lang="postcss" scoped>
+.editor-wrapper {
+  position: relative;
+}
+
 .action-bar {
   position: absolute;
-  overflow: hidden;
   width: 54px;
   height: 25px;
+  top: -25px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
 }
 
 .label-text-editor {
   margin: auto;
   font-family: "Roboto Condensed", sans-serif;
-  font-size: calc(v-bind("nodeLabelText.styles.fontSize") * 1px);
   text-align: v-bind("nodeLabelText.styles.align");
   font-weight: v-bind("nodeLabelText.styles.fontWeight");
-  border: 1.5px solid var(--knime-silver-sand);
-  line-height: v-bind("nodeLabelText.lineHeight");
-  padding: 1px;
+  font-size: calc(v-bind("nodeLabelText.styles.fontSize") * 1px);
+  line-height: v-bind("nodeLabelText.baseLineHeight");
+  border: v-bind("`${borderWidth}px`") var(--knime-silver-sand);
+  outline: 1px solid var(--knime-silver-sand);
 
   &:focus-within {
-    border: 1.5px solid var(--knime-stone-dark);
+    border: v-bind("`${borderWidth}px`") var(--knime-stone-dark);
+    outline: 1px solid var(--knime-stone-dark);
   }
 }
 </style>

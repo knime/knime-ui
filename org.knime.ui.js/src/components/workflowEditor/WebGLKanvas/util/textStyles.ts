@@ -11,22 +11,22 @@ const defaultTextStyles: Partial<TextStyle> | TextStyle = {
   fill: $colors.text.default,
 };
 
-const nodeFontSize = 12;
-const nodeLineHeight = 1.15;
+const nodeRootFontSize = 12;
+const nodeRootLineHeight = 1.15; // same as browser's default
 
 export const nodeNameText: TextStylePreset<{
-  fontSize: number;
-  lineHeight: number;
+  basefontSize: number;
+  baseLineHeight: number;
   maxLines: number;
 }> = {
-  fontSize: nodeFontSize,
-  lineHeight: nodeLineHeight,
+  basefontSize: nodeRootFontSize,
+  baseLineHeight: nodeRootLineHeight,
   maxLines: 3,
   styles: {
     ...defaultTextStyles,
-    fontSize: nodeFontSize,
+    fontSize: nodeRootFontSize,
     fontWeight: "bold",
-    lineHeight: nodeFontSize * nodeLineHeight,
+    lineHeight: nodeRootFontSize * nodeRootLineHeight,
     wordWrap: true,
     wordWrapWidth: 90,
     breakWords: true,
@@ -37,21 +37,22 @@ export const nodeNameText: TextStylePreset<{
 };
 
 export const nodeLabelText: TextStylePreset<{
-  lineHeight: number;
+  baseFontSize: number;
+  baseLineHeight: number;
   maxLines: number;
 }> = {
-  lineHeight: nodeLineHeight,
+  baseFontSize: nodeRootFontSize,
+  baseLineHeight: nodeRootLineHeight,
   maxLines: 8,
   styles: {
     ...defaultTextStyles,
-    fontSize: nodeFontSize,
+    fontSize: nodeRootFontSize,
     fontWeight: "normal",
-    lineHeight: nodeFontSize * nodeLineHeight,
+    lineHeight: nodeRootFontSize * nodeRootLineHeight,
     wordWrap: true,
-    wordWrapWidth: 150,
+    wordWrapWidth: 170,
     breakWords: true,
-    // fixes slight cut off of some chars
-    padding: 2,
+    whiteSpace: "pre",
     align: "center",
   },
 };

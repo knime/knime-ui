@@ -17,13 +17,30 @@ import { FLOATING_HTML_FADE_DELAY_MS } from "./constants";
 const canvasStore = useWebGLCanvasStore();
 const { zoomFactor } = storeToRefs(canvasStore);
 
+type TransformValue = `${number}px` | `${number}%` | `calc(${any})`;
+
 type Props = {
   active: boolean;
-  canvasPosition?: XY;
+  canvasPosition: XY | undefined;
+  transformOffsets?: {
+    x?: TransformValue;
+    y?: TransformValue;
+  };
   dimensions?: { width?: number; height?: number };
 };
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  transformOffsets: undefined,
+  dimensions: undefined,
+});
+
+const transformStyle = computed(() => {
+  const scale = `scale(${zoomFactor.value})`;
+  // prettier-ignore
+  const translate = `translate(${props.transformOffsets?.x ?? "0px"}, ${props.transformOffsets?.y ?? "0px"})`
+
+  return props.transformOffsets ? `${scale} ${translate}` : `${scale}`;
+});
 
 const screenPosition = computed(() => {
   if (!props.canvasPosition) {
@@ -59,6 +76,7 @@ const style = computed(() => {
     top: `${screenPosition.value.y}px`,
     width,
     height,
+    transform: transformStyle.value,
   };
 });
 </script>
@@ -75,7 +93,6 @@ const style = computed(() => {
 .canvas-floating-html {
   position: absolute;
   z-index: v-bind("$zIndices.layerExpandedMenus");
-  transform: scale(v-bind(zoomFactor));
   transform-origin: top left;
 }
 

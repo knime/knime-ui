@@ -133,21 +133,18 @@ const onPointerDown = (event: PointerEvent) => {
       @input="onInput"
       @keydown.enter="onEnterKey"
       @pointerdown="onPointerDown"
+      @wheel.prevent
     />
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .text-editor {
-  border: 1px solid var(--knime-silver-sand);
   background-color: var(--knime-white);
   margin: 0;
+  padding: 0;
   text-align: inherit;
   width: fit-content;
-
-  &:focus-within {
-    border: 1px solid var(--knime-masala);
-  }
 
   & > .ghost {
     visibility: hidden;
@@ -158,7 +155,7 @@ const onPointerDown = (event: PointerEvent) => {
     border: 0;
     padding: 0;
     margin: 0;
-    font: inherit; /* inherit all font styles from parent element */
+    line-height: inherit;
     letter-spacing: inherit;
     overflow: hidden;
     color: inherit;
@@ -173,10 +170,10 @@ const onPointerDown = (event: PointerEvent) => {
     margin: 0;
     resize: none;
     background-color: transparent;
-    font: inherit; /* inherit all font styles from parent element */
+    font-weight: inherit;
+    line-height: inherit;
     letter-spacing: inherit;
     overflow: hidden;
-    color: inherit;
     outline: none;
 
     &::placeholder {

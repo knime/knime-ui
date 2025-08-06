@@ -18,6 +18,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   nodeId: string;
+  isMetanode: boolean;
   label?: string;
 }>();
 
@@ -50,10 +51,12 @@ watch(isEditing, async () => {
 
 <template>
   <NodeLabelText
-    v-if="showText"
+    :visible="!isEditing"
+    :renderable="!isEditing"
     :label="label"
     :node-id="nodeId"
     :is-node-selected="isSelected"
+    :is-metanode="isMetanode"
     @rightclick="emit('rightclick', $event)"
     @pointerdown="emit('pointerdown', $event)"
   />

@@ -308,18 +308,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
 };
 
 const { resolution } = useZoomAwareResolution();
-
-const nodeLabelPosition = computed(() => {
-  const yOffset = 8;
-  return {
-    x: translatedPosition.value.x + $shapes.nodeSize / 2,
-    y:
-      translatedPosition.value.y +
-      nodeSelectionMeasures.value.y +
-      nodeSelectionMeasures.value.height +
-      yOffset,
-  };
-});
 </script>
 
 <template>
@@ -412,7 +400,8 @@ const nodeLabelPosition = computed(() => {
     v-if="renderable"
     :node-id="node.id"
     :label="node.annotation?.text.value"
-    :position="nodeLabelPosition"
+    :position="translatedPosition"
+    :is-metanode="isMetanode"
     @rightclick="onRightClick"
     @pointerdown="handlePointerInteraction"
   />

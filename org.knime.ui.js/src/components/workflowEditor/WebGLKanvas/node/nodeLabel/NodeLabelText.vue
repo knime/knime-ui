@@ -2,12 +2,13 @@
 <!-- eslint-disable no-undefined -->
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { FederatedPointerEvent, TextStyle } from "pixi.js";
+import { FederatedPointerEvent, Text, TextStyle } from "pixi.js";
 
-import { sleep } from "@knime/utils";
+import { navigatorUtils, sleep } from "@knime/utils";
 
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $colors from "@/style/colors";
+import { nodeSize } from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
 import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
@@ -25,6 +26,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   nodeId: string;
   isNodeSelected: boolean;
+  isMetanode: boolean;
   label?: string;
 }>();
 
@@ -51,7 +53,7 @@ const onPointerdown = async (event: FederatedPointerEvent) => {
   }
 };
 
-const hover = ref(false);
+const isHovered = ref(false);
 
 const showEmptyState = computed(
   () => props.isNodeSelected && (!props.label || props.label?.trim() === ""),
@@ -63,8 +65,7 @@ const label = computed(() =>
     : props.label?.replaceAll("\r\n", "\n") ?? "",
 );
 
-const { metrics: labelMeasures, shortenedText: shortenedNodeLabel } =
-  useNodeLabelShortening(label);
+const { shortenedText, metrics: labelMeasures } = useNodeLabelShortening(label);
 
 const textStyle = computed<Partial<TextStyle>>(() => {
   if (showEmptyState.value) {
@@ -77,12 +78,24 @@ const textStyle = computed<Partial<TextStyle>>(() => {
   return nodeLabelText.styles;
 });
 
+const textX = computed(() => nodeSize / 2 - labelMeasures.value.width / 2 - 1);
+
+const textY = computed(() => {
+  const baseYOffset = props.isMetanode ? nodeSize + 12 : nodeSize * 2;
+
+  return (
+    baseYOffset +
+    getNodeLabelTopOffset(props.nodeId) +
+    (navigatorUtils.isMac() ? 1 : -0.5)
+  );
+});
+
 const borderPadding = 2;
 const renderBorder = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics.rect(
-    -labelMeasures.value.width / 2 - borderPadding,
-    getNodeLabelTopOffset(props.nodeId),
+    textX.value - borderPadding,
+    textY.value,
     labelMeasures.value.width + borderPadding * 2,
     labelMeasures.value.height + 3,
   );
@@ -97,16 +110,16 @@ const renderBorder = (graphics: GraphicsInst) => {
       :resolution="resolution"
       :style="textStyle"
       :round-pixels="true"
-      :x="-labelMeasures.width / 2 + 1"
-      :y="getNodeLabelTopOffset(nodeId) + 0.5"
+      :x="textX"
+      :y="textY"
       event-mode="static"
       @rightclick="emit('rightclick', $event)"
-      @pointerenter="hover = true"
-      @pointerleave="hover = false"
+      @pointerenter="isHovered = true"
+      @pointerleave="isHovered = false"
       @pointerdown.stop.prevent="onPointerdown"
     >
-      {{ shortenedNodeLabel }}
+      {{ shortenedText }}
     </Text>
-    <Graphics :renderable="hover" @render="renderBorder" />
+    <Graphics :renderable="isHovered" @render="renderBorder" />
   </Container>
 </template>

@@ -9,7 +9,7 @@ import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { nodeNameMargin, nodeSize, portSize } from "@/style/shapes";
+import { nodeSize, portSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
 import { invalidCharacters } from "../../../common/constants";
 import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
@@ -94,14 +94,6 @@ const onSave = async () => {
   nodeInteractionsStore.closeNameEditor();
 };
 
-const padding = nodeNameText.styles.padding ?? 0;
-const yOffset = nodeNameMargin + padding - 3.5;
-
-const positionStyle = computed(() => ({
-  transform: `translateX(-1px) translateY(calc(-100% - ${yOffset}px))`,
-  transformOrigin: "bottom",
-}));
-
 const hideInvalidCharsTimeoutId = ref<number>();
 const onInvalidInput = () => {
   if (hideInvalidCharsTimeoutId.value) {
@@ -128,6 +120,18 @@ const actions: ActionButtonConfig[] = [
   },
 ];
 
+const borderWidth = 1;
+const transformOffsets = computed(() => {
+  const yOffset = Math.floor(
+    (nodeNameText.basefontSize * nodeNameText.baseLineHeight) / 2,
+  );
+
+  return {
+    x: "0px" as const,
+    y: `calc(-100% - ${yOffset}px)` as const,
+  };
+});
+
 const textEditorWrapper = useTemplateRef("textEditorWrapper");
 onClickOutside(textEditorWrapper, onSave);
 onContextMenuOutside(textEditorWrapper, onSave);
@@ -138,13 +142,11 @@ onContextMenuOutside(textEditorWrapper, onSave);
     :active="Boolean(editedNode)"
     :canvas-position="position"
     :dimensions="{ width: maxWidth }"
+    :transform-offsets="transformOffsets"
   >
-    <div ref="textEditorWrapper" :style="positionStyle">
-      <svg class="action-bar">
-        <ActionBar
-          transform="scale(0.95) translate(31, 10)"
-          :actions="actions"
-        />
+    <div ref="textEditorWrapper">
+      <svg class="action-bar" viewBox="-24.5 -12 49 24">
+        <ActionBar :actions="actions" />
       </svg>
       <TextEditor
         :value="nodeName"
@@ -183,10 +185,15 @@ onContextMenuOutside(textEditorWrapper, onSave);
 .name-text-editor {
   margin: auto;
   font-family: "Roboto Condensed", sans-serif;
-  font-size: calc(v-bind("nodeNameText.styles.fontSize") * 1px);
+  font-size: calc(v-bind("nodeNameText.basefontSize") * 1px);
   font-weight: v-bind("nodeNameText.styles.fontWeight");
   text-align: v-bind("nodeNameText.styles.align");
-  line-height: v-bind("nodeNameText.lineHeight");
+  line-height: v-bind("nodeNameText.baseLineHeight");
+  border: v-bind("`${borderWidth}px`") solid var(--knime-silver-sand);
+
+  &:focus-within {
+    border: v-bind("`${borderWidth}px`") solid var(--knime-stone-dark);
+  }
 }
 
 .invalid-chars-error {
