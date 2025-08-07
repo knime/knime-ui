@@ -48,6 +48,7 @@ export const nodeLabelText: TextStylePreset<{
     ...defaultTextStyles,
     fontSize: nodeRootFontSize,
     fontWeight: "normal",
+    fontStyle: "normal",
     lineHeight: nodeRootFontSize * nodeRootLineHeight,
     wordWrap: true,
     wordWrapWidth: 170,

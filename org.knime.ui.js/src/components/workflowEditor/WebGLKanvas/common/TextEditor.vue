@@ -145,6 +145,7 @@ const onPointerDown = (event: PointerEvent) => {
   padding: 0;
   text-align: inherit;
   width: fit-content;
+  color: var(--knime-masala);
 
   & > .ghost {
     visibility: hidden;
@@ -172,6 +173,7 @@ const onPointerDown = (event: PointerEvent) => {
     background-color: transparent;
     font-weight: inherit;
     line-height: inherit;
+    color: inherit;
     letter-spacing: inherit;
     overflow: hidden;
     outline: none;

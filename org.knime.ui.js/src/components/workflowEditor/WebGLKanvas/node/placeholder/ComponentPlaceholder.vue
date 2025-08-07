@@ -11,7 +11,7 @@ import { getToastPresets } from "@/toastPresets";
 import { geometry } from "@/util/geometry";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 import { useNodeSelectionPlaneMeasures } from "../useNodeSelectionPlaneMeasures";
-import { useNodeNameShorting } from "../useTextShortening";
+import { useNodeNameShortening } from "../useTextShortening";
 
 import ComponentPlaceholderState from "./ComponentPlaceholderState.vue";
 
@@ -100,7 +100,7 @@ const adjustedPosition = computed(() => {
   };
 });
 
-const { metrics: nodeNameDimensions } = useNodeNameShorting(
+const { metrics: nodeNameDimensions } = useNodeNameShortening(
   computed(() => props.placeholder.name ?? ""),
 );
 

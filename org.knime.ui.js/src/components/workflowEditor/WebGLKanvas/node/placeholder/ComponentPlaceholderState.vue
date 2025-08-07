@@ -13,7 +13,7 @@ import type { GraphicsInst } from "@/vue3-pixi";
 import { useObjectInteractions } from "../../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import NodeName from "../nodeName/NodeName.vue";
-import { useNodeNameShorting } from "../useTextShortening";
+import { useNodeNameShortening } from "../useTextShortening";
 
 import ComponentError from "./ComponentError.vue";
 import ComponentFloatingOptions from "./ComponentFloatingOptions.vue";
@@ -59,7 +59,7 @@ const nodeNamePosition = computed(() => {
   };
 });
 
-const { metrics: nodeNameDimensions } = useNodeNameShorting(
+const { metrics: nodeNameDimensions } = useNodeNameShortening(
   computed(() => props.name),
 );
 

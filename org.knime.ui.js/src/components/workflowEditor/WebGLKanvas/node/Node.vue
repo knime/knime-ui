@@ -40,7 +40,7 @@ import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
-import { useNodeNameShorting } from "./useTextShortening";
+import { useNodeNameShortening } from "./useTextShortening";
 
 interface Props {
   node: KnimeNode;
@@ -169,7 +169,7 @@ const isHovering = computed(
 );
 
 const { metrics: nodeNameDimensions, shortenedText: shortenedNodeName } =
-  useNodeNameShorting(toRef(props, "name"));
+  useNodeNameShortening(toRef(props, "name"));
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({

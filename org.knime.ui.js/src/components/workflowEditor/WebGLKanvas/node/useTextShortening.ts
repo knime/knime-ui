@@ -24,7 +24,8 @@ export const useTextShortening = (options: UseTextShorteningOptions) => {
         const line = rawMetrics.value.lines[i];
         if (i === options.maxLines - 1) {
           // eslint-disable-next-line no-magic-numbers
-          result += `${line.slice(0, -2)}…`;
+          const withoutLast2Characters = line.slice(0, -2);
+          result += `${withoutLast2Characters}…`;
         } else {
           result += `${line}\n`;
         }
@@ -45,10 +46,10 @@ export const useTextShortening = (options: UseTextShorteningOptions) => {
   return { metrics, shortenedText };
 };
 
-export const useNodeNameShorting = (text: MaybeRefOrGetter<string>) => {
+export const useNodeNameShortening = (text: MaybeRefOrGetter<string>) => {
   return useTextShortening({
     text,
-    maxLines: nodeNameText.maxLines!,
+    maxLines: nodeNameText.maxLines,
     styles: nodeNameText.styles,
   });
 };
@@ -56,7 +57,7 @@ export const useNodeNameShorting = (text: MaybeRefOrGetter<string>) => {
 export const useNodeLabelShortening = (text: MaybeRefOrGetter<string>) => {
   return useTextShortening({
     text,
-    maxLines: nodeLabelText.maxLines!,
+    maxLines: nodeLabelText.maxLines,
     styles: nodeLabelText.styles,
   });
 };

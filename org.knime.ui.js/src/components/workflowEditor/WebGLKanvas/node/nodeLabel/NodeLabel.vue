@@ -8,6 +8,7 @@ import { sleep } from "@knime/utils";
 
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { FLOATING_HTML_FADE_DELAY_MS } from "../../common/constants";
 
 import NodeLabelText from "./NodeLabelText.vue";
 
@@ -44,15 +45,15 @@ watch(isEditing, async () => {
     showText.value = false;
     return;
   }
-  await sleep(50);
+
+  await sleep(FLOATING_HTML_FADE_DELAY_MS);
   showText.value = true;
 });
 </script>
 
 <template>
   <NodeLabelText
-    :visible="!isEditing"
-    :renderable="!isEditing"
+    v-if="showText"
     :label="label"
     :node-id="nodeId"
     :is-node-selected="isSelected"

@@ -16,6 +16,7 @@ import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";
 import TextEditor from "../../common/TextEditor.vue";
+import { FLOATING_HTML_ACTIONBAR_VIEWBOX } from "../../common/constants";
 import { onContextMenuOutside } from "../../common/onContextMenuOutside";
 import { nodeNameText } from "../../util/textStyles";
 
@@ -145,7 +146,7 @@ onContextMenuOutside(textEditorWrapper, onSave);
     :transform-offsets="transformOffsets"
   >
     <div ref="textEditorWrapper">
-      <svg class="action-bar" viewBox="-24.5 -12 49 24">
+      <svg class="action-bar" :viewBox="FLOATING_HTML_ACTIONBAR_VIEWBOX">
         <ActionBar :actions="actions" />
       </svg>
       <TextEditor
