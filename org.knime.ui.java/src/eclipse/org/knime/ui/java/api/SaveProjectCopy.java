@@ -201,7 +201,7 @@ final class SaveProjectCopy {
             if (openProject.isPresent()) {
                 throw OperationNotAllowedException.builder() //
                     .withTitle("Failed to overwrite project") //
-                    .withDetails("Project <%s> is opened and can't be overwritten.".formatted(fileName)) //
+                    .withDetails("Project <%s> is opened and cannot be overwritten.".formatted(fileName)) //
                     .canCopy(false) //
                     .build();
             }
