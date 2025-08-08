@@ -5,7 +5,7 @@ import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import UserIcon from "@knime/styles/img/icons/user.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-import type { Message, StatusUpdate } from "@/store/aiAssistant";
+import type { Message, StatusUpdate } from "@/store/ai/types";
 
 import FeedbackControls from "./FeedbackControls.vue";
 import KaiStatus from "./KaiStatus.vue";

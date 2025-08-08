@@ -3,7 +3,7 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 import { isBrowser, runInEnvironment } from "@/environment";
-import { useAIAssistantStore } from "@/store/aiAssistant";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { getToastPresets } from "@/toastPresets";

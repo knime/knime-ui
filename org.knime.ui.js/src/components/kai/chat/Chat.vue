@@ -3,7 +3,7 @@ import { ref, watch } from "vue";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
-import type { ChainType } from "../types";
+import type { ChainType } from "@/store/ai/types";
 
 import ChatControls from "./ChatControls.vue";
 import MessageSeparatorComponent from "./MessageSeparator.vue";

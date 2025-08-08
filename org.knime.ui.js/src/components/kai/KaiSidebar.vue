@@ -7,12 +7,12 @@ import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
-import { useAIAssistantStore } from "@/store/aiAssistant";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import type { ChainType } from "@/store/ai/types";
 
 import KaiExtensionPanel from "./KaiExtensionPanel.vue";
 import Chat from "./chat/Chat.vue";
 import { useKaiPanels } from "./panels/useKaiPanels";
-import type { ChainType } from "./types";
 
 const chainType = ref<ChainType>("qa");
 

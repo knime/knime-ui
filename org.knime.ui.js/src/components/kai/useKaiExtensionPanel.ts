@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
-import type { HubItem } from "@/store/aiAssistant";
+import type { HubItem } from "@/store/ai/types";
 import { usePanelStore } from "@/store/panel";
 
 import type { Extensions } from "./types";

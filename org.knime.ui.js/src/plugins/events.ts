@@ -3,10 +3,8 @@ import { API } from "@api";
 import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { isDesktop } from "@/environment";
-import {
-  type AiAssistantEvent,
-  useAIAssistantStore,
-} from "@/store/aiAssistant";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import type { AiAssistantEvent } from "@/store/ai/types";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";

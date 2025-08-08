@@ -3,8 +3,7 @@ import { defineComponent } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-import type { ChainType } from "@/components/kai/types";
-import type { Message } from "@/store/aiAssistant";
+import type { ChainType, Message } from "@/store/ai/types";
 import { mockStores } from "@/test/utils/mockStores";
 import { MessageSeparator, useChat } from "../useChat";
 

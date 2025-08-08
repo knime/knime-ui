@@ -4,11 +4,11 @@ import { computed } from "vue";
 import { Button } from "@knime/components";
 import DocumentationIcon from "@knime/styles/img/icons/file-text-stack.svg";
 
-interface Props {
-  references: { [refName: string]: string[] };
-}
+import type { References } from "@/components/kai/types";
 
-const props = defineProps<Props>();
+const props = defineProps<{
+  references: References;
+}>();
 
 const openInBrowser = (url: string) => {
   window.open(url);

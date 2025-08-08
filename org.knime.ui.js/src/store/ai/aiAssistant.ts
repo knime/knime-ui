@@ -4,116 +4,23 @@ import { defineStore } from "pinia";
 
 import type { NodeRelation } from "@/api/custom-types";
 import { KaiMessage, type XY } from "@/api/gateway-api/generated-api";
-import type { NodeWithExtensionInfo } from "@/components/kai/types";
 import { useApplicationStore } from "@/store/application/application";
+import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
-import { useSelectionStore } from "./selection";
-
-/**
- * This file contains the store module for the AI assistant.
- */
-export interface HubItem {
-  id: string;
-  title: string;
-  itemType: string;
-  description: string;
-  pathToResource: string;
-  url: string;
-}
-
-export interface Message extends KaiMessage {
-  nodes?: NodeWithExtensionInfo[];
-  references?: {
-    [refName: string]: string[];
-  };
-  workflows?: HubItem[];
-  components?: HubItem[];
-  interactionId?: string;
-  isError?: boolean;
-  timestamp?: number;
-  kind?: "quick-build-explanation" | "other";
-}
-
-interface ProjectAndWorkflowIds {
-  projectId: string;
-  workflowId: string;
-}
-
-export interface StatusUpdate {
-  message: string;
-  type?: "INFO" | "WORKFLOW_BUILDING" | "NODE_ADDED";
-}
-
-interface ConversationState {
-  conversationId: string | null;
-  messages: Message[];
-  statusUpdate: StatusUpdate | null;
-  isProcessing: boolean;
-  incomingTokens: string;
-  projectAndWorkflowIds: ProjectAndWorkflowIds | null;
-}
-
-export interface AiAssistantState {
-  hubID: string | null;
-  qa: ConversationState;
-  build: ConversationState;
-  processedInteractionIds: Set<string>;
-}
-
-export interface Feedback {
-  isPositive: boolean;
-  comment: string;
-}
-
-type ChainType = Exclude<
-  keyof AiAssistantState,
-  "hubID" | "processedInteractionIds"
->;
-
-type AiAssistantQAEventPayload = {
-  message: string;
-  references: Message["references"];
-  workflows: Message["workflows"];
-  components: Message["components"];
-  nodes: NodeWithExtensionInfo[];
-  interactionId: string;
-};
-
-export type AiAssistantBuildEventPayload = {
-  message: string;
-  interactionId: string;
-  type: "SUCCESS" | "INPUT_NEEDED";
-  references: never;
-  workflows: never;
-  components: never;
-  nodes: never;
-};
-
-export type AiAssistantEvent =
-  | {
-      type: "result";
-      payload: AiAssistantQAEventPayload | AiAssistantBuildEventPayload;
-      conversation_id: string;
-    }
-  | {
-      type: "token";
-      payload: string;
-      conversation_id: string;
-    }
-  | {
-      type: "status_update";
-      payload: StatusUpdate;
-      conversation_id: string;
-    }
-  | {
-      type: "error";
-      payload: {
-        message: string;
-      };
-      conversation_id: string;
-    };
+import type {
+  AiAssistantBuildEventPayload,
+  AiAssistantEvent,
+  AiAssistantQAEventPayload,
+  AiAssistantState,
+  ChainType,
+  ConversationState,
+  Feedback,
+  Message,
+  ProjectAndWorkflowIds,
+  StatusUpdate,
+} from "./types";
 
 const responseCallback: Record<
   string,
@@ -218,7 +125,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
       projectAndWorkflowIds,
     }: {
       chainType: ChainType;
-      projectAndWorkflowIds: { workflowId: string; projectId: string };
+      projectAndWorkflowIds: ProjectAndWorkflowIds;
     }) {
       this[chainType].projectAndWorkflowIds = projectAndWorkflowIds;
     },

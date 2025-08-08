@@ -18,7 +18,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
-import { useAIAssistantStore } from "@/store/aiAssistant";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { geometry } from "@/util/geometry";

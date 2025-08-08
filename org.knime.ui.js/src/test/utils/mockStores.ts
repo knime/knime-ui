@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
 
-import { useAIAssistantStore } from "@/store/aiAssistant";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
