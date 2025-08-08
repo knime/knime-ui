@@ -3,6 +3,7 @@ import test, { Page, expect } from "@playwright/test";
 
 import {
   assertSnapshot,
+  executeUndo,
   getAnnotation,
   getCenter,
   pointToArray,
@@ -10,6 +11,8 @@ import {
 } from "../utils";
 
 import { annotationBringToFront } from "./workflowCommandMocks/annotation-bring-to-front";
+import { annotationTransform } from "./workflowCommandMocks/annotation-transform";
+import { undoAnnotationTransform } from "./workflowUndoCommandMock/undo-annotation-transform";
 
 const maxDiffPixels = 350;
 
@@ -88,9 +91,14 @@ test.describe("editing", () => {
   });
 });
 
-test("can be transformed", async ({ page }) => {
+test("can be transformed + undo", async ({ page }) => {
   await startApplication(page, {
     workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
+    workflowCommandFn: annotationTransform,
+    workflowUndoCommand: {
+      fn: undoAnnotationTransform,
+      data: {},
+    },
   });
 
   const annotation = await getAnnotation(page, "root_0");
@@ -108,6 +116,10 @@ test("can be transformed", async ({ page }) => {
   await page.mouse.down({ button: "left", clickCount: 1 });
   await page.mouse.move(southEastTransform.x - 200, southEastTransform.y - 200);
   await page.mouse.up({ button: "left" });
+
+  await assertSnapshot(page, maxDiffPixels);
+
+  await executeUndo(page);
 
   await assertSnapshot(page, maxDiffPixels);
 });

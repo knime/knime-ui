@@ -166,3 +166,8 @@ export const getPortActionButton = async (
 export const getMinimapCoordinates = (page: Page) => {
   return page.evaluate(() => window.__E2E_TEST__.getMinimapCoordinates());
 };
+
+export const executeUndo = async (page: Page) => {
+  await page.keyboard.press("ControlOrMeta+Z");
+  await page.waitForTimeout(500);
+};

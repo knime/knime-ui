@@ -205,6 +205,11 @@ watch(
   },
 );
 
+watch(
+  [() => props.annotation.bounds.height, () => props.annotation.bounds.width],
+  () => updateAnnotationText(props.annotation),
+);
+
 onMounted(() => {
   updateAnnotationText(props.annotation, true);
   autoUpdateResolution();
@@ -234,10 +239,6 @@ const onTransformEnd = (bounds: Bounds) => {
   annotationInteractionStore.transformWorkflowAnnotation({
     bounds,
     annotationId: props.annotation.id,
-  });
-  updateAnnotationText({
-    ...props.annotation,
-    bounds,
   });
 
   setTimeout(() => {
@@ -379,8 +380,6 @@ const { canvasLayers } = storeToRefs(canvasStore);
       :renderable="
         renderable && activeTransform?.annotationId !== annotation.id
       "
-      :width="annotation.bounds.width"
-      :height="annotation.bounds.height"
     />
   </Container>
 </template>

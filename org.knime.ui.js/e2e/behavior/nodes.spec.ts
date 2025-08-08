@@ -3,6 +3,7 @@ import { Page, expect, test } from "@playwright/test";
 
 import {
   assertSnapshot,
+  executeUndo,
   getCenter,
   getKanvasBoundingBox,
   getNode,
@@ -39,11 +40,6 @@ const startForPointerInteractions = (
     workflowCommandFn,
     workflowUndoCommand,
   });
-
-const executeUndo = async (page) => {
-  await page.keyboard.press("ControlOrMeta+Z");
-  await page.waitForTimeout(500);
-};
 
 test("panning with right click doesn't open ctx menu", async ({ page }) => {
   await startForPointerInteractions(page);
