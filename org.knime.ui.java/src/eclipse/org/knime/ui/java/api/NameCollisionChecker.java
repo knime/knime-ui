@@ -198,14 +198,14 @@ final class NameCollisionChecker {
                 .collect(Collectors.toSet());
             if (rootNames.size() != 1) {
                 throw new MutableServiceCallException(
-                    List.of("Expected single item in archive '%s', found %s".formatted(srcPath, rootNames)), false,
+                    "Expected single item in archive '%s', found %s".formatted(srcPath, rootNames), false,
                     null);
             }
             final String name = rootNames.iterator().next();
             return space.containsItemWithName(destWorkflowGroupItemId, name) ? Optional.of(name) : Optional.empty();
         } catch (final IOException e) {
-            throw new MutableServiceCallException(
-                List.of("Could not read '%s': %s".formatted(srcPath, e.getMessage())), true, e);
+            throw new MutableServiceCallException(e.getMessage(), true, e)
+                .addDetails("Failed to read '%s'.".formatted(srcPath));
         }
     }
 

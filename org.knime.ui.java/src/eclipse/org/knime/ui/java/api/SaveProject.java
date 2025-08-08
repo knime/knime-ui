@@ -256,7 +256,7 @@ final class SaveProject {
                 preCheckResult = checkServerUpload(remoteMountpointURI);
             }
         } catch (final MutableServiceCallException e) {
-            e.addDetails("Pre-check for upload failed");
+            e.addDetails("Pre-check for upload failed.");
             throw e.toGatewayException("Failed to upload item(s)");
         }
 
