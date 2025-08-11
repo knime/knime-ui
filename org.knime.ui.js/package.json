@@ -42,7 +42,7 @@
     "@knime/knime-ui-table": "0.5.22",
     "@knime/rich-text-editor": "^1.6.1",
     "@knime/styles": "^1.10.0",
-    "@knime/ui-extension-renderer": "2.2.1",
+    "@knime/ui-extension-renderer": "2.2.5",
     "@knime/utils": "^1.5.3",
     "@knime/virtual-tree": "^1.5.1",
     "@open-rpc/client-js": "^1.8.1",
