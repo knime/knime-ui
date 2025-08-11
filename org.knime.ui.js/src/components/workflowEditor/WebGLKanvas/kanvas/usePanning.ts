@@ -133,10 +133,11 @@ export const useCanvasPanning = ({
         eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
       }
 
+      const isMouseRightClick = pointerUpEvent.button === 2;
       const isUnhandledEvent = !pointerUpEvent.dataset;
       // show global context menu if we did not move
       // right click on other objects should prevent the event so its not getting here (see mousePan)
-      if (!hasMoved.value && isUnhandledEvent) {
+      if (!hasMoved.value && isMouseRightClick && isUnhandledEvent) {
         hasMoved.value = false;
         const [x, y] = useWebGLCanvasStore().toCanvasCoordinates([
           pointerUpEvent.offsetX,
