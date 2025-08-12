@@ -5,7 +5,12 @@ import { API } from "@api";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { markPointerEventAsHandled } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
-import { PORT_TYPE_IDS, createPort, createWorkflow } from "@/test/factories";
+import {
+  PORT_TYPE_IDS,
+  createNativeNode,
+  createPort,
+  createWorkflow,
+} from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import type { SnapTarget } from "../types";
@@ -303,6 +308,50 @@ describe("floatingConnector store", () => {
       sourceNode: "root:1",
       sourcePort: 0,
     });
+    expect(onCanvasDrop).not.toHaveBeenCalled();
+    expect(
+      mockedStores.floatingConnectorStore.floatingConnector,
+    ).toBeUndefined();
+  });
+
+  it("prevents connection if node configuration is dirty", async () => {
+    const { mockedStores, canvas } = setupStore();
+
+    const { onCanvasDrop } = startDrag(mockedStores);
+
+    pointerMove(canvas);
+
+    didDragToCompatibleTarget.value = true;
+    snapTarget.value = {
+      side: "in",
+      parentNodeId: "root:2",
+      ...createPort({
+        typeId: PORT_TYPE_IDS.BufferedDataTable,
+        index: 3,
+      }),
+    };
+
+    // @ts-expect-error
+    mockedStores.nodeConfigurationStore.activeContext = {
+      node: createNativeNode(),
+      isEmbeddable: true,
+    };
+    mockedStores.nodeConfigurationStore.dirtyState.apply = "configured";
+    const autoApplySettingsMock = vi.mocked(
+      mockedStores.nodeConfigurationStore.autoApplySettings,
+    );
+
+    autoApplySettingsMock.mockResolvedValue(false);
+
+    canvas.dispatchEvent(new PointerEvent("pointerup"));
+
+    expect(autoApplySettingsMock).toHaveBeenCalled();
+
+    await flushPromises();
+
+    expect(
+      mockedStores.nodeInteractionsStore.connectNodes,
+    ).not.toHaveBeenCalled();
     expect(onCanvasDrop).not.toHaveBeenCalled();
     expect(
       mockedStores.floatingConnectorStore.floatingConnector,

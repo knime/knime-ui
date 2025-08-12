@@ -153,7 +153,6 @@ const removePort = async (
   { index }: NodePortType,
   side: "input" | "output",
 ) => {
-  // TODO: NXT-3714 follow-up when NXT-3553 is merged
   const canContinue = await nodeConfigurationStore.autoApplySettings();
 
   if (!canContinue) {

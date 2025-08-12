@@ -6,6 +6,7 @@ import throttle from "raf-throttle";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as shapes from "@/style/shapes";
 import {
@@ -281,7 +282,7 @@ export const usePortDragging = (params: Params) => {
     }
   });
 
-  const onPointerUp = (event: PointerEvent) => {
+  const onPointerUp = async (event: PointerEvent) => {
     pointerDown.value = false;
 
     if (!dragConnector.value) {
@@ -290,6 +291,12 @@ export const usePortDragging = (params: Params) => {
 
     event.stopPropagation();
     (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+
+    const canContinue = await useNodeConfigurationStore().autoApplySettings();
+
+    if (!canContinue) {
+      return;
+    }
 
     if (lastHitTarget?.allowsDrop) {
       const dropped = lastHitTarget.element!.dispatchEvent(

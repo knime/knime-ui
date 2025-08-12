@@ -18,6 +18,7 @@ import {
 import { useApplicationStore } from "../application/application";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
+import { useNodeConfigurationStore } from "../nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "../workflow/workflow";
 
 import {
@@ -151,11 +152,7 @@ export const useFloatingConnectorStore = defineStore(
       });
     };
 
-    const { finishConnection, waitingForPortSelection } = useConnectAction({
-      floatingConnector: floatingConnector as Ref<FullFloatingConnector>,
-      snapTarget,
-      activeSnapPosition,
-    });
+    const { finishConnection, waitingForPortSelection } = useConnectAction();
 
     // This will hold a function reference used to clean up all the DOM event listeners
     let runListenerTeardown: (() => void) | undefined;
@@ -271,7 +268,21 @@ export const useFloatingConnectorStore = defineStore(
           }
         } else {
           try {
-            await finishConnection();
+            const currentSnapTarget = snapTarget.value;
+            const currentFloatingConnector = floatingConnector.value;
+            const currentSnapPosition = activeSnapPosition.value;
+
+            const canContinue =
+              await useNodeConfigurationStore().autoApplySettings();
+
+            if (canContinue) {
+              await finishConnection({
+                floatingConnector:
+                  currentFloatingConnector as FullFloatingConnector,
+                snapTarget: currentSnapTarget,
+                activeSnapPosition: currentSnapPosition,
+              });
+            }
           } catch (error) {
             consola.error("Did not complete connection: ", error);
           }

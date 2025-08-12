@@ -1,6 +1,6 @@
 /* eslint-disable func-style */
 /* eslint-disable no-undefined */
-import { type Ref, computed, ref } from "vue";
+import { computed, ref } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
@@ -16,10 +16,10 @@ import {
   isPlaceholderPort,
 } from "./types";
 
-type UseConnectActionOptions = {
-  floatingConnector: Ref<FullFloatingConnector | undefined>;
-  snapTarget: Ref<SnapTarget | undefined>;
-  activeSnapPosition: Ref<XY | undefined>;
+type FinishConnectionParams = {
+  floatingConnector: FullFloatingConnector | undefined;
+  snapTarget: SnapTarget | undefined;
+  activeSnapPosition: XY | undefined;
 };
 
 const createConnectionPayload = (params: {
@@ -52,9 +52,7 @@ const createConnectionPayload = (params: {
       };
 };
 
-export const useConnectAction = (options: UseConnectActionOptions) => {
-  const { floatingConnector, snapTarget, activeSnapPosition } = options;
-
+export const useConnectAction = () => {
   const waitingForPortSelection = ref(false);
   const nodeInteractionsStore = useNodeInteractionsStore();
 
@@ -98,14 +96,18 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
    * already existing port; or, in case of a placeholder port, add a new port
    * and then connect to it
    */
-  const finishConnection = async (): Promise<void> => {
+  const finishConnection = async (
+    params: FinishConnectionParams,
+  ): Promise<void> => {
+    const { floatingConnector, snapTarget } = params;
+
     // check for proper TS inference; shouldn't happen
-    if (!snapTarget.value || !floatingConnector.value) {
+    if (!snapTarget || !floatingConnector) {
       return Promise.reject(new Error("invalid state"));
     }
 
     const { wasAborted } = await useSelectionStore().deselectAllObjects([
-      snapTarget.value.parentNodeId,
+      snapTarget.parentNodeId,
     ]);
 
     if (wasAborted) {
@@ -113,15 +115,15 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
     }
 
     const targetPortDirection =
-      floatingConnector.value.context.origin === "out" ? "in" : "out";
+      floatingConnector.context.origin === "out" ? "in" : "out";
 
-    if (!isPlaceholderPort(snapTarget.value)) {
+    if (!isPlaceholderPort(snapTarget)) {
       await nodeInteractionsStore.connectNodes(
         createConnectionPayload({
-          sourceNodeId: floatingConnector.value.context.parentNodeId,
-          sourcePortIndex: floatingConnector.value.context.portInstance.index,
-          targetNodeId: snapTarget.value.parentNodeId,
-          targetPortIndex: snapTarget.value.index,
+          sourceNodeId: floatingConnector.context.parentNodeId,
+          sourcePortIndex: floatingConnector.context.portInstance.index,
+          targetNodeId: snapTarget.parentNodeId,
+          targetPortIndex: snapTarget.index,
           direction: targetPortDirection,
         }),
       );
@@ -129,27 +131,26 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
       return Promise.resolve();
     }
 
-    if (isPlaceholderPort(snapTarget.value)) {
+    if (isPlaceholderPort(snapTarget)) {
       // eslint-disable-next-line no-use-before-define
-      return connectViaPlaceHolderPort(targetPortDirection);
+      return connectViaPlaceHolderPort(params, targetPortDirection);
     }
 
     return Promise.reject(new Error("invalid state"));
   };
 
   async function connectViaPlaceHolderPort(
+    params: FinishConnectionParams,
     targetPortDirection: "in" | "out",
   ): Promise<void> {
+    const { activeSnapPosition, floatingConnector, snapTarget } = params;
+
     // TS check
-    if (
-      !snapTarget.value ||
-      !floatingConnector.value ||
-      !activeSnapPosition.value
-    ) {
+    if (!snapTarget || !floatingConnector || !activeSnapPosition) {
       return Promise.reject(new Error("invalid state"));
     }
 
-    const { validPortGroups } = snapTarget.value as SnappedPlaceholderPort;
+    const { validPortGroups } = snapTarget as SnappedPlaceholderPort;
 
     if (!validPortGroups) {
       return Promise.reject(new Error("invalid state"));
@@ -167,9 +168,9 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
       const [typeId] = validPortGroups[firstPortGroup].supportedPortTypeIds;
 
       await addPortAndConnectIt({
-        sourceNodeId: floatingConnector.value.context.parentNodeId,
-        sourcePortIndex: floatingConnector.value.context.portInstance.index,
-        targetNodeId: snapTarget.value.parentNodeId,
+        sourceNodeId: floatingConnector.context.parentNodeId,
+        sourcePortIndex: floatingConnector.context.portInstance.index,
+        targetNodeId: snapTarget.parentNodeId,
         targetPortTypeId: typeId,
         portSide: targetPortDirection === "in" ? "input" : "output",
         portGroup: firstPortGroup === "default" ? undefined : firstPortGroup,
@@ -183,10 +184,10 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
     const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
     waitingForPortSelection.value = true;
     canvasAnchoredComponentsStore.openPortTypeMenu({
-      nodeId: snapTarget.value.parentNodeId,
+      nodeId: snapTarget.parentNodeId,
       props: {
-        side: `${snapTarget.value.side}put` as const,
-        position: activeSnapPosition.value,
+        side: `${snapTarget.side}put`,
+        position: activeSnapPosition,
         portGroups: validPortGroups,
       },
       events: {
@@ -200,10 +201,9 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
 
           try {
             await addPortAndConnectIt({
-              sourceNodeId: floatingConnector.value!.context.parentNodeId,
-              sourcePortIndex:
-                floatingConnector.value!.context.portInstance.index,
-              targetNodeId: snapTarget.value!.parentNodeId,
+              sourceNodeId: floatingConnector.context.parentNodeId,
+              sourcePortIndex: floatingConnector.context.portInstance.index,
+              targetNodeId: snapTarget.parentNodeId,
               targetPortTypeId: typeId,
               portSide: targetPortDirection === "in" ? "input" : "output",
               portGroup: targetPortGroup ?? undefined,
