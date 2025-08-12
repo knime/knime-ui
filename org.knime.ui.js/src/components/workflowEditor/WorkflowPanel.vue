@@ -88,6 +88,7 @@ const panelStore = usePanelStore();
       { 'annotation-cursor': hasAnnotationModeEnabled },
     ]"
     @pointerdown.right="closeContextMenu($event)"
+    @keydown.shift.f10="canvasAnchoredComponentsStore.toggleContextMenu()"
     @pointerdown.left.ctrl="
       navigatorUtils.isMac() ? closeContextMenu($event) : null
     "

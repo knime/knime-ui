@@ -100,9 +100,9 @@ describe("WorkflowPanel", () => {
   describe("port Type menu", () => {
     const mountAndOpenMenu = async ({ closeCallback = vi.fn() } = {}) => {
       const mountResult = doShallowMount();
+      // @ts-expect-error
       mountResult.mockedStores.canvasAnchoredComponentsStore.portTypeMenu = {
         isOpen: true,
-        // @ts-expect-error
         props: {
           side: "input",
           position: { x: 0, y: 0 },
@@ -118,9 +118,9 @@ describe("WorkflowPanel", () => {
       const { wrapper, mockedStores } = doShallowMount();
       expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
 
+      // @ts-expect-error
       mockedStores.canvasAnchoredComponentsStore.portTypeMenu = {
         isOpen: true,
-        // @ts-expect-error
         props: {
           side: "input",
           position: { x: 0, y: 0 },

@@ -271,7 +271,6 @@ describe("canvasAnchoredComponents", () => {
     };
 
     it("should use the selected nodes as position if event has none (e.g. KeyboardEvent)", async () => {
-      const { event, preventDefault, stopPropagation } = createEvent();
       const { selectionStore, workflowStore, canvasAnchoredComponentsStore } =
         mockStoresWith();
 
@@ -285,28 +284,23 @@ describe("canvasAnchoredComponents", () => {
         ...node2.position,
       });
 
-      // @ts-expect-error
-      await canvasAnchoredComponentsStore.toggleContextMenu({ event });
+      await canvasAnchoredComponentsStore.toggleContextMenu();
       expect(selectionStore.deselectAllObjects).not.toHaveBeenCalled();
       expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
       expect(canvasAnchoredComponentsStore.contextMenu.position).toEqual({
         x: 36,
         y: 26,
       });
-      expect(preventDefault).toHaveBeenCalled();
-      expect(stopPropagation).toHaveBeenCalled();
     });
 
     it("should use the single (!) selected node as position if event has none (e.g. KeyboardEvent)", async () => {
-      const { event, preventDefault, stopPropagation } = createEvent();
       const { selectionStore, workflowStore, canvasAnchoredComponentsStore } =
         mockStoresWith();
 
       const { node1 } = createAndSetWorkflow(workflowStore);
       await selectionStore.selectNodes([node1.id]);
 
-      // @ts-expect-error
-      await canvasAnchoredComponentsStore.toggleContextMenu({ event });
+      await canvasAnchoredComponentsStore.toggleContextMenu();
       expect(selectionStore.deselectAllObjects).not.toHaveBeenCalled();
       expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
       // offset of a half node size
@@ -316,28 +310,22 @@ describe("canvasAnchoredComponents", () => {
         x,
         y,
       });
-      expect(preventDefault).toHaveBeenCalled();
-      expect(stopPropagation).toHaveBeenCalled();
     });
 
     it("should use center as fallback if event has no position and no nodes are selected", async () => {
-      const { event, preventDefault, stopPropagation } = createEvent();
       const { selectionStore, canvasStore, canvasAnchoredComponentsStore } =
         mockStoresWith();
 
       // @ts-expect-error
       canvasStore.getCenterOfScrollContainer = () => ({ x: 10, y: 10 });
 
-      // @ts-expect-error
-      await canvasAnchoredComponentsStore.toggleContextMenu({ event });
+      await canvasAnchoredComponentsStore.toggleContextMenu();
       expect(selectionStore.deselectAllObjects).not.toHaveBeenCalled();
       expect(canvasAnchoredComponentsStore.contextMenu.isOpen).toBe(true);
       expect(canvasAnchoredComponentsStore.contextMenu.position).toEqual({
         x: 10,
         y: 10,
       });
-      expect(preventDefault).toHaveBeenCalled();
-      expect(stopPropagation).toHaveBeenCalled();
     });
 
     it("should hide the menu", async () => {

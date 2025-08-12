@@ -10,6 +10,7 @@ import * as $shapes from "@/style/shapes";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { useCanvasModesStore } from "../application/canvasModes";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
+import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 import { useFloatingConnectorStore } from "../floatingConnector/floatingConnector";
 import { useSelectionStore } from "../selection";
 
@@ -62,17 +63,16 @@ type State = {
   };
 };
 
-const getContextMenuPositionOnSVGCanvas = async (event: MouseEvent) => {
-  const eventBasedPosition = () => {
-    const { clientX, clientY } = event;
-    if (!clientX && !clientY) {
+const getContextMenuPositionOnCanvas = async (event?: MouseEvent) => {
+  const { screenToCanvasCoordinates, getCenterOfScrollContainer } =
+    useCurrentCanvasStore().value;
+
+  const getEventBasedPosition = () => {
+    if (!event) {
       return null;
     }
 
-    const screenToCanvasCoordinates =
-      useSVGCanvasStore().screenToCanvasCoordinates;
-
-    const [x, y] = screenToCanvasCoordinates([clientX, clientY]);
+    const [x, y] = screenToCanvasCoordinates([event.clientX, event.clientY]);
 
     return { x, y };
   };
@@ -83,10 +83,8 @@ const getContextMenuPositionOnSVGCanvas = async (event: MouseEvent) => {
     y: y + $shapes.nodeSize / 2,
   });
 
-  const centerOfVisibleArea = useSVGCanvasStore().getCenterOfScrollContainer;
-
   // fallback position for keyboard shortcut to open context menu
-  const selectionBasedPosition = async () => {
+  const getSelectionBasedPosition = async () => {
     const selectedObjects: WorkflowObject[] =
       useSelectionStore().selectedObjects;
 
@@ -103,7 +101,7 @@ const getContextMenuPositionOnSVGCanvas = async (event: MouseEvent) => {
     const mostRightObject = await workflowNavigationService.nearestObject({
       objects: selectedObjects,
       reference: {
-        ...centerOfVisibleArea("right"),
+        ...getCenterOfScrollContainer("right"),
         id: "",
       },
       direction: "left",
@@ -116,10 +114,11 @@ const getContextMenuPositionOnSVGCanvas = async (event: MouseEvent) => {
     return extractXYWithOffset(mostRightObject);
   };
 
+  const selectionBasedPosition = await getSelectionBasedPosition();
   const position =
-    eventBasedPosition() ??
-    (await selectionBasedPosition()) ??
-    centerOfVisibleArea();
+    getEventBasedPosition() ??
+    selectionBasedPosition ??
+    getCenterOfScrollContainer();
 
   return position;
 };
@@ -355,21 +354,14 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         // reset to selection mode
         useCanvasModesStore().resetCanvasMode();
 
+        const position = await getContextMenuPositionOnCanvas(event);
+
         if (canvasRendererUtils.isWebGLRenderer()) {
-          this.contextMenu = {
+          useWebGLCanvasStore().setCanvasAnchor({
             isOpen: true,
-            position: useWebGLCanvasStore().canvasAnchor.anchor,
-          };
-
-          return;
+            anchor: position,
+          });
         }
-
-        // event is required for the SVG canvas
-        if (!event) {
-          return;
-        }
-
-        const position = await getContextMenuPositionOnSVGCanvas(event);
 
         this.contextMenu = {
           isOpen: true,
@@ -398,11 +390,7 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         };
       },
 
-      async toggleContextMenu({
-        event,
-      }: {
-        event?: MouseEvent;
-      } = {}) {
+      async toggleContextMenu({ event }: { event?: MouseEvent } = {}) {
         if (this.contextMenu.isOpen) {
           this.closeContextMenu(event);
         } else {

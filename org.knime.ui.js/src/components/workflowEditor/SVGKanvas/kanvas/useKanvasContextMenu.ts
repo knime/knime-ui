@@ -41,21 +41,11 @@ export const useKanvasContextMenu = (options: UseKanvasContextMenuOptions) => {
   };
 
   const onKeydown = (event: KeyboardEvent) => {
-    const stopPreventAndToggleContextMenu = () => {
-      // @ts-expect-error TODO: fix type in store
-      toggleContextMenu({ event });
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
     // handle key with KeyboardEvent to get our fallback position (based on the selection)
     if (event.key === "ContextMenu") {
-      stopPreventAndToggleContextMenu();
-    }
-
-    // Shift+F10 is used as cross platform context menu key (linux/windows support that anyway but Equo/CEF does not)
-    if (event.shiftKey && event.key === "F10") {
-      stopPreventAndToggleContextMenu();
+      event.preventDefault();
+      event.stopPropagation();
+      toggleContextMenu();
     }
   };
 

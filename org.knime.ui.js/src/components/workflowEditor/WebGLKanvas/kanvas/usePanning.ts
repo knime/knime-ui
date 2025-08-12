@@ -139,20 +139,12 @@ export const useCanvasPanning = ({
       // right click on other objects should prevent the event so its not getting here (see mousePan)
       if (!hasMoved.value && isMouseRightClick && isUnhandledEvent) {
         hasMoved.value = false;
-        const [x, y] = useWebGLCanvasStore().toCanvasCoordinates([
-          pointerUpEvent.offsetX,
-          pointerUpEvent.offsetY,
-        ]);
-        canvasStore.setCanvasAnchor({
-          isOpen: true,
-          anchor: { x, y },
-        });
 
         const { wasAborted } = await useSelectionStore().deselectAllObjects();
         if (wasAborted) {
           return;
         }
-        await toggleContextMenu();
+        await toggleContextMenu({ event: pointerUpEvent });
       }
 
       canvasStore.setInteractionsEnabled(true);
