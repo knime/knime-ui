@@ -38,6 +38,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { useLifecycleStore } from "@/store/application/lifecycle.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
+import { usePanelStore } from "../panel.ts";
 import { useSelectionStore } from "../selection";
 import { getCustomFetchOptionsForBrowser } from "../spaces/common.ts";
 import { useSpaceProvidersStore } from "../spaces/providers";
@@ -495,6 +496,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     const { wasAborted } = await useSelectionStore().deselectAllObjects();
     if (wasAborted) {
       return;
+    }
+
+    const panelStore = usePanelStore();
+    if (!panelStore.isRightPanelExpanded) {
+      panelStore.isRightPanelExpanded = true;
     }
 
     // Reset cached state

@@ -3,11 +3,11 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button, FunctionButton } from "@knime/components";
-import CloseIcon from "@knime/styles/img/icons/close.svg";
 import MinimizeDialogIcon from "@knime/styles/img/icons/minimize-large-dialog.svg";
 import OpenDialogIcon from "@knime/styles/img/icons/open-large-dialog.svg";
 
 import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
+import RightPanelHeader from "@/components/common/side-panel/RightPanelHeader.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { usePanelStore } from "@/store/panel";
@@ -111,29 +111,24 @@ const discardSettings = () => {
     </div>
 
     <div :class="['content', { 'large-mode': isLargeMode }]">
-      <div v-if="!isLargeMode" class="header">
-        <h1 class="node-name">{{ nodeName }}</h1>
-        <FunctionButton
-          v-if="canBeEnlarged"
-          title="Expand into a more advanced configuration view"
-          data-test-id="expand-dialog-btn"
-          class="expand-btn"
-          compact
-          @click="nodeConfigurationStore.setIsLargeMode(true)"
-        >
-          <OpenDialogIcon />
-        </FunctionButton>
-
-        <FunctionButton
-          title="Close panel"
-          data-test-id="close-panel-btn"
-          class="close-btn"
-          compact
-          @click="panelStore.isRightPanelExpanded = false"
-        >
-          <CloseIcon />
-        </FunctionButton>
-      </div>
+      <RightPanelHeader
+        v-if="!isLargeMode"
+        :title="nodeName"
+        @close="panelStore.isRightPanelExpanded = false"
+      >
+        <template #actions>
+          <FunctionButton
+            v-if="canBeEnlarged"
+            title="Expand into a more advanced configuration view"
+            data-test-id="expand-dialog-btn"
+            class="expand-btn"
+            compact
+            @click="nodeConfigurationStore.setIsLargeMode(true)"
+          >
+            <OpenDialogIcon />
+          </FunctionButton>
+        </template>
+      </RightPanelHeader>
 
       <AppRightPanelSkeleton
         v-if="isUIExtensionLoading"
@@ -223,25 +218,6 @@ const discardSettings = () => {
 
     &.large-mode {
       height: calc(100% - var(--title-bar-height));
-    }
-
-    & .header {
-      display: flex;
-      align-items: center;
-      padding: var(--space-4) var(--space-16);
-      border-bottom: 1px solid var(--knime-silver-sand);
-      min-height: var(--space-32);
-      gap: var(--space-4);
-
-      & .node-name {
-        margin: 0;
-        font-weight: 700;
-        font-size: 16px;
-        line-height: 1.44;
-        margin-right: auto;
-
-        @mixin truncate;
-      }
     }
   }
 }

@@ -60,12 +60,13 @@ useEventListener(panel, "click", (event) => {
   >
     <ToastStack v-if="isLargeMode" class="large-mode-toasts" />
 
-    <NodeConfigWrapper @escape-pressed="exitLargeMode">
+    <ManageVersionsWrapper
+      v-if="versionsStore.isSidepanelOpen && !singleSelectedNode"
+    />
+
+    <NodeConfigWrapper v-else @escape-pressed="exitLargeMode">
       <template #inactive>
-        <ManageVersionsWrapper
-          v-if="versionsStore.isSidepanelOpen && !singleSelectedNode"
-        />
-        <IncompatibleNodeConfigPlaceholder v-else />
+        <IncompatibleNodeConfigPlaceholder />
       </template>
     </NodeConfigWrapper>
   </dialog>
