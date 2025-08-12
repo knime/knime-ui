@@ -69,6 +69,6 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
         store.setDefault(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, true);
         store.setDefault(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY, KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED);
         store.setDefault(KnimeUIPreferences.SUB_NODE_CONTAINER_UI_MODE_JS_PREF_KEY, false);
-        store.setDefault(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY, AppStateEnt.CanvasRendererEnum.SVG.toString());
+        store.setDefault(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY, AppStateEnt.CanvasRendererEnum.WEBGL.toString());
     }
 }
