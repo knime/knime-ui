@@ -143,6 +143,7 @@ const onPointerDown = (event: PointerEvent) => {
     return;
   }
 
+  // if any canvas object has marked this event as handled, then we ignore panning
   if (event.dataset) {
     return;
   }

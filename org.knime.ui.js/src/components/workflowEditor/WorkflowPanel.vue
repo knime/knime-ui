@@ -77,6 +77,13 @@ const closeContextMenu = (event?: MouseEvent) => {
   }
 };
 
+const onKeyDown = (event: KeyboardEvent) => {
+  if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+    event.preventDefault();
+    canvasAnchoredComponentsStore.toggleContextMenu();
+  }
+};
+
 const panelStore = usePanelStore();
 </script>
 
@@ -87,8 +94,8 @@ const panelStore = usePanelStore();
       { 'read-only': !isWritable },
       { 'annotation-cursor': hasAnnotationModeEnabled },
     ]"
-    @pointerdown.right="closeContextMenu($event)"
-    @keydown.shift.f10="canvasAnchoredComponentsStore.toggleContextMenu()"
+    @pointerdown.right="closeContextMenu"
+    @keydown="onKeyDown"
     @pointerdown.left.ctrl="
       navigatorUtils.isMac() ? closeContextMenu($event) : null
     "

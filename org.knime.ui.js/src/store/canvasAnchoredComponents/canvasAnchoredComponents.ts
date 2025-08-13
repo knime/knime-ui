@@ -330,7 +330,7 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         };
       },
 
-      async openContextMenu({ event }: { event?: MouseEvent }) {
+      async openContextMenu({ event }: { event?: MouseEvent } = {}) {
         if (this.contextMenu.isOpen) {
           return;
         }
