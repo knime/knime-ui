@@ -163,5 +163,17 @@ export const useAnnotationInteractionsStore = defineStore(
         }
       },
     },
+    getters: {
+      getAnnotationById: () => (annotationId: string) => {
+        const workflowStore = useWorkflowStore();
+        if (!workflowStore.activeWorkflow) {
+          return undefined;
+        }
+
+        return workflowStore.activeWorkflow.workflowAnnotations.find(
+          ({ id }) => id === annotationId,
+        );
+      },
+    },
   },
 );

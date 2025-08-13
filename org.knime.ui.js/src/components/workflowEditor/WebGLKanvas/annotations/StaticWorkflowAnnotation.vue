@@ -327,6 +327,7 @@ const { canvasLayers } = storeToRefs(canvasStore);
       "
     >
       <TransformControls
+        v-if="showTransformControls || showFocus || showSelectionPlane"
         :initial-value="
           keyboardTransformActive ? activeTransform?.bounds : annotation.bounds
         "
@@ -363,8 +364,8 @@ const { canvasLayers } = storeToRefs(canvasStore);
           graphics.rect(
             0.5,
             0.5,
-            annotation.bounds.width - ANNOTATION_STROKE_SIZE,
-            annotation.bounds.height - ANNOTATION_STROKE_SIZE,
+            annotation.bounds.width - 1,
+            annotation.bounds.height - 1,
           );
           graphics.stroke({
             width: ANNOTATION_STROKE_SIZE,
