@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { getKanvasBoundingBox, startApplication } from "../utils";
 
 /* Testing the streaming connectors and labels. The challenge here is that the
-   connections and the node progress are continously animated, so in order to
+   connections and the node progress are continuously animated, so in order to
    create reliable screenshots we need to stop the Pixi ticker after a fixed amount of time
    to halt all animations. Due to the nature of the ticker all animations should progress
    the same amount given the same amount of time.

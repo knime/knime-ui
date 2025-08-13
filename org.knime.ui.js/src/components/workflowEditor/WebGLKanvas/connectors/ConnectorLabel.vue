@@ -32,7 +32,7 @@ const props = withDefaults(
   },
 );
 
-// offset so that label appears above connector segment in most cases (straight horizonal lines)
+// offset so that label appears above connector segment in most cases (straight horizontal lines)
 const OFFSET_Y = 16;
 
 const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
@@ -46,6 +46,12 @@ const {
   absolutePoint,
   bendpoints,
 } = toRefs(props);
+
+const isConnectedToExactlyOneSelectedNode = computed(
+  () =>
+    isNodeSelected(sourceNode.value ?? "") !==
+    isNodeSelected(destNode.value ?? ""),
+);
 
 const rawLabelMetrics = computed(() => {
   if (props.label) {
@@ -77,13 +83,17 @@ const getLabelPosition = (start: XY, end: XY, offset: XY): XY => {
   const { x: startX, y: startY } = start;
   const { x: endX, y: endY } = end;
 
+  const offsetX = isConnectedToExactlyOneSelectedNode.value
+    ? offset.x
+    : offset.x * 2;
+  const offsetY = isConnectedToExactlyOneSelectedNode.value
+    ? offset.y
+    : offset.y * 2;
+
   return {
-    x: startX + (endX - startX + offset.x) / 2 - labelWidth.value / 2,
+    x: startX + (endX - startX + offsetX) / 2 - labelWidth.value / 2,
     y:
-      startY +
-      (endY - startY + offset.y) / 2 -
-      OFFSET_Y -
-      labelHeight.value / 2,
+      startY + (endY - startY + offsetY) / 2 - OFFSET_Y - labelHeight.value / 2,
   };
 };
 
@@ -104,7 +114,7 @@ const halfWayPosition = computed(() => {
 
   if (bendpoints.value.length > 0) {
     // When there are bendpoints we cannot predict the curve of the connection path
-    // therfore, to place the label, we must:
+    // therefore, to place the label, we must:
     // (1) Find the main path's center, which is the center point of the vector between the
     // source port's coords (x, y) and the destination port's coords (x, y)
     const mainPathCenter = geometry.utils.getCenterPoint(
@@ -114,7 +124,7 @@ const halfWayPosition = computed(() => {
 
     // (2) For every path segment we have (determined by the bendpoints) we try to find the
     // closest distance to the main path's center. To do so, we optimize for the smallest delta possible using
-    // the euclidian distance when compared with the segment's center point (x, y)
+    // the euclidean distance when compared with the segment's center point (x, y)
     const { index: centermostPathSegmentIndex } = pathSegments.value.reduce(
       (acc, segment, index) => {
         const segmentCenter = geometry.utils.getCenterPoint(
