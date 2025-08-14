@@ -409,9 +409,9 @@ test.describe("node name editing", () => {
     }) => {
       await startForNameChange(page);
 
-      const [metanodeX, metanodeY] = await getNodePosition(page, id);
-      // select metanode
-      await page.mouse.click(metanodeX, metanodeY);
+      const [nodeX, nodeY] = await getNodePosition(page, id);
+      // select a node
+      await page.mouse.click(nodeX, nodeY);
       await page.keyboard.press("Shift+F2");
       await waitForFloatingEditor(page);
       await page.keyboard.insertText("New name");
@@ -419,7 +419,7 @@ test.describe("node name editing", () => {
       await assertSnapshot(page);
 
       // click-away
-      await page.mouse.click(metanodeX - 150, metanodeY - 150);
+      await page.mouse.click(nodeX - 150, nodeY - 150);
       await page.waitForTimeout(200);
       await assertSnapshot(page);
     });
@@ -471,6 +471,25 @@ test.describe("node name editing", () => {
       await page.waitForTimeout(200);
       await assertSnapshot(page);
       await expect((await getNodeName(page, id)).text).not.toBe("New name");
+    });
+
+    test(`${name}::can navigate with keyboard after saving`, async ({
+      page,
+    }) => {
+      await startForNameChange(page);
+
+      const [nodeX, nodeY] = await getNodePosition(page, id);
+      // select a node
+      await page.mouse.click(nodeX, nodeY);
+      await page.keyboard.press("Shift+F2");
+
+      // save name
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+      await page.keyboard.press("Enter");
+      await page.waitForTimeout(200);
+      await page.keyboard.press("ArrowDown");
+      await assertSnapshot(page);
     });
   });
 });
@@ -581,5 +600,22 @@ test.describe("node label editing", () => {
     await page.waitForTimeout(200);
     await assertSnapshot(page);
     await expect((await getNodeLabel(page)).text).toBe("New name");
+  });
+
+  test("can navigate with keyboard after saving", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    const [nodeX, nodeY] = await getNodePosition(page, IDS.node1);
+    // select node
+    await page.mouse.click(nodeX, nodeY);
+    await page.keyboard.press("F2");
+    await waitForFloatingEditor(page);
+    await page.keyboard.insertText("New name");
+    await page.keyboard.press("ControlOrMeta+Enter");
+    await page.waitForTimeout(200);
+
+    await page.keyboard.press("ArrowUp");
+    await assertSnapshot(page);
   });
 });

@@ -7,6 +7,7 @@ import { storeToRefs } from "pinia";
 
 import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize, portSize } from "@/style/shapes";
@@ -93,6 +94,7 @@ const onSave = async () => {
   }
 
   nodeInteractionsStore.closeNameEditor();
+  useWebGLCanvasStore().focus();
 };
 
 const hideInvalidCharsTimeoutId = ref<number>();
