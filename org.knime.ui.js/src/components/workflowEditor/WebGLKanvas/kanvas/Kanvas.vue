@@ -128,7 +128,7 @@ const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
 
 const isGrabbing = ref(false);
 const onPointerDown = (event: PointerEvent) => {
-  if (!interactionsEnabled.value) {
+  if (!interactionsEnabled.value && !hasPanModeEnabled.value) {
     return;
   }
 
@@ -154,7 +154,16 @@ const onPointerDown = (event: PointerEvent) => {
 
 const onPointerUp = (event: PointerEvent) => {
   isGrabbing.value = false;
-  $bus.emit("selection-pointerup", event);
+
+  const isMouseLeftClick = event.button === 0;
+
+  if (
+    !isHoldingDownSpace.value &&
+    isMouseLeftClick &&
+    !hasPanModeEnabled.value
+  ) {
+    $bus.emit("selection-pointerup", event);
+  }
 };
 
 const { onMouseWheel } = useMouseWheel({ scrollPan });

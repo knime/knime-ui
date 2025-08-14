@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -19,6 +20,7 @@ const { zoomFactor, canvasOffset } = storeToRefs(canvasStore);
 const { isDragging } = storeToRefs(useMovingStore());
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const selectionStore = useSelectionStore();
+const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
 
 const inverseMode = ref(false);
 const isSelectionVisible = ref(false);
@@ -85,7 +87,11 @@ const updateSelectionPreview = () => {
   );
 
   selectionStore.setPreselectionMode(true);
-  canvasStore.setInteractionsEnabled(false);
+
+  if (canvasStore.interactionsEnabled) {
+    canvasStore.setInteractionsEnabled(false);
+  }
+
   selectionStore.deselectAllPreselectedObjects();
   selectionStore.preselectNodes(calculateNodeSelection());
   selectionStore.preselectAnnotations(calculateAnnotationSelection());
@@ -129,7 +135,8 @@ const onSelectionStart = (event: PointerEvent) => {
   if (
     event.dataset?.skipGlobalSelection ||
     isDragging.value ||
-    !canvasStore.interactionsEnabled
+    !canvasStore.interactionsEnabled ||
+    hasPanModeEnabled.value
   ) {
     isSelectionVisible.value = false;
     return;

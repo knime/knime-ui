@@ -7,6 +7,7 @@ import { isModifierKeyPressed } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -103,7 +104,10 @@ export const useCanvasPanning = ({
         hasMoved.value = true;
 
         // prevent interaction with other canvas objects while in the panning state
-        canvasStore.setInteractionsEnabled(false);
+        if (canvasStore.interactionsEnabled) {
+          canvasStore.setInteractionsEnabled(false);
+        }
+
         canvasStore.setCanvasOffset({
           x:
             stage.value.x +
@@ -147,7 +151,9 @@ export const useCanvasPanning = ({
         await toggleContextMenu({ event: pointerUpEvent });
       }
 
-      canvasStore.setInteractionsEnabled(true);
+      if (!useCanvasModesStore().hasPanModeEnabled) {
+        canvasStore.setInteractionsEnabled(true);
+      }
       hasMoved.value = false;
     };
 
