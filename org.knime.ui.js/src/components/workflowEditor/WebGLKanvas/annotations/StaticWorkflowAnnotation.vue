@@ -158,11 +158,19 @@ const autoUpdateResolution = () => {
   );
 };
 
+const isUpdating = ref(false);
+
 const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
+  if (isUpdating.value) {
+    return;
+  }
+
   // do not update it if we are not rendered unless we are forced to
   if (!renderable.value && !force) {
     return;
   }
+
+  isUpdating.value = true;
 
   if (textRef) {
     annotationContainer.value!.removeChildAt(0);
@@ -191,6 +199,7 @@ const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
     requestAnimationFrame(() => {
       // as this is async the container might be already gone
       annotationContainer.value?.addChild(text);
+      isUpdating.value = false;
     });
   });
 };
