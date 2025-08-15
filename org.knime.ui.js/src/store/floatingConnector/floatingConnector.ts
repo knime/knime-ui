@@ -18,7 +18,7 @@ import {
 import { useApplicationStore } from "../application/application";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
-import { useNodeConfigurationStore } from "../nodeConfiguration/nodeConfiguration";
+import { useSelectionStore } from "../selection";
 import { useWorkflowStore } from "../workflow/workflow";
 
 import {
@@ -272,21 +272,24 @@ export const useFloatingConnectorStore = defineStore(
             const currentFloatingConnector = floatingConnector.value;
             const currentSnapPosition = activeSnapPosition.value;
 
-            const canContinue =
-              await useNodeConfigurationStore().autoApplySettings();
+            const { wasAborted } =
+              await useSelectionStore().tryDiscardCurrentSelection();
 
-            if (canContinue) {
-              await finishConnection({
-                floatingConnector:
-                  currentFloatingConnector as FullFloatingConnector,
-                snapTarget: currentSnapTarget,
-                activeSnapPosition: currentSnapPosition,
-              });
+            if (wasAborted) {
+              return;
             }
+
+            await finishConnection({
+              floatingConnector:
+                currentFloatingConnector as FullFloatingConnector,
+              snapTarget: currentSnapTarget,
+              activeSnapPosition: currentSnapPosition,
+            });
           } catch (error) {
             consola.error("Did not complete connection: ", error);
+          } finally {
+            removeActiveConnector();
           }
-          removeActiveConnector();
         }
 
         activeConnectionValidTargets.value?.clear();

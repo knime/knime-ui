@@ -6,7 +6,7 @@ import throttle from "raf-throttle";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
-import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as shapes from "@/style/shapes";
 import {
@@ -292,9 +292,10 @@ export const usePortDragging = (params: Params) => {
     event.stopPropagation();
     (event.target as HTMLElement).releasePointerCapture(event.pointerId);
 
-    const canContinue = await useNodeConfigurationStore().autoApplySettings();
+    const { wasAborted } =
+      await useSelectionStore().tryDiscardCurrentSelection();
 
-    if (!canContinue) {
+    if (wasAborted) {
       return;
     }
 

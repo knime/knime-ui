@@ -5,12 +5,7 @@ import { API } from "@api";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { markPointerEventAsHandled } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
-import {
-  PORT_TYPE_IDS,
-  createNativeNode,
-  createPort,
-  createWorkflow,
-} from "@/test/factories";
+import { PORT_TYPE_IDS, createPort, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import type { SnapTarget } from "../types";
@@ -331,21 +326,15 @@ describe("floatingConnector store", () => {
       }),
     };
 
-    // @ts-expect-error
-    mockedStores.nodeConfigurationStore.activeContext = {
-      node: createNativeNode(),
-      isEmbeddable: true,
-    };
-    mockedStores.nodeConfigurationStore.dirtyState.apply = "configured";
-    const autoApplySettingsMock = vi.mocked(
-      mockedStores.nodeConfigurationStore.autoApplySettings,
+    const tryDiscardCurrentSelectionMock = vi.mocked(
+      mockedStores.selectionStore.tryDiscardCurrentSelection,
     );
 
-    autoApplySettingsMock.mockResolvedValue(false);
+    tryDiscardCurrentSelectionMock.mockResolvedValue({ wasAborted: true });
 
     canvas.dispatchEvent(new PointerEvent("pointerup"));
 
-    expect(autoApplySettingsMock).toHaveBeenCalled();
+    expect(tryDiscardCurrentSelectionMock).toHaveBeenCalled();
 
     await flushPromises();
 
