@@ -34,6 +34,9 @@ importers:
       '@knime/hub-features':
         specifier: ^1.11.4
         version: 1.11.4(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
+      '@knime/kds-styles':
+        specifier: ^0.0.4
+        version: 0.0.4
       '@knime/knime-ui-table':
         specifier: 0.5.22
         version: 0.5.22(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
@@ -1191,6 +1194,10 @@ packages:
     peerDependencies:
       consola: 3.x
       vue: '>=3.5.0'
+
+  '@knime/kds-styles@0.0.4':
+    resolution: {integrity: sha512-Z4/fnKo6ncLPBmwyt5XFOpb1oxu2T77eTmtaol6xIu9gJjfCDK+A8I31vjasF48mVk0E8Rv1Zc0InMZHGHIVNg==}
+    engines: {node: 24.5.0, npm: please-use-pnpm}
 
   '@knime/knime-ui-table@0.5.22':
     resolution: {integrity: sha512-tkoTsOL9n+KN6joOiwvQiT7rURxcV1yrg5xGM2thffT3ZZJ+RIMhbOFfz2jyD2/ACkz4Zx11xFOTchSII+x/DQ==}
@@ -6923,6 +6930,8 @@ snapshots:
       - focus-trap
       - react
       - react-dom
+
+  '@knime/kds-styles@0.0.4': {}
 
   '@knime/knime-ui-table@0.5.22(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
     dependencies:

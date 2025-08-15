@@ -16,11 +16,14 @@ import {
   type CanvasRendererType,
   useCanvasRendererUtils,
 } from "../workflowEditor/util/canvasRenderer";
+import { useDarkMode } from "../workflowEditor/util/darkMode";
 
 const isFrontendDevMode = import.meta.env.DEV;
 const { currentRenderer, isSVGRenderer } = useCanvasRendererUtils();
 const canvasRenderers: CanvasRendererType[] = ["SVG", "WebGL"];
 const webglCanvasStore = useWebGLCanvasStore();
+
+const { currentMode } = useDarkMode();
 
 const wrapper = useTemplateRef("wrapper");
 const handle = useTemplateRef("handle");
@@ -125,6 +128,17 @@ const dragStart = (pointerDown: PointerEvent) => {
         :possible-values="
           canvasRenderers.map((value) => ({ id: value, text: value }))
         "
+      />
+
+      <ValueSwitch
+        v-model="currentMode"
+        compact
+        :possible-values="[
+          { id: 'light', text: '☀️' },
+          { id: 'dark', text: '🌙' },
+          { id: 'system', text: '🖥️' },
+        ]"
+        title="Toggle Dark Mode"
       />
 
       <FunctionButton

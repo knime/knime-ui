@@ -39,6 +39,7 @@
     "@fontsource/roboto-mono": "4.x",
     "@knime/components": "^1.33.2",
     "@knime/hub-features": "^1.11.4",
+    "@knime/kds-styles": "^0.0.4",
     "@knime/knime-ui-table": "0.5.22",
     "@knime/rich-text-editor": "^1.6.3",
     "@knime/styles": "^1.10.0",
