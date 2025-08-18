@@ -9,6 +9,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { getBendpointId } from "@/util/connectorUtil";
+import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../util/interaction";
 
@@ -43,25 +44,31 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     );
   });
 
+  const onBendpointMoveEnd = () => {
+    if (virtualBendpoint.value) {
+      addBendpoint({ ...virtualBendpoint.value, connectionId });
+      virtualBendpoint.value = null;
+
+      return Promise.resolve({ shouldMove: false });
+    }
+
+    return Promise.resolve({ shouldMove: true });
+  };
+
+  const onBendpointSelect = () => {
+    if (virtualBendpoint.value) {
+      addBendpoint({ ...virtualBendpoint.value, connectionId });
+      virtualBendpoint.value = null;
+    }
+  };
+
   const onBendpointClick = (event: FederatedPointerEvent, index: number) => {
     const bendpointId = getBendpointId(connectionId, index - 1);
 
     const { handlePointerInteraction } = useObjectInteractions({
       objectMetadata: { type: "bendpoint", bendpointId },
-      onMoveEnd: () => {
-        if (virtualBendpoint.value) {
-          addBendpoint({
-            connectionId,
-            position: virtualBendpoint.value.position,
-            index: virtualBendpoint.value.index,
-          });
-          virtualBendpoint.value = null;
-
-          return Promise.resolve({ shouldMove: false });
-        }
-
-        return Promise.resolve({ shouldMove: true });
-      },
+      onMoveEnd: onBendpointMoveEnd,
+      onSelect: onBendpointSelect,
     });
 
     handlePointerInteraction(event);
@@ -104,6 +111,10 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     index: number;
     event: FederatedPointerEvent;
   }) => {
+    if (isMultiselectEvent(event)) {
+      return;
+    }
+
     addVirtualBendpoint({
       position,
       connectionId,

@@ -62,6 +62,7 @@ describe("useObjectInteractions", () => {
   type MountOpts = {
     onMoveEnd?: () => Promise<{ shouldMove: boolean }>;
     onDoubleClick?: () => void;
+    onSelect?: () => void;
     isAnnotation?: boolean;
   };
 
@@ -88,6 +89,7 @@ describe("useObjectInteractions", () => {
         objectMetadata: { type: "node", nodeId: node.id },
         onMoveEnd: options.onMoveEnd,
         onDoubleClick: options.onDoubleClick,
+        onSelect: options.onSelect,
       },
       mockedStores,
     });
@@ -106,6 +108,7 @@ describe("useObjectInteractions", () => {
 
   describe("selection", () => {
     it("should select object and not drag", async () => {
+      const onSelect = vi.fn();
       const {
         getComposableResult,
         addEventSpy,
@@ -113,7 +116,7 @@ describe("useObjectInteractions", () => {
         selectSpy,
         deselectSpy,
         mockedStores,
-      } = doMount();
+      } = doMount({ onSelect });
 
       const { handlePointerInteraction } = getComposableResult();
 
@@ -145,6 +148,7 @@ describe("useObjectInteractions", () => {
       expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
 
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(onSelect).toHaveBeenCalledOnce();
       expect(selectSpy).toHaveBeenCalled();
       expect(deselectSpy).not.toHaveBeenCalled();
     });

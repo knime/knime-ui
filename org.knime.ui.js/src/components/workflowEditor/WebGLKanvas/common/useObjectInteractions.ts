@@ -154,6 +154,10 @@ type UseObjectInteractionsOptions = {
    * Optional handler to run when the user fires off a double click
    */
   onDoubleClick?: (event: PointerEvent) => void;
+  /**
+   * Optional handler to run when the object is selected
+   */
+  onSelect?: () => void;
 };
 
 /**
@@ -289,7 +293,7 @@ export const useObjectInteractions = (
   };
 
   /**
-   * Annotations are handled slighlty different when not selected, by making the
+   * Annotations are handled slightly different when not selected, by making the
    * selection only if the user performs a pointerdown and a pointerup without moving their mouse.
    * Otherwise, provided they do move, this interaction will be ignored and the annotation will be neither selected
    * nor moved. When the annotation is already selected, the behavior is the same as for other objects.
@@ -466,7 +470,6 @@ export const useObjectInteractions = (
         });
 
         objectHandler.selectObject();
-
         onMoveEnd().then(async ({ shouldMove }) => {
           if (shouldMove) {
             await movingStore.moveObjects();
@@ -479,10 +482,8 @@ export const useObjectInteractions = (
           { objectMetadata },
         );
 
-        const isNode = options.objectMetadata.type === "node";
-
         openRightPanelForNodes();
-
+        const isNode = options.objectMetadata.type === "node";
         if (isNode) {
           // skip deselecting -> re-selecting the same node
           await selectionStore.deselectAllObjects([
@@ -492,6 +493,8 @@ export const useObjectInteractions = (
           await selectionStore.deselectAllObjects();
           objectHandler.selectObject();
         }
+
+        options.onSelect?.();
       } else {
         consola.debug(
           "object interaction:: drag did not occur, handling previously unselected object",
@@ -500,6 +503,7 @@ export const useObjectInteractions = (
 
         openRightPanelForNodes();
         objectHandler.selectObject();
+        options.onSelect?.();
       }
 
       isSelectionDelayedUntilDragCompletes.value = false;
