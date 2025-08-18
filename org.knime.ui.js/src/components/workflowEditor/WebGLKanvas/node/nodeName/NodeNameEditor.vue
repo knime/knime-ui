@@ -26,6 +26,7 @@ const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
   nodeInteractionsStore,
 );
 const workflowStore = useWorkflowStore();
+const canvasStore = useWebGLCanvasStore();
 const { activeWorkflow } = storeToRefs(workflowStore);
 const { toastPresets } = getToastPresets();
 
@@ -39,6 +40,7 @@ const editedNode = computed(() => {
 
 const onCancel = () => {
   nodeInteractionsStore.closeNameEditor();
+  canvasStore.focus();
 };
 
 const nodeName = computed(() =>
@@ -94,7 +96,7 @@ const onSave = async () => {
   }
 
   nodeInteractionsStore.closeNameEditor();
-  useWebGLCanvasStore().focus();
+  canvasStore.focus();
 };
 
 const hideInvalidCharsTimeoutId = ref<number>();

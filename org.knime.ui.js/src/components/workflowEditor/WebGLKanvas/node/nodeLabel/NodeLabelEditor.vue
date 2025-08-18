@@ -26,6 +26,7 @@ import { getNodeLabelTopOffset } from "./getNodeLabelTopOffset";
 const nodeInteractionsStore = useNodeInteractionsStore();
 const { labelEditorNodeId } = storeToRefs(nodeInteractionsStore);
 const workflowStore = useWorkflowStore();
+const canvasStore = useWebGLCanvasStore();
 const { activeWorkflow } = storeToRefs(workflowStore);
 const { toastPresets } = getToastPresets();
 
@@ -39,6 +40,7 @@ const editedNode = computed(() => {
 
 const onCancel = () => {
   nodeInteractionsStore.closeLabelEditor();
+  canvasStore.focus();
 };
 
 const position = computed(() => {
@@ -76,7 +78,7 @@ const onSave = async () => {
   }
 
   nodeInteractionsStore.closeLabelEditor();
-  useWebGLCanvasStore().focus();
+  canvasStore.focus();
 };
 
 const borderWidth = 1;

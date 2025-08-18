@@ -481,13 +481,40 @@ test.describe("node name editing", () => {
       const [nodeX, nodeY] = await getNodePosition(page, id);
       // select a node
       await page.mouse.click(nodeX, nodeY);
-      await page.keyboard.press("Shift+F2");
 
-      // save name
+      // edit node name
+      await page.keyboard.press("Shift+F2");
       await waitForFloatingEditor(page);
       await page.keyboard.insertText("New name");
+
+      // save node name
       await page.keyboard.press("Enter");
       await page.waitForTimeout(200);
+
+      // navigate away
+      await page.keyboard.press("ArrowDown");
+      await assertSnapshot(page);
+    });
+
+    test(`${name}::can navigate with keyboard after canceling`, async ({
+      page,
+    }) => {
+      await startForNameChange(page);
+
+      const [nodeX, nodeY] = await getNodePosition(page, id);
+      // select a node
+      await page.mouse.click(nodeX, nodeY);
+
+      // edit node name
+      await page.keyboard.press("Shift+F2");
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+
+      // cancel
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(200);
+
+      // navigate away
       await page.keyboard.press("ArrowDown");
       await assertSnapshot(page);
     });
@@ -609,12 +636,39 @@ test.describe("node label editing", () => {
     const [nodeX, nodeY] = await getNodePosition(page, IDS.node1);
     // select node
     await page.mouse.click(nodeX, nodeY);
+
+    // edit node label
     await page.keyboard.press("F2");
     await waitForFloatingEditor(page);
     await page.keyboard.insertText("New name");
+
+    // save node label
     await page.keyboard.press("ControlOrMeta+Enter");
     await page.waitForTimeout(200);
 
+    // navigate away
+    await page.keyboard.press("ArrowUp");
+    await assertSnapshot(page);
+  });
+
+  test("can navigate with keyboard after canceling", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    const [nodeX, nodeY] = await getNodePosition(page, IDS.node1);
+    // select node
+    await page.mouse.click(nodeX, nodeY);
+
+    // edit node label
+    await page.keyboard.press("F2");
+    await waitForFloatingEditor(page);
+    await page.keyboard.insertText("New name");
+
+    // cancel
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // navigate away
     await page.keyboard.press("ArrowUp");
     await assertSnapshot(page);
   });
