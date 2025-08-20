@@ -16,6 +16,16 @@ const { editableAnnotationId, activeTransform } = storeToRefs(
   useAnnotationInteractionsStore(),
 );
 
+const isResizingAnnotation = computed(() => {
+  if (!activeWorkflow.value || !activeTransform.value) {
+    return false;
+  }
+
+  return activeWorkflow.value.workflowAnnotations.some(
+    ({ id }) => id === activeTransform.value?.annotationId,
+  );
+});
+
 const activeWorkflowAnnotation = computed(() => {
   if (
     !activeWorkflow.value ||
@@ -53,6 +63,7 @@ const bounds = computed(() => {
     <WorkflowAnnotation
       v-if="activeWorkflowAnnotation"
       :annotation="activeWorkflowAnnotation"
+      :is-resizing="isResizingAnnotation"
     />
   </FloatingHTML>
 </template>

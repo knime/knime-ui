@@ -31,7 +31,8 @@ describe("workflow::annotationInteractions", () => {
     );
 
     const bounds = { x: 1, y: 2, width: 3, height: 4 };
-    await annotationInteractionsStore.transformWorkflowAnnotation({
+
+    annotationInteractionsStore.previewWorkflowAnnotationTransform({
       bounds,
       annotationId,
     });
@@ -39,6 +40,11 @@ describe("workflow::annotationInteractions", () => {
     expect(
       workflowStore.activeWorkflow!.workflowAnnotations[0].bounds,
     ).toStrictEqual(bounds);
+
+    await annotationInteractionsStore.transformWorkflowAnnotation({
+      bounds,
+      annotationId,
+    });
 
     expect(
       API.workflowCommand.TransformWorkflowAnnotation,

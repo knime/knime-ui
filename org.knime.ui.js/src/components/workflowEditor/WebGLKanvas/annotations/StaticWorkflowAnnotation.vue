@@ -59,7 +59,7 @@ const { isAnnotationSelected } = selectionStore;
 const isSelected = computed(() => isAnnotationSelected(props.annotation.id));
 
 const canvasStore = useWebGLCanvasStore();
-const { toCanvasCoordinates, visibleArea, zoomAwareResolution } =
+const { toCanvasCoordinates, visibleArea, zoomAwareResolution, canvasLayers } =
   storeToRefs(canvasStore);
 
 const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
@@ -102,10 +102,25 @@ const { handlePointerInteraction } = useObjectInteractions({
   },
 });
 
+const isEditing = computed(
+  () => editableAnnotationId.value === props.annotation.id,
+);
+
+const isResizing = computed(
+  () => activeTransform.value?.annotationId === props.annotation.id,
+);
+
+const annotationControlsLayer = computed(() => {
+  const defaultLayer = null;
+  if (isEditing.value || isResizing.value) {
+    return canvasLayers.value.annotationControls;
+  }
+  return defaultLayer;
+});
+
 const translatedPosition = computed(() => {
   const bounds =
-    activeTransform.value &&
-    activeTransform.value.annotationId === props.annotation.id
+    activeTransform.value && isResizing.value
       ? activeTransform.value.bounds
       : props.annotation.bounds;
 
@@ -120,7 +135,7 @@ const translatedPosition = computed(() => {
       };
 });
 
-const renderable = computed(() => {
+const isWithinVisibleArea = computed(() => {
   const intersect = geometry.utils.rectangleIntersection(
     {
       left: props.annotation.bounds.x,
@@ -142,14 +157,14 @@ const renderable = computed(() => {
 let textRef: PIXI.HTMLText | undefined;
 
 const autoUpdateResolution = () => {
-  // debounce because the resolution or renderable sources
-  // could change fast often. e.g resolution due to fast zoom in/out
-  // and renderable due to fast panning which culls out of view annotations
+  // debounce because the resolution or renderable sources could change fast
+  // often. e.g resolution due to fast zoom in/out and if it's within visible
+  // area due to fast panning which culls out of view annotations
   watchDebounced(
-    [zoomAwareResolution, renderable],
+    [zoomAwareResolution, isWithinVisibleArea],
     () => {
       requestAnimationFrame(() => {
-        if (textRef && renderable.value) {
+        if (textRef && isWithinVisibleArea.value) {
           textRef.resolution = zoomAwareResolution.value;
         }
       });
@@ -166,7 +181,7 @@ const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
   }
 
   // do not update it if we are not rendered unless we are forced to
-  if (!renderable.value && !force) {
+  if (!isWithinVisibleArea.value && !force) {
     return;
   }
 
@@ -224,12 +239,6 @@ onMounted(() => {
   autoUpdateResolution();
 });
 
-const isStaticContent = computed(
-  () =>
-    activeTransform.value?.annotationId !== props.annotation.id &&
-    editableAnnotationId.value !== props.annotation.id,
-);
-
 const { showFocus, showSelectionPlane, showTransformControls } =
   useAnnotationVisualStatus(toRef(props.annotation.id));
 
@@ -242,6 +251,11 @@ const onTransformChange = ({ bounds }: { bounds: Bounds }) => {
     bounds,
     annotationId: props.annotation.id,
   };
+
+  annotationInteractionStore.previewWorkflowAnnotationTransform({
+    bounds,
+    annotationId: props.annotation.id,
+  });
 };
 
 const onTransformEnd = (bounds: Bounds) => {
@@ -314,27 +328,19 @@ useMagicKeys({
     keyboardTransformActive.value = true;
   },
 });
-
-const { canvasLayers } = storeToRefs(canvasStore);
 </script>
 
 <template>
   <Container
     :label="`StaticWorkflowAnnotation__${annotation.id}`"
     :position="translatedPosition"
-    :visible="renderable"
-    :renderable="renderable"
+    :visible="isWithinVisibleArea"
+    :renderable="isWithinVisibleArea"
     event-mode="static"
     @pointerdown="handlePointerInteraction"
     @rightclick.stop="onContextMenu"
   >
-    <Container
-      :layer="
-        editableAnnotationId === annotation.id
-          ? canvasLayers.annotationControls
-          : null
-      "
-    >
+    <Container :layer="annotationControlsLayer">
       <TransformControls
         v-if="showTransformControls || showFocus || showSelectionPlane"
         :initial-value="
@@ -349,7 +355,7 @@ const { canvasLayers } = storeToRefs(canvasStore);
     </Container>
 
     <Graphics
-      v-if="isStaticContent"
+      v-if="!isEditing"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
@@ -365,7 +371,7 @@ const { canvasLayers } = storeToRefs(canvasStore);
     />
 
     <Graphics
-      v-if="isStaticContent"
+      v-if="!isEditing"
       label="AnnotationBorder"
       @render="
         (graphics: GraphicsInst) => {
@@ -387,9 +393,7 @@ const { canvasLayers } = storeToRefs(canvasStore);
     <Container
       ref="annotationContainer"
       label="AnnotationContentWrapper"
-      :renderable="
-        renderable && activeTransform?.annotationId !== annotation.id
-      "
+      :renderable="isWithinVisibleArea && !isResizing"
     />
   </Container>
 </template>
