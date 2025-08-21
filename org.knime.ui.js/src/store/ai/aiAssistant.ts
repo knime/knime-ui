@@ -17,6 +17,7 @@ import type {
   ChainType,
   ConversationState,
   Feedback,
+  KaiUsageState,
   Message,
   ProjectAndWorkflowIds,
   StatusUpdate,
@@ -44,6 +45,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
     qa: createEmptyConversationState(),
     build: createEmptyConversationState(),
     processedInteractionIds: new Set(),
+    usage: null,
   }),
   actions: {
     setHubID(hubID: string | null) {
@@ -276,6 +278,10 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
             });
           }
 
+          if (payload.usage) {
+            this.updateUsage(payload.usage);
+          }
+
           responseCallback[chainType]?.resolve(payload);
           delete responseCallback[chainType];
           break;
@@ -312,6 +318,22 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         this.clearChain({ chainType });
       }
       this.popUserQuery({ chainType });
+    },
+
+    async fetchUsage() {
+      const projectAndWorkflowIds = useWorkflowStore().getProjectAndWorkflowIds;
+      const { projectId } = projectAndWorkflowIds;
+
+      try {
+        this.usage = await API.kai.getUsage({ projectId });
+      } catch (error) {
+        consola.error("getUsage", error);
+        // Set limit to null on error to indicate unavailable AI usage information
+        this.usage = null;
+      }
+    },
+    updateUsage(usage: KaiUsageState) {
+      this.usage = usage;
     },
   },
   getters: {

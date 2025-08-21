@@ -1,4 +1,4 @@
-import { type Ref, ref, watch } from "vue";
+import { type Ref, onBeforeMount, ref, watch } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
@@ -22,7 +22,7 @@ export const useQuickBuild = ({
     hideQuickActionMenuConnector,
   } = useCanvasAnchoredComponentsStore();
 
-  const { makeAiRequest } = useAIAssistantStore();
+  const { makeAiRequest, fetchUsage } = useAIAssistantStore();
 
   const { isAuthError, disconnectHub } = useHubAuth();
 
@@ -92,6 +92,8 @@ export const useQuickBuild = ({
       }
     },
   );
+
+  onBeforeMount(fetchUsage);
 
   return {
     userQuery,

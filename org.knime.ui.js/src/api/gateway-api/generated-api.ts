@@ -1901,6 +1901,29 @@ export interface KaiUiStrings {
 
 
 /**
+ * Current AI interaction usage and limits for the authenticated user.
+ * @export
+ * @interface KaiUsage
+ */
+export interface KaiUsage {
+
+    /**
+     * Maximum number of requests allowed.
+     * @type {number}
+     * @memberof KaiUsage
+     */
+    limit: number;
+    /**
+     * Number of requests used.
+     * @type {number}
+     * @memberof KaiUsage
+     */
+    used: number;
+
+}
+
+
+/**
  * The messages K-AI starts the conversations with.
  * @export
  * @interface KaiWelcomeMessages
@@ -5604,6 +5627,20 @@ const kai = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('KaiService.getUiStrings', { ...defaultParams, ...params });
+        },
+        /**
+         * Retrieves the current user's AI interaction usage and limits.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUsage(
+        	params: { projectId: string  }
+        ): Promise<KaiUsage> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.getUsage', { ...defaultParams, ...params });
         },
         /**
          * Sends a request to a chain.

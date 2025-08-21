@@ -2,6 +2,7 @@
 import ErrorIcon from "@knime/styles/img/icons/circle-close.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import type { KaiUsageState } from "@/store/ai/types";
 import ChatControls from "../chat/ChatControls.vue";
 import Message from "../chat/message/Message.vue";
 
@@ -10,6 +11,7 @@ type Props = {
   interactionId?: string;
   lastUserMessage: string;
   errorMessage: string;
+  usage: KaiUsageState;
 };
 
 defineProps<Props>();
@@ -28,9 +30,9 @@ defineEmits<{
       :content="prompt"
     />
     <ChatControls
-      class="chat-controls"
       :last-user-message="lastUserMessage"
       :text="errorMessage ? lastUserMessage : ''"
+      :usage="usage"
       placeholder="What would you like to build?"
       @send-message="$emit('sendMessage', $event)"
     />

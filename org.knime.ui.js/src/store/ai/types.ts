@@ -1,4 +1,4 @@
-import { KaiMessage } from "@/api/gateway-api/generated-api";
+import { KaiMessage, type KaiUsage } from "@/api/gateway-api/generated-api";
 
 export type Node = {
   title: string;
@@ -61,11 +61,14 @@ export type ConversationState = {
   projectAndWorkflowIds: ProjectAndWorkflowIds | null;
 };
 
+export type KaiUsageState = KaiUsage | null;
+
 export type AiAssistantState = {
   hubID: string | null;
   qa: ConversationState;
   build: ConversationState;
   processedInteractionIds: Set<string>;
+  usage: KaiUsageState;
 };
 
 export type Feedback = {
@@ -75,7 +78,7 @@ export type Feedback = {
 
 export type ChainType = Exclude<
   keyof AiAssistantState,
-  "hubID" | "processedInteractionIds"
+  "hubID" | "processedInteractionIds" | "usage"
 >;
 
 export type AiAssistantQAEventPayload = {
@@ -85,6 +88,7 @@ export type AiAssistantQAEventPayload = {
   components: Message["components"];
   nodes: NodeWithExtensionInfo[];
   interactionId: string;
+  usage?: KaiUsage;
 };
 
 export type AiAssistantBuildEventPayload = {
@@ -95,6 +99,7 @@ export type AiAssistantBuildEventPayload = {
   workflows: never;
   components: never;
   nodes: never;
+  usage?: KaiUsage;
 };
 
 export type AiAssistantEvent =

@@ -1,4 +1,4 @@
-import { computed } from "vue";
+import { computed, onBeforeMount } from "vue";
 import { storeToRefs } from "pinia";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
@@ -21,7 +21,7 @@ class MessageSeparator {
 
 const useChat = (chainType: ChainType) => {
   const aiAssistant = storeToRefs(useAIAssistantStore());
-  const { makeAiRequest, abortAiRequest } = useAIAssistantStore();
+  const { makeAiRequest, abortAiRequest, fetchUsage } = useAIAssistantStore();
   const { uiStrings } = useKaiServer();
   const { disconnectHub, isAuthError } = useHubAuth();
 
@@ -131,6 +131,8 @@ const useChat = (chainType: ChainType) => {
       });
     }
   };
+
+  onBeforeMount(fetchUsage);
 
   return {
     messagesWithSeparators,

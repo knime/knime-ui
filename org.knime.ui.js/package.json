@@ -40,7 +40,7 @@
     "@knime/components": "^1.36.1",
     "@knime/hub-features": "^1.14.1",
     "@knime/kds-styles": "^0.0.4",
-    "@knime/knime-ui-table": "0.5.22",
+    "@knime/knime-ui-table": "0.5.23",
     "@knime/rich-text-editor": "^1.7.0",
     "@knime/styles": "^1.11.0",
     "@knime/ui-extension-renderer": "2.3.0",

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import type { ChainType } from "@/store/ai/types";
 
 import ChatControls from "./ChatControls.vue";
@@ -26,6 +28,8 @@ const {
   abortSendMessage,
 } = useChat(props.chainType);
 
+const { usage } = storeToRefs(useAIAssistantStore());
+
 const scrollableContainer =
   ref<InstanceType<typeof SidebarPanelScrollContainer>>();
 
@@ -43,9 +47,7 @@ watch(
       scrollOnNewMessages();
     }
   },
-  {
-    deep: true,
-  },
+  { deep: true },
 );
 </script>
 
@@ -75,9 +77,9 @@ watch(
     </SidebarPanelScrollContainer>
 
     <ChatControls
-      class="chat-controls"
       :is-processing="isProcessing"
       :last-user-message="lastUserMessage"
+      :usage="usage"
       @send-message="sendMessage"
       @abort="abortSendMessage"
     />
@@ -100,7 +102,7 @@ watch(
     gap: 20px;
   }
 
-  & .chat-controls {
+  & :deep(.textarea-wrapper) {
     max-height: 200px;
     min-height: 50px;
   }
