@@ -12,7 +12,7 @@ import {
 } from "vue";
 import { refDebounced } from "@vueuse/core";
 import { isNumber, round } from "lodash-es";
-import { animate } from "motion";
+import { animate, mix } from "motion";
 import { defineStore } from "pinia";
 import { type IRenderLayer } from "pixi.js";
 
@@ -556,27 +556,23 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
 
     if (!doAnimate) {
-      setCanvasOffset({
-        x: newOffset.x,
-        y: newOffset.y,
-      });
+      setCanvasOffset({ x: newOffset.x, y: newOffset.y });
       return;
     }
 
-    animate(
-      currentOffset,
-      { x: newOffset.x, y: newOffset.y },
-      {
-        duration: 0.5,
-        ease: "easeOut",
-        onUpdate: () => {
-          setCanvasOffset({
-            x: currentOffset.x,
-            y: currentOffset.y,
-          });
-        },
+    // When an object is passed to `animate`, `onUpdate` will be called for
+    // each property update. To group x and y animations together, we animate
+    // from 0 to 1, and use `latest` and `mix` helper to calculate the progress.
+    animate(0, 1, {
+      duration: 0.5,
+      ease: "easeOut",
+      onUpdate: (latest) => {
+        setCanvasOffset({
+          x: mix(currentOffset.x, newOffset.x, latest),
+          y: mix(currentOffset.y, newOffset.y, latest),
+        });
       },
-    );
+    });
   };
 
   const moveViewToWorkflowCenter = () => {
