@@ -149,8 +149,6 @@ const onDiscardCurrentState = () => {
         "
         class="create-version-drawer"
       >
-        <div class="header">Create version</div>
-
         <CreateVersionForm
           :is-creation-pending="versionCreationState === 'pending'"
           @create="onCreate"
@@ -207,16 +205,6 @@ const onDiscardCurrentState = () => {
     flex-direction: column;
     position: absolute;
     inset: 0;
-    background-color: var(--knime-gray-ultra-light);
-
-    & .header {
-      display: flex;
-      padding: 32px 30px 16px;
-      background-color: var(--knime-white);
-      font-weight: 700;
-      font-size: 20px;
-      line-height: 20px;
-    }
   }
 }
 
