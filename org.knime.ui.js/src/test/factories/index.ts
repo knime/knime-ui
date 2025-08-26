@@ -3,6 +3,7 @@ export * from "./aiAssistant";
 export * from "./application";
 export * from "./common";
 export * from "./connections";
+export * from "./events";
 export * from "./nodes";
 export * from "./nodeRepository";
 export * from "./nodeDescription";

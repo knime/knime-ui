@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
-import { isModifierKeyPressed } from "@knime/utils";
+import { isModifierKeyPressed, navigatorUtils } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
@@ -161,8 +161,9 @@ export const useCanvasPanning = ({
       return;
     }
 
-    // invert xy on shift key (allows to scroll horizontally)
-    if (event.shiftKey) {
+    // Invert xy when Shift key is pressed, to allow horizontal scroll.
+    // This is not necessary on Mac, where it works automatically.
+    if (event.shiftKey && !navigatorUtils.isMac()) {
       canvasStore.setCanvasOffset({
         x: stage.value.x - event.deltaY,
         y: stage.value.y - event.deltaX,
