@@ -14,6 +14,7 @@ import type {
   ItemPermission,
   ItemSavepoint,
   NamedItemVersion,
+  VersionLimit,
   WithAvatar,
   WithLabels,
 } from "@knime/hub-features/versions";
@@ -52,6 +53,7 @@ type ProjectVersionsModeInfo = {
   unversionedSavepoint: (ItemSavepoint & WithAvatar & WithLabels) | null;
   permissions: Array<ItemPermission>;
   hasLoadedAll: boolean;
+  versionLimit?: VersionLimit;
 };
 
 const getVersionsApi = () => {
@@ -177,15 +179,13 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       );
       return;
     }
-    const versionsApi = getVersionsApi();
 
     const nextAction = await getUserSelectedNextAction(activeProjectId);
-
     if (nextAction === UnsavedChangesAction.CANCEL) {
       return;
     }
 
-    // Create version based on state on Hub side
+    const versionsApi = getVersionsApi();
     const newVersion = await versionsApi.createVersion({
       itemId: activeProjectOrigin!.itemId,
       title: name,
@@ -216,15 +216,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       `WorkflowVersionsStore::createVersion -> New project version '${newVersion.version}' created`,
     );
 
-    activeProjectVersionsModeInfo.value.loadedVersions.unshift({
-      ...newVersion,
-      labels: [],
-      avatar: await versionsApi.getAvatar({
-        accountName: newVersion.author,
-      }),
-    });
-
-    activeProjectVersionsModeInfo.value.unversionedSavepoint = null;
+    await refreshData();
   }
 
   async function deleteVersion(version: NamedItemVersion["version"]) {
@@ -404,6 +396,10 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     });
   }
 
+  /**
+   * Refreshes version related data in {@link ProjectVersionsModeInfo} by calling `getVersionsApi`.
+   * Has to be called whenever a version related actions is performed.
+   */
   async function refreshData(
     { loadAll }: { loadAll: boolean } = { loadAll: false },
   ) {
@@ -459,6 +455,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
 
       newData.hasLoadedAll =
         loadAll || itemSavepointsInfo.totalCount < VERSION_DEFAULT_LIMIT;
+
+      newData.versionLimit = await versionsApi.fetchVersionLimit({ itemId });
 
       return newData;
     };

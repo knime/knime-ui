@@ -89,6 +89,7 @@ const mockedVersionsApi: Mocked<ReturnType<typeof useVersionsApi>> = vi.hoisted(
     loadSavepointMetadata: vi.fn(),
     fetchPermissions: vi.fn(),
     discardUnversionedChanges: vi.fn(),
+    fetchVersionLimit: vi.fn(),
   }),
 );
 
@@ -523,6 +524,42 @@ describe("workflow store: versions", () => {
           });
         },
       );
+
+      it("creating two versions in a row also increases the version limit", async () => {
+        let currentUsage = 0;
+        mockedVersionsApi.fetchVersionLimit.mockImplementation((_) => {
+          const versionLimit = {
+            currentUsage,
+            limit: 2,
+          };
+          currentUsage += 1;
+          return Promise.resolve(versionLimit);
+        });
+        mockedVersionsApi.createVersion.mockResolvedValue(response);
+        const { workflowVersionsStore } = await setupStore();
+
+        await workflowVersionsStore.createVersion({
+          name: "v1",
+          description: "...",
+        });
+        expect(
+          workflowVersionsStore.activeProjectVersionsModeInfo?.versionLimit,
+        ).toEqual({
+          currentUsage: 1,
+          limit: 2,
+        });
+
+        await workflowVersionsStore.createVersion({
+          name: "v1",
+          description: "...",
+        });
+        expect(
+          workflowVersionsStore.activeProjectVersionsModeInfo?.versionLimit,
+        ).toEqual({
+          currentUsage: 2,
+          limit: 2,
+        });
+      });
     });
 
     it("deleteVersion", async () => {
@@ -538,7 +575,7 @@ describe("workflow store: versions", () => {
 
     it("delete selected version", async () => {
       const { workflowVersionsStore, projectId } = await setupStore();
-
+      // @ts-expect-error
       workflowVersionsStore.activeProjectCurrentVersion = version;
 
       await workflowVersionsStore.deleteVersion(version);
@@ -790,6 +827,11 @@ describe("workflow store: versions", () => {
         expect(mockedVersionsApi.loadSavepointMetadata).toHaveBeenCalledTimes(
           mockSavepoints.length,
         );
+
+        // expect version limit to be fetched
+        expect(mockedVersionsApi.fetchVersionLimit).toHaveBeenCalledWith({
+          itemId: "mockItemId",
+        });
       });
 
       it("loadAll", async () => {
