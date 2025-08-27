@@ -20,6 +20,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
+import { isPointOutsideBounds } from "@/util/geometry/utils";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
@@ -465,10 +466,18 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
   // returns the currently visible area of the workflow
   const visibleArea = computed(() => {
+    // TODO NXT-3439 explain the need for a buffer as the name `visibleArea`
+    // is misleading in the current state
     const OFFSET_BUFFER = 100;
 
     return calculateVisibleArea(OFFSET_BUFFER);
   });
+
+  const isPointOutsideVisibleArea = (point: XY) => {
+    const [x, y] = screenToCanvasCoordinates.value([point.x, point.y]);
+    const visibleArea = calculateVisibleArea();
+    return isPointOutsideBounds({ x, y }, visibleArea);
+  };
 
   const getVisibleFrame = computed(() => {
     const { x, y, width, height } = visibleArea.value;
@@ -701,7 +710,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     await Promise.resolve();
   };
 
-  const findObjectFromScreenCordinates = (coordinates: XY) => {
+  const findObjectFromScreenCoordinates = (coordinates: XY) => {
     if (!pixiApplication.value) {
       return undefined;
     }
@@ -760,13 +769,14 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     isDebugModeEnabled,
     canvasOffset,
     visibleArea,
+    isPointOutsideVisibleArea,
     removeLayers,
     setCanvasOffset,
     setCanvasAnchor,
     clearCanvasAnchor,
     setPixelRatio,
     pixelRatio: getPixelRatio,
-    findObjectFromScreenCordinates,
+    findObjectFromScreenCoordinates,
     isPanning,
     isHoldingDownSpace,
     maxWorldContentBounds,

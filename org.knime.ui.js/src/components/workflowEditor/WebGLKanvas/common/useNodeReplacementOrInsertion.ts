@@ -151,7 +151,7 @@ export const useNodeReplacementOrInsertion = () => {
       return undefined;
     }
 
-    const foundObject = canvasStore.findObjectFromScreenCordinates(position);
+    const foundObject = canvasStore.findObjectFromScreenCoordinates(position);
 
     if (
       foundObject &&

@@ -190,11 +190,13 @@ export const useFloatingConnectorStore = defineStore(
         return;
       }
 
-      consola.debug("floatingConnector:: starting connector drag", {
-        params,
-      });
+      consola.debug("floatingConnector:: starting connector drag", { params });
 
-      const { pixiApplication, toCanvasCoordinates } = useWebGLCanvasStore();
+      const {
+        pixiApplication,
+        toCanvasCoordinates,
+        isPointOutsideVisibleArea,
+      } = useWebGLCanvasStore();
       const canvas = pixiApplication!.app.canvas;
       canvas.setPointerCapture(pointerDownEvent.pointerId);
 
@@ -241,7 +243,7 @@ export const useFloatingConnectorStore = defineStore(
         setFloatingConnectorCoords(nextAbsolutePoint.x, nextAbsolutePoint.y);
       });
 
-      const onPointerUp = async () => {
+      const onPointerUp = async (pointerUpEvent: PointerEvent) => {
         pointerDown.value = false;
         didMove.value = false;
         isDragging.value = false;
@@ -250,6 +252,12 @@ export const useFloatingConnectorStore = defineStore(
         runListenerTeardown?.();
 
         if (!floatingConnector.value) {
+          return;
+        }
+
+        const { x, y } = pointerUpEvent;
+        if (isPointOutsideVisibleArea({ x, y })) {
+          removeActiveConnector();
           return;
         }
 
@@ -302,13 +310,13 @@ export const useFloatingConnectorStore = defineStore(
         canvas.releasePointerCapture(pointerDownEvent.pointerId);
         canvas.removeEventListener("pointermove", onPointerMove);
         canvas.removeEventListener("pointerup", onPointerUp);
-        canvas.removeEventListener("lostPointerCapture", onPointerUp);
+        canvas.removeEventListener("lostpointercapture", onPointerUp);
         runListenerTeardown = undefined;
       };
 
       canvas.addEventListener("pointermove", onPointerMove);
       canvas.addEventListener("pointerup", onPointerUp);
-      canvas.addEventListener("lostPointerCapture", onPointerUp);
+      canvas.addEventListener("lostpointercapture", onPointerUp);
 
       escapeAbortHandlerCleanup = setupAbortListener();
     };
