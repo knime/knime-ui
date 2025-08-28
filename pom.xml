@@ -116,17 +116,4 @@
             <url>${knime.javasnippet.p2}</url>
         </repository>
     </repositories>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-source-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
 </project>
