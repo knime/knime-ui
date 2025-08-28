@@ -2,9 +2,9 @@
 import { computed, defineAsyncComponent, watch } from "vue";
 import { storeToRefs } from "pinia";
 
+import { SplitPanel } from "@knime/components";
 import { navigatorUtils } from "@knime/utils";
 
-import SplitPanel from "@/components/common/SplitPanel.vue";
 import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
@@ -132,6 +132,7 @@ const panelStore = usePanelStore();
       v-if="useEmbeddedDialogs || versionsStore.isSidepanelOpen"
       v-model:secondary-size="nodeDialogSize"
       v-model:expanded="panelStore.isRightPanelExpanded"
+      class="split-panel"
       splitter-id="node-config-split-panel"
       direction="right"
       use-pixel
@@ -168,5 +169,9 @@ const panelStore = usePanelStore();
 
 .annotation-cursor {
   cursor: crosshair;
+}
+
+.split-panel {
+  --z-index-common-splitter: v-bind("$zIndices.layerStaticPanelDecorations");
 }
 </style>
