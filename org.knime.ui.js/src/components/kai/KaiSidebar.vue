@@ -63,8 +63,8 @@ const showChatControls = computed(() => !panelComponent.value);
       <component :is="panelComponent" />
     </div>
     <template v-else>
-      <Chat v-show="chainType === 'qa'" chain-type="qa" />
-      <Chat v-show="chainType === 'build'" chain-type="build" />
+      <Chat v-if="chainType === 'qa'" chain-type="qa" />
+      <Chat v-if="chainType === 'build'" chain-type="build" />
       <KaiExtensionPanel />
     </template>
   </SidebarPanelLayout>
