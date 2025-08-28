@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import { SplitPanel } from "@knime/components";
+
 import TooltipContainer from "@/components/application/TooltipContainer.vue";
-import SplitPanel from "@/components/common/SplitPanel.vue";
 import LayoutEditorDialog from "@/components/layoutEditor/LayoutEditorDialog.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
@@ -45,6 +46,7 @@ const savedSecondarySize = computed({
       <SplitPanel
         v-model:expanded="expanded"
         v-model:secondary-size="savedSecondarySize"
+        class="split-panel"
         splitter-id="node-output-split-panel"
         direction="down"
         :secondary-max-size="90"
@@ -98,5 +100,9 @@ main {
 .workflow-area {
   grid-area: workflow;
   overflow: hidden;
+}
+
+.split-panel {
+  --z-index-common-splitter: v-bind("$zIndices.layerStaticPanelDecorations");
 }
 </style>
