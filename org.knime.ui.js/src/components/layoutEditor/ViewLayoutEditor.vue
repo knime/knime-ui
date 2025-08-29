@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
@@ -16,18 +15,9 @@ const layoutEditorStore = useLayoutEditorStore();
 const { layout, availableNodes, isLegacyModeOutOfSync, isWrappingLayout } =
   storeToRefs(layoutEditorStore);
 
-const rows = computed({
-  get() {
-    return layout.value.rows;
-  },
-  set(value) {
-    layoutEditorStore.updateFirstLevelRows(value);
-  },
-});
-
 const onLegacyModeToggle = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  layoutEditorStore.setUseLegacyMode(target.checked);
+  const { checked } = event.target as HTMLInputElement;
+  layoutEditorStore.setUseLegacyMode(checked);
 };
 </script>
 
@@ -67,7 +57,7 @@ const onLegacyModeToggle = (event: Event) => {
         v-if="isLegacyModeOutOfSync"
         title="Legacy mode for some view may not match this setting"
         class="legacy-info"
-        disabled="true"
+        disabled
       >
         <InfoIcon />
       </button>
@@ -99,7 +89,7 @@ const onLegacyModeToggle = (event: Event) => {
       />
 
       <Draggable
-        v-model="rows"
+        v-model="layout.rows"
         group="content"
         class="layout-preview"
         :component-data="{ isFirstLevel: true }"
@@ -108,7 +98,11 @@ const onLegacyModeToggle = (event: Event) => {
         @end="layoutEditorStore.setIsDragging(false)"
       >
         <template #item="{ element, index }">
-          <Row :key="index" :row="element" :deletable="rows.length > 1" />
+          <Row
+            :key="index"
+            :row="element"
+            :deletable="layout.rows.length > 1"
+          />
         </template>
       </Draggable>
     </div>

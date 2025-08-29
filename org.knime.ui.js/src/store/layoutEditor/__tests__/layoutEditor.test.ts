@@ -131,16 +131,12 @@ describe("layoutEditor", () => {
       expect(layoutEditorStore.layout).toEqual(expected);
     });
 
-    it("updates first level rows to provided value and resets layout to initially set layout", () => {
+    it("resets layout to initially set layout", () => {
       const { layoutEditorStore } = setupStore();
 
       const initialLayout = createComplexLayout();
       layoutEditorStore.setLayout(initialLayout);
       expect(layoutEditorStore.layout).toEqual(initialLayout);
-
-      const newRows = [];
-      layoutEditorStore.updateFirstLevelRows(newRows);
-      expect(layoutEditorStore.layout.rows).toEqual(newRows);
 
       layoutEditorStore.resetLayout();
       expect(layoutEditorStore.layout).toEqual(initialLayout);
@@ -162,7 +158,7 @@ describe("layoutEditor", () => {
       expect(firstRow.columns[1].widthXS).toBe(newWidth);
     });
 
-    it("updates column content when provided the column and the new content", () => {
+    it("updates column content and aligns legacy mode settings when provided the column and the new content", () => {
       const { layoutEditorStore } = setupStore();
 
       const initialLayout = createComplexLayout();
@@ -170,6 +166,7 @@ describe("layoutEditor", () => {
 
       const newNodeId = "newNodeId";
       const newContent = [createViewItem(newNodeId)];
+      expect(newContent[0]).not.toHaveProperty("useLegacyMode");
       layoutEditorStore.updateColumnContent({
         column: layoutEditorStore.layout.rows[0].columns[0],
         newContent,
@@ -178,6 +175,9 @@ describe("layoutEditor", () => {
       expect(layoutEditorStore.layout.rows[0].columns[0].content).toEqual(
         newContent,
       );
+      expect(
+        layoutEditorStore.layout.rows[0].columns[0].content[0],
+      ).toHaveProperty("useLegacyMode", false);
     });
 
     it("deletes provided column and resizes remaining columns to fill row", () => {
@@ -470,7 +470,6 @@ describe("layoutEditor", () => {
       const { layoutEditorStore } = setupStore();
 
       expect(layoutEditorStore.configurationLayout).toEqual({ rows: [] });
-      expect(layoutEditorStore.getConfigurationRows).toEqual([]);
     });
 
     it("sets the configuration layout to provided value", () => {
@@ -480,20 +479,6 @@ describe("layoutEditor", () => {
       layoutEditorStore.setConfigurationLayout(initialLayout);
 
       expect(layoutEditorStore.configurationLayout).toEqual(initialLayout);
-      expect(layoutEditorStore.getConfigurationRows).toEqual(
-        initialLayout.rows,
-      );
-    });
-
-    it("updates configuration layout rows to provided value", () => {
-      const { layoutEditorStore } = setupStore();
-
-      const initialLayout = createConfigurationLayout();
-      layoutEditorStore.updateConfigurationRows(initialLayout.rows);
-
-      expect(layoutEditorStore.getConfigurationRows).toEqual(
-        initialLayout.rows,
-      );
     });
 
     it("inits configuration nodes as an empty array and updates them with provided value", () => {

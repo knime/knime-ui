@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { isEqual } from "lodash-es";
 import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
@@ -9,7 +8,7 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import {
   type LayoutEditorColumn,
-  isViewItem,
+  type LayoutEditorItem,
 } from "@/store/layoutEditor/types/view";
 import { checkMove } from "@/store/layoutEditor/utils";
 import { layoutEditorGridSize } from "@/style/shapes";
@@ -29,29 +28,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const layoutEditorStore = useLayoutEditorStore();
-const { layout, resizeColumnInfo } = storeToRefs(layoutEditorStore);
+const { resizeColumnInfo } = storeToRefs(layoutEditorStore);
 
-const content = computed({
-  get() {
-    return props.column.content;
-  },
-  set(newContent) {
-    let changedItem = false;
-    // ensure newly added nodes respect the current legacy mode settings
-    newContent
-      .filter((item) => isViewItem(item))
-      .forEach((item, itemIndex) => {
-        if (!changedItem && !isEqual(item, content.value[itemIndex])) {
-          changedItem = true;
-          item.useLegacyMode = layout.value.parentLayoutLegacyMode;
-        }
-      });
-    layoutEditorStore.updateColumnContent({
-      column: props.column,
-      newContent,
-    });
-  },
-});
+const onUpdateContent = (newContent: LayoutEditorItem[]) => {
+  layoutEditorStore.updateColumnContent({ column: props.column, newContent });
+};
 
 const isCurrentColumnResizing = computed(
   () => resizeColumnInfo.value?.column === props.column,
@@ -82,7 +63,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
 
 <template>
   <Draggable
-    v-model="content"
+    :model-value="column.content"
     group="content"
     draggable=".draggable"
     filter=".config-dialog, .legacy-info"
@@ -91,6 +72,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
     :style="{ gridColumn: `span ${column.widthXS}` }"
     item-key="itemID"
     :move="checkMove"
+    @update:model-value="onUpdateContent"
     @start="layoutEditorStore.setIsDragging(true)"
     @end="layoutEditorStore.setIsDragging(false)"
   >

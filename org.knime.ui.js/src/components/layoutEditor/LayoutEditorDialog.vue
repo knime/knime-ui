@@ -44,8 +44,12 @@ const closeModal = () => {
   if (isSubmitted.value) {
     return;
   }
-
   layoutEditorStore.setLayoutContext(null);
+};
+
+const onSubmit = async () => {
+  await layoutEditorStore.save();
+  isSubmitted.value = false;
 };
 
 watch(layoutContext, layoutEditorStore.load);
@@ -80,7 +84,7 @@ watch(layoutContext, layoutEditorStore.load);
         primary
         class="submit-button"
         :disabled="isSubmitted"
-        @click="layoutEditorStore.save"
+        @click="onSubmit"
       >
         <LoadingIcon v-if="isSubmitted" aria-hidden="true" focusable="false" />
         <strong>Finish</strong>

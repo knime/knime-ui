@@ -1,5 +1,6 @@
 import { computed, ref } from "vue";
 import { API } from "@api";
+import { isEqual } from "lodash-es";
 import { defineStore } from "pinia";
 
 import { layoutEditorGridSize } from "@/style/shapes";
@@ -8,7 +9,6 @@ import { getToastPresets } from "@/toastPresets";
 import type {
   ConfigurationLayout,
   ConfigurationLayoutEditorNode,
-  ConfigurationLayoutEditorRow,
 } from "./types/configuration";
 import {
   type LayoutContext,
@@ -86,10 +86,6 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
   };
 
-  const updateFirstLevelRows = (rows: LayoutEditorRowItem[]) => {
-    layout.value.rows = rows;
-  };
-
   /**
    * Columns
    */
@@ -113,6 +109,13 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     column: LayoutEditorColumn;
     newContent: LayoutEditorItem[];
   }) => {
+    // ensure newly added nodes respect the current legacy mode settings
+    for (let i = 0; i < data.newContent.length; i++) {
+      const item = data.newContent[i];
+      if (isViewItem(item) && !isEqual(item, data.column.content[i])) {
+        item.useLegacyMode = layout.value.parentLayoutLegacyMode;
+      }
+    }
     data.column.content = data.newContent;
   };
 
@@ -361,16 +364,10 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
    */
   const configurationLayout = ref<ConfigurationLayout>({ rows: [] });
 
-  const getConfigurationRows = computed(() => configurationLayout.value.rows);
-
   const setConfigurationLayout = (value: ConfigurationLayout) => {
     const layoutAsString = JSON.stringify(value);
 
     configurationLayout.value = JSON.parse(layoutAsString);
-  };
-
-  const updateConfigurationRows = (newRows: ConfigurationLayoutEditorRow[]) => {
-    configurationLayout.value.rows = newRows;
   };
 
   const configurationNodes = ref<ConfigurationLayoutEditorNode[]>([]);
@@ -448,7 +445,6 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     setLayout,
     clearLayout,
     resetLayout,
-    updateFirstLevelRows,
     addColumn,
     updateColumnContent,
     deleteColumn,
@@ -477,9 +473,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
     // Configuration layout
     configurationLayout,
-    getConfigurationRows,
     setConfigurationLayout,
-    updateConfigurationRows,
     configurationNodes,
     setConfigurationNodes,
 

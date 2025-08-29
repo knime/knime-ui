@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
@@ -8,23 +7,14 @@ import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import KnimeView from "./layout/KnimeView.vue";
 
 const layoutEditorStore = useLayoutEditorStore();
-const { getConfigurationRows, configurationNodes } =
+const { configurationLayout, configurationNodes } =
   storeToRefs(layoutEditorStore);
-
-const rows = computed({
-  get() {
-    return getConfigurationRows.value;
-  },
-  set(value) {
-    layoutEditorStore.updateConfigurationRows(value);
-  },
-});
 </script>
 
 <template>
   <Draggable
-    v-if="rows && rows.length"
-    v-model="rows"
+    v-if="configurationLayout.rows.length"
+    v-model="configurationLayout.rows"
     class="layout"
     item-key="id"
   >
