@@ -36,6 +36,7 @@ import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useLifecycleStore } from "@/store/application/lifecycle.ts";
+import { useVersionLimitError } from "@/util/versionLimitError.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
 import { useWorkflowPreviewSnapshotsStore } from "../application/workflowPreviewSnapshots.ts";
@@ -186,16 +187,23 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
 
     // Create version based on state on Hub side
-    const newVersion = await versionsApi.createVersion({
-      itemId: activeProjectOrigin!.itemId,
-      title: name,
-      description,
-    });
-
-    if (!newVersion) {
-      consola.error(
-        "WorkflowVersionsStore::createVersion -> No new version returned",
-      );
+    let newVersion: NamedItemVersion | null = null;
+    try {
+      newVersion = await versionsApi.createVersion({
+        itemId: activeProjectOrigin!.itemId,
+        title: name,
+        description,
+      });
+    } catch (error) {
+      // Handle 'VersionLimitError' for backwards compatibility with Hub feature, NXT-4056
+      const versionLimitError = useVersionLimitError();
+      if (versionLimitError.isError(error)) {
+        versionLimitError.showInfo(error);
+      } else {
+        consola.error(
+          "WorkflowVersionsStore::createVersion -> Error occurred while creating version",
+        );
+      }
       return;
     }
 

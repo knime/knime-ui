@@ -555,6 +555,27 @@ describe("workflow store: versions", () => {
           });
         },
       );
+
+      it("handles version limit error by showing a toast", async () => {
+        const { workflowVersionsStore, workflowPreviewSnapshotsStore } =
+          await setupStore();
+
+        workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot = () =>
+          Promise.resolve("ignored");
+
+        mockedVersionsApi.createVersion.mockRejectedValueOnce({
+          name: "FetchError",
+          status: 403,
+          data: {
+            title: "... version ...",
+          },
+        });
+        const toast = mockedObject(getToastsProvider());
+        await workflowVersionsStore.createVersion({ name, description });
+
+        expect(mockedVersionsApi.createVersion).toHaveBeenCalledWith(params);
+        expect(toast.show).toHaveBeenCalled();
+      });
     });
 
     it("deleteVersion", async () => {
@@ -575,6 +596,7 @@ describe("workflow store: versions", () => {
         projectId,
       } = await setupStore();
 
+      // @ts-expect-error
       workflowVersionsStore.activeProjectCurrentVersion = version;
       vi.mocked(
         workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot,

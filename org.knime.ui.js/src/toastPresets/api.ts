@@ -1,15 +1,20 @@
-import type { ToastServiceProvider } from "@knime/components";
+import type { ToastButton, ToastServiceProvider } from "@knime/components";
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
 
 import { copyErrorReportToClipboard } from "@/util/copyErrorReportToClipboard";
 
 import { defaultErrorPresetHandler } from "./defaultErrorPresetHandler";
-import type { ToastPresetErrorHandler } from "./types";
+import type { ToastPresetErrorHandler, ToastPresetHandler } from "./types";
 
 export type ApiToastPresets = {
   hubActionError: ToastPresetErrorHandler<{
     headline: string;
     message?: string;
+  }>;
+  hubLimitInfo: ToastPresetHandler<{
+    headline: string;
+    message: string;
+    button: ToastButton;
   }>;
 };
 
@@ -34,5 +39,14 @@ export const getPresets = ($toast: ToastServiceProvider): ApiToastPresets => {
           },
         ],
       }),
+    hubLimitInfo: ({ headline, message, button }) => {
+      $toast.show({
+        type: "info",
+        autoRemove: false,
+        headline,
+        message,
+        buttons: [button],
+      });
+    },
   };
 };
