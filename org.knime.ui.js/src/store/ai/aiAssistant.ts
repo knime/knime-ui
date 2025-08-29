@@ -318,6 +318,9 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         this.clearChain({ chainType });
       }
       this.popUserQuery({ chainType });
+
+      // re-fetch usage in case the cancelled interaction ended up counting towards the quota
+      await this.fetchUsage();
     },
 
     async fetchUsage() {
