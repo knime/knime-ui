@@ -2,29 +2,40 @@
 import { computed, onMounted, watch } from "vue";
 import { useTextareaAutosize } from "@vueuse/core";
 
-import { FunctionButton } from "@knime/components";
+import { FunctionButton, InlineMessage } from "@knime/components";
 import AbortIcon from "@knime/styles/img/icons/close.svg";
 import SendIcon from "@knime/styles/img/icons/paper-flier.svg";
 
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+import type { KaiUsageState } from "@/store/ai/types";
+
+import { getDaysLeftInMonth } from "./utils";
+
 const emit = defineEmits(["sendMessage", "abort"]);
 
-const props = defineProps({
-  isProcessing: {
-    type: Boolean,
-    default: false,
-  },
-  lastUserMessage: {
-    type: String,
-    default: "",
-  },
-  text: {
-    type: String,
-    default: "",
-  },
-  placeholder: {
-    type: String,
-    default: "",
-  },
+type Props = {
+  isProcessing?: boolean;
+  lastUserMessage?: string;
+  usage?: KaiUsageState;
+  text?: string;
+  placeholder?: string;
+};
+
+const props = withDefaults(defineProps<Props>(), {
+  isProcessing: false,
+  lastUserMessage: "",
+  usage: null,
+  text: "",
+  placeholder: "",
+});
+
+const { PRICING_URL } = knimeExternalUrls;
+
+const isWithinLimit = computed(() => {
+  if (props.usage === null || props.usage.limit === null) {
+    return true;
+  }
+  return props.usage.used < props.usage.limit;
 });
 
 const { textarea, input } = useTextareaAutosize();
@@ -81,37 +92,61 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
 </script>
 
 <template>
-  <div class="chat-controls" @click="handleClick">
-    <textarea
-      ref="textarea"
-      v-model="input"
-      class="textarea"
-      aria-label="Type your message"
-      :maxlength="$characterLimits.kai"
-      :placeholder="placeholder"
-      @keydown="handleKeyDown"
-    />
-    <FunctionButton
-      class="send-button"
-      primary
-      :disabled="disabled"
-      @click="handleSendButtonClick"
-    >
-      <AbortIcon
-        v-if="isProcessing"
-        class="abort-icon"
-        aria-hidden="true"
-        focusable="false"
+  <div>
+    <div v-if="isWithinLimit" class="textarea-wrapper" @click="handleClick">
+      <textarea
+        ref="textarea"
+        v-model="input"
+        class="textarea"
+        aria-label="Type your message"
+        :maxlength="$characterLimits.kai"
+        :placeholder="placeholder"
+        @keydown="handleKeyDown"
       />
-      <SendIcon v-else class="send-icon" aria-hidden="true" focusable="false" />
-    </FunctionButton>
+      <FunctionButton
+        class="send-button"
+        primary
+        :disabled="disabled"
+        @click="handleSendButtonClick"
+      >
+        <AbortIcon
+          v-if="isProcessing"
+          class="abort-icon"
+          aria-hidden="true"
+          focusable="false"
+        />
+        <SendIcon
+          v-else
+          class="send-icon"
+          aria-hidden="true"
+          focusable="false"
+        />
+      </FunctionButton>
+    </div>
+    <InlineMessage
+      v-if="!isWithinLimit"
+      variant="info"
+      title="All free monthly AI interactions used"
+    >
+      <a :href="PRICING_URL">Upgrade</a> to continue building with AI or wait
+      {{ getDaysLeftInMonth() }} days to use it again.
+    </InlineMessage>
+    <div class="chat-usage">
+      <div
+        v-if="usage !== null && usage.limit !== null && isWithinLimit"
+        class="kai-usage"
+      >
+        {{ usage.used }}/{{ usage.limit }} monthly interactions
+      </div>
+      <div class="kai-notice">K-AI can make mistakes.</div>
+    </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.chat-controls {
+.textarea-wrapper {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -149,5 +184,15 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       }
     }
   }
+}
+
+.chat-usage {
+  display: flex;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.kai-notice {
+  margin-left: auto;
 }
 </style>

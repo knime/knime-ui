@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
-import type { FederatedPointerEvent } from "pixi.js";
+import { storeToRefs } from "pinia";
+import type { FederatedPointerEvent, Graphics } from "pixi.js";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import * as $colors from "@/style/colors";
 import { DashLine } from "@/util/pixiDashedLine";
 import {
   DIRECTIONS,
@@ -33,6 +36,10 @@ const emit = defineEmits<{
 
 const { initialValue, showSelection } = toRefs(props);
 
+const { isDebugModeEnabled: isCanvasDebugEnabled } = storeToRefs(
+  useWebGLCanvasStore(),
+);
+
 const {
   transformedBounds,
   transformRectStrokeWidth,
@@ -57,18 +64,16 @@ const onControlPointerDown = (params: {
   startTransform(params);
 };
 
-const SELECTION_OFFSET = 2;
-const FOCUS_OFFSET = 6;
-
 const transformRectBounds = computed(() => {
   return {
-    x: -SELECTION_OFFSET,
-    y: -SELECTION_OFFSET,
-    width: transformedBounds.value.width + SELECTION_OFFSET * 2,
-    height: transformedBounds.value.height + SELECTION_OFFSET * 2,
+    x: -transformRectStrokeWidth.value * 2,
+    y: -transformRectStrokeWidth.value * 2,
+    width: transformedBounds.value.width + transformRectStrokeWidth.value * 4,
+    height: transformedBounds.value.height + transformRectStrokeWidth.value * 4,
   };
 });
 
+const FOCUS_OFFSET = 6;
 const focusRectBounds = computed(() => {
   return {
     x: -FOCUS_OFFSET,
@@ -77,6 +82,71 @@ const focusRectBounds = computed(() => {
     height: transformedBounds.value.height + FOCUS_OFFSET * 2,
   };
 });
+
+type TransformBorder = Bounds & {
+  direction: Extract<Directions, "n" | "s" | "w" | "e">;
+  debugColor: string;
+};
+
+const borders = computed(() => {
+  const edgeOffset = props.showTransformControls ? controlSize.value : 0;
+
+  const TransformBorderTop: TransformBorder = {
+    direction: "n",
+    debugColor: "red",
+    x: edgeOffset,
+    y: 0,
+    width: transformRectBounds.value.width - edgeOffset * 2,
+    height: transformRectStrokeWidth.value,
+  };
+
+  const TransformBorderBottom: TransformBorder = {
+    direction: "s",
+    debugColor: "red",
+    x: edgeOffset,
+    y: transformRectBounds.value.height - transformRectStrokeWidth.value,
+    width: transformRectBounds.value.width - edgeOffset * 2,
+    height: transformRectStrokeWidth.value,
+  };
+
+  const TransformBorderLeft: TransformBorder = {
+    direction: "w",
+    debugColor: "blue",
+    x: 0,
+    y: edgeOffset,
+    width: transformRectStrokeWidth.value,
+    height: transformRectBounds.value.height - edgeOffset * 2,
+  };
+
+  const TransformBorderRight: TransformBorder = {
+    direction: "e",
+    debugColor: "blue",
+    x: transformRectBounds.value.width - transformRectStrokeWidth.value,
+    y: edgeOffset,
+    width: transformRectStrokeWidth.value,
+    height: transformRectBounds.value.height - edgeOffset * 2,
+  };
+
+  return {
+    TransformBorderTop,
+    TransformBorderBottom,
+    TransformBorderLeft,
+    TransformBorderRight,
+  };
+});
+
+const renderBorder = (graphics: Graphics, border: TransformBorder) => {
+  graphics.clear();
+  graphics.rect(border.x, border.y, border.width, border.height);
+
+  const color = isCanvasDebugEnabled.value
+    ? border.debugColor
+    : $colors.kanvasNodeSelection.activeBorder;
+  graphics.fill(color);
+
+  // hover area
+  graphics.stroke({ width: 2, color: "transparent", cap: "square" });
+};
 </script>
 
 <template>
@@ -105,23 +175,62 @@ const focusRectBounds = computed(() => {
   />
 
   <Graphics
-    v-if="showSelection"
+    label="TransformBorderTop"
+    :renderable="showSelection"
+    event-mode="static"
+    :cursor="`${borders.TransformBorderTop.direction}-resize`"
     :position="transformRectBounds"
-    @render="
-      (graphics) => {
-        graphics.clear();
-        graphics.roundRect(
-          0,
-          0,
-          transformRectBounds.width,
-          transformRectBounds.height,
-          $shapes.selectedItemBorderRadius,
-        );
-        graphics.stroke({
-          width: transformRectStrokeWidth,
-          color: $colors.kanvasNodeSelection.activeBorder,
-        });
-      }
+    @render="(g) => renderBorder(g, borders.TransformBorderTop)"
+    @pointerdown.stop="
+      onControlPointerDown({
+        pointerDownEvent: $event,
+        direction: borders.TransformBorderTop.direction,
+      })
+    "
+  />
+
+  <Graphics
+    label="TransformBorderBottom"
+    :renderable="showSelection"
+    event-mode="static"
+    :cursor="`${borders.TransformBorderBottom.direction}-resize`"
+    :position="transformRectBounds"
+    @render="(g) => renderBorder(g, borders.TransformBorderBottom)"
+    @pointerdown.stop="
+      onControlPointerDown({
+        pointerDownEvent: $event,
+        direction: borders.TransformBorderBottom.direction,
+      })
+    "
+  />
+
+  <Graphics
+    label="TransformBorderLeft"
+    :renderable="showSelection"
+    event-mode="static"
+    :cursor="`${borders.TransformBorderLeft.direction}-resize`"
+    :position="transformRectBounds"
+    @render="(g) => renderBorder(g, borders.TransformBorderLeft)"
+    @pointerdown.stop="
+      onControlPointerDown({
+        pointerDownEvent: $event,
+        direction: borders.TransformBorderLeft.direction,
+      })
+    "
+  />
+
+  <Graphics
+    label="TransformBorderRight"
+    :renderable="showSelection"
+    event-mode="static"
+    :cursor="`${borders.TransformBorderRight.direction}-resize`"
+    :position="transformRectBounds"
+    @render="(g) => renderBorder(g, borders.TransformBorderRight)"
+    @pointerdown.stop="
+      onControlPointerDown({
+        pointerDownEvent: $event,
+        direction: borders.TransformBorderRight.direction,
+      })
     "
   />
 
@@ -131,15 +240,14 @@ const focusRectBounds = computed(() => {
     event-mode="static"
     :cursor="getCursorStyle(direction).cursor"
     :visible="showTransformControls"
-    :x="getControlPosition(transformRectBounds, direction).x"
-    :y="getControlPosition(transformRectBounds, direction).y"
+    :position="getControlPosition(transformRectBounds, direction)"
     @pointerdown.stop="
       onControlPointerDown({ pointerDownEvent: $event, direction })
     "
     @render="
       (graphics) => {
         graphics.clear();
-        graphics.rect(0.5, 0.5, controlSize - 1, controlSize - 1);
+        graphics.rect(0, 0, controlSize, controlSize);
         graphics.stroke({ width: 2, color: $colors.White });
         graphics.fill($colors.Cornflower);
       }

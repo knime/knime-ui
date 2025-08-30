@@ -43,6 +43,7 @@ const { projectId, workflowId, versionId, selectedNode } = toRefs(props);
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
   controlsVisibilityChange: [value: boolean];
+  escapePressed: [];
 }>();
 
 const loadExtensionConfig = async () => {
@@ -201,5 +202,6 @@ const apiLayer: UIExtensionAPILayer = {
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
     :shadow-app-style="{ width: '100%', zIndex: 0, height: '100%' }"
+    @escape-pressed="$emit('escapePressed')"
   />
 </template>

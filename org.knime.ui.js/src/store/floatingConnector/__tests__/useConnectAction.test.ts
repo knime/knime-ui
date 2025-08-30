@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { type Ref, ref } from "vue";
+import { ref } from "vue";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
@@ -10,7 +10,7 @@ import { createNativeNode, createPort } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
-import type { FloatingConnector, SnapTarget } from "../types";
+import type { FullFloatingConnector, SnapTarget } from "../types";
 import { useConnectAction } from "../useConnectAction";
 
 import { createMockFloatingConnector } from "./utils";
@@ -45,13 +45,7 @@ describe("floatingConnector::useConnectAction", () => {
     });
   };
 
-  const doMount = ({
-    floatingConnector,
-    snapTarget,
-  }: {
-    floatingConnector: Ref<FloatingConnector>;
-    snapTarget: Ref<SnapTarget>;
-  }) => {
+  const doMount = () => {
     const mockedStores = mockStores();
 
     mockedStores.nodeConfigurationStore.autoApplySettings = vi
@@ -60,11 +54,7 @@ describe("floatingConnector::useConnectAction", () => {
 
     const result = mountComposable({
       composable: useConnectAction,
-      composableProps: {
-        floatingConnector,
-        snapTarget,
-        activeSnapPosition: ref({ x: 0, y: 10 }),
-      },
+      composableProps: undefined,
       mockedStores,
     });
 
@@ -79,14 +69,15 @@ describe("floatingConnector::useConnectAction", () => {
     const floatingConnector = createMockFloatingConnector(fromNode, 0);
     const snapTarget = createMockSnapTarget("root:2", 2);
 
-    const { getComposableResult, mockedStores } = doMount({
-      floatingConnector,
-      snapTarget,
-    });
+    const { getComposableResult, mockedStores } = doMount();
 
     const { finishConnection } = getComposableResult();
 
-    await finishConnection();
+    await finishConnection({
+      floatingConnector: floatingConnector.value as FullFloatingConnector,
+      snapTarget: snapTarget.value,
+      activeSnapPosition: { x: 0, y: 10 },
+    });
     await flushPromises();
 
     expect(
@@ -109,14 +100,15 @@ describe("floatingConnector::useConnectAction", () => {
 
     mockedAPI.workflowCommand.AddPort.mockResolvedValue({ newPortIdx: 3 });
 
-    const { getComposableResult, mockedStores } = doMount({
-      floatingConnector,
-      snapTarget,
-    });
+    const { getComposableResult, mockedStores } = doMount();
 
     const { finishConnection } = getComposableResult();
 
-    finishConnection();
+    finishConnection({
+      floatingConnector: floatingConnector.value as FullFloatingConnector,
+      snapTarget: snapTarget.value,
+      activeSnapPosition: { x: 0, y: 10 },
+    });
     await flushPromises();
 
     expect(mockedStores.nodeInteractionsStore.addNodePort).toHaveBeenCalledWith(
@@ -156,17 +148,18 @@ describe("floatingConnector::useConnectAction", () => {
 
       mockedAPI.workflowCommand.AddPort.mockResolvedValue({ newPortIdx: 3 });
 
-      const { getComposableResult, mockedStores } = doMount({
-        floatingConnector,
-        snapTarget,
-      });
+      const { getComposableResult, mockedStores } = doMount();
 
       const { finishConnection, waitingForPortSelection } =
         getComposableResult();
 
       expect(waitingForPortSelection.value).toBe(false);
 
-      finishConnection();
+      finishConnection({
+        floatingConnector: floatingConnector.value as FullFloatingConnector,
+        snapTarget: snapTarget.value,
+        activeSnapPosition: { x: 0, y: 10 },
+      });
       // one nextTick is not enough
       await sleep(0);
 
@@ -246,17 +239,18 @@ describe("floatingConnector::useConnectAction", () => {
 
       mockedAPI.workflowCommand.AddPort.mockResolvedValue({ newPortIdx: 3 });
 
-      const { getComposableResult, mockedStores } = doMount({
-        floatingConnector,
-        snapTarget,
-      });
+      const { getComposableResult, mockedStores } = doMount();
 
       const { finishConnection, waitingForPortSelection } =
         getComposableResult();
 
       expect(waitingForPortSelection.value).toBe(false);
 
-      finishConnection();
+      finishConnection({
+        floatingConnector: floatingConnector.value as FullFloatingConnector,
+        snapTarget: snapTarget.value,
+        activeSnapPosition: { x: 0, y: 10 },
+      });
       // one nextTick is not enough
       await sleep(0);
 
@@ -289,13 +283,16 @@ describe("floatingConnector::useConnectAction", () => {
       const apiError = new Error("some problem");
       mockedAPI.workflowCommand.AddPort.mockRejectedValue(apiError);
 
-      const { getComposableResult } = doMount({
-        floatingConnector,
-        snapTarget,
-      });
+      const { getComposableResult } = doMount();
 
       const { finishConnection } = getComposableResult();
-      await expect(() => finishConnection()).rejects.toThrow(apiError);
+      await expect(() =>
+        finishConnection({
+          floatingConnector: floatingConnector.value as FullFloatingConnector,
+          snapTarget: snapTarget.value,
+          activeSnapPosition: { x: 0, y: 10 },
+        }),
+      ).rejects.toThrow(apiError);
     });
   });
 });

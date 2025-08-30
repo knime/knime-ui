@@ -1,11 +1,11 @@
-import { computed } from "vue";
+import { computed, onBeforeMount } from "vue";
 import { storeToRefs } from "pinia";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
-import { type Message, useAIAssistantStore } from "@/store/aiAssistant";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import type { ChainType, Message } from "@/store/ai/types";
 import { getToastPresets } from "@/toastPresets";
-import type { ChainType } from "../types";
 import { useHubAuth } from "../useHubAuth";
 import { useKaiServer } from "../useKaiServer";
 
@@ -21,7 +21,7 @@ class MessageSeparator {
 
 const useChat = (chainType: ChainType) => {
   const aiAssistant = storeToRefs(useAIAssistantStore());
-  const { makeAiRequest, abortAiRequest } = useAIAssistantStore();
+  const { makeAiRequest, abortAiRequest, fetchUsage } = useAIAssistantStore();
   const { uiStrings } = useKaiServer();
   const { disconnectHub, isAuthError } = useHubAuth();
 
@@ -86,7 +86,7 @@ const useChat = (chainType: ChainType) => {
     const messages = aiAssistant[chainType].value.messages;
 
     const lastUserMessage = messages.findLast(
-      (message: Message) => message.role === "user",
+      (message: Message) => message.role === KaiMessage.RoleEnum.User,
     );
 
     return lastUserMessage?.content ?? "";
@@ -131,6 +131,8 @@ const useChat = (chainType: ChainType) => {
       });
     }
   };
+
+  onBeforeMount(fetchUsage);
 
   return {
     messagesWithSeparators,

@@ -24,6 +24,7 @@ import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
 import TeamPlan from "@knime/styles/img/icons/team-group.svg";
 
 import InfoIcon from "@/assets/info.svg";
+import { isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
 import { knimeExternalUrls, modernUISource } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -134,13 +135,13 @@ const menuItems = computed(() => [
   // Add custom help menu entries if present
   ...customHelpMenuEntries.value,
 
-  {
+  ...addConditionalMenuEntry(isDesktop(), {
     text: "About KNIME Analytics Platform",
     icon: InfoIcon,
     metadata: {
       handler: () => API.desktop.openAboutDialog(),
     },
-  },
+  }),
   {
     text: "Additional credits",
     icon: InfoIcon,

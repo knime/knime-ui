@@ -45,7 +45,7 @@ export const useTransformControls = (options: UseTransformControlsOptions) => {
   );
 
   const controlSize = computed(() => {
-    const CONTROL_SIZE = 6;
+    const CONTROL_SIZE = isWebGLRenderer.value ? 3 : 6;
     const MAX_FACTOR = 1.4;
 
     return Math.max(CONTROL_SIZE / MAX_FACTOR, CONTROL_SIZE / zoomFactor.value);

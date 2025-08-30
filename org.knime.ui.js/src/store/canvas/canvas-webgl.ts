@@ -8,18 +8,21 @@ import {
   computed,
   ref,
   shallowRef,
+  toRef,
 } from "vue";
-import { isNumber } from "lodash-es";
-import { animate } from "motion";
+import { refDebounced } from "@vueuse/core";
+import { isNumber, round } from "lodash-es";
+import { animate, mix } from "motion";
 import { defineStore } from "pinia";
 import { type IRenderLayer } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
-import { clamp } from "@/util/clamp";
 import { geometry } from "@/util/geometry";
+import { isPointOutsideBounds } from "@/util/geometry/utils";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { clamp } from "@/util/math";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 
@@ -38,10 +41,21 @@ export type CanvasLayerNames =
   | "selectedNodes"
   | "selectedPorts"
   | "annotations"
-  | "annotationControls";
+  | "annotationControls"
+  | "debugLayer";
 
 const clampZoomFactor = (newFactor: number) =>
   clamp(newFactor, minZoomFactor, maxZoomFactor);
+
+const zoomToResolution = (zoomFactor: number) => {
+  if (zoomFactor > 3.5) {
+    return 5;
+  } else if (zoomFactor > 1.5) {
+    return 3;
+  } else {
+    return 1.25;
+  }
+};
 
 /**
  * Canvas Store manages positioning, zooming, scrolling and
@@ -57,6 +71,17 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isPanning = ref(false);
   const isHoldingDownSpace = ref(false);
   const shouldHideMiniMap = ref(false);
+
+  const zoomAwareResolution = refDebounced(
+    toRef(() => {
+      const targetResolution = round(
+        zoomToResolution(zoomFactor.value) * pixelRatio.value,
+      );
+
+      return targetResolution;
+    }),
+    300,
+  );
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -79,6 +104,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     selectedPorts: undefined,
     annotations: undefined,
     annotationControls: undefined,
+    debugLayer: undefined,
   });
 
   const removeLayers = () => {
@@ -440,10 +466,18 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
   // returns the currently visible area of the workflow
   const visibleArea = computed(() => {
+    // TODO NXT-3439 explain the need for a buffer as the name `visibleArea`
+    // is misleading in the current state
     const OFFSET_BUFFER = 100;
 
     return calculateVisibleArea(OFFSET_BUFFER);
   });
+
+  const isPointOutsideVisibleArea = (point: XY) => {
+    const [x, y] = screenToCanvasCoordinates.value([point.x, point.y]);
+    const visibleArea = calculateVisibleArea();
+    return isPointOutsideBounds({ x, y }, visibleArea);
+  };
 
   const getVisibleFrame = computed(() => {
     const { x, y, width, height } = visibleArea.value;
@@ -531,27 +565,23 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
 
     if (!doAnimate) {
-      setCanvasOffset({
-        x: newOffset.x,
-        y: newOffset.y,
-      });
+      setCanvasOffset({ x: newOffset.x, y: newOffset.y });
       return;
     }
 
-    animate(
-      currentOffset,
-      { x: newOffset.x, y: newOffset.y },
-      {
-        duration: 0.5,
-        ease: "easeOut",
-        onUpdate: () => {
-          setCanvasOffset({
-            x: currentOffset.x,
-            y: currentOffset.y,
-          });
-        },
+    // When an object is passed to `animate`, `onUpdate` will be called for
+    // each property update. To group x and y animations together, we animate
+    // from 0 to 1, and use `latest` and `mix` helper to calculate the progress.
+    animate(0, 1, {
+      duration: 0.5,
+      ease: "easeOut",
+      onUpdate: (latest) => {
+        setCanvasOffset({
+          x: mix(currentOffset.x, newOffset.x, latest),
+          y: mix(currentOffset.y, newOffset.y, latest),
+        });
       },
-    );
+    });
   };
 
   const moveViewToWorkflowCenter = () => {
@@ -680,7 +710,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     await Promise.resolve();
   };
 
-  const findObjectFromScreenCordinates = (coordinates: XY) => {
+  const findObjectFromScreenCoordinates = (coordinates: XY) => {
     if (!pixiApplication.value) {
       return undefined;
     }
@@ -739,15 +769,17 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     isDebugModeEnabled,
     canvasOffset,
     visibleArea,
+    isPointOutsideVisibleArea,
     removeLayers,
     setCanvasOffset,
     setCanvasAnchor,
     clearCanvasAnchor,
     setPixelRatio,
     pixelRatio: getPixelRatio,
-    findObjectFromScreenCordinates,
+    findObjectFromScreenCoordinates,
     isPanning,
     isHoldingDownSpace,
     maxWorldContentBounds,
+    zoomAwareResolution,
   };
 });

@@ -3,11 +3,11 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button, FunctionButton } from "@knime/components";
-import CloseIcon from "@knime/styles/img/icons/close.svg";
 import MinimizeDialogIcon from "@knime/styles/img/icons/minimize-large-dialog.svg";
 import OpenDialogIcon from "@knime/styles/img/icons/open-large-dialog.svg";
 
 import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
+import RightPanelHeader from "@/components/common/side-panel/RightPanelHeader.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { usePanelStore } from "@/store/panel";
@@ -42,6 +42,10 @@ const versionId = computed(() => activeWorkflow.value!.info.version);
 const canBeEnlarged = computed(
   () => activeExtensionConfig.value?.canBeEnlarged ?? false,
 );
+
+defineEmits<{
+  escapePressed: [];
+}>();
 
 const nodeName = computed<string>(() =>
   activeContext.value
@@ -107,29 +111,24 @@ const discardSettings = () => {
     </div>
 
     <div :class="['content', { 'large-mode': isLargeMode }]">
-      <div v-if="!isLargeMode" class="header">
-        <h1 class="node-name">{{ nodeName }}</h1>
-        <FunctionButton
-          v-if="canBeEnlarged"
-          title="Expand into a more advanced configuration view"
-          data-test-id="expand-dialog-btn"
-          class="expand-btn"
-          compact
-          @click="nodeConfigurationStore.setIsLargeMode(true)"
-        >
-          <OpenDialogIcon />
-        </FunctionButton>
-
-        <FunctionButton
-          title="Close panel"
-          data-test-id="close-panel-btn"
-          class="close-btn"
-          compact
-          @click="panelStore.isRightPanelExpanded = false"
-        >
-          <CloseIcon />
-        </FunctionButton>
-      </div>
+      <RightPanelHeader
+        v-if="!isLargeMode"
+        :title="nodeName"
+        @close="panelStore.isRightPanelExpanded = false"
+      >
+        <template #actions>
+          <FunctionButton
+            v-if="canBeEnlarged"
+            title="Expand into a more advanced configuration view"
+            data-test-id="expand-dialog-btn"
+            class="expand-btn"
+            compact
+            @click="nodeConfigurationStore.setIsLargeMode(true)"
+          >
+            <OpenDialogIcon />
+          </FunctionButton>
+        </template>
+      </RightPanelHeader>
 
       <AppRightPanelSkeleton
         v-if="isUIExtensionLoading"
@@ -147,6 +146,7 @@ const discardSettings = () => {
           :selected-node="activeContext.node"
           @loading-state-change="loadingState = $event"
           @controls-visibility-change="areControlsVisible = $event"
+          @escape-pressed="$emit('escapePressed')"
         />
         <NodeConfigButtons
           v-if="areControlsVisible && isUIExtensionReady"
@@ -165,6 +165,8 @@ const discardSettings = () => {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .node-configuration {
   --title-bar-height: var(--space-32);
 
@@ -174,6 +176,7 @@ const discardSettings = () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--space-8);
     color: var(--knime-white);
     background-color: var(--knime-masala);
     max-width: 100%;
@@ -184,12 +187,16 @@ const discardSettings = () => {
       margin: 0;
       font-size: 18px;
       line-height: var(--title-bar-height);
+      flex: 1;
+
+      @mixin truncate;
     }
 
     & .minimize-btn {
       color: var(--knime-white);
       margin-bottom: 1px;
       padding: var(--space-4) var(--space-8);
+      white-space: nowrap;
 
       &:hover,
       &:focus {
@@ -211,23 +218,6 @@ const discardSettings = () => {
 
     &.large-mode {
       height: calc(100% - var(--title-bar-height));
-    }
-
-    & .header {
-      display: flex;
-      align-items: center;
-      padding: var(--space-4) var(--space-16);
-      border-bottom: 1px solid var(--knime-silver-sand);
-      min-height: var(--space-32);
-      gap: var(--space-4);
-
-      & .node-name {
-        margin: 0;
-        font-weight: 700;
-        font-size: 16px;
-        line-height: 1.44;
-        margin-right: auto;
-      }
     }
   }
 }

@@ -2,78 +2,60 @@
 import { Button } from "@knime/components";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 
-import CloseButton from "../common/CloseButton.vue";
+import RightPanelHeader from "../common/side-panel/RightPanelHeader.vue";
 
 defineEmits(["close", "upload"]);
 </script>
 
 <template>
   <div class="version-panel-promote-hub-wrapper">
-    <div class="header">
-      <h6>Version history</h6>
-      <CloseButton @close.stop="$emit('close')" />
-    </div>
+    <RightPanelHeader title="Version history" @close="$emit('close')" />
+
     <div class="version-list-container">
       <img
         src="/images/Versioning-history-illustration-product-hint.png"
         alt="List of versions"
         class="version-list"
       />
+      <p class="description">
+        To use the version history, connect and upload your workflow to the
+        KNIME Hub. Store it in your space, track changes and restore older
+        versions easily.
+      </p>
+
+      <Button primary compact @click="$emit('upload')">
+        <CloudUploadIcon />
+        Upload now
+      </Button>
     </div>
-    <p class="description">
-      To use the version history, connect and upload your workflow to the KNIME
-      Hub. Store it in your space, track changes and restore older versions
-      easily.
-    </p>
-    <Button primary compact @click="$emit('upload')"
-      ><CloudUploadIcon />Upload now</Button
-    >
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .version-panel-promote-hub-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
   height: 100%;
-  padding: var(--space-16) var(--space-16) 0;
-
-  & .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding-bottom: var(--space-4);
-    margin-bottom: var(--space-12);
-    border-bottom: 1px solid var(--knime-silver-sand);
-
-    & h6 {
-      margin: 0;
-      font-weight: 500;
-      font-size: 16px;
-      line-height: 28px;
-      color: var(--knime-masala);
-    }
-  }
 
   & .version-list-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
+    padding: var(--space-16) var(--space-16) 0;
 
     & .version-list {
       width: 100%;
     }
-  }
 
-  & .description {
-    font-weight: 400;
-    font-size: 13px;
-    line-height: 150%;
-    letter-spacing: 0%;
-    vertical-align: middle;
-    margin-bottom: var(--space-24);
-    color: var(--knime-masala);
+    & .description {
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 150%;
+      letter-spacing: 0%;
+      vertical-align: middle;
+      margin-bottom: var(--space-24);
+      color: var(--knime-masala);
+    }
   }
 }
 </style>

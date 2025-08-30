@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, toRefs, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
 import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 
 import { useKaiPanels } from "./panels/useKaiPanels";
@@ -44,6 +46,8 @@ const {
   abortSendMessage,
   statusUpdate,
 } = useQuickBuild({ nodeId, startPosition });
+
+const { usage } = storeToRefs(useAIAssistantStore());
 
 const menuState = computed<QuickBuildMenuState>(() => {
   if (isProcessing.value) {
@@ -115,6 +119,7 @@ watch(menuState, (menuState) => {
           :interaction-id="result?.interactionId"
           :last-user-message="lastUserMessage"
           :error-message="errorMessage"
+          :usage="usage"
           @send-message="sendMessage"
         />
       </template>

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-undefined */
 import { type Ref, computed } from "vue";
 import { storeToRefs } from "pinia";
@@ -33,6 +34,7 @@ import {
 import AddFileIcon from "@/assets/add-file.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import PlusIcon from "@/assets/plus.svg";
+import type { MenuItemWithHandler } from "@/components/common/types";
 import { useMovingItems } from "@/components/spaces/useMovingItems";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { isBrowser } from "@/environment";
@@ -45,6 +47,12 @@ import { useSpacesStore } from "@/store/spaces/spaces";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { getToastPresets } from "@/toastPresets";
 
+/**
+ * Returns **all** the possible actions that can be made on the Space Explorer
+ * at ay given time, **unconditionally**. That means, that these actions are
+ * not necessarily what the user _can_ do based on some context, but instead all
+ * the possible things that the Space Explorer supports.
+ */
 export const useSpaceExplorerActions = (
   projectId: Ref<string>,
   selectedItemIds: Ref<string[]>,
@@ -99,89 +107,117 @@ export const useSpaceExplorerActions = (
       ? "workflows"
       : "folders";
 
-  const createFolderAction = computed(() => ({
-    id: "createFolder",
-    text: "Create folder",
-    icon: FolderPlusIcon,
-    separator: true,
-    execute: async () => {
-      try {
-        await createFolder({
-          projectId: projectId.value,
-        });
-      } catch (error) {
-        toastPresets.spaces.crud.createFolderFailed({ error });
-      }
-    },
-  }));
+  const createFolderAction = computed(
+    () =>
+      ({
+        text: "Create folder",
+        icon: FolderPlusIcon,
+        metadata: {
+          id: "createFolder",
+          handler: async () => {
+            try {
+              await createFolder({
+                projectId: projectId.value,
+              });
+            } catch (error) {
+              toastPresets.spaces.crud.createFolderFailed({ error });
+            }
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const importWorkflow = computed(() => ({
-    id: "importWorkflow",
-    text: "Import workflow",
-    icon: ImportWorkflowIcon,
-    execute: async () => {
-      const items: string[] | null = await importToWorkflowGroup({
-        projectId: projectId.value,
-        importType: "WORKFLOW",
-      });
-      if (items && items.length > 0) {
-        setCurrentSelectedItemIds(items);
-      }
-    },
-  }));
+  const importWorkflow = computed(
+    () =>
+      ({
+        text: "Import workflow",
+        icon: ImportWorkflowIcon,
+        metadata: {
+          id: "importWorkflow",
+          handler: async () => {
+            const items: string[] | null = await importToWorkflowGroup({
+              projectId: projectId.value,
+              importType: "WORKFLOW",
+            });
+            if (items && items.length > 0) {
+              setCurrentSelectedItemIds(items);
+            }
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const importFiles = computed(() => ({
-    id: "importFiles",
-    text: "Add files",
-    icon: AddFileIcon,
-    separator: true,
-    execute: async () => {
-      const items: string[] | null = await importToWorkflowGroup({
-        projectId: projectId.value,
-        importType: "FILES",
-      });
-      if (items && items.length > 0) {
-        setCurrentSelectedItemIds(items);
-      }
-    },
-  }));
+  const importFiles = computed(
+    () =>
+      ({
+        text: "Add files",
+        icon: AddFileIcon,
+        metadata: {
+          id: "importFiles",
+          handler: async () => {
+            const items: string[] | null = await importToWorkflowGroup({
+              projectId: projectId.value,
+              importType: "FILES",
+            });
+            if (items && items.length > 0) {
+              setCurrentSelectedItemIds(items);
+            }
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const reloadAction = computed(() => ({
-    id: "reload",
-    text: "Reload",
-    icon: ReloadIcon,
-    execute: () => {
-      if (projectId) {
-        fetchWorkflowGroupContent({
-          projectId: projectId.value,
-        });
-      }
-    },
-  }));
+  const reloadAction = computed(
+    () =>
+      ({
+        text: "Reload",
+        icon: ReloadIcon,
+        metadata: {
+          id: "reload",
+          handler: () => {
+            if (projectId) {
+              fetchWorkflowGroupContent({
+                projectId: projectId.value,
+              });
+            }
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const exportItem = computed(() => ({
-    id: "export",
-    text: "Export",
-    icon: FileExportIcon,
-    disabled: doesSelectionContainFile.value || isSelectionMultiple.value,
-    execute: () => {
-      exportSpaceItem({
-        projectId: projectId.value,
-        itemId: selectedItemIds.value[0],
-      });
-    },
-  }));
+  const exportItem = computed(
+    () =>
+      ({
+        text: "Export",
+        icon: FileExportIcon,
+        disabled: doesSelectionContainFile.value || isSelectionMultiple.value,
+        metadata: {
+          id: "export",
+          handler: () => {
+            exportSpaceItem({
+              projectId: projectId.value,
+              itemId: selectedItemIds.value[0],
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const duplicateItem = computed(() => ({
-    id: "duplicate",
-    text: "Duplicate",
-    icon: DuplicateIcon,
-    title: options.anchorItem?.isOpen
-      ? `Open ${openFileType} cannot be duplicated.`
-      : "",
-    disabled: options.anchorItem?.isOpen,
-    execute: () => onDuplicateItems(selectedItemIds.value),
-  }));
+  const duplicateItem = computed(
+    () =>
+      ({
+        text: "Duplicate",
+        icon: DuplicateIcon,
+        title: options.anchorItem?.isOpen
+          ? `Open ${openFileType} cannot be duplicated.`
+          : "",
+        disabled: options.anchorItem?.isOpen,
+        metadata: {
+          id: "duplicate",
+          handler: () => onDuplicateItems(selectedItemIds.value),
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
   const renameItem = computed(() => {
     if (!options.anchorItem || !options.createRenameOption) {
@@ -207,10 +243,9 @@ export const useSpaceExplorerActions = (
       icon: DeleteIcon,
       hotkeyText: hotkeys.formatHotkeys(["Delete"]),
     };
+
     // TODO NXT-3468 when Desktop and Browser are in sync, the below block should not be needed anymore.
-    // Instead FileExplorerContextMenu from webapps-common
-    // https://bitbucket.org/KNIME/webapps-common/src/07664ef06d6ad0c800c9ab9f992daf410e4c1745/packages/components/src/components/FileExplorer/components/FileExplorerContextMenu.vue?at=master#lines-106
-    // should be adapted to reflect the new default text
+    // and instead they value will be used based on whether recycle bin is supported or not
     if (isBrowser()) {
       customProps.text = "Move to recycle bin";
     }
@@ -218,37 +253,45 @@ export const useSpaceExplorerActions = (
     return options.createDeleteOption(options.anchorItem, customProps);
   });
 
-  const createWorkflow = computed(() => ({
-    id: "createWorkflow",
-    text: "Create workflow",
-    icon: PlusIcon,
-    disabled: isLoadingContent.value,
-    hidden: options.mode !== "mini",
-    execute: () => {
-      setCreateWorkflowModalConfig({
-        isOpen: true,
-        projectId: projectId.value,
-      });
-    },
-  }));
+  const createWorkflow = computed(
+    () =>
+      ({
+        text: "Create workflow",
+        icon: PlusIcon,
+        disabled: isLoadingContent.value,
+        metadata: {
+          id: "createWorkflow",
+          handler: () => {
+            setCreateWorkflowModalConfig({
+              isOpen: true,
+              projectId: projectId.value,
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const downloadToLocalSpace = computed(() => ({
-    id: "downloadToLocalSpace",
-    text: "Download",
-    icon: CloudDownloadIcon,
-    disabled: isSelectionEmpty.value,
-    title: isSelectionEmpty.value
-      ? "Select at least one file to download to local space."
-      : "Download to local space",
-    separator: true,
-    execute: () => {
-      moveToLocalProviderFromHub({
-        projectId: projectId.value,
-      });
-    },
-  }));
+  const downloadToLocalSpace = computed(
+    () =>
+      ({
+        text: "Download",
+        icon: CloudDownloadIcon,
+        disabled: isSelectionEmpty.value,
+        title: isSelectionEmpty.value
+          ? "Select at least one file to download to local space."
+          : "Download to local space",
+        metadata: {
+          id: "downloadToLocalSpace",
+          handler: () => {
+            moveToLocalProviderFromHub({
+              projectId: projectId.value,
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const downloadInBrowser = computed(() => {
+  const downloadFromHubInBrowser = computed(() => {
     let tooltip = "Download to disk";
     if (isSelectionEmpty.value) {
       tooltip = "Select a file to download.";
@@ -256,195 +299,240 @@ export const useSpaceExplorerActions = (
       tooltip =
         "Multiple selection is not supported for downloads in the browser.";
     }
+
     return {
-      id: "downloadInBrowser",
       text: "Download",
       icon: CloudDownloadIcon,
       disabled: isSelectionEmpty.value || isSelectionMultiple.value,
       title: tooltip,
-      execute: () => {
-        const itemId = selectedItemIds.value[0];
-        const name =
-          getWorkflowGroupContent(projectId.value)?.items.find(
-            (item) => item.id === itemId,
-          )?.name ?? "Unknown";
-        startDownload({
-          itemId,
-          name,
-        });
+      metadata: {
+        id: "downloadInBrowser",
+        handler: () => {
+          const itemId = selectedItemIds.value[0];
+          const name =
+            getWorkflowGroupContent(projectId.value)?.items.find(
+              (item) => item.id === itemId,
+            )?.name ?? "Unknown";
+
+          startDownload({ itemId, name });
+        },
       },
-    };
+    } satisfies MenuItemWithHandler;
   });
 
-  const moveToSpace = computed(() => ({
-    id: "moveToSpace",
-    text: "Move to...",
-    icon: MoveToSpaceIcon,
-    disabled: isSelectionEmpty.value,
-    title: isSelectionEmpty.value
-      ? "Select at least one item to move."
-      : undefined,
-    execute: () => {
-      moveOrCopyToSpace({
-        projectId: projectId.value,
-        isCopy: false,
-        itemIds: selectedItemIds.value,
-      }).catch((error: any) => {
-        const { toastPresets } = getToastPresets();
-        toastPresets.spaces.crud.moveItemsFailed({ error });
-      });
-    },
-  }));
-
-  const copyToSpace = computed(() => ({
-    id: "copyToSpace",
-    text: "Copy to...",
-    icon: CopyIcon,
-    disabled: isSelectionEmpty.value,
-    title: isSelectionEmpty.value
-      ? "Select at least one item to copy."
-      : undefined,
-    separator: true,
-    execute: () => {
-      moveOrCopyToSpace({
-        projectId: projectId.value,
-        isCopy: true,
-        itemIds: selectedItemIds.value,
-      }).catch((error: any) => {
-        const { toastPresets } = getToastPresets();
-        toastPresets.spaces.crud.copyItemsFailed({ error });
-      });
-    },
-  }));
-
-  const uploadAction = computed(() => ({
-    id: "upload",
-    text: "Upload",
-    icon: CloudUploadIcon,
-    execute: async () => {
-      await startUpload();
-    },
-  }));
-
-  const uploadToHub = computed(() => ({
-    id: "upload",
-    text: "Upload",
-    icon: CloudUploadIcon,
-    disabled: isSelectionEmpty.value,
-    title: isSelectionEmpty.value
-      ? "Select at least one file to upload."
-      : undefined,
-    execute: async () => {
-      const uploadResult = await moveToHubFromLocalProvider({
-        itemIds: selectedItemIds.value,
-      });
-
-      if (!uploadResult || uploadResult.remoteItemIds.length === 0) {
-        return;
-      }
-
-      const $toast = getToastsProvider();
-      const { revealInSpaceExplorer } = useRevealInSpaceExplorer($router);
-      $toast.show({
-        headline: "Upload complete",
-        type: "success",
-        buttons: [
-          {
-            icon: ListIcon,
-            text: "Reveal in space explorer",
-            callback: () => {
-              revealInSpaceExplorer({
-                providerId: uploadResult.destinationProviderId,
-                spaceId: uploadResult.destinationSpaceId,
-                itemIds: uploadResult.remoteItemIds,
-              });
-            },
+  const moveToSpace = computed(
+    () =>
+      ({
+        text: "Move to...",
+        icon: MoveToSpaceIcon,
+        disabled: isSelectionEmpty.value,
+        title: isSelectionEmpty.value
+          ? "Select at least one item to move."
+          : undefined,
+        metadata: {
+          id: "moveToSpace",
+          handler: () => {
+            moveOrCopyToSpace({
+              projectId: projectId.value,
+              isCopy: false,
+              itemIds: selectedItemIds.value,
+            }).catch((error) => {
+              const { toastPresets } = getToastPresets();
+              toastPresets.spaces.crud.moveItemsFailed({ error });
+            });
           },
-        ],
-      });
-    },
-  }));
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const openInBrowserAction = computed(() => ({
-    id: "openInBrowser",
-    text: `Open in ${providerType.value}`,
-    icon: LinkExternal,
-    disabled: isSelectionEmpty.value || isSelectionMultiple.value,
-    title: isSelectionEmpty.value
-      ? `Select one file to open in ${providerType.value}.`
-      : undefined,
-    execute: () => {
-      openInBrowser({
-        projectId: projectId.value,
-        itemId: selectedItemIds.value[0],
-      });
-    },
-  }));
+  const copyToSpace = computed(
+    () =>
+      ({
+        text: "Copy to...",
+        icon: CopyIcon,
+        disabled: isSelectionEmpty.value,
+        title: isSelectionEmpty.value
+          ? "Select at least one item to copy."
+          : undefined,
+        metadata: {
+          id: "copyToSpace",
+          handler: () => {
+            moveOrCopyToSpace({
+              projectId: projectId.value,
+              isCopy: true,
+              itemIds: selectedItemIds.value,
+            }).catch((error) => {
+              const { toastPresets } = getToastPresets();
+              toastPresets.spaces.crud.copyItemsFailed({ error });
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const openAPIDefinitionAction = computed(() => ({
-    id: "openAPIDefinition",
-    text: "Open API Definition",
-    icon: LinkExternal,
-    disabled: isSelectionEmpty.value || isSelectionMultiple.value,
-    title: isSelectionEmpty.value
-      ? "Select one workflow to open in server."
-      : undefined,
-    execute: () => {
-      openAPIDefinition({
-        projectId: projectId.value,
-        itemId: selectedItemIds.value[0],
-      });
-    },
-  }));
+  const uploadToHubInBrowser = computed(
+    () =>
+      ({
+        text: "Upload",
+        icon: CloudUploadIcon,
+        metadata: {
+          id: "upload",
+          handler: async () => {
+            await startUpload();
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
-  const openPermissionsDialogAction = computed(() => ({
-    id: "openPermissionsDialog",
-    text: "Permissions",
-    icon: KeyIcon,
-    disabled: isSelectionEmpty.value || isSelectionMultiple.value,
-    title: isSelectionEmpty.value
-      ? "View and edit access permissions"
-      : undefined,
-    execute: () => {
-      openPermissionsDialog({
-        projectId: projectId.value,
-        itemId: selectedItemIds.value[0],
-      });
-    },
-  }));
+  const uploadToHubFromLocalSpace = computed(
+    () =>
+      ({
+        text: "Upload",
+        icon: CloudUploadIcon,
+        disabled: isSelectionEmpty.value,
+        title: isSelectionEmpty.value
+          ? "Select at least one file to upload."
+          : undefined,
+        metadata: {
+          id: "upload",
+          handler: async () => {
+            const uploadResult = await moveToHubFromLocalProvider({
+              itemIds: selectedItemIds.value,
+            });
 
-  const displayDeploymentsAction = computed(() => ({
-    id: "displayDeployments",
-    text: "Display schedules and jobs",
-    icon: DeploymentIcon,
-    disabled: isSelectionEmpty.value || isSelectionMultiple.value,
-    title: isSelectionEmpty.value
-      ? "Select a file to display schedules and jobs."
-      : undefined,
-    execute: () => {
-      displayDeployments({
-        projectId: projectId.value,
-        itemId: selectedItemIds.value[0],
-        itemName: options.anchorItem?.name ?? "",
-      });
-    },
-  }));
+            if (!uploadResult || uploadResult.remoteItemIds.length === 0) {
+              return;
+            }
 
-  const executeWorkflowAction = computed(() => ({
-    id: "execute",
-    text: "Execute",
-    icon: CirclePlayIcon,
-    disabled: isSelectionEmpty.value || isSelectionMultiple.value,
-    title: isSelectionEmpty.value
-      ? "Select a file to execute a workflow."
-      : undefined,
-    execute: () => {
-      executeWorkflow({
-        projectId: projectId.value,
-        itemId: selectedItemIds.value[0],
-      });
-    },
-  }));
+            const $toast = getToastsProvider();
+            const { revealInSpaceExplorer } = useRevealInSpaceExplorer($router);
+            $toast.show({
+              headline: "Upload complete",
+              type: "success",
+              buttons: [
+                {
+                  icon: ListIcon,
+                  text: "Reveal in space explorer",
+                  callback: () => {
+                    revealInSpaceExplorer({
+                      providerId: uploadResult.destinationProviderId,
+                      spaceId: uploadResult.destinationSpaceId,
+                      itemIds: uploadResult.remoteItemIds,
+                    });
+                  },
+                },
+              ],
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
+
+  const openInBrowserAction = computed(
+    () =>
+      ({
+        text: `Open in ${providerType.value}`,
+        icon: LinkExternal,
+        disabled: isSelectionEmpty.value || isSelectionMultiple.value,
+        title: isSelectionEmpty.value
+          ? `Select one file to open in ${providerType.value}.`
+          : undefined,
+        metadata: {
+          id: "openInBrowser",
+          handler: () => {
+            openInBrowser({
+              projectId: projectId.value,
+              itemId: selectedItemIds.value[0],
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
+
+  const openAPIDefinitionAction = computed(
+    () =>
+      ({
+        text: "Open API Definition",
+        icon: LinkExternal,
+        disabled: isSelectionEmpty.value || isSelectionMultiple.value,
+        title: isSelectionEmpty.value
+          ? "Select one workflow to open in server."
+          : undefined,
+        metadata: {
+          id: "openAPIDefinition",
+          handler: () => {
+            openAPIDefinition({
+              projectId: projectId.value,
+              itemId: selectedItemIds.value[0],
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
+
+  const openPermissionsDialogAction = computed(
+    () =>
+      ({
+        text: "Permissions",
+        icon: KeyIcon,
+        disabled: isSelectionEmpty.value || isSelectionMultiple.value,
+        title: isSelectionEmpty.value
+          ? "View and edit access permissions"
+          : undefined,
+        metadata: {
+          id: "openPermissionsDialog",
+          handler: () => {
+            openPermissionsDialog({
+              projectId: projectId.value,
+              itemId: selectedItemIds.value[0],
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
+
+  const displayDeploymentsAction = computed(
+    () =>
+      ({
+        text: "Display schedules and jobs",
+        icon: DeploymentIcon,
+        disabled: isSelectionEmpty.value || isSelectionMultiple.value,
+        title: isSelectionEmpty.value
+          ? "Select a file to display schedules and jobs."
+          : undefined,
+        metadata: {
+          id: "displayDeployments",
+          handler: () => {
+            displayDeployments({
+              projectId: projectId.value,
+              itemId: selectedItemIds.value[0],
+              itemName: options.anchorItem?.name ?? "",
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
+
+  const executeWorkflowAction = computed(
+    () =>
+      ({
+        text: "Execute",
+        icon: CirclePlayIcon,
+        disabled: isSelectionEmpty.value || isSelectionMultiple.value,
+        title: isSelectionEmpty.value
+          ? "Select a file to execute a workflow."
+          : undefined,
+        metadata: {
+          id: "execute",
+          handler: () => {
+            executeWorkflow({
+              projectId: projectId.value,
+              itemId: selectedItemIds.value[0],
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
 
   return {
     createFolderAction,
@@ -457,15 +545,15 @@ export const useSpaceExplorerActions = (
     deleteItem,
     createWorkflow,
     downloadToLocalSpace,
-    downloadInBrowser,
     moveToSpace,
     copyToSpace,
-    uploadToHub,
+    uploadToHubFromLocalSpace,
     openInBrowserAction,
     openAPIDefinitionAction,
     openPermissionsDialogAction,
     displayDeploymentsAction,
     executeWorkflowAction,
-    uploadAction,
+    uploadToHubInBrowser,
+    downloadFromHubInBrowser,
   };
 };

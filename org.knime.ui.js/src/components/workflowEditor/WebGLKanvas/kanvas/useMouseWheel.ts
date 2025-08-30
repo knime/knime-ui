@@ -20,10 +20,11 @@ export const useMouseWheel = (options: UseMouseWheelOptions) => {
   const { scrollToZoomEnabled } = storeToRefs(useApplicationSettingsStore());
 
   const zoom = throttle(function (event: WheelEvent) {
+    const delta = event.shiftKey ? event.deltaX : event.deltaY;
     canvasStore.zoomAroundPointer({
       cursorX: event.offsetX,
       cursorY: event.offsetY,
-      delta: Math.sign(-event.deltaY) as -1 | 0 | 1,
+      delta: Math.sign(-delta) as -1 | -0 | 0 | 1,
     });
   });
 

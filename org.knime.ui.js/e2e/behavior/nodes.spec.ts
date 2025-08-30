@@ -3,6 +3,7 @@ import { Page, expect, test } from "@playwright/test";
 
 import {
   assertSnapshot,
+  executeUndo,
   getCenter,
   getKanvasBoundingBox,
   getNode,
@@ -40,10 +41,17 @@ const startForPointerInteractions = (
     workflowUndoCommand,
   });
 
-const executeUndo = async (page) => {
-  await page.keyboard.press("ControlOrMeta+Z");
-  await page.waitForTimeout(500);
-};
+test("panning with right click doesn't open ctx menu", async ({ page }) => {
+  await startForPointerInteractions(page);
+
+  const [n1x, n1y] = await getNodePosition(page, IDS.node1);
+
+  await page.mouse.move(n1x, n1y);
+  await page.mouse.down({ button: "right" });
+  await page.mouse.move(n1x + 300, n1y - 300);
+  await page.mouse.up();
+  await assertSnapshot(page);
+});
 
 test.describe("selection", () => {
   test("selects only 1 node", async ({ page }) => {
@@ -401,9 +409,9 @@ test.describe("node name editing", () => {
     }) => {
       await startForNameChange(page);
 
-      const [metanodeX, metanodeY] = await getNodePosition(page, id);
-      // select metanode
-      await page.mouse.click(metanodeX, metanodeY);
+      const [nodeX, nodeY] = await getNodePosition(page, id);
+      // select a node
+      await page.mouse.click(nodeX, nodeY);
       await page.keyboard.press("Shift+F2");
       await waitForFloatingEditor(page);
       await page.keyboard.insertText("New name");
@@ -411,7 +419,7 @@ test.describe("node name editing", () => {
       await assertSnapshot(page);
 
       // click-away
-      await page.mouse.click(metanodeX - 150, metanodeY - 150);
+      await page.mouse.click(nodeX - 150, nodeY - 150);
       await page.waitForTimeout(200);
       await assertSnapshot(page);
     });
@@ -464,6 +472,52 @@ test.describe("node name editing", () => {
       await assertSnapshot(page);
       await expect((await getNodeName(page, id)).text).not.toBe("New name");
     });
+
+    test(`${name}::can navigate with keyboard after saving`, async ({
+      page,
+    }) => {
+      await startForNameChange(page);
+
+      const [nodeX, nodeY] = await getNodePosition(page, id);
+      // select a node
+      await page.mouse.click(nodeX, nodeY);
+
+      // edit node name
+      await page.keyboard.press("Shift+F2");
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+
+      // save node name
+      await page.keyboard.press("Enter");
+      await page.waitForTimeout(200);
+
+      // navigate away
+      await page.keyboard.press("ArrowDown");
+      await assertSnapshot(page);
+    });
+
+    test(`${name}::can navigate with keyboard after canceling`, async ({
+      page,
+    }) => {
+      await startForNameChange(page);
+
+      const [nodeX, nodeY] = await getNodePosition(page, id);
+      // select a node
+      await page.mouse.click(nodeX, nodeY);
+
+      // edit node name
+      await page.keyboard.press("Shift+F2");
+      await waitForFloatingEditor(page);
+      await page.keyboard.insertText("New name");
+
+      // cancel
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(200);
+
+      // navigate away
+      await page.keyboard.press("ArrowDown");
+      await assertSnapshot(page);
+    });
   });
 });
 
@@ -488,7 +542,6 @@ test.describe("node label editing", () => {
 
   test("can edit label with dblclick->Ctrl+enter", async ({ page }) => {
     await startForLabelChange(page);
-    await selectNode(page);
 
     // start edit
     const [metanodeX, metanodeY] = getCenter(await getNodeLabel(page));
@@ -574,5 +627,49 @@ test.describe("node label editing", () => {
     await page.waitForTimeout(200);
     await assertSnapshot(page);
     await expect((await getNodeLabel(page)).text).toBe("New name");
+  });
+
+  test("can navigate with keyboard after saving", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    const [nodeX, nodeY] = await getNodePosition(page, IDS.node1);
+    // select node
+    await page.mouse.click(nodeX, nodeY);
+
+    // edit node label
+    await page.keyboard.press("F2");
+    await waitForFloatingEditor(page);
+    await page.keyboard.insertText("New name");
+
+    // save node label
+    await page.keyboard.press("ControlOrMeta+Enter");
+    await page.waitForTimeout(200);
+
+    // navigate away
+    await page.keyboard.press("ArrowUp");
+    await assertSnapshot(page);
+  });
+
+  test("can navigate with keyboard after canceling", async ({ page }) => {
+    await startForLabelChange(page);
+    await selectNode(page);
+
+    const [nodeX, nodeY] = await getNodePosition(page, IDS.node1);
+    // select node
+    await page.mouse.click(nodeX, nodeY);
+
+    // edit node label
+    await page.keyboard.press("F2");
+    await waitForFloatingEditor(page);
+    await page.keyboard.insertText("New name");
+
+    // cancel
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // navigate away
+    await page.keyboard.press("ArrowUp");
+    await assertSnapshot(page);
   });
 });

@@ -8,11 +8,9 @@ import LinkIcon from "@knime/styles/img/icons/link-external.svg";
 import type { ExtensionWithNodes, Extensions } from "@/components/kai/types";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 
-interface Props {
+const props = defineProps<{
   extensions: Extensions;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const hasExtensions = computed(() => Object.keys(props.extensions).length > 0);
 const { KNIME_HUB_HOME_URL } = knimeExternalUrls;

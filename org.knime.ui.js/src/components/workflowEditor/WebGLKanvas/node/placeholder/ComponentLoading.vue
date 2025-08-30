@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
-import { useZoomAwareResolution } from "../../common/useZoomAwareResolution";
 import { placeholderProgressText } from "../../util/textStyles";
 
 type Props = {
@@ -13,7 +14,7 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const { resolution } = useZoomAwareResolution();
+const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
 
 const progressPercentile = computed(() => {
   if (!props.progress) {
@@ -103,7 +104,7 @@ const renderProgressBorder = (graphics: GraphicsInst) => {
 <template>
   <Container label="PlaceholderLoading">
     <Text
-      :resolution="resolution"
+      :resolution="zoomAwareResolution"
       :round-pixels="true"
       :text="progressPercentile"
       :style="placeholderProgressText.styles"

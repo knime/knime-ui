@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 /* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";

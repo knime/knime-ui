@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -82,6 +83,9 @@ class ImportWorkflows extends AbstractImportItems {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(ImportWorkflows.class);
 
+    private static final Pattern KNWF_KNAR_FILE_EXTENSION =
+            Pattern.compile("\\.(knwf|knar)$", Pattern.CASE_INSENSITIVE);
+
     @Override
     protected FileDialog getFileDialog() {
         var dialog = new FileDialog(SWTUtilities.getActiveShell(), SWT.OPEN);
@@ -95,8 +99,10 @@ class ImportWorkflows extends AbstractImportItems {
     protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final Space space,
             final String workflowGroupItemId, final List<Path> srcPaths) throws IOException {
         var archiveFilePath = srcPaths.get(0); // There can only be one
+        final var fileSuffixMatcher = KNWF_KNAR_FILE_EXTENSION.matcher(archiveFilePath.getFileName().toString());
+        final var archiveFileName = fileSuffixMatcher.replaceAll("").trim();
         var nameCollision =
-                NameCollisionChecker.checkForNameCollisionInZip(space, archiveFilePath, workflowGroupItemId);
+                NameCollisionChecker.checkForNameCollisionInDir(space, archiveFileName, workflowGroupItemId);
         return nameCollision.map(nc -> {
             var nameCollisions = Collections.singletonList(nc);
             return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions,

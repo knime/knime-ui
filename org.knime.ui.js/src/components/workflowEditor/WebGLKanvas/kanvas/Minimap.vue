@@ -6,7 +6,7 @@ import { BlurFilter, type FederatedPointerEvent, type Graphics } from "pixi.js";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $shapes from "@/style/shapes";
-import { clamp } from "@/util/clamp";
+import { clamp } from "@/util/math";
 import { markPointerEventAsHandled } from "../util/interaction";
 
 import MiniPreview from "./MiniPreview.vue";

@@ -13,7 +13,7 @@ import type { GraphicsInst } from "@/vue3-pixi";
 import { useObjectInteractions } from "../../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import NodeName from "../nodeName/NodeName.vue";
-import { useNodeNameTextMetrics } from "../useNodeNameTextMetrics";
+import { useNodeNameShortening } from "../useTextShortening";
 
 import ComponentError from "./ComponentError.vue";
 import ComponentFloatingOptions from "./ComponentFloatingOptions.vue";
@@ -59,13 +59,14 @@ const nodeNamePosition = computed(() => {
   };
 });
 
-const { metrics: nodeNameDimensions } = useNodeNameTextMetrics({
-  nodeName: computed(() => props.name),
-  shortenName: false,
-});
+const { metrics: nodeNameDimensions } = useNodeNameShortening(
+  computed(() => props.name),
+);
 
 const onRightClick = async (event: FederatedPointerEvent) => {
-  markPointerEventAsHandled(event, { initiator: "placeholder-ctx-menu" });
+  markPointerEventAsHandled(event, {
+    initiator: "component-placeholder::onContextMenu",
+  });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({

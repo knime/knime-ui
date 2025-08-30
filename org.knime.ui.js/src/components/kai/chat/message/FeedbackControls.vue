@@ -7,7 +7,7 @@ import ThumbsDownIcon from "@knime/styles/img/icons/thumbs-down.svg";
 import ThumbsUpIcon from "@knime/styles/img/icons/thumbs-up.svg";
 import { sleep } from "@knime/utils";
 
-import { useAIAssistantStore } from "@/store/aiAssistant";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 
 const DELAY_TIME = 1000;
 

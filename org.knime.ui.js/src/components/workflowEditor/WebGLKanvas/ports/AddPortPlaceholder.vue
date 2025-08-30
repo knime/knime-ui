@@ -48,7 +48,7 @@ useEventListener(
     if (event.key !== "Escape" || !props.selected) {
       return;
     }
-    markEscapeAsHandled(event, { initiator: "webgl/AddPortPlaceholder" });
+    markEscapeAsHandled(event, { initiator: "add-port-placeholder::onEscape" });
     emit("deselect");
   },
   { capture: true },

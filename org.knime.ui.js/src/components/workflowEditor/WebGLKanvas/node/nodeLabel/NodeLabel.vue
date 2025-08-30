@@ -2,16 +2,24 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import type { FederatedPointerEvent } from "pixi.js";
 
 import { sleep } from "@knime/utils";
 
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { FLOATING_HTML_FADE_DELAY_MS } from "../../common/constants";
 
 import NodeLabelText from "./NodeLabelText.vue";
 
+const emit = defineEmits<{
+  rightclick: [FederatedPointerEvent];
+  pointerdown: [FederatedPointerEvent];
+}>();
+
 const props = defineProps<{
   nodeId: string;
+  isMetanode: boolean;
   label?: string;
 }>();
 
@@ -37,7 +45,8 @@ watch(isEditing, async () => {
     showText.value = false;
     return;
   }
-  await sleep(50);
+
+  await sleep(FLOATING_HTML_FADE_DELAY_MS);
   showText.value = true;
 });
 </script>
@@ -48,5 +57,8 @@ watch(isEditing, async () => {
     :label="label"
     :node-id="nodeId"
     :is-node-selected="isSelected"
+    :is-metanode="isMetanode"
+    @rightclick="emit('rightclick', $event)"
+    @pointerdown="emit('pointerdown', $event)"
   />
 </template>

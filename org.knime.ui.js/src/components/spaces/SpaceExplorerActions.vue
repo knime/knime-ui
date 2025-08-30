@@ -3,24 +3,20 @@ import { computed, toRefs } from "vue";
 import { kebabCase } from "lodash-es";
 import { storeToRefs } from "pinia";
 
-import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
+import { FunctionButton, SubMenu } from "@knime/components";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import SearchButton from "@/components/common/SearchButton.vue";
-import {
-  type ActionMenuItem,
-  useContextualSpaceExplorerActions,
-} from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
+import { useContextualSpaceExplorerActions } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import type { MenuItemWithHandler } from "../common/types";
 
 import SpaceExplorerActionButton from "./SpaceExplorerActionButton.vue";
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 
 type DisplayModes = "normal" | "mini";
-
-type ItemWithExecute = MenuItem & { execute: () => any };
 
 type Props = {
   projectId: string;
@@ -60,9 +56,9 @@ const createWorkflowButtonTitle = computed(() => {
   return `${text} (${hotkeyText})`;
 });
 
-const filteredActions = (hideItems: string[]): ActionMenuItem[] =>
+const filteredActions = (hideItems: string[]): MenuItemWithHandler[] =>
   spaceExplorerActionsItems.value.filter(
-    (item) => !hideItems.includes(item.id),
+    (item) => !hideItems.includes(item.metadata!.id!),
   );
 </script>
 
@@ -79,16 +75,16 @@ const filteredActions = (hideItems: string[]): ActionMenuItem[] =>
 
         <SpaceExplorerActionButton
           v-for="action in filteredActions(['createWorkflow', 'connectToHub'])"
-          :key="action.id"
+          :key="action.metadata?.id"
           :item="action"
-          :data-test-id="`space-${kebabCase(action.id)}-btn`"
+          :data-test-id="`space-${kebabCase(action.metadata?.id)}-btn`"
           :disabled="action.disabled || isLoadingContent"
         />
 
         <SpaceExplorerFloatingButton
           :title="createWorkflowButtonTitle"
           :disabled="createWorkflow.disabled"
-          @click="createWorkflow.execute()"
+          @click="createWorkflow.metadata.handler()"
         />
       </div>
     </template>
@@ -118,7 +114,8 @@ const filteredActions = (hideItems: string[]): ActionMenuItem[] =>
           button-title="More actions"
           @toggle.stop
           @item-click="
-            (_: MouseEvent, { execute }: ItemWithExecute) => execute()
+            (_: MouseEvent, item: MenuItemWithHandler) =>
+              item.metadata?.handler?.()
           "
         >
           <MenuOptionsIcon class="open-icon" />

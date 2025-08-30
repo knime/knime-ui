@@ -119,7 +119,6 @@ describe("WebGL canvas store", () => {
   describe("kanvas wrapper element", () => {
     it("sets initial container size", () => {
       const { canvasStore, kanvasWrapper } = createStore();
-      // @ts-expect-error
       canvasStore.initScrollContainerElement(kanvasWrapper);
       expect(canvasStore.containerSize).toStrictEqual({
         width: CONTAINER_DIMENSIONS.width,
@@ -154,7 +153,6 @@ describe("WebGL canvas store", () => {
         };
         const { canvasStore, kanvasWrapper } = createStore(workflowBounds);
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         // workflow size + padding + container sized padding
         const width = 400 + 2 * padding + CONTAINER_DIMENSIONS.width * 2;
@@ -175,7 +173,6 @@ describe("WebGL canvas store", () => {
         };
         const { canvasStore, kanvasWrapper } = createStore(workflowBounds);
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         canvasStore.setFactor(0.01);
 
@@ -224,7 +221,6 @@ describe("WebGL canvas store", () => {
         // set some factor
         canvasStore.zoomFactor = 0.5;
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         await canvasStore.restoreScrollState({});
 
@@ -267,7 +263,6 @@ describe("WebGL canvas store", () => {
           bottom: 60,
         });
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         const fitToZoom = canvasStore.fitToScreenZoomFactor;
 
@@ -286,7 +281,6 @@ describe("WebGL canvas store", () => {
           bottom: 60,
         });
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         canvasStore.fitToScreen();
 
@@ -302,7 +296,6 @@ describe("WebGL canvas store", () => {
           bottom: 200,
         });
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
 
         canvasStore.fillScreen();
@@ -319,7 +312,6 @@ describe("WebGL canvas store", () => {
           bottom: 1000,
         });
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
 
         canvasStore.fillScreen();
@@ -333,7 +325,6 @@ describe("WebGL canvas store", () => {
       it("zoom around center by delta", () => {
         const { canvasStore, kanvasWrapper } = createStore();
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         canvasStore.zoomCentered({ delta: 1 });
 
@@ -345,7 +336,6 @@ describe("WebGL canvas store", () => {
       it("zoom around center to factor", () => {
         const { canvasStore, kanvasWrapper } = createStore();
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         canvasStore.zoomCentered({ factor: 2 });
 
@@ -359,7 +349,6 @@ describe("WebGL canvas store", () => {
       it("zoom by delta", () => {
         const { canvasStore, kanvasWrapper } = createStore();
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         expect(canvasStore.zoomFactor).toBe(1);
 
@@ -370,7 +359,6 @@ describe("WebGL canvas store", () => {
       it("zoom to factor", () => {
         const { canvasStore, kanvasWrapper } = createStore();
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         expect(canvasStore.zoomFactor).toBe(1);
 
@@ -381,7 +369,6 @@ describe("WebGL canvas store", () => {
       it("throws for incorrect arguments", () => {
         const { canvasStore, kanvasWrapper } = createStore();
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         expect(() => {
           // @ts-expect-error
@@ -392,7 +379,6 @@ describe("WebGL canvas store", () => {
       it("respects max and min zoom", () => {
         const { canvasStore, kanvasWrapper } = createStore();
 
-        // @ts-expect-error
         canvasStore.initScrollContainerElement(kanvasWrapper);
         const tooManyZoomSteps = 10000;
         expect(canvasStore.zoomFactor).toBe(1);

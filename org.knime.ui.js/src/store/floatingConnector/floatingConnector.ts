@@ -18,6 +18,7 @@ import {
 import { useApplicationStore } from "../application/application";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
+import { useSelectionStore } from "../selection";
 import { useWorkflowStore } from "../workflow/workflow";
 
 import {
@@ -151,11 +152,7 @@ export const useFloatingConnectorStore = defineStore(
       });
     };
 
-    const { finishConnection, waitingForPortSelection } = useConnectAction({
-      floatingConnector: floatingConnector as Ref<FullFloatingConnector>,
-      snapTarget,
-      activeSnapPosition,
-    });
+    const { finishConnection, waitingForPortSelection } = useConnectAction();
 
     // This will hold a function reference used to clean up all the DOM event listeners
     let runListenerTeardown: (() => void) | undefined;
@@ -193,11 +190,13 @@ export const useFloatingConnectorStore = defineStore(
         return;
       }
 
-      consola.debug("floatingConnector:: starting connector drag", {
-        params,
-      });
+      consola.debug("floatingConnector:: starting connector drag", { params });
 
-      const { pixiApplication, toCanvasCoordinates } = useWebGLCanvasStore();
+      const {
+        pixiApplication,
+        toCanvasCoordinates,
+        isPointOutsideVisibleArea,
+      } = useWebGLCanvasStore();
       const canvas = pixiApplication!.app.canvas;
       canvas.setPointerCapture(pointerDownEvent.pointerId);
 
@@ -244,7 +243,7 @@ export const useFloatingConnectorStore = defineStore(
         setFloatingConnectorCoords(nextAbsolutePoint.x, nextAbsolutePoint.y);
       });
 
-      const onPointerUp = async () => {
+      const onPointerUp = async (pointerUpEvent: PointerEvent) => {
         pointerDown.value = false;
         didMove.value = false;
         isDragging.value = false;
@@ -253,6 +252,12 @@ export const useFloatingConnectorStore = defineStore(
         runListenerTeardown?.();
 
         if (!floatingConnector.value) {
+          return;
+        }
+
+        const { x, y } = pointerUpEvent;
+        if (isPointOutsideVisibleArea({ x, y })) {
+          removeActiveConnector();
           return;
         }
 
@@ -271,11 +276,28 @@ export const useFloatingConnectorStore = defineStore(
           }
         } else {
           try {
-            await finishConnection();
+            const currentSnapTarget = snapTarget.value;
+            const currentFloatingConnector = floatingConnector.value;
+            const currentSnapPosition = activeSnapPosition.value;
+
+            const { wasAborted } =
+              await useSelectionStore().tryDiscardCurrentSelection();
+
+            if (wasAborted) {
+              return;
+            }
+
+            await finishConnection({
+              floatingConnector:
+                currentFloatingConnector as FullFloatingConnector,
+              snapTarget: currentSnapTarget,
+              activeSnapPosition: currentSnapPosition,
+            });
           } catch (error) {
             consola.error("Did not complete connection: ", error);
+          } finally {
+            removeActiveConnector();
           }
-          removeActiveConnector();
         }
 
         activeConnectionValidTargets.value?.clear();
@@ -288,13 +310,13 @@ export const useFloatingConnectorStore = defineStore(
         canvas.releasePointerCapture(pointerDownEvent.pointerId);
         canvas.removeEventListener("pointermove", onPointerMove);
         canvas.removeEventListener("pointerup", onPointerUp);
-        canvas.removeEventListener("lostPointerCapture", onPointerUp);
+        canvas.removeEventListener("lostpointercapture", onPointerUp);
         runListenerTeardown = undefined;
       };
 
       canvas.addEventListener("pointermove", onPointerMove);
       canvas.addEventListener("pointerup", onPointerUp);
-      canvas.addEventListener("lostPointerCapture", onPointerUp);
+      canvas.addEventListener("lostpointercapture", onPointerUp);
 
       escapeAbortHandlerCleanup = setupAbortListener();
     };

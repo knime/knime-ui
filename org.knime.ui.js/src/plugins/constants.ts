@@ -6,8 +6,8 @@ import type { PluginInitFunction } from "./types";
 
 export const characterLimits = Object.freeze({
   workflowAnnotations: 50_000,
-  nodeLabel: 1000,
-  nodeName: 200,
+  nodeLabel: 250,
+  nodeName: 90,
   metadata: {
     description: 50_000,
     tags: 100,

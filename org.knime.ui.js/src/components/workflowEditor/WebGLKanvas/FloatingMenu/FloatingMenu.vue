@@ -6,8 +6,7 @@ import {
   type FloatingContainerProperties,
   useCanvasFloatingContainer,
 } from "../../CanvasAnchoredComponents";
-
-import { useFloatingMenuClickaway } from "./useFloatingMenuClickaway";
+import { useCanvasClickOutside } from "../common/useCanvasClickOutside";
 
 defineOptions({ inheritAttrs: false });
 
@@ -31,10 +30,10 @@ useCanvasFloatingContainer({
   canvasStore,
 });
 
-useFloatingMenuClickaway({
+useCanvasClickOutside({
   rootEl,
   focusTrap: toRef(props, "focusTrap"),
-  onClickaway: () => emit("menuClose"),
+  onClickOutside: () => emit("menuClose"),
 });
 </script>
 

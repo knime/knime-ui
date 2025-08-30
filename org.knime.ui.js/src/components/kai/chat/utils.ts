@@ -1,4 +1,4 @@
-const isSameDay = (timestamp1: number, timestamp2: number): boolean => {
+export const isSameDay = (timestamp1: number, timestamp2: number): boolean => {
   const date1 = new Date(timestamp1);
   const date2 = new Date(timestamp2);
   return (
@@ -8,11 +8,11 @@ const isSameDay = (timestamp1: number, timestamp2: number): boolean => {
   );
 };
 
-const isToday = (timestamp: number): boolean => {
+export const isToday = (timestamp: number): boolean => {
   return isSameDay(timestamp, Date.now());
 };
 
-const isYesterday = (timestamp: number): boolean => {
+export const isYesterday = (timestamp: number): boolean => {
   const now = new Date();
   const yesterday = new Date(
     now.getFullYear(),
@@ -22,4 +22,7 @@ const isYesterday = (timestamp: number): boolean => {
   return isSameDay(timestamp, yesterday.getTime());
 };
 
-export { isToday, isYesterday, isSameDay };
+export const getDaysLeftInMonth = (date: Date = new Date()): number => {
+  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  return endOfMonth.getDate() - date.getDate();
+};

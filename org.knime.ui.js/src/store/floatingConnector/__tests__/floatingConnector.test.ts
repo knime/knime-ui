@@ -259,7 +259,7 @@ describe("floatingConnector store", () => {
     ).toBeUndefined();
   });
 
-  it("connects the nodes when the connector is dropped on a port placehoder", async () => {
+  it("connects the nodes when the connector is dropped on a port placeholder", async () => {
     const { mockedStores, canvas } = setupStore();
 
     mockedAPI.workflowCommand.AddPort.mockResolvedValue({ newPortIdx: 5 });
@@ -309,6 +309,44 @@ describe("floatingConnector store", () => {
     ).toBeUndefined();
   });
 
+  it("prevents connection if node configuration is dirty", async () => {
+    const { mockedStores, canvas } = setupStore();
+
+    const { onCanvasDrop } = startDrag(mockedStores);
+
+    pointerMove(canvas);
+
+    didDragToCompatibleTarget.value = true;
+    snapTarget.value = {
+      side: "in",
+      parentNodeId: "root:2",
+      ...createPort({
+        typeId: PORT_TYPE_IDS.BufferedDataTable,
+        index: 3,
+      }),
+    };
+
+    const tryDiscardCurrentSelectionMock = vi.mocked(
+      mockedStores.selectionStore.tryDiscardCurrentSelection,
+    );
+
+    tryDiscardCurrentSelectionMock.mockResolvedValue({ wasAborted: true });
+
+    canvas.dispatchEvent(new PointerEvent("pointerup"));
+
+    expect(tryDiscardCurrentSelectionMock).toHaveBeenCalled();
+
+    await flushPromises();
+
+    expect(
+      mockedStores.nodeInteractionsStore.connectNodes,
+    ).not.toHaveBeenCalled();
+    expect(onCanvasDrop).not.toHaveBeenCalled();
+    expect(
+      mockedStores.floatingConnectorStore.floatingConnector,
+    ).toBeUndefined();
+  });
+
   it("resets state and aborts connection when pressing 'Esc'", () => {
     const { mockedStores, canvas } = setupStore();
 
@@ -319,6 +357,26 @@ describe("floatingConnector store", () => {
 
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(mockedStores.floatingConnectorStore.floatingConnector).toBeFalsy();
+  });
+
+  it("resets state and aborts connection when dropping outside of visible area of the canvas", () => {
+    const { mockedStores, canvas } = setupStore();
+    mockedStores.webglCanvasStore.isPointOutsideVisibleArea = vi
+      .fn()
+      .mockReturnValue(true);
+
+    const { onCanvasDrop } = startDrag(mockedStores);
+    pointerMove(canvas);
+    expect(mockedStores.floatingConnectorStore.floatingConnector).toBeTruthy();
+
+    // Drop the connection outside of visible area
+    const options = { offsetX: 1000, offsetY: 1000 } as PointerEventInit;
+    canvas.dispatchEvent(new PointerEvent("pointerup", options));
+
+    expect(onCanvasDrop).not.toHaveBeenCalled();
+    expect(
+      mockedStores.floatingConnectorStore.floatingConnector,
+    ).toBeUndefined();
   });
 
   it("creates a floatingConnector manually based on a provided context", () => {

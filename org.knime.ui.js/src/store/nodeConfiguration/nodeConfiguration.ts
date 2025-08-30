@@ -243,6 +243,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
      * Discard the changes made to the node configuration by resetting the dirty state back to CLEAN
      */
     discardSettings() {
+      this.setLatestPublishedData(null);
       this.setDirtyState({
         apply: "clean",
         view: "clean",

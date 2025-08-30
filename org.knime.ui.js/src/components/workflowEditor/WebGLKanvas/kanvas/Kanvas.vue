@@ -54,12 +54,20 @@ const MAIN_CONTAINER_LABEL = "MainContainer";
 const { devMode } = storeToRefs(useApplicationSettingsStore());
 
 const addRenderLayers = (app: ApplicationInst["app"]) => {
+  let layerIndex = 0;
+
+  const debugLayer = new RenderLayer();
+  // @ts-expect-error type misses label
+  debugLayer.label = "DebugLayer";
+  app.stage.addChildAt(debugLayer, layerIndex++);
+  canvasLayers.value.debugLayer = debugLayer;
+
   // annotations need to be behind everything else
   const annotationsLayer = new RenderLayer({ sortableChildren: true });
   // @ts-expect-error type misses label
   annotationsLayer.label = "AnnotationsLayer";
 
-  app.stage.addChildAt(annotationsLayer, 0);
+  app.stage.addChildAt(annotationsLayer, layerIndex++);
   canvasLayers.value.annotations = annotationsLayer;
 
   // add a layer so we can move the selection plane of the nodes to the back
@@ -67,7 +75,7 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
   // @ts-expect-error type misses label
   nodeSelectionPlaneRenderLayer.label = "NodeSelectionPlaneRenderLayer";
 
-  app.stage.addChildAt(nodeSelectionPlaneRenderLayer, 1);
+  app.stage.addChildAt(nodeSelectionPlaneRenderLayer, layerIndex++);
   canvasLayers.value.nodeSelectionPlane = nodeSelectionPlaneRenderLayer;
 };
 
@@ -120,6 +128,10 @@ const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
 
 const isGrabbing = ref(false);
 const onPointerDown = (event: PointerEvent) => {
+  if (!interactionsEnabled.value) {
+    return;
+  }
+
   const isMouseLeftClick = event.button === 0;
 
   if (
@@ -131,6 +143,7 @@ const onPointerDown = (event: PointerEvent) => {
     return;
   }
 
+  // if any canvas object has marked this event as handled, then we ignore panning
   if (event.dataset) {
     return;
   }
@@ -179,7 +192,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
         grabbing: isGrabbing,
       },
     ]"
-    @wheel.prevent="onMouseWheel"
+    @wheel.passive="onMouseWheel"
     @pointerdown="onPointerDown"
     @pointermove="$bus.emit('selection-pointermove', $event)"
     @pointerup="onPointerUp"
@@ -191,7 +204,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
       :label="MAIN_CONTAINER_LABEL"
       :event-mode="interactionsEnabled ? undefined : 'none'"
     >
-      <Debug v-if="isCanvasDebugEnabled" />
+      <Debug :visible="isCanvasDebugEnabled" />
       <slot />
     </Container>
 

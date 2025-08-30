@@ -14,6 +14,7 @@ import type {
   ItemPermission,
   ItemSavepoint,
   NamedItemVersion,
+  VersionLimit,
   WithAvatar,
   WithLabels,
 } from "@knime/hub-features/versions";
@@ -38,6 +39,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { useLifecycleStore } from "@/store/application/lifecycle.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
+import { usePanelStore } from "../panel.ts";
 import { useSelectionStore } from "../selection";
 import { getCustomFetchOptionsForBrowser } from "../spaces/common.ts";
 import { useSpaceProvidersStore } from "../spaces/providers";
@@ -51,6 +53,7 @@ type ProjectVersionsModeInfo = {
   unversionedSavepoint: (ItemSavepoint & WithAvatar & WithLabels) | null;
   permissions: Array<ItemPermission>;
   hasLoadedAll: boolean;
+  versionLimit?: VersionLimit;
 };
 
 const getVersionsApi = () => {
@@ -176,15 +179,13 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       );
       return;
     }
-    const versionsApi = getVersionsApi();
 
     const nextAction = await getUserSelectedNextAction(activeProjectId);
-
     if (nextAction === UnsavedChangesAction.CANCEL) {
       return;
     }
 
-    // Create version based on state on Hub side
+    const versionsApi = getVersionsApi();
     const newVersion = await versionsApi.createVersion({
       itemId: activeProjectOrigin!.itemId,
       title: name,
@@ -215,15 +216,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       `WorkflowVersionsStore::createVersion -> New project version '${newVersion.version}' created`,
     );
 
-    activeProjectVersionsModeInfo.value.loadedVersions.unshift({
-      ...newVersion,
-      labels: [],
-      avatar: await versionsApi.getAvatar({
-        accountName: newVersion.author,
-      }),
-    });
-
-    activeProjectVersionsModeInfo.value.unversionedSavepoint = null;
+    await refreshData();
   }
 
   async function deleteVersion(version: NamedItemVersion["version"]) {
@@ -300,15 +293,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       );
       return;
     }
-    await getVersionsApi().restoreVersion({
-      itemId: activeProjectOrigin.itemId,
-      version,
-    });
 
     await Promise.all([
-      API.workflow.disposeVersion({
+      API.workflow.restoreVersion({
         projectId: activeProjectId,
-        version: CURRENT_STATE_VERSION,
+        version: version.toString(),
       }),
       refreshData(),
     ]);
@@ -407,6 +396,10 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     });
   }
 
+  /**
+   * Refreshes version related data in {@link ProjectVersionsModeInfo} by calling `getVersionsApi`.
+   * Has to be called whenever a version related actions is performed.
+   */
   async function refreshData(
     { loadAll }: { loadAll: boolean } = { loadAll: false },
   ) {
@@ -463,6 +456,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       newData.hasLoadedAll =
         loadAll || itemSavepointsInfo.totalCount < VERSION_DEFAULT_LIMIT;
 
+      newData.versionLimit = await versionsApi.fetchVersionLimit({ itemId });
+
       return newData;
     };
 
@@ -499,6 +494,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     const { wasAborted } = await useSelectionStore().deselectAllObjects();
     if (wasAborted) {
       return;
+    }
+
+    const panelStore = usePanelStore();
+    if (!panelStore.isRightPanelExpanded) {
+      panelStore.isRightPanelExpanded = true;
     }
 
     // Reset cached state

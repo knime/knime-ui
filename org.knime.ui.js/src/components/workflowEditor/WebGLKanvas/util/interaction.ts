@@ -1,7 +1,27 @@
 import type { FederatedPointerEvent } from "pixi.js";
 
+type Initiator =
+  | "action-button"
+  | "add-port-placeholder"
+  | "add-port-placeholder::onEscape"
+  | "annotation-transform"
+  | "annotation::onContextMenu"
+  | "bendpoint::onContextMenu"
+  | "component-placeholder::onContextMenu"
+  | "connection-select"
+  | "floating-connector"
+  | "floating-connector::onEscape"
+  | "minimap-pan"
+  | "node::onContextMenu"
+  | "node-label-edit"
+  | "node-name-edit"
+  | "node-port::onEscape"
+  | "object-interaction"
+  | "object-interaction::onEscape"
+  | "text-editing";
+
 export type CustomUIEventDataset = {
-  initiator: string;
+  initiator: Initiator;
   skipGlobalSelection?: boolean;
   skipDeselectByKeyboard?: boolean;
 };

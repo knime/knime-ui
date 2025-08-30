@@ -74,7 +74,7 @@ export default {
 
 path {
   fill: none;
-  stroke: var(--knime-masala);
+  stroke: var(--knime-black);
   stroke-linecap: round;
   stroke-linejoin: round;
 }

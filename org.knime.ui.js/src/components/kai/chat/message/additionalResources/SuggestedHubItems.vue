@@ -4,7 +4,7 @@ import { computed } from "vue";
 import { Button } from "@knime/components";
 import LinkIcon from "@knime/styles/img/icons/link-external.svg";
 
-import type { HubItem } from "@/store/aiAssistant";
+import type { HubItem } from "@/store/ai/types";
 
 interface Props {
   items: HubItem[];

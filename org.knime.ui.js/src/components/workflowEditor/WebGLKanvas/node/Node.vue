@@ -27,7 +27,6 @@ import type { PortPositions } from "../../common/usePortPositions";
 import { useNodeHoverProvider } from "../common/useNodeHoverState";
 import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";
 import { useObjectInteractions } from "../common/useObjectInteractions";
-import { useZoomAwareResolution } from "../common/useZoomAwareResolution";
 import NodePorts from "../ports/NodePorts.vue";
 import { markPointerEventAsHandled } from "../util/interaction";
 
@@ -40,8 +39,8 @@ import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeHoverSize } from "./useNodeHoverSize";
-import { useNodeNameTextMetrics } from "./useNodeNameTextMetrics";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
+import { useNodeNameShortening } from "./useTextShortening";
 
 interface Props {
   node: KnimeNode;
@@ -63,8 +62,13 @@ const isComponent = computed(() => isNodeComponent(props.node));
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
 const canvasStore = useWebGLCanvasStore();
-const { isDebugModeEnabled, visibleArea, toCanvasCoordinates, canvasLayers } =
-  storeToRefs(canvasStore);
+const {
+  isDebugModeEnabled,
+  visibleArea,
+  toCanvasCoordinates,
+  canvasLayers,
+  zoomAwareResolution,
+} = storeToRefs(canvasStore);
 
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
@@ -164,11 +168,8 @@ const isHovering = computed(
     (portTypeMenu.value.isOpen && portTypeMenu.value.nodeId === props.node.id),
 );
 
-const { metrics: nodeNameDimensions, shortenedNodeName } =
-  useNodeNameTextMetrics({
-    nodeName: toRef(props, "name"),
-    shortenName: isMetanode.value || isComponent.value,
-  });
+const { metrics: nodeNameDimensions, shortenedText: shortenedNodeName } =
+  useNodeNameShortening(toRef(props, "name"));
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
@@ -262,7 +263,8 @@ const allAllowedActions = computed(() => {
     ...loopInfo?.allowedActions,
   };
 
-  const canConfigure = !useEmbeddedDialogs.value;
+  const canConfigure =
+    !useEmbeddedDialogs.value && props.node.dialogType !== undefined;
 
   return { ...baseConfig, canConfigure };
 });
@@ -288,7 +290,9 @@ const actionBarPosition = computed(() => {
 });
 
 const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
-  markPointerEventAsHandled(event, { initiator: "node-ctx-menu" });
+  markPointerEventAsHandled(event, {
+    initiator: "node::onContextMenu",
+  });
   const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
 
   canvasStore.setCanvasAnchor({
@@ -307,20 +311,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
 
   await canvasAnchoredComponentsStore.toggleContextMenu();
 };
-
-const { resolution } = useZoomAwareResolution();
-
-const nodeLabelPosition = computed(() => {
-  const yOffset = 8;
-  return {
-    x: translatedPosition.value.x + $shapes.nodeSize / 2,
-    y:
-      translatedPosition.value.y +
-      nodeSelectionMeasures.value.y +
-      nodeSelectionMeasures.value.height +
-      yOffset,
-  };
-});
 </script>
 
 <template>
@@ -363,7 +353,8 @@ const nodeLabelPosition = computed(() => {
     />
 
     <NodeName
-      v-if="renderable"
+      :renderable="renderable"
+      :visible="renderable"
       :node-id="node.id"
       :name="shortenedNodeName"
       :full-name="name"
@@ -374,7 +365,8 @@ const nodeLabelPosition = computed(() => {
 
     <Container label="NodeTorsoContainer">
       <NodeTorso
-        v-if="renderable"
+        :renderable="renderable"
+        :visible="renderable"
         label="NodeTorso"
         :node-id="node.id"
         :kind="node.kind"
@@ -389,12 +381,19 @@ const nodeLabelPosition = computed(() => {
         "
       />
 
-      <NodeDecorators v-if="renderable" :type="type" v-bind="node" />
+      <NodeDecorators
+        :renderable="renderable"
+        :visible="renderable"
+        :type="type"
+        v-bind="node"
+      />
 
       <NodeState
-        v-if="!isMetanode && renderable"
+        v-if="!isMetanode"
+        :renderable="renderable"
+        :visible="renderable"
         v-bind="node.state"
-        :text-resolution="resolution"
+        :text-resolution="zoomAwareResolution"
       />
     </Container>
 
@@ -410,9 +409,13 @@ const nodeLabelPosition = computed(() => {
   </Container>
 
   <NodeLabel
-    v-if="renderable"
+    :renderable="renderable"
+    :visible="renderable"
     :node-id="node.id"
     :label="node.annotation?.text.value"
-    :position="nodeLabelPosition"
+    :position="translatedPosition"
+    :is-metanode="isMetanode"
+    @rightclick="onRightClick"
+    @pointerdown="handlePointerInteraction"
   />
 </template>

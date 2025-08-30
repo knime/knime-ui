@@ -660,14 +660,6 @@ describe("Kanvas", () => {
       ).toHaveBeenCalledWith(expect.anything());
     });
 
-    it("opens contextmenu with SHIFT+F10", async () => {
-      const { wrapper, mockedStores } = doShallowMount();
-      await wrapper.trigger("keydown", { key: "F10", shiftKey: true });
-      expect(
-        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
-      ).toHaveBeenCalledWith(expect.anything());
-    });
-
     it("left click with control on Mac opens context menu", async () => {
       mockIsMac(true);
       const { wrapper, mockedStores } = doShallowMount();
@@ -685,7 +677,7 @@ describe("Kanvas", () => {
       await wrapper.trigger("keydown", { key: "ContextMenu" });
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
-      ).toHaveBeenCalledWith(expect.anything());
+      ).toHaveBeenCalledWith();
     });
   });
 

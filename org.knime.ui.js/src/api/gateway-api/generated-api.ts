@@ -1901,6 +1901,29 @@ export interface KaiUiStrings {
 
 
 /**
+ * Current AI interaction usage and limits for the authenticated user.
+ * @export
+ * @interface KaiUsage
+ */
+export interface KaiUsage {
+
+    /**
+     * Maximum number of requests allowed.
+     * @type {number}
+     * @memberof KaiUsage
+     */
+    limit: number;
+    /**
+     * Number of requests used.
+     * @type {number}
+     * @memberof KaiUsage
+     */
+    used: number;
+
+}
+
+
+/**
  * The messages K-AI starts the conversations with.
  * @export
  * @interface KaiWelcomeMessages
@@ -5606,6 +5629,20 @@ const kai = function(rpcClient: RPCClient) {
             return rpcClient.call('KaiService.getUiStrings', { ...defaultParams, ...params });
         },
         /**
+         * Retrieves the current user's AI interaction usage and limits.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUsage(
+        	params: { projectId: string  }
+        ): Promise<KaiUsage> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.getUsage', { ...defaultParams, ...params });
+        },
+        /**
          * Sends a request to a chain.
          * @param {string} params.kaiChainId Id of a K-AI chain.
          * @param {KaiRequest} params.kaiRequest 
@@ -6389,6 +6426,22 @@ const workflow = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('WorkflowService.redoWorkflowCommand', { ...defaultParams, ...params });
+        },
+        /**
+         * Restore the workflow (manager) corresponding to the given project and version, s.t. the current working area  will be overwritten with the specified version to restore.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.version The version identifier. &#x60;null&#x60; corresponds to the current-state (working area).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        async restoreVersion(
+        	params: { projectId: string,  version: string  }
+        ): Promise<Response> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('WorkflowService.restoreVersion', { ...defaultParams, ...params });
         },
         /**
          * Save a project. This is a temporary service endpoint to offer saving a project in the browser environment, i.e. without any progress indication. In the desktop environment, this endpoint will not be called and instead the corresponding one from the Desktop API. Projects are usually only saved on session close in the browser environment, so the only other current use-case is saving before creating a version. We leave the call to the Catalog service to create the version to the Frontend for the time being. This means the code paths diverge only on save-and-upload. Otherwise, we would (a) have to parameterise the Gateway endpoint by some `doSave`, which is equivalent to `isBrowser` and (b) implement capability for the backend to make the Catalog call. As soon as we can provide Browser-compatible (i.e. Web-UI) progress indication (NXT-3634), the two endpoints and their backing duplicated logic can be unified and `createVersion` can become a single Gateway endpoint, also performing the hub service call (if desired).

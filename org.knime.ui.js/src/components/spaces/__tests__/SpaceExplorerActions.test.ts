@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { flushPromises, mount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
 import { SubMenu } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import type { MenuItemWithHandler } from "@/components/common/types";
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
@@ -94,6 +95,13 @@ describe("SpaceExplorerActions.vue", () => {
     });
 
     await nextTick();
+  };
+
+  const findItemByActionId = (wrapper: VueWrapper<any>, actionId: string) => {
+    const subMenu = wrapper.findComponent(SubMenu);
+    return subMenu
+      .props("items")
+      .find((item) => (item as MenuItemWithHandler).metadata?.id === actionId);
   };
 
   describe("normal mode", () => {
@@ -297,7 +305,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            id: "downloadToLocalSpace",
+            metadata: expect.objectContaining({ id: "downloadToLocalSpace" }),
             disabled: true,
           }),
         ]),
@@ -318,7 +326,7 @@ describe("SpaceExplorerActions.vue", () => {
       );
 
       const subMenu = wrapper.findComponent(SubMenu);
-      const item = subMenu.props("items").find((item) => item.id === actionId);
+      const item = findItemByActionId(wrapper, actionId);
       subMenu.vm.$emit("item-click", null, item);
 
       expect(mockedStores.spaceUploadsStore[storeAction]).toHaveBeenCalledWith({
@@ -344,9 +352,7 @@ describe("SpaceExplorerActions.vue", () => {
         );
 
         const subMenu = wrapper.findComponent(SubMenu);
-        const item = subMenu
-          .props("items")
-          .find((item) => item.id === actionId);
+        const item = findItemByActionId(wrapper, actionId);
         subMenu.vm.$emit("item-click", null, item);
 
         expect(
@@ -389,9 +395,7 @@ describe("SpaceExplorerActions.vue", () => {
         });
 
         const subMenu = wrapper.findComponent(SubMenu);
-        const item = subMenu
-          .props("items")
-          .find((item) => item.id === actionId);
+        const item = findItemByActionId(wrapper, actionId);
         subMenu.vm.$emit("item-click", null, item);
 
         expect(

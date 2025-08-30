@@ -194,10 +194,17 @@ describe("nodeConfiguration", () => {
 
       await selectionStore.selectNodes([configuredEmbeddableNode.id]);
       await flushPromises();
+      nodeConfiguration.setLatestPublishedData({
+        projectId: "",
+        nodeId: "",
+        workflowId: "",
+        data: "foo",
+      });
       nodeConfiguration.setDirtyState(dirtyState);
 
       const done = vi.fn();
 
+      expect(nodeConfiguration.latestPublishedData).not.toBeNull();
       nodeConfiguration.autoApplySettings().then(done);
 
       await flushPromises();
@@ -207,6 +214,7 @@ describe("nodeConfiguration", () => {
         configuredEmbeddableNode.id,
       ]);
 
+      expect(nodeConfiguration.latestPublishedData).toBeNull();
       expect(nodeConfiguration.applySettings).not.toHaveBeenCalled();
     });
 

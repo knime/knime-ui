@@ -10,11 +10,14 @@ import {
 
 import { onWorkflowSaved } from "@/composables/useWorkflowSaveListener";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
 
 import VersionPanelPromoteHub from "./VersionPanelPromoteHub.vue";
+
+const { PRICING_URL } = knimeExternalUrls;
 
 const versionsStore = useWorkflowVersionsStore();
 const { activeProjectVersionsModeInfo, activeProjectVersionsModeStatus } =
@@ -34,6 +37,9 @@ const hasAdminRights = computed(
 const hasEditCapability = computed(
   () =>
     activeProjectVersionsModeInfo.value?.permissions.includes("EDIT") ?? false,
+);
+const versionLimit = computed(
+  () => activeProjectVersionsModeInfo.value?.versionLimit,
 );
 
 const versionCreationState = ref<
@@ -149,8 +155,6 @@ const onDiscardCurrentState = () => {
         "
         class="create-version-drawer"
       >
-        <div class="header">Create version</div>
-
         <CreateVersionForm
           :is-creation-pending="versionCreationState === 'pending'"
           @create="onCreate"
@@ -173,6 +177,8 @@ const onDiscardCurrentState = () => {
       :has-unversioned-changes="
         versionsStore.activeProjectHasUnversionedChanges
       "
+      :version-limit="versionLimit"
+      :upgrade-url="PRICING_URL"
       @close="onClose"
       @select="onSelect"
       @load-all="onLoadAll"
@@ -207,16 +213,6 @@ const onDiscardCurrentState = () => {
     flex-direction: column;
     position: absolute;
     inset: 0;
-    background-color: var(--knime-gray-ultra-light);
-
-    & .header {
-      display: flex;
-      padding: 32px 30px 16px;
-      background-color: var(--knime-white);
-      font-weight: 700;
-      font-size: 20px;
-      line-height: 20px;
-    }
   }
 }
 

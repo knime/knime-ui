@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Button } from "@knime/components";
 
-import type { ActionMenuItem } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
+import type { MenuItemWithHandler } from "../common/types";
 
 type Props = {
-  item: ActionMenuItem;
+  item: MenuItemWithHandler;
   disabled?: boolean;
 };
 
@@ -13,15 +13,14 @@ defineProps<Props>();
 
 <template>
   <Button
-    :id="item.id"
-    :key="item.id"
+    :id="item.metadata?.id"
     :title="item.text"
     :aria-label="item.text"
     class="action-button"
     compact
     :aria-disabled="disabled || null"
     :disabled="disabled"
-    @click="item.execute?.()"
+    @click="item.metadata?.handler?.()"
   >
     <Component
       :is="item.icon"

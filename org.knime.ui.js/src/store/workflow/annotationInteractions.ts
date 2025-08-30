@@ -76,6 +76,23 @@ export const useAnnotationInteractionsStore = defineStore(
         this.setEditableAnnotationId(newAnnotationId);
       },
 
+      previewWorkflowAnnotationTransform({
+        bounds,
+        annotationId,
+      }: {
+        bounds: Bounds;
+        annotationId: string;
+      }) {
+        // optimistic update
+        const annotation =
+          useWorkflowStore().activeWorkflow!.workflowAnnotations.find(
+            (annotationCandidate) => annotationCandidate.id === annotationId,
+          )!;
+        if (annotation) {
+          annotation.bounds = bounds;
+        }
+      },
+
       transformWorkflowAnnotation({
         bounds,
         annotationId,
@@ -85,15 +102,6 @@ export const useAnnotationInteractionsStore = defineStore(
       }) {
         const { projectId, workflowId } =
           useWorkflowStore().getProjectAndWorkflowIds;
-
-        // optimistic update
-        const annotation =
-          useWorkflowStore().activeWorkflow!.workflowAnnotations.find(
-            (annotationCandidate) => annotationCandidate.id === annotationId,
-          )!;
-        if (annotation) {
-          annotation.bounds = bounds;
-        }
 
         return API.workflowCommand.TransformWorkflowAnnotation({
           projectId,
@@ -161,6 +169,18 @@ export const useAnnotationInteractionsStore = defineStore(
 
           throw error;
         }
+      },
+    },
+    getters: {
+      getAnnotationById: () => (annotationId: string) => {
+        const workflowStore = useWorkflowStore();
+        if (!workflowStore.activeWorkflow) {
+          return undefined;
+        }
+
+        return workflowStore.activeWorkflow.workflowAnnotations.find(
+          ({ id }) => id === annotationId,
+        );
       },
     },
   },

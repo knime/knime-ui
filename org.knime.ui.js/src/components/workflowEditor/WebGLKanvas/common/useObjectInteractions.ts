@@ -9,9 +9,12 @@ import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
+import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
+import { geometry } from "@/util/geometry";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 import {
   markEscapeAsHandled,
@@ -37,6 +40,10 @@ const useObjectHandler = (objectMetadata: ObjectMetadata) => {
     isObjectSelected: () => boolean;
     selectObject: () => void;
     deselectObject: () => void;
+    /**
+     * Needed for grid snapping. Not used by objects that do not snap to grid
+     */
+    getObjectInitialPosition?: () => XY;
   };
 
   function assertUnreachable(_: never): never {
@@ -55,6 +62,12 @@ const useObjectHandler = (objectMetadata: ObjectMetadata) => {
             selectionStore.selectNodes([objectMetadata.nodeId]),
           deselectObject: () =>
             selectionStore.deselectNodes([objectMetadata.nodeId]),
+          getObjectInitialPosition: () => {
+            const node = useNodeInteractionsStore().getNodeById(
+              objectMetadata.nodeId,
+            );
+            return node!.position;
+          },
         };
       }
 
@@ -67,6 +80,13 @@ const useObjectHandler = (objectMetadata: ObjectMetadata) => {
             selectionStore.selectAnnotations([objectMetadata.annotationId]),
           deselectObject: () =>
             selectionStore.deselectAnnotations([objectMetadata.annotationId]),
+          getObjectInitialPosition: () => {
+            const annotation =
+              useAnnotationInteractionsStore().getAnnotationById(
+                objectMetadata.annotationId,
+              );
+            return { x: annotation!.bounds.x, y: annotation!.bounds.y };
+          },
         };
       }
 
@@ -134,6 +154,10 @@ type UseObjectInteractionsOptions = {
    * Optional handler to run when the user fires off a double click
    */
   onDoubleClick?: (event: PointerEvent) => void;
+  /**
+   * Optional handler to run when the object is selected
+   */
+  onSelect?: () => void;
 };
 
 /**
@@ -194,11 +218,31 @@ export const useObjectInteractions = (
 
   const objectHandler = useObjectHandler(objectMetadata);
 
-  const startPosition = ref<XY>({ x: 0, y: 0 });
+  const startPosition = ref<XY & { gridPositionDelta: XY }>({
+    x: 0,
+    y: 0,
+    gridPositionDelta: { x: 0, y: 0 },
+  });
   const setStartPosition = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
     const { clientX, clientY } = pointerDownEvent;
     const [x, y] = canvasStore.screenToCanvasCoordinates([clientX, clientY]);
-    startPosition.value = { x, y };
+
+    const currentObjectPosition =
+      objectHandler.getObjectInitialPosition?.() ?? { x: 0, y: 0 };
+
+    // account for any delta between the current position and its grid-adjusted equivalent.
+    // this is useful for objects that might be not aligned to the grid,
+    // so that they can be brought back in during the drag operation
+    const gridPositionDelta = {
+      x:
+        geometry.utils.snapToGrid(currentObjectPosition.x) -
+        currentObjectPosition.x,
+      y:
+        geometry.utils.snapToGrid(currentObjectPosition.y) -
+        currentObjectPosition.y,
+    };
+
+    startPosition.value = { x, y, gridPositionDelta };
   };
 
   const registerDragAbort = () => {
@@ -206,7 +250,7 @@ export const useObjectInteractions = (
       if (isDragging.value && event.key === "Escape") {
         movingStore.abortDrag();
         markEscapeAsHandled(event, {
-          initiator: "object-interaction::escapeKey",
+          initiator: "object-interaction::onEscape",
         });
       }
     };
@@ -230,8 +274,16 @@ export const useObjectInteractions = (
       pointerMoveEvent.clientY,
     ]);
 
-    const deltaX = moveX - startPosition.value.x;
-    const deltaY = moveY - startPosition.value.y;
+    const snapFn = pointerMoveEvent.altKey
+      ? (val: number) => val
+      : geometry.utils.snapToGrid;
+
+    const deltaX =
+      snapFn(moveX - startPosition.value.x) +
+      startPosition.value.gridPositionDelta.x;
+    const deltaY =
+      snapFn(moveY - startPosition.value.y) +
+      startPosition.value.gridPositionDelta.y;
 
     const isSignificantMove =
       Math.abs(deltaX) >= MIN_MOVE_THRESHOLD ||
@@ -241,7 +293,7 @@ export const useObjectInteractions = (
   };
 
   /**
-   * Annotations are handled slighlty different when not selected, by making the
+   * Annotations are handled slightly different when not selected, by making the
    * selection only if the user performs a pointerdown and a pointerup without moving their mouse.
    * Otherwise, provided they do move, this interaction will be ignored and the annotation will be neither selected
    * nor moved. When the annotation is already selected, the behavior is the same as for other objects.
@@ -356,7 +408,7 @@ export const useObjectInteractions = (
       });
 
       // since multiselection means no drag will be made, we can
-      // immadiately make the real selection
+      // immediately make the real selection
       const action = objectHandler.isObjectSelected()
         ? objectHandler.deselectObject
         : objectHandler.selectObject;
@@ -418,7 +470,6 @@ export const useObjectInteractions = (
         });
 
         objectHandler.selectObject();
-
         onMoveEnd().then(async ({ shouldMove }) => {
           if (shouldMove) {
             await movingStore.moveObjects();
@@ -431,10 +482,8 @@ export const useObjectInteractions = (
           { objectMetadata },
         );
 
-        const isNode = options.objectMetadata.type === "node";
-
         openRightPanelForNodes();
-
+        const isNode = options.objectMetadata.type === "node";
         if (isNode) {
           // skip deselecting -> re-selecting the same node
           await selectionStore.deselectAllObjects([
@@ -444,6 +493,8 @@ export const useObjectInteractions = (
           await selectionStore.deselectAllObjects();
           objectHandler.selectObject();
         }
+
+        options.onSelect?.();
       } else {
         consola.debug(
           "object interaction:: drag did not occur, handling previously unselected object",
@@ -452,6 +503,7 @@ export const useObjectInteractions = (
 
         openRightPanelForNodes();
         objectHandler.selectObject();
+        options.onSelect?.();
       }
 
       isSelectionDelayedUntilDragCompletes.value = false;
