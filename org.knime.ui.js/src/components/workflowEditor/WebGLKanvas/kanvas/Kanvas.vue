@@ -177,7 +177,8 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
 <template>
   <Application
     ref="pixiApp"
-    :background-color="0xffffff"
+    :background-color="0x000000"
+    :background-alpha="0"
     :width="containerSize.width"
     :height="containerSize.height"
     :resolution="pixelRatio"
@@ -210,6 +211,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
 
     <Minimap v-if="isMinimapVisible && !shouldHideMiniMap" />
   </Application>
+  <div id="annotaitons" />
 </template>
 
 <style scoped lang="postcss">

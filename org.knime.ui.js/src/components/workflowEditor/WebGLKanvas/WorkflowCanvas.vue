@@ -218,6 +218,11 @@ const onEscape = async (event: KeyboardEvent) => {
   height: 100%;
   width: 100%;
 
+  & :deep(canvas) {
+    position: absolute;
+    z-index: 1001;
+  }
+
   &:focus {
     outline: none;
   }

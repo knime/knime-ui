@@ -2,15 +2,18 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
 import {
+  type App,
+  type AppContext,
   computed,
-  nextTick,
+  createApp,
+  getCurrentInstance,
   onMounted,
+  onUnmounted,
   ref,
   toRef,
   useTemplateRef,
-  watch,
 } from "vue";
-import { useMagicKeys, watchDebounced } from "@vueuse/core";
+import { useMagicKeys } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -18,7 +21,6 @@ import { getMetaOrCtrlKey } from "@knime/utils";
 
 import type {
   Bounds,
-  WorkflowAnnotation,
   WorkflowAnnotation as WorkflowAnnotationType,
 } from "@/api/gateway-api/generated-api";
 import { useAnnotationVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
@@ -35,7 +37,7 @@ import { useObjectInteractions } from "../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../util/interaction";
 
 import TransformControls from "./TransformControls.vue";
-import { getAnnotationStyles } from "./annotationStyles";
+import WorkflowAnnotation from "./WorkflowAnnotation.vue";
 
 const ANNOTATION_MIN_HEIGHT_PX = 30;
 const ANNOTATION_MIN_WIDTH_PX = 30;
@@ -51,6 +53,44 @@ const annotationContainer = useTemplateRef<ContainerInst>(
   "annotationContainer",
 );
 
+let app: App;
+
+// import constants from "@/plugins/constants";
+
+const inheritParent = (app: App<any>, appContext?: AppContext) => {
+  const parent = appContext?.app;
+  if (parent) {
+    app.config.globalProperties = parent.config.globalProperties;
+    Object.assign(app._context, parent._context);
+  }
+};
+
+onMounted(() => {
+  // create component
+  const element = document.createElement("div");
+  element.style.width = `${props.annotation.bounds.width}px`;
+  element.style.height = `${props.annotation.bounds.height}px`;
+
+  const { appContext } = getCurrentInstance()!;
+
+  app = createApp(WorkflowAnnotation, {
+    annotation: props.annotation,
+    isResizing: true,
+  });
+  inheritParent(app, appContext);
+  app.mount(element);
+
+  // wire to pixi
+  const domContainer = new PIXI.DOMContainer({
+    element,
+  });
+  annotationContainer.value!.addChild(domContainer);
+});
+
+onUnmounted(() => {
+  app.unmount();
+});
+
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 
 const selectionStore = useSelectionStore();
@@ -59,7 +99,7 @@ const { isAnnotationSelected } = selectionStore;
 const isSelected = computed(() => isAnnotationSelected(props.annotation.id));
 
 const canvasStore = useWebGLCanvasStore();
-const { toCanvasCoordinates, visibleArea, zoomAwareResolution, canvasLayers } =
+const { toCanvasCoordinates, visibleArea, canvasLayers } =
   storeToRefs(canvasStore);
 
 const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
@@ -152,91 +192,6 @@ const isWithinVisibleArea = computed(() => {
   );
 
   return Boolean(intersect);
-});
-
-let textRef: PIXI.HTMLText | undefined;
-
-const autoUpdateResolution = () => {
-  // debounce because the resolution or renderable sources could change fast
-  // often. e.g resolution due to fast zoom in/out and if it's within visible
-  // area due to fast panning which culls out of view annotations
-  watchDebounced(
-    [zoomAwareResolution, isWithinVisibleArea],
-    () => {
-      requestAnimationFrame(() => {
-        if (textRef && isWithinVisibleArea.value) {
-          textRef.resolution = zoomAwareResolution.value;
-        }
-      });
-    },
-    { immediate: true, debounce: 600 },
-  );
-};
-
-const isUpdating = ref(false);
-
-const updateAnnotationText = (nextValue: WorkflowAnnotation, force = false) => {
-  if (isUpdating.value) {
-    return;
-  }
-
-  // do not update it if we are not rendered unless we are forced to
-  if (!isWithinVisibleArea.value && !force) {
-    return;
-  }
-
-  isUpdating.value = true;
-
-  if (textRef) {
-    annotationContainer.value!.removeChildAt(0);
-    textRef = undefined;
-  }
-
-  const annotationTextWithStyles = getAnnotationStyles(
-    nextValue,
-    ANNOTATION_STROKE_SIZE,
-  );
-
-  const text = new PIXI.HTMLText({
-    label: "AnnotationText",
-    text: annotationTextWithStyles,
-    style: {
-      fontFamily: "Roboto Condensed",
-      wordWrap: true,
-      wordWrapWidth: nextValue.bounds.width,
-    },
-  });
-
-  text.roundPixels = true;
-  text.resolution = zoomAwareResolution.value;
-  textRef = text;
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      // as this is async the container might be already gone
-      annotationContainer.value?.addChild(text);
-      isUpdating.value = false;
-    });
-  });
-};
-
-watch(
-  () => props.annotation.text.value,
-  (next, prev) => {
-    const isSameText = next === prev;
-    if (!isSameText) {
-      updateAnnotationText(props.annotation);
-    }
-  },
-);
-
-watch(
-  [() => props.annotation.bounds.height, () => props.annotation.bounds.width],
-  () => updateAnnotationText(props.annotation),
-);
-
-onMounted(() => {
-  updateAnnotationText(props.annotation, true);
-  autoUpdateResolution();
 });
 
 const { showFocus, showSelectionPlane, showTransformControls } =
@@ -365,7 +320,7 @@ useMagicKeys({
             annotation.bounds.width,
             annotation.bounds.height,
           );
-          graphics.fill($colors.White);
+          graphics.fill('transparent');
         }
       "
     />
@@ -390,10 +345,6 @@ useMagicKeys({
       "
     />
 
-    <Container
-      ref="annotationContainer"
-      label="AnnotationContentWrapper"
-      :renderable="isWithinVisibleArea && !isResizing"
-    />
+    <Container ref="annotationContainer" label="AnnotationContentWrapper" />
   </Container>
 </template>
