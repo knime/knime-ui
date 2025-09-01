@@ -90,9 +90,6 @@ import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.VersionId;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
@@ -132,7 +129,6 @@ public final class DesktopAPUtil {
      *
      * @param ctx The workflow context
      * @return The optional workflow manager that has been loaded.
-     * @throws GatewayException
      */
     public static Optional<WorkflowManager> loadWorkflowManagerWithProgress(final WorkflowContextV2 ctx) {
         return runWithProgress(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
@@ -385,7 +381,6 @@ public final class DesktopAPUtil {
          *
          * @param progressMonitor progress monitor
          * @return computed result
-         * @throws InterruptedException if the invocation was interrupted
          */
         R invoke(IProgressMonitor progressMonitor);
     }
@@ -398,11 +393,9 @@ public final class DesktopAPUtil {
      * @param logger logger to use
      * @param task Task to perform
      * @return returned value
-     * @throws NetworkException
-     * @throws LoggedOutException
-     * @throws ServiceCallException
      */
-    public static <R> Optional<R> runWithProgress(final String name, final NodeLogger logger, final FunctionWithProgress<R> task)  {
+    public static <R> Optional<R> runWithProgress(final String name, final NodeLogger logger,
+        final FunctionWithProgress<R> task) {
         return composedRunWithProgress(name, logger, task,
             cause -> showWarningAndLogError(name + " failed", cause.getMessage(), logger, cause));
     }
@@ -415,12 +408,9 @@ public final class DesktopAPUtil {
      * @param logger logger to use
      * @param task function to call
      * @return returned value
-     * @throws NetworkException
-     * @throws LoggedOutException
-     * @throws ServiceCallException
      */
     public static <R> Optional<R> runWithProgressWithoutWarnings(final String name, final NodeLogger logger,
-        final FunctionWithProgress<R> task)  {
+        final FunctionWithProgress<R> task) {
         return composedRunWithProgress(name, logger, task,
             cause -> logger.error("%s failed: %s".formatted(name, cause.getMessage())));
     }
@@ -432,13 +422,9 @@ public final class DesktopAPUtil {
      * @param errorHandler
      * @return An Optional containing the result of the task
      * @param <R> Result type of the task
-     * @throws ServiceCallException
-     * @throws LoggedOutException
-     * @throws NetworkException
      */
     private static <R> Optional<R> composedRunWithProgress(final String name, final NodeLogger logger,
-        final FunctionWithProgress<R> task, final Consumer<Throwable> errorHandler)
-         {
+        final FunctionWithProgress<R> task, final Consumer<Throwable> errorHandler) {
 
         final var result = new AtomicReference<R>();
         final var gatewayExceptionRef = new AtomicReference<GatewayException>();
@@ -463,13 +449,7 @@ public final class DesktopAPUtil {
 
         final var ge = gatewayExceptionRef.get();
         if (ge != null) {
-            if (ge instanceof ServiceCallException sce) {
-                return Optional.empty();
-            } else if (ge instanceof LoggedOutException loe) {
-                return Optional.empty();
-            } else {
-                return Optional.empty();
-            }
+            return Optional.empty();
         }
         return Optional.ofNullable(result.get());
     }
@@ -511,14 +491,9 @@ public final class DesktopAPUtil {
      * @param remoteFileStore
      * @param locationInfo if {@code null} it will be inferred from 'remoteFileStore'
      * @return an empty optional if the download or opening the workflow failed
-     * @throws NetworkException
-     * @throws LoggedOutException
-     * @throws ServiceCallException
      */
     public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgress(
-        final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo)
-         {
-
+        final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
         return runWithProgress(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
     }
@@ -529,14 +504,9 @@ public final class DesktopAPUtil {
      * @param remoteFileStore
      * @param locationInfo if {@code null} it will be inferred from 'remoteFileStore'
      * @return an empty optional if the download or opening the workflow failed
-     * @throws NetworkException
-     * @throws LoggedOutException
-     * @throws ServiceCallException
      */
     public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgressWithoutWarnings(
-        final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo)
-         {
-
+        final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
         return runWithProgressWithoutWarnings(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
     }
@@ -627,13 +597,8 @@ public final class DesktopAPUtil {
      *
      * @param fileStore source file store
      * @return newly fetch file store
-     * @throws NetworkException
-     * @throws LoggedOutException
-     * @throws ServiceCallException
      */
-    public static boolean waitForMountpointToFinishFetching(final AbstractExplorerFileStore fileStore)
-         {
-
+    public static boolean waitForMountpointToFinishFetching(final AbstractExplorerFileStore fileStore) {
         final var provider = fileStore.getContentProvider();
         if (fileStore instanceof RemoteExplorerFileStore && isMountpointFetching(provider, fileStore)) {
             return runWithProgress("Fetching remote contents...", LOGGER, progress -> {

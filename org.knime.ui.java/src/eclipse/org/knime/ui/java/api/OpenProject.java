@@ -59,7 +59,6 @@ import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.util.Pair;
 import org.knime.core.util.hub.NamedItemVersion;
-import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceItemVersionEnt;
@@ -168,11 +167,8 @@ final class OpenProject {
      * @param repoObjectImport The source of the project
      * @param selectedVersion The version information of the given import, can be {@code null}
      * @return Whether the project could be fetched and opened
-     * @throws GatewayException
      */
-    static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion)
-         {
-
+    static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion) {
         final var wfm = loadWorkflowWithProgress(repoObjectImport);
         if (wfm == null) {
             return false;
@@ -248,7 +244,6 @@ final class OpenProject {
     /**
      * Registers the project with the {@link ProjectManager}, sets it as active, adds it to the most recently used and
      * updates the app state.
-     * @throws GatewayException
      */
     static void registerProjectAndSetActive(final Project project, final SpaceProviderEnt.TypeEnum providerType) {
 

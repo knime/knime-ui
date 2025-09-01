@@ -137,16 +137,15 @@ public final class SaveAndCloseProjects {
      */
     public static State saveAndCloseProjectsInteractively(final List<String> projectIds) {
         var projectManager = ProjectManager.getInstance();
-        final List<WorkflowManager> dirtyWfmsList = new ArrayList<>();
+        final List<WorkflowManager> dirtyWfms = new ArrayList<>();
         for (final var id : projectIds) {
             projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded).ifPresent(wfm -> {
                 if (wfm.isDirty()) {
-                    dirtyWfmsList.add(wfm);
+                    dirtyWfms.add(wfm);
                 }
             });
         }
-        final var dirtyWfms = dirtyWfmsList.toArray(WorkflowManager[]::new);
-        var shallSaveProjects = promptWhetherToSaveProjects();
+        var shallSaveProjects = promptWhetherToSaveProjects(dirtyWfms);
         return switch (shallSaveProjects) {
             case YES -> { // NOSONAR
                 assertUiThread();
@@ -175,15 +174,11 @@ public final class SaveAndCloseProjects {
      * @param projectIds id of the projects to save
      * @param firstFailure the first id of the project that couldn't be saved
      * @param progressService
-     * @throws GatewayException -
      */
     public static void saveProjectsWithProgressBar(final String[] projectIds,
-        final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService)
-         {
+        final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService) {
         try {
-            progressService.busyCursorWhile(monitor -> {
-                saveProjects(projectIds, firstFailure, monitor);
-            });
+            progressService.busyCursorWhile(monitor -> saveProjects(projectIds, firstFailure, monitor));
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving workflow failed", e);
             firstFailure.compareAndExchange(null, Optional.empty());
@@ -195,7 +190,7 @@ public final class SaveAndCloseProjects {
     }
 
     private static void saveProjects(final String[] projectIds, final AtomicReference<Optional<String>> firstFailure,
-        final IProgressMonitor monitor)  {
+        final IProgressMonitor monitor) {
         monitor.beginTask("Saving " + projectIds.length + " projects", projectIds.length);
         for (var projectId : projectIds) {
             var projectManager = ProjectManager.getInstance();
@@ -252,14 +247,14 @@ public final class SaveAndCloseProjects {
      * @param dirtyWfms The dirty workflow managers to potentially save
      * @return The {@link DialogResponse}
      */
-    public static DialogResponse promptWhetherToSaveProjects(final WorkflowManager... dirtyWfms) {
+    public static DialogResponse promptWhetherToSaveProjects(final List<WorkflowManager> dirtyWfms) {
         String title;
         var message = new StringBuilder();
-        if (dirtyWfms.length == 0) {
+        if (dirtyWfms.isEmpty()) {
             return DialogResponse.NO;
-        } else if (dirtyWfms.length == 1) {
+        } else if (dirtyWfms.size() == 1) {
             title = "Save Workflow";
-            message.append("Save '").append(dirtyWfms[0].getName()).append("'?");
+            message.append("Save '").append(dirtyWfms.get(0).getName()).append("'?");
         } else {
             title = "Save Workflows";
             message.append("Save workflows?\n");
@@ -282,10 +277,10 @@ public final class SaveAndCloseProjects {
         return DialogResponse.of(dialogReturnCode);
     }
 
-    private static boolean promptCancelExecution(final WorkflowManager... wfms) {
-        var namesOfExecutingProjects = Arrays.stream(wfms).filter(Objects::nonNull)
-            .filter(wfm -> wfm.getNodeContainerState().isExecutionInProgress()).map(WorkflowManager::getName)
-            .toArray(String[]::new);
+    private static boolean promptCancelExecution(final List<WorkflowManager> wfms) {
+        var namesOfExecutingProjects =
+            wfms.stream().filter(Objects::nonNull).filter(wfm -> wfm.getNodeContainerState().isExecutionInProgress())
+                .map(WorkflowManager::getName).toArray(String[]::new);
         if (namesOfExecutingProjects.length == 0) {
             return true;
         }

@@ -122,7 +122,6 @@ final class SaveProject {
      * @param localOnly if {@code true}, the project is only saved locally even if it is a temporary copy from Hub
      * @param allowOverwritePrompt -
      * @return A boolean indicating whether the project was saved.
-     * @throws GatewayException
      */
     static boolean saveProject(final String projectId, final boolean localOnly, final boolean allowOverwritePrompt) {
         var projectWfm = WorkflowManagerResolver.get(projectId, NodeIDEnt.getRootID());
@@ -147,21 +146,15 @@ final class SaveProject {
         final boolean allowOverwritePrompt) {
         var wasSaveSuccessful = new AtomicBoolean();
         try {
-            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
-                wasSaveSuccessful.set(saveProject(monitor, wfm, localOnly, allowOverwritePrompt));
-            });
+            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(
+                monitor -> wasSaveSuccessful.set(saveProject(monitor, wfm, localOnly, allowOverwritePrompt)));
         } catch (InvocationTargetException e) {
             LOGGER.error("Saving the workflow or saving the SVG failed", e);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted the saving process");
             Thread.currentThread().interrupt();
         }
-
-        if (wasSaveSuccessful.get()) {
-            return true;
-        }
-
-        return false;
+        return wasSaveSuccessful.get();
     }
 
     static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final boolean localOnly) {

@@ -51,6 +51,7 @@ package org.knime.ui.java.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -164,12 +165,12 @@ public final class ClassicWorkflowEditorUtil {
         return loadResult.getWorkflowManager();
     }
 
-    private static WorkflowManager[] getDirtyWorkflowManagers() {
+    private static List<WorkflowManager> getDirtyWorkflowManagers() {
         return getOpenWorkflowEditors()//
             .map(WorkflowEditor::getWorkflowManager)//
             .flatMap(Optional::stream)//
             .filter(WorkflowManager::isDirty)//
-            .toArray(WorkflowManager[]::new);
+            .toList();
     }
 
     /**

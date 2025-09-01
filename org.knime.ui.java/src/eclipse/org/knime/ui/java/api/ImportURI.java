@@ -162,9 +162,7 @@ public final class ImportURI {
                 && repoObjectImport.getType() == RepoObjectType.Workflow) {
                 var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
                 var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
-                runInDisplayThread(() -> {
-                    OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null));
-                });
+                runInDisplayThread(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion.orElse(null)));
             } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
                 runInDisplayThread(() -> checkAndInstallExtension(extensionImport));
             } else {

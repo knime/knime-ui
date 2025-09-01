@@ -31,9 +31,9 @@ export const defaultAPIErrorHandler = (
       data.date && isValidDate(data.date) ? new Date(data.date) : undefined;
 
     const rfcError = new rfcErrors.RFCError({
-      title: data.title ?? "",
+      title: data.title,
       date,
-      status: data.status ?? error.code,
+      status: data.status,
       details: data.details,
       requestId: data["x-request-id"],
       errorId: data["x-error-id"],

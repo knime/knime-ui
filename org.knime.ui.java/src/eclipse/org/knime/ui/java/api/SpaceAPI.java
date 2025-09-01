@@ -77,7 +77,6 @@ import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
@@ -158,7 +157,7 @@ final class SpaceAPI {
     @API
     static void disconnectSpaceProvider(final String spaceProviderId) {
         var spaceProvider = DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey())
-                .getSpaceProvider(spaceProviderId);
+            .getSpaceProvider(spaceProviderId);
         if (spaceProvider != null) {
             spaceProvider.getConnection(false).ifPresent(SpaceProviderConnection::disconnect);
         }
@@ -218,10 +217,6 @@ final class SpaceAPI {
                 return performAsyncHubDownload(sources, destination);
             }
             return legacyCopyBetweenSpaces(sources, destination, false);
-
-        } catch (OperationNotAllowedException e) {
-            LOGGER.error("Download error: " + e.getMessage(), e);
-            throw new IllegalStateException("Failed to download items: " + e.getMessage(), e);
         } catch (MutableServiceCallException e) { // NOSONAR
             throw e.toGatewayException( //
                 "Failed to download item%s".formatted(sourceItemIdsParam.length == 1 ? "" : "s"));
@@ -274,11 +269,7 @@ final class SpaceAPI {
         final boolean excludeData) throws GatewayException, MutableServiceCallException {
         final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
         if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
-            try {
-                return performAsyncHubUpload(sources, destination, excludeData);
-            } catch (OperationNotAllowedException e) { // NOSONAR
-                // fall through to the default upload
-            }
+            return performAsyncHubUpload(sources, destination, excludeData);
         }
 
         legacyCopyBetweenSpaces(sources, destination, excludeData);
@@ -328,7 +319,7 @@ final class SpaceAPI {
         throws GatewayException, MutableServiceCallException {
 
         final var remoteTargetSpace = destination.space();
-        if (remoteTargetSpace.toEntity().isPrivate().booleanValue()) {
+        if (Boolean.TRUE.equals(remoteTargetSpace.toEntity().isPrivate())) {
             return true;
         }
         var contentProvider = ExplorerMountTable.getMountedContent().values().stream()
