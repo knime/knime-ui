@@ -1,6 +1,6 @@
 import { API } from "@api";
 
-import type { KnimeNode } from "@/api/custom-types";
+import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -11,10 +11,15 @@ import { nodeSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import { portPositions } from "@/util/portShift";
-import type { UnionToShortcutRegistry } from "../types";
+import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "../types";
+import type {
+  QuickActionMenuMode,
+  QuickActionMenuProps,
+} from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<
-  | "quickActionMenu"
+  | "openQuickNodeInsertionMenu"
+  | "openQuickBuildMenu"
   | "autoConnectNodesDefault"
   | "autoConnectNodesFlowVar"
   | "autoDisconnectNodesDefault"
@@ -58,118 +63,121 @@ const canAutoConnectOrDisconnect = () => {
   return isSingleNodeSelected ? isAnyPortBarSelected : isMultipleNodesSelected;
 };
 
-const workflowEditorShortcuts: WorkflowEditorShortcuts = {
-  quickActionMenu: {
-    text: "Quick add node",
-    title: "Add new node",
-    hotkey: ["CtrlOrCmd", "."],
-    additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
-    group: "workflowEditor",
-    execute: ({ payload }) => {
-      // destruct current state
-      const positionFromContextMenu = payload?.metadata?.position as XY;
-      const { isOpen, props } =
-        useCanvasAnchoredComponentsStore().quickActionMenu;
+const calculateNodeInsertionPosition = (
+  node: KnimeNode,
+  portIndex: number,
+  portCount: number,
+  nextSide: NodeRelation,
+) => {
+  const isOutports = nextSide === "SUCCESSORS";
+  const portPositionValues = portPositions({
+    portCount,
+    isMetanode: isNodeMetaNode(node),
+    isOutports,
+  });
+  const xOffset = nodeSize * (isOutports ? 3 : -3);
+  const startPoint: XY = {
+    x: node.position.x + portPositionValues[portIndex][0] + xOffset,
+    y: node.position.y + portPositionValues[portIndex][1],
+  };
+  return geometry.findFreeSpaceAroundPointWithFallback({
+    startPoint,
+    visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
+    nodes: useWorkflowStore().activeWorkflow!.nodes,
+  });
+};
 
-      const {
-        nodeId: lastNodeId,
-        port,
-        position: lastPosition,
-        nodeRelation,
-        positionOrigin: lastPositionOrigin,
-      } = props ?? {};
-      const lastPortIndex = port?.index ?? -1;
+const openQuickActionMenu =
+  ({ menuMode }: { menuMode: QuickActionMenuMode }) =>
+  ({ payload }: ShortcutExecuteContext) => {
+    const positionFromContextMenu = payload?.metadata?.position as XY;
+    const store = useCanvasAnchoredComponentsStore();
+    const { isOpen, props } = store.quickActionMenu;
 
-      // use the node of the currently open dialog because the node might not be selected in that case
-      const node = isOpen
-        ? useNodeInteractionsStore().getNodeById(lastNodeId!)
-        : useSelectionStore().singleSelectedNode;
+    const {
+      nodeId: lastNodeId,
+      port,
+      position: lastPosition,
+      nodeRelation,
+      positionOrigin: lastPositionOrigin,
+    } = props ?? {};
+    const lastPortIndex = port?.index ?? -1;
 
-      // global menu without predecessor node
-      if (node === null) {
-        const position =
-          positionFromContextMenu ??
-          geometry.findFreeSpaceAroundCenterWithFallback({
-            visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
-            nodes: useWorkflowStore().activeWorkflow!.nodes,
-          });
+    const node = isOpen
+      ? useNodeInteractionsStore().getNodeById(lastNodeId!)
+      : useSelectionStore().singleSelectedNode;
 
-        useCanvasAnchoredComponentsStore().openQuickActionMenu({
-          props: { position },
-        });
-
-        return;
-      }
-
-      const nodeId = node.id;
-      // shuffle between ports, starts in the outPort side with the first flowvar port, then the other ports in the same side and last the flowvar port
-      // then change to the inPort side with the same order
-      let nextSide = nodeRelation || "SUCCESSORS";
-      if (lastPortIndex === 0) {
-        nextSide =
-          nodeRelation === "SUCCESSORS" ? "PREDECESSORS" : "SUCCESSORS";
-      }
-      const portCount =
-        nextSide === "SUCCESSORS" ? node.outPorts.length : node.inPorts.length;
-      const startIndex = portCount === 1 ? 0 : 1;
-      const nextIndex =
-        nextSide === nodeRelation
-          ? (lastPortIndex + 1) % portCount
-          : startIndex;
-      const portIndex = lastNodeId === nodeId ? nextIndex : startIndex;
-
-      // if it's not open we need to find a proper position to put the menu
-      const calculatePosition = (
-        node: KnimeNode,
-        portIndex: number,
-        portCount: number,
-      ) => {
-        const isOutports = nextSide === "SUCCESSORS";
-        const portPositionValues = portPositions({
-          portCount,
-          isMetanode: isNodeMetaNode(node),
-          isOutports,
-        });
-
-        // eslint-disable-next-line no-magic-numbers
-        const xOffset = nodeSize * (isOutports ? 3 : -3);
-
-        const startPoint: XY = {
-          x: node.position.x + portPositionValues[portIndex][0] + xOffset,
-          y: node.position.y + portPositionValues[portIndex][1],
-        };
-
-        return geometry.findFreeSpaceAroundPointWithFallback({
-          startPoint,
+    // global menu without predecessor node
+    if (node === null) {
+      const position =
+        positionFromContextMenu ??
+        geometry.findFreeSpaceAroundCenterWithFallback({
           visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
           nodes: useWorkflowStore().activeWorkflow!.nodes,
         });
-      };
 
-      const nextPort =
-        nextSide === "SUCCESSORS"
-          ? node.outPorts[portIndex]
-          : node.inPorts[portIndex];
+      const p = { position } as QuickActionMenuProps;
+      p.initialMode = menuMode;
+      store.openQuickActionMenu({ props: p });
+      return;
+    }
 
-      const portSideWillChange = nextSide !== nodeRelation;
-      const portSideChangesForCalculatedPosition =
-        portSideWillChange && lastPositionOrigin !== "mouse";
-      const useLastPosition = isOpen && !portSideChangesForCalculatedPosition;
-      const position =
-        useLastPosition && lastPosition
-          ? lastPosition
-          : calculatePosition(node, portIndex, portCount);
+    const nodeId = node.id;
+    let nextSide = nodeRelation || "SUCCESSORS";
+    if (lastPortIndex === 0) {
+      nextSide = nodeRelation === "SUCCESSORS" ? "PREDECESSORS" : "SUCCESSORS";
+    }
+    const portCount =
+      nextSide === "SUCCESSORS" ? node.outPorts.length : node.inPorts.length;
+    const startIndex = portCount === 1 ? 0 : 1;
+    const nextIndex =
+      nextSide === nodeRelation ? (lastPortIndex + 1) % portCount : startIndex;
+    const portIndex = lastNodeId === nodeId ? nextIndex : startIndex;
 
-      useCanvasAnchoredComponentsStore().openQuickActionMenu({
-        props: {
-          nodeId,
-          port: nextPort,
-          position,
-          nodeRelation: nextSide,
-          positionOrigin: useLastPosition ? lastPositionOrigin : "calculated",
-        },
-      });
-    },
+    const nextPort =
+      nextSide === "SUCCESSORS"
+        ? node.outPorts[portIndex]
+        : node.inPorts[portIndex];
+
+    const portSideWillChange = nextSide !== nodeRelation;
+    const portSideChangesForCalculatedPosition =
+      portSideWillChange && lastPositionOrigin !== "mouse";
+    const useLastPosition = isOpen && !portSideChangesForCalculatedPosition;
+    const position =
+      useLastPosition && lastPosition
+        ? lastPosition
+        : calculateNodeInsertionPosition(node, portIndex, portCount, nextSide);
+
+    const p = {
+      nodeId,
+      port: nextPort,
+      position,
+      nodeRelation: nextSide,
+      positionOrigin: useLastPosition ? lastPositionOrigin : "calculated",
+    } as QuickActionMenuProps;
+    p.initialMode = menuMode;
+    store.openQuickActionMenu({ props: p });
+  };
+
+const workflowEditorShortcuts: WorkflowEditorShortcuts = {
+  openQuickNodeInsertionMenu: {
+    text: "Open Quick Node Insertion menu",
+    title: "Open Quick Node Insertion menu",
+    hotkey: ["CtrlOrCmd", "."],
+    additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
+    group: "workflowEditor",
+    execute: openQuickActionMenu({ menuMode: "quick-add" }),
+    condition: () => useWorkflowStore().isWritable,
+  },
+  openQuickBuildMenu: {
+    text: "Open Quick Build with K-AI menu",
+    title: "Open Quick Build menu",
+    hotkey: ["CtrlOrCmd", "Shift", "."],
+    additionalHotkeys: [
+      { key: ["Ctrl", "Shift", " " /* Space */], visible: false },
+    ],
+    group: "workflowEditor",
+    execute: openQuickActionMenu({ menuMode: "quick-build" }),
     condition: () => useWorkflowStore().isWritable,
   },
   autoConnectNodesDefault: {

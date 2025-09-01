@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, toRefs, watch } from "vue";
+/*
+Quick Action Menu has the following modes:
+- Quick Node Insertion (aka Quick Node Add) mode: allows searching the node repository and instantly adding the selected node;
+- Quick Build mode: allows prompting K-AI with a workflow-building request.
+
+On drag of node port or double-click on canvas, the menu will open in last mode used.
+
+On cmd/ctrl + . the menu will open in Quick Node Insertion mode.
+On cmd/ctrl + shift + . the menu will open in Quick Build mode.
+*/
+import { computed, onMounted, ref, toRefs, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
@@ -24,6 +34,8 @@ import { useQuickActionMenu } from "./useQuickActionMenu";
 
 const { FloatingMenu } = getFloatingMenuComponent();
 
+export type QuickActionMenuMode = "quick-add" | "quick-build" | null;
+
 export type QuickActionMenuProps = {
   nodeId?: string | null;
   position: XY;
@@ -31,6 +43,7 @@ export type QuickActionMenuProps = {
   nodeRelation?: NodeRelation | null;
   // required for recalculation of the position if opened with key shortcuts
   positionOrigin?: "mouse" | "calculated";
+  initialMode?: QuickActionMenuMode;
 };
 
 const props = withDefaults(defineProps<QuickActionMenuProps>(), {
@@ -38,6 +51,7 @@ const props = withDefaults(defineProps<QuickActionMenuProps>(), {
   port: null,
   nodeRelation: null,
   positionOrigin: "mouse",
+  initialMode: null,
 });
 
 const QUICK_BUILD_PROCESSING_OFFSET = 70;
@@ -62,6 +76,14 @@ const {
 const quickBuildState = ref<QuickBuildMenuState>("INPUT");
 const updateQuickBuildState = (newState: QuickBuildMenuState) =>
   (quickBuildState.value = newState);
+
+onMounted(() => {
+  if (props.initialMode === "quick-build" && isQuickBuildModeAvailable.value) {
+    setQuickBuildMode();
+  } else if (props.initialMode === "quick-add") {
+    setQuickAddMode();
+  }
+});
 
 const canvasPosition = computed(() => {
   let pos = { ...props.position };
@@ -167,7 +189,7 @@ watch(
 <template>
   <FloatingMenu
     :canvas-position="canvasPosition"
-    aria-label="Quick add node"
+    aria-label="Quick Action menu"
     :anchor="floatingMenuAnchor"
     :top-offset="floatingMenuTopOffset"
     :focus-trap="quickActionMenu.isOpen"
