@@ -51,9 +51,6 @@ import java.util.Optional;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.ui.java.util.DesktopAPUtil.FunctionWithProgress;
 
 /**
@@ -75,9 +72,6 @@ public interface ProgressReporter {
      * @param task -
      * @return The result of the computation, if successful.
      * @param <R> The result type
-     * @throws ServiceCallException
-     * @throws LoggedOutException
-     * @throws NetworkException
      */
     <R> Optional<R> getWithProgress(String name, NodeLogger logger, FunctionWithProgress<R> task);
 

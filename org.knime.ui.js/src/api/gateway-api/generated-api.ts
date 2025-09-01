@@ -6343,6 +6343,7 @@ const space = function(rpcClient: RPCClient) {
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
          * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         async renameItem(
         	params: { spaceProviderId: string,  spaceId: string,  itemId: string,  itemName: string  }
@@ -6362,6 +6363,7 @@ const space = function(rpcClient: RPCClient) {
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
          * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         async renameSpace(
         	params: { spaceProviderId: string,  spaceId: string,  spaceName: string  }

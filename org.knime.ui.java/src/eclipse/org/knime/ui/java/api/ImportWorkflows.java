@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -106,16 +107,13 @@ class ImportWorkflows extends AbstractImportItems {
 
         var archiveFilePath = srcPaths.get(0); // There can only be one
         try {
-
             final var fileSuffixMatcher = KNWF_KNAR_FILE_EXTENSION.matcher(archiveFilePath.getFileName().toString());
             final var archiveFileName = fileSuffixMatcher.replaceAll("").trim();
-            var nameCollision =
-                NameCollisionChecker.checkForNameCollisionInDir(space, archiveFileName, workflowGroupItemId);
-            if (nameCollision.isEmpty()) {
+            var nameCollisions =
+                NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId, Stream.of(archiveFileName));
+            if (nameCollisions.isEmpty()) {
                 return Optional.of(Space.NameCollisionHandling.NOOP);
             }
-
-            var nameCollisions = Collections.singletonList(nameCollision.get());
             return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions,
                 UsageContext.IMPORT);
         } catch (final MutableServiceCallException e) { // NOSONAR

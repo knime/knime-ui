@@ -50,7 +50,7 @@ package org.knime.ui.java.api;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -143,9 +143,7 @@ final class NodeAPI {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
 
-        CoreUtil.executeThenRun(nc, () -> {
-            Display.getDefault().asyncExec(task);
-        });
+        CoreUtil.executeThenRun(nc, () -> Display.getDefault().asyncExec(task));
 
     }
 

@@ -62,12 +62,12 @@ import java.util.function.Consumer;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.gateway.api.util.EntityUtil;
 import org.knime.gateway.api.webui.entity.GatewayProblemDescriptionEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
+import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ToastService;
@@ -208,10 +208,10 @@ public final class DesktopAPI {
             event.set("result", MAPPER.valueToTree(invokeMethod(method, args)));
         } catch (GatewayException e) {
             LOGGER.debug("Desktop API function call failed with `GatewayException` for '" + method.getName() + "'", e);
-            event.put("error", problemToString(EntityUtil.knownToProblemDescription(e)));
+            event.put("error", problemToString(EntityFactory.Misc.buildKnownProblemDescriptionEnt(e)));
         } catch (Throwable e) {
             LOGGER.debug("Desktop API function call failed for '" + method.getName() + "'", e);
-            event.put("error", problemToString(EntityUtil.unknownToProblemDescription(e)));
+            event.put("error", problemToString(EntityFactory.Misc.buildUnknownProblemDescriptionEnt(e)));
         }
 
         final var eventConsumer = getDeps(EventConsumer.class);

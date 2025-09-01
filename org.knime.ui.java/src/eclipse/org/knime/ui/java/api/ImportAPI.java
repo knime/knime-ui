@@ -160,14 +160,12 @@ final class ImportAPI {
         var workflowIdEnt = new NodeIDEnt(workflowId);
         Supplier<WorkflowManager> wfmSupplier =
             () -> WorkflowManagerResolver.get(projectId, workflowIdEnt);
-        Supplier<NodeID> command = () -> {
-            return Display.getDefault().syncCall(() -> {
-                final var wfm = wfmSupplier.get();
-                var snc = CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y,
-                    isRemoteLocation, false);
-                return snc == null ? null : snc.getID();
-            });
-        };
+        Supplier<NodeID> command = () -> Display.getDefault().syncCall(() -> {
+            final var wfm = wfmSupplier.get();
+            var snc =
+                CreateMetaNodeTemplateCommand.createMetaNodeTemplate(wfm, uri, (int)x, (int)y, isRemoteLocation, false);
+            return snc == null ? null : snc.getID();
+        });
         var componentId = command.get();
         if (componentId == null) {
             return null;

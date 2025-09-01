@@ -81,13 +81,3 @@ export function isApiErrorType<CODE extends KnownExecutorExceptions>(
     isApiError(e) && e.code === EXPECTED_EXCEPTION_CODE && e.data.code === code
   );
 }
-
-type KnownApiError = FormattedApiError & { code: ExpectedExceptionCode };
-export function isKnownApiError(e: unknown): e is KnownApiError {
-  return isApiError(e) && e.code === EXPECTED_EXCEPTION_CODE;
-}
-
-type UnknownApiError = FormattedApiError & { code: UnexpectedExceptionCode };
-export function isUnknownApiError(e: unknown): e is UnknownApiError {
-  return isApiError(e) && e.code === UNEXPECTED_EXCEPTION_CODE;
-}
