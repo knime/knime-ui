@@ -4,7 +4,7 @@ Quick Action Menu has the following modes:
 - Quick Node Insertion (aka Quick Node Add) mode: allows searching the node repository and instantly adding the selected node;
 - Quick Build mode: allows prompting K-AI with a workflow-building request.
 
-On drag of node port or double-click on canvas, the menu will open in last mode used.
+On drag of node port or double-click on canvas, the menu will open in the mode it was last opened in.
 
 On cmd/ctrl + . the menu will open in Quick Node Insertion mode.
 On cmd/ctrl + shift + . the menu will open in Quick Build mode.

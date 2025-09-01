@@ -201,5 +201,25 @@ describe("QuickActionMenu.vue", () => {
       expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(false);
       expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
     });
+
+    it("respects initialMode prop for quick-add mode", () => {
+      const { wrapper } = doMount({
+        props: { initialMode: "quick-add" },
+        initialMenuMode: "quick-add",
+      });
+
+      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
+      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(false);
+    });
+
+    it("respects initialMode prop for quick-build mode", () => {
+      const { wrapper } = doMount({
+        props: { initialMode: "quick-build" },
+        initialMenuMode: "quick-build",
+      });
+
+      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(true);
+      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
+    });
   });
 });

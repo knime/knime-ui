@@ -16,6 +16,9 @@ import ZoomMenu from "./ZoomMenu.vue";
 
 const $shortcuts = useShortcuts();
 const minimapShortcut = $shortcuts.get("toggleMinimap");
+const zoomOutShortcut = $shortcuts.get("zoomOut");
+const zoomInShortcut = $shortcuts.get("zoomIn");
+
 const isMinimapVisible = computed(
   () => useSettingsStore().settings.isMinimapVisible,
 );
@@ -43,15 +46,15 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
       class="minimap-toggle"
       :active="isMinimapVisible"
       data-test-id="canvas-tool-minimap-toggle"
-      @pointerdown="$shortcuts.dispatch('toggleMinimap')"
+      @pointerdown="$shortcuts.dispatch(minimapShortcut.name)"
     >
       <MapIcon />
     </FunctionButton>
 
     <FunctionButton
-      :title="`Zoom out – ${$shortcuts.get('zoomOut').hotkeyText}`"
+      :title="`Zoom out – ${zoomOutShortcut.hotkeyText}`"
       data-test-id="canvas-tool-zoom-out"
-      @pointerdown="$shortcuts.dispatch('zoomOut')"
+      @pointerdown="$shortcuts.dispatch(zoomOutShortcut.name)"
     >
       <LenseMinusIcon />
     </FunctionButton>
@@ -59,9 +62,9 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
     <ZoomMenu />
 
     <FunctionButton
-      :title="`Zoom in – ${$shortcuts.get('zoomIn').hotkeyText}`"
+      :title="`Zoom in – ${zoomInShortcut.hotkeyText}`"
       data-test-id="canvas-tool-zoom-in"
-      @pointerdown="$shortcuts.dispatch('zoomIn')"
+      @pointerdown="$shortcuts.dispatch(zoomInShortcut.name)"
     >
       <LensePlusIcon />
     </FunctionButton>

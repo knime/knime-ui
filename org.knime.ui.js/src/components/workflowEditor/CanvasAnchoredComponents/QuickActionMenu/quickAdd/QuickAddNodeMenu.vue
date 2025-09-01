@@ -162,7 +162,10 @@ const searchDownKey = () => {
 const searchHandleShortcuts = (e: KeyboardEvent) => {
   // bypass disabled shortcuts for <input> elements only for the quick add node
   let [shortcut = null] = $shortcuts.findByHotkey(e);
-  if (shortcut === "quickActionMenu" && $shortcuts.isEnabled(shortcut)) {
+  if (
+    shortcut === "openQuickNodeInsertionMenu" &&
+    $shortcuts.isEnabled(shortcut)
+  ) {
     $shortcuts.dispatch(shortcut);
     e.preventDefault();
     e.stopPropagation();

@@ -200,6 +200,7 @@ describe("WorkflowPanel", () => {
         },
         nodeRelation: "SUCCESSORS",
         positionOrigin: "mouse",
+        initialMode: null,
       });
     });
 

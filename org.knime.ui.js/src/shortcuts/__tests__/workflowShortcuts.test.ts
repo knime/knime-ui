@@ -958,7 +958,7 @@ describe("workflowShortcuts", () => {
     });
   });
 
-  describe("quickActionMenu", () => {
+  describe("openQuickNodeInsertionMenu", () => {
     it.each([
       ["enables", true],
       ["disables", false],
@@ -969,7 +969,9 @@ describe("workflowShortcuts", () => {
       selectionStore.singleSelectedNode = null;
       // @ts-expect-error
       workflowStore.isWritable = cond;
-      expect(workflowShortcuts.quickActionMenu.condition?.()).toBe(cond);
+      expect(workflowShortcuts.openQuickNodeInsertionMenu.condition?.()).toBe(
+        cond,
+      );
     });
 
     it("opens quick add node menu in global mode if no node is selected", () => {
@@ -977,12 +979,15 @@ describe("workflowShortcuts", () => {
 
       // @ts-expect-error
       selectionStore.singleSelectedNode = null;
-      workflowShortcuts.quickActionMenu.execute(mockShortcutContext());
+      workflowShortcuts.openQuickNodeInsertionMenu.execute(
+        mockShortcutContext(),
+      );
       expect(
         canvasAnchoredComponentsStore.openQuickActionMenu,
       ).toHaveBeenCalledWith({
         props: {
           position: expect.anything(),
+          initialMode: "quick-add",
         },
       });
     });
@@ -1002,7 +1007,9 @@ describe("workflowShortcuts", () => {
 
       // @ts-expect-error
       selectionStore.singleSelectedNode = mockNodeTemplate(1);
-      workflowShortcuts.quickActionMenu.execute(mockShortcutContext());
+      workflowShortcuts.openQuickNodeInsertionMenu.execute(
+        mockShortcutContext(),
+      );
       expect(
         canvasAnchoredComponentsStore.openQuickActionMenu,
       ).toHaveBeenCalledWith({
@@ -1012,6 +1019,7 @@ describe("workflowShortcuts", () => {
           port: { index: 0, typeId: "some.type" },
           position: expect.anything(),
           positionOrigin: "calculated",
+          initialMode: "quick-add",
         },
       });
     });
@@ -1021,7 +1029,9 @@ describe("workflowShortcuts", () => {
 
       // @ts-expect-error
       selectionStore.singleSelectedNode = mockNodeTemplate(3);
-      workflowShortcuts.quickActionMenu.execute(mockShortcutContext());
+      workflowShortcuts.openQuickNodeInsertionMenu.execute(
+        mockShortcutContext(),
+      );
       expect(
         canvasAnchoredComponentsStore.openQuickActionMenu,
       ).toHaveBeenCalledWith({
@@ -1031,6 +1041,7 @@ describe("workflowShortcuts", () => {
           port: { index: 1, typeId: "some.type" },
           position: expect.anything(),
           positionOrigin: "calculated",
+          initialMode: "quick-add",
         },
       });
     });
@@ -1064,7 +1075,9 @@ describe("workflowShortcuts", () => {
           nodeRelation: "SUCCESSORS",
         },
       };
-      workflowShortcuts.quickActionMenu.execute(mockShortcutContext());
+      workflowShortcuts.openQuickNodeInsertionMenu.execute(
+        mockShortcutContext(),
+      );
       expect(
         canvasAnchoredComponentsStore.openQuickActionMenu,
       ).toHaveBeenCalledWith({
@@ -1073,6 +1086,7 @@ describe("workflowShortcuts", () => {
           nodeRelation: "SUCCESSORS",
           port: { index: 2, typeId: "some.type" },
           position: { x: 5, y: 8 },
+          initialMode: "quick-add",
         },
       });
     });

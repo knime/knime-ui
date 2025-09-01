@@ -2,6 +2,7 @@ import { API } from "@api";
 
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -12,10 +13,6 @@ import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import { portPositions } from "@/util/portShift";
 import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "../types";
-import type {
-  QuickActionMenuMode,
-  QuickActionMenuProps,
-} from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<
   | "openQuickNodeInsertionMenu"
@@ -92,23 +89,24 @@ const openQuickActionMenu =
   ({ payload }: ShortcutExecuteContext) => {
     const positionFromContextMenu = payload?.metadata?.position as XY;
     const store = useCanvasAnchoredComponentsStore();
-    const { isOpen, props } = store.quickActionMenu;
+    const { isOpen, props: currentMenuProps } = store.quickActionMenu;
 
+    // get current quick action menu info (if exists)
     const {
       nodeId: lastNodeId,
       port,
       position: lastPosition,
       nodeRelation,
       positionOrigin: lastPositionOrigin,
-    } = props ?? {};
+    } = currentMenuProps ?? {};
     const lastPortIndex = port?.index ?? -1;
 
-    const node = isOpen
+    const predecessorNode = isOpen
       ? useNodeInteractionsStore().getNodeById(lastNodeId!)
       : useSelectionStore().singleSelectedNode;
 
-    // global menu without predecessor node
-    if (node === null) {
+    // 1. no single predecessor node, open quick action menu as detached
+    if (predecessorNode === null) {
       const position =
         positionFromContextMenu ??
         geometry.findFreeSpaceAroundCenterWithFallback({
@@ -116,28 +114,34 @@ const openQuickActionMenu =
           nodes: useWorkflowStore().activeWorkflow!.nodes,
         });
 
-      const p = { position } as QuickActionMenuProps;
-      p.initialMode = menuMode;
-      store.openQuickActionMenu({ props: p });
+      store.openQuickActionMenu({
+        props: {
+          position,
+          initialMode: menuMode,
+        },
+      });
       return;
     }
 
-    const nodeId = node.id;
+    // determine where and how to render quick action menu
     let nextSide = nodeRelation || "SUCCESSORS";
     if (lastPortIndex === 0) {
       nextSide = nodeRelation === "SUCCESSORS" ? "PREDECESSORS" : "SUCCESSORS";
     }
     const portCount =
-      nextSide === "SUCCESSORS" ? node.outPorts.length : node.inPorts.length;
+      nextSide === "SUCCESSORS"
+        ? predecessorNode.outPorts.length
+        : predecessorNode.inPorts.length;
     const startIndex = portCount === 1 ? 0 : 1;
     const nextIndex =
       nextSide === nodeRelation ? (lastPortIndex + 1) % portCount : startIndex;
-    const portIndex = lastNodeId === nodeId ? nextIndex : startIndex;
+    const portIndex =
+      lastNodeId === predecessorNode.id ? nextIndex : startIndex;
 
     const nextPort =
       nextSide === "SUCCESSORS"
-        ? node.outPorts[portIndex]
-        : node.inPorts[portIndex];
+        ? predecessorNode.outPorts[portIndex]
+        : predecessorNode.inPorts[portIndex];
 
     const portSideWillChange = nextSide !== nodeRelation;
     const portSideChangesForCalculatedPosition =
@@ -146,23 +150,30 @@ const openQuickActionMenu =
     const position =
       useLastPosition && lastPosition
         ? lastPosition
-        : calculateNodeInsertionPosition(node, portIndex, portCount, nextSide);
+        : calculateNodeInsertionPosition(
+            predecessorNode,
+            portIndex,
+            portCount,
+            nextSide,
+          );
 
-    const p = {
-      nodeId,
-      port: nextPort,
-      position,
-      nodeRelation: nextSide,
-      positionOrigin: useLastPosition ? lastPositionOrigin : "calculated",
-    } as QuickActionMenuProps;
-    p.initialMode = menuMode;
-    store.openQuickActionMenu({ props: p });
+    // 2. predecessor node(s) exist, render quick action menu attached on the correct side
+    store.openQuickActionMenu({
+      props: {
+        nodeId: predecessorNode.id,
+        port: nextPort,
+        position,
+        nodeRelation: nextSide,
+        positionOrigin: useLastPosition ? lastPositionOrigin : "calculated",
+        initialMode: menuMode,
+      },
+    });
   };
 
 const workflowEditorShortcuts: WorkflowEditorShortcuts = {
   openQuickNodeInsertionMenu: {
-    text: "Open Quick Node Insertion menu",
-    title: "Open Quick Node Insertion menu",
+    text: "Quick add node",
+    title: "Quick add node",
     hotkey: ["CtrlOrCmd", "."],
     additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
@@ -170,8 +181,8 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     condition: () => useWorkflowStore().isWritable,
   },
   openQuickBuildMenu: {
-    text: "Open Quick Build with K-AI menu",
-    title: "Open Quick Build menu",
+    text: "Quick Build with K-AI",
+    title: "Quick Build with K-AI",
     hotkey: ["CtrlOrCmd", "Shift", "."],
     additionalHotkeys: [
       { key: ["Ctrl", "Shift", " " /* Space */], visible: false },

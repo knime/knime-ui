@@ -292,7 +292,7 @@ const setMenuItems = () => {
 
   const quickNodeAnnotationGroup: Array<MenuItem> = [
     ...mapToShortcut([
-      { name: "quickActionMenu", isVisible: isSelectionEmpty.value },
+      { name: "openQuickNodeInsertionMenu", isVisible: isSelectionEmpty.value },
     ]),
   ];
 
