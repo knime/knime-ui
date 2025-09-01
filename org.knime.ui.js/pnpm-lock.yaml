@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  brace-expansion@>=1.0.0 <=1.1.11: '>=1.1.12'
+  linkifyjs@<4.3.2: '>=4.3.2'
+
 importers:
 
   .:
@@ -1176,13 +1180,6 @@ packages:
       consola: 3.x
       vue: '>=3.5.0'
 
-  '@knime/components@1.29.0':
-    resolution: {integrity: sha512-SuLhY/OOisWSYJut34eYw/blMxLR1SbDvksqoVqBdQCavDAxDDChP44VFBS19jxD5B5GJ/qzHhokKx+sM0EU/Q==}
-    engines: {node: 22.x}
-    peerDependencies:
-      consola: 3.x
-      vue: '>=3.5.0'
-
   '@knime/components@1.30.0':
     resolution: {integrity: sha512-BuK1GeYwdk5IOB0Y1cSZVt5pMuIUp4vNST2IR4TxWDLDtl9nmoN1hmw9kPgVOseqnL8cLSQWNU30P9BhiFc4eQ==}
     engines: {node: 22.x}
@@ -1233,12 +1230,6 @@ packages:
       '@fontsource/roboto': 4.x
       '@fontsource/roboto-mono': 4.x
 
-  '@knime/styles@1.5.0':
-    resolution: {integrity: sha512-XqGpTxRIyroQVJ3gE5BQ+zhqTVkyGWnVLETXwvw7Erz5MSWWR04VMFRxSEc6tjoJYnmSdwdspWSJbvfDH/7AFA==}
-    peerDependencies:
-      '@fontsource/roboto': 4.x
-      '@fontsource/roboto-mono': 4.x
-
   '@knime/styles@1.6.0':
     resolution: {integrity: sha512-kIJzAEhRHYS1Ed4n9UnkF5VXS5v+ICX6xhHelj7eAAuub6J6icx3gDyDuzhv0Wtv1HktNWQvg8P2/Cni65OJcg==}
     peerDependencies:
@@ -1256,11 +1247,6 @@ packages:
 
   '@knime/utils@1.4.0':
     resolution: {integrity: sha512-cBZxD8YtK/gpg6sXfhg1Ar/BXMq2teEel8OdrH9mvL0I74nbmIOQKx+qvDn/C7N16vbPKdll5zOZWVd3QQOu6Q==}
-    peerDependencies:
-      consola: 3.x
-
-  '@knime/utils@1.4.1':
-    resolution: {integrity: sha512-YDTtYZ0eNLoMIohcejtMQHOtqpA8OQz0zge/SqlZoZPbGp6CN8+bweLwF/tWvQa3enI0DXkThjaCSlquYucjAA==}
     peerDependencies:
       consola: 3.x
 
@@ -2273,9 +2259,6 @@ packages:
   boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
 
-  brace-expansion@1.1.11:
-    resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
-
   brace-expansion@2.0.1:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
 
@@ -2443,9 +2426,6 @@ packages:
   comment-parser@1.4.1:
     resolution: {integrity: sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg==}
     engines: {node: '>= 12.0.0'}
-
-  concat-map@0.0.1:
-    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
   confbox@0.1.8:
     resolution: {integrity: sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==}
@@ -3812,8 +3792,8 @@ packages:
   linkify-it@5.0.0:
     resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
 
-  linkifyjs@4.3.1:
-    resolution: {integrity: sha512-DRSlB9DKVW04c4SUdGvKK5FR6be45lTU9M76JnngqPeeGDqPwYc0zdUErtsNVMtxPXgUWV4HbXbnC4sNyBxkYg==}
+  linkifyjs@4.3.2:
+    resolution: {integrity: sha512-NT1CJtq3hHIreOianA8aSXn6Cw0JzYOuDQbOrSPe7gqFnCpKP++MQe3ODgO3oh2GJFORkAAdqredOa60z63GbA==}
 
   lint-staged@15.5.1:
     resolution: {integrity: sha512-6m7u8mue4Xn6wK6gZvSCQwBvMBR36xfY24nF5bMTf2MHDYG6S3yhJuOgdYVw99hsjyDt2d4z168b3naI8+NWtQ==}
@@ -6928,36 +6908,6 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/components@1.29.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
-    dependencies:
-      '@floating-ui/vue': 1.1.5(vue@3.5.13(typescript@5.8.3))
-      '@knime/styles': 1.5.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
-      '@knime/utils': 1.4.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.2.3)
-      '@knime/vue-headless-virtual-scroller': 0.1.2(vue@3.5.13(typescript@5.8.3))
-      '@vueuse/components': 10.11.1(vue@3.5.13(typescript@5.8.3))
-      '@vueuse/core': 10.11.1(vue@3.5.13(typescript@5.8.3))
-      '@vueuse/shared': 10.11.1(vue@3.5.13(typescript@5.8.3))
-      color-hash: 2.0.2
-      consola: 3.2.3
-      date-fns: 2.30.0
-      date-fns-tz: 2.0.0(date-fns@2.30.0)
-      filesize: 10.0.6
-      focus-trap-vue: 4.0.2(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))
-      lodash-es: 4.17.21
-      motion: 12.5.0
-      typescript: 5.8.3
-      v-calendar: https://bitbucket.org/KNIME/v-calendar/get/31f97bfb0854e28c87f35ee28c8f332181c22e8f.tar.gz(@popperjs/core@2.11.8)(vue@3.5.13(typescript@5.8.3))
-      vue: 3.5.13(typescript@5.8.3)
-    transitivePeerDependencies:
-      - '@emotion/is-prop-valid'
-      - '@fontsource/roboto'
-      - '@fontsource/roboto-mono'
-      - '@popperjs/core'
-      - '@vue/composition-api'
-      - focus-trap
-      - react
-      - react-dom
-
   '@knime/components@1.30.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.2.3)(focus-trap@7.6.4)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
       '@floating-ui/vue': 1.1.5(vue@3.5.13(typescript@5.8.3))
@@ -7126,17 +7076,6 @@ snapshots:
       postcss-preset-env: 10.0.5(postcss@8.4.47)
       postcss-url: 10.1.3(postcss@8.4.47)
 
-  '@knime/styles@1.5.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)':
-    dependencies:
-      '@fontsource/roboto': 4.5.8
-      '@fontsource/roboto-mono': 4.5.10
-      modern-normalize: 2.0.0
-      postcss: 8.4.47
-      postcss-import: 16.1.0(postcss@8.4.47)
-      postcss-mixins: 11.0.1(postcss@8.4.47)
-      postcss-preset-env: 10.0.5(postcss@8.4.47)
-      postcss-url: 10.1.3(postcss@8.4.47)
-
   '@knime/styles@1.6.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)':
     dependencies:
       '@fontsource/roboto': 4.5.8
@@ -7178,16 +7117,6 @@ snapshots:
   '@knime/utils@1.4.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.2.3)':
     dependencies:
       '@knime/styles': 1.4.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
-      consola: 3.2.3
-      date-fns: 2.30.0
-      date-fns-tz: 2.0.0(date-fns@2.30.0)
-    transitivePeerDependencies:
-      - '@fontsource/roboto'
-      - '@fontsource/roboto-mono'
-
-  '@knime/utils@1.4.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.2.3)':
-    dependencies:
-      '@knime/styles': 1.5.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
       consola: 3.2.3
       date-fns: 2.30.0
       date-fns-tz: 2.0.0(date-fns@2.30.0)
@@ -7547,7 +7476,7 @@ snapshots:
     dependencies:
       '@tiptap/core': 2.12.0(@tiptap/pm@2.12.0)
       '@tiptap/pm': 2.12.0
-      linkifyjs: 4.3.1
+      linkifyjs: 4.3.2
 
   '@tiptap/extension-list-item@2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))':
     dependencies:
@@ -8320,11 +8249,6 @@ snapshots:
 
   boolbase@1.0.0: {}
 
-  brace-expansion@1.1.11:
-    dependencies:
-      balanced-match: 1.0.2
-      concat-map: 0.0.1
-
   brace-expansion@2.0.1:
     dependencies:
       balanced-match: 1.0.2
@@ -8495,8 +8419,6 @@ snapshots:
   commander@7.2.0: {}
 
   comment-parser@1.4.1: {}
-
-  concat-map@0.0.1: {}
 
   confbox@0.1.8: {}
 
@@ -9989,7 +9911,7 @@ snapshots:
     dependencies:
       uc.micro: 2.1.0
 
-  linkifyjs@4.3.1: {}
+  linkifyjs@4.3.2: {}
 
   lint-staged@15.5.1:
     dependencies:
@@ -10161,11 +10083,11 @@ snapshots:
 
   minimatch@3.0.8:
     dependencies:
-      brace-expansion: 1.1.11
+      brace-expansion: 2.0.1
 
   minimatch@3.1.2:
     dependencies:
-      brace-expansion: 1.1.11
+      brace-expansion: 2.0.1
 
   minimatch@9.0.1:
     dependencies:
