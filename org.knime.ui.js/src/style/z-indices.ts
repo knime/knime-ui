@@ -99,6 +99,16 @@ export const layerCanvasDecorations = 10;
  */
 export const layerCanvasTooltips = 5;
 
+/**
+ * Layer for the canvas itself
+ */
+export const layerCanvasSurface = 4;
+
+/**
+ * Layer for Pixi's DOM Container objects
+ */
+export const layerCanvasDomContainers = 3;
+
 /* --------------------------**** CANVAS ****-------------------------------------- */
 
 /**

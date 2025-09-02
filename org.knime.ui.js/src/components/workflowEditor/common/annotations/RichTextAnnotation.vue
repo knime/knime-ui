@@ -15,7 +15,6 @@ interface Props {
   initialBorderColor: string;
   canvasRenderer: CanvasRendererType;
   zoomFactor: number;
-  isResizing?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -43,7 +42,6 @@ const isBrowserWebKit = computed(
 <template>
   <div
     class="annotation-editor-wrapper"
-    :class="{ 'is-resizing': isResizing }"
     aria-label="Edit annotation"
     @pointerdown="editable && $event.stopPropagation()"
   >
@@ -102,10 +100,6 @@ const isBrowserWebKit = computed(
 .annotation-editor-wrapper {
   height: 100%;
   background: var(--knime-white);
-
-  &.is-resizing {
-    background: transparent;
-  }
 }
 
 .toolbar-webgl {
@@ -121,7 +115,7 @@ const isBrowserWebKit = computed(
 }
 
 .annotation-editor {
-  --border-width: 2px;
+  --border-width: calc(v-bind("$shapes.annotationBorderWidth") * 1px);
 
   height: 100%;
   border: var(--border-width) solid v-bind("activeBorderColor");

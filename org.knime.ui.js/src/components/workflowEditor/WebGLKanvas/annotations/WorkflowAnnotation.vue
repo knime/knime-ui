@@ -22,7 +22,6 @@ defineOptions({ inheritAttrs: false });
 
 type Props = {
   annotation: WorkflowAnnotation;
-  isResizing: boolean;
 };
 
 const props = defineProps<Props>();
@@ -96,7 +95,6 @@ useCanvasClickOutside({
     :editable="isEditing"
     :annotation-bounds="annotation.bounds"
     :zoom-factor="zoomFactor"
-    :is-resizing="isResizing"
     canvas-renderer="WebGL"
     @change="onAnnotationTextChange"
     @change-border-color="onAnnotationColorChange"

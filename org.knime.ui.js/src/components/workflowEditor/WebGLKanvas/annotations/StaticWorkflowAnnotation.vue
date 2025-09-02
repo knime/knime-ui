@@ -2,16 +2,13 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
 import {
-  type App,
-  type AppContext,
   computed,
-  createApp,
-  getCurrentInstance,
   onMounted,
   onUnmounted,
   ref,
   toRef,
   useTemplateRef,
+  watch,
 } from "vue";
 import { useMagicKeys } from "@vueuse/core";
 import { storeToRefs } from "pinia";
@@ -30,6 +27,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { gridSize } from "@/style/shapes";
+import * as shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { FLOATING_HTML_FADE_DELAY_MS } from "../common/constants";
@@ -37,14 +35,13 @@ import { useObjectInteractions } from "../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../util/interaction";
 
 import TransformControls from "./TransformControls.vue";
-import WorkflowAnnotation from "./WorkflowAnnotation.vue";
 
 const ANNOTATION_MIN_HEIGHT_PX = 30;
 const ANNOTATION_MIN_WIDTH_PX = 30;
 
-const ANNOTATION_STROKE_SIZE = 1.5;
 type Props = {
   annotation: WorkflowAnnotationType;
+  zIndex: number;
 };
 
 const props = defineProps<Props>();
@@ -53,42 +50,64 @@ const annotationContainer = useTemplateRef<ContainerInst>(
   "annotationContainer",
 );
 
-let app: App;
+// This is required for CEF to avoid having visual artifacts of the borders
+// when panning/resizing annotations due to fractional pixels and GPU transforms
+const wrapper = document.createElement("div");
+wrapper.style.background = "white";
+wrapper.style.padding = `${shapes.annotationBorderWidth}px`;
 
-// import constants from "@/plugins/constants";
+const annotationContent = document.createElement("div");
+wrapper.appendChild(annotationContent);
 
-const inheritParent = (app: App<any>, appContext?: AppContext) => {
-  const parent = appContext?.app;
-  if (parent) {
-    app.config.globalProperties = parent.config.globalProperties;
-    Object.assign(app._context, parent._context);
-  }
+const domContainer = new PIXI.DOMContainer({
+  label: "StaticAnnotationText",
+  eventMode: "none",
+  element: wrapper,
+});
+annotationContent.classList.add("static-workflow-annotation");
+
+const updateStyles = () => {
+  annotationContent.style.width = `${props.annotation.bounds.width}px`;
+  annotationContent.style.height = `${props.annotation.bounds.height}px`;
+  annotationContent.style.zIndex = props.zIndex.toString();
+  annotationContent.style.border = `${shapes.annotationBorderWidth}px solid ${props.annotation.borderColor}`;
 };
 
+const updateText = () => {
+  annotationContent.innerHTML = props.annotation.text.value;
+};
+
+watch(
+  () => props.annotation.text.value,
+  (next, prev) => {
+    const isSameText = next === prev;
+    if (!isSameText) {
+      updateText();
+    }
+  },
+);
+
+watch(
+  [
+    () => props.annotation.bounds.height,
+    () => props.annotation.bounds.width,
+    () => props.zIndex,
+    () => props.annotation.borderColor,
+  ],
+  () => {
+    updateStyles();
+  },
+);
+
 onMounted(() => {
-  // create component
-  const element = document.createElement("div");
-  element.style.width = `${props.annotation.bounds.width}px`;
-  element.style.height = `${props.annotation.bounds.height}px`;
+  updateText();
+  updateStyles();
 
-  const { appContext } = getCurrentInstance()!;
-
-  app = createApp(WorkflowAnnotation, {
-    annotation: props.annotation,
-    isResizing: true,
-  });
-  inheritParent(app, appContext);
-  app.mount(element);
-
-  // wire to pixi
-  const domContainer = new PIXI.DOMContainer({
-    element,
-  });
   annotationContainer.value!.addChild(domContainer);
 });
 
 onUnmounted(() => {
-  app.unmount();
+  domContainer.destroy();
 });
 
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
@@ -291,6 +310,7 @@ useMagicKeys({
     :position="translatedPosition"
     :visible="isWithinVisibleArea"
     :renderable="isWithinVisibleArea"
+    :z-index="zIndex"
     event-mode="static"
     @pointerdown="handlePointerInteraction"
     @rightclick.stop="onContextMenu"
@@ -325,26 +345,36 @@ useMagicKeys({
       "
     />
 
-    <Graphics
-      v-if="!isEditing"
-      label="AnnotationBorder"
-      @render="
-        (graphics: GraphicsInst) => {
-          graphics.clear();
-          graphics.rect(
-            0.5,
-            0.5,
-            annotation.bounds.width - 1,
-            annotation.bounds.height - 1,
-          );
-          graphics.stroke({
-            width: ANNOTATION_STROKE_SIZE,
-            color: annotation.borderColor,
-          });
-        }
-      "
+    <Container
+      ref="annotationContainer"
+      :renderable="isWithinVisibleArea"
+      label="AnnotationContentWrapper"
+      :position="{
+        x: -shapes.annotationBorderWidth,
+        y: -shapes.annotationBorderWidth,
+      }"
     />
-
-    <Container ref="annotationContainer" label="AnnotationContentWrapper" />
   </Container>
 </template>
+
+<style lang="postcss">
+@import url("@knime/styles/css/rich-text-editor.css");
+
+.static-workflow-annotation {
+  font-family: "Roboto Condensed", sans-serif;
+  padding: 10px;
+  font-variant-ligatures: none;
+  overflow: hidden;
+  background: white;
+  white-space: break-spaces;
+  word-break: normal;
+  overflow-wrap: anywhere;
+
+  @mixin rich-text-editor-styles;
+
+  & p {
+    /* font-size * line-height */
+    min-height: calc(13 * 1.44 * 1px);
+  }
+}
+</style>

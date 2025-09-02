@@ -219,8 +219,14 @@ const onEscape = async (event: KeyboardEvent) => {
   width: 100%;
 
   & :deep(canvas) {
-    position: absolute;
-    z-index: 1001;
+    position: relative;
+    z-index: v-bind("$zIndices.layerCanvasSurface");
+
+    /* override z-index added by Pixi's DOMContainer implementation */
+    & ~ div:not([class]) {
+      isolation: isolate;
+      z-index: v-bind("$zIndices.layerCanvasDomContainers") !important;
+    }
   }
 
   &:focus {

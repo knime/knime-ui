@@ -103,3 +103,5 @@ export const quickActionMenuWidth = 360; // px
 export const floatingCanvasToolsSize = 36; // px
 export const floatingCanvasToolsBottomOffset = 16; // px
 export const canvasMinimapAspectRatio = 4 / 3;
+
+export const annotationBorderWidth = 2; // px

@@ -3,11 +3,11 @@ import {
   type Application,
   type Container,
   type ContainerChild,
+  DOMContainer,
   type Text,
 } from "pixi.js";
 
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
-import { removeAnnotationStyles } from "../annotations/annotationStyles";
 
 /**
  * Utility functions to help with E2E testing the WebGL Kanvas as it's tricky to
@@ -229,9 +229,9 @@ export const initE2ETestUtils = (app: Application) => {
 
       const annotation = getPixiContainerBounds([annotationIdLabel]);
 
-      const annotationText = getPixiContainerBounds([
+      const annotationText = getPixiContainer([
         annotationIdLabel,
-        "AnnotationText",
+        "StaticAnnotationText",
       ]);
 
       if (!annotationText || !annotation) {
@@ -240,7 +240,7 @@ export const initE2ETestUtils = (app: Application) => {
         );
       }
 
-      const text = removeAnnotationStyles(annotationText.text!);
+      const text = (annotationText as DOMContainer).element.innerHTML;
 
       return {
         ...annotation,

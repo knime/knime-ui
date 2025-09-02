@@ -211,7 +211,6 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
 
     <Minimap v-if="isMinimapVisible && !shouldHideMiniMap" />
   </Application>
-  <div id="annotaitons" />
 </template>
 
 <style scoped lang="postcss">
