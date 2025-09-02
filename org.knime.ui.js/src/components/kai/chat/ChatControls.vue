@@ -189,7 +189,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
 .chat-usage {
   display: flex;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .kai-notice {
