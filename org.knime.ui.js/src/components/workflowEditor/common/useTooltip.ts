@@ -45,11 +45,18 @@ export const useTooltip = (params: {
       return anchorPoint;
     }
 
+    if (!params.element.value) {
+      return undefined;
+    }
+
     const isPixiContainer = (
       value: Element | ContainerInst,
     ): value is ContainerInst => Boolean((value as ContainerInst).getBounds);
 
-    if (params.element.value && isPixiContainer(params.element.value)) {
+    const isDOMElement = (value: Element | ContainerInst): value is Element =>
+      value instanceof Element && !isPixiContainer(value);
+
+    if (isPixiContainer(params.element.value)) {
       const elemBounds = params.element.value.getBounds();
       const [canvasX, canvasY] = useWebGLCanvasStore().toCanvasCoordinates([
         elemBounds.x,
@@ -60,6 +67,20 @@ export const useTooltip = (params: {
         y: canvasY,
       };
     }
+
+    if (isDOMElement(params.element.value)) {
+      const rect = params.element.value.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const targetY = orientation === "bottom" ? rect.bottom : rect.top;
+
+      const [canvasX, canvasY] =
+        useWebGLCanvasStore().screenToCanvasCoordinates([centerX, targetY]);
+      return {
+        x: canvasX,
+        y: canvasY,
+      };
+    }
+
     return undefined;
   };
 
