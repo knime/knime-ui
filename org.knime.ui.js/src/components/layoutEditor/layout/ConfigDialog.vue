@@ -8,6 +8,7 @@ import type {
   LayoutEditorItem,
   LayoutEditorItemSizingConfig,
 } from "@/store/layoutEditor/types/view";
+import * as layoutEditorZIndices from "../z-indices";
 
 type Props = {
   item: LayoutEditorItem;
@@ -173,7 +174,7 @@ watch(
   background: var(--knime-white);
   padding: var(--space-8);
   width: 360px;
-  z-index: 100;
+  z-index: v-bind("layoutEditorZIndices.configDialog");
 }
 
 .grid {

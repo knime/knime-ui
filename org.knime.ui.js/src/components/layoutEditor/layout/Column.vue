@@ -12,6 +12,7 @@ import {
 } from "@/store/layoutEditor/types/view";
 import { checkMove } from "@/store/layoutEditor/utils";
 import { layoutEditorGridSize } from "@/style/shapes";
+import * as layoutEditorZIndices from "../z-indices";
 
 import ColumnContent from "./ColumnContent.vue";
 import EditButton from "./EditButton.vue";
@@ -133,7 +134,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
     background-color: var(--resize-color);
     position: absolute;
     right: calc(var(--resize-width) / 2 * -1);
-    z-index: 10;
+    z-index: v-bind("layoutEditorZIndices.columnResizeHandle");
     bottom: 0;
     border-style: solid;
     border-width: 10px var(--resize-border-width) 10px
@@ -147,7 +148,6 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
       width: 0;
       height: 0;
       border-style: solid;
-      z-index: 1;
       display: block;
       position: absolute;
       top: calc(50% - var(--resize-arrow-height));
@@ -202,7 +202,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 1000;
+    z-index: v-bind("layoutEditorZIndices.columnResizeOverlay");
   }
 }
 </style>

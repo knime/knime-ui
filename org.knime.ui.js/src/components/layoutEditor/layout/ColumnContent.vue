@@ -17,6 +17,7 @@ import {
   isRowItem,
   isViewItem,
 } from "@/store/layoutEditor/types/view";
+import * as layoutEditorZIndices from "../z-indices";
 
 import ConfigDialog from "./ConfigDialog.vue";
 import EditButton from "./EditButton.vue";
@@ -32,17 +33,15 @@ const props = defineProps<Props>();
 const layoutEditorStore = useLayoutEditorStore();
 const { nodes } = storeToRefs(layoutEditorStore);
 
-const floatingOptions = {
-  strategy: "fixed" as const,
-  middleware: [flip(), shift()],
-  whileElementsMounted: autoUpdate,
-};
-
 const itemAsView = computed(() => (isViewItem(props.item) ? props.item : null));
 const showConfigDialog = ref(false);
 const reference = ref(null);
 const floating = ref(null);
-const { floatingStyles } = useFloating(reference, floating, floatingOptions);
+const { floatingStyles } = useFloating(reference, floating, {
+  strategy: "fixed",
+  middleware: [flip(), shift()],
+  whileElementsMounted: autoUpdate,
+});
 
 const showLegacyFlagDialog = ref(false);
 const legacyFlagReference = ref(null);
@@ -50,7 +49,7 @@ const legacyFlagFloating = ref(null);
 const { floatingStyles: legacyFlagFloatingStyles } = useFloating(
   legacyFlagReference,
   legacyFlagFloating,
-  floatingOptions,
+  { middleware: [flip(), shift()], whileElementsMounted: autoUpdate },
 );
 const showLegacyModeEnabledWarning = computed(() =>
   nodes.value.some(
@@ -168,7 +167,7 @@ const closeDialogs = () => {
   cursor: default;
   padding: var(--space-8);
   width: 360px;
-  z-index: 100;
+  z-index: v-bind("layoutEditorZIndices.legacyInfoBox");
 }
 
 /* full window overlay to prevent other actions while popover is open */
@@ -180,6 +179,6 @@ const closeDialogs = () => {
   background-color: transparent;
   position: fixed;
   inset: 0;
-  z-index: 99;
+  z-index: v-bind("layoutEditorZIndices.columnResizeHandle");
 }
 </style>

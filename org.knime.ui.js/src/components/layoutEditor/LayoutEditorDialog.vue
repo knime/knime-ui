@@ -97,6 +97,9 @@ watch(layoutContext, layoutEditorStore.load);
 .modal.info {
   --modal-height: 95vh;
   --modal-width: 95vw;
+  --z-index-common-modal: v-bind("$zIndices.layerModals");
+
+  isolation: isolate;
 
   & :deep(.inner) {
     top: 50%;

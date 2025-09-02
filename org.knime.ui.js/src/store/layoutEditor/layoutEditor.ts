@@ -290,7 +290,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
     // also make sure the total width doesn't exceed the gridSize
     const totalWidth =
-      resizeInfo.widthOfOtherSiblings ?? 0 + newWidth + newSiblingWidth;
+      (resizeInfo.widthOfOtherSiblings ?? 0) + newWidth + newSiblingWidth;
     if (totalWidth <= layoutEditorGridSize) {
       // currently we don't support responsive layouts, so set all sizes
       if (resizeInfo.nextSibling) {

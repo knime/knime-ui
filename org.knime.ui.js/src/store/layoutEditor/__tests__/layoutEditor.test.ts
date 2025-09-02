@@ -388,7 +388,7 @@ describe("layoutEditor", () => {
       const initialResizeColumnInfo = createResizeColumnInfo(resizedColumn);
       layoutEditorStore.setResizeColumnInfo(initialResizeColumnInfo);
 
-      const newWidth = 50;
+      const newWidth = 5;
       layoutEditorStore.resizeColumn(newWidth);
       expect(layoutEditorStore.resizeColumnInfo?.column.widthXS).toBe(newWidth);
       expect(resizedColumn.widthXS).toBe(newWidth);
