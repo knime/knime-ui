@@ -419,6 +419,15 @@ const setMenuItems = () => {
     ),
   ];
 
+  const aiQuickActionsGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      {
+        name: "generateAnnotation",
+        isVisible: areNodesSelected,
+      },
+    ]),
+  ];
+
   visibleItems.value = menuGroupsBuilder()
     .append(basicOperationsGroup)
     .append(
@@ -440,6 +449,7 @@ const setMenuItems = () => {
     .append(nodeAlignmentGroup)
     .append(metanodeAndComponentGroup)
     .append(componentPlaceholderGroup)
+    .append(aiQuickActionsGroup)
     .build();
 };
 
