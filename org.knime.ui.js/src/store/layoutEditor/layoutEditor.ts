@@ -3,8 +3,10 @@ import { API } from "@api";
 import { isEqual } from "lodash-es";
 import { defineStore } from "pinia";
 
+import type { KnimeNode } from "@/api/custom-types";
 import { layoutEditorGridSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
+import { isNativeNode } from "@/util/nodeUtil";
 
 import type {
   ConfigurationLayout,
@@ -187,6 +189,14 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       ({ nodeID }) => !nodeIdsInLayout.value.includes(nodeID),
     );
   });
+
+  const getNodeIcon = (node: KnimeNode) => {
+    if (!layoutContext.value || !isNativeNode(node)) {
+      return null;
+    }
+    const nodeTemplates = layoutContext.value?.workflow.nodeTemplates;
+    return nodeTemplates[node.templateId].icon || null;
+  };
 
   const setNodes = (newNodes: LayoutEditorNode[]) => {
     nodes.value = newNodes;
@@ -386,16 +396,22 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
     try {
       const viewLayout = JSON.parse(
-        await API.componenteditor.getViewLayout(layoutContext.value),
+        await API.componenteditor.getViewLayout(
+          layoutContext.value.identifiers,
+        ),
       );
       const viewNodes = JSON.parse(
-        await API.componenteditor.getViewNodes(layoutContext.value),
+        await API.componenteditor.getViewNodes(layoutContext.value.identifiers),
       );
       const configurationLayout = JSON.parse(
-        await API.componenteditor.getConfigurationLayout(layoutContext.value),
+        await API.componenteditor.getConfigurationLayout(
+          layoutContext.value.identifiers,
+        ),
       );
       const configurationNodes = JSON.parse(
-        await API.componenteditor.getConfigurationNodes(layoutContext.value),
+        await API.componenteditor.getConfigurationNodes(
+          layoutContext.value.identifiers,
+        ),
       );
 
       const filledConfigurationLayout = configurationNodes.reduce(
@@ -419,11 +435,11 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
     try {
       await API.componenteditor.setViewLayout({
-        ...layoutContext.value,
+        ...layoutContext.value.identifiers,
         componentViewLayout: JSON.stringify(layout.value),
       });
       await API.componenteditor.setConfigurationLayout({
-        ...layoutContext.value,
+        ...layoutContext.value.identifiers,
         componentConfigurationLayout: JSON.stringify(configurationLayout.value),
       });
       layoutContext.value = null;
@@ -453,6 +469,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     // Nodes
     nodes,
     availableNodes,
+    getNodeIcon,
     setNodes,
     addNode,
 

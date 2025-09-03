@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
 import { layoutEditorGridSize } from "@/style/shapes";
+import { createWorkflow } from "@/test/factories";
 import {
   createColumn,
   createComplexLayout,
@@ -28,6 +29,7 @@ const mockedAPI = deepMocked(API);
 const projectId = "someMockProjectId";
 const workflowId = "someMockWorkflowId";
 const nodeId = "someMockNodeId";
+const activeWorkflow = createWorkflow();
 const widthXS = layoutEditorGridSize;
 
 describe("layoutEditor", () => {
@@ -38,7 +40,10 @@ describe("layoutEditor", () => {
   };
 
   describe("open workflow state", () => {
-    const workflow: LayoutContext = { projectId, workflowId, nodeId };
+    const workflow: LayoutContext = {
+      identifiers: { projectId, workflowId, nodeId },
+      workflow: activeWorkflow,
+    };
 
     it("inits with open workflow as null", () => {
       const { layoutEditorStore } = setupStore();
@@ -315,6 +320,22 @@ describe("layoutEditor", () => {
         type: nodeNotInLayout.type,
       });
     });
+
+    it("returns a correct node icon", () => {
+      const { layoutEditorStore } = setupStore();
+
+      const workflow: LayoutContext = {
+        identifiers: { projectId, workflowId, nodeId },
+        workflow: activeWorkflow,
+      };
+
+      layoutEditorStore.setLayoutContext(workflow);
+
+      expect(
+        // @ts-expect-error
+        layoutEditorStore.getNodeIcon({ templateId: "Source", kind: "node" }),
+      ).toEqual(expect.stringContaining("data:image"));
+    });
   });
 
   describe("layout elements (empty rows)", () => {
@@ -516,7 +537,10 @@ describe("layoutEditor", () => {
 
       const { layoutEditorStore } = setupStore();
 
-      const workflow: LayoutContext = { projectId, workflowId, nodeId };
+      const workflow: LayoutContext = {
+        identifiers: { projectId, workflowId, nodeId },
+        workflow: activeWorkflow,
+      };
       layoutEditorStore.setLayoutContext(workflow);
       await layoutEditorStore.load();
 
@@ -550,23 +574,26 @@ describe("layoutEditor", () => {
 
       const { layoutEditorStore } = setupStore();
 
-      const workflow: LayoutContext = { projectId, workflowId, nodeId };
+      const workflow: LayoutContext = {
+        identifiers: { projectId, workflowId, nodeId },
+        workflow: activeWorkflow,
+      };
       layoutEditorStore.setLayoutContext(workflow);
       await layoutEditorStore.load();
 
       expect(componentLoadingFailedSpy).not.toHaveBeenCalled();
       expect(
         mockedAPI.componenteditor.getViewLayout,
-      ).toHaveBeenCalledExactlyOnceWith(workflow);
+      ).toHaveBeenCalledExactlyOnceWith(workflow.identifiers);
       expect(
         mockedAPI.componenteditor.getViewNodes,
-      ).toHaveBeenCalledExactlyOnceWith(workflow);
+      ).toHaveBeenCalledExactlyOnceWith(workflow.identifiers);
       expect(
         mockedAPI.componenteditor.getConfigurationLayout,
-      ).toHaveBeenCalledExactlyOnceWith(workflow);
+      ).toHaveBeenCalledExactlyOnceWith(workflow.identifiers);
       expect(
         mockedAPI.componenteditor.getConfigurationNodes,
-      ).toHaveBeenCalledExactlyOnceWith(workflow);
+      ).toHaveBeenCalledExactlyOnceWith(workflow.identifiers);
       expect(fillConfigurationLayoutSpy).toHaveBeenCalledTimes(
         initialConfigurationNodes.length,
       );
@@ -609,7 +636,10 @@ describe("layoutEditor", () => {
 
       const { layoutEditorStore } = setupStore();
 
-      const workflow: LayoutContext = { projectId, workflowId, nodeId };
+      const workflow: LayoutContext = {
+        identifiers: { projectId, workflowId, nodeId },
+        workflow: activeWorkflow,
+      };
       layoutEditorStore.setLayoutContext(workflow);
       await layoutEditorStore.save();
 
@@ -624,7 +654,10 @@ describe("layoutEditor", () => {
 
       const { layoutEditorStore } = setupStore();
 
-      const workflow: LayoutContext = { projectId, workflowId, nodeId };
+      const workflow: LayoutContext = {
+        identifiers: { projectId, workflowId, nodeId },
+        workflow: activeWorkflow,
+      };
       layoutEditorStore.setLayoutContext(workflow);
       await layoutEditorStore.save();
 
@@ -632,13 +665,13 @@ describe("layoutEditor", () => {
       expect(
         mockedAPI.componenteditor.setViewLayout,
       ).toHaveBeenCalledExactlyOnceWith({
-        ...workflow,
+        ...workflow.identifiers,
         componentViewLayout: expect.any(String),
       });
       expect(
         mockedAPI.componenteditor.setConfigurationLayout,
       ).toHaveBeenCalledExactlyOnceWith({
-        ...workflow,
+        ...workflow.identifiers,
         componentConfigurationLayout: expect.any(String),
       });
     });

@@ -1,12 +1,17 @@
 /* eslint-disable no-use-before-define */
 
+import type { Workflow } from "@/api/gateway-api/generated-api";
+
 /**
  * Layout context
  */
 export type LayoutContext = null | {
-  projectId: string;
-  workflowId: string;
-  nodeId: string;
+  identifiers: {
+    projectId: string;
+    workflowId: string;
+    nodeId: string;
+  };
+  workflow: Workflow;
 };
 
 /**

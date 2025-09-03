@@ -5,8 +5,6 @@ import MissingIcon from "@knime/styles/img/icons/circle-help.svg";
 import ComponentIcon from "@knime/styles/img/icons/layout-editor.svg";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
-import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import { useWorkflowStore } from "@/store/workflow/workflow";
 
 const props = defineProps<{
   nodeSuffix: string;
@@ -15,16 +13,17 @@ const props = defineProps<{
 const isComponent = ref<boolean>(false);
 const icon = ref<string | null>(null);
 
+const layoutEditorStore = useLayoutEditorStore();
+
 watch(
   () => props.nodeSuffix,
   () => {
-    const component = useLayoutEditorStore().layoutContext;
-    if (component) {
-      const nodeId = `${component.nodeId}:0:${props.nodeSuffix}`;
-      const node = useWorkflowStore().activeWorkflow!.nodes[nodeId];
+    if (layoutEditorStore.layoutContext) {
+      const nodeId = `${layoutEditorStore.layoutContext.identifiers.nodeId}:0:${props.nodeSuffix}`;
+      const node = layoutEditorStore.layoutContext.workflow.nodes[nodeId];
 
       isComponent.value = node && node.kind === "component";
-      icon.value = useNodeInteractionsStore().getNodeIcon(nodeId) || null;
+      icon.value = layoutEditorStore.getNodeIcon(node);
     }
   },
   { immediate: true },

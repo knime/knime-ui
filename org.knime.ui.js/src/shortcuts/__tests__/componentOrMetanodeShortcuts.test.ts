@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
+import { API } from "@api";
 import { capitalize } from "lodash-es";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
@@ -10,8 +12,11 @@ import {
   createWorkflow,
 } from "@/test/factories";
 import { mockShortcutContext } from "@/test/factories/shortcuts";
+import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import componentOrMetanodeShortcuts from "../componentOrMetanodeShortcuts";
+
+const mockedAPI = deepMocked(API);
 
 describe("componentOrMetanodeShortcuts", () => {
   const createStore = () => {
@@ -204,7 +209,10 @@ describe("componentOrMetanodeShortcuts", () => {
       ).toHaveBeenCalled();
     });
 
-    it("open modern layout editor by node ID if feature flag present", () => {
+    it("open modern layout editor by node ID if feature flag present", async () => {
+      mockedAPI.workflow.getWorkflow.mockResolvedValue({
+        workflow: createWorkflow(),
+      });
       const { applicationStore, layoutEditorStore } = createStore();
       applicationStore.featureFlags[
         "org.knime.ui.feature.modern_layout_editor_feature"
@@ -213,6 +221,9 @@ describe("componentOrMetanodeShortcuts", () => {
       componentOrMetanodeShortcuts.openLayoutEditorByNodeId.execute(
         mockShortcutContext(),
       );
+
+      await flushPromises();
+
       expect(layoutEditorStore.setLayoutContext).toHaveBeenCalled();
     });
 

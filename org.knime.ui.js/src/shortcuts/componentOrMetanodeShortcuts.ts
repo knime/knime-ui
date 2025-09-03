@@ -1,3 +1,6 @@
+import { API } from "@api";
+
+import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import CreateComponent from "@knime/styles/img/icons/component.svg";
 import LayoutIcon from "@knime/styles/img/icons/layout-editor.svg";
 import CreateMetanode from "@knime/styles/img/icons/metanode-add.svg";
@@ -415,12 +418,20 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         useWorkflowStore().getProjectAndWorkflowIds;
 
       const activeWorkflow = useWorkflowStore().activeWorkflow;
-      const parents = activeWorkflow?.parents?.at(0);
+
+      if (!activeWorkflow) {
+        return;
+      }
+
+      const parents = activeWorkflow.parents?.at(0);
 
       useLayoutEditorStore().setLayoutContext({
-        projectId,
-        workflowId: parents?.containerId || nodeId,
-        nodeId,
+        identifiers: {
+          projectId,
+          workflowId: parents?.containerId || nodeId,
+          nodeId,
+        },
+        workflow: activeWorkflow,
       });
     },
     condition: () => {
@@ -441,7 +452,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "Shift", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
-    execute: () => {
+    execute: async () => {
       const nodeId = useSelectionStore().singleSelectedNode?.id ?? "";
 
       const { isModernLayoutEditor } = useFeatures();
@@ -450,13 +461,19 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         return;
       }
 
-      const { projectId, workflowId } =
-        useWorkflowStore().getProjectAndWorkflowIds;
+      const workflowStore = useWorkflowStore();
+      const { projectId, workflowId } = workflowStore.getProjectAndWorkflowIds;
+      const versionId = workflowStore.activeWorkflow?.info.version;
+
+      const { workflow } = await API.workflow.getWorkflow({
+        projectId,
+        workflowId: nodeId,
+        versionId: versionId ?? CURRENT_STATE_VERSION,
+      });
 
       useLayoutEditorStore().setLayoutContext({
-        projectId,
-        workflowId,
-        nodeId,
+        identifiers: { projectId, workflowId, nodeId },
+        workflow,
       });
     },
     condition: () => {
