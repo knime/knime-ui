@@ -9,6 +9,20 @@ export interface RPCClient {
   registerEventHandlers(eventHandlers: Record<string, any>): void;
 }
 
+const isObject = (e: unknown): e is Exclude<object, any[]> => {
+  return e !== null && typeof e === "object" && !Array.isArray(e);
+};
+
+type JSONRPCErrorData = {
+  data: unknown;
+};
+
+const isJSONRPCErrorWithData = (e: unknown): e is JSONRPCErrorData => {
+  return (
+    isObject(e) && "code" in e && typeof e.code === "number" && "data" in e
+  );
+};
+
 const request = {
   jsonrpc: "2.0",
   id: 0,
@@ -34,6 +48,10 @@ export const createRPCClient = (): RPCClient => {
         return response;
       } catch (error) {
         consola.error("RPC Client:: Error RPC request", error);
+
+        if (isJSONRPCErrorWithData(error)) {
+          throw error.data;
+        }
 
         throw error;
       }

@@ -3,7 +3,7 @@
  * It's being generated from knime-com-shared (see template in exceptions.mustache)
  */
 
-export const KNOWN_EXECUTOR_EXCEPTIONS = [
+export const GATEWAY_EXCEPTIONS = [
   "ServiceCallException",
   "NetworkException",
   "NodeDescriptionNotAvailableException",
@@ -16,19 +16,14 @@ export const KNOWN_EXECUTOR_EXCEPTIONS = [
   "LoggedOutException",
 ] as const;
 
-export type KnownExecutorExceptions =
-  (typeof KNOWN_EXECUTOR_EXCEPTIONS)[number];
+export type GatewayExceptions =
+  (typeof GATEWAY_EXCEPTIONS)[number];
 
 function isObject(e: unknown): e is Exclude<object, any[]> {
   return e !== null && typeof e === "object" && !Array.isArray(e);
 }
 
-const EXPECTED_EXCEPTION_CODE = -32600;
-type ExpectedExceptionCode = typeof EXPECTED_EXCEPTION_CODE;
-const UNEXPECTED_EXCEPTION_CODE = -32601;
-type UnexpectedExceptionCode = typeof UNEXPECTED_EXCEPTION_CODE;
-
-export type ApiErrorData = {
+export type GatewayProblemDescription = {
   code: string;
   title: string;
   canCopy: boolean;
@@ -42,12 +37,9 @@ export type ApiErrorData = {
   "x-error-id"?: string;
 };
 
-type FormattedApiError = {
-  code: ExpectedExceptionCode | UnexpectedExceptionCode;
-  data: ApiErrorData;
-};
-
-export function isApiErrorData(data: unknown): data is ApiErrorData {
+export function isValidAPIError(
+  data: unknown,
+): data is GatewayProblemDescription {
   return (
     isObject(data) &&
     "code" in data &&
@@ -57,27 +49,13 @@ export function isApiErrorData(data: unknown): data is ApiErrorData {
   );
 }
 
-export function isApiError(e: unknown): e is FormattedApiError {
-  return (
-    isObject(e) &&
-    "code" in e &&
-    typeof e.code === "number" &&
-    [EXPECTED_EXCEPTION_CODE, UNEXPECTED_EXCEPTION_CODE].includes(e.code) &&
-    "data" in e &&
-    isApiErrorData(e.data)
-  );
-}
+type ApiError<CODE extends GatewayExceptions> = {
+  code: CODE;
+} & GatewayProblemDescription;
 
-type ApiError<CODE extends KnownExecutorExceptions> = FormattedApiError & {
-  code: ExpectedExceptionCode;
-  data: { code: CODE };
-};
-
-export function isApiErrorType<CODE extends KnownExecutorExceptions>(
-  e: unknown,
+export function matchesAPIErrorCode<CODE extends GatewayExceptions>(
+  error: unknown,
   code: CODE,
-): e is ApiError<CODE> {
-  return (
-    isApiError(e) && e.code === EXPECTED_EXCEPTION_CODE && e.data.code === code
-  );
+): error is ApiError<CODE> {
+  return isValidAPIError(error) && error.code === code;
 }

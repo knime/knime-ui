@@ -3,7 +3,7 @@ import type { VNode } from "vue";
 import type { ToastServiceProvider } from "@knime/components";
 import { rfcErrors } from "@knime/hub-features";
 
-import { isApiError } from "@/api/gateway-api/generated-exceptions";
+import { isValidAPIError } from "@/api/gateway-api/generated-exceptions";
 
 import { defaultAPIErrorHandler } from "./defaultAPIErrorHandler";
 import { type ToastPresetErrorHandler, type ToastPresetHandler } from "./types";
@@ -85,8 +85,8 @@ export const getPresets = (
           .join("\n")}`;
 
         const details = failedProviders.flatMap(({ error }) => {
-          if (isApiError(error)) {
-            return error.data.details ?? [];
+          if (isValidAPIError(error)) {
+            return error.details ?? [];
           }
 
           return (error as Error).message;

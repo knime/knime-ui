@@ -2,8 +2,7 @@
 import type { Toast, ToastServiceProvider } from "@knime/components";
 import { rfcErrors } from "@knime/hub-features";
 
-import { isDesktopApiError } from "@/api/desktop-api/exceptions";
-import { isApiError } from "@/api/gateway-api/generated-exceptions";
+import { isValidAPIError } from "@/api/gateway-api/generated-exceptions";
 import { isValidDate } from "@/util/date-time";
 
 /**
@@ -25,26 +24,25 @@ export const defaultAPIErrorHandler = (
 ) => {
   const genericHeadline = "An unexpected error occurred";
 
-  if (isApiError(error) || isDesktopApiError(error)) {
-    const { data } = error;
+  if (isValidAPIError(error)) {
     const date =
-      data.date && isValidDate(data.date) ? new Date(data.date) : undefined;
+      error.date && isValidDate(error.date) ? new Date(error.date) : undefined;
 
     const rfcError = new rfcErrors.RFCError({
-      title: data.title,
+      title: error.title,
       date,
-      status: data.status,
-      details: data.details,
-      requestId: data["x-request-id"],
-      errorId: data["x-error-id"],
-      stacktrace: data.stackTrace,
+      status: error.status,
+      details: error.details,
+      requestId: error["x-request-id"],
+      errorId: error["x-error-id"],
+      stacktrace: error.stackTrace,
     });
 
     return $toast.show(
       rfcErrors.toToast({
         headline: payload.headline ?? genericHeadline,
         rfcError,
-        canCopyToClipboard: data.canCopy,
+        canCopyToClipboard: error.canCopy,
       }),
     );
   }
