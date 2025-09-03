@@ -37,7 +37,9 @@ watch(isLargeMode, () => {
 });
 
 const exitLargeMode = () => {
-  isLargeMode.value = false;
+  if (isLargeMode.value) {
+    nodeConfigurationStore.setIsLargeMode(false);
+  }
 };
 
 useEventListener(panel, "click", (event) => {

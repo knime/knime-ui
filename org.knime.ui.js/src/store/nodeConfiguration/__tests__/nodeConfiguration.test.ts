@@ -279,6 +279,38 @@ describe("nodeConfiguration", () => {
     });
   });
 
+  describe("setIsLargeMode", () => {
+    it("should toggle to large and dispatch a DisplayModeEvent event", () => {
+      const { nodeConfiguration } = loadStore();
+
+      const dispatcher = vi.fn();
+      nodeConfiguration.setPushEventDispatcher(dispatcher);
+
+      nodeConfiguration.setIsLargeMode(true);
+
+      expect(nodeConfiguration.isLargeMode).toBe(true);
+      expect(dispatcher).toHaveBeenCalledWith({
+        eventType: "DisplayModeEvent",
+        payload: { mode: "large" },
+      });
+    });
+
+    it("should toggle to small and dispatch a DisplayModeEvent event", () => {
+      const { nodeConfiguration } = loadStore();
+
+      const dispatcher = vi.fn();
+      nodeConfiguration.setPushEventDispatcher(dispatcher);
+
+      nodeConfiguration.setIsLargeMode(false);
+
+      expect(nodeConfiguration.isLargeMode).toBe(false);
+      expect(dispatcher).toHaveBeenCalledWith({
+        eventType: "DisplayModeEvent",
+        payload: { mode: "small" },
+      });
+    });
+  });
+
   describe("getters", () => {
     it("activeNode", async () => {
       const { nodeConfiguration, selectionStore } = loadStore();

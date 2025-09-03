@@ -96,6 +96,9 @@ describe("NodeConfig", () => {
     await nextTick();
 
     assertLargeModeClosed();
+    expect(
+      mockedStores.nodeConfigurationStore.setIsLargeMode,
+    ).toHaveBeenCalledWith(false);
   });
 
   it("is toggled to small if dialog background is clicked", async () => {
@@ -107,6 +110,9 @@ describe("NodeConfig", () => {
     await wrapper.find("dialog").trigger("click");
 
     assertLargeModeClosed();
+    expect(
+      mockedStores.nodeConfigurationStore.setIsLargeMode,
+    ).toHaveBeenCalledWith(false);
   });
 
   it("is not toggled to small if dialog area is clicked", async () => {
@@ -118,5 +124,8 @@ describe("NodeConfig", () => {
     await wrapper.findComponent(NodeConfigWrapper).trigger("click");
 
     expect(closeModal).not.toHaveBeenCalled();
+    expect(
+      mockedStores.nodeConfigurationStore.setIsLargeMode,
+    ).not.toHaveBeenCalled();
   });
 });
