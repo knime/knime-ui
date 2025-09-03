@@ -328,6 +328,10 @@ const hoverAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
 };
 
 const openAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
+  if (!event[getMetaOrCtrlKey()]) {
+    return;
+  }
+
   const elements = document.elementsFromPoint(event.clientX, event.clientY);
   const link = findLink(elements);
 
@@ -371,7 +375,7 @@ const openAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
       v-if="!isEditing"
       event-mode="static"
       @pointermove="hoverAnnotationLinks"
-      @pointerdown.ctrl="openAnnotationLinks"
+      @pointerdown="openAnnotationLinks"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
