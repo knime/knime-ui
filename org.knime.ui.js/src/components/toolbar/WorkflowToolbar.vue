@@ -409,6 +409,10 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     flex: 0 0;
     gap: var(--space-4);
 
+    & button {
+      white-space: nowrap;
+    }
+
     & .help-menu:deep(button.submenu-toggle) {
       border: 1px solid var(--knime-silver-sand);
     }
