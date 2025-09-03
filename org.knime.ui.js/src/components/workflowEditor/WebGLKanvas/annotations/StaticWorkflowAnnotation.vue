@@ -69,8 +69,8 @@ annotationContent.classList.add("static-workflow-annotation");
 const updateStyles = () => {
   annotationContent.style.width = `${props.annotation.bounds.width}px`;
   annotationContent.style.height = `${props.annotation.bounds.height}px`;
-  annotationContent.style.zIndex = props.zIndex.toString();
   annotationContent.style.border = `${shapes.annotationBorderWidth}px solid ${props.annotation.borderColor}`;
+  wrapper.style.zIndex = props.zIndex.toString();
 };
 
 const updateText = () => {
