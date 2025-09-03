@@ -9,7 +9,7 @@ import {
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-import { isApiErrorType } from "@/api/gateway-api/generated-exceptions";
+import { matchesAPIErrorCode } from "@/api/gateway-api/generated-exceptions";
 import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling";
 import { isBrowser } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
@@ -581,7 +581,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         // retry with collision strategy if there is a collision
         if (
           !params?.collisionHandling &&
-          isApiErrorType(error, "CollisionException")
+          matchesAPIErrorCode(error, "CollisionException")
         ) {
           const collisionHandling = await promptCollisionStrategies();
           if (collisionHandling === "CANCEL") {

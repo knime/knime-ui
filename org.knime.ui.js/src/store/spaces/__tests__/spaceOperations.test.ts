@@ -639,13 +639,10 @@ describe("spaces::spaceOperations", () => {
     } as const;
 
     const collisionExceptionFromBE = {
-      code: -32600,
-      data: {
-        code: "CollisionException",
-        title: "error message",
-        canCopy: false,
-        message: "error message",
-      },
+      code: "CollisionException",
+      title: "error message",
+      canCopy: false,
+      message: "error message",
     };
 
     it("uses provided params", async () => {

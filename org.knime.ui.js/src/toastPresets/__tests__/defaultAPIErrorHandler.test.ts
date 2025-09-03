@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import { rfcErrors } from "@knime/hub-features";
 
-import type { ApiErrorData } from "@/api/gateway-api/generated-exceptions";
 import { getToastsProvider } from "@/plugins/toasts";
 import { defaultAPIErrorHandler } from "../defaultAPIErrorHandler";
 
@@ -29,16 +28,13 @@ describe("defaultAPIErrorHandler", () => {
     ["Desktop API error", 0, false],
   ])("should handle %s", (_, code, canCopyToClipboard) => {
     const error = {
-      code,
-      data: {
-        code: "ServiceCallException",
-        title: "The title",
-        date: new Date("2025-10-19").toISOString(),
-        "x-request-id": "1234567",
-        status: 422,
-        details: ["Detail line 1", "Detail line 2"],
-        canCopy: canCopyToClipboard,
-      } satisfies ApiErrorData,
+      code: "ServiceCallException",
+      title: "The title",
+      date: new Date("2025-10-19").toISOString(),
+      "x-request-id": "1234567",
+      status: 422,
+      details: ["Detail line 1", "Detail line 2"],
+      canCopy: canCopyToClipboard,
     };
 
     defaultAPIErrorHandler($toast, error, {
@@ -53,11 +49,11 @@ describe("defaultAPIErrorHandler", () => {
       }),
     );
     expect(rfcError).toBeInstanceOf(rfcErrors.RFCError);
-    expect(rfcError.data.title).toBe(error.data.title);
-    expect(rfcError.data.details).toEqual(error.data.details);
-    expect(rfcError.data.requestId).toEqual(error.data["x-request-id"]);
-    expect(rfcError.data.status).toEqual(error.data.status);
-    expect(rfcError.data.date).toEqual(new Date(error.data.date));
+    expect(rfcError.data.title).toBe(error.title);
+    expect(rfcError.data.details).toEqual(error.details);
+    expect(rfcError.data.requestId).toEqual(error["x-request-id"]);
+    expect(rfcError.data.status).toEqual(error.status);
+    expect(rfcError.data.date).toEqual(new Date(error.date));
   });
 
   it("should handle Hub API errors", () => {

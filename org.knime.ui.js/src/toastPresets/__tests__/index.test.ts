@@ -168,23 +168,17 @@ describe("toastPresets", () => {
           {
             name: "Provider1",
             error: {
-              code: -32600,
-              data: {
-                code: "SomeException",
-                title: "",
-                details: ["problem 1", "problem 2"],
-              },
+              code: "SomeException",
+              title: "",
+              details: ["problem 1", "problem 2"],
             },
           },
           {
             name: "Provider2",
             error: {
-              code: -32600,
-              data: {
-                code: "SomeException",
-                title: "",
-                details: ["problem 3"],
-              },
+              code: "SomeException",
+              title: "",
+              details: ["problem 3"],
             },
           },
         ];
