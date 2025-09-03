@@ -6,6 +6,7 @@ type Initiator =
   | "add-port-placeholder::onEscape"
   | "annotation-transform"
   | "annotation::onContextMenu"
+  | "annotation::onLinkClick"
   | "bendpoint::onContextMenu"
   | "component-placeholder::onContextMenu"
   | "connection-select"
