@@ -92,5 +92,21 @@ const onWheel = throttle(function (e: WheelEvent) {
    &:deep(svg.arrow) {
       stroke:  var(--kds-color-text-and-icon-neutral)
    }
+
+  &:deep(span) {
+    color: var(--kds-color-text-and-icon-subtle);
+    font: var(--kds-font-base-interactive-small);
+    padding: var(--kds-spacing-container-0-25x);
+    line-height: 16px;
+
+    & svg.breadcrumb-icon {
+      //stroke: var(--kds-color-text-and-icon-neutral);
+      stroke: var(--kds-color-text-and-icon-subtle);
+      margin: 0 var(--kds-spacing-container-0-37x) 0 var(--kds-spacing-container-0-37x);
+      stroke-width: 2.25px;
+      width: 16px;
+      height: 16px;
+    }
+  }
 }
 </style>

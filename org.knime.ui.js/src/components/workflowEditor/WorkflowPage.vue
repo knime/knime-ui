@@ -88,7 +88,6 @@ const savedSecondarySize = computed({
   grid-area: toolbar;
   height: var(--app-toolbar-height);
   flex: 0 0 auto;
-  padding: 10px;
   padding: var(--kds-spacing-container-0-5x);
   background-color: var(--kds-color-surface-default);
   padding: var(--kds-spacing-container-0-5x);
