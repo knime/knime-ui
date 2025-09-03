@@ -32,6 +32,7 @@ export type LayoutEditorNode = {
   description?: string | null;
   icon: string;
   type: LayoutEditorNodeType;
+  templateId: string | null;
   /**
    * Properties of the node item that will be used when this
    * node is added to the layout.

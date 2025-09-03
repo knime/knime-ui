@@ -4,27 +4,25 @@ import { ref, watch } from "vue";
 import MissingIcon from "@knime/styles/img/icons/circle-help.svg";
 import ComponentIcon from "@knime/styles/img/icons/layout-editor.svg";
 
-import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
-import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import { useWorkflowStore } from "@/store/workflow/workflow";
+import type { ConfigurationLayoutEditorNode } from "@/store/layoutEditor/types/configuration";
+import type { LayoutEditorNode } from "@/store/layoutEditor/types/view";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 
 const props = defineProps<{
-  nodeSuffix: string;
+  node: LayoutEditorNode | ConfigurationLayoutEditorNode;
 }>();
 
 const isComponent = ref<boolean>(false);
 const icon = ref<string | null>(null);
 
-watch(
-  () => props.nodeSuffix,
-  () => {
-    const component = useLayoutEditorStore().layoutContext;
-    if (component) {
-      const nodeId = `${component.nodeId}:0:${props.nodeSuffix}`;
-      const node = useWorkflowStore().activeWorkflow!.nodes[nodeId];
+const nodeTemplatesStore = useNodeTemplatesStore();
 
-      isComponent.value = node && node.kind === "component";
-      icon.value = useNodeInteractionsStore().getNodeIcon(nodeId) || null;
+watch(
+  () => props.node.templateId,
+  () => {
+    isComponent.value = props.node.type === "nestedLayout";
+    if (props.node.templateId !== null) {
+      icon.value = nodeTemplatesStore.cache[props.node.templateId].icon ?? null;
     }
   },
   { immediate: true },

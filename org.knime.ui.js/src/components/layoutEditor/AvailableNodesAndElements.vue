@@ -39,7 +39,7 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
         @click.prevent="layoutEditorStore.addNode(element)"
       >
         <div class="name">
-          <NodeIcon :node-suffix="element.nodeID" class="node-icon" />
+          <NodeIcon :node="element" class="node-icon" />
           <div :title="element.name">
             {{ element.name }}
           </div>

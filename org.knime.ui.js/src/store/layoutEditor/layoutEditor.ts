@@ -5,6 +5,7 @@ import { defineStore } from "pinia";
 
 import { layoutEditorGridSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
+import { useNodeTemplatesStore } from "../nodeTemplates/nodeTemplates";
 
 import type {
   ConfigurationLayout,
@@ -402,6 +403,11 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       const configurationNodes = JSON.parse(
         await API.componenteditor.getConfigurationNodes(layoutContext.value),
       );
+
+      const nodeTemplateIds = [...viewNodes, ...configurationNodes].map(
+        (node) => node.templateId,
+      );
+      await useNodeTemplatesStore().getNodeTemplates({ nodeTemplateIds });
 
       const filledConfigurationLayout = configurationNodes.reduce(
         fillConfigurationLayout,

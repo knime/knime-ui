@@ -23,6 +23,7 @@ type ConfigurationLayoutEditorItem = {
 
 export type ConfigurationLayoutEditorNode = {
   type: "configuration";
+  templateId: string;
   name: string;
   icon: string;
   layout: ConfigurationLayoutEditorItem;

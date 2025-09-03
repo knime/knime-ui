@@ -4,6 +4,11 @@ import { API } from "@api";
 
 import { layoutEditorGridSize } from "@/style/shapes";
 import {
+  NODE_FACTORIES,
+  createAvailablePortTypes,
+  createNodeTemplate,
+} from "@/test/factories";
+import {
   createColumn,
   createComplexLayout,
   createConfigurationLayout,
@@ -18,8 +23,8 @@ import { mockStores } from "@/test/utils/mockStores";
 import { getToastPresets } from "@/toastPresets";
 import type {
   LayoutContext,
-  LayoutEditorItem,
   LayoutEditorRowItem,
+  LayoutEditorViewItem,
 } from "../types/view";
 import * as layoutEditorUtils from "../utils";
 
@@ -32,9 +37,10 @@ const widthXS = layoutEditorGridSize;
 
 describe("layoutEditor", () => {
   const setupStore = () => {
-    const { layoutEditorStore } = mockStores();
+    const { layoutEditorStore, applicationStore, nodeTemplatesStore } =
+      mockStores();
 
-    return { layoutEditorStore };
+    return { layoutEditorStore, applicationStore, nodeTemplatesStore };
   };
 
   describe("open workflow state", () => {
@@ -421,7 +427,7 @@ describe("layoutEditor", () => {
       layoutEditorStore.setLayout(initialLayout);
 
       const item = layoutEditorStore.layout.rows[0].columns[0]
-        .content[0] as LayoutEditorItem;
+        .content[0] as LayoutEditorViewItem;
 
       const autoSizingConfig = {
         resizeMethod: "auto" as const,
@@ -453,7 +459,7 @@ describe("layoutEditor", () => {
       const initialLayout = createComplexLayout();
       layoutEditorStore.setLayout(initialLayout);
       const view = layoutEditorStore.layout.rows[0].columns[0]
-        .content[0] as LayoutEditorItem;
+        .content[0] as LayoutEditorViewItem;
       expect(layoutEditorStore.layout.parentLayoutLegacyMode).toBe(false);
       expect(view.useLegacyMode).toBe(false);
       expect(layoutEditorStore.isLegacyModeOutOfSync).toBe(true);
@@ -526,6 +532,13 @@ describe("layoutEditor", () => {
     });
 
     it("fetches data, fills the configuration layout and populates the store with fetched data", async () => {
+      const nodeTemplate1 = createNodeTemplate({
+        id: NODE_FACTORIES.ExcelTableReaderNodeFactory,
+      });
+      mockedAPI.noderepository.getNodeTemplates.mockResolvedValue({
+        [nodeTemplate1.id]: nodeTemplate1,
+      });
+
       const initialLayout = createComplexLayout();
       mockedAPI.componenteditor.getViewLayout.mockResolvedValueOnce(
         JSON.stringify(initialLayout),
@@ -548,7 +561,13 @@ describe("layoutEditor", () => {
         "fillConfigurationLayout",
       );
 
-      const { layoutEditorStore } = setupStore();
+      const { layoutEditorStore, applicationStore, nodeTemplatesStore } =
+        setupStore();
+      applicationStore.setAvailablePortTypes(createAvailablePortTypes());
+      const nodeTemplateIds = [
+        ...initialNodes,
+        ...initialConfigurationNodes,
+      ].map((node) => node.templateId);
 
       const workflow: LayoutContext = { projectId, workflowId, nodeId };
       layoutEditorStore.setLayoutContext(workflow);
@@ -583,6 +602,9 @@ describe("layoutEditor", () => {
       expect(layoutEditorStore.configurationNodes).toEqual(
         initialConfigurationNodes,
       );
+      expect(nodeTemplatesStore.getNodeTemplates).toHaveBeenCalledWith({
+        nodeTemplateIds,
+      });
     });
   });
 

@@ -87,7 +87,8 @@ const autoSizeStyles = computed(() => {
   >
     <div v-if="node" :title="node.name" class="knime-view-container">
       <main>
-        <NodeIcon :node-suffix="view.nodeID" class="node-icon" /> <br />
+        <NodeIcon :node="node" class="node-icon" />
+        <br />
         {{ node.name }} <br />
         <small class="text-muted node-id">Node&nbsp;{{ view.nodeID }}</small>
         <small v-if="!isEnabled" class="text-muted">
