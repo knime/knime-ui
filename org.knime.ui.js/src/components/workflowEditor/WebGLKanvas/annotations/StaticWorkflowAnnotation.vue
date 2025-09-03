@@ -302,6 +302,41 @@ useMagicKeys({
     keyboardTransformActive.value = true;
   },
 });
+
+const findLink = (elements: Element[]) => {
+  const workflowAnnotationIndex = elements.findIndex((el) =>
+    el.classList.contains("static-workflow-annotation"),
+  );
+  const annotationElements = elements.slice(1, workflowAnnotationIndex);
+  return annotationElements.find(
+    (el) => el.tagName === "A",
+  ) as HTMLAnchorElement;
+};
+
+const openAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
+  const elements = document.elementsFromPoint(event.clientX, event.clientY);
+  const link = findLink(elements);
+
+  if (link) {
+    window.open(link.href, "_blank");
+    // do not deselect annotation if a link was opened
+    event.stopPropagation();
+  }
+};
+
+let lastHoveredLink: HTMLAnchorElement | undefined;
+const hoverAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
+  const elements = document.elementsFromPoint(event.clientX, event.clientY);
+  const link = findLink(elements);
+  if (lastHoveredLink) {
+    lastHoveredLink.classList.remove("hover");
+    lastHoveredLink = undefined;
+  }
+  if (link) {
+    link.classList.add("hover");
+    lastHoveredLink = link;
+  }
+};
 </script>
 
 <template>
@@ -331,6 +366,9 @@ useMagicKeys({
 
     <Graphics
       v-if="!isEditing"
+      event-mode="static"
+      @pointermove="hoverAnnotationLinks"
+      @pointerdown.ctrl="openAnnotationLinks"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
