@@ -274,6 +274,9 @@ const activeVersionTitle = computed(() => {
   );
 
     &:focus-visible {
+    border-radius: var(--kds-border-radius-container-0-37x);
+
+    &:focus {
       outline: var(--kds-border-action-focused);
       outline-offset: 1px;
       background-color: var(--kds-color-background-neutral-initial);
