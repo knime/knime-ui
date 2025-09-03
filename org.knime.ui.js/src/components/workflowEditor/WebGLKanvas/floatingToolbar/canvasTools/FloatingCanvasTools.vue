@@ -11,6 +11,7 @@ import LensePlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSettingsStore } from "@/store/settings";
+import FloatingToolbar from "../FloatingToolbar.vue";
 
 import ZoomMenu from "./ZoomMenu.vue";
 
@@ -29,7 +30,7 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
 </script>
 
 <template>
-  <div class="canvas-tools" @pointerdown.stop>
+  <FloatingToolbar position="right">
     <FunctionButton
       :title="`Toggle pan mode – ${
         $shortcuts.get('switchToPanMode').hotkeyText
@@ -68,26 +69,11 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
     >
       <LensePlusIcon />
     </FunctionButton>
-  </div>
+  </FloatingToolbar>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
-
-.canvas-tools {
-  position: absolute;
-  max-height: calc(v-bind("$shapes.floatingCanvasToolsSize") * 1px);
-  bottom: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
-  right: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
-  display: flex;
-  align-items: center;
-  background: var(--knime-white);
-  border: 1px solid var(--knime-gray-ultra-light);
-  border-radius: 8px;
-  box-shadow: var(--shadow-elevation-1);
-  z-index: v-bind("$zIndices.layerCanvasDecorations");
-  padding: var(--space-4);
-}
 
 .minimap-toggle {
   margin-left: 2px;
