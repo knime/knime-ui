@@ -1,5 +1,8 @@
+import AiTextIcon from "@knime/styles/img/icons/ai-description.svg";
+
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
@@ -14,6 +17,7 @@ import type { UnionToShortcutRegistry } from "./types";
 type AnnotationShortcuts = UnionToShortcutRegistry<
   | "switchToAnnotationMode"
   | "addWorkflowAnnotation"
+  | "generateAnnotation"
   | "bringAnnotationToFront"
   | "bringAnnotationForward"
   | "sendAnnotationBackward"
@@ -54,6 +58,16 @@ const annotationShortcuts: AnnotationShortcuts = {
       });
     },
     condition: () => useWorkflowStore().isWritable,
+  },
+  generateAnnotation: {
+    text: "Annotate with K-AI",
+    icon: AiTextIcon,
+    execute: () => {
+      useAiQuickActionsStore().generateAnnotation();
+    },
+    condition: () =>
+      useSelectionStore().selectedNodeIds.length > 0 &&
+      useWorkflowStore().isWritable,
   },
   bringAnnotationToFront: {
     text: "Bring to front",

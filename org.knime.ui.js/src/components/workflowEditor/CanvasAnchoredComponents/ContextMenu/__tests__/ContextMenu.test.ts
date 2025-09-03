@@ -303,6 +303,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateAnnotation" } },
         ]),
       );
     });
@@ -346,6 +347,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateAnnotation" } },
         ]),
       );
     });
@@ -380,6 +382,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateAnnotation" } },
         ]),
       );
     });
@@ -422,6 +425,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateAnnotation" } },
         ]),
       );
     });
@@ -499,6 +503,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "alignVertically" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateAnnotation" } },
         ]),
       );
     });
@@ -572,6 +577,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
           { text: "Metanode" },
+          { metadata: { shortcutName: "generateAnnotation" } },
         ]),
       );
     });
@@ -621,6 +627,7 @@ describe("ContextMenu.vue", () => {
                 { text: "Share" },
               ]),
             },
+            { metadata: { shortcutName: "generateAnnotation" } },
           ]),
         );
       });
@@ -673,6 +680,7 @@ describe("ContextMenu.vue", () => {
                 { text: "Disconnect link" },
               ]),
             },
+            { metadata: { shortcutName: "generateAnnotation" } },
           ]),
         );
       });
@@ -728,6 +736,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "alignVertically" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateAnnotation" } },
         ]),
       );
     });

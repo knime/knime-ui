@@ -3,6 +3,7 @@ import { computed, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import { FunctionButton } from "@knime/components";
+import AiTextIcon from "@knime/styles/img/icons/ai-description.svg";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
 import NodesAlignHorizIcon from "@knime/styles/img/icons/nodes-align-horiz.svg";
 import NodesAlignVertIcon from "@knime/styles/img/icons/nodes-align-vert.svg";
@@ -10,32 +11,53 @@ import NodesAlignVertIcon from "@knime/styles/img/icons/nodes-align-vert.svg";
 import { useTooltip } from "@/components/workflowEditor/common/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useShortcuts } from "@/plugins/shortcuts";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useSelectionStore } from "@/store/selection";
 import FloatingToolbar from "../FloatingToolbar.vue";
 
-const { getSelectedNodes } = storeToRefs(useSelectionStore());
+const { usage } = storeToRefs(useAIAssistantStore());
+const hasAiUsageRemaining = computed(() => {
+  if (!usage.value || !usage.value.limit) {
+    return true;
+  }
+
+  return usage.value.used < usage.value.limit;
+});
+
+const { getSelectedNodes, singleSelectedNode } = storeToRefs(
+  useSelectionStore(),
+);
 const canAlignNodes = computed(() => getSelectedNodes.value.length > 1);
 
 const $shortcuts = useShortcuts();
-
 const quickBuildShortcut = $shortcuts.get("openQuickBuildMenu");
+const generateAnnotationShortcut = $shortcuts.get("generateAnnotation");
 const alignHorizontallyShortcut = $shortcuts.get("alignHorizontally");
 const alignVerticallyShortcut = $shortcuts.get("alignVertically");
 
-const quickBuildTitle = `${quickBuildShortcut.text} - ${quickBuildShortcut.hotkeyText}`;
-const alignNodesHorizontallyTitle = `${alignHorizontallyShortcut.text} - ${alignHorizontallyShortcut.hotkeyText}`;
-const alignNodesVerticallyTitle = `${alignVerticallyShortcut.text} - ${alignVerticallyShortcut.hotkeyText}`;
+// web-native tooltip text for each button, shown on hover when button is not disabled
+const quickBuildTitle = `${quickBuildShortcut.text} – ${quickBuildShortcut.hotkeyText}`;
+const generateAnnotationTitle = `${generateAnnotationShortcut.text}`;
+const alignNodesHorizontallyTitle = `${alignHorizontallyShortcut.text} – ${alignHorizontallyShortcut.hotkeyText}`;
+const alignNodesVerticallyTitle = `${alignVerticallyShortcut.text} – ${alignVerticallyShortcut.hotkeyText}`;
 
-const alignHorizontallyWrapperRef = useTemplateRef<Element>(
-  "alignHorizontallyWrapper",
-);
-const alignVerticallyWrapperRef = useTemplateRef<Element>(
-  "alignVerticallyWrapper",
-);
+// show hover AI usage Tooltip over AI buttons
+const aiUsageTooltip = computed<TooltipDefinition | null>(() => {
+  if (!usage.value || !usage.value.limit) {
+    return null;
+  }
 
-// show tooltip on hover over disabled node alignment buttons (only one node is selected)
+  return {
+    position: { x: 0, y: 0 }, // placeholder, auto-computed by useTooltip
+    gap: 4,
+    orientation: "top",
+    text: `${usage.value.used}/${usage.value.limit} monthly interations`,
+  };
+});
+
+// show hover Tooltip over disabled node alignment buttons (only one node is selected)
 const alignmentTooltip = computed<TooltipDefinition | null>(() => {
-  if (canAlignNodes.value) {
+  if (!singleSelectedNode.value) {
     return null;
   }
 
@@ -47,6 +69,22 @@ const alignmentTooltip = computed<TooltipDefinition | null>(() => {
   };
 });
 
+// template refs for attaching Tooltip components to
+const quickBuildWrapperRef = useTemplateRef<Element>("quickBuild");
+const generateAnnotationWrapperRef =
+  useTemplateRef<Element>("generateAnnotation");
+const alignHorizontallyWrapperRef =
+  useTemplateRef<Element>("alignHorizontally");
+const alignVerticallyWrapperRef = useTemplateRef<Element>("alignVertically");
+
+useTooltip({
+  tooltip: aiUsageTooltip,
+  element: quickBuildWrapperRef,
+});
+useTooltip({
+  tooltip: aiUsageTooltip,
+  element: generateAnnotationWrapperRef,
+});
 useTooltip({
   tooltip: alignmentTooltip,
   element: alignHorizontallyWrapperRef,
@@ -59,15 +97,29 @@ useTooltip({
 
 <template>
   <FloatingToolbar position="center">
-    <FunctionButton
-      :title="quickBuildTitle"
-      data-test-id="node-selection-tool-quick-build"
-      @pointerdown="$shortcuts.dispatch(quickBuildShortcut.name)"
-    >
-      <AiIcon />
-    </FunctionButton>
+    <div ref="quickBuild">
+      <FunctionButton
+        :title="quickBuildTitle"
+        :disabled="!hasAiUsageRemaining"
+        data-test-id="node-selection-tool-quick-build"
+        @pointerdown="$shortcuts.dispatch(quickBuildShortcut.name)"
+      >
+        <AiIcon />
+      </FunctionButton>
+    </div>
 
-    <div ref="alignHorizontallyWrapper">
+    <div ref="generateAnnotation">
+      <FunctionButton
+        :title="generateAnnotationTitle"
+        :disabled="!hasAiUsageRemaining"
+        data-test-id="node-selection-tool-generate-annotation"
+        @pointerdown="$shortcuts.dispatch(generateAnnotationShortcut.name)"
+      >
+        <AiTextIcon />
+      </FunctionButton>
+    </div>
+
+    <div ref="alignHorizontally">
       <FunctionButton
         :title="alignNodesHorizontallyTitle"
         :disabled="!canAlignNodes"
@@ -78,7 +130,7 @@ useTooltip({
       </FunctionButton>
     </div>
 
-    <div ref="alignVerticallyWrapper">
+    <div ref="alignVertically">
       <FunctionButton
         :title="alignNodesVerticallyTitle"
         :disabled="!canAlignNodes"
