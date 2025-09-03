@@ -314,13 +314,22 @@ const findLink = (elements: Element[]) => {
 };
 
 let lastHoveredLink: HTMLAnchorElement | undefined;
+
+const cleanupHoveredLink = () => {
+  lastHoveredLink?.classList.remove("hover");
+  lastHoveredLink = undefined;
+};
+
+window.addEventListener("blur", cleanupHoveredLink);
+onUnmounted(() => {
+  window.removeEventListener("blur", cleanupHoveredLink);
+});
+
 const hoverAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
   const elements = document.elementsFromPoint(event.clientX, event.clientY);
   const link = findLink(elements);
-  if (lastHoveredLink) {
-    lastHoveredLink.classList.remove("hover");
-    lastHoveredLink = undefined;
-  }
+  cleanupHoveredLink();
+
   if (link) {
     link.classList.add("hover");
     lastHoveredLink = link;
@@ -336,8 +345,7 @@ const openAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
   const link = findLink(elements);
 
   if (link) {
-    lastHoveredLink?.classList.remove("hover");
-    lastHoveredLink = undefined;
+    cleanupHoveredLink();
     markPointerEventAsHandled(event, { initiator: "annotation::onLinkClick" });
     window.open(link.href, "_blank");
     // do not deselect annotation if a link was opened

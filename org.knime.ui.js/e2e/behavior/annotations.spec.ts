@@ -62,9 +62,9 @@ test.describe("editing", () => {
     // select all text
     await page.keyboard.press("ControlOrMeta+a");
     await page.keyboard.insertText("This is the new content");
-    await expect(page.getByRole("paragraph")).toContainText(
-      "This is the new content",
-    );
+    await expect(
+      page.getByTestId("workflow-annotation-root_0").getByRole("paragraph"),
+    ).toContainText("This is the new content");
   });
 
   test("aborting edit reverts back to previous text", async ({ page }) => {
@@ -80,9 +80,9 @@ test.describe("editing", () => {
     await page.keyboard.press("ControlOrMeta+a");
     await page.keyboard.insertText("This is the new content");
     await page.waitForTimeout(200);
-    await expect(page.getByRole("paragraph")).toContainText(
-      "This is the new content",
-    );
+    await expect(
+      page.getByTestId("workflow-annotation-root_0").getByRole("paragraph"),
+    ).toContainText("This is the new content");
     await assertSnapshot(page, maxDiffPixels);
 
     // esc aborts edit

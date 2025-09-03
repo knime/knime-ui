@@ -95,6 +95,7 @@ useCanvasClickOutside({
     :editable="isEditing"
     :annotation-bounds="annotation.bounds"
     :zoom-factor="zoomFactor"
+    :data-test-id="`workflow-annotation-${annotation.id}`"
     canvas-renderer="WebGL"
     @change="onAnnotationTextChange"
     @change-border-color="onAnnotationColorChange"
