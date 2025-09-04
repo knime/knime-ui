@@ -128,10 +128,11 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         /// Canvas renderer
         addField(new LabelField(getFieldEditorParent(), ""));
 
-        final var canvasRendererOptions = new String[][]{
-            new String[]{"WebGL rendering (better performance for large workflows)",
-                AppStateEnt.CanvasRendererEnum.WEBGL.toString()},
-            new String[]{"SVG rendering (legacy)", AppStateEnt.CanvasRendererEnum.SVG.toString()}};
+        final var canvasRendererOptions = new String[][] {
+            new String[]{"SVG rendering", AppStateEnt.CanvasRendererEnum.SVG.toString()},
+            new String[]{"WebGL rendering (better performance for large workflows but still experimental)", //
+                    AppStateEnt.CanvasRendererEnum.WEBGL.toString()},
+        };
 
         final var canvasRendererEditor = new RadioGroupFieldEditor(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY,
                 "Workflow editor", 1, canvasRendererOptions, getFieldEditorParent());
