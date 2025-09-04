@@ -456,7 +456,16 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       newData.hasLoadedAll =
         loadAll || itemSavepointsInfo.totalCount < VERSION_DEFAULT_LIMIT;
 
-      newData.versionLimit = await versionsApi.fetchVersionLimit({ itemId });
+      try {
+        newData.versionLimit = await versionsApi.fetchVersionLimit({ itemId });
+      } catch (error) {
+        // Ignore 404 errors, for backwards compatibility with older Hub versions
+        if (error instanceof rfcErrors.RFCError && error.data.status === 404) {
+          consola.info("Version limits not supported by Hub version");
+        } else {
+          throw error;
+        }
+      }
 
       return newData;
     };

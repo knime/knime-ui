@@ -5,6 +5,7 @@ import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 import { useRouter } from "vue-router";
 
+import { rfcErrors } from "@knime/hub-features";
 import {
   CURRENT_STATE_VERSION,
   type ItemSavepoint,
@@ -890,6 +891,19 @@ describe("workflow store: versions", () => {
       expect(workflowVersionsStore.activeProjectVersionsModeStatus).toBe(
         "inactive",
       );
+    });
+
+    it("ignores 404 when fetching version limits, no errors are thrown", async () => {
+      mockedVersionsApi.fetchVersionLimit.mockRejectedValue(
+        new rfcErrors.RFCError({ title: "resource not found", status: 404 }),
+      );
+      const { workflowVersionsStore } = await setupStore();
+
+      await workflowVersionsStore.refreshData();
+
+      expect(
+        workflowVersionsStore.activeProjectVersionsModeInfo?.versionLimit,
+      ).toBeUndefined();
     });
   });
 });
