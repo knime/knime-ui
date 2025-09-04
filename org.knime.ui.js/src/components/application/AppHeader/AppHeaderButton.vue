@@ -64,6 +64,8 @@ defineEmits<Emits>();
 .button.item-button {
   --theme-button-small-foreground-color-hover: var(--knime-white);
   --theme-button-small-background-color-hover: var(--knime-dove-gray);
+  --theme-button-small-foreground-color-focus: var(--knime-white);
+  --theme-button-small-background-color-focus: var(--knime-dove-gray);
 }
 
 .button.item-button,
