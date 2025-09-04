@@ -8,6 +8,7 @@ import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId, parseBendpointId } from "@/util/connectorUtil";
+import type { Bounds } from "@/api/gateway-api/generated-api";
 
 export type NodeOutputTabIdentifier = "view" | `${number}` | null;
 
@@ -333,6 +334,32 @@ export const useSelectionStore = defineStore("selection", () => {
       : null;
   });
 
+  const getBoundsAroundNodeSelection = computed<Bounds>(() => {
+    const xs = getSelectedNodes.value.map((n) => n.position.x);
+    const ys = getSelectedNodes.value.map((n) => n.position.y);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    const maxX = Math.max(...xs);
+    const maxY = Math.max(...ys);
+
+    const PADDING_TOP = 120;
+    const PADDING_RIGHT = 100;
+    const PADDING_BOTTOM = 100;
+    const PADDING_LEFT = 100;
+
+    const annotationX = minX - PADDING_LEFT;
+    const annotationY = minY - PADDING_TOP;
+    const annotationWidth = maxX - minX + PADDING_LEFT + PADDING_RIGHT;
+    const annotationHeight = maxY - minY + PADDING_TOP + PADDING_BOTTOM;
+
+    return {
+      x: annotationX,
+      y: annotationY,
+      width: Math.max(80, annotationWidth),
+      height: Math.max(60, annotationHeight),
+    };
+  });
+
   const toggleAnnotationSelection = ({
     annotationId,
     isMultiselect,
@@ -492,6 +519,8 @@ export const useSelectionStore = defineStore("selection", () => {
     selectedObjects,
     isSelectionEmpty,
     getFocusedObject,
+
+    getBoundsAroundNodeSelection,
 
     // selection state predicates
     isNodeSelected: (id: string) => Boolean(selectedNodes.value[id]),

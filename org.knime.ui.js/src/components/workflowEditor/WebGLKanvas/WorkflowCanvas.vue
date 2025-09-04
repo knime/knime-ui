@@ -12,6 +12,7 @@ import { storeToRefs } from "pinia";
 import { sleep } from "@knime/utils";
 
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
+import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -23,6 +24,7 @@ import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 
 import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
+import SkeletonAnnotation from "./annotations/SkeletonAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import FloatingCanvasTools from "./floatingToolbar/canvasTools/FloatingCanvasTools.vue";
 import FloatingNodeSelectionTools from "./floatingToolbar/nodeSelectionTools/FloatingNodeSelectionTools.vue";
@@ -30,11 +32,18 @@ import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 
+const aiQuickActions = useAiQuickActionsStore();
+const shouldShowSkeletonAnnotation = computed(() =>
+  aiQuickActions.isActionProcessing("generateAnnotation"),
+);
+
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
 
-const { selectedNodeIds } = storeToRefs(useSelectionStore());
+const { selectedNodeIds, getBoundsAroundNodeSelection } = storeToRefs(
+  useSelectionStore(),
+);
 const { containerSize, shouldHideMiniMap, interactionsEnabled } =
   storeToRefs(canvasStore);
 const hasSelectedNodes = computed(() => selectedNodeIds.value.length > 0);
@@ -199,6 +208,11 @@ const onEscape = async (event: KeyboardEvent) => {
     <FloatingCanvasTools v-if="!isWorkflowEmpty" />
 
     <FloatingNodeSelectionTools v-if="hasSelectedNodes" />
+
+    <SkeletonAnnotation
+      v-if="shouldShowSkeletonAnnotation"
+      :bounds="getBoundsAroundNodeSelection"
+    />
 
     <svg
       v-if="activeWorkflow && isWorkflowEmpty"

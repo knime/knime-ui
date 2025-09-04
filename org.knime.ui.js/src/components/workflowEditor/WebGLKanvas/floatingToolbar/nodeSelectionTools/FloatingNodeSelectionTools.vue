@@ -24,11 +24,10 @@ const hasAiUsageRemaining = computed(() => {
   return usage.value.used < usage.value.limit;
 });
 
-const { getSelectedNodes } = storeToRefs(useSelectionStore());
-const canAlignNodes = computed(() => getSelectedNodes.value.length > 1);
-const isOnlyOneNodeSelected = computed(
-  () => getSelectedNodes.value.length === 1,
+const { getSelectedNodes, singleSelectedNode } = storeToRefs(
+  useSelectionStore(),
 );
+const canAlignNodes = computed(() => getSelectedNodes.value.length > 1);
 
 const $shortcuts = useShortcuts();
 const quickBuildShortcut = $shortcuts.get("openQuickBuildMenu");
@@ -38,7 +37,7 @@ const alignVerticallyShortcut = $shortcuts.get("alignVertically");
 
 // web-native tooltip text for each button, shown on hover when button is not disabled
 const quickBuildTitle = `${quickBuildShortcut.text} – ${quickBuildShortcut.hotkeyText}`;
-const generateAnnotationTitle = `${generateAnnotationShortcut.text} – ${generateAnnotationShortcut.hotkeyText}`;
+const generateAnnotationTitle = `${generateAnnotationShortcut.text}`;
 const alignNodesHorizontallyTitle = `${alignHorizontallyShortcut.text} – ${alignHorizontallyShortcut.hotkeyText}`;
 const alignNodesVerticallyTitle = `${alignVerticallyShortcut.text} – ${alignVerticallyShortcut.hotkeyText}`;
 
@@ -58,7 +57,7 @@ const aiUsageTooltip = computed<TooltipDefinition | null>(() => {
 
 // show hover Tooltip over disabled node alignment buttons (only one node is selected)
 const alignmentTooltip = computed<TooltipDefinition | null>(() => {
-  if (!isOnlyOneNodeSelected.value) {
+  if (!singleSelectedNode.value) {
     return null;
   }
 
