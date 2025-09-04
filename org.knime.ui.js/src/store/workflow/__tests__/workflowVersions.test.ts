@@ -891,5 +891,19 @@ describe("workflow store: versions", () => {
         "inactive",
       );
     });
+
+    it("404 when fetching version limit is ignored, no errors are thrown", async () => {
+      mockedVersionsApi.fetchVersionLimit.mockRejectedValue({
+        message: "Not found",
+        status: 404,
+      });
+      const { workflowVersionsStore } = await setupStore();
+
+      await workflowVersionsStore.refreshData();
+
+      expect(
+        workflowVersionsStore.activeProjectVersionsModeInfo?.versionLimit,
+      ).toBeUndefined();
+    });
   });
 });
