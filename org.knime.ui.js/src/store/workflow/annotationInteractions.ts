@@ -56,9 +56,17 @@ export const useAnnotationInteractionsStore = defineStore(
         this.editableAnnotationId = annotationId;
       },
 
-      async addWorkflowAnnotation({ bounds }: { bounds: Bounds }) {
+      async addWorkflowAnnotation({
+        bounds,
+        content,
+      }: {
+        bounds: Bounds;
+        content?: string;
+      }) {
         const { projectId, workflowId } =
           useWorkflowStore().getProjectAndWorkflowIds;
+
+        const borderColor = colors.defaultAnnotationBorderColor;
 
         const { newAnnotationId } =
           await API.workflowCommand.AddWorkflowAnnotation({
@@ -67,6 +75,15 @@ export const useAnnotationInteractionsStore = defineStore(
             bounds,
             borderColor: colors.defaultAnnotationBorderColor,
           });
+
+        // pre-fill the just added annotation with initial content
+        if (content) {
+          await this.updateAnnotation({
+            annotationId: newAnnotationId,
+            text: content,
+            borderColor,
+          });
+        }
 
         const { wasAborted } = await useSelectionStore().deselectAllObjects();
         if (wasAborted) {

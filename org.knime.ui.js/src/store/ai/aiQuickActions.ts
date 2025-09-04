@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { useAnnotationInteractionsStore } from "../workflow/annotationInteractions";
+import { useSelectionStore } from "../selection";
 
 type ActionName = "generateAnnotation";
 type ActionStatus = "ready" | "processing";
@@ -15,11 +17,21 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
     }
   };
 
+  const updateStateFor = ({
+    actionName,
+    newState,
+  }: {
+    actionName: ActionName;
+    newState: ActionStatus;
+  }) => {
+    actionsState.value[actionName] = newState;
+  };
+
   const isActionProcessing = (actionName: ActionName) => {
     return actionsState.value[actionName] === "processing";
   };
 
-  async function generateAnnotation() {
+  const generateAnnotation = async () => {
     const actionName: ActionName = "generateAnnotation";
     ensureStateFor(actionName);
 
@@ -27,11 +39,17 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
       return;
     }
 
-    // TODO: replace with actual API call
-    actionsState.value[actionName] = "processing";
+    updateStateFor({ actionName, newState: "processing" });
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    actionsState.value[actionName] = "ready";
-  }
+    updateStateFor({ actionName, newState: "ready" });
+
+    const selection = useSelectionStore();
+    const annotationInteractions = useAnnotationInteractionsStore();
+    await annotationInteractions.addWorkflowAnnotation({
+      bounds: selection.getBoundsAroundNodeSelection,
+      content: "<h5>Placeholder heading</h5><p>Placeholder text</p>",
+    });
+  };
 
   return {
     // state tracking
