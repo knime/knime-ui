@@ -27,6 +27,8 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
     tag="ul"
     class="available-nodes"
     item-key="id"
+    :force-fallback="true"
+    :fallback-on-body="true"
     @start="layoutEditorStore.setIsDragging(true)"
     @end="layoutEditorStore.setIsDragging(false)"
   >
@@ -68,6 +70,8 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
     tag="ul"
     class="available-elements"
     item-key="name"
+    :force-fallback="true"
+    :fallback-on-body="true"
     @start="layoutEditorStore.setIsDragging(true)"
     @end="layoutEditorStore.setIsDragging(false)"
   >
@@ -97,9 +101,84 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
   color: var(--knime-dove-gray);
 }
 
+.sortable-chosen {
+  background-color: var(--knime-aquamarine-light);
+  list-style: none;
+  border-radius: 3px;
+  padding: var(--space-4);
+
+  &.quickform,
+  &.configuration {
+    background-color: var(--knime-avocado-light);
+  }
+}
+
+.available-nodes,
+.available-elements {
+  list-style: none;
+  padding: 0;
+  min-height: 30px;
+}
+
+.item {
+  cursor: grab;
+  border-radius: 3px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.row {
+  background-color: var(--knime-white);
+  user-select: none;
+  border: 2px solid var(--knime-silver-sand);
+  height: 30px;
+  display: flex;
+  align-items: center;
+
+  & .col {
+    flex: 1;
+    height: 70%;
+
+    &:not(:last-of-type) {
+      border-right: 2px solid var(--knime-silver-sand);
+    }
+  }
+}
+
+.name {
+  display: flex;
+  align-items: center;
+
+  & div {
+    flex: 1;
+    margin-right: var(--space-8);
+
+    @mixin truncate;
+  }
+
+  & small {
+    white-space: nowrap;
+  }
+}
+
+.description {
+  margin-left: var(--space-24);
+
+  @mixin truncate;
+}
+
+.node-icon {
+  margin-right: var(--space-8);
+}
+
 .available-nodes {
   & .item {
     background-color: var(--knime-aquamarine);
+    user-select: none;
+
+    &:hover {
+      background-color: var(--knime-aquamarine-light);
+    }
 
     &.quickform,
     &.configuration {
@@ -109,73 +188,12 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
         background-color: var(--knime-avocado-light);
       }
     }
-
-    & .name {
-      display: flex;
-      align-items: center;
-
-      & div {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        flex: 1;
-        margin-right: var(--space-8);
-      }
-
-      & small {
-        white-space: nowrap;
-      }
-    }
-
-    & .description {
-      margin-left: var(--space-24);
-
-      @mixin truncate;
-    }
-
-    & .node-icon {
-      margin-right: var(--space-8);
-    }
   }
 }
 
 .available-elements {
-  & .item {
-    background-color: var(--knime-white);
-  }
-
-  & .row {
-    border: 2px solid var(--knime-silver-sand);
-    height: 30px;
-    display: flex;
-    align-items: center;
-  }
-
-  & .col {
-    flex: 1;
-    height: 70%;
-  }
-
-  & .col:not(:last-of-type) {
-    border-right: 2px solid var(--knime-silver-sand);
-  }
-}
-
-.available-nodes,
-.available-elements {
-  list-style: none;
-  padding: 0;
-  min-height: 30px;
-
-  & .item {
-    cursor: grab;
-    border-radius: 3px;
-    padding: var(--space-4);
-    margin-bottom: var(--space-4);
-
-    &:hover {
-      background-color: var(--knime-aquamarine-light);
-    }
+  & .row:hover {
+    background-color: transparent;
   }
 }
 </style>

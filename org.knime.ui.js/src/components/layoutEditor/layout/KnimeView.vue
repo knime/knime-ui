@@ -124,6 +124,7 @@ const autoSizeStyles = computed(() => {
   text-align: center;
   padding: 10px;
   container-type: inline-size;
+  user-select: none;
 
   & .knime-view-container {
     display: inline-flex;

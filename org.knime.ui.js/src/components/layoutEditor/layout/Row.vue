@@ -17,10 +17,12 @@ import EditButton from "./EditButton.vue";
 type Props = {
   row: LayoutEditorRowItem;
   deletable?: boolean;
+  isRootRow?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   deletable: true,
+  isRootRow: false,
 });
 
 const layoutEditorStore = useLayoutEditorStore();
@@ -59,6 +61,7 @@ const isColumnDeletable = (column: LayoutEditorColumn) => {
       :resizable="columns.length > 1 && column != columns[columns.length - 1]"
       :deletable="isColumnDeletable(column)"
       :column="column"
+      :is-root-column="isRootRow"
     />
 
     <EditButton
