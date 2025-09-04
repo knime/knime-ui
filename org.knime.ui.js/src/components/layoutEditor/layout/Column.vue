@@ -73,6 +73,8 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
     :style="{ gridColumn: `span ${column.widthXS}` }"
     item-key="itemID"
     :move="checkMove"
+    :force-fallback="true"
+    :fallback-on-body="true"
     @update:model-value="onUpdateContent"
     @start="layoutEditorStore.setIsDragging(true)"
     @end="layoutEditorStore.setIsDragging(false)"
@@ -121,7 +123,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
 
   background-color: var(--knime-white);
   padding: calc(var(--resize-width) / 2);
-  min-height: 60px;
+  min-height: 100px;
   position: relative;
 
   & .resize-handle {

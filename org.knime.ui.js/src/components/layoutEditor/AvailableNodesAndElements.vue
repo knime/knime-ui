@@ -27,6 +27,8 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
     tag="ul"
     class="available-nodes"
     item-key="id"
+    :force-fallback="true"
+    :fallback-on-body="true"
     @start="layoutEditorStore.setIsDragging(true)"
     @end="layoutEditorStore.setIsDragging(false)"
   >
@@ -68,6 +70,8 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
     tag="ul"
     class="available-elements"
     item-key="name"
+    :force-fallback="true"
+    :fallback-on-body="true"
     @start="layoutEditorStore.setIsDragging(true)"
     @end="layoutEditorStore.setIsDragging(false)"
   >

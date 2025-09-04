@@ -94,6 +94,8 @@ const onLegacyModeToggle = (event: Event) => {
         class="layout-preview"
         :component-data="{ isFirstLevel: true }"
         item-key="id"
+        :force-fallback="true"
+        :fallback-on-body="true"
         @start="layoutEditorStore.setIsDragging(true)"
         @end="layoutEditorStore.setIsDragging(false)"
       >
