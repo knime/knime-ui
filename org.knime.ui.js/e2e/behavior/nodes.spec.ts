@@ -365,6 +365,20 @@ test("node names render correctly", async ({ page }) => {
   });
 });
 
+[{ key: "ContextMenu" }, { key: "Shift+F10" }].forEach(({ key }) => {
+  test(`context menu opens with keyboard via: ${key}`, async ({ page }) => {
+    await startForPointerInteractions(page);
+
+    const [nodeX, nodeY] = await getNodePosition(page, IDS.node1);
+
+    // select a node
+    await page.mouse.click(nodeX, nodeY);
+
+    await page.keyboard.press(key);
+    await assertSnapshot(page);
+  });
+});
+
 const waitForFloatingEditor = (page: Page) =>
   page.waitForSelector(".canvas-floating-html", { state: "visible" });
 

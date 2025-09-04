@@ -62,13 +62,8 @@ const isComponent = computed(() => isNodeComponent(props.node));
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
 const canvasStore = useWebGLCanvasStore();
-const {
-  isDebugModeEnabled,
-  visibleArea,
-  toCanvasCoordinates,
-  canvasLayers,
-  zoomAwareResolution,
-} = storeToRefs(canvasStore);
+const { isDebugModeEnabled, visibleArea, canvasLayers, zoomAwareResolution } =
+  storeToRefs(canvasStore);
 
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
@@ -290,26 +285,19 @@ const actionBarPosition = computed(() => {
 });
 
 const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
-  markPointerEventAsHandled(event, {
-    initiator: "node::onContextMenu",
-  });
-  const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
-
-  canvasStore.setCanvasAnchor({
-    isOpen: true,
-    anchor: { x, y },
-  });
+  markPointerEventAsHandled(event, { initiator: "node::onContextMenu" });
 
   if (!isNodeSelected(props.node.id)) {
     const { wasAborted } = await selectionStore.deselectAllObjects([
       props.node.id,
     ]);
+
     if (wasAborted) {
       return;
     }
   }
 
-  await canvasAnchoredComponentsStore.toggleContextMenu();
+  await canvasAnchoredComponentsStore.toggleContextMenu({ event });
 };
 </script>
 

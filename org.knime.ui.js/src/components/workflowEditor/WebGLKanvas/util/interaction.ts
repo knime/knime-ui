@@ -10,6 +10,7 @@ type Initiator =
   | "bendpoint::onContextMenu"
   | "component-placeholder::onContextMenu"
   | "connection-select"
+  | "connection::onContextMenu"
   | "floating-connector"
   | "floating-connector::onEscape"
   | "minimap-pan"

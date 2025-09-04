@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import {
   isFullFloatingConnector,
@@ -169,6 +170,17 @@ const {
   isConnectionHighlighted: isHighlighted,
   isConnectionHovered,
 });
+
+const onRightClick = async (event: FederatedPointerEvent) => {
+  markPointerEventAsHandled(event, { initiator: "connection::onContextMenu" });
+
+  if (!isConnectionSelected(props.id)) {
+    await selectionStore.deselectAllObjects();
+  }
+
+  selectionStore.selectConnections(props.id);
+  await useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
+};
 </script>
 
 <template>
@@ -204,6 +216,7 @@ const {
           (hovered) =>
             onPathSegmentHovered(hovered, hovered ? index : undefined)
         "
+        @rightclick="onRightClick"
         @add-virtual-bendpoint="onVirtualBendpointClick({ ...$event, index })"
       />
 

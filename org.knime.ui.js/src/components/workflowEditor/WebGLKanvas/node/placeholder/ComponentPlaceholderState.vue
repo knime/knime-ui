@@ -38,11 +38,8 @@ const { getSelectedComponentPlaceholder } = storeToRefs(useSelectionStore());
 const { selectComponentPlaceholder } = useSelectionStore();
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const canvasStore = useWebGLCanvasStore();
-const {
-  visibleArea,
-  isDebugModeEnabled: isCanvasDebugEnabled,
-  toCanvasCoordinates,
-} = storeToRefs(canvasStore);
+const { visibleArea, isDebugModeEnabled: isCanvasDebugEnabled } =
+  storeToRefs(canvasStore);
 
 const isHovering = ref(false);
 const isComponentPlaceholderSelected = computed(
@@ -67,18 +64,12 @@ const onRightClick = async (event: FederatedPointerEvent) => {
   markPointerEventAsHandled(event, {
     initiator: "component-placeholder::onContextMenu",
   });
-  const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
-
-  canvasStore.setCanvasAnchor({
-    isOpen: true,
-    anchor: { x, y },
-  });
 
   if (!isComponentPlaceholderSelected.value) {
     await selectComponentPlaceholder(props.id);
   }
 
-  await toggleContextMenu();
+  await toggleContextMenu({ event });
 };
 
 const { handlePointerInteraction } = useObjectInteractions({

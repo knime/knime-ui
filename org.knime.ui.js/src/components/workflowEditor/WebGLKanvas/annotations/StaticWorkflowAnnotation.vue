@@ -118,24 +118,12 @@ const { isAnnotationSelected } = selectionStore;
 const isSelected = computed(() => isAnnotationSelected(props.annotation.id));
 
 const canvasStore = useWebGLCanvasStore();
-const { toCanvasCoordinates, visibleArea, canvasLayers } =
-  storeToRefs(canvasStore);
+const { visibleArea, canvasLayers } = storeToRefs(canvasStore);
 
 const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
-  markPointerEventAsHandled(event, {
-    initiator: "annotation::onContextMenu",
-  });
-  const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
+  markPointerEventAsHandled(event, { initiator: "annotation::onContextMenu" });
 
-  canvasStore.setCanvasAnchor({
-    isOpen: true,
-    anchor: { x, y },
-  });
-
-  const metaOrCtrlKey = getMetaOrCtrlKey();
-  const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
-
-  if (!isMultiselect && !isSelected.value) {
+  if (!isSelected.value) {
     const { wasAborted } = await selectionStore.deselectAllObjects();
     if (wasAborted) {
       return;

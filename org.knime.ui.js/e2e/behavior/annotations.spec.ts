@@ -248,3 +248,36 @@ test("have context menu", async ({ page }) => {
 
   await assertSnapshot(page, maxDiffPixels);
 });
+
+test("context menu retains multi-selection", async ({ page }) => {
+  await startApplication(page, {
+    workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
+  });
+
+  const annotation1 = await getAnnotation(page, "root_0");
+  const annotation2 = await getAnnotation(page, "root_1");
+
+  await page.mouse.click(...getCenter(annotation1));
+  await page.keyboard.down("Shift");
+  await page.mouse.click(...getCenter(annotation2));
+  await page.keyboard.up("Shift");
+
+  await page.mouse.click(...getCenter(annotation1), { button: "right" });
+
+  await assertSnapshot(page, maxDiffPixels);
+});
+
+[{ key: "ContextMenu" }, { key: "Shift+F10" }].forEach(({ key }) => {
+  test(`context menu opens with keyboard via: ${key}`, async ({ page }) => {
+    await startApplication(page, {
+      workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
+    });
+
+    const annotation = await getAnnotation(page, "root_0");
+
+    await page.mouse.click(...getCenter(annotation));
+
+    await page.keyboard.press(key);
+    await assertSnapshot(page, maxDiffPixels);
+  });
+});

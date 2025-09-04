@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
+import { flushPromises } from "@vue/test-utils";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -241,7 +242,7 @@ describe("useBendpointActions", () => {
   });
 
   describe("onBendpointRightClick", () => {
-    it("should handle right click events correctly", () => {
+    it("should handle right click events correctly", async () => {
       const { getComposableResult, mockedStores } = doMount();
       const { onBendpointRightClick, hoveredBendpoint } = getComposableResult();
 
@@ -254,18 +255,15 @@ describe("useBendpointActions", () => {
         initiator: "bendpoint::onContextMenu",
       });
 
+      await flushPromises();
       expect(hoveredBendpoint.value).toBe(index);
       expect(mockedStores.selectionStore.selectBendpoints).toHaveBeenCalledWith(
         `${mockConnectionId}__${index}`,
       );
 
       expect(
-        mockedStores.webglCanvasStore.setCanvasAnchor,
-      ).toHaveBeenCalledWith({ isOpen: true, anchor: { x: 150, y: 250 } });
-
-      expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
-      ).toHaveBeenCalled();
+      ).toHaveBeenCalledWith({ event });
     });
   });
 

@@ -72,6 +72,9 @@ watch(selectedNodeIds, () => {
 });
 
 const closeContextMenu = (event?: MouseEvent) => {
+  // TODO: NXT-3695 - review logic of this method, naming and usages after the SVG
+  // canvas is removed. Currently, this component is used by both renderers, but in WebGL
+  // this logic seems a bit repetitive / confusing
   if (contextMenu.value.isOpen) {
     canvasAnchoredComponentsStore.toggleContextMenu({ event });
   }

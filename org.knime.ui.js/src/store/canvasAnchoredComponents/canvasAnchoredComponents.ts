@@ -1,5 +1,6 @@
 import { nextTick } from "vue";
 import { defineStore } from "pinia";
+import { FederatedPointerEvent } from "pixi.js";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
@@ -63,24 +64,31 @@ type State = {
   };
 };
 
-const getContextMenuPositionOnCanvas = async (event?: MouseEvent) => {
-  const { screenToCanvasCoordinates, getCenterOfScrollContainer } =
+type PointerInteractionEvent =
+  | MouseEvent
+  | PointerEvent
+  | FederatedPointerEvent;
+
+const getPointerBasedPosition = (event: PointerInteractionEvent) => {
+  const { screenToCanvasCoordinates, toCanvasCoordinates } =
     useCurrentCanvasStore().value;
 
-  const getEventBasedPosition = () => {
-    if (!event) {
-      return null;
-    }
+  const [x, y] =
+    event instanceof FederatedPointerEvent
+      ? toCanvasCoordinates([event.global.x, event.global.y])
+      : screenToCanvasCoordinates([event.clientX, event.clientY]);
 
-    const [x, y] = screenToCanvasCoordinates([event.clientX, event.clientY]);
+  return { x, y };
+};
 
-    return { x, y };
-  };
+const getKeyboardBasedPosition = async () => {
+  const { getCenterOfScrollContainer } = useCurrentCanvasStore().value;
 
-  // the node offset is also fine for annotations so we use it all the time
+  // random offset pushing the position slightly down from the x,y coordinate
+  const OFFSET = 16;
   const extractXYWithOffset = ({ x, y }: XY) => ({
-    x: x + $shapes.nodeSize / 2,
-    y: y + $shapes.nodeSize / 2,
+    x: x + OFFSET,
+    y: y + OFFSET,
   });
 
   // fallback position for keyboard shortcut to open context menu
@@ -100,10 +108,7 @@ const getContextMenuPositionOnCanvas = async (event?: MouseEvent) => {
     // try to find the object that is nearest going left from the right border (y-centered) of the visible area
     const mostRightObject = await workflowNavigationService.nearestObject({
       objects: selectedObjects,
-      reference: {
-        ...getCenterOfScrollContainer("right"),
-        id: "",
-      },
+      reference: { ...getCenterOfScrollContainer("right"), id: "" },
       direction: "left",
     });
 
@@ -115,10 +120,7 @@ const getContextMenuPositionOnCanvas = async (event?: MouseEvent) => {
   };
 
   const selectionBasedPosition = await getSelectionBasedPosition();
-  const position =
-    getEventBasedPosition() ??
-    selectionBasedPosition ??
-    getCenterOfScrollContainer();
+  const position = selectionBasedPosition ?? getCenterOfScrollContainer();
 
   return position;
 };
@@ -330,7 +332,9 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         };
       },
 
-      async openContextMenu({ event }: { event?: MouseEvent } = {}) {
+      async openContextMenu({
+        event,
+      }: { event?: PointerInteractionEvent } = {}) {
         if (this.contextMenu.isOpen) {
           return;
         }
@@ -344,7 +348,8 @@ export const useCanvasAnchoredComponentsStore = defineStore(
           this.portTypeMenu.events.menuClose?.();
         }
 
-        // event is optional because it's not required fot the WebGL canvas
+        // event is optional because in the case of keyboard interactions to open
+        // the context menu, we can't derive a position from the event
         if (event) {
           // we do not want it to bubble up if we handle it here
           event.stopPropagation();
@@ -354,7 +359,9 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         // reset to selection mode
         useCanvasModesStore().resetCanvasMode();
 
-        const position = await getContextMenuPositionOnCanvas(event);
+        const position = event
+          ? getPointerBasedPosition(event)
+          : await getKeyboardBasedPosition();
 
         if (canvasRendererUtils.isWebGLRenderer()) {
           useWebGLCanvasStore().setCanvasAnchor({
@@ -390,7 +397,9 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         };
       },
 
-      async toggleContextMenu({ event }: { event?: MouseEvent } = {}) {
+      async toggleContextMenu({
+        event,
+      }: { event?: PointerInteractionEvent } = {}) {
         if (this.contextMenu.isOpen) {
           this.closeContextMenu(event);
         } else {

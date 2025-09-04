@@ -23,7 +23,12 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
   const { connectionId, isConnectionHighlighted, isConnectionHovered } =
     options;
 
-  const { isConnectionSelected, selectBendpoints } = useSelectionStore();
+  const {
+    isConnectionSelected,
+    isBendpointSelected,
+    selectBendpoints,
+    deselectAllObjects,
+  } = useSelectionStore();
 
   const virtualBendpoint = ref<{ index: number; position: XY } | null>(null);
   const { addVirtualBendpoint, addBendpoint } =
@@ -81,25 +86,20 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     hoveredBendpoint.value = isHovered ? index : null;
   };
 
-  const onBendpointRightClick = (
+  const onBendpointRightClick = async (
     event: FederatedPointerEvent,
     index: number,
   ) => {
-    markPointerEventAsHandled(event, {
-      initiator: "bendpoint::onContextMenu",
-    });
+    markPointerEventAsHandled(event, { initiator: "bendpoint::onContextMenu" });
     const bendpointId = getBendpointId(connectionId, index);
     hoveredBendpoint.value = index;
+
+    if (!isBendpointSelected(bendpointId)) {
+      await deselectAllObjects();
+    }
     selectBendpoints(bendpointId);
 
-    const [x, y] = toCanvasCoordinates.value([event.global.x, event.global.y]);
-
-    canvasStore.setCanvasAnchor({
-      isOpen: true,
-      anchor: { x, y },
-    });
-
-    canvasAnchoredComponentsStore.toggleContextMenu();
+    canvasAnchoredComponentsStore.toggleContextMenu({ event });
   };
 
   const onVirtualBendpointClick = ({
