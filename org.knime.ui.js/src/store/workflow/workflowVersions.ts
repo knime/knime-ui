@@ -37,6 +37,7 @@ import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useLifecycleStore } from "@/store/application/lifecycle.ts";
+import { isErrorWithStatus } from "@/util/error.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
 import { usePanelStore } from "../panel.ts";
@@ -456,7 +457,17 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       newData.hasLoadedAll =
         loadAll || itemSavepointsInfo.totalCount < VERSION_DEFAULT_LIMIT;
 
-      newData.versionLimit = await versionsApi.fetchVersionLimit({ itemId });
+      try {
+        newData.versionLimit = await versionsApi.fetchVersionLimit({ itemId });
+      } catch (error) {
+        // Ignore 404 errors, for backwards compatibility with older Hub versions
+        // eslint-disable-next-line no-magic-numbers
+        if (isErrorWithStatus(error, 404)) {
+          consola.info("Version limits not supported by Hub version");
+        } else {
+          throw error;
+        }
+      }
 
       return newData;
     };
