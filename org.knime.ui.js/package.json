@@ -42,7 +42,7 @@
     "@knime/kds-styles": "^0.0.4",
     "@knime/knime-ui-table": "0.5.23",
     "@knime/rich-text-editor": "^1.7.11",
-    "@knime/styles": "^1.12.1",
+    "@knime/styles": "^1.13.0",
     "@knime/ui-extension-renderer": "2.3.0",
     "@knime/utils": "^1.5.7",
     "@knime/virtual-tree": "^1.6.11",
