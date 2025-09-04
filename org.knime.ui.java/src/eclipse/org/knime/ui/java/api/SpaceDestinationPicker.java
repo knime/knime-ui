@@ -48,9 +48,16 @@
  */
 package org.knime.ui.java.api;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.util.EclipseUtil;
+import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
+import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.SelectedDestination;
 
@@ -108,6 +115,29 @@ final class SpaceDestinationPicker {
     public boolean open() { // NOSONAR accepted for now
         final var workbench = PlatformUI.getWorkbench();
         return workbench.getDisplay().syncCall(() -> { // NOSONAR
+
+            // Workaround, especially refreshing file stores, until we have a modern picker (NXT-2842)
+            // Fetchers are not active, so we need to make sure we refresh before showing the dialog
+            final var mountIDs = Arrays.stream(m_spaceProviders).collect(Collectors.toSet());
+            final var remotes = ExplorerMountTable.getMountedContent() //
+                .values().stream() //
+                // filter mounted with current space providers, to not refresh remotes that are not visible in
+                // ModernUI, if any
+                .filter(m -> mountIDs.contains(m.getMountID())) //
+                // we don't need to refresh local and currently unconnected
+                .filter(p -> p.isRemote() && p.isAuthenticated()) //
+                .map(p -> p.getRootStore()) //
+                .filter(RemoteExplorerFileStore.class::isInstance) //)
+                .map(RemoteExplorerFileStore.class::cast) //)
+                .toList();
+            if (!remotes.isEmpty()) {
+                // These refresh calls restart the "sleeping" Fetchers, which are not actively running in ModernUI
+                final var uiPerspective = EclipseUtil.currentUIPerspective().orElse(null);
+                if (uiPerspective.equals("modern")) {
+                    ExplorerFileSystem.refreshContentProviders(mountIDs.toArray(new String[0]));
+                }
+            }
+
             final var shell = workbench.getModalDialogShellProvider().getShell();
             m_dialog = new DestinationSelectionDialog(shell, m_spaceProviders, null,
                 "Destination", m_operation.m_title, "Select the destination folder.",
