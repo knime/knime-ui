@@ -37,7 +37,6 @@ import PlusIcon from "@/assets/plus.svg";
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { useMovingItems } from "@/components/spaces/useMovingItems";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
-import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
@@ -62,6 +61,7 @@ export const useSpaceExplorerActions = (
     createDeleteOption?: CreateDefaultMenuOption;
     anchorItem?: FileExplorerItem;
     providerInfo?: SpaceProviderNS.SpaceProvider | null;
+    canSoftDelete: boolean;
   },
 ) => {
   const { toastPresets } = getToastPresets();
@@ -244,9 +244,7 @@ export const useSpaceExplorerActions = (
       hotkeyText: hotkeys.formatHotkeys(["Delete"]),
     };
 
-    // TODO NXT-3468 when Desktop and Browser are in sync, the below block should not be needed anymore.
-    // and instead they value will be used based on whether recycle bin is supported or not
-    if (isBrowser()) {
+    if (options.canSoftDelete) {
       customProps.text = "Move to recycle bin";
     }
 

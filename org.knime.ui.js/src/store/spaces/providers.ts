@@ -225,7 +225,6 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
         return state.spaceProviders[spaceProviderId] || null;
       },
-
     getProviderInfoFromActiveProject: (state) => () => {
       const { activeProjectOrigin } = useApplicationStore();
       const activeProjectProviderId = activeProjectOrigin?.providerId;

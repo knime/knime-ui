@@ -1,11 +1,13 @@
 import { type Ref, h, markRaw } from "vue";
+import { API } from "@api";
 import { useRouter } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
-import { isBrowser } from "@/environment";
+import { getToastsProvider } from "@/plugins/toasts";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 
@@ -22,7 +24,8 @@ type UseDeleteItemsOptions = {
 };
 
 export const useDeleteItems = (options: UseDeleteItemsOptions) => {
-  const { deleteItems } = useSpaceOperationsStore();
+  const { deleteItems, getDeletionInfo } = useSpaceOperationsStore();
+  const { getProviderInfoFromProjectPath } = useSpaceProvidersStore();
   const $router = useRouter();
 
   const { itemIconRenderer } = options;
@@ -54,24 +57,55 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
   };
 
   const onDeleteItems = async (items: FileExplorerItem[]) => {
-    // TODO NXT-3468 when Desktop and Browser are in sync confirmation should no longer be needed
-    // as there won't be any hard deletes
-    const isBrowserOrConfirmed =
-      isBrowser() || (await askConfirmation(items)).confirmed;
+    const spaceProvider = getProviderInfoFromProjectPath(
+      options.projectId.value,
+    );
+    const { canSoftDelete, groupName } = getDeletionInfo(
+      options.projectId.value,
+    );
 
-    if (isBrowserOrConfirmed) {
-      const itemIds = items.map(({ id }) => id);
+    const canProceed =
+      canSoftDelete || (await askConfirmation(items)).confirmed;
+    if (!canProceed) {
+      return;
+    }
 
-      try {
-        await deleteItems({
-          projectId: options.projectId.value,
-          itemIds,
-          $router,
+    const itemIds = items.map(({ id }) => id);
+    try {
+      await deleteItems({
+        projectId: options.projectId.value,
+        itemIds,
+        $router,
+      });
+
+      // Show success toast when soft delete was used
+      if (canSoftDelete) {
+        const $toast = getToastsProvider();
+        const itemCount = itemIds.length;
+        const headline = `Item${
+          itemCount > 1 ? "(s)" : ""
+        } moved to the recycle bin`;
+        $toast.show({
+          type: "success",
+          headline,
+          autoRemove: true,
+          buttons: [
+            {
+              icon: TrashIcon,
+              text: "Show recycle bin",
+              callback: () => {
+                API.desktop.openRecycleBinPage({
+                  spaceProviderId: spaceProvider!.id,
+                  group: groupName!,
+                });
+              },
+            },
+          ],
         });
-      } catch (error) {
-        const { toastPresets } = getToastPresets();
-        toastPresets.spaces.crud.deleteItemsFailed({ error });
       }
+    } catch (error) {
+      const { toastPresets } = getToastPresets();
+      toastPresets.spaces.crud.deleteItemsFailed({ error });
     }
   };
 

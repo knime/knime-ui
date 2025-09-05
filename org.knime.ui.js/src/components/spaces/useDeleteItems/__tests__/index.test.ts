@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type FunctionalComponent, ref } from "vue";
 
 import { useDeleteItems } from "@/components/spaces/useDeleteItems";
-import { isBrowser, isDesktop } from "@/environment";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 
 const mockShow = vi.hoisted(() =>
@@ -19,21 +17,19 @@ vi.mock("@/composables/useConfirmDialog", () => ({
 }));
 await import("@/composables/useConfirmDialog");
 
-vi.mock("@/environment");
-
 describe("useDeleteItems::index", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it.each([
-    ["BROWSER" as const, "and opens", 0],
-    ["DESKTOP" as const, "but does not open", 1],
+    [true, "without", 0],
+    [false, "with", 1],
   ])(
-    "for environment %s calls deleteItems from spaceOperationsStore %s confirmation dialog",
-    async (environment, _testDescriptionPart, expectedCalls) => {
+    "when softDelete is %s, calls deleteItems from spaceOperationsStore %s confirmation dialog",
+    async (softDelete, _testDescriptionPart, expectedCalls) => {
       const mockedStores = mockStores();
-      mockEnvironment(environment, { isBrowser, isDesktop });
+      (mockedStores.spaceOperationsStore as any).softDelete = softDelete;
       const { onDeleteItems } = useDeleteItems({
         projectId: ref("projectId"),
         itemIconRenderer: vi.fn(() => ({}) as FunctionalComponent),

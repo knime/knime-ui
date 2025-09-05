@@ -3792,6 +3792,12 @@ export interface SpaceGroup {
      * @memberof SpaceGroup
      */
     spaces: Array<Space>;
+    /**
+     * Whether this group supports a \&quot;recycle bin\&quot; for deletion of items.
+     * @type {boolean}
+     * @memberof SpaceGroup
+     */
+    canSoftDelete?: boolean;
 
 }
 

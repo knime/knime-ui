@@ -153,5 +153,16 @@ export const useSpacesStore = defineStore("spaces", {
         useSpaceCachingStore().projectPath[projectId];
       API.desktop.openAPIDefinition({ spaceProviderId, spaceId, itemId });
     },
+
+    openRecycleBinPage({
+      projectId,
+      group,
+    }: {
+      projectId: string;
+      group: string;
+    }) {
+      const { spaceProviderId } = useSpaceCachingStore().projectPath[projectId];
+      API.desktop.openRecycleBinPage({ spaceProviderId, group });
+    },
   },
 });

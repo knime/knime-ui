@@ -583,18 +583,24 @@ describe("spaces::spaceOperations", () => {
       ).toHaveBeenCalledWith({ projectId });
     });
 
-    it("should call backend with softDelete = true if AP runs in browser", async () => {
-      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+    it("should use soft delete when available", async () => {
       const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
         loadStore();
-
       spaceCachingStore.projectPath.project2 = {
         spaceProviderId,
         spaceId,
-        itemId: "",
+        itemId: "level2",
       };
+      const space = createSpace({ id: spaceId });
+      const spaceGroup = createSpaceGroup({
+        canSoftDelete: true,
+        spaces: [space],
+      });
       spaceProvidersStore.setSpaceProviders({
-        [spaceProviderId]: createSpaceProvider(),
+        [spaceProviderId]: createSpaceProvider({
+          id: spaceProviderId,
+          spaceGroups: [spaceGroup],
+        }),
       });
 
       await spaceOperationsStore.deleteItems({

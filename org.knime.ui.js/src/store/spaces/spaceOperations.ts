@@ -11,11 +11,10 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { matchesAPIErrorCode } from "@/api/gateway-api/generated-exceptions";
 import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling";
-import { isBrowser } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
-import { isProjectOpen } from "@/store/spaces/util";
+import { findSpaceGroupFromSpaceId, isProjectOpen } from "@/store/spaces/util";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 
@@ -471,12 +470,13 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         this.setIsLoadingContent(true);
         this.setActiveRenamedItemId("");
 
-        // TODO NXT-3468 when Desktop and Browser are in sync, softDelete can be hard set to true here
+        const { canSoftDelete } = this.getDeletionInfo(projectId);
+
         await API.space.deleteItems({
           spaceProviderId,
           spaceId,
           itemIds,
-          softDelete: isBrowser(),
+          softDelete: canSoftDelete,
         });
         await this.fetchWorkflowGroupContent({
           projectId: isDeletingActiveProject
@@ -599,6 +599,26 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
     },
   },
   getters: {
+    getDeletionInfo: () => (projectId: string) => {
+      const providersStore = useSpaceProvidersStore();
+      if (
+        !useSpaceCachingStore().projectPath.hasOwnProperty(projectId) ||
+        !providersStore.spaceProviders
+      ) {
+        return { canSoftDelete: false, groupName: null };
+      }
+
+      const { spaceId } = useSpaceCachingStore().projectPath[projectId];
+
+      const group = findSpaceGroupFromSpaceId(
+        providersStore.spaceProviders,
+        spaceId,
+      );
+      return {
+        canSoftDelete: group?.canSoftDelete ?? false,
+        groupName: group?.name ?? null,
+      };
+    },
     pathToItemId() {
       return (projectId: string, pathId: string) => {
         // going back

@@ -35,15 +35,16 @@ export const useContextualSpaceExplorerActions = (
     isMultipleSelectionActive?: boolean;
   },
 ) => {
-  const { getProviderInfoFromProjectPath } = storeToRefs(
-    useSpaceProvidersStore(),
-  );
-  const { selectionContainsFile, selectionContainsWorkflow } = storeToRefs(
-    useSpaceOperationsStore(),
-  );
+  const { getProviderInfoFromProjectPath } = useSpaceProvidersStore();
+  const { selectionContainsFile, selectionContainsWorkflow, getDeletionInfo } =
+    storeToRefs(useSpaceOperationsStore());
   const providerInfo = computed(() =>
-    getProviderInfoFromProjectPath.value(projectId.value),
+    getProviderInfoFromProjectPath(projectId.value),
   );
+  const canSoftDelete = computed(() => {
+    const { canSoftDelete } = getDeletionInfo.value(projectId.value);
+    return canSoftDelete;
+  });
 
   const {
     createFolderAction,
@@ -72,6 +73,7 @@ export const useContextualSpaceExplorerActions = (
     createDeleteOption: options.createDeleteOption,
     anchorItem: options.anchorItem,
     providerInfo: providerInfo.value,
+    canSoftDelete: canSoftDelete.value,
   });
 
   const isLocal = computed(() =>

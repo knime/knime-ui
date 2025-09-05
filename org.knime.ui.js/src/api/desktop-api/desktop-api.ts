@@ -647,6 +647,22 @@ export const openAPIDefinition = ({
   );
 };
 
+export const openRecycleBinPage = ({
+  spaceProviderId,
+  group,
+}: {
+  spaceProviderId: string;
+  group: string;
+}) => {
+  return callBrowserFunction(
+    window.openRecycleBinPage,
+    [spaceProviderId, group],
+    "Error opening recycle bin page",
+    false,
+    { block: false },
+  );
+};
+
 export const saveProjectAs = ({ projectId }: { projectId: string }) => {
   return callBrowserFunction(
     window.saveProjectAs,
