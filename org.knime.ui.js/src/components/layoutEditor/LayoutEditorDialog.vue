@@ -38,9 +38,12 @@ const isSubmitted = ref(false);
 const activeTab = ref<LayoutEditorTabValue>("viewLayoutEditor");
 
 const layoutEditorStore = useLayoutEditorStore();
-const { layoutContext } = storeToRefs(layoutEditorStore);
+const { layoutContext, isDragging } = storeToRefs(layoutEditorStore);
 
 const closeModal = () => {
+  if (isDragging.value) {
+    return;
+  }
   if (isSubmitted.value) {
     return;
   }
