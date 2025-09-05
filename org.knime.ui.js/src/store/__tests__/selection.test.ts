@@ -440,6 +440,22 @@ describe("selection store", () => {
       await selectionStore.deselectAllObjects();
       expect(selectionStore.isSelectionEmpty).toBe(true);
     });
+
+    describe("calculating annotation bounds around node selection", () => {
+      it("returns default bounds when no nodes are selected", async () => {
+        const { selectionStore } = createWorkflowContext();
+
+        await selectionStore.deselectAllObjects();
+
+        const bounds = selectionStore.getAnnotationBoundsForSelectedNodes;
+        expect(bounds).toEqual({
+          x: 0,
+          y: 0,
+          width: 80,
+          height: 80,
+        });
+      });
+    });
   });
 
   describe("edge cases and invalid states", () => {
