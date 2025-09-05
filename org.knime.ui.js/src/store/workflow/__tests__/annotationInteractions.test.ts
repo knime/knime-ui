@@ -56,7 +56,7 @@ describe("workflow::annotationInteractions", () => {
     });
   });
 
-  it("should add annotation", async () => {
+  it("should add annotation without content", async () => {
     mockedAPI.workflowCommand.AddWorkflowAnnotation.mockResolvedValueOnce({
       newAnnotationId: "mock-annotation2",
     });
@@ -90,9 +90,77 @@ describe("workflow::annotationInteractions", () => {
       borderColor: $colors.defaultAnnotationBorderColor,
     });
 
+    expect(
+      mockedAPI.workflowCommand.UpdateWorkflowAnnotation,
+    ).not.toHaveBeenCalled();
+
     expect(selectionStore.selectedAnnotationIds).toEqual(["mock-annotation2"]);
     expect(annotationInteractionsStore.editableAnnotationId).toBe(
       "mock-annotation2",
+    );
+  });
+
+  it("should add annotation with content", async () => {
+    mockedAPI.workflowCommand.AddWorkflowAnnotation.mockResolvedValueOnce({
+      newAnnotationId: "mock-annotation-with-content",
+    });
+
+    const { workflowStore, annotationInteractionsStore, selectionStore } =
+      mockStores();
+
+    const mockAnnotation1 = createWorkflowAnnotation({
+      id: "mock-annotation1",
+    });
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        workflowAnnotations: [
+          mockAnnotation1,
+          createWorkflowAnnotation({
+            id: "mock-annotation-with-content",
+            text: { value: "", contentType: TypedText.ContentTypeEnum.Plain },
+            borderColor: $colors.defaultAnnotationBorderColor,
+          }),
+        ],
+        projectId: "foo",
+        info: {
+          containerId: "root",
+        },
+      }),
+    );
+    selectionStore.selectAnnotations(mockAnnotation1.id);
+
+    const bounds = { x: 10, y: 10, width: 80, height: 80 };
+    const content = "This is test annotation content";
+
+    await annotationInteractionsStore.addWorkflowAnnotation({
+      bounds,
+      content,
+    });
+
+    expect(
+      mockedAPI.workflowCommand.AddWorkflowAnnotation,
+    ).toHaveBeenCalledWith({
+      projectId: "foo",
+      workflowId: "root",
+      bounds,
+      borderColor: $colors.defaultAnnotationBorderColor,
+    });
+
+    expect(
+      mockedAPI.workflowCommand.UpdateWorkflowAnnotation,
+    ).toHaveBeenCalledWith({
+      projectId: "foo",
+      workflowId: "root",
+      annotationId: "mock-annotation-with-content",
+      text: content,
+      borderColor: $colors.defaultAnnotationBorderColor,
+    });
+
+    expect(selectionStore.selectedAnnotationIds).toEqual([
+      "mock-annotation-with-content",
+    ]);
+    expect(annotationInteractionsStore.editableAnnotationId).toBe(
+      "mock-annotation-with-content",
     );
   });
 
