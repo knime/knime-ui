@@ -190,6 +190,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   display: flex;
   font-size: 10px;
   font-weight: 500;
+  line-height: 1.95;
 }
 
 .kai-notice {
