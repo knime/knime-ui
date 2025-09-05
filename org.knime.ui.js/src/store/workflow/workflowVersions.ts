@@ -460,8 +460,20 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         newData.versionLimit = await versionsApi.fetchVersionLimit({ itemId });
       } catch (error) {
         // Ignore 404 errors, for backwards compatibility with older Hub versions
-        if (error instanceof rfcErrors.RFCError && error.data.status === 404) {
-          consola.info("Version limits not supported by Hub version");
+        // Returned error might be "Error Details" format ("RFC") or plain.
+        // TODO NXT-4096: Is "Error Details" format check necessary? When is this or the other returned?
+        const notFound = 404;
+        const rfcStatusIsNotFound =
+          error instanceof rfcErrors.RFCError && error.data.status === notFound;
+        const statusIsNotFound =
+          typeof error === "object" &&
+          error !== null &&
+          "status" in error &&
+          error.status === notFound;
+        if (rfcStatusIsNotFound || statusIsNotFound) {
+          consola.info(
+            "workflowVersions::refreshData: Version limits not supported by Hub version (threw 404)",
+          );
         } else {
           throw error;
         }
