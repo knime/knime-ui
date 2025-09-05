@@ -5,13 +5,14 @@ import { InputField, ValueSwitch } from "@knime/components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import type {
-  LayoutEditorItem,
   LayoutEditorItemSizingConfig,
+  LayoutEditorNestedLayoutItem,
+  LayoutEditorViewItem,
 } from "@/store/layoutEditor/types/view";
 import * as layoutEditorZIndices from "../z-indices";
 
 type Props = {
-  item: LayoutEditorItem;
+  item: LayoutEditorViewItem | LayoutEditorNestedLayoutItem;
 };
 
 const props = defineProps<Props>();

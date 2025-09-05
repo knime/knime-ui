@@ -25,7 +25,6 @@ describe("getAllColumnArrays", () => {
   it("returns columns for a single row", () => {
     const layout: LayoutEditorRowItem[] = [
       {
-        nodeID: "row",
         type: "row",
         columns: [
           { content: [], widthXS },
@@ -45,13 +44,11 @@ describe("getAllColumnArrays", () => {
 
   it("returns nested columns arrays", () => {
     const nestedRow: LayoutEditorRowItem = {
-      nodeID: "row",
       type: "row",
       columns: [{ content: [], widthXS }],
     };
     const layout: LayoutEditorRowItem[] = [
       {
-        nodeID: "row",
         type: "row",
         columns: [{ content: [nestedRow], widthXS }],
       },
@@ -61,9 +58,7 @@ describe("getAllColumnArrays", () => {
     expect(result).toEqual([
       [
         {
-          content: [
-            { nodeID: "row", type: "row", columns: [{ content: [], widthXS }] },
-          ],
+          content: [{ type: "row", columns: [{ content: [], widthXS }] }],
           widthXS,
         },
       ],
@@ -79,12 +74,10 @@ describe("getAllColumnArrays", () => {
   it("returns columns for multiple rows", () => {
     const layout: LayoutEditorRowItem[] = [
       {
-        nodeID: "row",
         type: "row",
         columns: [{ content: [], widthXS }],
       },
       {
-        nodeID: "row",
         type: "row",
         columns: [
           { content: [], widthXS },
@@ -108,7 +101,6 @@ describe("getAllContentArrays", () => {
   it("returns content arrays for a single row", () => {
     const layout: LayoutEditorRowItem[] = [
       {
-        nodeID: "row",
         type: "row",
         columns: [
           { content: [{ type: "view", nodeID: "v1" }], widthXS },
@@ -127,13 +119,11 @@ describe("getAllContentArrays", () => {
 
   it("returns nested content arrays", () => {
     const nestedRow: LayoutEditorRowItem = {
-      nodeID: "row",
       type: "row",
       columns: [{ content: [{ type: "view", nodeID: "v3" }], widthXS }],
     };
     const layout: LayoutEditorRowItem[] = [
       {
-        nodeID: "row",
         type: "row",
         columns: [{ content: [nestedRow], widthXS }],
       },
@@ -143,7 +133,6 @@ describe("getAllContentArrays", () => {
     expect(result).toEqual([
       [
         {
-          nodeID: "row",
           type: "row",
           columns: [{ content: [{ type: "view", nodeID: "v3" }], widthXS }],
         },
@@ -161,14 +150,10 @@ describe("getAllContentArrays", () => {
   it("handles mixed content types", () => {
     const layout: LayoutEditorRowItem[] = [
       {
-        nodeID: "row",
         type: "row",
         columns: [
           {
-            content: [
-              { type: "view", nodeID: "v1" },
-              { nodeID: "html", type: "html" },
-            ],
+            content: [{ type: "view", nodeID: "v1" }, { type: "html" }],
             widthXS,
           },
         ],
@@ -177,10 +162,7 @@ describe("getAllContentArrays", () => {
 
     const result = getAllContentArrays(layout);
     expect(result).toEqual([
-      [
-        { type: "view", nodeID: "v1" },
-        { nodeID: "html", type: "html" },
-      ],
+      [{ type: "view", nodeID: "v1" }, { type: "html" }],
       layout,
     ]);
   });
@@ -191,7 +173,6 @@ describe("cleanLayout", () => {
     const layout: LayoutEditorViewLayout = {
       rows: [
         {
-          nodeID: "row",
           type: "row",
           columns: [
             { content: [], widthXS },
@@ -213,11 +194,9 @@ describe("cleanLayout", () => {
       rows: [
         // @ts-expect-error: Expecting missing columns property
         {
-          nodeID: "row",
           type: "row",
         },
         {
-          nodeID: "row",
           type: "row",
           columns: [{ content: [], widthXS }],
         },
@@ -235,12 +214,10 @@ describe("cleanLayout", () => {
     const layout: LayoutEditorViewLayout = {
       rows: [
         {
-          nodeID: "row",
           type: "row",
           columns: [{ content: [viewNode], widthXS }],
         },
         {
-          nodeID: "row",
           type: "row",
           columns: [{ content: [viewNode], widthXS }],
         },
@@ -263,7 +240,7 @@ describe("cleanLayout", () => {
   it("adds missing widthXS to columns", () => {
     const layout: LayoutEditorViewLayout = {
       // @ts-expect-error: Expecting missing widthXS property
-      rows: [{ nodeID: "row", type: "row", columns: [{ content: [] }] }],
+      rows: [{ type: "row", columns: [{ content: [] }] }],
       parentLayoutLegacyMode: false,
     };
 
@@ -277,7 +254,6 @@ describe("cleanLayout", () => {
     const layout: LayoutEditorViewLayout = {
       rows: [
         {
-          nodeID: "row",
           type: "row",
           columns: [{ content: [viewNode], widthXS }],
         },
@@ -295,11 +271,10 @@ describe("cleanLayout", () => {
 
   it("allows nestedLayout and html", () => {
     const nestedLayoutItem = createNestedLayout("nl1");
-    const htmlItem = { nodeID: "row", type: "html" as const };
+    const htmlItem = { type: "html" as const };
     const layout: LayoutEditorViewLayout = {
       rows: [
         {
-          nodeID: "row",
           type: "row",
           columns: [
             { content: [nestedLayoutItem], widthXS },
@@ -323,7 +298,7 @@ describe("checkMove", () => {
   it("should allow row to be dropped at first level", () => {
     const event = {
       relatedContext: { component: { componentData: { isFirstLevel: true } } },
-      draggedContext: { element: { nodeID: "row", type: "row" as const } },
+      draggedContext: { element: { type: "row" as const } },
     };
 
     expect(checkMove(event)).toBe(true);

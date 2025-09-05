@@ -3,8 +3,9 @@ import { computed } from "vue";
 
 import type { ConfigurationLayoutEditorNode } from "@/store/layoutEditor/types/configuration";
 import {
-  type LayoutEditorItem,
+  type LayoutEditorNestedLayoutItem,
   type LayoutEditorNode,
+  type LayoutEditorViewItem,
   isViewItem,
 } from "@/store/layoutEditor/types/view";
 
@@ -12,7 +13,7 @@ import NodeIcon from "./NodeIcon.vue";
 
 type Props = {
   nodes: LayoutEditorNode[] | ConfigurationLayoutEditorNode[];
-  view: LayoutEditorItem;
+  view: LayoutEditorViewItem | LayoutEditorNestedLayoutItem;
 };
 
 const props = defineProps<Props>();

@@ -15,8 +15,10 @@ import {
   type LayoutEditorColumn,
   type LayoutEditorItem,
   type LayoutEditorItemSizingConfig,
+  type LayoutEditorNestedLayoutItem,
   type LayoutEditorNode,
   type LayoutEditorRowItem,
+  type LayoutEditorViewItem,
   type LayoutEditorViewLayout,
   type ResizeColumnInfo,
   type RowElementTemplate,
@@ -179,7 +181,10 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     return allContentArrays
       .flat(1)
       .filter((item) => item.hasOwnProperty("nodeID"))
-      .map((item) => (item as LayoutEditorItem).nodeID);
+      .map(
+        (item) =>
+          (item as LayoutEditorViewItem | LayoutEditorNestedLayoutItem).nodeID,
+      );
   });
 
   const availableNodes = computed(() => {
@@ -302,7 +307,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
   const updateContentItemConfig = (data: {
     config: LayoutEditorItemSizingConfig;
-    item: LayoutEditorItem;
+    item: LayoutEditorViewItem | LayoutEditorNestedLayoutItem;
   }) => {
     // if set to auto, get default resizeMethod from node
     if (data.config.resizeMethod === "auto") {

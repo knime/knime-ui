@@ -84,7 +84,6 @@ export const createColumn = (): LayoutEditorColumn => ({
 });
 
 export const createEmptyRow = (): LayoutEditorRowItem => ({
-  nodeID: "row",
   type: "row",
   columns: [{ content: [], widthXS: layoutEditorGridSize }],
 });
@@ -92,7 +91,6 @@ export const createEmptyRow = (): LayoutEditorRowItem => ({
 export const createComplexLayout = (): LayoutEditorViewLayout => ({
   rows: [
     {
-      nodeID: "row",
       type: "row",
       columns: [
         {
@@ -108,7 +106,6 @@ export const createComplexLayout = (): LayoutEditorViewLayout => ({
               sizeWidth: false,
             },
             {
-              nodeID: "row",
               type: "row",
               columns: [
                 {
@@ -149,7 +146,6 @@ export const createComplexLayout = (): LayoutEditorViewLayout => ({
                 {
                   content: [
                     {
-                      nodeID: "row",
                       type: "row",
                       columns: [
                         {
@@ -170,7 +166,6 @@ export const createComplexLayout = (): LayoutEditorViewLayout => ({
                       ],
                     },
                     {
-                      nodeID: "row",
                       type: "row",
                       columns: [
                         {
@@ -231,7 +226,6 @@ export const createComplexLayout = (): LayoutEditorViewLayout => ({
       ],
     },
     {
-      nodeID: "row",
       type: "row",
       columns: [
         {

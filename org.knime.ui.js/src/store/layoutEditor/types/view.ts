@@ -36,7 +36,7 @@ export type LayoutEditorNode = {
    * Properties of the node item that will be used when this
    * node is added to the layout.
    */
-  layout: LayoutEditorItem;
+  layout: LayoutEditorViewItem | LayoutEditorNestedLayoutItem;
   name: string;
 };
 
@@ -85,7 +85,7 @@ type LayoutEditorBaseProps = {
   additionalStyles?: string[];
 };
 
-export type LayoutEditorRowItem = LayoutEditorBaseProps & {
+export type LayoutEditorRowItem = {
   type: "row";
   columns: LayoutEditorColumn[];
 };
@@ -104,7 +104,7 @@ export const isViewItem = (
 ): node is LayoutEditorViewItem =>
   Boolean((node as LayoutEditorViewItem).type === "view");
 
-type LayoutEditorNestedLayoutItem = LayoutEditorBaseProps & {
+export type LayoutEditorNestedLayoutItem = LayoutEditorBaseProps & {
   type: "nestedLayout";
 };
 
@@ -113,7 +113,7 @@ export const isNestedLayoutItem = (
 ): node is LayoutEditorNestedLayoutItem =>
   Boolean((node as LayoutEditorNestedLayoutItem).type === "nestedLayout");
 
-type LayoutEditorHtmlItem = LayoutEditorBaseProps & {
+type LayoutEditorHtmlItem = {
   type: "html";
 };
 
@@ -124,7 +124,7 @@ export type LayoutEditorItem =
   | LayoutEditorHtmlItem;
 
 export type LayoutEditorItemSizingConfig = Pick<
-  LayoutEditorItem,
+  LayoutEditorBaseProps,
   "resizeMethod" | "minWidth" | "maxWidth" | "minHeight" | "maxHeight"
 >;
 

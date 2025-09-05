@@ -22,7 +22,7 @@ export const getEmptyLayout = (): LayoutEditorViewLayout => {
   });
 
   return {
-    rows: [{ nodeID: "row", type: "row", columns: [column] }],
+    rows: [{ type: "row", columns: [column] }],
     // when the layout is cleared, disable legacy mode by default
     parentLayoutLegacyMode: false,
   };
@@ -81,7 +81,7 @@ export const generateRowTemplates = (): RowElementTemplate[] => {
     }
     return {
       name: `${numberOfColumns}-column`,
-      data: { nodeID: "row", type: "row", columns },
+      data: { type: "row", columns },
     };
   });
 };
