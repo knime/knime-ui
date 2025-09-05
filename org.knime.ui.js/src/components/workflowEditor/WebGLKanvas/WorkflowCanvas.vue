@@ -41,7 +41,7 @@ const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
 
-const { selectedNodeIds, getBoundsAroundNodeSelection } = storeToRefs(
+const { selectedNodeIds, getAnnotationBoundsForSelectedNodes } = storeToRefs(
   useSelectionStore(),
 );
 const { containerSize, shouldHideMiniMap, interactionsEnabled } =
@@ -211,7 +211,7 @@ const onEscape = async (event: KeyboardEvent) => {
 
     <SkeletonAnnotation
       v-if="shouldShowSkeletonAnnotation"
-      :bounds="getBoundsAroundNodeSelection"
+      :bounds="getAnnotationBoundsForSelectedNodes"
     />
 
     <svg

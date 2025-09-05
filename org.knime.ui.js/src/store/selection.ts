@@ -3,12 +3,12 @@ import { type Ref, computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
+import type { Bounds } from "@/api/gateway-api/generated-api";
 import { isBrowser } from "@/environment";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId, parseBendpointId } from "@/util/connectorUtil";
-import type { Bounds } from "@/api/gateway-api/generated-api";
 
 export type NodeOutputTabIdentifier = "view" | `${number}` | null;
 
@@ -334,29 +334,52 @@ export const useSelectionStore = defineStore("selection", () => {
       : null;
   });
 
-  const getBoundsAroundNodeSelection = computed<Bounds>(() => {
-    const xs = getSelectedNodes.value.map((n) => n.position.x);
-    const ys = getSelectedNodes.value.map((n) => n.position.y);
-    const minX = Math.min(...xs);
-    const minY = Math.min(...ys);
-    const maxX = Math.max(...xs);
-    const maxY = Math.max(...ys);
+  const getAnnotationBoundsForSelectedNodes = computed<Bounds>(() => {
+    const nodeSide = 32;
+    const xOffset = 2 * nodeSide;
+    const yOffset = 4 * nodeSide;
+    const widthPadding = 3 * nodeSide;
+    const heightPadding = 4 * nodeSide;
 
-    const PADDING_TOP = 120;
-    const PADDING_RIGHT = 100;
-    const PADDING_BOTTOM = 100;
-    const PADDING_LEFT = 100;
+    const selectedNodes = getSelectedNodes.value;
+    if (selectedNodes.length === 0) {
+      return {
+        x: 0,
+        y: 0,
+        width: 80,
+        height: 80,
+      };
+    }
 
-    const annotationX = minX - PADDING_LEFT;
-    const annotationY = minY - PADDING_TOP;
-    const annotationWidth = maxX - minX + PADDING_LEFT + PADDING_RIGHT;
-    const annotationHeight = maxY - minY + PADDING_TOP + PADDING_BOTTOM;
+    const { minX, minY, maxX, maxY } = selectedNodes.reduce(
+      // reducer (determine min and max coordinates over all selected nodes)
+      (bounds, { position }) => ({
+        minX: Math.min(bounds.minX, position.x),
+        minY: Math.min(bounds.minY, position.y),
+        maxX: Math.max(bounds.maxX, position.x),
+        maxY: Math.max(bounds.maxY, position.y),
+      }),
+      // accumulator (starts with Infinities to be replaced with the first node's values)
+      {
+        minX: Infinity,
+        minY: Infinity,
+        maxX: -Infinity,
+        maxY: -Infinity,
+      },
+    );
+
+    // translate annotation origin
+    const annotationX = minX - xOffset;
+    const annotationY = minY - yOffset;
+
+    const annotationWidth = maxX - annotationX + widthPadding;
+    const annotationHeight = maxY - annotationY + heightPadding;
 
     return {
       x: annotationX,
       y: annotationY,
-      width: Math.max(80, annotationWidth),
-      height: Math.max(60, annotationHeight),
+      width: annotationWidth,
+      height: annotationHeight,
     };
   });
 
@@ -520,7 +543,7 @@ export const useSelectionStore = defineStore("selection", () => {
     isSelectionEmpty,
     getFocusedObject,
 
-    getBoundsAroundNodeSelection,
+    getAnnotationBoundsForSelectedNodes,
 
     // selection state predicates
     isNodeSelected: (id: string) => Boolean(selectedNodes.value[id]),

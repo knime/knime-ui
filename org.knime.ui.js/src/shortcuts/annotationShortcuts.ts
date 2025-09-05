@@ -1,17 +1,18 @@
+import AiTextIcon from "@knime/styles/img/icons/ai-description.svg";
+
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import AiTextIcon from "@knime/styles/img/icons/ai-description.svg";
 import {
   defaultAddWorkflowAnnotationHeight,
   defaultAddWorkflowAnnotationWidth,
 } from "@/style/shapes";
 
 import type { UnionToShortcutRegistry } from "./types";
-import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 
 type AnnotationShortcuts = UnionToShortcutRegistry<
   | "switchToAnnotationMode"

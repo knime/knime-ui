@@ -1,7 +1,8 @@
-import { defineStore } from "pinia";
 import { ref } from "vue";
-import { useAnnotationInteractionsStore } from "../workflow/annotationInteractions";
+import { defineStore } from "pinia";
+
 import { useSelectionStore } from "../selection";
+import { useAnnotationInteractionsStore } from "../workflow/annotationInteractions";
 
 type ActionName = "generateAnnotation";
 type ActionStatus = "ready" | "processing";
@@ -46,7 +47,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
     const selection = useSelectionStore();
     const annotationInteractions = useAnnotationInteractionsStore();
     await annotationInteractions.addWorkflowAnnotation({
-      bounds: selection.getBoundsAroundNodeSelection,
+      bounds: selection.getAnnotationBoundsForSelectedNodes,
       content: "<h5>Placeholder heading</h5><p>Placeholder text</p>",
     });
   };
