@@ -41,6 +41,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
     }
 
     updateStateFor({ actionName, newState: "processing" });
+    // TODO AP-24796: replace with API.kai call once ready
     await new Promise((resolve) => setTimeout(resolve, 2000));
     updateStateFor({ actionName, newState: "ready" });
 
