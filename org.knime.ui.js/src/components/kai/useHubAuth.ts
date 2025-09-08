@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 
 import { isBrowser, runInEnvironment } from "@/environment";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { getToastPresets } from "@/toastPresets";
@@ -15,6 +16,7 @@ const useHubAuth = () => {
   const { getHubID } = useAIAssistantStore();
   const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
   const { connectProvider, disconnectProvider } = useSpaceAuthStore();
+  const { fetchAvailableQuickActions } = useAiQuickActionsStore();
 
   runInEnvironment({
     DESKTOP: () => {
@@ -47,6 +49,7 @@ const useHubAuth = () => {
       await connectProvider({
         spaceProviderId: hubID.value,
       });
+      await fetchAvailableQuickActions();
     } catch (error) {
       const providerName = spaceProviders.value?.[hubID.value ?? ""]?.name;
       toastPresets.spaces.auth.connectFailed({ error, providerName });

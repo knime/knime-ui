@@ -5,6 +5,7 @@ import { SkeletonItem } from "@knime/components";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
 import FloatingHTML from "../common/FloatingHTML.vue";
 
 type Props = {
@@ -38,13 +39,15 @@ const dimensions = computed(() => ({
 
 <style lang="postcss" scoped>
 .skeleton-container {
+  --border-width: calc(v-bind("$shapes.annotationBorderWidth") * 1px);
+
   /* fill the FloatingHTML container */
   width: 100%;
   height: 100%;
 
   /* mimic normal annotation styles */
   padding: 10px;
-  border: 2px solid v-bind("$colors.SilverSand");
+  border: var(--border-width) solid v-bind("$colors.SilverSand");
 
   /* control skeleton spacing */
   display: flex;

@@ -1,4 +1,9 @@
-import { KaiMessage, type KaiUsage } from "@/api/gateway-api/generated-api";
+import {
+  type Bounds,
+  KaiMessage,
+  KaiQuickActionRequest,
+  type KaiUsage,
+} from "@/api/gateway-api/generated-api";
 
 export type Node = {
   title: string;
@@ -125,3 +130,21 @@ export type AiAssistantEvent =
       };
       conversation_id: string;
     };
+
+// AI Quick Action types
+export const KaiQuickActionId = {
+  generateAnnotation: KaiQuickActionRequest.ActionIdEnum.GenerateAnnotation,
+};
+
+export type KaiQuickActionId = KaiQuickActionRequest.ActionIdEnum;
+
+// "Annotate with K-AI" quick action
+export type GenerateAnnotationState =
+  | { status: "idle"; bounds: null }
+  | { status: "waiting"; bounds: null } // reserved for when the action was triggerred, but processing hasn't started yet
+  | { status: "processing"; bounds: Bounds };
+
+// Structure keeping track of states of all quick actions
+export type ActionsStates = {
+  [KaiQuickActionId.generateAnnotation]: GenerateAnnotationState;
+};

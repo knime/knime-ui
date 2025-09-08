@@ -23,6 +23,9 @@ import type {
   StatusUpdate,
 } from "./types";
 
+// sometimes unlimited AI interactions are represented extremely large integers
+export const UNLIMITED_AI_INTERACTIONS_THRESHOLD = 1_000_000;
+
 const responseCallback: Record<
   string,
   { resolve: CallableFunction; reject: CallableFunction }
@@ -391,6 +394,17 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
           supportedPortKinds.includes(availablePortTypes[portTypeId]?.kind)
         );
       };
+    },
+    hasUsageRemaining: (state) => {
+      if (
+        !state.usage ||
+        !state.usage.limit ||
+        state.usage.limit > UNLIMITED_AI_INTERACTIONS_THRESHOLD
+      ) {
+        return true;
+      }
+
+      return state.usage.used < state.usage.limit;
     },
   },
 });

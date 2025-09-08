@@ -8,20 +8,42 @@ import AiIcon from "@knime/styles/img/icons/ai-general.svg";
 import NodesAlignHorizIcon from "@knime/styles/img/icons/nodes-align-horiz.svg";
 import NodesAlignVertIcon from "@knime/styles/img/icons/nodes-align-vert.svg";
 
+import { useHubAuth } from "@/components/kai/useHubAuth";
 import { useTooltip } from "@/components/workflowEditor/common/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useShortcuts } from "@/plugins/shortcuts";
-import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import {
+  UNLIMITED_AI_INTERACTIONS_THRESHOLD,
+  useAIAssistantStore,
+} from "@/store/ai/aiAssistant";
+import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
+import { KaiQuickActionId } from "@/store/ai/types";
 import { useSelectionStore } from "@/store/selection";
 import FloatingToolbar from "../FloatingToolbar.vue";
 
-const { usage } = storeToRefs(useAIAssistantStore());
-const hasAiUsageRemaining = computed(() => {
-  if (!usage.value || !usage.value.limit) {
-    return true;
+const { isAuthenticated } = useHubAuth();
+const { isKaiEnabled } = useIsKaiEnabled();
+
+const { usage, hasUsageRemaining } = storeToRefs(useAIAssistantStore());
+
+const aiQuickActions = useAiQuickActionsStore();
+const generateAnnotationId = KaiQuickActionId.generateAnnotation;
+const isGenerateAnnotationBusy = computed(() => {
+  return (
+    aiQuickActions.actionsStates[KaiQuickActionId.generateAnnotation].status !==
+    "idle"
+  );
+});
+
+const shouldShowGenerateAnnotationButton = computed(() => {
+  if (!isKaiEnabled.value) {
+    return false;
   }
 
-  return usage.value.used < usage.value.limit;
+  return isAuthenticated.value
+    ? aiQuickActions.availableQuickActions.includes(generateAnnotationId)
+    : true;
 });
 
 const { getSelectedNodes, singleSelectedNode } = storeToRefs(
@@ -43,7 +65,11 @@ const alignNodesVerticallyTitle = `${alignVerticallyShortcut.text} – ${alignVe
 
 // show hover AI usage Tooltip over AI buttons
 const aiUsageTooltip = computed<TooltipDefinition | null>(() => {
-  if (!usage.value || !usage.value.limit) {
+  if (
+    !usage.value ||
+    !usage.value.limit ||
+    usage.value.limit > UNLIMITED_AI_INTERACTIONS_THRESHOLD
+  ) {
     return null;
   }
 
@@ -97,10 +123,10 @@ useTooltip({
 
 <template>
   <FloatingToolbar position="center">
-    <div ref="quickBuild">
+    <div v-if="isKaiEnabled" ref="quickBuild">
       <FunctionButton
         :title="quickBuildTitle"
-        :disabled="!hasAiUsageRemaining"
+        :disabled="!hasUsageRemaining"
         data-test-id="node-selection-tool-quick-build"
         @pointerdown="$shortcuts.dispatch(quickBuildShortcut.name)"
       >
@@ -108,10 +134,10 @@ useTooltip({
       </FunctionButton>
     </div>
 
-    <div ref="generateAnnotation">
+    <div v-if="shouldShowGenerateAnnotationButton" ref="generateAnnotation">
       <FunctionButton
         :title="generateAnnotationTitle"
-        :disabled="!hasAiUsageRemaining"
+        :disabled="!hasUsageRemaining || isGenerateAnnotationBusy"
         data-test-id="node-selection-tool-generate-annotation"
         @pointerdown="$shortcuts.dispatch(generateAnnotationShortcut.name)"
       >

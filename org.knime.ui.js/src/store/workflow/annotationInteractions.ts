@@ -1,7 +1,8 @@
 /* eslint-disable no-undefined */
 import { API } from "@api";
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 
+import { type KnimeNode } from "@/api/custom-types";
 import {
   type Bounds,
   type ReorderWorkflowAnnotationsCommand,
@@ -10,6 +11,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
 import * as colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
 
 import { useWorkflowStore } from "./workflow";
 
@@ -199,6 +201,87 @@ export const useAnnotationInteractionsStore = defineStore(
           ({ id }) => id === annotationId,
         );
       },
+      getAnnotationBoundsForSelectedNodes: (): Bounds => {
+        const nodeSize = $shapes.nodeSize;
+        const xOffset = 2 * nodeSize;
+        const yOffset = 4 * nodeSize;
+        const widthPadding = 3 * nodeSize;
+        const heightPadding = 4 * nodeSize;
+
+        const { getSelectedNodes: selectedNodes } = storeToRefs(
+          useSelectionStore(),
+        );
+        if (selectedNodes.value.length === 0) {
+          return {
+            x: 0,
+            y: 0,
+            width: 80,
+            height: 80,
+          };
+        }
+
+        const { minX, minY, maxX, maxY } = selectedNodes.value.reduce(
+          // reducer (determine min and max coordinates over all selected nodes)
+          (bounds, { position }) => ({
+            minX: Math.min(bounds.minX, position.x),
+            minY: Math.min(bounds.minY, position.y),
+            maxX: Math.max(bounds.maxX, position.x),
+            maxY: Math.max(bounds.maxY, position.y),
+          }),
+          // accumulator (starts with Infinities to be replaced with the first node's values)
+          {
+            minX: Infinity,
+            minY: Infinity,
+            maxX: -Infinity,
+            maxY: -Infinity,
+          },
+        );
+
+        // translate annotation origin
+        const annotationX = minX - xOffset;
+        const annotationY = minY - yOffset;
+
+        const annotationWidth = maxX - annotationX + widthPadding;
+        const annotationHeight = maxY - annotationY + heightPadding;
+
+        return {
+          x: annotationX,
+          y: annotationY,
+          width: annotationWidth,
+          height: annotationHeight,
+        };
+      },
+      getContainedNodesForAnnotation:
+        () =>
+        (annotationId: string): string[] => {
+          const { activeWorkflow } = useWorkflowStore();
+          if (!activeWorkflow) {
+            return [];
+          }
+
+          const annotation = activeWorkflow.workflowAnnotations.find(
+            ({ id }) => id === annotationId,
+          );
+          if (!annotation) {
+            return [];
+          }
+
+          const { x, y, width, height } = annotation.bounds;
+
+          const nodes = Object.values(activeWorkflow.nodes) as KnimeNode[];
+          return nodes
+            .filter((node) => {
+              const nodeX = node.position.x;
+              const nodeY = node.position.y;
+              return (
+                nodeX >= x &&
+                nodeX <= x + width &&
+                nodeY >= y &&
+                nodeY <= y + height
+              );
+            })
+            .map((node) => node.id);
+        },
     },
   },
 );

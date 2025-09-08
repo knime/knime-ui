@@ -1848,6 +1848,269 @@ export namespace KaiMessage {
     }
 }
 /**
+ * Base AI quick action context schema for proper inheritance.
+ * @export
+ * @interface KaiQuickActionContext
+ */
+export interface KaiQuickActionContext {
+
+
+}
+
+
+/**
+ * Structured error information for AI quick action failures.
+ * @export
+ * @interface KaiQuickActionError
+ */
+export interface KaiQuickActionError {
+
+    /**
+     * Machine-readable error code for programmatic handling.
+     * @type {string}
+     * @memberof KaiQuickActionError
+     */
+    code: KaiQuickActionError.CodeEnum;
+    /**
+     * Human-readable error message to display to users.
+     * @type {string}
+     * @memberof KaiQuickActionError
+     */
+    message: string;
+    /**
+     * Optional additional context about the error.
+     * @type {{ [key: string]: any; }}
+     * @memberof KaiQuickActionError
+     */
+    details?: { [key: string]: any; };
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionError
+ */
+export namespace KaiQuickActionError {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum CodeEnum {
+        LLMERROR = 'LLM_ERROR',
+        QUOTAEXCEEDED = 'QUOTA_EXCEEDED',
+        TIMEOUT = 'TIMEOUT',
+        VALIDATIONERROR = 'VALIDATION_ERROR',
+        AUTHENTICATIONFAILED = 'AUTHENTICATION_FAILED',
+        SERVICEUNAVAILABLE = 'SERVICE_UNAVAILABLE',
+        UNKNOWN = 'UNKNOWN'
+    }
+}
+/**
+ *
+ * @export
+ * @interface KaiQuickActionGenerateAnnotationContext
+ */
+export interface KaiQuickActionGenerateAnnotationContext extends KaiQuickActionContext {
+
+    /**
+     *
+     * @type {Workflow}
+     * @memberof KaiQuickActionGenerateAnnotationContext
+     */
+    workflow: Workflow;
+    /**
+     * One or more nodes that are being annotated.
+     * @type {Array<any>}
+     * @memberof KaiQuickActionGenerateAnnotationContext
+     */
+    selectedNodeIds: Array<any>;
+    /**
+     * Existing workflow annotations containing nodes of this workflow.
+     * @type {Array<any>}
+     * @memberof KaiQuickActionGenerateAnnotationContext
+     */
+    annotationsContainingNodes?: Array<any>;
+
+}
+
+
+/**
+ *
+ * @export
+ * @interface KaiQuickActionGenerateAnnotationRequest
+ */
+export interface KaiQuickActionGenerateAnnotationRequest extends KaiQuickActionRequest {
+
+    /**
+     *
+     * @type {KaiQuickActionGenerateAnnotationContext}
+     * @memberof KaiQuickActionGenerateAnnotationRequest
+     */
+    context: KaiQuickActionGenerateAnnotationContext;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionGenerateAnnotationRequest
+ */
+export namespace KaiQuickActionGenerateAnnotationRequest {
+}
+/**
+ *
+ * @export
+ * @interface KaiQuickActionGenerateAnnotationResponse
+ */
+export interface KaiQuickActionGenerateAnnotationResponse extends KaiQuickActionResponse {
+
+    /**
+     *
+     * @type {KaiQuickActionGenerateAnnotationResult}
+     * @memberof KaiQuickActionGenerateAnnotationResponse
+     */
+    result: KaiQuickActionGenerateAnnotationResult;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionGenerateAnnotationResponse
+ */
+export namespace KaiQuickActionGenerateAnnotationResponse {
+}
+/**
+ *
+ * @export
+ * @interface KaiQuickActionGenerateAnnotationResult
+ */
+export interface KaiQuickActionGenerateAnnotationResult extends KaiQuickActionResult {
+
+    /**
+     * The generated HTML annotation text.
+     * @type {string}
+     * @memberof KaiQuickActionGenerateAnnotationResult
+     */
+    annotationText: string;
+
+}
+
+
+/**
+ * Request for executing an AI quick action.
+ * @export
+ * @interface KaiQuickActionRequest
+ */
+export interface KaiQuickActionRequest {
+
+    /**
+     *
+     * @type {string}
+     * @memberof KaiQuickActionRequest
+     */
+    actionId: KaiQuickActionRequest.ActionIdEnum;
+    /**
+     * Identifies the top-level workflow, needed for authentication.
+     * @type {string}
+     * @memberof KaiQuickActionRequest
+     */
+    projectId: string;
+    /**
+     *
+     * @type {KaiQuickActionContext}
+     * @memberof KaiQuickActionRequest
+     */
+    context: KaiQuickActionContext;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionRequest
+ */
+export namespace KaiQuickActionRequest {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ActionIdEnum {
+        GenerateAnnotation = 'generateAnnotation'
+    }
+}
+/**
+ * Response from executing an AI quick action.
+ * @export
+ * @interface KaiQuickActionResponse
+ */
+export interface KaiQuickActionResponse {
+
+    /**
+     *
+     * @type {string}
+     * @memberof KaiQuickActionResponse
+     */
+    actionId: KaiQuickActionResponse.ActionIdEnum;
+    /**
+     *
+     * @type {KaiQuickActionResult}
+     * @memberof KaiQuickActionResponse
+     */
+    result: KaiQuickActionResult;
+    /**
+     *
+     * @type {KaiUsage}
+     * @memberof KaiQuickActionResponse
+     */
+    usage: KaiUsage;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionResponse
+ */
+export namespace KaiQuickActionResponse {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ActionIdEnum {
+        GenerateAnnotation = 'generateAnnotation'
+    }
+}
+/**
+ * Base AI quick action result schema for proper inheritance.
+ * @export
+ * @interface KaiQuickActionResult
+ */
+export interface KaiQuickActionResult {
+
+
+}
+
+
+/**
+ *
+ * @export
+ * @interface KaiQuickActionsAvailable
+ */
+export interface KaiQuickActionsAvailable {
+
+    /**
+     * List of available quick action IDs.
+     * @type {Array<string>}
+     * @memberof KaiQuickActionsAvailable
+     */
+    availableActions: Array<string>;
+
+}
+
+
+/**
  * Encapsulates a request to K-AI which contains the entire conversation  as well as information on the open workflow, subworkflow and selected nodes. 
  * @export
  * @interface KaiRequest
@@ -5652,6 +5915,21 @@ const kai = function(rpcClient: RPCClient) {
             return rpcClient.call('KaiService.abortAiRequest', { ...defaultParams, ...params });
         },
         /**
+         * Executes a promptless AI quick action that doesn't require chat interactions.
+         * @param {'generateAnnotation'} params.kaiQuickActionId Identifier of an AI quick action.
+         * @param {KaiQuickActionRequest} params.kaiQuickActionRequest 
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async executeQuickAction(
+        	params: { kaiQuickActionId: 'generateAnnotation',  kaiQuickActionRequest: KaiQuickActionRequest  }
+        ): Promise<KaiQuickActionResponse> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.executeQuickAction', { ...defaultParams, ...params });
+        },
+        /**
          * Fetches the disclaimer and welcome messages displayed in K-AI's chat interface.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
@@ -5677,6 +5955,20 @@ const kai = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('KaiService.getUsage', { ...defaultParams, ...params });
+        },
+        /**
+         * Returns available AI quick actions.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listQuickActions(
+        	params: { projectId: string  }
+        ): Promise<KaiQuickActionsAvailable> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.listQuickActions', { ...defaultParams, ...params });
         },
         /**
          * Sends a request to a chain.

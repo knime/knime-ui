@@ -441,74 +441,58 @@ describe("selection store", () => {
       expect(selectionStore.isSelectionEmpty).toBe(true);
     });
 
-    describe("calculating annotation bounds around node selection", () => {
-      it("returns default bounds when no nodes are selected", async () => {
+    describe("edge cases and invalid states", () => {
+      it("handles focusing non-existent objects", () => {
+        const { selectionStore } = createWorkflowContext();
+        const fakeNode = {
+          id: "ghost-node",
+          type: "non-existent",
+        } as unknown as WorkflowObject;
+
+        selectionStore.focusObject(fakeNode);
+        expect(selectionStore.getFocusedObject).toBeNull();
+      });
+
+      it("handles duplicate selection IDs", async () => {
+        const { selectionStore, node1 } = createWorkflowContext();
+
+        await selectionStore.selectNodes([node1.id, node1.id]);
+        expect(selectionStore.selectedNodeIds).toEqual([node1.id]);
+
+        await selectionStore.deselectNodes(["non-existent-id"]);
+        expect(selectionStore.selectedNodeIds).toEqual([node1.id]);
+      });
+
+      it("handles toggleAnnotationSelection with isSelected=true", () => {
+        const { selectionStore, annotation1 } = createWorkflowContext();
+
+        selectionStore.toggleAnnotationSelection({
+          annotationId: annotation1.id,
+          isMultiselect: false,
+          isSelected: true,
+        });
+
+        expect(selectionStore.selectedAnnotationIds).toEqual([annotation1.id]);
+      });
+
+      it("handles empty selection operations", async () => {
         const { selectionStore } = createWorkflowContext();
 
-        await selectionStore.deselectAllObjects();
+        await selectionStore.selectNodes([]);
+        await selectionStore.deselectNodes([]);
+        selectionStore.selectConnections([]);
 
-        const bounds = selectionStore.getAnnotationBoundsForSelectedNodes;
-        expect(bounds).toEqual({
-          x: 0,
-          y: 0,
-          width: 80,
-          height: 80,
-        });
-      });
-    });
-  });
-
-  describe("edge cases and invalid states", () => {
-    it("handles focusing non-existent objects", () => {
-      const { selectionStore } = createWorkflowContext();
-      const fakeNode = {
-        id: "ghost-node",
-        type: "non-existent",
-      } as unknown as WorkflowObject;
-
-      selectionStore.focusObject(fakeNode);
-      expect(selectionStore.getFocusedObject).toBeNull();
-    });
-
-    it("handles duplicate selection IDs", async () => {
-      const { selectionStore, node1 } = createWorkflowContext();
-
-      await selectionStore.selectNodes([node1.id, node1.id]);
-      expect(selectionStore.selectedNodeIds).toEqual([node1.id]);
-
-      await selectionStore.deselectNodes(["non-existent-id"]);
-      expect(selectionStore.selectedNodeIds).toEqual([node1.id]);
-    });
-
-    it("handles toggleAnnotationSelection with isSelected=true", () => {
-      const { selectionStore, annotation1 } = createWorkflowContext();
-
-      selectionStore.toggleAnnotationSelection({
-        annotationId: annotation1.id,
-        isMultiselect: false,
-        isSelected: true,
+        expect(selectionStore.selectedNodeIds).toEqual([]);
+        expect(selectionStore.getSelectedConnections).toEqual([]);
       });
 
-      expect(selectionStore.selectedAnnotationIds).toEqual([annotation1.id]);
-    });
+      it("handles selection of non-existent nodes", async () => {
+        const { selectionStore } = createWorkflowContext();
 
-    it("handles empty selection operations", async () => {
-      const { selectionStore } = createWorkflowContext();
-
-      await selectionStore.selectNodes([]);
-      await selectionStore.deselectNodes([]);
-      selectionStore.selectConnections([]);
-
-      expect(selectionStore.selectedNodeIds).toEqual([]);
-      expect(selectionStore.getSelectedConnections).toEqual([]);
-    });
-
-    it("handles selection of non-existent nodes", async () => {
-      const { selectionStore } = createWorkflowContext();
-
-      await selectionStore.selectNodes(["non-existent-node"]);
-      expect(selectionStore.selectedNodeIds).toEqual([]);
-      expect(selectionStore.getSelectedNodes).toEqual([]);
+        await selectionStore.selectNodes(["non-existent-node"]);
+        expect(selectionStore.selectedNodeIds).toEqual([]);
+        expect(selectionStore.getSelectedNodes).toEqual([]);
+      });
     });
   });
 });

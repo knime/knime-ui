@@ -3,7 +3,6 @@ import { type Ref, computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
-import type { Bounds } from "@/api/gateway-api/generated-api";
 import { isBrowser } from "@/environment";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
@@ -334,55 +333,6 @@ export const useSelectionStore = defineStore("selection", () => {
       : null;
   });
 
-  const getAnnotationBoundsForSelectedNodes = computed<Bounds>(() => {
-    const nodeSide = 32;
-    const xOffset = 2 * nodeSide;
-    const yOffset = 4 * nodeSide;
-    const widthPadding = 3 * nodeSide;
-    const heightPadding = 4 * nodeSide;
-
-    const selectedNodes = getSelectedNodes.value;
-    if (selectedNodes.length === 0) {
-      return {
-        x: 0,
-        y: 0,
-        width: 80,
-        height: 80,
-      };
-    }
-
-    const { minX, minY, maxX, maxY } = selectedNodes.reduce(
-      // reducer (determine min and max coordinates over all selected nodes)
-      (bounds, { position }) => ({
-        minX: Math.min(bounds.minX, position.x),
-        minY: Math.min(bounds.minY, position.y),
-        maxX: Math.max(bounds.maxX, position.x),
-        maxY: Math.max(bounds.maxY, position.y),
-      }),
-      // accumulator (starts with Infinities to be replaced with the first node's values)
-      {
-        minX: Infinity,
-        minY: Infinity,
-        maxX: -Infinity,
-        maxY: -Infinity,
-      },
-    );
-
-    // translate annotation origin
-    const annotationX = minX - xOffset;
-    const annotationY = minY - yOffset;
-
-    const annotationWidth = maxX - annotationX + widthPadding;
-    const annotationHeight = maxY - annotationY + heightPadding;
-
-    return {
-      x: annotationX,
-      y: annotationY,
-      width: annotationWidth,
-      height: annotationHeight,
-    };
-  });
-
   const toggleAnnotationSelection = ({
     annotationId,
     isMultiselect,
@@ -542,8 +492,6 @@ export const useSelectionStore = defineStore("selection", () => {
     selectedObjects,
     isSelectionEmpty,
     getFocusedObject,
-
-    getAnnotationBoundsForSelectedNodes,
 
     // selection state predicates
     isNodeSelected: (id: string) => Boolean(selectedNodes.value[id]),

@@ -124,6 +124,13 @@ export const isPointOutsideBounds = (
   );
 };
 
+export const isPointInsideBounds = (
+  point: XY,
+  bounds: XY & { width: number; height: number },
+): boolean => {
+  return !isPointOutsideBounds(point, bounds);
+};
+
 export const getEdgeNearPoint = (
   point: XY,
   bounds: XY & { width: number; height: number },

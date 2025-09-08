@@ -1,8 +1,9 @@
-import AiTextIcon from "@knime/styles/img/icons/ai-description.svg";
-
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
+import { KaiQuickActionId } from "@/store/ai/types";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
@@ -61,11 +62,15 @@ const annotationShortcuts: AnnotationShortcuts = {
   },
   generateAnnotation: {
     text: "Annotate with K-AI",
-    icon: AiTextIcon,
     execute: () => {
       useAiQuickActionsStore().generateAnnotation();
     },
     condition: () =>
+      useIsKaiEnabled().isKaiEnabled.value &&
+      useAIAssistantStore().hasUsageRemaining &&
+      useAiQuickActionsStore().availableQuickActions.includes(
+        KaiQuickActionId.generateAnnotation,
+      ) &&
       useSelectionStore().selectedNodeIds.length > 0 &&
       useWorkflowStore().isWritable,
   },

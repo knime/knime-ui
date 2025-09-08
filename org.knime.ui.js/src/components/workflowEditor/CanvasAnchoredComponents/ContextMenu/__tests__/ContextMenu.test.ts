@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
+import { nextTick, ref } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
 import { MenuItems } from "@knime/components";
@@ -14,8 +14,10 @@ import {
   TemplateLink,
 } from "@/api/gateway-api/generated-api";
 import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import type { ShortcutName, ShortcutsService } from "@/shortcuts";
+import { KaiQuickActionId } from "@/store/ai/types";
 import {
   createAvailablePortTypes,
   createComponentNode,
@@ -42,13 +44,20 @@ vi.mock("@/plugins/shortcuts", async (importOriginal) => {
   };
 });
 
+vi.mock("@/composables/useIsKaiEnabled");
+
 describe("ContextMenu.vue", () => {
   const createStores = (
     options: {
       allowedWorkflowActions?: Partial<AllowedWorkflowActions>;
       nodes?: Record<string, KnimeNode>;
+      isKaiEnabled?: boolean;
+      isGenerateAnnotationAvailable?: boolean;
     } = {},
   ) => {
+    const { isKaiEnabled = true, isGenerateAnnotationAvailable = true } =
+      options;
+
     const mockedStores = mockStores();
 
     mockedStores.applicationSettingsStore.hasClipboardSupport = true;
@@ -84,7 +93,17 @@ describe("ContextMenu.vue", () => {
     nodeOutputEl.id = "node-output";
     document.body.appendChild(nodeOutputEl);
 
-    return { mockedStores };
+    const isKaiEnabledRef = ref(isKaiEnabled);
+    vi.mocked(useIsKaiEnabled).mockReturnValue({
+      isKaiEnabled: isKaiEnabledRef,
+    });
+
+    mockedStores.aiQuickActionsStore.availableQuickActions =
+      isGenerateAnnotationAvailable
+        ? [KaiQuickActionId.generateAnnotation]
+        : [];
+
+    return { mockedStores, isKaiEnabledRef };
   };
 
   type MountOpts = {

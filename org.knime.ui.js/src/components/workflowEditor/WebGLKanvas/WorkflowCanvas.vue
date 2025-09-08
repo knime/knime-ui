@@ -13,6 +13,7 @@ import { sleep } from "@knime/utils";
 
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
+import { KaiQuickActionId } from "@/store/ai/types";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -33,17 +34,16 @@ import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 
 const aiQuickActions = useAiQuickActionsStore();
-const shouldShowSkeletonAnnotation = computed(() =>
-  aiQuickActions.isActionProcessing("generateAnnotation"),
-);
+const skeletonAnnotationBounds = computed(() => {
+  return aiQuickActions.actionsStates[KaiQuickActionId.generateAnnotation]
+    .bounds;
+});
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
 
-const { selectedNodeIds, getAnnotationBoundsForSelectedNodes } = storeToRefs(
-  useSelectionStore(),
-);
+const { selectedNodeIds } = storeToRefs(useSelectionStore());
 const { containerSize, shouldHideMiniMap, interactionsEnabled } =
   storeToRefs(canvasStore);
 const hasSelectedNodes = computed(() => selectedNodeIds.value.length > 0);
@@ -94,6 +94,8 @@ onMounted(() => {
   if (isWorkflowEmpty.value) {
     return;
   }
+
+  aiQuickActions.fetchAvailableQuickActions();
 
   onCanvasReady = async () => {
     const wasRestored =
@@ -210,8 +212,8 @@ const onEscape = async (event: KeyboardEvent) => {
     <FloatingNodeSelectionTools v-if="hasSelectedNodes" />
 
     <SkeletonAnnotation
-      v-if="shouldShowSkeletonAnnotation"
-      :bounds="getAnnotationBoundsForSelectedNodes"
+      v-if="skeletonAnnotationBounds"
+      :bounds="skeletonAnnotationBounds"
     />
 
     <svg

@@ -297,4 +297,21 @@ describe("workflow::annotationInteractions", () => {
       );
     });
   });
+
+  describe("calculating annotation bounds around node selection", () => {
+    it("returns default bounds when no nodes are selected", async () => {
+      const { selectionStore, annotationInteractionsStore } = mockStores();
+
+      await selectionStore.deselectAllObjects();
+
+      const bounds =
+        annotationInteractionsStore.getAnnotationBoundsForSelectedNodes;
+      expect(bounds).toEqual({
+        x: 0,
+        y: 0,
+        width: 80,
+        height: 80,
+      });
+    });
+  });
 });
