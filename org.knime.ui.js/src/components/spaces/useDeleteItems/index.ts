@@ -1,5 +1,4 @@
 import { type Ref, h, markRaw } from "vue";
-import { API } from "@api";
 import { useRouter } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
@@ -25,7 +24,8 @@ type UseDeleteItemsOptions = {
 
 export const useDeleteItems = (options: UseDeleteItemsOptions) => {
   const { deleteItems, getDeletionInfo } = useSpaceOperationsStore();
-  const { getProviderInfoFromProjectPath } = useSpaceProvidersStore();
+  const { getProviderInfoFromProjectPath, getRecycleBinUrl } =
+    useSpaceProvidersStore();
   const $router = useRouter();
 
   const { itemIconRenderer } = options;
@@ -94,10 +94,10 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
               icon: TrashIcon,
               text: "Show recycle bin",
               callback: () => {
-                API.desktop.openRecycleBinPage({
-                  spaceProviderId: spaceProvider!.id,
-                  group: groupName!,
-                });
+                const url = getRecycleBinUrl(spaceProvider!.id, groupName!);
+                if (url) {
+                  window.open(url);
+                }
               },
             },
           ],

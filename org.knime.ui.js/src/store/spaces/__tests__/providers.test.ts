@@ -439,4 +439,70 @@ describe("spaces::providers", () => {
       });
     });
   });
+
+  describe("getRecycleBinUrl", () => {
+    it("should return the recycle bin url", () => {
+      const { spaceProvidersStore } = loadStore();
+      const provider = createSpaceProvider({
+        id: "provider1",
+        hostname: "https://api.knime.com/hub",
+      });
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const url = spaceProvidersStore.getRecycleBinUrl(provider.id, "my-group");
+      expect(url).toBe("https://knime.com/hub/my-group/recycle-bin");
+    });
+
+    it("should return null if hostname does not start with api.", () => {
+      const { spaceProvidersStore } = loadStore();
+      const provider = createSpaceProvider({
+        id: "provider1",
+        hostname: "https://knime.com/hub",
+      });
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const url = spaceProvidersStore.getRecycleBinUrl(provider.id, "my-group");
+      expect(url).toBeNull();
+    });
+
+    it("should return null if provider has no hostname", () => {
+      const { spaceProvidersStore } = loadStore();
+      const provider = createSpaceProvider({
+        id: "provider1",
+        hostname: undefined,
+      });
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const url = spaceProvidersStore.getRecycleBinUrl(provider.id, "my-group");
+      expect(url).toBeNull();
+    });
+
+    it("should return null for invalid provider id", () => {
+      const { spaceProvidersStore } = loadStore();
+      const url = spaceProvidersStore.getRecycleBinUrl(
+        "invalid-provider",
+        "my-group",
+      );
+      expect(url).toBeNull();
+    });
+
+    it("should return null for invalid hostname url", () => {
+      const { spaceProvidersStore } = loadStore();
+      const provider = createSpaceProvider({
+        id: "provider1",
+        hostname: "invalid-url",
+      });
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+      const url = spaceProvidersStore.getRecycleBinUrl(provider.id, "my-group");
+      expect(url).toBeNull();
+    });
+  });
 });

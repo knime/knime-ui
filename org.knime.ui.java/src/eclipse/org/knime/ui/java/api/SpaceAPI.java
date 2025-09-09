@@ -474,39 +474,6 @@ final class SpaceAPI {
     }
 
     /**
-     * The following assumptions on the Hub service are made:
-     * <ul>
-     * <li>The endpoint is only called for Hub Space Providers which support the "recycle bin" feature in their webapp.
-     * Availability in the Modern UI frontend is controlled by SpaceGroup#canSoftDelete.</li>
-     * <li>The URI of the recycle bin in the Hub webapp is <hub-web-address>/<group-name>/recycle-bin where <group-name>
-     * is the name of the space group containing the item (since this controls whether soft delete is available).</li>
-     * </ul>
-     *
-     * @param spaceProviderId
-     * @param groupName
-     */
-    @API
-    static void openRecycleBinPage(final String spaceProviderId, final String groupName) {
-        final var provider = DesktopAPI.getSpaceProvider(spaceProviderId);
-        try {
-            var uriBuilder = new URIBuilder( //
-                provider.getServerAddress() //
-                    .orElseThrow(() -> new IllegalStateException("No server address known for this provider"))) //
-                .appendPath(groupName) //
-                .appendPath("recycle-bin");
-            if (uriBuilder.getHost().startsWith("api.")) {
-                uriBuilder.setHost(uriBuilder.getHost().substring(4));
-            } else {
-                throw new IllegalStateException(
-                    "Unexpected shape of provider server address. This most likely means the queried provider does not support this operation");
-            }
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(uriBuilder.build().toString(), EclipseUIAPI.class);
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException("openRecycleBinPage: Invalid URL constructed", e);
-        }
-    }
-
-    /**
      * Opens the API definition of a workflow (Swagger)
      *
      * @param spaceProviderId provider ID of the source space

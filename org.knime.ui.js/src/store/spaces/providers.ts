@@ -252,6 +252,36 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       return activeProjectProvider ?? null;
     },
 
+    getRecycleBinUrl: (state) => {
+      return (providerId: string, groupName: string): string | null => {
+        const provider = state.spaceProviders?.[providerId];
+        if (!provider?.hostname) {
+          return null;
+        }
+        try {
+          const url = new URL(provider.hostname);
+          if (url.hostname.startsWith("api.")) {
+            url.hostname = url.hostname.substring(4);
+          } else {
+            consola.error(
+              "Could not construct recycle bin URL: Unexpected provider hostname.",
+            );
+            return null;
+          }
+
+          const pathParts = url.pathname.split("/").filter((p) => p);
+          pathParts.push(groupName);
+          pathParts.push("recycle-bin");
+          url.pathname = `/${pathParts.join("/")}`;
+
+          return url.toString();
+        } catch (e) {
+          consola.error("Could not construct recycle bin URL", e);
+          return null;
+        }
+      };
+    },
+
     getCommunityHubInfo(state) {
       const communityHubProvider = Object.values(
         state.spaceProviders ?? {},
