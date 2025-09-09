@@ -185,8 +185,8 @@ const translatedPosition = computed(() => {
 const isWithinVisibleArea = computed(() => {
   const intersect = geometry.utils.rectangleIntersection(
     {
-      left: props.annotation.bounds.x,
-      top: props.annotation.bounds.y,
+      left: translatedPosition.value.x,
+      top: translatedPosition.value.y,
       width: props.annotation.bounds.width,
       height: props.annotation.bounds.height,
     },

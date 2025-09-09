@@ -255,8 +255,8 @@ export const useFloatingConnectorStore = defineStore(
           return;
         }
 
-        const { x, y } = pointerUpEvent;
-        if (isPointOutsideVisibleArea({ x, y })) {
+        const { clientX, clientY } = pointerUpEvent;
+        if (isPointOutsideVisibleArea({ x: clientX, y: clientY })) {
           removeActiveConnector();
           return;
         }

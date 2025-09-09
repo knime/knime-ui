@@ -1,7 +1,7 @@
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as shapes from "@/style/shapes";
 
-import type { GeometryArea, GeometryBounds } from "./types";
+import type { Edge, GeometryArea, GeometryBounds } from "./types";
 
 /**
  * Finds the intersection of A and B
@@ -122,4 +122,47 @@ export const isPointOutsideBounds = (
   return (
     point.x < bounds.x || point.x > xMax || point.y < bounds.y || point.y > yMax
   );
+};
+
+export const getEdgeNearPoint = (
+  point: XY,
+  bounds: XY & { width: number; height: number },
+  offset: number,
+): Edge | null => {
+  const minX = bounds.x + offset;
+  const maxX = bounds.x + bounds.width - offset;
+  const minY = bounds.y + offset;
+  const maxY = bounds.y + bounds.height - offset;
+
+  const nearLeft = point.x < minX;
+  const nearRight = point.x > maxX;
+  const nearTop = point.y < minY;
+  const nearBottom = point.y > maxY;
+
+  if (nearTop && nearRight) {
+    return "top-right";
+  }
+  if (nearBottom && nearRight) {
+    return "bottom-right";
+  }
+  if (nearBottom && nearLeft) {
+    return "bottom-left";
+  }
+  if (nearTop && nearLeft) {
+    return "top-left";
+  }
+  if (nearTop) {
+    return "top";
+  }
+  if (nearRight) {
+    return "right";
+  }
+  if (nearBottom) {
+    return "bottom";
+  }
+  if (nearLeft) {
+    return "left";
+  }
+
+  return null;
 };

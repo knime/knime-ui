@@ -3,6 +3,8 @@ import { Page, test } from "@playwright/test";
 
 import {
   assertSnapshot,
+  getAnnotation,
+  getCenter,
   getKanvasBoundingBox,
   getMinimapCoordinates,
   getNodePosition,
@@ -87,6 +89,137 @@ test.describe("panning", () => {
 
       await assertSnapshot(page);
     });
+  });
+
+  test("by dragging a node to the corner of the canvas (zoomed in)", async ({
+    page,
+  }) => {
+    await startApplication(page, {
+      workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
+    });
+
+    // Zoom in
+    await page.getByTestId("canvas-tool-zoom-in").click();
+    await page.getByTestId("canvas-tool-zoom-in").click();
+
+    const kanvasBox = await getKanvasBoundingBox(page);
+
+    // Drag a node near top-right corner of screen and hold until edge of canvas is reached
+    const [n1x, n1y] = await getNodePosition(page, "root:1");
+    await page.mouse.move(n1x, n1y);
+    await page.mouse.down();
+
+    const panDistance = 300;
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.move(
+        kanvasBox!.x + kanvasBox!.width - 30,
+        kanvasBox!.y + 30,
+      );
+    }
+
+    // Drag away from the corner and drop
+    await page.mouse.move(
+      kanvasBox!.x + kanvasBox!.width - 160,
+      kanvasBox!.y + 140,
+    );
+    await page.mouse.up();
+
+    await assertSnapshot(page);
+  });
+
+  test("by dragging an annotation to the corner of the canvas (zoomed out)", async ({
+    page,
+  }) => {
+    await startApplication(page, {
+      workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
+    });
+
+    // Zoom out
+    await page.getByTestId("canvas-tool-zoom-out").click();
+    await page.getByTestId("canvas-tool-zoom-out").click();
+
+    const kanvasBox = await getKanvasBoundingBox(page);
+
+    // Drag an annotation near top-left corner of screen and hold until edge of canvas is reached
+    const annotation = await getAnnotation(page, "root_0");
+    await page.mouse.click(...getCenter(annotation));
+    await page.mouse.move(...getCenter(annotation));
+    await page.mouse.down();
+    const panDistance = 300;
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.move(kanvasBox!.x + 20, kanvasBox!.y + 20);
+    }
+
+    // Drop
+    await page.mouse.up();
+
+    await assertSnapshot(page);
+  });
+
+  test("by dragging a bendpoint to the edge of the canvas", async ({
+    page,
+  }) => {
+    await startApplication(page, {
+      workflowFixturePath:
+        "connections/getWorkflow-connection-interactions.json",
+    });
+
+    const kanvasBox = await getKanvasBoundingBox(page);
+
+    // Drag a bendpoint near left edge of screen and hold until edge of canvas is reached
+    const { x, y } = { x: kanvasBox!.x + 410, y: kanvasBox!.y + 180 };
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    const panDistance = 300;
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.move(kanvasBox!.x + 20, y);
+    }
+
+    // Drop
+    await page.mouse.up();
+
+    await assertSnapshot(page);
+  });
+
+  test("by dragging a mix of nodes and annotations to the edge of the canvas", async ({
+    page,
+  }) => {
+    await start(page);
+
+    const kanvasBox = await getKanvasBoundingBox(page);
+
+    // Select annotation
+    const annotation = await getAnnotation(page, "root_3");
+    await page.mouse.click(annotation.center.x, annotation.center.y - 100);
+
+    // Multiselect some nodes as well
+    const [n1x, n1y] = await getNodePosition(page, "root:19");
+    await page.mouse.move(n1x - 50, n1y - 50);
+    await page.keyboard.down("Shift");
+    await page.mouse.down();
+    await page.mouse.move(n1x + 210, n1y + 80);
+    await page.mouse.up();
+    await page.keyboard.up("Shift");
+
+    // Drag selected objects near bottom edge of screen and hold until edge of canvas is reached
+    await page.mouse.move(annotation.center.x, annotation.center.y - 100);
+    await page.mouse.down();
+    const panDistance = 300;
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.move(
+        annotation.center.x,
+        kanvasBox!.y + kanvasBox!.height - 20,
+      );
+    }
+
+    // Drag away from the edge, drop
+    await page.mouse.move(
+      annotation.center.x,
+      kanvasBox!.y + kanvasBox!.height - 300,
+    );
+    await page.mouse.up();
+
+    await assertSnapshot(page);
   });
 });
 

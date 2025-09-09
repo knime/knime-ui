@@ -17,6 +17,11 @@ import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 import {
+  type PanningToEdgeUpdateHandler,
+  getPanAdjustedDelta,
+  useDragNearEdgePanning,
+} from "../kanvas/useDragNearEdgePanning";
+import {
   markEscapeAsHandled,
   markPointerEventAsHandled,
 } from "../util/interaction";
@@ -203,6 +208,8 @@ export const useObjectInteractions = (
     isDragging,
     isSelectionDelayedUntilDragCompletes,
   } = storeToRefs(movingStore);
+
+  const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 
   const { isPointerDownDoubleClick } = usePointerDownDoubleClick();
 
@@ -458,6 +465,20 @@ export const useObjectInteractions = (
         return;
       }
 
+      const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
+        edge,
+        isAtEdge,
+      }) => {
+        const movePreview = getPanAdjustedDelta(
+          edge,
+          movingStore.movePreviewDelta,
+          isAtEdge,
+        );
+        movingStore.setMovePreview(movePreview);
+      };
+
+      startPanningToEdge(pointerMoveEvent, onPanningToEdgeUpdate);
+
       options.onMove?.(pointerMoveEvent);
       movingStore.setIsDragging(true);
       movingStore.setMovePreview({ deltaX, deltaY });
@@ -468,6 +489,8 @@ export const useObjectInteractions = (
         consola.debug("object interaction:: drag completed", {
           objectMetadata,
         });
+
+        stopPanningToEdge();
 
         objectHandler.selectObject();
         onMoveEnd().then(async ({ shouldMove }) => {

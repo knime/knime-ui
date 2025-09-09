@@ -20,7 +20,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { isPointOutsideBounds } from "@/util/geometry/utils";
+import { getEdgeNearPoint, isPointOutsideBounds } from "@/util/geometry/utils";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
@@ -285,44 +285,53 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     );
   });
 
-  const setCanvasOffset = (value: XY) => {
-    useWorkflowStore().setTooltip(null);
-
-    const minX = maxWorldContentBounds.value.left * zoomFactor.value;
-    const minY = maxWorldContentBounds.value.top * zoomFactor.value;
-
-    const maxX =
+  const canvasOffsetBoundary = computed(() => ({
+    left: maxWorldContentBounds.value.left * zoomFactor.value,
+    top: maxWorldContentBounds.value.top * zoomFactor.value,
+    right:
       (maxWorldContentBounds.value.right -
         containerSize.value.width / zoomFactor.value) *
-      zoomFactor.value;
-
-    const maxY =
+      zoomFactor.value,
+    bottom:
       (maxWorldContentBounds.value.bottom -
         containerSize.value.height / zoomFactor.value) *
-      zoomFactor.value;
+      zoomFactor.value,
+  }));
+
+  const isAtCanvasOffsetBoundaryAxis = computed(() => ({
+    x:
+      -canvasOffset.value.x <= canvasOffsetBoundary.value.left ||
+      -canvasOffset.value.x >= canvasOffsetBoundary.value.right,
+    y:
+      -canvasOffset.value.y <= canvasOffsetBoundary.value.top ||
+      -canvasOffset.value.y >= canvasOffsetBoundary.value.bottom,
+  }));
+
+  const setCanvasOffset = (value: XY) => {
+    useWorkflowStore().setTooltip(null);
 
     // make sure panning is not possible outside the max content bounds
     // to ensure consistent and predictable minimap coordinate mapping
 
     const newX = (() => {
-      if (-value.x <= minX) {
-        return -minX;
+      if (-value.x <= canvasOffsetBoundary.value.left) {
+        return -canvasOffsetBoundary.value.left;
       }
 
-      if (-value.x >= maxX) {
-        return -maxX;
+      if (-value.x >= canvasOffsetBoundary.value.right) {
+        return -canvasOffsetBoundary.value.right;
       }
 
       return value.x;
     })();
 
     const newY = (() => {
-      if (-value.y <= minY) {
-        return -minY;
+      if (-value.y <= canvasOffsetBoundary.value.top) {
+        return -canvasOffsetBoundary.value.top;
       }
 
-      if (-value.y >= maxY) {
-        return -maxY;
+      if (-value.y >= canvasOffsetBoundary.value.bottom) {
+        return -canvasOffsetBoundary.value.bottom;
       }
 
       return value.y;
@@ -479,6 +488,12 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     const [x, y] = screenToCanvasCoordinates.value([point.x, point.y]);
     const visibleArea = calculateVisibleArea();
     return isPointOutsideBounds({ x, y }, visibleArea);
+  };
+
+  const getVisibleAreaEdgeNearPoint = (point: XY) => {
+    const [x, y] = screenToCanvasCoordinates.value([point.x, point.y]);
+    const visibleArea = calculateVisibleArea();
+    return getEdgeNearPoint({ x, y }, visibleArea, 35);
   };
 
   const getVisibleFrame = computed(() => {
@@ -772,6 +787,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasOffset,
     visibleArea,
     isPointOutsideVisibleArea,
+    getVisibleAreaEdgeNearPoint,
     removeLayers,
     setCanvasOffset,
     setCanvasAnchor,
@@ -782,6 +798,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     isPanning,
     isHoldingDownSpace,
     maxWorldContentBounds,
+    isAtCanvasOffsetBoundaryAxis,
     zoomAwareResolution,
   };
 });

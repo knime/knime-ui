@@ -4,6 +4,8 @@ import { storeToRefs } from "pinia";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
 import { geometry } from "@/util/geometry";
 import { getBezier } from "../../util/connectorPath";
 
@@ -47,6 +49,8 @@ const getBoundingBox = (start: XY, ctrl1: XY, ctrl2: XY, end: XY) => {
 
 export const useConnectorCulling = (options: UseConnectorCullingOptions) => {
   const { visibleArea } = storeToRefs(useWebGLCanvasStore());
+  const { isDragging } = storeToRefs(useMovingStore());
+  const selectionStore = useSelectionStore();
 
   // use a connector without bendpoints by just creating a bezier from start to end
   const { start, end } = useConnectorPosition(options);
@@ -71,6 +75,15 @@ export const useConnectorCulling = (options: UseConnectorCullingOptions) => {
   // the visible area of the WF and an AABB that was created based on the points of the
   // bezier curve that describe the connector
   const renderable = computed(() => {
+    const isAffectedByDrag =
+      isDragging.value &&
+      (selectionStore.isNodeSelected(options.sourceNode.value ?? "") ||
+        selectionStore.isNodeSelected(options.destNode.value ?? ""));
+
+    if (isAffectedByDrag) {
+      return true;
+    }
+
     const intersect = geometry.utils.rectangleIntersection(boundingBox.value, {
       left: visibleArea.value.x,
       top: visibleArea.value.y,

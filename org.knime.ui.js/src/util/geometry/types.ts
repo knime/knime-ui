@@ -9,3 +9,13 @@ export type GeometryBounds = {
   right?: number;
   bottom?: number;
 } & GeometryArea;
+
+export type Edge =
+  | "top"
+  | "top-right"
+  | "right"
+  | "bottom-right"
+  | "bottom"
+  | "bottom-left"
+  | "left"
+  | "top-left";

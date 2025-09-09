@@ -13,10 +13,15 @@ import * as $colors from "@/style/colors";
 import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { findObjectsForSelection } from "../../util/findObjectsForSelection";
+import {
+  type PanningToEdgeUpdateHandler,
+  useDragNearEdgePanning,
+} from "../kanvas/useDragNearEdgePanning";
 
 const canvasStore = useWebGLCanvasStore();
 const { zoomFactor, canvasOffset } = storeToRefs(canvasStore);
-const { isDragging } = storeToRefs(useMovingStore());
+const movingStore = useMovingStore();
+const { isDragging } = storeToRefs(movingStore);
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const selectionStore = useSelectionStore();
 
@@ -33,6 +38,8 @@ const nodeIdsToDeselectOnEnd = ref<string[]>([]);
 const selectedAnnotationIdsAtStart = ref<string[]>([]);
 const annotationIdsToSelectOnEnd = ref<string[]>([]);
 const annotationIdsToDeselectOnEnd = ref<string[]>([]);
+
+const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 
 let selectionPointerId: number | undefined;
 
@@ -166,6 +173,19 @@ const onSelectionStart = (event: PointerEvent) => {
   updateSelectionPreview();
 };
 
+const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
+  offset,
+  isAtEdge,
+}) => {
+  if (!isAtEdge.x) {
+    endPos.value.x -= offset.x;
+  }
+  if (!isAtEdge.y) {
+    endPos.value.y -= offset.y;
+  }
+  updateSelectionPreview();
+};
+
 const onSelectionMove = (event: PointerEvent) => {
   if (
     !isSelectionVisible.value ||
@@ -178,6 +198,8 @@ const onSelectionMove = (event: PointerEvent) => {
   if (canvasStore.interactionsEnabled === "all") {
     canvasStore.setInteractionsEnabled("none");
   }
+
+  startPanningToEdge(event, onPanningToEdgeUpdate);
 
   const { offsetX, offsetY } = event;
 
@@ -196,6 +218,8 @@ const onSelectionEnd = async (event: PointerEvent) => {
   consola.debug("global rectangle selection:: end", { event });
   startPos.value = { x: 0, y: 0 };
   endPos.value = { x: 0, y: 0 };
+
+  stopPanningToEdge();
 
   selectionStore.deselectAllPreselectedObjects();
   selectionStore.setPreselectionMode(false);
