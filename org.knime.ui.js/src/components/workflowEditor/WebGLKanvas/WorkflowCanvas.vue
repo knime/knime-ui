@@ -32,8 +32,11 @@ import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+const canvasStore = useWebGLCanvasStore();
 
 const { selectedNodeIds } = storeToRefs(useSelectionStore());
+const { containerSize, shouldHideMiniMap, interactionsEnabled } =
+  storeToRefs(canvasStore);
 const hasSelectedNodes = computed(() => selectedNodeIds.value.length > 0);
 
 const openQuickActionMenu = (event: PointerEvent) => {
@@ -41,7 +44,7 @@ const openQuickActionMenu = (event: PointerEvent) => {
     return;
   }
 
-  const [x, y] = useWebGLCanvasStore().screenToCanvasCoordinates([
+  const [x, y] = canvasStore.screenToCanvasCoordinates([
     event.clientX,
     event.clientY,
   ]);
@@ -58,18 +61,16 @@ const { isPointerDownDoubleClick } = usePointerDownDoubleClick({
 });
 
 const onPointerDown = (event: PointerEvent) => {
-  if (isPointerDownDoubleClick(event)) {
+  if (isPointerDownDoubleClick(event) && interactionsEnabled.value === "all") {
     // Prevent the kanvas from stealing focus from quick action menu
     event.preventDefault();
     openQuickActionMenu(event);
   }
 };
 
-let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
-const canvasStore = useWebGLCanvasStore();
-const { containerSize, shouldHideMiniMap } = storeToRefs(canvasStore);
-
-let onCanvasReady: () => void;
+let resizeObserver: ResizeObserver,
+  stopResizeObserver: () => void,
+  onCanvasReady: () => void;
 
 const workflowEmptyViewBox = computed(() =>
   [

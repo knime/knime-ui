@@ -5,10 +5,12 @@ import throttle from "raf-throttle";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
 
+import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSelectionStore } from "@/store/selection";
 import { isInputElement } from "@/util/isInputElement";
 
 import { useArrowKeyMoving } from "./useArrowKeyMoving";
+import { useArrowKeyPanning } from "./useArrowKeyPanning";
 import { useArrowKeySelection } from "./useArrowKeySelection";
 import { useInitialSelection } from "./useInitialSelection";
 
@@ -32,6 +34,10 @@ export const useArrowKeyNavigation = (
     rootEl: options.rootEl,
   });
   const { handleInitialSelection } = useInitialSelection();
+
+  const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
+
+  const { handlePanning } = useArrowKeyPanning();
 
   const { selectedObjects, getFocusedObject, activeNodePorts } = storeToRefs(
     useSelectionStore(),
@@ -89,6 +95,12 @@ export const useArrowKeyNavigation = (
     ].includes(event.key);
 
     if (isArrowKey && shouldNavigate(event)) {
+      // in pan mode we should pan with arrow keys
+      if (hasPanModeEnabled.value) {
+        handlePanning(event);
+        return;
+      }
+
       // no objects are selected and no modifiers are used and nothing is focused -> initial selection
       if (isInitialSelectionEvent(event)) {
         await handleInitialSelection(event);

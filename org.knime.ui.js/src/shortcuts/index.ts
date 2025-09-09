@@ -54,13 +54,16 @@ const shortcuts: ShortcutsRegistry = {
         executionShortcuts,
       ),
       ...conditionGroup(
-        () => Boolean(useCurrentCanvasStore().value.interactionsEnabled),
+        () =>
+          useCurrentCanvasStore().value.interactionsEnabled === "all" ||
+          useCurrentCanvasStore().value.interactionsEnabled === true,
         selectionShortcuts,
       ),
       ...conditionGroup(
         () =>
           Boolean(
-            useCurrentCanvasStore().value.interactionsEnabled &&
+            (useCurrentCanvasStore().value.interactionsEnabled === "all" ||
+              useCurrentCanvasStore().value.interactionsEnabled === true) &&
               !useWorkflowStore().isWorkflowEmpty,
           ),
         canvasShortcuts,

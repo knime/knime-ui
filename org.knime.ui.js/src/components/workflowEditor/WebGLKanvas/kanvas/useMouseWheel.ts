@@ -29,7 +29,7 @@ export const useMouseWheel = (options: UseMouseWheelOptions) => {
   });
 
   const onMouseWheel = (event: WheelEvent) => {
-    if (!interactionsEnabled.value || isWorkflowEmpty.value) {
+    if (interactionsEnabled.value === "none" || isWorkflowEmpty.value) {
       return;
     }
 

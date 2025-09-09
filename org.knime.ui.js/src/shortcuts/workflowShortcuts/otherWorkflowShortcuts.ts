@@ -7,6 +7,7 @@ import SelectionModeIcon from "@/assets/selection-mode.svg";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
@@ -126,6 +127,9 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
             : ("pan" as const);
 
         canvasModesStore.switchCanvasMode(action);
+        useWebGLCanvasStore().setInteractionsEnabled(
+          canvasModesStore.canvasMode === "pan" ? "camera-only" : "all",
+        );
       } else {
         canvasModesStore.switchCanvasMode("pan");
       }

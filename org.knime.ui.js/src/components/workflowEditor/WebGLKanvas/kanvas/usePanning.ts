@@ -103,7 +103,10 @@ export const useCanvasPanning = ({
         hasMoved.value = true;
 
         // prevent interaction with other canvas objects while in the panning state
-        canvasStore.setInteractionsEnabled(false);
+        if (canvasStore.interactionsEnabled === "all") {
+          canvasStore.setInteractionsEnabled("none");
+        }
+
         canvasStore.setCanvasOffset({
           x:
             stage.value.x +
@@ -137,7 +140,12 @@ export const useCanvasPanning = ({
       const isUnhandledEvent = !pointerUpEvent.dataset;
       // show global context menu if we did not move
       // right click on other objects should prevent the event so its not getting here (see mousePan)
-      if (!hasMoved.value && isMouseRightClick && isUnhandledEvent) {
+      if (
+        !hasMoved.value &&
+        isMouseRightClick &&
+        isUnhandledEvent &&
+        canvasStore.interactionsEnabled === "all"
+      ) {
         hasMoved.value = false;
 
         const { wasAborted } = await useSelectionStore().deselectAllObjects();
@@ -147,7 +155,9 @@ export const useCanvasPanning = ({
         await toggleContextMenu({ event: pointerUpEvent });
       }
 
-      canvasStore.setInteractionsEnabled(true);
+      if (canvasStore.interactionsEnabled === "none") {
+        canvasStore.setInteractionsEnabled("all");
+      }
       hasMoved.value = false;
     };
 

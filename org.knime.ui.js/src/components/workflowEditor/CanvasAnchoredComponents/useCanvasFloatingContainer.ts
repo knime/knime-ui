@@ -6,6 +6,7 @@ import type { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useMovingStore } from "@/store/workflow/moving";
+import { useCanvasRendererUtils } from "../util/canvasRenderer";
 
 /**
  * Common properties of a FloatingMenu implementation, regardless of which
@@ -28,14 +29,15 @@ export type FloatingContainerProperties = {
   focusTrap?: boolean;
 };
 
+type WebGlCanvasStore = ReturnType<typeof useWebGLCanvasStore>;
+type SVGCanvasStore = ReturnType<typeof useSVGCanvasStore>;
+
 type UseCanvasFloatingContainerOptions = {
   rootEl: MaybeElementRef<HTMLElement | undefined>;
   closeMenu: () => void;
   disableInteractions?: boolean;
   closeOnEscape?: boolean;
-  canvasStore?: ReturnType<
-    typeof useSVGCanvasStore | typeof useWebGLCanvasStore
-  >;
+  canvasStore?: WebGlCanvasStore | SVGCanvasStore;
 };
 
 export const useCanvasFloatingContainer = (
@@ -69,7 +71,11 @@ export const useCanvasFloatingContainer = (
 
   onMounted(() => {
     if (disableInteractions && canvasStore) {
-      canvasStore.setInteractionsEnabled(false);
+      if (useCanvasRendererUtils().isSVGRenderer.value) {
+        (canvasStore as SVGCanvasStore).setInteractionsEnabled(false);
+      } else {
+        (canvasStore as WebGlCanvasStore).setInteractionsEnabled("none");
+      }
     }
   });
 
@@ -85,7 +91,11 @@ export const useCanvasFloatingContainer = (
 
   onBeforeUnmount(() => {
     if (canvasStore) {
-      canvasStore.setInteractionsEnabled(true);
+      if (useCanvasRendererUtils().isSVGRenderer.value) {
+        (canvasStore as SVGCanvasStore).setInteractionsEnabled(true);
+      } else {
+        (canvasStore as WebGlCanvasStore).setInteractionsEnabled("all");
+      }
     }
   });
 };

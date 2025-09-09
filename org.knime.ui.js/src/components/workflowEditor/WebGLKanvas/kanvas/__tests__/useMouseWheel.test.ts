@@ -26,11 +26,11 @@ describe("useMouseWheel", () => {
 
   const doMount = ({
     scrollToZoomEnabled = false,
-    interactionsEnabled = true,
+    interactionsEnabled = "all",
     isWorkflowEmpty = false,
   }: {
     scrollToZoomEnabled?: boolean;
-    interactionsEnabled?: boolean;
+    interactionsEnabled?: "all" | "none" | "camera-only";
     isWorkflowEmpty?: boolean;
   }) => {
     const mockedStores = mockStores();
@@ -82,7 +82,7 @@ describe("useMouseWheel", () => {
     it("should not do anything when interactions are disabled", async () => {
       const { getComposableResult, mockedStores } = doMount({
         scrollToZoomEnabled: true,
-        interactionsEnabled: false,
+        interactionsEnabled: "none",
       });
       const { onMouseWheel } = getComposableResult();
 

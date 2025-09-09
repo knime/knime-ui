@@ -10,10 +10,10 @@ export const usePauseCanvasInteractions = () => {
   const canvasStore = useWebGLCanvasStore();
 
   onMounted(() => {
-    canvasStore.setInteractionsEnabled(false);
+    canvasStore.setInteractionsEnabled("none");
   });
 
   onUnmounted(() => {
-    canvasStore.setInteractionsEnabled(true);
+    canvasStore.setInteractionsEnabled("all");
   });
 };

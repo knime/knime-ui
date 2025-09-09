@@ -102,10 +102,10 @@ describe("WebGL canvas store", () => {
 
   it("setInteractionsEnabled", () => {
     const { canvasStore } = createStore();
-    expect(canvasStore.interactionsEnabled).toBe(true);
+    expect(canvasStore.interactionsEnabled).toBe("all");
 
-    canvasStore.setInteractionsEnabled(false);
-    expect(canvasStore.interactionsEnabled).toBe(false);
+    canvasStore.setInteractionsEnabled("none");
+    expect(canvasStore.interactionsEnabled).toBe("none");
   });
 
   it("setIsMoveLocked", () => {

@@ -254,6 +254,7 @@ describe("usePanning", () => {
 
       const { getComposableResult, mockedStores, mockedCanvas } = doMount();
       const { mousePan } = getComposableResult();
+      mockedStores.webglCanvasStore.setInteractionsEnabled("all");
 
       const pointerDownEvent = createPointerEvent("pointerdown", {
         offsetX: 100,
@@ -281,7 +282,7 @@ describe("usePanning", () => {
       ).toHaveBeenCalledWith({ x: 120, y: 120 });
       expect(
         mockedStores.webglCanvasStore.setInteractionsEnabled,
-      ).toHaveBeenCalledWith(false);
+      ).toHaveBeenCalledWith("none");
     });
 
     it("should stop panning on pointer up", async () => {
@@ -293,6 +294,8 @@ describe("usePanning", () => {
 
       const { getComposableResult, mockedStores, mockedCanvas } = doMount();
       const { mousePan } = getComposableResult();
+
+      mockedStores.webglCanvasStore.setInteractionsEnabled("none");
 
       const pointerDownEvent = createPointerEvent("pointerdown", {
         target: mockTarget,
@@ -314,7 +317,7 @@ describe("usePanning", () => {
       expect(mockedStores.webglCanvasStore.isPanning).toBe(false);
       expect(
         mockedStores.webglCanvasStore.setInteractionsEnabled,
-      ).toHaveBeenCalledWith(true);
+      ).toHaveBeenCalledWith("all");
       expect(mockTarget.releasePointerCapture).toHaveBeenCalledWith(1);
       expect(mockedCanvas.removeEventListener).toHaveBeenCalledWith(
         "pointermove",

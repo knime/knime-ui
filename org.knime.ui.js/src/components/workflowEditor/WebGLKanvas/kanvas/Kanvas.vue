@@ -128,7 +128,7 @@ const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
 
 const isGrabbing = ref(false);
 const onPointerDown = (event: PointerEvent) => {
-  if (!interactionsEnabled.value) {
+  if (interactionsEnabled.value === "none") {
     return;
   }
 
@@ -137,7 +137,7 @@ const onPointerDown = (event: PointerEvent) => {
   if (
     !isHoldingDownSpace.value &&
     isMouseLeftClick &&
-    !hasPanModeEnabled.value
+    interactionsEnabled.value === "all"
   ) {
     $bus.emit("selection-pointerdown", event);
     return;
@@ -203,7 +203,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     <Container
       ref="mainContainer"
       :label="MAIN_CONTAINER_LABEL"
-      :event-mode="interactionsEnabled ? undefined : 'none'"
+      :event-mode="interactionsEnabled === 'all' ? undefined : 'none'"
     >
       <Debug :visible="isCanvasDebugEnabled" />
       <slot />

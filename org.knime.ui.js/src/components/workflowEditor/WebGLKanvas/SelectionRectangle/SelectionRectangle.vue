@@ -85,7 +85,7 @@ const updateSelectionPreview = () => {
   );
 
   selectionStore.setPreselectionMode(true);
-  canvasStore.setInteractionsEnabled(false);
+
   selectionStore.deselectAllPreselectedObjects();
   selectionStore.preselectNodes(calculateNodeSelection());
   selectionStore.preselectAnnotations(calculateAnnotationSelection());
@@ -129,7 +129,7 @@ const onSelectionStart = (event: PointerEvent) => {
   if (
     event.dataset?.skipGlobalSelection ||
     isDragging.value ||
-    !canvasStore.interactionsEnabled
+    canvasStore.interactionsEnabled === "none"
   ) {
     isSelectionVisible.value = false;
     return;
@@ -151,7 +151,6 @@ const onSelectionStart = (event: PointerEvent) => {
   };
 
   selectionStore.setPreselectionMode(true);
-  canvasStore.setInteractionsEnabled(false);
 
   inverseMode.value = event.shiftKey || event.ctrlKey || event.metaKey;
   if (inverseMode.value) {
@@ -176,6 +175,10 @@ const onSelectionMove = (event: PointerEvent) => {
     return;
   }
 
+  if (canvasStore.interactionsEnabled === "all") {
+    canvasStore.setInteractionsEnabled("none");
+  }
+
   const { offsetX, offsetY } = event;
 
   endPos.value = {
@@ -187,13 +190,16 @@ const onSelectionMove = (event: PointerEvent) => {
 };
 
 const onSelectionEnd = async (event: PointerEvent) => {
+  if (!selectionPointerId) {
+    return;
+  }
   consola.debug("global rectangle selection:: end", { event });
   startPos.value = { x: 0, y: 0 };
   endPos.value = { x: 0, y: 0 };
 
   selectionStore.deselectAllPreselectedObjects();
   selectionStore.setPreselectionMode(false);
-  canvasStore.setInteractionsEnabled(true);
+  canvasStore.setInteractionsEnabled("all");
 
   if (
     event.dataset?.skipGlobalSelection ||

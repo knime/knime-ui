@@ -5,6 +5,7 @@ import {
   assertSnapshot,
   getKanvasBoundingBox,
   getMinimapCoordinates,
+  getNodePosition,
   startApplication,
 } from "../utils";
 
@@ -65,6 +66,27 @@ test.describe("panning", () => {
     await page.mouse.move(startX + 300, startY - 300);
     await page.mouse.up();
     await assertSnapshot(page);
+  });
+
+  const mouseButtons = ["left", "right", "middle"] as const;
+  mouseButtons.forEach((button) => {
+    test(`pan mode, pan with ${button} mouse button`, async ({ page }) => {
+      await startApplication(page, {
+        workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
+        withMouseCursor: true,
+      });
+
+      await page.getByTestId("canvas-tool-pan-mode").click();
+
+      const [nodeX, nodeY] = await getNodePosition(page, "root:1");
+
+      await page.mouse.move(nodeX, nodeY);
+      await page.mouse.down({ button });
+      await page.mouse.move(nodeX + 300, nodeY - 300);
+      await page.mouse.up();
+
+      await assertSnapshot(page);
+    });
   });
 });
 

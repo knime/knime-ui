@@ -62,11 +62,13 @@ const zoomToResolution = (zoomFactor: number) => {
  * coordinate transformations for the Kanvas component.
  */
 
+type InteractionsEnabled = "all" | "none" | "camera-only";
+
 export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const zoomFactor = ref(defaultZoomFactor);
   /** Size of the element that contains the <canvas> */
   const containerSize = ref({ width: 0, height: 0 });
-  const interactionsEnabled = ref(true);
+  const interactionsEnabled = ref<InteractionsEnabled>("all");
   const pixelRatio = ref(1);
   const isPanning = ref(false);
   const isHoldingDownSpace = ref(false);
@@ -150,8 +152,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     containerSize.value.height = height;
   };
 
-  const setInteractionsEnabled = (enabled: boolean) => {
-    interactionsEnabled.value = enabled;
+  const setInteractionsEnabled = (value: InteractionsEnabled) => {
+    interactionsEnabled.value = value;
   };
 
   const setIsMoveLocked = (locked: boolean) => {
