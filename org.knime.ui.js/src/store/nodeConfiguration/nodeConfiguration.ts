@@ -171,6 +171,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
 
       if (isApplied && execute) {
         await useExecutionStore().executeNodes([nodeId]);
+        this.updateTimestamp();
       }
 
       return isApplied;
