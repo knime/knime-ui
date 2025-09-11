@@ -556,11 +556,6 @@ describe("layoutEditor", () => {
         JSON.stringify(initialConfigurationNodes),
       );
 
-      const fillConfigurationLayoutSpy = vi.spyOn(
-        layoutEditorUtils,
-        "fillConfigurationLayout",
-      );
-
       const { layoutEditorStore, applicationStore, nodeTemplatesStore } =
         setupStore();
       applicationStore.setAvailablePortTypes(createAvailablePortTypes());
@@ -586,24 +581,44 @@ describe("layoutEditor", () => {
       expect(
         mockedAPI.componenteditor.getConfigurationNodes,
       ).toHaveBeenCalledExactlyOnceWith(workflow);
-      expect(fillConfigurationLayoutSpy).toHaveBeenCalledTimes(
-        initialConfigurationNodes.length,
-      );
+
       expect(layoutEditorStore.layout).toEqual(
         layoutEditorUtils.cleanLayout(initialLayout),
       );
       expect(layoutEditorStore.nodes).toEqual(initialNodes);
-      expect(layoutEditorStore.configurationLayout).toEqual(
-        initialConfigurationNodes.reduce(
-          layoutEditorUtils.fillConfigurationLayout,
-          initialConfigurationLayout,
-        ),
-      );
+      expect(layoutEditorStore.configurationLayout).toEqual({
+        rows: [
+          {
+            columns: [{ content: [{ nodeID: "1", type: "configuration" }] }],
+            type: "row",
+          },
+          {
+            columns: [{ content: [{ nodeID: "7", type: "configuration" }] }],
+            type: "row",
+          },
+          {
+            columns: [{ content: [{ nodeID: "2", type: "configuration" }] }],
+            type: "row",
+          },
+          {
+            columns: [{ content: [{ nodeID: "9", type: "configuration" }] }],
+            type: "row",
+          },
+          {
+            columns: [{ content: [{ nodeID: "10", type: "configuration" }] }],
+            type: "row",
+          },
+          {
+            columns: [{ content: [{ nodeID: "12", type: "configuration" }] }],
+            type: "row",
+          },
+        ],
+      });
       expect(layoutEditorStore.configurationNodes).toEqual(
         initialConfigurationNodes,
       );
       expect(nodeTemplatesStore.getNodeTemplates).toHaveBeenCalledWith({
-        nodeTemplateIds,
+        nodeTemplateIds: nodeTemplateIds.filter(Boolean),
       });
     });
   });
@@ -663,6 +678,26 @@ describe("layoutEditor", () => {
         ...workflow,
         componentConfigurationLayout: expect.any(String),
       });
+    });
+  });
+
+  describe("close", () => {
+    it("resets state", () => {
+      const { layoutEditorStore } = setupStore();
+      layoutEditorStore.advancedEditorData.dirty = true;
+      layoutEditorStore.advancedEditorData.validity = "invalid";
+      layoutEditorStore.advancedEditorData.contentDraft = '{ "foo": "bar" }';
+      layoutEditorStore.setLayoutContext({
+        nodeId: "n1",
+        projectId: "p1",
+        workflowId: "wf1",
+      });
+
+      layoutEditorStore.close();
+      expect(layoutEditorStore.layoutContext).toBeNull();
+      expect(layoutEditorStore.advancedEditorData.dirty).toBe(false);
+      expect(layoutEditorStore.advancedEditorData.validity).toBe("valid");
+      expect(layoutEditorStore.advancedEditorData.contentDraft).toBeNull();
     });
   });
 });

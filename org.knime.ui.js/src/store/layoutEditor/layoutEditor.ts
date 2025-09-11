@@ -21,6 +21,7 @@ import {
   type LayoutEditorRowItem,
   type LayoutEditorViewItem,
   type LayoutEditorViewLayout,
+  type LayoutEditorViewNode,
   type ResizeColumnInfo,
   type RowElementTemplate,
   isViewItem,
@@ -35,8 +36,20 @@ import {
   getEmptyLayout,
 } from "./utils";
 
+type AdvancedEditorView = {
+  contentDraft: string | null;
+  validity: "checking" | "valid" | "invalid";
+  dirty: boolean;
+};
+
 export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   const { toastPresets } = getToastPresets();
+
+  const advancedEditorData = ref<AdvancedEditorView>({
+    contentDraft: null,
+    validity: "valid",
+    dirty: false,
+  });
 
   const layoutContext = ref<LayoutContext>(null);
 
@@ -393,25 +406,29 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     try {
       const viewLayout = JSON.parse(
         await API.componenteditor.getViewLayout(layoutContext.value),
-      );
+      ) as LayoutEditorViewLayout;
+
       const viewNodes = JSON.parse(
         await API.componenteditor.getViewNodes(layoutContext.value),
-      );
+      ) as LayoutEditorViewNode[];
+
       const configurationLayout = JSON.parse(
         await API.componenteditor.getConfigurationLayout(layoutContext.value),
-      );
+      ) as Partial<ConfigurationLayout>;
+
       const configurationNodes = JSON.parse(
         await API.componenteditor.getConfigurationNodes(layoutContext.value),
-      );
+      ) as ConfigurationLayoutEditorNode[];
 
-      const nodeTemplateIds = [...viewNodes, ...configurationNodes].map(
-        (node) => node.templateId,
-      );
+      const nodeTemplateIds = [...viewNodes, ...configurationNodes]
+        .map((node) => node.templateId)
+        .filter((templateId): templateId is string => Boolean(templateId));
+
       await useNodeTemplatesStore().getNodeTemplates({ nodeTemplateIds });
 
-      const filledConfigurationLayout = configurationNodes.reduce(
-        fillConfigurationLayout,
+      const filledConfigurationLayout = fillConfigurationLayout(
         configurationLayout,
+        configurationNodes,
       );
 
       setLayout(viewLayout);
@@ -421,6 +438,15 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     } catch (error) {
       toastPresets.workflow.layoutEditor.loadLayoutAndNodes({ error });
     }
+  };
+
+  const close = () => {
+    setLayoutContext(null);
+    advancedEditorData.value = {
+      contentDraft: null,
+      dirty: false,
+      validity: "valid",
+    };
   };
 
   const save = async () => {
@@ -437,13 +463,15 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
         ...layoutContext.value,
         componentConfigurationLayout: JSON.stringify(configurationLayout.value),
       });
-      layoutContext.value = null;
+      close();
     } catch (error) {
       toastPresets.workflow.layoutEditor.setLayout({ error });
     }
   };
 
   return {
+    advancedEditorData,
+
     layoutContext,
     setLayoutContext,
 
@@ -491,5 +519,6 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     // Loading and saving workflow layout data
     load,
     save,
+    close,
   };
 });

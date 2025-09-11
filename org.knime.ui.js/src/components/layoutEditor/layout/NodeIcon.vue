@@ -13,16 +13,26 @@ const props = defineProps<{
 }>();
 
 const isComponent = ref<boolean>(false);
-const icon = ref<string | null>(null);
+const icon = ref<string>();
 
 const nodeTemplatesStore = useNodeTemplatesStore();
 
 watch(
   () => props.node.templateId,
-  () => {
+  async () => {
     isComponent.value = props.node.type === "nestedLayout";
-    if (props.node.templateId !== null) {
-      icon.value = nodeTemplatesStore.cache[props.node.templateId].icon ?? null;
+
+    if (props.node.templateId === null) {
+      return;
+    }
+
+    try {
+      const template = await nodeTemplatesStore.getSingleNodeTemplate({
+        nodeTemplateId: props.node.templateId,
+      });
+      icon.value = template?.icon;
+    } catch (error) {
+      consola.error("Failed to get icon from template", { error });
     }
   },
   { immediate: true },

@@ -105,6 +105,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
 
   const kanvas = document.createElement("div");
   kanvas.setAttribute("id", "kanvas");
+  kanvas.setAttribute("tabindex", "0");
   kanvas.appendChild(
     document.createElementNS("http://www.w3.org/2000/svg", "svg"),
   );

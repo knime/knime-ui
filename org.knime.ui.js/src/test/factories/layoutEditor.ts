@@ -1,6 +1,7 @@
+import { merge } from "lodash-es";
+
 import type {
   ConfigurationLayout,
-  ConfigurationLayoutEditorColumnContent,
   ConfigurationLayoutEditorNode,
   ConfigurationLayoutEditorRow,
 } from "@/store/layoutEditor/types/configuration";
@@ -16,21 +17,15 @@ import type {
   ResizeColumnInfo,
 } from "@/store/layoutEditor/types/view";
 import { layoutEditorGridSize } from "@/style/shapes";
+import type { DeepPartial } from "../utils";
 
 import { NODE_FACTORIES } from "./common";
-
-const createConfigNode = (
-  nodeID: string,
-): ConfigurationLayoutEditorColumnContent => ({
-  type: "configuration",
-  nodeID,
-});
 
 export const createConfigRow = (
   nodeID: string,
 ): ConfigurationLayoutEditorRow => ({
   type: "row",
-  columns: [{ content: [createConfigNode(nodeID)] }],
+  columns: [{ content: [{ type: "configuration", nodeID }] }],
 });
 
 export const createViewItem = (
@@ -442,6 +437,22 @@ export const createConfigurationLayout = (): ConfigurationLayout => ({
     },
   ],
 });
+
+export const createConfigurationNode = (
+  data: DeepPartial<ConfigurationLayoutEditorNode> = {},
+): ConfigurationLayoutEditorNode => {
+  const base = {
+    type: "configuration",
+    templateId: NODE_FACTORIES.ExcelTableReaderNodeFactory,
+    name: "String Configuration",
+    icon: "icon1",
+    layout: { type: "configuration", nodeID: "9" },
+    nodeID: "9",
+    availableInDialog: true,
+  };
+
+  return merge(base, data);
+};
 
 export const createConfigurationNodes = (): ConfigurationLayoutEditorNode[] => [
   {

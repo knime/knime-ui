@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "inmemory://schemas/layout-editor-view-layout.json",
+  "title": "LayoutEditorViewLayout",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rows", "parentLayoutLegacyMode"],
+  "properties": {
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/LayoutEditorRowItem" }
+    },
+    "parentLayoutLegacyMode": { "type": "boolean" }
+  },
+  "definitions": {
+    "LayoutEditorItemType": {
+      "type": "string",
+      "enum": ["row", "view", "nestedLayout", "html"]
+    },
+
+    "LayoutEditorViewResizeMethod": {
+      "type": "string",
+      "enum": [
+        "aspectRatio16by9",
+        "aspectRatio4by3",
+        "aspectRatio1by1",
+        "viewLowestElement",
+        "auto"
+      ]
+    },
+
+    "LayoutEditorBaseProps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodeID", "type"],
+      "properties": {
+        "nodeID": { "type": "string", "enum": [""] },
+        "type": { "$ref": "#/definitions/LayoutEditorItemType" },
+        "useLegacyMode": { "type": "boolean" },
+        "resizeMethod": {
+          "$ref": "#/definitions/LayoutEditorViewResizeMethod"
+        },
+        "resizeInterval": { "type": "null" },
+        "resizeTolerance": { "type": ["number", "null"] },
+        "autoResize": { "type": "boolean" },
+        "scrolling": { "type": "boolean" },
+        "sizeHeight": { "type": "boolean" },
+        "sizeWidth": { "type": "boolean" },
+        "maxHeight": { "type": ["number", "null"] },
+        "maxWidth": { "type": ["number", "null"] },
+        "minHeight": { "type": ["number", "null"] },
+        "minWidth": { "type": ["number", "null"] },
+        "additionalClasses": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "additionalStyles": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "LayoutEditorRowItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "columns"],
+      "properties": {
+        "type": { "const": "row" },
+        "columns": {
+          "minItems": 1,
+          "type": "array",
+          "items": { "$ref": "#/definitions/LayoutEditorColumn" }
+        }
+      }
+    },
+
+    "LayoutEditorViewItem": {
+      "allOf": [
+        { "$ref": "#/definitions/LayoutEditorBaseProps" },
+        {
+          "type": "object",
+          "properties": { "type": { "const": "view" } },
+          "required": ["type"]
+        }
+      ]
+    },
+
+    "LayoutEditorNestedLayoutItem": {
+      "allOf": [
+        { "$ref": "#/definitions/LayoutEditorBaseProps" },
+        {
+          "type": "object",
+          "properties": { "type": { "const": "nestedLayout" } },
+          "required": ["type"]
+        }
+      ]
+    },
+
+    "LayoutEditorHtmlItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "html" }
+      }
+    },
+
+    "LayoutEditorItem": {
+      "oneOf": [
+        { "$ref": "#/definitions/LayoutEditorRowItem" },
+        { "$ref": "#/definitions/LayoutEditorViewItem" },
+        { "$ref": "#/definitions/LayoutEditorNestedLayoutItem" },
+        { "$ref": "#/definitions/LayoutEditorHtmlItem" }
+      ]
+    },
+
+    "LayoutEditorColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content", "widthXS"],
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/LayoutEditorItem" }
+        },
+        "widthXS": { "type": "number" }
+      }
+    }
+  }
+}

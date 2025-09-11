@@ -11,6 +11,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
 import { type ApplicationInst } from "@/vue3-pixi";
 
@@ -18,7 +19,11 @@ const useHoldingDownSpace = () => {
   const { isHoldingDownSpace, isPanning } = storeToRefs(useWebGLCanvasStore());
 
   const onPressSpace = (event: KeyboardEvent) => {
-    if (isInputElement(event.target as HTMLElement) || isUIExtensionFocused()) {
+    if (
+      isInputElement(event.target as HTMLElement) ||
+      isUIExtensionFocused() ||
+      getKanvasDomElement() !== document.activeElement
+    ) {
       return;
     }
 

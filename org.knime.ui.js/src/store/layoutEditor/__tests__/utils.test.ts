@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { layoutEditorGridSize } from "@/style/shapes";
 import {
   createConfigRow,
+  createConfigurationNode,
   createNestedLayout,
   createViewItem,
 } from "@/test/factories/layoutEditor";
@@ -327,10 +328,9 @@ describe("fillConfigurationLayout", () => {
   it("should add a new configuration row if not present", () => {
     const layout = { rows: [] };
 
-    const result = fillConfigurationLayout(layout, {
-      nodeID: "node1",
-      type: "configuration",
-    });
+    const result = fillConfigurationLayout(layout, [
+      createConfigurationNode({ nodeID: "node1" }),
+    ]);
     expect(result.rows.length).toBe(1);
     const configurationNode = result.rows[0].columns[0].content[0];
     expect(configurationNode.nodeID).toBe("node1");
@@ -342,20 +342,18 @@ describe("fillConfigurationLayout", () => {
       rows: [createConfigRow("node1")],
     };
 
-    const result = fillConfigurationLayout(layout, {
-      nodeID: "node1",
-      type: "configuration",
-    });
+    const result = fillConfigurationLayout(layout, [
+      createConfigurationNode({ nodeID: "node1" }),
+    ]);
     expect(result.rows.length).toBe(1);
   });
 
   it("should initialize rows if missing", () => {
     const layout = {} as ConfigurationLayout;
 
-    const result = fillConfigurationLayout(layout, {
-      nodeID: "node2",
-      type: "configuration",
-    });
+    const result = fillConfigurationLayout(layout, [
+      createConfigurationNode({ nodeID: "node2" }),
+    ]);
     expect(result.rows.length).toBe(1);
     const config = result.rows[0].columns[0].content[0];
     expect(config.nodeID).toBe("node2");
@@ -364,14 +362,12 @@ describe("fillConfigurationLayout", () => {
   it("should add multiple configuration rows for different nodeIDs", () => {
     const layout = { rows: [] };
 
-    const result1 = fillConfigurationLayout(layout, {
-      nodeID: "node1",
-      type: "configuration",
-    });
-    const result2 = fillConfigurationLayout(result1, {
-      nodeID: "node2",
-      type: "configuration",
-    });
+    const result1 = fillConfigurationLayout(layout, [
+      createConfigurationNode({ nodeID: "node1" }),
+    ]);
+    const result2 = fillConfigurationLayout(result1, [
+      createConfigurationNode({ nodeID: "node2" }),
+    ]);
     expect(result2.rows.length).toBe(2);
     const config1 = result2.rows[0].columns[0].content[0];
     const config2 = result2.rows[1].columns[0].content[0];

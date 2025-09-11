@@ -1,3 +1,4 @@
+import type { Environment } from "monaco-editor";
 import { Entries } from "type-fest";
 
 import type { CustomUIEventDataset } from "./components/workflowEditor/WebGLKanvas/util/interaction";
@@ -16,6 +17,8 @@ declare global {
     store: any;
     router: any;
     toast: any;
+
+    MonacoEnvironment?: Environment | undefined;
   }
 
   interface ObjectConstructor {

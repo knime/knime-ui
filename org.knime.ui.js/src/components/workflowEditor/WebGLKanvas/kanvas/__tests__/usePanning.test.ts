@@ -13,6 +13,7 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
 import { useCanvasPanning } from "../usePanning";
 
@@ -48,19 +49,16 @@ describe("usePanning", () => {
     isPanning = false,
     isHoldingDownSpace = false,
     isDragging = false,
-    interactionsEnabled = true,
   }: {
     isPanning?: boolean;
     isHoldingDownSpace?: boolean;
     isDragging?: boolean;
-    interactionsEnabled?: boolean;
   } = {}) => {
     const mockedStores = mockStores();
     const mockedStage = { x: 100, y: 100 };
 
     mockedStores.webglCanvasStore.isPanning = isPanning;
     mockedStores.webglCanvasStore.isHoldingDownSpace = isHoldingDownSpace;
-    mockedStores.webglCanvasStore.interactionsEnabled = interactionsEnabled;
     // @ts-expect-error
     mockedStores.webglCanvasStore.stage = mockedStage;
     mockedStores.movingStore.isDragging = isDragging;
@@ -87,7 +85,7 @@ describe("usePanning", () => {
   describe("useHoldingDownSpace", () => {
     it("should set isHoldingDownSpace to true when space is pressed", () => {
       const { mockedStores } = doMount();
-
+      getKanvasDomElement()?.focus();
       const spaceEvent = createKeyboardEvent("keypress", { code: "Space" });
       document.dispatchEvent(spaceEvent);
 

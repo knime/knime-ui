@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
+import type { Component } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button, LoadingIcon, Modal, TabBar } from "@knime/components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
-
-import ConfigurationLayoutEditor from "./ConfigurationLayoutEditor.vue";
-import ViewLayoutEditor from "./ViewLayoutEditor.vue";
 
 type LayoutEditorTabValue =
   | "viewLayoutEditor"
@@ -17,28 +15,28 @@ type LayoutEditorTabValue =
 type LayoutEditorTabs = {
   value: LayoutEditorTabValue;
   label: string;
+  component: Component;
+  disabled?: boolean;
 };
 
-const tabs: LayoutEditorTabs[] = [
-  {
-    value: "viewLayoutEditor",
-    label: "Composite View Layout",
-  },
-  {
-    value: "advancedViewLayoutEditor",
-    label: "Advanced Composite View Layout",
-  },
-  {
-    value: "configurationLayout",
-    label: "Configuration Dialog Layout",
-  },
-];
+const ViewLayoutEditor = defineAsyncComponent({
+  loader: () => import("./ViewLayoutEditor.vue"),
+});
+
+const AdvancedViewLayoutEditor = defineAsyncComponent({
+  loader: () => import("./AdvancedViewLayoutEditor.vue"),
+});
+
+const ConfigurationLayoutEditor = defineAsyncComponent({
+  loader: () => import("./ConfigurationLayoutEditor.vue"),
+});
 
 const isSubmitted = ref(false);
 const activeTab = ref<LayoutEditorTabValue>("viewLayoutEditor");
 
 const layoutEditorStore = useLayoutEditorStore();
-const { layoutContext, isDragging } = storeToRefs(layoutEditorStore);
+const { layoutContext, isDragging, advancedEditorData } =
+  storeToRefs(layoutEditorStore);
 
 const closeModal = () => {
   if (isDragging.value) {
@@ -47,7 +45,8 @@ const closeModal = () => {
   if (isSubmitted.value) {
     return;
   }
-  layoutEditorStore.setLayoutContext(null);
+
+  layoutEditorStore.close();
 };
 
 const onSubmit = async () => {
@@ -56,26 +55,50 @@ const onSubmit = async () => {
 };
 
 watch(layoutContext, layoutEditorStore.load);
+
+const tabs = computed<LayoutEditorTabs[]>(() => [
+  {
+    value: "viewLayoutEditor",
+    label: "Composite View Layout",
+    component: ViewLayoutEditor,
+    disabled:
+      advancedEditorData.value.validity === "invalid" ||
+      advancedEditorData.value.validity === "checking",
+  },
+  {
+    value: "advancedViewLayoutEditor",
+    label: "Advanced View Layout",
+    component: AdvancedViewLayoutEditor,
+  },
+  {
+    value: "configurationLayout",
+    label: "Configuration Dialog Layout",
+    component: ConfigurationLayoutEditor,
+    disabled:
+      advancedEditorData.value.validity === "invalid" ||
+      advancedEditorData.value.validity === "checking",
+  },
+]);
+
+const activeTabComponent = computed(
+  () => tabs.value.find(({ value }) => value === activeTab.value)!.component,
+);
 </script>
 
 <template>
   <Modal
     :active="layoutContext !== null"
-    title="Create a new workflow"
+    title="Layout editor"
     style-type="info"
     class="modal"
     @cancel="closeModal"
   >
     <template #notice>
-      <TabBar v-model="activeTab" :possible-values="tabs" :disabled="false" />
+      <TabBar v-model="activeTab" :possible-values="tabs" />
     </template>
 
     <template #confirmation>
-      <ViewLayoutEditor v-if="activeTab === 'viewLayoutEditor'" />
-
-      <ConfigurationLayoutEditor
-        v-else-if="activeTab === 'configurationLayout'"
-      />
+      <Component :is="activeTabComponent" />
     </template>
 
     <template #controls>
@@ -86,11 +109,15 @@ watch(layoutContext, layoutEditorStore.load);
         compact
         primary
         class="submit-button"
-        :disabled="isSubmitted"
+        :disabled="
+          isSubmitted ||
+          advancedEditorData.validity === 'invalid' ||
+          advancedEditorData.validity === 'checking'
+        "
         @click="onSubmit"
       >
         <LoadingIcon v-if="isSubmitted" aria-hidden="true" focusable="false" />
-        <strong>Finish</strong>
+        <strong>Apply</strong>
       </Button>
     </template>
   </Modal>
@@ -101,25 +128,32 @@ watch(layoutContext, layoutEditorStore.load);
   --modal-height: 95vh;
   --modal-width: 95vw;
   --z-index-common-modal: v-bind("$zIndices.layerModals");
+  --background: var(--knime-gray-ultra-light);
 
+  background: var(--background);
   isolation: isolate;
 
   & :deep(.inner) {
     top: 50%;
     display: flex;
     flex-direction: column;
-  }
+    background: var(--background);
 
-  & :deep(.notice) {
-    background-color: var(--knime-white);
-    overflow: hidden;
-    padding: 0;
-  }
+    & > .notice {
+      background: var(--background);
+      overflow: hidden;
+      padding: 0;
+    }
 
-  & :deep(.confirmation) {
-    overflow: hidden;
-    height: 100%;
-    padding: 0;
+    & > .confirmation {
+      overflow: hidden;
+      height: 100%;
+      padding: 0;
+    }
+
+    & > .controls {
+      border-top: 1px solid var(--knime-silver-sand);
+    }
   }
 }
 </style>

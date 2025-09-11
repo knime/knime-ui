@@ -73,7 +73,7 @@ type LayoutEditorBaseProps = {
   useLegacyMode?: boolean;
   resizeMethod?: LayoutEditorViewResizeMethod;
   resizeInterval?: null;
-  resizeTolerance?: null;
+  resizeTolerance?: number | null;
   autoResize?: boolean;
   scrolling?: boolean;
   sizeHeight?: boolean;

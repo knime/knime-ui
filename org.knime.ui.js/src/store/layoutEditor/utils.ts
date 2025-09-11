@@ -13,7 +13,10 @@ import {
 } from "@/store/layoutEditor/types/view";
 import { layoutEditorGridSize } from "@/style/shapes";
 
-import type { ConfigurationLayout } from "./types/configuration";
+import type {
+  ConfigurationLayout,
+  ConfigurationLayoutEditorNode,
+} from "./types/configuration";
 
 export const getEmptyLayout = (): LayoutEditorViewLayout => {
   const column = reactive<LayoutEditorColumn>({
@@ -163,22 +166,29 @@ export const checkMove = (event: VueSortableEvent) => {
 };
 
 export const fillConfigurationLayout = (
-  layout: ConfigurationLayout,
-  { nodeID, type },
+  inputLayout: Partial<ConfigurationLayout>,
+  nodes: ConfigurationLayoutEditorNode[],
 ): ConfigurationLayout => {
-  if (!layout.rows) {
-    layout.rows = [];
-  }
+  const layout: ConfigurationLayout =
+    "rows" in inputLayout ? (inputLayout as ConfigurationLayout) : { rows: [] };
 
-  if (layout.rows.find((row) => row.columns[0].content[0].nodeID === nodeID)) {
-    return layout;
-  }
+  return nodes.reduce((updatedLayout, { nodeID, type }) => {
+    // if node is already in layout, do not modify layout
+    if (
+      updatedLayout.rows.find(
+        (row) => row.columns[0].content[0].nodeID === nodeID,
+      )
+    ) {
+      return updatedLayout;
+    }
 
-  return {
-    ...layout,
-    rows: [
-      ...layout.rows,
-      { type: "row", columns: [{ content: [{ nodeID, type }] }] },
-    ],
-  };
+    // otherwise, add node
+    return {
+      ...updatedLayout,
+      rows: [
+        ...updatedLayout.rows,
+        { type: "row", columns: [{ content: [{ nodeID, type }] }] },
+      ],
+    };
+  }, layout);
 };
