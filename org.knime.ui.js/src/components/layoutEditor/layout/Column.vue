@@ -69,7 +69,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
     :model-value="column.content"
     group="content"
     draggable=".draggable"
-    filter=".config-dialog, .legacy-info"
+    filter=".config-dialog, .dialog-overlay, .legacy-info, .edit-button"
     :prevent-on-filter="false"
     :class="['column', { resizable }]"
     :style="{ gridColumn: `span ${column.widthXS}` }"

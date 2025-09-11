@@ -91,6 +91,7 @@ const onLegacyModeToggle = (event: Event) => {
       <Draggable
         v-model="layout.rows"
         group="content"
+        filter=".edit-button"
         class="layout-preview"
         :component-data="{ isFirstLevel: true }"
         item-key="id"

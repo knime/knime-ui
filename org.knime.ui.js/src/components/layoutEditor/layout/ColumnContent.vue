@@ -170,7 +170,7 @@ const closeDialogs = () => {
   z-index: v-bind("layoutEditorZIndices.legacyInfoBox");
 }
 
-/* full window overlay to prevent other actions while popover is open */
+/* full window overlay to prevent other actions while config dialog is open */
 .dialog-overlay {
   margin: 0;
   padding: 0;

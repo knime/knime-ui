@@ -8,7 +8,7 @@ const { isDragging } = storeToRefs(layoutEditorStore);
 </script>
 
 <template>
-  <button :class="{ hidden: isDragging }" v-bind="$attrs">
+  <button class="edit-button" :class="{ hidden: isDragging }" v-bind="$attrs">
     <slot />
   </button>
 </template>
