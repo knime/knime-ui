@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
@@ -1016,6 +1016,7 @@ describe("NodePort", () => {
 
         const hitTarget = await dragAboveTarget({ wrapper });
         await dropOnTarget({ wrapper });
+        await flushPromises();
 
         expect(hitTarget._connectorDropEvent.detail).toEqual(
           expect.objectContaining({
@@ -1042,6 +1043,7 @@ describe("NodePort", () => {
 
         const hitTarget = await dragAboveTarget({ wrapper });
         await dropOnTarget({ wrapper });
+        await flushPromises();
 
         expect(hitTarget._connectorDropEvent.detail).toEqual(
           expect.objectContaining({

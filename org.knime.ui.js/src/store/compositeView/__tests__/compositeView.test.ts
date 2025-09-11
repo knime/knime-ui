@@ -1,5 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  type MockedObject,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { flushPromises } from "@vue/test-utils";
 
+import { isBrowser, isDesktop } from "@/environment";
 import { useExecutionStore } from "@/store/workflow/execution";
 import {
   createConnection,
@@ -7,6 +17,7 @@ import {
   createWorkflow,
   createWorkflowAnnotation,
 } from "@/test/factories";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import { type PageBuilderApi, useCompositeViewStore } from "../compositeView";
 
@@ -20,9 +31,9 @@ vi.mock("../pageBuilderStore", () => ({
   pageBuilderApiVuexStoreConfig: { state: {}, actions: {} },
 }));
 
-const mockPageBuilder: PageBuilderApi = vi.hoisted(() => ({
+const mockPageBuilder: MockedObject<PageBuilderApi> = vi.hoisted(() => ({
   mountShadowApp: vi.fn(),
-  loadPage: vi.fn(() => Promise.resolve()),
+  loadPage: vi.fn((..._args: any[]) => Promise.resolve()),
   isDirty: vi.fn(() => Promise.resolve(false)),
   isDefault: vi.fn(() => Promise.resolve(true)),
   hasPage: vi.fn(() => false),
@@ -47,6 +58,8 @@ vi.mock("../showPageBuilderUnsavedChangesDialog", () => ({
   showPageBuilderUnsavedChangesDialog: showPageBuilderUnsavedChangesDialogMock,
 }));
 
+vi.mock("@/environment");
+
 const someProjectId = "some-project-id";
 const someNodeId = "node-123";
 
@@ -54,6 +67,10 @@ describe("composite view store", () => {
   describe("state management for pageBuilder integration", () => {
     beforeEach(() => {
       mockStores();
+    });
+
+    afterEach(() => {
+      vi.clearAllMocks();
     });
 
     it("should initialize PageBuilder with correct environment and settings", async () => {
@@ -132,6 +149,31 @@ describe("composite view store", () => {
       mockPageBuilder.isDirty.mockResolvedValue(false);
       await applyAndExecute();
       expect(mockPageBuilder.applyAndExecute).not.toHaveBeenCalled();
+    });
+
+    it("should apply and execute when dirty by prompting (DESKTOP)", async () => {
+      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+      const { clickAwayCompositeView, getPageBuilder } =
+        useCompositeViewStore();
+      await getPageBuilder(someProjectId);
+      mockPageBuilder.isDirty.mockResolvedValue(true);
+      mockPageBuilder.hasPage.mockReturnValue(true);
+      await clickAwayCompositeView();
+      await flushPromises();
+      expect(showPageBuilderUnsavedChangesDialogMock).toHaveBeenCalled();
+    });
+
+    it("should apply and execute when dirty without prompting (BROWSER)", async () => {
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+      const { clickAwayCompositeView, getPageBuilder } =
+        useCompositeViewStore();
+      await getPageBuilder(someProjectId);
+      mockPageBuilder.isDirty.mockResolvedValue(true);
+      mockPageBuilder.hasPage.mockReturnValue(true);
+      await clickAwayCompositeView();
+      await flushPromises();
+      expect(mockPageBuilder.applyAndExecute).toHaveBeenCalled();
+      expect(showPageBuilderUnsavedChangesDialogMock).not.toHaveBeenCalled();
     });
 
     it("should not execute when no page exists", async () => {

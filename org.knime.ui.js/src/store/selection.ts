@@ -79,12 +79,6 @@ export const useSelectionStore = defineStore("selection", () => {
    * @returns Whether the user aborted the selection context switch or not
    */
   const tryDiscardCurrentSelection = async () => {
-    const canDiscardSelection = canDiscardCurrentSelection();
-
-    if (canDiscardSelection) {
-      return { wasAborted: false };
-    }
-
     const canContinue =
       (await useCompositeViewStore().clickAwayCompositeView()) &&
       (await useNodeConfigurationStore().autoApplySettings());

@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { defineStore } from "pinia";
 
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
-import { isDesktop } from "@/environment";
+import { isBrowser, isDesktop } from "@/environment";
 import { useExecutionStore } from "@/store/workflow/execution";
 
 import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
@@ -162,6 +162,11 @@ export const useCompositeViewStore = defineStore("component", () => {
     await useExecutionStore().executeNodes([componentNodeId]);
   };
 
+  /**
+   * Tries to apply unsaved changes to a composite view
+   *
+   * @returns resolves to true if operation succeeds
+   */
   const clickAwayCompositeView = async (): Promise<boolean> => {
     if (activePageBuilder.value === null) {
       return true;
@@ -169,6 +174,11 @@ export const useCompositeViewStore = defineStore("component", () => {
 
     const isDirty = await activePageBuilder.value.isDirty();
     if (!isDirty) {
+      return true;
+    }
+
+    if (isBrowser()) {
+      await applyAndExecute();
       return true;
     }
 
