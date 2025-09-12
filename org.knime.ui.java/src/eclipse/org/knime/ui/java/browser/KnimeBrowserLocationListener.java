@@ -111,7 +111,9 @@ public class KnimeBrowserLocationListener implements LocationListener {
     public void changed(final LocationEvent event) {
         var url = event.location;
         CEFZoomSync.subscribeAndUpdateZoom(m_browser);
-        if (KnimeBrowserView.isInitialized && (isAppPage(url) || isDevPage(url))) {
+        if (KnimeBrowserView.isInitialized && //
+            LifeCycle.get().isNextStateTransition(StateTransition.WEB_APP_LOADED) && //
+            (isAppPage(url) || isDevPage(url))) {
             LifeCycle.get().webAppLoaded();
         }
     }
