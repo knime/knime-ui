@@ -221,6 +221,33 @@ test.describe("panning", () => {
 
     await assertSnapshot(page);
   });
+
+  test("by dragging a port to the edge of the canvas", async ({ page }) => {
+    await startApplication(page, {
+      workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
+    });
+
+    const kanvasBox = await getKanvasBoundingBox(page);
+
+    // Drag a port near right edge of screen and hold until edge of canvas is reached
+    const [n1x, n1y] = await getNodePosition(page, "root:2");
+    await page.mouse.move(n1x + 25, n1y);
+    await page.mouse.down();
+
+    const panDistance = 300;
+    for (let i = 0; i < panDistance; i++) {
+      await page.mouse.move(kanvasBox!.x + kanvasBox!.width - 20, n1y - 150);
+    }
+
+    // Drag away from the corner and drop
+    await page.mouse.move(
+      kanvasBox!.x + kanvasBox!.width - 600,
+      kanvasBox!.y + 100,
+    );
+    await page.mouse.up();
+
+    await assertSnapshot(page);
+  });
 });
 
 const startForMinimap = (page: Page) =>

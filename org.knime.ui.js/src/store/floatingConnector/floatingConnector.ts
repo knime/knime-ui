@@ -7,6 +7,10 @@ import throttle from "raf-throttle";
 import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import {
+  type PanningToEdgeUpdateHandler,
+  useDragNearEdgePanning,
+} from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
+import {
   markEscapeAsHandled,
   markPointerEventAsHandled,
 } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
@@ -190,6 +194,9 @@ export const useFloatingConnectorStore = defineStore(
         return;
       }
 
+      const { startPanningToEdge, stopPanningToEdge } =
+        useDragNearEdgePanning();
+
       consola.debug("floatingConnector:: starting connector drag", { params });
 
       const {
@@ -241,6 +248,21 @@ export const useFloatingConnectorStore = defineStore(
           : pointerMoveAbsoluteCoords.value;
 
         setFloatingConnectorCoords(nextAbsolutePoint.x, nextAbsolutePoint.y);
+
+        const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
+          offset,
+          isAtEdge,
+        }) => {
+          const newX = isAtEdge.x
+            ? floatingConnector.value!.absolutePoint.x
+            : floatingConnector.value!.absolutePoint.x - offset.x;
+          const newY = isAtEdge.y
+            ? floatingConnector.value!.absolutePoint.y
+            : floatingConnector.value!.absolutePoint.y - offset.y;
+          setFloatingConnectorCoords(newX, newY);
+        };
+
+        startPanningToEdge(pointerDownEvent, onPanningToEdgeUpdate);
       });
 
       const onPointerUp = async (pointerUpEvent: PointerEvent) => {
@@ -250,6 +272,8 @@ export const useFloatingConnectorStore = defineStore(
         escapeAbortHandlerCleanup?.();
         escapeAbortHandlerCleanup = undefined;
         runListenerTeardown?.();
+
+        stopPanningToEdge();
 
         if (!floatingConnector.value) {
           return;
