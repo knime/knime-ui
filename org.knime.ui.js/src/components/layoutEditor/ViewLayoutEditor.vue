@@ -31,7 +31,7 @@ const onLegacyModeToggle = (event: Event) => {
           title="remove all views and rows"
           @click="layoutEditorStore.clearLayout()"
         >
-          clear layout
+          Clear layout
         </Button>
         <Button
           compact
@@ -39,7 +39,7 @@ const onLegacyModeToggle = (event: Event) => {
           title="revert to initial state"
           @click="layoutEditorStore.resetLayout()"
         >
-          reset layout
+          Reset layout
         </Button>
       </div>
 
@@ -49,6 +49,7 @@ const onLegacyModeToggle = (event: Event) => {
         <input
           :checked="layout.parentLayoutLegacyMode"
           type="checkbox"
+          class="legacy-checkbox"
           @change="onLegacyModeToggle"
         />
         Use legacy mode
@@ -114,6 +115,8 @@ const onLegacyModeToggle = (event: Event) => {
 </template>
 
 <style lang="postcss">
+@import url("@/assets/mixins.css");
+
 /* when dragging from available nodes/elements over layout,
   this list element will temporarily be added to the layout */
 .layout-preview li.sortable-ghost {
@@ -138,6 +141,12 @@ const onLegacyModeToggle = (event: Event) => {
 
   & * {
     display: none; /* for now we just hide the content, maybe there is a better way to render the ghost */
+  }
+}
+
+.legacy-checkbox {
+  &:focus-visible {
+    @mixin focus-outline;
   }
 }
 </style>

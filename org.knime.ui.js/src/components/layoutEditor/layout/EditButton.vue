@@ -14,13 +14,15 @@ const { isDragging } = storeToRefs(layoutEditorStore);
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 button {
-  margin: 0;
-  padding: 0;
+  margin: 2px;
+  padding: 2px;
   border: 0;
   outline: 0;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   background-color: var(--knime-silver-sand);
   position: absolute;
   right: 0;
@@ -28,10 +30,15 @@ button {
   cursor: pointer;
   opacity: 1;
   transition: opacity 0.2s;
+  border-radius: 2px;
 
   &:hover,
   &.active {
     background-color: var(--knime-yellow);
+  }
+
+  &:focus-visible {
+    @mixin focus-outline;
   }
 
   &.hidden {

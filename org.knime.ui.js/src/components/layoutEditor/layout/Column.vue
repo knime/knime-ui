@@ -93,6 +93,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
         :class="['resize-handle', { active: isCurrentColumnResizing }]"
         title="Drag to resize"
         @mousedown.prevent.stop="handleColumnResizeMouseDown"
+        @pointerdown.stop
       />
       <EditButton
         v-if="deletable"

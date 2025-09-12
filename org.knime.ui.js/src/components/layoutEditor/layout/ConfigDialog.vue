@@ -36,18 +36,20 @@ const initialResizeMode = initialItemConfig.resizeMethod?.includes(
 const itemConfig = ref(initialItemConfig);
 const resizeMode = ref(initialResizeMode);
 
-const handleKeyUp = (event: KeyboardEvent) => {
+const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === "Escape") {
     emit("close");
+    event.stopPropagation();
   }
 };
 
 onMounted(() => {
-  window.addEventListener("keydown", handleKeyUp);
+  // capture is required to get this event before the modal does (both listen to window)
+  window.addEventListener("keydown", handleKeyDown, { capture: true });
 });
 
 onUnmounted(() => {
-  window.removeEventListener("keydown", handleKeyUp);
+  window.removeEventListener("keydown", handleKeyDown, { capture: true });
 });
 
 watch(resizeMode, (newResizeMode) => {
