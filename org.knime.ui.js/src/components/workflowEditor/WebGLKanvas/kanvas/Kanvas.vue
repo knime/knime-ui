@@ -193,7 +193,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
         grabbing: isGrabbing,
       },
     ]"
-    @wheel.passive="onMouseWheel"
+    @wheel.prevent="onMouseWheel"
     @pointerdown="onPointerDown"
     @pointermove="$bus.emit('selection-pointermove', $event)"
     @pointerup="onPointerUp"
