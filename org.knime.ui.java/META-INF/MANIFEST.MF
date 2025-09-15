@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: KNIME Modern UI
 Bundle-SymbolicName: org.knime.ui.java;singleton:=true
-Bundle-Version: 5.7.0.qualifier
+Bundle-Version: 5.8.0.qualifier
 Export-Package: org.knime.ui.java.api,
  org.knime.ui.java.util
 Require-Bundle: com.equo.chromium;bundle-version="128.0.9",
@@ -29,17 +29,17 @@ Require-Bundle: com.equo.chromium;bundle-version="128.0.9",
  org.eclipse.swt;bundle-version="[3.114.0,4.0.0)",
  org.eclipse.ui;bundle-version="[3.116.0,4.0.0)",
  org.eclipse.ui.ide;bundle-version="[3.17.0,4.0.0)",
- org.knime.core;bundle-version="[5.7.0,6.0.0)",
- org.knime.core.ui;bundle-version="[5.7.0,6.0.0)",
- org.knime.core.wizard;bundle-version="[5.7.0,6.0.0)",
+ org.knime.core;bundle-version="[5.8.0,6.0.0)",
+ org.knime.core.ui;bundle-version="[5.8.0,6.0.0)",
+ org.knime.core.wizard;bundle-version="[5.8.0,6.0.0)",
  org.knime.core.workbench;bundle-version="[5.6.0,6.0.0)",
- org.knime.gateway.api;bundle-version="[5.7.0,6.0.0)",
- org.knime.gateway.json;bundle-version="[5.7.0,6.0.0)",
- org.knime.gateway.impl;bundle-version="[5.7.0,6.0.0)",
- org.knime.gateway.impl.jsonrpc;bundle-version="[5.7.0,6.0.0)",
+ org.knime.gateway.api;bundle-version="[5.8.0,6.0.0)",
+ org.knime.gateway.json;bundle-version="[5.8.0,6.0.0)",
+ org.knime.gateway.impl;bundle-version="[5.8.0,6.0.0)",
+ org.knime.gateway.impl.jsonrpc;bundle-version="[5.8.0,6.0.0)",
  org.knime.js.cef;bundle-version="[5.6.0,6.0.0)",
- org.knime.product;bundle-version="[5.7.0,6.0.0)",
- org.knime.ui.js;bundle-version="[5.7.0,6.0.0)",
+ org.knime.product;bundle-version="[5.8.0,6.0.0)",
+ org.knime.ui.js;bundle-version="[5.8.0,6.0.0)",
  org.knime.workbench.core;bundle-version="[5.6.0,6.0.0)",
  org.knime.workbench.editor;bundle-version="[5.7.0,6.0.0)",
  org.knime.workbench.explorer.view;bundle-version="[9.2.0,10.0.0)",
