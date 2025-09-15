@@ -32,18 +32,22 @@ import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 
+// AI quick actions
 const aiQuickActions = useAiQuickActionsStore();
-const shouldShowSkeletonAnnotation = computed(() =>
-  aiQuickActions.isActionProcessing("generateAnnotation"),
-);
+const generateAnnotationActionState =
+  aiQuickActions.getStateForAction("generateAnnotation");
+// this can be null. We use this computed property for both
+// - conditional rendering of the skeleton annotation
+// - and to specify its non-null bounds if it is rendered
+const skeletonAnnotationBounds = computed(() => {
+  return generateAnnotationActionState.value.bounds;
+});
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
 
-const { selectedNodeIds, getAnnotationBoundsForSelectedNodes } = storeToRefs(
-  useSelectionStore(),
-);
+const { selectedNodeIds } = storeToRefs(useSelectionStore());
 const { containerSize, shouldHideMiniMap, interactionsEnabled } =
   storeToRefs(canvasStore);
 const hasSelectedNodes = computed(() => selectedNodeIds.value.length > 0);
@@ -210,8 +214,8 @@ const onEscape = async (event: KeyboardEvent) => {
     <FloatingNodeSelectionTools v-if="hasSelectedNodes" />
 
     <SkeletonAnnotation
-      v-if="shouldShowSkeletonAnnotation"
-      :bounds="getAnnotationBoundsForSelectedNodes"
+      v-if="skeletonAnnotationBounds"
+      :bounds="skeletonAnnotationBounds"
     />
 
     <svg

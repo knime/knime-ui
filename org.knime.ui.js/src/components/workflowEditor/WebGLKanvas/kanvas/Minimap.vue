@@ -12,10 +12,10 @@ import { markPointerEventAsHandled } from "../util/interaction";
 import MiniPreview from "./MiniPreview.vue";
 
 const paddingBottom = 6;
-const rightOffset = $shapes.floatingCanvasToolsBottomOffset;
+const rightOffset = $shapes.floatingToolbarBottomOffset;
 const bottomOffset =
-  $shapes.floatingCanvasToolsBottomOffset +
-  $shapes.floatingCanvasToolsSize +
+  $shapes.floatingToolbarBottomOffset +
+  $shapes.floatingToolbarHeight +
   paddingBottom;
 
 const canvasStore = useWebGLCanvasStore();

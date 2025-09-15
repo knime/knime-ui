@@ -1,63 +1,63 @@
-import { ref } from "vue";
+import { computed, reactive } from "vue";
 import { defineStore } from "pinia";
 
-import { useSelectionStore } from "../selection";
+import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useAnnotationInteractionsStore } from "../workflow/annotationInteractions";
 
-type ActionName = "generateAnnotation";
-type ActionStatus = "ready" | "processing";
+type GenerateAnnotationState =
+  | { status: "idle"; bounds: null }
+  | { status: "processing"; bounds: Bounds }; // can only contain bounds while processing
 
-type ActionsState = Partial<Record<ActionName, ActionStatus>>;
+interface ActionsStates {
+  generateAnnotation: GenerateAnnotationState;
+}
 
 export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
-  const actionsState = ref<ActionsState>({});
-
-  const ensureStateFor = (actionName: ActionName) => {
-    if (!actionsState.value[actionName]) {
-      actionsState.value[actionName] = "ready";
-    }
-  };
-
-  const updateStateFor = ({
-    actionName,
-    newState,
-  }: {
-    actionName: ActionName;
-    newState: ActionStatus;
-  }) => {
-    actionsState.value[actionName] = newState;
-  };
-
-  const isActionProcessing = (actionName: ActionName) => {
-    return actionsState.value[actionName] === "processing";
+  const actionsStates = reactive<ActionsStates>({
+    generateAnnotation: {
+      status: "idle",
+      bounds: null,
+    },
+  });
+  const getStateForAction = <T extends keyof ActionsStates>(actionName: T) => {
+    return computed(() => actionsStates[actionName]);
   };
 
   const generateAnnotation = async () => {
-    const actionName: ActionName = "generateAnnotation";
-    ensureStateFor(actionName);
-
-    if (isActionProcessing(actionName)) {
+    if (actionsStates.generateAnnotation.status === "processing") {
       return;
     }
 
-    updateStateFor({ actionName, newState: "processing" });
+    const annotationInteractions = useAnnotationInteractionsStore();
+    const capturedBounds =
+      annotationInteractions.getAnnotationBoundsForSelectedNodes;
+
+    // mark processing
+    actionsStates.generateAnnotation = {
+      status: "processing",
+      bounds: capturedBounds,
+    };
+
     // TODO AP-24796: replace with API.kai call once ready
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    updateStateFor({ actionName, newState: "ready" });
-
-    const selection = useSelectionStore();
-    const annotationInteractions = useAnnotationInteractionsStore();
     await annotationInteractions.addWorkflowAnnotation({
-      bounds: selection.getAnnotationBoundsForSelectedNodes,
+      // Use the bounds that were safely captured and stored in our own state.
+      bounds: actionsStates.generateAnnotation.bounds,
       content: "<h5>Placeholder heading</h5><p>Placeholder text</p>",
     });
+
+    // mark idle
+    actionsStates.generateAnnotation = {
+      status: "idle",
+      bounds: null,
+    };
   };
 
   return {
     // state tracking
-    isActionProcessing,
+    getStateForAction,
 
-    // executable Quick AI Actions
+    // executable Quick AI actions
     generateAnnotation,
   };
 });

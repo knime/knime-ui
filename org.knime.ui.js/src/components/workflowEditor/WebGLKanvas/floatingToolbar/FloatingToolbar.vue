@@ -21,8 +21,8 @@ withDefaults(defineProps<Props>(), {
 <style lang="postcss" scoped>
 .floating-toolbar {
   position: absolute;
-  max-height: calc(v-bind("$shapes.floatingCanvasToolsSize") * 1px);
-  bottom: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
+  max-height: calc(v-bind("$shapes.floatingToolbarHeight") * 1px);
+  bottom: calc(v-bind("$shapes.floatingToolbarBottomOffset") * 1px);
   display: flex;
   align-items: center;
   background: var(--knime-white);
@@ -34,7 +34,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .position-right {
-  right: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
+  right: calc(v-bind("$shapes.floatingToolbarBottomOffset") * 1px);
 }
 
 .position-center {
