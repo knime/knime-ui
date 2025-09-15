@@ -3,6 +3,7 @@ import { storeToRefs } from "pinia";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
+import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -24,6 +25,16 @@ const getNodeFactoryFromEvent = (event: DragEvent) => {
   return JSON.parse(data) as NodeFactoryKey;
 };
 
+// One key characteristic of this composable, which can be confusing at first glance,
+// is that the dragStart and onDrag handlers to not happen at the same location in the code.
+// This is because the drag start handler, which mainly manipulates that event will likely
+// be bound at a separate location than the onDrag. This means that the variables declared
+// inside this composable are not stable across usages, unless declared outside of it
+
+let dragStartTime: number | null;
+
+const DRAG_TO_EDGE_BUFFER_MS = 300;
+
 export const useDragNodeIntoCanvas = () => {
   const isKnimeNode = (event: DragEvent) =>
     event.dataTransfer?.types.includes(KNIME_MIME);
@@ -37,6 +48,8 @@ export const useDragNodeIntoCanvas = () => {
   const { isWebGLRenderer } = useCanvasRendererUtils();
   const { toastPresets } = getToastPresets();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
+
+  const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 
   const onDragStart = (
     event: DragEvent,
@@ -81,11 +94,17 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   const onDragOver = (event: DragEvent) => {
+    // only define start time when the first dragover is fired
+    if (!dragStartTime) {
+      dragStartTime = window.performance.now();
+    }
+
     if (!isWritable.value) {
       event.dataTransfer!.dropEffect = "none";
     } else if (isKnimeNode(event)) {
       event.dataTransfer!.dropEffect = "copy";
     }
+    const elapsedTime = window.performance.now() - dragStartTime;
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
@@ -98,6 +117,13 @@ export const useDragNodeIntoCanvas = () => {
         event.clientX,
         event.clientY,
       ]);
+
+      // skip first few MS of the drag interaction, to avoid panning to the edge when crossing over the
+      // left edge, which would normally happen as you drag a node out of the repository and into
+      // the canvas
+      if (elapsedTime > DRAG_TO_EDGE_BUFFER_MS) {
+        startPanningToEdge(event);
+      }
 
       nodeReplacementOrInsertion.onDragMove(
         { x: canvasX, y: canvasY },
@@ -119,6 +145,8 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   const onDrop = async (event: DragEvent) => {
+    dragStartTime = null;
+    stopPanningToEdge();
     const nodeFactory = getNodeFactoryFromEvent(event);
 
     if (!isWritable.value || !nodeFactory) {
@@ -154,6 +182,8 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   const onDragEnd = (event: DragEvent) => {
+    dragStartTime = null;
+    stopPanningToEdge();
     (event.target as HTMLElement).style.cursor = "pointer";
     nodeTemplatesStore.setDraggingNodeTemplate(null);
 

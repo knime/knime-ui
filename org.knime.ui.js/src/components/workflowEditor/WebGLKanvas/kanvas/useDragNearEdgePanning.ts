@@ -44,10 +44,10 @@ export const getPanAdjustedDelta = (
   return { deltaX, deltaY };
 };
 
-export const useDragNearEdgePanning = () => {
-  const currentEdgeNearDragCoordinates = ref<Edge | null>(null);
-  let isPanning = false;
+const currentEdgeNearDragCoordinates = ref<Edge | null>(null);
+let isPanning = false;
 
+export const useDragNearEdgePanning = () => {
   const canvasStore = useWebGLCanvasStore();
   const { zoomFactor, isAtCanvasOffsetBoundaryAxis } = storeToRefs(canvasStore);
 
@@ -73,13 +73,13 @@ export const useDragNearEdgePanning = () => {
   };
 
   const startPanningToEdge = (
-    event: PointerEvent,
-    onUpdate: PanningToEdgeUpdateHandler,
+    uiEvent: { clientX: number; clientY: number },
+    onUpdate: PanningToEdgeUpdateHandler = () => {},
   ) => {
     currentEdgeNearDragCoordinates.value =
       canvasStore.getVisibleAreaEdgeNearPoint({
-        x: event.clientX,
-        y: event.clientY,
+        x: uiEvent.clientX,
+        y: uiEvent.clientY,
       });
 
     if (currentEdgeNearDragCoordinates.value === null) {
