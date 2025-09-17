@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.knime.js.core.webResources">
+      <webResourceBundle
+            debug="false"
+            name="org.knime.ui.dataapp.js"
+            version="5.2.0"
+            webResourceBundleID="org.knime.ui.dataapp.js">
+         <webResource
+               relativePathSource="dist/"
+               relativePathTarget="org/knime/ui/dataapp/js/">
+         </webResource>
+      </webResourceBundle>
+   </extension>
+
+</plugin>
