@@ -1,12 +1,40 @@
-import { createApp } from "vue";
+import * as Vue from "vue";
+// eslint-disable-next-line depend/ban-dependencies
+import { default as $axios } from "axios";
 import { createPinia } from "pinia";
 
 import App from "./App.vue";
+import { apiFactory } from "./api";
+import initConstants from "./plugins/constants";
+import { setupLogger } from "./plugins/logger";
 import router from "./router";
+import { createStore } from "./store";
+import { embedding } from "./util/embedding/embedding";
 
-const app = createApp(App);
+setupLogger();
 
-app.use(createPinia());
-app.use(router);
+try {
+  const app = Vue.createApp(App);
 
-app.mount("#app");
+  const { jobId, restApiBaseUrl } = await embedding.waitForContext();
+
+  const api = apiFactory({ $axios });
+  const store = createStore(api);
+
+  initConstants(app, { jobId, restApiBaseUrl });
+
+  api.setStore(store);
+
+  app.use(createPinia());
+  app.use(router);
+  app.use(store);
+
+  // required for loading pagebuilder
+  window.Vue = Vue;
+  window.VUE_APP = app;
+
+  app.mount("#app");
+} catch (error) {
+  consola.fatal("Failed to initialize DataApp UI");
+  embedding.sendAppInitializationError(error);
+}
