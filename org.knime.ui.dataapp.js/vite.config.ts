@@ -18,5 +18,13 @@ export default ({ mode }: { mode: string }) => {
       },
     },
     envPrefix,
+    server: {
+      proxy: {
+        "/_/api": {
+          target: process.env.KNIME_DEV_LOCAL_EXECUTION_WEBAPP_URL,
+          changeOrigin: true,
+        },
+      },
+    },
   });
 };

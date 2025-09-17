@@ -15,7 +15,7 @@ export const createStore = (api) => {
         namespaced: true,
         ...wizardExecutionStoreConfig,
       },
-      notificationsConfig: {
+      notification: {
         namespaced: true,
         ...notificationsConfig,
       },

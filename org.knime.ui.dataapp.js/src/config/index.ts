@@ -24,7 +24,7 @@ export const wizardExecutionStates = {
   CANCELLED: "EXECUTION_CANCELLED",
   STOPPING: "STOPPING_EXECUTION", // used for error handling; frontend only
   MISSING: "MISSING_JOB", // used for error handling; frontend only
-};
+} as const;
 
 // Unsupported wizardExecutionStates and their error message details.
 export const unsupportedExecutionStates = {
@@ -70,3 +70,18 @@ export const reportFormats = [
 ];
 
 export const defaultReportFormats = ["pdf", "html", "docx", "xlsx", "pptx"];
+
+export const progressMessages = {
+  [wizardExecutionStates.LOADING]: "Loading…",
+  [wizardExecutionStates.EXECUTING]: "Executing…",
+  [wizardExecutionStates.STOPPING]: "Stopping…",
+  DEFAULT: "A problem occurred…",
+} as const;
+
+export const resultPageMessages = {
+  [wizardExecutionStates.FINISHED]: "Finished successfully",
+  [wizardExecutionStates.FAILED]: "Workflow not executed",
+  [wizardExecutionStates.FINISHED_WITH_ERRORS]: "Workflow finished with errors",
+  [wizardExecutionStates.NOT_EXECUTABLE]: "Workflow not executed",
+  [wizardExecutionStates.CANCELLED]: "Execution cancelled",
+};

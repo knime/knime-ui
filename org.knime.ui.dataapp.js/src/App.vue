@@ -1,25 +1,29 @@
 <script setup lang="ts">
-import { onBeforeMount } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useStore } from "vuex";
 
+import JobExecution from "./components/JobExecution.vue";
 import { useConstants } from "./plugins/constants";
+import { embedding } from "./util/embedding/embedding";
 import { pageBuilderLoader } from "./util/pagebuilderLoader/pagebuilderLoader";
 
 const { restApiBaseUrl, jobId } = useConstants();
 
+const isReady = ref(false);
 const store = useStore();
 
-onBeforeMount(() => {
-  pageBuilderLoader(restApiBaseUrl, jobId, store);
+onBeforeMount(async () => {
+  try {
+    await pageBuilderLoader(restApiBaseUrl, jobId, store);
+    isReady.value = true;
+  } catch (error) {
+    embedding.sendAppInitializationError(error);
+  }
 });
 </script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <JobExecution v-if="isReady" />
 </template>
 
 <style scoped></style>

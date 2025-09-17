@@ -1,29 +1,30 @@
+/* eslint-disable no-console */
 export const state = () => ({
   list: [],
 });
 
 export const actions = {
   show() {
-    alert("notifications: show not implemented");
+    console.error("NOTIFICATIONS: show action not implemented");
   },
 
   add() {
-    alert("notifications: add not implemented");
+    console.error("NOTIFICATIONS: add action not implemented");
   },
 
   remove() {
-    alert("notifications: remove not implemented");
+    console.error("NOTIFICATIONS: remove action not implemented");
   },
 
   clear() {
-    alert("notifications: clear not implemented");
+    console.error("NOTIFICATIONS: clear action not implemented");
   },
 
   setMessageIcon() {
-    alert("notifications: setMessageIcon not implemented");
+    console.error("NOTIFICATIONS: setMessageIcon action not implemented");
   },
 
   setWithFooter() {
-    alert("notifications: setWithFooter not implemented");
+    console.error("NOTIFICATIONS: setWithFooter action not implemented");
   },
 };
