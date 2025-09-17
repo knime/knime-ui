@@ -212,7 +212,7 @@ const onSelectionMove = (event: PointerEvent) => {
 };
 
 const onSelectionEnd = async (event: PointerEvent) => {
-  if (!selectionPointerId) {
+  if (selectionPointerId === undefined) {
     return;
   }
   consola.debug("global rectangle selection:: end", { event });

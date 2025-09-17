@@ -79,9 +79,9 @@ describe("SelectionRectangle.vue", () => {
       offsetX: startPos.x,
       offsetY: startPos.y,
       shiftKey: false,
-      pointerId: 1,
+      pointerId: 0,
     };
-    const endEvent = { offsetX: endPos.x, offsetY: endPos.y, pointerId: 1 };
+    const endEvent = { offsetX: endPos.x, offsetY: endPos.y, pointerId: 0 };
 
     const pointerDown = async (event?: Partial<typeof startEvent>) => {
       $bus.emit("selection-pointerdown", {
