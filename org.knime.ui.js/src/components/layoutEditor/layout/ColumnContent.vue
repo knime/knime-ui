@@ -74,7 +74,6 @@ const closeDialogs = () => {
       :view="item"
     />
     <Row v-else-if="isRowItem(item)" :row="item" />
-    <div v-else-if="item.type === 'html'">HTML</div>
 
     <EditButton
       v-if="item.type !== 'row'"

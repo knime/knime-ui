@@ -321,17 +321,20 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
   const updateContentItemConfig = (data: {
     config: LayoutEditorItemSizingConfig;
-    item: LayoutEditorViewItem | LayoutEditorNestedLayoutItem;
+    item: LayoutEditorViewItem;
   }) => {
     // if set to auto, get default resizeMethod from node
     if (data.config.resizeMethod === "auto") {
       const defaultNode = nodes.value.find(
         (node) => node.nodeID === data.item.nodeID,
       );
-      data.config.resizeMethod =
-        defaultNode && defaultNode.layout.resizeMethod?.indexOf("view") === 0
-          ? defaultNode.layout.resizeMethod
-          : "viewLowestElement";
+
+      if (defaultNode && isViewItem(defaultNode.layout)) {
+        data.config.resizeMethod =
+          defaultNode.layout.resizeMethod?.indexOf("view") === 0
+            ? defaultNode.layout.resizeMethod
+            : "viewLowestElement";
+      }
     }
 
     // apply new config; delete unset props
@@ -449,9 +452,32 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     };
   };
 
+  const setLayoutContentFromAdvancedEditor = () => {
+    if (
+      advancedEditorData.value.contentDraft &&
+      advancedEditorData.value.validity === "valid"
+    ) {
+      try {
+        layout.value = JSON.parse(advancedEditorData.value.contentDraft);
+
+        advancedEditorData.value.contentDraft = null;
+        advancedEditorData.value.dirty = false;
+      } catch (error) {
+        consola.error(
+          "Failed to parse advanced layout editor content draft",
+          error,
+        );
+      }
+    }
+  };
+
   const save = async () => {
     if (layoutContext.value === null) {
       return;
+    }
+
+    if (advancedEditorData.value.dirty) {
+      setLayoutContentFromAdvancedEditor();
     }
 
     try {
@@ -520,5 +546,6 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     load,
     save,
     close,
+    setLayoutContentFromAdvancedEditor,
   };
 });

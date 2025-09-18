@@ -26,8 +26,22 @@
         "aspectRatio4by3",
         "aspectRatio1by1",
         "viewLowestElement",
-        "auto"
+        "viewBodyOffset",
+        "viewBodyScroll",
+        "viewDocumentElementOffset",
+        "viewDocumentElementScroll",
+        "viewMax",
+        "viewMin",
+        "viewGrow",
+        "viewTaggedElement",
+        "viewLowestElementIEMax",
+        "manual"
       ]
+    },
+
+    "NodeId": {
+      "type": "string",
+      "enum": [""]
     },
 
     "LayoutEditorBaseProps": {
@@ -35,13 +49,13 @@
       "additionalProperties": false,
       "required": ["nodeID", "type"],
       "properties": {
-        "nodeID": { "type": "string", "enum": [""] },
+        "nodeID": { "$ref": "#/definitions/NodeId" },
         "type": { "$ref": "#/definitions/LayoutEditorItemType" },
         "useLegacyMode": { "type": "boolean" },
         "resizeMethod": {
           "$ref": "#/definitions/LayoutEditorViewResizeMethod"
         },
-        "resizeInterval": { "type": "null" },
+        "resizeInterval": { "type": ["number", "null"] },
         "resizeTolerance": { "type": ["number", "null"] },
         "autoResize": { "type": "boolean" },
         "scrolling": { "type": "boolean" },
@@ -88,31 +102,19 @@
     },
 
     "LayoutEditorNestedLayoutItem": {
-      "allOf": [
-        { "$ref": "#/definitions/LayoutEditorBaseProps" },
-        {
-          "type": "object",
-          "properties": { "type": { "const": "nestedLayout" } },
-          "required": ["type"]
-        }
-      ]
-    },
-
-    "LayoutEditorHtmlItem": {
       "type": "object",
-      "additionalProperties": false,
-      "required": ["type"],
       "properties": {
-        "type": { "const": "html" }
-      }
+        "type": { "const": "nestedLayout" },
+        "nodeID": { "$ref": "#/definitions/NodeId" }
+      },
+      "required": ["type", "nodeID"]
     },
 
     "LayoutEditorItem": {
       "oneOf": [
         { "$ref": "#/definitions/LayoutEditorRowItem" },
         { "$ref": "#/definitions/LayoutEditorViewItem" },
-        { "$ref": "#/definitions/LayoutEditorNestedLayoutItem" },
-        { "$ref": "#/definitions/LayoutEditorHtmlItem" }
+        { "$ref": "#/definitions/LayoutEditorNestedLayoutItem" }
       ]
     },
 
@@ -125,7 +127,11 @@
           "type": "array",
           "items": { "$ref": "#/definitions/LayoutEditorItem" }
         },
-        "widthXS": { "type": "number" }
+        "widthXS": { "type": "number" },
+        "widthSM": { "type": "number" },
+        "widthMD": { "type": "number" },
+        "widthLG": { "type": "number" },
+        "widthXL": { "type": "number" }
       }
     }
   }

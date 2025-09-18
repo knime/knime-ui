@@ -65,14 +65,27 @@ type LayoutEditorViewResizeMethod =
   | "aspectRatio4by3"
   | "aspectRatio1by1"
   | "viewLowestElement"
-  | "auto";
+  | "auto"
+  | "viewBodyOffset"
+  | "viewBodyScroll"
+  | "viewDocumentElementOffset"
+  | "viewDocumentElementScroll"
+  | "viewMax"
+  | "viewMin"
+  | "viewGrow"
+  | "viewTaggedElement"
+  | "viewLowestElementIEMax"
+  | "manual";
+
+type NodeID = {
+  nodeID: string;
+};
 
 type LayoutEditorBaseProps = {
-  nodeID: string;
   type: LayoutEditorItemType;
   useLegacyMode?: boolean;
   resizeMethod?: LayoutEditorViewResizeMethod;
-  resizeInterval?: null;
+  resizeInterval?: number | null;
   resizeTolerance?: number | null;
   autoResize?: boolean;
   scrolling?: boolean;
@@ -96,16 +109,17 @@ export const isRowItem = (
 ): item is LayoutEditorRowItem =>
   Boolean((item as LayoutEditorRowItem).type === "row");
 
-export type LayoutEditorViewItem = LayoutEditorBaseProps & {
-  type: "view";
-};
+export type LayoutEditorViewItem = NodeID &
+  LayoutEditorBaseProps & {
+    type: "view";
+  };
 
 export const isViewItem = (
   node: LayoutEditorItem,
 ): node is LayoutEditorViewItem =>
   Boolean((node as LayoutEditorViewItem).type === "view");
 
-export type LayoutEditorNestedLayoutItem = LayoutEditorBaseProps & {
+export type LayoutEditorNestedLayoutItem = NodeID & {
   type: "nestedLayout";
 };
 
@@ -114,15 +128,10 @@ export const isNestedLayoutItem = (
 ): node is LayoutEditorNestedLayoutItem =>
   Boolean((node as LayoutEditorNestedLayoutItem).type === "nestedLayout");
 
-type LayoutEditorHtmlItem = {
-  type: "html";
-};
-
 export type LayoutEditorItem =
   | LayoutEditorRowItem
   | LayoutEditorViewItem
-  | LayoutEditorNestedLayoutItem
-  | LayoutEditorHtmlItem;
+  | LayoutEditorNestedLayoutItem;
 
 export type LayoutEditorItemSizingConfig = Pick<
   LayoutEditorBaseProps,
@@ -132,6 +141,10 @@ export type LayoutEditorItemSizingConfig = Pick<
 export type LayoutEditorColumn = {
   content: Array<LayoutEditorItem>;
   widthXS: number;
+  widthSM?: number;
+  widthMD?: number;
+  widthLG?: number;
+  widthXL?: number;
 };
 
 export type LayoutEditorViewLayout = {

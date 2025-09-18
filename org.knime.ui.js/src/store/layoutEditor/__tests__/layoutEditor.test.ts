@@ -653,6 +653,39 @@ describe("layoutEditor", () => {
       expect(setLayoutFailedSpy).toHaveBeenCalledExactlyOnceWith({ error });
     });
 
+    it("saves the content of the advanced layout editor", async () => {
+      const { layoutEditorStore } = setupStore();
+
+      const dummyData = { foo: "bar" };
+      const layoutContext = {
+        projectId: "p1",
+        workflowId: "w1",
+        nodeId: "n1",
+      };
+      layoutEditorStore.advancedEditorData = {
+        contentDraft: JSON.stringify(dummyData),
+        dirty: true,
+        validity: "valid",
+      };
+      layoutEditorStore.layoutContext = layoutContext;
+      layoutEditorStore.layout = {
+        rows: [],
+        parentLayoutLegacyMode: false,
+      };
+      await layoutEditorStore.save();
+
+      expect(layoutEditorStore.advancedEditorData).toEqual({
+        contentDraft: null,
+        dirty: false,
+        validity: "valid",
+      });
+      expect(layoutEditorStore.layout).toEqual(dummyData);
+      expect(mockedAPI.componenteditor.setViewLayout).toHaveBeenCalledWith({
+        ...layoutContext,
+        componentViewLayout: JSON.stringify(dummyData),
+      });
+    });
+
     it("saves the layouts for the open workflow and resets open workflow", async () => {
       mockedAPI.componenteditor.setViewLayout.mockResolvedValueOnce(true);
       mockedAPI.componenteditor.setConfigurationLayout.mockResolvedValueOnce(

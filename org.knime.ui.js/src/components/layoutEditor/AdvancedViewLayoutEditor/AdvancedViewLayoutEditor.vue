@@ -1,3 +1,4 @@
+<!-- eslint-disable func-style -->
 <!-- eslint-disable one-var -->
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
@@ -21,6 +22,7 @@ import CircleCloseFilledIcon from "@knime/styles/img/icons/circle-close.svg";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 import schema from "./schema.json";
+import { useDuplicateNodeIdValidation } from "./useDuplicateNodeIdValidation";
 
 const editorElementRef = useTemplateRef("editorRef");
 
@@ -43,8 +45,13 @@ let editorInstance: monaco.editor.IStandaloneCodeEditor;
 let disposables: monaco.IDisposable[] = [];
 let jsonLanguageService: LanguageService;
 
-const problems = ref<Diagnostic[]>([]);
-const isInvalidContent = computed(() => problems.value.length > 0);
+const schemaValidationIssues = ref<Diagnostic[]>([]);
+const duplicateNodeIssues = ref<Diagnostic[]>([]);
+const isInvalidContent = computed(
+  () =>
+    schemaValidationIssues.value.length > 0 ||
+    duplicateNodeIssues.value.length > 0,
+);
 
 const getJSONSchema = () => {
   if (!modelUri) {
@@ -60,7 +67,9 @@ const getJSONSchema = () => {
   };
 };
 
-const validateContent = async (content: string) => {
+const { validateDuplicateNodeIds } = useDuplicateNodeIdValidation();
+
+const runSchemaValidation = async (content: string) => {
   if (!jsonLanguageService) {
     consola.error(
       "Failed to run JSON Schema validation. Language service not available",
@@ -84,14 +93,43 @@ const validateContent = async (content: string) => {
 
   advancedEditorData.value.validity =
     diagnostics.length === 0 ? "valid" : "invalid";
-  problems.value = diagnostics;
+  schemaValidationIssues.value = diagnostics;
+};
+
+const runNodeIdValidation = (content: string) => {
+  const markers = validateDuplicateNodeIds(content, model);
+
+  // set custom markers just for the node id
+  monaco.editor.setModelMarkers(model, "node-id-rules", markers);
+
+  duplicateNodeIssues.value = [];
+
+  if (markers.length > 0) {
+    advancedEditorData.value.validity = "invalid";
+  }
+
+  // use markers to also create issues to display in bottom panel
+  // because these are custom markers which monaco itself doens't produce
+  // so they don't show up unless explicitly added
+  for (const marker of markers) {
+    duplicateNodeIssues.value.push({
+      message: marker.message,
+      range: {
+        start: {
+          character: marker.startColumn - 1,
+          line: marker.startLineNumber - 1,
+        },
+        end: {
+          character: marker.endColumn,
+          line: marker.endLineNumber,
+        },
+      },
+    });
+  }
 };
 
 const initializeEditor = () => {
-  schema.definitions.LayoutEditorBaseProps.properties.nodeID = {
-    type: "string",
-    enum: nodes.value.map(({ nodeID }) => nodeID),
-  };
+  schema.definitions.NodeId.enum = nodes.value.map(({ nodeID }) => nodeID);
 
   const initialContent =
     layoutEditorStore.advancedEditorData.contentDraft ??
@@ -132,7 +170,9 @@ const initializeEditor = () => {
     editorInstance.onDidChangeModelContent(
       rafThrottle(async () => {
         advancedEditorData.value.contentDraft = model.getValue();
-        await validateContent(advancedEditorData.value.contentDraft);
+
+        await runSchemaValidation(advancedEditorData.value.contentDraft);
+        runNodeIdValidation(advancedEditorData.value.contentDraft);
       }),
     ),
   );
@@ -171,27 +211,12 @@ const goToLine = (lineNumber: number, column: number) => {
 onMounted(() => {
   initializeEditor();
   initializeJSONLanguageService();
+  // run an initial validation, in case the previous content is now invalid
+  runSchemaValidation(model.getValue());
 });
 
 onUnmounted(() => {
-  if (
-    advancedEditorData.value.contentDraft &&
-    advancedEditorData.value.validity === "valid"
-  ) {
-    try {
-      layout.value = JSON.parse(advancedEditorData.value.contentDraft);
-
-      // advanced layout editor is being unmounted, so we can set the content draft
-      // back into the data and mark it as not dirty again
-      advancedEditorData.value.contentDraft = null;
-      advancedEditorData.value.dirty = false;
-    } catch (error) {
-      consola.error(
-        "Failed to parse advanced layout editor content draft",
-        error,
-      );
-    }
-  }
+  layoutEditorStore.setLayoutContentFromAdvancedEditor();
 
   disposables.forEach((d) => d.dispose());
 });
@@ -201,13 +226,12 @@ onUnmounted(() => {
   <div :class="['wrapper', { invalid: isInvalidContent }]">
     <div id="advanced-layout-editor" ref="editorRef" class="editor-root" />
     <div class="problems">
-      <span v-if="problems.length === 0" class="no-problems">
-        No problems found
-      </span>
-
-      <template v-else>
+      <template v-if="isInvalidContent">
         <button
-          v-for="(problem, index) in problems"
+          v-for="(problem, index) in [
+            ...schemaValidationIssues,
+            ...duplicateNodeIssues,
+          ]"
           :key="index"
           class="problem"
           @click="
@@ -225,6 +249,7 @@ onUnmounted(() => {
           >
         </button>
       </template>
+      <span v-else class="no-problems"> No problems found </span>
     </div>
   </div>
 </template>

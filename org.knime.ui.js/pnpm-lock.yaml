@@ -85,6 +85,9 @@ importers:
       fuse.js:
         specifier: 6.6.2
         version: 6.6.2
+      jsonc-parser:
+        specifier: ^3.3.1
+        version: 3.3.1
       kd-tree-javascript:
         specifier: ^1.0.3
         version: 1.0.3
