@@ -24,7 +24,8 @@ const ViewLayoutEditor = defineAsyncComponent({
 });
 
 const AdvancedViewLayoutEditor = defineAsyncComponent({
-  loader: () => import("./AdvancedViewLayoutEditor.vue"),
+  loader: () =>
+    import("./AdvancedViewLayoutEditor/AdvancedViewLayoutEditor.vue"),
 });
 
 const ConfigurationLayoutEditor = defineAsyncComponent({
