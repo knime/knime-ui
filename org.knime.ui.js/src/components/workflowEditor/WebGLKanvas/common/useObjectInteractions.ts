@@ -18,7 +18,6 @@ import { geometry } from "@/util/geometry";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 import {
   type PanningToEdgeUpdateHandler,
-  getPanAdjustedDelta,
   useDragNearEdgePanning,
 } from "../kanvas/useDragNearEdgePanning";
 import {
@@ -256,6 +255,7 @@ export const useObjectInteractions = (
     const abort = (event: KeyboardEvent) => {
       if (isDragging.value && event.key === "Escape") {
         movingStore.abortDrag();
+        stopPanningToEdge();
         markEscapeAsHandled(event, {
           initiator: "object-interaction::onEscape",
         });
@@ -466,15 +466,15 @@ export const useObjectInteractions = (
       }
 
       const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
-        edge,
+        offset,
         isAtEdge,
       }) => {
-        const movePreview = getPanAdjustedDelta(
-          edge,
-          movingStore.movePreviewDelta,
-          isAtEdge,
-        );
-        movingStore.setMovePreview(movePreview);
+        const currentDelta = movingStore.movePreviewDelta;
+
+        const deltaX = isAtEdge.x ? currentDelta.x : currentDelta.x - offset.x;
+        const deltaY = isAtEdge.y ? currentDelta.y : currentDelta.y - offset.y;
+
+        movingStore.setMovePreview({ deltaX, deltaY });
       };
 
       startPanningToEdge(pointerMoveEvent, onPanningToEdgeUpdate);

@@ -158,6 +158,8 @@ export const useFloatingConnectorStore = defineStore(
 
     const { finishConnection, waitingForPortSelection } = useConnectAction();
 
+    const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
+
     // This will hold a function reference used to clean up all the DOM event listeners
     let runListenerTeardown: (() => void) | undefined;
 
@@ -166,6 +168,7 @@ export const useFloatingConnectorStore = defineStore(
         if (event.key === "Escape") {
           resetState();
           removeActiveConnector();
+          stopPanningToEdge();
           runListenerTeardown?.();
           markEscapeAsHandled(event, {
             initiator: "floating-connector::onEscape",
@@ -193,9 +196,6 @@ export const useFloatingConnectorStore = defineStore(
       ) {
         return;
       }
-
-      const { startPanningToEdge, stopPanningToEdge } =
-        useDragNearEdgePanning();
 
       consola.debug("floatingConnector:: starting connector drag", { params });
 

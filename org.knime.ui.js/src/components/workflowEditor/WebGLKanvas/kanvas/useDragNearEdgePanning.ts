@@ -6,15 +6,26 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import type { Edge } from "@/util/geometry/types";
 
 export type PanningToEdgeUpdateHandler = (args: {
+  /**
+   * The edge of the screen being approached with the cursor interaction
+   */
   edge: Edge;
+  /**
+   * The offset vector to apply to the interaction being affected as the cursor
+   * approaches the edge of the screen. It takes zoom factor into account
+   */
   offset: XY;
+  /**
+   * Whether the interaction is at the X-Axis (left/right ends) or
+   * the Y-Axis (top/bottom ends)
+   */
   isAtEdge: { x: boolean; y: boolean };
 }) => void;
 
 const BASE_OFFSET = 5;
 
-const getDirectionToOffset = (edge: Edge, modifier: number = 1) => {
-  const offsetValue = BASE_OFFSET * modifier;
+const getPanOffsetFromEdge = (edge: Edge, modifier: number = 1) => {
+  const offsetValue = BASE_OFFSET / modifier;
   const directionToOffset: Record<Edge, { x: number; y: number }> = {
     top: { x: 0, y: offsetValue },
     right: { x: -offsetValue, y: 0 },
@@ -28,20 +39,9 @@ const getDirectionToOffset = (edge: Edge, modifier: number = 1) => {
   return directionToOffset[edge];
 };
 
-const getNewCanvasOffset = (edge: Edge, stage: XY, zoomFactor: number) => {
-  const direction = getDirectionToOffset(edge, zoomFactor);
+const getNewCanvasOffset = (edge: Edge, stage: XY) => {
+  const direction = getPanOffsetFromEdge(edge);
   return { x: stage.x + direction.x, y: stage.y + direction.y };
-};
-
-export const getPanAdjustedDelta = (
-  edge: Edge,
-  delta: XY,
-  isAtEdge: { x: boolean; y: boolean },
-) => {
-  const direction = getDirectionToOffset(edge);
-  const deltaX = isAtEdge.x ? delta.x : delta.x - direction.x;
-  const deltaY = isAtEdge.y ? delta.y : delta.y - direction.y;
-  return { deltaX, deltaY };
 };
 
 const currentEdgeNearDragCoordinates = ref<Edge | null>(null);
@@ -59,13 +59,15 @@ export const useDragNearEdgePanning = () => {
     const offset = getNewCanvasOffset(
       currentEdgeNearDragCoordinates.value,
       canvasStore.stage,
-      zoomFactor.value,
     );
     canvasStore.setCanvasOffset(offset);
 
     onUpdate({
       edge: currentEdgeNearDragCoordinates.value,
-      offset: getDirectionToOffset(currentEdgeNearDragCoordinates.value),
+      offset: getPanOffsetFromEdge(
+        currentEdgeNearDragCoordinates.value,
+        zoomFactor.value,
+      ),
       isAtEdge: isAtCanvasOffsetBoundaryAxis.value,
     });
 

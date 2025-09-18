@@ -104,24 +104,18 @@ test.describe("panning", () => {
 
     const kanvasBox = await getKanvasBoundingBox(page);
 
-    // Drag a node near top-right corner of screen and hold until edge of canvas is reached
+    // Drag a node near edge of screen and hold until pan is made
     const [n1x, n1y] = await getNodePosition(page, "root:1");
     await page.mouse.move(n1x, n1y);
     await page.mouse.down();
 
-    const panDistance = 300;
+    const panDistance = 100;
     for (let i = 0; i < panDistance; i++) {
-      await page.mouse.move(
-        kanvasBox!.x + kanvasBox!.width - 30,
-        kanvasBox!.y + 30,
-      );
+      await page.mouse.move(kanvasBox!.x + kanvasBox!.width - 30, n1y);
     }
 
     // Drag away from the corner and drop
-    await page.mouse.move(
-      kanvasBox!.x + kanvasBox!.width - 160,
-      kanvasBox!.y + 140,
-    );
+    await page.mouse.move(kanvasBox!.x + kanvasBox!.width - 160, n1y);
     await page.mouse.up();
 
     await assertSnapshot(page);
@@ -145,7 +139,7 @@ test.describe("panning", () => {
     await page.mouse.click(...getCenter(annotation));
     await page.mouse.move(...getCenter(annotation));
     await page.mouse.down();
-    const panDistance = 300;
+    const panDistance = 100;
     for (let i = 0; i < panDistance; i++) {
       await page.mouse.move(kanvasBox!.x + 20, kanvasBox!.y + 20);
     }
@@ -170,7 +164,7 @@ test.describe("panning", () => {
     const { x, y } = { x: kanvasBox!.x + 410, y: kanvasBox!.y + 180 };
     await page.mouse.move(x, y);
     await page.mouse.down();
-    const panDistance = 300;
+    const panDistance = 100;
     for (let i = 0; i < panDistance; i++) {
       await page.mouse.move(kanvasBox!.x + 20, y);
     }
@@ -204,7 +198,7 @@ test.describe("panning", () => {
     // Drag selected objects near bottom edge of screen and hold until edge of canvas is reached
     await page.mouse.move(annotation.center.x, annotation.center.y - 100);
     await page.mouse.down();
-    const panDistance = 300;
+    const panDistance = 50;
     for (let i = 0; i < panDistance; i++) {
       await page.mouse.move(
         annotation.center.x,
@@ -234,7 +228,7 @@ test.describe("panning", () => {
     await page.mouse.move(n1x + 25, n1y);
     await page.mouse.down();
 
-    const panDistance = 300;
+    const panDistance = 100;
     for (let i = 0; i < panDistance; i++) {
       await page.mouse.move(kanvasBox!.x + kanvasBox!.width - 20, n1y - 150);
     }
