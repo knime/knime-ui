@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "vue";
 
-import { InputField, ValueSwitch } from "@knime/components";
+import { InlineMessage, InputField, ValueSwitch } from "@knime/components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import type {
@@ -83,11 +83,8 @@ watch(
 
 <template>
   <div class="config-dialog">
-    <div
-      class="grid"
-      :class="resizeMode === 'auto' ? 'full-grid' : 'basic-grid'"
-    >
-      <div :style="{ gridArea: 'cell1' }">
+    <div class="grid">
+      <div class="aspect-ratio-config">
         <ValueSwitch
           v-model="resizeMode"
           :possible-values="[
@@ -96,8 +93,7 @@ watch(
           ]"
           compact
         />
-      </div>
-      <div :style="{ gridArea: 'cell2' }">
+
         <ValueSwitch
           v-if="resizeMode === 'aspectRatio'"
           v-model="itemConfig.resizeMethod"
@@ -108,59 +104,73 @@ watch(
           ]"
           compact
         />
-        <small v-else>
-          Height dynamically calculated depending on content.
-        </small>
       </div>
 
-      <template v-if="resizeMode === 'auto'">
-        <div :style="{ gridArea: 'cell3', textAlign: 'center' }">Width</div>
-        <div :style="{ gridArea: 'cell4', textAlign: 'center' }">Height</div>
+      <InlineMessage
+        v-if="resizeMode === 'auto'"
+        variant="info"
+        title="Height calculation"
+      >
+        Will be derived automatically depending on content.
+      </InlineMessage>
 
-        <div :style="{ gridArea: 'cell5' }">Min</div>
-        <div :style="{ gridArea: 'cell6' }">
-          <InputField
-            v-model="itemConfig.minWidth"
-            type="number"
-            min="0"
-            compact
-          >
-            <template #iconRight>px</template>
-          </InputField>
-        </div>
-        <div :style="{ gridArea: 'cell7' }">
-          <InputField
-            v-model="itemConfig.minHeight"
-            type="number"
-            min="0"
-            compact
-          >
-            <template #iconRight>px</template>
-          </InputField>
-        </div>
-
-        <div :style="{ gridArea: 'cell8' }">Max</div>
-        <div :style="{ gridArea: 'cell9' }">
-          <InputField
-            v-model="itemConfig.maxWidth"
-            type="number"
-            min="0"
-            compact
-          >
-            <template #iconRight>px</template>
-          </InputField>
-        </div>
-        <div :style="{ gridArea: 'cell10' }">
-          <InputField
-            v-model="itemConfig.maxHeight"
-            type="number"
-            min="0"
-            compact
-          >
-            <template #iconRight>px</template>
-          </InputField>
-        </div>
-      </template>
+      <table v-if="resizeMode === 'auto'" class="size-table">
+        <thead>
+          <tr>
+            <th />
+            <th scope="col">Width</th>
+            <th scope="col">Height</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Min</th>
+            <td>
+              <InputField
+                v-model="itemConfig.minWidth"
+                type="number"
+                min="0"
+                compact
+              >
+                <template #iconRight>px</template>
+              </InputField>
+            </td>
+            <td>
+              <InputField
+                v-model="itemConfig.minHeight"
+                type="number"
+                min="0"
+                compact
+              >
+                <template #iconRight>px</template>
+              </InputField>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Max</th>
+            <td>
+              <InputField
+                v-model="itemConfig.maxWidth"
+                type="number"
+                min="0"
+                compact
+              >
+                <template #iconRight>px</template>
+              </InputField>
+            </td>
+            <td>
+              <InputField
+                v-model="itemConfig.maxHeight"
+                type="number"
+                min="0"
+                compact
+              >
+                <template #iconRight>px</template>
+              </InputField>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
@@ -174,9 +184,14 @@ watch(
   cursor: default;
   font-size: inherit;
   background: var(--knime-white);
-  padding: var(--space-8);
-  width: 360px;
+  padding: var(--space-16);
   z-index: v-bind("layoutEditorZIndices.configDialog");
+}
+
+.aspect-ratio-config {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
 }
 
 .grid {
@@ -185,17 +200,16 @@ watch(
   gap: var(--space-8);
 }
 
-.basic-grid {
-  grid-template-areas: "cell1 cell2";
-  grid-template-columns: repeat(2, 1fr);
-}
+.size-table {
+  border-collapse: separate;
+  border-spacing: var(--space-8);
 
-.full-grid {
-  grid-template-areas:
-    "cell1 cell1 cell1 cell1 cell1 cell1 cell2 cell2 cell2 cell2 cell2 cell2"
-    "cell3 cell3 cell3 cell3 cell3 cell3 cell4 cell4 cell4 cell4 cell4 cell4"
-    "cell5 cell5 cell6 cell6 cell6 cell6 cell6 cell7 cell7 cell7 cell7 cell7"
-    "cell8 cell8 cell9 cell9 cell9 cell9 cell9 cell10 cell10 cell10 cell10 cell10";
-  grid-template-columns: repeat(12, 1fr);
+  & th {
+    font-weight: 400;
+  }
+
+  & td {
+    max-width: 120px;
+  }
 }
 </style>

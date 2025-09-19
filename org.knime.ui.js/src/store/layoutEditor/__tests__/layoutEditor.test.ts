@@ -144,7 +144,7 @@ describe("layoutEditor", () => {
       layoutEditorStore.setLayout(initialLayout);
       expect(layoutEditorStore.layout).toEqual(initialLayout);
 
-      layoutEditorStore.resetLayout();
+      layoutEditorStore.discardChanges();
       expect(layoutEditorStore.layout).toEqual(initialLayout);
     });
 

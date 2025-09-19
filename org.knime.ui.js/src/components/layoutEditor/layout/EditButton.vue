@@ -34,7 +34,12 @@ button {
 
   &:hover,
   &.active {
-    background-color: var(--knime-yellow);
+    background-color: var(--knime-masala);
+  }
+
+  &:hover :slotted(svg),
+  &.active :slotted(svg) {
+    stroke: var(--knime-white);
   }
 
   &:focus-visible {

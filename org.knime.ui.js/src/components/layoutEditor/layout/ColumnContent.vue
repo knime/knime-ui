@@ -40,6 +40,7 @@ const floating = ref(null);
 const { floatingStyles } = useFloating(reference, floating, {
   strategy: "fixed",
   middleware: [flip(), shift()],
+  placement: "bottom-start",
   whileElementsMounted: autoUpdate,
 });
 
@@ -139,10 +140,6 @@ const closeDialogs = () => {
 
   &:not(:last-of-type) {
     margin-bottom: 5px;
-  }
-
-  & .delete-button {
-    border-radius: 0 3px 0 0;
   }
 
   & .config-button {

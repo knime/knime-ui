@@ -41,7 +41,10 @@ watch(
 
 <template>
   <span class="node-element-icon-container">
-    <ComponentIcon v-if="isComponent" class="node-element-icon" />
+    <ComponentIcon
+      v-if="isComponent"
+      :class="['node-element-icon', { 'component-icon': isComponent }]"
+    />
     <img v-else-if="icon !== null" :src="icon" alt="Icon of the node" />
     <MissingIcon v-else class="node-element-icon" />
   </span>
@@ -57,6 +60,10 @@ watch(
 }
 
 .node-element-icon {
+  &.component-icon {
+    fill: var(--knime-white);
+  }
+
   @mixin svg-icon-size var(--space-16);
 
   scale: 120%;

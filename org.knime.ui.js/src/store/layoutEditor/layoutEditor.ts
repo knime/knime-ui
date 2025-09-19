@@ -71,6 +71,19 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
    */
   const layout = ref<LayoutEditorViewLayout>(getEmptyLayout());
   const initialLayout = ref<string | null>(null);
+  const hasChanges = computed(() => {
+    if (initialLayout.value === null) {
+      return false;
+    }
+
+    try {
+      const layoutAsString = JSON.stringify(layout.value);
+      return layoutAsString !== initialLayout.value;
+    } catch (error) {
+      consola.warn("Failed to parse layout when computing for changes", error);
+      return true;
+    }
+  });
 
   const setLayout = (value: LayoutEditorViewLayout) => {
     if (!value.rows) {
@@ -84,19 +97,14 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
 
     const cleanedLayout = cleanLayout(value);
-
-    const layoutAsString = JSON.stringify(cleanedLayout);
-
-    layout.value = JSON.parse(layoutAsString);
-
-    initialLayout.value = layoutAsString;
+    layout.value = cleanedLayout;
   };
 
   const clearLayout = () => {
     layout.value = getEmptyLayout();
   };
 
-  const resetLayout = () => {
+  const discardChanges = () => {
     if (initialLayout.value !== null) {
       layout.value = JSON.parse(initialLayout.value);
     }
@@ -435,6 +443,8 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       );
 
       setLayout(viewLayout);
+      initialLayout.value = JSON.stringify(layout.value);
+
       setNodes(viewNodes);
       setConfigurationLayout(filledConfigurationLayout);
       setConfigurationNodes(configurationNodes);
@@ -507,9 +517,10 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
     // Layout state
     layout,
+    hasChanges,
     setLayout,
     clearLayout,
-    resetLayout,
+    discardChanges,
     addColumn,
     updateColumnContent,
     deleteColumn,

@@ -12,8 +12,13 @@ import AvailableNodesAndElements from "./AvailableNodesAndElements.vue";
 import Row from "./layout/Row.vue";
 
 const layoutEditorStore = useLayoutEditorStore();
-const { layout, availableNodes, isLegacyModeOutOfSync, isWrappingLayout } =
-  storeToRefs(layoutEditorStore);
+const {
+  layout,
+  availableNodes,
+  isLegacyModeOutOfSync,
+  isWrappingLayout,
+  hasChanges,
+} = storeToRefs(layoutEditorStore);
 
 const onLegacyModeToggle = (event: Event) => {
   const { checked } = event.target as HTMLInputElement;
@@ -28,7 +33,7 @@ const onLegacyModeToggle = (event: Event) => {
         <Button
           compact
           with-border
-          title="remove all views and rows"
+          title="Remove all views and rows"
           @click="layoutEditorStore.clearLayout()"
         >
           Clear layout
@@ -36,10 +41,11 @@ const onLegacyModeToggle = (event: Event) => {
         <Button
           compact
           with-border
-          title="revert to initial state"
-          @click="layoutEditorStore.resetLayout()"
+          title="Revert to initial state"
+          :disabled="!hasChanges"
+          @click="layoutEditorStore.discardChanges()"
         >
-          Reset layout
+          Discard changes
         </Button>
       </div>
 
@@ -162,11 +168,12 @@ const onLegacyModeToggle = (event: Event) => {
   background-color: var(--knime-gray-light-semi);
   height: 100%;
   padding: var(--space-12) var(--space-12) 0 var(--space-16);
-  max-width: 250px;
+  width: 300px;
 }
 
 .controls {
   display: flex;
+  justify-content: center;
   gap: var(--space-4);
 }
 

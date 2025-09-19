@@ -8,6 +8,7 @@ import {
   type LayoutEditorViewItem,
   isViewItem,
 } from "@/store/layoutEditor/types/view";
+import { parseNodeDescription } from "@/store/layoutEditor/utils";
 
 import NodeIcon from "./NodeIcon.vue";
 
@@ -88,9 +89,8 @@ const autoSizeStyles = computed(() => {
     <div v-if="node" :title="node.name" class="knime-view-container">
       <main>
         <NodeIcon :node="node" class="node-icon" />
-        <br />
-        {{ node.name }} <br />
-        <small class="text-muted node-id">Node&nbsp;{{ view.nodeID }}</small>
+        <div class="node-name">{{ node.name }}</div>
+        <small class="text-muted node-id">Node {{ view.nodeID }}</small>
         <small v-if="!isEnabled" class="text-muted">
           (disabled in node usage)
         </small>
@@ -102,14 +102,15 @@ const autoSizeStyles = computed(() => {
           "
           class="description"
         >
-          <small>{{ node.description }}</small>
+          <small>{{ parseNodeDescription(node.description) }}</small>
         </div>
       </main>
     </div>
 
     <main v-else class="knime-view-container">
-      <span class="node-id">Node&nbsp;{{ view.nodeID }}</span> (missing in
-      workflow)
+      <span class="node-name">
+        Node {{ view.nodeID }} (missing in workflow)
+      </span>
     </main>
   </div>
 </template>
@@ -120,7 +121,7 @@ const autoSizeStyles = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--knime-aquamarine);
+  background-color: var(--knime-cornflower-semi);
   border-radius: 3px;
   overflow: hidden;
   text-align: center;
@@ -133,6 +134,10 @@ const autoSizeStyles = computed(() => {
     align-items: center;
     justify-content: center;
     font-size: clamp(13px, 7cqi, 28px);
+  }
+
+  & .text-muted {
+    color: var(--knime-dove-gray);
   }
 
   &.missing {
@@ -163,13 +168,20 @@ const autoSizeStyles = computed(() => {
 
   & main {
     padding: 0 10px;
+    font-size: 13px;
 
-    & .description {
-      line-height: 100%;
+    & .node-name {
+      font-weight: bold;
     }
 
     & .node-id {
+      font-size: 10px;
       white-space: nowrap;
+    }
+
+    & .description {
+      line-height: 100%;
+      white-space: pre-wrap;
     }
   }
 }
