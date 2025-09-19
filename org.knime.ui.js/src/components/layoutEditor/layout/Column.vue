@@ -122,7 +122,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
     (var(--resize-width) - var(--resize-line-width)) / 2
   );
   --resize-color: var(--knime-silver-sand);
-  --resize-color-active: var(--knime-yellow);
+  --resize-color-active: var(--knime-masala);
   --resize-arrow-width: var(--space-4);
   --resize-arrow-height: var(--space-4);
 

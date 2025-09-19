@@ -40,6 +40,7 @@ const floating = ref(null);
 const { floatingStyles } = useFloating(reference, floating, {
   strategy: "fixed",
   middleware: [flip(), shift()],
+  placement: "bottom-start",
   whileElementsMounted: autoUpdate,
 });
 

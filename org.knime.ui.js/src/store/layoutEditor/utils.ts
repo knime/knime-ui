@@ -95,7 +95,9 @@ export const generateRowTemplates = (): RowElementTemplate[] => {
 // - remove multiple nodes with the same nodeID
 // - add missing widthXS
 // - remove duplicate widths if equal
-export const cleanLayout = function (layout: LayoutEditorViewLayout) {
+export const cleanLayout = function (
+  layout: LayoutEditorViewLayout,
+): LayoutEditorViewLayout {
   const nodeIDs: string[] = [];
 
   const recursiveClean = function (rows: Array<LayoutEditorItem>) {
@@ -139,7 +141,7 @@ export const cleanLayout = function (layout: LayoutEditorViewLayout) {
   return {
     rows: recursiveClean(layout.rows),
     parentLayoutLegacyMode: layout.parentLayoutLegacyMode,
-  };
+  } as LayoutEditorViewLayout;
 };
 
 export const createViewFromNode = ({ layout }: LayoutEditorNode) =>
@@ -191,4 +193,13 @@ export const fillConfigurationLayout = (
       ],
     };
   }, layout);
+};
+
+export const parseNodeDescription = (raw: string) => {
+  try {
+    return JSON.parse(`"${raw}"`);
+  } catch (error) {
+    consola.warn("Failed to parse node description", error);
+    return raw;
+  }
 };

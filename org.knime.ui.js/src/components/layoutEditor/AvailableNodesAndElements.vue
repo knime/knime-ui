@@ -7,6 +7,7 @@ import {
   checkMove,
   createViewFromNode,
   createViewFromRowTemplate,
+  parseNodeDescription,
 } from "@/store/layoutEditor/utils";
 
 import NodeIcon from "./layout/NodeIcon.vue";
@@ -35,7 +36,7 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
     <template #item="{ element }">
       <li
         :key="element.nodeID"
-        :class="['item', element.type]"
+        :class="['item', 'draggable-node', element.type]"
         @click.prevent="layoutEditorStore.addNode(element)"
       >
         <div class="name">
@@ -50,7 +51,7 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
           class="description"
           :title="element.description"
         >
-          {{ element.description }}
+          {{ parseNodeDescription(element.description) }}
         </div>
       </li>
     </template>
@@ -120,13 +121,6 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
   min-height: 30px;
 }
 
-.item {
-  cursor: grab;
-  border-radius: 3px;
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
-}
-
 .row {
   background-color: var(--knime-white);
   user-select: none;
@@ -145,55 +139,61 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
   }
 }
 
-.name {
-  display: flex;
-  align-items: center;
+.available-elements .row:hover {
+  background-color: transparent;
+}
 
-  & div {
-    flex: 1;
+.item {
+  cursor: grab;
+  border-radius: 3px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.draggable-node {
+  background-color: var(--knime-aquamarine);
+  user-select: none;
+
+  &:hover {
+    background-color: var(--knime-aquamarine-light);
+  }
+
+  & .node-icon {
     margin-right: var(--space-8);
+  }
+
+  & .name {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: bold;
+
+    & div {
+      flex: 1;
+      margin-right: var(--space-8);
+
+      @mixin truncate;
+    }
+
+    & small {
+      white-space: nowrap;
+    }
+  }
+
+  & .description {
+    font-size: 13px;
+    margin-left: var(--space-24);
 
     @mixin truncate;
   }
 
-  & small {
-    white-space: nowrap;
-  }
-}
-
-.description {
-  margin-left: var(--space-24);
-
-  @mixin truncate;
-}
-
-.node-icon {
-  margin-right: var(--space-8);
-}
-
-.available-nodes {
-  & .item {
-    background-color: var(--knime-aquamarine);
-    user-select: none;
+  &.quickform,
+  &.configuration {
+    background-color: var(--knime-avocado);
 
     &:hover {
-      background-color: var(--knime-aquamarine-light);
+      background-color: var(--knime-avocado-light);
     }
-
-    &.quickform,
-    &.configuration {
-      background-color: var(--knime-avocado);
-
-      &:hover {
-        background-color: var(--knime-avocado-light);
-      }
-    }
-  }
-}
-
-.available-elements {
-  & .row:hover {
-    background-color: transparent;
   }
 }
 </style>
