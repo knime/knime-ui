@@ -73,10 +73,12 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `pnpm build:e2e && pnpm serve --host=${WEBSERVER_HOST} --port=${WEBSERVER_PORT}`,
+    command: `echo "Starting application at: http://${WEBSERVER_HOST}:${WEBSERVER_PORT}" && pnpm build:e2e && pnpm serve --host=${WEBSERVER_HOST} --port=${WEBSERVER_PORT}`,
     url: WEBSERVER_URL,
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",
     stderr: "pipe",
+    // Add more time, because in CI the vite build for the application might take longer
+    timeout: 240000,
   },
 });
