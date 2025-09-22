@@ -1,3 +1,5 @@
+import type { Toast } from "@knime/components";
+
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 export type EmbeddingContext = {
@@ -15,7 +17,8 @@ const MESSAGES = {
   EMBEDDING_CONTEXT: `${_prefix}__EMBEDDING_CONTEXT`,
 
   INITIALIZATION_FAILED: `${_prefix}__INITIALIZATION_FAILED`,
-};
+  NOTIFICATION: `${_prefix}__NOTIFICATION`,
+} as const;
 
 let __embeddingContext: Readonly<EmbeddingContext>;
 
@@ -73,20 +76,6 @@ const waitForContext = (): Promise<EmbeddingContext> => {
     consola.info("Embedding:: Received context message", data);
     const { payload } = data;
 
-    // // for embedded dev mode, resolve to the dev urls
-    // // see .env file for more details
-    // if (import.meta.env.DEV && import.meta.env.VITE_BROWSER_DEV_MODE_EMBEDDED === "true") {
-    //   const context: EmbeddingContext = {
-    //     url: import.meta.env.VITE_BROWSER_DEV_WS_URL,
-    //     restApiBaseUrl: "",
-    //     userIdleTimeout: payload.userIdleTimeout,
-    //   };
-    //   setContext(context);
-    //   resolve(context);
-    //   teardown();
-    //   return;
-    // }
-
     if (!payload.jobId) {
       consola.fatal("Embedding:: Incorrect context payload", data);
       reject(new Error("incorrect context payload. `jobId` missing"));
@@ -112,8 +101,25 @@ const sendAppInitializationError = (error: unknown) => {
   window.parent.postMessage({ type: MESSAGES.INITIALIZATION_FAILED, error }, "*");
 };
 
+export type GenericNotification = {
+  kind: "generic";
+  content: unknown;
+};
+
+export type ToastNotification = {
+  kind: "toast";
+  content: Toast;
+};
+
+export type Notification = GenericNotification | ToastNotification;
+
+export const notifyEmbedder = (notification: Notification) => {
+  window.parent.postMessage({ type: MESSAGES.NOTIFICATION, payload: notification }, "*");
+};
+
 export const embedding = {
   waitForContext,
   getContext,
   sendAppInitializationError,
+  notifyEmbedder,
 };
