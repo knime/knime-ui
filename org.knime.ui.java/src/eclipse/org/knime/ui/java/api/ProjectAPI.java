@@ -112,7 +112,7 @@ final class ProjectAPI {
      */
     @API
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
-        throws OpenProject.OpenProjectException, GatewayException {
+        throws GatewayException {
         OpenProject.openProject(spaceId, itemId, spaceProviderId);
     }
 

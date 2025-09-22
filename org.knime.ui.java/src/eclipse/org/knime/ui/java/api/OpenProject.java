@@ -48,7 +48,6 @@ package org.knime.ui.java.api;
 
 import static org.knime.gateway.api.entity.EntityBuilderManager.builder;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -105,21 +104,26 @@ final class OpenProject {
      * @throws ServiceCallException
      * @throws LoggedOutException
      * @throws NetworkException
-     * @throws OpenProjectException Specific exception thrown when a project failed to open
      */
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
-        throws OpenProjectException, NetworkException, LoggedOutException, ServiceCallException {
+        throws NetworkException, LoggedOutException, ServiceCallException {
         var spaceProviders = DesktopAPI.getSpaceProviders();
-
         Space space;
         final ProjectTypeEnum projectType;
         try {
             space = spaceProviders.getSpace(spaceProviderId, spaceId);
-            projectType = space.getProjectType(itemId).orElseThrow(
-                () -> new OpenProjectException("The item is not a valid project.", new IllegalArgumentException(
-                    "The item for id " + itemId + " is neither a workflow- nor a component-project")));
+            projectType = space.getProjectType(itemId).orElseThrow(() -> ServiceCallException.builder() //
+                .withTitle("Failed to open project") //
+                .withDetails(
+                    "The project type could not be determined. This might be due to network or file access issues.") //
+                .canCopy(false) //
+                .build());
         } catch (NoSuchElementException e) {
-            throw new OpenProjectException("The project could not be found.", e);
+            throw ServiceCallException.builder() //
+                .withTitle("Failed to open project") //
+                .withDetails("The space or item could not be found. Check whether your spaces are configured properly") //
+                .canCopy(false) //
+                .build(); //
         } catch (MutableServiceCallException e) {
             throw e.toGatewayException("Failed to open project");
         }
@@ -140,7 +144,11 @@ final class OpenProject {
         // already trigger loading of wfm here because we want to abort and not register the project if this fails
         var loadedWfm = project.getFromCacheOrLoadWorkflowManager(VersionId.currentState());
         if (loadedWfm.isEmpty()) {
-            throw new OpenProjectException("Could not load workflow");
+            throw ServiceCallException.builder() //
+                .withTitle("Failed to load project") //
+                .withDetails("The project could not be loaded. Please check the log file for details") //
+                .canCopy(false) //
+                .build();
         } else {
             final var providerType = spaceProviders.getProviderTypes().get(spaceProviderId);
             registerProjectAndSetActive(project, providerType);
@@ -227,18 +235,6 @@ final class OpenProject {
             .setAuthorAccountId(selectedVersion.authorAccountId()) //
             .setCreatedOn(selectedVersion.createdOn()) //
             .build();
-    }
-
-    @SuppressWarnings("serial")
-    static final class OpenProjectException extends IOException {
-
-        private OpenProjectException(final String message, final Throwable cause) {
-            super(message, cause);
-        }
-
-        private OpenProjectException(final String message) {
-            super(message);
-        }
     }
 
     /**
