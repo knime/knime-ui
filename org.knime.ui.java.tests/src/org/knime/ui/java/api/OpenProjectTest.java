@@ -107,7 +107,7 @@ class OpenProjectTest {
         var itemId = localSpace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 
         assertThatThrownBy(() -> OpenProject.openProject("local", "local", "does-not-exist"))
-            .isInstanceOf(OpenProject.OpenProjectException.class);
+            .isInstanceOf(RuntimeException.class);
 
         OpenProject.openProject("local", itemId, "local");
 

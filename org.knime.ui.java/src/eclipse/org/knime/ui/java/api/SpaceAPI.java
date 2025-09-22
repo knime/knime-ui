@@ -132,19 +132,23 @@ final class SpaceAPI {
      * provider information (no matter whether it has been connected already or not).
      *
      * @return A JSON object with all the space provider information.
-     * @throws JsonProcessingException if the result couldn't be serialized
+     * @throws RuntimeException if the result couldn't be serialized
      * @throws NoSuchElementException if there is no space provider for the given id
      */
     @API(runInUIThread = false)
-    static String connectSpaceProvider(final String spaceProviderId) throws JsonProcessingException {
+    static String connectSpaceProvider(final String spaceProviderId) {
         final var spaceProvider = DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey())
             .getSpaceProvider(spaceProviderId);
         if (spaceProvider == null) {
             throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
         }
         var isConnected = spaceProvider.getConnection(false).isPresent();
-        return ObjectMapperUtil.getInstance().getObjectMapper()
-            .writeValueAsString(AppStateEntityFactory.buildSpaceProviderEnt(spaceProvider, !isConnected));
+        try {
+            return ObjectMapperUtil.getInstance().getObjectMapper()
+                    .writeValueAsString(AppStateEntityFactory.buildSpaceProviderEnt(spaceProvider, !isConnected));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize space provider.", e);
+        }
     }
 
     /**

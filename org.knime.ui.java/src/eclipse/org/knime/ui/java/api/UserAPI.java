@@ -100,16 +100,18 @@ final class UserAPI {
      *
      * @param key the part of the user profile to update
      * @param value the new value to replace the old value with completely
-     * @throws JsonProcessingException
      */
     @API
-    static void setUserProfilePart(final String key, final String data)
-        throws JsonProcessingException {
-        var userProfile = DesktopAPI.getDeps(UserProfile.class);
-        var mapToUpdate = UserProfilePart.of(key).get(userProfile);
-        var dataMap = DesktopAPI.MAPPER.readValue(data, Map.class);
-        mapToUpdate.clear();
-        mapToUpdate.putAll(dataMap);
+    static void setUserProfilePart(final String key, final String data) {
+        try {
+            var userProfile = DesktopAPI.getDeps(UserProfile.class);
+            var mapToUpdate = UserProfilePart.of(key).get(userProfile);
+            var dataMap = DesktopAPI.MAPPER.readValue(data, Map.class);
+            mapToUpdate.clear();
+            mapToUpdate.putAll(dataMap);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse JSON data: " + e.getMessage(), e);
+        }
     }
 
     /**
