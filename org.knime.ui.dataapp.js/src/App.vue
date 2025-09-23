@@ -4,7 +4,7 @@ import { useStore } from "vuex";
 
 import JobExecution from "./components/JobExecution.vue";
 import { useConstants } from "./plugins/constants";
-import { embedding } from "./util/embedding/embedding";
+import { embeddingBridge } from "./util/embedding/embeddingBridge";
 import { pageBuilderLoader } from "./util/pagebuilderLoader/pagebuilderLoader";
 
 const { restApiBaseUrl, jobId } = useConstants();
@@ -17,7 +17,7 @@ onBeforeMount(async () => {
     await pageBuilderLoader(restApiBaseUrl, jobId, store);
     isReady.value = true;
   } catch (error) {
-    embedding.sendAppInitializationError(error);
+    embeddingBridge.sendAppInitializationError(error);
   }
 });
 </script>
@@ -25,5 +25,3 @@ onBeforeMount(async () => {
 <template>
   <JobExecution v-if="isReady" />
 </template>
-
-<style scoped></style>

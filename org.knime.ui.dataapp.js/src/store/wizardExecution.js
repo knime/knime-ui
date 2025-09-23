@@ -3,7 +3,7 @@
 import { StatusCodes } from "http-status-codes";
 
 import * as globalConfigs from "@/config";
-import { embedding } from "@/util/embedding/embedding";
+import { embeddingBridge } from "@/util/embedding/embeddingBridge";
 import extractErrorMessage from "@/util/extractErrorMessage";
 
 /* wizard execution/navigation messages and configurations */
@@ -188,7 +188,7 @@ export const actions = {
           unsupportedExecutionStates[execState] || "No or unsupported wizardExecutionState!";
         consola.error(`${execState} State: ${details}`);
 
-        embedding.dispatchCommandToEmbedder({
+        embeddingBridge.dispatchCommandToEmbedder({
           kind: "showNotification",
           content: {
             type: "error",
@@ -254,11 +254,11 @@ export const actions = {
    */
   clearPageContentErrorNotifications() {
     consola.trace("Removing error notifications of client-side origin");
-    embedding.dispatchCommandToEmbedder({
+    embeddingBridge.dispatchCommandToEmbedder({
       kind: "clearNotification",
       payload: { deduplicationKey: clientValidationErrorMsgConfig.id },
     });
-    embedding.dispatchCommandToEmbedder({
+    embeddingBridge.dispatchCommandToEmbedder({
       kind: "clearNotification",
       payload: { deduplicationKey: serverValidationErrorMsgConfig.id },
     });
@@ -292,7 +292,7 @@ export const actions = {
     if (!validPage) {
       consola.error("Client side validation failed.");
 
-      embedding.dispatchCommandToEmbedder({
+      embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
         content: {
           type: "error",
@@ -311,7 +311,7 @@ export const actions = {
       return { viewValues };
     }
     consola.error("Retrieving viewValues failed.");
-    embedding.dispatchCommandToEmbedder({
+    embeddingBridge.dispatchCommandToEmbedder({
       kind: "showNotification",
       content: {
         type: "error",
@@ -339,7 +339,7 @@ export const actions = {
         });
       }
 
-      embedding.dispatchCommandToEmbedder({
+      embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
         content: {
           type: "error",
@@ -382,7 +382,7 @@ export const actions = {
     let errorResponse = pageError || jobError;
     if (errorResponse) {
       dispatch("clear");
-      embedding.dispatchCommandToEmbedder({
+      embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
         content: {
           type: "error",
@@ -438,7 +438,7 @@ export const actions = {
     }
     if (status === StatusCodes.NOT_ACCEPTABLE) {
       consola.error("Server validation failed.");
-      embedding.dispatchCommandToEmbedder({
+      embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
         content: {
           type: "error",
@@ -450,7 +450,7 @@ export const actions = {
       return {};
     }
 
-    embedding.dispatchCommandToEmbedder({
+    embeddingBridge.dispatchCommandToEmbedder({
       kind: "showNotification",
       content: {
         type: "error",
@@ -492,7 +492,7 @@ export const actions = {
       });
     }
 
-    embedding.dispatchCommandToEmbedder({
+    embeddingBridge.dispatchCommandToEmbedder({
       kind: "showNotification",
       content: {
         type: "error",
@@ -554,7 +554,7 @@ export const actions = {
     await dispatch("setNodesReExecuting", {});
     if (status === StatusCodes.NOT_ACCEPTABLE) {
       consola.error("Server validation failed.");
-      embedding.dispatchCommandToEmbedder({
+      embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
         content: {
           type: "error",
@@ -566,7 +566,7 @@ export const actions = {
       return {};
     }
 
-    embedding.dispatchCommandToEmbedder({
+    embeddingBridge.dispatchCommandToEmbedder({
       kind: "showNotification",
       content: {
         type: "error",
@@ -606,7 +606,7 @@ export const actions = {
         await dispatch("setNodesReExecuting", { nodesReExecuting: null });
         consola.debug("Reexecution failed: ", errorResponse);
         if (this.$router && this.$router.currentRoute.name !== "space-repository-job-exec") {
-          embedding.dispatchCommandToEmbedder({
+          embeddingBridge.dispatchCommandToEmbedder({
             kind: "showNotification",
             content: {
               type: "error",
@@ -664,7 +664,7 @@ export const actions = {
     // eslint-disable-next-line no-magic-numbers
     if (state.reExecutionUpdates >= 5 && !state.executingShown) {
       commit("setExecutingShown", true);
-      embedding.dispatchCommandToEmbedder({
+      embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
         content: {
           type: "error",
@@ -675,7 +675,7 @@ export const actions = {
     }
     if (!state.nodesReExecuting?.length && state.executingShown) {
       commit("setExecutingShown", false);
-      embedding.dispatchCommandToEmbedder({
+      embeddingBridge.dispatchCommandToEmbedder({
         kind: "clearNotification",
         // message also acts as id
         payload: { id: message },

@@ -54,12 +54,17 @@ const getPagebuilderScriptURL = (
   jobId: string,
   resource: typeof PAGEBULDER_RESOURCE,
 ) => {
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && import.meta.env.KNIME_DEV_LOCAL_PAGEBUILDER_SCRIPT_URL) {
     const baseUrl = import.meta.env.KNIME_DEV_LOCAL_PAGEBUILDER_SCRIPT_URL;
     return `${baseUrl}/${resource.devBuildPath}`;
   }
 
-  return `${baseUrl}/jobs/${jobId}/workflow/wizard/web-resources/${resource.url}`;
+  const _baseUrl = import.meta.env.PROD
+    ? baseUrl
+    : // will get proxied from hub-execution-webapp
+      `${import.meta.env.KNIME_DEV_LOCAL_EXECUTION_WEBAPP_URL}/_/api`;
+
+  return `${_baseUrl}/jobs/${jobId}/workflow/wizard/web-resources/${resource.url}`;
 };
 
 export async function pageBuilderLoader(restApiBaseUrl: string, jobId: string, store: Store<any>) {

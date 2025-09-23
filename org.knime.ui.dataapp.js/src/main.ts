@@ -2,6 +2,7 @@ import * as Vue from "vue";
 // eslint-disable-next-line depend/ban-dependencies
 import { default as $axios } from "axios";
 import { createPinia } from "pinia";
+import "./assets/index.css";
 
 import App from "./App.vue";
 import { apiFactory } from "./api";
@@ -9,14 +10,14 @@ import initConstants from "./plugins/constants";
 import { setupLogger } from "./plugins/logger";
 import router from "./router";
 import { createStore } from "./store";
-import { embedding } from "./util/embedding/embedding";
+import { embeddingBridge } from "./util/embedding/embeddingBridge";
 
 setupLogger();
 
 try {
   const app = Vue.createApp(App);
 
-  const { jobId, restApiBaseUrl } = await embedding.waitForContext();
+  const { jobId, restApiBaseUrl } = await embeddingBridge.waitForContext();
 
   const api = apiFactory({ $axios });
   const store = createStore(api);
@@ -36,5 +37,5 @@ try {
   app.mount("#app");
 } catch (error) {
   consola.fatal("Failed to initialize DataApp UI");
-  embedding.sendAppInitializationError(error);
+  embeddingBridge.sendAppInitializationError(error);
 }

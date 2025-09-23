@@ -117,7 +117,7 @@ export const dispatchCommandToEmbedder = (command: Command) => {
   window.parent.postMessage({ type: MESSAGES.COMMAND, payload: command }, "*");
 };
 
-export const embedding = {
+export const embeddingBridge = {
   waitForContext,
   getContext,
   sendAppInitializationError,
