@@ -1,7 +1,6 @@
 import { createStore as __createStore } from "vuex";
 
 import * as apiStoreConfig from "./api";
-import * as notificationsConfig from "./notifications";
 import * as wizardExecutionStoreConfig from "./wizardExecution";
 
 export const createStore = (api) => {
@@ -14,10 +13,6 @@ export const createStore = (api) => {
       wizardExecution: {
         namespaced: true,
         ...wizardExecutionStoreConfig,
-      },
-      notification: {
-        namespaced: true,
-        ...notificationsConfig,
       },
     },
   });

@@ -2,13 +2,31 @@
 /* eslint-disable complexity */
 import { StatusCodes } from "http-status-codes";
 
-// import {
-//   DEFAULT_ERROR_MESSAGE,
-//   clientValidationErrorMsgConfig,
-//   serverValidationErrorMsgConfig,
-// } from "@/config/messages.config";
 import * as globalConfigs from "@/config";
+import { embedding } from "@/util/embedding/embedding";
 import extractErrorMessage from "@/util/extractErrorMessage";
+
+/* wizard execution/navigation messages and configurations */
+const CLIENT_VALIDATION_ERROR_MESSAGE =
+  "Some of your input is invalid. Please check the messages on the page.";
+/**
+ * Contains a message (@field message) and unique message hash (@field id) which can be used for notification tracking.
+ */
+const clientValidationErrorMsgConfig = {
+  message: CLIENT_VALIDATION_ERROR_MESSAGE,
+  id: btoa(CLIENT_VALIDATION_ERROR_MESSAGE),
+};
+
+const SERVER_VALIDATION_ERROR_MESSAGE =
+  "Sorry, a problem occurred. Please check for errors on the page and" +
+  " contact your admin for KNIME Hub if the problem persists.";
+/**
+ * Contains a message (@field message) and unique message hash (@field id) which can be used for notification tracking.
+ */
+const serverValidationErrorMsgConfig = {
+  message: SERVER_VALIDATION_ERROR_MESSAGE,
+  id: btoa(SERVER_VALIDATION_ERROR_MESSAGE),
+};
 
 const formatViewValues = (viewValues) =>
   Object.keys(viewValues).reduce((obj, nodeId) => {
@@ -169,7 +187,16 @@ export const actions = {
         let details =
           unsupportedExecutionStates[execState] || "No or unsupported wizardExecutionState!";
         consola.error(`${execState} State: ${details}`);
-        dispatch("notification/show", { message: DEFAULT_ERROR_MESSAGE, details }, { root: true });
+
+        embedding.dispatchCommandToEmbedder({
+          kind: "showNotification",
+          content: {
+            type: "error",
+            message: `${DEFAULT_ERROR_MESSAGE}\n${details}`,
+            autoRemove: true,
+          },
+        });
+
         page = null;
       }
     }
@@ -225,10 +252,16 @@ export const actions = {
    * Clears error notification from page validation or other client-side problems and can be called
    * upon successfully completing a wizard navigation request.
    */
-  clearPageContentErrorNotifications({ dispatch }) {
+  clearPageContentErrorNotifications() {
     consola.trace("Removing error notifications of client-side origin");
-    let id = "[clientValidationErrorMsgConfig.id, serverValidationErrorMsgConfig.id]";
-    dispatch("notification/remove", { id }, { root: true });
+    embedding.dispatchCommandToEmbedder({
+      kind: "clearNotification",
+      payload: { deduplicationKey: clientValidationErrorMsgConfig.id },
+    });
+    embedding.dispatchCommandToEmbedder({
+      kind: "clearNotification",
+      payload: { deduplicationKey: serverValidationErrorMsgConfig.id },
+    });
   },
 
   /**
@@ -258,8 +291,14 @@ export const actions = {
 
     if (!validPage) {
       consola.error("Client side validation failed.");
-      dispatch("notification/show", "clientValidationErrorMsgConfig", {
-        root: true,
+
+      embedding.dispatchCommandToEmbedder({
+        kind: "showNotification",
+        content: {
+          type: "error",
+          deduplicationKey: clientValidationErrorMsgConfig.id,
+          message: clientValidationErrorMsgConfig.message,
+        },
       });
       return {};
     }
@@ -272,9 +311,15 @@ export const actions = {
       return { viewValues };
     }
     consola.error("Retrieving viewValues failed.");
-    dispatch("notification/show", "serverValidationErrorMsgConfig", {
-      root: true,
+    embedding.dispatchCommandToEmbedder({
+      kind: "showNotification",
+      content: {
+        type: "error",
+        deduplicationKey: serverValidationErrorMsgConfig.id,
+        message: serverValidationErrorMsgConfig.message,
+      },
     });
+
     return {};
   },
 
@@ -293,11 +338,15 @@ export const actions = {
           jobId,
         });
       }
-      dispatch(
-        "notification/show",
-        { message: extractErrorMessage(errorResponse) },
-        { root: true },
-      );
+
+      embedding.dispatchCommandToEmbedder({
+        kind: "showNotification",
+        content: {
+          type: "error",
+          message: extractErrorMessage(errorResponse),
+        },
+      });
+
       return {};
     }
     // stop polling if navigation has occurred
@@ -333,11 +382,13 @@ export const actions = {
     let errorResponse = pageError || jobError;
     if (errorResponse) {
       dispatch("clear");
-      dispatch(
-        "notification/show",
-        { message: extractErrorMessage(errorResponse) },
-        { root: true },
-      );
+      embedding.dispatchCommandToEmbedder({
+        kind: "showNotification",
+        content: {
+          type: "error",
+          message: extractErrorMessage(errorResponse),
+        },
+      });
       return { errorResponse };
     }
     // set resource base url because it currently includes the jobId
@@ -387,13 +438,26 @@ export const actions = {
     }
     if (status === StatusCodes.NOT_ACCEPTABLE) {
       consola.error("Server validation failed.");
-      dispatch("notification/show", "serverValidationErrorMsgConfig", {
-        root: true,
+      embedding.dispatchCommandToEmbedder({
+        kind: "showNotification",
+        content: {
+          type: "error",
+          deduplicationKey: serverValidationErrorMsgConfig.id,
+          message: serverValidationErrorMsgConfig.message,
+        },
       });
       await dispatch("pagebuilder/setValidationErrors", { page: data }, { root: true });
       return {};
     }
-    dispatch("notification/show", { message: extractErrorMessage(errorResponse) }, { root: true });
+
+    embedding.dispatchCommandToEmbedder({
+      kind: "showNotification",
+      content: {
+        type: "error",
+        message: extractErrorMessage(errorResponse),
+      },
+    });
+
     return { errorResponse };
   },
 
@@ -427,7 +491,15 @@ export const actions = {
         jobId,
       });
     }
-    dispatch("notification/show", { message: extractErrorMessage(errorResponse) }, { root: true });
+
+    embedding.dispatchCommandToEmbedder({
+      kind: "showNotification",
+      content: {
+        type: "error",
+        message: extractErrorMessage(errorResponse),
+      },
+    });
+
     return { errorResponse };
   },
 
@@ -482,13 +554,26 @@ export const actions = {
     await dispatch("setNodesReExecuting", {});
     if (status === StatusCodes.NOT_ACCEPTABLE) {
       consola.error("Server validation failed.");
-      dispatch("notification/show", "serverValidationErrorMsgConfig", {
-        root: true,
+      embedding.dispatchCommandToEmbedder({
+        kind: "showNotification",
+        content: {
+          type: "error",
+          deduplicationKey: serverValidationErrorMsgConfig.id,
+          message: serverValidationErrorMsgConfig.message,
+        },
       });
       await dispatch("pagebuilder/setValidationErrors", { page: data }, { root: true });
       return {};
     }
-    dispatch("notification/show", { message: extractErrorMessage(errorResponse) }, { root: true });
+
+    embedding.dispatchCommandToEmbedder({
+      kind: "showNotification",
+      content: {
+        type: "error",
+        message: extractErrorMessage(errorResponse),
+      },
+    });
+
     return { errorResponse };
   },
 
@@ -521,11 +606,13 @@ export const actions = {
         await dispatch("setNodesReExecuting", { nodesReExecuting: null });
         consola.debug("Reexecution failed: ", errorResponse);
         if (this.$router && this.$router.currentRoute.name !== "space-repository-job-exec") {
-          dispatch(
-            "notification/show",
-            { message: "Page re-execution unsuccessful." },
-            { root: true },
-          );
+          embedding.dispatchCommandToEmbedder({
+            kind: "showNotification",
+            content: {
+              type: "error",
+              message: "Page re-execution unsuccessful.",
+            },
+          });
         }
         return {};
       }
@@ -572,26 +659,27 @@ export const actions = {
     return poll(true);
   },
 
-  toggleExecutingMessage({ dispatch, commit, state }) {
+  toggleExecutingMessage({ commit, state }) {
     let message = "Executing...";
     // eslint-disable-next-line no-magic-numbers
     if (state.reExecutionUpdates >= 5 && !state.executingShown) {
       commit("setExecutingShown", true);
-      return dispatch(
-        "notification/show",
-        {
-          id: message,
+      embedding.dispatchCommandToEmbedder({
+        kind: "showNotification",
+        content: {
+          type: "error",
           message,
-          type: "info",
-          singleton: true,
-          showCloseButton: false,
+          deduplicationKey: message,
         },
-        { root: true },
-      );
+      });
     }
     if (!state.nodesReExecuting?.length && state.executingShown) {
       commit("setExecutingShown", false);
-      return dispatch("notification/remove", { id: message }, { root: true });
+      embedding.dispatchCommandToEmbedder({
+        kind: "clearNotification",
+        // message also acts as id
+        payload: { id: message },
+      });
     }
     return {};
   },

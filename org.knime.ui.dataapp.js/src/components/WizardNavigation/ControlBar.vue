@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 /**
  * Sticky footer component with 3 slots for controls.
  */
@@ -8,14 +8,6 @@ export default {
       type: Boolean,
       default: false,
     },
-  },
-  mounted() {
-    consola.trace("ControlBar mounted");
-    this.$store.dispatch("notification/setWithFooter", { withFooter: true });
-  },
-  beforeUnmount() {
-    consola.trace("ControlBar beforeUnmount");
-    this.$store.dispatch("notification/setWithFooter", { withFooter: false });
   },
 };
 </script>

@@ -12,7 +12,6 @@ export const useJobExecution = () => {
   const isFinished = computed(() => store.getters["wizardExecution/isFinished"]);
   const hasPreviousPage = computed(() => store.getters["wizardExecution/hasPreviousPage"]);
   const hasReport = computed(() => store.getters["wizardExecution/hasReport"]);
-  const totalNotifications = computed(() => store.getters["notification/totalNotifications"]);
 
   const executionState = computed(() => {
     return page.value?.wizardExecutionState;
@@ -51,10 +50,7 @@ export const useJobExecution = () => {
   const showControlBar = computed(() => {
     const noUserActionPossible = isFinished.value && !hasPreviousPage.value && !hasReport.value;
     const showControlBar = isPageValid.value && !noUserActionPossible;
-    // make sure notifications are displayed above the control bar
-    store.dispatch("notification/setWithFooter", {
-      withFooter: showControlBar,
-    });
+
     return showControlBar;
   });
 
@@ -83,11 +79,8 @@ export const useJobExecution = () => {
     // equal to the navigation bar min-height (70) + 5 * minimum notification height (56)
     const maxMargin = 350;
     const minNavHeight = 70;
-    const minMessageHeight = 56;
     let marginBottomPx = minNavHeight;
-    for (let i = 0; i < totalNotifications.value; i++) {
-      marginBottomPx += minMessageHeight;
-    }
+
     return `margin-bottom: ${Math.min(marginBottomPx, maxMargin)}px;`;
   });
 

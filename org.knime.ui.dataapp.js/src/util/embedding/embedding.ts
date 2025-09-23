@@ -17,7 +17,7 @@ const MESSAGES = {
   EMBEDDING_CONTEXT: `${_prefix}__EMBEDDING_CONTEXT`,
 
   INITIALIZATION_FAILED: `${_prefix}__INITIALIZATION_FAILED`,
-  NOTIFICATION: `${_prefix}__NOTIFICATION`,
+  COMMAND: `${_prefix}__COMMAND`,
 } as const;
 
 let __embeddingContext: Readonly<EmbeddingContext>;
@@ -101,25 +101,25 @@ const sendAppInitializationError = (error: unknown) => {
   window.parent.postMessage({ type: MESSAGES.INITIALIZATION_FAILED, error }, "*");
 };
 
-export type GenericNotification = {
-  kind: "generic";
-  content: unknown;
+type ShowNotificationCommand = {
+  kind: "showNotification";
+  payload: Toast;
 };
 
-export type ToastNotification = {
-  kind: "toast";
-  content: Toast;
+type ClearNotificationCommand = {
+  kind: "clearNotification";
+  payload: { id: string } | { deduplicationKey: string };
 };
 
-export type Notification = GenericNotification | ToastNotification;
+export type Command = ShowNotificationCommand | ClearNotificationCommand;
 
-export const notifyEmbedder = (notification: Notification) => {
-  window.parent.postMessage({ type: MESSAGES.NOTIFICATION, payload: notification }, "*");
+export const dispatchCommandToEmbedder = (command: Command) => {
+  window.parent.postMessage({ type: MESSAGES.COMMAND, payload: command }, "*");
 };
 
 export const embedding = {
   waitForContext,
   getContext,
   sendAppInitializationError,
-  notifyEmbedder,
+  dispatchCommandToEmbedder,
 };

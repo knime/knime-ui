@@ -7,12 +7,12 @@ import SignWarningIcon from "@knime/styles/img/icons/sign-warning.svg";
 
 const {
   messageHeader,
-  messages = {},
+  messages = [],
   success = false,
 } = defineProps<{
   messageHeader: string;
   success?: boolean;
-  messages?: Record<string, unknown>;
+  messages?: string[];
 }>();
 
 const icon = computed(() => (success ? CircleCheckIcon : SignWarningIcon));
@@ -26,7 +26,7 @@ const icon = computed(() => (success ? CircleCheckIcon : SignWarningIcon));
           <Component :is="icon" :class="{ icon: true, error: !success }" />
           <h5>{{ messageHeader }}</h5>
         </div>
-        <Collapser v-if="messages && Object.keys(messages).length" class="collapser result-content">
+        <Collapser v-if="messages && messages.length > 0" class="collapser result-content">
           <ul>
             <li v-for="(item, key) in messages" :key="key">
               {{ item }}

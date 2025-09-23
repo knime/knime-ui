@@ -10,7 +10,7 @@
  * @param {String} [errorResponse.headers['content-type']] - optional response type from the failed server response headers.
  * @returns {String} - the message extracted from the server error provided with HTML and empty data removed.
  */
-export default ({ data, headers, statusText }, defaultMessage = null) => {
+const extractErrorMessage = ({ data, headers, statusText }, defaultMessage = null) => {
   // Remove html from error data.
   if (
     headers &&
@@ -24,4 +24,11 @@ export default ({ data, headers, statusText }, defaultMessage = null) => {
     data = defaultMessage || "Something went wrong.";
   }
   return data;
+};
+
+export default extractErrorMessage;
+
+export const getErrorMessageForToast = (baseMessage, errorResponse) => {
+  const details = errorResponse ? extractErrorMessage(errorResponse) : null;
+  return details ? `${baseMessage}\n${details}}` : baseMessage;
 };
