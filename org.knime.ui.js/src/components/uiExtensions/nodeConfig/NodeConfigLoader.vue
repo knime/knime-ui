@@ -90,6 +90,7 @@ const loadExtensionConfig = async () => {
 const { uniqueNodeConfigId } = useUniqueNodeStateId(toRefs(props));
 
 const resetState = () => {
+  emit("controlsVisibilityChange", true);
   nodeConfigurationStore.setActiveExtensionConfig(null);
   nodeConfigurationStore.resetDirtyState();
 };

@@ -381,14 +381,14 @@ describe("NodeConfigLoader.vue", () => {
       const { wrapper } = doMount();
       await flushPromises();
 
-      expect(wrapper.emitted("controlsVisibilityChange")).toBeUndefined();
-
       const apiLayer = getApiLayer(wrapper);
 
       apiLayer.setControlsVisibility({ shouldBeVisible: false });
 
       await nextTick();
-      expect(wrapper.emitted("controlsVisibilityChange")![0][0]).toBe(false);
+      expect(wrapper.emitted("controlsVisibilityChange")!.at(-1)![0]).toBe(
+        false,
+      );
     });
 
     it("implements sendAlert", async () => {
@@ -455,8 +455,9 @@ describe("NodeConfigLoader.vue", () => {
 
   it("should reset nodeConfigurationStore on mount", () => {
     mockGetNodeDialog();
-    const { mockedStores } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
+    expect(wrapper.emitted("controlsVisibilityChange")![0][0]).toBe(true);
     expect(
       mockedStores.nodeConfigurationStore.setActiveExtensionConfig,
     ).toHaveBeenCalledExactlyOnceWith(null);
