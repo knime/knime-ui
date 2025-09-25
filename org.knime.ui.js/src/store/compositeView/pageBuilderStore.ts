@@ -36,13 +36,13 @@ interface SelectionServiceParams {
 
 export type PageBuilderStoreState = {
   projectId: string | null;
-  disallowWebNodes: boolean;
+  disallowLegacyWidgets: boolean;
   onChange: (isDirty: boolean, isDefault: boolean) => void;
 };
 
 const state: PageBuilderStoreState = {
   projectId: null,
-  disallowWebNodes: true,
+  disallowLegacyWidgets: true,
   onChange: () => {},
 };
 
@@ -526,7 +526,8 @@ const getters = {
         resourceInfo.baseUrl,
       );
     },
-  disallowWebNodes: (state: PageBuilderStoreState) => state.disallowWebNodes,
+  disallowLegacyWidgets: (state: PageBuilderStoreState) =>
+    state.disallowLegacyWidgets,
 };
 
 /*

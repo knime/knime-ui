@@ -78,7 +78,7 @@ describe("composite view store", () => {
       expect(mockCreatePageBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           state: {
-            disallowWebNodes: true,
+            disallowLegacyWidgets: true,
             disableWidgetsWhileExecuting: true,
             alwaysTearDownKnimePageBuilderAPI: true,
           },

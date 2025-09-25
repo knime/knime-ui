@@ -85,7 +85,7 @@ export const useCompositeViewStore = defineStore("component", () => {
           ...pageBuilderApiVuexStoreConfig,
           state: {
             ...pageBuilderApiVuexStoreConfig.state,
-            disallowWebNodes: true,
+            disallowLegacyWidgets: true,
             disableWidgetsWhileExecuting: true,
             alwaysTearDownKnimePageBuilderAPI: true,
           },
