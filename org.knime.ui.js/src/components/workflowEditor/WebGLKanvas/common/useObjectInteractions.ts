@@ -281,9 +281,15 @@ export const useObjectInteractions = (
       pointerMoveEvent.clientY,
     ]);
 
-    const snapFn = pointerMoveEvent.altKey
-      ? (val: number) => val
-      : geometry.utils.snapToGrid;
+    const shouldSnapToGrid =
+      !pointerMoveEvent.altKey && objectMetadata.type !== "bendpoint";
+
+    const moveThreshold =
+      objectMetadata.type === "bendpoint" ? 1 : MIN_MOVE_THRESHOLD;
+
+    const snapFn = shouldSnapToGrid
+      ? geometry.utils.snapToGrid
+      : (val: number) => val;
 
     const deltaX =
       snapFn(moveX - startPosition.value.x) +
@@ -293,8 +299,7 @@ export const useObjectInteractions = (
       startPosition.value.gridPositionDelta.y;
 
     const isSignificantMove =
-      Math.abs(deltaX) >= MIN_MOVE_THRESHOLD ||
-      Math.abs(deltaY) >= MIN_MOVE_THRESHOLD;
+      Math.abs(deltaX) >= moveThreshold || Math.abs(deltaY) >= moveThreshold;
 
     return { isSignificantMove, deltaX, deltaY };
   };
