@@ -110,11 +110,22 @@
       "required": ["type", "nodeID"]
     },
 
+    "LayoutEditorHtmlItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "html" },
+        "value": { "type": "string" }
+      }
+    },
+
     "LayoutEditorItem": {
       "oneOf": [
         { "$ref": "#/definitions/LayoutEditorRowItem" },
         { "$ref": "#/definitions/LayoutEditorViewItem" },
-        { "$ref": "#/definitions/LayoutEditorNestedLayoutItem" }
+        { "$ref": "#/definitions/LayoutEditorNestedLayoutItem" },
+        { "$ref": "#/definitions/LayoutEditorHtmlItem" }
       ]
     },
 

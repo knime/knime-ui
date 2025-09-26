@@ -47,6 +47,7 @@ const closeModal = () => {
     return;
   }
 
+  activeTab.value = "viewLayoutEditor";
   layoutEditorStore.close();
 };
 

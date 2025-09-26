@@ -21,6 +21,7 @@ import * as layoutEditorZIndices from "../z-indices";
 
 import ConfigDialog from "./ConfigDialog.vue";
 import EditButton from "./EditButton.vue";
+import HTMLView from "./HTMLView.vue";
 import KnimeView from "./KnimeView.vue";
 import Row from "./Row.vue";
 
@@ -75,6 +76,8 @@ const closeDialogs = () => {
       :view="item"
     />
     <Row v-else-if="isRowItem(item)" :row="item" />
+
+    <HTMLView v-else-if="item.type === 'html'" :item="item" />
 
     <EditButton
       v-if="item.type !== 'row'"

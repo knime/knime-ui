@@ -128,10 +128,16 @@ export const isNestedLayoutItem = (
 ): node is LayoutEditorNestedLayoutItem =>
   Boolean((node as LayoutEditorNestedLayoutItem).type === "nestedLayout");
 
+export type LayoutEditorHtmlItem = {
+  type: "html";
+  value: string;
+};
+
 export type LayoutEditorItem =
   | LayoutEditorRowItem
   | LayoutEditorViewItem
-  | LayoutEditorNestedLayoutItem;
+  | LayoutEditorNestedLayoutItem
+  | LayoutEditorHtmlItem;
 
 export type LayoutEditorItemSizingConfig = Pick<
   LayoutEditorBaseProps,
