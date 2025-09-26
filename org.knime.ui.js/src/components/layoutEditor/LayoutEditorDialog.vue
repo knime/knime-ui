@@ -55,6 +55,13 @@ const onSubmit = async () => {
   isSubmitted.value = false;
 };
 
+watch(layoutContext, () => {
+  // reset tab state when layout editor is closed
+  if (layoutContext.value === null) {
+    activeTab.value = "viewLayoutEditor";
+  }
+});
+
 watch(layoutContext, layoutEditorStore.load);
 
 const tabs = computed<LayoutEditorTabs[]>(() => [

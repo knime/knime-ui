@@ -12,6 +12,7 @@ import "monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestController";
 import rafThrottle from "raf-throttle";
 import {
   Diagnostic,
+  type JSONSchema,
   type LanguageService,
   TextDocument,
   getLanguageService,
@@ -21,7 +22,6 @@ import CircleCloseFilledIcon from "@knime/styles/img/icons/circle-close.svg";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
-import schema from "./schema.json";
 import { useDuplicateNodeIdValidation } from "./useDuplicateNodeIdValidation";
 
 const editorElementRef = useTemplateRef("editorRef");
@@ -53,29 +53,13 @@ const isInvalidContent = computed(
     duplicateNodeIssues.value.length > 0,
 );
 
-const getJSONSchema = () => {
-  if (!modelUri) {
-    throw new Error("Tried to get JSON schema before creating model");
-  }
-
-  return {
-    // this is not a real uri. it's just used as an identifier for this
-    // schema but there's no fetching involved
-    uri: "http://org.knime.ui/layout-editor-schema.json",
-    fileMatch: [modelUri.toString()],
-    schema,
-  };
-};
-
 const { validateDuplicateNodeIds } = useDuplicateNodeIdValidation();
 
-const runSchemaValidation = async (content: string) => {
-  if (!jsonLanguageService) {
-    consola.error(
-      "Failed to run JSON Schema validation. Language service not available",
-    );
-    return;
-  }
+const runSchemaValidation = async (
+  languageService: LanguageService,
+  model: monaco.editor.ITextModel,
+) => {
+  const content = model.getValue();
 
   const textDocument = TextDocument.create(
     model.uri.toString(),
@@ -84,9 +68,9 @@ const runSchemaValidation = async (content: string) => {
     content,
   );
 
-  const jsonDocument = jsonLanguageService.parseJSONDocument(textDocument);
+  const jsonDocument = languageService.parseJSONDocument(textDocument);
 
-  const diagnostics = await jsonLanguageService.doValidation(
+  const diagnostics = await languageService.doValidation(
     textDocument,
     jsonDocument,
   );
@@ -128,21 +112,41 @@ const runNodeIdValidation = (content: string) => {
   }
 };
 
-const initializeEditor = () => {
+type SchemaConfig = {
+  uri: string;
+  fileMatch: string[];
+  schema: JSONSchema;
+};
+
+const getSchema = async (): Promise<SchemaConfig> => {
+  const schema = (await import("./schema.json")).default;
   schema.definitions.NodeId.enum = nodes.value.map(({ nodeID }) => nodeID);
+
+  const schemaConfig = {
+    // this is not a real uri. it's just used as an identifier for this
+    // schema but there's no fetching involved
+    uri: "http://org.knime.ui/layout-editor-schema.json",
+    fileMatch: ["*.json"],
+    schema,
+  };
+
+  return schemaConfig;
+};
+
+const initializeEditor = (schemaConfig: SchemaConfig) => {
+  modelUri = monaco.Uri.parse("file:///layout-editor.json");
 
   const initialContent =
     layoutEditorStore.advancedEditorData.contentDraft ??
     JSON.stringify(layout.value, null, 2);
 
-  modelUri = monaco.Uri.parse("file://layout-editor.json");
-  model = monaco.editor.createModel(initialContent, "json", modelUri);
-  advancedEditorData.value.contentDraft = initialContent;
-
   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
     validate: true,
-    schemas: [getJSONSchema()],
+    schemas: [schemaConfig],
   });
+
+  model = monaco.editor.createModel(initialContent, "json", modelUri);
+  advancedEditorData.value.contentDraft = initialContent;
 
   editorInstance = monaco.editor.create(editorElementRef.value!, {
     model,
@@ -171,7 +175,7 @@ const initializeEditor = () => {
       rafThrottle(async () => {
         advancedEditorData.value.contentDraft = model.getValue();
 
-        await runSchemaValidation(advancedEditorData.value.contentDraft);
+        await runSchemaValidation(jsonLanguageService, model);
         runNodeIdValidation(advancedEditorData.value.contentDraft);
       }),
     ),
@@ -179,6 +183,8 @@ const initializeEditor = () => {
 
   disposables.push(editorInstance);
   disposables.push(model);
+
+  return model;
 };
 
 // Monaco's validation and problem detection runs in a webworker asynchronously
@@ -186,7 +192,7 @@ const initializeEditor = () => {
 // to make sure the user doesn't exit the editor in an invalid state we have to make sure
 // a transition from invalid -> valid is properly handled. For this reason, we have to run validation
 // manually on demand
-const initializeJSONLanguageService = () => {
+const initializeJSONLanguageService = (schemaConfig: SchemaConfig) => {
   jsonLanguageService = getLanguageService({
     schemaRequestService: (_uri) => {
       throw new Error("fetch should not be used");
@@ -195,9 +201,34 @@ const initializeJSONLanguageService = () => {
 
   jsonLanguageService.configure({
     allowComments: false,
-    schemas: [getJSONSchema()],
+    schemas: [
+      {
+        ...schemaConfig,
+        // clone to avoid sharing same object reference between editor and language service
+        schema: structuredClone(schemaConfig.schema),
+      },
+    ],
+    validate: true,
   });
 };
+
+onMounted(async () => {
+  const schemaConfig = await getSchema();
+
+  // make a deep copy of the schema to avoid mutation issues while sharing it
+  // between the editor and the language service
+  const model = initializeEditor(schemaConfig);
+  initializeJSONLanguageService(schemaConfig);
+
+  // run an initial validation, in case the previous content is now invalid
+  await runSchemaValidation(jsonLanguageService, model);
+});
+
+onUnmounted(() => {
+  layoutEditorStore.setLayoutContentFromAdvancedEditor();
+
+  disposables.forEach((d) => d.dispose());
+});
 
 const goToLine = (lineNumber: number, column: number) => {
   editorInstance.setPosition({ lineNumber, column });
@@ -207,19 +238,6 @@ const goToLine = (lineNumber: number, column: number) => {
   );
   editorInstance.focus();
 };
-
-onMounted(() => {
-  initializeEditor();
-  initializeJSONLanguageService();
-  // run an initial validation, in case the previous content is now invalid
-  runSchemaValidation(model.getValue());
-});
-
-onUnmounted(() => {
-  layoutEditorStore.setLayoutContentFromAdvancedEditor();
-
-  disposables.forEach((d) => d.dispose());
-});
 </script>
 
 <template>
