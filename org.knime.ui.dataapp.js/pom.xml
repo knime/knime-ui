@@ -13,17 +13,17 @@
     <packaging>eclipse-plugin</packaging>
 
     <properties>
-        <sonar.sources>src</sonar.sources>
-        <sonar.tests>src</sonar.tests>
-        <sonar.test.inclusions>src/**/__tests__/**/*</sonar.test.inclusions>
-        <sonar.exclusions>src/**/__tests__/**/*,node_modules/**/*,dist/**/*,.nyc_output/**/*,test-results/**/*,*.log,config/**/*,**/config.js,**/*.config.js,buildtools/**,src/test/**</sonar.exclusions>
-        <sonar.javascript.lcov.reportPaths>test-results/lcov.info</sonar.javascript.lcov.reportPaths>
-        <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths>
-        <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths>
+        <!-- <sonar.sources>src</sonar.sources> -->
+        <!-- <sonar.tests>src</sonar.tests> -->
+        <!-- <sonar.test.inclusions>src/**/__tests__/**/*</sonar.test.inclusions> -->
+        <!-- <sonar.exclusions>src/**/__tests__/**/*,node_modules/**/*,dist/**/*,.nyc_output/**/*,test-results/**/*,*.log,config/**/*,**/config.js,**/*.config.js,buildtools/**,src/test/**</sonar.exclusions> -->
+        <!-- <sonar.javascript.lcov.reportPaths>test-results/lcov.info</sonar.javascript.lcov.reportPaths> -->
+        <!-- <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths> -->
+        <!-- <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths> -->
         <node.version>v22.11.0</node.version>
         <pnpm.version>10.7.0</pnpm.version>
         <revision>5.8.0</revision>
-        <cyclonedx.skip>true</cyclonedx.skip>
+        <!-- <cyclonedx.skip>true</cyclonedx.skip> -->
     </properties>
 
     <build>
@@ -86,7 +86,7 @@
                         </configuration>
                     </execution>
 
-				<!-- 
+				<!--
                     <execution>
                         <id>pnpm coverage</id>
                         <phase>test</phase>
