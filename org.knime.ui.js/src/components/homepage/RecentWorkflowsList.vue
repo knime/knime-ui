@@ -1,40 +1,49 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { formatTimeAgo } from "@vueuse/core";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
-import { Button, FileExplorer, useHint } from "@knime/components";
+import { FileExplorer } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
 import CloudComponentIcon from "@knime/styles/img/icons/cloud-component.svg";
 import CloudWorkflowIcon from "@knime/styles/img/icons/cloud-workflow.svg";
 import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
-import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import TimeIcon from "@knime/styles/img/icons/time.svg";
 import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 
 import type { RecentWorkflow, SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
-import { HINTS } from "@/hints/hints.config";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
-import { cachedLocalSpaceProjectId } from "@/store/spaces/common";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { useSpacesStore } from "@/store/spaces/spaces";
 import { formatSpaceProviderName, isLocalProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 
-import PageTitle from "./PageTitle.vue";
 import RecentWorkflowContextMenu from "./RecentWorkflowContextMenu.vue";
+
+type Props = {
+  filterQuery?: string;
+  disableContextMenu?: boolean;
+};
+
+const props = withDefaults(defineProps<Props>(), {
+  filterQuery: "",
+  disableContextMenu: false,
+});
+
+const emit = defineEmits<{
+  onOpen: [RecentWorkflow];
+}>();
 
 type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 
 const items = ref<RecentWorkflowItem[]>([]);
 const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
 const { connectProvider } = useSpaceAuthStore();
-const { openProject, fetchWorkflowGroupContent } = useSpaceOperationsStore();
-const { setCreateWorkflowModalConfig } = useSpacesStore();
+const { openProject } = useSpaceOperationsStore();
+
 const $router = useRouter();
 const { toastPresets } = getToastPresets();
 
@@ -56,12 +65,21 @@ const toFileExplorerItem = (
   meta: { recentWorkflow },
 });
 
+const isLoading = ref(false);
 const getRecentWorkflows = async () => {
+  isLoading.value = true;
   const recentWorkflows =
     await API.desktop.updateAndGetMostRecentlyUsedProjects();
 
   items.value = recentWorkflows.map(toFileExplorerItem);
+  isLoading.value = false;
 };
+
+const filteredItems = computed(() =>
+  items.value.filter((item) =>
+    item.name.toLowerCase().includes(props.filterQuery.toLowerCase()),
+  ),
+);
 
 const getSpaceProviderName = (recentWorkflow: RecentWorkflow) => {
   const provider = getProvider(recentWorkflow);
@@ -91,7 +109,7 @@ const tryConnectToProvider = async (
   }
 };
 
-const openRecentWorkflow = async (item: FileExplorerItem) => {
+const openRecentWorkflow = async (item: RecentWorkflowItem) => {
   const {
     recentWorkflow: { origin },
   } = (item as RecentWorkflowItem).meta!;
@@ -109,23 +127,13 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
 
   try {
     await openProject({ ...origin, $router });
+    emit("onOpen", item.meta!.recentWorkflow);
   } catch (error) {
     consola.error("Could not open recent workflow:", error);
 
     toastPresets.app.openProjectFailed({ error });
   }
 };
-
-const createNewWorkflowButton = ref<InstanceType<typeof Button>>();
-
-const { createHint } = useHint();
-
-onMounted(() => {
-  createHint({
-    hintId: HINTS.NEW_WORKFLOW,
-    referenceElement: createNewWorkflowButton,
-  });
-});
 
 const getIcon = (recentWorkflow: RecentWorkflow) => {
   const provider = getProvider(recentWorkflow);
@@ -148,111 +156,88 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
     : WorkflowIcon;
 };
 
-const createWorkflowLocally = async () => {
-  await fetchWorkflowGroupContent({
-    projectId: cachedLocalSpaceProjectId,
-  });
+const emptyMessage = computed(() => {
+  const hasNoItems =
+    items.value.length === 0 && filteredItems.value.length === 0;
 
-  setCreateWorkflowModalConfig({
-    isOpen: true,
-    projectId: cachedLocalSpaceProjectId,
-  });
-};
+  const title = hasNoItems
+    ? "You don't have any recent workflows yet"
+    : "No matching results";
+
+  const subtitle = hasNoItems
+    ? "Once you open a workflow or a component you will be able to quickly find it here."
+    : "Change your filter query to get different results.";
+
+  return { title, subtitle };
+});
 </script>
 
 <template>
-  <div class="recent-workflows">
-    <PageTitle title="Recently used workflows and components">
-      <template #append>
-        <Button
-          ref="createNewWorkflowButton"
-          compact
-          primary
-          class="create-workflow-button"
-          title="Create new workflow"
-          @click="createWorkflowLocally"
-        >
-          <PlusIcon />
-          <span>Create new workflow</span>
-        </Button>
-      </template>
-    </PageTitle>
-
-    <div class="list" data-test-id="recent-workflows">
-      <FileExplorer
-        :items="items"
-        disable-multi-select
-        disable-dragging
-        @open-file="openRecentWorkflow"
+  <FileExplorer
+    :items="filteredItems"
+    class="recent-workflows-list"
+    disable-multi-select
+    disable-dragging
+    :disable-context-menu="disableContextMenu"
+    @open-file="(e) => openRecentWorkflow(e as RecentWorkflowItem)"
+  >
+    <template v-if="!isLoading" #emptyFolder>
+      <div
+        data-test-id="no-recent-workflows"
+        class="no-recent-workflows-wrapper"
       >
-        <template #emptyFolder>
-          <div
-            data-test-id="no-recent-workflows"
-            class="no-recent-workflows-wrapper"
-          >
-            <div class="no-recent-workflows">
-              <TimeIcon />
-              <h3>You don't have any recent workflows yet</h3>
-              <p>
-                Once you open a workflow or a component you will be able to
-                quickly find it here.
-              </p>
-            </div>
-          </div>
-        </template>
+        <div class="no-recent-workflows">
+          <TimeIcon />
+          <h3>{{ emptyMessage.title }}</h3>
+          <p>
+            {{ emptyMessage.subtitle }}
+          </p>
+        </div>
+      </div>
+    </template>
 
-        <template #itemIcon="{ item }">
-          <Component
-            :is="getIcon(item.meta!.recentWorkflow as RecentWorkflow)"
-          />
-        </template>
+    <template #itemIcon="{ item }">
+      <Component :is="getIcon(item.meta!.recentWorkflow as RecentWorkflow)" />
+    </template>
 
-        <template #itemContent="{ item }">
-          <div class="item-content">
-            <span data-test-id="recent-workflow-name">{{ item.name }}</span>
+    <template #itemContent="{ item }">
+      <div class="item-content">
+        <span data-test-id="recent-workflow-name">{{ item.name }}</span>
 
-            <div class="item-meta">
-              <span
-                class="provider-name"
-                data-test-id="recent-workflow-provider"
-              >
-                {{
-                  getSpaceProviderName(
-                    item.meta!.recentWorkflow as RecentWorkflow,
-                  )
-                }}
-              </span>
-              <span data-test-id="recent-workflow-time">
-                {{
-                  formatTimeAgo(
-                    new Date(
-                      (item.meta!.recentWorkflow as RecentWorkflow).timeUsed,
-                    ),
-                  )
-                }}
-              </span>
-            </div>
-          </div>
-        </template>
+        <div class="item-meta">
+          <span class="provider-name" data-test-id="recent-workflow-provider">
+            {{
+              getSpaceProviderName(item.meta!.recentWorkflow as RecentWorkflow)
+            }}
+          </span>
+          <span data-test-id="recent-workflow-time">
+            {{
+              formatTimeAgo(
+                new Date(
+                  (item.meta!.recentWorkflow as RecentWorkflow).timeUsed,
+                ),
+              )
+            }}
+          </span>
+        </div>
+      </div>
+    </template>
 
-        <template #contextMenu="{ anchor, onItemClick, closeContextMenu }">
-          <RecentWorkflowContextMenu
-            :anchor="anchor"
-            :on-item-click="onItemClick"
-            :close-context-menu="closeContextMenu"
-          />
-        </template>
-      </FileExplorer>
-    </div>
-  </div>
+    <template #contextMenu="{ anchor, onItemClick, closeContextMenu }">
+      <RecentWorkflowContextMenu
+        :anchor="anchor"
+        :on-item-click="onItemClick"
+        :close-context-menu="closeContextMenu"
+      />
+    </template>
+  </FileExplorer>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.recent-workflows {
-  padding: 24px;
-  container: wrapper / inline-size;
+.recent-workflows-list {
+  overflow-y: auto;
 
   & .item-content {
     display: flex;
@@ -268,34 +253,6 @@ const createWorkflowLocally = async () => {
       & .provider-name {
         @mixin truncate;
       }
-    }
-  }
-}
-
-.create-workflow-button {
-  & svg {
-    margin-right: 4px;
-  }
-}
-
-@container wrapper (max-width: 580px) {
-  .create-workflow-button {
-    width: 30px;
-    height: 30px;
-
-    & span {
-      display: none;
-    }
-
-    & svg {
-      margin-right: 0;
-      padding-left: 1px;
-      top: 0;
-    }
-
-    &.compact {
-      min-width: auto;
-      padding: 5px;
     }
   }
 }

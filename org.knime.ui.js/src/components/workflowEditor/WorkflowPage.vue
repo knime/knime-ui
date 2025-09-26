@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import { SplitPanel } from "@knime/components";
 
@@ -8,9 +9,11 @@ import LayoutEditorDialog from "@/components/layoutEditor/LayoutEditorDialog.vue
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
+import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
+import CommandPanel from "./CommandPanel.vue";
 import WorkflowPanel from "./WorkflowPanel.vue";
 
 /**
@@ -31,6 +34,8 @@ const savedSecondarySize = computed({
     });
   },
 });
+
+const { isCommandPanelVisible } = storeToRefs(usePanelStore());
 </script>
 
 <template>
@@ -41,6 +46,7 @@ const savedSecondarySize = computed({
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
+    <CommandPanel v-if="isCommandPanelVisible" />
 
     <main class="workflow-area">
       <SplitPanel

@@ -154,7 +154,7 @@ export const createShortcutsService = ({
       return true;
     }
 
-    return shortcut.condition();
+    return shortcut.condition({ $router });
   };
 
   const preventDefault: ShortcutsService["preventDefault"] = (shortcutName) => {

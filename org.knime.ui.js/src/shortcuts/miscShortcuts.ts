@@ -1,6 +1,8 @@
 import LensMinusIcon from "@knime/styles/img/icons/lense-minus.svg";
 import LensPlusIcon from "@knime/styles/img/icons/lense-plus.svg";
 
+import { isDesktop } from "@/environment";
+import { APP_ROUTES } from "@/router/appRoutes";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
@@ -42,7 +44,15 @@ export const sidePanelShortcuts: SidePanelShortcuts = {
     text: "Hide or show left side panel",
     group: "panelNavigation",
     hotkey: ["CtrlOrCmd", "P"],
-    execute: () => usePanelStore().toggleLeftPanel(),
+    execute: () => {
+      usePanelStore().isCommandPanelVisible =
+        !usePanelStore().isCommandPanelVisible;
+    },
+    condition: ({ $router }) => {
+      const isWorkflowPage =
+        $router.currentRoute.value.name === APP_ROUTES.WorkflowPage;
+      return isWorkflowPage && isDesktop();
+    },
   },
 };
 

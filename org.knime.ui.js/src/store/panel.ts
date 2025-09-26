@@ -22,6 +22,7 @@ export interface PanelState {
   isLeftPanelExpanded: boolean;
   isExtensionPanelOpen: boolean;
   isRightPanelExpanded: boolean;
+  isCommandPanelVisible: boolean;
 }
 
 export const usePanelStore = defineStore("panel", {
@@ -30,6 +31,7 @@ export const usePanelStore = defineStore("panel", {
     isLeftPanelExpanded: true,
     isExtensionPanelOpen: false,
     isRightPanelExpanded: true,
+    isCommandPanelVisible: false,
   }),
   actions: {
     setActiveTab({

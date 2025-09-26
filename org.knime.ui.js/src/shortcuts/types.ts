@@ -26,6 +26,10 @@ export type ShortcutExecuteContext = {
   payload: { event?: Event; metadata?: any };
 };
 
+export type ShortcutConditionContext = {
+  $router: Router;
+};
+
 export type Shortcut = {
   /**
    * Action that executes when the shortcut is triggered. Will receive a context object
@@ -38,7 +42,7 @@ export type Shortcut = {
    * Shortcut can only execute if the result of this function is `true`. If not provided defaults to
    * true
    */
-  condition?: () => boolean;
+  condition?: (context: ShortcutConditionContext) => boolean;
 
   /**
    * Key combination that triggers the shortcut.

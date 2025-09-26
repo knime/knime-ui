@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ExampleWorkflows from "./ExampleWorkflows.vue";
-import RecentWorkflowsList from "./RecentWorkflowsList.vue";
+import RecentWorkflows from "./RecentWorkflows.vue";
 </script>
 
 <template>
@@ -9,7 +9,7 @@ import RecentWorkflowsList from "./RecentWorkflowsList.vue";
       <ExampleWorkflows />
     </div>
     <div>
-      <RecentWorkflowsList />
+      <RecentWorkflows />
     </div>
   </div>
 </template>
