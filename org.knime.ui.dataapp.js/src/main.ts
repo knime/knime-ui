@@ -24,8 +24,6 @@ try {
 
   initConstants(app, { jobId, restApiBaseUrl });
 
-  api.setStore(store);
-
   app.use(createPinia());
   app.use(router);
   app.use(store);

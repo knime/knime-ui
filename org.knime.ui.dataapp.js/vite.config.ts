@@ -6,8 +6,7 @@ import vueDevTools from "vite-plugin-vue-devtools";
 
 const envPrefix = "KNIME_";
 
-// https://vite.dev/config/
-export default ({ mode }: { mode: string }) => {
+export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd(), envPrefix) };
 
   return defineConfig({
@@ -28,4 +27,4 @@ export default ({ mode }: { mode: string }) => {
       },
     },
   });
-};
+});

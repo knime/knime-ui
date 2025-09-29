@@ -54,6 +54,7 @@ export const jobStates = {
   VANISHED: "Failed",
   NOT_EXECUTABLE: "Not executable",
 
+  // @ts-expect-error - needs refactoring
   [undefined]: "Interaction required", // fallback job state
 };
 

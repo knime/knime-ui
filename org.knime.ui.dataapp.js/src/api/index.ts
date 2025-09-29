@@ -1,3 +1,4 @@
+import { axiosResponseInterceptor } from "./axios-response.interceptor";
 import {
   callNodeDataService,
   callNodeDataServiceForVirtualProject,
@@ -17,15 +18,10 @@ import {
 } from "./serviceUrls";
 
 export const apiFactory = ({ $axios }) => {
-  let store;
-
   $axios.defaults.baseURL = "/_/api";
   consola.debug("Initializing axios using basePath", $axios.defaults.baseURL);
 
-  // reduce response payload by telling the server to suppress the Mason hypermedia elements
-  /* $axios.defaults.headers = {
-        Prefer: 'representation=minimal'
-    }; */
+  $axios.interceptors.response.use(axiosResponseInterceptor);
 
   /**
    * Package all requests (successful & error) to simplify checking for errors and improve
@@ -54,10 +50,6 @@ export const apiFactory = ({ $axios }) => {
     };
 
   return {
-    setStore: ($store) => {
-      store = $store;
-    },
-
     job: ({ jobId }) => {
       consola.trace("Axios sending job get request");
       return $axios.get(job({ jobId })[0]).then(createResponseHandler(), createErrorHandler());
