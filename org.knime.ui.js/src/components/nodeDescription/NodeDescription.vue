@@ -2,7 +2,9 @@
 import { computed, ref, toRefs, watch } from "vue";
 
 import { NodeFeatureList } from "@knime/components";
+import { sanitization } from "@knime/utils";
 
+import type { ComponentNodeDescription } from "@/api/custom-types";
 import { type NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import CloseButton from "@/components/common/CloseButton.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
@@ -11,7 +13,6 @@ import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
 } from "@/util/portDataMapper";
-import { sanitizeComponentDescription } from "@/util/sanitization";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 
@@ -87,6 +88,24 @@ const loadNativeNodeDescription = async () => {
   } finally {
     isLoading.value = false;
   }
+};
+
+const sanitizeComponentDescription = (
+  unsafeDescription: ComponentNodeDescription,
+): ComponentNodeDescriptionWithExtendedPorts => {
+  const cleaned: ComponentNodeDescription = {
+    ...unsafeDescription,
+    inPorts: (unsafeDescription.inPorts ?? []).map((port) => ({
+      ...port,
+      description: sanitization.stripHTML(port.description ?? ""),
+    })),
+    outPorts: (unsafeDescription.outPorts ?? []).map((port) => ({
+      ...port,
+      description: sanitization.stripHTML(port.description ?? ""),
+    })),
+  };
+
+  return cleaned as unknown as ComponentNodeDescriptionWithExtendedPorts;
 };
 
 const loadComponentDescription = async () => {

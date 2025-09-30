@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { InputField, Label, TextArea } from "@knime/components";
+import { sanitization } from "@knime/utils";
 
 import type {
   NodePortDescription,
   PortType,
 } from "@/api/gateway-api/generated-api";
 import portIconRenderer from "@/components/common/PortIconRenderer";
-import { sanitizeHTML } from "@/util/sanitization";
 
 export type PortEditorData = Pick<PortType, "color"> & NodePortDescription;
 
@@ -58,7 +58,7 @@ const updateField = <K extends keyof PortEditorData, V = PortEditorData[K]>(
           title="Port description"
           :maxlength="$characterLimits.metadata.component.portDescription"
           @update:model-value="
-            updateField('description', sanitizeHTML($event), index)
+            updateField('description', sanitization.stripHTML($event), index)
           "
         />
       </div>
