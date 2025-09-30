@@ -12,11 +12,13 @@ import { layoutEditorGridSize } from "@/style/shapes";
 
 import AvailableNodesAndElements from "./AvailableNodesAndElements.vue";
 import Row from "./layout/Row.vue";
+import NodeUsageButton from "./node-usage/NodeUsageButton.vue";
 
 const layoutEditorStore = useLayoutEditorStore();
 const {
   layout,
   availableNodes,
+  legacyNodes,
   isLegacyModeOutOfSync,
   isWrappingLayout,
   hasChanges,
@@ -54,6 +56,7 @@ const reportingEnabled = computed({
         >
           Clear layout
         </Button>
+
         <Button
           compact
           with-border
@@ -63,6 +66,8 @@ const reportingEnabled = computed({
         >
           Discard changes
         </Button>
+
+        <NodeUsageButton v-if="legacyNodes.length" />
       </div>
 
       <AvailableNodesAndElements />

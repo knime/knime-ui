@@ -29,7 +29,7 @@ const initialItemConfig: LayoutEditorItemSizingConfig = {
 const initialResizeMode = initialItemConfig.resizeMethod?.includes(
   "aspectRatio",
 )
-  ? "aspectRatio"
+  ? initialItemConfig.resizeMethod
   : "auto";
 
 const itemConfig = ref(initialItemConfig);
@@ -52,20 +52,14 @@ onUnmounted(() => {
 });
 
 watch(resizeMode, (newResizeMode) => {
-  switch (newResizeMode) {
-    case "aspectRatio":
-      itemConfig.value.resizeMethod = "aspectRatio16by9";
+  itemConfig.value.resizeMethod = newResizeMode;
 
-      // aspect ratio currently doesn't support min/max sizes
-      itemConfig.value.minWidth = null;
-      itemConfig.value.maxWidth = null;
-      itemConfig.value.minHeight = null;
-      itemConfig.value.maxHeight = null;
-
-      break;
-    case "auto":
-      itemConfig.value.resizeMethod = "auto";
-      break;
+  // aspect ratio options don't support min/max sizes
+  if (newResizeMode !== "auto") {
+    itemConfig.value.minWidth = null;
+    itemConfig.value.maxWidth = null;
+    itemConfig.value.minHeight = null;
+    itemConfig.value.maxHeight = null;
   }
 });
 
@@ -84,23 +78,14 @@ watch(
 <template>
   <div class="config-dialog">
     <div class="grid">
-      <div class="aspect-ratio-config">
+      <div class="resize-method-config">
         <ValueSwitch
           v-model="resizeMode"
           :possible-values="[
-            { id: 'aspectRatio', text: 'Aspect ratio' },
             { id: 'auto', text: 'Auto' },
-          ]"
-          compact
-        />
-
-        <ValueSwitch
-          v-if="resizeMode === 'aspectRatio'"
-          v-model="itemConfig.resizeMethod"
-          :possible-values="[
             { id: 'aspectRatio16by9', text: '16:9' },
             { id: 'aspectRatio4by3', text: '4:3' },
-            { id: 'aspectRatio1by1', text: 'square' },
+            { id: 'aspectRatio1by1', text: '1:1' },
           ]"
           compact
         />
@@ -132,7 +117,7 @@ watch(
                 min="0"
                 compact
               >
-                <template #iconRight>px</template>
+                <template #iconRight><span class="unit">px</span></template>
               </InputField>
             </td>
             <td>
@@ -142,7 +127,7 @@ watch(
                 min="0"
                 compact
               >
-                <template #iconRight>px</template>
+                <template #iconRight><span class="unit">px</span></template>
               </InputField>
             </td>
           </tr>
@@ -155,7 +140,7 @@ watch(
                 min="0"
                 compact
               >
-                <template #iconRight>px</template>
+                <template #iconRight><span class="unit">px</span></template>
               </InputField>
             </td>
             <td>
@@ -165,7 +150,7 @@ watch(
                 min="0"
                 compact
               >
-                <template #iconRight>px</template>
+                <template #iconRight><span class="unit">px</span></template>
               </InputField>
             </td>
           </tr>
@@ -188,16 +173,16 @@ watch(
   z-index: v-bind("layoutEditorZIndices.configDialog");
 }
 
-.aspect-ratio-config {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.resize-method-config {
+  display: flex;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .grid {
   display: grid;
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--space-16);
 }
 
 .size-table {
@@ -205,11 +190,16 @@ watch(
   border-spacing: var(--space-8);
 
   & th {
-    font-weight: 400;
+    font-weight: 500;
+    font-size: 12px;
   }
 
   & td {
-    max-width: 120px;
+    max-width: 90px;
+
+    & .unit {
+      font-size: 12px;
+    }
   }
 }
 </style>

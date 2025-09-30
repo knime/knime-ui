@@ -19,6 +19,7 @@ export type RowElementTemplate = {
 };
 
 export type LayoutEditorNodeType =
+  | "legacyView"
   | "view"
   | "quickform"
   | "nestedLayout"
@@ -26,7 +27,6 @@ export type LayoutEditorNodeType =
 
 export type LayoutEditorNode = {
   nodeID: string;
-  preview?: null;
   availableInView?: boolean;
   availableInDialog?: boolean;
   description?: string | null;
@@ -42,7 +42,7 @@ export type LayoutEditorNode = {
 };
 
 export type LayoutEditorViewNode = LayoutEditorNode & {
-  type: "view";
+  type: "view" | "legacyView";
 };
 
 export type LayoutEditorQuickformNode = LayoutEditorNode & {

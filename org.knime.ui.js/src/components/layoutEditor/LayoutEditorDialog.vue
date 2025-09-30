@@ -9,7 +9,7 @@ import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
 type LayoutEditorTabValue =
   | "viewLayoutEditor"
-  | "advancedViewLayoutEditor"
+  | "advancedLayoutEditor"
   | "configurationLayout";
 
 type LayoutEditorTabs = {
@@ -23,9 +23,8 @@ const ViewLayoutEditor = defineAsyncComponent({
   loader: () => import("./ViewLayoutEditor.vue"),
 });
 
-const AdvancedViewLayoutEditor = defineAsyncComponent({
-  loader: () =>
-    import("./AdvancedViewLayoutEditor/AdvancedViewLayoutEditor.vue"),
+const AdvancedLayoutEditor = defineAsyncComponent({
+  loader: () => import("./AdvancedLayoutEditor/AdvancedLayoutEditor.vue"),
 });
 
 const ConfigurationLayoutEditor = defineAsyncComponent({
@@ -67,16 +66,16 @@ watch(layoutContext, layoutEditorStore.load);
 const tabs = computed<LayoutEditorTabs[]>(() => [
   {
     value: "viewLayoutEditor",
-    label: "Composite View Layout",
+    label: "Data App Layout",
     component: ViewLayoutEditor,
     disabled:
       advancedEditorData.value.validity === "invalid" ||
       advancedEditorData.value.validity === "checking",
   },
   {
-    value: "advancedViewLayoutEditor",
-    label: "Advanced View Layout",
-    component: AdvancedViewLayoutEditor,
+    value: "advancedLayoutEditor",
+    label: "Advanced Layout",
+    component: AdvancedLayoutEditor,
   },
   {
     value: "configurationLayout",

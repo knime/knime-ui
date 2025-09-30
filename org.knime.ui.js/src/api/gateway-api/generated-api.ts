@@ -959,6 +959,12 @@ export interface ComponentEditorConfig {
      * @memberof ComponentEditorConfig
      */
     configurationLayout: string;
+    /**
+     * Properties of legacy view nodes to update.
+     * @type {Array<LegacyViewNodeConfig>}
+     * @memberof ComponentEditorConfig
+     */
+    legacyViewNodes?: Array<LegacyViewNodeConfig>;
 
 }
 
@@ -2295,6 +2301,29 @@ export interface KaiWelcomeMessages {
      * @memberof KaiWelcomeMessages
      */
     build: string;
+
+}
+
+
+/**
+ * Configuration of a legacy view node.
+ * @export
+ * @interface LegacyViewNodeConfig
+ */
+export interface LegacyViewNodeConfig {
+
+    /**
+     * The node ID of the legacy view node.
+     * @type {string}
+     * @memberof LegacyViewNodeConfig
+     */
+    nodeId: string;
+    /**
+     * Whether the legacy view node is available in the view layout.
+     * @type {boolean}
+     * @memberof LegacyViewNodeConfig
+     */
+    availableInView: boolean;
 
 }
 

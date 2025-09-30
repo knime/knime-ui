@@ -178,6 +178,6 @@ const closeDialogs = () => {
   background-color: transparent;
   position: fixed;
   inset: 0;
-  z-index: v-bind("layoutEditorZIndices.columnResizeHandle");
+  z-index: v-bind("layoutEditorZIndices.dialogOverlay");
 }
 </style>

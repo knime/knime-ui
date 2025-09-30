@@ -3,7 +3,10 @@ import { API } from "@api";
 import { isEqual } from "lodash-es";
 import { defineStore } from "pinia";
 
-import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
+import {
+  ComponentEditorConfig,
+  type LegacyViewNodeConfig,
+} from "@/api/gateway-api/generated-api";
 import { layoutEditorGridSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
 import { useNodeTemplatesStore } from "../nodeTemplates/nodeTemplates";
@@ -215,6 +218,10 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       ({ nodeID }) => !nodeIdsInLayout.value.includes(nodeID),
     );
   });
+
+  const legacyNodes = computed(() =>
+    nodes.value.filter(({ type }) => type === "legacyView"),
+  );
 
   const setNodes = (newNodes: LayoutEditorNode[]) => {
     nodes.value = newNodes;
@@ -505,13 +512,24 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
 
     try {
+      const config: ComponentEditorConfig = {
+        reporting: reporting.value,
+        viewLayout: JSON.stringify(layout.value),
+        configurationLayout: JSON.stringify(configurationLayout.value),
+      };
+      const legacyViewNodes: LegacyViewNodeConfig[] = nodes.value
+        .filter((node) => node.type === "legacyView")
+        .map((node) => ({
+          nodeId: node.nodeID,
+          availableInView: node.availableInView || false,
+        }));
+      if (legacyViewNodes.length > 0) {
+        config.legacyViewNodes = legacyViewNodes;
+      }
+
       await API.componenteditor.applyComponentEditorConfig({
         ...layoutContext.value,
-        config: {
-          reporting: reporting.value,
-          viewLayout: JSON.stringify(layout.value),
-          configurationLayout: JSON.stringify(configurationLayout.value),
-        },
+        config,
       });
       close();
     } catch (error) {
@@ -543,6 +561,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     // Nodes
     nodes,
     availableNodes,
+    legacyNodes,
     setNodes,
     addNode,
 

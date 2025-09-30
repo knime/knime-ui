@@ -125,7 +125,7 @@ const getSchema = async (): Promise<SchemaConfig> => {
   const schemaConfig = {
     // this is not a real uri. it's just used as an identifier for this
     // schema but there's no fetching involved
-    uri: "http://org.knime.ui/layout-editor-schema.json",
+    uri: "https://org.knime.ui/layout-editor-schema.json",
     fileMatch: ["*.json"],
     schema,
   };

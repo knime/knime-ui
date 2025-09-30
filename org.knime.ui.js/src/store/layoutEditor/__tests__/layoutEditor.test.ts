@@ -714,6 +714,40 @@ describe("layoutEditor", () => {
         },
       });
     });
+
+    it("saves the 'enable' state of the legacy view nodes", async () => {
+      mockedAPI.componenteditor.applyComponentEditorConfig.mockResolvedValueOnce(
+        true,
+      );
+      const { layoutEditorStore } = setupStore();
+      const workflow: LayoutContext = { projectId, workflowId, nodeId };
+      layoutEditorStore.setLayoutContext(workflow);
+      layoutEditorStore.nodes = [
+        {
+          nodeID: "n1",
+          type: "legacyView",
+          icon: "",
+          availableInView: true,
+          layout: { nodeID: "n1", type: "view" },
+          name: "Legacy View 1",
+          templateId: "t1",
+        },
+      ];
+      await layoutEditorStore.save();
+
+      expect(setLayoutFailedSpy).not.toHaveBeenCalled();
+      expect(
+        mockedAPI.componenteditor.applyComponentEditorConfig,
+      ).toHaveBeenCalledExactlyOnceWith({
+        ...workflow,
+        config: {
+          viewLayout: expect.any(String),
+          configurationLayout: expect.any(String),
+          legacyViewNodes: [{ nodeId: "n1", availableInView: true }],
+          reporting: "not-available",
+        },
+      });
+    });
   });
 
   describe("close", () => {
