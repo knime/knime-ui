@@ -218,6 +218,7 @@ const onEscape = async (event: KeyboardEvent) => {
   overflow: hidden;
   height: 100%;
   width: 100%;
+  isolation: isolate;
 
   & :deep(canvas) {
     position: relative;
