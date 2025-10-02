@@ -120,6 +120,15 @@ export const mockWebsocket = async (
           return;
         }
 
+        case "KaiService.listQuickActions": {
+          answer({
+            result: {
+              availableActions: ["generateAnnotation"],
+            },
+          });
+          return;
+        }
+
         default: {
           answer({});
         }

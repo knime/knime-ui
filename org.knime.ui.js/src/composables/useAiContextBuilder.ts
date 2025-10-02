@@ -83,7 +83,8 @@ const filterWorkflowToVicinity = (
   // This can happen if the user selects nodes that are very far apart (arguably a misuse
   // of the annotation function)
   if (
-    Object.keys(nodesInVicinity).length > VICINITY_CONFIG.LARGE_WORKFLOW_NODE_COUNT
+    Object.keys(nodesInVicinity).length >
+    VICINITY_CONFIG.LARGE_WORKFLOW_NODE_COUNT
   ) {
     const error: KaiQuickActionError = {
       code: KaiQuickActionError.CodeEnum.VALIDATIONERROR,
