@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.prefs;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 
@@ -69,6 +70,18 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
         store.setDefault(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, true);
         store.setDefault(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY, KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED);
         store.setDefault(KnimeUIPreferences.SUB_NODE_CONTAINER_UI_MODE_JS_PREF_KEY, false);
-        store.setDefault(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY, AppStateEnt.CanvasRendererEnum.WEBGL.toString());
+        store.setDefault(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY, canvasRenderer());
+    }
+
+    /**
+     * Decides which canvas renderer to use by default based on the OS.
+     */
+    private static String canvasRenderer() {
+        final var renderer = isLinux() ? AppStateEnt.CanvasRendererEnum.SVG : AppStateEnt.CanvasRendererEnum.WEBGL;
+        return renderer.toString();
+    }
+
+    private static boolean isLinux() {
+        return Platform.OS_LINUX.equals(Platform.getOS());
     }
 }
