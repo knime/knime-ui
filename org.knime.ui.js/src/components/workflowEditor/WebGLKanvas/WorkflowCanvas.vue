@@ -25,7 +25,6 @@ import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import FloatingCanvasTools from "./floatingToolbar/canvasTools/FloatingCanvasTools.vue";
-import FloatingNodeSelectionTools from "./floatingToolbar/nodeSelectionTools/FloatingNodeSelectionTools.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
@@ -34,10 +33,8 @@ const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
 
-const { selectedNodeIds } = storeToRefs(useSelectionStore());
 const { containerSize, shouldHideMiniMap, interactionsEnabled } =
   storeToRefs(canvasStore);
-const hasSelectedNodes = computed(() => selectedNodeIds.value.length > 0);
 
 const openQuickActionMenu = (event: PointerEvent) => {
   if (event.dataset) {
@@ -197,8 +194,6 @@ const onEscape = async (event: KeyboardEvent) => {
     <NodeLabelEditor />
 
     <FloatingCanvasTools v-if="!isWorkflowEmpty" />
-
-    <FloatingNodeSelectionTools v-if="hasSelectedNodes" />
 
     <svg
       v-if="activeWorkflow && isWorkflowEmpty"
