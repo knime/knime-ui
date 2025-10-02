@@ -282,7 +282,8 @@ public final class DesktopAPI {
         final LocalSpace localSpace, //
         final WelcomeAPEndpoint welcomeAPEndpoint, //
         final ExampleProjects exampleProjects, //
-        final UserProfile userProfile, final ProgressReporter progressReporter) {
+        final UserProfile userProfile, //
+        final ProgressReporter progressReporter) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }

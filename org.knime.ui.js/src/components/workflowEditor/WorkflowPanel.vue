@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, watch } from "vue";
+import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import { SplitPanel } from "@knime/components";
@@ -53,15 +54,16 @@ const WorkflowCanvas = computed(() =>
   currentRenderer.value === "SVG" ? SVGKanvas : WebGLKanvas,
 );
 
+const settingsStore = useSettingsStore();
+// eslint-disable-next-line no-magic-numbers
+const debouncedUpdateSetting = debounce(settingsStore.updateSetting, 5000);
+
 const nodeDialogSize = computed({
   get() {
-    return useSettingsStore().settings.nodeDialogSize;
+    return settingsStore.settings.nodeDialogSize;
   },
   set(value: number) {
-    useSettingsStore().updateSetting({
-      key: "nodeDialogSize",
-      value,
-    });
+    debouncedUpdateSetting({ key: "nodeDialogSize", value });
   },
 });
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { debounce } from "lodash-es";
 
 import { SplitPanel } from "@knime/components";
 
@@ -17,18 +18,18 @@ import WorkflowPanel from "./WorkflowPanel.vue";
  * Component that acts as a router page to render the workflow
  */
 const workflowStore = useWorkflowStore();
-const settingsStore = useSettingsStore();
 const expanded = ref(true);
+
+const settingsStore = useSettingsStore();
+// eslint-disable-next-line no-magic-numbers
+const debouncedUpdateSetting = debounce(settingsStore.updateSetting, 5000);
 
 const savedSecondarySize = computed({
   get() {
     return settingsStore.settings.nodeOutputSize;
   },
   set(value: number) {
-    settingsStore.updateSetting({
-      key: "nodeOutputSize",
-      value,
-    });
+    debouncedUpdateSetting({ key: "nodeOutputSize", value });
   },
 });
 </script>

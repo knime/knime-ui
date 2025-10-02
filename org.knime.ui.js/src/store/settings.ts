@@ -1,5 +1,4 @@
 import { API } from "@api";
-import { type DebouncedFunc, debounce } from "lodash-es";
 import { defineStore } from "pinia";
 
 import { runInEnvironment } from "@/environment";
@@ -48,10 +47,6 @@ const saveItem = (key: string, value: any) => {
   window?.localStorage?.setItem(key, JSON.stringify(value));
 };
 
-let debouncedSetUserProfilePart: DebouncedFunc<
-  typeof API.desktop.setUserProfilePart
->;
-
 export const useSettingsStore = defineStore("settings", {
   state: (): SettingsState => ({
     settings: defaults,
@@ -75,17 +70,6 @@ export const useSettingsStore = defineStore("settings", {
     },
 
     async updateSetting(payload: { key: string; value: any }) {
-      if (!debouncedSetUserProfilePart) {
-        // the API import is undefined on the module root and makes the tests fail
-        // This is due to order issues when importing the modules, so we use
-        // a singleton approach to avoid this problem
-        debouncedSetUserProfilePart = debounce(
-          API.desktop.setUserProfilePart,
-          // eslint-disable-next-line no-magic-numbers
-          5_000,
-        );
-      }
-
       this.updateAllSettings({
         ...this.settings,
         [payload.key]: payload.value,
@@ -93,7 +77,7 @@ export const useSettingsStore = defineStore("settings", {
 
       await runInEnvironment({
         DESKTOP: () => {
-          debouncedSetUserProfilePart({
+          API.desktop.setUserProfilePart({
             key: SETTINGS_KEY,
             data: this.settings,
           });
