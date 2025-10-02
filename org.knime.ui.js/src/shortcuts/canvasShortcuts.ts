@@ -39,7 +39,12 @@ const canvasShortcuts: CanvasShortcuts = {
     text: "Zoom in",
     hotkey: ["CtrlOrCmd", "+"],
     group: "canvasNavigation",
-    additionalHotkeys: [{ key: ["Shift", "CtrlOrCmd", "="], visible: false }],
+    additionalHotkeys: [
+      // other hotkeys for keyboards layouts that produce a `+`
+      // in other ways (e.g in english distributions, mac keyboards, etc)
+      { key: ["CtrlOrCmd", "="], visible: false },
+      { key: ["Shift", "CtrlOrCmd", "+"], visible: false },
+    ],
     execute: throttle(() => {
       useCurrentCanvasStore().value.zoomCentered({ delta: 1 });
     }),
