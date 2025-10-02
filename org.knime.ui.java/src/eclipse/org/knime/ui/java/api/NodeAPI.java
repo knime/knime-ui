@@ -50,8 +50,6 @@ package org.knime.ui.java.api;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
-import javax.swing.SwingUtilities;
-
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.Node;
@@ -88,22 +86,19 @@ final class NodeAPI {
     }
 
     /**
-     * Opens the swing dialog or CEF-based dialog of a node.
+     * Opens the configuration dialog for a specific node in a workflow.
      *
-     * @param projectId
-     * @param versionId
-     * @param nodeId
-     * @return whether the node settings have changed
+     * @param projectId The ID of the project containing the workflow
+     * @param versionId The version ID of the workflow
+     * @param nodeId The ID of the node whose dialog should be opened
      */
     @API
-    static boolean openNodeDialog(final String projectId, final String versionId, final String nodeId) {
+    static void openNodeDialog(final String projectId, final String versionId, final String nodeId) {
         var version = VersionId.parse(versionId);
         var nodeIdEnt = new NodeIDEnt(nodeId);
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, version, nodeIdEnt);
         checkIsNotNull(nc, projectId, nodeId);
-        var oldSettings = nc.getNodeSettings();
         NodeContainerEditPart.openNodeDialog(wrap(nc));
-        return !oldSettings.equals(nc.getNodeSettings());
     }
 
     /**
@@ -173,7 +168,7 @@ final class NodeAPI {
             // swing-based view
             final var title = nc.getViewName(0) + " - " + nc.getDisplayLabel();
             final var knimeWindowBounds = getAppBoundsAsAWTRec();
-            SwingUtilities.invokeLater(() -> Node.invokeOpenView(nc.getView(0), title, knimeWindowBounds));
+            javax.swing.SwingUtilities.invokeLater(() -> Node.invokeOpenView(nc.getView(0), title, knimeWindowBounds));
         } else {
             NodeLogger.getLogger(NodeAPI.class).warnWithFormat(
                 "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());

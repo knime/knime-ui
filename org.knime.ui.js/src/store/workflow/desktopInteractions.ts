@@ -7,7 +7,6 @@ import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
-import { useSelectionStore } from "@/store/selection";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 
 import { useComponentInteractionsStore } from "./componentInteractions";
@@ -74,17 +73,11 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
       const { activeWorkflow } = useWorkflowStore();
       const { version: versionId } = activeWorkflow!.info;
 
-      const settingsChanged = await API.desktop.openNodeDialog({
+      await API.desktop.openNodeDialog({
         projectId: activeWorkflow!.projectId,
         versionId: versionId ?? CURRENT_STATE_VERSION,
         nodeId,
       });
-
-      // after dialog is closed, check if the node was selected and rerender port views
-      const selectedNode = useSelectionStore().singleSelectedNode;
-      if (settingsChanged && selectedNode) {
-        useNodeConfigurationStore().updateTimestamp();
-      }
     },
 
     /* See docs in API */

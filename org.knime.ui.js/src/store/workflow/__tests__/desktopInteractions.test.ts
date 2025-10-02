@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { flushPromises } from "@vue/test-utils";
 import { useEventBus } from "@vueuse/core";
 import { API } from "@api";
 
@@ -47,73 +46,13 @@ describe("workflow store: desktop interactions", () => {
 
     describe("calls openNodeDialog from API", () => {
       const projectId = "project-id";
-      const versionId = "version-id";
       const nodeId = "node-id";
-
-      it("and does not update if node settings have not changed", async () => {
-        mockedAPI.desktop.openNodeDialog.mockReturnValue(
-          Promise.resolve(false),
-        ); // resolve with false (no setting change) to prevent triggering extra store actions
-        const {
-          workflowStore,
-          desktopInteractionsStore,
-          nodeConfigurationStore,
-        } = mockStores();
-        workflowStore.setActiveWorkflow(
-          createWorkflow({
-            projectId,
-            info: { version: versionId },
-          }),
-        );
-
-        await desktopInteractionsStore.openNodeConfiguration(nodeId);
-
-        expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
-          projectId,
-          versionId,
-          nodeId,
-        });
-        expect(nodeConfigurationStore.updateTimestamp).not.toHaveBeenCalled();
-      });
-
-      it("and update if node settings have changed", async () => {
-        mockedAPI.desktop.openNodeDialog.mockImplementation(() =>
-          Promise.resolve(true),
-        );
-        const {
-          workflowStore,
-          desktopInteractionsStore,
-          nodeConfigurationStore,
-          selectionStore,
-        } = mockStores();
-        workflowStore.setActiveWorkflow(
-          createWorkflow({
-            projectId,
-            info: { version: versionId },
-          }),
-        );
-        await selectionStore.selectNodes(["root:1"]);
-        await flushPromises();
-
-        await desktopInteractionsStore.openNodeConfiguration(nodeId);
-
-        expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
-          projectId,
-          versionId,
-          nodeId,
-        });
-        expect(nodeConfigurationStore.updateTimestamp).toHaveBeenCalled();
-      });
 
       it("with current version if no versionId is provided", () => {
         mockedAPI.desktop.openNodeDialog.mockReturnValue(
           Promise.resolve(false),
         ); // resolve with false (no setting change) to prevent triggering extra store actions
-        const {
-          workflowStore,
-          desktopInteractionsStore,
-          nodeConfigurationStore,
-        } = mockStores();
+        const { workflowStore, desktopInteractionsStore } = mockStores();
         workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId,
@@ -128,7 +67,6 @@ describe("workflow store: desktop interactions", () => {
           versionId: CURRENT_STATE_VERSION,
           nodeId,
         });
-        expect(nodeConfigurationStore.updateTimestamp).not.toHaveBeenCalled();
       });
     });
 

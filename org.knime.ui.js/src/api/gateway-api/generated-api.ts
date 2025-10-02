@@ -2397,6 +2397,12 @@ export interface Node {
      */
     dialogType?: Node.DialogTypeEnum;
     /**
+     * A change in this value signals that the configuration of a node has been changed.  Applies only to nodes under the UI-extensions, modern dialog framework. Only present for native nodes and components, not for metanodes. Only present if node is executed.
+     * @type {number}
+     * @memberof Node
+     */
+    modelSettingsContentVersion?: number;
+    /**
      * A change in this value signals that the input of the node has changed (this currently only considers   port specs). Includes the flow variable port. Not present if &#x60;hasDialog&#x60; is false. Not present if &#x60;interaction info&#x60; is not included. Not present if no input ports present. Not present for metanodes.
      * @type {number}
      * @memberof Node

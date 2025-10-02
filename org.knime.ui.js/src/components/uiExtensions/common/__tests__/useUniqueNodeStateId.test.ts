@@ -30,13 +30,11 @@ describe("useUniqueNodeStateId", () => {
       selectedNode: ref(
         createNativeNode({
           state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+          modelSettingsContentVersion: 42,
         }),
       ),
-      timestamp: ref(1),
     });
 
-    expect(uniqueNodeViewId.value).toMatch(
-      "project1__workflow1::root:1_EXECUTED_1",
-    );
+    expect(uniqueNodeViewId.value).toMatch("project1__workflow1::root:1_42");
   });
 });

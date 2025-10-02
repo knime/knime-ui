@@ -50,7 +50,6 @@ describe("NodeViewLoader.vue", () => {
     projectId: "project-id",
     workflowId: "workflow-id",
     selectedNode: dummyNode,
-    timestamp: 0,
   };
 
   afterEach(() => {

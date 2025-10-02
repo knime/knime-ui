@@ -14,7 +14,6 @@ import CompositeViewTabOutput from "@/components/uiExtensions/compositeView/Comp
 import NodeViewTabOutput from "@/components/uiExtensions/nodeViews/NodeViewTabOutput.vue";
 import { HINTS } from "@/hints/hints.config";
 import { useApplicationStore } from "@/store/application/application";
-import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import {
   type NodeOutputTabIdentifier,
   useSelectionStore,
@@ -67,7 +66,6 @@ const { activeProjectId: projectId, availablePortTypes } = storeToRefs(
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const workflowId = computed(() => activeWorkflow.value!.info.containerId);
 const versionId = computed(() => activeWorkflow.value!.info.version);
-const { timestamp } = storeToRefs(useNodeConfigurationStore());
 const { singleSelectedNode, getSelectedNodes: selectedNodes } = storeToRefs(
   useSelectionStore(),
 );
@@ -256,7 +254,6 @@ const onPortViewLoadingState = async (
           :workflow-id="workflowId"
           :version-id="versionId"
           :selected-node="singleSelectedNode as NativeNode"
-          :timestamp="timestamp || 0"
           :available-port-types="availablePortTypes"
           @alert="currentNodeViewAlert = $event"
           @loading-state-change="loadingState = $event"

@@ -141,7 +141,6 @@ describe("nodeConfiguration", () => {
     expect(nodeConfiguration.activeNodeViewNeedsExecution).toBe(true);
     expect(done).toHaveBeenCalledWith(true);
     expect(executionStore.executeNodes).toHaveBeenCalledWith(["root:1"]);
-    expect(nodeConfiguration.updateTimestamp).toHaveBeenCalled();
   });
 
   describe("autoApplySettings [DESKTOP]", () => {

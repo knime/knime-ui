@@ -63,7 +63,6 @@ describe("NodeViewTabOutput.vue", () => {
     workflowId: "workflow-1",
     selectedNode: dummyNode,
     availablePortTypes,
-    timestamp: new Date("2022-01-01T00:00:00Z").getTime(),
     isTabSelected: true,
   };
 

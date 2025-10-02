@@ -30,7 +30,6 @@ type Props = {
   workflowId: string;
   versionId?: string;
   selectedNode: NativeNode;
-  timestamp: number;
 };
 
 const props = defineProps<Props>();

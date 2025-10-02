@@ -74,7 +74,6 @@ export interface NodeConfigurationState {
     versionId?: string;
   } | null;
   pushEventDispatcher: UIExtensionPushEventDispatcher;
-  timestamp: number | null;
   isLargeMode: boolean;
   activeNodeViewNeedsExecution: boolean;
 }
@@ -93,7 +92,6 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     },
     latestPublishedData: null,
     pushEventDispatcher: () => {},
-    timestamp: null,
     isLargeMode: false,
     activeNodeViewNeedsExecution: false,
   }),
@@ -136,9 +134,6 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
       this.activeExtensionConfig = activeExtensionConfig;
     },
 
-    updateTimestamp() {
-      this.timestamp = Date.now();
-    },
     /**
      * Attempts to apply the changes to the node config of the given node (by id), and optionally
      * execute the node afterwards.
@@ -171,7 +166,6 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
 
       if (isApplied && execute) {
         await useExecutionStore().executeNodes([nodeId]);
-        this.updateTimestamp();
       }
 
       return isApplied;

@@ -1,4 +1,4 @@
-import { type Ref, computed, ref } from "vue";
+import { type Ref, computed } from "vue";
 
 import type {
   ComponentNode,
@@ -10,11 +10,10 @@ type UseUniqueNodeStateIdOptions = {
   projectId: Ref<string>;
   workflowId: Ref<string>;
   selectedNode: Ref<NativeNode | ComponentNode>;
-  timestamp?: Ref<number>;
 };
 
 export const useUniqueNodeStateId = (options: UseUniqueNodeStateIdOptions) => {
-  const { projectId, workflowId, selectedNode, timestamp = ref(0) } = options;
+  const { projectId, workflowId, selectedNode } = options;
   const templateId = computed(() =>
     isNativeNode(selectedNode.value)
       ? selectedNode.value.templateId
@@ -28,7 +27,7 @@ export const useUniqueNodeStateId = (options: UseUniqueNodeStateIdOptions) => {
 
   const uniqueNodeViewId = computed(
     () =>
-      `${projectId.value}__${workflowId.value}::${selectedNode.value.id}_${selectedNode.value.state?.executionState}_${timestamp.value}`,
+      `${projectId.value}__${workflowId.value}::${selectedNode.value.id}_${selectedNode.value.modelSettingsContentVersion}`,
   );
 
   return { uniqueNodeConfigId, uniqueNodeViewId };
