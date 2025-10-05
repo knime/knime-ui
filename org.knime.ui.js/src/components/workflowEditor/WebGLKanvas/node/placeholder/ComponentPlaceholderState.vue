@@ -69,7 +69,15 @@ const onRightClick = async (event: FederatedPointerEvent) => {
     await selectComponentPlaceholder(props.id);
   }
 
-  await toggleContextMenu({ event });
+  await toggleContextMenu({
+    event,
+    anchoredTo: {
+      type: "node",
+      id: props.id,
+      x: props.position.x,
+      y: props.position.y,
+    },
+  });
 };
 
 const { handlePointerInteraction } = useObjectInteractions({

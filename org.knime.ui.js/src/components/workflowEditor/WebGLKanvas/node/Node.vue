@@ -297,7 +297,15 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
     }
   }
 
-  await canvasAnchoredComponentsStore.toggleContextMenu({ event });
+  await canvasAnchoredComponentsStore.toggleContextMenu({
+    event,
+    anchoredTo: {
+      type: "node",
+      id: props.node.id,
+      x: props.node.position.x,
+      y: props.node.position.y,
+    },
+  });
 };
 </script>
 

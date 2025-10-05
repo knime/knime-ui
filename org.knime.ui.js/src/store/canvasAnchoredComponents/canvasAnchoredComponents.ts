@@ -35,6 +35,7 @@ type State = {
   contextMenu: {
     isOpen: boolean;
     position: XY | null;
+    anchoredTo?: WorkflowObject;
   };
 
   /**
@@ -334,7 +335,11 @@ export const useCanvasAnchoredComponentsStore = defineStore(
 
       async openContextMenu({
         event,
-      }: { event?: PointerInteractionEvent } = {}) {
+        anchoredTo,
+      }: {
+        event?: PointerInteractionEvent;
+        anchoredTo?: WorkflowObject;
+      } = {}) {
         if (this.contextMenu.isOpen) {
           return;
         }
@@ -373,6 +378,7 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         this.contextMenu = {
           isOpen: true,
           position,
+          anchoredTo,
         };
       },
 
@@ -399,11 +405,15 @@ export const useCanvasAnchoredComponentsStore = defineStore(
 
       async toggleContextMenu({
         event,
-      }: { event?: PointerInteractionEvent } = {}) {
+        anchoredTo,
+      }: {
+        event?: PointerInteractionEvent;
+        anchoredTo?: WorkflowObject;
+      } = {}) {
         if (this.contextMenu.isOpen) {
           this.closeContextMenu(event);
         } else {
-          await this.openContextMenu({ event });
+          await this.openContextMenu({ event, anchoredTo });
         }
       },
 

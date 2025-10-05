@@ -18,6 +18,7 @@ import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
@@ -32,6 +33,7 @@ import {
   isNodeMetaNode,
 } from "@/util/nodeUtil";
 import { toExtendedPortObject } from "@/util/portDataMapper";
+import { canvasRendererUtils } from "../../util/canvasRenderer";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
@@ -312,10 +314,16 @@ const setMenuItems = () => {
   ];
 
   const nodeAlignmentGroup: Array<MenuItem> = [
-    ...mapToShortcut([
-      { name: "alignHorizontally", isVisible: !isSelectionEmpty.value },
-      { name: "alignVertically", isVisible: !isSelectionEmpty.value },
-    ]),
+    ...filterItemVisibility(
+      {
+        text: "Align",
+        children: mapToShortcut([
+          { name: "alignTop", isVisible: true },
+          { name: "alignLeft", isVisible: true },
+        ]),
+      },
+      !isSelectionEmpty.value,
+    ),
   ];
 
   const componentPlaceholderGroup: Array<MenuItem> = [
@@ -460,9 +468,9 @@ type ContextMenuItem = MenuItem<{
   shortcutName: ShortcutName;
 }>;
 
-const onItemClick = (event: MouseEvent, item: MenuItem) => {
-  emit("menuClose");
+const { contextMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
 
+const onItemClick = (event: MouseEvent, item: MenuItem) => {
   const contextMenuItem = item as ContextMenuItem;
   if (typeof contextMenuItem.metadata?.handler === "function") {
     contextMenuItem.metadata.handler();
@@ -476,10 +484,23 @@ const onItemClick = (event: MouseEvent, item: MenuItem) => {
     return;
   }
 
+  const metadata = (() => {
+    const base = { position: props.position };
+    if (canvasRendererUtils.isSVGRenderer()) {
+      return base;
+    }
+
+    return {
+      ...base,
+      contextMenuAnchor: contextMenu.value.anchoredTo,
+    };
+  })();
+
   $shortcuts.dispatch(shortcutName, {
     event,
-    metadata: { position: props.position },
+    metadata,
   });
+  emit("menuClose");
 };
 
 const setActiveDescendant = (itemId: string | null) => {

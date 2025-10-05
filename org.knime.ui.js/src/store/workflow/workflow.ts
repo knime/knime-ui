@@ -420,7 +420,10 @@ export const useWorkflowStore = defineStore("workflow", {
         links,
       });
     },
-    async alignSelectedNodes(direction: AlignNodesCommand.DirectionEnum) {
+    async alignSelectedNodes(
+      direction: AlignNodesCommand.DirectionEnum,
+      referenceNodeId?: string,
+    ) {
       const selectionStore = useSelectionStore();
       const { projectId, workflowId } = this.getProjectAndWorkflowIds;
       const selectedNodes: KnimeNode[] = selectionStore.getSelectedNodes;
@@ -430,6 +433,7 @@ export const useWorkflowStore = defineStore("workflow", {
         workflowId,
         direction,
         nodeIds: selectedNodes.map((sn) => sn.id),
+        referenceNodeId,
       });
     },
   },

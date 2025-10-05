@@ -19,8 +19,8 @@ const canAlignNodes = computed(() => getSelectedNodes.value.length > 1);
 const $shortcuts = useShortcuts();
 
 const quickBuildShortcut = $shortcuts.get("openQuickBuildMenu");
-const alignHorizontallyShortcut = $shortcuts.get("alignHorizontally");
-const alignVerticallyShortcut = $shortcuts.get("alignVertically");
+const alignHorizontallyShortcut = $shortcuts.get("alignLeft");
+const alignVerticallyShortcut = $shortcuts.get("alignTop");
 
 const quickBuildTitle = `${quickBuildShortcut.text} - ${quickBuildShortcut.hotkeyText}`;
 const alignNodesHorizontallyTitle = `${alignHorizontallyShortcut.text} - ${alignHorizontallyShortcut.hotkeyText}`;
@@ -88,5 +88,19 @@ useTooltip({
         <NodesAlignVertIcon />
       </FunctionButton>
     </div>
+
+    <FunctionButton
+      title="Center"
+      @pointerdown="$shortcuts.dispatch('alignCenter')"
+    >
+      C
+    </FunctionButton>
+
+    <FunctionButton
+      title="Middle"
+      @pointerdown="$shortcuts.dispatch('alignMiddle')"
+    >
+      M
+    </FunctionButton>
   </FloatingToolbar>
 </template>

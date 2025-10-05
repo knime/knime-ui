@@ -131,7 +131,15 @@ const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
   }
 
   selectionStore.selectAnnotations(props.annotation.id);
-  await toggleContextMenu({ event });
+  await toggleContextMenu({
+    event,
+    anchoredTo: {
+      type: "annotation",
+      id: props.annotation.id,
+      x: props.annotation.bounds.x,
+      y: props.annotation.bounds.y,
+    },
+  });
 };
 
 const annotationInteractionStore = useAnnotationInteractionsStore();
