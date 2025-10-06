@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { flushPromises } from "@vue/test-utils";
 
 import { navigatorUtils } from "@knime/utils";
 
@@ -67,14 +66,14 @@ describe("useMouseWheel", () => {
       const wheelEvent = createWheelEvent({ deltaY: 100 });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).toHaveBeenCalledWith({
         cursorX: 50,
         cursorY: 50,
-        delta: -1,
+        delta: 100,
       });
       expect(scrollPanMock).not.toHaveBeenCalled();
     });
@@ -89,10 +88,10 @@ describe("useMouseWheel", () => {
       const wheelEvent = createWheelEvent({ deltaY: 100 });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).not.toHaveBeenCalled();
       expect(scrollPanMock).not.toHaveBeenCalled();
     });
@@ -107,10 +106,10 @@ describe("useMouseWheel", () => {
       const wheelEvent = createWheelEvent({ deltaY: 100 });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).not.toHaveBeenCalled();
       expect(scrollPanMock).not.toHaveBeenCalled();
     });
@@ -128,14 +127,14 @@ describe("useMouseWheel", () => {
       });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).toHaveBeenCalledWith({
         cursorX: 50,
         cursorY: 50,
-        delta: 1,
+        delta: -50,
       });
     });
 
@@ -148,14 +147,14 @@ describe("useMouseWheel", () => {
       const wheelEvent = createWheelEvent({ deltaY: 0 });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).toHaveBeenCalledWith({
         cursorX: 50,
         cursorY: 50,
-        delta: -0,
+        delta: 0,
       });
     });
 
@@ -172,14 +171,14 @@ describe("useMouseWheel", () => {
       });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).toHaveBeenCalledWith({
         cursorX: 150,
         cursorY: 200,
-        delta: -1,
+        delta: 100,
       });
     });
   });
@@ -194,10 +193,10 @@ describe("useMouseWheel", () => {
       const wheelEvent = createWheelEvent({ deltaY: 100 });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).not.toHaveBeenCalled();
       expect(scrollPanMock).toHaveBeenCalledWith(wheelEvent);
     });
@@ -211,14 +210,14 @@ describe("useMouseWheel", () => {
       const wheelEvent = createWheelEvent({ deltaY: -100, ctrlKey: true });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).toHaveBeenCalledWith({
         cursorX: 50,
         cursorY: 50,
-        delta: 1,
+        delta: -100,
       });
       expect(scrollPanMock).not.toHaveBeenCalled();
     });
@@ -237,14 +236,14 @@ describe("useMouseWheel", () => {
       });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).toHaveBeenCalledWith({
         cursorX: 50,
         cursorY: 50,
-        delta: 1,
+        delta: -100,
       });
     });
 
@@ -259,14 +258,14 @@ describe("useMouseWheel", () => {
       const wheelEvent = createWheelEvent({ deltaY: 100, metaKey: true });
       onMouseWheel(wheelEvent);
 
-      await flushPromises();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       expect(
-        mockedStores.webglCanvasStore.zoomAroundPointer,
+        mockedStores.webglCanvasStore.zoomAroundPointerWithSensitivity,
       ).toHaveBeenCalledWith({
         cursorX: 50,
         cursorY: 50,
-        delta: -1,
+        delta: 100,
       });
       expect(scrollPanMock).not.toHaveBeenCalled();
     });

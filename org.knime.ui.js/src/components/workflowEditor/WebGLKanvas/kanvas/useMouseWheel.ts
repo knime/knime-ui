@@ -1,5 +1,4 @@
 import { storeToRefs } from "pinia";
-import throttle from "raf-throttle";
 
 import { navigatorUtils } from "@knime/utils";
 
@@ -19,14 +18,30 @@ export const useMouseWheel = (options: UseMouseWheelOptions) => {
   const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
   const { scrollToZoomEnabled } = storeToRefs(useApplicationSettingsStore());
 
-  const zoom = throttle(function (event: WheelEvent) {
-    const delta = event.shiftKey ? event.deltaX : event.deltaY;
-    canvasStore.zoomAroundPointer({
-      cursorX: event.offsetX,
-      cursorY: event.offsetY,
-      delta: Math.sign(-delta) as -1 | -0 | 0 | 1,
+  let frameId: number | null = null;
+  let accumulatedDelta = 0;
+  let cursorPosition: { x: number; y: number } | null = null;
+
+  const applyZoomOnNextFrame = () => {
+    if (frameId !== null) {
+      return;
+    }
+
+    frameId = requestAnimationFrame(() => {
+      const delta = accumulatedDelta;
+      accumulatedDelta = 0;
+      frameId = null;
+      if (!cursorPosition) {
+        return;
+      }
+
+      canvasStore.zoomAroundPointerWithSensitivity({
+        delta,
+        cursorX: cursorPosition.x,
+        cursorY: cursorPosition.y,
+      });
     });
-  });
+  };
 
   const onMouseWheel = (event: WheelEvent) => {
     if (interactionsEnabled.value === "none" || isWorkflowEmpty.value) {
@@ -41,8 +56,14 @@ export const useMouseWheel = (options: UseMouseWheelOptions) => {
       scrollToZoomEnabled.value ||
       event.ctrlKey ||
       (navigatorUtils.isMac() && event.metaKey);
+
     if (shouldZoom) {
-      zoom(event);
+      cursorPosition = { x: event.offsetX, y: event.offsetY };
+
+      const delta = event.shiftKey ? event.deltaX : event.deltaY;
+      accumulatedDelta += delta;
+
+      applyZoomOnNextFrame();
       return;
     }
 

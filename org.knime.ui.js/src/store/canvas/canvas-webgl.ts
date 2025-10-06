@@ -672,6 +672,28 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     setFactor(newFactor);
   };
 
+  const zoomAroundPointerWithSensitivity = ({
+    delta,
+    cursorX,
+    cursorY,
+  }: {
+    delta: number;
+    cursorX: number;
+    cursorY: number;
+  }) => {
+    const ZOOM_SENSITIVITY = 0.007;
+    const MIN_DELTA = 0.5;
+    const MAX_DELTA = 1.5;
+
+    // For more native-like zoom feel on touchpad/trackpad
+    const zoomFactorScale = Math.exp(-delta * ZOOM_SENSITIVITY);
+    const clampedZoomFactorScale = clamp(zoomFactorScale, MIN_DELTA, MAX_DELTA);
+
+    const factor = clampZoomFactor(zoomFactor.value * clampedZoomFactorScale);
+    const roundedFactor = Math.round((factor + Number.EPSILON) * 100) / 100;
+    zoomAroundPointer({ factor: roundedFactor, cursorX, cursorY });
+  };
+
   /*
    * Zooms in/out of the workflow while keeping the center fixated
    */
@@ -763,6 +785,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     fillScreen,
     zoomCentered,
     zoomAroundPointer,
+    zoomAroundPointerWithSensitivity,
     updateContainerSize,
     restoreScrollState, // TODO NXT-3439 rename to restoreCanvasViewportPosition
     moveObjectIntoView,

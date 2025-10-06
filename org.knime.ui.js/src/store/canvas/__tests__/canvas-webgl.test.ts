@@ -366,6 +366,21 @@ describe("WebGL canvas store", () => {
         expect(canvasStore.zoomFactor).toBe(2);
       });
 
+      it("zoom with sensitivity", () => {
+        const { canvasStore, kanvasWrapper } = createStore();
+
+        canvasStore.initScrollContainerElement(kanvasWrapper);
+        expect(canvasStore.zoomFactor).toBe(1);
+
+        const zoomOutOptions = { delta: 100, cursorX: 0, cursorY: 0 };
+        canvasStore.zoomAroundPointerWithSensitivity(zoomOutOptions);
+        expect(canvasStore.zoomFactor).toBe(0.5);
+
+        const zoomInOptions = { delta: -100, cursorX: 0, cursorY: 0 };
+        canvasStore.zoomAroundPointerWithSensitivity(zoomInOptions);
+        expect(canvasStore.zoomFactor).toBe(0.75);
+      });
+
       it("throws for incorrect arguments", () => {
         const { canvasStore, kanvasWrapper } = createStore();
 
