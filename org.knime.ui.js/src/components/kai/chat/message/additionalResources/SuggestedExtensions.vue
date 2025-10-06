@@ -19,9 +19,15 @@ const openNodeInBrowser = (
   extension: ExtensionWithNodes,
   factoryName: string,
 ) => {
-  const vendor = encodeURI(`${extension.owner.toLowerCase()}`);
-  const extensionUrl = `${KNIME_HUB_HOME_URL}/${vendor}/extensions/${extension.featureSymbolicName}/latest`;
-  const url = `${extensionUrl}/${factoryName}`;
+  const base = new URL(KNIME_HUB_HOME_URL);
+
+  const vendor = encodeURIComponent(extension.owner.toLowerCase());
+  const feature = encodeURIComponent(extension.featureSymbolicName);
+  const factory = encodeURIComponent(factoryName);
+
+  const path = `${vendor}/extensions/${feature}/latest/${factory}/`;
+  const url = new URL(path, base).toString();
+
   window.open(url);
 };
 </script>
