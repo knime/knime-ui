@@ -47,7 +47,7 @@ describe("HelpMenu.vue", () => {
       },
     });
 
-    const teamPlanItemText = "Learn more about the KNIME Team Plan";
+    const teamPlanItemText = "Learn more about KNIME pricing";
 
     const hasEntry = () =>
       wrapper

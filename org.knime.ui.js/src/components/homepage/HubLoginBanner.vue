@@ -16,7 +16,7 @@ const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 
 const bannerTitle = computed(() =>
   getCommunityHubInfo.value.isCommunityHubConnected
-    ? "Automate Workflows with KNIME Team Plan"
+    ? "Automate Workflows with KNIME Pro"
     : "Store your workflows in your free private cloud space",
 );
 
@@ -28,7 +28,7 @@ const buttonText = computed(() =>
 
 const buttonLink = computed(() => {
   const baseUrl = getCommunityHubInfo.value.isCommunityHubConnected
-    ? knimeExternalUrls.TEAM_PLAN_URL
+    ? knimeExternalUrls.KNIME_PRO_URL
     : knimeExternalUrls.COMMUNITY_HUB_URL;
 
   return `${baseUrl}&alt=bannerButton`;

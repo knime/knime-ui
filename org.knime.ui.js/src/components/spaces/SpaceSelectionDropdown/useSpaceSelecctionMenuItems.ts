@@ -251,14 +251,14 @@ export const useSpaceSelectionMenuItems = (
         // If this is a Hub provider and the user has NO team, add a “Create team” item
         if (shouldShowCreateTeamOption(provider)) {
           const createTeamItem: MenuItem<ExternalLinkMetadata> = {
-            text: "Create Team",
+            text: "Get KNIME Pro",
             icon: LinkExternalIcon,
             selected: false,
             sectionHeadline: false,
             separator: false,
             metadata: {
               type: "external-link",
-              url: knimeExternalUrls.TEAM_PLAN_URL,
+              url: `${knimeExternalUrls.KNIME_PRO_URL}&alt=spaceDropdown`,
             },
           };
 

@@ -19,7 +19,8 @@ export const knimeExternalUrls = {
   KNIME_HUB_SEARCH_URL: `https://hub.knime.com/search?q=%s&type=all&${modernUISource}`,
   KNIME_HUB_HOME_HOSTNAME: "api.hub.knime.com",
   KNIME_HUB_DEV_HOSTNAME: "hubdev.knime.com",
-  PRICING_URL: "https://www.knime.com/knime-hub-pricing",
+  PRICING_URL: `https://www.knime.com/knime-hub-pricing${modernUISource}`,
+  KNIME_PRO_URL: `https://www.knime.com/pro${modernUISource}`,
 };
 
 /**

@@ -163,7 +163,7 @@ const onDiscardCurrentState = () => {
         versionsStore.activeProjectHasUnversionedChanges
       "
       :version-limit="versionLimit"
-      :upgrade-url="PRICING_URL"
+      :upgrade-url="`${PRICING_URL}&alt=versionLimit`"
       @close="onClose"
       @select="onSelect"
       @load-all="onLoadAll"

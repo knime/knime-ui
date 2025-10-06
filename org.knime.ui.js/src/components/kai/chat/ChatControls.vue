@@ -128,8 +128,8 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       variant="info"
       title="All free monthly AI interactions used"
     >
-      <a :href="PRICING_URL">Upgrade</a> to continue building with AI or wait
-      {{ getDaysLeftInMonth() }} days to use it again.
+      <a :href="`${PRICING_URL}&alt=kaiChat`">Upgrade</a> to continue building
+      with AI or wait {{ getDaysLeftInMonth() }} days to use it again.
     </InlineMessage>
     <div class="chat-usage">
       <div

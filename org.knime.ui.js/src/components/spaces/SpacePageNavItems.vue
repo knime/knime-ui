@@ -40,7 +40,7 @@ const {
   logout,
 } = useSpaceProviderAuth();
 
-const { TEAM_PLAN_URL } = knimeExternalUrls;
+const { KNIME_PRO_URL } = knimeExternalUrls;
 
 const shouldShowCreateTeamOption = (
   provider: SpaceProviderNS.SpaceProvider,
@@ -228,10 +228,10 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
         </NavMenuItem>
         <NavMenuItem
           v-if="shouldShowCreateTeamOption(item.metadata.spaceProvider!)"
-          text="Create Team"
+          text="Get KNIME Pro"
           :with-indicator="false"
           target="_blank"
-          :href="TEAM_PLAN_URL"
+          :href="`${KNIME_PRO_URL}&alt=spaceExplorer`"
         >
           <template #prepend>
             <LinkExternalIcon />

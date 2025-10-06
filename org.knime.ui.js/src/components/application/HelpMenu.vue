@@ -55,7 +55,7 @@ const {
   GETTING_STARTED_URL,
   KNIME_HUB_HOME_URL,
   SELF_PACED_COURSES_URL,
-  TEAM_PLAN_URL,
+  PRICING_URL,
 } = knimeExternalUrls;
 
 const customHelpMenuEntries = computed(() => {
@@ -125,10 +125,10 @@ const menuItems = computed(() => [
   ...addConditionalMenuEntry(
     getCommunityHubInfo.value.isOnlyCommunityHubMounted,
     {
-      text: "Learn more about the KNIME Team Plan",
+      text: "Learn more about KNIME pricing",
       separator: true,
       icon: TeamPlan,
-      href: `${TEAM_PLAN_URL}&alt=helpmenubutton`,
+      href: `${PRICING_URL}&alt=helpmenubutton`,
     },
   ),
 
