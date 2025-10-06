@@ -164,9 +164,7 @@ const setup = async () => {
 
   // fetch provider space groups
   const spaceProvidersStore = useSpaceProvidersStore();
-  const spaceProviders = Object.values(
-    spaceProvidersStore.spaceProviders ?? {},
-  );
+  const spaceProviders = Object.values(spaceProvidersStore.spaceProviders);
   const { failedProviders } =
     await spaceProvidersStore.fetchSpaceGroupsForProviders(spaceProviders);
 

@@ -39,12 +39,16 @@ watch(
     () => $route.params.itemId,
   ],
   () => {
+    if (!activeSpaceProvider.value || !activeSpace.value) {
+      return;
+    }
+
     // This is required to sync between route params and store state
     setProjectPath({
       projectId: globalSpaceBrowserProjectId,
       value: {
-        spaceId: activeSpace.value!.id,
-        spaceProviderId: activeSpaceProvider.value!.id,
+        spaceId: activeSpace.value.id,
+        spaceProviderId: activeSpaceProvider.value.id,
         itemId: $route.params.itemId as string,
       },
     });
@@ -78,6 +82,10 @@ const { breadcrumbs } = usePageBreadcrumbs();
 const { getSpaceIcon } = useSpaceIcons();
 
 const title = computed(() => {
+  if (!activeSpaceProvider.value) {
+    return "";
+  }
+
   // for Hub providers return the name of the space
   if (isHubProvider(activeSpaceProvider.value)) {
     return activeSpace.value?.name ?? "";
@@ -88,11 +96,15 @@ const title = computed(() => {
 });
 
 const hubSpaceIcon = computed(() => {
-  if (!isHubProvider(activeSpaceProvider.value)) {
+  if (
+    !activeSpaceProvider.value ||
+    !isHubProvider(activeSpaceProvider.value) ||
+    !activeSpace.value
+  ) {
     return null;
   }
 
-  return getSpaceIcon(activeSpace.value!);
+  return getSpaceIcon(activeSpace.value);
 });
 
 const existingSpaceNames = computed<Array<string>>(() => {
@@ -107,6 +119,10 @@ const errorOnHeader = ref("");
 const isEditing = ref(false);
 
 const onRenameSpace = (name: string) => {
+  if (!activeSpaceProvider.value) {
+    return;
+  }
+
   errorOnHeader.value = "";
   renameSpace({
     spaceProviderId: activeSpaceProvider.value.id,

@@ -370,7 +370,7 @@ export const useApplicationStore = defineStore("application", {
         return true;
       }
 
-      const spaceProviders = useSpaceProvidersStore().spaceProviders ?? {};
+      const { spaceProviders } = useSpaceProvidersStore();
 
       // try to find a provider that contains the spaceId referenced
       // by the activeProject's origin

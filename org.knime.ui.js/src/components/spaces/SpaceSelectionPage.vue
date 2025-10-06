@@ -40,6 +40,10 @@ const { breadcrumbs } = usePageBreadcrumbs();
 const { getSpaceGroupIcon, getSpaceProviderIcon } = useSpaceIcons();
 
 const onSpaceCardClick = (space: SpaceWithGroupId) => {
+  if (!activeSpaceProvider.value) {
+    return;
+  }
+
   $router.push({
     name: APP_ROUTES.Home.SpaceBrowsingPage,
     params: {
@@ -60,6 +64,10 @@ const toSpaceWithGroupId =
   (space: SpaceProviderNS.Space): SpaceWithGroupId => ({ ...space, groupId });
 
 const allSpaces = computed<Array<SpaceWithGroupId>>(() => {
+  if (!activeSpaceProvider.value) {
+    return [];
+  }
+
   const spacesFromAllGroups = activeSpaceProvider.value.spaceGroups.flatMap(
     ({ spaces, id }) => spaces.map(toSpaceWithGroupId(id)),
   );
@@ -79,21 +87,33 @@ const filteredSpaces = computed(() =>
   ),
 );
 
-const title = computed(() =>
-  isShowingAllSpaces.value
-    ? `Spaces of ${formatSpaceProviderName(activeSpaceProvider.value)}`
-    : activeSpaceGroup.value?.name ?? "",
-);
+const title = computed(() => {
+  if (!activeSpaceProvider.value) {
+    return "";
+  }
 
-const icon = computed(() =>
-  isShowingAllSpaces.value
+  return isShowingAllSpaces.value
+    ? `Spaces of ${formatSpaceProviderName(activeSpaceProvider.value)}`
+    : activeSpaceGroup.value?.name ?? "";
+});
+
+const icon = computed(() => {
+  if (!activeSpaceProvider.value) {
+    return null;
+  }
+
+  return isShowingAllSpaces.value
     ? getSpaceProviderIcon(activeSpaceProvider.value)
-    : activeSpaceGroup.value && getSpaceGroupIcon(activeSpaceGroup.value),
-);
+    : activeSpaceGroup.value && getSpaceGroupIcon(activeSpaceGroup.value);
+});
 
 const { toastPresets } = getToastPresets();
 
 const onSpaceExplorerFloatingButtonClick = async () => {
+  if (!activeSpaceProvider.value) {
+    return;
+  }
+
   isCreateSpaceDisabled.value = true;
 
   try {
@@ -110,6 +130,10 @@ const onSpaceExplorerFloatingButtonClick = async () => {
 };
 
 const reload = async () => {
+  if (!activeSpaceProvider.value) {
+    return;
+  }
+
   try {
     await reloadProviderSpaces({ id: activeSpaceProvider.value.id });
   } catch (error) {
@@ -146,7 +170,7 @@ const reload = async () => {
     </template>
 
     <template #content>
-      <template v-if="activeSpaceProvider.spaceGroups.length === 0">
+      <template v-if="activeSpaceProvider?.spaceGroups.length === 0">
         <div class="no-space-groups">
           <span
             >You are not a member of any team, yet. To get started ask an admin

@@ -1,7 +1,9 @@
+/* eslint-disable no-undefined */
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 
+import type { SpaceProviderNS } from "@/api/custom-types";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 
@@ -11,18 +13,27 @@ export const useActiveRouteData = () => {
   );
   const $route = useRoute();
 
-  const activeSpaceProvider = computed(() => {
-    return spaceProviders.value![$route.params.spaceProviderId as string];
+  const activeSpaceProvider = computed<
+    SpaceProviderNS.SpaceProvider | undefined
+  >(() => {
+    return spaceProviders.value[$route.params.spaceProviderId as string];
   });
 
-  const activeSpaceGroup = computed(() => {
-    const { groupId } = $route.params;
-    const groups = activeSpaceProvider.value.spaceGroups ?? [];
+  const activeSpaceGroup = computed<SpaceProviderNS.SpaceGroup | undefined>(
+    () => {
+      const { groupId } = $route.params;
 
-    return groups.find(({ id }) => id === groupId);
-  });
+      if (!activeSpaceProvider.value) {
+        return undefined;
+      }
 
-  const activeSpace = computed(() => {
+      const groups = activeSpaceProvider.value.spaceGroups ?? [];
+
+      return groups.find(({ id }) => id === groupId);
+    },
+  );
+
+  const activeSpace = computed<SpaceProviderNS.Space | undefined>(() => {
     const { spaceId } = $route.params;
 
     return activeSpaceGroup.value?.spaces.find(({ id }) => id === spaceId);
@@ -35,6 +46,10 @@ export const useActiveRouteData = () => {
   );
 
   const isLoadingSpacesData = computed(() => {
+    if (!activeSpaceProvider.value) {
+      return false;
+    }
+
     return loadingProviderSpacesData.value[activeSpaceProvider.value.id];
   });
 

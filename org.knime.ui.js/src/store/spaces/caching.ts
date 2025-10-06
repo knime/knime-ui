@@ -99,8 +99,7 @@ export const useSpaceCachingStore = defineStore("space.caching", {
     },
 
     syncPathWithOpenProjects({ openProjects }: { openProjects: Project[] }) {
-      const currentSpaceProviders =
-        useSpaceProvidersStore().spaceProviders ?? {};
+      const currentSpaceProviders = useSpaceProvidersStore().spaceProviders;
 
       // add
       openProjects.forEach(({ projectId, origin }) => {

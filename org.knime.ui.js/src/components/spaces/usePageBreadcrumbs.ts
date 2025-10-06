@@ -28,6 +28,11 @@ export const usePageBreadcrumbs = () => {
   const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
   const breadcrumbs = computed<Array<ClickableBreadcrumbItem>>(() => {
+    if (!activeSpaceProvider.value) {
+      return [];
+    }
+
+    const spaceProviderId = activeSpaceProvider.value.id;
     const isHub = isHubProvider(activeSpaceProvider.value);
 
     const spaceProviderBreadcrumbItem: ClickableBreadcrumbItem = {
@@ -38,10 +43,7 @@ export const usePageBreadcrumbs = () => {
         onClick: () => {
           $router.push({
             name: APP_ROUTES.Home.SpaceSelectionPage,
-            params: {
-              spaceProviderId: activeSpaceProvider.value.id,
-              groupId: "all",
-            },
+            params: { spaceProviderId, groupId: "all" },
           });
         },
       }),
@@ -64,7 +66,7 @@ export const usePageBreadcrumbs = () => {
         $router.push({
           name: APP_ROUTES.Home.SpaceSelectionPage,
           params: {
-            spaceProviderId: activeSpaceProvider.value.id,
+            spaceProviderId,
             groupId: activeSpaceGroup.value?.id ?? "",
           },
         });

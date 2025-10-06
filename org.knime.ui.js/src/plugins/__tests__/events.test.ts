@@ -7,7 +7,7 @@ import {
   it,
   vi,
 } from "vitest";
-import { flushPromises } from "@vue/test-utils";
+import { ref } from "vue";
 import { API } from "@api";
 
 import type { DesktopEventHandlers } from "@/api/desktop-api";
@@ -17,10 +17,15 @@ import {
   SpaceProvider,
 } from "@/api/gateway-api/generated-api";
 import { isBrowser, isDesktop } from "@/environment";
+import { APP_ROUTES } from "@/router/appRoutes";
+import {
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+} from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { getToastPresets } from "@/toastPresets";
 import { notifyPatch } from "@/util/event-syncer";
 import eventsPlugin from "../events";
 
@@ -50,8 +55,13 @@ describe("Event Plugin", () => {
   });
 
   const loadPlugin = () => {
+    const currentRouteMock = ref({
+      name: "",
+      params: {} as Record<string, string>,
+    });
     const routerMock = {
       push: vi.fn(),
+      currentRoute: currentRouteMock,
     };
 
     const toastMock = {
@@ -63,7 +73,7 @@ describe("Event Plugin", () => {
     // @ts-expect-error
     eventsPlugin({ $router: routerMock, $toast: toastMock });
 
-    return { mockedStores, routerMock, toastMock };
+    return { mockedStores, routerMock, toastMock, currentRouteMock };
   };
 
   it("all eventsHandlers are functions", () => {
@@ -73,291 +83,320 @@ describe("Event Plugin", () => {
     });
   });
 
-  describe("events", () => {
-    beforeEach(() => {
-      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+  beforeEach(() => {
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+  });
+
+  afterEach(() => {
+    notifyPatchMock.mockClear();
+  });
+
+  it("handles WorkflowChangedEvents", () => {
+    const { mockedStores } = loadPlugin();
+    registeredHandlers.WorkflowChangedEvent!({
+      // @ts-expect-error
+      patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
     });
 
-    afterEach(() => {
-      notifyPatchMock.mockClear();
+    expect(mockedStores.workflowStore["patch.apply"]).toHaveBeenCalledWith([
+      { dummy: true, path: "/activeWorkflow/foo/bar" },
+    ]);
+  });
+
+  it("should call `notifyPatch` for patches with snapshotId", () => {
+    const snapshotId = "1";
+    registeredHandlers.WorkflowChangedEvent!({
+      // @ts-expect-error
+      patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
+      snapshotId,
+    });
+    loadPlugin();
+    expect(notifyPatch).toHaveBeenCalledWith(snapshotId);
+  });
+
+  it("should not call `notifyPatch` for patches without snapshotId", () => {
+    loadPlugin();
+    registeredHandlers.WorkflowChangedEvent!({
+      // @ts-expect-error
+      patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
+    });
+    expect(notifyPatch).not.toHaveBeenCalled();
+  });
+
+  it("handles ProjectDirtyStateEvent", () => {
+    const { mockedStores } = loadPlugin();
+    const dirtyProjectsMap = { 1: false, 2: false, 3: true };
+
+    registeredHandlers.ProjectDirtyStateEvent!({ dirtyProjectsMap });
+
+    expect(
+      mockedStores.dirtyProjectsTrackingStore.updateDirtyProjectsMap,
+    ).toHaveBeenCalledWith(dirtyProjectsMap);
+
+    registeredHandlers.ProjectDirtyStateEvent!({
+      dirtyProjectsMap,
+      shouldReplace: true,
     });
 
-    it("handles WorkflowChangedEvents", () => {
-      const { mockedStores } = loadPlugin();
-      registeredHandlers.WorkflowChangedEvent!({
-        // @ts-expect-error
-        patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
-      });
+    expect(mockedStores.dirtyProjectsTrackingStore.dirtyProjectsMap).toEqual(
+      dirtyProjectsMap,
+    );
+  });
 
-      expect(mockedStores.workflowStore["patch.apply"]).toHaveBeenCalledWith([
-        { dummy: true, path: "/activeWorkflow/foo/bar" },
-      ]);
+  it("handles CompositeEvents", () => {
+    const eventHandlers = new Map();
+    const wfcSpy = vi.spyOn(registeredHandlers, "WorkflowChangedEvent");
+    const pdsSpy = vi.spyOn(registeredHandlers, "ProjectDirtyStateEvent");
+    eventHandlers.set(
+      "WorkflowChangedEvent",
+      registeredHandlers.WorkflowChangedEvent,
+    );
+    eventHandlers.set(
+      "ProjectDirtyStateEvent",
+      registeredHandlers.ProjectDirtyStateEvent,
+    );
+    const dirtyProjectsMap = { 1: false, 2: false, 3: true };
+
+    registeredHandlers.CompositeEvent!({
+      events: ["WorkflowChangedEvent", "ProjectDirtyStateEvent"],
+      // @ts-expect-error
+      params: [
+        { patch: { ops: [{ dummy: true, path: "/foo/bar" }] } },
+        { dirtyProjectsMap },
+      ],
+      eventHandlers,
     });
 
-    it("should call `notifyPatch` for patches with snapshotId", () => {
-      const snapshotId = "1";
-      registeredHandlers.WorkflowChangedEvent!({
-        // @ts-expect-error
-        patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
-        snapshotId,
-      });
-      loadPlugin();
-      expect(notifyPatch).toHaveBeenCalledWith(snapshotId);
+    expect(wfcSpy).toHaveBeenCalledWith({
+      patch: { ops: [{ dummy: true, path: "/activeWorkflow/foo/bar" }] },
     });
 
-    it("should not call `notifyPatch` for patches without snapshotId", () => {
-      loadPlugin();
-      registeredHandlers.WorkflowChangedEvent!({
-        // @ts-expect-error
-        patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
-      });
-      expect(notifyPatch).not.toHaveBeenCalled();
-    });
+    expect(pdsSpy).toHaveBeenCalledWith({ dirtyProjectsMap });
+  });
 
-    it("handles ProjectDirtyStateEvent", () => {
-      const { mockedStores } = loadPlugin();
-      const dirtyProjectsMap = { 1: false, 2: false, 3: true };
-
-      registeredHandlers.ProjectDirtyStateEvent!({ dirtyProjectsMap });
-
-      expect(
-        mockedStores.dirtyProjectsTrackingStore.updateDirtyProjectsMap,
-      ).toHaveBeenCalledWith(dirtyProjectsMap);
-
-      registeredHandlers.ProjectDirtyStateEvent!({
-        dirtyProjectsMap,
-        shouldReplace: true,
+  describe("appState event", () => {
+    describe("provider updates", () => {
+      const provider1 = createSpaceProvider({
+        id: "hub1",
+        type: SpaceProvider.TypeEnum.HUB,
       });
 
-      expect(mockedStores.dirtyProjectsTrackingStore.dirtyProjectsMap).toEqual(
-        dirtyProjectsMap,
-      );
-    });
-
-    it("handles CompositeEvents", () => {
-      const eventHandlers = new Map();
-      const wfcSpy = vi.spyOn(registeredHandlers, "WorkflowChangedEvent");
-      const pdsSpy = vi.spyOn(registeredHandlers, "ProjectDirtyStateEvent");
-      eventHandlers.set(
-        "WorkflowChangedEvent",
-        registeredHandlers.WorkflowChangedEvent,
-      );
-      eventHandlers.set(
-        "ProjectDirtyStateEvent",
-        registeredHandlers.ProjectDirtyStateEvent,
-      );
-      const dirtyProjectsMap = { 1: false, 2: false, 3: true };
-
-      registeredHandlers.CompositeEvent!({
-        events: ["WorkflowChangedEvent", "ProjectDirtyStateEvent"],
-        // @ts-expect-error
-        params: [
-          { patch: { ops: [{ dummy: true, path: "/foo/bar" }] } },
-          { dirtyProjectsMap },
-        ],
-        eventHandlers,
+      const provider2 = createSpaceProvider({
+        id: "hub2",
+        type: SpaceProvider.TypeEnum.HUB,
       });
 
-      expect(wfcSpy).toHaveBeenCalledWith({
-        patch: { ops: [{ dummy: true, path: "/activeWorkflow/foo/bar" }] },
-      });
-
-      expect(pdsSpy).toHaveBeenCalledWith({ dirtyProjectsMap });
-    });
-
-    describe("appState event", () => {
-      const providerId = "id1";
-      const spaceProviders = [
-        {
-          id: providerId,
-          name: "provider name",
-          connected: false,
-          connectionMode: SpaceProvider.ConnectionModeEnum.AUTOMATIC,
-          type: SpaceProvider.TypeEnum.HUB,
-        },
-      ];
-      const appStateEventPayload = {
-        appState: {
-          spaceProviders,
-        },
-      };
-
-      it("sets the space providers and fetches space data", () => {
-        const { mockedStores } = loadPlugin();
-        vi.mocked(
-          mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
-        ).mockResolvedValueOnce({ failedProviders: [] });
-
-        registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
-
-        expect(
-          mockedStores.spaceProvidersStore.setAllSpaceProviders,
-        ).toHaveBeenCalledWith(spaceProviders);
-        expect(
-          mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
-        ).toHaveBeenCalledWith(spaceProviders);
-      });
-
-      it("shows an error toast if a provider's space groups can't be loaded", async () => {
-        const { toastPresets } = getToastPresets();
-        const preset = vi.spyOn(
-          toastPresets.spaces.crud,
-          "fetchProviderSpaceGroupsFailed",
-        );
-        const { mockedStores } = loadPlugin();
-
-        const failedProviders = [
-          { name: spaceProviders[0].name, error: new Error("foo") },
-        ];
-
-        vi.mocked(
-          mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
-        ).mockResolvedValueOnce({
-          failedProviders,
-        });
-
-        registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
-        await flushPromises();
-
-        expect(preset).toHaveBeenCalledWith({
-          failedProviders,
-        });
-      });
-
-      it("does nothing if there are not space providers supplied", () => {
-        const { mockedStores } = loadPlugin();
-        registeredHandlers.AppStateChangedEvent!({
-          appState: {},
-        });
-        expect(
-          mockedStores.spaceProvidersStore.setAllSpaceProviders,
-        ).not.toHaveBeenCalled();
-        expect(
-          mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
-        ).not.toHaveBeenCalled();
-      });
-
-      it("replaces application state", () => {
+      it("adds or removes providers based on event payload", () => {
         const { mockedStores, routerMock } = loadPlugin();
 
-        registeredHandlers.AppStateChangedEvent!({
-          // @ts-expect-error
-          appState: { openProjects: [{ id: "mock" }] },
-        });
-
-        expect(
-          mockedStores.applicationStore.replaceApplicationState,
-        ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
-        expect(
-          mockedStores.lifecycleStore.setActiveProject,
-        ).toHaveBeenCalledWith({ $router: routerMock });
-      });
-
-      it("does not call setActiveProject when there's a pending workflow navigation", () => {
-        const { mockedStores } = loadPlugin();
-
-        mockedStores.lifecycleStore.pendingWorkflowNavigation = {
-          projectId: "foo",
-          workflowId: "bar",
+        mockedStores.spaceProvidersStore.spaceProviders = {
+          [provider1.id]: provider1,
         };
 
-        registeredHandlers.AppStateChangedEvent!({
-          // @ts-expect-error
-          appState: { openProjects: [{ id: "mock" }] },
-        });
-
-        expect(
-          mockedStores.applicationStore.replaceApplicationState,
-        ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
-        expect(
-          mockedStores.lifecycleStore.setActiveProject,
-        ).not.toHaveBeenCalled();
-      });
-
-      it("does not call setActiveProject on the browser", () => {
-        mockEnvironment("BROWSER", { isBrowser, isDesktop });
-        const { mockedStores } = loadPlugin();
-
-        mockedStores.lifecycleStore.pendingWorkflowNavigation = {
-          projectId: "foo",
-          workflowId: "bar",
+        const appStateEventPayload = {
+          appState: { spaceProviders: [provider2 as SpaceProvider] },
         };
 
-        registeredHandlers.AppStateChangedEvent!({
-          // @ts-expect-error
-          appState: { openProjects: [{ id: "mock" }] },
-        });
+        expect(
+          mockedStores.spaceProvidersStore.spaceProviders[provider1.id],
+        ).toBeDefined();
+
+        registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
 
         expect(
-          mockedStores.applicationStore.replaceApplicationState,
-        ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
+          mockedStores.spaceProvidersStore.spaceProviders[provider1.id],
+        ).toBeUndefined();
+
         expect(
-          mockedStores.lifecycleStore.setActiveProject,
-        ).not.toHaveBeenCalled();
+          mockedStores.spaceProvidersStore.spaceProviders[provider2.id],
+        ).toEqual({ ...provider2, spaceGroups: [] });
+
+        expect(routerMock.push).not.toHaveBeenCalled();
       });
 
-      // TODO NXT-1437
-      it.todo("should clear the application busy state");
-    });
-
-    describe("updateAvailable event", () => {
-      it("replaces availableUpdates state", () => {
+      it("does not modify existing providers", () => {
         const { mockedStores } = loadPlugin();
-        const newReleases = [
-          {
-            isUpdatePossible: true,
-            name: "KNIME Analytics Platform 5.0",
-            shortName: "5.0",
-          },
-          {
-            isUpdatePossible: false,
-            name: "KNIME Analytics Platform 6.0",
-            shortName: "6.0",
-          },
-        ];
-        const bugfixes = ["Update1", "Update2"];
 
-        registeredHandlers.UpdateAvailableEvent!({
-          newReleases,
-          bugfixes,
+        const spaceGroups = [createSpaceGroup({ spaces: [createSpace()] })];
+        const providerInState = createSpaceProvider({
+          id: "hub1",
+          type: SpaceProvider.TypeEnum.HUB,
+          spaceGroups,
         });
 
+        mockedStores.spaceProvidersStore.spaceProviders = {
+          [providerInState.id]: providerInState,
+        };
+
+        const appStateEventPayload = {
+          appState: {
+            spaceProviders: [
+              // send the same existing provider, but without spaces
+              createSpaceProvider({ id: providerInState.id }) as SpaceProvider,
+              provider2 as SpaceProvider,
+            ],
+          },
+        };
+
+        registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
+
         expect(
-          mockedStores.applicationStore.setAvailableUpdates,
-        ).toHaveBeenCalledWith({ newReleases, bugfixes });
+          mockedStores.spaceProvidersStore.spaceProviders[providerInState.id]
+            .spaceGroups,
+        ).toEqual(spaceGroups);
       });
 
-      it("does not replace availableUpdates state if there are no updates", () => {
-        const { mockedStores } = loadPlugin();
-        const newReleases = undefined;
-        const bugfixes = undefined;
+      it("navigates to get-started page if provider is removed", () => {
+        const { mockedStores, currentRouteMock, routerMock } = loadPlugin();
 
-        registeredHandlers.UpdateAvailableEvent!({
-          newReleases,
-          bugfixes,
+        mockedStores.spaceProvidersStore.spaceProviders = {
+          [provider1.id]: provider1,
+        };
+        currentRouteMock.value.name = APP_ROUTES.Home.SpaceBrowsingPage;
+        currentRouteMock.value.params.spaceProviderId = provider1.id;
+
+        const appStateEventPayload = {
+          appState: { spaceProviders: [provider2 as SpaceProvider] },
+        };
+
+        registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
+
+        expect(routerMock.push).toHaveBeenCalledWith({
+          name: APP_ROUTES.Home.GetStarted,
         });
-
-        expect(
-          mockedStores.applicationStore.setAvailableUpdates,
-        ).not.toHaveBeenCalled();
       });
     });
 
-    describe("showToastEvent", () => {
-      it("should call method show", () => {
-        const { toastMock } = loadPlugin();
+    it("replaces application state", () => {
+      const { mockedStores, routerMock } = loadPlugin();
 
-        const toastEvent = {
-          type: ShowToastEvent.TypeEnum.Success,
-          autoRemove: true,
-          headline: "Brave new toast",
-          message: "Some toast in my message",
-        };
-
-        registeredHandlers.ShowToastEvent!(toastEvent);
-
-        expect(toastMock.show).toBeCalledWith(toastEvent);
+      registeredHandlers.AppStateChangedEvent!({
+        // @ts-expect-error
+        appState: { openProjects: [{ id: "mock" }] },
       });
+
+      expect(
+        mockedStores.applicationStore.replaceApplicationState,
+      ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
+      expect(mockedStores.lifecycleStore.setActiveProject).toHaveBeenCalledWith(
+        { $router: routerMock },
+      );
+    });
+
+    it("does nothing if app state is empty", () => {
+      const { mockedStores } = loadPlugin();
+      registeredHandlers.AppStateChangedEvent!({
+        appState: {},
+      });
+      expect(
+        mockedStores.applicationStore.replaceApplicationState,
+      ).not.toHaveBeenCalled();
+    });
+
+    it("does not call setActiveProject when there's a pending workflow navigation", () => {
+      const { mockedStores } = loadPlugin();
+
+      mockedStores.lifecycleStore.pendingWorkflowNavigation = {
+        projectId: "foo",
+        workflowId: "bar",
+      };
+
+      registeredHandlers.AppStateChangedEvent!({
+        // @ts-expect-error
+        appState: { openProjects: [{ id: "mock" }] },
+      });
+
+      expect(
+        mockedStores.applicationStore.replaceApplicationState,
+      ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
+      expect(
+        mockedStores.lifecycleStore.setActiveProject,
+      ).not.toHaveBeenCalled();
+    });
+
+    it("does not call setActiveProject on the browser", () => {
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+      const { mockedStores } = loadPlugin();
+
+      mockedStores.lifecycleStore.pendingWorkflowNavigation = {
+        projectId: "foo",
+        workflowId: "bar",
+      };
+
+      registeredHandlers.AppStateChangedEvent!({
+        // @ts-expect-error
+        appState: { openProjects: [{ id: "mock" }] },
+      });
+
+      expect(
+        mockedStores.applicationStore.replaceApplicationState,
+      ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
+      expect(
+        mockedStores.lifecycleStore.setActiveProject,
+      ).not.toHaveBeenCalled();
+    });
+
+    // TODO NXT-1437
+    it.todo("should clear the application busy state");
+  });
+
+  describe("updateAvailable event", () => {
+    it("replaces availableUpdates state", () => {
+      const { mockedStores } = loadPlugin();
+      const newReleases = [
+        {
+          isUpdatePossible: true,
+          name: "KNIME Analytics Platform 5.0",
+          shortName: "5.0",
+        },
+        {
+          isUpdatePossible: false,
+          name: "KNIME Analytics Platform 6.0",
+          shortName: "6.0",
+        },
+      ];
+      const bugfixes = ["Update1", "Update2"];
+
+      registeredHandlers.UpdateAvailableEvent!({
+        newReleases,
+        bugfixes,
+      });
+
+      expect(
+        mockedStores.applicationStore.setAvailableUpdates,
+      ).toHaveBeenCalledWith({ newReleases, bugfixes });
+    });
+
+    it("does not replace availableUpdates state if there are no updates", () => {
+      const { mockedStores } = loadPlugin();
+      const newReleases = undefined;
+      const bugfixes = undefined;
+
+      registeredHandlers.UpdateAvailableEvent!({
+        newReleases,
+        bugfixes,
+      });
+
+      expect(
+        mockedStores.applicationStore.setAvailableUpdates,
+      ).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("showToastEvent", () => {
+    it("should call method show", () => {
+      const { toastMock } = loadPlugin();
+
+      const toastEvent = {
+        type: ShowToastEvent.TypeEnum.Success,
+        autoRemove: true,
+        headline: "Brave new toast",
+        message: "Some toast in my message",
+      };
+
+      registeredHandlers.ShowToastEvent!(toastEvent);
+
+      expect(toastMock.show).toBeCalledWith(toastEvent);
     });
   });
 });

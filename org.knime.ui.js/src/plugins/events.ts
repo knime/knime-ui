@@ -3,6 +3,7 @@ import { API } from "@api";
 import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { isDesktop } from "@/environment";
+import { APP_ROUTES } from "@/router/appRoutes";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import type { AiAssistantEvent } from "@/store/ai/types";
 import { useApplicationStore } from "@/store/application/application";
@@ -15,14 +16,11 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import { nodeSize } from "@/style/shapes";
-import { getToastPresets } from "@/toastPresets";
 import { notifyPatch } from "@/util/event-syncer";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";
-
-const { toastPresets } = getToastPresets();
 
 const init: PluginInitFunction = ({ $router, $toast }) => {
   API.event.registerEventHandlers({
@@ -114,29 +112,57 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
         return;
       }
 
-      const spaceProviders = appState.spaceProviders;
+      const incomingProviders = appState.spaceProviders;
+
       // needs to happen before 'replaceApplicationState'
-      if (spaceProviders) {
-        // TODO: NXT-3464 - remove async call for `fetchSpaceGroupsForProviders`
-        // when ticket is done.
-        try {
-          useSpaceProvidersStore().setAllSpaceProviders(spaceProviders);
+      if (incomingProviders) {
+        const spaceProvidersStore = useSpaceProvidersStore();
 
-          const { failedProviders } =
-            await useSpaceProvidersStore().fetchSpaceGroupsForProviders(
-              spaceProviders,
-            );
+        const isOnSpacePages =
+          $router.currentRoute.value.name ===
+            APP_ROUTES.Home.SpaceBrowsingPage ||
+          $router.currentRoute.value.name ===
+            APP_ROUTES.Home.SpaceSelectionPage;
 
-          if (failedProviders.length > 0) {
-            toastPresets.spaces.crud.fetchProviderSpaceGroupsFailed({
-              failedProviders,
-            });
-          }
-        } catch (error) {
-          consola.error(
-            "events::SpaceProvidersChangedEvent -> unexpected error",
-            { error },
+        if (isOnSpacePages) {
+          const displayedSpaceProviderId = $router.currentRoute.value.params
+            .spaceProviderId as string;
+
+          const wasRemoved = !incomingProviders.find(
+            ({ id }) => id === displayedSpaceProviderId,
           );
+
+          if (wasRemoved) {
+            $router.push({ name: APP_ROUTES.Home.GetStarted });
+          }
+        }
+
+        // add new incoming providers
+        for (const incoming of incomingProviders) {
+          const shouldBeAdded =
+            !spaceProvidersStore.spaceProviders[incoming.id];
+
+          if (shouldBeAdded) {
+            spaceProvidersStore.spaceProviders[incoming.id] = {
+              ...incoming,
+              spaceGroups: [],
+            };
+          }
+        }
+
+        const currentProviders = Object.values(
+          spaceProvidersStore.spaceProviders,
+        );
+
+        // remove pre-existing providers that are no longer present
+        for (const current of currentProviders) {
+          const shouldBeRemoved = !incomingProviders.some(
+            ({ id }) => id === current.id,
+          );
+
+          if (shouldBeRemoved) {
+            delete spaceProvidersStore.spaceProviders[current.id];
+          }
         }
       }
 

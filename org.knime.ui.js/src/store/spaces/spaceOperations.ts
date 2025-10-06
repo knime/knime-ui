@@ -296,9 +296,14 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
       itemId,
       $router,
     }: WorkflowOrigin & { $router?: Router }) {
-      const provider = (useSpaceProvidersStore().spaceProviders ?? {})[
-        providerId
-      ];
+      const provider = useSpaceProvidersStore().spaceProviders[providerId];
+
+      if (!provider) {
+        consola.error(
+          "Unexpected error: Tried to open a project from an unknown provider.",
+        );
+        return;
+      }
 
       const foundOpenProject = useApplicationStore().openProjects.find(
         (project) =>

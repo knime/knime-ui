@@ -309,7 +309,12 @@ describe("spaces::spaceOperations", () => {
 
   describe("openProject", () => {
     it("should open workflow", async () => {
-      const { spaceOperationsStore, spaceCachingStore } = loadStore();
+      const { spaceOperationsStore, spaceProvidersStore, spaceCachingStore } =
+        loadStore();
+
+      spaceProvidersStore.setSpaceProviders({
+        local: createSpaceProvider(),
+      });
 
       spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
@@ -335,7 +340,12 @@ describe("spaces::spaceOperations", () => {
     });
 
     it("should fail to open workflow", async () => {
-      const { spaceOperationsStore, spaceCachingStore } = loadStore();
+      const { spaceOperationsStore, spaceProvidersStore, spaceCachingStore } =
+        loadStore();
+
+      spaceProvidersStore.setSpaceProviders({
+        local: createSpaceProvider(),
+      });
 
       spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",

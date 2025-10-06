@@ -68,6 +68,11 @@ export const routes: Array<RouteRecordRaw> = [
         path: "/space-browsing/:spaceProviderId/:groupId/:spaceId/:itemId",
         component: () => import("@/components/spaces/SpaceBrowsingPage.vue"),
       },
+      ...registerRoute("DESKTOP", {
+        path: "/:pathMatch(.*)*",
+        name: "NotFound",
+        redirect: "/get-started",
+      }),
     ],
     meta: { showUpdateBanner: true },
   }),

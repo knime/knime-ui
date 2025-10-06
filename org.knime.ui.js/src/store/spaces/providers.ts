@@ -19,7 +19,7 @@ export interface ProvidersState {
   /**
    * Record of all the providers currently available
    */
-  spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> | null;
+  spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>;
   /**
    * Loading state used when authenticating to a provider
    */
@@ -34,7 +34,7 @@ export interface ProvidersState {
 export const useSpaceProvidersStore = defineStore("space.providers", {
   state: (): ProvidersState => ({
     // metadata of all available space providers and their spaces (including local)
-    spaceProviders: null,
+    spaceProviders: {},
     isConnectingToProvider: null,
     loadingProviderSpacesData: {},
   }),
@@ -56,18 +56,18 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
     }) {
       this.spaceProviders = {
         ...this.spaceProviders,
-        [id]: { ...(this.spaceProviders ?? {})[id], ...value },
+        [id]: { ...this.spaceProviders[id], ...value },
       };
     },
 
     setSpaceProviders(
-      spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> | null,
+      spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
     ) {
       this.spaceProviders = spaceProviders;
     },
 
     setAllSpaceProviders(spaceProviders: SpaceProvider[]) {
-      consola.trace("action::setAllSpaceProviders -> Setting provider spaces");
+      consola.trace("action::setAllSpaceProviders -> Setting space providers");
       const spaceProvidersById = Object.fromEntries(
         spaceProviders.map((sp) => [sp.id, { ...sp, spaceGroups: [] }]),
       );
@@ -246,8 +246,9 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
         return null;
       }
 
-      const providers = state.spaceProviders ?? {};
-      const activeProjectProvider = providers[activeProjectOrigin.providerId];
+      const { spaceProviders } = state;
+      const activeProjectProvider =
+        spaceProviders[activeProjectOrigin.providerId];
 
       return activeProjectProvider ?? null;
     },
@@ -283,9 +284,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
     },
 
     getCommunityHubInfo(state) {
-      const communityHubProvider = Object.values(
-        state.spaceProviders ?? {},
-      ).find(
+      const communityHubProvider = Object.values(state.spaceProviders).find(
         (provider) =>
           provider.hostname &&
           extractHostname(provider.hostname) === KNIME_HUB_HOME_HOSTNAME,
@@ -301,7 +300,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
           isCommunityHubMounted &&
           // filter out Hub and Server providers
           Boolean(
-            Object.values(state.spaceProviders ?? {}).filter(
+            Object.values(state.spaceProviders).filter(
               (provider) => !isLocalProvider(provider),
             ).length === 1,
           ),
