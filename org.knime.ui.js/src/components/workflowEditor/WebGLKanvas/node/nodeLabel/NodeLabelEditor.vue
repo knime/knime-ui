@@ -131,7 +131,11 @@ onContextMenuOutside(textEditorWrapper, onSave);
     :canvas-position="position"
     :transform-offsets="transformOffsets"
   >
-    <div ref="textEditorWrapper" class="editor-wrapper">
+    <div
+      ref="textEditorWrapper"
+      data-test-id="floating-node-label-editor"
+      class="editor-wrapper"
+    >
       <svg class="action-bar" :viewBox="FLOATING_HTML_ACTIONBAR_VIEWBOX">
         <ActionBar :actions="actions" />
       </svg>

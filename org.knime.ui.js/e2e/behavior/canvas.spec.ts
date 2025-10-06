@@ -213,7 +213,7 @@ test.describe("panning", () => {
     );
     await page.mouse.up();
 
-    await assertSnapshot(page);
+    await assertSnapshot(page, 300);
   });
 
   test("by dragging a port to the edge of the canvas", async ({ page }) => {

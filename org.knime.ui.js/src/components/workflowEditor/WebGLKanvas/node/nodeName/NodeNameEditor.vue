@@ -149,7 +149,7 @@ onContextMenuOutside(textEditorWrapper, onSave);
     :dimensions="{ width: maxWidth }"
     :transform-offsets="transformOffsets"
   >
-    <div ref="textEditorWrapper">
+    <div ref="textEditorWrapper" data-test-id="floating-node-name-editor">
       <svg class="action-bar" :viewBox="FLOATING_HTML_ACTIONBAR_VIEWBOX">
         <ActionBar :actions="actions" />
       </svg>

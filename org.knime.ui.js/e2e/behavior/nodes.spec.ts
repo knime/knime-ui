@@ -398,6 +398,12 @@ test.describe("node name editing", () => {
     return name;
   };
 
+  const assertEditorIsClosed = (page: Page) => {
+    return expect(
+      page.getByTestId("floating-node-name-editor"),
+    ).not.toBeVisible();
+  };
+
   [
     { name: "metanode", id: IDS.metanode },
     { name: "component", id: IDS.component },
@@ -413,7 +419,7 @@ test.describe("node name editing", () => {
       await waitForFloatingEditor(page);
       await page.keyboard.insertText("New name");
       await page.keyboard.press("Enter");
-      await page.waitForTimeout(200);
+      await assertEditorIsClosed(page);
       await assertSnapshot(page);
       expect((await getNodeName(page, id)).text).toBe("New name");
     });
@@ -434,7 +440,7 @@ test.describe("node name editing", () => {
 
       // click-away
       await page.mouse.click(nodeX - 150, nodeY - 150);
-      await page.waitForTimeout(200);
+      await assertEditorIsClosed(page);
       await assertSnapshot(page);
     });
 
@@ -449,7 +455,7 @@ test.describe("node name editing", () => {
       await assertSnapshot(page);
 
       await page.keyboard.press("Escape");
-      await page.waitForTimeout(200);
+      await assertEditorIsClosed(page);
       await assertSnapshot(page);
     });
 
@@ -464,10 +470,10 @@ test.describe("node name editing", () => {
 
       const saveButton = page.getByTestId("node-name-editor-save");
       await saveButton.click();
-      // make sure editor is closed and text is on stage
-      await page.waitForTimeout(300);
+
+      await assertEditorIsClosed(page);
       await assertSnapshot(page);
-      await expect((await getNodeName(page, id)).text).toBe("New name");
+      expect((await getNodeName(page, id)).text).toBe("New name");
     });
 
     test(`${name}::cancels edit name with button`, async ({ page }) => {
@@ -481,10 +487,10 @@ test.describe("node name editing", () => {
 
       const cancelButton = page.getByTestId("node-name-editor-cancel");
       await cancelButton.click();
-      // make sure editor is closed and text is on stage
-      await page.waitForTimeout(200);
+
+      await assertEditorIsClosed(page);
       await assertSnapshot(page);
-      await expect((await getNodeName(page, id)).text).not.toBe("New name");
+      expect((await getNodeName(page, id)).text).not.toBe("New name");
     });
 
     test(`${name}::can navigate with keyboard after saving`, async ({
@@ -503,7 +509,8 @@ test.describe("node name editing", () => {
 
       // save node name
       await page.keyboard.press("Enter");
-      await page.waitForTimeout(200);
+
+      await assertEditorIsClosed(page);
 
       // navigate away
       await page.keyboard.press("ArrowDown");
@@ -526,7 +533,7 @@ test.describe("node name editing", () => {
 
       // cancel
       await page.keyboard.press("Escape");
-      await page.waitForTimeout(200);
+      await assertEditorIsClosed(page);
 
       // navigate away
       await page.keyboard.press("ArrowDown");
@@ -554,6 +561,12 @@ test.describe("node label editing", () => {
     return page.mouse.click(metanodeX, metanodeY);
   };
 
+  const assertEditorIsClosed = (page: Page) => {
+    return expect(
+      page.getByTestId("floating-node-label-editor"),
+    ).not.toBeVisible();
+  };
+
   test("can edit label with dblclick->Ctrl+enter", async ({ page }) => {
     await startForLabelChange(page);
 
@@ -566,9 +579,10 @@ test.describe("node label editing", () => {
     await page.keyboard.insertText("New name");
     await page.waitForTimeout(5000);
     await page.keyboard.press("ControlOrMeta+Enter");
-    await page.waitForTimeout(200);
+
+    await assertEditorIsClosed(page);
     await assertSnapshot(page);
-    await expect((await getNodeLabel(page)).text).toBe("New name");
+    expect((await getNodeLabel(page)).text).toBe("New name");
     await page.waitForTimeout(5000);
   });
 
@@ -586,7 +600,7 @@ test.describe("node label editing", () => {
 
     // click-away
     await page.mouse.click(metanodeX - 150, metanodeY - 150);
-    await page.waitForTimeout(200);
+    await assertEditorIsClosed(page);
     await assertSnapshot(page);
   });
 
@@ -602,7 +616,7 @@ test.describe("node label editing", () => {
     await assertSnapshot(page);
 
     await page.keyboard.press("Escape");
-    await page.waitForTimeout(200);
+    await assertEditorIsClosed(page);
     await assertSnapshot(page);
   });
 
@@ -619,9 +633,9 @@ test.describe("node label editing", () => {
 
     const cancelButton = page.getByTestId("node-label-editor-cancel");
     await cancelButton.click();
-    page.waitForTimeout(200);
+    await assertEditorIsClosed(page);
     await assertSnapshot(page);
-    await expect((await getNodeLabel(page)).text).toBe("Add comment");
+    expect((await getNodeLabel(page)).text).toBe("Add comment");
   });
 
   test("can edit label with button", async ({ page }) => {
@@ -638,9 +652,9 @@ test.describe("node label editing", () => {
 
     const saveButton = page.getByTestId("node-label-editor-save");
     await saveButton.click();
-    await page.waitForTimeout(200);
+    await assertEditorIsClosed(page);
     await assertSnapshot(page);
-    await expect((await getNodeLabel(page)).text).toBe("New name");
+    expect((await getNodeLabel(page)).text).toBe("New name");
   });
 
   test("can navigate with keyboard after saving", async ({ page }) => {
@@ -658,7 +672,7 @@ test.describe("node label editing", () => {
 
     // save node label
     await page.keyboard.press("ControlOrMeta+Enter");
-    await page.waitForTimeout(200);
+    await assertEditorIsClosed(page);
 
     // navigate away
     await page.keyboard.press("ArrowUp");
@@ -680,7 +694,7 @@ test.describe("node label editing", () => {
 
     // cancel
     await page.keyboard.press("Escape");
-    await page.waitForTimeout(200);
+    await assertEditorIsClosed(page);
 
     // navigate away
     await page.keyboard.press("ArrowUp");
