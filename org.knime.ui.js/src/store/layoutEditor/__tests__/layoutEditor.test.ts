@@ -513,12 +513,16 @@ describe("layoutEditor", () => {
 
       layoutEditorStore.load();
 
-      expect(mockedAPI.componenteditor.getViewLayout).not.toHaveBeenCalled();
+      expect(
+        mockedAPI.componenteditor.getComponentEditorState,
+      ).not.toHaveBeenCalled();
     });
 
     it("shows a toast if any of the requests fail", async () => {
       const error = new Error("test error");
-      mockedAPI.componenteditor.getViewLayout.mockRejectedValueOnce(error);
+      mockedAPI.componenteditor.getComponentEditorState.mockRejectedValueOnce(
+        error,
+      );
 
       const { layoutEditorStore } = setupStore();
 
@@ -540,21 +544,19 @@ describe("layoutEditor", () => {
       });
 
       const initialLayout = createComplexLayout();
-      mockedAPI.componenteditor.getViewLayout.mockResolvedValueOnce(
-        JSON.stringify(initialLayout),
-      );
       const initialNodes = createNodes();
-      mockedAPI.componenteditor.getViewNodes.mockResolvedValueOnce(
-        JSON.stringify(initialNodes),
-      );
       const initialConfigurationLayout = createConfigurationLayout();
-      mockedAPI.componenteditor.getConfigurationLayout.mockResolvedValueOnce(
-        JSON.stringify(initialConfigurationLayout),
-      );
       const initialConfigurationNodes = createConfigurationNodes();
-      mockedAPI.componenteditor.getConfigurationNodes.mockResolvedValueOnce(
-        JSON.stringify(initialConfigurationNodes),
-      );
+      mockedAPI.componenteditor.getComponentEditorState.mockResolvedValueOnce({
+        config: {
+          viewLayout: JSON.stringify(initialLayout),
+          configurationLayout: JSON.stringify(initialConfigurationLayout),
+        },
+        viewNodes: initialNodes.map((node) => JSON.stringify(node)),
+        configurationNodes: initialConfigurationNodes.map((node) =>
+          JSON.stringify(node),
+        ),
+      });
 
       const { layoutEditorStore, applicationStore, nodeTemplatesStore } =
         setupStore();
@@ -570,16 +572,7 @@ describe("layoutEditor", () => {
 
       expect(componentLoadingFailedSpy).not.toHaveBeenCalled();
       expect(
-        mockedAPI.componenteditor.getViewLayout,
-      ).toHaveBeenCalledExactlyOnceWith(workflow);
-      expect(
-        mockedAPI.componenteditor.getViewNodes,
-      ).toHaveBeenCalledExactlyOnceWith(workflow);
-      expect(
-        mockedAPI.componenteditor.getConfigurationLayout,
-      ).toHaveBeenCalledExactlyOnceWith(workflow);
-      expect(
-        mockedAPI.componenteditor.getConfigurationNodes,
+        mockedAPI.componenteditor.getComponentEditorState,
       ).toHaveBeenCalledExactlyOnceWith(workflow);
 
       expect(layoutEditorStore.layout).toEqual(
@@ -637,12 +630,16 @@ describe("layoutEditor", () => {
 
       layoutEditorStore.save();
 
-      expect(mockedAPI.componenteditor.setViewLayout).not.toHaveBeenCalled();
+      expect(
+        mockedAPI.componenteditor.applyComponentEditorConfig,
+      ).not.toHaveBeenCalled();
     });
 
     it("shows a toast if any of the requests fail", async () => {
       const error = new Error("test error");
-      mockedAPI.componenteditor.setViewLayout.mockRejectedValueOnce(error);
+      mockedAPI.componenteditor.applyComponentEditorConfig.mockRejectedValueOnce(
+        error,
+      );
 
       const { layoutEditorStore } = setupStore();
 
@@ -680,15 +677,19 @@ describe("layoutEditor", () => {
         validity: "valid",
       });
       expect(layoutEditorStore.layout).toEqual(dummyData);
-      expect(mockedAPI.componenteditor.setViewLayout).toHaveBeenCalledWith({
+      expect(
+        mockedAPI.componenteditor.applyComponentEditorConfig,
+      ).toHaveBeenCalledWith({
         ...layoutContext,
-        componentViewLayout: JSON.stringify(dummyData),
+        config: {
+          viewLayout: JSON.stringify(dummyData),
+          configurationLayout: JSON.stringify({ rows: [] }),
+        },
       });
     });
 
     it("saves the layouts for the open workflow and resets open workflow", async () => {
-      mockedAPI.componenteditor.setViewLayout.mockResolvedValueOnce(true);
-      mockedAPI.componenteditor.setConfigurationLayout.mockResolvedValueOnce(
+      mockedAPI.componenteditor.applyComponentEditorConfig.mockResolvedValueOnce(
         true,
       );
 
@@ -700,16 +701,13 @@ describe("layoutEditor", () => {
 
       expect(setLayoutFailedSpy).not.toHaveBeenCalled();
       expect(
-        mockedAPI.componenteditor.setViewLayout,
+        mockedAPI.componenteditor.applyComponentEditorConfig,
       ).toHaveBeenCalledExactlyOnceWith({
         ...workflow,
-        componentViewLayout: expect.any(String),
-      });
-      expect(
-        mockedAPI.componenteditor.setConfigurationLayout,
-      ).toHaveBeenCalledExactlyOnceWith({
-        ...workflow,
-        componentConfigurationLayout: expect.any(String),
+        config: {
+          viewLayout: expect.any(String),
+          configurationLayout: expect.any(String),
+        },
       });
     });
   });

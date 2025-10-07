@@ -415,21 +415,25 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
 
     try {
+      const state = await API.componenteditor.getComponentEditorState(
+        layoutContext.value,
+      );
+
       const viewLayout = JSON.parse(
-        await API.componenteditor.getViewLayout(layoutContext.value),
+        state.config.viewLayout,
       ) as LayoutEditorViewLayout;
 
-      const viewNodes = JSON.parse(
-        await API.componenteditor.getViewNodes(layoutContext.value),
-      ) as LayoutEditorViewNode[];
+      const viewNodes = state.viewNodes.map(
+        (node) => JSON.parse(node) as LayoutEditorViewNode,
+      );
 
       const configurationLayout = JSON.parse(
-        await API.componenteditor.getConfigurationLayout(layoutContext.value),
+        state.config.configurationLayout,
       ) as Partial<ConfigurationLayout>;
 
-      const configurationNodes = JSON.parse(
-        await API.componenteditor.getConfigurationNodes(layoutContext.value),
-      ) as ConfigurationLayoutEditorNode[];
+      const configurationNodes = state.configurationNodes.map(
+        (node) => JSON.parse(node) as ConfigurationLayoutEditorNode,
+      );
 
       const nodeTemplateIds = [...viewNodes, ...configurationNodes]
         .map((node) => node.templateId)
@@ -491,13 +495,12 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
 
     try {
-      await API.componenteditor.setViewLayout({
+      await API.componenteditor.applyComponentEditorConfig({
         ...layoutContext.value,
-        componentViewLayout: JSON.stringify(layout.value),
-      });
-      await API.componenteditor.setConfigurationLayout({
-        ...layoutContext.value,
-        componentConfigurationLayout: JSON.stringify(configurationLayout.value),
+        config: {
+          viewLayout: JSON.stringify(layout.value),
+          configurationLayout: JSON.stringify(configurationLayout.value),
+        },
       });
       close();
     } catch (error) {

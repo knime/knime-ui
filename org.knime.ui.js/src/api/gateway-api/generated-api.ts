@@ -935,6 +935,58 @@ export namespace CommandResult {
     }
 }
 /**
+ * A components editor configuration.
+ * @export
+ * @interface ComponentEditorConfig
+ */
+export interface ComponentEditorConfig {
+
+    /**
+     * The view layout of the component.
+     * @type {string}
+     * @memberof ComponentEditorConfig
+     */
+    viewLayout: string;
+    /**
+     * The configuration layout of the component.
+     * @type {string}
+     * @memberof ComponentEditorConfig
+     */
+    configurationLayout: string;
+
+}
+
+
+/**
+ * The state of the component editor.
+ * @export
+ * @interface ComponentEditorState
+ */
+export interface ComponentEditorState {
+
+    /**
+     *
+     * @type {ComponentEditorConfig}
+     * @memberof ComponentEditorState
+     */
+    config: ComponentEditorConfig;
+    /**
+     * The nodes in the view layout.
+     * @type {Array<string>}
+     * @memberof ComponentEditorState
+     */
+    viewNodes: Array<string>;
+    /**
+     * The nodes in the configuration layout.
+     * @type {Array<string>}
+     * @memberof ComponentEditorState
+     */
+    configurationNodes: Array<string>;
+
+}
+
+
+/**
  * A node wrapping (referencing) a workflow (also referred to it as component or subnode) that almost behaves as a ordinary node.
  * @export
  * @interface ComponentNode
@@ -1847,6 +1899,269 @@ export namespace KaiMessage {
         User = 'user'
     }
 }
+/**
+ * Base AI quick action context schema for proper inheritance.
+ * @export
+ * @interface KaiQuickActionContext
+ */
+export interface KaiQuickActionContext {
+
+
+}
+
+
+/**
+ * Structured error information for AI quick action failures.
+ * @export
+ * @interface KaiQuickActionError
+ */
+export interface KaiQuickActionError {
+
+    /**
+     * Machine-readable error code for programmatic handling.
+     * @type {string}
+     * @memberof KaiQuickActionError
+     */
+    code: KaiQuickActionError.CodeEnum;
+    /**
+     * Human-readable error message to display to users.
+     * @type {string}
+     * @memberof KaiQuickActionError
+     */
+    message: string;
+    /**
+     * Optional additional context about the error.
+     * @type {{ [key: string]: any; }}
+     * @memberof KaiQuickActionError
+     */
+    details?: { [key: string]: any; };
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionError
+ */
+export namespace KaiQuickActionError {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum CodeEnum {
+        LLMERROR = 'LLM_ERROR',
+        QUOTAEXCEEDED = 'QUOTA_EXCEEDED',
+        TIMEOUT = 'TIMEOUT',
+        VALIDATIONERROR = 'VALIDATION_ERROR',
+        AUTHENTICATIONFAILED = 'AUTHENTICATION_FAILED',
+        SERVICEUNAVAILABLE = 'SERVICE_UNAVAILABLE',
+        UNKNOWN = 'UNKNOWN'
+    }
+}
+/**
+ *
+ * @export
+ * @interface KaiQuickActionGenerateAnnotationContext
+ */
+export interface KaiQuickActionGenerateAnnotationContext extends KaiQuickActionContext {
+
+    /**
+     *
+     * @type {Workflow}
+     * @memberof KaiQuickActionGenerateAnnotationContext
+     */
+    workflow: Workflow;
+    /**
+     * One or more nodes that are being annotated.
+     * @type {Array<any>}
+     * @memberof KaiQuickActionGenerateAnnotationContext
+     */
+    selectedNodeIds: Array<any>;
+    /**
+     * Existing workflow annotations containing nodes of this workflow.
+     * @type {Array<any>}
+     * @memberof KaiQuickActionGenerateAnnotationContext
+     */
+    annotationsContainingNodes?: Array<any>;
+
+}
+
+
+/**
+ *
+ * @export
+ * @interface KaiQuickActionGenerateAnnotationRequest
+ */
+export interface KaiQuickActionGenerateAnnotationRequest extends KaiQuickActionRequest {
+
+    /**
+     *
+     * @type {KaiQuickActionGenerateAnnotationContext}
+     * @memberof KaiQuickActionGenerateAnnotationRequest
+     */
+    context: KaiQuickActionGenerateAnnotationContext;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionGenerateAnnotationRequest
+ */
+export namespace KaiQuickActionGenerateAnnotationRequest {
+}
+/**
+ *
+ * @export
+ * @interface KaiQuickActionGenerateAnnotationResponse
+ */
+export interface KaiQuickActionGenerateAnnotationResponse extends KaiQuickActionResponse {
+
+    /**
+     *
+     * @type {KaiQuickActionGenerateAnnotationResult}
+     * @memberof KaiQuickActionGenerateAnnotationResponse
+     */
+    result: KaiQuickActionGenerateAnnotationResult;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionGenerateAnnotationResponse
+ */
+export namespace KaiQuickActionGenerateAnnotationResponse {
+}
+/**
+ *
+ * @export
+ * @interface KaiQuickActionGenerateAnnotationResult
+ */
+export interface KaiQuickActionGenerateAnnotationResult extends KaiQuickActionResult {
+
+    /**
+     * The generated HTML annotation text.
+     * @type {string}
+     * @memberof KaiQuickActionGenerateAnnotationResult
+     */
+    annotationText: string;
+
+}
+
+
+/**
+ * Request for executing an AI quick action.
+ * @export
+ * @interface KaiQuickActionRequest
+ */
+export interface KaiQuickActionRequest {
+
+    /**
+     *
+     * @type {string}
+     * @memberof KaiQuickActionRequest
+     */
+    actionId: KaiQuickActionRequest.ActionIdEnum;
+    /**
+     * Identifies the top-level workflow, needed for authentication.
+     * @type {string}
+     * @memberof KaiQuickActionRequest
+     */
+    projectId: string;
+    /**
+     *
+     * @type {KaiQuickActionContext}
+     * @memberof KaiQuickActionRequest
+     */
+    context: KaiQuickActionContext;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionRequest
+ */
+export namespace KaiQuickActionRequest {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ActionIdEnum {
+        GenerateAnnotation = 'generateAnnotation'
+    }
+}
+/**
+ * Response from executing an AI quick action.
+ * @export
+ * @interface KaiQuickActionResponse
+ */
+export interface KaiQuickActionResponse {
+
+    /**
+     *
+     * @type {string}
+     * @memberof KaiQuickActionResponse
+     */
+    actionId: KaiQuickActionResponse.ActionIdEnum;
+    /**
+     *
+     * @type {KaiQuickActionResult}
+     * @memberof KaiQuickActionResponse
+     */
+    result: KaiQuickActionResult;
+    /**
+     *
+     * @type {KaiUsage}
+     * @memberof KaiQuickActionResponse
+     */
+    usage: KaiUsage;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiQuickActionResponse
+ */
+export namespace KaiQuickActionResponse {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ActionIdEnum {
+        GenerateAnnotation = 'generateAnnotation'
+    }
+}
+/**
+ * Base AI quick action result schema for proper inheritance.
+ * @export
+ * @interface KaiQuickActionResult
+ */
+export interface KaiQuickActionResult {
+
+
+}
+
+
+/**
+ *
+ * @export
+ * @interface KaiQuickActionsAvailable
+ */
+export interface KaiQuickActionsAvailable {
+
+    /**
+     * List of available quick action IDs.
+     * @type {Array<string>}
+     * @memberof KaiQuickActionsAvailable
+     */
+    availableActions: Array<string>;
+
+}
+
+
 /**
  * Encapsulates a request to K-AI which contains the entire conversation  as well as information on the open workflow, subworkflow and selected nodes. 
  * @export
@@ -5342,110 +5657,40 @@ const component = function(rpcClient: RPCClient) {
 const componenteditor = function(rpcClient: RPCClient) {
     return {
         /**
-         * Gets configuration layout for the component editor.
+         * Sets component editor config.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {ComponentEditorConfig} [params.config] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        async getConfigurationLayout(
-        	params: { projectId: string,  workflowId: string,  nodeId: string  }
-        ): Promise<string> {
-            const defaultParams = { 
-            }
-            
-            return rpcClient.call('ComponentEditorService.getConfigurationLayout', { ...defaultParams, ...params });
-        },
-        /**
-         * Gets configuration nodes for the component editor.
-         * @param {string} params.projectId ID of the workflow-project.
-         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [params.options] Override http request option.
-         * @throws {RequiredError}
-         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         */
-        async getConfigurationNodes(
-        	params: { projectId: string,  workflowId: string,  nodeId: string  }
-        ): Promise<string> {
-            const defaultParams = { 
-            }
-            
-            return rpcClient.call('ComponentEditorService.getConfigurationNodes', { ...defaultParams, ...params });
-        },
-        /**
-         * Gets view layout for the component editor.
-         * @param {string} params.projectId ID of the workflow-project.
-         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [params.options] Override http request option.
-         * @throws {RequiredError}
-         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         */
-        async getViewLayout(
-        	params: { projectId: string,  workflowId: string,  nodeId: string  }
-        ): Promise<string> {
-            const defaultParams = { 
-            }
-            
-            return rpcClient.call('ComponentEditorService.getViewLayout', { ...defaultParams, ...params });
-        },
-        /**
-         * Gets view nodes for the component editor.
-         * @param {string} params.projectId ID of the workflow-project.
-         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [params.options] Override http request option.
-         * @throws {RequiredError}
-         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         */
-        async getViewNodes(
-        	params: { projectId: string,  workflowId: string,  nodeId: string  }
-        ): Promise<string> {
-            const defaultParams = { 
-            }
-            
-            return rpcClient.call('ComponentEditorService.getViewNodes', { ...defaultParams, ...params });
-        },
-        /**
-         * Sets configuration layout for the component editor.
-         * @param {string} params.projectId ID of the workflow-project.
-         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {string} [params.componentConfigurationLayout] 
-         * @param {*} [params.options] Override http request option.
-         * @throws {RequiredError}
-         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         */
-        async setConfigurationLayout(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  componentConfigurationLayout?: string  }
+        async applyComponentEditorConfig(
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  config?: ComponentEditorConfig  }
         ): Promise<Response> {
             const defaultParams = { 
-                componentConfigurationLayout: null,
+                config: null,
             }
             
-            return rpcClient.call('ComponentEditorService.setConfigurationLayout', { ...defaultParams, ...params });
+            return rpcClient.call('ComponentEditorService.applyComponentEditorConfig', { ...defaultParams, ...params });
         },
         /**
-         * Sets view layout for the component view editor.
+         * Returns the state required to render the component editor. 
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {string} [params.componentViewLayout] 
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        async setViewLayout(
-        	params: { projectId: string,  workflowId: string,  nodeId: string,  componentViewLayout?: string  }
-        ): Promise<Response> {
+        async getComponentEditorState(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<ComponentEditorState> {
             const defaultParams = { 
-                componentViewLayout: null,
             }
             
-            return rpcClient.call('ComponentEditorService.setViewLayout', { ...defaultParams, ...params });
+            return rpcClient.call('ComponentEditorService.getComponentEditorState', { ...defaultParams, ...params });
         },
     }
 };
@@ -5652,6 +5897,21 @@ const kai = function(rpcClient: RPCClient) {
             return rpcClient.call('KaiService.abortAiRequest', { ...defaultParams, ...params });
         },
         /**
+         * Executes a promptless AI quick action that doesn't require chat interactions.
+         * @param {'generateAnnotation'} params.kaiQuickActionId Identifier of an AI quick action.
+         * @param {KaiQuickActionRequest} params.kaiQuickActionRequest 
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async executeQuickAction(
+        	params: { kaiQuickActionId: 'generateAnnotation',  kaiQuickActionRequest: KaiQuickActionRequest  }
+        ): Promise<KaiQuickActionResponse> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.executeQuickAction', { ...defaultParams, ...params });
+        },
+        /**
          * Fetches the disclaimer and welcome messages displayed in K-AI's chat interface.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
@@ -5677,6 +5937,20 @@ const kai = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('KaiService.getUsage', { ...defaultParams, ...params });
+        },
+        /**
+         * Returns available AI quick actions.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listQuickActions(
+        	params: { projectId: string  }
+        ): Promise<KaiQuickActionsAvailable> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.listQuickActions', { ...defaultParams, ...params });
         },
         /**
          * Sends a request to a chain.
