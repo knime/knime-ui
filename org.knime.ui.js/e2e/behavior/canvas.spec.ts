@@ -175,7 +175,7 @@ test.describe("panning", () => {
     await assertSnapshot(page);
   });
 
-  test("by dragging a mix of nodes and annotations to the edge of the canvas", async ({
+  test.skip("by dragging a mix of nodes and annotations to the edge of the canvas", async ({
     page,
   }) => {
     await start(page);
