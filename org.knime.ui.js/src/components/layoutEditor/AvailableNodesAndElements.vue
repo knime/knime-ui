@@ -17,82 +17,84 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
 </script>
 
 <template>
-  <h4>Views <small class="text-muted">drag into layout or click</small></h4>
-  <Draggable
-    v-model="availableNodes"
-    :group="{ name: 'content', pull: 'clone', put: false }"
-    :sort="false"
-    draggable=".item"
-    :clone="createViewFromNode"
-    :move="checkMove"
-    tag="ul"
-    class="available-nodes"
-    item-key="id"
-    :force-fallback="true"
-    :fallback-on-body="true"
-    @start="layoutEditorStore.setIsDragging(true)"
-    @end="layoutEditorStore.setIsDragging(false)"
-  >
-    <template #item="{ element }">
-      <li
-        :key="element.nodeID"
-        :class="['item', 'draggable-node', element.type]"
-        @click.prevent="layoutEditorStore.addNode(element)"
-      >
-        <div class="name">
-          <NodeIcon :node="element" class="node-icon" />
-          <div :title="element.name">
-            {{ element.name }}
-          </div>
-          <small class="text-muted">Node {{ element.nodeID }}</small>
-        </div>
-        <div
-          v-if="element.description && element.description.length"
-          class="description"
-          :title="element.description"
+  <div>
+    <h4>Views <small class="text-muted">drag into layout or click</small></h4>
+    <Draggable
+      v-model="availableNodes"
+      :group="{ name: 'content', pull: 'clone', put: false }"
+      :sort="false"
+      draggable=".item"
+      :clone="createViewFromNode"
+      :move="checkMove"
+      tag="ul"
+      class="available-nodes"
+      item-key="id"
+      :force-fallback="true"
+      :fallback-on-body="true"
+      @start="layoutEditorStore.setIsDragging(true)"
+      @end="layoutEditorStore.setIsDragging(false)"
+    >
+      <template #item="{ element }">
+        <li
+          :key="element.nodeID"
+          :class="['item', 'draggable-node', element.type]"
+          @click.prevent="layoutEditorStore.addNode(element)"
         >
-          {{ parseNodeDescription(element.description) }}
-        </div>
-      </li>
-    </template>
-    <template #footer>
-      <small v-if="availableNodes.length === 0">
-        (all views are used in the layout)
-      </small>
-    </template>
-  </Draggable>
+          <div class="name">
+            <NodeIcon :node="element" class="node-icon" />
+            <div :title="element.name">
+              {{ element.name }}
+            </div>
+            <small class="text-muted">Node {{ element.nodeID }}</small>
+          </div>
+          <div
+            v-if="element.description && element.description.length"
+            class="description"
+            :title="element.description"
+          >
+            {{ parseNodeDescription(element.description) }}
+          </div>
+        </li>
+      </template>
+      <template #footer>
+        <small v-if="availableNodes.length === 0">
+          (all views are used in the layout)
+        </small>
+      </template>
+    </Draggable>
 
-  <h4>Rows <small class="text-muted">drag into layout or click</small></h4>
-  <Draggable
-    v-model="elements"
-    :group="{ name: 'content', pull: 'clone', put: false }"
-    :sort="false"
-    :clone="createViewFromRowTemplate"
-    tag="ul"
-    class="available-elements"
-    item-key="name"
-    :force-fallback="true"
-    :fallback-on-body="true"
-    @start="layoutEditorStore.setIsDragging(true)"
-    @end="layoutEditorStore.setIsDragging(false)"
-  >
-    <template #item="{ element, index }">
-      <li
-        :key="index"
-        :title="element.name"
-        class="item row"
-        @click.prevent="
-          layoutEditorStore.addElement(createViewFromRowTemplate(element))
-        "
-      >
-        <div
-          v-for="(_, colIndex) in element.data.columns"
-          :key="colIndex"
-          class="col"
-        />
-      </li>
-    </template>
-  </Draggable>
+    <h4>Rows <small class="text-muted">drag into layout or click</small></h4>
+    <Draggable
+      v-model="elements"
+      :group="{ name: 'content', pull: 'clone', put: false }"
+      :sort="false"
+      :clone="createViewFromRowTemplate"
+      tag="ul"
+      class="available-elements"
+      item-key="name"
+      :force-fallback="true"
+      :fallback-on-body="true"
+      @start="layoutEditorStore.setIsDragging(true)"
+      @end="layoutEditorStore.setIsDragging(false)"
+    >
+      <template #item="{ element, index }">
+        <li
+          :key="index"
+          :title="element.name"
+          class="item row"
+          @click.prevent="
+            layoutEditorStore.addElement(createViewFromRowTemplate(element))
+          "
+        >
+          <div
+            v-for="(_, colIndex) in element.data.columns"
+            :key="colIndex"
+            class="col"
+          />
+        </li>
+      </template>
+    </Draggable>
+  </div>
 </template>
 
 <style lang="postcss" scoped>

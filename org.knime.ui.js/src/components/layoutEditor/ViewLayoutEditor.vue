@@ -18,6 +18,7 @@ const {
   isLegacyModeOutOfSync,
   isWrappingLayout,
   hasChanges,
+  isReportingEnabled,
 } = storeToRefs(layoutEditorStore);
 
 const onLegacyModeToggle = (event: Event) => {
@@ -68,6 +69,18 @@ const onLegacyModeToggle = (event: Event) => {
       >
         <InfoIcon />
       </button>
+
+      <label class="reporting-label">
+        <input
+          v-model="isReportingEnabled"
+          type="checkbox"
+          class="reporting-checkbox"
+          :disabled="isReportingEnabled === undefined"
+        />
+        Enable reporting{{
+          isReportingEnabled === null ? " (requires Reporting extension)" : ""
+        }}
+      </label>
     </div>
 
     <div class="layout">
@@ -121,8 +134,6 @@ const onLegacyModeToggle = (event: Event) => {
 </template>
 
 <style lang="postcss">
-@import url("@/assets/mixins.css");
-
 /* when dragging from available nodes/elements over layout,
   this list element will temporarily be added to the layout */
 .layout-preview li.sortable-ghost {
@@ -149,15 +160,11 @@ const onLegacyModeToggle = (event: Event) => {
     display: none; /* for now we just hide the content, maybe there is a better way to render the ghost */
   }
 }
-
-.legacy-checkbox {
-  &:focus-visible {
-    @mixin focus-outline;
-  }
-}
 </style>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .container {
   background-color: var(--knime-white);
   display: flex;
@@ -169,6 +176,8 @@ const onLegacyModeToggle = (event: Event) => {
   height: 100%;
   padding: var(--space-12) var(--space-12) 0 var(--space-16);
   width: 300px;
+  display: flex;
+  flex-direction: column;
 }
 
 .controls {
@@ -206,5 +215,17 @@ const onLegacyModeToggle = (event: Event) => {
   height: 14px;
   width: 14px;
   padding: 0;
+}
+
+.reporting-label {
+  margin-top: auto;
+  margin-bottom: var(--space-12);
+}
+
+.legacy-checkbox,
+.reporting-checkbox {
+  &:focus-visible {
+    @mixin focus-outline;
+  }
 }
 </style>

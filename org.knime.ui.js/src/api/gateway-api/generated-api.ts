@@ -942,6 +942,12 @@ export namespace CommandResult {
 export interface ComponentEditorConfig {
 
     /**
+     * Whether reporting is enabled for the component. It has three states: - true: reporting is enabled - false: reporting is disabled - absent: reporting extension is not installed -&gt; option disabled
+     * @type {boolean}
+     * @memberof ComponentEditorConfig
+     */
+    reportingEnabled?: boolean;
+    /**
      * The view layout of the component.
      * @type {string}
      * @memberof ComponentEditorConfig
@@ -2712,7 +2718,7 @@ export interface Node {
      */
     dialogType?: Node.DialogTypeEnum;
     /**
-     * A change in this value signals that the configuration of a node has been changed.  Applies only to nodes under the UI-extensions, modern dialog framework. Only present for native nodes and components, not for metanodes. Only present if node is executed.
+     * A change in this value signals that the model settings of a node have changed.  Applies only to nodes under the UI-extensions, modern dialog framework. Only present for native nodes and components, not for metanodes. Only present if node is executed. Only present if node provides a view.
      * @type {number}
      * @memberof Node
      */

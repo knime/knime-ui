@@ -390,6 +390,11 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   });
 
   /**
+   * Reporting
+   */
+  const isReportingEnabled = ref<boolean | undefined>();
+
+  /**
    * Configuration layout
    */
   const configurationLayout = ref<ConfigurationLayout>({ rows: [] });
@@ -452,6 +457,8 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       setNodes(viewNodes);
       setConfigurationLayout(filledConfigurationLayout);
       setConfigurationNodes(configurationNodes);
+
+      isReportingEnabled.value = state.config.reportingEnabled;
     } catch (error) {
       toastPresets.workflow.layoutEditor.loadLayoutAndNodes({ error });
     }
@@ -498,6 +505,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       await API.componenteditor.applyComponentEditorConfig({
         ...layoutContext.value,
         config: {
+          reportingEnabled: isReportingEnabled.value,
           viewLayout: JSON.stringify(layout.value),
           configurationLayout: JSON.stringify(configurationLayout.value),
         },
@@ -549,6 +557,9 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     // Legacy mode
     setUseLegacyMode,
     isLegacyModeOutOfSync,
+
+    // Reporting
+    isReportingEnabled,
 
     // Configuration layout
     configurationLayout,
