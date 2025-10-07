@@ -50,7 +50,9 @@ package org.knime.ui.java.util;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -63,9 +65,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -83,16 +87,17 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
-import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
+import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
+import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.editor2.LoadMetaNodeTemplateRunnable;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.editparts.GUIWorkflowCipherPrompt;
@@ -104,7 +109,6 @@ import org.knime.workbench.explorer.filesystem.MessageFileStore;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 import org.knime.workbench.explorer.view.AbstractContentProvider;
-import org.knime.workbench.explorer.view.actions.DownloadAndOpenWorkflowAction;
 import org.knime.workbench.explorer.view.actions.WorkflowDownload;
 import org.knime.workbench.explorer.view.dialogs.SnapshotPanel;
 
@@ -265,12 +269,12 @@ public final class DesktopAPUtil {
 
     /** Answer to the question dialog asking whether a remote workflow should be overwritten. */
     public enum OverwriteRemotelyResult {
-        /** Abort upload. */
-        CANCEL,
-        /** Overwrite workflow without creating a snapshot. */
-        OVERWRITE,
-        /** First create a snapshot and then upload the workflow. */
-        OVERWRITE_WITH_SNAPSHOT
+            /** Abort upload. */
+            CANCEL,
+            /** Overwrite workflow without creating a snapshot. */
+            OVERWRITE,
+            /** First create a snapshot and then upload the workflow. */
+            OVERWRITE_WITH_SNAPSHOT
     }
 
     /**
@@ -280,17 +284,17 @@ public final class DesktopAPUtil {
      * @param contentProvider content provider of the item to upload, may be {@code null} for Hub
      * @param location location name, either {@code "Hub"} or {@code "Server"}
      * @return pair of answer and the comment to be used if the answer is
-     *        {@link OverwriteRemotelyResult#OVERWRITE_WITH_SNAPSHOT}
+     *         {@link OverwriteRemotelyResult#OVERWRITE_WITH_SNAPSHOT}
      */
     public static Pair<OverwriteRemotelyResult, String> openOverwriteRemotelyDialog(final String itemNameAndPath,
-            final AbstractContentProvider contentProvider, final String location) {
+        final AbstractContentProvider contentProvider, final String location) {
         final var snapshotPanelRef = new AtomicReference<SnapshotPanel>();
         @SuppressWarnings("restriction")
         final var shell = org.knime.core.ui.util.SWTUtilities.getActiveShell();
         final var dialog = new MessageDialog(shell, "Overwrite on " + location + "?", null,
-            "The workflow\n\n\t" + itemNameAndPath
-                + "\n\nalready exists on the " + location + ". Do you want to overwrite it?\n",
-            MessageDialog.QUESTION, new String[] { IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL }, 1) {
+            "The workflow\n\n\t" + itemNameAndPath + "\n\nalready exists on the " + location
+                + ". Do you want to overwrite it?\n",
+            MessageDialog.QUESTION, new String[]{IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL}, 1) {
             @Override
             protected Control createCustomArea(final Composite parent) {
                 if (contentProvider != null && contentProvider.supportsSnapshots()) {
@@ -340,7 +344,7 @@ public final class DesktopAPUtil {
      * @param e exception to log
      */
     public static void showWarningAndLogError(final String title, final String message, final NodeLogger logger,
-            final Throwable e) {
+        final Throwable e) {
         logger.error(title + ": " + message, e);
         showWarning(title, message);
     }
@@ -354,7 +358,7 @@ public final class DesktopAPUtil {
      * @param e exception to log
      */
     public static void showAndLogError(final String title, final String message, final NodeLogger logger,
-            final Throwable e) {
+        final Throwable e) {
         logger.error(title + ": " + message, e);
         showError(title, message);
     }
@@ -471,7 +475,7 @@ public final class DesktopAPUtil {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
                 try {
                     consumer.accept(monitor);
-                } catch (Throwable e) {  // NOSONAR
+                } catch (Throwable e) { // NOSONAR
                     // arguments to `busyCursorWhile` are only allowed to throw InvocationTargetExceptions
                     throw new InvocationTargetException(e);
                 }
@@ -488,72 +492,48 @@ public final class DesktopAPUtil {
     /**
      * Downloads a remote workflow into a temporary directory.
      *
-     * @param remoteFileStore
-     * @param locationInfo if {@code null} it will be inferred from 'remoteFileStore'
+     * @param repoObjectImport import object describing the remote workflow to import
+     * @param remoteLocation non-{@code null} location info of the remote workflow
      * @return an empty optional if the download or opening the workflow failed
      */
-    public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgress(
-        final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
+    public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgress(final RepoObjectImport repoObjectImport,
+        final HubSpaceLocationInfo remoteLocation) {
         return runWithProgress(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
-            progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
+            progress -> downloadWorkflow(progress, repoObjectImport, remoteLocation));
     }
 
     /**
-     * Downloads a remote workflow into a temporary directory, but warnings suppressed.
-     *
-     * @param remoteFileStore
-     * @param locationInfo if {@code null} it will be inferred from 'remoteFileStore'
-     * @return an empty optional if the download or opening the workflow failed
+     * Downloads a remote workflow into a temporary directory using the given {@link HttpURLConnection} supplier.
      */
-    public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgressWithoutWarnings(
-        final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
-        return runWithProgressWithoutWarnings(WorkflowManagerLoader.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
-            progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
-    }
+    private static RemoteWorkflowInput downloadWorkflow(final IProgressMonitor progress,
+        final RepoObjectImport repoObjectImport, final HubSpaceLocationInfo remoteLocation) {
 
-    /**
-     * Downloads a remote workflow into a temporary directory. This code is heavily inspired by the
-     * {@link DownloadAndOpenWorkflowAction}.
-     *
-     * @param progress
-     * @param source source file store
-     * @param locationInfo inferred from {@code source} if null.
-     * @return
-     * @throws InterruptedException
-     */
-    private static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
-        final RemoteExplorerFileStore source, final LocationInfo locationInfo) {
+        final var name = IPath.forPosix(remoteLocation.getWorkflowPath()).lastSegment();
         final LocalExplorerFileStore tmpDestDir;
         try {
-            // It's possible to out-run the KNIME-Explorer fetcher in here, and then the workflow can't be downloaded
-            if (!waitForMountpointToFinishFetching(progress, source)) {
-                // user has aborted
-                return null;
-            }
-
-            // fetch the actual name from the remote side because `source.getName()` may only return the repository ID
-            // at that is not always a valid directory name
-            final var name = source.fetchInfo().getName();
             tmpDestDir = ExplorerMountTable.createExplorerTempDir(name).getChild(name);
-            tmpDestDir.mkdir(EFS.NONE, progress);
-        } catch (CoreException e1) {
-            throw new IllegalStateException(e1);
-        } catch (InterruptedException e1) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException(e1);
+            tmpDestDir.getParent().mkdir(EFS.NONE, progress);
+        } catch (final CoreException e) {
+            throw ExceptionUtils
+                .asRuntimeException(new IOException("Could not create temporary directory to download workflow", e));
         }
 
         final String[] content;
+        final String mountID;
         try {
-            new WorkflowDownload(source, tmpDestDir, false, null, progress).runSync(progress);
+            mountID = ResolverUtil.toDescription(repoObjectImport.getKnimeURI(), progress)
+                .map(d -> d.getMountpointName()).orElseThrow(() -> new IllegalStateException(
+                    "Unable to retrieve mount ID for " + repoObjectImport.getDataURI()));
+            final var downloadDir = ResolverUtil.resolveURItoLocalOrTempFile(repoObjectImport.getKnimeURI(), progress);
+            Files.move(downloadDir.toPath(), tmpDestDir.toLocalFile(EFS.NONE, progress).toPath());
+
             content = tmpDestDir.childNames(EFS.NONE, progress);
             if (content == null || content.length == 0) {
                 tmpDestDir.delete(EFS.NONE, progress);
                 throw new IllegalStateException("Error during download: No content available.");
             }
-        } catch (CoreException e) {
+        } catch (final CoreException | IOException e) {
             throw new IllegalStateException(e);
-
         }
 
         // it is weird if the length is not 1 (because we downloaded one item)
@@ -572,13 +552,14 @@ public final class DesktopAPUtil {
         try {
             final var localWorkflowPath = workflowDir.getParent().toLocalFile().toPath();
             final var mountpointRoot = workflowDir.getContentProvider().getRootStore().toLocalFile().toPath();
-            var effectiveLocationInfo = locationInfo == null ? source.locationInfo().orElse(null) : locationInfo;
-            CheckUtils.checkNotNull(effectiveLocationInfo, "Location info could not be determined for " + source);
+            var effectiveLocationInfo = remoteLocation;
+            CheckUtils.checkNotNull(effectiveLocationInfo,
+                "Location info could not be determined for " + repoObjectImport.getDataURI());
             context = WorkflowContextV2.builder() //
                 .withAnalyticsPlatformExecutor(builder -> builder //
                     .withCurrentUserAsUserId() //
                     .withLocalWorkflowPath(localWorkflowPath) //
-                    .withMountpoint(source.getMountID(), mountpointRoot)) //
+                    .withMountpoint(mountID, mountpointRoot)) //
                 .withLocation(effectiveLocationInfo) //
                 .build(); //
         } catch (CoreException e) {
@@ -626,7 +607,7 @@ public final class DesktopAPUtil {
      * @throws InterruptedException if the waiting was interrupted
      */
     public static boolean waitForMountpointToFinishFetching(final IProgressMonitor progress,
-            final AbstractExplorerFileStore fileStore) throws InterruptedException {
+        final AbstractExplorerFileStore fileStore) throws InterruptedException {
         // TODO AP-22079 remove this immediately after the "hybrid mode" of CUI and MUI has been retired
         final var provider = fileStore.getContentProvider();
         if (fileStore instanceof RemoteExplorerFileStore) {
@@ -645,10 +626,10 @@ public final class DesktopAPUtil {
     }
 
     private static boolean isMountpointFetching(final AbstractContentProvider provider,
-            final AbstractExplorerFileStore filestore) {
+        final AbstractExplorerFileStore filestore) {
         final var children = provider.getChildren(filestore);
         return children.length == 1 && children[0] instanceof MessageFileStore msg
-                && "Fetching content...".equals(msg.getName());
+            && "Fetching content...".equals(msg.getName());
     }
 
     /**
@@ -680,7 +661,7 @@ public final class DesktopAPUtil {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }
-            } catch (Throwable e) {  // NOSONAR
+            } catch (Throwable e) { // NOSONAR
                 onError.accept(e);
             }
             if (System.currentTimeMillis() > timeoutTime) {

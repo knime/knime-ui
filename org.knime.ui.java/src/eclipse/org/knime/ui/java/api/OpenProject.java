@@ -76,8 +76,6 @@ import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProgressReporter;
 import org.knime.workbench.core.imports.RepoObjectImport;
-import org.knime.workbench.explorer.ExplorerMountTable;
-import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 /**
  * Opens a project.
@@ -177,15 +175,16 @@ final class OpenProject {
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion) {
-        final var wfm = loadWorkflowWithProgress(repoObjectImport);
+        final var locationInfo = repoObjectImport.locationInfo()//
+                .filter(HubSpaceLocationInfo.class::isInstance)//
+                .map(HubSpaceLocationInfo.class::cast)//
+                .orElse(null);
+
+        final var wfm = loadWorkflowWithProgress(repoObjectImport, locationInfo);
         if (wfm == null) {
             return false;
         }
 
-        final var locationInfo = repoObjectImport.locationInfo()//
-            .filter(HubSpaceLocationInfo.class::isInstance)//
-            .map(HubSpaceLocationInfo.class::cast)//
-            .orElse(null);
         final var origin = findOrigin(locationInfo, wfm, selectedVersion).orElse(null);
         final var project = Project.builder().setWfm(wfm).setOrigin(origin).build();
         // Provider type can only be Hub here
@@ -258,16 +257,12 @@ final class OpenProject {
         });
     }
 
-    private static WorkflowManager loadWorkflowWithProgress(final RepoObjectImport repoObjectImport) {
-
-        final var fileStore =
-            (RemoteExplorerFileStore)ExplorerMountTable.getFileSystem().getStore(repoObjectImport.getKnimeURI());
-        var locationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
-        final var remoteInput = DesktopAPUtil.downloadWorkflowWithProgress(fileStore, locationInfo);
+    private static WorkflowManager loadWorkflowWithProgress(final RepoObjectImport repoObjectImport,
+            final HubSpaceLocationInfo remoteLocation) {
+        final var remoteInput = DesktopAPUtil.downloadWorkflowWithProgress(repoObjectImport, remoteLocation);
         if (remoteInput.isEmpty()) {
             return null;
         }
-
         return DesktopAPUtil.loadWorkflowManagerWithProgress(remoteInput.get().getWorkflowContext()).orElse(null);
     }
 }
