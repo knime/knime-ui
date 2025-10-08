@@ -183,6 +183,7 @@ const createWorkflowLocally = async () => {
         :items="items"
         disable-multi-select
         disable-dragging
+        disable-options-menu
         @open-file="openRecentWorkflow"
       >
         <template #emptyFolder>
@@ -207,32 +208,30 @@ const createWorkflowLocally = async () => {
           />
         </template>
 
-        <template #itemContent="{ item }">
-          <div class="item-content">
-            <span data-test-id="recent-workflow-name">{{ item.name }}</span>
+        <template #dynamicColumnProvider="{ item }">
+          <span
+            class="dynamic-column provider-name"
+            data-test-id="recent-workflow-provider"
+          >
+            {{
+              getSpaceProviderName(item.meta!.recentWorkflow as RecentWorkflow)
+            }}
+          </span>
+        </template>
 
-            <div class="item-meta">
-              <span
-                class="provider-name"
-                data-test-id="recent-workflow-provider"
-              >
-                {{
-                  getSpaceProviderName(
-                    item.meta!.recentWorkflow as RecentWorkflow,
-                  )
-                }}
-              </span>
-              <span data-test-id="recent-workflow-time">
-                {{
-                  formatTimeAgo(
-                    new Date(
-                      (item.meta!.recentWorkflow as RecentWorkflow).timeUsed,
-                    ),
-                  )
-                }}
-              </span>
-            </div>
-          </div>
+        <template #dynamicColumnTimeUsed="{ item }">
+          <span
+            class="dynamic-column time-used"
+            data-test-id="recent-workflow-time"
+          >
+            {{
+              formatTimeAgo(
+                new Date(
+                  (item.meta!.recentWorkflow as RecentWorkflow).timeUsed,
+                ),
+              )
+            }}
+          </span>
         </template>
 
         <template #contextMenu="{ anchor, onItemClick, closeContextMenu }">
@@ -253,23 +252,20 @@ const createWorkflowLocally = async () => {
 .recent-workflows {
   padding: 24px;
   container: wrapper / inline-size;
+}
 
-  & .item-content {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
+.list {
+  --file-explorer-item-grid: 2fr 1fr 100px;
+}
 
-    & .item-meta {
-      width: 50%;
-      display: flex;
-      gap: 20px;
-      justify-content: space-between;
+.dynamic-column {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-      & .provider-name {
-        @mixin truncate;
-      }
-    }
-  }
+.time-used {
+  text-align: right;
+  width: 100%;
 }
 
 .create-workflow-button {
@@ -279,6 +275,14 @@ const createWorkflowLocally = async () => {
 }
 
 @container wrapper (max-width: 580px) {
+  .list {
+    --file-explorer-item-grid: 4fr 1fr 0;
+
+    & .time-used {
+      display: none;
+    }
+  }
+
   .create-workflow-button {
     width: 30px;
     height: 30px;
@@ -296,6 +300,17 @@ const createWorkflowLocally = async () => {
     &.compact {
       min-width: auto;
       padding: 5px;
+    }
+  }
+}
+
+@container wrapper (max-width: 380px) {
+  .list {
+    --file-explorer-item-grid: 1fr 0 0;
+
+    & .provider-name,
+    & .time-used {
+      display: none;
     }
   }
 }

@@ -229,6 +229,7 @@ watch(isLoadingContent, () => {
         aria-label="Current workflow group in Space Explorer"
         :selected-item-ids="selectedItemIds"
         :mode="mode"
+        disable-options-menu
         :virtual
         :items="filteredFileExplorerItems"
         :is-root-folder="activeWorkflowGroup.path.length === 0"

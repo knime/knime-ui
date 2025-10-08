@@ -21,8 +21,8 @@ import KeyIcon from "@knime/styles/img/icons/key.svg";
 import LinkExternal from "@knime/styles/img/icons/link-external.svg";
 import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.svg";
-import RenameIcon from "@knime/styles/img/icons/pencil.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
+import RenameIcon from "@knime/styles/img/icons/rename.svg";
 import DeleteIcon from "@knime/styles/img/icons/trash.svg";
 import { hotkeys } from "@knime/utils";
 
