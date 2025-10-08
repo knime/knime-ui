@@ -184,7 +184,7 @@ test.describe("dragging", () => {
 
     await page.keyboard.down("ControlOrMeta");
     for (let i = 0; i < 10; i++) {
-      await page.mouse.wheel(0, -1);
+      await page.mouse.wheel(0, -24.4);
     }
     await page.keyboard.up("ControlOrMeta");
 
