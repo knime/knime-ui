@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
 import { Button, InlineMessage } from "@knime/components";
 import InfoIcon from "@knime/styles/img/icons/circle-info.svg";
 
+import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import { layoutEditorGridSize } from "@/style/shapes";
 
@@ -18,13 +20,26 @@ const {
   isLegacyModeOutOfSync,
   isWrappingLayout,
   hasChanges,
-  isReportingEnabled,
+  reporting,
 } = storeToRefs(layoutEditorStore);
 
 const onLegacyModeToggle = (event: Event) => {
   const { checked } = event.target as HTMLInputElement;
   layoutEditorStore.setUseLegacyMode(checked);
 };
+
+const isReportingNotAvailable = computed(
+  () => reporting.value === ComponentEditorConfig.ReportingEnum.NotAvailable,
+);
+
+const reportingEnabled = computed({
+  get: () => reporting.value === ComponentEditorConfig.ReportingEnum.Enabled,
+  set: (value: boolean) => {
+    reporting.value = value
+      ? ComponentEditorConfig.ReportingEnum.Enabled
+      : ComponentEditorConfig.ReportingEnum.Disabled;
+  },
+});
 </script>
 
 <template>
@@ -72,13 +87,13 @@ const onLegacyModeToggle = (event: Event) => {
 
       <label class="reporting-label">
         <input
-          v-model="isReportingEnabled"
+          v-model="reportingEnabled"
           type="checkbox"
           class="reporting-checkbox"
-          :disabled="isReportingEnabled === undefined"
+          :disabled="isReportingNotAvailable"
         />
         Enable reporting{{
-          isReportingEnabled === null ? " (requires Reporting extension)" : ""
+          isReportingNotAvailable ? " (requires Reporting extension)" : ""
         }}
       </label>
     </div>

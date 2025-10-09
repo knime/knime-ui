@@ -35,6 +35,7 @@ import {
   getAllContentArrays,
   getEmptyLayout,
 } from "./utils";
+import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
 
 type AdvancedEditorView = {
   contentDraft: string | null;
@@ -392,7 +393,9 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   /**
    * Reporting
    */
-  const isReportingEnabled = ref<boolean | undefined>();
+  const reporting = ref<ComponentEditorConfig.ReportingEnum>(
+    ComponentEditorConfig.ReportingEnum.NotAvailable,
+  );
 
   /**
    * Configuration layout
@@ -458,7 +461,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       setConfigurationLayout(filledConfigurationLayout);
       setConfigurationNodes(configurationNodes);
 
-      isReportingEnabled.value = state.config.reportingEnabled;
+      reporting.value = state.config.reporting;
     } catch (error) {
       toastPresets.workflow.layoutEditor.loadLayoutAndNodes({ error });
     }
@@ -505,7 +508,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
       await API.componenteditor.applyComponentEditorConfig({
         ...layoutContext.value,
         config: {
-          reportingEnabled: isReportingEnabled.value,
+          reporting: reporting.value,
           viewLayout: JSON.stringify(layout.value),
           configurationLayout: JSON.stringify(configurationLayout.value),
         },
@@ -559,7 +562,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     isLegacyModeOutOfSync,
 
     // Reporting
-    isReportingEnabled,
+    reporting,
 
     // Configuration layout
     configurationLayout,

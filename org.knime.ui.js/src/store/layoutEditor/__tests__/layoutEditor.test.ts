@@ -27,6 +27,7 @@ import type {
   LayoutEditorViewItem,
 } from "../types/view";
 import * as layoutEditorUtils from "../utils";
+import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
@@ -684,6 +685,7 @@ describe("layoutEditor", () => {
         config: {
           viewLayout: JSON.stringify(dummyData),
           configurationLayout: JSON.stringify({ rows: [] }),
+          reporting: "not-available",
         },
       });
     });
@@ -697,6 +699,7 @@ describe("layoutEditor", () => {
 
       const workflow: LayoutContext = { projectId, workflowId, nodeId };
       layoutEditorStore.setLayoutContext(workflow);
+      layoutEditorStore.reporting = ComponentEditorConfig.ReportingEnum.Enabled;
       await layoutEditorStore.save();
 
       expect(setLayoutFailedSpy).not.toHaveBeenCalled();
@@ -707,6 +710,7 @@ describe("layoutEditor", () => {
         config: {
           viewLayout: expect.any(String),
           configurationLayout: expect.any(String),
+          reporting: "enabled",
         },
       });
     });

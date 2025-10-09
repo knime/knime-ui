@@ -942,11 +942,11 @@ export namespace CommandResult {
 export interface ComponentEditorConfig {
 
     /**
-     * Whether reporting is enabled for the component. It has three states: - true: reporting is enabled - false: reporting is disabled - absent: reporting extension is not installed -&gt; option disabled
-     * @type {boolean}
+     * Whether reporting is enabled for the component or not available.
+     * @type {string}
      * @memberof ComponentEditorConfig
      */
-    reportingEnabled?: boolean;
+    reporting: ComponentEditorConfig.ReportingEnum;
     /**
      * The view layout of the component.
      * @type {string}
@@ -963,6 +963,21 @@ export interface ComponentEditorConfig {
 }
 
 
+/**
+ * @export
+ * @namespace ComponentEditorConfig
+ */
+export namespace ComponentEditorConfig {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ReportingEnum {
+        Enabled = 'enabled',
+        Disabled = 'disabled',
+        NotAvailable = 'not-available'
+    }
+}
 /**
  * The state of the component editor.
  * @export
