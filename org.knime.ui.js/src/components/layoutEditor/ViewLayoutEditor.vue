@@ -193,6 +193,11 @@ const reportingEnabled = computed({
   width: 300px;
   display: flex;
   flex-direction: column;
+
+  & .reporting-label {
+    margin-top: auto;
+    margin-bottom: var(--space-12);
+  }
 }
 
 .controls {
@@ -230,11 +235,6 @@ const reportingEnabled = computed({
   height: 14px;
   width: 14px;
   padding: 0;
-}
-
-.reporting-label {
-  margin-top: auto;
-  margin-bottom: var(--space-12);
 }
 
 .legacy-checkbox,
