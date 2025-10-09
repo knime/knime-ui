@@ -110,7 +110,7 @@ describe("RecentWorkflowsList.vue", () => {
 
     // item 1
     expect(
-      findAllByTestId(wrapper, "recent-workflow-name").at(0)?.text(),
+      findAllByTestId(wrapper, "file-explorer-item").at(0)?.text(),
     ).toMatch("Workflow 1");
 
     expect(
@@ -123,7 +123,7 @@ describe("RecentWorkflowsList.vue", () => {
 
     // item 2
     expect(
-      findAllByTestId(wrapper, "recent-workflow-name").at(1)?.text(),
+      findAllByTestId(wrapper, "file-explorer-item").at(1)?.text(),
     ).toMatch("Workflow 2");
 
     expect(
@@ -136,7 +136,7 @@ describe("RecentWorkflowsList.vue", () => {
 
     // item 3
     expect(
-      findAllByTestId(wrapper, "recent-workflow-name").at(2)?.text(),
+      findAllByTestId(wrapper, "file-explorer-item").at(2)?.text(),
     ).toMatch("Workflow 3");
 
     expect(
@@ -250,7 +250,7 @@ describe("RecentWorkflowsList.vue", () => {
 
     await flushPromises();
 
-    expect(findAllByTestId(wrapper, "recent-workflow-name").length).toBe(3);
+    expect(findAllByTestId(wrapper, "file-explorer-item").length).toBe(3);
 
     vi.mocked(useSpaceOperationsStore().openProject).mockImplementation(() =>
       Promise.reject(new Error("failure opening recent workflow")),
