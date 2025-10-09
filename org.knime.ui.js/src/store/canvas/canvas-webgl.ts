@@ -681,7 +681,9 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     cursorX: number;
     cursorY: number;
   }) => {
-    const ZOOM_SENSITIVITY = 0.007;
+    // Touchpad/trackpad pinch-to-zoom gestures produce much smaller delta
+    // values compared to mouse wheel. If small delta -> higher sensitivity.
+    const ZOOM_SENSITIVITY = Math.abs(delta) < 12 ? 0.015 : 0.007;
     const MIN_DELTA = 0.5;
     const MAX_DELTA = 1.5;
 
