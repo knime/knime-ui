@@ -3,6 +3,7 @@ import { API } from "@api";
 import { isEqual } from "lodash-es";
 import { defineStore } from "pinia";
 
+import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
 import { layoutEditorGridSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
 import { useNodeTemplatesStore } from "../nodeTemplates/nodeTemplates";
@@ -35,7 +36,6 @@ import {
   getAllContentArrays,
   getEmptyLayout,
 } from "./utils";
-import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
 
 type AdvancedEditorView = {
   contentDraft: string | null;

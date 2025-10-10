@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
+import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
 import { layoutEditorGridSize } from "@/style/shapes";
 import {
   NODE_FACTORIES,
@@ -27,7 +28,6 @@ import type {
   LayoutEditorViewItem,
 } from "../types/view";
 import * as layoutEditorUtils from "../utils";
-import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
