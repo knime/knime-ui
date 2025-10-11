@@ -44,8 +44,8 @@ const applicationStore = useApplicationStore();
 
 const { activeProjectId } = storeToRefs(applicationStore);
 
-const { selectedNodeIds } = useSelectionStore();
-const { hasAnnotationModeEnabled } = useCanvasModesStore();
+const { selectedNodeIds } = storeToRefs(useSelectionStore());
+const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
 
 const activeWorkflowId = computed(() => activeWorkflow.value!.info.containerId);
 const { currentRenderer } = useCanvasRendererUtils();

@@ -9,6 +9,7 @@ import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
+import type { SelectionMode } from "@/store/selection/types";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -42,7 +43,7 @@ const useObjectHandler = (objectMetadata: ObjectMetadata) => {
   type HandlersApi = {
     getObjectId: () => string;
     isObjectSelected: () => boolean;
-    selectObject: () => void;
+    selectObject: (mode?: SelectionMode) => void;
     deselectObject: () => void;
     /**
      * Needed for grid snapping. Not used by objects that do not snap to grid
@@ -62,8 +63,8 @@ const useObjectHandler = (objectMetadata: ObjectMetadata) => {
           getObjectId: () => objectMetadata.nodeId,
           isObjectSelected: () =>
             selectionStore.isNodeSelected(objectMetadata.nodeId),
-          selectObject: () =>
-            selectionStore.selectNodes([objectMetadata.nodeId]),
+          selectObject: (mode) =>
+            selectionStore.selectNodes([objectMetadata.nodeId], mode),
           deselectObject: () =>
             selectionStore.deselectNodes([objectMetadata.nodeId]),
           getObjectInitialPosition: () => {
@@ -201,12 +202,8 @@ export const useObjectInteractions = (
   const panelStore = usePanelStore();
   const selectionStore = useSelectionStore();
   const movingStore = useMovingStore();
-  const {
-    dragInitiatorId,
-    hasAbortedDrag,
-    isDragging,
-    isSelectionDelayedUntilDragCompletes,
-  } = storeToRefs(movingStore);
+  const { dragInitiatorId, hasAbortedDrag, isDragging } =
+    storeToRefs(movingStore);
 
   const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 
@@ -384,20 +381,19 @@ export const useObjectInteractions = (
 
     const selectionStore = useSelectionStore();
 
-    const canDiscardSelection = selectionStore.canDiscardCurrentSelection();
+    const canDiscardSelection = selectionStore.canClearCurrentSelection();
 
     if (
       !canDiscardSelection &&
       selectionStore.singleSelectedObject?.id !== objectHandler.getObjectId()
     ) {
-      const { wasAborted } = await selectionStore.tryDiscardCurrentSelection();
+      const { wasAborted } = await selectionStore.tryClearSelection();
 
       if (!wasAborted) {
         consola.debug(
           "object interaction:: selection context was cleaned. Selecting next object",
           { objectMetadata },
         );
-        await selectionStore.deselectAllObjects();
         objectHandler.selectObject();
 
         openRightPanelForNodes();
@@ -434,11 +430,12 @@ export const useObjectInteractions = (
         { objectMetadata },
       );
 
-      // a drag is not possible when the WF is not writable, so we can assume the same value
-      isSelectionDelayedUntilDragCompletes.value = isWorkflowWritable.value;
-
+      // a drag is not possible when the WF is not writable, we should use 'committed' mode directly
+      const selectionMode: SelectionMode = isWorkflowWritable.value
+        ? "preview"
+        : "committed";
       await selectionStore.deselectAllObjects();
-      objectHandler.selectObject();
+      objectHandler.selectObject(selectionMode);
     }
 
     // we exit here to allow selection on non-writable workflows but not movement
@@ -534,7 +531,7 @@ export const useObjectInteractions = (
         options.onSelect?.();
       }
 
-      isSelectionDelayedUntilDragCompletes.value = false;
+      selectionStore.commitSelectionPreview();
       removeDragAbortListener();
       canvas.releasePointerCapture(pointerDownEvent.pointerId);
       canvas.removeEventListener("pointermove", onMove);

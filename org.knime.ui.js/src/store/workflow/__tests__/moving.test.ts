@@ -105,7 +105,7 @@ describe("workflow::moving", () => {
       });
 
       Object.values(annotationsArray).forEach((annotation) => {
-        selectionStore.selectAnnotations(annotation.id);
+        selectionStore.selectAnnotations([annotation.id]);
         annotationIds.push(annotation.id);
       });
 

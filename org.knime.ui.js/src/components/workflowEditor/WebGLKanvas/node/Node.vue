@@ -10,7 +10,6 @@ import {
   NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
-import { useNodeVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -68,7 +67,6 @@ const { isDebugModeEnabled, visibleArea, canvasLayers, zoomAwareResolution } =
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
 const selectionStore = useSelectionStore();
-const { singleSelectedNode } = storeToRefs(selectionStore);
 const { isNodeSelected } = selectionStore;
 const { isWritable } = storeToRefs(useWorkflowStore());
 
@@ -107,6 +105,8 @@ const isReplacementCandidate = computed(
 );
 
 const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
+
+const { singleSelectedNode } = selectionStore.querySelection("preview");
 
 const { handlePointerInteraction, isDraggingThisObject } =
   useObjectInteractions({
@@ -151,9 +151,8 @@ const { handlePointerInteraction, isDraggingThisObject } =
     },
   });
 
-const { showSelectionPlane, showFocus } = useNodeVisualStatus(
-  toRef(props.node.id),
-);
+const { showSelection, showFocus } =
+  selectionStore.getNodeVisualSelectionStates(props.node.id);
 
 const hoverProvider = useNodeHoverProvider();
 
@@ -288,13 +287,13 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
   markPointerEventAsHandled(event, { initiator: "node::onContextMenu" });
 
   if (!isNodeSelected(props.node.id)) {
-    const { wasAborted } = await selectionStore.deselectAllObjects([
-      props.node.id,
-    ]);
+    const { wasAborted } = await selectionStore.tryClearSelection();
 
     if (wasAborted) {
       return;
     }
+
+    selectionStore.selectNodes([props.node.id]);
   }
 
   await canvasAnchoredComponentsStore.toggleContextMenu({ event });
@@ -306,7 +305,7 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
     :layer="canvasLayers.nodeSelectionPlane"
     :anchor-position="translatedPosition"
     :renderable="renderable"
-    :show-selection="showSelectionPlane"
+    :show-selection="showSelection"
     :show-focus="showFocus"
     :measures="nodeSelectionMeasures"
   />

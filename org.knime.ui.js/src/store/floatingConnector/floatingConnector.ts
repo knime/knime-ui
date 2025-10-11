@@ -22,7 +22,6 @@ import {
 import { useApplicationStore } from "../application/application";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
-import { useSelectionStore } from "../selection";
 import { useWorkflowStore } from "../workflow/workflow";
 
 import {
@@ -303,13 +302,6 @@ export const useFloatingConnectorStore = defineStore(
             const currentSnapTarget = snapTarget.value;
             const currentFloatingConnector = floatingConnector.value;
             const currentSnapPosition = activeSnapPosition.value;
-
-            const { wasAborted } =
-              await useSelectionStore().tryDiscardCurrentSelection();
-
-            if (wasAborted) {
-              return;
-            }
 
             await finishConnection({
               floatingConnector:

@@ -73,7 +73,7 @@ const onPointerDown = async (event: PointerEvent) => {
   const eventTarget = event.currentTarget as HTMLElement;
 
   if (!isMetaNodePortBarSelected(props.type) && !event.ctrlKey) {
-    const { wasAborted } = await selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.tryClearSelection();
     if (wasAborted) {
       return;
     }

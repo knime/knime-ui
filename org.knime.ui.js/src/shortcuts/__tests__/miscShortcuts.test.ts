@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
 
 import { createWorkflow } from "@/test/factories";
 import { mockShortcutContext } from "@/test/factories/shortcuts";
@@ -16,14 +17,21 @@ describe("miscShortcuts", () => {
   });
 
   describe("selectionShortcuts", () => {
-    it("execute selectAll", () => {
+    it("execute selectAll", async () => {
       const { selectionStore, workflowStore } = mockStores();
 
       workflowStore.activeWorkflow = createWorkflow({
         nodes: {},
         workflowAnnotations: [],
       });
+
+      vi.mocked(selectionStore.tryClearSelection).mockResolvedValueOnce({
+        wasAborted: false,
+      });
       selectionShortcuts.selectAll.execute(mockShortcutContext());
+
+      await flushPromises();
+      expect(selectionStore.tryClearSelection).toHaveBeenCalled();
       expect(selectionStore.selectAllObjects).toHaveBeenCalled();
     });
 

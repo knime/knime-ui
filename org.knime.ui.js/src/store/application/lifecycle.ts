@@ -134,7 +134,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
         if (isLeavingWorkflow) {
           // before leaving a workflow check attempt to auto-apply pending
           // node configuration changes (if any)
-          const { wasAborted } = await useSelectionStore().deselectAllObjects();
+          const { wasAborted } = await useSelectionStore().tryClearSelection();
 
           if (wasAborted) {
             // cancel the navigation if the user cancelled on the auto-apply prompt

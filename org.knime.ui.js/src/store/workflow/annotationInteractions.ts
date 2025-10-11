@@ -68,7 +68,7 @@ export const useAnnotationInteractionsStore = defineStore(
             borderColor: colors.defaultAnnotationBorderColor,
           });
 
-        const { wasAborted } = await useSelectionStore().deselectAllObjects();
+        const { wasAborted } = await useSelectionStore().tryClearSelection();
         if (wasAborted) {
           return;
         }

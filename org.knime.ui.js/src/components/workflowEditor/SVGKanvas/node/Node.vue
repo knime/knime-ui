@@ -1,12 +1,10 @@
 <script>
 /* eslint-disable max-lines */
 // TODO: NXT-1069 split up this file
-import { toRef } from "vue";
 import { mapActions, mapState } from "pinia";
 
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
-import { useNodeVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
 import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -282,11 +280,11 @@ export default {
     },
 
     showSelection() {
-      return useNodeVisualStatus(toRef(this.id)).showSelectionPlane.value;
+      return this.getNodeVisualSelectionStates(this.id).showSelection.value;
     },
 
     showFocus() {
-      return useNodeVisualStatus(toRef(this.id)).showFocus.value;
+      return this.getNodeVisualSelectionStates(this.id).showFocus.value;
     },
 
     isExecuting() {
@@ -318,8 +316,11 @@ export default {
     ...mapActions(useDesktopInteractionsStore, ["openNodeConfiguration"]),
     ...mapActions(useSelectionStore, [
       "deselectAllObjects",
+      "promptUserAboutClearingSelection",
+      "tryClearSelection",
       "selectNodes",
       "deselectNodes",
+      "getNodeVisualSelectionStates",
     ]),
     ...mapActions(useMovingStore, ["resetDragState"]),
     ...mapActions(useNodeConfigurationStore, ["setIsLargeMode"]),
@@ -420,7 +421,9 @@ export default {
         }
       } else {
         // Single select
-        await this.deselectAllObjects([this.id]);
+        await this.tryClearSelection({
+          keepNodesInSelection: [this.id],
+        });
       }
     },
     /*
@@ -436,11 +439,20 @@ export default {
 
       let wasAborted = false;
       if (event.shiftKey || event[getMetaOrCtrlKey()]) {
+        wasAborted = await this.promptUserAboutClearingSelection().wasAborted;
+        if (wasAborted) {
+          return;
+        }
+
         // Multi select
-        wasAborted = (await this.selectNodes([this.id])).wasAborted;
+        this.selectNodes([this.id]);
       } else if (!this.isNodeSelected(this.id)) {
         // single select
-        wasAborted = (await this.deselectAllObjects([this.id])).wasAborted;
+        wasAborted = (await this.tryClearSelection()).wasAborted;
+
+        if (!wasAborted) {
+          this.selectNodes([this.id]);
+        }
       }
 
       if (wasAborted) {

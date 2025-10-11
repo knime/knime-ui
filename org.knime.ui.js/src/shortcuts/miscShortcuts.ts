@@ -27,7 +27,16 @@ export const selectionShortcuts: SelectionShortcuts = {
     text: "Select all objects",
     hotkey: ["CtrlOrCmd", "A"],
     group: "general",
-    execute: () => useSelectionStore().selectAllObjects(),
+    execute: async () => {
+      const selectionStore = useSelectionStore();
+
+      const { wasAborted } = await selectionStore.tryClearSelection();
+      if (wasAborted) {
+        return;
+      }
+
+      selectionStore.selectAllObjects();
+    },
   },
   deselectAll: {
     text: "Deselect all objects",

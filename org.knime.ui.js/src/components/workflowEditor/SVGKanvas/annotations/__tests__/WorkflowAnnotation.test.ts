@@ -135,7 +135,7 @@ describe("WorkflowAnnotation.vue", () => {
       });
     });
 
-    it("should transform annotation using keyboard shortcuts", async () => {
+    it("should transform annotation using keyboard shortcuts", () => {
       const { mockedStores } = doMount();
 
       const dispatchKeyEvent = (key: string, altKey: boolean) => {
@@ -157,9 +157,9 @@ describe("WorkflowAnnotation.vue", () => {
       const workflowId =
         mockedStores.workflowStore.activeWorkflow!.info.containerId;
 
-      await mockedStores.selectionStore.selectAnnotations(
+      mockedStores.selectionStore.selectAnnotations([
         defaultProps.annotation.id,
-      );
+      ]);
 
       const { bounds: currentBounds } = defaultProps.annotation;
 
@@ -546,10 +546,10 @@ describe("WorkflowAnnotation.vue", () => {
 
       await flushPromises();
 
-      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
       expect(
         mockedStores.selectionStore.selectAnnotations,
-      ).toHaveBeenCalledWith(defaultProps.annotation.id);
+      ).toHaveBeenCalledWith([defaultProps.annotation.id]);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -563,10 +563,10 @@ describe("WorkflowAnnotation.vue", () => {
         .trigger("pointerdown", { button: 0, ctrlKey: true });
       await flushPromises();
 
-      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
       expect(
         mockedStores.selectionStore.selectAnnotations,
-      ).toHaveBeenCalledWith(defaultProps.annotation.id);
+      ).toHaveBeenCalledWith([defaultProps.annotation.id]);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -582,7 +582,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       expect(
         mockedStores.selectionStore.selectAnnotations,
-      ).toHaveBeenCalledWith(defaultProps.annotation.id);
+      ).toHaveBeenCalledWith([defaultProps.annotation.id]);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -598,7 +598,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       expect(
         mockedStores.selectionStore.selectAnnotations,
-      ).toHaveBeenCalledWith(defaultProps.annotation.id);
+      ).toHaveBeenCalledWith([defaultProps.annotation.id]);
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();

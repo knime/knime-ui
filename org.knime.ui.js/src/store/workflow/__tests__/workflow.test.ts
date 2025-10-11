@@ -52,11 +52,11 @@ describe("workflow::index", () => {
       const connectionIds: string[] = [];
       const annotationIds: string[] = [];
       const connectionBendpoints = {};
+      const bendpointIds: string[] = [];
 
       for (let i = 0; i < amount / 2; i++) {
         const id = `node-${i}`;
         nodesArray[id] = { id, allowedActions: { canDelete: true } };
-        await selectionStore.selectNodes([id]);
         nodeIds.push(id);
       }
 
@@ -70,14 +70,13 @@ describe("workflow::index", () => {
       for (let i = 0; i < amount / 2; i++) {
         const id = `annotation-${i}`;
         annotationsArray[i] = { id };
-        selectionStore.selectAnnotations(id);
         annotationIds.push(id);
       }
 
       for (let i = 0; i < amount / 2; i++) {
         const connectionId = `connection-${i}`;
         const id = `${connectionId}__0`;
-        selectionStore.selectBendpoints(id);
+        bendpointIds.push(id);
         connectionBendpoints[connectionId] = [0];
       }
 
@@ -92,6 +91,9 @@ describe("workflow::index", () => {
           },
         }),
       );
+      selectionStore.selectNodes(nodeIds);
+      selectionStore.selectAnnotations(annotationIds);
+      selectionStore.selectBendpoints(bendpointIds);
 
       await workflowStore.deleteSelectedObjects();
       expect(mockedAPI.workflowCommand.Delete).toHaveBeenNthCalledWith(1, {

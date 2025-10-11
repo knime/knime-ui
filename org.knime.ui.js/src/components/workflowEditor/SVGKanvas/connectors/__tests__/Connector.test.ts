@@ -224,7 +224,7 @@ describe("Connector.vue", () => {
       await wrapper.find("g path").trigger("click", { button: 0 });
       await flushPromises();
 
-      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
       expect(
         mockedStores.selectionStore.selectConnections,
       ).toHaveBeenCalledWith(connection.id);
@@ -241,7 +241,7 @@ describe("Connector.vue", () => {
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
       expect(
         mockedStores.selectionStore.selectConnections,
       ).toHaveBeenCalledWith(connection.id);
@@ -255,7 +255,7 @@ describe("Connector.vue", () => {
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
-      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
       expect(
         mockedStores.selectionStore.selectConnections,
       ).toHaveBeenCalledWith(connection.id);

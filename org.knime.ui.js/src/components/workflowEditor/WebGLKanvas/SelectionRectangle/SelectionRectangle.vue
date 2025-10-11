@@ -12,7 +12,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
 import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
-import { findObjectsForSelection } from "../../util/findObjectsForSelection";
+import { findObjectsForSelectionWebGL } from "../../util/findObjectsForSelection";
 import {
   type PanningToEdgeUpdateHandler,
   useDragNearEdgePanning,
@@ -26,99 +26,68 @@ const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const selectionStore = useSelectionStore();
 
 const inverseMode = ref(false);
-const isSelectionVisible = ref(false);
+const isSelectionRectangleVisible = ref(false);
 
 const startPos = ref<XY>({ x: 0, y: 0 });
 const endPos = ref<XY>({ x: 0, y: 0 });
 
-const selectedNodeIdsAtStart = ref<string[]>([]);
-const nodeIdsToSelectOnEnd = ref<string[]>([]);
-const nodeIdsToDeselectOnEnd = ref<string[]>([]);
-
-const selectedAnnotationIdsAtStart = ref<string[]>([]);
-const annotationIdsToSelectOnEnd = ref<string[]>([]);
-const annotationIdsToDeselectOnEnd = ref<string[]>([]);
+const selectionOnStart = new Map<
+  string,
+  { id: string; type: "node" | "annotation" }
+>();
 
 const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 
 let selectionPointerId: number | undefined;
-
-const calculateNodeSelection = () => {
-  const selection = [
-    ...selectedNodeIdsAtStart.value,
-    ...nodeIdsToSelectOnEnd.value,
-  ];
-
-  return inverseMode.value
-    ? selection.filter(
-        (nodeId) => !nodeIdsToDeselectOnEnd.value.includes(nodeId),
-      )
-    : selection;
-};
-
-const calculateAnnotationSelection = () => {
-  const selection = [
-    ...selectedAnnotationIdsAtStart.value,
-    ...annotationIdsToSelectOnEnd.value,
-  ];
-  return inverseMode.value
-    ? selection.filter(
-        (annotationId) =>
-          !annotationIdsToDeselectOnEnd.value.includes(annotationId),
-      )
-    : selection;
-};
+let didDrag = false;
 
 const updateSelectionPreview = () => {
-  const { nodesInside, annotationsInside } = findObjectsForSelection({
+  const { inside } = findObjectsForSelectionWebGL({
     startPos: startPos.value,
     endPos: endPos.value,
     workflow: activeWorkflow.value!,
   });
 
-  nodeIdsToSelectOnEnd.value = nodesInside.filter(
-    (nodeId) => !selectedNodeIdsAtStart.value.includes(nodeId),
-  );
-  nodeIdsToDeselectOnEnd.value = nodesInside.filter((nodeId) =>
-    selectedNodeIdsAtStart.value.includes(nodeId),
-  );
+  const next: {
+    nodes: string[];
+    annotations: string[];
+  } = { nodes: [], annotations: [] };
 
-  annotationIdsToSelectOnEnd.value = annotationsInside.filter(
-    (annotationId) =>
-      !selectedAnnotationIdsAtStart.value.includes(annotationId),
-  );
-  annotationIdsToDeselectOnEnd.value = annotationsInside.filter(
-    (annotationId) => selectedAnnotationIdsAtStart.value.includes(annotationId),
-  );
+  if (inverseMode.value) {
+    // add objects inside rectangle that were NOT selected initially
+    for (const [id, { type }] of inside) {
+      if (!selectionOnStart.has(id)) {
+        const target = type === "node" ? next.nodes : next.annotations;
+        target.push(id);
+      }
+    }
 
-  selectionStore.setPreselectionMode(true);
+    // remove objects inside rectangle that were selected initially
+    for (const [id, { type }] of selectionOnStart) {
+      if (!inside.has(id)) {
+        const target = type === "node" ? next.nodes : next.annotations;
+        target.push(id);
+      }
+    }
+  } else {
+    for (const [id, { type }] of inside) {
+      const target = type === "node" ? next.nodes : next.annotations;
+      target.push(id);
+    }
+  }
 
-  selectionStore.deselectAllPreselectedObjects();
-  selectionStore.preselectNodes(calculateNodeSelection());
-  selectionStore.preselectAnnotations(calculateAnnotationSelection());
+  selectionStore.deselectAllObjects([], "preview");
+  selectionStore.selectNodes(next.nodes, "preview");
+  selectionStore.selectAnnotations(next.annotations, "preview");
 };
 
 const clearState = () => {
-  nodeIdsToSelectOnEnd.value = [];
-  nodeIdsToDeselectOnEnd.value = [];
-  selectedNodeIdsAtStart.value = [];
-
-  annotationIdsToSelectOnEnd.value = [];
-  annotationIdsToDeselectOnEnd.value = [];
-  selectedAnnotationIdsAtStart.value = [];
-};
-
-const doRealSelection = async () => {
-  const { deselectAllObjects, selectAnnotations } = useSelectionStore();
-
-  const { wasAborted } = await deselectAllObjects(calculateNodeSelection());
-  if (!wasAborted) {
-    selectAnnotations(calculateAnnotationSelection());
-  }
+  selectionOnStart.clear();
+  didDrag = false;
 };
 
 const selectionRectangle = computed(() =>
-  isSelectionVisible.value
+  isSelectionRectangleVisible.value
     ? {
         x: Math.min(startPos.value.x, endPos.value.x),
         y: Math.min(startPos.value.y, endPos.value.y),
@@ -138,13 +107,20 @@ const onSelectionStart = (event: PointerEvent) => {
     isDragging.value ||
     canvasStore.interactionsEnabled === "none"
   ) {
-    isSelectionVisible.value = false;
+    isSelectionRectangleVisible.value = false;
+    return;
+  }
+
+  if (!selectionStore.canClearCurrentSelection()) {
+    selectionStore.promptUserAboutClearingSelection();
+    // end interaction regardless of user discarding or not
+    // to prevent the selection rectangle from getting stuck in an odd state
     return;
   }
 
   selectionPointerId = event.pointerId;
   (event.target as HTMLElement).setPointerCapture(event.pointerId);
-  isSelectionVisible.value = true;
+  isSelectionRectangleVisible.value = true;
 
   const { offsetX, offsetY } = event;
 
@@ -157,17 +133,18 @@ const onSelectionStart = (event: PointerEvent) => {
     y: startPos.value.y,
   };
 
-  selectionStore.setPreselectionMode(true);
-
   inverseMode.value = event.shiftKey || event.ctrlKey || event.metaKey;
+
   if (inverseMode.value) {
-    selectedNodeIdsAtStart.value = [...selectionStore.selectedNodeIds];
-    selectedAnnotationIdsAtStart.value = [
-      ...selectionStore.selectedAnnotationIds,
-    ];
+    for (const id of selectionStore.selectedNodeIds) {
+      selectionOnStart.set(id, { id, type: "node" });
+    }
+
+    for (const id of selectionStore.selectedAnnotationIds) {
+      selectionOnStart.set(id, { id, type: "annotation" });
+    }
   } else {
-    selectedNodeIdsAtStart.value = [];
-    selectedAnnotationIdsAtStart.value = [];
+    selectionStore.deselectAllObjects();
   }
 
   updateSelectionPreview();
@@ -188,13 +165,14 @@ const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
 
 const onSelectionMove = (event: PointerEvent) => {
   if (
-    !isSelectionVisible.value ||
+    !isSelectionRectangleVisible.value ||
     isDragging.value ||
     event.pointerId !== selectionPointerId
   ) {
     return;
   }
 
+  didDrag = true;
   if (canvasStore.interactionsEnabled === "all") {
     canvasStore.setInteractionsEnabled("none");
   }
@@ -211,39 +189,42 @@ const onSelectionMove = (event: PointerEvent) => {
   updateSelectionPreview();
 };
 
-const onSelectionEnd = async (event: PointerEvent) => {
+const onSelectionEnd = (event: PointerEvent) => {
   if (selectionPointerId === undefined) {
     return;
   }
+
   consola.debug("global rectangle selection:: end", { event });
   startPos.value = { x: 0, y: 0 };
   endPos.value = { x: 0, y: 0 };
 
   stopPanningToEdge();
-
-  selectionStore.deselectAllPreselectedObjects();
-  selectionStore.setPreselectionMode(false);
   canvasStore.setInteractionsEnabled("all");
 
   if (
     event.dataset?.skipGlobalSelection ||
     isDragging.value ||
-    !isSelectionVisible.value ||
+    !isSelectionRectangleVisible.value ||
     event.pointerId !== selectionPointerId
   ) {
-    isSelectionVisible.value = false;
+    isSelectionRectangleVisible.value = false;
     clearState();
     return;
   }
-  isSelectionVisible.value = false;
 
+  isSelectionRectangleVisible.value = false;
   const target = event.target as HTMLElement;
   if (target.hasPointerCapture(selectionPointerId!)) {
     target.releasePointerCapture(selectionPointerId!);
   }
   selectionPointerId = undefined;
 
-  await doRealSelection();
+  // when a drag didn't happen then no rectangle was made
+  // so we don't need to commit a preview
+  if (didDrag) {
+    selectionStore.commitSelectionPreview();
+  }
+
   clearState();
 };
 
@@ -289,7 +270,7 @@ useGlobalBusListener({
 
 <template>
   <Graphics
-    v-if="isSelectionVisible"
+    v-if="isSelectionRectangleVisible"
     :x="selectionRectangle.x"
     :y="selectionRectangle.y"
     @render="renderFn"

@@ -127,9 +127,7 @@ describe("ComponentPlaceholder", () => {
       },
     });
 
-    expect(mockedStores.selectionStore.deselectAllObjects).toBeCalledWith([
-      testComponentId,
-    ]);
+    expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
   });
 
   it.each([

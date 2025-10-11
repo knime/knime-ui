@@ -144,7 +144,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       const selectionStore = useSelectionStore();
       const currentSelection = selectionStore.selectedNodeIds;
       if (selectionMode !== "none") {
-        const { wasAborted } = await selectionStore.deselectAllObjects();
+        const { wasAborted } = await selectionStore.tryClearSelection();
         if (wasAborted) {
           return {};
         }

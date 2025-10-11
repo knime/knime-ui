@@ -295,39 +295,35 @@ export const useNodeReplacementOrInsertion = () => {
     params: ReplacementPayload,
   ): Promise<{ wasReplaced: boolean }> => {
     return new Promise((resolve) => {
-      // update the drag state in raf so that it's in sync with the move handler
-      // which is throttled
-      requestAnimationFrame(() => {
-        if (
-          !isWritable.value ||
-          hasAbortedDrag.value ||
-          !replacementOperation.value
-        ) {
-          isDragging.value = false;
-          replacementOperation.value = null;
-          resolve(Promise.resolve({ wasReplaced: false }));
-          return;
-        }
+      if (
+        !isWritable.value ||
+        hasAbortedDrag.value ||
+        !replacementOperation.value
+      ) {
+        isDragging.value = false;
+        replacementOperation.value = null;
+        resolve(Promise.resolve({ wasReplaced: false }));
+        return;
+      }
 
-        try {
-          if (replacementOperation.value.type === "node") {
-            resolve(
-              doNodeReplacement(replacementOperation.value.candidateId, params),
-            );
-          } else {
-            resolve(
-              doNodeInsertion(
-                replacementOperation.value.candidateId,
-                dropPosition,
-                params,
-              ),
-            );
-          }
-        } finally {
-          isDragging.value = false;
-          replacementOperation.value = null;
+      try {
+        if (replacementOperation.value.type === "node") {
+          resolve(
+            doNodeReplacement(replacementOperation.value.candidateId, params),
+          );
+        } else {
+          resolve(
+            doNodeInsertion(
+              replacementOperation.value.candidateId,
+              dropPosition,
+              params,
+            ),
+          );
         }
-      });
+      } finally {
+        isDragging.value = false;
+        replacementOperation.value = null;
+      }
     });
   };
 

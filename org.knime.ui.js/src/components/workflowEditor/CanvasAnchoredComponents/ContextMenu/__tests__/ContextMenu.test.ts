@@ -681,7 +681,7 @@ describe("ContextMenu.vue", () => {
     it("shows correct menu items if one annotation is selected", async () => {
       const { mockedStores } = createStores();
 
-      mockedStores.selectionStore.selectAnnotations("annotation:1");
+      mockedStores.selectionStore.selectAnnotations(["annotation:1"]);
 
       const { wrapper } = await doMount({ customStores: mockedStores });
 

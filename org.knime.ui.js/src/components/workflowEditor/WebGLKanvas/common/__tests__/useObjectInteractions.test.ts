@@ -234,7 +234,7 @@ describe("useObjectInteractions", () => {
 
       vi.mocked(
         mockedStores.selectionStore,
-      ).canDiscardCurrentSelection.mockImplementation(() => false);
+      ).canClearCurrentSelection.mockImplementation(() => false);
 
       const { handlePointerInteraction } = getComposableResult();
 
@@ -266,7 +266,7 @@ describe("useObjectInteractions", () => {
 
       vi.mocked(
         mockedStores.selectionStore,
-      ).canDiscardCurrentSelection.mockImplementation(() => false);
+      ).canClearCurrentSelection.mockImplementation(() => false);
 
       mockedStores.selectionStore.selectNodes([node.id]);
 

@@ -498,7 +498,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    const { wasAborted } = await useSelectionStore().deselectAllObjects();
+    const { wasAborted } = await useSelectionStore().tryClearSelection();
     if (wasAborted) {
       return;
     }

@@ -1,18 +1,13 @@
-import { storeToRefs } from "pinia";
-
 import { navigatorUtils } from "@knime/utils";
 
-import type { KnimeNode } from "@/api/custom-types";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 import { isDesktop } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
-import type { NodeOutputTabIdentifier } from "@/store/selection";
+import { useNodeOutputStore } from "@/store/nodeOutput";
 import { useSelectionStore } from "@/store/selection";
-import { useExecutionStore } from "@/store/workflow/execution";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNodeMetaNode } from "@/util/nodeUtil";
 import { getNextSelectedPort } from "@/util/portSelection";
 import type { UnionToShortcutRegistry } from "../types";
 
@@ -26,27 +21,6 @@ type SelectedNodeWorkflowShortcuts = UnionToShortcutRegistry<
   | "shuffleSelectedPort"
 >;
 
-const getPortFromKey = (
-  node: KnimeNode,
-  e: KeyboardEvent,
-): NodeOutputTabIdentifier => {
-  let port: NodeOutputTabIdentifier = `${Number(e.code.slice("Digit".length))}`;
-
-  if (port === "1" && "hasView" in node && node.hasView) {
-    port = "view";
-  } else if (isNodeMetaNode(node)) {
-    // Metanodes don't have a flowvariable port,
-    // their port tabs are 0-indexed instead
-    port = `${Number(port) - 1}`;
-  }
-
-  if (Number(port) >= node.outPorts.length) {
-    return null;
-  }
-
-  return port;
-};
-
 const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
   activateOutputPort: {
     text: "Activate the n-th output port view",
@@ -54,14 +28,8 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     group: "selectedNode",
     execute: ({ payload }) => {
       const event = payload.event! as KeyboardEvent;
-      const { singleSelectedNode } = useSelectionStore();
-      const { activePortTab } = storeToRefs(useSelectionStore());
-
-      const port = getPortFromKey(singleSelectedNode!, event);
-
-      if (port) {
-        activePortTab.value = port;
-      }
+      const nodeOutputStore = useNodeOutputStore();
+      nodeOutputStore.setActivePortTabByKeyboard(event);
     },
     condition: () => {
       const { singleSelectedNode } = useSelectionStore();
@@ -76,7 +44,7 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     additionalHotkeys: [{ key: ["Shift", "0-0"], visible: false }], // range matches Digit0 Key even with shift
     group: "selectedNode",
     execute: () => {
-      storeToRefs(useSelectionStore()).activePortTab.value = "0";
+      useNodeOutputStore().activePortTab = "0";
     },
     condition: () => {
       const { singleSelectedNode } = useSelectionStore();
@@ -99,12 +67,8 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     group: "selectedNode",
     execute: ({ payload }) => {
       const event = payload.event! as KeyboardEvent;
-      const { singleSelectedNode } = useSelectionStore();
-      const port = getPortFromKey(singleSelectedNode!, event);
-
-      if (port) {
-        useExecutionStore().openPortView({ node: singleSelectedNode!, port });
-      }
+      const nodeOutputStore = useNodeOutputStore();
+      return nodeOutputStore.detachPortViewByKeyboard(event);
     },
     condition: () => {
       const { singleSelectedNode } = useSelectionStore();
@@ -123,13 +87,11 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     icon: OpenDialogIcon,
     group: "selectedNode",
     execute: () => {
+      const nodeOutputStore = useNodeOutputStore();
       const { singleSelectedNode } = useSelectionStore();
 
       if (singleSelectedNode?.state?.executionState === "EXECUTED") {
-        useExecutionStore().openPortView({
-          node: singleSelectedNode!,
-          port: "0",
-        });
+        nodeOutputStore.detachDefaultFlowVariablePortView();
       } else {
         // TODO: NXT-2024 remove this condition once flowvars can be detached in 'configured' state
         getToastsProvider().show({
@@ -161,19 +123,12 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     icon: OpenDialogIcon,
     group: "selectedNode",
     execute: () => {
-      const { singleSelectedNode, activePortTab } = useSelectionStore();
-
-      if (!singleSelectedNode || !activePortTab) {
-        return;
-      }
-
-      useExecutionStore().openPortView({
-        node: singleSelectedNode,
-        port: activePortTab,
-      });
+      const { detachActiveTabPortView } = useNodeOutputStore();
+      detachActiveTabPortView();
     },
     condition: () => {
-      const { singleSelectedNode, activePortTab } = useSelectionStore();
+      const { activePortTab } = useNodeOutputStore();
+      const { singleSelectedNode } = useSelectionStore();
 
       return Boolean(isDesktop() && singleSelectedNode && activePortTab);
     },

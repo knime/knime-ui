@@ -578,7 +578,7 @@ describe("NodeOutput.vue", () => {
       const { wrapper } = await doMount(mockedStores);
 
       mockedStores.workflowStore.activeWorkflow!.info.version = versionId;
-      mockedStores.selectionStore.activePortTab =
+      mockedStores.nodeOutputStore.activePortTab =
         activePortTab as NodeOutputTabIdentifier;
       await nextTick();
 
@@ -598,7 +598,7 @@ describe("NodeOutput.vue", () => {
     const mockedStores = await createStores();
     const { wrapper } = await doMount(mockedStores);
 
-    mockedStores.selectionStore.activePortTab = "view";
+    mockedStores.nodeOutputStore.activePortTab = "view";
     await nextTick();
 
     expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBeTruthy();
@@ -616,7 +616,7 @@ describe("NodeOutput.vue", () => {
     });
     const { wrapper } = await doMount(mockedStores);
 
-    mockedStores.selectionStore.activePortTab = "view";
+    mockedStores.nodeOutputStore.activePortTab = "view";
     await nextTick();
 
     expect(wrapper.findComponent(CompositeViewTabOutput).exists()).toBeTruthy();
@@ -629,7 +629,7 @@ describe("NodeOutput.vue", () => {
       const mockedStores = await createStores();
       const { wrapper } = await doMount(mockedStores);
 
-      mockedStores.selectionStore.activePortTab =
+      mockedStores.nodeOutputStore.activePortTab =
         activePortTab as NodeOutputTabIdentifier;
       await nextTick();
 

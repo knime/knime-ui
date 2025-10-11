@@ -293,7 +293,7 @@ export const usePortDragging = (params: Params) => {
     (event.target as HTMLElement).releasePointerCapture(event.pointerId);
 
     const { wasAborted } =
-      await useSelectionStore().tryDiscardCurrentSelection();
+      await useSelectionStore().promptUserAboutClearingSelection();
 
     if (wasAborted) {
       return;

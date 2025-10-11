@@ -76,7 +76,7 @@ describe("workflow::annotationInteractions", () => {
         },
       }),
     );
-    selectionStore.selectAnnotations(mockAnnotation1.id);
+    selectionStore.selectAnnotations([mockAnnotation1.id]);
 
     const bounds = { x: 10, y: 10, width: 80, height: 80 };
     await annotationInteractionsStore.addWorkflowAnnotation({ bounds });
@@ -120,8 +120,8 @@ describe("workflow::annotationInteractions", () => {
         },
       }),
     );
-    selectionStore.selectAnnotations(mockAnnotation1.id);
-    selectionStore.selectAnnotations(mockAnnotation2.id);
+    selectionStore.selectAnnotations([mockAnnotation1.id]);
+    selectionStore.selectAnnotations([mockAnnotation2.id]);
 
     await annotationInteractionsStore.reorderWorkflowAnnotation({ action });
 

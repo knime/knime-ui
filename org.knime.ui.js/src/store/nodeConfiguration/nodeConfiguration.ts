@@ -28,7 +28,6 @@ import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { isNodeExecuting, isNodeMetaNode } from "@/util/nodeUtil";
-import { useMovingStore } from "../workflow/moving";
 
 let unwrappedPromise = createUnwrappedPromise<boolean>();
 const $toast = getToastsProvider();
@@ -257,10 +256,11 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     },
 
     activeContext: (_): ActiveContext => {
-      const activeNodeId = useSelectionStore().singleSelectedNode?.id;
-      const { isSelectionDelayedUntilDragCompletes } = useMovingStore();
+      const { querySelection } = useSelectionStore();
+      const { singleSelectedNode } = querySelection("committed");
+      const activeNodeId = singleSelectedNode.value?.id;
 
-      if (!activeNodeId || isSelectionDelayedUntilDragCompletes) {
+      if (!activeNodeId) {
         return null;
       }
 

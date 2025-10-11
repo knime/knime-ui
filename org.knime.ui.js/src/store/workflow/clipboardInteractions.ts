@@ -141,7 +141,7 @@ export const useClipboardInteractionsStore = defineStore(
         });
 
         if (command === "cut") {
-          const { wasAborted } = await selectionStore.deselectAllObjects();
+          const { wasAborted } = await selectionStore.tryClearSelection();
           if (wasAborted) {
             return;
           }
@@ -237,7 +237,7 @@ export const useClipboardInteractionsStore = defineStore(
         const workflowStore = useWorkflowStore();
         const selectionStore = useSelectionStore();
 
-        const { wasAborted } = await selectionStore.deselectAllObjects();
+        const { wasAborted } = await selectionStore.tryClearSelection();
         if (wasAborted) {
           return;
         }

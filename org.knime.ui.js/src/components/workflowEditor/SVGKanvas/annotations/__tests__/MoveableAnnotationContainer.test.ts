@@ -120,7 +120,7 @@ describe("MoveableAnnotationContainer.vue", () => {
     it("does not deselect annotation when annotation is already selected", () => {
       const { wrapper, mockedStores } = doMount();
 
-      mockedStores.selectionStore.selectAnnotations("annotation:1");
+      mockedStores.selectionStore.selectAnnotations(["annotation:1"]);
 
       expect(mockedStores.selectionStore.selectedAnnotationIds).toEqual([
         "annotation:1",

@@ -17,6 +17,7 @@ import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingCon
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
+import { useNodeOutputStore } from "@/store/nodeOutput";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { usePanelStore } from "@/store/panel";
@@ -98,6 +99,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const selectionStore = useSelectionStore(testingPinia);
   const settingsStore = useSettingsStore(testingPinia);
   const floatingConnectorStore = useFloatingConnectorStore(testingPinia);
+  const nodeOutputStore = useNodeOutputStore(testingPinia);
 
   const compositeViewStore = useCompositeViewStore(testingPinia);
 
@@ -156,5 +158,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
     webglCanvasStore,
     floatingConnectorStore,
     compositeViewStore,
+    nodeOutputStore,
   };
 };

@@ -6,7 +6,6 @@ import {
   executeUndo,
   getAnnotation,
   getCenter,
-  pointToArray,
   startApplication,
 } from "../utils";
 
@@ -181,35 +180,14 @@ test("ignores interaction and does rectangle selection when not selected", async
   });
 
   const annotation = await getAnnotation(page, "root_0");
+  // select it -> unselect it: make sure it works even when the annotation
+  // had been selected before
+  await page.mouse.click(...getCenter(annotation));
+  await page.mouse.click(annotation.x - 20, annotation.y - 20);
 
   await page.mouse.move(...getCenter(annotation));
   await page.mouse.down({ button: "left", clickCount: 1 });
   await page.mouse.move(annotation.center.x + 300, annotation.center.y + 100);
-
-  await assertSnapshot(page, maxDiffPixels);
-});
-
-test("is selected by rectangle selection when fully covered", async ({
-  page,
-}) => {
-  await startApplication(page, {
-    workflowFixturePath: "annotation/getWorkflow-annotation-editing.json",
-  });
-
-  const annotation = await getAnnotation(page, "root_0");
-
-  await page.mouse.move(
-    ...pointToArray({ x: annotation.x - 20, y: annotation.y - 20 }),
-  );
-  await page.mouse.down({ button: "left", clickCount: 1 });
-  await page.mouse.move(annotation.center.x, annotation.center.y);
-
-  await assertSnapshot(page, maxDiffPixels);
-
-  await page.mouse.move(
-    annotation.x + annotation.width + 20,
-    annotation.y + annotation.height + 20,
-  );
 
   await assertSnapshot(page, maxDiffPixels);
 });

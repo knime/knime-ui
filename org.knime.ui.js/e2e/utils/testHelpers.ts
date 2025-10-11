@@ -68,6 +68,13 @@ export const testSimpleScreenshot = async (
   });
 };
 
+export const arrayToPoint = ([x, y]: [number, number]): {
+  x: number;
+  y: number;
+} => {
+  return { x, y };
+};
+
 export const pointToArray = ({
   x,
   y,

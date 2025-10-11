@@ -326,15 +326,17 @@ describe("floatingConnector store", () => {
       }),
     };
 
-    const tryDiscardCurrentSelectionMock = vi.mocked(
-      mockedStores.selectionStore.tryDiscardCurrentSelection,
+    const tryClearSelectionMock = vi.mocked(
+      mockedStores.selectionStore.tryClearSelection,
     );
 
-    tryDiscardCurrentSelectionMock.mockResolvedValue({ wasAborted: true });
+    tryClearSelectionMock.mockResolvedValue({
+      wasAborted: true,
+    });
 
     canvas.dispatchEvent(new PointerEvent("pointerup"));
 
-    expect(tryDiscardCurrentSelectionMock).toHaveBeenCalled();
+    expect(tryClearSelectionMock).toHaveBeenCalled();
 
     await flushPromises();
 

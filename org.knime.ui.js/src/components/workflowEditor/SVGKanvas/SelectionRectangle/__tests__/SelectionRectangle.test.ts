@@ -202,26 +202,20 @@ describe("SelectionRectangle", () => {
     it("shows selection preview for included nodes and annotations", async () => {
       const { selectionStore } = await mountAndSelect();
 
-      expect(selectionStore.preselectionMode).toBe(true);
-      expect(selectionStore.isNodePreselected(nodesInside[0])).toBe(true);
-      expect(selectionStore.isNodePreselected(nodesInside[1])).toBe(true);
+      const {
+        selectedNodeIds,
+        selectedAnnotationIds,
+        isNodeSelected,
+        isAnnotationSelected,
+      } = selectionStore.querySelection("preview");
 
-      expect(selectionStore.isAnnotationPreselected(annotationsInside[0])).toBe(
-        true,
-      );
-      expect(selectionStore.isAnnotationPreselected(annotationsInside[1])).toBe(
-        true,
-      );
+      expect(selectedNodeIds.value).toEqual(nodesInside);
+      expect(selectedAnnotationIds.value).toEqual(annotationsInside);
 
-      expect(selectionStore.isNodePreselected(nodesOutside[0])).toBe(false);
-      expect(selectionStore.isNodePreselected(nodesOutside[1])).toBe(false);
-
-      expect(
-        selectionStore.isAnnotationPreselected(annotationsOutside[0]),
-      ).toBe(false);
-      expect(
-        selectionStore.isAnnotationPreselected(annotationsOutside[1]),
-      ).toBe(false);
+      expect(isNodeSelected(nodesOutside[0])).toBe(false);
+      expect(isNodeSelected(nodesOutside[1])).toBe(false);
+      expect(isAnnotationSelected(annotationsOutside[0])).toBe(false);
+      expect(isAnnotationSelected(annotationsOutside[1])).toBe(false);
     });
 
     it("removes selection preview of previously selected nodes", async () => {
@@ -235,16 +229,13 @@ describe("SelectionRectangle", () => {
       });
       await pointerMove({ clientX: 0, clientY: 0 });
 
-      expect(selectionStore.preselectionMode).toBe(true);
-      expect(selectionStore.isNodePreselected(nodesInside[0])).toBe(false);
-      expect(selectionStore.isNodePreselected(nodesInside[1])).toBe(false);
+      const { isNodeSelected, isAnnotationSelected } =
+        selectionStore.querySelection("preview");
 
-      expect(selectionStore.isAnnotationPreselected(annotationsInside[0])).toBe(
-        false,
-      );
-      expect(selectionStore.isAnnotationPreselected(annotationsInside[1])).toBe(
-        false,
-      );
+      expect(isNodeSelected(nodesOutside[0])).toBe(false);
+      expect(isNodeSelected(nodesOutside[1])).toBe(false);
+      expect(isAnnotationSelected(annotationsOutside[0])).toBe(false);
+      expect(isAnnotationSelected(annotationsOutside[1])).toBe(false);
     });
 
     it("selects nodes and annotations on pointer up", async () => {
@@ -252,9 +243,9 @@ describe("SelectionRectangle", () => {
       await pointerUp();
       await flushPromises();
 
-      expect(selectionStore.deselectAllObjects).toHaveBeenCalledWith(
-        nodesInside,
-      );
+      expect(selectionStore.tryClearSelection).toHaveBeenCalledWith({
+        keepNodesInSelection: nodesInside,
+      });
 
       expect(selectionStore.selectAnnotations).toHaveBeenCalledWith(
         annotationsInside,
@@ -280,16 +271,13 @@ describe("SelectionRectangle", () => {
     it("deselects already selected nodes and annotations with preview", async () => {
       const { selectionStore } = await mountAndSelect();
 
-      expect(selectionStore.preselectionMode).toBe(true);
-      expect(selectionStore.isNodePreselected(nodesInside[0])).toBe(false);
-      expect(selectionStore.isNodePreselected(nodesInside[1])).toBe(false);
+      const { isNodeSelected, isAnnotationSelected } =
+        selectionStore.querySelection("preview");
 
-      expect(selectionStore.isAnnotationPreselected(annotationsInside[0])).toBe(
-        false,
-      );
-      expect(selectionStore.isAnnotationPreselected(annotationsInside[1])).toBe(
-        false,
-      );
+      expect(isNodeSelected(nodesOutside[0])).toBe(false);
+      expect(isNodeSelected(nodesOutside[1])).toBe(false);
+      expect(isAnnotationSelected(annotationsOutside[0])).toBe(false);
+      expect(isAnnotationSelected(annotationsOutside[1])).toBe(false);
     });
 
     it("pointerup deselects nodes", async () => {
@@ -298,9 +286,15 @@ describe("SelectionRectangle", () => {
       await pointerMove({ clientX: 0, clientY: 0 });
       await pointerUp();
 
-      expect(selectionStore.preselectionMode).toBe(false);
-      expect(selectionStore.deselectAllObjects).toHaveBeenCalledWith([]);
-      expect(selectionStore.selectAnnotations).toHaveBeenCalledWith([]);
+      expect(selectionStore.deselectAllObjects).toHaveBeenCalledWith(
+        [],
+        "preview",
+      );
+      expect(selectionStore.selectNodes).toHaveBeenCalledWith([], "preview");
+      expect(selectionStore.selectAnnotations).toHaveBeenCalledWith(
+        [],
+        "preview",
+      );
     });
   });
 
@@ -316,10 +310,10 @@ describe("SelectionRectangle", () => {
       await pointerUp();
 
       expect(
-        mockedStores.selectionStore.deselectAllObjects,
-      ).toHaveBeenCalledWith(
-        expect.arrayContaining([...nodesInside, someOtherNodeId]),
-      );
+        mockedStores.selectionStore.tryClearSelection,
+      ).toHaveBeenCalledWith({
+        keepNodesInSelection: [someOtherNodeId, ...nodesInside],
+      });
     });
 
     it("adds annotations to selection with shift", async () => {
@@ -333,7 +327,7 @@ describe("SelectionRectangle", () => {
 
       expect(
         mockedStores.selectionStore.selectAnnotations,
-      ).toHaveBeenCalledWith(annotationsInside);
+      ).toHaveBeenCalledWith(annotationsInside, "preview");
     });
   });
 

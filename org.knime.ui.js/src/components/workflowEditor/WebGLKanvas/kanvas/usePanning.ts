@@ -153,7 +153,7 @@ export const useCanvasPanning = ({
       ) {
         hasMoved.value = false;
 
-        const { wasAborted } = await useSelectionStore().deselectAllObjects();
+        const { wasAborted } = await useSelectionStore().tryClearSelection();
         if (wasAborted) {
           return;
         }

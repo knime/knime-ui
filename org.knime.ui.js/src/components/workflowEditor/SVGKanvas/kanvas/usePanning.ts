@@ -203,7 +203,7 @@ export const usePanning = (options: UsePanningOptions) => {
   const stopPan = async (event: PointerEvent) => {
     // user is not panning but did right-clicked
     if (!isPanning.value && isHoldingDownRightClick.value) {
-      const { wasAborted } = await useSelectionStore().deselectAllObjects();
+      const { wasAborted } = await useSelectionStore().tryClearSelection();
       if (!wasAborted) {
         await toggleContextMenu({
           event,

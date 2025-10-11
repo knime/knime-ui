@@ -64,7 +64,7 @@ export const useInitialSelection = () => {
         ? selectionStore.selectNodes
         : selectionStore.selectAnnotations;
 
-    await action([objectToSelect.id]);
+    action([objectToSelect.id]);
 
     moveObjectIntoView(objectToSelect);
   };

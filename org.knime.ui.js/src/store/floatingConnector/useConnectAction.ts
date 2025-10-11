@@ -106,9 +106,9 @@ export const useConnectAction = () => {
       return Promise.reject(new Error("invalid state"));
     }
 
-    const { wasAborted } = await useSelectionStore().deselectAllObjects([
-      snapTarget.parentNodeId,
-    ]);
+    const { wasAborted } = await useSelectionStore().tryClearSelection({
+      keepNodesInSelection: [snapTarget.parentNodeId],
+    });
 
     if (wasAborted) {
       return Promise.reject(new Error("aborting connection"));

@@ -1,5 +1,5 @@
 import { type Ref, onMounted } from "vue";
-import { useEventListener } from "@vueuse/core";
+import { useEventListener, useTimeoutFn } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
@@ -74,12 +74,7 @@ type UseArrowKeySelectionOptions = {
 export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
   const { workflowObjects } = storeToRefs(useWorkflowStore());
 
-  const {
-    singleSelectedObject,
-    getFocusedObject: focusedObject,
-    isSelectionEmpty,
-    selectedObjects,
-  } = storeToRefs(useSelectionStore());
+  const { getFocusedObject: focusedObject } = storeToRefs(useSelectionStore());
 
   const {
     focusObject,
@@ -91,12 +86,19 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
     selectAnnotations,
     deselectAnnotations,
     selectComponentPlaceholder,
+    querySelection,
+    commitSelectionPreview,
   } = useSelectionStore();
+
+  const SELECTION_MODE = "preview" as const;
+  const { singleSelectedObject, selectedObjects, isSelectionEmpty } =
+    querySelection(SELECTION_MODE);
 
   const canvasStore = canvasRendererUtils.isSVGRenderer()
     ? useSVGCanvasStore()
     : useWebGLCanvasStore();
 
+  // eslint-disable-next-line complexity
   const handleSelection = async (event: KeyboardEvent) => {
     const isMultiselect = event.shiftKey;
 
@@ -176,21 +178,20 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
         return;
       }
 
-      const preserveSelectionFor =
-        nearestObject.type === "node" ? [nearestObject.id] : [];
-
-      const { wasAborted } = await deselectAllObjects(preserveSelectionFor);
-      if (wasAborted) {
-        return;
-      }
+      deselectAllObjects([], SELECTION_MODE);
 
       if (nearestObject.type === "componentPlaceholder") {
         selectComponentPlaceholder(nearestObject.id);
       }
 
       if (nearestObject.type === "annotation") {
-        selectAnnotations([nearestObject.id]);
+        selectAnnotations([nearestObject.id], SELECTION_MODE);
       }
+
+      if (nearestObject.type === "node") {
+        selectNodes([nearestObject.id], SELECTION_MODE);
+      }
+
       canvasStore.moveObjectIntoView(nearestObject);
 
       return;
@@ -211,20 +212,14 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
       );
 
       // deselect everything and select object that's furthest away in the same direction
-      const { wasAborted } = await deselectAllObjects();
-      if (wasAborted) {
-        return;
-      }
-
-      if (furthestObject.type === "node") {
-        await selectNodes([furthestObject.id]);
-      } else {
-        selectAnnotations([furthestObject.id]);
-      }
+      deselectAllObjects([], SELECTION_MODE);
+      const select =
+        furthestObject.type === "node" ? selectNodes : selectAnnotations;
+      select([furthestObject.id], SELECTION_MODE);
     }
   };
 
-  const selectOnEnter = async (event: KeyboardEvent) => {
+  const selectOnEnter = (event: KeyboardEvent) => {
     if (
       event.key !== "Enter" ||
       isInputElement(event.target as HTMLElement) ||
@@ -238,7 +233,7 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
         const action = isNodeSelected(focusedObject.value.id)
           ? deselectNodes
           : selectNodes;
-        await action([focusedObject.value.id]);
+        action([focusedObject.value.id]);
       } else {
         const action = isAnnotationSelected(focusedObject.value.id)
           ? deselectAnnotations
@@ -252,5 +247,30 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
     useEventListener(options.rootEl, "keydown", selectOnEnter);
   });
 
-  return { handleSelection };
+  const TIMEOUT_DELAY_MS = 300;
+  const {
+    isPending,
+    start: startTimer,
+    stop: stopTimer,
+  } = useTimeoutFn(commitSelectionPreview, TIMEOUT_DELAY_MS, {
+    immediate: false,
+  });
+
+  return {
+    handleSelection: (event: KeyboardEvent) => {
+      const isJustChangingFocus = event.shiftKey;
+      if (isJustChangingFocus) {
+        handleSelection(event);
+        return;
+      }
+
+      // commit selection only after timer has run, but cancel
+      // any pending timer if another selection comes in quick enough
+      if (isPending.value) {
+        stopTimer();
+      }
+
+      handleSelection(event).then(startTimer);
+    },
+  };
 };

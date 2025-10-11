@@ -145,7 +145,7 @@ const isTargetForReplacement = computed(() => {
 const onConnectionPointerdown = async (event: FederatedPointerEvent) => {
   markPointerEventAsHandled(event, { initiator: "connection-select" });
   if (!isMultiselectEvent(event)) {
-    const { wasAborted } = await selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.tryClearSelection();
     if (wasAborted) {
       return;
     }

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 
@@ -10,6 +10,7 @@ import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import ConnectorSnappingProvider from "../../connectors/ConnectorSnappingProvider.vue";
 import NodePort from "../../ports/NodePort/NodePort.vue";
@@ -108,6 +109,7 @@ describe("Node", () => {
     mockedStores.selectionStore.isNodeSelected = vi.fn();
     // @ts-expect-error
     mockedStores.workflowStore.isWritable = true;
+    mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
     // @ts-expect-error
     mockedStores.nodeConfigurationStore.canBeEnlarged = true;
     mockedStores.desktopInteractionsStore.openNodeConfiguration = vi.fn();
@@ -320,58 +322,26 @@ describe("Node", () => {
       };
     });
 
-    it("shows frame if selection preview is active", async () => {
-      mockedStores.selectionStore.isNodeSelected = vi
-        .fn()
-        .mockReturnValueOnce(false);
-      let { wrapper } = doMount({ props });
-      expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
-
-      mockedStores.selectionStore.preselectionMode = true;
-      mockedStores.selectionStore.isNodePreselected = vi
-        .fn()
-        .mockReturnValueOnce(true);
-
-      await nextTick();
-      expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
-    });
-
-    it('hides frame if selection preview is "hide" even if real selection is active', async () => {
+    it("shows selection based on `getNodeVisualSelectionStates`", async () => {
       mockedStores.selectionStore.isNodeSelected = vi
         .fn()
         .mockReturnValueOnce(true);
+      const showSelection = ref(true);
+      vi.mocked(
+        mockedStores.selectionStore.getNodeVisualSelectionStates,
+      ).mockReturnValue({
+        showFocus: computed(() => false),
+        // @ts-expect-error
+        showSelection,
+      });
+
       const { wrapper } = doMount({ props });
-      expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
-
-      mockedStores.selectionStore.preselectionMode = true;
-      mockedStores.selectionStore.isNodePreselected = vi
-        .fn()
-        .mockReturnValueOnce(false);
       await nextTick();
-
-      expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
-    });
-
-    it("clears selection preview state", async () => {
-      mockedStores.selectionStore.isNodeSelected = vi
-        .fn()
-        .mockReturnValue(true);
-      const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
-      mockedStores.selectionStore.preselectionMode = true;
-      mockedStores.selectionStore.isNodePreselected = vi
-        .fn()
-        .mockReturnValueOnce(false);
+      showSelection.value = false;
       await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
-
-      mockedStores.selectionStore.preselectionMode = false;
-      mockedStores.selectionStore.isNodePreselected = vi
-        .fn()
-        .mockReturnValueOnce(true);
-      await nextTick();
-      expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
     });
   });
 
@@ -383,20 +353,6 @@ describe("Node", () => {
           executionState: "IDLE",
         },
       };
-    });
-
-    it("shows frame if selected", () => {
-      mockedStores.selectionStore.isNodeSelected = vi
-        .fn()
-        .mockReturnValueOnce(true);
-      let { wrapper } = doMount({ props });
-      expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
-
-      mockedStores.selectionStore.isNodeSelected = vi
-        .fn()
-        .mockReturnValueOnce(false);
-      wrapper = doMount({ props }).wrapper;
-      expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
     });
 
     it("has no shadow effect", () => {
@@ -441,8 +397,8 @@ describe("Node", () => {
       await wrapper.find(".mouse-clickable").trigger("click", { button: 0 });
 
       expect(
-        mockedStores.selectionStore.deselectAllObjects,
-      ).toHaveBeenCalledWith([commonNode.id]);
+        mockedStores.selectionStore.tryClearSelection,
+      ).toHaveBeenCalledWith({ keepNodesInSelection: [commonNode.id] });
     });
 
     it("left click with control on Mac opens context menu", async () => {
@@ -467,7 +423,7 @@ describe("Node", () => {
       mockUserAgent("windows");
       mockedStores.selectionStore.isNodeSelected = vi
         .fn()
-        .mockReturnValueOnce(true);
+        .mockReturnValueOnce(false);
       const { wrapper } = doMount({ props });
 
       await wrapper
@@ -484,7 +440,7 @@ describe("Node", () => {
       mockUserAgent("mac");
       mockedStores.selectionStore.isNodeSelected = vi
         .fn()
-        .mockReturnValueOnce(true);
+        .mockReturnValueOnce(false);
       const { wrapper } = doMount({ props });
 
       await wrapper
@@ -505,8 +461,7 @@ describe("Node", () => {
           .fn()
           .mockReturnValue(true);
         const { wrapper } = doMount({ props });
-        await mockedStores.selectionStore.selectNodes([commonNode.id]);
-        await flushPromises();
+        mockedStores.selectionStore.selectNodes([commonNode.id]);
 
         await wrapper
           .find(".mouse-clickable")
@@ -599,9 +554,9 @@ describe("Node", () => {
         .find(".mouse-clickable")
         .trigger("pointerdown", { button: 2 });
 
-      expect(
-        mockedStores.selectionStore.deselectAllObjects,
-      ).toHaveBeenCalledWith([commonNode.id]);
+      await flushPromises();
+
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
     });
 
     it("forwards hover state to children", () => {
@@ -1169,9 +1124,7 @@ describe("Node", () => {
         .findComponent(NodeName)
         .trigger("pointerdown", { button: 2 });
       await flushPromises();
-      expect(
-        mockedStores.selectionStore.deselectAllObjects,
-      ).toHaveBeenCalledWith([commonNode.id]);
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
@@ -1179,9 +1132,7 @@ describe("Node", () => {
 
     it("should handle click events", async () => {
       await wrapper.findComponent(NodeName).trigger("click", { button: 0 });
-      expect(
-        mockedStores.selectionStore.deselectAllObjects,
-      ).toHaveBeenCalledWith([commonNode.id]);
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
     });
 
     it("should handle width dimension changes and update the selection outline", async () => {

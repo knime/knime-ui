@@ -39,9 +39,9 @@ export const useArrowKeyNavigation = (
 
   const { handlePanning } = useArrowKeyPanning();
 
-  const { selectedObjects, getFocusedObject, activeNodePorts } = storeToRefs(
-    useSelectionStore(),
-  );
+  const selectionStore = useSelectionStore();
+  const { selectedObjects, getFocusedObject, activeNodePorts } =
+    storeToRefs(selectionStore);
 
   const hasSelectedObjects = () => {
     return selectedObjects.value.length > 0;
@@ -113,7 +113,13 @@ export const useArrowKeyNavigation = (
         return;
       }
 
-      await handleSelection(event);
+      const { wasAborted } =
+        await selectionStore.promptUserAboutClearingSelection();
+      if (wasAborted) {
+        return;
+      }
+
+      handleSelection(event);
     }
   });
 

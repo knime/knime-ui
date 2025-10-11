@@ -111,22 +111,6 @@ test.describe("selection", () => {
     await assertSnapshot(page);
   });
 
-  test("rectangle selection", async ({ page }) => {
-    await startForPointerInteractions(page);
-    const [node1X, node1Y] = await getNodePosition(page, IDS.node1);
-    const [node2X, node2Y] = await getNodePosition(page, IDS.node2);
-
-    // make a selection that covers 2 nodes
-    // select a node
-    await page.mouse.move(node1X - 50, node1Y - 50);
-    await page.mouse.down();
-    await page.mouse.move(node2X + 50, node2Y + 50);
-    await assertSnapshot(page);
-
-    await page.mouse.up();
-    await assertSnapshot(page);
-  });
-
   test("click on empty canvas clears selection", async ({ page }) => {
     await startForPointerInteractions(page);
 

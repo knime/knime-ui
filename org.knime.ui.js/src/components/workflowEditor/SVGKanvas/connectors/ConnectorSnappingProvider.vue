@@ -125,7 +125,7 @@ export default {
     ]),
     ...mapActions(useNodeInteractionsStore, ["connectNodes", "addNodePort"]),
     ...mapActions(useNodeConfigurationStore, ["autoApplySettings"]),
-    ...mapActions(useSelectionStore, ["deselectAllObjects"]),
+    ...mapActions(useSelectionStore, ["tryClearSelection"]),
 
     onConnectorStart({ validConnectionTargets, startNodeId }) {
       // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
@@ -310,7 +310,7 @@ export default {
       // onConnectorEnd()
       let targetPort = { ...this.targetPort };
 
-      const { wasAborted } = await this.deselectAllObjects([this.id]);
+      const { wasAborted } = await this.tryClearSelection([this.id]);
       if (wasAborted) {
         return;
       }

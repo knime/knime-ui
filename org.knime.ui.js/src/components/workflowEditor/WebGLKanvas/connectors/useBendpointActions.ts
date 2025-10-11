@@ -27,7 +27,7 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     isConnectionSelected,
     isBendpointSelected,
     selectBendpoints,
-    deselectAllObjects,
+    tryClearSelection,
   } = useSelectionStore();
 
   const virtualBendpoint = ref<{ index: number; position: XY } | null>(null);
@@ -93,12 +93,19 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     markPointerEventAsHandled(event, { initiator: "bendpoint::onContextMenu" });
     const bendpointId = getBendpointId(connectionId, index);
     hoveredBendpoint.value = index;
+    // clone point so that coordinates are preserved after async call
+    const globalPointClone = event.global.clone();
 
     if (!isBendpointSelected(bendpointId)) {
-      await deselectAllObjects();
-    }
-    selectBendpoints(bendpointId);
+      const { wasAborted } = await tryClearSelection();
 
+      if (wasAborted) {
+        return;
+      }
+    }
+
+    selectBendpoints(bendpointId);
+    event.global.set(globalPointClone.x, globalPointClone.y);
     canvasAnchoredComponentsStore.toggleContextMenu({ event });
   };
 

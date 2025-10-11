@@ -102,6 +102,7 @@ const onWheel = (e: WheelEvent) => {
       aria-label="Zoom level"
       :value="zoomInputValue"
       class="zoom-input"
+      data-test-id="zoom-input"
       @click.stop="onZoomInputClick"
       @keydown.enter.stop.prevent="onZoomInputEnter"
       @wheel.prevent="onWheel"

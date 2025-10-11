@@ -24,7 +24,7 @@ type Props = {
 const props = defineProps<Props>();
 
 const { getSelectedComponentPlaceholder } = storeToRefs(useSelectionStore());
-const { deselectAllObjects } = useSelectionStore();
+const { tryClearSelection, selectComponentPlaceholder } = useSelectionStore();
 const {
   selectedNodeIds,
   selectedAnnotationIds,
@@ -77,7 +77,11 @@ watch(placeholderState, async () => {
 
   if (isSelectionUnchanged && (isSuccess.value || isSuccessWithWarning.value)) {
     if (props.placeholder.componentId && isComponentSelected.value) {
-      await deselectAllObjects([props.placeholder.componentId]);
+      const { wasAborted } = await tryClearSelection();
+
+      if (!wasAborted) {
+        selectComponentPlaceholder(props.placeholder.componentId);
+      }
     }
   }
 

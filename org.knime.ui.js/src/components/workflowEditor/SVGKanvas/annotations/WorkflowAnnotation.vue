@@ -16,7 +16,6 @@ import type {
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
 import { TypedText } from "@/api/gateway-api/generated-api";
-import { useAnnotationVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -64,8 +63,8 @@ const {
   focusCanvas,
 });
 
-const { showSelectionPlane, showTransformControls, showFocus } =
-  useAnnotationVisualStatus(toRef(props.annotation.id));
+const { showSelection, showTransformControls, showFocus } =
+  selectionStore.getAnnotationVisualSelectionState(props.annotation.id);
 
 const isRichTextAnnotation = computed(() => {
   return props.annotation.text.contentType === TypedText.ContentTypeEnum.Html;
@@ -76,7 +75,7 @@ const onLeftClick = async (event: PointerEvent) => {
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   if (!isMultiselect && !isSelected.value) {
-    const { wasAborted } = await selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.tryClearSelection();
     if (wasAborted) {
       return;
     }
@@ -94,13 +93,13 @@ const onContextMenu = async (event: PointerEvent) => {
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   if (!isMultiselect && !isSelected.value) {
-    const { wasAborted } = await selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.tryClearSelection();
     if (wasAborted) {
       return;
     }
   }
 
-  selectionStore.selectAnnotations(props.annotation.id);
+  selectionStore.selectAnnotations([props.annotation.id]);
   await toggleContextMenu({ event });
 };
 
@@ -194,7 +193,7 @@ onKeyDown(
   <TransformControls
     ref="transformControlsRef"
     :show-transform-controls="showTransformControls"
-    :show-selection="showSelectionPlane"
+    :show-selection="showSelection"
     :show-focus="showFocus"
     :initial-value="annotation.bounds"
     :is-annotation-selected="isSelected"

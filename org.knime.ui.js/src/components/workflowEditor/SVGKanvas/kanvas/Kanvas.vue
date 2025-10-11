@@ -109,7 +109,7 @@ const startRectangleSelection = (event: PointerEvent) => {
 const selectionStore = useSelectionStore();
 
 const onLeftControlClickOnMac = async (event: PointerEvent) => {
-  const { wasAborted } = await selectionStore.deselectAllObjects();
+  const { wasAborted } = await selectionStore.tryClearSelection();
   if (!wasAborted) {
     await useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
   }
@@ -123,7 +123,7 @@ const clickOnEmptyKanvas = async (event: MouseEvent) => {
 
   if (clickedSolelyOnSvg && !specialKey) {
     wasLastPointerDownOnSvg.value = false;
-    await selectionStore.deselectAllObjects();
+    await selectionStore.tryClearSelection();
   }
 };
 

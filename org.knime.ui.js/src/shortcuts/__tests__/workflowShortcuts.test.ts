@@ -2,13 +2,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
-import { Node, PortType, WorkflowInfo } from "@/api/gateway-api/generated-api";
+import { Node, WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
-import { isBrowser, isDesktop } from "@/environment";
 import { createNativeNode, createPort, createWorkflow } from "@/test/factories";
 import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { deepMocked } from "@/test/utils";
-import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import workflowShortcuts from "../workflowShortcuts";
 
@@ -24,24 +22,17 @@ vi.mock("@/util/portSelection", () => {
 describe("workflowShortcuts", () => {
   const mockedAPI = deepMocked(API);
 
-  const createStore = () => {
+  const createStore = (stubActions = true) => {
+    const mockedStores = mockStores({ stubActions });
+
     const {
       applicationStore,
       applicationSettingsStore,
       workflowStore,
       selectionStore,
-      desktopInteractionsStore,
-      uiControlsStore,
-      spaceOperationsStore,
-      executionStore,
-      nodeInteractionsStore,
-      annotationInteractionsStore,
-      clipboardInteractionsStore,
       canvasStore,
-      movingStore,
-      dirtyProjectsTrackingStore,
       canvasAnchoredComponentsStore,
-    } = mockStores({ stubActions: true });
+    } = mockedStores;
 
     applicationSettingsStore.hasClipboardSupport = true;
     // @ts-expect-error
@@ -81,23 +72,7 @@ describe("workflowShortcuts", () => {
       height: 1000,
     };
 
-    return {
-      applicationStore,
-      workflowStore,
-      selectionStore,
-      desktopInteractionsStore,
-      uiControlsStore,
-      spaceOperationsStore,
-      applicationSettingsStore,
-      executionStore,
-      nodeInteractionsStore,
-      annotationInteractionsStore,
-      clipboardInteractionsStore,
-      canvasStore,
-      movingStore,
-      dirtyProjectsTrackingStore,
-      canvasAnchoredComponentsStore,
-    };
+    return mockedStores;
   };
 
   describe("save", () => {
@@ -298,371 +273,6 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.configureFlowVariables.condition?.()).toBe(
         false,
       );
-    });
-  });
-
-  describe("portview shortcuts", () => {
-    const eventShiftDigit1 = new KeyboardEvent("keydown", {
-      key: "1",
-      code: "Digit1",
-      shiftKey: true,
-    });
-    const eventShiftDigit3 = new KeyboardEvent("keydown", {
-      key: "3",
-      code: "Digit3",
-      shiftKey: true,
-    });
-
-    const eventShiftAltDigit1 = new KeyboardEvent("keydown", {
-      key: "1",
-      code: "Digit1",
-      shiftKey: true,
-      altKey: true,
-    });
-    const eventShiftAltDigit3 = new KeyboardEvent("keydown", {
-      key: "3",
-      code: "Digit3",
-      shiftKey: true,
-      altKey: true,
-    });
-
-    describe("activateOutputPort", () => {
-      it("executes", () => {
-        // mock selected node with 4 dummy ports
-        const { selectionStore } = createStore();
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [{}, {}, {}, {}],
-        };
-        workflowShortcuts.activateOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit1 } }),
-        );
-        expect(selectionStore.activePortTab).toBe("1");
-
-        workflowShortcuts.activateOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
-        );
-        expect(selectionStore.activePortTab).toBe("3");
-
-        // handle metanodes
-        // @ts-expect-error
-        selectionStore.singleSelectedNode.kind = Node.KindEnum.Metanode;
-        workflowShortcuts.activateOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit1 } }),
-        );
-        expect(selectionStore.activePortTab).toBe("0");
-
-        workflowShortcuts.activateOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
-        );
-        expect(selectionStore.activePortTab).toBe("2");
-      });
-
-      it("handles too few outPorts", () => {
-        const { selectionStore } = createStore();
-        // @ts-expect-error
-        selectionStore.singleSelectedNode.outPorts = [{}, {}];
-        workflowShortcuts.activateOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
-        );
-        expect(selectionStore.activePortTab).toBeNull();
-      });
-
-      it("handles views", () => {
-        const { selectionStore } = createStore();
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = {
-          id: "root:0",
-          allowedActions: {},
-          hasView: true,
-          outPorts: [{}, {}],
-        };
-        workflowShortcuts.activateOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit1 } }),
-        );
-        expect(selectionStore.activePortTab).toBe("view");
-      });
-
-      it("checks condition", () => {
-        const { selectionStore } = createStore();
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = null;
-        expect(workflowShortcuts.activateOutputPort.condition?.()).toBe(false); // no selected node
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [],
-        };
-        expect(workflowShortcuts.activateOutputPort.condition?.()).toBe(false); // no output port
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [{}],
-        };
-        expect(workflowShortcuts.activateOutputPort.condition?.()).toBeTruthy();
-      });
-    });
-
-    describe("activateFlowVarPort", () => {
-      it("executes", () => {
-        const { selectionStore } = createStore();
-
-        workflowShortcuts.activateFlowVarPort.execute(mockShortcutContext());
-        expect(selectionStore.activePortTab).toBe("0");
-      });
-
-      it("checks condition", () => {
-        const { selectionStore, applicationStore } = createStore();
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = null;
-        applicationStore.availablePortTypes = {
-          mockTypeId: {
-            name: "notAFlowVarPort",
-            kind: PortType.KindEnum.Other,
-          },
-        };
-        expect(workflowShortcuts.activateFlowVarPort.condition?.()).toBe(false); // no node selected
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [{ typeId: "mockTypeId" }],
-        };
-        expect(workflowShortcuts.activateFlowVarPort.condition?.()).toBe(false); // not a flowvar port
-
-        applicationStore.availablePortTypes = {
-          mockTypeId: {
-            name: "flowVarPort",
-            kind: PortType.KindEnum.FlowVariable,
-          },
-        };
-        expect(
-          workflowShortcuts.activateFlowVarPort.condition?.(),
-        ).toBeTruthy();
-      });
-    });
-
-    describe("detachOutputPort", () => {
-      it("executes", () => {
-        const { selectionStore, executionStore } = createStore();
-
-        const node = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [{}, {}, {}, {}],
-        };
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = node;
-        workflowShortcuts.detachOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftAltDigit1 } }),
-        );
-        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
-          node,
-          port: "1",
-        });
-
-        workflowShortcuts.detachOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftAltDigit3 } }),
-        );
-        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
-          node,
-          port: "3",
-        });
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode.hasView = true;
-        workflowShortcuts.detachOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftAltDigit1 } }),
-        );
-        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
-          node,
-          port: "view",
-        });
-
-        // handle metanodes
-        // @ts-expect-error
-        selectionStore.singleSelectedNode.hasView = false;
-        // @ts-expect-error
-        selectionStore.singleSelectedNode.kind = Node.KindEnum.Metanode;
-        workflowShortcuts.detachOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit1 } }),
-        );
-        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
-          node,
-          port: "0",
-        });
-
-        workflowShortcuts.detachOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
-        );
-        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
-          node,
-          port: "2",
-        });
-
-        // handle too few outPorts
-        vi.clearAllMocks();
-        // @ts-expect-error
-        selectionStore.singleSelectedNode.outPorts = [{}, {}];
-        workflowShortcuts.detachOutputPort.execute(
-          mockShortcutContext({ payload: { event: eventShiftDigit3 } }),
-        );
-        expect(executionStore.openPortView).not.toBeCalled();
-      });
-
-      it("checks condition", () => {
-        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
-        const { selectionStore } = createStore();
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [{}],
-        };
-        expect(workflowShortcuts.detachOutputPort.condition?.()).toBeTruthy();
-
-        // detach only on desktop
-        mockEnvironment("BROWSER", { isBrowser, isDesktop });
-        expect(workflowShortcuts.detachOutputPort.condition?.()).toBe(false);
-
-        // no selected node
-        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = null;
-        expect(workflowShortcuts.detachOutputPort.condition?.()).toBe(false);
-
-        // no output ports
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [],
-        };
-        expect(workflowShortcuts.detachOutputPort.condition?.()).toBe(false);
-      });
-    });
-
-    describe("detachFlowVarPort", () => {
-      it("executes", () => {
-        const { selectionStore, executionStore } = createStore();
-
-        const node = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [{}, {}, {}, {}],
-          state: {
-            executionState: "IDLE",
-          },
-        };
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = node;
-        workflowShortcuts.detachFlowVarPort.execute(mockShortcutContext());
-        expect(executionStore.openPortView).not.toBeCalled();
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode.state.executionState = "EXECUTED";
-        workflowShortcuts.detachFlowVarPort.execute(mockShortcutContext());
-        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
-          node,
-          port: "0",
-        });
-      });
-
-      it("checks condition", () => {
-        const { selectionStore, applicationStore } = createStore();
-
-        const node = {
-          id: "root:0",
-          allowedActions: {},
-          outPorts: [{ typeId: "mockTypeId" }],
-        };
-        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = node;
-        applicationStore.availablePortTypes = {
-          mockTypeId: {
-            name: "flowVariablePort",
-            kind: PortType.KindEnum.FlowVariable,
-          },
-        };
-        expect(workflowShortcuts.detachFlowVarPort.condition?.()).toBeTruthy();
-
-        // detach only on desktop
-        mockEnvironment("BROWSER", { isBrowser, isDesktop });
-        expect(workflowShortcuts.detachFlowVarPort.condition?.()).toBe(false);
-
-        // no selected node
-        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = null;
-        expect(workflowShortcuts.detachFlowVarPort.condition?.()).toBe(false);
-
-        // no flowVariable port
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = node;
-        applicationStore.availablePortTypes = {
-          mockTypeId: {
-            name: "notAFlowVariablePort",
-            kind: PortType.KindEnum.Other,
-          },
-        };
-        expect(workflowShortcuts.detachFlowVarPort.condition?.()).toBe(false);
-      });
-    });
-
-    describe("detachActiveOutputPort", () => {
-      it("executes", () => {
-        const { selectionStore, executionStore } = createStore();
-
-        selectionStore.activePortTab = "42";
-        const node = selectionStore.singleSelectedNode;
-        workflowShortcuts.detachActiveOutputPort.execute(mockShortcutContext());
-        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
-          node,
-          port: "42",
-        });
-      });
-
-      it("checks condition", () => {
-        const { selectionStore } = createStore();
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = null;
-        expect(
-          workflowShortcuts.detachActiveOutputPort.condition?.(),
-        ).toBeFalsy();
-
-        // @ts-expect-error
-        selectionStore.singleSelectedNode = {
-          id: "root:0",
-          allowedActions: {},
-        };
-        mockEnvironment("BROWSER", { isBrowser, isDesktop });
-        expect(
-          workflowShortcuts.detachActiveOutputPort.condition?.(),
-        ).toBeFalsy();
-
-        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
-        expect(
-          workflowShortcuts.detachActiveOutputPort.condition?.(),
-        ).toBeFalsy();
-
-        selectionStore.activePortTab = "1";
-        expect(
-          workflowShortcuts.detachActiveOutputPort.condition?.(),
-        ).toBeTruthy();
-      });
     });
   });
 
@@ -1098,7 +708,7 @@ describe("workflowShortcuts", () => {
 
       const nodes = [createNativeNode(), createNativeNode()];
       // @ts-expect-error
-      selectionStore.getSelectedNodes = nodes;
+      selectionStore.selectedNodeIds = nodes.map(({ id }) => id);
       // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
       workflowShortcuts.autoConnectNodesDefault.execute(mockShortcutContext());
@@ -1117,7 +727,7 @@ describe("workflowShortcuts", () => {
 
       const nodes = [createNativeNode(), createNativeNode()];
       // @ts-expect-error
-      selectionStore.getSelectedNodes = nodes;
+      selectionStore.selectedNodeIds = nodes.map(({ id }) => id);
       // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
       workflowShortcuts.autoConnectNodesFlowVar.execute(mockShortcutContext());
@@ -1195,7 +805,7 @@ describe("workflowShortcuts", () => {
 
       const nodes = [createNativeNode(), createNativeNode()];
       // @ts-expect-error
-      selectionStore.getSelectedNodes = nodes;
+      selectionStore.selectedNodeIds = nodes.map(({ id }) => id);
       // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
       workflowShortcuts.autoDisconnectNodesDefault.execute(
@@ -1216,7 +826,7 @@ describe("workflowShortcuts", () => {
 
       const nodes = [createNativeNode(), createNativeNode()];
       // @ts-expect-error
-      selectionStore.getSelectedNodes = nodes;
+      selectionStore.selectedNodeIds = nodes.map(({ id }) => id);
       // @ts-expect-error
       selectionStore.getSelectedMetanodePortBars = ["in"];
       workflowShortcuts.autoDisconnectNodesFlowVar.execute(

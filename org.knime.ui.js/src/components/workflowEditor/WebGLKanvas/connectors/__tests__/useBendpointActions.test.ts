@@ -27,8 +27,14 @@ const createMockEvent = (): FederatedPointerEvent => ({
   clientY: 200,
   globalX: 150,
   globalY: 250,
-  // @ts-expect-error
-  global: { x: 150, y: 250 },
+  global: {
+    x: 150,
+    y: 250,
+    // @ts-expect-error
+    clone: vi.fn(() => ({ x: 150, y: 250 })),
+    // @ts-expect-error
+    set: () => {},
+  },
   stopPropagation: vi.fn(),
   nativeEvent: new PointerEvent("pointerdown"),
 });
@@ -261,6 +267,7 @@ describe("useBendpointActions", () => {
         `${mockConnectionId}__${index}`,
       );
 
+      expect(event.global.clone).toHaveBeenCalled();
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalledWith({ event });

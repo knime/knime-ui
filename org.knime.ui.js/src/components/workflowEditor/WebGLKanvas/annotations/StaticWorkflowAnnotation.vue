@@ -6,7 +6,6 @@ import {
   onMounted,
   onUnmounted,
   ref,
-  toRef,
   useTemplateRef,
   watch,
 } from "vue";
@@ -20,7 +19,6 @@ import type {
   Bounds,
   WorkflowAnnotation as WorkflowAnnotationType,
 } from "@/api/gateway-api/generated-api";
-import { useAnnotationVisualStatus } from "@/components/workflowEditor/common/useVisualStatus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -124,13 +122,13 @@ const onContextMenu = async (event: PIXI.FederatedPointerEvent) => {
   markPointerEventAsHandled(event, { initiator: "annotation::onContextMenu" });
 
   if (!isSelected.value) {
-    const { wasAborted } = await selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.tryClearSelection();
     if (wasAborted) {
       return;
     }
   }
 
-  selectionStore.selectAnnotations(props.annotation.id);
+  selectionStore.selectAnnotations([props.annotation.id]);
   await toggleContextMenu({ event });
 };
 
@@ -201,8 +199,8 @@ const isWithinVisibleArea = computed(() => {
   return Boolean(intersect);
 });
 
-const { showFocus, showSelectionPlane, showTransformControls } =
-  useAnnotationVisualStatus(toRef(props.annotation.id));
+const { showFocus, showSelection, showTransformControls } =
+  selectionStore.getAnnotationVisualSelectionState(props.annotation.id);
 
 const onTransformChange = ({ bounds }: { bounds: Bounds }) => {
   // minimum size
@@ -355,13 +353,13 @@ const openAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
   >
     <Container :layer="annotationControlsLayer">
       <TransformControls
-        v-if="showTransformControls || showFocus || showSelectionPlane"
+        v-if="showTransformControls || showFocus || showSelection"
         :initial-value="
           keyboardTransformActive ? activeTransform?.bounds : annotation.bounds
         "
         :show-transform-controls="showTransformControls"
         :show-focus="showFocus"
-        :show-selection="showSelectionPlane"
+        :show-selection="showSelection"
         @on-bounds-change="onTransformChange"
         @transform-end="onTransformEnd($event.bounds)"
       />

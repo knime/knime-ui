@@ -124,13 +124,12 @@ export default defineComponent({
   },
   methods: {
     ...mapActions(useSelectionStore, [
+      "tryClearSelection",
       "deselectAllObjects",
+      "selectNodes",
       "selectAnnotations",
       "deselectAnnotations",
-      "deselectAllPreselectedObjects",
-      "preselectNodes",
-      "preselectAnnotations",
-      "setPreselectionMode",
+      "commitSelectionPreview",
     ]),
 
     startRectangleSelection(event: PointerEvent) {
@@ -165,9 +164,6 @@ export default defineComponent({
       event: PointerEvent,
     ) {
       /* eslint-disable no-invalid-this */
-      this.deselectAllPreselectedObjects();
-      this.setPreselectionMode(false);
-
       if (this.pointerId !== event.pointerId) {
         return;
       }
@@ -181,9 +177,10 @@ export default defineComponent({
         return;
       }
 
-      const { wasAborted } = await this.deselectAllObjects(
-        this.calculateSelection,
-      );
+      const { wasAborted } = await this.tryClearSelection({
+        keepNodesInSelection: this.calculateSelection,
+      });
+
       if (!wasAborted) {
         await this.selectAnnotations(this.calculateAnnotationSelection);
       }
@@ -248,10 +245,9 @@ export default defineComponent({
           this.selectedAnnotationIdsAtStart.includes(annotationId),
       );
 
-      this.setPreselectionMode(true);
-      this.deselectAllPreselectedObjects();
-      this.preselectNodes(this.calculateSelection);
-      this.preselectAnnotations(this.calculateAnnotationSelection);
+      this.deselectAllObjects([], "preview");
+      this.selectNodes(this.calculateSelection, "preview");
+      this.selectAnnotations(this.calculateAnnotationSelection, "preview");
     },
   },
 });

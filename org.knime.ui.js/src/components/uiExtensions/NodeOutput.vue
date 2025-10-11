@@ -16,8 +16,9 @@ import { HINTS } from "@/hints/hints.config";
 import { useApplicationStore } from "@/store/application/application";
 import {
   type NodeOutputTabIdentifier,
-  useSelectionStore,
-} from "@/store/selection";
+  useNodeOutputStore,
+} from "@/store/nodeOutput";
+import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -66,12 +67,13 @@ const { activeProjectId: projectId, availablePortTypes } = storeToRefs(
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const workflowId = computed(() => activeWorkflow.value!.info.containerId);
 const versionId = computed(() => activeWorkflow.value!.info.version);
-const { singleSelectedNode, getSelectedNodes: selectedNodes } = storeToRefs(
-  useSelectionStore(),
-);
+const { querySelection } = useSelectionStore();
+const { singleSelectedNode, getSelectedNodes: selectedNodes } =
+  querySelection("committed");
+
 const { isSelectionDelayedUntilDragCompletes } = storeToRefs(useMovingStore());
 
-const { activePortTab } = storeToRefs(useSelectionStore());
+const { activePortTab } = storeToRefs(useNodeOutputStore());
 
 const selectedTab = computed({
   get() {

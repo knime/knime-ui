@@ -95,7 +95,7 @@ const {
 
 const onConnectionSegmentClick = async (event: MouseEvent) => {
   if (!isMultiselectEvent(event)) {
-    const { wasAborted } = await selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.tryClearSelection();
     if (wasAborted) {
       return;
     }
@@ -192,7 +192,7 @@ const onBendpointPointerdown = async (
 
   const bendpointId = getBendpointId(props.id, index - 1);
   if (!isBendpointSelected(bendpointId)) {
-    const { wasAborted } = await selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.tryClearSelection();
     if (wasAborted) {
       return;
     }
@@ -217,7 +217,7 @@ const onBendpointClick = async (event: MouseEvent, index: number) => {
 
     action(bendpointId);
   } else {
-    const { wasAborted } = await selectionStore.deselectAllObjects();
+    const { wasAborted } = await selectionStore.tryClearSelection();
     if (wasAborted) {
       return;
     }

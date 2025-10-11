@@ -669,7 +669,7 @@ describe("Kanvas", () => {
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalledWith(expect.anything());
-      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.tryClearSelection).toHaveBeenCalled();
     });
 
     it("opens contextmenu via context menu key (regardless of empty state)", async () => {
@@ -826,6 +826,10 @@ describe("Kanvas", () => {
     describe("arrow key selection", () => {
       const mocked = mockedObject(workflowNavigationService);
 
+      afterEach(() => {
+        mocked.nearestObject.mockReset();
+      });
+
       const mockNearestObject = (value) => {
         mocked.nearestObject.mockResolvedValueOnce(value);
       };
@@ -919,8 +923,11 @@ describe("Kanvas", () => {
         const { node1, node2, wrapper, mockedStores } = mountWithWorkflow();
 
         await mockedStores.selectionStore.selectNodes([node1.id]);
+        const nodeObject = createWorkflowObject(node2);
+        mockNearestObject(nodeObject);
         emitEvent(wrapper, "keydown", "ArrowRight", false);
         await flushPromises();
+        mockedStores.selectionStore.commitSelectionPreview();
 
         expect(mockedStores.selectionStore.selectedNodeIds).toStrictEqual([
           node2.id,
@@ -940,10 +947,11 @@ describe("Kanvas", () => {
         emitEvent(wrapper, "keydown", "ArrowRight", false);
         await flushPromises();
 
-        expect(mockedStores.selectionStore.selectedNodeIds).toStrictEqual([]);
-        expect(mockedStores.selectionStore.selectedAnnotationIds).toStrictEqual(
-          [annotation1.id],
-        );
+        const { selectedNodeIds, selectedAnnotationIds } =
+          mockedStores.selectionStore.querySelection("preview");
+
+        expect(selectedNodeIds.value).toStrictEqual([]);
+        expect(selectedAnnotationIds.value).toStrictEqual([annotation1.id]);
         expect(mockedStores.selectionStore.getFocusedObject).toBeFalsy();
       });
 
@@ -951,21 +959,22 @@ describe("Kanvas", () => {
         const { mockedStores, node1, node2, annotation1, wrapper } =
           mountWithWorkflow();
 
+        const { selectedNodeIds, selectedAnnotationIds } =
+          mockedStores.selectionStore.querySelection("preview");
+
         // Go right
         await mockedStores.selectionStore.selectNodes([node1.id]);
         await flushPromises();
         await mockedStores.selectionStore.selectNodes([node2.id]);
         await flushPromises();
-        mockedStores.selectionStore.selectAnnotations(annotation1.id);
+        mockedStores.selectionStore.selectAnnotations([annotation1.id]);
 
         await nextTick();
         emitEvent(wrapper, "keydown", "ArrowRight", false);
         await flushPromises();
 
-        expect(mockedStores.selectionStore.selectedNodeIds).toStrictEqual([]);
-        expect(mockedStores.selectionStore.selectedAnnotationIds).toStrictEqual(
-          [annotation1.id],
-        );
+        expect(selectedNodeIds.value).toStrictEqual([]);
+        expect(selectedAnnotationIds.value).toStrictEqual([annotation1.id]);
 
         await mockedStores.selectionStore.deselectAllObjects();
         await flushPromises();
@@ -975,17 +984,13 @@ describe("Kanvas", () => {
         await flushPromises();
         await mockedStores.selectionStore.selectNodes([node2.id]);
         await flushPromises();
-        mockedStores.selectionStore.selectAnnotations(annotation1.id);
+        mockedStores.selectionStore.selectAnnotations([annotation1.id]);
 
         emitEvent(wrapper, "keydown", "ArrowLeft", false);
         await flushPromises();
 
-        expect(mockedStores.selectionStore.selectedNodeIds).toStrictEqual([
-          node1.id,
-        ]);
-        expect(mockedStores.selectionStore.selectedAnnotationIds).toStrictEqual(
-          [],
-        );
+        expect(selectedNodeIds.value).toStrictEqual([node1.id]);
+        expect(selectedAnnotationIds.value).toStrictEqual([]);
       });
 
       it("should add/remove from selection by pressing 'Enter'", async () => {

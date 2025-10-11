@@ -21,7 +21,7 @@ let lastHitTarget: Element | null = null;
 const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging, hasAbortedDrag } =
   storeToRefs(movingStore);
-const { isNodeSelected, deselectAllObjects } = useSelectionStore();
+const { isNodeSelected, tryClearSelection, selectNodes } = useSelectionStore();
 const { isNodeConnected, getNodeById } = storeToRefs(
   useNodeInteractionsStore(),
 );
@@ -122,15 +122,17 @@ const { createPointerDownHandler } = useMoveObject({
 });
 
 const onPointerDown = async (event: PointerEvent) => {
-  // Capture currentTarget synchronously as the async deselectAllObjects call will
+  // Capture currentTarget synchronously as the async call will
   // cause the event to be already bubbled up and current Target to be null
   const currentTarget = event.currentTarget as HTMLElement;
 
   if (!isNodeSelected(props.id)) {
-    const { wasAborted } = await deselectAllObjects([props.id]);
+    const { wasAborted } = await tryClearSelection();
+
     if (wasAborted) {
       return;
     }
+    selectNodes([props.id]);
   }
   createPointerDownHandler(position)(event, currentTarget);
 };

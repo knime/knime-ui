@@ -17,7 +17,7 @@ const props = defineProps<Props>();
 const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
 const { isMoveLocked } = storeToRefs(useSVGCanvasStore());
-const { isAnnotationSelected, selectAnnotations, deselectAllObjects } =
+const { isAnnotationSelected, selectAnnotations, tryClearSelection } =
   useSelectionStore();
 const { startedSelectionFromAnnotationId } = storeToRefs(useSelectionStore());
 
@@ -47,11 +47,11 @@ const onPointerDown = async (event: PointerEvent) => {
   const currentTarget = event.currentTarget as HTMLElement;
 
   if (!isAnnotationSelected(props.id)) {
-    const { wasAborted } = await deselectAllObjects();
+    const { wasAborted } = await tryClearSelection();
     if (wasAborted) {
       return;
     }
-    selectAnnotations(props.id);
+    selectAnnotations([props.id]);
   }
 
   createPointerDownHandler(initialPosition)(event, currentTarget);

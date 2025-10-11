@@ -447,7 +447,7 @@ describe("application::lifecycle", () => {
       const router = getRouter();
       const { lifecycleStore, selectionStore } = loadStore();
 
-      vi.mocked(selectionStore.deselectAllObjects).mockImplementationOnce(() =>
+      vi.mocked(selectionStore.tryClearSelection).mockImplementationOnce(() =>
         Promise.resolve({ wasAborted: true }),
       );
 
