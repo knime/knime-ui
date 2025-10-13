@@ -681,17 +681,23 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     cursorX: number;
     cursorY: number;
   }) => {
-    const ZOOM_SENSITIVITY = 0.007;
-    const MIN_DELTA = 0.5;
-    const MAX_DELTA = 1.5;
+    // Touchpad/trackpad pinch-to-zoom gestures produce much smaller delta
+    // values compared to mouse wheel. If small delta -> higher sensitivity.
+    const ZOOM_SENSITIVITY = Math.abs(delta) < 12 ? 0.015 : 0.007;
 
-    // For more native-like zoom feel on touchpad/trackpad
-    const zoomFactorScale = Math.exp(-delta * ZOOM_SENSITIVITY);
-    const clampedZoomFactorScale = clamp(zoomFactorScale, MIN_DELTA, MAX_DELTA);
+    // Calculate the zoom factor scale based on sensitivity and received delta.
+    // To avoid exponential zoom exploding on longer wheel/pinch, clamp to
+    // sensible min/max values.
+    const MIN_FACTOR_SCALE = 2 / 3;
+    const MAX_FACTOR_SCALE = 3 / 2;
+    const factorScale = clamp(
+      Math.exp(-delta * ZOOM_SENSITIVITY),
+      MIN_FACTOR_SCALE,
+      MAX_FACTOR_SCALE,
+    );
 
-    const factor = clampZoomFactor(zoomFactor.value * clampedZoomFactorScale);
-    const roundedFactor = Math.round((factor + Number.EPSILON) * 100) / 100;
-    zoomAroundPointer({ factor: roundedFactor, cursorX, cursorY });
+    const factor = clampZoomFactor(zoomFactor.value * factorScale);
+    zoomAroundPointer({ factor, cursorX, cursorY });
   };
 
   /*
