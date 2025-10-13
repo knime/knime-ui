@@ -27,6 +27,7 @@ import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 
 const MAX_PIXEL_RATIO = 2.5;
+const MIN_PIXEL_RATIO = 1.33;
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
@@ -74,10 +75,19 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isHoldingDownSpace = ref(false);
   const shouldHideMiniMap = ref(false);
 
+  const pixelRatioWithLimits = computed(() => {
+    // use lower bound to avoid blurry rendering (happen when having a ratio of 1)
+    // use upper bound to avoid too high resolution on high dpi screens (e.g. browser zoom) due to performance impact
+    return Math.max(
+      Math.min(pixelRatio.value, MAX_PIXEL_RATIO),
+      MIN_PIXEL_RATIO,
+    );
+  });
+
   const zoomAwareResolution = refDebounced(
     toRef(() => {
       const targetResolution = round(
-        zoomToResolution(zoomFactor.value) * pixelRatio.value,
+        zoomToResolution(zoomFactor.value) * pixelRatioWithLimits.value,
       );
 
       return targetResolution;
@@ -135,11 +145,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const setPixelRatio = (ratio: number) => {
     pixelRatio.value = ratio;
   };
-
-  const getPixelRatio = computed(() => {
-    // use upper bound to avoid too high resolution on high dpi screens (e.g. browser zoom) due to performance impact
-    return Math.min(pixelRatio.value, MAX_PIXEL_RATIO);
-  });
 
   const setContainerSize = ({
     width,
@@ -822,7 +827,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     setCanvasAnchor,
     clearCanvasAnchor,
     setPixelRatio,
-    pixelRatio: getPixelRatio,
+    pixelRatio: pixelRatioWithLimits,
     findObjectFromScreenCoordinates,
     isPanning,
     isHoldingDownSpace,
