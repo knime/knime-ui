@@ -220,7 +220,9 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   });
 
   const legacyNodes = computed(() =>
-    nodes.value.filter(({ type }) => type === "legacyView"),
+    nodes.value.filter(
+      ({ type }) => type === "legacyView" || type === "quickform",
+    ),
   );
 
   const setNodes = (newNodes: LayoutEditorNode[]) => {
@@ -518,7 +520,9 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
         configurationLayout: JSON.stringify(configurationLayout.value),
       };
       const legacyViewNodes: LegacyViewNodeConfig[] = nodes.value
-        .filter((node) => node.type === "legacyView")
+        .filter(
+          (node) => node.type === "legacyView" || node.type === "quickform",
+        )
         .map((node) => ({
           nodeId: node.nodeID,
           availableInView: node.availableInView || false,

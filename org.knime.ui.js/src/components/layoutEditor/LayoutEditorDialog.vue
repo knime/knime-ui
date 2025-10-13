@@ -7,6 +7,8 @@ import { Button, LoadingIcon, Modal, TabBar } from "@knime/components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
+import * as layoutEditorZIndices from "./z-indices";
+
 type LayoutEditorTabValue =
   | "viewLayoutEditor"
   | "advancedLayoutEditor"
@@ -109,7 +111,13 @@ const activeTabComponent = computed(
     </template>
 
     <template #controls>
-      <Button compact with-border :disabled="isSubmitted" @click="closeModal">
+      <Button
+        compact
+        with-border
+        class="cancel-button"
+        :disabled="isSubmitted"
+        @click="closeModal"
+      >
         <strong>Cancel</strong>
       </Button>
       <Button
@@ -162,5 +170,10 @@ const activeTabComponent = computed(
       border-top: 1px solid var(--knime-silver-sand);
     }
   }
+}
+
+.cancel-button,
+.submit-button {
+  z-index: v-bind("layoutEditorZIndices.modalControls");
 }
 </style>
