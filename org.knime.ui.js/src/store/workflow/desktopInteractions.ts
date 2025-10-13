@@ -88,21 +88,6 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
       });
     },
 
-    /* See docs in API */
-    openLayoutEditor() {
-      const { projectId, workflowId } =
-        useWorkflowStore().getProjectAndWorkflowIds;
-
-      API.desktop.openLayoutEditor({ projectId, workflowId });
-    },
-
-    /* See docs in API */
-    openLayoutEditorByNodeId({ nodeId }: { nodeId: string }) {
-      const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
-
-      API.desktop.openLayoutEditor({ projectId, workflowId: nodeId });
-    },
-
     async saveProjectAs() {
       const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
 

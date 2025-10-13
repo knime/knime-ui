@@ -125,14 +125,6 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     blocksUi: true,
   },
   {
-    name: "openLayoutEditor",
-    params: [
-      ["projectId", "project1"],
-      ["workflowId", "workflow1"],
-    ],
-    blocksUi: true,
-  },
-  {
     name: "connectSpaceProvider",
     params: [["spaceProviderId", "1"]],
     returnValue: JSON.stringify({

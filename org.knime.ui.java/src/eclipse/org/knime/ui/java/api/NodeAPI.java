@@ -192,31 +192,6 @@ final class NodeAPI {
         NodeContainerEditPart.openDialog(wrap(nc), null);
     }
 
-    /**
-     *
-     * Opens the layout editor of a component
-     *
-     * @param projectId
-     * @param nodeId
-     * @return
-     */
-    @API
-    static String openLayoutEditor(final String projectId, final String nodeId) {
-        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        checkIsNotNull(nc, projectId, nodeId);
-        if (nc instanceof WorkflowManager wfm && wfm.isComponentProjectWFM()) {
-            nc = (NodeContainer)wfm.getDirectNCParent();
-        }
-        if (nc instanceof SubNodeContainer subnode) {
-            SubnodeLayoutAction.openLayoutEditor(subnode);
-            return null;
-        } else {
-            final var message = String.format("There is no layout editor for node '%s'", nc);
-            NodeLogger.getLogger(NodeAPI.class).warn(message);
-            return message;
-        }
-    }
-
     static void checkIsNotNull(final NodeContainer nc, final String projectId, final String nodeId) {
         CheckUtils.checkArgument(nc != null, "Node with id '%s' not found in workflow with id '%s'", projectId, nodeId);
     }

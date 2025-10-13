@@ -437,22 +437,6 @@ export const setProjectActiveAndEnsureItsLoaded = ({
   );
 };
 
-export const openLayoutEditor = ({
-  projectId,
-  workflowId,
-}: {
-  projectId: string;
-  workflowId: string;
-}) => {
-  return callBrowserFunction(
-    window.openLayoutEditor,
-    [projectId, workflowId],
-    "Could not open layout editor",
-    false,
-    { block: true, darkenBackground: true },
-  );
-};
-
 export const openWorkflowCoachPreferencePage = () => {
   return callBrowserFunction(
     window.openWorkflowCoachPreferencePage,

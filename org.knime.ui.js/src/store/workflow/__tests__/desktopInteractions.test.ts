@@ -84,41 +84,6 @@ describe("workflow store: desktop interactions", () => {
       });
     });
 
-    it("calls openLayoutEditor from API", async () => {
-      const { workflowStore, desktopInteractionsStore } = await mockStores();
-
-      workflowStore.setActiveWorkflow(
-        createWorkflow({
-          projectId: "foo",
-          info: { containerId: "root" },
-        }),
-      );
-      desktopInteractionsStore.openLayoutEditor();
-
-      expect(mockedAPI.desktop.openLayoutEditor).toHaveBeenCalledWith({
-        projectId: "foo",
-        workflowId: "root",
-      });
-    });
-
-    it("calls openLayoutEditor from API with nodeId", async () => {
-      const { workflowStore, desktopInteractionsStore } = await mockStores();
-      const nodeId = "nodeId1";
-
-      workflowStore.setActiveWorkflow(
-        createWorkflow({
-          projectId: "foo",
-          info: { containerId: "root" },
-        }),
-      );
-      desktopInteractionsStore.openLayoutEditorByNodeId({ nodeId });
-
-      expect(mockedAPI.desktop.openLayoutEditor).toHaveBeenCalledWith({
-        projectId: "foo",
-        workflowId: nodeId,
-      });
-    });
-
     describe("save workflow", () => {
       mockedAPI.desktop.saveProject.mockResolvedValue(true);
 

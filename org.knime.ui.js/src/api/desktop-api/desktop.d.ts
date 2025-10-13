@@ -80,11 +80,6 @@ declare function setProjectActiveAndEnsureItsLoaded(
   removeProjectIfNotLoaded: boolean,
 ): boolean;
 
-declare function openLayoutEditor(
-  projectId: string,
-  workflowId: string,
-): string;
-
 declare function openWorkflowCoachPreferencePage(): void;
 
 declare function connectSpaceProvider(spaceProviderId: string): string;
