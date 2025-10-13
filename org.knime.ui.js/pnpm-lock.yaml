@@ -27,8 +27,8 @@ importers:
         specifier: 4.x
         version: 4.5.10
       '@knime/components':
-        specifier: ^1.39.2
-        version: 1.39.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
+        specifier: ^1.39.3
+        version: 1.39.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
       '@knime/hub-features':
         specifier: ^1.14.8
         version: 1.14.8(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
@@ -1221,8 +1221,8 @@ packages:
       consola: 3.x
       vue: '>=3.5.0'
 
-  '@knime/components@1.39.2':
-    resolution: {integrity: sha512-/RF6ezbCwxboqwBsUSL5dDpQLgAnY+HUrmPcUYH5rMbcnJpbo9cqvTq3RUabx8oiUFrlYeazsgE6hQZJM61Adw==}
+  '@knime/components@1.39.3':
+    resolution: {integrity: sha512-myckKtyx3aCjdlvFvVXr0TPWn60uXiXsg10BSxWV+X2D7g3MZjPjlUQ5FNALzW1ZOnHk8QygI7hsUKlMcvW6tQ==}
     engines: {node: 22.x}
     peerDependencies:
       consola: 3.x
@@ -7208,7 +7208,7 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/components@1.39.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))':
+  '@knime/components@1.39.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))':
     dependencies:
       '@floating-ui/vue': 1.1.8(vue@3.5.18(typescript@5.8.3))
       '@knime/styles': 1.14.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
