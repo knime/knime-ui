@@ -299,6 +299,19 @@ watch(isLoadingContent, () => {
   width: 100%;
   height: 100%;
   min-height: 100px;
+
+  /** START: NXT-4145: backport of https://github.com/knime/webapps-common/pull/25 */
+  & :deep(.item-error) {
+    bottom: 0;
+    z-index: 10;
+    transform: translateY(100%);
+  }
+
+  & :deep(.file-explorer-item-base) {
+    position: relative;
+  }
+
+  /** END */
 }
 
 .breadcrumb-container {
