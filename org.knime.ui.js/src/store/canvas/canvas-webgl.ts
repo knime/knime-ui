@@ -686,8 +686,18 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     cursorX: number;
     cursorY: number;
   }) => {
-    // Touchpad/trackpad pinch-to-zoom gestures produce much smaller delta
-    // values compared to mouse wheel. If small delta -> higher sensitivity.
+    // Most mice will send deltas over 50 for each step of the mouse wheel.
+    // In this case, we ignore sensitivity and use a stepped approach.
+    if (Math.abs(delta) > 50) {
+      zoomAroundPointer({
+        cursorX,
+        cursorY,
+        delta: Math.sign(-delta) as -1 | -0 | 0 | 1,
+      });
+      return;
+    }
+
+    // For higher deltas, reduce sensitivity, to increase precision.
     const ZOOM_SENSITIVITY = Math.abs(delta) < 12 ? 0.015 : 0.007;
 
     // Calculate the zoom factor scale based on sensitivity and received delta.

@@ -27,8 +27,7 @@ vi.mock("@/util/getKanvasDomElement", () => {
   };
 });
 
-const round = (n: number) => {
-  const precision = 10;
+const round = (n: number, precision: number = 10) => {
   return Number(n.toFixed(precision));
 };
 
@@ -366,19 +365,49 @@ describe("WebGL canvas store", () => {
         expect(canvasStore.zoomFactor).toBe(2);
       });
 
-      it("zoom with sensitivity", () => {
+      it("zoom with sensitivity - low delta", () => {
         const { canvasStore, kanvasWrapper } = createStore();
 
         canvasStore.initScrollContainerElement(kanvasWrapper);
         expect(canvasStore.zoomFactor).toBe(1);
 
-        const zoomOutOptions = { delta: 100, cursorX: 0, cursorY: 0 };
+        const zoomOutOptions = { delta: 1.2, cursorX: 0, cursorY: 0 };
         canvasStore.zoomAroundPointerWithSensitivity(zoomOutOptions);
-        expect(canvasStore.zoomFactor).toBe(2 / 3);
+        expect(round(canvasStore.zoomFactor, 2)).toBe(0.98);
 
-        const zoomInOptions = { delta: -100, cursorX: 0, cursorY: 0 };
+        const zoomInOptions = { delta: -1.2, cursorX: 0, cursorY: 0 };
         canvasStore.zoomAroundPointerWithSensitivity(zoomInOptions);
+        expect(round(canvasStore.zoomFactor)).toBe(1);
+      });
+
+      it("zoom with sensitivity - medium delta", () => {
+        const { canvasStore, kanvasWrapper } = createStore();
+
+        canvasStore.initScrollContainerElement(kanvasWrapper);
         expect(canvasStore.zoomFactor).toBe(1);
+
+        const zoomOutOptions = { delta: 12, cursorX: 0, cursorY: 0 };
+        canvasStore.zoomAroundPointerWithSensitivity(zoomOutOptions);
+        expect(round(canvasStore.zoomFactor, 2)).toBe(0.92);
+
+        const zoomInOptions = { delta: -12, cursorX: 0, cursorY: 0 };
+        canvasStore.zoomAroundPointerWithSensitivity(zoomInOptions);
+        expect(round(canvasStore.zoomFactor)).toBe(1);
+      });
+
+      it("zoom with sensitivity - high delta", () => {
+        const { canvasStore, kanvasWrapper } = createStore();
+
+        canvasStore.initScrollContainerElement(kanvasWrapper);
+        expect(canvasStore.zoomFactor).toBe(1);
+
+        const zoomOutOptions = { delta: 120, cursorX: 0, cursorY: 0 };
+        canvasStore.zoomAroundPointerWithSensitivity(zoomOutOptions);
+        expect(round(canvasStore.zoomFactor, 2)).toBe(0.92);
+
+        const zoomInOptions = { delta: -120, cursorX: 0, cursorY: 0 };
+        canvasStore.zoomAroundPointerWithSensitivity(zoomInOptions);
+        expect(round(canvasStore.zoomFactor)).toBe(1);
       });
 
       it("throws for incorrect arguments", () => {
