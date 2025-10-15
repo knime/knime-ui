@@ -88,6 +88,10 @@ const toast = getToastsProvider();
 
 const eventHandlers: Set<Function> = new Set();
 
+const { findSpaceByIdMock } = vi.hoisted(() => ({
+  findSpaceByIdMock: vi.fn(),
+}));
+
 vi.mock("@vueuse/core", async (importOriginal) => {
   const actual = (await importOriginal()) as object;
   return {
@@ -104,6 +108,10 @@ vi.mock("@vueuse/core", async (importOriginal) => {
   };
 });
 
+vi.mock("@/store/spaces/util", () => ({
+  findSpaceById: findSpaceByIdMock,
+}));
+
 describe("ManageVersionsWrapper.vue", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -115,6 +123,7 @@ describe("ManageVersionsWrapper.vue", () => {
   }: {
     props?: Partial<InstanceType<typeof ManageVersionsWrapper>["$props"]>;
     versionsModeStatus?: VersionsModeStatus;
+    isItemInPrivateSpace?: boolean;
   } = {}) => {
     const mockedStores = mockStores();
     const { workflowVersionsStore } = mockedStores;
@@ -151,6 +160,50 @@ describe("ManageVersionsWrapper.vue", () => {
 
       expect(wrapper.findComponent(ManageVersions).exists()).toBe(false);
       expect(wrapper.findComponent(VersionPanelPromoteHub).exists()).toBe(true);
+    });
+
+    it("passes item visibility to ManageVersions component", async () => {
+      const { wrapper, mockedStores } = doMount();
+      const { applicationStore, spaceProvidersStore } = mockedStores;
+
+      // @ts-expect-error mocking for test
+      spaceProvidersStore.spaceProviders = { test: "mock" };
+
+      // helper to update mocks and retrigger evaluation of computed properties
+      const updateMocks = async (isPrivate: boolean) => {
+        findSpaceByIdMock.mockReturnValue({ private: isPrivate });
+        applicationStore.setOpenProjects([
+          {
+            name: "mockProject",
+            projectId: "mockProjectId",
+            origin: {
+              itemId: "mockItemId",
+              providerId: "mockProviderId",
+              spaceId: "mockSpaceId",
+            },
+          },
+        ]);
+        applicationStore.setActiveProjectId("mockProjectId");
+        await nextTick();
+      };
+
+      // with public space
+      await updateMocks(false);
+      let manageVersions = wrapper.findComponent(ManageVersions);
+      expect(manageVersions.props("isPrivate")).toBe(false);
+      expect(findSpaceByIdMock).toHaveBeenCalledWith(
+        spaceProvidersStore.spaceProviders,
+        "mockSpaceId",
+      );
+
+      // with private space
+      await updateMocks(true);
+      manageVersions = wrapper.findComponent(ManageVersions);
+      expect(manageVersions.props("isPrivate")).toBe(true);
+      expect(findSpaceByIdMock).toHaveBeenCalledWith(
+        spaceProvidersStore.spaceProviders,
+        "mockSpaceId",
+      );
     });
   });
 

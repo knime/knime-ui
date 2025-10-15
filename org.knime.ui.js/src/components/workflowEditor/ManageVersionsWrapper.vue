@@ -12,6 +12,8 @@ import { onWorkflowSaved } from "@/composables/useWorkflowSaveListener";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { findSpaceById } from "@/store/spaces/util";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
 
@@ -124,6 +126,18 @@ const onDiscardCurrentState = () => {
     .discardUnversionedChanges()
     .catch((error) => toastPresets.versions.discardFailed({ error }));
 };
+
+const spaceProvidersStore = useSpaceProvidersStore();
+const isItemInPrivateSpace = computed(() => {
+  if (!activeProjectOrigin.value) {
+    return false;
+  }
+  const space = findSpaceById(
+    spaceProvidersStore.spaceProviders,
+    activeProjectOrigin.value.spaceId,
+  );
+  return Boolean(space?.private);
+});
 </script>
 
 <template>
@@ -164,6 +178,7 @@ const onDiscardCurrentState = () => {
       "
       :version-limit="versionLimit"
       :upgrade-url="`${PRICING_URL}&alt=versionLimit`"
+      :is-private="isItemInPrivateSpace"
       @close="onClose"
       @select="onSelect"
       @load-all="onLoadAll"
