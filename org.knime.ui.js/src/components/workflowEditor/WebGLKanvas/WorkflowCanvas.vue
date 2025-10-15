@@ -13,6 +13,7 @@ import { sleep } from "@knime/utils";
 
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
+import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -30,6 +31,7 @@ import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
+const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
 
@@ -181,7 +183,7 @@ const onEscape = async (event: KeyboardEvent) => {
     @keydown.esc="onEscape"
   >
     <Kanvas
-      v-if="activeWorkflow && !isWorkflowEmpty"
+      v-if="activeWorkflow && !isWorkflowEmpty && !isLoadingWorkflow"
       @canvas-ready="onCanvasReady?.()"
     >
       <Workflow />
