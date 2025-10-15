@@ -198,7 +198,7 @@ test.describe("panning", () => {
     // Drag selected objects near bottom edge of screen and hold until edge of canvas is reached
     await page.mouse.move(annotation.center.x, annotation.center.y - 100);
     await page.mouse.down();
-    const panDistance = 50;
+    const panDistance = 100;
     for (let i = 0; i < panDistance; i++) {
       await page.mouse.move(
         annotation.center.x,
