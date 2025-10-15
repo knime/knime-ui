@@ -425,18 +425,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
         activeWorkflow?.projectId !== newWorkflow?.projectId;
       this.setIsChangingProject(isChangingProject);
 
-      // only activate the app loader if we're going to switch to a workflow; skip it
-      // when showing the home page.
-      // Also reset the error (if any) but skip for the homepage to avoid flashes of loading state
-      if (newWorkflow) {
-        useWorkflowStore().setWorkflowLoadingError(null);
-        this.setIsLoadingWorkflow(true);
-      }
-
-      // small wait time to improve visual feedback of app skeleton loader
-      const RENDER_DELAY_MS = 100;
-      await sleep(RENDER_DELAY_MS);
-
       if (useWorkflowStore()?.activeWorkflow) {
         consola.trace(
           "action::switchWorkflow -> saving canvas state and unloading active workflow",
@@ -451,9 +439,18 @@ export const useLifecycleStore = defineStore("lifecycle", {
           useApplicationStore().setActiveProjectId(null);
         }
       }
+      // small wait time to improve visual feedback of app skeleton loader
+      const RENDER_DELAY_MS = 100;
+      await sleep(RENDER_DELAY_MS);
 
       // only continue if the new workflow exists
       if (newWorkflow) {
+        // only activate the app loader if we're going to switch to a workflow; skip it
+        // when showing the home page.
+        // Also reset the error (if any) but skip for the homepage to avoid flashes of loading state
+        useWorkflowStore().setWorkflowLoadingError(null);
+        this.setIsLoadingWorkflow(true);
+
         lifecycleBus.emit("beforeLoadWorkflow");
 
         const { projectId, workflowId = "root" } = newWorkflow;
