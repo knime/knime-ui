@@ -20,6 +20,7 @@ try {
   const { jobId, restApiBaseUrl } = await embeddingBridge.waitForContext();
 
   const api = apiFactory({ $axios });
+  app.config.globalProperties.$api = api;
   const store = createStore(api);
 
   initConstants(app, { jobId, restApiBaseUrl });
