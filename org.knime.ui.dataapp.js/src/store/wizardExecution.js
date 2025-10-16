@@ -583,7 +583,10 @@ export const actions = {
     dispatch("stopPolling", { flushTimers: true });
     dispatch("setPage", { page: { wizardExecutionState: CANCELLED } });
     dispatch("setNodesReExecuting", { nodesReExecuting: null });
-    dispatch("deployments/deleteJob", { jobId, update: false }, { root: true });
+    embeddingBridge.dispatchCommandToEmbedder({
+      kind: "executionStatus",
+      payload: { status: "CANCELLED" },
+    });
   },
 
   startReExecutionPolling({ dispatch, state, getters }, { jobId }) {

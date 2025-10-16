@@ -111,7 +111,14 @@ type ClearNotificationCommand = {
   payload: { id: string } | { deduplicationKey: string };
 };
 
-export type Command = ShowNotificationCommand | ClearNotificationCommand;
+type ExecutionStatusCommand = {
+  kind: "executionStatus";
+  payload: {
+    status: "CANCELLED";
+  };
+};
+
+export type Command = ShowNotificationCommand | ClearNotificationCommand | ExecutionStatusCommand;
 
 export const dispatchCommandToEmbedder = (command: Command) => {
   window.parent.postMessage({ type: MESSAGES.COMMAND, payload: command }, "*");
