@@ -190,7 +190,7 @@ export const actions = {
 
         embeddingBridge.dispatchCommandToEmbedder({
           kind: "showNotification",
-          content: {
+          payload: {
             type: "error",
             message: `${DEFAULT_ERROR_MESSAGE}\n${details}`,
             autoRemove: true,
@@ -294,7 +294,7 @@ export const actions = {
 
       embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           deduplicationKey: clientValidationErrorMsgConfig.id,
           message: clientValidationErrorMsgConfig.message,
@@ -313,7 +313,7 @@ export const actions = {
     consola.error("Retrieving viewValues failed.");
     embeddingBridge.dispatchCommandToEmbedder({
       kind: "showNotification",
-      content: {
+      payload: {
         type: "error",
         deduplicationKey: serverValidationErrorMsgConfig.id,
         message: serverValidationErrorMsgConfig.message,
@@ -341,7 +341,7 @@ export const actions = {
 
       embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           message: extractErrorMessage(errorResponse),
         },
@@ -384,7 +384,7 @@ export const actions = {
       dispatch("clear");
       embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           message: extractErrorMessage(errorResponse),
         },
@@ -440,7 +440,7 @@ export const actions = {
       consola.error("Server validation failed.");
       embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           deduplicationKey: serverValidationErrorMsgConfig.id,
           message: serverValidationErrorMsgConfig.message,
@@ -452,7 +452,7 @@ export const actions = {
 
     embeddingBridge.dispatchCommandToEmbedder({
       kind: "showNotification",
-      content: {
+      payload: {
         type: "error",
         message: extractErrorMessage(errorResponse),
       },
@@ -494,7 +494,7 @@ export const actions = {
 
     embeddingBridge.dispatchCommandToEmbedder({
       kind: "showNotification",
-      content: {
+      payload: {
         type: "error",
         message: extractErrorMessage(errorResponse),
       },
@@ -556,7 +556,7 @@ export const actions = {
       consola.error("Server validation failed.");
       embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           deduplicationKey: serverValidationErrorMsgConfig.id,
           message: serverValidationErrorMsgConfig.message,
@@ -568,7 +568,7 @@ export const actions = {
 
     embeddingBridge.dispatchCommandToEmbedder({
       kind: "showNotification",
-      content: {
+      payload: {
         type: "error",
         message: extractErrorMessage(errorResponse),
       },
@@ -611,7 +611,7 @@ export const actions = {
         if (this.$router && this.$router.currentRoute.name !== "space-repository-job-exec") {
           embeddingBridge.dispatchCommandToEmbedder({
             kind: "showNotification",
-            content: {
+            payload: {
               type: "error",
               message: "Page re-execution unsuccessful.",
             },
@@ -669,10 +669,10 @@ export const actions = {
       commit("setExecutingShown", true);
       embeddingBridge.dispatchCommandToEmbedder({
         kind: "showNotification",
-        content: {
-          type: "error",
+        payload: {
           message,
           deduplicationKey: message,
+          autoRemove: false,
         },
       });
     }
@@ -680,8 +680,7 @@ export const actions = {
       commit("setExecutingShown", false);
       embeddingBridge.dispatchCommandToEmbedder({
         kind: "clearNotification",
-        // message also acts as id
-        payload: { id: message },
+        payload: { deduplicationKey: message },
       });
     }
     return {};

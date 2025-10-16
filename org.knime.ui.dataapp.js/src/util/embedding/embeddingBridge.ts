@@ -113,9 +113,7 @@ type ClearNotificationCommand = {
 
 type ExecutionStatusCommand = {
   kind: "executionStatus";
-  payload: {
-    status: "CANCELLED";
-  };
+  payload: { status: "CANCELLED" };
 };
 
 export type Command = ShowNotificationCommand | ClearNotificationCommand | ExecutionStatusCommand;
