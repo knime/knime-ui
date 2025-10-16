@@ -7,8 +7,8 @@ import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import WorkflowPortalLayers from "../common/WorkflowPortalLayers.vue";
 
-import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 import MoveableAnnotationContainer from "./annotations/MoveableAnnotationContainer.vue";
 import WorkflowAnnotation from "./annotations/WorkflowAnnotation.vue";
 import Connector from "./connectors/Connector.vue";

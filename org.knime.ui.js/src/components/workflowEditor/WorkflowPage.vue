@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { debounce } from "lodash-es";
+import { storeToRefs } from "pinia";
 
 import { SplitPanel } from "@knime/components";
 
@@ -17,7 +18,12 @@ import WorkflowPanel from "./WorkflowPanel.vue";
 /**
  * Component that acts as a router page to render the workflow
  */
-const workflowStore = useWorkflowStore();
+const {
+  activeWorkflow,
+  isWorkflowEmpty,
+  error: workflowError,
+} = storeToRefs(useWorkflowStore());
+
 const expanded = ref(true);
 
 const settingsStore = useSettingsStore();
@@ -35,16 +41,14 @@ const savedSecondarySize = computed({
 </script>
 
 <template>
-  <div
-    v-if="workflowStore.activeWorkflow && !workflowStore.error"
-    id="workflow-page"
-  >
+  <div v-if="activeWorkflow && !workflowError" id="workflow-page">
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
 
     <main class="workflow-area">
       <SplitPanel
+        v-if="!isWorkflowEmpty"
         v-model:expanded="expanded"
         v-model:secondary-size="savedSecondarySize"
         class="split-panel"
@@ -58,6 +62,8 @@ const savedSecondarySize = computed({
           <NodeOutput />
         </template>
       </SplitPanel>
+
+      <WorkflowPanel v-else id="workflow-panel" />
     </main>
 
     <LayoutEditorDialog />

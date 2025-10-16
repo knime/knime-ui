@@ -1,3 +1,4 @@
+import { ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
@@ -34,6 +35,7 @@ const getNodeFactoryFromEvent = (event: DragEvent) => {
 let dragStartTime: number | null;
 
 const DRAG_TO_EDGE_BUFFER_MS = 300;
+const isDraggingOver = ref(false);
 
 export const useDragNodeIntoCanvas = () => {
   const isKnimeNode = (event: DragEvent) =>
@@ -94,6 +96,8 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   const onDragOver = (event: DragEvent) => {
+    isDraggingOver.value = true;
+
     // only define start time when the first dragover is fired
     if (!dragStartTime) {
       dragStartTime = window.performance.now();
@@ -145,6 +149,7 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   const onDrop = async (event: DragEvent) => {
+    isDraggingOver.value = false;
     dragStartTime = null;
     stopPanningToEdge();
     const nodeFactory = getNodeFactoryFromEvent(event);
@@ -182,6 +187,7 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   const onDragEnd = (event: DragEvent) => {
+    isDraggingOver.value = false;
     dragStartTime = null;
     stopPanningToEdge();
     (event.target as HTMLElement).style.cursor = "pointer";
@@ -201,6 +207,7 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   return {
+    isDraggingOver,
     onDragStart,
     onDrag,
     onDragOver,

@@ -34,7 +34,9 @@ const WebGLKanvas = defineAsyncComponent({
 });
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
-const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
+const { activeWorkflow, isWritable, isWorkflowEmpty } = storeToRefs(
+  useWorkflowStore(),
+);
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu, quickActionMenu, contextMenu } = storeToRefs(
   canvasAnchoredComponentsStore,
@@ -131,7 +133,10 @@ const panelStore = usePanelStore();
     <WorkflowInfoBar />
 
     <SplitPanel
-      v-if="useEmbeddedDialogs || versionsStore.isSidepanelOpen"
+      v-if="
+        (useEmbeddedDialogs || versionsStore.isSidepanelOpen) &&
+        !isWorkflowEmpty
+      "
       v-model:secondary-size="nodeDialogSize"
       v-model:expanded="panelStore.isRightPanelExpanded"
       class="split-panel"
