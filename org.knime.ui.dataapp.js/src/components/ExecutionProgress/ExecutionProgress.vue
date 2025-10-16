@@ -18,7 +18,7 @@ const { executionState = undefined } = defineProps<{
 
 const store = useStore();
 
-const totalPercentage = computed(() => store.state.wizardExecution.totalPercentage);
+const totalPercentage = computed(() => store.getters["wizardExecution/totalPercentage"]);
 const loading = computed(() => executionState === LOADING);
 const executing = computed(() => executionState === EXECUTING);
 const stopped = computed(() => !loading.value && !executing.value);
