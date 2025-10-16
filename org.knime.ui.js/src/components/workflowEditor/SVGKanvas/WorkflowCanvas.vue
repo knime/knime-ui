@@ -9,17 +9,17 @@ import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
-const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
-const { fillScreen, screenToCanvasCoordinates } = useSVGCanvasStore();
-const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
-
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import Workflow from "./Workflow.vue";
 import WorkflowEmpty from "./WorkflowEmpty.vue";
 import AnnotationRectangle from "./annotations/AnnotationRectangle.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
 import KanvasFilters from "./kanvas/KanvasFilters.vue";
+
+const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
+const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
+const { fillScreen, screenToCanvasCoordinates } = useSVGCanvasStore();
+const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const kanvas = ref<InstanceType<typeof Kanvas>>();

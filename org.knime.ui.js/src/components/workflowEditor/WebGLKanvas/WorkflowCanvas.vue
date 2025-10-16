@@ -19,9 +19,9 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
-import WorkflowEmpty from "../SVGKanvas/WorkflowEmpty.vue";
 import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 
+import EmptyWorkflow from "./EmptyWorkflow/EmptyWorkflow.vue";
 import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
@@ -30,13 +30,12 @@ import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 
-const { onDrop, onDragOver } = useDragNodeIntoCanvas();
+const { isDraggingOver, onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
 
-const { containerSize, shouldHideMiniMap, interactionsEnabled } =
-  storeToRefs(canvasStore);
+const { shouldHideMiniMap, interactionsEnabled } = storeToRefs(canvasStore);
 
 const openQuickActionMenu = (event: PointerEvent) => {
   if (event.dataset) {
@@ -70,15 +69,6 @@ const onPointerDown = (event: PointerEvent) => {
 let resizeObserver: ResizeObserver,
   stopResizeObserver: () => void,
   onCanvasReady: () => void;
-
-const workflowEmptyViewBox = computed(() =>
-  [
-    -containerSize.value.width / 2,
-    -containerSize.value.height / 2,
-    containerSize.value.width,
-    containerSize.value.height,
-  ].join(" "),
-);
 
 onMounted(() => {
   if (isWorkflowEmpty.value) {
@@ -197,15 +187,10 @@ const onEscape = async (event: KeyboardEvent) => {
 
     <FloatingCanvasTools v-if="!isWorkflowEmpty" />
 
-    <svg
+    <EmptyWorkflow
       v-if="activeWorkflow && isWorkflowEmpty"
-      :width="containerSize.width"
-      :height="containerSize.height"
-      :viewBox="workflowEmptyViewBox"
-      aria-label="Empty workflow – start by adding nodes"
-    >
-      <WorkflowEmpty />
-    </svg>
+      :is-dragging-over="isDraggingOver"
+    />
   </div>
 </template>
 
