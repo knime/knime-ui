@@ -10,13 +10,14 @@ import { HINTS } from "@/hints/hints.config";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { portSize } from "@/style/shapes";
+import { getNodeState } from "@/util/nodeUtil";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 
 /**
  * Hints for the webgl based canvas. Works by injecting DOMContainers to use as elements for the hints.
  * @param isPixiAppInitialized
  */
-export const useKanvasHint = (isPixiAppInitialized: Ref<boolean>) => {
+export const useKanvasNodePortHint = (isPixiAppInitialized: Ref<boolean>) => {
   const { createHint, isCompleted } = useHint();
 
   const { workflowHasNodes, activeWorkflow } = storeToRefs(useWorkflowStore());
@@ -31,7 +32,7 @@ export const useKanvasHint = (isPixiAppInitialized: Ref<boolean>) => {
     const executedNodesWithOutPorts = nodes.filter(
       (node) =>
         node.outPorts.length > 1 &&
-        node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED,
+        getNodeState(node, 0) === NodeState.ExecutionStateEnum.EXECUTED,
     );
 
     const targetNodes =

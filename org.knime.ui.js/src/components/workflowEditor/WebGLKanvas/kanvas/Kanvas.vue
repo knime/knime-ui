@@ -24,7 +24,7 @@ import { clearIconCache } from "../common/iconCache";
 import { initE2ETestUtils } from "../util/e2eTest";
 
 import Minimap from "./Minimap.vue";
-import { useKanvasHint } from "./useKanvasHint";
+import { useKanvasNodePortHint } from "./useKanvasNodePortHint";
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
 
@@ -112,7 +112,7 @@ watch(
   { once: true },
 );
 
-useKanvasHint(isPixiAppInitialized);
+useKanvasNodePortHint(isPixiAppInitialized);
 
 onUnmounted(() => {
   canvasStore.pixiApplication = null;
