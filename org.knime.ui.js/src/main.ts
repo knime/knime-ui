@@ -1,6 +1,8 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
+import { embeddingSDK } from "@knime/hub-features";
+
 import { initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
@@ -9,7 +11,6 @@ import {
   isBrowser,
   runInEnvironment,
 } from "./environment";
-import { browserEmbedding } from "./environment/browserEmbedding";
 import { initPlugins } from "./plugins";
 import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
@@ -29,9 +30,9 @@ try {
       await initJSONRPCClient("DESKTOP", null);
     },
     BROWSER: async () => {
-      const browserSessionContext = await browserEmbedding.waitForContext();
-      await initJSONRPCClient("BROWSER", browserSessionContext);
-      setRestApiBaseUrl(browserSessionContext.restApiBaseUrl);
+      const embeddingContext = await embeddingSDK.guest.waitForContext();
+      await initJSONRPCClient("BROWSER", embeddingContext);
+      setRestApiBaseUrl(embeddingContext.restApiBaseUrl);
     },
   });
 
@@ -63,6 +64,6 @@ try {
 } catch (error) {
   consola.fatal("Failed to initialize Application", error);
   if (isBrowser()) {
-    browserEmbedding.sendAppInitializationError(error);
+    embeddingSDK.guest.sendEmbeddingFailureMessage(error);
   }
 }

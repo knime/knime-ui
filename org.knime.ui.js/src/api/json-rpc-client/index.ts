@@ -1,7 +1,8 @@
 import { Client, RequestManager } from "@open-rpc/client-js";
 
+import type { EmbeddingContext } from "@knime/hub-features";
+
 import type { Environment } from "@/environment";
-import type { BrowserSessionContext } from "@/environment/browserEmbedding";
 import { $bus } from "@/plugins/event-bus";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { getToastPresets } from "@/toastPresets";
@@ -126,7 +127,7 @@ const setupActivityHeartbeat = (ws: WebSocket) => {
   });
 };
 
-const initBrowserClient = (context: BrowserSessionContext) =>
+const initBrowserClient = (context: EmbeddingContext) =>
   new Promise((resolve, reject) => {
     try {
       if (!context) {
@@ -139,7 +140,7 @@ const initBrowserClient = (context: BrowserSessionContext) =>
         return;
       }
 
-      const transport = new WebSocketTransport(context.url);
+      const transport = new WebSocketTransport(context.wsConnectionUri);
 
       const connection: WebSocket = transport.connection;
 
@@ -167,7 +168,7 @@ const getRPCClientInstance = () => jsonRPCClient;
 
 const initJSONRPCClient = async (
   mode: Environment,
-  context: BrowserSessionContext | null,
+  context: EmbeddingContext | null,
 ) => {
   try {
     const clientInitializer =

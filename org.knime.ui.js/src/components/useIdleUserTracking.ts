@@ -1,7 +1,7 @@
 import { onMounted, watch } from "vue";
 import { useIdle } from "@vueuse/core";
 
-import { browserEmbedding } from "@/environment/browserEmbedding";
+import { embeddingSDK } from "@knime/hub-features";
 
 /**
  * Tracks idleness of the user based on interaction events (mousemove, keydown, etc).
@@ -13,7 +13,7 @@ import { browserEmbedding } from "@/environment/browserEmbedding";
  */
 export const useIdleUserTracking = () => {
   onMounted(() => {
-    const context = browserEmbedding.getBrowserSessionContext();
+    const context = embeddingSDK.guest.getContext();
     if (!context) {
       return;
     }
@@ -26,7 +26,7 @@ export const useIdleUserTracking = () => {
     });
 
     watch(idle, () => {
-      browserEmbedding.notifyActivityChange({
+      embeddingSDK.guest.notifyActivityChange({
         idle: idle.value,
         lastActive: new Date(lastActive.value).toISOString(),
       });
