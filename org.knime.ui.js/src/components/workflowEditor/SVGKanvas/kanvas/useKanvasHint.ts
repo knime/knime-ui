@@ -70,12 +70,15 @@ export const useKanvasHint = () => {
 
   onMounted(async () => {
     if (workflowHasNodes.value) {
+      // we need to wait until it has rendered to get the center of the scroll container
+      await new Promise((r) => setTimeout(r, 0));
       await showHint();
     } else {
       const unWatch = watch(workflowHasNodes, async (hasNodes) => {
         if (!hasNodes) {
           return;
         }
+        await new Promise((r) => setTimeout(r, 0));
         await showHint();
         unWatch();
       });
