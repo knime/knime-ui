@@ -27,8 +27,8 @@ importers:
         specifier: 4.x
         version: 4.5.10
       '@knime/components':
-        specifier: ^1.40.1
-        version: 1.40.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
+        specifier: ^1.41.3
+        version: 1.41.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
       '@knime/hub-features':
         specifier: ^1.14.25
         version: 1.14.25(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
@@ -1216,6 +1216,13 @@ packages:
 
   '@knime/components@1.40.1':
     resolution: {integrity: sha512-mkZoFh59s13wLM1w/SbtH8mLQziVJLNNU5GSvlj3y5xi15xL7JMheEeJm04FYg+EZzpmdDolo8m5Pxbl2LvPXw==}
+    engines: {node: 22.x}
+    peerDependencies:
+      consola: 3.x
+      vue: '>=3.5.0'
+
+  '@knime/components@1.41.3':
+    resolution: {integrity: sha512-oXUadAZz0KdNjLTirflbT+AgnozaZJtwOG2fcNWjHMSMqe2UyTJra7K4dXjR0k7KBu6/2IenOIbTnB8J0F7LJg==}
     engines: {node: 22.x}
     peerDependencies:
       consola: 3.x
@@ -3260,8 +3267,8 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
-  framer-motion@12.23.22:
-    resolution: {integrity: sha512-ZgGvdxXCw55ZYvhoZChTlG6pUuehecgvEAJz0BHoC5pQKW1EC5xf1Mul1ej5+ai+pVY0pylyFfdl45qnM1/GsA==}
+  framer-motion@12.23.24:
+    resolution: {integrity: sha512-HMi5HRoRCTou+3fb3h9oTLyJGBxHfW+HnNE25tAXOvVx/IvwMHK0cx7IR4a2ZU6sh3IX1Z+4ts32PcYBOqka8w==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -4176,8 +4183,8 @@ packages:
   moo@0.5.2:
     resolution: {integrity: sha512-iSAJLHYKnX41mKcJKjqvnAN9sf0LMDTXDEvFv+ffuRR9a1MIuXLjMNL6EsnDHSkKLTWNqQQ5uo61P4EbU4NU+Q==}
 
-  motion-dom@12.23.21:
-    resolution: {integrity: sha512-5xDXx/AbhrfgsQmSE7YESMn4Dpo6x5/DTZ4Iyy4xqDvVHWvFVoV+V2Ri2S/ksx+D40wrZ7gPYiMWshkdoqNgNQ==}
+  motion-dom@12.23.23:
+    resolution: {integrity: sha512-n5yolOs0TQQBRUFImrRfs/+6X4p3Q4n1dUEqt/H58Vx7OW6RF+foWEgmTVDhIWJIMXOuNNL0apKH2S16en9eiA==}
 
   motion-dom@12.5.0:
     resolution: {integrity: sha512-uH2PETDh7m+Hjd1UQQ56yHqwn83SAwNjimNPE/kC+Kds0t4Yh7+29rfo5wezVFpPOv57U4IuWved5d1x0kNhbQ==}
@@ -4204,6 +4211,20 @@ packages:
 
   motion@12.23.22:
     resolution: {integrity: sha512-iSq6X9vLHbeYwmHvhK//+U74ROaPnZmBuy60XZzqNl0QtZkWfoZyMDHYnpKuWFv0sNMqHgED8aCXk94LCoQPGg==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
+  motion@12.23.24:
+    resolution: {integrity: sha512-Rc5E7oe2YZ72N//S3QXGzbnXgqNrTESv8KKxABR20q2FLch9gHLo0JLyYo2hZ238bZ9Gx6cWhj9VO0IgwbMjCw==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -7190,6 +7211,37 @@ snapshots:
       - react
       - react-dom
 
+  '@knime/components@1.41.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))':
+    dependencies:
+      '@floating-ui/vue': 1.1.8(vue@3.5.18(typescript@5.8.3))
+      '@knime/styles': 1.14.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
+      '@knime/utils': 1.6.2(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.4.2)
+      '@knime/vue-headless-virtual-scroller': 0.1.3(vue@3.5.18(typescript@5.8.3))
+      '@vueuse/components': 13.6.0(vue@3.5.18(typescript@5.8.3))
+      '@vueuse/core': 13.6.0(vue@3.5.18(typescript@5.8.3))
+      '@vueuse/shared': 13.6.0(vue@3.5.18(typescript@5.8.3))
+      color-hash: 2.0.2
+      consola: 3.4.2
+      date-fns: 2.30.0
+      date-fns-tz: 2.0.0(date-fns@2.30.0)
+      filesize: 10.0.6
+      focus-trap-vue: 4.0.2(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
+      lodash-es: 4.17.21
+      motion: 12.23.24
+      typescript: 5.8.3
+      uuid: 11.1.0
+      v-calendar: https://bitbucket.org/KNIME/v-calendar/get/048477f.tar.gz(@popperjs/core@2.11.8)(vue@3.5.18(typescript@5.8.3))
+      vue: 3.5.18(typescript@5.8.3)
+    transitivePeerDependencies:
+      - '@emotion/is-prop-valid'
+      - '@fontsource/roboto'
+      - '@fontsource/roboto-mono'
+      - '@popperjs/core'
+      - '@vue/composition-api'
+      - focus-trap
+      - react
+      - react-dom
+
   '@knime/eslint-config@9.0.2(@vue/compiler-sfc@3.5.18)(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.33.1(eslint@9.22.0)(typescript@5.8.3))(eslint@9.22.0))(eslint@9.22.0)(postcss-html@1.8.0)(prettier@3.0.1)(stylelint@16.18.0(typescript@5.8.3))(typescript@5.8.3)(vitest@3.2.4(@types/node@22.13.10)(jsdom@24.1.3)(yaml@2.7.1))(vue-eslint-parser@10.1.3(eslint@9.22.0))':
     dependencies:
       '@eslint/js': 9.28.0
@@ -9599,9 +9651,9 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-  framer-motion@12.23.22:
+  framer-motion@12.23.24:
     dependencies:
-      motion-dom: 12.23.21
+      motion-dom: 12.23.23
       motion-utils: 12.23.6
       tslib: 2.8.1
 
@@ -10507,7 +10559,7 @@ snapshots:
   moo@0.5.2:
     optional: true
 
-  motion-dom@12.23.21:
+  motion-dom@12.23.23:
     dependencies:
       motion-utils: 12.23.6
 
@@ -10521,12 +10573,17 @@ snapshots:
 
   motion@12.23.12:
     dependencies:
-      framer-motion: 12.23.22
+      framer-motion: 12.23.24
       tslib: 2.8.1
 
   motion@12.23.22:
     dependencies:
-      framer-motion: 12.23.22
+      framer-motion: 12.23.24
+      tslib: 2.8.1
+
+  motion@12.23.24:
+    dependencies:
+      framer-motion: 12.23.24
       tslib: 2.8.1
 
   motion@12.5.0:
