@@ -1,4 +1,4 @@
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { Bounds, XY } from "@/api/gateway-api/generated-api";
 import * as shapes from "@/style/shapes";
 
 import type { Edge, GeometryArea, GeometryBounds } from "./types";
@@ -124,6 +124,13 @@ export const isPointOutsideBounds = (
   );
 };
 
+export const isPointInsideBounds = (
+  point: XY,
+  bounds: XY & { width: number; height: number },
+): boolean => {
+  return !isPointOutsideBounds(point, bounds);
+};
+
 export const getEdgeNearPoint = (
   point: XY,
   bounds: XY & { width: number; height: number },
@@ -166,3 +173,10 @@ export const getEdgeNearPoint = (
 
   return null;
 };
+
+export const boundsToGeometryBounds = (bounds: Bounds): GeometryBounds => ({
+  left: bounds.x,
+  top: bounds.y,
+  width: bounds.width,
+  height: bounds.height,
+});

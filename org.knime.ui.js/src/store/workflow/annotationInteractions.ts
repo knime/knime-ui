@@ -10,6 +10,8 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
 import * as colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
+import { isPointInsideBounds } from "@/util/geometry/utils";
 
 import { useWorkflowStore } from "./workflow";
 
@@ -74,6 +76,45 @@ export const useAnnotationInteractionsStore = defineStore(
         }
         useSelectionStore().selectAnnotations([newAnnotationId]);
         this.setEditableAnnotationId(newAnnotationId);
+      },
+
+      async addWorkflowAnnotationWithContent({
+        bounds,
+        content,
+        setEditable = false,
+      }: {
+        bounds: Bounds;
+        content: string;
+        setEditable?: boolean;
+      }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+
+        const borderColor = colors.defaultAnnotationBorderColor;
+
+        const { newAnnotationId } =
+          await API.workflowCommand.AddWorkflowAnnotation({
+            projectId,
+            workflowId,
+            bounds,
+            borderColor,
+          });
+
+        await this.updateAnnotation({
+          annotationId: newAnnotationId,
+          text: content,
+          borderColor,
+        });
+
+        const { wasAborted } = await useSelectionStore().tryClearSelection();
+        if (wasAborted) {
+          return;
+        }
+        useSelectionStore().selectAnnotations([newAnnotationId]);
+
+        if (setEditable) {
+          this.setEditableAnnotationId(newAnnotationId);
+        }
       },
 
       previewWorkflowAnnotationTransform({
@@ -182,6 +223,82 @@ export const useAnnotationInteractionsStore = defineStore(
           ({ id }) => id === annotationId,
         );
       },
+
+      getAnnotationBoundsForSelectedNodes: (): Bounds => {
+        const nodeSize = $shapes.nodeSize;
+
+        // padding around the selection for visual spacing
+        const xOffset = 2 * nodeSize;
+        const yOffset = 4 * nodeSize;
+        const widthPadding = 3 * nodeSize;
+        const heightPadding = 4 * nodeSize;
+
+        const selectedNodes = useSelectionStore().getSelectedNodes;
+        if (selectedNodes.length === 0) {
+          return {
+            x: 0,
+            y: 0,
+            width: 80,
+            height: 80,
+          };
+        }
+
+        const { minX, minY, maxX, maxY } = selectedNodes.reduce(
+          // reducer (determine min and max coordinates over all selected nodes)
+          // Note: node positions represent the top-left corner, so we add nodeSize
+          // to get the right and bottom edges
+          (bounds, { position }) => ({
+            minX: Math.min(bounds.minX, position.x),
+            minY: Math.min(bounds.minY, position.y),
+            maxX: Math.max(bounds.maxX, position.x + nodeSize),
+            maxY: Math.max(bounds.maxY, position.y + nodeSize),
+          }),
+          // accumulator (starts with Infinities to be replaced with the first node's values)
+          {
+            minX: Infinity,
+            minY: Infinity,
+            maxX: -Infinity,
+            maxY: -Infinity,
+          },
+        );
+
+        // translate annotation origin
+        const annotationX = minX - xOffset;
+        const annotationY = minY - yOffset;
+
+        const annotationWidth = maxX - annotationX + widthPadding;
+        const annotationHeight = maxY - annotationY + heightPadding;
+
+        return {
+          x: annotationX,
+          y: annotationY,
+          width: annotationWidth,
+          height: annotationHeight,
+        };
+      },
+
+      getContainedNodesForAnnotation:
+        () =>
+        (annotationId: string): string[] => {
+          const { activeWorkflow } = useWorkflowStore();
+          if (!activeWorkflow) {
+            return [];
+          }
+
+          const annotation = activeWorkflow.workflowAnnotations.find(
+            ({ id }) => id === annotationId,
+          );
+          if (!annotation) {
+            return [];
+          }
+
+          const nodes = Object.values(activeWorkflow.nodes);
+          return nodes
+            .filter((node) => {
+              return isPointInsideBounds(node.position, annotation.bounds);
+            })
+            .map((node) => node.id);
+        },
     },
   },
 );

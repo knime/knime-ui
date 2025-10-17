@@ -6,7 +6,11 @@ import {
   TypedText,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
-import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
+import {
+  createNativeNode,
+  createWorkflow,
+  createWorkflowAnnotation,
+} from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 
@@ -94,6 +98,149 @@ describe("workflow::annotationInteractions", () => {
     expect(annotationInteractionsStore.editableAnnotationId).toBe(
       "mock-annotation2",
     );
+  });
+
+  it("should add annotation prefilled with content and set it as editable", async () => {
+    const newAnnotationId = "mock-annotation-with-content";
+
+    const { workflowStore, annotationInteractionsStore, selectionStore } =
+      mockStores();
+
+    const mockAnnotation1 = createWorkflowAnnotation({
+      id: "mock-annotation1",
+    });
+
+    const mockNewAnnotation = createWorkflowAnnotation({
+      id: newAnnotationId,
+      text: {
+        value: "",
+        contentType: TypedText.ContentTypeEnum.Html,
+      },
+      borderColor: $colors.defaultAnnotationBorderColor,
+    });
+
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        workflowAnnotations: [mockAnnotation1],
+        projectId: "foo",
+        info: {
+          containerId: "root",
+        },
+      }),
+    );
+    selectionStore.selectAnnotations([mockAnnotation1.id]);
+
+    const bounds = { x: 10, y: 10, width: 80, height: 80 };
+    const content = "Beep boop";
+
+    mockedAPI.workflowCommand.AddWorkflowAnnotation.mockImplementationOnce(
+      () => {
+        workflowStore.activeWorkflow!.workflowAnnotations.push(
+          mockNewAnnotation,
+        );
+        return { newAnnotationId };
+      },
+    );
+
+    await annotationInteractionsStore.addWorkflowAnnotationWithContent({
+      bounds,
+      content,
+      setEditable: true,
+    });
+
+    expect(
+      mockedAPI.workflowCommand.AddWorkflowAnnotation,
+    ).toHaveBeenCalledWith({
+      projectId: "foo",
+      workflowId: "root",
+      bounds,
+      borderColor: $colors.defaultAnnotationBorderColor,
+    });
+
+    expect(
+      mockedAPI.workflowCommand.UpdateWorkflowAnnotation,
+    ).toHaveBeenCalledWith({
+      projectId: "foo",
+      workflowId: "root",
+      annotationId: newAnnotationId,
+      text: content,
+      borderColor: $colors.defaultAnnotationBorderColor,
+    });
+
+    expect(selectionStore.selectedAnnotationIds).toEqual([newAnnotationId]);
+    expect(annotationInteractionsStore.editableAnnotationId).toBe(
+      newAnnotationId,
+    );
+  });
+
+  it("should add annotation prefilled with content without setting it as editable", async () => {
+    const newAnnotationId = "mock-annotation-with-content-not-editable";
+
+    const { workflowStore, annotationInteractionsStore, selectionStore } =
+      mockStores();
+
+    const mockAnnotation1 = createWorkflowAnnotation({
+      id: "mock-annotation1",
+    });
+
+    const mockNewAnnotation = createWorkflowAnnotation({
+      id: newAnnotationId,
+      text: {
+        value: "",
+        contentType: TypedText.ContentTypeEnum.Html,
+      },
+      borderColor: $colors.defaultAnnotationBorderColor,
+    });
+
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        workflowAnnotations: [mockAnnotation1],
+        projectId: "foo",
+        info: {
+          containerId: "root",
+        },
+      }),
+    );
+    selectionStore.selectAnnotations([mockAnnotation1.id]);
+
+    const bounds = { x: 20, y: 20, width: 100, height: 100 };
+    const content = "Blip blop";
+
+    mockedAPI.workflowCommand.AddWorkflowAnnotation.mockImplementationOnce(
+      () => {
+        workflowStore.activeWorkflow!.workflowAnnotations.push(
+          mockNewAnnotation,
+        );
+        return { newAnnotationId };
+      },
+    );
+
+    await annotationInteractionsStore.addWorkflowAnnotationWithContent({
+      bounds,
+      content,
+    });
+
+    expect(
+      mockedAPI.workflowCommand.AddWorkflowAnnotation,
+    ).toHaveBeenCalledWith({
+      projectId: "foo",
+      workflowId: "root",
+      bounds,
+      borderColor: $colors.defaultAnnotationBorderColor,
+    });
+
+    expect(
+      mockedAPI.workflowCommand.UpdateWorkflowAnnotation,
+    ).toHaveBeenCalledWith({
+      projectId: "foo",
+      workflowId: "root",
+      annotationId: newAnnotationId,
+      text: content,
+      borderColor: $colors.defaultAnnotationBorderColor,
+    });
+
+    expect(selectionStore.selectedAnnotationIds).toEqual([newAnnotationId]);
+    expect(annotationInteractionsStore.editableAnnotationId).toBeNull();
   });
 
   it.each([
@@ -227,6 +374,201 @@ describe("workflow::annotationInteractions", () => {
       expect(updatedAnnotation.text.contentType).toEqual(
         TypedText.ContentTypeEnum.Plain,
       );
+    });
+  });
+
+  describe("getters", () => {
+    describe("getAnnotationBoundsForSelectedNodes", () => {
+      it("returns default bounds when no nodes are selected", () => {
+        const { annotationInteractionsStore } = mockStores();
+
+        const bounds =
+          annotationInteractionsStore.getAnnotationBoundsForSelectedNodes;
+
+        expect(bounds).toEqual({
+          x: 0,
+          y: 0,
+          width: 80,
+          height: 80,
+        });
+      });
+
+      it("calculates bounds for multiple selected nodes", () => {
+        const { workflowStore, selectionStore, annotationInteractionsStore } =
+          mockStores();
+
+        const node1 = createNativeNode({
+          id: "node-1",
+          position: { x: 100, y: 200 },
+        });
+        const node2 = createNativeNode({
+          id: "node-2",
+          position: { x: 300, y: 400 },
+        });
+        const node3 = createNativeNode({
+          id: "node-3",
+          position: { x: 200, y: 300 },
+        });
+
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            nodes: {
+              [node1.id]: node1,
+              [node2.id]: node2,
+              [node3.id]: node3,
+            },
+          }),
+        );
+
+        selectionStore.selectNodes([node1.id, node2.id, node3.id]);
+
+        const bounds =
+          annotationInteractionsStore.getAnnotationBoundsForSelectedNodes;
+
+        // With nodeSize = 32:
+        // minX = 100, minY = 200
+        // maxX = 300 + 32 = 332 (rightmost node position + nodeSize)
+        // maxY = 400 + 32 = 432 (bottommost node position + nodeSize)
+        // xOffset = 64, yOffset = 128, widthPadding = 96, heightPadding = 128
+        expect(bounds.x).toBe(100 - 64); // 36
+        expect(bounds.y).toBe(200 - 128); // 72
+        expect(bounds.width).toBe(332 - (100 - 64) + 96); // 392
+        expect(bounds.height).toBe(432 - (200 - 128) + 128); // 488
+      });
+    });
+
+    describe("getContainedNodesForAnnotation", () => {
+      it("returns empty array when no active workflow", () => {
+        const { annotationInteractionsStore } = mockStores();
+
+        const nodeIds =
+          annotationInteractionsStore.getContainedNodesForAnnotation(
+            "non-existent",
+          );
+
+        expect(nodeIds).toEqual([]);
+      });
+
+      it("returns empty array when annotation does not exist", () => {
+        const { workflowStore, annotationInteractionsStore } = mockStores();
+
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            workflowAnnotations: [],
+          }),
+        );
+
+        const nodeIds =
+          annotationInteractionsStore.getContainedNodesForAnnotation(
+            "non-existent",
+          );
+
+        expect(nodeIds).toEqual([]);
+      });
+
+      it("returns nodes inside annotation bounds", () => {
+        const { workflowStore, annotationInteractionsStore } = mockStores();
+
+        const node1 = createNativeNode({
+          id: "node-1",
+          position: { x: 50, y: 50 },
+        });
+        const node2 = createNativeNode({
+          id: "node-2",
+          position: { x: 150, y: 150 },
+        });
+        const node3 = createNativeNode({
+          id: "node-3",
+          position: { x: 250, y: 250 },
+        });
+
+        const annotation = createWorkflowAnnotation({
+          id: "annotation-1",
+          bounds: { x: 0, y: 0, width: 200, height: 200 },
+        });
+
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            nodes: {
+              [node1.id]: node1,
+              [node2.id]: node2,
+              [node3.id]: node3,
+            },
+            workflowAnnotations: [annotation],
+          }),
+        );
+
+        const nodeIds =
+          annotationInteractionsStore.getContainedNodesForAnnotation(
+            annotation.id,
+          );
+
+        // node1 and node2 are inside, node3 is outside
+        expect(nodeIds).toEqual(["node-1", "node-2"]);
+      });
+
+      it("returns empty array when no nodes are inside annotation", () => {
+        const { workflowStore, annotationInteractionsStore } = mockStores();
+
+        const node1 = createNativeNode({
+          id: "node-1",
+          position: { x: 250, y: 250 },
+        });
+
+        const annotation = createWorkflowAnnotation({
+          id: "annotation-1",
+          bounds: { x: 0, y: 0, width: 100, height: 100 },
+        });
+
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            nodes: { [node1.id]: node1 },
+            workflowAnnotations: [annotation],
+          }),
+        );
+
+        const nodeIds =
+          annotationInteractionsStore.getContainedNodesForAnnotation(
+            annotation.id,
+          );
+
+        expect(nodeIds).toEqual([]);
+      });
+
+      it("includes nodes at annotation boundaries", () => {
+        const { workflowStore, annotationInteractionsStore } = mockStores();
+
+        const nodeAtTopLeft = createNativeNode({
+          id: "node-top-left",
+          position: { x: 0, y: 0 },
+        });
+        const nodeAtBottomRight = createNativeNode({
+          id: "node-bottom-right",
+          position: { x: 200, y: 200 },
+        });
+
+        const annotation = createWorkflowAnnotation({
+          id: "annotation-1",
+          bounds: { x: 0, y: 0, width: 200, height: 200 },
+        });
+
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            nodes: {
+              [nodeAtTopLeft.id]: nodeAtTopLeft,
+              [nodeAtBottomRight.id]: nodeAtBottomRight,
+            },
+            workflowAnnotations: [annotation],
+          }),
+        );
+
+        const nodeIds =
+          annotationInteractionsStore.getContainedNodesForAnnotation(
+            annotation.id,
+          );
+
+        expect(nodeIds).toEqual(["node-top-left", "node-bottom-right"]);
+      });
     });
   });
 });
