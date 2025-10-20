@@ -123,7 +123,7 @@ export const getPresets = (
         defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Create folder failed",
-          message: "Error while creating folder",
+          message: "Error while creating folder.",
         }),
       moveItemsFailed: ({ error }) =>
         defaultAPIErrorHandler($toast, error, {
@@ -172,7 +172,7 @@ export const getPresets = (
         return $toast.show({
           type: "warning",
           headline: "Name has changed",
-          message: `The project name has changed from "${oldItemName}" to "${newItemName}" on the remote Hub`,
+          message: `The project name has changed from "${oldItemName}" to "${newItemName}" on the remote Hub.`,
           autoRemove: true,
         });
       },

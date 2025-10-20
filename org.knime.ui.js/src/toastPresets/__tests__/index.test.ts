@@ -40,7 +40,7 @@ describe("toastPresets", () => {
 
       expect($toast.show).toBeCalledWith({
         headline: "Could not open workflow",
-        message: "The workflow might not exist anymore or be corrupted",
+        message: "The workflow might not exist anymore or be corrupted.",
         type: "warning",
       });
     });
@@ -112,7 +112,7 @@ describe("toastPresets", () => {
         [
           "createFolderFailed",
           "Create folder failed",
-          "Error while creating folder",
+          "Error while creating folder.",
         ],
         [
           "createWorkflowFailed",

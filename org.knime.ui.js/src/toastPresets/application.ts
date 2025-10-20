@@ -16,7 +16,7 @@ export const getPresets = (
       defaultAPIErrorHandler($toast, error, {
         type: "warning",
         headline: "Could not open workflow",
-        message: "The workflow might not exist anymore or be corrupted",
+        message: "The workflow might not exist anymore or be corrupted.",
       }),
 
     saveProjectFailed: ({ error }) =>
