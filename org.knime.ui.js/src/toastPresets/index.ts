@@ -3,6 +3,10 @@ import type { ToastServiceProvider } from "@knime/components";
 import { getToastsProvider } from "@/plugins/toasts";
 
 import {
+  type AiQuickActionToastPresets,
+  getPresets as getAiQuickActionPresets,
+} from "./aiQuickActions";
+import {
   type ApplicationToastPresets,
   getPresets as getApplicationPresets,
 } from "./application";
@@ -29,6 +33,7 @@ type ToastPresetRegistry = {
   spaces: SpacesToastPresets;
   versions: VersionsToastPresets;
   workflow: WorkflowToastPresets;
+  aiQuickActions: AiQuickActionToastPresets;
 };
 
 let registry: ToastPresetRegistry | null = null;
@@ -40,6 +45,7 @@ const initToastPresets = ($toastService: ToastServiceProvider) => {
     spaces: getSpacesPresets($toastService),
     versions: getVersionsPresets($toastService),
     workflow: getWorkflowPresets($toastService),
+    aiQuickActions: getAiQuickActionPresets($toastService),
   } satisfies ToastPresetRegistry);
 };
 

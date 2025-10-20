@@ -216,4 +216,103 @@ describe("toastPresets", () => {
       });
     });
   });
+
+  describe("aiQuickActions", () => {
+    it.each([
+      [
+        "quotaExceeded",
+        "warning",
+        "AI interaction limit reached",
+        "You have reached your monthly AI interaction limit of 100.",
+      ],
+      [
+        "timeout",
+        "error",
+        "AI quick action request timed out",
+        "Unable to reach the LLM provider. Please try again later.",
+      ],
+      [
+        "llmError",
+        "error",
+        "Could not perform AI quick action",
+        "The AI failed to generate a properly formatted annotation.",
+      ],
+      [
+        "validationError",
+        "warning",
+        "Could not perform AI quick action",
+        "The request or response data has unexpected format.",
+      ],
+      [
+        "serviceUnavailable",
+        "error",
+        "AI services unavailable",
+        "Service is temporarily unavailable.",
+      ],
+      [
+        "unknownError",
+        "error",
+        "AI quick action failed",
+        "An unexpected error occurred.",
+      ],
+    ])("should show %s toast", (method, type, headline, message) => {
+      const { toastPresets, $toast } = toastSetup();
+      toastPresets.aiQuickActions[method]({ message });
+
+      expect($toast.show).toBeCalledWith({
+        type,
+        headline,
+        message,
+        autoRemove: false,
+      });
+    });
+
+    it("should show authenticationFailed toast with login button", () => {
+      const { toastPresets, $toast } = toastSetup();
+      const onLogin = vi.fn();
+
+      toastPresets.aiQuickActions.authenticationFailed({
+        message: "Authentication failed.",
+        hubId: "KNIME Hub",
+        onLogin,
+      });
+
+      expect($toast.show).toBeCalledWith({
+        type: "warning",
+        headline: "Could not authenticate with KNIME Hub",
+        message: "Authentication failed.",
+        autoRemove: false,
+        buttons: [
+          {
+            text: "Log in to KNIME Hub",
+            callback: onLogin,
+          },
+        ],
+      });
+    });
+
+    it("should show actionNotSupported toast", () => {
+      const { toastPresets, $toast } = toastSetup();
+      toastPresets.aiQuickActions.actionNotSupported({
+        hubId: "KNIME Hub",
+      });
+
+      expect($toast.show).toBeCalledWith({
+        type: "warning",
+        headline: "Could not perform AI quick action",
+        message: "KNIME Hub does not support this AI quick action.",
+      });
+    });
+
+    it("should show noActiveWorkflow toast", () => {
+      const { toastPresets, $toast } = toastSetup();
+      toastPresets.aiQuickActions.noActiveWorkflow();
+
+      expect($toast.show).toBeCalledWith({
+        type: "error",
+        headline: "Could not perform AI quick action",
+        message: "No active workflow found.",
+      });
+    });
+  });
 });
