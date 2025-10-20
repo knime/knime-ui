@@ -4,21 +4,24 @@ import { debounce } from "lodash-es";
 
 import { SplitPanel } from "@knime/components";
 
-import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import LayoutEditorDialog from "@/components/layoutEditor/LayoutEditorDialog.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
+import TooltipContainer from "@/components/workflowEditor/SVGKanvas/tooltip/TooltipContainer.vue";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import WorkflowPanel from "./WorkflowPanel.vue";
+import { useCanvasRendererUtils } from "./util/canvasRenderer";
 
 /**
  * Component that acts as a router page to render the workflow
  */
 const workflowStore = useWorkflowStore();
 const expanded = ref(true);
+
+const { isSVGRenderer } = useCanvasRendererUtils();
 
 const settingsStore = useSettingsStore();
 // eslint-disable-next-line no-magic-numbers
@@ -40,7 +43,7 @@ const savedSecondarySize = computed({
     id="workflow-page"
   >
     <WorkflowToolbar id="toolbar" />
-    <TooltipContainer id="tooltip-container" />
+    <TooltipContainer v-if="isSVGRenderer" id="tooltip-container" />
     <Sidebar id="sidebar" />
 
     <main class="workflow-area">

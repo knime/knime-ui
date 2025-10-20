@@ -10,8 +10,8 @@ import {
 
 import * as $colors from "@/style/colors";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
-import { useTooltip } from "../../common/useTooltip";
 import type { ActionButtonConfig, TooltipDefinition } from "../../types";
+import { useTooltip } from "../tooltip/useTooltip";
 import { markPointerEventAsHandled } from "../util/interaction";
 
 const buttonRadius = 9;
@@ -75,7 +75,20 @@ const tooltip = computed<TooltipDefinition>(() => {
   };
 });
 
-useTooltip({ tooltip, element: useTemplateRef<ContainerInst>("tooltipRef") });
+const { showTooltip, hideTooltip } = useTooltip({
+  tooltip,
+  element: useTemplateRef<ContainerInst>("tooltipRef"),
+});
+
+const onPointerEnter = () => {
+  isHovered.value = true;
+  showTooltip();
+};
+
+const onPointerLeave = () => {
+  isHovered.value = false;
+  hideTooltip();
+};
 </script>
 
 <template>
@@ -87,8 +100,8 @@ useTooltip({ tooltip, element: useTemplateRef<ContainerInst>("tooltipRef") });
     :position-x="x"
     :hit-area="hitArea"
     @pointerdown.left.stop="onClick"
-    @pointerenter="isHovered = true"
-    @pointerleave="isHovered = false"
+    @pointerenter="onPointerEnter"
+    @pointerleave="onPointerLeave"
   >
     <Graphics
       label="actionButtonShadow"

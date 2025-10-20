@@ -14,9 +14,9 @@ import { portSize } from "@/style/shapes";
 import * as $shapes from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
-import { useTooltip } from "../../common/useTooltip";
 import type { TooltipDefinition } from "../../types";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
+import { useTooltip } from "../tooltip/useTooltip";
 
 import NodePortActions from "./NodePortActions.vue";
 import Port from "./Port.vue";
@@ -143,21 +143,11 @@ const flowVarTransparency = useFlowVarPortTransparency({
 
 const isHovered = ref(false);
 
-const onPointerEnter = () => {
-  isHovered.value = true;
-  flowVarTransparency.onPointerEnter();
-};
-
-const onPointerLeave = () => {
-  isHovered.value = false;
-  flowVarTransparency.onPointerLeave();
-};
-
 const tooltip = computed<TooltipDefinition>(() => {
   return {
     position: {
       // + 1 is due to the animation that makes the port bigger
-      x: portSize / 2 + 1,
+      x: props.selected ? portSize : portSize / 2 + 1,
       y: 0,
     },
     gap: 4,
@@ -167,7 +157,22 @@ const tooltip = computed<TooltipDefinition>(() => {
     hoverable: false,
   } satisfies TooltipDefinition;
 });
-useTooltip({ tooltip, element: portContainer });
+
+const tooltipRef = useTemplateRef<ContainerInst>("tooltipRef");
+const { showTooltip, hideTooltip } = useTooltip({
+  element: tooltipRef,
+  tooltip,
+});
+
+const onPointerEnter = () => {
+  isHovered.value = true;
+  flowVarTransparency.onPointerEnter();
+};
+
+const onPointerLeave = () => {
+  isHovered.value = false;
+  flowVarTransparency.onPointerLeave();
+};
 
 const onClose = () => {
   if (props.selected) {
@@ -228,11 +233,14 @@ useAnimatePixiContainer({
     @pointerleave="onPointerLeave"
   >
     <Container
+      ref="tooltipRef"
       :hit-area="hitArea"
       :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
       event-mode="static"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
+      @pointerenter="showTooltip"
+      @pointerleave="hideTooltip"
     >
       <Graphics
         v-if="isCanvasDebugEnabled"

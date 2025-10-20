@@ -25,6 +25,7 @@ import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 import type { CanvasPosition } from "../application/canvasStateTracking";
+import { useCanvasTooltipStore } from "../canvasTooltip/canvasTooltip";
 
 const MAX_PIXEL_RATIO = 2.5;
 const MIN_PIXEL_RATIO = 1.33;
@@ -131,7 +132,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isDebugModeEnabled = ref(false);
 
   const setFactor = (newFactor: number) => {
-    useWorkflowStore().setTooltip(null);
+    useCanvasTooltipStore().hideTooltip();
 
     const clampedFactor = clampZoomFactor(newFactor);
     zoomFactor.value = clampedFactor;
@@ -313,7 +314,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   }));
 
   const setCanvasOffset = (value: XY) => {
-    useWorkflowStore().setTooltip(null);
+    useCanvasTooltipStore().hideTooltip();
 
     // make sure panning is not possible outside the max content bounds
     // to ensure consistent and predictable minimap coordinate mapping

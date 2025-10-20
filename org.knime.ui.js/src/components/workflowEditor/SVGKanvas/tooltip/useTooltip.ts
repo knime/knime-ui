@@ -1,4 +1,3 @@
-/* eslint-disable no-undefined */
 import {
   type ComputedRef,
   type Ref,
@@ -9,11 +8,9 @@ import {
 import { storeToRefs } from "pinia";
 
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { ContainerInst } from "@/vue3-pixi";
-import { canvasRendererUtils } from "../util/canvasRenderer";
 
 export const entryDelayMS = 750;
 export const leaveDelayMS = 550;
@@ -28,7 +25,7 @@ export const useTooltip = (params: {
 
   let removeTooltipWatcher: (() => void) | null;
   // eslint-disable-next-line one-var
-  let tooltipTimeout: number, hideOnMouseoutTimeout: number;
+  let tooltipTimeout: number;
 
   // takes care of removing the tooltip watcher even if the tooltip got closed from any other component (set null)
   watch(tooltip, (value) => {
@@ -36,53 +33,6 @@ export const useTooltip = (params: {
       removeTooltipWatcher?.();
     }
   });
-
-  const getAutoAnchorPoint = (
-    anchorPoint: { x: number; y: number } | undefined,
-    orientation: "top" | "bottom" = "top",
-  ) => {
-    if (anchorPoint) {
-      return anchorPoint;
-    }
-
-    if (!params.element.value) {
-      return undefined;
-    }
-
-    const isPixiContainer = (
-      value: Element | ContainerInst,
-    ): value is ContainerInst => Boolean((value as ContainerInst).getBounds);
-
-    const isDOMElement = (value: Element | ContainerInst): value is Element =>
-      value instanceof Element && !isPixiContainer(value);
-
-    if (isPixiContainer(params.element.value)) {
-      const elemBounds = params.element.value.getBounds();
-      const [canvasX, canvasY] = useWebGLCanvasStore().toCanvasCoordinates([
-        elemBounds.x,
-        elemBounds.y + (orientation === "bottom" ? elemBounds.height : 0),
-      ]);
-      return {
-        x: canvasX,
-        y: canvasY,
-      };
-    }
-
-    if (isDOMElement(params.element.value)) {
-      const rect = params.element.value.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const targetY = orientation === "bottom" ? rect.bottom : rect.top;
-
-      const [canvasX, canvasY] =
-        useWebGLCanvasStore().screenToCanvasCoordinates([centerX, targetY]);
-      return {
-        x: canvasX,
-        y: canvasY,
-      };
-    }
-
-    return undefined;
-  };
 
   const showTooltip = () => {
     if (isDragging.value) {
@@ -93,17 +43,10 @@ export const useTooltip = (params: {
     const removeWatcher = watch(
       params.tooltip,
       (value) => {
-        // automatically set the anchor point to our element
-        const anchorPoint = getAutoAnchorPoint(
-          value?.anchorPoint,
-          value?.orientation,
-        );
-        if (!anchorPoint) {
+        if (!value?.anchorPoint) {
           return;
         }
-        workflowStore.setTooltip(
-          value === null ? null : { ...value, anchorPoint },
-        );
+        workflowStore.setTooltip(value === null ? null : { ...value });
       },
       { immediate: true },
     );
@@ -125,23 +68,6 @@ export const useTooltip = (params: {
 
     // wait for entryDelay to set tooltip
     tooltipTimeout = window.setTimeout(showTooltip, entryDelayMS);
-  };
-
-  const handleWebGlHoverableLeave = () => {
-    if (hideOnMouseoutTimeout) {
-      clearTimeout(hideOnMouseoutTimeout);
-    }
-    // give the use some time to move to the tooltip
-    hideOnMouseoutTimeout = window.setTimeout(() => {
-      // check if current mouse position is on tooltip
-      if (
-        !Array.from(document.querySelectorAll(":hover")).some(
-          (el) => (el as HTMLElement).dataset?.isTooltip,
-        )
-      ) {
-        workflowStore.setTooltip(null);
-      }
-    }, leaveDelayMS);
   };
 
   const onTooltipMouseLeave = (event: any) => {
@@ -166,14 +92,7 @@ export const useTooltip = (params: {
     }
 
     // -- hoverable handling
-
-    // webgl events do not have a relatedTarget use custom handling
-    if (canvasRendererUtils.isWebGLRenderer()) {
-      handleWebGlHoverableLeave();
-      return;
-    }
-
-    // svg: remove tooltip if user did not switch to the tooltip with the mouse
+    // remove tooltip if user did not switch to the tooltip with the mouse
     const tooltipContainer = document.getElementById("tooltip-container");
     if (!tooltipContainer?.contains(relatedTarget)) {
       workflowStore.setTooltip(null);

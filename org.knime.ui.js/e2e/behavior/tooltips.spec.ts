@@ -31,6 +31,27 @@ test("node state error tooltip is shown", async ({ page }) => {
   await assertSnapshot(page);
 });
 
+test("node state warning tooltip is shown and stays visible on hover", async ({
+  page,
+}) => {
+  await startApplication(page, {
+    withMouseCursor: true,
+    workflowFixturePath: "nodes/getWorkflow-two-nodes-with-warnings.json",
+  });
+
+  const nodeState = (await getNode(page, tooltipNodeId)).state!;
+
+  const nodeCenter = getCenter(nodeState);
+
+  await page.mouse.move(...nodeCenter);
+
+  await waitForTooltip(page);
+
+  await page.getByTestId("tooltip").hover();
+
+  await assertSnapshot(page);
+});
+
 test("ports have tooltips", async ({ page }) => {
   await startForTooltips(page);
 

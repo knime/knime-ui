@@ -12,6 +12,7 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { useCanvasTooltipStore } from "@/store/canvasTooltip/canvasTooltip";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
@@ -100,6 +101,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const settingsStore = useSettingsStore(testingPinia);
   const floatingConnectorStore = useFloatingConnectorStore(testingPinia);
   const nodeOutputStore = useNodeOutputStore(testingPinia);
+  const canvasTooltipStore = useCanvasTooltipStore(testingPinia);
 
   const compositeViewStore = useCompositeViewStore(testingPinia);
 
@@ -159,5 +161,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
     floatingConnectorStore,
     compositeViewStore,
     nodeOutputStore,
+    canvasTooltipStore,
   };
 };

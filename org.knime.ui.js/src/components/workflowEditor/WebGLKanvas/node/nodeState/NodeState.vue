@@ -4,7 +4,7 @@ import { computed, useTemplateRef } from "vue";
 import { Graphics, Point, Polygon } from "pixi.js";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
-import { useTooltip } from "@/components/workflowEditor/common/useTooltip";
+import { useTooltip } from "@/components/workflowEditor/WebGLKanvas/tooltip/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
@@ -94,7 +94,6 @@ const tooltip = computed<TooltipDefinition | null>(() => {
       x: nodeSize / 2,
       y: 0,
     },
-    anchorPoint: undefined,
     gap: 1,
     hoverable: true,
     orientation: "bottom",
@@ -116,7 +115,10 @@ const tooltip = computed<TooltipDefinition | null>(() => {
 });
 
 const tooltipRef = useTemplateRef<ContainerInst>("tooltipRef");
-useTooltip({ tooltip, element: tooltipRef });
+const { showTooltip, hideTooltip } = useTooltip({
+  tooltip,
+  element: tooltipRef,
+});
 
 const issuesIconWidth = 13;
 const issuesIconHeight = 10;
@@ -151,6 +153,8 @@ const hitArea = new Polygon([
     :hit-area="hitArea"
     event-mode="static"
     :y="$shapes.nodeSize + $shapes.nodeStatusMarginTop"
+    @pointerenter="showTooltip"
+    @pointerleave="hideTooltip"
   >
     <Graphics
       event-mode="none"

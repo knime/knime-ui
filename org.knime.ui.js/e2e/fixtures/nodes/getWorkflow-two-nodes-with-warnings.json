@@ -1,0 +1,167 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "snapshotId": "108",
+    "workflow": {
+      "info": {
+        "name": "KNIME_project",
+        "containerId": "root",
+        "containerType": "project",
+        "providerType": "LOCAL"
+      },
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": false,
+        "canReset": false,
+        "canUndo": true,
+        "canRedo": false
+      },
+      "nodeTemplates": {
+        "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory": {
+          "name": "Excel Reader",
+          "type": "Source",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADPSURBVHgBtVFBDoIwEByIiSfrA2xAH0A8C1E+4l+Es+EXHrkazsTg3fAAhfABevOEQFISlNImxEmazna3050uMBHa2jBO9e5J6rxXnvsigQoKqAW0oXOdk2eWtUsUizDjZGtZeKQpzkEAVFV3JkPPAqUUtyRp+d5xUBRFV2jQ1XgH3yCE9OL4+P6pcS/zvkDzehiGYGWJaxS1FhhjULLAP2xjmhiKRRaUx8gFXcdGnNw73ozRl11ekoUwp4kSB3un1BnGBDjGuI6J+J8FVXwArGpkXrM0Y1EAAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory"
+          }
+        }
+      },
+      "nodes": {
+        "root:1": {
+          "position": {
+            "y": 150,
+            "x": 415
+          },
+          "id": "root:1",
+          "state": {
+            "executionState": "IDLE",
+            "resolutions": [],
+            "warning": "Please specify a file"
+          },
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": true,
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "templateId": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            }
+          },
+          "kind": "node",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -416327618,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "File Table",
+              "index": 1,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "hasView": false,
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ]
+        },
+        "root:2": {
+          "position": {
+            "y": 280,
+            "x": 415
+          },
+          "id": "root:2",
+          "state": {
+            "executionState": "IDLE",
+            "resolutions": [],
+            "warning": "Please specify a file"
+          },
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canDelete": true,
+            "canCollapse": "true",
+            "canReset": false
+          },
+          "templateId": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            }
+          },
+          "kind": "node",
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "connectedVia": [],
+              "portContentVersion": -416327618,
+              "canRemove": false,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            },
+            {
+              "name": "File Table",
+              "index": 1,
+              "connectedVia": [],
+              "canRemove": false,
+              "typeId": "org.knime.core.node.BufferedDataTable"
+            }
+          ],
+          "hasView": false,
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "connectedVia": [],
+              "canRemove": false,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+            }
+          ]
+        }
+      },
+      "dirty": true,
+      "workflowAnnotations": [],
+      "metadata": {
+        "metadataType": "project",
+        "lastEdit": "2025-10-13T10:32:11.217+02:00",
+        "tags": [],
+        "description": {
+          "contentType": "text/plain",
+          "value": ""
+        },
+        "links": []
+      },
+      "connections": {}
+    }
+  }
+}

@@ -29,6 +29,7 @@ import FloatingCanvasTools from "./floatingToolbar/canvasTools/FloatingCanvasToo
 import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
+import Tooltip from "./tooltip/Tooltip.vue";
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
@@ -196,6 +197,8 @@ const onEscape = async (event: KeyboardEvent) => {
     <NodeLabelEditor />
 
     <FloatingCanvasTools v-if="!isWorkflowEmpty" />
+
+    <Tooltip />
 
     <svg
       v-if="activeWorkflow && isWorkflowEmpty"

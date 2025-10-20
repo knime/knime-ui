@@ -7,7 +7,7 @@ import type { CanvasTextMetrics, FederatedPointerEvent } from "pixi.js";
 
 import { sleep } from "@knime/utils";
 
-import { useTooltip } from "@/components/workflowEditor/common/useTooltip";
+import { useTooltip } from "@/components/workflowEditor/WebGLKanvas/tooltip/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -24,7 +24,8 @@ const props = defineProps<{
   metrics: CanvasTextMetrics;
 }>();
 
-const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
+const canvasStore = useWebGLCanvasStore();
+const { zoomAwareResolution } = storeToRefs(canvasStore);
 
 const nodeInteractionsStore = useNodeInteractionsStore();
 const { nameEditorNodeId } = storeToRefs(nodeInteractionsStore);
@@ -77,7 +78,11 @@ const tooltip = computed<TooltipDefinition | null>(() => {
   };
 });
 
-useTooltip({ tooltip, element: useTemplateRef<ContainerInst>("tooltipRef") });
+const tooltipRef = useTemplateRef<ContainerInst>("tooltipRef");
+const { showTooltip, hideTooltip } = useTooltip({
+  element: tooltipRef,
+  tooltip,
+});
 </script>
 
 <template>
@@ -94,6 +99,8 @@ useTooltip({ tooltip, element: useTemplateRef<ContainerInst>("tooltipRef") });
       :x="-metrics.width / 2 + 1.2"
       :y="-metrics.height"
       @pointerdown.prevent="isEditable && onPointerdown($event)"
+      @pointerenter="showTooltip"
+      @pointerleave="hideTooltip"
     >
       {{ name }}
     </Text>
