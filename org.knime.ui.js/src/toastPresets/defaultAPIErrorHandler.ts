@@ -7,7 +7,7 @@ import { isValidDate } from "@/util/date-time";
 
 /**
  * Offers specialized handling for instances of API Gateway errors (both expected and unexpected),
- * Desktop API errors and Hub API RFCError (e.g requests made directly o the Hub API while in the browser).
+ * Desktop API errors and Hub API RFCError (e.g requests made directly to the Hub API while in the browser).
  * It will format and display the information inside the error object appropriately in a toast
  * given that the contents match the structure of an RFC-9457 error. Failing to parse the error
  * as such, it simply shows a basic toast with the error's message property
