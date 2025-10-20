@@ -12,7 +12,8 @@ import { workflowNavigationService } from "@/util/workflowNavigationService";
 export const useKanvasHint = () => {
   const { createHint, isCompleted } = useHint();
 
-  const { workflowHasNodes, activeWorkflow } = storeToRefs(useWorkflowStore());
+  const workflowStore = useWorkflowStore();
+  const { workflowHasNodes } = storeToRefs(workflowStore);
 
   const showHint = async () => {
     // we skip the search for the most center node if this thing is done already
@@ -20,7 +21,7 @@ export const useKanvasHint = () => {
       return;
     }
 
-    const nodes = computed(() => activeWorkflow.value?.nodes);
+    const nodes = computed(() => workflowStore.activeWorkflow?.nodes);
     const executedNodesWithOutPorts = Object.values(nodes.value ?? {}).filter(
       (node) =>
         node.outPorts.length > 1 &&
