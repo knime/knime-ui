@@ -33,8 +33,8 @@ importers:
         specifier: ^1.14.25
         version: 1.14.25(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-styles':
-        specifier: ^0.0.4
-        version: 0.0.4
+        specifier: ^0.0.8
+        version: 0.0.8
       '@knime/knime-ui-table':
         specifier: 0.5.23
         version: 0.5.23(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
@@ -1243,9 +1243,9 @@ packages:
       consola: 3.x
       vue: '>=3.5.0'
 
-  '@knime/kds-styles@0.0.4':
-    resolution: {integrity: sha512-Z4/fnKo6ncLPBmwyt5XFOpb1oxu2T77eTmtaol6xIu9gJjfCDK+A8I31vjasF48mVk0E8Rv1Zc0InMZHGHIVNg==}
-    engines: {node: 24.5.0, npm: please-use-pnpm}
+  '@knime/kds-styles@0.0.8':
+    resolution: {integrity: sha512-o4x1yCgrZs11mjj8cUryrqwT5RTUTQMDPVIxl2fZbac1JDY3wBFJQkC8iLdPKKGQVx3E1P1ib0sGokxoAxna1Q==}
+    engines: {node: 24.10.0, npm: please-use-pnpm}
 
   '@knime/knime-ui-table@0.5.23':
     resolution: {integrity: sha512-Sd+R5NTL3hF//n2MuWpS2ze6xYN6g7EM/IpFE71kST9zTBzLDXOBA/QROvlx5JhSe/6+ljW/jyOzeon3BSy2/Q==}
@@ -7298,7 +7298,9 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/kds-styles@0.0.4': {}
+  '@knime/kds-styles@0.0.8':
+    dependencies:
+      modern-normalize: 3.0.1
 
   '@knime/knime-ui-table@0.5.23(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))':
     dependencies:
