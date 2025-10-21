@@ -355,6 +355,13 @@ const onCloseError = () => {
     "header" min-content
     "workflow" auto
     "download-banner" min-content;
+
+  /** backport https://github.com/knime/webapps-common/pull/45 */
+  & :deep(.hint-popover .arrow) {
+    pointer-events: none;
+  }
+
+  /** end of backport */
 }
 
 #header {
