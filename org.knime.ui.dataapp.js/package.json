@@ -21,12 +21,16 @@
     "ci:lint-format": "run-p lint:* format:check -c"
   },
   "dependencies": {
+    "@fontsource/roboto": "^5.2.8",
+    "@fontsource/roboto-mono": "^5.2.8",
     "@knime/components": "^1.38.0",
+    "@knime/hub-features": "^1.15.0",
     "@knime/styles": "^1.13.0",
     "@knime/utils": "^1.5.8",
     "@open-rpc/client-js": "^1.8.1",
     "axios": "^1.12.2",
     "pinia": "^3.0.3",
+    "vite-svg-loader": "^5.1.0",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1",
     "vuex": "^4.1.0"

@@ -2,9 +2,10 @@
 import { onBeforeMount, ref } from "vue";
 import { useStore } from "vuex";
 
+import { embeddingSDK } from "@knime/hub-features";
+
 import JobExecution from "./components/JobExecution.vue";
 import { useConstants } from "./plugins/constants";
-import { embeddingBridge } from "./util/embedding/embeddingBridge";
 import { pageBuilderLoader } from "./util/pagebuilderLoader/pagebuilderLoader";
 
 const { restApiBaseUrl, jobId } = useConstants();
@@ -17,7 +18,7 @@ onBeforeMount(async () => {
     await pageBuilderLoader(restApiBaseUrl, jobId, store);
     isReady.value = true;
   } catch (error) {
-    embeddingBridge.sendAppInitializationError(error);
+    embeddingSDK.guest.sendEmbeddingFailureMessage(error);
   }
 });
 </script>

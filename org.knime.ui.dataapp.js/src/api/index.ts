@@ -217,5 +217,9 @@ export const apiFactory = ({ $axios }) => {
         )
         .then(createResponseHandler(), createErrorHandler());
     },
+    deleteJob: ({ jobId }) => {
+      consola.trace("Axios delete job", jobId);
+      return $axios.delete(...job({ jobId })).then(createResponseHandler(), createErrorHandler());
+    },
   };
 };

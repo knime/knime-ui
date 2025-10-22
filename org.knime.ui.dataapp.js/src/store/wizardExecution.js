@@ -2,8 +2,9 @@
 /* eslint-disable complexity */
 import { StatusCodes } from "http-status-codes";
 
+import { embeddingSDK } from "@knime/hub-features";
+
 import * as globalConfigs from "@/config";
-import { embeddingBridge } from "@/util/embedding/embeddingBridge";
 import extractErrorMessage from "@/util/extractErrorMessage";
 
 /* wizard execution/navigation messages and configurations */
@@ -188,9 +189,9 @@ export const actions = {
           unsupportedExecutionStates[execState] || "No or unsupported wizardExecutionState!";
         consola.error(`${execState} State: ${details}`);
 
-        embeddingBridge.dispatchCommandToEmbedder({
+        embeddingSDK.guest.dispatchGenericEventToHost({
           kind: "showNotification",
-          content: {
+          payload: {
             type: "error",
             message: `${DEFAULT_ERROR_MESSAGE}\n${details}`,
             autoRemove: true,
@@ -254,11 +255,11 @@ export const actions = {
    */
   clearPageContentErrorNotifications() {
     consola.trace("Removing error notifications of client-side origin");
-    embeddingBridge.dispatchCommandToEmbedder({
+    embeddingSDK.guest.dispatchGenericEventToHost({
       kind: "clearNotification",
       payload: { deduplicationKey: clientValidationErrorMsgConfig.id },
     });
-    embeddingBridge.dispatchCommandToEmbedder({
+    embeddingSDK.guest.dispatchGenericEventToHost({
       kind: "clearNotification",
       payload: { deduplicationKey: serverValidationErrorMsgConfig.id },
     });
@@ -292,9 +293,9 @@ export const actions = {
     if (!validPage) {
       consola.error("Client side validation failed.");
 
-      embeddingBridge.dispatchCommandToEmbedder({
+      embeddingSDK.guest.dispatchGenericEventToHost({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           deduplicationKey: clientValidationErrorMsgConfig.id,
           message: clientValidationErrorMsgConfig.message,
@@ -311,9 +312,9 @@ export const actions = {
       return { viewValues };
     }
     consola.error("Retrieving viewValues failed.");
-    embeddingBridge.dispatchCommandToEmbedder({
+    embeddingSDK.guest.dispatchGenericEventToHost({
       kind: "showNotification",
-      content: {
+      payload: {
         type: "error",
         deduplicationKey: serverValidationErrorMsgConfig.id,
         message: serverValidationErrorMsgConfig.message,
@@ -339,9 +340,9 @@ export const actions = {
         });
       }
 
-      embeddingBridge.dispatchCommandToEmbedder({
+      embeddingSDK.guest.dispatchGenericEventToHost({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           message: extractErrorMessage(errorResponse),
         },
@@ -382,9 +383,9 @@ export const actions = {
     let errorResponse = pageError || jobError;
     if (errorResponse) {
       dispatch("clear");
-      embeddingBridge.dispatchCommandToEmbedder({
+      embeddingSDK.guest.dispatchGenericEventToHost({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           message: extractErrorMessage(errorResponse),
         },
@@ -438,9 +439,9 @@ export const actions = {
     }
     if (status === StatusCodes.NOT_ACCEPTABLE) {
       consola.error("Server validation failed.");
-      embeddingBridge.dispatchCommandToEmbedder({
+      embeddingSDK.guest.dispatchGenericEventToHost({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           deduplicationKey: serverValidationErrorMsgConfig.id,
           message: serverValidationErrorMsgConfig.message,
@@ -450,9 +451,9 @@ export const actions = {
       return {};
     }
 
-    embeddingBridge.dispatchCommandToEmbedder({
+    embeddingSDK.guest.dispatchGenericEventToHost({
       kind: "showNotification",
-      content: {
+      payload: {
         type: "error",
         message: extractErrorMessage(errorResponse),
       },
@@ -492,9 +493,9 @@ export const actions = {
       });
     }
 
-    embeddingBridge.dispatchCommandToEmbedder({
+    embeddingSDK.guest.dispatchGenericEventToHost({
       kind: "showNotification",
-      content: {
+      payload: {
         type: "error",
         message: extractErrorMessage(errorResponse),
       },
@@ -554,9 +555,9 @@ export const actions = {
     await dispatch("setNodesReExecuting", {});
     if (status === StatusCodes.NOT_ACCEPTABLE) {
       consola.error("Server validation failed.");
-      embeddingBridge.dispatchCommandToEmbedder({
+      embeddingSDK.guest.dispatchGenericEventToHost({
         kind: "showNotification",
-        content: {
+        payload: {
           type: "error",
           deduplicationKey: serverValidationErrorMsgConfig.id,
           message: serverValidationErrorMsgConfig.message,
@@ -566,9 +567,9 @@ export const actions = {
       return {};
     }
 
-    embeddingBridge.dispatchCommandToEmbedder({
+    embeddingSDK.guest.dispatchGenericEventToHost({
       kind: "showNotification",
-      content: {
+      payload: {
         type: "error",
         message: extractErrorMessage(errorResponse),
       },
@@ -583,7 +584,7 @@ export const actions = {
     dispatch("stopPolling", { flushTimers: true });
     dispatch("setPage", { page: { wizardExecutionState: CANCELLED } });
     dispatch("setNodesReExecuting", { nodesReExecuting: null });
-    dispatch("deployments/deleteJob", { jobId, update: false }, { root: true });
+    this.$api.deleteJob({ jobId });
   },
 
   startReExecutionPolling({ dispatch, state, getters }, { jobId }) {
@@ -606,9 +607,9 @@ export const actions = {
         await dispatch("setNodesReExecuting", { nodesReExecuting: null });
         consola.debug("Reexecution failed: ", errorResponse);
         if (this.$router && this.$router.currentRoute.name !== "space-repository-job-exec") {
-          embeddingBridge.dispatchCommandToEmbedder({
+          embeddingSDK.guest.dispatchGenericEventToHost({
             kind: "showNotification",
-            content: {
+            payload: {
               type: "error",
               message: "Page re-execution unsuccessful.",
             },
@@ -664,21 +665,20 @@ export const actions = {
     // eslint-disable-next-line no-magic-numbers
     if (state.reExecutionUpdates >= 5 && !state.executingShown) {
       commit("setExecutingShown", true);
-      embeddingBridge.dispatchCommandToEmbedder({
+      embeddingSDK.guest.dispatchGenericEventToHost({
         kind: "showNotification",
-        content: {
-          type: "error",
+        payload: {
           message,
           deduplicationKey: message,
+          autoRemove: false,
         },
       });
     }
     if (!state.nodesReExecuting?.length && state.executingShown) {
       commit("setExecutingShown", false);
-      embeddingBridge.dispatchCommandToEmbedder({
+      embeddingSDK.guest.dispatchGenericEventToHost({
         kind: "clearNotification",
-        // message also acts as id
-        payload: { id: message },
+        payload: { deduplicationKey: message },
       });
     }
     return {};

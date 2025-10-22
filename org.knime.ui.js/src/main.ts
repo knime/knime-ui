@@ -1,6 +1,8 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
+import { type EmbeddingContext, embeddingSDK } from "@knime/hub-features";
+
 import { initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
@@ -9,7 +11,6 @@ import {
   isBrowser,
   runInEnvironment,
 } from "./environment";
-import { browserEmbedding } from "./environment/browserEmbedding";
 import { initPlugins } from "./plugins";
 import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
@@ -20,6 +21,45 @@ import "./assets/index.css";
 // Setup logger for production
 setupLogger();
 
+const waitForEmbeddingContext = async (): Promise<EmbeddingContext> => {
+  const isDevMode = import.meta.env.DEV;
+  const isBrowserEmbeddedDevMode =
+    import.meta.env.DEV &&
+    import.meta.env.VITE_BROWSER_DEV_MODE_EMBEDDED === "true";
+
+  const isE2EMode = import.meta.env.MODE === "e2e";
+
+  // for dev mode, use provided url directly
+  // see .env file for more details
+  if (!isBrowserEmbeddedDevMode || isE2EMode) {
+    // eslint-disable-next-line no-magic-numbers
+    const twentyMinutes = 20 * 60 * 1000;
+
+    const context: EmbeddingContext = {
+      wsConnectionUri: import.meta.env.VITE_BROWSER_DEV_WS_URL,
+      restApiBaseUrl: "_NOOP_",
+      userIdleTimeout: twentyMinutes,
+      jobId: "_NOOP_",
+    };
+
+    embeddingSDK.guest.setContext(context);
+    return context;
+  }
+
+  if (isDevMode && isBrowserEmbeddedDevMode) {
+    // still perform the message exchange for embedded mode
+    // but use a local WS url for dev
+    const context = await embeddingSDK.guest.waitForContext();
+
+    return {
+      ...context,
+      wsConnectionUri: import.meta.env.VITE_BROWSER_DEV_WS_URL,
+    } satisfies EmbeddingContext;
+  }
+
+  return embeddingSDK.guest.waitForContext();
+};
+
 try {
   const toastServiceProvider = getToastsProvider();
   const toastPlugin = toastServiceProvider.getToastServicePlugin();
@@ -29,9 +69,9 @@ try {
       await initJSONRPCClient("DESKTOP", null);
     },
     BROWSER: async () => {
-      const browserSessionContext = await browserEmbedding.waitForContext();
-      await initJSONRPCClient("BROWSER", browserSessionContext);
-      setRestApiBaseUrl(browserSessionContext.restApiBaseUrl);
+      const embeddingContext = await waitForEmbeddingContext();
+      await initJSONRPCClient("BROWSER", embeddingContext);
+      setRestApiBaseUrl(embeddingContext.restApiBaseUrl);
     },
   });
 
@@ -63,6 +103,6 @@ try {
 } catch (error) {
   consola.fatal("Failed to initialize Application", error);
   if (isBrowser()) {
-    browserEmbedding.sendAppInitializationError(error);
+    embeddingSDK.guest.sendEmbeddingFailureMessage(error);
   }
 }

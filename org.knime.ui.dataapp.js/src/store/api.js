@@ -124,6 +124,18 @@ export const actions = {
       return { error: JSON.stringify({ code: 400, message }) };
     }
   },
+  registerService() {
+    // TODO: pagebuilder calls this action, should be implemented or not be called
+    consola.trace("Implementation missing for `registerService`");
+  },
+  deregisterService() {
+    // TODO: pagebuilder calls this action, should be implemented or not be called
+    consola.trace("Implementation missing for `deregisterService`");
+  },
+  onChange() {
+    // TODO: pagebuilder calls this action, should be implemented or not be called
+    consola.trace("Implementation missing for `onChange`");
+  },
 };
 
 export const getters = {

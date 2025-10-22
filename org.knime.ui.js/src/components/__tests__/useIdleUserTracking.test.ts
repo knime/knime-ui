@@ -1,10 +1,11 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { nextTick, ref } from "vue";
 
-import { browserEmbedding } from "@/environment/browserEmbedding";
+import { embeddingSDK } from "@knime/hub-features";
+
 import { mountComposable } from "@/test/utils/mountComposable";
 
-vi.mock("@/environment/browserEmbedding");
+vi.mock("@knime/hub-features");
 
 const idle = ref(false);
 const lastActive = ref(new Date("2025-10-04").getTime());
@@ -20,10 +21,11 @@ vi.doMock("@vueuse/core", async (importOriginal) => {
 
 describe("useIdleUserTracking", () => {
   beforeAll(() => {
-    vi.mocked(browserEmbedding).getBrowserSessionContext.mockReturnValue({
-      url: "",
+    vi.mocked(embeddingSDK.guest).getContext.mockReturnValue({
+      wsConnectionUri: "",
       restApiBaseUrl: "",
       userIdleTimeout: 3000,
+      jobId: "",
     });
   });
 
@@ -35,7 +37,9 @@ describe("useIdleUserTracking", () => {
       composableProps: undefined,
     });
 
-    const notifyActivitySpy = vi.mocked(browserEmbedding).notifyActivityChange;
+    const notifyActivitySpy = vi.mocked(
+      embeddingSDK.guest,
+    ).notifyActivityChange;
 
     expect(notifyActivitySpy).not.toHaveBeenCalled();
 
