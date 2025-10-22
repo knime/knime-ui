@@ -364,8 +364,6 @@ const { isSVGRenderer } = useCanvasRendererUtils();
   height: var(--app-toolbar-height);
   max-width: 100vw;
   flex: 0 0 auto;
-  background-color: var(--kds-color-surface-default);
-  border-bottom: 1px solid var(--knime-silver-sand);
 
   & .button-list {
     transition: opacity 150ms ease-out;
