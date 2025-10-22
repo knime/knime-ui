@@ -6,8 +6,10 @@ import {
 } from "@/api/gateway-api/generated-api";
 import type { ContainerInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
+import { useNodeHoverListener } from "../common/useNodeHoverState";
 
 type UseFlowVarPortTransparencyOptions = {
+  nodeId: string;
   portContainer: ShallowRef<ContainerInst | null>;
   nodeKind: Node.KindEnum;
   port: NodePortType;
@@ -56,13 +58,15 @@ export const useFlowVarPortTransparency = (
     animateOut: true,
   });
 
-  const onPointerEnter = () => {
-    isHovering.value = true;
-  };
+  useNodeHoverListener({
+    nodeId: options.nodeId,
+    onEnterCallback: () => {
+      isHovering.value = true;
+    },
+    onLeaveCallback: () => {
+      isHovering.value = false;
+    },
+  });
 
-  const onPointerLeave = () => {
-    isHovering.value = false;
-  };
-
-  return { initialAlpha, onPointerEnter, onPointerLeave };
+  return { initialAlpha };
 };

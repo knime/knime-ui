@@ -137,6 +137,7 @@ const portContainer = useTemplateRef<ContainerInst>("portContainer");
 
 const flowVarTransparency = useFlowVarPortTransparency({
   portContainer,
+  nodeId: props.nodeId,
   port: props.port,
   nodeKind: props.nodeKind,
 });
@@ -166,12 +167,10 @@ const { showTooltip, hideTooltip } = useTooltip({
 
 const onPointerEnter = () => {
   isHovered.value = true;
-  flowVarTransparency.onPointerEnter();
 };
 
 const onPointerLeave = () => {
   isHovered.value = false;
-  flowVarTransparency.onPointerLeave();
 };
 
 const onClose = () => {
@@ -208,6 +207,7 @@ useAnimatePixiContainer({
   animateOut: true,
   immediate: true,
 });
+
 useAnimatePixiContainer({
   initialValue: 0,
   targetValue: 1,
