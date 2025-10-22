@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 
 import { type EmbeddingContext, embeddingSDK } from "@knime/hub-features";
+import { useLegacyMode } from "@knime/kds-components";
 
 import { initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
@@ -59,6 +60,9 @@ const waitForEmbeddingContext = async (): Promise<EmbeddingContext> => {
 
   return embeddingSDK.guest.waitForContext();
 };
+
+// Set legacy mode class for KNIME Design System - should be done early to avoid flickering
+useLegacyMode(true);
 
 try {
   const toastServiceProvider = getToastsProvider();

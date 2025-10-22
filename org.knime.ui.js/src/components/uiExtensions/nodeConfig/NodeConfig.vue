@@ -102,7 +102,7 @@ dialog {
 
 .node-config-embedded-content-panel {
   width: 100%;
-  background-color: var(--knime-gray-ultra-light);
+  background-color: var(--kds-color-surface-default);
 
   &.small {
     display: block;

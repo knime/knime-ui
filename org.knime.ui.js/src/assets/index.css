@@ -1,5 +1,6 @@
 @import "modern-normalize/modern-normalize.css";
 @import "@knime/kds-styles/kds-variables.css";
+@import "@knime/kds-styles/kds-legacy-theme.css";
 @import "@knime/styles/css/basics";
 @import "@knime/styles/css/grid";
 @import "./animation";

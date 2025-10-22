@@ -22,6 +22,12 @@ export default defineConfig((env) => {
       testTimeout: 30000,
       reporters: ["default", "junit"],
 
+      server: {
+        deps: {
+          inline: [/@knime\/kds-components/],
+        },
+      },
+
       coverage: {
         provider: "v8",
         all: true,

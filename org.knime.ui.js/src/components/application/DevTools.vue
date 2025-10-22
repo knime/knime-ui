@@ -3,6 +3,11 @@ import { onMounted, ref, useTemplateRef, watch } from "vue";
 import { useWindowSize } from "@vueuse/core";
 
 import { FunctionButton, ValueSwitch } from "@knime/components";
+import {
+  type DarkModeType,
+  useDarkMode,
+  useLegacyMode,
+} from "@knime/kds-components";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
@@ -21,6 +26,20 @@ const isFrontendDevMode = import.meta.env.DEV;
 const { currentRenderer, isSVGRenderer } = useCanvasRendererUtils();
 const canvasRenderers: CanvasRendererType[] = ["SVG", "WebGL"];
 const webglCanvasStore = useWebGLCanvasStore();
+
+const { currentMode } = useDarkMode();
+const { legacyMode } = useLegacyMode();
+const extendedMode = ref<"legacy" | DarkModeType>(currentMode.value);
+watch(extendedMode, (value) => {
+  const isLegacy = value === "legacy";
+  // dark mode is saved and loaded from local storage, legacy mode can be set, but is not saved
+  legacyMode.value = isLegacy;
+  if (!isLegacy && currentMode.value !== value) {
+    currentMode.value = value;
+  } else if (isLegacy) {
+    currentMode.value = "light"; // enforce light mode to avoid visual glitches
+  }
+});
 
 const wrapper = useTemplateRef("wrapper");
 const handle = useTemplateRef("handle");
@@ -125,6 +144,18 @@ const dragStart = (pointerDown: PointerEvent) => {
         :possible-values="
           canvasRenderers.map((value) => ({ id: value, text: value }))
         "
+      />
+
+      <ValueSwitch
+        v-model="extendedMode"
+        compact
+        :possible-values="[
+          { id: 'legacy', text: '🏛️' },
+          { id: 'light', text: '☀️' },
+          { id: 'dark', text: '🌙' },
+          { id: 'system', text: '🖥️' },
+        ]"
+        title="Toggle Dark / Legacy Mode"
       />
 
       <FunctionButton

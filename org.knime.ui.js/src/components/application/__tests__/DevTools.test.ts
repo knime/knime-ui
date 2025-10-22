@@ -3,6 +3,7 @@ import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { ValueSwitch } from "@knime/components";
+import { useDarkMode, useLegacyMode } from "@knime/kds-components";
 
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { isBrowser, isDesktop } from "@/environment";
@@ -11,6 +12,20 @@ import { mockStores } from "@/test/utils/mockStores";
 import DevTools from "../DevTools.vue";
 
 vi.mock("@/environment");
+
+vi.mock("@knime/kds-components", () => {
+  const mockCurrentMode = { value: "light" };
+  const mockUseLegacyMode = { value: false };
+
+  return {
+    useDarkMode: () => ({
+      currentMode: mockCurrentMode,
+    }),
+    useLegacyMode: () => ({
+      legacyMode: mockUseLegacyMode,
+    }),
+  };
+});
 
 describe("DevTools.vue", () => {
   const doMount = () => {
@@ -29,6 +44,8 @@ describe("DevTools.vue", () => {
   afterEach(() => {
     // reset renderer
     currentRenderer.value = "SVG";
+    // reset mocks
+    vi.clearAllMocks();
   });
 
   it("renders button to open browser inspector only on desktop", () => {
@@ -82,5 +99,70 @@ describe("DevTools.vue", () => {
 
     await wrapper.find('[data-test-id="canvas-debug-btn"]').trigger("click");
     expect(mockedStores.webglCanvasStore.isDebugModeEnabled).toBe(true);
+  });
+
+  describe("theme switch", () => {
+    const getThemeSwitch = (wrapper: any) => {
+      const themeSwitches = wrapper.findAllComponents(ValueSwitch);
+      return themeSwitches.length > 1 ? themeSwitches[1] : null;
+    };
+
+    it("initializes with current mode value from useDarkMode", () => {
+      const { wrapper } = doMount();
+      const themeSwitch = getThemeSwitch(wrapper);
+      expect(themeSwitch!.props("modelValue")).toBe("light");
+    });
+
+    it("switches to dark mode correctly", async () => {
+      const { wrapper } = doMount();
+      const { currentMode } = useDarkMode();
+      const { legacyMode } = useLegacyMode();
+      const themeSwitch = getThemeSwitch(wrapper);
+      await themeSwitch!.setValue("dark");
+
+      await nextTick();
+      expect(currentMode.value).toBe("dark");
+      expect(legacyMode.value).toBe(false);
+    });
+
+    it("switches to light mode correctly", async () => {
+      const { wrapper } = doMount();
+      const { currentMode } = useDarkMode();
+      const { legacyMode } = useLegacyMode();
+      const themeSwitch = getThemeSwitch(wrapper);
+      await themeSwitch!.setValue("light");
+
+      await nextTick();
+      expect(currentMode.value).toBe("light");
+      expect(legacyMode.value).toBe(false);
+    });
+
+    it("switches to system mode correctly", async () => {
+      const { wrapper } = doMount();
+      const { currentMode } = useDarkMode();
+      const { legacyMode } = useLegacyMode();
+      const themeSwitch = getThemeSwitch(wrapper);
+      await themeSwitch!.setValue("system");
+
+      await nextTick();
+      expect(currentMode.value).toBe("system");
+      expect(legacyMode.value).toBe(false);
+    });
+
+    it("switches to legacy mode correctly", async () => {
+      const { wrapper } = doMount();
+      const { currentMode } = useDarkMode();
+      const { legacyMode } = useLegacyMode();
+      const themeSwitch = getThemeSwitch(wrapper);
+
+      await themeSwitch!.setValue("dark");
+      await nextTick();
+      expect(currentMode.value).toBe("dark");
+
+      await themeSwitch!.setValue("legacy");
+      await nextTick();
+      expect(legacyMode.value).toBe(true);
+      expect(currentMode.value).toBe("light");
+    });
   });
 });
