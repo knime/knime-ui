@@ -89,12 +89,17 @@ const savedSecondarySize = computed({
   height: var(--app-toolbar-height);
   flex: 0 0 auto;
 <<<<<<< HEAD
+<<<<<<< HEAD
   padding: 10px;
   background-color: var(--kds-color-surface-default);
 =======
   padding: var(--kds-spacing-container-0-5x);
   background-color: var(--knime-porcelain);
 >>>>>>> 159b92329 (NXT-4173: Tokenise workflow toolbar)
+=======
+  background-color: var(--kds-color-surface-default);
+  padding: var(--kds-spacing-container-0-5x);
+>>>>>>> adde9191c (NXT-4173: Add button border-radius fallback)
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 

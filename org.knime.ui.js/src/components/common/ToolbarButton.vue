@@ -21,16 +21,18 @@ withDefaults(defineProps<Props>(), {
 @import url("@/assets/mixins.css");
 
 button {
-
   --icon-size: 16;
   --icon-margin: 6;
   --icon-box-size: 26;
-  white-space: nowrap;
 
+  white-space: nowrap;
   display: flex;
   align-items: center;
   height: calc((var(--icon-box-size) + 2) * 1px);
-  border-radius: var(--kds-border-radius-container-0-37x);
+  border-radius: var(
+    --kds-legacy-button-border-radius,
+    var(--kds-border-radius-container-0-37x)
+  );
   border: var(--kds-color-border-transparent);
   color: var(--kds-color-text-and-icon-neutral);
   background: transparent;
@@ -54,7 +56,8 @@ button {
     @mixin kds-svg-icon-size-medium;
 
     stroke: var(--kds-color-text-and-icon-neutral);
-    margin: 0 var(--kds-spacing-container-0-37x) 0 var(--kds-spacing-container-0-37x);
+    margin: 0 var(--kds-spacing-container-0-37x) 0
+      var(--kds-spacing-container-0-37x);
   }
 
   &:disabled {
@@ -73,7 +76,6 @@ button {
       outline: var(--kds-border-action-focused);
       outline-offset: 1px;
 
-
       & :slotted(svg) {
         stroke: var(--knime-black);
       }
@@ -81,7 +83,7 @@ button {
 
     &:hover {
       background: var(--kds-color-background-neutral-hover);
-      border-color: var(--kds-color-background-neutral-hover));
+      border-color: var(--kds-color-background-neutral-hover);
     }
 
     &:active {
@@ -93,7 +95,6 @@ button {
     &:hover:focus {
       border-color: var(--knime-black);
     }
-
   }
 }
 </style>
