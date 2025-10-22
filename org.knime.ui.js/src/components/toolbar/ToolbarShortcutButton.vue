@@ -93,7 +93,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       ref="submenu"
       :teleport-to-body="false"
       :items="subMenuItems"
-      tabindex="0"
+      tabindex="-1"
       orientation="left"
       button-title="Open save options"
       :aria-label="`Open submenu for ${shortcut.text}`"
@@ -127,7 +127,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   display: inline-flex;
-  margin-right: 5px;
+  margin-right: var(--kds-spacing-container-0-5x);
 
   & .button {
     position: relative;
@@ -140,7 +140,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       opacity: 1;
 
       & svg {
-        opacity: 0.25;
+        color: var(--kds-color-text-and-icon-disabled);
       }
     }
 
@@ -148,16 +148,6 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     border-radius: var(--kds-border-radius-container-0-37x) 0 0
       var(--kds-border-radius-container-0-37x);
 
-    &::after {
-      content: "";
-      display: block;
-      position: absolute;
-      width: 1px;
-      height: calc(100% - 10px);
-      right: 0;
-      top: 5px;
-      background-color: var(--kds-color-border-transparent);
-    }
   }
 
   &:hover,
@@ -172,21 +162,20 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 
   & .submenu {
     display: inline-flex;
-    border: 1px solid var(--kds-color-border-transparent);
+    border: var(--kds-color-border-transparent);
     border-left: none;
+
+    &:hover {
+      background: var(--kds-color-background-neutral-hover);
+    }
 
     /* best way to ensure flexible 1/4 corners */
     border-radius: 0 var(--kds-border-radius-container-0-37x)
       var(--kds-border-radius-container-0-37x) 0;
 
-    /* emulate button focus state for submenu */
-    &:focus {
+    &:focus-visible {
       outline: var(--kds-border-action-focused);
       outline-offset: 1px;
-
-      & :slotted(svg) {
-        stroke: var(--knime-black);
-      }
     }
 
     &:deep(.function-button.active) {
@@ -195,20 +184,28 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 
     /* style toggle button (the dropdown icon) */
     & :deep(.submenu-toggle) {
-      width: 28px;
-      height: 28px;
+      width: calc(var(--kds-dimension-component-width-1-75x) - 1px);
+      height: calc(var(--kds-dimension-component-height-1-75x) - 2px);
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 0 var(--kds-border-radius-container-0-37x)
+          var(--kds-border-radius-container-0-37x) 0;
+      
+      &:focus-visible {
+      outline: var(--kds-border-action-focused);
+      outline-offset: 1px;
+      background-color: var(--kds-color-background-neutral);
+      }
 
-      &.active,
-      &:hover,
-      &:focus {
-        background-color: transparent;
+      &:hover {
+        color: var(--kds-color-text-and-icon-neutral);
+        background-color: var(--kds-color-background-neutral-hover);
+        border-color: var(--kds-color-background-neutral-hover);
       }
 
       & svg {
-        @mixin svg-icon-size 12;
+        @mixin svg-icon-size 14;
 
         stroke: var(--theme-button-split-foreground-color);
         padding: 0;
@@ -221,9 +218,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     }
 
     /* emulate button hover state */
-    &:hover,
     &.expanded {
-      color: var(--knime-white);
       background: var(--kds-color-background-neutral-hover);
     }
   }
