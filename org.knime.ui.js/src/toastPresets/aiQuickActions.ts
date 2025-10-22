@@ -4,8 +4,34 @@ import { KaiQuickActionError } from "@/api/gateway-api/generated-api";
 
 import type { ToastPresetHandler } from "./types";
 
+export type AiQuickActionToastPresets = {
+  quotaExceeded: ToastPresetHandler<{ message: string }>;
+  timeout: ToastPresetHandler<{ message: string }>;
+  llmError: ToastPresetHandler<{ message: string }>;
+  validationError: ToastPresetHandler<{ message: string }>;
+  serviceUnavailable: ToastPresetHandler<{ message: string }>;
+  authenticationFailed: ToastPresetHandler<{
+    message: string;
+    hubId: string;
+    onLogin: () => Promise<void>;
+  }>;
+  unknownError: ToastPresetHandler<{ message: string }>;
+  noActiveWorkflow: ToastPresetHandler;
+};
+
 /**
- * Util for external callers (e.g. the aiQuickAction store) to parse errors from the AI service.
+ * Creates a properly formatted K-AI Quick Action error that can be thrown.
+ */
+export const createQuickActionError = (
+  code: KaiQuickActionError.CodeEnum,
+  message: string,
+): Error => {
+  const errorData: KaiQuickActionError = { code, message };
+  return new Error(JSON.stringify({ detail: errorData }));
+};
+
+/**
+ * Util for external callers to parse errors from the AI service.
  */
 export const parseQuickActionError = (error: unknown): KaiQuickActionError => {
   try {
@@ -28,22 +54,6 @@ export const parseQuickActionError = (error: unknown): KaiQuickActionError => {
     code: KaiQuickActionError.CodeEnum.UNKNOWN,
     message: "An unexpected error occurred.",
   };
-};
-
-export type AiQuickActionToastPresets = {
-  quotaExceeded: ToastPresetHandler<{ message: string }>;
-  timeout: ToastPresetHandler<{ message: string }>;
-  llmError: ToastPresetHandler<{ message: string }>;
-  validationError: ToastPresetHandler<{ message: string }>;
-  serviceUnavailable: ToastPresetHandler<{ message: string }>;
-  authenticationFailed: ToastPresetHandler<{
-    message: string;
-    hubId: string;
-    onLogin: () => Promise<void>;
-  }>;
-  unknownError: ToastPresetHandler<{ message: string }>;
-  actionNotSupported: ToastPresetHandler<{ hubId: string }>;
-  noActiveWorkflow: ToastPresetHandler;
 };
 
 export const getPresets = (
@@ -110,13 +120,6 @@ export const getPresets = (
         headline: "AI quick action failed",
         message,
         autoRemove: false,
-      }),
-
-    actionNotSupported: ({ hubId }) =>
-      $toast.show({
-        type: "warning",
-        headline: "Could not perform AI quick action",
-        message: `${hubId} does not support this AI quick action.`,
       }),
 
     noActiveWorkflow: () =>
