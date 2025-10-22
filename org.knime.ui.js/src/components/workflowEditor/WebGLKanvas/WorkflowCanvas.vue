@@ -12,6 +12,8 @@ import { storeToRefs } from "pinia";
 import { sleep } from "@knime/utils";
 
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
+import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
+import { QuickActionId } from "@/store/ai/types";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -24,6 +26,7 @@ import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 
 import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
+import SkeletonAnnotation from "./annotations/SkeletonAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import FloatingCanvasTools from "./floatingToolbar/canvasTools/FloatingCanvasTools.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
@@ -34,10 +37,17 @@ import Tooltip from "./tooltip/Tooltip.vue";
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+const aiQuickActionsStore = useAiQuickActionsStore();
 const canvasStore = useWebGLCanvasStore();
 
 const { containerSize, shouldHideMiniMap, interactionsEnabled } =
   storeToRefs(canvasStore);
+
+const skeletonAnnotationData = computed(
+  () =>
+    aiQuickActionsStore.processingActions[QuickActionId.GenerateAnnotation] ??
+    null,
+);
 
 const openQuickActionMenu = (event: PointerEvent) => {
   if (event.dataset) {
@@ -191,6 +201,11 @@ const onEscape = async (event: KeyboardEvent) => {
     </Kanvas>
 
     <EditableWorkflowAnnotation />
+
+    <SkeletonAnnotation
+      v-if="skeletonAnnotationData"
+      :bounds="skeletonAnnotationData.bounds"
+    />
 
     <NodeNameEditor />
 

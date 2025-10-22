@@ -47,8 +47,11 @@ describe("ContextMenu.vue", () => {
     options: {
       allowedWorkflowActions?: Partial<AllowedWorkflowActions>;
       nodes?: Record<string, KnimeNode>;
+      areAiQuickActionsAvailable?: boolean;
     } = {},
   ) => {
+    const { areAiQuickActionsAvailable = true } = options;
+
     const mockedStores = mockStores();
 
     mockedStores.applicationSettingsStore.hasClipboardSupport = true;
@@ -83,6 +86,10 @@ describe("ContextMenu.vue", () => {
     const nodeOutputEl = document.createElement("div");
     nodeOutputEl.id = "node-output";
     document.body.appendChild(nodeOutputEl);
+
+    mockedStores.aiQuickActionsStore.isQuickActionAvailable = vi
+      .fn()
+      .mockReturnValue(areAiQuickActionsAvailable);
 
     return { mockedStores };
   };
@@ -198,7 +205,9 @@ describe("ContextMenu.vue", () => {
     await flushPromises();
 
     expect(
-      renderedMenuItems(wrapper).map((item) => item.metadata.shortcutName),
+      renderedMenuItems(wrapper).map(
+        (item) => (item.metadata as any)?.shortcutName,
+      ),
     ).toStrictEqual([
       "executeAll",
       "resetAll",
@@ -303,6 +312,35 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateWorkflowAnnotation" } },
+        ]),
+      );
+    });
+
+    it("shows correct menu items if one node is selected but AI quick actions are disabled", async () => {
+      const { mockedStores } = createStores({
+        areAiQuickActionsAvailable: false,
+      });
+
+      await mockedStores.selectionStore.selectNodes(["root:1"]);
+      await flushPromises();
+
+      const { wrapper } = await doMount({ customStores: mockedStores });
+
+      expect(renderedMenuItems(wrapper)).toEqual(
+        assertItems([
+          { metadata: { shortcutName: "configureNode" } },
+          {
+            metadata: {
+              shortcutName: "editNodeComment",
+            },
+            separator: true,
+          },
+          { metadata: { shortcutName: "cut" } },
+          { metadata: { shortcutName: "copy" } },
+          { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          { metadata: { shortcutName: "createMetanode" } },
+          { metadata: { shortcutName: "createComponent" } },
         ]),
       );
     });
@@ -346,6 +384,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateWorkflowAnnotation" } },
         ]),
       );
     });
@@ -380,6 +419,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateWorkflowAnnotation" } },
         ]),
       );
     });
@@ -422,6 +462,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateWorkflowAnnotation" } },
         ]),
       );
     });
@@ -499,6 +540,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "alignVertically" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateWorkflowAnnotation" } },
         ]),
       );
     });
@@ -572,6 +614,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
           { text: "Metanode" },
+          { metadata: { shortcutName: "generateWorkflowAnnotation" } },
         ]),
       );
     });
@@ -621,6 +664,7 @@ describe("ContextMenu.vue", () => {
                 { text: "Share" },
               ]),
             },
+            { metadata: { shortcutName: "generateWorkflowAnnotation" } },
           ]),
         );
       });
@@ -673,6 +717,7 @@ describe("ContextMenu.vue", () => {
                 { text: "Disconnect link" },
               ]),
             },
+            { metadata: { shortcutName: "generateWorkflowAnnotation" } },
           ]),
         );
       });
@@ -728,6 +773,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "alignVertically" }, separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
+          { metadata: { shortcutName: "generateWorkflowAnnotation" } },
         ]),
       );
     });

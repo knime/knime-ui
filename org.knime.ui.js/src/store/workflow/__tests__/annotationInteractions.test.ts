@@ -6,6 +6,7 @@ import {
   TypedText,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
 import {
   createNativeNode,
   createWorkflow,
@@ -100,7 +101,7 @@ describe("workflow::annotationInteractions", () => {
     );
   });
 
-  it("should add annotation prefilled with content and set it as editable", async () => {
+  it("should add annotation prefilled with content and set it as editable and selected", async () => {
     const newAnnotationId = "mock-annotation-with-content";
 
     const { workflowStore, annotationInteractionsStore, selectionStore } =
@@ -146,6 +147,7 @@ describe("workflow::annotationInteractions", () => {
       bounds,
       content,
       setEditable: true,
+      setSelected: true,
     });
 
     expect(
@@ -173,7 +175,7 @@ describe("workflow::annotationInteractions", () => {
     );
   });
 
-  it("should add annotation prefilled with content without setting it as editable", async () => {
+  it("should add annotation prefilled with content without setting it as editable and selected", async () => {
     const newAnnotationId = "mock-annotation-with-content-not-editable";
 
     const { workflowStore, annotationInteractionsStore, selectionStore } =
@@ -239,7 +241,7 @@ describe("workflow::annotationInteractions", () => {
       borderColor: $colors.defaultAnnotationBorderColor,
     });
 
-    expect(selectionStore.selectedAnnotationIds).toEqual([newAnnotationId]);
+    expect(selectionStore.selectedAnnotationIds).toEqual([]);
     expect(annotationInteractionsStore.editableAnnotationId).toBeNull();
   });
 
@@ -426,14 +428,16 @@ describe("workflow::annotationInteractions", () => {
           annotationInteractionsStore.getAnnotationBoundsForSelectedNodes;
 
         // With nodeSize = 32:
-        // minX = 100, minY = 200
-        // maxX = 300 + 32 = 332 (rightmost node position + nodeSize)
-        // maxY = 400 + 32 = 432 (bottommost node position + nodeSize)
-        // xOffset = 64, yOffset = 128, widthPadding = 96, heightPadding = 128
-        expect(bounds.x).toBe(100 - 64); // 36
-        expect(bounds.y).toBe(200 - 128); // 72
-        expect(bounds.width).toBe(332 - (100 - 64) + 96); // 392
-        expect(bounds.height).toBe(432 - (200 - 128) + 128); // 488
+        const nodeSize = $shapes.nodeSize;
+        const xOffset = 2 * nodeSize;
+        const yOffset = 6 * nodeSize;
+        const widthPadding = 3 * nodeSize;
+        const heightPadding = 4 * nodeSize;
+
+        expect(bounds.x).toBe(100 - xOffset);
+        expect(bounds.y).toBe(200 - yOffset);
+        expect(bounds.width).toBe(300 - (100 - xOffset) + widthPadding);
+        expect(bounds.height).toBe(400 - (200 - yOffset) + heightPadding);
       });
     });
 

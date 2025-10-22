@@ -1,8 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import * as shapes from "@/style/shapes";
-import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
+import {
+  createNativeNode,
+  createWorkflow,
+  createWorkflowAnnotation,
+} from "@/test/factories";
 import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import annotationShortcuts from "../annotationShortcuts";
@@ -14,6 +18,7 @@ describe("annotationShortcuts", () => {
       selectionStore,
       annotationInteractionsStore,
       canvasModesStore,
+      aiQuickActionsStore,
     } = mockStores();
 
     const annotation1 = createWorkflowAnnotation({
@@ -21,9 +26,12 @@ describe("annotationShortcuts", () => {
       bounds: { x: 40, y: 10, width: 20, height: 20 },
     });
 
+    const node1 = createNativeNode({ id: "root:1" });
+
     workflowStore.activeWorkflow = createWorkflow({
       allowedActions: {},
       workflowAnnotations: [annotation1],
+      nodes: { "root:1": node1 },
     });
 
     return {
@@ -31,6 +39,7 @@ describe("annotationShortcuts", () => {
       selectionStore,
       annotationInteractionsStore,
       canvasModesStore,
+      aiQuickActionsStore,
     };
   };
 
@@ -90,6 +99,17 @@ describe("annotationShortcuts", () => {
     );
   });
 
+  it("should dispatch action to generate workflow annotation via K-AI when at least one node is selected", () => {
+    const { aiQuickActionsStore, selectionStore } = createStore();
+
+    selectionStore.selectNodes(["root:1"]);
+
+    annotationShortcuts.generateWorkflowAnnotation.execute(
+      mockShortcutContext(),
+    );
+    expect(aiQuickActionsStore.generateAnnotation).toHaveBeenCalled();
+  });
+
   describe("condition", () => {
     it.each([
       ["bringAnnotationToFront"],
@@ -116,6 +136,47 @@ describe("annotationShortcuts", () => {
       // @ts-expect-error
       workflowStore.isWritable = false;
       expect(annotationShortcuts.addWorkflowAnnotation.condition?.()).toBe(
+        false,
+      );
+    });
+
+    it("can generate annotation when nodes are selected and workflow is writable", () => {
+      const { selectionStore } = createStore();
+
+      expect(annotationShortcuts.generateWorkflowAnnotation.condition?.()).toBe(
+        false,
+      );
+
+      selectionStore.selectNodes(["root:1"]);
+      expect(annotationShortcuts.generateWorkflowAnnotation.condition?.()).toBe(
+        true,
+      );
+    });
+
+    it("cannot generate annotation when workflow is not writable", () => {
+      const { workflowStore, selectionStore } = createStore();
+
+      selectionStore.selectNodes(["root:1"]);
+      expect(annotationShortcuts.generateWorkflowAnnotation.condition?.()).toBe(
+        true,
+      );
+
+      // @ts-expect-error
+      workflowStore.isWritable = false;
+      expect(annotationShortcuts.generateWorkflowAnnotation.condition?.()).toBe(
+        false,
+      );
+    });
+
+    it("cannot generate annotation when AI quick actions are not available", () => {
+      const { selectionStore, aiQuickActionsStore } = createStore();
+
+      selectionStore.selectNodes(["root:1"]);
+      aiQuickActionsStore.isQuickActionAvailable = vi
+        .fn()
+        .mockReturnValueOnce(false);
+
+      expect(annotationShortcuts.generateWorkflowAnnotation.condition?.()).toBe(
         false,
       );
     });

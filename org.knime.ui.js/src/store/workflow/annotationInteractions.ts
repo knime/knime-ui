@@ -81,10 +81,12 @@ export const useAnnotationInteractionsStore = defineStore(
       async addWorkflowAnnotationWithContent({
         bounds,
         content,
+        setSelected = false,
         setEditable = false,
       }: {
         bounds: Bounds;
         content: string;
+        setSelected?: boolean;
         setEditable?: boolean;
       }) {
         const { projectId, workflowId } =
@@ -110,7 +112,10 @@ export const useAnnotationInteractionsStore = defineStore(
         if (wasAborted) {
           return;
         }
-        useSelectionStore().selectAnnotations([newAnnotationId]);
+
+        if (setSelected) {
+          useSelectionStore().selectAnnotations([newAnnotationId]);
+        }
 
         if (setEditable) {
           this.setEditableAnnotationId(newAnnotationId);
@@ -229,7 +234,7 @@ export const useAnnotationInteractionsStore = defineStore(
 
         // padding around the selection for visual spacing
         const xOffset = 2 * nodeSize;
-        const yOffset = 4 * nodeSize;
+        const yOffset = 6 * nodeSize;
         const widthPadding = 3 * nodeSize;
         const heightPadding = 4 * nodeSize;
 
@@ -250,8 +255,8 @@ export const useAnnotationInteractionsStore = defineStore(
           (bounds, { position }) => ({
             minX: Math.min(bounds.minX, position.x),
             minY: Math.min(bounds.minY, position.y),
-            maxX: Math.max(bounds.maxX, position.x + nodeSize),
-            maxY: Math.max(bounds.maxY, position.y + nodeSize),
+            maxX: Math.max(bounds.maxX, position.x),
+            maxY: Math.max(bounds.maxY, position.y),
           }),
           // accumulator (starts with Infinities to be replaced with the first node's values)
           {

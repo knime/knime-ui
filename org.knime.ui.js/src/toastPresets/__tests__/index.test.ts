@@ -291,19 +291,6 @@ describe("toastPresets", () => {
       });
     });
 
-    it("should show actionNotSupported toast", () => {
-      const { toastPresets, $toast } = toastSetup();
-      toastPresets.aiQuickActions.actionNotSupported({
-        hubId: "KNIME Hub",
-      });
-
-      expect($toast.show).toBeCalledWith({
-        type: "warning",
-        headline: "Could not perform AI quick action",
-        message: "KNIME Hub does not support this AI quick action.",
-      });
-    });
-
     it("should show noActiveWorkflow toast", () => {
       const { toastPresets, $toast } = toastSetup();
       toastPresets.aiQuickActions.noActiveWorkflow();

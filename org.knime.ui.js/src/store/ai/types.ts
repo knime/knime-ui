@@ -1,4 +1,8 @@
-import { KaiMessage, type KaiUsage } from "@/api/gateway-api/generated-api";
+import {
+  KaiMessage,
+  KaiQuickActionRequest,
+  type KaiUsage,
+} from "@/api/gateway-api/generated-api";
 
 export type Node = {
   title: string;
@@ -125,3 +129,7 @@ export type AiAssistantEvent =
       };
       conversation_id: string;
     };
+
+// =======AI QUICK ACTIONS=======
+export type QuickActionId = KaiQuickActionRequest.ActionIdEnum;
+export const QuickActionId = KaiQuickActionRequest.ActionIdEnum;

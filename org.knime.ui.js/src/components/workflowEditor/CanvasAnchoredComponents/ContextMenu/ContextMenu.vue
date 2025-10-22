@@ -419,6 +419,15 @@ const setMenuItems = () => {
     ),
   ];
 
+  const aiActionsGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      {
+        name: "generateWorkflowAnnotation",
+        isVisible: true, // visibility dictated by the shortcut's `condition` predicate
+      },
+    ]),
+  ];
+
   visibleItems.value = menuGroupsBuilder()
     .append(basicOperationsGroup)
     .append(
@@ -440,6 +449,7 @@ const setMenuItems = () => {
     .append(nodeAlignmentGroup)
     .append(metanodeAndComponentGroup)
     .append(componentPlaceholderGroup)
+    .append(aiActionsGroup)
     .build();
 };
 
