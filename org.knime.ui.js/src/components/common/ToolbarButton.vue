@@ -21,14 +21,10 @@ withDefaults(defineProps<Props>(), {
 @import url("@/assets/mixins.css");
 
 button {
-  --icon-size: 16;
-  --icon-margin: 6;
-  --icon-box-size: 26;
-
   white-space: nowrap;
   display: flex;
   align-items: center;
-  height: calc((var(--icon-box-size) + 2) * 1px);
+  height: var(--kds-dimension-component-height-1-75x);
   border-radius: var(
     --kds-legacy-button-border-radius,
     var(--kds-border-radius-container-0-37x)
@@ -38,7 +34,7 @@ button {
   background: transparent;
   outline: none;
   padding: 0;
-  line-height: 26px;
+  line-height: var(--kds-core-line-height-singleline);
   text-rendering: geometricprecision;
 
   &.with-text {
@@ -72,17 +68,17 @@ button {
   &:not(:disabled) {
     cursor: pointer;
 
-    &:focus {
+    &:focus-visible {
       outline: var(--kds-border-action-focused);
       outline-offset: 1px;
 
       & :slotted(svg) {
-        stroke: var(--knime-black);
+        stroke: var(--kds-color-text-and-icon-neutral);
       }
     }
 
     &:hover {
-      background: var(--kds-color-background-neutral-hover);
+      background-color: var(--kds-color-background-neutral-hover);
       border-color: var(--kds-color-background-neutral-hover);
     }
 
@@ -93,7 +89,7 @@ button {
     }
 
     &:hover:focus {
-      border-color: var(--knime-black);
+      border-color: red;
     }
   }
 }

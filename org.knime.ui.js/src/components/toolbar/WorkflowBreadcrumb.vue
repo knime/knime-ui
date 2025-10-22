@@ -262,7 +262,7 @@ const activeVersionTitle = computed(() => {
   & :deep(.function-button) {
     border-radius: var(--kds-border-radius-container-0-37x);
 
-    &:focus {
+    &:focus-visible {
       outline: var(--kds-border-action-focused);
       outline-offset: 1px;
       background-color: var(--kds-color-background-neutral-initial);
