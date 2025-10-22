@@ -21,25 +21,28 @@ withDefaults(defineProps<Props>(), {
 @import url("@/assets/mixins.css");
 
 button {
-  --icon-size: 18;
+
+  --icon-size: 16;
   --icon-margin: 6;
-  --icon-box-size: calc(var(--icon-size) + var(--icon-margin) * 2);
+  --icon-box-size: 26;
+  white-space: nowrap;
 
   display: flex;
   align-items: center;
   height: calc((var(--icon-box-size) + 2) * 1px);
-  border-radius: calc((var(--icon-box-size) + 2) / 2 * 1px);
-  border: 1px solid var(--knime-silver-sand);
-  color: var(--knime-masala);
+  border-radius: var(--kds-border-radius-container-0-37x);
+  border: var(--kds-color-border-transparent);
+  color: var(--kds-color-text-and-icon-neutral);
   background: transparent;
   outline: none;
   padding: 0;
-  line-height: 1;
+  line-height: 26px;
+  text-rendering: geometricprecision;
 
   &.with-text {
-    font-size: 13px;
-    padding-right: 9px;
-    padding-left: 2px;
+    font: var(--kds-font-base-interactive-medium-strong);
+    padding-right: var(--kds-spacing-container-0-5x);
+    padding-left: var(--kds-spacing-container-0-12x);
   }
 
   &.primary {
@@ -48,24 +51,28 @@ button {
   }
 
   & :slotted(svg) {
-    @mixin svg-icon-size var(--icon-size);
+    @mixin kds-svg-icon-size-medium;
 
-    stroke: var(--knime-masala);
-    margin: calc(var(--icon-margin) * 1px);
+    stroke: var(--kds-color-text-and-icon-neutral);
+    margin: 0 var(--kds-spacing-container-0-37x) 0 var(--kds-spacing-container-0-37x);
   }
 
   &:disabled {
-    opacity: 0.25;
     cursor: default;
+    color: var(--kds-color-text-and-icon-disabled);
+
+    & :deep(svg) {
+      stroke: var(--kds-color-text-and-icon-disabled);
+    }
   }
 
   &:not(:disabled) {
     cursor: pointer;
 
     &:focus {
-      background: var(--knime-white);
-      color: var(--knime-black);
-      border-color: var(--knime-black);
+      outline: var(--kds-border-action-focused);
+      outline-offset: 1px;
+
 
       & :slotted(svg) {
         stroke: var(--knime-black);
@@ -73,25 +80,20 @@ button {
     }
 
     &:hover {
-      color: var(--knime-white);
-      background: var(--knime-masala);
-      border-color: var(--knime-masala);
+      background: var(--kds-color-background-neutral-hover);
+      border-color: var(--kds-color-background-neutral-hover));
     }
 
     &:active {
-      color: var(--knime-white);
-      background: var(--knime-black);
-      border-color: var(--knime-black);
+      color: var(--kds-color-text-and-icon-neutral);
+      background: var(--kds-color-background-neutral-active);
+      border-color: var(--kds-border-action-transparent);
     }
 
     &:hover:focus {
       border-color: var(--knime-black);
     }
 
-    &:hover :slotted(svg),
-    &:active :slotted(svg) {
-      stroke: var(--knime-white);
-    }
   }
 }
 </style>

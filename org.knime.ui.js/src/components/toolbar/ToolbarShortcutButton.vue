@@ -128,9 +128,6 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 
   display: inline-flex;
   margin-right: 5px;
-  border-radius: var(
-    --theme-button-split-border-radius
-  ); /* needed for correct :hover style trigger below */
 
   & .button {
     position: relative;
@@ -148,8 +145,8 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     }
 
     /* best way to ensure flexible 1/4 corners */
-    border-radius: var(--theme-button-split-border-radius) 0 0
-      var(--theme-button-split-border-radius);
+    border-radius: var(--kds-border-radius-container-0-37x) 0 0
+      var(--kds-border-radius-container-0-37x);
 
     &::after {
       content: "";
@@ -159,7 +156,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       height: calc(100% - 10px);
       right: 0;
       top: 5px;
-      background-color: var(--knime-silver-sand);
+      background-color: var(--kds-color-border-transparent);
     }
   }
 
@@ -170,32 +167,36 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
         display: none;
       }
     }
+
   }
 
   & .submenu {
     display: inline-flex;
-    border: 1px solid var(--knime-silver-sand);
+    border: 1px solid var(--kds-color-border-transparent);
     border-left: none;
 
     /* best way to ensure flexible 1/4 corners */
-    border-radius: 0 var(--theme-button-split-border-radius)
-      var(--theme-button-split-border-radius) 0;
+    border-radius: 0 var(--kds-border-radius-container-0-37x)
+      var(--kds-border-radius-container-0-37x) 0;
 
     /* emulate button focus state for submenu */
     &:focus {
-      outline: none;
-      background: var(--knime-white);
-      color: var(--knime-black);
-      border-color: var(--knime-black);
+      outline: var(--kds-border-action-focused);
+      outline-offset: 1px;
 
       & :slotted(svg) {
         stroke: var(--knime-black);
       }
     }
 
+    &:deep(.function-button.active) {
+      background-color: transparent;
+    }
+
     /* style toggle button (the dropdown icon) */
     & :deep(.submenu-toggle) {
       width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -223,12 +224,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     &:hover,
     &.expanded {
       color: var(--knime-white);
-      background: var(--knime-masala);
-      border-color: var(--knime-masala);
-
-      & .submenu-toggle svg {
-        stroke: var(--knime-white);
-      }
+      background: var(--kds-color-background-neutral-hover);
     }
   }
 }
