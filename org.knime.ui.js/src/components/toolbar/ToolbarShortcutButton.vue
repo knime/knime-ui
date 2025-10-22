@@ -166,7 +166,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     border-left: none;
 
     &:hover {
-      background: var(--kds-color-background-neutral-hover);
+      background: transparent;
     }
 
     /* best way to ensure flexible 1/4 corners */
