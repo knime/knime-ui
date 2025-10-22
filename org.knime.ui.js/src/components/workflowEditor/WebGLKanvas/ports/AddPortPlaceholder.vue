@@ -166,7 +166,8 @@ useAnimatePixiContainer<number>({
       isMenuOpenOnParentNode.value ||
       isNodeHovered.value ||
       isNodeSingleSelected.value ||
-      selected.value,
+      selected.value ||
+      isPlaceholderPortHovered.value,
   ),
   animationParams: { duration: 0.17 },
   onUpdate: (value) => {

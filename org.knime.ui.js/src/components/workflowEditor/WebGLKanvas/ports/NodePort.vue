@@ -20,7 +20,7 @@ import { useTooltip } from "../tooltip/useTooltip";
 
 import NodePortActions from "./NodePortActions.vue";
 import Port from "./Port.vue";
-import { useFlowVarPortTransparency } from "./useFlowVarPortTransparency";
+import { usePortTransparency } from "./usePortTransparency";
 
 interface Props {
   nodeId: string;
@@ -135,7 +135,7 @@ const onPointerUp = () => {
 
 const portContainer = useTemplateRef<ContainerInst>("portContainer");
 
-const flowVarTransparency = useFlowVarPortTransparency({
+const portTransparency = usePortTransparency({
   portContainer,
   nodeId: props.nodeId,
   port: props.port,
@@ -226,7 +226,7 @@ useAnimatePixiContainer({
   <Container
     ref="portContainer"
     :layer="selected ? canvasLayers.selectedPorts : null"
-    :alpha="flowVarTransparency.initialAlpha ? 1 : 0"
+    :alpha="portTransparency.initialAlpha"
     event-mode="static"
     :position="position"
     @pointerenter="onPointerEnter"

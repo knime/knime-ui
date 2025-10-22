@@ -1,45 +1,62 @@
 import { type ShallowRef, computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import {
   Node,
   type NodePort as NodePortType,
 } from "@/api/gateway-api/generated-api";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type { ContainerInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useNodeHoverListener } from "../common/useNodeHoverState";
 
-type UseFlowVarPortTransparencyOptions = {
+type UsePortTransparencyOptions = {
   nodeId: string;
   portContainer: ShallowRef<ContainerInst | null>;
   nodeKind: Node.KindEnum;
   port: NodePortType;
 };
 
-export const useFlowVarPortTransparency = (
-  options: UseFlowVarPortTransparencyOptions,
-) => {
+export const usePortTransparency = (options: UsePortTransparencyOptions) => {
   const { portContainer } = options;
-  const isHovering = ref(false);
+  const isParentNodeHovered = ref(false);
+  const { nameEditorNodeId } = storeToRefs(useNodeInteractionsStore());
+  const { isDragging } = storeToRefs(useMovingStore());
+
+  // metanodes don't have default flow variable ports, so if their first port (index 0)
+  // is a flow variable one that's still not considered a default one, which all the other
+  // nodes have
+  const isDefaultFlowVariablePort = computed(() => {
+    if (options.nodeKind === Node.KindEnum.Metanode) {
+      return false;
+    }
+
+    return options.port.index === 0;
+  });
+
+  const isConnected = computed(() => options.port.connectedVia.length > 0);
 
   // Transitions/animations cannot be applied at CSS level for canvas-rendered elements
   // therefore we need to take an imperative approach and do a tween animation instead.
   // For this, an initial alpha value is determined, but not made reactive; then further
   // visibility changes will be tracked in order to perform the tweens
-
   const initialAlpha =
-    options.nodeKind === Node.KindEnum.Metanode ||
-    options.port.connectedVia.length
+    !isDefaultFlowVariablePort.value || isConnected.value
       ? 1
-      : // any port other than 0 will be alpha: 1
+      : // any port other than 0 will have `alpha: 1`
         Math.max(0, options.port.index > 0 ? 1 : 0);
 
   const isVisible = computed(() => {
-    if (
-      options.nodeKind === Node.KindEnum.Metanode ||
-      options.port.connectedVia.length ||
-      isHovering.value ||
-      options.port.index >= 1
-    ) {
+    if (!isDefaultFlowVariablePort.value || isConnected.value) {
+      return true;
+    }
+
+    if (nameEditorNodeId.value === options.nodeId) {
+      return false;
+    }
+
+    if (isParentNodeHovered.value && !isDragging.value) {
       return true;
     }
 
@@ -61,10 +78,10 @@ export const useFlowVarPortTransparency = (
   useNodeHoverListener({
     nodeId: options.nodeId,
     onEnterCallback: () => {
-      isHovering.value = true;
+      isParentNodeHovered.value = true;
     },
     onLeaveCallback: () => {
-      isHovering.value = false;
+      isParentNodeHovered.value = false;
     },
   });
 
