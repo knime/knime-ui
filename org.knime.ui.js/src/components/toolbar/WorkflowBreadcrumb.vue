@@ -277,7 +277,9 @@ const activeVersionTitle = computed(() => {
     }
     & svg {
       stroke: var(--kds-color-text-and-icon-neutral);
-      stroke-width: 2.25px;
+      stroke-width: 3.50px;
+      width: 12px;
+      height: 12px;
     }
   }
 }
