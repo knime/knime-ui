@@ -99,8 +99,12 @@ const savedSecondarySize = computed({
 =======
   background-color: var(--kds-color-surface-default);
   padding: var(--kds-spacing-container-0-5x);
+<<<<<<< HEAD
 >>>>>>> adde9191c (NXT-4173: Add button border-radius fallback)
   border-bottom: 1px solid var(--knime-silver-sand);
+=======
+  border-bottom: var(--kds-border-base-muted);
+>>>>>>> db7cbcf16 (NXT-4173: Refine css)
 }
 
 main {
