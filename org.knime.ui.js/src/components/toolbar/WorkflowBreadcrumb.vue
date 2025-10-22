@@ -236,11 +236,11 @@ const activeVersionTitle = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 5px;
+  font: var(--kds-font-base-interactive-small);
+  color: var(--kds-color-text-and-icon-subtle);
 
   & span {
-    font-size: 13px;
-    line-height: 18px;
-    font-weight: 500;
+    font: var(--kds-font-base-body-small);
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -258,6 +258,27 @@ const activeVersionTitle = computed(() => {
   & .workflow-versions-information {
     margin: 0 10px;
     max-width: 300px;
+  }
+  & :deep(.function-button) {
+    border-radius: var(--kds-border-radius-container-0-37x);
+
+    &:focus {
+      outline: var(--kds-border-action-focused);
+      outline-offset: 1px;
+      background-color: var(--kds-color-background-neutral-initial);
+    }
+    &:hover, &.expanded {
+      background: var(--kds-color-background-neutral-hover);
+      border-color: var(--kds-color-background-neutral-hover);
+    }
+    &:active {
+      background: var(--kds-color-background-neutral-active);
+      border-color: var(--kds-border-action-transparent);
+    }
+    & svg {
+      stroke: var(--kds-color-text-and-icon-neutral);
+      stroke-width: 2.25px;
+    }
   }
 }
 </style>
