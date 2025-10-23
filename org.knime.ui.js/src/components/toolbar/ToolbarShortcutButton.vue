@@ -145,8 +145,16 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     }
 
     /* best way to ensure flexible 1/4 corners */
-    border-radius: var(--kds-border-radius-container-0-37x) 0 0
-      var(--kds-border-radius-container-0-37x);
+    border-top-right-radius: 0;
+    border-top-left-radius:  var(
+    --kds-legacy-button-border-radius,
+    var(--kds-border-radius-container-0-37x)
+  );
+    border-bottom-left-radius:  var(
+    --kds-legacy-button-border-radius,
+    var(--kds-border-radius-container-0-37x)
+  );
+    border-bottom-right-radius: 0;
 
   }
 
@@ -173,6 +181,17 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
     border-radius: 0 var(--kds-border-radius-container-0-37x)
       var(--kds-border-radius-container-0-37x) 0;
 
+    border-top-left-radius: 0;
+    border-top-right-radius:  var(
+    --kds-legacy-button-border-radius,
+    var(--kds-border-radius-container-0-37x)
+  );
+    border-bottom-right-radius:  var(
+    --kds-legacy-button-border-radius,
+    var(--kds-border-radius-container-0-37x)
+  );
+    border-bottom-left-radius: 0;
+
     &:focus-visible {
       outline: var(--kds-border-action-focused);
       outline-offset: 1px;
@@ -189,8 +208,16 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0 var(--kds-border-radius-container-0-37x)
-          var(--kds-border-radius-container-0-37x) 0;
+    border-top-left-radius: 0;
+    border-top-right-radius:  var(
+    --kds-legacy-button-border-radius,
+    var(--kds-border-radius-container-0-37x)
+  );
+    border-bottom-right-radius:  var(
+    --kds-legacy-button-border-radius,
+    var(--kds-border-radius-container-0-37x)
+  );
+    border-bottom-left-radius: 0;
       
       &:focus-visible {
       outline: var(--kds-border-action-focused);
@@ -207,7 +234,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       & svg {
         @mixin svg-icon-size 14;
 
-        stroke: var(--theme-button-split-foreground-color);
+        stroke: var(--kds-color-text-and-icon-neutral);
         padding: 0;
       }
     }

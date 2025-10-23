@@ -229,6 +229,11 @@ const activeVersionTitle = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 5px;
+
+   &:deep(span.clickable:hover) {
+    color: var(--kds-color-text-and-icon-neutral);
+  }
+
 }
 
 .breadcrumb-root {
@@ -260,7 +265,10 @@ const activeVersionTitle = computed(() => {
     max-width: 300px;
   }
   & :deep(.function-button) {
-    border-radius: var(--kds-border-radius-container-0-37x);
+    border-radius: var(
+    --kds-legacy-button-border-radius,
+    var(--kds-border-radius-container-0-37x)
+  );
 
     &:focus-visible {
       outline: var(--kds-border-action-focused);
