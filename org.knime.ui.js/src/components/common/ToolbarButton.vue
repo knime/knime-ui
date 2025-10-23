@@ -89,7 +89,7 @@ button {
     }
 
     &:hover:focus {
-      border-color: red;
+      border-color: var(--kds-color-text-and-icon-neutral);
     }
   }
 }
