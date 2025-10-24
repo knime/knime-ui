@@ -1,7 +1,7 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
-import { type EmbeddingContext, embeddingSDK } from "@knime/hub-features";
+import { embeddingSDK } from "@knime/hub-features";
 import { useLegacyMode } from "@knime/kds-components";
 
 import { initJSONRPCClient } from "./api/json-rpc-client";
@@ -12,6 +12,7 @@ import {
   isBrowser,
   runInEnvironment,
 } from "./environment";
+import { waitForEmbeddingContext } from "./environment/waitForEmbeddingContext";
 import { initPlugins } from "./plugins";
 import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
@@ -21,45 +22,6 @@ import "./assets/index.css";
 
 // Setup logger for production
 setupLogger();
-
-const waitForEmbeddingContext = async (): Promise<EmbeddingContext> => {
-  const isDevMode = import.meta.env.DEV;
-  const isBrowserEmbeddedDevMode =
-    import.meta.env.DEV &&
-    import.meta.env.VITE_BROWSER_DEV_MODE_EMBEDDED === "true";
-
-  const isE2EMode = import.meta.env.MODE === "e2e";
-
-  // for dev mode, use provided url directly
-  // see .env file for more details
-  if (!isBrowserEmbeddedDevMode || isE2EMode) {
-    // eslint-disable-next-line no-magic-numbers
-    const twentyMinutes = 20 * 60 * 1000;
-
-    const context: EmbeddingContext = {
-      wsConnectionUri: import.meta.env.VITE_BROWSER_DEV_WS_URL,
-      restApiBaseUrl: "_NOOP_",
-      userIdleTimeout: twentyMinutes,
-      jobId: "_NOOP_",
-    };
-
-    embeddingSDK.guest.setContext(context);
-    return context;
-  }
-
-  if (isDevMode && isBrowserEmbeddedDevMode) {
-    // still perform the message exchange for embedded mode
-    // but use a local WS url for dev
-    const context = await embeddingSDK.guest.waitForContext();
-
-    return {
-      ...context,
-      wsConnectionUri: import.meta.env.VITE_BROWSER_DEV_WS_URL,
-    } satisfies EmbeddingContext;
-  }
-
-  return embeddingSDK.guest.waitForContext();
-};
 
 // Set legacy mode class for KNIME Design System - should be done early to avoid flickering
 useLegacyMode(true);
