@@ -2,12 +2,13 @@ import { API } from "@api";
 import { isEmpty, isUndefined } from "lodash-es";
 import { defineStore } from "pinia";
 
+import { promise as promiseUtils } from "@knime/utils";
+
 import type { NodeRelation } from "@/api/custom-types";
 import { KaiMessage, type XY } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import type {
   AiAssistantBuildEventPayload,
@@ -203,9 +204,10 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
 
         // Resolve/reject only after handleAiAssistantEvent receives a
         // corresponding result or error.
-        const { resolve, reject, promise } = createUnwrappedPromise<
-          AiAssistantQAEventPayload | AiAssistantBuildEventPayload
-        >();
+        const { resolve, reject, promise } =
+          promiseUtils.createUnwrappedPromise<
+            AiAssistantQAEventPayload | AiAssistantBuildEventPayload
+          >();
         responseCallback[chainType] = { resolve, reject };
 
         return promise;

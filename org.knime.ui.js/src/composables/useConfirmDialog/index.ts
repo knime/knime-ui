@@ -1,6 +1,6 @@
 import { type VNode, computed, ref } from "vue";
 
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
+import { promise } from "@knime/utils";
 
 type ConfirmationButton = {
   type: "confirm";
@@ -76,7 +76,7 @@ type ConfirmResult = { confirmed: boolean; doNotAskAgain?: boolean };
 
 const isActive = ref(false);
 const activeModalConfig = ref<ModalConfig | null>(null);
-const unwrappedPromise = ref(createUnwrappedPromise<ConfirmResult>());
+const unwrappedPromise = ref(promise.createUnwrappedPromise<ConfirmResult>());
 
 export const isComponentBasedConfig = (
   config: ModalConfig,
@@ -101,7 +101,7 @@ export const useConfirmDialog = () => {
   const close = () => {
     isActive.value = false;
     activeModalConfig.value = null;
-    unwrappedPromise.value = createUnwrappedPromise();
+    unwrappedPromise.value = promise.createUnwrappedPromise();
   };
 
   const confirm = (doNotAskAgain = false) => {

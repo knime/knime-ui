@@ -1,8 +1,9 @@
 import { computed, ref } from "vue";
 
+import { promise } from "@knime/utils";
+
 import type { SpaceTreeSelection } from "@/components/spaces/SpaceTree.vue";
 import { localRootProjectPath } from "@/store/spaces/caching";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 export type DestinationPickerConfig = {
   title?: string;
@@ -23,7 +24,9 @@ export type DestinationPickerResult =
 
 const isActive = ref(false);
 const activePickerModalConfig = ref<DestinationPickerConfig | null>(null);
-const unwrappedPromise = ref(createUnwrappedPromise<DestinationPickerResult>());
+const unwrappedPromise = ref(
+  promise.createUnwrappedPromise<DestinationPickerResult>(),
+);
 
 const defaults = {
   title: "Destination",
@@ -63,7 +66,7 @@ export const useDestinationPicker = () => {
       // fallback in case of simultaneous prompts:
       // resolve the already open one as canceled
       unwrappedPromise.value.resolve(null);
-      unwrappedPromise.value = createUnwrappedPromise();
+      unwrappedPromise.value = promise.createUnwrappedPromise();
     }
 
     activePickerModalConfig.value = { ...defaults, ...config };
@@ -74,7 +77,7 @@ export const useDestinationPicker = () => {
   const close = () => {
     isActive.value = false;
     activePickerModalConfig.value = null;
-    unwrappedPromise.value = createUnwrappedPromise();
+    unwrappedPromise.value = promise.createUnwrappedPromise();
   };
 
   const confirm = (result: DestinationPickerResult) => {

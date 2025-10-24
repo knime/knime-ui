@@ -17,7 +17,7 @@ import {
   ToastStack,
   useBeforeUnload,
 } from "@knime/components";
-import { getMetaOrCtrlKey } from "@knime/utils";
+import { getMetaOrCtrlKey, promise as promiseUtils } from "@knime/utils";
 
 import BlockUi from "@/components/application/BlockUi.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
@@ -38,7 +38,6 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { getToastPresets } from "@/toastPresets";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
 
 import AppHeaderSkeleton from "./application/AppHeader/AppHeaderSkeleton.vue";
@@ -107,7 +106,7 @@ const AppHeader = defineAsyncComponent({
       "@/components/application/AppHeader/AppHeader.vue"
     );
     const { promise, resolve } =
-      createUnwrappedPromise<Awaited<typeof componentPromise>>();
+      promiseUtils.createUnwrappedPromise<Awaited<typeof componentPromise>>();
 
     // make sure the AppHeader component is not fully loaded until the application
     // is initialized

@@ -20,7 +20,14 @@ vi.mock("@/router/router", () => {
   };
 });
 
-vi.mock("@knime/utils");
+vi.mock("@knime/utils", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    sleep: vi.fn(),
+  };
+});
 
 describe("workflowMonitor", () => {
   const loadStore = () => {

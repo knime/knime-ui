@@ -1,7 +1,7 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import { sleep } from "@knime/utils";
+import { promise as promiseUtils, sleep } from "@knime/utils";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import {
@@ -16,7 +16,6 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
@@ -151,7 +150,7 @@ export const useWorkflowMonitorStore = defineStore("workflowMonitor", {
       // to load. Because this is an async process we hide that complexity inside this action
       // and simply return a promise which will only resolve once everything is complete, regardless
       // of whether it's navigating to an issue in the current WF or a nested one. (see lifecycle bus listener below)
-      const { promise, resolve } = createUnwrappedPromise<void>();
+      const { promise, resolve } = promiseUtils.createUnwrappedPromise<void>();
 
       const selectNodeWithIssue = async (nodeId: string) => {
         const { wasAborted } = await useSelectionStore().tryClearSelection({

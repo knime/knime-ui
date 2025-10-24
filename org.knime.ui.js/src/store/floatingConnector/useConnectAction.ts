@@ -2,10 +2,11 @@
 /* eslint-disable no-undefined */
 import { computed, ref } from "vue";
 
+import { promise as promiseUtils } from "@knime/utils";
+
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
 import type { Direction } from "@/util/compatibleConnections";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeInteractionsStore } from "../workflow/nodeInteractions";
 
@@ -179,7 +180,8 @@ export const useConnectAction = () => {
       return Promise.resolve();
     }
 
-    const { promise, resolve, reject } = createUnwrappedPromise<void>();
+    const { promise, resolve, reject } =
+      promiseUtils.createUnwrappedPromise<void>();
 
     const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
     waitingForPortSelection.value = true;

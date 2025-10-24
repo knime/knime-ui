@@ -4,12 +4,13 @@ import { flushPromises, shallowMount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 import { useRoute } from "vue-router";
 
+import { promise as promiseUtils } from "@knime/utils";
+
 import { isBrowser, isDesktop } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 import { createSpaceProvider } from "@/test/factories";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import DevTools from "../application/DevTools.vue";
 import ErrorOverlay from "../application/ErrorOverlay.vue";
 
@@ -178,7 +179,7 @@ describe("KnimeUI.vue", () => {
 
   it("loads the provider space groups after the initializeApplication action has completed", async () => {
     // promise to resolve the initializeApplication action manually
-    const { promise, resolve } = createUnwrappedPromise<void>();
+    const { promise, resolve } = promiseUtils.createUnwrappedPromise<void>();
     const { mockedStores } = await doShallowMount({
       initializeApplication: vi.fn(() => promise),
     });

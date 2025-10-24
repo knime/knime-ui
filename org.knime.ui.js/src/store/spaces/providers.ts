@@ -1,6 +1,8 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
+import { promise as promiseUtils } from "@knime/utils";
+
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceProvider } from "@/api/gateway-api/generated-api";
 import {
@@ -9,7 +11,6 @@ import {
 } from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
 import { isLocalProvider } from "@/store/spaces/util";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import { useSpaceCachingStore } from "./caching";
 
@@ -98,7 +99,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       type FailedProviders = Array<{ name: string; error: unknown }>;
       const failedProviders: FailedProviders = [];
 
-      const { promise, resolve } = createUnwrappedPromise<{
+      const { promise, resolve } = promiseUtils.createUnwrappedPromise<{
         failedProviders: FailedProviders;
       }>();
 

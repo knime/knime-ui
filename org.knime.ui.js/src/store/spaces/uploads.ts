@@ -8,12 +8,11 @@ import {
   useAutoCloseOnCompletion,
 } from "@knime/components";
 import { rfcErrors, useFileUpload } from "@knime/hub-features";
-import { knimeFileFormats } from "@knime/utils";
+import { knimeFileFormats, promise as promiseUtils } from "@knime/utils";
 
 import { useDestinationPicker } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { useApplicationStore } from "../application/application";
 
 import { localRootProjectPath, useSpaceCachingStore } from "./caching";
@@ -71,7 +70,9 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
   });
 
   const getFilesToUpload = () => {
-    const { promise, resolve } = createUnwrappedPromise<File[] | null>();
+    const { promise, resolve } = promiseUtils.createUnwrappedPromise<
+      File[] | null
+    >();
 
     const { open, reset, onChange } = useFileDialog();
 

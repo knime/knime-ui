@@ -13,6 +13,7 @@ import {
   type WithLabels,
   useVersionsApi,
 } from "@knime/hub-features/versions";
+import { promise as promiseUtils } from "@knime/utils";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
@@ -28,7 +29,6 @@ import {
 import { deepMocked, mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import { getToastPresets } from "@/toastPresets";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import type { VersionsModeStatus } from "../workflowVersions";
 
 const mockSavepoints: Array<ItemSavepoint & WithAvatar & WithLabels> =
@@ -794,7 +794,7 @@ describe("workflow store: versions", () => {
         expect(workflowVersionsStore.loading).toBe(false);
 
         const { promise, resolve } =
-          createUnwrappedPromise<
+          promiseUtils.createUnwrappedPromise<
             Awaited<ReturnType<typeof mockedVersionsApi.fetchItemSavepoints>>
           >();
         mockedVersionsApi.fetchItemSavepoints.mockReturnValue(promise);

@@ -6,6 +6,7 @@ import type {
   KnownEventType,
 } from "@knime/ui-extension-renderer/api";
 import type { UIExtensionAPILayer } from "@knime/ui-extension-renderer/vue";
+import { promise } from "@knime/utils";
 
 import {
   type ComponentNode,
@@ -26,10 +27,9 @@ import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { isNodeExecuting, isNodeMetaNode } from "@/util/nodeUtil";
 
-let unwrappedPromise = createUnwrappedPromise<boolean>();
+let unwrappedPromise = promise.createUnwrappedPromise<boolean>();
 const $toast = getToastsProvider();
 
 const showUnsavedChangesDialog = async (askToConfirm: boolean) => {
@@ -230,7 +230,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
      */
     setApplyComplete(isApplied: boolean) {
       unwrappedPromise.resolve(isApplied);
-      unwrappedPromise = createUnwrappedPromise();
+      unwrappedPromise = promise.createUnwrappedPromise();
     },
 
     /**
