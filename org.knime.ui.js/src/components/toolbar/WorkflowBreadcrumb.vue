@@ -230,10 +230,13 @@ const activeVersionTitle = computed(() => {
   justify-content: center;
   gap: 5px;
 
+/* Overwrite for clickable hover elements of the nested action breadcrumb */
    &:deep(span.clickable:hover) {
     color: var(--kds-color-text-and-icon-neutral);
+    & svg {
+      stroke: var(--kds-color-text-and-icon-neutral);
+    }
   }
-
 }
 
 .breadcrumb-root {
