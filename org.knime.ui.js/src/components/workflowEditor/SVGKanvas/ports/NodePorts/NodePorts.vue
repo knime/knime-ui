@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { KnimeNode, NodePortGroups } from "@/api/custom-types";
 import type {
@@ -7,6 +8,7 @@ import type {
   NodePort as NodePortType,
 } from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type { TargetPort } from "../../../CanvasAnchoredComponents/PortTypeMenu/types";
 import { useNodeInfo } from "../../../common/useNodeInfo";
@@ -233,6 +235,14 @@ const assignAddPortPlaceholderRef = (
     outputAddPortPlaceholder.value = ref;
   }
 };
+
+const { isDragging } = storeToRefs(useMovingStore());
+
+watch(isDragging, (isDragging, wasDragging) => {
+  if (currentlySelectedPort.value && isDragging && !wasDragging) {
+    clearSelection();
+  }
+});
 </script>
 
 <template>

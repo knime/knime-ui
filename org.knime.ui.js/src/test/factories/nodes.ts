@@ -147,6 +147,8 @@ export const createWorkflowObject = (
     type: "node",
     x: 0,
     y: 0,
+    width: 32,
+    height: 32,
   };
 
   if (!data) {
@@ -158,8 +160,7 @@ export const createWorkflowObject = (
       ...base,
       id: data.id,
       type: "annotation",
-      x: data.bounds.x,
-      y: data.bounds.y,
+      ...data.bounds,
     };
   } else {
     return {

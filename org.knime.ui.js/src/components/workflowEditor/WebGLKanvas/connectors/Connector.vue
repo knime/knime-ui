@@ -3,6 +3,7 @@ import { computed, ref, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
+import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
@@ -23,7 +24,6 @@ import { markPointerEventAsHandled } from "../util/interaction";
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import ConnectorPathSegment from "./ConnectorPathSegment.vue";
 import { useBendpointActions } from "./useBendpointActions";
-import { useConnectorCulling } from "./useConnectorCulling";
 
 const props = withDefaults(defineProps<ConnectorProps<AbsolutePointXY>>(), {
   sourceNode: null,
@@ -38,10 +38,10 @@ const props = withDefaults(defineProps<ConnectorProps<AbsolutePointXY>>(), {
 const { isDragging } = storeToRefs(useMovingStore());
 const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
-const { isDebugModeEnabled } = storeToRefs(canvasStore);
+const { isDebugModeEnabled, isHoldingDownSpace } = storeToRefs(canvasStore);
 
 const selectionStore = useSelectionStore();
-const { singleSelectedNode, getSelectedConnections: selectedConnections } =
+const { getSelectedConnections: selectedConnections } =
   storeToRefs(selectionStore);
 const { isNodeSelected, isConnectionSelected, isBendpointSelected } =
   selectionStore;
@@ -76,15 +76,6 @@ const { pathSegments } = useConnectorPathSegments({
   bendpoints,
 });
 
-const { renderable } = useConnectorCulling({
-  sourceNode,
-  destNode,
-  sourcePort,
-  destPort,
-  absolutePoint: computed(() =>
-    absolutePoint.value ? [absolutePoint.value.x, absolutePoint.value.y] : null,
-  ),
-});
 const { shouldHideSelection } = storeToRefs(useSelectionStore());
 const isConnectionHovered = ref(false);
 const hoveredPathSegment = ref<number>();
@@ -101,14 +92,22 @@ const onPathSegmentHovered = (
   hoveredPathSegment.value = index;
 };
 
+const isSourceNodeSelected = computed(() =>
+  isNodeSelected(props.sourceNode ?? ""),
+);
+const isDestNodeSelected = computed(() => isNodeSelected(props.destNode ?? ""));
+const { singleSelectedNode } = selectionStore.querySelection("committed");
+
 const isHighlighted = computed(() => {
+  if (!singleSelectedNode.value) {
+    return false;
+  }
+
   // if only one node and no connections are selected, highlight the connections from and to that node
   return (
-    Boolean(singleSelectedNode.value) &&
     !shouldHideSelection.value &&
     selectedConnections.value.length === 0 &&
-    (isNodeSelected(props.sourceNode ?? "") ||
-      isNodeSelected(props.destNode ?? ""))
+    (isSourceNodeSelected.value || isDestNodeSelected.value)
   );
 });
 
@@ -143,6 +142,15 @@ const isTargetForReplacement = computed(() => {
 });
 
 const onConnectionPointerdown = async (event: FederatedPointerEvent) => {
+  if (useCanvasModesStore().hasPanModeEnabled) {
+    return;
+  }
+
+  const isMouseLeftClick = event.button === 0;
+  if ((isMouseLeftClick && isHoldingDownSpace.value) || !isMouseLeftClick) {
+    return;
+  }
+
   markPointerEventAsHandled(event, { initiator: "connection-select" });
   if (!isMultiselectEvent(event)) {
     const { wasAborted } = await selectionStore.tryClearSelection();
@@ -175,7 +183,7 @@ const onRightClick = async (event: FederatedPointerEvent) => {
   markPointerEventAsHandled(event, { initiator: "connection::onContextMenu" });
 
   if (!isConnectionSelected(props.id)) {
-    await selectionStore.deselectAllObjects();
+    selectionStore.deselectAllObjects();
   }
 
   selectionStore.selectConnections(props.id);
@@ -184,11 +192,7 @@ const onRightClick = async (event: FederatedPointerEvent) => {
 </script>
 
 <template>
-  <Container
-    :label="`Connection__${id}`"
-    :renderable="renderable"
-    :visible="renderable"
-  >
+  <Container :label="`Connection__${id}`">
     <template v-for="(segment, index) of pathSegments" :key="index">
       <ConnectorPathSegment
         :connection-id="id"
@@ -209,7 +213,7 @@ const onRightClick = async (event: FederatedPointerEvent) => {
         :is-segment-hovered="hoveredPathSegment === index"
         :is-debug-mode-enabled="isDebugModeEnabled"
         :is-floating-connector="Boolean(absolutePoint)"
-        @pointerdown.stop="onConnectionPointerdown"
+        @pointerdown="onConnectionPointerdown"
         @pointerenter="onPathSegmentHovered(true, index)"
         @pointerleave="onPathSegmentHovered(false, undefined)"
         @hover-virtual-bendpoint="

@@ -153,10 +153,7 @@ export const useNodeReplacementOrInsertion = () => {
 
     const foundObject = canvasStore.findObjectFromScreenCoordinates(position);
 
-    if (
-      foundObject &&
-      foundObject.label.startsWith("ConnectorPathSegmentHoverArea__")
-    ) {
+    if (foundObject?.label?.startsWith("ConnectorPathSegmentHoverArea__")) {
       const connectionId = foundObject.label.replace(
         "ConnectorPathSegmentHoverArea__",
         "",

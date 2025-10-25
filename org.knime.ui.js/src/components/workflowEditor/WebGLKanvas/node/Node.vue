@@ -74,13 +74,18 @@ const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging, hasAbortedDrag } =
   storeToRefs(movingStore);
 
+const isSelected = computed(() => isNodeSelected(props.node.id));
+
 const translatedPosition = computed(() => {
-  if (selectionStore.isNodeSelected(props.node.id)) {
+  if (isSelected.value) {
     return {
       x: props.position.x + movePreviewDelta.value.x,
       y: props.position.y + movePreviewDelta.value.y,
     };
   }
+
+  // cannot return `props.position` directly because a WF patch (e.g undo)
+  // won't trigger reactivity
   return { x: props.position.x, y: props.position.y };
 });
 
@@ -220,10 +225,18 @@ const isConnectionForbidden = computed(
 );
 
 const onNodeHoverAreaPointerEnter = () => {
+  if (isDragging.value) {
+    return;
+  }
+
   hoverProvider.onPointerEnter(props.node.id);
 };
 
 const onNodeHoverAreaPointerMove = () => {
+  if (isDragging.value) {
+    return;
+  }
+
   if (
     // ignore self-hover
     (floatingConnector.value &&
@@ -242,6 +255,10 @@ const onNodeHoverAreaPointerMove = () => {
 };
 
 const onNodeHoverAreaPointerLeave = () => {
+  if (isDragging.value) {
+    return;
+  }
+
   hoverProvider.onPointerLeave();
 
   floatingConnectorStore.onLeaveConnectionSnapCandidate({
@@ -286,7 +303,7 @@ const actionBarPosition = computed(() => {
 const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
   markPointerEventAsHandled(event, { initiator: "node::onContextMenu" });
 
-  if (!isNodeSelected(props.node.id)) {
+  if (!isSelected.value) {
     const { wasAborted } = await selectionStore.tryClearSelection();
 
     if (wasAborted) {
@@ -298,6 +315,10 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
 
   await canvasAnchoredComponentsStore.toggleContextMenu({ event });
 };
+
+const renderLayer = computed(() =>
+  isSelected.value ? canvasLayers.value.selectedNodes : null,
+);
 </script>
 
 <template>
@@ -314,7 +335,7 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
     :label="`Node__${node.id}`"
     :renderable="renderable"
     :visible="renderable"
-    :layer="isNodeSelected(node.id) ? canvasLayers.selectedNodes : null"
+    :layer="renderLayer"
     :event-mode="isDraggingThisObject ? 'none' : 'static'"
     :alpha="floatingConnector && isConnectionForbidden ? 0.7 : 1"
     :position="translatedPosition"

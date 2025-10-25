@@ -8,6 +8,7 @@ import { HINTS } from "@/hints/hints.config";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
+import { nodeToWorkflowObject } from "@/util/workflowUtil";
 
 export const useKanvasHint = () => {
   const { createHint, isCompleted } = useHint();
@@ -39,21 +40,13 @@ export const useKanvasHint = () => {
       return;
     }
 
-    const nodeObjects = targetNodes.map(({ id, position }) => ({
-      id,
-      type: "node" as const,
-      x: position.x,
-      y: position.y,
-    }));
+    const nodeObjects = targetNodes.map(nodeToWorkflowObject);
 
     const center = useSVGCanvasStore().getCenterOfScrollContainer();
 
     const nearestObject = await workflowNavigationService.nearestObject({
       objects: nodeObjects,
-      reference: {
-        ...center,
-        id: "",
-      },
+      reference: { ...center, id: "" },
       direction: "left",
     });
 

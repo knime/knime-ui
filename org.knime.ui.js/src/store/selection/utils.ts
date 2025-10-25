@@ -1,4 +1,4 @@
-import { type Ref, computed, ref } from "vue";
+import { type Ref, computed, reactive, ref } from "vue";
 
 export const selectionAdder =
   (target: Ref<Record<string, boolean>>) => (toAdd: string[] | string) => {
@@ -26,23 +26,30 @@ export const useStateWithPreview = () => {
    * Changes immediately upon a selection state change. Used for immediate
    * interactions, which require faster frames (e.g canvas interactions)
    */
-  const previewSelection = ref<Record<string, boolean>>({});
+  const previewSelection = reactive(new Set<string>());
+
   /**
    * Changes depending on selection mode. If mode is delayed, then selection
    * must be committed before this value takes effect. Used for interactions
    * that depend on selection state but that have a heavy impact on the main thread
    * (e.g rendering UI extensions)
    */
-  const committedSelection = ref<Record<string, boolean>>({});
+  const committedSelection = reactive(new Set<string>());
 
   const commitSelection = () => {
     consola.trace("Committing selection");
-    committedSelection.value = { ...previewSelection.value };
+    committedSelection.clear();
+    for (const element of previewSelection) {
+      committedSelection.add(element);
+    }
     commitVersion.value = previewVersion.value;
   };
 
   const updatePreview = (newState: Record<string, boolean>) => {
-    previewSelection.value = newState;
+    previewSelection.clear();
+    for (const element of Object.keys(newState)) {
+      previewSelection.add(element);
+    }
     previewVersion.value++;
   };
 

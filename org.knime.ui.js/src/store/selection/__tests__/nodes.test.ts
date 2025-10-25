@@ -60,6 +60,8 @@ describe("selection::nodes", () => {
       type: "node",
       x: node1.position.x,
       y: node1.position.y,
+      width: 32,
+      height: 32,
     });
     expect(showSelection.value).toBe(true);
     expect(showFocus.value).toBe(true);

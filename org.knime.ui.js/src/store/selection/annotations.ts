@@ -30,17 +30,17 @@ export const useAnnotationSelection = (
   /**
    * List of selected annotation ids. Defaults to `committed` selection.
    */
-  const selectedAnnotationIds = computed(() =>
-    Object.keys(committedSelection.value),
-  );
+  const selectedAnnotationIds = computed(() => [
+    ...committedSelection.values(),
+  ]);
 
   /**
    * List of selected annotations. Defaults to `committed` selection.
    */
   const getSelectedAnnotations = computed(() => {
     return workflowStore.activeWorkflow
-      ? workflowStore.activeWorkflow.workflowAnnotations.filter(
-          ({ id }) => committedSelection.value[id],
+      ? workflowStore.activeWorkflow.workflowAnnotations.filter(({ id }) =>
+          committedSelection.has(id),
         )
       : [];
   });
@@ -107,17 +107,19 @@ export const useAnnotationSelection = (
     }
 
     if (!isMultiselect) {
-      previewSelection.value = { [annotationId]: true };
-      committedSelection.value = { [annotationId]: true };
+      previewSelection.clear();
+      committedSelection.clear();
+      previewSelection.add(annotationId);
+      committedSelection.add(annotationId);
       return;
     }
 
     if (isSelected) {
-      delete previewSelection.value[annotationId];
-      delete committedSelection.value[annotationId];
+      previewSelection.delete(annotationId);
+      committedSelection.delete(annotationId);
     } else {
-      previewSelection.value[annotationId] = true;
-      committedSelection.value[annotationId] = true;
+      previewSelection.add(annotationId);
+      committedSelection.add(annotationId);
     }
   };
 
@@ -150,10 +152,7 @@ export const useAnnotationSelection = (
 
   const getAnnotationVisualSelectionState = (annotationId: string) => {
     const showSelection = computed(() => {
-      return (
-        Boolean(previewSelection.value[annotationId]) &&
-        !shouldHideSelection.value
-      );
+      return previewSelection.has(annotationId) && !shouldHideSelection.value;
     });
 
     const showFocus = computed(
@@ -169,12 +168,12 @@ export const useAnnotationSelection = (
   const query = (mode: SelectionMode) => {
     const _state = mode === "committed" ? committedSelection : previewSelection;
 
-    const selectedAnnotationIds = computed(() => Object.keys(_state.value));
+    const selectedAnnotationIds = computed(() => [..._state.values()]);
 
     const getSelectedAnnotations = computed(() => {
       return workflowStore.activeWorkflow
-        ? workflowStore.activeWorkflow.workflowAnnotations.filter(
-            ({ id }) => _state.value[id],
+        ? workflowStore.activeWorkflow.workflowAnnotations.filter(({ id }) =>
+            _state.has(id),
           )
         : [];
     });
@@ -185,7 +184,7 @@ export const useAnnotationSelection = (
         : null;
     });
 
-    const isAnnotationSelected = (id: string) => Boolean(_state.value[id]);
+    const isAnnotationSelected = (id: string) => _state.has(id);
 
     return {
       selectedAnnotationIds,
@@ -202,8 +201,7 @@ export const useAnnotationSelection = (
     singleSelectedAnnotation,
 
     isAnnotationSelected: (id: string) =>
-      Boolean(committedSelection.value[id]) ||
-      Boolean(previewSelection.value[id]),
+      committedSelection.has(id) || previewSelection.has(id),
 
     selectAnnotations: (ids: string[], mode: SelectionMode = "committed") => {
       if (mode === "committed") {
@@ -213,7 +211,7 @@ export const useAnnotationSelection = (
         );
       } else {
         return setAnnotationSelection(
-          [...Object.keys(previewSelection.value), ...ids],
+          [...previewSelection.values(), ...ids],
           mode,
         );
       }

@@ -1,9 +1,8 @@
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NativeNode, NodePort } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
-import { useMovingStore } from "@/store/workflow/moving";
 import type { SelectedPortIdentifier } from "@/util/portSelection";
 
 import { useNodeInfo } from "./useNodeInfo";
@@ -76,14 +75,6 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
       updateSelection(`${side}-${index}`);
     }
   };
-
-  const { isDragging } = storeToRefs(useMovingStore());
-
-  watch(isDragging, (isDragging, wasDragging) => {
-    if (isActiveNodePortsInstance.value && isDragging && !wasDragging) {
-      clearSelection();
-    }
-  });
 
   return {
     currentlySelectedPort,

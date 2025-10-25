@@ -40,21 +40,27 @@ export const rectangleIntersection = (
   return intersection;
 };
 
+export const isIntersecting = (A: Bounds, B: Bounds): boolean => {
+  return (
+    A.x < B.x + B.width &&
+    A.x + A.width > B.x &&
+    A.y < B.y + B.height &&
+    A.y + A.height > B.y
+  );
+};
+
+export const rectContains = (reference: Bounds, candidate: Bounds): boolean => {
+  return (
+    reference.x < candidate.x &&
+    reference.y < candidate.y &&
+    reference.x + reference.width > candidate.x + candidate.width &&
+    reference.y + reference.height > candidate.y + candidate.height
+  );
+};
+
 /**
  * Calculates how much of rectangle A's area is covered by rectangle B
- * @param { Object } A area A
- * @param { Number } A.top
- * @param { Number } A.left
- * @param { Number } A.width
- * @param { Number } A.height
- *
- * @param { Object } B area B
- * @param { Number } B.top
- * @param { Number } B.left
- * @param { Number } B.width
- * @param { Number } B.height
- *
- * @returns { Number } coverage of A by B
+ * @returns coverage of A by B
  */
 export const areaCoverage = (A: GeometryBounds, B: GeometryBounds) => {
   const intersection = rectangleIntersection(A, B);

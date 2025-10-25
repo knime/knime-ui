@@ -23,6 +23,11 @@ import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { geometry } from "@/util/geometry";
 import { getPortContext } from "@/util/portSelection";
+import {
+  annotationToWorkflowObject,
+  componentPlaceholderToWorkflowObject,
+  nodeToWorkflowObject,
+} from "@/util/workflowUtil";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";
@@ -457,27 +462,14 @@ export const useWorkflowStore = defineStore("workflow", {
       const { nodes, workflowAnnotations, componentPlaceholders } =
         state.activeWorkflow;
 
-      const nodeObjects = Object.values(nodes).map(({ id, position }) => ({
-        id,
-        type: "node" as const,
-        x: position.x,
-        y: position.y,
-      }));
+      const nodeObjects = Object.values(nodes).map(nodeToWorkflowObject);
 
-      const annotationObjects = workflowAnnotations.map(({ id, bounds }) => ({
-        id,
-        type: "annotation" as const,
-        x: bounds.x,
-        y: bounds.y,
-      }));
+      const annotationObjects = workflowAnnotations.map(
+        annotationToWorkflowObject,
+      );
 
       const componentPlaceholderObjects = (componentPlaceholders ?? []).map(
-        ({ id, position }) => ({
-          id,
-          type: "componentPlaceholder" as const,
-          x: position.x,
-          y: position.y,
-        }),
+        componentPlaceholderToWorkflowObject,
       );
 
       return [

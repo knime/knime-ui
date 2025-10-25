@@ -3,7 +3,6 @@ import { defineStore } from "pinia";
 
 import { promise as promiseUtils, sleep } from "@knime/utils";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import {
   type WorkflowMonitorState as WorkflowMonitorAPIState,
   type WorkflowMonitorMessage,
@@ -16,6 +15,7 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import { nodeToWorkflowObject } from "@/util/workflowUtil";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
@@ -161,12 +161,8 @@ export const useWorkflowMonitorStore = defineStore("workflowMonitor", {
           return;
         }
 
-        const { position } = workflowStore.activeWorkflow!.nodes[nodeId];
-        const workflowObject: WorkflowObject = {
-          id: nodeId,
-          type: "node",
-          ...position,
-        };
+        const node = workflowStore.activeWorkflow!.nodes[nodeId];
+        const workflowObject = nodeToWorkflowObject(node);
 
         // small wait period for the canvas to get settled
         // eslint-disable-next-line no-magic-numbers

@@ -47,10 +47,13 @@ const {
   bendpoints,
 } = toRefs(props);
 
+const isSourceNodeSelected = computed(() =>
+  isNodeSelected(props.sourceNode ?? ""),
+);
+const isDestNodeSelected = computed(() => isNodeSelected(props.destNode ?? ""));
+
 const isConnectedToExactlyOneSelectedNode = computed(
-  () =>
-    isNodeSelected(sourceNode.value ?? "") !==
-    isNodeSelected(destNode.value ?? ""),
+  () => isSourceNodeSelected.value !== isDestNodeSelected.value,
 );
 
 const rawLabelMetrics = computed(() => {

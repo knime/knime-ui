@@ -2,6 +2,7 @@ import { type Ref, computed, readonly, ref } from "vue";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { nodeToWorkflowObject } from "@/util/workflowUtil";
 
 import type { SelectionMode } from "./types";
 import { useStateWithPreview } from "./utils";
@@ -25,7 +26,7 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
   /**
    * List of selected nodes ids. Defaults to "committed" mode.
    */
-  const selectedNodeIds = computed(() => Object.keys(committedSelection.value));
+  const selectedNodeIds = computed(() => [...committedSelection.values()]);
 
   /**
    * List of selected nodes. Defaults to "committed" mode.
@@ -95,7 +96,8 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
 
     const node =
       workflowStore.activeWorkflow.nodes[options.focusedObject.value.id];
-    return node ? { ...node.position, id: node.id, type: "node" } : null;
+
+    return node ? nodeToWorkflowObject(node) : null;
   });
 
   const selectAll = (mode: SelectionMode = "committed") => {
@@ -111,7 +113,10 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
     mode: SelectionMode = "committed",
   ) => {
     setNodeSelection(preserveNodeSelectionFor, mode);
-    selectedComponentPlaceholder.value = null;
+
+    if (selectedComponentPlaceholder.value) {
+      selectedComponentPlaceholder.value = null;
+    }
   };
 
   /**
@@ -120,10 +125,7 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
    */
   const getNodeVisualSelectionStates = (nodeId: string) => {
     const showSelection = computed(() => {
-      return (
-        Boolean(previewSelection.value[nodeId]) &&
-        !options.shouldHideSelection.value
-      );
+      return previewSelection.has(nodeId) && !options.shouldHideSelection.value;
     });
 
     const showFocus = computed(() => focusedNode.value?.id === nodeId);
@@ -137,7 +139,7 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
   const query = (mode: SelectionMode) => {
     const _state = mode === "committed" ? committedSelection : previewSelection;
 
-    const selectedNodeIds = computed(() => Object.keys(_state.value));
+    const selectedNodeIds = computed(() => [..._state.values()]);
     const singleSelectedNode = computed(() => {
       if (selectedNodeIds.value.length !== 1) {
         return null;
@@ -155,7 +157,7 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
         : [];
     });
 
-    const isNodeSelected = (id: string) => Boolean(_state.value[id]);
+    const isNodeSelected = (id: string) => _state.has(id);
 
     return {
       selectedNodeIds,
@@ -171,17 +173,13 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
     getSelectedNodes,
 
     isNodeSelected: (id: string) =>
-      Boolean(committedSelection.value[id]) ||
-      Boolean(previewSelection.value[id]),
+      committedSelection.has(id) || previewSelection.has(id),
 
     selectNodes: (ids: string[], mode: SelectionMode = "committed") => {
       if (mode === "committed") {
         setNodeSelection([...selectedNodeIds.value, ...ids], mode);
       } else {
-        setNodeSelection(
-          [...Object.keys(previewSelection.value), ...ids],
-          mode,
-        );
+        setNodeSelection([...previewSelection.values(), ...ids], mode);
       }
     },
 

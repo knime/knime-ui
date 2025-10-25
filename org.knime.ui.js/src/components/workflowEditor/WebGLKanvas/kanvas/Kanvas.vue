@@ -155,9 +155,8 @@ const onPointerDown = (event: PointerEvent) => {
   mousePan(event);
 };
 
-const onPointerUp = (event: PointerEvent) => {
+const onPointerUp = () => {
   isGrabbing.value = false;
-  $bus.emit("selection-pointerup", event);
 };
 
 const { onMouseWheel } = useMouseWheel({ scrollPan });
@@ -198,7 +197,6 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     ]"
     @wheel.prevent="onMouseWheel"
     @pointerdown="onPointerDown"
-    @pointermove="$bus.emit('selection-pointermove', $event)"
     @pointerup="onPointerUp"
     @contextmenu.prevent
     @init-complete="isPixiAppInitialized = true"

@@ -3,6 +3,7 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
+import rafThrottle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
@@ -434,7 +435,7 @@ export const useObjectInteractions = (
       const selectionMode: SelectionMode = isWorkflowWritable.value
         ? "preview"
         : "committed";
-      await selectionStore.deselectAllObjects();
+      selectionStore.deselectAllObjects();
       objectHandler.selectObject(selectionMode);
     }
 
@@ -453,7 +454,11 @@ export const useObjectInteractions = (
 
     let didDrag = false;
 
-    const onMove = (pointerMoveEvent: PointerEvent): void => {
+    const onMove = rafThrottle((pointerMoveEvent: PointerEvent): void => {
+      if (pointerMoveEvent.buttons === 0) {
+        return;
+      }
+
       const { isSignificantMove, deltaX, deltaY } =
         calculateMoveDeltas(pointerMoveEvent);
 
@@ -461,8 +466,22 @@ export const useObjectInteractions = (
         return;
       }
 
+      if (selectionStore.activeNodePorts) {
+        // hide any active selected port
+        selectionStore.updateActiveNodePorts({
+          nodeId: null,
+          selectedPort: null,
+        });
+      }
+
+      // prevent any other object interaction temporarily while a drag is occurring
+      if (canvasStore.interactionsEnabled === "all") {
+        canvasStore.setInteractionsEnabled("camera-only");
+      }
+
       dragInitiatorId.value = objectHandler.getObjectId();
       didDrag = true;
+
       if (hasAbortedDrag.value) {
         return;
       }
@@ -484,9 +503,11 @@ export const useObjectInteractions = (
       options.onMove?.(pointerMoveEvent);
       movingStore.setIsDragging(true);
       movingStore.setMovePreview({ deltaX, deltaY });
-    };
+    });
 
-    const onUp = async () => {
+    const onUp = rafThrottle(() => {
+      canvasStore.setInteractionsEnabled("all");
+
       if (didDrag) {
         consola.debug("object interaction:: drag completed", {
           objectMetadata,
@@ -511,11 +532,9 @@ export const useObjectInteractions = (
         const isNode = options.objectMetadata.type === "node";
         if (isNode) {
           // skip deselecting -> re-selecting the same node
-          await selectionStore.deselectAllObjects([
-            objectHandler.getObjectId(),
-          ]);
+          selectionStore.deselectAllObjects([objectHandler.getObjectId()]);
         } else {
-          await selectionStore.deselectAllObjects();
+          selectionStore.deselectAllObjects();
           objectHandler.selectObject();
         }
 
@@ -536,7 +555,7 @@ export const useObjectInteractions = (
       canvas.releasePointerCapture(pointerDownEvent.pointerId);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
-    };
+    });
 
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);

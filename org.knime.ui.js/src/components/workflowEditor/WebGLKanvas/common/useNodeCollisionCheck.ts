@@ -1,14 +1,36 @@
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
+import { SpatialHash } from "@/util/geometry/spatialHash";
 
 const DISTANCE_BUFFER = 20;
-const spatialHash = ref<Record<string, string[]>>({});
-const cellSize = ref(0);
+const spatialHash = new SpatialHash({
+  cellSize: $shapes.nodeSize + DISTANCE_BUFFER,
+  aabbTesters: {
+    node: (reference, candidate) => {
+      return Boolean(
+        geometry.utils.rectangleIntersection(
+          {
+            left: reference.x,
+            top: reference.y,
+            width: reference.width + DISTANCE_BUFFER,
+            height: reference.height + DISTANCE_BUFFER,
+          },
+          {
+            left: candidate.x,
+            top: candidate.y,
+            width: candidate.width + DISTANCE_BUFFER,
+            height: candidate.height + DISTANCE_BUFFER,
+          },
+        ),
+      );
+    },
+  },
+});
 
 export const useNodeCollisionCheck = () => {
   const workflowStore = useWorkflowStore();
@@ -20,12 +42,16 @@ export const useNodeCollisionCheck = () => {
       return;
     }
 
-    const result = geometry.buildSpatialHash(
-      nodes.value,
-      $shapes.nodeSize + DISTANCE_BUFFER,
+    spatialHash.reset(
+      Object.values(nodes.value).map((node) => ({
+        id: node.id,
+        type: "node",
+        x: node.position.x,
+        y: node.position.y,
+        width: $shapes.nodeSize,
+        height: $shapes.nodeSize,
+      })),
     );
-    spatialHash.value = result.hash;
-    cellSize.value = result.cellSize;
   };
 
   const check = (referenceNode: { id: string; position: XY }) => {
@@ -33,32 +59,13 @@ export const useNodeCollisionCheck = () => {
       return null;
     }
 
-    const foundCandidate = geometry.queryNearbyObjects({
-      reference: {
-        id: referenceNode.id,
-        position: referenceNode.position,
-      },
-      objects: nodes.value,
-      hash: spatialHash.value,
-      aabbTest: (reference, candidate) => {
-        return Boolean(
-          geometry.utils.rectangleIntersection(
-            {
-              left: reference.position.x,
-              top: reference.position.y,
-              width: $shapes.nodeSize + DISTANCE_BUFFER,
-              height: $shapes.nodeSize + DISTANCE_BUFFER,
-            },
-            {
-              left: candidate.position.x,
-              top: candidate.position.y,
-              width: $shapes.nodeSize + DISTANCE_BUFFER,
-              height: $shapes.nodeSize + DISTANCE_BUFFER,
-            },
-          ),
-        );
-      },
-      cellSize: cellSize.value,
+    const foundCandidate = spatialHash.queryNearbyObjects({
+      id: referenceNode.id,
+      type: "node",
+      x: referenceNode.position.x,
+      y: referenceNode.position.y,
+      width: $shapes.nodeSize,
+      height: $shapes.nodeSize,
     });
 
     return foundCandidate;

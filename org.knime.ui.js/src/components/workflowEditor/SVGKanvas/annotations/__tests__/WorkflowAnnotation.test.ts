@@ -514,6 +514,7 @@ describe("WorkflowAnnotation.vue", () => {
       await wrapper
         .findComponent(TransformControls)
         .trigger("click", { button: 0, metaKey: true });
+      await nextTick();
 
       expect(
         mockedStores.selectionStore.toggleAnnotationSelection,
@@ -527,6 +528,7 @@ describe("WorkflowAnnotation.vue", () => {
         .findComponent(TransformControls)
         .trigger("click", { button: 0, metaKey: true });
 
+      await nextTick();
       expect(
         mockedStores.selectionStore.toggleAnnotationSelection,
       ).toHaveBeenCalledWith({

@@ -6,6 +6,11 @@ import { isBrowser } from "@/environment";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import {
+  annotationToWorkflowObject,
+  componentPlaceholderToWorkflowObject,
+  nodeToWorkflowObject,
+} from "@/util/workflowUtil";
 import { useMovingStore } from "../workflow/moving";
 
 import { useAnnotationSelection } from "./annotations";
@@ -87,27 +92,17 @@ export const useSelectionStore = defineStore("selection", () => {
   });
 
   const selectedObjects = computed<WorkflowObject[]>(() => [
-    ...nodeSelection.getSelectedNodes.value.map(({ id, position }) => ({
-      id,
-      type: "node" as const,
-      ...position,
-    })),
+    ...nodeSelection.getSelectedNodes.value.map(nodeToWorkflowObject),
 
     ...annotationSelection.getSelectedAnnotations.value.map(
-      ({ id, bounds }) => ({
-        id,
-        type: "annotation" as const,
-        ...bounds,
-      }),
+      annotationToWorkflowObject,
     ),
 
     ...(nodeSelection.getSelectedComponentPlaceholder?.value
       ? [
-          {
-            id: nodeSelection.getSelectedComponentPlaceholder.value.id,
-            type: "componentPlaceholder" as const,
-            ...nodeSelection.getSelectedComponentPlaceholder.value.position,
-          },
+          componentPlaceholderToWorkflowObject(
+            nodeSelection.getSelectedComponentPlaceholder.value,
+          ),
         ]
       : []),
   ]);
@@ -144,8 +139,8 @@ export const useSelectionStore = defineStore("selection", () => {
 
     return Object.values(activeWorkflow.connections).filter(
       (conn) =>
-        nodeSelection.internal.committedSelectedNodes.value[conn.sourceNode] &&
-        nodeSelection.internal.committedSelectedNodes.value[conn.destNode],
+        nodeSelection.internal.committedSelectedNodes.has(conn.sourceNode) &&
+        nodeSelection.internal.committedSelectedNodes.has(conn.destNode),
     );
   });
 
@@ -325,25 +320,15 @@ export const useSelectionStore = defineStore("selection", () => {
     });
 
     const selectedObjects = computed<WorkflowObject[]>(() => [
-      ...getSelectedNodes.value.map(({ id, position }) => ({
-        id,
-        type: "node" as const,
-        ...position,
-      })),
+      ...getSelectedNodes.value.map(nodeToWorkflowObject),
 
-      ...getSelectedAnnotations.value.map(({ id, bounds }) => ({
-        id,
-        type: "annotation" as const,
-        ...bounds,
-      })),
+      ...getSelectedAnnotations.value.map(annotationToWorkflowObject),
 
       ...(nodeSelection.getSelectedComponentPlaceholder?.value
         ? [
-            {
-              id: nodeSelection.getSelectedComponentPlaceholder.value.id,
-              type: "componentPlaceholder" as const,
-              ...nodeSelection.getSelectedComponentPlaceholder.value.position,
-            },
+            componentPlaceholderToWorkflowObject(
+              nodeSelection.getSelectedComponentPlaceholder.value,
+            ),
           ]
         : []),
     ]);

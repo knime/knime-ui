@@ -1,7 +1,10 @@
+<!-- eslint-disable no-use-before-define -->
+<!-- eslint-disable func-style -->
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
+import rafThrottle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
@@ -10,9 +13,9 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
+import { SpatialHash } from "@/util/geometry/spatialHash";
 import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
-import { findObjectsForSelectionWebGL } from "../../util/findObjectsForSelection";
 import {
   type PanningToEdgeUpdateHandler,
   useDragNearEdgePanning,
@@ -22,11 +25,13 @@ const canvasStore = useWebGLCanvasStore();
 const { zoomFactor, canvasOffset } = storeToRefs(canvasStore);
 const movingStore = useMovingStore();
 const { isDragging } = storeToRefs(movingStore);
-const { activeWorkflow } = storeToRefs(useWorkflowStore());
+const { workflowObjects } = storeToRefs(useWorkflowStore());
 const selectionStore = useSelectionStore();
 
 const inverseMode = ref(false);
 const isSelectionRectangleVisible = ref(false);
+
+const spatialHash = new SpatialHash();
 
 const startPos = ref<XY>({ x: 0, y: 0 });
 const endPos = ref<XY>({ x: 0, y: 0 });
@@ -42,11 +47,7 @@ let selectionPointerId: number | undefined;
 let didDrag = false;
 
 const updateSelectionPreview = () => {
-  const { inside } = findObjectsForSelectionWebGL({
-    startPos: startPos.value,
-    endPos: endPos.value,
-    workflow: activeWorkflow.value!,
-  });
+  const { inside } = spatialHash.queryRectBounds(selectionRectangle.value);
 
   const next: {
     nodes: string[];
@@ -86,16 +87,12 @@ const clearState = () => {
   didDrag = false;
 };
 
-const selectionRectangle = computed(() =>
-  isSelectionRectangleVisible.value
-    ? {
-        x: Math.min(startPos.value.x, endPos.value.x),
-        y: Math.min(startPos.value.y, endPos.value.y),
-        width: Math.abs(endPos.value.x - startPos.value.x),
-        height: Math.abs(endPos.value.y - startPos.value.y),
-      }
-    : {},
-);
+const selectionRectangle = computed(() => ({
+  x: Math.min(startPos.value.x, endPos.value.x),
+  y: Math.min(startPos.value.y, endPos.value.y),
+  width: Math.abs(endPos.value.x - startPos.value.x),
+  height: Math.abs(endPos.value.y - startPos.value.y),
+}));
 
 const onSelectionStart = (event: PointerEvent) => {
   consola.debug("global rectangle selection:: start", { event });
@@ -133,6 +130,8 @@ const onSelectionStart = (event: PointerEvent) => {
     y: startPos.value.y,
   };
 
+  spatialHash.reset(workflowObjects.value);
+
   inverseMode.value = event.shiftKey || event.ctrlKey || event.metaKey;
 
   if (inverseMode.value) {
@@ -147,6 +146,78 @@ const onSelectionStart = (event: PointerEvent) => {
     selectionStore.deselectAllObjects();
   }
 
+  const canvas = canvasStore.pixiApplication!.canvas;
+
+  const onSelectionMove = rafThrottle((event: PointerEvent) => {
+    if (
+      !isSelectionRectangleVisible.value ||
+      isDragging.value ||
+      event.pointerId !== selectionPointerId
+    ) {
+      return;
+    }
+
+    didDrag = true;
+    if (canvasStore.interactionsEnabled === "all") {
+      canvasStore.setInteractionsEnabled("none");
+    }
+
+    startPanningToEdge(event, onPanningToEdgeUpdate);
+
+    const { offsetX, offsetY } = event;
+
+    endPos.value = {
+      x: (offsetX - canvasOffset.value.x) / zoomFactor.value,
+      y: (offsetY - canvasOffset.value.y) / zoomFactor.value,
+    };
+
+    updateSelectionPreview();
+  });
+
+  const onSelectionEnd = rafThrottle((event: PointerEvent) => {
+    if (selectionPointerId === undefined) {
+      return;
+    }
+
+    canvas.removeEventListener("pointermove", onSelectionMove);
+    canvas.removeEventListener("pointerup", onSelectionEnd);
+
+    consola.debug("global rectangle selection:: end", { event });
+    startPos.value = { x: 0, y: 0 };
+    endPos.value = { x: 0, y: 0 };
+
+    stopPanningToEdge();
+    canvasStore.setInteractionsEnabled("all");
+
+    if (
+      event.dataset?.skipGlobalSelection ||
+      isDragging.value ||
+      !isSelectionRectangleVisible.value ||
+      event.pointerId !== selectionPointerId
+    ) {
+      isSelectionRectangleVisible.value = false;
+      clearState();
+      return;
+    }
+
+    isSelectionRectangleVisible.value = false;
+    const target = event.target as HTMLElement;
+    if (target.hasPointerCapture(selectionPointerId!)) {
+      target.releasePointerCapture(selectionPointerId!);
+    }
+    selectionPointerId = undefined;
+
+    // when a drag didn't happen then no rectangle was made
+    // so we don't need to commit a preview
+    if (didDrag) {
+      selectionStore.commitSelectionPreview();
+    }
+
+    clearState();
+  });
+
+  canvas.addEventListener("pointermove", onSelectionMove);
+  canvas.addEventListener("pointerup", onSelectionEnd);
   updateSelectionPreview();
 };
 
@@ -161,71 +232,6 @@ const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
     endPos.value.y -= offset.y;
   }
   updateSelectionPreview();
-};
-
-const onSelectionMove = (event: PointerEvent) => {
-  if (
-    !isSelectionRectangleVisible.value ||
-    isDragging.value ||
-    event.pointerId !== selectionPointerId
-  ) {
-    return;
-  }
-
-  didDrag = true;
-  if (canvasStore.interactionsEnabled === "all") {
-    canvasStore.setInteractionsEnabled("none");
-  }
-
-  startPanningToEdge(event, onPanningToEdgeUpdate);
-
-  const { offsetX, offsetY } = event;
-
-  endPos.value = {
-    x: (offsetX - canvasOffset.value.x) / zoomFactor.value,
-    y: (offsetY - canvasOffset.value.y) / zoomFactor.value,
-  };
-
-  updateSelectionPreview();
-};
-
-const onSelectionEnd = (event: PointerEvent) => {
-  if (selectionPointerId === undefined) {
-    return;
-  }
-
-  consola.debug("global rectangle selection:: end", { event });
-  startPos.value = { x: 0, y: 0 };
-  endPos.value = { x: 0, y: 0 };
-
-  stopPanningToEdge();
-  canvasStore.setInteractionsEnabled("all");
-
-  if (
-    event.dataset?.skipGlobalSelection ||
-    isDragging.value ||
-    !isSelectionRectangleVisible.value ||
-    event.pointerId !== selectionPointerId
-  ) {
-    isSelectionRectangleVisible.value = false;
-    clearState();
-    return;
-  }
-
-  isSelectionRectangleVisible.value = false;
-  const target = event.target as HTMLElement;
-  if (target.hasPointerCapture(selectionPointerId!)) {
-    target.releasePointerCapture(selectionPointerId!);
-  }
-  selectionPointerId = undefined;
-
-  // when a drag didn't happen then no rectangle was made
-  // so we don't need to commit a preview
-  if (didDrag) {
-    selectionStore.commitSelectionPreview();
-  }
-
-  clearState();
 };
 
 const DASH_ARRAY = 5;
@@ -257,14 +263,6 @@ const renderFn = (graphics: GraphicsInst) => {
 useGlobalBusListener({
   eventName: "selection-pointerdown",
   handler: onSelectionStart,
-});
-useGlobalBusListener({
-  eventName: "selection-pointermove",
-  handler: onSelectionMove,
-});
-useGlobalBusListener({
-  eventName: "selection-pointerup",
-  handler: onSelectionEnd,
 });
 </script>
 

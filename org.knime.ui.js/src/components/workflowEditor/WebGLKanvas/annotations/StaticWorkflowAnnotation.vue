@@ -181,22 +181,15 @@ const translatedPosition = computed(() => {
 });
 
 const isWithinVisibleArea = computed(() => {
-  const intersect = geometry.utils.rectangleIntersection(
+  return geometry.utils.isIntersecting(
     {
-      left: translatedPosition.value.x,
-      top: translatedPosition.value.y,
+      x: translatedPosition.value.x,
+      y: translatedPosition.value.y,
       width: props.annotation.bounds.width,
       height: props.annotation.bounds.height,
     },
-    {
-      left: visibleArea.value.x,
-      top: visibleArea.value.y,
-      width: visibleArea.value.width,
-      height: visibleArea.value.height,
-    },
+    visibleArea.value,
   );
-
-  return Boolean(intersect);
 });
 
 const { showFocus, showSelection, showTransformControls } =

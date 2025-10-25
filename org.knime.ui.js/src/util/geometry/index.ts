@@ -7,7 +7,6 @@ import {
   findFreeSpaceFrom,
 } from "./findFreeSpaceOnCanvas";
 import calculateMetaNodePortBarBounds from "./metaNodePortBarBounds";
-import { buildSpatialHash, queryNearbyObjects } from "./spatialHash";
 import * as utils from "./utils";
 import getWorkflowObjectBounds, { nodePadding } from "./workflowObjectBounds";
 
@@ -16,8 +15,6 @@ export const geometry = {
   findFreeSpaceFrom,
   findFreeSpaceAroundPointWithFallback,
   findFreeSpaceAroundCenterWithFallback,
-  buildSpatialHash,
-  queryNearbyObjects,
   getWorkflowObjectBounds,
   calculateMetaNodePortBarBounds,
   nodePadding,

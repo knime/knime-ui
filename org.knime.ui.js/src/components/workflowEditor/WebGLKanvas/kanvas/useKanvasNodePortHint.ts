@@ -4,7 +4,6 @@ import { DOMContainer } from "pixi.js";
 
 import { useHint } from "@knime/components";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import { NodeState } from "@/api/gateway-api/generated-api";
 import { HINTS } from "@/hints/hints.config";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -12,6 +11,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { portSize } from "@/style/shapes";
 import { getNodeState } from "@/util/nodeUtil";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
+import { nodeToWorkflowObject } from "@/util/workflowUtil";
 
 /**
  * Hints for the webgl based canvas. Works by injecting DOMContainers to use as elements for the hints.
@@ -44,21 +44,13 @@ export const useKanvasNodePortHint = (isPixiAppInitialized: Ref<boolean>) => {
       return;
     }
 
-    const nodeObjects = targetNodes.map(({ id, position }) => ({
-      id,
-      type: "node",
-      x: position.x,
-      y: position.y,
-    })) satisfies WorkflowObject[];
+    const nodeObjects = targetNodes.map(nodeToWorkflowObject);
 
     const center = useWebGLCanvasStore().getCenterOfScrollContainer();
 
     const nearestObject = await workflowNavigationService.nearestObject({
       objects: nodeObjects,
-      reference: {
-        ...center,
-        id: "",
-      },
+      reference: { ...center, id: "" },
       direction: "left",
     });
 

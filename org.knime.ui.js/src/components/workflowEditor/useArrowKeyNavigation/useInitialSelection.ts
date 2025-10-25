@@ -49,10 +49,7 @@ export const useInitialSelection = () => {
     // look for the "first" object, just use one if we can't find a near one at the center
     const mostCenterObject = await workflowNavigationService.nearestObject({
       objects: workflowObjects.value,
-      reference: {
-        ...referencePoint,
-        id: "",
-      },
+      reference: { ...referencePoint, id: "" },
       direction: isKeyboardEvent ? directionMap[event.key] : "right",
     });
 

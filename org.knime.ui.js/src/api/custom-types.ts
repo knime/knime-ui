@@ -167,6 +167,8 @@ export type NodeTemplateWithExtendedPorts = NodeTemplate & {
 export type WorkflowObject = XY & {
   id: string;
   type: "node" | "annotation" | "componentPlaceholder";
+  width?: number;
+  height?: number;
 };
 
 export type RecentWorkflow = {

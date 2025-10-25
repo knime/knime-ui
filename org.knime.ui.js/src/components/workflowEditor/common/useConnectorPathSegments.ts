@@ -39,9 +39,10 @@ type UseConnectorPathSegmentsOptions = {
 export const useConnectorPathSegments = (
   options: UseConnectorPathSegmentsOptions,
 ) => {
-  const { movePreviewDelta } = storeToRefs(useMovingStore());
+  const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
+  const selectionStore = useSelectionStore();
   const { isMetaNodePortBarSelected, isNodeSelected, isBendpointSelected } =
-    useSelectionStore();
+    selectionStore;
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
 
   const virtualBendpoints = computed(
@@ -78,18 +79,34 @@ export const useConnectorPathSegments = (
   const { start: startSegmentPosition, end: endSegmentPosition } =
     useConnectorPosition(options);
 
-  const needToUpdateSourcePosition = computed(
-    () =>
-      isNodeSelected(options.sourceNode.value ?? "") ||
-      (isMetanodeInPortBarConnection.value && isMetaNodePortBarSelected("in")),
+  const isSourceNodeSelected = computed(() =>
+    isNodeSelected(options.sourceNode.value ?? ""),
+  );
+  const isDestNodeSelected = computed(() =>
+    isNodeSelected(options.destNode.value ?? ""),
   );
 
-  const needToUpdateDestPosition = computed(
-    () =>
-      isNodeSelected(options.destNode.value ?? "") ||
-      (isMetanodeOutPortBarConnection.value &&
-        isMetaNodePortBarSelected("out")),
-  );
+  const needToUpdateSourcePosition = computed(() => {
+    if (!isDragging.value) {
+      return false;
+    }
+
+    return (
+      isSourceNodeSelected.value ||
+      (isMetanodeInPortBarConnection.value && isMetaNodePortBarSelected("in"))
+    );
+  });
+
+  const needToUpdateDestPosition = computed(() => {
+    if (!isDragging.value) {
+      return false;
+    }
+
+    return (
+      isDestNodeSelected.value ||
+      (isMetanodeOutPortBarConnection.value && isMetaNodePortBarSelected("out"))
+    );
+  });
 
   const pathSegments = computed(() => {
     let startX = startSegmentPosition.value.x;

@@ -133,16 +133,6 @@ describe("SelectionRectangle.vue", () => {
 
   beforeEach(vi.clearAllMocks);
 
-  it("unregister events on beforeUnmount", () => {
-    const $bussOffSpy = vi.spyOn($bus, "off");
-    const { wrapper } = doMount();
-    // @ts-expect-error
-    wrapper.vm.$parent.$off = vi.fn();
-    wrapper.unmount();
-    // pointer-down, pointer-move, pointer-up
-    expect($bussOffSpy).toHaveBeenCalledTimes(3);
-  });
-
   it("does nothing if move is called but pointerDown is missing", async () => {
     const { wrapper, pointerMove, pointerUp, mockedStores } = doMount();
     await pointerMove();
