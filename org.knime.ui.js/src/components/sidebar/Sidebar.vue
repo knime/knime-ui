@@ -11,6 +11,7 @@ import { onKeyDown } from "@vueuse/core";
 
 import { useHint } from "@knime/components";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
+import CloudComponentIcon from "@knime/styles/img/icons/cloud-component.svg";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
 import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 
@@ -65,6 +66,11 @@ const KaiSidebar = defineAsyncComponent({
 
 const WorkflowMonitor = defineAsyncComponent({
   loader: () => import("@/components/workflowMonitor/WorkflowMonitor.vue"),
+  loadingComponent: SidebarContentLoading,
+});
+
+const HubComponentBrowser = defineAsyncComponent({
+  loader: () => import("@/components/hubComponents/HubComponentBrowser.vue"),
   loadingComponent: SidebarContentLoading,
 });
 
@@ -131,6 +137,15 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       isExpanded: panelStore.isLeftPanelExpanded,
       onClick: () => activateSection(TABS.SPACE_EXPLORER),
     }),
+
+    {
+      name: TABS.HUB_COMPONENTS,
+      title: "Hub",
+      icon: CloudComponentIcon,
+      isActive: panelStore.isTabActive(TABS.HUB_COMPONENTS),
+      isExpanded: panelStore.isLeftPanelExpanded,
+      onClick: () => activateSection(TABS.HUB_COMPONENTS),
+    },
 
     ...registerSidebarSection(
       isKaiEnabled.value && uiControls.canAccessKAIPanel,
@@ -230,6 +245,12 @@ const hasSection = (name: TabValues) => {
             panelStore.isTabActive(TABS.SPACE_EXPLORER)
           "
         />
+        <HubComponentBrowser
+          v-if="
+            hasSection(TABS.HUB_COMPONENTS) &&
+            panelStore.isTabActive(TABS.HUB_COMPONENTS)
+          "
+        />
         <KaiSidebar
           v-if="hasSection(TABS.KAI) && panelStore.isTabActive(TABS.KAI)"
         />
@@ -271,7 +292,8 @@ nav {
 
   & > div {
     &:focus-within:has(:focus-visible) {
-      @mixin focus-outline;
+      outline: 2px solid var(--knime-cornflower);
+      outline-offset: -2px;
     }
 
     & label {
@@ -286,8 +308,8 @@ nav {
       border-bottom: 1px solid var(--bg-color);
 
       & svg {
-        @mixin svg-icon-size 16;
-
+        width: 16px;
+        height: 16px;
         stroke: var(--fg-color);
       }
 
