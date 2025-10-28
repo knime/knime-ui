@@ -1,10 +1,12 @@
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import * as API from "@/api/desktop-api/desktop-api";
 import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import { getToastsProvider } from "@/plugins/toasts";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
@@ -40,6 +42,7 @@ export const useDragNodeIntoCanvas = () => {
     event.dataTransfer?.types.includes(KNIME_MIME);
 
   const { isWritable } = storeToRefs(useWorkflowStore());
+  const $toast = getToastsProvider();
 
   const canvasStore = useCurrentCanvasStore();
   const nodeTemplatesStore = useNodeTemplatesStore();
@@ -97,6 +100,11 @@ export const useDragNodeIntoCanvas = () => {
     // only define start time when the first dragover is fired
     if (!dragStartTime) {
       dragStartTime = window.performance.now();
+      consola.info("First dragover event", { 
+        isKnimeNode: isKnimeNode(event),
+        dataTransferTypes: event.dataTransfer?.types,
+        draggedTemplateData: nodeTemplatesStore.draggedTemplateData 
+      });
     }
 
     if (!isWritable.value) {
@@ -149,7 +157,63 @@ export const useDragNodeIntoCanvas = () => {
     stopPanningToEdge();
     const nodeFactory = getNodeFactoryFromEvent(event);
 
+    consola.info("onDrop called", { nodeFactory, hasNodeFactory: Boolean(nodeFactory) });
+
     if (!isWritable.value || !nodeFactory) {
+      consola.info("Exiting onDrop", { isWritable: isWritable.value, hasNodeFactory: Boolean(nodeFactory) });
+      return;
+    }
+
+    consola.info("Node factory className", { className: nodeFactory.className });
+
+    // Check if this is a Hub component (ID starts with *)
+    if (
+      typeof nodeFactory.className === "string" &&
+      nodeFactory.className.startsWith("*")
+    ) {
+      consola.info("Hub component detected - using URI import", { className: nodeFactory.className });
+      event.preventDefault();
+      
+      // Extract component ID (remove * prefix for short URL)
+      const componentId = nodeFactory.className;
+      const shortId = componentId.substring(1); // Remove * prefix
+      
+      // Use the HTTPS URL directly - same as what paste uses
+      const uri = `https://hub.knime.com/s/${shortId}`;
+      
+      consola.info("Attempting Hub component import", { uri, componentId, shortId });
+      
+      const [canvasX, canvasY] = canvasStore.value.screenToCanvasCoordinates([
+        event.clientX,
+        event.clientY,
+      ]);
+
+      const dropPosition: XY = {
+        x: canvasX - $shapes.nodeSize / 2,
+        y: canvasY - $shapes.nodeSize / 2,
+      };
+      
+      try {
+        const { projectId, workflowId } = useWorkflowStore().getProjectAndWorkflowIds;
+        consola.info("Calling importURIAtWorkflowCanvas", { projectId, workflowId, uri });
+        await API.importURIAtWorkflowCanvas({
+          uri,
+          projectId,
+          workflowId,
+          x: dropPosition.x,
+          y: dropPosition.y,
+        });
+        consola.info("Successfully imported Hub component");
+      } catch (error) {
+        consola.error({ message: "Failed to import Hub component", error, uri });
+        $toast.show({
+          headline: "Cannot Add Hub Component",
+          message:
+            "To add Hub components, mount the KNIME Hub in the Space Explorer first, then drag components from there.",
+          type: "warning",
+          autoRemove: true,
+        });
+      }
       return;
     }
 
