@@ -21,7 +21,10 @@ const emit = defineEmits<{
 
 const addHubComponentToWorkflow = useAddHubComponentToWorkflow();
 
-const handleDoubleClick = () => {
+const handleDoubleClick = (event: MouseEvent) => {
+  // Prevent the DraggableNodeTemplate's default double-click handler
+  event.stopPropagation();
+  event.preventDefault();
   addHubComponentToWorkflow(props.component);
 };
 
@@ -35,7 +38,10 @@ const handleShowDescription = () => {
 </script>
 
 <template>
-  <div class="hub-component-wrapper">
+  <div 
+    class="hub-component-wrapper"
+    @dblclick.capture="handleDoubleClick"
+  >
     <!-- Private badge overlay -->
     <div v-if="component.isPrivate" class="private-badge">
       Private
@@ -48,7 +54,6 @@ const handleShowDescription = () => {
       :is-highlighted="isHighlighted"
       :is-description-active="isDescriptionActive"
       :display-mode="displayMode"
-      @dblclick="handleDoubleClick"
       @click="handleClick"
       @show-node-description="handleShowDescription"
     />
