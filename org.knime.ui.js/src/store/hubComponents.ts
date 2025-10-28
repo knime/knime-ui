@@ -17,11 +17,12 @@ const { KNIME_HUB_HOME_HOSTNAME } = knimeExternalUrls;
 const INITIAL_COMPONENTS_PER_CATEGORY = 18;
 const LOAD_MORE_BATCH_SIZE = 18;
 const MAX_TOTAL_COMPONENTS = 3000;
+const HTTP_UNAUTHORIZED = 401;
 
 // Cache key for localStorage
 const CACHE_KEY = "knime_hub_components_cache";
 const CACHE_VERSION_KEY = "knime_hub_components_cache_version";
-const CACHE_VERSION = "1.1.0"; // Bumped version to invalidate old cache without provider filtering
+const CACHE_VERSION = "1.3.0"; // Bumped: exclude icon data to fix localStorage quota, handle 401 gracefully
 
 /**
  * Get the Hub provider ID
@@ -91,11 +92,15 @@ interface CacheData {
 
 /**
  * Save components to localStorage cache
+ * Note: We exclude the icon data to save space (it's large base64 strings)
  */
 const saveCacheToStorage = (components: HubComponent[], wasAuthenticated: boolean) => {
   try {
+    // Remove icon data before caching to save localStorage space
+    const componentsWithoutIcons = components.map(({ icon: _icon, ...rest }) => rest);
+    
     const cacheData: CacheData = {
-      components,
+      components: componentsWithoutIcons as HubComponent[],
       timestamp: Date.now(),
       wasAuthenticated,
     };
@@ -159,6 +164,9 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
   // Category expansion and pagination state
   const expandedCategories = ref<Set<string>>(new Set());
   const categoryLoadCounts = ref<Map<string, number>>(new Map());
+  
+  // Map of component ID to hubUrl for drag & drop lookup
+  const componentIdToHubUrl = ref<Map<string, string>>(new Map());
 
   // Try to load from cache on initialization
   const initializeFromCache = () => {
@@ -170,6 +178,13 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
       if (cached.wasAuthenticated === currentAuthState) {
         components.value = cached.components;
         lastAuthState.value = currentAuthState;
+        
+        // Populate the component ID to hubUrl lookup map
+        componentIdToHubUrl.value.clear();
+        cached.components.forEach(component => {
+          componentIdToHubUrl.value.set(component.id, component.hubUrl);
+        });
+        
         consola.info("Loaded Hub components from cache", {
           count: cached.components.length,
           wasAuthenticated: cached.wasAuthenticated,
@@ -409,7 +424,12 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
     return { componentType, nodeType };
   };
 
-  const createHubComponent = (result: any, hubProviderId: string | null, availablePortTypes: any): HubComponent => {
+  const createHubComponent = (
+    result: any, 
+    hubProviderId: string | null, 
+    hubProviderHostname: string | null,
+    availablePortTypes: any
+  ): HubComponent => {
     // For public KNIME Hub components, the spaceId is typically "Examples"
     const spaceId = result.owner === "knime" ? "Examples" : result.owner;
     
@@ -423,6 +443,18 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
     let iconDataUri: string | undefined;
     if (result.icon?.data) {
       iconDataUri = `data:image/png;base64,${result.icon.data}`;
+    }
+    
+    // Construct the Hub URL using the provider's hostname
+    let hubUrl: string;
+    if (hubProviderHostname) {
+      const hostname = hubProviderHostname.startsWith("http") 
+        ? hubProviderHostname 
+        : `https://${hubProviderHostname}`;
+      hubUrl = `${hostname}/s/${shortId}`;
+    } else {
+      // Fallback to Community Hub
+      hubUrl = `https://hub.knime.com/s/${shortId}`;
     }
     
     // Create a proper NodeTemplate for drag & drop
@@ -439,8 +471,8 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
       downloadCount: result.downloadCount,
       rating: result.kudosCount,
       lastUpdated: result.lastEditedOn || result.versionCreatedOn || new Date().toISOString(),
-      // Use the short URL format: /s/{shortId} (without the * prefix)
-      hubUrl: `https://hub.knime.com/s/${shortId}`,
+      // Use the provider-specific URL
+      hubUrl,
       // Hub space reference data for drag & drop
       providerId: hubProviderId || "knime-hub-id-not-found",
       spaceId,
@@ -521,14 +553,19 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
             const response = await fetch(url);
             
             if (!response.ok) {
+              if (response.status === HTTP_UNAUTHORIZED) {
+                // Authentication required - skip this provider silently
+                consola.info(`Authentication required for ${hubProvider.name}, skipping`);
+                return;
+              }
               throw new Error(`Failed to fetch components from ${hubProvider.name}: ${response.statusText}`);
             }
 
             const data = await response.json();
             
-            // Map Hub API response to HubComponent interface with the correct providerId
+            // Map Hub API response to HubComponent interface with the correct providerId and hostname
             const providerComponents = (data.results || []).map((result: any) => 
-              createHubComponent(result, hubProvider.id, availablePortTypes)
+              createHubComponent(result, hubProvider.id, hubProvider.hostname ?? null, availablePortTypes)
             );
             
             allComponents.push(...providerComponents);
@@ -545,6 +582,12 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
       );
 
       components.value = allComponents;
+
+      // Populate the component ID to hubUrl lookup map
+      componentIdToHubUrl.value.clear();
+      allComponents.forEach(component => {
+        componentIdToHubUrl.value.set(component.id, component.hubUrl);
+      });
 
       // Save to cache
       const currentAuthState = isHubAuthenticated();
@@ -600,6 +643,14 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
     selectedProviderId.value = providerId;
   };
 
+  /**
+   * Get the hubUrl for a component by its ID
+   * Used for drag & drop when only the component ID is available
+   */
+  const getHubUrlForComponentId = (componentId: string): string | null => {
+    return componentIdToHubUrl.value.get(componentId) ?? null;
+  };
+
   return {
     components,
     filteredComponents,
@@ -621,5 +672,6 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
     isCategoryExpanded,
     getHubProviders,
     setSelectedProviderId,
+    getHubUrlForComponentId,
   };
 });
