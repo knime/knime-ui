@@ -551,6 +551,12 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
       allComponents.forEach(component => {
         componentIdToHubUrl.value.set(component.id, component.hubUrl);
       });
+      
+      consola.info("Lookup map populated", {
+        mapSize: componentIdToHubUrl.value.size,
+        // eslint-disable-next-line no-magic-numbers
+        sampleEntries: Array.from(componentIdToHubUrl.value.entries()).slice(0, 3)
+      });
 
       // Save to cache
       const currentAuthState = isHubAuthenticated();
@@ -561,6 +567,11 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
         totalCount: components.value.length,
         providerCount: hubProviders.length,
         wasAuthenticated: currentAuthState,
+        sampleComponent: components.value[0] ? {
+          id: components.value[0].id,
+          name: components.value[0].name,
+          hubUrl: components.value[0].hubUrl
+        } : null
       });
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Unknown error occurred";
