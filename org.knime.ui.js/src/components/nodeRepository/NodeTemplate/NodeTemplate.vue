@@ -83,6 +83,7 @@ defineExpose({ getNodePreview });
       <NodePreview
         ref="nodePreview"
         :type="nodeTemplate.type"
+        :is-component="nodeTemplate.component"
         :in-ports="nodeTemplate.inPorts"
         :out-ports="nodeTemplate.outPorts"
         :icon="nodeTemplate.icon"

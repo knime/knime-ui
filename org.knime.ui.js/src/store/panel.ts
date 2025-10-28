@@ -11,6 +11,7 @@ export const TABS = {
   NODE_REPOSITORY: "nodeRepository",
   NODE_DIALOG: "nodeDialog",
   SPACE_EXPLORER: "spaceExplorer",
+  HUB_COMPONENTS: "hubComponents",
   KAI: "kai",
   WORKFLOW_MONITOR: "workflowMonitor",
 } as const;
