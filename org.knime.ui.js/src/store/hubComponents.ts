@@ -552,7 +552,8 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
         componentIdToHubUrl.value.set(component.id, component.hubUrl);
       });
       
-      consola.info("Lookup map populated", {
+      // eslint-disable-next-line no-console
+      console.log("🔍 LOOKUP MAP POPULATED", {
         mapSize: componentIdToHubUrl.value.size,
         // eslint-disable-next-line no-magic-numbers
         sampleEntries: Array.from(componentIdToHubUrl.value.entries()).slice(0, 3)
@@ -563,7 +564,8 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
       saveCacheToStorage(components.value, currentAuthState);
       lastAuthState.value = currentAuthState;
 
-      consola.info("Fetched Hub components from all providers", {
+      // eslint-disable-next-line no-console
+      console.log("✅ FETCHED HUB COMPONENTS", {
         totalCount: components.value.length,
         providerCount: hubProviders.length,
         wasAuthenticated: currentAuthState,
