@@ -7,7 +7,7 @@
         <version>${revision}${changelist}</version>
     </parent>
 
-    <artifactId>org.knime.ui.dataapp.js</artifactId>
+    <artifactId>org.knime.dataapp.js</artifactId>
     <name>KNIME HTML/JS DataApp UI</name>
     <description>HTML / JS based UI for DataApps</description>
     <packaging>eclipse-plugin</packaging>

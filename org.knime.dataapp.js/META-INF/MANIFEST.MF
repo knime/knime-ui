@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DataApp User Interface
-Bundle-SymbolicName: org.knime.ui.dataapp.js;singleton:=true
+Bundle-SymbolicName: org.knime.dataapp.js;singleton:=true
 Bundle-Version: 5.8.0.qualifier
 Bundle-Vendor: KNIME AG, Zurich, Switzerland
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Eclipse-BundleShape: dir
-Automatic-Module-Name: org.knime.ui.dataapp.js
+Automatic-Module-Name: org.knime.dataapp.js
