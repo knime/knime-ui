@@ -37,14 +37,8 @@ export const useAddHubComponentToWorkflow = () => {
           nodes: activeWorkflow.value!.nodes,
         });
 
-    // Extract component ID (remove * prefix for short URL)
-    const componentId = component.id;
-    const shortId = componentId.startsWith("*")
-      ? componentId.substring(1)
-      : componentId;
-
-    // Use HTTPS URL - same as drag & drop
-    const uri = `https://hub.knime.com/s/${shortId}`;
+    // Use the component's hubUrl which includes the correct provider hostname
+    const uri = component.hubUrl;
 
     try {
       const { projectId, workflowId } =

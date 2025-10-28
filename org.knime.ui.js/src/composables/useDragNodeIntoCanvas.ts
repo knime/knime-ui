@@ -9,6 +9,7 @@ import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasR
 import { getToastsProvider } from "@/plugins/toasts";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
+import { useHubComponentsStore } from "@/store/hubComponents";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -174,14 +175,22 @@ export const useDragNodeIntoCanvas = () => {
       consola.info("Hub component detected - using URI import", { className: nodeFactory.className });
       event.preventDefault();
       
-      // Extract component ID (remove * prefix for short URL)
-      const componentId = nodeFactory.className;
-      const shortId = componentId.substring(1); // Remove * prefix
+      // Look up the hubUrl from the store using the component ID
+      const hubComponentsStore = useHubComponentsStore();
+      const uri = hubComponentsStore.getHubUrlForComponentId(nodeFactory.className);
       
-      // Use the HTTPS URL directly - same as what paste uses
-      const uri = `https://hub.knime.com/s/${shortId}`;
+      if (!uri) {
+        consola.error("No hubUrl found for component", { componentId: nodeFactory.className });
+        $toast.show({
+          headline: "Cannot Add Hub Component",
+          message: "Component URL not found. Please try refreshing the component list.",
+          type: "error",
+          autoRemove: true,
+        });
+        return;
+      }
       
-      consola.info("Attempting Hub component import", { uri, componentId, shortId });
+      consola.info("Attempting Hub component import", { uri, componentId: nodeFactory.className });
       
       const [canvasX, canvasY] = canvasStore.value.screenToCanvasCoordinates([
         event.clientX,
