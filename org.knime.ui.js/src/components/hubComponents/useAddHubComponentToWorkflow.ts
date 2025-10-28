@@ -17,6 +17,9 @@ export const useAddHubComponentToWorkflow = () => {
   const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());
 
   return async (component: HubComponent) => {
+    // eslint-disable-next-line no-console
+    console.log("🔵 ADD COMPONENT CALLED", { component });
+    
     // Do not try to add to read-only workflow
     if (!isWritable.value) {
       return;
@@ -40,7 +43,8 @@ export const useAddHubComponentToWorkflow = () => {
     // Use the component's hubUrl which includes the correct provider hostname
     const uri = component.hubUrl;
     
-    consola.info("Double-click add component:", { 
+    // eslint-disable-next-line no-console
+    console.log("🎯 DOUBLE-CLICK ADD COMPONENT", { 
       componentId: component.id,
       hubUrl: component.hubUrl,
       uri 
