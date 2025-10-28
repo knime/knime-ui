@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, defineComponent, h, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
-import { useKdsDynamicModal } from "@knime/kds-components";
+import {
+  KdsButton,
+  type KdsButtonProps,
+  useKdsDynamicModal,
+} from "@knime/kds-components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
-import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
-import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
@@ -34,7 +36,7 @@ import { getToastPresets } from "@/toastPresets";
 import HelpMenu from "../application/HelpMenu.vue";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
-import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
+import SaveButton from "./SaveButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
 
@@ -100,71 +102,96 @@ const canvasModes = computed<Array<MenuItem>>(() => {
   });
 });
 
-const hideText = computed<Partial<Record<ShortcutName, boolean>>>(() => ({
-  save: true,
-  saveAs: true,
-  undo: true,
-  redo: true,
-}));
+const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
+  () => {
+    if (!activeWorkflow.value || !activeProjectId.value) {
+      return [];
+    }
 
-const toolbarDropdowns = computed<
-  Partial<Record<ShortcutName, { name: ShortcutName; separator?: boolean }[]>>
->(() => {
-  // when the project is unknown we won't show the "save" action, and therefore
-  // cannot show the dropdown
-  if (activeProjectId.value && isUnknownProject.value(activeProjectId.value)) {
-    return {};
-  }
+    if (!activeWorkflow.value || !uiControls.canEditWorkflow) {
+      return [];
+    }
 
-  return {
-    save: [
-      { name: "save" },
-      { name: "saveAs", separator: true },
-      { name: "export" },
-    ],
-  };
-});
+    const hasNodesSelected = selectedNodes.value.length > 0;
 
-const toolbarButtons = computed<Array<ShortcutName>>(() => {
-  if (!activeWorkflow.value || !activeProjectId.value) {
-    return [];
-  }
+    const variant: KdsButtonProps["variant"] = "transparent";
+    const visibleItems: Array<
+      { id: ShortcutName; visible: boolean } & KdsButtonProps
+    > = [
+      // Always visible
+      {
+        id: "undo",
+        visible: true,
+        label: $shortcuts.getText("undo"),
+        leadingIcon: "undo",
+        variant,
+      },
+      {
+        id: "redo",
+        visible: true,
+        label: $shortcuts.getText("redo"),
+        leadingIcon: "redo",
+        variant,
+      },
 
-  if (!activeWorkflow.value || !uiControls.canEditWorkflow) {
-    return [];
-  }
+      // Workflow
+      {
+        id: "executeAll",
+        visible: !hasNodesSelected,
+        label: $shortcuts.getText("executeAll"),
+        leadingIcon: "chevron-right-double",
+        variant,
+      },
+      {
+        id: "cancelAll",
+        visible: !hasNodesSelected,
+        label: $shortcuts.getText("cancelAll"),
+        leadingIcon: "x-close",
+        variant,
+      },
+      {
+        id: "resetAll",
+        visible: !hasNodesSelected,
+        label: $shortcuts.getText("resetAll"),
+        leadingIcon: "reset-all",
+        variant,
+      },
 
-  if (activeProjectVersionsModeStatus.value === "active") {
-    return ["closeVersionHistory"];
-  }
+      // Node execution
+      {
+        id: "executeSelected",
+        visible: hasNodesSelected,
+        label: $shortcuts.getText("executeSelected"),
+        leadingIcon: "selected-execution",
+        variant,
+      },
+      {
+        id: "cancelSelected",
+        visible: hasNodesSelected,
+        label: $shortcuts.getText("cancelSelected"),
+        leadingIcon: "selected-cancel",
+        variant,
+      },
+      {
+        id: "resetSelected",
+        visible: hasNodesSelected,
+        label: $shortcuts.getText("resetSelected"),
+        leadingIcon: "selected-reset",
+        variant,
+      },
 
-  const hasNodesSelected = selectedNodes.value.length > 0;
+      {
+        id: "openLayoutEditor",
+        visible: $shortcuts.isEnabled("openLayoutEditor"),
+        label: $shortcuts.getText("openLayoutEditor"),
+        leadingIcon: "layout-editor",
+        variant,
+      },
+    ];
 
-  const visibleItems: Partial<Record<ShortcutName, boolean>> = {
-    save: !isUnknownProject.value(activeProjectId.value) && isDesktop(),
-    saveAs: isUnknownProject.value(activeProjectId.value) && isDesktop(),
-
-    // Always visible
-    undo: true,
-    redo: true,
-
-    // Workflow
-    executeAll: !hasNodesSelected,
-    cancelAll: !hasNodesSelected,
-    resetAll: !hasNodesSelected,
-
-    // Node execution
-    executeSelected: hasNodesSelected,
-    cancelSelected: hasNodesSelected,
-    resetSelected: hasNodesSelected,
-
-    openLayoutEditor: $shortcuts.isEnabled("openLayoutEditor"),
-  };
-
-  return Object.entries(visibleItems)
-    .filter(([_, visible]) => visible)
-    .map(([name]) => name);
-});
+    return visibleItems.filter(({ visible }) => visible);
+  },
+);
 
 const onCanvasModeUpdate = (
   _: unknown,
@@ -247,23 +274,12 @@ const onUploadButtonClick = async () => {
 
 const uploadButton = ref<InstanceType<typeof ToolbarButton>>();
 
-type CreateHintOptions = Parameters<
-  ReturnType<typeof useHint>["createHint"]
->[0];
-
-const ToolbarButtonWithHint = defineComponent(
-  (props: { createHintOptions: CreateHintOptions }, ctx) => {
-    onMounted(() => {
-      // By creating the hint in this wrapper, it's lifecycle is independent of the WorkflowToolbar
-      //  (e.g. when switching between two tabs with different ToolbarButtons each)
-      useHint().createHint(props.createHintOptions);
-    });
-    return () => h(ToolbarButton, ctx.attrs, ctx.slots);
-  },
-  {
-    props: ["createHintOptions"] as const,
-  },
-);
+onMounted(() => {
+  useHint().createHint({
+    hintId: HINTS.UPLOAD_BUTTON,
+    referenceElement: uploadButton,
+  });
+});
 
 const { isSVGRenderer } = useCanvasRendererUtils();
 </script>
@@ -271,18 +287,30 @@ const { isSVGRenderer } = useCanvasRendererUtils();
 <template>
   <div class="toolbar">
     <transition-group tag="div" name="button-list">
+      <KdsButton
+        v-if="activeProjectVersionsModeStatus === 'active'"
+        label="Close version history"
+        leading-icon="redo"
+        @click="$shortcuts.dispatch('closeVersionHistory')"
+      />
+
       <!--
         setting :key="the list of all visible buttons",
         re-renders the whole list in a new div whenever buttons appear or disappear,
         such that those two lists can be faded
       -->
-      <div :key="toolbarButtons.join()" class="button-list">
-        <ToolbarShortcutButton
+      <div
+        v-else
+        :key="toolbarButtons.map(({ id }) => id).join()"
+        class="button-list"
+      >
+        <SaveButton v-if="isDesktop()" />
+
+        <KdsButton
           v-for="button in toolbarButtons"
-          :key="button"
-          :name="button"
-          :with-text="!hideText[button]"
-          :dropdown="toolbarDropdowns[button] ?? []"
+          :key="button.id"
+          v-bind="button"
+          @click="$shortcuts.dispatch(button.id)"
         />
       </div>
     </transition-group>
@@ -294,30 +322,22 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     />
 
     <div class="toolbar-end">
-      <ToolbarButtonWithHint
+      <KdsButton
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocalWorkflow"
         ref="uploadButton"
-        with-text
-        title="Upload"
-        :create-hint-options="{
-          hintId: HINTS.UPLOAD_BUTTON,
-          referenceElement: computed(() => uploadButton),
-        }"
+        label="Upload"
+        leading-icon="cloud-upload"
+        variant="transparent"
         @click="onUploadButtonClick"
-      >
-        <Component :is="CloudUploadIcon" />
-        Upload
-      </ToolbarButtonWithHint>
+      />
 
-      <ToolbarButton
+      <KdsButton
         v-else-if="isDeploymentButtonVisible"
-        with-text
-        title="Deploy on Hub"
+        label="Deploy on Hub"
+        leading-icon="deploy"
+        variant="transparent"
         @click="onDeploymentButtonClick"
-      >
-        <DeploymentIcon />
-        Deploy on Hub
-      </ToolbarButton>
+      />
 
       <SubMenu
         v-if="isSVGRenderer"
