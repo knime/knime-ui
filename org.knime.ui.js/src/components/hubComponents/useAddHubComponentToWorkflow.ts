@@ -39,6 +39,12 @@ export const useAddHubComponentToWorkflow = () => {
 
     // Use the component's hubUrl which includes the correct provider hostname
     const uri = component.hubUrl;
+    
+    consola.info("Double-click add component:", { 
+      componentId: component.id,
+      hubUrl: component.hubUrl,
+      uri 
+    });
 
     try {
       const { projectId, workflowId } =
