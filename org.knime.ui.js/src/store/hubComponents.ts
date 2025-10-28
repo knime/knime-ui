@@ -409,12 +409,17 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
     }
     
     // Construct the Hub URL using the provider's hostname
+    // Note: The hostname is the API endpoint (e.g., api.hub.knime.com)
+    // We need to remove 'api.' prefix for the user-facing Hub URL
     let hubUrl: string;
     if (hubProviderHostname) {
       const hostname = hubProviderHostname.startsWith("http") 
         ? hubProviderHostname 
         : `https://${hubProviderHostname}`;
-      hubUrl = `${hostname}/s/${shortId}`;
+      
+      // Remove 'api.' prefix if present to get the Hub URL
+      const hubHostname = hostname.replace("://api.", "://");
+      hubUrl = `${hubHostname}/s/${shortId}`;
     } else {
       // Fallback to Community Hub
       hubUrl = `https://hub.knime.com/s/${shortId}`;
