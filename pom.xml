@@ -16,7 +16,7 @@
 
     <modules>
         <module>org.knime.ui.js</module>
-        <module>org.knime.ui.dataapp.js</module>
+        <module>org.knime.dataapp.js</module>
         <module>org.knime.ui.java</module>
         <module>org.knime.ui.java.tests</module>
         <module>org.knime.features.ui</module>

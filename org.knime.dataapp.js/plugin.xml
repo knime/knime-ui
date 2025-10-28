@@ -5,12 +5,12 @@
          point="org.knime.js.core.webResources">
       <webResourceBundle
             debug="false"
-            name="org.knime.ui.dataapp.js"
+            name="org.knime.dataapp.js"
             version="5.2.0"
-            webResourceBundleID="org.knime.ui.dataapp.js">
+            webResourceBundleID="org.knime.dataapp.js">
          <webResource
                relativePathSource="dist/"
-               relativePathTarget="org/knime/ui/dataapp/js/">
+               relativePathTarget="org/knime/dataapp/js/">
          </webResource>
       </webResourceBundle>
    </extension>

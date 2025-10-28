@@ -747,7 +747,7 @@ propagated with or for interoperation with KNIME.
          unpack="false"/>
 
    <plugin
-         id="org.knime.ui.dataapp.js"
+         id="org.knime.dataapp.js"
          download-size="0"
          install-size="0"
          version="0.0.0"
