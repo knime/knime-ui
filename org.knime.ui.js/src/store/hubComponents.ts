@@ -22,7 +22,7 @@ const HTTP_UNAUTHORIZED = 401;
 // Cache key for localStorage
 const CACHE_KEY = "knime_hub_components_cache";
 const CACHE_VERSION_KEY = "knime_hub_components_cache_version";
-const CACHE_VERSION = "1.3.0"; // Bumped: exclude icon data to fix localStorage quota, handle 401 gracefully
+const CACHE_VERSION = "1.4.0"; // Caching disabled - localStorage quota issues with icons
 
 /**
  * Get the Hub provider ID
@@ -92,23 +92,10 @@ interface CacheData {
 
 /**
  * Save components to localStorage cache
- * Note: We exclude the icon data to save space (it's large base64 strings)
+ * DISABLED: Caching disabled due to localStorage quota issues with large icons
  */
-const saveCacheToStorage = (components: HubComponent[], wasAuthenticated: boolean) => {
-  try {
-    // Remove icon data before caching to save localStorage space
-    const componentsWithoutIcons = components.map(({ icon: _icon, ...rest }) => rest);
-    
-    const cacheData: CacheData = {
-      components: componentsWithoutIcons as HubComponent[],
-      timestamp: Date.now(),
-      wasAuthenticated,
-    };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-    localStorage.setItem(CACHE_VERSION_KEY, CACHE_VERSION);
-  } catch (err) {
-    consola.warn("Failed to save Hub components to cache:", err);
-  }
+const saveCacheToStorage = (_components: HubComponent[], _wasAuthenticated: boolean) => {
+  // Caching disabled - always fetch fresh
 };
 
 /**
@@ -170,32 +157,8 @@ export const useHubComponentsStore = defineStore("hubComponents", () => {
 
   // Try to load from cache on initialization
   const initializeFromCache = () => {
-    const cached = loadCacheFromStorage();
-    if (cached) {
-      const currentAuthState = isHubAuthenticated();
-      
-      // Use cache if auth state hasn't changed
-      if (cached.wasAuthenticated === currentAuthState) {
-        components.value = cached.components;
-        lastAuthState.value = currentAuthState;
-        
-        // Populate the component ID to hubUrl lookup map
-        componentIdToHubUrl.value.clear();
-        cached.components.forEach(component => {
-          componentIdToHubUrl.value.set(component.id, component.hubUrl);
-        });
-        
-        consola.info("Loaded Hub components from cache", {
-          count: cached.components.length,
-          wasAuthenticated: cached.wasAuthenticated,
-        });
-        return true;
-      } else {
-        // Auth state changed, invalidate cache
-        consola.info("Auth state changed, invalidating cache");
-        clearCache();
-      }
-    }
+    // Caching disabled - always fetch fresh
+    clearCache();
     return false;
   };
 
