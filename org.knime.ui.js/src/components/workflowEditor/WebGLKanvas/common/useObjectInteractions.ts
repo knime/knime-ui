@@ -55,6 +55,13 @@ const prepareContainersForDrag = (
   for (const nodeId of selectedNodeIds) {
     const nc = stage.getChildByLabel(`Node__${nodeId}`, true)!;
     const sc = stage.getChildByLabel(`NodeSelectionPlane__${nodeId}`, true)!;
+    // make sure dragged objects are not culled while drag is in
+    // progress to avoid visual glitches if dragging objects that were culled
+    // before drag started
+    nc.renderable = true;
+    nc.visible = true;
+    sc.renderable = true;
+    sc.visible = true;
 
     selectionLayer.addChild(sc);
     nodesLayer.addChild(nc);

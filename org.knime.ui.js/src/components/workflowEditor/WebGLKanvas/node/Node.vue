@@ -339,8 +339,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
     />
 
     <NodeName
-      :renderable="renderable"
-      :visible="renderable"
       :node-id="node.id"
       :name="shortenedNodeName"
       :full-name="name"
@@ -351,8 +349,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
 
     <Container label="NodeTorsoContainer">
       <NodeTorso
-        :renderable="renderable"
-        :visible="renderable"
         label="NodeTorso"
         :node-id="node.id"
         :kind="node.kind"
@@ -367,17 +363,10 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         "
       />
 
-      <NodeDecorators
-        :renderable="renderable"
-        :visible="renderable"
-        :type="type"
-        v-bind="node"
-      />
+      <NodeDecorators :type="type" v-bind="node" />
 
       <NodeState
         v-if="!isMetanode"
-        :renderable="renderable"
-        :visible="renderable"
         v-bind="node.state"
         :text-resolution="zoomAwareResolution"
       />
@@ -394,8 +383,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
     />
 
     <NodeLabel
-      :renderable="renderable"
-      :visible="renderable"
       :node-id="node.id"
       :label="node.annotation?.text.value"
       :is-metanode="isMetanode"
