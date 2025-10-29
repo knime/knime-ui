@@ -70,7 +70,29 @@ const isLegacyDescription = computed(() => {
   font-size: 13px;
   line-height: 150%;
 
-  & :deep(h3) {
+  & :deep(h1),
+  & :deep(h2),
+  & :deep(h3),
+  & :deep(h4),
+  & :deep(h5),
+  & :deep(h6) {
+    line-height: 1.2;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+  }
+
+  & :deep(h1) {
+    font-size: 16px;
+  }
+
+  & :deep(h2) {
+    font-size: 15px;
+  }
+
+  & :deep(h3),
+  & :deep(h4),
+  & :deep(h5),
+  & :deep(h6) {
     font-size: 13px;
   }
 
