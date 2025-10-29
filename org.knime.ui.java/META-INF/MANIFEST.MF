@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: KNIME Modern UI
 Bundle-SymbolicName: org.knime.ui.java;singleton:=true
-Bundle-Version: 5.8.0.qualifier
+Bundle-Version: 5.9.0.qualifier
 Export-Package: org.knime.ui.java.api,
  org.knime.ui.java.util
 Require-Bundle: com.equo.chromium;bundle-version="128.0.9",
