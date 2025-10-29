@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.api;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -59,7 +60,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -69,6 +70,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.knime.core.internal.knimeurl.ExplorerURLStreamHandler;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.util.ClassUtils;
@@ -79,6 +81,7 @@ import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.hub.HubItemVersion;
+import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.core.util.urlresolve.KnimeUrlResolver;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.IdAndPath;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
@@ -191,9 +194,15 @@ final class ManipulateComponents {
      */
     private static Optional<IdAndPath> translateHubUrl(final URL url) {
         try {
-            return queryHubInfo(url.toURI()).map(loc -> new IdAndPath(loc.getWorkflowItemId(),
-                Path.forPosix(loc.getWorkflowPath()).makeRelative()));
-        } catch (URISyntaxException e) {
+            final var uri = url.toURI();
+            final var service = ResolverUtil.getURLService(uri);
+            final var absolute = ExplorerURLStreamHandler.resolveKNIMEURLToAbsolute(url);
+            if (service.isPresent() && absolute.isPresent()) {
+                return service.get().fetchItemInfo(uri, new NullProgressMonitor())
+                    .filter(ii -> ii.id().isPresent()) // Hub only
+                    .map(ii -> new IdAndPath(ii.id().orElseThrow(), ii.path().makeRelative()));
+            }
+        } catch (URISyntaxException | IOException e) {
             LOGGER.debug(e);
         }
         return Optional.empty();
