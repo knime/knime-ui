@@ -1,44 +1,77 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/custom-types";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import { geometry } from "@/util/geometry";
 import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
+
+import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
+import { useNodeNameShortening } from "./useTextShortening";
 
 /**
  * Colored rect that is used as selection plane for nodes
  */
 
 type Props = {
-  renderable?: boolean;
-  anchorPosition: XY;
-  showSelection: boolean;
-  showFocus: boolean;
-  measures: XY & { width: number; height: number };
+  node: KnimeNode;
+  name: string;
 };
-
-const { shouldHideSelection } = storeToRefs(useSelectionStore());
 
 const props = defineProps<Props>();
 
-const position = computed(() => ({
-  x: props.anchorPosition?.x,
-  y: props.anchorPosition?.y + $shapes.selectedItemBorderRadius,
-}));
+const canvasStore = useWebGLCanvasStore();
+const { visibleArea } = storeToRefs(canvasStore);
+const renderable = computed(
+  () =>
+    !geometry.utils.isPointOutsideBounds(
+      props.node.position,
+      visibleArea.value,
+    ),
+);
+
+const selectionStore = useSelectionStore();
+const { shouldHideSelection } = storeToRefs(selectionStore);
+const { showSelection, showFocus } =
+  selectionStore.getNodeVisualSelectionStates(props.node.id);
+
+const { metrics: nodeNameDimensions } = useNodeNameShortening(
+  toRef(props, "name"),
+);
+
+const nodeInteractionsStore = useNodeInteractionsStore();
+const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
+  nodeInteractionsStore,
+);
+
+const isEditingName = computed(() => nameEditorNodeId.value === props.node.id);
+const { nodeSelectionMeasures: measures } = useNodeSelectionPlaneMeasures({
+  extraHeight: () =>
+    isEditingName.value
+      ? nameEditorDimensions.value.height
+      : nodeNameDimensions.value.height,
+  kind: props.node.kind,
+  width: () =>
+    isEditingName.value
+      ? nameEditorDimensions.value.width
+      : $shapes.nodeNameHorizontalMargin * 2,
+});
 
 const selectionPlaneRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
 
   graphics.roundRect(
-    props.measures.x,
-    props.measures.y,
-    props.measures.width,
-    props.measures.height,
+    measures.value.x,
+    measures.value.y,
+    measures.value.width,
+    measures.value.height,
     $shapes.selectedItemBorderRadius,
   );
   graphics.stroke({
@@ -53,10 +86,10 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
   const dash = new DashLine(graphics, { dash: [5, 5] });
 
   dash.roundRect(
-    props.measures.x - 4,
-    props.measures.y - 4,
-    props.measures.width + 8,
-    props.measures.height + 8,
+    measures.value.x - 4,
+    measures.value.y - 4,
+    measures.value.width + 8,
+    measures.value.height + 8,
     $shapes.selectedItemBorderRadius,
   );
 
@@ -69,7 +102,7 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
 
 <template>
   <Container
-    label="NodeSelectionPlane"
+    :label="`NodeSelectionPlane__${node.id}`"
     :renderable="
       renderable && (showFocus || showSelection) && !shouldHideSelection
     "
@@ -78,16 +111,8 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
     "
     event-mode="none"
   >
-    <Graphics
-      v-if="showFocus"
-      :position="position"
-      @render="focusPlaneRenderFn"
-    />
+    <Graphics v-if="showFocus" @render="focusPlaneRenderFn" />
 
-    <Graphics
-      v-if="showSelection"
-      :position="position"
-      @render="selectionPlaneRenderFn"
-    />
+    <Graphics v-if="showSelection" @render="selectionPlaneRenderFn" />
   </Container>
 </template>

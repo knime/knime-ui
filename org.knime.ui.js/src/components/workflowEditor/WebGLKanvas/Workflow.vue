@@ -18,6 +18,7 @@ import Connector from "./connectors/Connector.vue";
 import ConnectorLabel from "./connectors/ConnectorLabel.vue";
 import FloatingConnector from "./floatingConnector/FloatingConnector.vue";
 import Node from "./node/Node.vue";
+import NodeSelectionPlane from "./node/NodeSelectionPlane.vue";
 import ComponentPlaceholder from "./node/placeholder/ComponentPlaceholder.vue";
 import MetanodePortBars from "./portbars/MetanodePortBars.vue";
 
@@ -103,21 +104,35 @@ const annotations = computed(
       "
     />
 
+    <Container label="NODE_SELECTION_CONTAINER" :is-render-group="true">
+      <template v-for="node in activeWorkflow!.nodes" :key="node.id">
+        <NodeSelectionPlane
+          :position="node.position"
+          :node="node"
+          :name="getNodeName(node.id)"
+        />
+      </template>
+    </Container>
+
     <ComponentPlaceholder
       v-for="componentPlaceholder of componentPlaceholders"
       :key="`placeholder-${componentPlaceholder.id}`"
       :placeholder="componentPlaceholder"
     />
 
-    <Node
-      v-for="node in activeWorkflow!.nodes"
-      :key="node.id"
-      :position="node.position"
-      :icon="getNodeIcon(node.id)"
-      :type="getNodeType(node.id)"
-      :name="getNodeName(node.id)"
-      :node="node"
-    />
+    <Container label="NODE_CONTAINER" :is-render-group="true">
+      <template v-for="node in activeWorkflow!.nodes" :key="node.id">
+        <Node
+          :position="node.position"
+          :icon="getNodeIcon(node.id)"
+          :type="getNodeType(node.id)"
+          :name="getNodeName(node.id)"
+          :node="node"
+        />
+      </template>
+    </Container>
+
+    <Container label="DRAG_CONTAINER" :is-render-group="true" />
 
     <Connector
       v-for="connector of activeWorkflow.connections"

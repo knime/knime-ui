@@ -2,7 +2,6 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type { KnimeNode } from "@/api/custom-types";
 import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
 
@@ -89,11 +88,11 @@ export const useMovingStore = defineStore("moving", {
       }
 
       // do optimistic updates
-      const selectedNodes = selectionStore.getSelectedNodes;
-      selectedNodes.forEach((node: KnimeNode) => {
-        node.position.x += translation.x;
-        node.position.y += translation.y;
-      });
+      // const selectedNodes = selectionStore.getSelectedNodes;
+      // selectedNodes.forEach((node: KnimeNode) => {
+      //   node.position.x += translation.x;
+      //   node.position.y += translation.y;
+      // });
 
       const selectedAnnotations = selectionStore.getSelectedAnnotations;
       selectedAnnotations.forEach((annotation: WorkflowAnnotation) => {

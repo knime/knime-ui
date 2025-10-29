@@ -6,6 +6,7 @@ import type { AllowedPixiProps } from "./props";
 
 export interface ContainerProps {
   layer?: IRenderLayer | null;
+  isRenderGroup?: boolean;
 }
 
 export interface ContainerEvents extends PixiEvents {

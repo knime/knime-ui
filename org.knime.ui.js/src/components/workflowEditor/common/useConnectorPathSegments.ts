@@ -39,7 +39,7 @@ type UseConnectorPathSegmentsOptions = {
 export const useConnectorPathSegments = (
   options: UseConnectorPathSegmentsOptions,
 ) => {
-  const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
+  const { movePreviewDelta } = storeToRefs(useMovingStore());
   const selectionStore = useSelectionStore();
   const { isMetaNodePortBarSelected, isNodeSelected, isBendpointSelected } =
     selectionStore;
@@ -87,10 +87,6 @@ export const useConnectorPathSegments = (
   );
 
   const needToUpdateSourcePosition = computed(() => {
-    if (!isDragging.value) {
-      return false;
-    }
-
     return (
       isSourceNodeSelected.value ||
       (isMetanodeInPortBarConnection.value && isMetaNodePortBarSelected("in"))
@@ -98,10 +94,6 @@ export const useConnectorPathSegments = (
   });
 
   const needToUpdateDestPosition = computed(() => {
-    if (!isDragging.value) {
-      return false;
-    }
-
     return (
       isDestNodeSelected.value ||
       (isMetanodeOutPortBarConnection.value && isMetaNodePortBarSelected("out"))

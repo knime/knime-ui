@@ -1,5 +1,5 @@
 /* eslint-disable func-style */
-/* eslint-disable no-undefined */
+
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
@@ -30,6 +30,67 @@ import {
 import { usePointerDownDoubleClick } from "./usePointerDownDoubleClick";
 
 const MIN_MOVE_THRESHOLD = $shapes.gridSize.x;
+
+type DraggedContainers = Array<{
+  nodeId: string;
+  node: PIXI.Container;
+  selection: PIXI.Container;
+}>;
+
+const prepareContainersForDrag = (
+  stage: PIXI.Container,
+  dragContainer: PIXI.Container,
+  selectedNodeIds: string[],
+) => {
+  dragContainer.x = 0;
+  dragContainer.y = 0;
+
+  const selectionLayer = new PIXI.Container();
+  const nodesLayer = new PIXI.Container();
+  dragContainer.addChild(selectionLayer);
+  dragContainer.addChild(nodesLayer);
+
+  const movedContainers: DraggedContainers = [];
+
+  for (const nodeId of selectedNodeIds) {
+    const nc = stage.getChildByLabel(`Node__${nodeId}`, true)!;
+    const sc = stage.getChildByLabel(`NodeSelectionPlane__${nodeId}`, true)!;
+
+    selectionLayer.addChild(sc);
+    nodesLayer.addChild(nc);
+    movedContainers.push({ nodeId, node: nc, selection: sc });
+  }
+
+  return movedContainers;
+};
+
+const repositionContainersAfterDrag = (
+  stage: PIXI.Container,
+  dragContainer: PIXI.Container,
+  moved: DraggedContainers,
+) => {
+  const { activeWorkflow } = useWorkflowStore();
+  const { movePreviewDelta } = useMovingStore();
+
+  if (!activeWorkflow) {
+    return;
+  }
+
+  const nodesContainer = stage.getChildByLabel("NODE_CONTAINER", true)!;
+  const selectionPlaneContainer = stage.getChildByLabel(
+    "NODE_SELECTION_CONTAINER",
+    true,
+  )!;
+
+  for (const { nodeId, node, selection } of moved) {
+    activeWorkflow.nodes[nodeId].position.x += movePreviewDelta.x;
+    activeWorkflow.nodes[nodeId].position.y += movePreviewDelta.y;
+
+    selectionPlaneContainer.addChild(selection);
+    nodesContainer.addChild(node);
+  }
+  dragContainer.removeChildren();
+};
 
 type ObjectMetadata =
   | { type: "node"; nodeId: string }
@@ -453,6 +514,11 @@ export const useObjectInteractions = (
     let didDrag = false;
 
     const { selectedObjects } = selectionStore.querySelection("preview");
+    const stage = pixiApplication.value!.app.stage;
+    const dragContainer = stage.getChildByLabel("DRAG_CONTAINER", true)!;
+    let hasMovedContainers = false;
+    let repositionedContainers: DraggedContainers = [];
+    const { selectedNodeIds } = selectionStore.querySelection("preview");
 
     const onMove = rafThrottle((pointerMoveEvent: PointerEvent): void => {
       if (pointerMoveEvent.buttons === 0) {
@@ -487,6 +553,15 @@ export const useObjectInteractions = (
       dragInitiatorId.value = objectHandler.getObjectId();
       didDrag = true;
 
+      if (!hasMovedContainers) {
+        hasMovedContainers = true;
+        repositionedContainers = prepareContainersForDrag(
+          stage,
+          dragContainer,
+          selectedNodeIds.value,
+        );
+      }
+
       if (hasAbortedDrag.value) {
         return;
       }
@@ -507,6 +582,9 @@ export const useObjectInteractions = (
 
       options.onMove?.(pointerMoveEvent);
       movingStore.setIsDragging(true);
+
+      dragContainer.position.x = deltaX;
+      dragContainer.position.y = deltaY;
       movingStore.setMovePreview({ deltaX, deltaY });
     });
 
@@ -521,9 +599,17 @@ export const useObjectInteractions = (
         stopPanningToEdge();
 
         objectHandler.selectObject();
+
+        repositionContainersAfterDrag(
+          stage,
+          dragContainer,
+          repositionedContainers,
+        );
+
         onMoveEnd().then(async ({ shouldMove }) => {
           if (shouldMove) {
             await movingStore.moveObjects();
+            // eslint-disable-next-line no-undefined
             dragInitiatorId.value = undefined;
           }
         });
