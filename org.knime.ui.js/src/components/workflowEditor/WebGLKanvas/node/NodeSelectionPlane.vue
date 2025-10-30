@@ -4,6 +4,7 @@ import { computed, toRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
+import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -21,6 +22,7 @@ import { useNodeNameShortening } from "./useTextShortening";
  */
 
 type Props = {
+  position: XY;
   node: KnimeNode;
   name: string;
 };
@@ -109,6 +111,10 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
     :visible="
       renderable && (showFocus || showSelection) && !shouldHideSelection
     "
+    :position="{
+      x: position.x,
+      y: position.y + $shapes.selectedItemBorderRadius,
+    }"
     event-mode="none"
   >
     <Graphics v-if="showFocus" @render="focusPlaneRenderFn" />

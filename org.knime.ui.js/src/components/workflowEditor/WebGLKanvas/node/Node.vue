@@ -9,6 +9,7 @@ import {
   MetaNodeState,
   NativeNodeInvariants,
   Node,
+  type XY,
 } from "@/api/gateway-api/generated-api";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -42,7 +43,7 @@ import { useNodeNameShortening } from "./useTextShortening";
 
 interface Props {
   node: KnimeNode;
-  position: { x: number; y: number };
+  position: XY;
   name: string;
   icon?: string | null;
   type?: NativeNodeInvariants.TypeEnum | null;

@@ -1,214 +1,29 @@
-/* eslint-disable func-style */
-
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 import rafThrottle from "raf-throttle";
 
-import type { XY } from "@/api/gateway-api/generated-api";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import type { SelectionMode } from "@/store/selection/types";
-import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
-import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { isMultiselectEvent } from "../../util/isMultiselectEvent";
+import { isMultiselectEvent } from "../../../util/isMultiselectEvent";
 import {
   type PanningToEdgeUpdateHandler,
   useDragNearEdgePanning,
-} from "../kanvas/useDragNearEdgePanning";
-import {
-  markEscapeAsHandled,
-  markPointerEventAsHandled,
-} from "../util/interaction";
+} from "../../kanvas/useDragNearEdgePanning";
+import { markPointerEventAsHandled } from "../../util/interaction";
+import { usePointerDownDoubleClick } from "../usePointerDownDoubleClick";
 
-import { usePointerDownDoubleClick } from "./usePointerDownDoubleClick";
-
-const MIN_MOVE_THRESHOLD = $shapes.gridSize.x;
-
-type DraggedContainers = Array<{
-  nodeId: string;
-  node: PIXI.Container;
-  selection: PIXI.Container;
-}>;
-
-const prepareContainersForDrag = (
-  stage: PIXI.Container,
-  dragContainer: PIXI.Container,
-  selectedNodeIds: string[],
-) => {
-  dragContainer.x = 0;
-  dragContainer.y = 0;
-
-  const selectionLayer = new PIXI.Container();
-  const nodesLayer = new PIXI.Container();
-  dragContainer.addChild(selectionLayer);
-  dragContainer.addChild(nodesLayer);
-
-  const movedContainers: DraggedContainers = [];
-
-  for (const nodeId of selectedNodeIds) {
-    const nc = stage.getChildByLabel(`Node__${nodeId}`, true)!;
-    const sc = stage.getChildByLabel(`NodeSelectionPlane__${nodeId}`, true)!;
-    // make sure dragged objects are not culled while drag is in
-    // progress to avoid visual glitches if dragging objects that were culled
-    // before drag started
-    nc.renderable = true;
-    nc.visible = true;
-    sc.renderable = true;
-    sc.visible = true;
-
-    selectionLayer.addChild(sc);
-    nodesLayer.addChild(nc);
-    movedContainers.push({ nodeId, node: nc, selection: sc });
-  }
-
-  return movedContainers;
-};
-
-const repositionContainersAfterDrag = (
-  stage: PIXI.Container,
-  dragContainer: PIXI.Container,
-  moved: DraggedContainers,
-) => {
-  const { activeWorkflow } = useWorkflowStore();
-  const { movePreviewDelta } = useMovingStore();
-
-  if (!activeWorkflow) {
-    return;
-  }
-
-  const nodesContainer = stage.getChildByLabel("NODE_CONTAINER", true)!;
-  const selectionPlaneContainer = stage.getChildByLabel(
-    "NODE_SELECTION_CONTAINER",
-    true,
-  )!;
-
-  for (const { nodeId, node, selection } of moved) {
-    activeWorkflow.nodes[nodeId].position.x += movePreviewDelta.x;
-    activeWorkflow.nodes[nodeId].position.y += movePreviewDelta.y;
-
-    selectionPlaneContainer.addChild(selection);
-    nodesContainer.addChild(node);
-  }
-  dragContainer.removeChildren();
-};
-
-type ObjectMetadata =
-  | { type: "node"; nodeId: string }
-  | { type: "componentPlaceholder"; placeholderId: string }
-  | { type: "annotation"; annotationId: string }
-  | { type: "bendpoint"; bendpointId: string }
-  | { type: "portbar"; containerId: string; side: "in" | "out" };
-
-const useObjectHandler = (objectMetadata: ObjectMetadata) => {
-  const selectionStore = useSelectionStore();
-
-  type HandlersApi = {
-    getObjectId: () => string;
-    isObjectSelected: () => boolean;
-    selectObject: (mode?: SelectionMode) => void;
-    deselectObject: () => void;
-    /**
-     * Needed for grid snapping. Not used by objects that do not snap to grid
-     */
-    getObjectInitialPosition?: () => XY;
-  };
-
-  function assertUnreachable(_: never): never {
-    throw new Error("Exhaustive check not met");
-  }
-
-  // eslint-disable-next-line consistent-return
-  const setup = (): HandlersApi => {
-    switch (objectMetadata.type) {
-      case "node": {
-        return {
-          getObjectId: () => objectMetadata.nodeId,
-          isObjectSelected: () =>
-            selectionStore.isNodeSelected(objectMetadata.nodeId),
-          selectObject: (mode) =>
-            selectionStore.selectNodes([objectMetadata.nodeId], mode),
-          deselectObject: () =>
-            selectionStore.deselectNodes([objectMetadata.nodeId]),
-          getObjectInitialPosition: () => {
-            const node = useNodeInteractionsStore().getNodeById(
-              objectMetadata.nodeId,
-            );
-            return node!.position;
-          },
-        };
-      }
-
-      case "annotation": {
-        return {
-          getObjectId: () => objectMetadata.annotationId,
-          isObjectSelected: () =>
-            selectionStore.isAnnotationSelected(objectMetadata.annotationId),
-          selectObject: () =>
-            selectionStore.selectAnnotations([objectMetadata.annotationId]),
-          deselectObject: () =>
-            selectionStore.deselectAnnotations([objectMetadata.annotationId]),
-          getObjectInitialPosition: () => {
-            const annotation =
-              useAnnotationInteractionsStore().getAnnotationById(
-                objectMetadata.annotationId,
-              );
-            return { x: annotation!.bounds.x, y: annotation!.bounds.y };
-          },
-        };
-      }
-
-      case "bendpoint": {
-        return {
-          getObjectId: () => objectMetadata.bendpointId,
-          isObjectSelected: () =>
-            selectionStore.isBendpointSelected(objectMetadata.bendpointId),
-          selectObject: () =>
-            selectionStore.selectBendpoints(objectMetadata.bendpointId),
-          deselectObject: () =>
-            selectionStore.deselectBendpoints(objectMetadata.bendpointId),
-        };
-      }
-
-      case "componentPlaceholder": {
-        return {
-          getObjectId: () => objectMetadata.placeholderId,
-          isObjectSelected: () =>
-            selectionStore.getSelectedComponentPlaceholder?.id ===
-            objectMetadata.placeholderId,
-          selectObject: () =>
-            selectionStore.selectComponentPlaceholder(
-              objectMetadata.placeholderId,
-            ),
-          deselectObject: () => selectionStore.deselectComponentPlaceholder(),
-        };
-      }
-
-      case "portbar": {
-        return {
-          getObjectId: () => objectMetadata.containerId,
-          isObjectSelected: () =>
-            selectionStore.isMetaNodePortBarSelected(objectMetadata.side),
-          selectObject: () =>
-            selectionStore.selectMetanodePortBar(objectMetadata.side),
-          deselectObject: () =>
-            selectionStore.deselectMetanodePortBar(objectMetadata.side),
-        };
-      }
-
-      default:
-        assertUnreachable(objectMetadata);
-    }
-  };
-
-  return setup();
-};
+import type { ObjectMetadata, StartPosition } from "./types";
+import { useAbortDragListener } from "./useAbortDragListener";
+import { useContainerDragging } from "./useContainerDragging";
+import { useMoveDeltaCalculation } from "./useMoveDeltaCalculation";
+import { useObjectHandler } from "./useObjectSelectionHandler";
 
 type UseObjectInteractionsOptions = {
   objectMetadata: ObjectMetadata;
@@ -288,13 +103,18 @@ export const useObjectInteractions = (
   const { pixiApplication, isHoldingDownSpace } = storeToRefs(canvasStore);
   const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 
-  const objectHandler = useObjectHandler(objectMetadata);
-
-  const startPosition = ref<XY & { gridPositionDelta: XY }>({
+  const startPosition = ref<StartPosition>({
     x: 0,
     y: 0,
     gridPositionDelta: { x: 0, y: 0 },
   });
+
+  const objectHandler = useObjectHandler(objectMetadata);
+  const { calculateMoveDeltas } = useMoveDeltaCalculation({
+    objectMetadata,
+    startPosition,
+  });
+
   const setStartPosition = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
     const { clientX, clientY } = pointerDownEvent;
     const [x, y] = canvasStore.screenToCanvasCoordinates([clientX, clientY]);
@@ -315,59 +135,6 @@ export const useObjectInteractions = (
     };
 
     startPosition.value = { x, y, gridPositionDelta };
-  };
-
-  const registerDragAbort = () => {
-    const abort = (event: KeyboardEvent) => {
-      if (isDragging.value && event.key === "Escape") {
-        movingStore.abortDrag();
-        stopPanningToEdge();
-        markEscapeAsHandled(event, {
-          initiator: "object-interaction::onEscape",
-        });
-      }
-    };
-
-    const teardown = () => {
-      if (hasAbortedDrag.value) {
-        movingStore.resetAbortDrag();
-      }
-
-      window.removeEventListener("keydown", abort, { capture: true });
-    };
-
-    window.addEventListener("keydown", abort);
-
-    return teardown;
-  };
-
-  const calculateMoveDeltas = (pointerMoveEvent: PointerEvent) => {
-    const [moveX, moveY] = canvasStore.screenToCanvasCoordinates([
-      pointerMoveEvent.clientX,
-      pointerMoveEvent.clientY,
-    ]);
-
-    const shouldSnapToGrid =
-      !pointerMoveEvent.altKey && objectMetadata.type !== "bendpoint";
-
-    const moveThreshold =
-      objectMetadata.type === "bendpoint" ? 1 : MIN_MOVE_THRESHOLD;
-
-    const snapFn = shouldSnapToGrid
-      ? geometry.utils.snapToGrid
-      : (val: number) => val;
-
-    const deltaX =
-      snapFn(moveX - startPosition.value.x) +
-      startPosition.value.gridPositionDelta.x;
-    const deltaY =
-      snapFn(moveY - startPosition.value.y) +
-      startPosition.value.gridPositionDelta.y;
-
-    const isSignificantMove =
-      Math.abs(deltaX) >= moveThreshold || Math.abs(deltaY) >= moveThreshold;
-
-    return { isSignificantMove, deltaX, deltaY };
   };
 
   /**
@@ -430,6 +197,20 @@ export const useObjectInteractions = (
     canvas.addEventListener("pointerup", onUp);
   };
 
+  const {
+    startContainerDragging,
+    updateContainerPosition,
+    endContainerDragging,
+    abortContainerDrag,
+  } = useContainerDragging();
+
+  const { registerDragAbortListener } = useAbortDragListener({
+    onAbort: () => {
+      abortContainerDrag();
+      stopPanningToEdge();
+    },
+  });
+
   const handleDefaultInteraction = async (
     pointerDownEvent: PIXI.FederatedPointerEvent,
   ) => {
@@ -458,11 +239,10 @@ export const useObjectInteractions = (
 
       if (!wasAborted) {
         consola.debug(
-          "object interaction:: selection context was cleaned. Selecting next object",
+          "object interaction:: selection context was cleared. Selecting next object",
           { objectMetadata },
         );
         objectHandler.selectObject();
-
         openRightPanelForNodes();
       }
 
@@ -513,19 +293,20 @@ export const useObjectInteractions = (
     setStartPosition(pointerDownEvent);
     const canvas = pixiApplication.value!.canvas;
     canvas.setPointerCapture(pointerDownEvent.pointerId);
-    const removeDragAbortListener = registerDragAbort();
+    const removeDragAbortListener = registerDragAbortListener();
 
-    // make sure to start after selection has been made, because that's async
+    // make sure to start after selection has been handled
     options.onMoveStart?.();
 
     let didDrag = false;
 
-    const { selectedObjects } = selectionStore.querySelection("preview");
-    const stage = pixiApplication.value!.app.stage;
-    const dragContainer = stage.getChildByLabel("DRAG_CONTAINER", true)!;
-    let hasMovedContainers = false;
-    let repositionedContainers: DraggedContainers = [];
-    const { selectedNodeIds } = selectionStore.querySelection("preview");
+    const { selectedNodeIds, selectedObjects } =
+      selectionStore.querySelection("preview");
+
+    const updatePosition = (deltaX: number, deltaY: number) => {
+      updateContainerPosition(deltaX, deltaY);
+      movingStore.setMovePreview({ deltaX, deltaY });
+    };
 
     const onMove = rafThrottle((pointerMoveEvent: PointerEvent): void => {
       if (pointerMoveEvent.buttons === 0) {
@@ -560,18 +341,11 @@ export const useObjectInteractions = (
       dragInitiatorId.value = objectHandler.getObjectId();
       didDrag = true;
 
-      if (!hasMovedContainers) {
-        hasMovedContainers = true;
-        repositionedContainers = prepareContainersForDrag(
-          stage,
-          dragContainer,
-          selectedNodeIds.value,
-        );
-      }
-
       if (hasAbortedDrag.value) {
         return;
       }
+
+      startContainerDragging(selectedNodeIds.value);
 
       const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
         offset,
@@ -582,17 +356,17 @@ export const useObjectInteractions = (
         const deltaX = isAtEdge.x ? currentDelta.x : currentDelta.x - offset.x;
         const deltaY = isAtEdge.y ? currentDelta.y : currentDelta.y - offset.y;
 
-        movingStore.setMovePreview({ deltaX, deltaY });
+        updatePosition(deltaX, deltaY);
       };
 
       startPanningToEdge(pointerMoveEvent, onPanningToEdgeUpdate);
 
-      options.onMove?.(pointerMoveEvent);
-      movingStore.setIsDragging(true);
+      if (!isDragging.value) {
+        movingStore.setIsDragging(true);
+      }
 
-      dragContainer.position.x = deltaX;
-      dragContainer.position.y = deltaY;
-      movingStore.setMovePreview({ deltaX, deltaY });
+      updatePosition(deltaX, deltaY);
+      options.onMove?.(pointerMoveEvent);
     });
 
     const onUp = rafThrottle(() => {
@@ -607,11 +381,7 @@ export const useObjectInteractions = (
 
         objectHandler.selectObject();
 
-        repositionContainersAfterDrag(
-          stage,
-          dragContainer,
-          repositionedContainers,
-        );
+        endContainerDragging();
 
         onMoveEnd().then(async ({ shouldMove }) => {
           if (shouldMove) {

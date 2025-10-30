@@ -104,7 +104,7 @@ const annotations = computed(
       "
     />
 
-    <Container label="NODE_SELECTION_CONTAINER" :is-render-group="true">
+    <Container label="NODE_SELECTIONS_CONTAINER" :is-render-group="true">
       <template v-for="node in activeWorkflow!.nodes" :key="node.id">
         <NodeSelectionPlane
           :position="node.position"
@@ -114,13 +114,15 @@ const annotations = computed(
       </template>
     </Container>
 
+    <Container label="SELECTION_DRAG_CONTAINER" :is-render-group="true" />
+
     <ComponentPlaceholder
       v-for="componentPlaceholder of componentPlaceholders"
       :key="`placeholder-${componentPlaceholder.id}`"
       :placeholder="componentPlaceholder"
     />
 
-    <Container label="NODE_CONTAINER" :is-render-group="true">
+    <Container label="NODES_CONTAINER" :is-render-group="true">
       <template v-for="node in activeWorkflow!.nodes" :key="node.id">
         <Node
           :position="node.position"
@@ -132,7 +134,7 @@ const annotations = computed(
       </template>
     </Container>
 
-    <Container label="DRAG_CONTAINER" :is-render-group="true" />
+    <Container label="NODES_DRAG_CONTAINER" :is-render-group="true" />
 
     <Connector
       v-for="connector of activeWorkflow.connections"

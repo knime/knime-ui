@@ -6,10 +6,19 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { createNativeNode, createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
-import { markPointerEventAsHandled } from "../../util/interaction";
-import { useObjectInteractions } from "../useObjectInteractions";
+import { useObjectInteractions } from "..";
+import { markPointerEventAsHandled } from "../../../util/interaction";
 
-vi.mock("../../util/interaction");
+vi.mock("../../../util/interaction");
+
+vi.mock("../useContainerDragging", () => ({
+  useContainerDragging: () => ({
+    startContainerDragging: vi.fn(),
+    updateContainerPosition: vi.fn(),
+    endContainerDragging: vi.fn(),
+    abortContainerDrag: vi.fn(),
+  }),
+}));
 
 describe("useObjectInteractions", () => {
   afterEach(() => {
