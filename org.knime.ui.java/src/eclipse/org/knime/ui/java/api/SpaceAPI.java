@@ -78,6 +78,7 @@ import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
@@ -100,6 +101,7 @@ import org.knime.workbench.explorer.dialogs.Validator;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
+import org.knime.workbench.explorer.filesystem.ExplorerRemoteContentRefresher;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -268,8 +270,18 @@ final class SpaceAPI {
         // the UI never offered "Upload" from non-local -- let's make this assumption explicit here
         CheckUtils.checkArgument(sources.isLocal(), "Unexpected upload from non-local space");
         if (destination.isHub()) {
-            // always use HubClient SDK for uploads to Hub spaces, let it handle backwards-compatibility
-            return performAsyncHubUpload(sources, destination, excludeData);
+            try {
+                // always use HubClient SDK for uploads to Hub spaces, let it handle backwards-compatibility
+                return performAsyncHubUpload(sources, destination, excludeData);
+            } catch (final OperationNotAllowedException e) {
+                LOGGER.debug("Async upload not available, falling back to legacy upload", e);
+            }
+            // AP-25240: in case the new upload flow is not supported, we need to use the old one. But since the
+            // fetchers are not running, we need the refresh to guarantee (somewhat) up to date conflict resolution
+            final var mountId =
+                ExplorerFileSystem.getIDfromURI(destination.space().toKnimeUrl(destination.space().getId()));
+            ExplorerRemoteContentRefresher.refreshContentProvidersWithProgress(Display.getCurrent().getActiveShell(),
+                List.of(mountId));
         }
 
         legacyCopyBetweenSpaces(sources, destination, excludeData);
