@@ -53,6 +53,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -101,6 +102,7 @@ import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
 import org.knime.workbench.explorer.dialogs.Validator;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
+import org.knime.workbench.explorer.filesystem.ExplorerRemoteContentRefresher;
 import org.knime.workbench.explorer.view.AbstractContentProvider;
 import org.knime.workbench.explorer.view.ContentObject;
 
@@ -124,6 +126,11 @@ final class ManipulateComponents {
 
         final var validMountPoints = getAllValidMountPoint(ExplorerMountTable.getMountedContent());
         final var shell = SWTUtilities.getActiveShell();
+        final var isCanceled =
+            ExplorerRemoteContentRefresher.refreshContentProviders(shell, Arrays.asList(validMountPoints));
+        if (isCanceled) {
+            return false;
+        }
         final var dialog = new DestinationSelectionDialog(shell, validMountPoints, null);
         if (dialog.open() != Window.OK) {
             return false; // If the operation was aborted
