@@ -69,6 +69,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.service.GatewayException;
@@ -111,15 +112,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Kai Franze, KNIME GmbH, Germany
  */
 final class SpaceAPI {
-
-    private static final String ASYNC_UPLOAD_FEATURE_FLAG = "knime.hub.async_upload";
-
-    private static final String ASYNC_DOWNLOAD_FEATURE_FLAG = "knime.hub.async_download";
-
-    private static boolean systemPropertyIsFalse(final String propertyName) {
-        return Boolean.FALSE.toString() //
-            .equalsIgnoreCase(System.getProperty(propertyName));
-    }
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(SpaceAPI.class);
 
@@ -215,9 +207,11 @@ final class SpaceAPI {
             return true;
         }
 
+        // the UI never offered "Download" to non-local -- let's make this assumption explicit here
+        CheckUtils.checkArgument(destination.isLocal(), "Unexpected download to non-local space");
         try {
-            final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
-            if (!asyncDownloadDisabled && sources.isHub() && destination.isLocal()) {
+            if (sources.isHub()) {
+                // always use HubClient SDK for downloads from Hub spaces, let it handle backwards-compatibility
                 return performAsyncHubDownload(sources, destination);
             }
             return legacyCopyBetweenSpaces(sources, destination, false);
@@ -271,8 +265,10 @@ final class SpaceAPI {
 
     private static List<String> performUpload(final Locator.Siblings sources, final Locator.Destination destination,
         final boolean excludeData) throws GatewayException, MutableServiceCallException {
-        final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
-        if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
+        // the UI never offered "Upload" from non-local -- let's make this assumption explicit here
+        CheckUtils.checkArgument(sources.isLocal(), "Unexpected upload from non-local space");
+        if (destination.isHub()) {
+            // always use HubClient SDK for uploads to Hub spaces, let it handle backwards-compatibility
             return performAsyncHubUpload(sources, destination, excludeData);
         }
 
