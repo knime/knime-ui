@@ -104,7 +104,7 @@ const annotations = computed(
       "
     />
 
-    <Container label="NODE_SELECTIONS_CONTAINER" :is-render-group="true">
+    <Container label="NODE_SELECTIONS_CONTAINER">
       <template v-for="node in activeWorkflow!.nodes" :key="node.id">
         <NodeSelectionPlane
           :position="node.position"
@@ -122,7 +122,7 @@ const annotations = computed(
       :placeholder="componentPlaceholder"
     />
 
-    <Container label="NODES_CONTAINER" :is-render-group="true">
+    <Container label="NODES_CONTAINER">
       <template v-for="node in activeWorkflow!.nodes" :key="node.id">
         <Node
           :position="node.position"

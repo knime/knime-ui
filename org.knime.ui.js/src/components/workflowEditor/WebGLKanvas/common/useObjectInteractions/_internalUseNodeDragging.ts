@@ -3,7 +3,7 @@ import * as PIXI from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 // the general containers are static and singleton so they can be cached
@@ -20,58 +20,61 @@ let __containersCache: {
 
 const containerSelectors = (stage: PIXI.Container) => {
   return {
-    nodes: {
-      wrapper: () => {
-        if (__containersCache.nodes.wrapper) {
+    select: {
+      nodes: {
+        wrapper: () => {
+          if (__containersCache.nodes.wrapper) {
+            return __containersCache.nodes.wrapper;
+          }
+
+          __containersCache.nodes.wrapper = stage.getChildByLabel(
+            "NODES_CONTAINER",
+            true,
+          )!;
           return __containersCache.nodes.wrapper;
-        }
+        },
+        dragLayer: () => {
+          if (__containersCache.nodes.dragLayer) {
+            return __containersCache.nodes.dragLayer;
+          }
 
-        __containersCache.nodes.wrapper = stage.getChildByLabel(
-          "NODES_CONTAINER",
-          true,
-        )!;
-        return __containersCache.nodes.wrapper;
-      },
-      dragLayer: () => {
-        if (__containersCache.nodes.dragLayer) {
+          __containersCache.nodes.dragLayer = stage.getChildByLabel(
+            "NODES_DRAG_CONTAINER",
+            true,
+          )!;
           return __containersCache.nodes.dragLayer;
-        }
-
-        __containersCache.nodes.dragLayer = stage.getChildByLabel(
-          "NODES_DRAG_CONTAINER",
-          true,
-        )!;
-        return __containersCache.nodes.dragLayer;
+        },
+        byId: (nodeId: string) =>
+          stage.getChildByLabel(`Node__${nodeId}`, true)!,
       },
-      byId: (nodeId: string) => stage.getChildByLabel(`Node__${nodeId}`, true)!,
-    },
 
-    selectionOutline: {
-      wrapper: () => {
-        if (__containersCache.selectionOutline.wrapper) {
+      selectionOutline: {
+        wrapper: () => {
+          if (__containersCache.selectionOutline.wrapper) {
+            return __containersCache.selectionOutline.wrapper;
+          }
+
+          __containersCache.selectionOutline.wrapper = stage.getChildByLabel(
+            "NODE_SELECTIONS_CONTAINER",
+            true,
+          )!;
           return __containersCache.selectionOutline.wrapper;
-        }
+        },
+        dragLayer: () => {
+          if (__containersCache.selectionOutline.dragLayer) {
+            return __containersCache.selectionOutline.dragLayer;
+          }
 
-        __containersCache.selectionOutline.wrapper = stage.getChildByLabel(
-          "NODE_SELECTIONS_CONTAINER",
-          true,
-        )!;
-        return __containersCache.selectionOutline.wrapper;
-      },
-      dragLayer: () => {
-        if (__containersCache.selectionOutline.dragLayer) {
+          __containersCache.selectionOutline.dragLayer = stage.getChildByLabel(
+            "SELECTION_DRAG_CONTAINER",
+            true,
+          )!;
+
           return __containersCache.selectionOutline.dragLayer;
-        }
-
-        __containersCache.selectionOutline.dragLayer = stage.getChildByLabel(
-          "SELECTION_DRAG_CONTAINER",
-          true,
-        )!;
-
-        return __containersCache.selectionOutline.dragLayer;
+        },
+        byId: (nodeId: string) =>
+          stage.getChildByLabel(`NodeSelectionPlane__${nodeId}`, true)!,
       },
-      byId: (nodeId: string) =>
-        stage.getChildByLabel(`NodeSelectionPlane__${nodeId}`, true)!,
     },
   };
 };
@@ -99,7 +102,7 @@ const prepareContainersForDrag = (
   }
 
   const movedContainers = new Map<string, ContainerMetadata>();
-  const select = containerSelectors(stage);
+  const { select } = containerSelectors(stage);
 
   for (const nodeId of selectedNodeIds) {
     const nc = select.nodes.byId(nodeId);
@@ -130,32 +133,29 @@ const prepareContainersForDrag = (
 const repositionContainersAfterDrag = (
   stage: PIXI.Container,
   moved: DraggedContainers,
+  /**
+   * `null` value means position should be reverted to its original value
+   * before the drag
+   */
   nextPosition: XY | null,
 ) => {
-  const { activeWorkflow } = useWorkflowStore();
+  const nodeInteractionsStore = useNodeInteractionsStore();
 
-  if (!activeWorkflow) {
-    throw new Error(
-      "Container repositioning:: Invalid state -> no active workflow was found",
-    );
-  }
-
-  const select = containerSelectors(stage);
+  const { select } = containerSelectors(stage);
 
   const nodesDragLayer = select.nodes.dragLayer();
   const nodesWrapper = select.nodes.wrapper();
 
   const selectionsWrapper = select.selectionOutline.wrapper();
   const selectionsDragLayer = select.nodes.dragLayer();
+  const isRevert = nextPosition === null;
 
   for (const { nodeId, node, selection, originalPosition } of moved.values()) {
-    if (nextPosition) {
-      activeWorkflow.nodes[nodeId].position.x += nextPosition.x;
-      activeWorkflow.nodes[nodeId].position.y += nextPosition.y;
-    } else {
-      activeWorkflow.nodes[nodeId].position.x = originalPosition.x;
-      activeWorkflow.nodes[nodeId].position.y = originalPosition.y;
-    }
+    nodeInteractionsStore.updatePosition(
+      nodeId,
+      isRevert ? originalPosition : nextPosition,
+      isRevert ? "replace" : "add",
+    );
 
     selectionsWrapper.addChild(selection);
     nodesWrapper.addChild(node);
@@ -176,12 +176,13 @@ let hasInitialized = false;
 let movedContainers: DraggedContainers;
 
 /**
- * Handles drag optimization. During a drag interaction, it will reposition the
- * containers being dragged into a Pixi RenderGroup in order to improve performance
+ * Handles drag optimization for nodes. During a drag interaction, it will reposition the
+ * pixi containers being dragged into a Pixi RenderGroup in order to improve performance
  * when applying transforms to the whole group. After the drag interaction completes,
- * it will handle stabilizing the scene graph to the same state as it was before the drag.
+ * it will handle stabilizing the scene graph so that the nodes are visually updated to
+ * the correct position
  */
-export const useContainerDragging = () => {
+export const useNodeDragging = () => {
   const canvasStore = useWebGLCanvasStore();
   const { pixiApplication } = storeToRefs(canvasStore);
 
@@ -195,7 +196,13 @@ export const useContainerDragging = () => {
     return pixiApplication.value.app.stage;
   };
 
-  const startContainerDragging = (nodeIds: string[]) => {
+  /**
+   * Prepare for the upcoming drag interaction by making changes to the
+   * Pixi scene graph in order to optimize the position transforms for the
+   * nodes that will be dragged
+   * @param nodeIds
+   */
+  const startDrag = (nodeIds: string[]) => {
     if (hasInitialized) {
       return;
     }
@@ -205,9 +212,13 @@ export const useContainerDragging = () => {
     movedContainers = prepareContainersForDrag(stage, nodeIds);
   };
 
-  const updateContainerPosition = (deltaX: number, deltaY: number) => {
+  /**
+   * Update the position of the Pixi container that holds all the nodes
+   * being dragged
+   */
+  const updateDragPosition = (deltaX: number, deltaY: number) => {
     const stage = getStage();
-    const select = containerSelectors(stage);
+    const { select } = containerSelectors(stage);
     const nodesDragLayer = select.nodes.dragLayer();
     const selectionsDragLayer = select.selectionOutline.dragLayer();
 
@@ -224,20 +235,32 @@ export const useContainerDragging = () => {
     selectionsDragLayer.position.y = deltaY;
   };
 
-  const endContainerDragging = () => {
+  /**
+   * Apply the drag deltas to the node instances in the workflow state, and
+   * cleanup the Pixi modifications to the scene graph which happened during
+   * the drag
+   */
+  const endDrag = (finalDeltaX: number, finalDeltaY: number) => {
     if (!hasInitialized) {
       return;
     }
 
-    const { movePreviewDelta } = useMovingStore();
     const stage = getStage();
-    repositionContainersAfterDrag(stage, movedContainers, movePreviewDelta);
+    repositionContainersAfterDrag(stage, movedContainers, {
+      x: finalDeltaX,
+      y: finalDeltaY,
+    });
 
     movedContainers.clear();
     hasInitialized = false;
   };
 
-  const abortContainerDrag = () => {
+  /**
+   * Aborts the drag interaction and cleanup the Pixi modifications to the scene
+   * graph which happened during the drah. This will also reset node positions
+   * to their originals before the drag
+   */
+  const abortDrag = () => {
     if (!hasInitialized) {
       return;
     }
@@ -250,9 +273,9 @@ export const useContainerDragging = () => {
   };
 
   return {
-    startContainerDragging,
-    updateContainerPosition,
-    endContainerDragging,
-    abortContainerDrag,
+    startDrag,
+    updateDragPosition,
+    endDrag,
+    abortDrag,
   };
 };
