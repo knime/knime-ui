@@ -56,9 +56,10 @@ const canApplyAndExecute = computed(() => {
 <template>
   <div ref="buttons" class="buttons">
     <KButton
+      class="button discard"
       label="Discard"
-      size="medium"
       variant="transparent"
+      :disabled="!canApplyOrDiscard"
       @click="emit('discard')"
     />
 
@@ -68,7 +69,6 @@ const canApplyAndExecute = computed(() => {
       :disabled="!canApplyAndExecute"
       label="Apply and Execute"
       variant="transparent"
-      size="medium"
       @click="emit('apply', true)"
     />
 
@@ -76,7 +76,6 @@ const canApplyAndExecute = computed(() => {
       v-if="showExecuteOnlyButton"
       class="button execute"
       label="Execute"
-      size="medium"
       variant="transparent"
       @click="emit('execute')"
     />
@@ -85,7 +84,6 @@ const canApplyAndExecute = computed(() => {
       class="button apply"
       :disabled="!canApplyOrDiscard"
       label="Apply"
-      size="medium"
       variant="outlined"
       @click="emit('apply', false)"
     />
