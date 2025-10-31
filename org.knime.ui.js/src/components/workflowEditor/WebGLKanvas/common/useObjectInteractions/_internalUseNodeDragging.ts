@@ -90,7 +90,6 @@ type DraggedContainers = Map<string, ContainerMetadata>;
 
 const prepareContainersForDrag = (
   stage: PIXI.Container,
-  // dragContainer: PIXI.Container,
   selectedNodeIds: string[],
 ): DraggedContainers => {
   const { activeWorkflow } = useWorkflowStore();
