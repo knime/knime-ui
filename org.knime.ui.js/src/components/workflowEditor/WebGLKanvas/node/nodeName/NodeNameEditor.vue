@@ -5,6 +5,8 @@ import { computed, ref, useTemplateRef } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
+import { onContextMenuOutside } from "@knime/components";
+
 import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -18,7 +20,6 @@ import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";
 import TextEditor from "../../common/TextEditor.vue";
 import { FLOATING_HTML_ACTIONBAR_VIEWBOX } from "../../common/constants";
-import { onContextMenuOutside } from "../../common/onContextMenuOutside";
 import { nodeNameText } from "../../util/textStyles";
 
 const nodeInteractionsStore = useNodeInteractionsStore();
