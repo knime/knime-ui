@@ -1,8 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { createNativeNode, createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
@@ -11,16 +12,22 @@ import { markPointerEventAsHandled } from "../../../util/interaction";
 
 vi.mock("../../../util/interaction");
 
-vi.mock("../useContainerDragging", () => ({
-  useContainerDragging: () => ({
-    startContainerDragging: vi.fn(),
-    updateContainerPosition: vi.fn(),
-    endContainerDragging: vi.fn(),
-    abortContainerDrag: vi.fn(),
+vi.mock("../_internalUseNodeDragging", () => ({
+  useNodeDragging: () => ({
+    startDrag: vi.fn(),
+    updateDragPosition: vi.fn(),
+    endDrag: vi.fn(),
+    abortDrag: vi.fn(),
   }),
 }));
 
 describe("useObjectInteractions", () => {
+  const { currentRenderer } = useCanvasRendererUtils();
+
+  beforeAll(() => {
+    currentRenderer.value = "WebGL";
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -297,7 +304,10 @@ describe("useObjectInteractions", () => {
       expect(mockedStores.movingStore.setIsDragging).toHaveBeenCalled();
       expect(mockedStores.movingStore.setMovePreview).toHaveBeenCalled();
       expect(onMoveEnd).toHaveBeenCalled();
-      expect(mockedStores.movingStore.moveObjects).toHaveBeenCalled();
+      expect(mockedStores.movingStore.moveObjectsWebGL).toHaveBeenCalledWith({
+        x: 10,
+        y: 10,
+      });
     });
 
     it("should not move any object if workflow is not writable", async () => {
@@ -391,7 +401,7 @@ describe("useObjectInteractions", () => {
       });
       await flushPromises();
       expect(onMoveEnd).toHaveBeenCalledOnce();
-      expect(mockedStores.movingStore.moveObjects).toHaveBeenCalledOnce();
+      expect(mockedStores.movingStore.moveObjectsWebGL).toHaveBeenCalledOnce();
     });
   });
 
