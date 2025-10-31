@@ -381,7 +381,9 @@ export const useObjectInteractions = (
 
         onMoveEnd().then(async ({ shouldMove }) => {
           if (shouldMove) {
-            await movingStore.moveObjectsWebGL(movingStore.movePreviewDelta);
+            await movingStore.moveObjectsWebGL({
+              ...movingStore.movePreviewDelta,
+            });
             // eslint-disable-next-line no-undefined
             dragInitiatorId.value = undefined;
           }

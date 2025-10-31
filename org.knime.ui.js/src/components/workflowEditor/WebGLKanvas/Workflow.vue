@@ -22,6 +22,31 @@ import NodeSelectionPlane from "./node/NodeSelectionPlane.vue";
 import ComponentPlaceholder from "./node/placeholder/ComponentPlaceholder.vue";
 import MetanodePortBars from "./portbars/MetanodePortBars.vue";
 
+/**
+ * ****************************** IMPORTANT NOTE *******************************
+ *
+ * This handles some key concepts in the application and canvas rendering
+ *
+ * 1. Rendering order:
+ *    The order in the template is important, the custom Vue Pixi renderer
+ *    will add objects to the Pixi scene graph in the order they are declared:
+ *    "Objects at the top will be rendered behind objects that follow."
+ *
+ * 2. Render layers:
+ *    Despite the render order, sometimes it's useful to bring a certain object
+ *    atop another regardless of the place it has in the scene graph
+ *    (think z-index). This is the purpose of render layers.
+ *    For more info, see: https://pixijs.com/8.x/guides/concepts/render-layers
+ *
+ * 3. Drag containers:
+ *    Drag operations can be expensive on big workflows, because many objects
+ *    could be moved at the same time. In order to optimize this, drag containers
+ *    are used as render groups for the objects being dragged. This improves
+ *    performance by applying a transform only once instead of to each individual
+ *    item being dragged.
+ *    For more info, see: https://pixijs.com/8.x/guides/concepts/render-groups
+ */
+
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
   useNodeInteractionsStore(),
@@ -105,13 +130,13 @@ const annotations = computed(
     />
 
     <Container label="NODE_SELECTIONS_CONTAINER">
-      <template v-for="node in activeWorkflow!.nodes" :key="node.id">
-        <NodeSelectionPlane
-          :position="node.position"
-          :node="node"
-          :name="getNodeName(node.id)"
-        />
-      </template>
+      <NodeSelectionPlane
+        v-for="node in activeWorkflow!.nodes"
+        :key="node.id"
+        :position="node.position"
+        :node-id="node.id"
+        :name="getNodeName(node.id)"
+      />
     </Container>
 
     <Container label="SELECTION_DRAG_CONTAINER" :is-render-group="true" />
@@ -123,15 +148,15 @@ const annotations = computed(
     />
 
     <Container label="NODES_CONTAINER">
-      <template v-for="node in activeWorkflow!.nodes" :key="node.id">
-        <Node
-          :position="node.position"
-          :icon="getNodeIcon(node.id)"
-          :type="getNodeType(node.id)"
-          :name="getNodeName(node.id)"
-          :node="node"
-        />
-      </template>
+      <Node
+        v-for="node in activeWorkflow!.nodes"
+        :key="node.id"
+        :position="node.position"
+        :icon="getNodeIcon(node.id)"
+        :type="getNodeType(node.id)"
+        :name="getNodeName(node.id)"
+        :node="node"
+      />
     </Container>
 
     <Container label="NODES_DRAG_CONTAINER" :is-render-group="true" />

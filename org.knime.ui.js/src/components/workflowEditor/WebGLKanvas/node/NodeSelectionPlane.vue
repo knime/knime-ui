@@ -3,7 +3,6 @@
 import { computed, toRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
@@ -22,27 +21,26 @@ import { useNodeNameShortening } from "./useTextShortening";
  */
 
 type Props = {
+  nodeId: string;
   position: XY;
-  node: KnimeNode;
   name: string;
+  isMetanode?: boolean;
 };
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  isMetanode: false,
+});
 
 const canvasStore = useWebGLCanvasStore();
 const { visibleArea } = storeToRefs(canvasStore);
 const renderable = computed(
-  () =>
-    !geometry.utils.isPointOutsideBounds(
-      props.node.position,
-      visibleArea.value,
-    ),
+  () => !geometry.utils.isPointOutsideBounds(props.position, visibleArea.value),
 );
 
 const selectionStore = useSelectionStore();
 const { shouldHideSelection } = storeToRefs(selectionStore);
 const { showSelection, showFocus } =
-  selectionStore.getNodeVisualSelectionStates(props.node.id);
+  selectionStore.getNodeVisualSelectionStates(props.nodeId);
 
 const { metrics: nodeNameDimensions } = useNodeNameShortening(
   toRef(props, "name"),
@@ -53,13 +51,13 @@ const { nameEditorNodeId, nameEditorDimensions } = storeToRefs(
   nodeInteractionsStore,
 );
 
-const isEditingName = computed(() => nameEditorNodeId.value === props.node.id);
+const isEditingName = computed(() => nameEditorNodeId.value === props.nodeId);
 const { nodeSelectionMeasures: measures } = useNodeSelectionPlaneMeasures({
   extraHeight: () =>
     isEditingName.value
       ? nameEditorDimensions.value.height
       : nodeNameDimensions.value.height,
-  kind: props.node.kind,
+  isMetanode: props.isMetanode,
   width: () =>
     isEditingName.value
       ? nameEditorDimensions.value.width
@@ -104,7 +102,7 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
 
 <template>
   <Container
-    :label="`NodeSelectionPlane__${node.id}`"
+    :label="`NodeSelectionPlane__${nodeId}`"
     :renderable="
       renderable && (showFocus || showSelection) && !shouldHideSelection
     "

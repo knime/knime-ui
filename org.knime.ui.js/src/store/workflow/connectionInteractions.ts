@@ -94,7 +94,7 @@ export const useConnectionInteractionsStore = defineStore(
 
         // move new bendpoint
         const movingStore = useMovingStore();
-        await movingStore.moveObjectsWebGL(movingStore.movePreviewDelta);
+        await movingStore.moveObjectsWebGL({ ...movingStore.movePreviewDelta });
 
         this.removeVirtualBendpoint({ connectionId, index });
       },

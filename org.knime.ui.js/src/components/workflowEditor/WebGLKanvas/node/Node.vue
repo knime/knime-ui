@@ -275,7 +275,7 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
     isEditingName.value
       ? nameEditorDimensions.value.height
       : nodeNameDimensions.value.height,
-  kind: props.node.kind,
+  isMetanode,
   width: () =>
     isEditingName.value
       ? nameEditorDimensions.value.width
@@ -304,10 +304,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
 
   await canvasAnchoredComponentsStore.toggleContextMenu({ event });
 };
-
-// const renderLayer = computed(() =>
-//   isSelected.value ? canvasLayers.value.selectedNodes : null,
-// );
 </script>
 
 <template>

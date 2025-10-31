@@ -4,16 +4,12 @@ import { storeToRefs } from "pinia";
 
 import type { Toast } from "@knime/components";
 
-import { ComponentPlaceholder, Node } from "@/api/gateway-api/generated-api";
+import { ComponentPlaceholder } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
-import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
-import { useNodeSelectionPlaneMeasures } from "../useNodeSelectionPlaneMeasures";
-import { useNodeNameShortening } from "../useTextShortening";
 
 import ComponentPlaceholderState from "./ComponentPlaceholderState.vue";
 
@@ -33,7 +29,7 @@ const {
 } = storeToRefs(useSelectionStore());
 const { closeContextMenu } = useCanvasAnchoredComponentsStore();
 const canvasStore = useWebGLCanvasStore();
-const { visibleArea, canvasLayers } = storeToRefs(canvasStore);
+const { canvasLayers } = storeToRefs(canvasStore);
 
 const previousSelection = ref<Set<string>>(new Set());
 const getSelection = () =>
@@ -105,35 +101,14 @@ const adjustedPosition = computed(() => {
     y: props.placeholder.position.y + 6,
   };
 });
-
-const { metrics: nodeNameDimensions } = useNodeNameShortening(
-  computed(() => props.placeholder.name ?? ""),
-);
-
-const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
-  extraHeight: () => nodeNameDimensions.value.height,
-  kind: Node.KindEnum.Component,
-  width: () => $shapes.nodeNameHorizontalMargin * 2,
-});
-
-const renderable = computed(
-  () =>
-    !geometry.utils.isPointOutsideBounds(
-      adjustedPosition.value,
-      visibleArea.value,
-    ),
-);
 </script>
 
 <template>
   <NodeSelectionPlane
     v-if="isComponentSelected"
-    :layer="canvasLayers.nodeSelectionPlane"
-    :anchor-position="adjustedPosition"
-    :renderable="renderable"
-    :show-selection="true"
-    :show-focus="false"
-    :measures="nodeSelectionMeasures"
+    :position="adjustedPosition"
+    :node-id="placeholder.id"
+    :name="placeholder.name ?? ''"
   />
 
   <ComponentPlaceholderState
