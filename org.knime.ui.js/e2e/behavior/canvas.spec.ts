@@ -161,7 +161,7 @@ test.describe("panning", () => {
     const kanvasBox = await getKanvasBoundingBox(page);
 
     // Drag a bendpoint near left edge of screen and hold until edge of canvas is reached
-    const { x, y } = { x: kanvasBox!.x + 410, y: kanvasBox!.y + 180 };
+    const { x, y } = { x: kanvasBox!.x + 410, y: kanvasBox!.y + 105 };
     await page.mouse.move(x, y);
     await page.mouse.down();
     const panDistance = 100;

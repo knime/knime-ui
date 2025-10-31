@@ -380,8 +380,6 @@ export const useObjectInteractions = (
       return;
     }
 
-    const selectionStore = useSelectionStore();
-
     const canDiscardSelection = selectionStore.canClearCurrentSelection();
 
     if (
@@ -454,6 +452,8 @@ export const useObjectInteractions = (
 
     let didDrag = false;
 
+    const { selectedObjects } = selectionStore.querySelection("preview");
+
     const onMove = rafThrottle((pointerMoveEvent: PointerEvent): void => {
       if (pointerMoveEvent.buttons === 0) {
         return;
@@ -475,7 +475,12 @@ export const useObjectInteractions = (
       }
 
       // prevent any other object interaction temporarily while a drag is occurring
-      if (canvasStore.interactionsEnabled === "all") {
+      // but only when more than 1 object is dragged. Because a single object can
+      // trigger a replacement (e.g node dropped on connection)
+      if (
+        selectedObjects.value.length > 1 &&
+        canvasStore.interactionsEnabled === "all"
+      ) {
         canvasStore.setInteractionsEnabled("camera-only");
       }
 

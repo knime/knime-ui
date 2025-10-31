@@ -22,7 +22,7 @@ const getConnectionPosition = async (page: Page) => {
   const kanvasBox = await getKanvasBoundingBox(page);
   return {
     x: kanvasBox!.x + 290,
-    y: kanvasBox!.y + 300,
+    y: kanvasBox!.y + 218,
   };
 };
 
@@ -43,12 +43,28 @@ test("connection has context menu", async ({ page }) => {
   await assertSnapshot(page);
 });
 
+test("should offer to replace connections when dragging a single node", async ({
+  page,
+}) => {
+  await start(page);
+  // close minimap as it interferes with this fixture
+  await page.getByTestId("canvas-tool-minimap-toggle").click();
+
+  const [nodeX, nodeY] = await getNodePosition(page, "root:1");
+  const connectionPosition = await getConnectionPosition(page);
+
+  await page.mouse.move(nodeX, nodeY);
+  await page.mouse.down();
+  await page.mouse.move(connectionPosition.x, connectionPosition.y);
+  await assertSnapshot(page);
+});
+
 test.describe("bendpoints", () => {
   const getFirstBendpointPosition = async (page: Page) => {
     const kanvasBox = await getKanvasBoundingBox(page);
     return {
       x: kanvasBox!.x + 410,
-      y: kanvasBox!.y + 180,
+      y: kanvasBox!.y + 105,
     };
   };
 
