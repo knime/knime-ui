@@ -150,12 +150,23 @@ const dragStart = (pointerDown: PointerEvent) => {
         v-model="extendedMode"
         compact
         :possible-values="[
-          { id: 'legacy', text: '🏛️' },
-          { id: 'light', text: '☀️' },
-          { id: 'dark', text: '🌙' },
-          { id: 'system', text: '🖥️' },
+          {
+            id: 'legacy',
+            text: '🏛️ Legacy',
+          },
+          {
+            id: 'light',
+            text: '☀️ Light',
+          },
+          {
+            id: 'dark',
+            text: '🌙 Dark',
+          },
+          {
+            id: 'system',
+            text: '🖥️ System',
+          },
         ]"
-        title="Toggle Dark / Legacy Mode"
       />
 
       <FunctionButton

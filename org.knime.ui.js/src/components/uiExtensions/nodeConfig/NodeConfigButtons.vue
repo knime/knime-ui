@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { Button } from "@knime/components";
+import { Button as KButton } from "@knime/kds-components";
 import type { APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
 import {
@@ -55,55 +55,49 @@ const canApplyAndExecute = computed(() => {
 
 <template>
   <div ref="buttons" class="buttons">
-    <Button
-      with-border
-      compact
-      class="button discard"
-      :disabled="!canApplyOrDiscard"
+    <KButton
+      label="Discard"
+      size="medium"
+      variant="transparent"
       @click="emit('discard')"
-    >
-      <strong>Discard</strong>
-    </Button>
+    />
 
-    <Button
+    <KButton
       v-if="!showExecuteOnlyButton"
-      with-border
-      compact
       class="button apply-execute"
       :disabled="!canApplyAndExecute"
+      label="Apply and Execute"
+      variant="transparent"
+      size="medium"
       @click="emit('apply', true)"
-    >
-      <strong>Apply and Execute</strong>
-    </Button>
+    />
 
-    <Button
+    <KButton
       v-if="showExecuteOnlyButton"
-      with-border
-      compact
       class="button execute"
+      label="Execute"
+      size="medium"
+      variant="transparent"
       @click="emit('execute')"
-    >
-      <strong>Execute</strong>
-    </Button>
+    />
 
-    <Button
-      primary
-      compact
+    <KButton
       class="button apply"
       :disabled="!canApplyOrDiscard"
+      label="Apply"
+      size="medium"
+      variant="outlined"
       @click="emit('apply', false)"
-    >
-      <strong>Apply</strong>
-    </Button>
+    />
   </div>
 </template>
 
 <style lang="postcss" scoped>
 & .buttons {
-  border-top: 1px solid var(--knime-silver-sand);
+  border-top: var(--kds-border-base-muted);
   display: flex;
-  padding: 10px 20px;
-  gap: 10px;
+  padding: var(--kds-spacing-container-0-5x);
+  gap: var(--kds-spacing-container-0-5x);
   justify-content: space-between;
   margin-top: auto;
 
