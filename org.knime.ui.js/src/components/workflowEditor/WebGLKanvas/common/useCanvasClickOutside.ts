@@ -28,7 +28,7 @@ type UseCanvasClickOutside = {
    * Function to determine if canvas events should be ignored.
    * @param event - The pointer event
    * @returns true if the event should be ignored
-   * @example (event) => event.dataset?.initiator === "ignored-initiator"
+   * @example (event) => isMarkedEvent(event, "ignored-initiator")
    */
   ignoreCanvasEvents?: (event: PointerEvent) => boolean;
   /**

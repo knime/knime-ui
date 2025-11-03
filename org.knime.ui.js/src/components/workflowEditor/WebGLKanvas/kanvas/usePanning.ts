@@ -14,6 +14,7 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
 import { type ApplicationInst } from "@/vue3-pixi";
+import { isMarkedEvent } from "../util/interaction";
 
 const useHoldingDownSpace = () => {
   const { isHoldingDownSpace, isPanning } = storeToRefs(useWebGLCanvasStore());
@@ -142,7 +143,7 @@ export const useCanvasPanning = ({
       }
 
       const isMouseRightClick = pointerUpEvent.button === 2;
-      const isUnhandledEvent = !pointerUpEvent.dataset;
+      const isUnhandledEvent = !isMarkedEvent(pointerUpEvent);
       // show global context menu if we did not move
       // right click on other objects should prevent the event so its not getting here (see mousePan)
       if (

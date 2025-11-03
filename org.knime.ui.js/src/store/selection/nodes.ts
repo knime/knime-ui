@@ -125,7 +125,15 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
    */
   const getNodeVisualSelectionStates = (nodeId: string) => {
     const showSelection = computed(() => {
-      return previewSelection.has(nodeId) && !options.shouldHideSelection.value;
+      if (options.shouldHideSelection.value) {
+        return false;
+      }
+
+      if (selectedComponentPlaceholder.value === nodeId) {
+        return true;
+      }
+
+      return previewSelection.has(nodeId);
     });
 
     const showFocus = computed(() => focusedNode.value?.id === nodeId);

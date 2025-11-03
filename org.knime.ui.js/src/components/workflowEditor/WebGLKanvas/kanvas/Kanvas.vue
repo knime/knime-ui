@@ -22,6 +22,7 @@ import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
 import { initE2ETestUtils } from "../util/e2eTest";
+import { isMarkedEvent } from "../util/interaction";
 
 import Minimap from "./Minimap.vue";
 import { useKanvasNodePortHint } from "./useKanvasNodePortHint";
@@ -147,7 +148,7 @@ const onPointerDown = (event: PointerEvent) => {
   }
 
   // if any canvas object has marked this event as handled, then we ignore panning
-  if (event.dataset) {
+  if (isMarkedEvent(event)) {
     return;
   }
 

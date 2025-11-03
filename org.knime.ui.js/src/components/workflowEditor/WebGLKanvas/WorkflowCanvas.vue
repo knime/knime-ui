@@ -33,6 +33,7 @@ import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 import Tooltip from "./tooltip/Tooltip.vue";
+import { isMarkedEvent } from "./util/interaction";
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
@@ -50,7 +51,7 @@ const skeletonAnnotationData = computed(
 );
 
 const openQuickActionMenu = (event: PointerEvent) => {
-  if (event.dataset) {
+  if (isMarkedEvent(event)) {
     return;
   }
 
@@ -65,9 +66,7 @@ const openQuickActionMenu = (event: PointerEvent) => {
 };
 
 const { isPointerDownDoubleClick } = usePointerDownDoubleClick({
-  eventHandledChecker: (event) => {
-    return Boolean(event.dataset);
-  },
+  eventHandledChecker: (event) => isMarkedEvent(event),
 });
 
 const onPointerDown = (event: PointerEvent) => {

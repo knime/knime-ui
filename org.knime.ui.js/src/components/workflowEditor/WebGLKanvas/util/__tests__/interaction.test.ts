@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { FederatedPointerEvent } from "pixi.js";
 
-import { markPointerEventAsHandled } from "../interaction";
+import { isMarkedEvent, markPointerEventAsHandled } from "../interaction";
 
 describe("interaction utils", () => {
   describe("markPointerEventAsHandled", () => {
@@ -72,6 +72,35 @@ describe("interaction utils", () => {
       markPointerEventAsHandled(federatedEvent, dataset);
       expect(federatedNativeEvent.dataset).toEqual(dataset);
       expect(federatedEvent.nativeEvent.dataset).toEqual(dataset);
+    });
+  });
+
+  describe("isMarkedEvent", () => {
+    it("should detect marked event (PointerEvent)", () => {
+      const pointerEvent = new PointerEvent("pointerdown");
+
+      expect(isMarkedEvent(pointerEvent)).toBe(false);
+
+      markPointerEventAsHandled(pointerEvent, { initiator: "action-button" });
+      expect(isMarkedEvent(pointerEvent)).toBe(true);
+
+      expect(isMarkedEvent(pointerEvent, "add-port-placeholder")).toBe(false);
+      expect(isMarkedEvent(pointerEvent, "action-button")).toBe(true);
+    });
+
+    it("should detect marked event (FederatedPointerEvent)", () => {
+      const pointerEvent = new PointerEvent("pointerdown");
+      const federatedEvent = {
+        nativeEvent: pointerEvent,
+      } as FederatedPointerEvent;
+
+      expect(isMarkedEvent(federatedEvent)).toBe(false);
+
+      markPointerEventAsHandled(federatedEvent, { initiator: "action-button" });
+      expect(isMarkedEvent(federatedEvent)).toBe(true);
+
+      expect(isMarkedEvent(federatedEvent, "add-port-placeholder")).toBe(false);
+      expect(isMarkedEvent(federatedEvent, "action-button")).toBe(true);
     });
   });
 });

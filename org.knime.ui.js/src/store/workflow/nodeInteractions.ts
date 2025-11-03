@@ -341,6 +341,33 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         portIndex: index,
       });
     },
+
+    updatePosition(
+      nodeId: string,
+      position: XY,
+      mode: "add" | "replace" = "replace",
+    ) {
+      const { activeWorkflow } = useWorkflowStore();
+
+      if (!activeWorkflow) {
+        return;
+      }
+
+      if (!activeWorkflow.nodes[nodeId]) {
+        consola.error(
+          "nodeInteraction:: Cannot apply position update, node is invalid",
+        );
+        return;
+      }
+
+      if (mode === "add") {
+        activeWorkflow.nodes[nodeId].position.x += position.x;
+        activeWorkflow.nodes[nodeId].position.y += position.y;
+      } else {
+        activeWorkflow.nodes[nodeId].position.x = position.x;
+        activeWorkflow.nodes[nodeId].position.y = position.y;
+      }
+    },
   },
 
   getters: {

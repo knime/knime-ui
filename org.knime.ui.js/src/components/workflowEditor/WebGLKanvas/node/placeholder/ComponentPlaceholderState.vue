@@ -66,7 +66,7 @@ const onRightClick = async (event: FederatedPointerEvent) => {
   });
 
   if (!isComponentPlaceholderSelected.value) {
-    await selectComponentPlaceholder(props.id);
+    selectComponentPlaceholder(props.id);
   }
 
   await toggleContextMenu({ event });

@@ -20,7 +20,8 @@ type Initiator =
   | "node-port::onEscape"
   | "object-interaction"
   | "object-interaction::onEscape"
-  | "text-editing";
+  | "text-editing"
+  | "node-label-hover";
 
 export type CustomUIEventDataset = {
   initiator: Initiator;
@@ -73,4 +74,21 @@ export const markEscapeAsHandled = (
     initiator,
     skipDeselectByKeyboard,
   };
+};
+
+export const isMarkedEvent = (
+  event: FederatedPointerEvent | PointerEvent,
+  initiator?: Initiator,
+) => {
+  const nativeEvent = event instanceof PointerEvent ? event : event.nativeEvent;
+
+  if (!nativeEvent.dataset) {
+    return false;
+  }
+
+  if (initiator) {
+    return nativeEvent.dataset.initiator === initiator;
+  }
+
+  return true;
 };

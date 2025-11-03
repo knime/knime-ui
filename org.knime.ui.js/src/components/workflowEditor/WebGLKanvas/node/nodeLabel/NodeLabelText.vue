@@ -102,6 +102,11 @@ const renderBorder = (graphics: GraphicsInst) => {
   );
   graphics.stroke({ color: $colors.SilverSand, width: 1.3 });
 };
+
+const onPointerEnter = (event: FederatedPointerEvent) => {
+  isHovered.value = true;
+  markPointerEventAsHandled(event, { initiator: "node-label-hover" });
+};
 </script>
 
 <template>
@@ -115,7 +120,7 @@ const renderBorder = (graphics: GraphicsInst) => {
       :y="textY"
       event-mode="static"
       @rightclick="emit('rightclick', $event)"
-      @pointerenter="isHovered = true"
+      @pointerenter="onPointerEnter"
       @pointerleave="isHovered = false"
       @pointerdown.stop.prevent="onPointerdown"
     >

@@ -9,6 +9,7 @@ import {
   MetaNodeState,
   NativeNodeInvariants,
   Node,
+  type XY,
 } from "@/api/gateway-api/generated-api";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -27,10 +28,9 @@ import { useNodeHoverProvider } from "../common/useNodeHoverState";
 import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import NodePorts from "../ports/NodePorts.vue";
-import { markPointerEventAsHandled } from "../util/interaction";
+import { isMarkedEvent, markPointerEventAsHandled } from "../util/interaction";
 
 import NodeActionBar from "./NodeActionBar.vue";
-import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeDecorators from "./decorators/NodeDecorators.vue";
 import NodeLabel from "./nodeLabel/NodeLabel.vue";
 import NodeName from "./nodeName/NodeName.vue";
@@ -43,7 +43,7 @@ import { useNodeNameShortening } from "./useTextShortening";
 
 interface Props {
   node: KnimeNode;
-  position: { x: number; y: number };
+  position: XY;
   name: string;
   icon?: string | null;
   type?: NativeNodeInvariants.TypeEnum | null;
@@ -61,7 +61,7 @@ const isComponent = computed(() => isNodeComponent(props.node));
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
 const canvasStore = useWebGLCanvasStore();
-const { isDebugModeEnabled, visibleArea, canvasLayers, zoomAwareResolution } =
+const { isDebugModeEnabled, visibleArea, zoomAwareResolution } =
   storeToRefs(canvasStore);
 
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
@@ -71,19 +71,11 @@ const { isNodeSelected } = selectionStore;
 const { isWritable } = storeToRefs(useWorkflowStore());
 
 const movingStore = useMovingStore();
-const { movePreviewDelta, isDragging, hasAbortedDrag } =
-  storeToRefs(movingStore);
+const { isDragging, hasAbortedDrag } = storeToRefs(movingStore);
 
 const isSelected = computed(() => isNodeSelected(props.node.id));
 
 const translatedPosition = computed(() => {
-  if (isSelected.value) {
-    return {
-      x: props.position.x + movePreviewDelta.value.x,
-      y: props.position.y + movePreviewDelta.value.y,
-    };
-  }
-
   // cannot return `props.position` directly because a WF patch (e.g undo)
   // won't trigger reactivity
   return { x: props.position.x, y: props.position.y };
@@ -156,9 +148,6 @@ const { handlePointerInteraction, isDraggingThisObject } =
     },
   });
 
-const { showSelection, showFocus } =
-  selectionStore.getNodeVisualSelectionStates(props.node.id);
-
 const hoverProvider = useNodeHoverProvider();
 
 const isHovering = computed(
@@ -224,8 +213,8 @@ const isConnectionForbidden = computed(
     floatingConnector.value.context.parentNodeId !== props.node.id,
 );
 
-const onNodeHoverAreaPointerEnter = () => {
-  if (isDragging.value) {
+const onNodeHoverAreaPointerEnter = (event: PIXI.FederatedPointerEvent) => {
+  if (isDragging.value || isMarkedEvent(event)) {
     return;
   }
 
@@ -286,7 +275,7 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
     isEditingName.value
       ? nameEditorDimensions.value.height
       : nodeNameDimensions.value.height,
-  kind: props.node.kind,
+  isMetanode,
   width: () =>
     isEditingName.value
       ? nameEditorDimensions.value.width
@@ -315,27 +304,13 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
 
   await canvasAnchoredComponentsStore.toggleContextMenu({ event });
 };
-
-const renderLayer = computed(() =>
-  isSelected.value ? canvasLayers.value.selectedNodes : null,
-);
 </script>
 
 <template>
-  <NodeSelectionPlane
-    :layer="canvasLayers.nodeSelectionPlane"
-    :anchor-position="translatedPosition"
-    :renderable="renderable"
-    :show-selection="showSelection"
-    :show-focus="showFocus"
-    :measures="nodeSelectionMeasures"
-  />
-
   <Container
     :label="`Node__${node.id}`"
     :renderable="renderable"
     :visible="renderable"
-    :layer="renderLayer"
     :event-mode="isDraggingThisObject ? 'none' : 'static'"
     :alpha="floatingConnector && isConnectionForbidden ? 0.7 : 1"
     :position="translatedPosition"
@@ -361,8 +336,6 @@ const renderLayer = computed(() =>
     />
 
     <NodeName
-      :renderable="renderable"
-      :visible="renderable"
       :node-id="node.id"
       :name="shortenedNodeName"
       :full-name="name"
@@ -373,8 +346,6 @@ const renderLayer = computed(() =>
 
     <Container label="NodeTorsoContainer">
       <NodeTorso
-        :renderable="renderable"
-        :visible="renderable"
         label="NodeTorso"
         :node-id="node.id"
         :kind="node.kind"
@@ -389,17 +360,10 @@ const renderLayer = computed(() =>
         "
       />
 
-      <NodeDecorators
-        :renderable="renderable"
-        :visible="renderable"
-        :type="type"
-        v-bind="node"
-      />
+      <NodeDecorators :type="type" v-bind="node" />
 
       <NodeState
         v-if="!isMetanode"
-        :renderable="renderable"
-        :visible="renderable"
         v-bind="node.state"
         :text-resolution="zoomAwareResolution"
       />
@@ -414,16 +378,13 @@ const renderLayer = computed(() =>
       :port-groups="isNativeNode(node) ? node.portGroups : undefined"
       @update-port-positions="portPositions = $event"
     />
-  </Container>
 
-  <NodeLabel
-    :renderable="renderable"
-    :visible="renderable"
-    :node-id="node.id"
-    :label="node.annotation?.text.value"
-    :position="translatedPosition"
-    :is-metanode="isMetanode"
-    @rightclick="onRightClick"
-    @pointerdown="handlePointerInteraction"
-  />
+    <NodeLabel
+      :node-id="node.id"
+      :label="node.annotation?.text.value"
+      :is-metanode="isMetanode"
+      @rightclick="onRightClick"
+      @pointerdown="handlePointerInteraction"
+    />
+  </Container>
 </template>

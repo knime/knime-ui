@@ -10,6 +10,7 @@ import {
 } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { isNodeMetaNode } from "@/util/nodeUtil";
 import type { ContainerInst } from "@/vue3-pixi";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
@@ -18,8 +19,34 @@ import Connector from "./connectors/Connector.vue";
 import ConnectorLabel from "./connectors/ConnectorLabel.vue";
 import FloatingConnector from "./floatingConnector/FloatingConnector.vue";
 import Node from "./node/Node.vue";
+import NodeSelectionPlane from "./node/NodeSelectionPlane.vue";
 import ComponentPlaceholder from "./node/placeholder/ComponentPlaceholder.vue";
 import MetanodePortBars from "./portbars/MetanodePortBars.vue";
+
+/**
+ * ****************************** IMPORTANT NOTE *******************************
+ *
+ * This handles some key concepts in the application and canvas rendering
+ *
+ * 1. Rendering order:
+ *    The order in the template is important, the custom Vue Pixi renderer
+ *    will add objects to the Pixi scene graph in the order they are declared:
+ *    "Objects at the top will be rendered behind objects that follow."
+ *
+ * 2. Render layers:
+ *    Despite the render order, sometimes it's useful to bring a certain object
+ *    atop another regardless of the place it has in the scene graph
+ *    (think z-index). This is the purpose of render layers.
+ *    For more info, see: https://pixijs.com/8.x/guides/concepts/render-layers
+ *
+ * 3. Drag containers:
+ *    Drag operations can be expensive on big workflows, because many objects
+ *    could be moved at the same time. In order to optimize this, drag containers
+ *    are used as render groups for the objects being dragged. This improves
+ *    performance by applying a transform only once instead of to each individual
+ *    item being dragged.
+ *    For more info, see: https://pixijs.com/8.x/guides/concepts/render-groups
+ */
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
@@ -103,21 +130,36 @@ const annotations = computed(
       "
     />
 
+    <Container label="NodeSelectionsWrapper">
+      <NodeSelectionPlane
+        v-for="node in activeWorkflow!.nodes"
+        :key="node.id"
+        :position="node.position"
+        :node-id="node.id"
+        :name="getNodeName(node.id)"
+        :is-metanode="isNodeMetaNode(node)"
+      />
+    </Container>
+
+    <Container label="NodeSelectionsDragContainer" :is-render-group="true" />
+
     <ComponentPlaceholder
       v-for="componentPlaceholder of componentPlaceholders"
       :key="`placeholder-${componentPlaceholder.id}`"
       :placeholder="componentPlaceholder"
     />
 
-    <Node
-      v-for="node in activeWorkflow!.nodes"
-      :key="node.id"
-      :position="node.position"
-      :icon="getNodeIcon(node.id)"
-      :type="getNodeType(node.id)"
-      :name="getNodeName(node.id)"
-      :node="node"
-    />
+    <Container label="NodesWrapper">
+      <Node
+        v-for="node in activeWorkflow!.nodes"
+        :key="node.id"
+        :position="node.position"
+        :icon="getNodeIcon(node.id)"
+        :type="getNodeType(node.id)"
+        :name="getNodeName(node.id)"
+        :node="node"
+      />
+    </Container>
 
     <Connector
       v-for="connector of activeWorkflow.connections"
@@ -133,6 +175,8 @@ const annotations = computed(
         v-bind="connector"
       />
     </template>
+
+    <Container label="NodesDragContainer" :is-render-group="true" />
 
     <Container ref="selectedNodesLayerContainer" />
     <Container ref="selectedPortsLayerContainer" />

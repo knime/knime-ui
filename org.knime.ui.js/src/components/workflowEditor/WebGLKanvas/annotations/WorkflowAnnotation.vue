@@ -17,6 +17,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import RichTextAnnotation from "../../common/annotations/RichTextAnnotation.vue";
 import { useAnnotationDataEditing } from "../../common/annotations/useAnnotationDataEditing";
 import { useCanvasClickOutside } from "../common/useCanvasClickOutside";
+import { isMarkedEvent } from "../util/interaction";
 
 defineOptions({ inheritAttrs: false });
 
@@ -80,8 +81,7 @@ useCanvasClickOutside({
     // The portal target is using this as an ID for the toolbar
     "#annotation-editor-toolbar",
   ],
-  ignoreCanvasEvents: (event) =>
-    event.dataset?.initiator === "annotation-transform",
+  ignoreCanvasEvents: (event) => isMarkedEvent(event, "annotation-transform"),
   onClickOutside: saveContent,
 });
 </script>

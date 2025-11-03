@@ -4,6 +4,7 @@ import { defineStore } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
 import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useSelectionStore } from "@/store/selection";
 
 import { useWorkflowStore } from "./workflow";
@@ -70,6 +71,12 @@ export const useMovingStore = defineStore("moving", {
      * Calls the API to save the position of the nodes after the move is over
      */
     async moveObjects() {
+      if (!canvasRendererUtils.isSVGRenderer()) {
+        throw new Error(
+          "Implementation error: this action must be used in the SVG renderer",
+        );
+      }
+
       const selectionStore = useSelectionStore();
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
@@ -94,6 +101,89 @@ export const useMovingStore = defineStore("moving", {
         node.position.x += translation.x;
         node.position.y += translation.y;
       });
+
+      const selectedAnnotations = selectionStore.getSelectedAnnotations;
+      selectedAnnotations.forEach((annotation: WorkflowAnnotation) => {
+        annotation.bounds.x += translation.x;
+        annotation.bounds.y += translation.y;
+      });
+
+      if (metanodePortBars.includes("in")) {
+        const metaInBounds =
+          useWorkflowStore().activeWorkflow?.metaInPorts?.bounds;
+        if (!metaInBounds) {
+          return;
+        }
+        metaInBounds.x += translation.x;
+        metaInBounds.y += translation.y;
+      }
+
+      if (metanodePortBars.includes("out")) {
+        const metaOutBounds =
+          useWorkflowStore().activeWorkflow?.metaOutPorts?.bounds;
+        if (!metaOutBounds) {
+          return;
+        }
+        metaOutBounds.x += translation.x;
+        metaOutBounds.y += translation.y;
+      }
+
+      Object.keys(connectionBendpoints).forEach((connectionId: string) => {
+        connectionBendpoints[connectionId].forEach((selectedIndex: number) => {
+          const connection =
+            useWorkflowStore()?.activeWorkflow?.connections[connectionId];
+          const bendpoint = connection?.bendpoints?.[selectedIndex];
+
+          if (!bendpoint) {
+            return;
+          }
+          bendpoint.x += translation.x;
+          bendpoint.y += translation.y;
+        });
+      });
+
+      // reset drag state
+      this.resetDragState();
+
+      // send data to backend
+      try {
+        await API.workflowCommand.Translate({
+          projectId,
+          workflowId,
+          nodeIds: selectedNodeIds,
+          annotationIds: selectedAnnotationIds,
+          connectionBendpoints,
+          metanodeInPortsBar: metanodePortBars.includes("in"),
+          metanodeOutPortsBar: metanodePortBars.includes("out"),
+          translation,
+        });
+      } catch (e) {
+        consola.log("The following error occurred: ", e);
+      }
+    },
+
+    /**
+     * Calls the API to save the position of the nodes after the move is over
+     */
+    async moveObjectsWebGL(translation: XY) {
+      if (!canvasRendererUtils.isWebGLRenderer()) {
+        throw new Error(
+          "Implementation error: this action must be used in the WebGL renderer",
+        );
+      }
+
+      const selectionStore = useSelectionStore();
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
+      const selectedNodeIds = selectionStore.selectedNodeIds;
+      const selectedAnnotationIds = selectionStore.selectedAnnotationIds;
+      const connectionBendpoints = selectionStore.getSelectedBendpoints;
+      const metanodePortBars = selectionStore.getSelectedMetanodePortBars;
+
+      if (translation.x === 0 && translation.y === 0) {
+        this.resetDragState();
+        return;
+      }
 
       const selectedAnnotations = selectionStore.getSelectedAnnotations;
       selectedAnnotations.forEach((annotation: WorkflowAnnotation) => {

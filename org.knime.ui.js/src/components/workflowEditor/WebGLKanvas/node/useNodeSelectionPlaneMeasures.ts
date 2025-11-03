@@ -1,10 +1,9 @@
 import { type MaybeRefOrGetter, computed, toValue } from "vue";
 
-import type { Node } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 
 type UseNodeSelectionPlaneMeasuresOptions = {
-  kind: MaybeRefOrGetter<Node.KindEnum>;
+  isMetanode: MaybeRefOrGetter<boolean>;
   extraHeight: MaybeRefOrGetter<number>;
   width: MaybeRefOrGetter<number>;
 };
@@ -26,7 +25,7 @@ export const useNodeSelectionPlaneMeasures = (
     const extraHeight = toValue(options.extraHeight);
     const baseWidth = toValue(options.width);
 
-    const hasStatusBar = toValue(options.kind) !== "metanode";
+    const hasStatusBar = !toValue(options.isMetanode);
     // the selection plane's height has to account for
     // (1) node's size plus the selection padding for top and bottom
     // (2) the height and margin of the node status bar if it's present
