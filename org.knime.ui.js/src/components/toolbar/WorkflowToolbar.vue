@@ -139,7 +139,7 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         id: "executeAll",
         visible: !hasNodesSelected,
         label: $shortcuts.getText("executeAll"),
-        leadingIcon: "chevron-right-double",
+        leadingIcon: "execute-all",
         variant,
       },
       {
@@ -419,6 +419,49 @@ const { isSVGRenderer } = useCanvasRendererUtils();
 
     & .help-menu:deep(button.submenu-toggle) {
       border: 1px solid var(--knime-silver-sand);
+    }
+  
+    & :deep(.submenu-toggle) {
+      border-radius: var(
+      --kds-legacy-button-border-radius,
+      var(--kds-border-radius-container-0-37x)
+    );
+          
+      & svg {
+        stroke-width: 3.5px;
+        width: 12px;
+        height: 12px;
+      }
+      &.expanded {
+        background-color: var(--kds-color-background-neutral-active);
+
+        & svg {
+          stroke: var(--kds-color-text-and-icon-neutral);
+        }
+      }
+
+      &:not(.expanded) svg {
+        stroke: var(--kds-color-text-and-icon-neutral);
+      }
+
+      &:focus-visible {
+          outline: var(--kds-border-action-focused);
+          outline-offset: 1px;
+          background-color: transparent;
+
+          & svg {
+            stroke: var(--kds-color-text-and-icon-neutral);
+          }
+
+        &:hover {
+          background-color: var(--kds-color-background-neutral-hover);
+          border-color: var(--kds-color-background-neutral-hover);
+        }
+
+        &:active {
+          stroke: var(--kds-color-background-neutral);
+        }
+      }
     }
   }
 }

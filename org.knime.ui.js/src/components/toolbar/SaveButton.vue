@@ -170,8 +170,8 @@ const title = computed(() => {
 
     /* style toggle button (the dropdown icon) */
     & :deep(.submenu-toggle) {
-      width: calc(var(--kds-dimension-component-width-1-75x) - 1px);
-      height: calc(var(--kds-dimension-component-height-1-75x) - 2px);
+      width: var(--kds-dimension-component-width-1-75x);
+      height: var(--kds-dimension-component-height-1-75x);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -199,7 +199,7 @@ const title = computed(() => {
       }
 
       & svg {
-        @mixin svg-icon-size 14;
+        @mixin svg-icon-size 12;
 
         stroke: var(--kds-color-text-and-icon-neutral);
         padding: 0;

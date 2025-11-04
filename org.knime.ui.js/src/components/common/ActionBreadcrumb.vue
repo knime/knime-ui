@@ -86,9 +86,11 @@ const onWheel = throttle(function (e: WheelEvent) {
     & svg.breadcrumb-icon {
       stroke: var(--kds-color-text-and-icon-subtle);
       margin: 0 var(--kds-spacing-container-0-37x) 0 var(--kds-spacing-container-0-37x);
+
        @mixin kds-svg-icon-size-medium;
     }
   }
+
    &:deep(svg.arrow) {
       stroke:  var(--kds-color-text-and-icon-neutral)
    }

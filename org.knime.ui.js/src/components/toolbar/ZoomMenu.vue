@@ -115,7 +115,7 @@ const onWheel = (e: WheelEvent) => {
 
   & :deep(.submenu-toggle.expanded) {
     & .zoom-input {
-      color: var(--theme-button-foreground-color-active, var(--knime-white));
+      color: var(--kds-color-text-and-icon-neutral);
     }
 
     & svg {
@@ -137,14 +137,25 @@ const onWheel = (e: WheelEvent) => {
       background: transparent;
       border: none;
       text-align: right;
-      color: var(--theme-button-foreground-color, var(--knime-masala));
-      width: 54px;
-      padding: 8px 4px 8px 16px;
-      font-size: 14px;
+      color: var(--kds-color-text-and-icon-neutral);
+      width: var(--kds-dimension-component-width-4x);
+      padding: var(--kds-spacing-container-0-5x) var(--kds-spacing-container-0-25x) var(--kds-spacing-container-0-5x) var(--kds-spacing-container-1x);
+      font-size: var(--kds-font-base-interactive-medium-strong);
       margin-right: 0;
 
       &:focus {
-        outline: none;
+        outline: var(--kds-border-action-focused);
+        outline-offset: 1px;
+        border-radius: var(
+          --kds-legacy-button-border-radius,
+          var(--kds-border-radius-container-0-37x)
+        )
+        0
+        0
+        var(
+          --kds-legacy-button-border-radius,
+          var(--kds-border-radius-container-0-37x)
+        );
       }
     }
   }
