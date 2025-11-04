@@ -79,24 +79,6 @@ final class ComponentAPI {
     }
 
     /**
-     * Opens a Swing dialog to link a component
-     *
-     * @param projectId
-     * @param rootWorkflowId
-     * @param nodeId
-     *
-     * @return {@true} if the operation was successful, {@code false} otherwise
-     * @throws OperationNotAllowedException
-     */
-    @API
-    static boolean openLinkComponentDialog(final String projectId, final String rootWorkflowId, final String nodeId)
-        throws GatewayException {
-
-        final var component = assertIsWritableAndGetComponent(projectId, nodeId);
-        return ManipulateComponents.openLinkComponentDialog(component);
-    }
-
-    /**
      * Opens a components link type dialog, only available for absolute links.
      *
      * @param projectId

@@ -117,7 +117,7 @@ import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.NodeCollectionUtil;
-import org.knime.ui.java.util.ProgressReporter;
+import org.knime.ui.java.util.WorkbenchProgressReporter;
 
 import com.equo.middleware.api.handler.IRequestFilter;
 import com.equo.middleware.api.resource.MutableRequest;
@@ -140,7 +140,7 @@ final class Init {
     }
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean checkForUpdates) {
-        var progressReporter = new ProgressReporter.WorkbenchProgressReporter();
+        var progressReporter = new WorkbenchProgressReporter();
         var localSpace = state.getLocalSpace();
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);

@@ -931,7 +931,8 @@ export namespace CommandResult {
         AddPortResult = 'add_port_result',
         AddAnnotationResult = 'add_annotation_result',
         UpdateLinkedComponentsResult = 'update_linked_components_result',
-        AddComponentPlaceholderResult = 'add_component_placeholder_result'
+        AddComponentPlaceholderResult = 'add_component_placeholder_result',
+        ShareComponentResult = 'share_component_result'
     }
 }
 /**
@@ -4041,6 +4042,116 @@ export namespace SelectionEvent {
     }
 }
 /**
+ *
+ * @export
+ * @interface ShareComponentCommand
+ */
+export interface ShareComponentCommand extends WorkflowCommand {
+
+    /**
+     *
+     * @type {string}
+     * @memberof ShareComponentCommand
+     */
+    nodeId?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof ShareComponentCommand
+     */
+    destinationSpaceProviderId?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof ShareComponentCommand
+     */
+    destinationSpaceId?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof ShareComponentCommand
+     */
+    destinationItemId?: string;
+    /**
+     * How to solve potential name collisions.
+     * @type {string}
+     * @memberof ShareComponentCommand
+     */
+    collisionHandling?: ShareComponentCommand.CollisionHandlingEnum;
+    /**
+     *
+     * @type {boolean}
+     * @memberof ShareComponentCommand
+     */
+    includeInputData?: boolean;
+    /**
+     *
+     * @type {string}
+     * @memberof ShareComponentCommand
+     */
+    linkType?: ShareComponentCommand.LinkTypeEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace ShareComponentCommand
+ */
+export namespace ShareComponentCommand {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum CollisionHandlingEnum {
+        NOOP = 'NOOP',
+        AUTORENAME = 'AUTORENAME',
+        OVERWRITE = 'OVERWRITE'
+    }
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum LinkTypeEnum {
+        NODERELATIVE = 'NODE_RELATIVE',
+        WORKFLOWRELATIVE = 'WORKFLOW_RELATIVE',
+        SPACERELATIVE = 'SPACE_RELATIVE',
+        MOUNTPOINTRELATIVE = 'MOUNTPOINT_RELATIVE',
+        MOUNTPOINTABSOLUTE = 'MOUNTPOINT_ABSOLUTE',
+        MOUNTPOINTABSOLUTEIDBASED = 'MOUNTPOINT_ABSOLUTE_ID_BASED',
+        NONE = 'NONE'
+    }
+}
+/**
+ *
+ * @export
+ * @interface ShareComponentResult
+ */
+export interface ShareComponentResult extends CommandResult {
+
+    /**
+     *
+     * @type {boolean}
+     * @memberof ShareComponentResult
+     */
+    isNameCollision?: boolean;
+    /**
+     *
+     * @type {string}
+     * @memberof ShareComponentResult
+     */
+    browserLink?: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace ShareComponentResult
+ */
+export namespace ShareComponentResult {
+}
+/**
  * Event emitted in order to show a toast.
  * @export
  * @interface ShowToastEvent
@@ -5340,6 +5451,7 @@ export namespace WorkflowCommand {
         AddWorkflowAnnotation = 'add_workflow_annotation',
         UpdateProjectMetadata = 'update_project_metadata',
         UpdateComponentMetadata = 'update_component_metadata',
+        ShareComponent = 'share_component',
         AddBendpoint = 'add_bendpoint',
         UpdateComponentLinkInformation = 'update_component_link_information',
         TransformMetanodePortsBar = 'transform_metanode_ports_bar',
@@ -7310,6 +7422,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateLinkedComponents }
 		}) as Promise<UpdateLinkedComponentsResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * 
+     */
+	ShareComponent(
+		params: { projectId: string, workflowId: string } & Omit<ShareComponentCommand, 'kind'>
+    ): Promise<ShareComponentResult> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ShareComponent }
+		}) as Promise<ShareComponentResult>;
 		return postProcessCommandResponse(commandResponse);
 	},	
 

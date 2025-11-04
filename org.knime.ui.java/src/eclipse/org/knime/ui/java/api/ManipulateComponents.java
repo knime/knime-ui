@@ -48,30 +48,13 @@
  */
 package org.knime.ui.java.api;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiPredicate;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.Window;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
-import org.knime.core.node.NodeLogger;
-import org.knime.core.node.port.PortObject;
 import org.knime.core.node.workflow.MetaNodeTemplateInformation.Role;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.SubNodeContainer;
@@ -80,7 +63,6 @@ import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.hub.HubItemVersion;
 import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.core.util.urlresolve.KnimeUrlResolver;
-import org.knime.core.util.urlresolve.KnimeUrlResolver.IdAndPath;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
 import org.knime.core.util.urlresolve.URLResolverUtil;
 import org.knime.gateway.api.service.GatewayException;
@@ -89,21 +71,10 @@ import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAl
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
-import org.knime.gateway.impl.webui.service.commands.UpdateComponentLinkInformation;
-import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionDialog;
 import org.knime.workbench.editor2.actions.ChangeSubNodeLinkAction;
 import org.knime.workbench.editor2.commands.ChangeSubNodeLinkCommand;
 import org.knime.workbench.editor2.commands.UpdateMetaNodeLinkCommand;
-import org.knime.workbench.explorer.ExplorerMountTable;
-import org.knime.workbench.explorer.dialogs.MessageJobFilter;
-import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
-import org.knime.workbench.explorer.dialogs.Validator;
-import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
-import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
-import org.knime.workbench.explorer.filesystem.ExplorerRemoteContentRefresher;
-import org.knime.workbench.explorer.view.AbstractContentProvider;
-import org.knime.workbench.explorer.view.ContentObject;
 
 /**
  * Helper methods to operate on components
@@ -114,31 +85,8 @@ import org.knime.workbench.explorer.view.ContentObject;
 @SuppressWarnings("restriction")
 final class ManipulateComponents {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(ManipulateComponents.class);
-
     private ManipulateComponents() {
         // Stateless
-    }
-
-    static boolean openLinkComponentDialog(final SubNodeContainer component) throws GatewayException {
-        assertLinkedComponent(component, false);
-
-        final var validMountPoints = getAllValidMountPoint(ExplorerMountTable.getMountedContent());
-        final var shell = SWTUtilities.getActiveShell();
-        final var isCanceled =
-            ExplorerRemoteContentRefresher.refreshContentProviders(shell, Arrays.asList(validMountPoints));
-        if (isCanceled) {
-            return false;
-        }
-        final var dialog = new DestinationSelectionDialog(shell, validMountPoints, null);
-        if (dialog.open() != Window.OK) {
-            return false; // If the operation was aborted
-        }
-
-        final var data = getDataFromComponent(dialog.m_isIncludeInputData, component, shell);
-        final var target = dialog.getSelection();
-        final var contentProvider = target.getContentProvider();
-        return contentProvider.saveSubNodeTemplate(component, target, data);
     }
 
     static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
@@ -161,7 +109,10 @@ final class ManipulateComponents {
         try {
             final var context = CoreUtil.getProjectWorkflow(component).getContextV2();
             changeOptions = KnimeUrlResolver.getResolver(context) //
-                    .changeLinkType(URLResolverUtil.toURL(sourceURI), ManipulateComponents::translateHubUrl);
+                .changeLinkType( //
+                    URLResolverUtil.toURL(sourceURI), //
+                    ResolverUtil::translateHubUrl //
+                );
             if (changeOptions.size() <= (changeOptions.containsKey(linkVariant) ? 1 : 0)) {
                 // there are no other options available
                 return;
@@ -187,23 +138,6 @@ final class ManipulateComponents {
             cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, sourceURI, newUri.get(), false));
             cmd.execute(wfKey, null);
         }
-    }
-
-    /**
-     * Requests the catalog path and ID of the given URL if it references an item in a Hub catalog.
-     *
-     * @param url KNIME URL to translate
-     * @return ID and path of the item if located on Hub, {@link Optional#empty()} otherwise
-     */
-    private static Optional<IdAndPath> translateHubUrl(final URL url) {
-        try {
-            return ResolverUtil.fetchItemInfo(url, new NullProgressMonitor())
-                    .filter(ii -> ii.id().isPresent()) // Hub only
-                    .map(ii -> new IdAndPath(ii.id().orElseThrow(), ii.path().makeRelative()));
-        } catch (final IOException e) {
-            LOGGER.debug(e);
-        }
-        return Optional.empty();
     }
 
     /**
@@ -262,56 +196,6 @@ final class ManipulateComponents {
         }
     }
 
-    private static String[] getAllValidMountPoint(final Map<String, AbstractContentProvider> contentProviders)
-        throws OperationNotAllowedException {
-        List<String> list = new ArrayList<>();
-        for (final var entry : contentProviders.entrySet()) {
-            final var contentProvider = entry.getValue();
-            if (contentProvider.isWritable() && contentProvider.canHostComponentTemplates()) {
-                list.add(entry.getKey());
-            }
-        }
-
-        if (list.isEmpty()) {
-            // Hard to imagine when this would happen, since `LOCAL` is always an option
-            throw OperationNotAllowedException.builder() //
-                .withTitle("No valid mountpoint found") //
-                .withDetails("None of your spaces can host shared components.") //
-                .canCopy(false) //
-                .build();
-        }
-
-        return list.toArray(new String[0]);
-    }
-
-    /**
-     * @return The data of the component, can be {@code null}.
-     */
-    private static PortObject[] getDataFromComponent(final boolean isIncludeInputData, final SubNodeContainer component,
-        final Shell shell) {
-        PortObject[] data = null;
-        if (isIncludeInputData) {
-            //fetch input data
-            final var optData = DesktopAPUtil.runWithProgress("Executing upstream nodes ...", LOGGER, mon -> {
-                // since 5.5, the "fetchInputDataFromParent" method is not executing the workflow anymore
-                try {
-                    component.getParent().executePredecessorsAndWait(component.getID());
-                } catch (InterruptedException e) {// NOSONAR: cancellation is handled
-                    return null;
-                }
-                return component.fetchInputDataFromParent();
-            });
-            if (optData.isEmpty()) {
-                MessageDialog.openError(shell, "Problem saving component with example input data",
-                    "No data available at the component's input ports, "
-                        + "most likely because the execution of upstream nodes failed.");
-                return null; // NOSONAR: Can be `null` documented.
-            }
-            data = optData.get();
-        }
-        return data;
-    }
-
     /**
      * @deprecated See NXT-2173
      */
@@ -332,61 +216,4 @@ final class ManipulateComponents {
         return new WorkflowCommandAdapter(linkCmd, true);
     }
 
-    private static UpdateComponentLinkInformation
-        getUpdateComponentLinkInformationCommand(final SubNodeContainer component) {
-        final var componentId = component.getID();
-        final var targetUri = component.getTemplateInformation().getSourceURI();
-        return new UpdateComponentLinkInformation(componentId, targetUri);
-    }
-
-    /**
-     * Dialog to select the mountpoint + destination folder. Also contains a checkbox whether to include input data.
-     */
-    private static final class DestinationSelectionDialog extends SpaceResourceSelectionDialog {
-
-        private boolean m_isIncludeInputData;
-
-        /**
-         * @param parentShell
-         * @param mountIDs
-         * @param initialSelection
-         */
-        DestinationSelectionDialog(final Shell parentShell, final String[] mountIDs,
-            final ContentObject initialSelection) {
-            super(parentShell, mountIDs, initialSelection);
-            setTitle("Save As Shared Component");
-            setHeader("Select destination folder for shared component");
-            setValidator(new Validator() {
-                @Override
-                public String validateSelectionValue(final AbstractExplorerFileStore selection, final String name) {
-                    final AbstractExplorerFileInfo info = selection.fetchInfo();
-                    if (info.isWorkflowGroup()) {
-                        return null;
-                    }
-                    return "Only folders can be selected as destination.";
-                }
-            });
-            setFilter(new MessageJobFilter());
-        }
-
-        @Override
-        protected void createCustomFooterField(final Composite parent) {
-            final var includeInputDataButton = new Button(parent, SWT.CHECK);
-            m_isIncludeInputData = false;
-            includeInputDataButton.setSelection(m_isIncludeInputData);
-            includeInputDataButton.setText("Include input data with component");
-            includeInputDataButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(final SelectionEvent e) {
-                    final var b = (Button)e.widget;
-                    m_isIncludeInputData = b.getSelection();
-                }
-            });
-            final var hint = new Label(parent, SWT.NONE);
-            hint.setText("""
-                    Including input data in a component facilitates their direct editing later on.
-                    Please note that upstream nodes need to be executed (or will be executed on save)"
-                    if input data is to be included. It is advised to keep the input data as small as possible.""");
-        }
-    }
 }

@@ -2,13 +2,28 @@ import { API } from "@api";
 import { defineStore } from "pinia";
 
 import { rfcErrors } from "@knime/hub-features";
+import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 import LoadIcon from "@knime/styles/img/icons/load.svg";
 
-import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
+import type { NameCollisionHandling } from "@/api/custom-types.ts";
+import {
+  ShareComponentCommand,
+  type ShareComponentResult,
+  UpdateLinkedComponentsResult,
+} from "@/api/gateway-api/generated-api";
+import {
+  type DestinationPickerConfig,
+  useDestinationPicker,
+} from "@/components/spaces/DestinationPicker/useDestinationPicker";
+import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer.ts";
+import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling.ts";
 import { getToastsProvider } from "@/plugins/toasts";
-import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useApplicationStore } from "@/store/application/application.ts";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";
 
 import { useWorkflowStore } from "./workflow";
+
+import LinkTypeEnum = ShareComponentCommand.LinkTypeEnum;
 
 const TOAST_HEADLINE = "Linked components";
 
@@ -34,6 +49,73 @@ type ComponentInteractionsState = {
   processedUpdateNotifications: Record<string, boolean>;
 };
 
+const mapLinkType = (linkType: string): LinkTypeEnum => {
+  switch (linkType?.toUpperCase()) {
+    case "WORKFLOW_RELATIVE":
+      return LinkTypeEnum.WORKFLOWRELATIVE;
+    case "SPACE_RELATIVE":
+      return LinkTypeEnum.SPACERELATIVE;
+    case "MOUNTPOINT_ABSOLUTE_PATH":
+      return LinkTypeEnum.MOUNTPOINTABSOLUTE;
+    case "MOUNTPOINT_ABSOLUTE_ID":
+      return LinkTypeEnum.MOUNTPOINTABSOLUTEIDBASED;
+    default:
+      throw new Error(`Unknown link type: ${linkType}`);
+  }
+};
+
+const checkForCollisionsAndLink = async ({
+  nodeId,
+  destination,
+  collisionHandling,
+}): Promise<{
+  result: ShareComponentResult | undefined;
+  selectedCollisionHandling: NameCollisionHandling;
+}> => {
+  const { promptCollisionStrategies } = usePromptCollisionStrategies();
+
+  try {
+    const { projectId, workflowId } =
+      useWorkflowStore().getProjectAndWorkflowIds;
+    const { spaceProviderId, spaceId, itemId } = destination;
+    const result = await API.workflowCommand.ShareComponent({
+      projectId,
+      workflowId,
+      nodeId,
+      destinationSpaceProviderId: spaceProviderId,
+      destinationSpaceId: spaceId,
+      destinationItemId: itemId,
+      linkType: mapLinkType(destination.linkType),
+      includeInputData: destination.includeData || false,
+      collisionHandling,
+    });
+
+    if (result.isNameCollision) {
+      const collisionHandlingChoice = await promptCollisionStrategies();
+      if (collisionHandlingChoice === "CANCEL") {
+        return {
+          // eslint-disable-next-line no-undefined
+          result: undefined,
+          selectedCollisionHandling: collisionHandling,
+        };
+      }
+      return await checkForCollisionsAndLink({
+        nodeId,
+        destination,
+        collisionHandling,
+      });
+    }
+
+    return {
+      result,
+      selectedCollisionHandling: collisionHandling,
+    };
+  } catch (error) {
+    consola.error(error);
+    throw error;
+  }
+};
+
 export const useComponentInteractionsStore = defineStore(
   "componentInteractions",
   {
@@ -51,19 +133,107 @@ export const useComponentInteractionsStore = defineStore(
         this.processedUpdateNotifications[projectId] = value;
       },
 
+      // TODO frontend tests
       async linkComponent({ nodeId }: { nodeId: string }) {
+        const { promptDestination } = useDestinationPicker();
+
+        const applicationStore = useApplicationStore();
+        const projectSpaceId = applicationStore.activeProject?.origin?.spaceId;
         const { projectId, workflowId } =
           useWorkflowStore().getProjectAndWorkflowIds;
-        const success = await API.desktop.openLinkComponentDialog({
-          projectId,
-          workflowId,
-          nodeId,
-        });
-        if (success) {
-          // Reload the space items if the component linking was successful
-          await useSpaceOperationsStore().fetchWorkflowGroupContent({
-            projectId,
+
+        const pickerConfig = {
+          title: "Save as shared component",
+          description: "Select destination folder for shared component:",
+          validate(selection) {
+            return selection?.type === "item" && selection.isWorkflowContainer
+              ? { valid: true }
+              : { valid: false };
+          },
+          askLinkSettings: true,
+          sourceSpaceId: projectSpaceId!,
+        } satisfies DestinationPickerConfig;
+
+        const destination = await promptDestination(pickerConfig);
+        if (!destination || destination.type !== "item") {
+          return;
+        }
+
+        if (!destination.linkType) {
+          throw new Error("Destination link type is missing");
+        }
+
+        const { result, selectedCollisionHandling } =
+          await checkForCollisionsAndLink({
+            nodeId,
+            destination,
+            collisionHandling: null,
           });
+
+        if (!result || selectedCollisionHandling === "CANCEL") {
+          return;
+        }
+
+        const { spaceProviderId, spaceId, itemId } = destination;
+        $toast.show({
+          headline: "Component shared and linked",
+          message:
+            "The component has been exported to the destination space and" +
+            "the instance in this workflow has been replaced with a link.",
+          type: "success",
+          buttons: [
+            {
+              icon: ListIcon,
+              text: "Reveal in space explorer",
+              callback: () => {
+                useRevealInSpaceExplorer().revealInSpaceExplorer({
+                  providerId: spaceProviderId,
+                  spaceId,
+                  itemIds: [itemId],
+                });
+              },
+            },
+          ],
+        });
+
+        await useSpaceOperationsStore().fetchWorkflowGroupContent({
+          projectId,
+        });
+
+        if (selectedCollisionHandling === "AUTORENAME") {
+          // the name of the component has changed on the remote side
+          // (due to the collision handling strategy), which immediately
+          // makes a component update available. To avoid this happening at
+          // some random time later which might be inconvenient, we do it right away.
+          const updateResult = await API.workflowCommand.UpdateLinkedComponents(
+            {
+              projectId,
+              workflowId,
+              nodeIds: [nodeId],
+            },
+          );
+
+          if (
+            updateResult.status ===
+            UpdateLinkedComponentsResult.StatusEnum.Error
+          ) {
+            const title =
+              "Could not update the component link with the new name.";
+
+            const rfcError = new rfcErrors.RFCError({
+              title,
+              details: updateResult.details,
+            });
+
+            const toastId = $toast.show(
+              rfcErrors.toToast({
+                headline: TOAST_HEADLINE,
+                rfcError,
+              }),
+            );
+
+            addToastId(workflowId, toastId);
+          }
         }
       },
 

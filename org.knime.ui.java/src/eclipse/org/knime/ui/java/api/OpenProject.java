@@ -58,6 +58,7 @@ import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.util.Pair;
 import org.knime.core.util.hub.NamedItemVersion;
+import org.knime.gateway.api.util.ProgressReporter;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceItemVersionEnt;
@@ -74,7 +75,6 @@ import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.ui.java.util.CreateProject;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
-import org.knime.ui.java.util.ProgressReporter;
 import org.knime.workbench.core.imports.RepoObjectImport;
 
 /**

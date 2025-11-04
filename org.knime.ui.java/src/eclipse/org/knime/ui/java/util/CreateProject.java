@@ -57,6 +57,7 @@ import org.knime.core.node.workflow.contextv2.RestLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.util.ProgressReporter;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;

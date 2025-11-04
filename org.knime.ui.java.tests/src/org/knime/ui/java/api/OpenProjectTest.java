@@ -58,6 +58,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.api.util.ProgressReporter;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.Origin;
@@ -70,7 +71,6 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.LocalSpaceUtilTest;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
-import org.knime.ui.java.util.ProgressReporter;
 
 /**
  * Tests methods in {@link OpenProject}.
@@ -102,7 +102,7 @@ class OpenProjectTest {
         DesktopAPI.injectDependency(eventConsumer);
         DesktopAPI.injectDependency(mruProjects);
         DesktopAPI.injectDependency(localSpace);
-        DesktopAPI.injectDependency(new ProgressReporter.NullProgressReporter());
+        DesktopAPI.injectDependency(ProgressReporter.NO_OP);
 
         var itemId = localSpace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 

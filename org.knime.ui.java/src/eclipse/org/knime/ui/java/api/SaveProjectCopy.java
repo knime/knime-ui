@@ -67,6 +67,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.util.ProgressReporter;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
@@ -83,7 +84,6 @@ import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.DesktopAPUtil.FunctionWithProgress;
 
 /**
  * Helper class to save a copy of a project, for instance
@@ -299,7 +299,7 @@ final class SaveProjectCopy {
     }
 
     private static WorkflowManager withCleanup(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
-        final FunctionWithProgress<WorkflowManager> saveLogic)
+        final ProgressReporter.FunctionWithProgress<WorkflowManager> saveLogic)
         throws NoSuchElementException  {
         final Consumer<WorkflowManager> successHandler = wfm -> {
             if (oldContext.isTemporyWorkflowCopyMode()) { // If saved from a yellow bar editor

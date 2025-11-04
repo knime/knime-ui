@@ -93,6 +93,7 @@ import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.util.ProgressReporter;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
@@ -374,22 +375,6 @@ public final class DesktopAPUtil {
     }
 
     /**
-     * A function that can report progress and be cancelled.
-     *
-     * @param <R> result type
-     */
-    public interface FunctionWithProgress<R> {
-
-        /**
-         * Invokes the function.
-         *
-         * @param progressMonitor progress monitor
-         * @return computed result
-         */
-        R invoke(IProgressMonitor progressMonitor);
-    }
-
-    /**
      * Runs the given function while showing a modal SWT dialog with progress information.
      *
      * @param <R> Result type of the task
@@ -399,7 +384,7 @@ public final class DesktopAPUtil {
      * @return returned value
      */
     public static <R> Optional<R> runWithProgress(final String name, final NodeLogger logger,
-        final FunctionWithProgress<R> task) {
+        final ProgressReporter.FunctionWithProgress<R> task) {
         return composedRunWithProgress(name, logger, task,
             cause -> showWarningAndLogError(name + " failed", cause.getMessage(), logger, cause));
     }
@@ -414,7 +399,7 @@ public final class DesktopAPUtil {
      * @return returned value
      */
     public static <R> Optional<R> runWithProgressWithoutWarnings(final String name, final NodeLogger logger,
-        final FunctionWithProgress<R> task) {
+        final ProgressReporter.FunctionWithProgress<R> task) {
         return composedRunWithProgress(name, logger, task,
             cause -> logger.error("%s failed: %s".formatted(name, cause.getMessage())));
     }
@@ -428,7 +413,7 @@ public final class DesktopAPUtil {
      * @param <R> Result type of the task
      */
     private static <R> Optional<R> composedRunWithProgress(final String name, final NodeLogger logger,
-        final FunctionWithProgress<R> task, final Consumer<Throwable> errorHandler) {
+        final ProgressReporter.FunctionWithProgress<R> task, final Consumer<Throwable> errorHandler) {
 
         final var result = new AtomicReference<R>();
         final var gatewayExceptionRef = new AtomicReference<GatewayException>();

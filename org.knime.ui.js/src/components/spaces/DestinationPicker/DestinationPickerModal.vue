@@ -9,6 +9,7 @@ import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import SpaceTree, {
   type SpaceTreeSelection,
 } from "@/components/spaces/SpaceTree.vue";
+import AdvancedLinkSettings from "../AdvancedLinkSettings.vue";
 
 import { useDestinationPicker } from "./useDestinationPicker";
 
@@ -17,6 +18,8 @@ const { isActive, config, cancel, confirm } = useDestinationPicker();
 const isValid = ref<boolean>(false);
 const validationHint = ref<string | null>(null);
 const resetWorkflow = ref(false);
+const includeData = ref(false);
+const linkType = ref<string>();
 const resetMode = ref<SpaceProvider.ResetOnUploadEnum>();
 
 const selected = ref<SpaceTreeSelection>(null);
@@ -36,14 +39,19 @@ const onSpaceTreeSelection = (selection: SpaceTreeSelection) => {
   validationHint.value = hint ?? null;
 };
 
+const showAdvancedLinkSettings = ref(false);
+
 const onSubmit = () => {
   confirm({
     ...selected.value!,
     resetWorkflow: resetWorkflow.value,
+    includeData: includeData.value,
+    linkType: linkType.value,
   });
 };
 
 const resetModalState = () => {
+  showAdvancedLinkSettings.value = false;
   isValid.value = false;
   validationHint.value = null;
   resetWorkflow.value = false;
@@ -92,16 +100,38 @@ const showValidationHint = computed(
       </div>
     </template>
     <template
-      v-if="showValidationHint || config?.askResetWorkflow"
+      v-if="
+        showValidationHint ||
+        config?.askResetWorkflow ||
+        config?.askLinkSettings
+      "
       #confirmation
     >
       <div class="spaced-container">
-        <Checkbox
-          v-if="config?.askResetWorkflow && selected?.type === 'item'"
-          v-model="resetWorkflow"
-          label="Reset Workflow(s) before upload"
-          :disabled="resetMode === SpaceProvider.ResetOnUploadEnum.MANDATORY"
-        />
+        <template v-if="selected?.type === 'item'">
+          <Checkbox
+            v-if="config?.askResetWorkflow"
+            v-model="resetWorkflow"
+            label="Reset Workflow(s) before upload":disabled="resetMode === SpaceProvider.ResetOnUploadEnum.MANDATORY"
+          />
+          <template v-if="config?.askLinkSettings">
+            <Button
+              v-if="!showAdvancedLinkSettings"
+              compact
+              style="text-align: left; padding-left: 0"
+              @click="showAdvancedLinkSettings = true"
+            >
+              Show advanced settings
+            </Button>
+            <AdvancedLinkSettings
+              v-if="showAdvancedLinkSettings"
+              v-model:link-type="linkType"
+              v-model:include-data="includeData"
+              :source-space-id="config.sourceSpaceId"
+              :selected-space-id="selected.spaceId"
+            />
+          </template>
+        </template>
       </div>
     </template>
 

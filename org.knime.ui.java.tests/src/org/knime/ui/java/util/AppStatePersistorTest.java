@@ -64,6 +64,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.util.PathUtils;
+import org.knime.gateway.api.util.ProgressReporter;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -182,7 +183,7 @@ public class AppStatePersistorTest {
         var spaceProvidersManager = new SpaceProvidersManager(null, null, null, spaceProvider, List.of());
         spaceProvidersManager.update();
         for (final var p : AppStatePersistor.loadAppState(m_space).openProjectsToRestore()) {
-            pm.addProject(CreateProject.createProjectFromOrigin(p.origin(), new ProgressReporter.NullProgressReporter(),
+            pm.addProject(CreateProject.createProjectFromOrigin(p.origin(), ProgressReporter.NO_OP,
                 m_space));
         }
         var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
