@@ -233,6 +233,7 @@ const activeVersionTitle = computed(() => {
 /* Overwrite for clickable hover elements of the nested action breadcrumb */
    &:deep(span.clickable:hover) {
     color: var(--kds-color-text-and-icon-neutral);
+
     & svg {
       stroke: var(--kds-color-text-and-icon-neutral);
     }
@@ -254,47 +255,59 @@ const activeVersionTitle = computed(() => {
   }
 
   & .breadcrumb-icon {
-    stroke: var(--knime-masala);
+    stroke: var(--kds-color-text-and-icon-neutral);
 
     @mixin svg-icon-size 12;
   }
 
-  & .dropdown-icon {
-    @mixin svg-icon-size 10;
-  }
 
   & .workflow-versions-information {
     margin: 0 10px;
     max-width: 300px;
   }
-  & :deep(.function-button) {
+
+  & :deep(.submenu-toggle) {
     border-radius: var(
     --kds-legacy-button-border-radius,
     var(--kds-border-radius-container-0-37x)
   );
-
-    &:focus-visible {
-    border-radius: var(--kds-border-radius-container-0-37x);
-
-    &:focus {
-      outline: var(--kds-border-action-focused);
-      outline-offset: 1px;
-      background-color: var(--kds-color-background-neutral-initial);
-    }
-    &:hover, &.expanded {
-      background: var(--kds-color-background-neutral-hover);
-      border-color: var(--kds-color-background-neutral-hover);
-    }
-    &:active {
-      background: var(--kds-color-background-neutral-active);
-      border-color: var(--kds-border-action-transparent);
-    }
+        
     & svg {
-      stroke: var(--kds-color-text-and-icon-neutral);
-      stroke-width: 3.50px;
+      stroke-width: 3.5px;
       width: 12px;
       height: 12px;
     }
+    &.expanded {
+      background-color: var(--kds-color-background-neutral-active);
+
+      & svg {
+        stroke: var(--kds-color-text-and-icon-neutral);
+      }
+    }
+
+    &:not(.expanded) svg {
+      stroke: var(--kds-color-text-and-icon-neutral);
+    }
+
+    &:focus-visible {
+        outline: var(--kds-border-action-focused);
+        outline-offset: 1px;
+        background: transparent;
+
+        & svg {
+          stroke: var(--kds-color-text-and-icon-neutral);
+        }
+
+      &:hover {
+        background-color: var(--kds-color-background-neutral-hover);
+        border-color: var(--kds-color-background-neutral-hover);
+      }
+
+      &:active {
+        stroke: var(--kds-color-background-neutral);
+      }
+    }
   }
 }
+
 </style>
