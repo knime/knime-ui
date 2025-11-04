@@ -797,6 +797,24 @@ describe("workflowShortcuts", () => {
         true,
       );
     });
+
+    it("should not work if workflow is not writable", () => {
+      const { selectionStore, workflowStore } = createStore();
+      // @ts-expect-error
+      workflowStore.isWritable = false;
+
+      // @ts-expect-error
+      selectionStore.getSelectedNodes = [
+        createNativeNode(),
+        createNativeNode(),
+      ];
+      expect(workflowShortcuts.autoConnectNodesDefault.condition?.()).toBe(
+        false,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+        false,
+      );
+    });
   });
 
   describe("autoDisconnectNodes", () => {
@@ -850,7 +868,7 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
         false,
       );
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+      expect(workflowShortcuts.autoDisconnectNodesFlowVar.condition?.()).toBe(
         false,
       );
     });
@@ -863,7 +881,7 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
         false,
       );
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+      expect(workflowShortcuts.autoDisconnectNodesFlowVar.condition?.()).toBe(
         false,
       );
     });
@@ -878,7 +896,7 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
         true,
       );
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+      expect(workflowShortcuts.autoDisconnectNodesFlowVar.condition?.()).toBe(
         true,
       );
     });
@@ -894,8 +912,26 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
         true,
       );
-      expect(workflowShortcuts.autoConnectNodesFlowVar.condition?.()).toBe(
+      expect(workflowShortcuts.autoDisconnectNodesFlowVar.condition?.()).toBe(
         true,
+      );
+    });
+
+    it("should not work if workflow is not writable", () => {
+      const { selectionStore, workflowStore } = createStore();
+      // @ts-expect-error
+      workflowStore.isWritable = false;
+
+      // @ts-expect-error
+      selectionStore.getSelectedNodes = [
+        createNativeNode(),
+        createNativeNode(),
+      ];
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition?.()).toBe(
+        false,
+      );
+      expect(workflowShortcuts.autoDisconnectNodesFlowVar.condition?.()).toBe(
+        false,
       );
     });
   });

@@ -48,6 +48,12 @@ const createAutoConnectionHandler =
   };
 
 const canAutoConnectOrDisconnect = () => {
+  const { isWritable } = useWorkflowStore();
+
+  if (!isWritable) {
+    return false;
+  }
+
   const {
     getSelectedNodes: selectedNodes,
     getSelectedMetanodePortBars: selectedPortBars,
