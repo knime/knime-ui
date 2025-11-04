@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ref } from "vue";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
-import { createNativeNode } from "@/test/factories";
+import { createNativeNode, createPort } from "@/test/factories";
 import { useUniqueNodeStateId } from "../useUniqueNodeStateId";
 
 describe("useUniqueNodeStateId", () => {
@@ -14,12 +14,14 @@ describe("useUniqueNodeStateId", () => {
         createNativeNode({
           inputContentVersion: 13,
           templateId: "org.knime.base.node.MockNodeFactory",
+          inPorts: [createPort(), createPort()],
+          outPorts: [createPort()],
         }),
       ),
     });
 
     expect(uniqueNodeConfigId.value).toBe(
-      "project1__workflow1::org.knime.base.node.MockNodeFactory_root:1_inports-1_content-13",
+      "project1__workflow1::org.knime.base.node.MockNodeFactory_root:1_ports-2-1-13",
     );
   });
 

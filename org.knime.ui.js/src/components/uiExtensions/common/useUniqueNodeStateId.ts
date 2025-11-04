@@ -20,10 +20,11 @@ export const useUniqueNodeStateId = (options: UseUniqueNodeStateIdOptions) => {
       : selectedNode.value.kind,
   );
 
-  const uniqueNodeConfigId = computed(
-    () =>
-      `${projectId.value}__${workflowId.value}::${templateId.value}_${selectedNode.value.id}_inports-${selectedNode.value.inPorts.length}_content-${selectedNode.value.inputContentVersion}`,
-  );
+  const uniqueNodeConfigId = computed(() => {
+    const inputPortCount = selectedNode.value.inPorts.length;
+    const outputPortCount = selectedNode.value.outPorts.length;
+    return `${projectId.value}__${workflowId.value}::${templateId.value}_${selectedNode.value.id}_ports-${inputPortCount}-${outputPortCount}-${selectedNode.value.inputContentVersion}`;
+  });
 
   const uniqueNodeViewId = computed(
     () =>
