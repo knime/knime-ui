@@ -369,7 +369,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
         aria-label="Zoom Menu"
       />
 
-      <HelpMenu class="help-menu" />
+      <HelpMenu v-if="isBrowser()" class="help-menu" />
     </div>
   </div>
 </template>
