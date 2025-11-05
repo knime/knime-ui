@@ -6,70 +6,20 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-// the general containers are static and singleton so they can be cached
-let __containersCache: {
-  nodes: {
-    wrapper?: PIXI.Container;
-    dragContainer?: PIXI.Container;
-  };
-  selectionOutline: {
-    wrapper?: PIXI.Container;
-    dragContainer?: PIXI.Container;
-  };
-} = { nodes: {}, selectionOutline: {} };
-
 const containerSelectors = (stage: PIXI.Container) => {
   return {
     select: {
       nodes: {
-        wrapper: () => {
-          if (__containersCache.nodes.wrapper) {
-            return __containersCache.nodes.wrapper;
-          }
-
-          __containersCache.nodes.wrapper = stage.getChildByLabel(
-            "NodesWrapper",
-            true,
-          )!;
-          return __containersCache.nodes.wrapper;
-        },
-        dragContainer: () => {
-          if (__containersCache.nodes.dragContainer) {
-            return __containersCache.nodes.dragContainer;
-          }
-
-          __containersCache.nodes.dragContainer = stage.getChildByLabel(
-            "NodesDragContainer",
-            true,
-          )!;
-          return __containersCache.nodes.dragContainer;
-        },
+        wrapper: () => stage.getChildByLabel("NodesWrapper", true)!,
+        dragContainer: () => stage.getChildByLabel("NodesDragContainer", true)!,
         byId: (nodeId: string) =>
           stage.getChildByLabel(`Node__${nodeId}`, true)!,
       },
 
       selectionOutline: {
-        wrapper: () => {
-          if (__containersCache.selectionOutline.wrapper) {
-            return __containersCache.selectionOutline.wrapper;
-          }
-
-          __containersCache.selectionOutline.wrapper = stage.getChildByLabel(
-            "NodeSelectionsWrapper",
-            true,
-          )!;
-          return __containersCache.selectionOutline.wrapper;
-        },
-        dragContainer: () => {
-          if (__containersCache.selectionOutline.dragContainer) {
-            return __containersCache.selectionOutline.dragContainer;
-          }
-
-          __containersCache.selectionOutline.dragContainer =
-            stage.getChildByLabel("NodeSelectionsDragContainer", true)!;
-
-          return __containersCache.selectionOutline.dragContainer;
-        },
+        wrapper: () => stage.getChildByLabel("NodeSelectionsWrapper", true)!,
+        dragContainer: () =>
+          stage.getChildByLabel("NodeSelectionsDragContainer", true)!,
         byId: (nodeId: string) =>
           stage.getChildByLabel(`NodeSelectionPlane__${nodeId}`, true)!,
       },
