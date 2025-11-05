@@ -133,17 +133,7 @@ const onWheel = (e: WheelEvent) => {
       margin-bottom: 1px;
     }
 
-    & .zoom-input {
-      background: transparent;
-      border: none;
-      text-align: right;
-      color: var(--kds-color-text-and-icon-neutral);
-      width: var(--kds-dimension-component-width-4x);
-      padding: var(--kds-spacing-container-0-5x) var(--kds-spacing-container-0-25x) var(--kds-spacing-container-0-5x) var(--kds-spacing-container-1x);
-      font-size: var(--kds-font-base-interactive-medium-strong);
-      margin-right: 0;
-
-      &:focus {
+     &:focus-visible, &:focus-within {
         outline: var(--kds-border-action-focused);
         outline-offset: 1px;
         border-radius: var(
@@ -156,6 +146,20 @@ const onWheel = (e: WheelEvent) => {
           --kds-legacy-button-border-radius,
           var(--kds-border-radius-container-0-37x)
         );
+      }
+
+    & .zoom-input {
+      background: transparent;
+      border: none;
+      text-align: right;
+      color: var(--kds-color-text-and-icon-neutral);
+      width: var(--kds-dimension-component-width-4x);
+      padding: var(--kds-spacing-container-0-5x) var(--kds-spacing-container-0-25x) var(--kds-spacing-container-0-5x) var(--kds-spacing-container-1x);
+      font-size: var(--kds-font-base-interactive-medium-strong);
+      margin-right: 0;
+
+      &:focus-visible {
+        outline: none;
       }
     }
   }

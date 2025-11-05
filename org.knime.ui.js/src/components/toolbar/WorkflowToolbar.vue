@@ -373,7 +373,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
         aria-label="Zoom Menu"
       />
 
-      <HelpMenu v-if="isBrowser()" class="help-menu" />
+      <HelpMenu class="help-menu" />
     </div>
   </div>
 </template>
@@ -417,8 +417,17 @@ const { isSVGRenderer } = useCanvasRendererUtils();
       white-space: nowrap;
     }
 
-    & .help-menu:deep(button.submenu-toggle) {
-      border: 1px solid var(--knime-silver-sand);
+    & .help-menu:deep(.function-button) {
+      width: var(--kds-dimension-component-width-1-75x);
+      height: var(--kds-dimension-component-height-1-75x);
+      
+      & svg {
+        stroke: var(--kds-color-text-and-icon-neutral);
+      }
+    }
+
+    & .help-menu:deep(.function-button.active) {
+      background: var(--kds-color-background-neutral-active);
     }
   
     & :deep(.submenu-toggle) {
