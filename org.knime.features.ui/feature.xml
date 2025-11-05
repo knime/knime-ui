@@ -729,7 +729,7 @@ propagated with or for interoperation with KNIME.
    </license>
 
    <requires>
-      <import feature="org.knime.features.gateway" version="5.8.0" match="compatible"/>
+      <import feature="org.knime.features.gateway" version="5.8.1" match="compatible"/>
    </requires>
 
    <plugin
