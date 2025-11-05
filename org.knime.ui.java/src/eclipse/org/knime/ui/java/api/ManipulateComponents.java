@@ -72,11 +72,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.port.PortObject;
-import org.knime.core.node.util.ClassUtils;
 import org.knime.core.node.workflow.MetaNodeTemplateInformation.Role;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.SubNodeContainer;
-import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.hub.HubItemVersion;
@@ -216,14 +214,9 @@ final class ManipulateComponents {
         throws GatewayException {
         assertLinkedComponent(component, true);
 
-        final var srcUri = component.getTemplateInformation().getSourceURI();
-        if (queryHubInfo(srcUri).isEmpty()) {
-            throw OperationNotAllowedException.builder() //
-                .withTitle("Cannot change Hub item version") //
-                .withDetails("This component is not located on a mountpoint that supports item versioning.")
-                .canCopy(false) //
-                .build();
-        }
+        // WorkflowEntityFactory#isHubItemVersionChangeable disables the action for non-Hub items,
+        // so we assume that the call is fine
+
 
         final var shell = SWTUtilities.getActiveShell();
         final var wfm = component.getParent();
@@ -232,6 +225,7 @@ final class ManipulateComponents {
             return;
         }
 
+        final var srcUri = component.getTemplateInformation().getSourceURI();
         final var currentVersion = HubItemVersion.of(srcUri).orElse(HubItemVersion.currentState());
         final var targetVersion = dialog.getSelectedVersion();
         if (Objects.equals(targetVersion, currentVersion)) {
@@ -343,19 +337,6 @@ final class ManipulateComponents {
         final var componentId = component.getID();
         final var targetUri = component.getTemplateInformation().getSourceURI();
         return new UpdateComponentLinkInformation(componentId, targetUri);
-    }
-
-    /**
-     * Fetches information for the given KNIME URL if it is located on a Hub mountpoint. This may issue a REST request.
-     *
-     * @param uri KNIME URL
-     * @return location info if located on Hub, {@link Optional#empty()} otherwise
-     */
-    private static Optional<HubSpaceLocationInfo> queryHubInfo(final URI uri) {
-        return Optional.ofNullable(uri) //
-                .map(ExplorerMountTable.getFileSystem()::getStore) //
-                .flatMap(AbstractExplorerFileStore::locationInfo) //
-                .flatMap(info -> ClassUtils.castOptional(HubSpaceLocationInfo.class, info));
     }
 
     /**
