@@ -66,9 +66,6 @@ const onWheel = throttle(function (e: WheelEvent) {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-
-
-
 .action-breadcrumb {
   overflow-x: auto; /* Scroll breadcrumb with hidden scrollbar in ... */
   -ms-overflow-style: none; /* ... Edge */
@@ -78,24 +75,6 @@ const onWheel = throttle(function (e: WheelEvent) {
   }
 
   &:deep(span) {
-    color:var(--kds-color-text-and-icon-subtle);
-    font: var(--kds-font-base-interactive-small);
-    padding: var(--kds-spacing-container-0-25x);
-    line-height: 16px;
-
-    & svg.breadcrumb-icon {
-      stroke: var(--kds-color-text-and-icon-subtle);
-      margin: 0 var(--kds-spacing-container-0-37x) 0 var(--kds-spacing-container-0-37x);
-
-       @mixin kds-svg-icon-size-medium;
-    }
-  }
-
-   &:deep(svg.arrow) {
-      stroke:  var(--kds-color-text-and-icon-neutral)
-   }
-
-  &:deep(span) {
     color: var(--kds-color-text-and-icon-subtle);
     font: var(--kds-font-base-interactive-small);
     padding: var(--kds-spacing-container-0-25x);
@@ -103,11 +82,15 @@ const onWheel = throttle(function (e: WheelEvent) {
 
     & svg.breadcrumb-icon {
       stroke: var(--kds-color-text-and-icon-subtle);
-      margin: 0 var(--kds-spacing-container-0-37x) 0 var(--kds-spacing-container-0-37x);
-      stroke-width: 2.25px;
-      width: 16px;
-      height: 16px;
+      margin: 0 var(--kds-spacing-container-0-37x) 0
+        var(--kds-spacing-container-0-37x);
+
+      @mixin kds-svg-icon-size-medium;
     }
+  }
+
+  &:deep(svg.arrow) {
+    stroke: var(--kds-color-text-and-icon-neutral);
   }
 }
 </style>
