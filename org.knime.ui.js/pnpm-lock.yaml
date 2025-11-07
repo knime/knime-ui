@@ -33,11 +33,11 @@ importers:
         specifier: ^1.15.5
         version: 1.15.5(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-components':
-        specifier: ^0.3.0
-        version: 0.3.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
+        specifier: ^0.0.16
+        version: 0.0.16(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-styles':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.0.16
+        version: 0.0.16
       '@knime/knime-ui-table':
         specifier: 0.5.23
         version: 0.5.23(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
@@ -1122,20 +1122,11 @@ packages:
   '@fontsource/roboto-condensed@4.5.9':
     resolution: {integrity: sha512-ql4sQq+h8puBVildZ5ssjYf8DWDONYDe3PD3Bu/p1ZW9GnRETRNPPcCTs/q62HIl3QimwwkiKWynn6wZhQaetg==}
 
-  '@fontsource/roboto-condensed@5.2.8':
-    resolution: {integrity: sha512-M2OxXXGJQeif+LhxHjWiCEX3BHIYeZf64CcUTeh9AQFGp7DXo2UAXZiZUUOalVdOiuUtQSIi2CDHLDWFiyoECQ==}
-
   '@fontsource/roboto-mono@4.5.10':
     resolution: {integrity: sha512-KrJdmkqz6DszT2wV/bbhXef4r0hV3B0vw2mAqei8A2kRnvq+gcJLmmIeQ94vu9VEXrUQzos5M9lH1TAAXpRphw==}
 
-  '@fontsource/roboto-mono@5.2.8':
-    resolution: {integrity: sha512-M0XPRcvkOKiTPooXwX7yJSNpuad3CPcQwsADBfnopz3apBs+VKI47pc42mlvAxJjNTRauu5rndSxHc8F52bR7Q==}
-
   '@fontsource/roboto@4.5.8':
     resolution: {integrity: sha512-CnD7zLItIzt86q4Sj3kZUiLcBk1dSk81qcqgMGaZe7SQ1P8hFNxhMl5AZthK1zrDM5m74VVhaOpuMGIL4gagaA==}
-
-  '@fontsource/roboto@5.2.8':
-    resolution: {integrity: sha512-oh9g4Cg3loVMz9MWeKWfDI+ooxxG1aRVetkiKIb2ESS2rrryGecQ/y4pAj4z5A5ebyw450dYRi/c4k/I3UBhHA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -1239,15 +1230,15 @@ packages:
       consola: 3.x
       vue: '>=3.5.0'
 
-  '@knime/kds-components@0.3.0':
-    resolution: {integrity: sha512-YseV5nkCNVY6QbBYLuphkZa9QYe+onK+khteYy+vlR8QdWFHpQleQrAFC0mBXdBdfAlFRxQ3x8VWaEU4QZ717w==}
+  '@knime/kds-components@0.0.16':
+    resolution: {integrity: sha512-pWAU3YspEHVXDmcA5ZA6NM7QcOfVUCTg6lCVGkAJM7jItZg6UwUx9ZdmDD7DY09n8hX0EMEY2vo7iiTJlTYUwg==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
     peerDependencies:
       '@vueuse/core': ~13.8.0
       vue: ~3.5.0
 
-  '@knime/kds-styles@0.3.0':
-    resolution: {integrity: sha512-QgqYfDaAM87mt5XqAgr7+0Lx+ycTlGkx0o8ylO0Rz6S1sY71g/gjebdYDwLJYcm0lrJm9MHGnbIrdO+03TzMig==}
+  '@knime/kds-styles@0.0.16':
+    resolution: {integrity: sha512-D2+ZIcp39G/EAHvd646phuB/u/8p2sNJ7ppNFicaf3Epx/pE3W6gZBqqLBVY86re3nDGSHCsogY4/BKAyCl6JQ==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
 
   '@knime/knime-ui-table@0.5.23':
@@ -7184,15 +7175,9 @@ snapshots:
 
   '@fontsource/roboto-condensed@4.5.9': {}
 
-  '@fontsource/roboto-condensed@5.2.8': {}
-
   '@fontsource/roboto-mono@4.5.10': {}
 
-  '@fontsource/roboto-mono@5.2.8': {}
-
   '@fontsource/roboto@4.5.8': {}
-
-  '@fontsource/roboto@5.2.8': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -7455,9 +7440,9 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/kds-components@0.3.0(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
+  '@knime/kds-components@0.0.16(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
     dependencies:
-      '@knime/kds-styles': 0.3.0
+      '@knime/kds-styles': 0.0.16
       '@knime/styles': 1.14.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
       '@knime/utils': 1.8.0(consola@3.4.2)
       '@vueuse/core': 13.8.0(vue@3.5.18(typescript@5.8.3))
@@ -7467,11 +7452,8 @@ snapshots:
       - '@fontsource/roboto'
       - '@fontsource/roboto-mono'
 
-  '@knime/kds-styles@0.3.0':
+  '@knime/kds-styles@0.0.16':
     dependencies:
-      '@fontsource/roboto': 5.2.8
-      '@fontsource/roboto-condensed': 5.2.8
-      '@fontsource/roboto-mono': 5.2.8
       modern-normalize: 3.0.1
 
   '@knime/knime-ui-table@0.5.23(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))':
