@@ -133,20 +133,20 @@ const onWheel = (e: WheelEvent) => {
       margin-bottom: 1px;
     }
 
-     &:focus-visible, &:focus-within {
-        outline: var(--kds-border-action-focused);
-        outline-offset: 1px;
-        border-radius: var(
+    &:focus-visible,
+    &:focus-within {
+      outline: var(--kds-border-action-focused);
+      outline-offset: 1px;
+      border-radius: var(
           --kds-legacy-button-border-radius,
           var(--kds-border-radius-container-0-37x)
         )
-        0
-        0
+        0 0
         var(
           --kds-legacy-button-border-radius,
           var(--kds-border-radius-container-0-37x)
         );
-      }
+    }
 
     & .zoom-input {
       background: transparent;
@@ -154,7 +154,9 @@ const onWheel = (e: WheelEvent) => {
       text-align: right;
       color: var(--kds-color-text-and-icon-neutral);
       width: var(--kds-dimension-component-width-4x);
-      padding: var(--kds-spacing-container-0-5x) var(--kds-spacing-container-0-25x) var(--kds-spacing-container-0-5x) var(--kds-spacing-container-1x);
+      padding: var(--kds-spacing-container-0-5x)
+        var(--kds-spacing-container-0-25x) var(--kds-spacing-container-0-5x)
+        var(--kds-spacing-container-1x);
       font-size: var(--kds-font-base-interactive-medium-strong);
       margin-right: 0;
 
