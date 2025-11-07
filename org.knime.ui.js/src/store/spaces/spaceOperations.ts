@@ -3,6 +3,8 @@ import { API } from "@api";
 import { defineStore } from "pinia";
 import type { Router } from "vue-router";
 
+import { promise } from "@knime/utils";
+
 import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
 import {
   SpaceGroup,
@@ -30,6 +32,11 @@ type SpaceOperationsState = {
 };
 
 type MoveOrCopyItemsParams = Parameters<typeof API.space.moveOrCopyItems>[0];
+
+const workflowContentRequestTracker = new Map<
+  string,
+  { abortController: AbortController; metadata: PathTriplet }
+>();
 
 export const useSpaceOperationsStore = defineStore("space.operations", {
   state: (): SpaceOperationsState => ({
@@ -95,23 +102,64 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
       projectId: string;
       retry?: boolean;
     }) {
-      const pathTriplet = useSpaceCachingStore().projectPath[projectId];
+      const spaceCachingStore = useSpaceCachingStore();
+      const pathTriplet = { ...spaceCachingStore.projectPath[projectId] };
+
       if (!pathTriplet) {
-        return [];
+        return;
+      }
+
+      const requestKey = projectId;
+
+      if (workflowContentRequestTracker.has(requestKey)) {
+        const { abortController, metadata } =
+          workflowContentRequestTracker.get(requestKey)!;
+
+        consola.trace("Aborting fetchWorkflowGroupContent", {
+          projectId: requestKey,
+          metadata,
+        });
+
+        abortController.abort(
+          `Content for project "${projectId}" was requested but there was already a pending request.`,
+        );
+        workflowContentRequestTracker.delete(requestKey);
       }
 
       const { spaceId, spaceProviderId, itemId } = pathTriplet;
 
-      const content = await this.fetchWorkflowGroupContentByIdTriplet({
-        spaceId,
-        spaceProviderId,
-        itemId,
-        retry,
+      const { abortController, runAbortablePromise } =
+        promise.createAbortablePromise();
+
+      workflowContentRequestTracker.set(requestKey, {
+        abortController,
+        metadata: pathTriplet,
       });
 
-      useSpaceCachingStore().setWorkflowGroupContent({ projectId, content });
+      try {
+        const content = await runAbortablePromise(() =>
+          this.fetchWorkflowGroupContentByIdTriplet({
+            spaceId,
+            spaceProviderId,
+            itemId,
+            retry,
+          }),
+        );
 
-      return content;
+        useSpaceCachingStore().setWorkflowGroupContent({ projectId, content });
+        workflowContentRequestTracker.delete(requestKey);
+      } catch (error) {
+        if (error instanceof promise.AbortError) {
+          consola.info(
+            "fetchWorkflowGroupContent Aborted. Reason:",
+            error.message,
+          );
+          return;
+        }
+
+        workflowContentRequestTracker.delete(requestKey);
+        throw error;
+      }
     },
 
     changeDirectory({

@@ -125,9 +125,7 @@ const fetchWorkflowGroupContents = async () => {
     return;
   }
 
-  await fetchWorkflowGroupContent({
-    projectId: props.projectId,
-  });
+  await fetchWorkflowGroupContent({ projectId: props.projectId });
 };
 
 // spaceId and itemId (folder) are based on the projectId but might change even with the same projectId (change dir)

@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import { isBrowser, isDesktop } from "@/environment";
@@ -148,6 +149,33 @@ describe("spaces::spaceOperations", () => {
           projectId: "myProject1",
         }),
       ).rejects.toThrowError(error);
+    });
+
+    it("should abort requests if made consecutively to the same source", async () => {
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
+
+      spaceOperationsStore.fetchWorkflowGroupContent({
+        projectId: "myProject1",
+      });
+
+      spaceOperationsStore.fetchWorkflowGroupContent({
+        projectId: "myProject1",
+      });
+
+      await flushPromises();
+
+      expect(spaceCachingStore.setWorkflowGroupContent).toHaveBeenCalledOnce();
+      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
+        spaceProviderId: "mockProviderId",
+        spaceId: "mockSpaceId",
+        itemId: "bar",
+      });
+
+      expect(
+        spaceCachingStore.workflowGroupCache.get(
+          JSON.stringify(spaceCachingStore.projectPath.myProject1),
+        ),
+      ).toEqual(fetchWorkflowGroupContentResponse);
     });
   });
 
