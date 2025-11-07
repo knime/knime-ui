@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { Button, Checkbox } from "@knime/components";
+import { Button, Checkbox } from "@knime/kds-components";
 
 import { useDisclaimer } from "./useDisclaimer";
 
@@ -19,10 +19,12 @@ const close = () => closeDisclaimer(shouldNotAskAgain.value);
       </p>
     </div>
     <div class="controls">
-      <Checkbox v-model="shouldNotAskAgain" class="checkbox">
-        Do not show again
-      </Checkbox>
-      <Button primary compact @click="close"> Accept and continue </Button>
+      <Checkbox
+        v-model="shouldNotAskAgain"
+        class="checkbox"
+        label="Do not show again"
+      />
+      <Button label="Accept and continue" @click="close" />
     </div>
   </div>
 </template>
@@ -54,8 +56,7 @@ const close = () => closeDisclaimer(shouldNotAskAgain.value);
   }
 
   & .checkbox {
-    font-size: 12px;
-    margin-top: var(--space-8);
+    margin: var(--space-8) 0;
   }
 }
 </style>

@@ -2,7 +2,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import { Button, Checkbox, InlineMessage, Modal } from "@knime/components";
+import { InlineMessage, Modal } from "@knime/components";
+import { Button, Checkbox } from "@knime/kds-components";
 
 import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import SpaceTree, {
@@ -98,26 +99,15 @@ const showValidationHint = computed(
         <Checkbox
           v-if="config?.askResetWorkflow && selected?.type === 'item'"
           v-model="resetWorkflow"
+          label="Reset Workflow(s) before upload"
           :disabled="resetMode === SpaceProvider.ResetOnUploadEnum.MANDATORY"
-        >
-          Reset Workflow(s) before upload
-        </Checkbox>
+        />
       </div>
     </template>
 
     <template #controls>
-      <Button compact with-border @click="cancel">
-        <strong>Cancel</strong>
-      </Button>
-      <Button
-        compact
-        primary
-        class="submit-button"
-        :disabled="!isValid"
-        @click="onSubmit"
-      >
-        <strong>Choose</strong>
-      </Button>
+      <Button variant="outlined" label="Cancel" @click="cancel" />
+      <Button :disabled="!isValid" label="Choose" @click="onSubmit" />
     </template>
   </Modal>
 </template>

@@ -33,11 +33,11 @@ importers:
         specifier: ^1.15.5
         version: 1.15.5(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-components':
-        specifier: ^0.0.11
-        version: 0.0.11(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
+        specifier: ^0.0.15
+        version: 0.0.15(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-styles':
-        specifier: ^0.0.11
-        version: 0.0.11
+        specifier: ^0.0.15
+        version: 0.0.15
       '@knime/knime-ui-table':
         specifier: 0.5.23
         version: 0.5.23(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
@@ -1230,15 +1230,15 @@ packages:
       consola: 3.x
       vue: '>=3.5.0'
 
-  '@knime/kds-components@0.0.11':
-    resolution: {integrity: sha512-xYEBrlpOUARRy4JiFBg4x2LzsFSSHY8qjkyD4Bu/LM+BC55/b5lBjyFaNmRJOL3lIQofMSTHulUtUQTtzuwp8w==}
+  '@knime/kds-components@0.0.15':
+    resolution: {integrity: sha512-7IAHnatXTY7j/qXHnili3AhlpkmUIBGUlJSVijTt9aoO3WxML0lX85wxxCHqd2cC2v4asMweeBGQtwoTxj2Y+w==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
     peerDependencies:
       '@vueuse/core': ~13.8.0
       vue: ~3.5.0
 
-  '@knime/kds-styles@0.0.11':
-    resolution: {integrity: sha512-kqTUEXGde5yL/Z9P6kIAxfwhwK+8RTQOnze9hdDL4hYWeMXkKitRnMvh1VdU/oQEwxXh+o/x3ZkRK8cofryFKQ==}
+  '@knime/kds-styles@0.0.15':
+    resolution: {integrity: sha512-lVydXCxsXqxzql0T9Rt4YzE0U/VI1nEsdfoExehAhn0kiGCv6K3CiE26vHsyRZ53wZq/2pEv1ewyGRm5lsEIhA==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
 
   '@knime/knime-ui-table@0.5.23':
@@ -7422,9 +7422,9 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/kds-components@0.0.11(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
+  '@knime/kds-components@0.0.15(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
     dependencies:
-      '@knime/kds-styles': 0.0.11
+      '@knime/kds-styles': 0.0.15
       '@knime/styles': 1.14.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
       '@knime/utils': 1.7.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.4.2)
       '@vueuse/core': 13.8.0(vue@3.5.18(typescript@5.8.3))
@@ -7434,7 +7434,7 @@ snapshots:
       - '@fontsource/roboto'
       - '@fontsource/roboto-mono'
 
-  '@knime/kds-styles@0.0.11':
+  '@knime/kds-styles@0.0.15':
     dependencies:
       modern-normalize: 3.0.1
 
