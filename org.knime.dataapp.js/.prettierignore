@@ -1,7 +1,0 @@
-pnpm-lock.yaml
-test-results
-dist
-generated-api.ts
-generated-exceptions.ts
-licenses/
-.pnpm-store
