@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, useTemplateRef } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 
@@ -14,7 +14,6 @@ import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
-import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isBrowser, isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
@@ -272,7 +271,7 @@ const onUploadButtonClick = async () => {
   }
 };
 
-const uploadButton = ref<InstanceType<typeof ToolbarButton>>();
+const uploadButton = useTemplateRef<any>("uploadButton");
 
 onMounted(() => {
   useHint().createHint({
@@ -290,7 +289,8 @@ const { isSVGRenderer } = useCanvasRendererUtils();
       <KdsButton
         v-if="activeProjectVersionsModeStatus === 'active'"
         label="Close version history"
-        leading-icon="redo"
+        leading-icon="chevron-left"
+        variant="outlined"
         @click="$shortcuts.dispatch('closeVersionHistory')"
       />
 
@@ -417,30 +417,18 @@ const { isSVGRenderer } = useCanvasRendererUtils();
       white-space: nowrap;
     }
 
-    & .help-menu:deep(.function-button) {
-      width: var(--kds-dimension-component-width-1-75x);
-      height: var(--kds-dimension-component-height-1-75x);
-      
-      & svg {
-        stroke: var(--kds-color-text-and-icon-neutral);
-      }
-    }
-
-    & .help-menu:deep(.function-button.active) {
-      background: var(--kds-color-background-neutral-active);
-    }
-  
     & :deep(.submenu-toggle) {
       border-radius: var(
-      --kds-legacy-button-border-radius,
-      var(--kds-border-radius-container-0-37x)
-    );
-          
+        --kds-legacy-button-border-radius,
+        var(--kds-border-radius-container-0-37x)
+      );
+
       & svg {
         stroke-width: 3.5px;
         width: 12px;
         height: 12px;
       }
+
       &.expanded {
         background-color: var(--kds-color-background-neutral-active);
 
@@ -454,13 +442,13 @@ const { isSVGRenderer } = useCanvasRendererUtils();
       }
 
       &:focus-visible {
-          outline: var(--kds-border-action-focused);
-          outline-offset: 1px;
-          background-color: transparent;
+        outline: var(--kds-border-action-focused);
+        outline-offset: 1px;
+        background-color: transparent;
 
-          & svg {
-            stroke: var(--kds-color-text-and-icon-neutral);
-          }
+        & svg {
+          stroke: var(--kds-color-text-and-icon-neutral);
+        }
 
         &:hover {
           background-color: var(--kds-color-background-neutral-hover);
@@ -471,6 +459,19 @@ const { isSVGRenderer } = useCanvasRendererUtils();
           stroke: var(--kds-color-background-neutral);
         }
       }
+    }
+
+    & .help-menu:deep(.function-button) {
+      width: var(--kds-dimension-component-width-1-75x);
+      height: var(--kds-dimension-component-height-1-75x);
+
+      & svg {
+        stroke: var(--kds-color-text-and-icon-neutral);
+      }
+    }
+
+    & .help-menu:deep(.function-button.active) {
+      background: var(--kds-color-background-neutral-active);
     }
   }
 }
