@@ -430,9 +430,6 @@ describe("AppHeaderContextMenu.vue", () => {
 
       expect(toast.show).not.toHaveBeenCalled();
 
-      expect(
-        mockedStores.panelStore.setCurrentProjectActiveTab,
-      ).toHaveBeenCalledWith(panelStore.TABS.SPACE_EXPLORER);
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.Home.SpaceBrowsingPage,
         params: {

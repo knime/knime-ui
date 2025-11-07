@@ -29,7 +29,7 @@ type Props = {
   workflow: Workflow;
 };
 const props = defineProps<Props>();
-const { revealItemInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
+const { revealSingleItem, canRevealItem } = useRevealInSpaceExplorer();
 const { getSpaceProviderIcon } = useSpaceIcons();
 const { toastPresets } = getToastPresets();
 
@@ -95,10 +95,7 @@ const dropdownItems = computed(() => {
             (project) => project.projectId === activeProjectId.value,
           )!.name;
 
-          await revealItemInSpaceExplorer(
-            activeProjectOrigin.value!,
-            projectName,
-          );
+          await revealSingleItem(activeProjectOrigin.value!, projectName);
         },
       },
     });

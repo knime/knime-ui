@@ -403,7 +403,7 @@ export const useSpaceExplorerActions = (
             }
 
             const $toast = getToastsProvider();
-            const { revealInSpaceExplorer } = useRevealInSpaceExplorer($router);
+            const { revealMultipleItems } = useRevealInSpaceExplorer($router);
             $toast.show({
               headline: "Upload complete",
               type: "success",
@@ -412,10 +412,10 @@ export const useSpaceExplorerActions = (
                   icon: ListIcon,
                   text: "Reveal in space explorer",
                   callback: () => {
-                    revealInSpaceExplorer({
+                    revealMultipleItems({
                       providerId: uploadResult.destinationProviderId,
                       spaceId: uploadResult.destinationSpaceId,
-                      itemIds: uploadResult.remoteItemIds,
+                      itemIdsToReveal: uploadResult.remoteItemIds,
                     });
                   },
                 },

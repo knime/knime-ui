@@ -40,7 +40,7 @@ vi.mock(
     return {
       useRevealInSpaceExplorer: () => ({
         ...original.useRevealInSpaceExplorer(),
-        revealItemInSpaceExplorer: revealInSpaceExplorerSpy,
+        revealSingleItem: revealInSpaceExplorerSpy,
       }),
     };
   },
@@ -159,6 +159,7 @@ describe("WorkflowBreadcrumb.vue", () => {
     const versionsStore = useWorkflowVersionsStore();
     vi.mocked(versionsStore.activateVersionsMode).mockImplementation(vi.fn());
 
+    // @ts-expect-error
     wrapper
       .findComponent(SubMenu)
       .props("items")
@@ -174,6 +175,8 @@ describe("WorkflowBreadcrumb.vue", () => {
     const revealInSpaceExplorerItem = wrapper
       .findComponent(SubMenu)
       .props("items");
+
+    // @ts-expect-error
     revealInSpaceExplorerItem
       .find((item) => item.text === "Reveal in space explorer")
       ?.metadata.handler();
@@ -187,6 +190,8 @@ describe("WorkflowBreadcrumb.vue", () => {
     const revealInSpaceExplorerItem = wrapper
       .findComponent(SubMenu)
       .props("items");
+
+    // @ts-expect-error
     revealInSpaceExplorerItem
       .find((item) => item.text === "Close project")
       ?.metadata.handler();

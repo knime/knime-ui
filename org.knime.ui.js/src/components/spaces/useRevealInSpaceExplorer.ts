@@ -3,7 +3,7 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 import { type Router, useRouter } from "vue-router";
 
-import type { AncestorInfo } from "@/api/custom-types";
+import type { AncestorInfo, SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { isBrowser } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -20,8 +20,34 @@ import {
 } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 
-const DEFAULT_GROUP_ID = "defaultGroupId";
 const ROOT_ITEM_ID = "root";
+
+const getAncestorInfo = (
+  spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
+  origin: SpaceItemReference,
+): Promise<AncestorInfo> => {
+  const provider = spaceProviders[origin.providerId];
+
+  if (!provider) {
+    return Promise.resolve({ itemName: null, ancestorItemIds: [] });
+  }
+
+  if (isLocalProvider(provider)) {
+    return origin.ancestorItemIds
+      ? Promise.resolve({
+          itemName: null,
+          ancestorItemIds: origin.ancestorItemIds,
+        })
+      : Promise.resolve({ itemName: null, ancestorItemIds: [] });
+  }
+
+  // Throws error if the ancestor item IDs could not be retrieved
+  return API.desktop.getAncestorInfo({
+    providerId: origin.providerId,
+    spaceId: origin.spaceId,
+    itemId: origin.itemId,
+  });
+};
 
 export const useRevealInSpaceExplorer = (router?: Router) => {
   const $router = router || useRouter(); // router might not be available in all contexts
@@ -54,84 +80,53 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     return !isServerProvider(provider);
   };
 
-  // Fetch ancestor info
-  const getAncestorInfo = (
-    origin: SpaceItemReference,
-  ): Promise<AncestorInfo> => {
-    const provider = spaceProviders.value?.[origin.providerId];
-
-    if (!provider) {
-      return Promise.resolve({ itemName: null, ancestorItemIds: [] });
-    }
-
-    if (isLocalProvider(provider)) {
-      return origin.ancestorItemIds
-        ? Promise.resolve({
-            itemName: null,
-            ancestorItemIds: origin.ancestorItemIds,
-          })
-        : Promise.resolve({ itemName: null, ancestorItemIds: [] });
-    }
-
-    // Throws error if the ancestor item IDs could not be retrieved
-    return API.desktop.getAncestorInfo({
-      providerId: origin.providerId,
-      spaceId: origin.spaceId,
-      itemId: origin.itemId,
-    });
-  };
-
-  const resetSelectedItemAndShowError = (error: unknown = null) => {
+  const handleRevealFailure = (error: unknown = null) => {
+    consola.error("Could not reveal in Space Explorer:", error);
     setCurrentSelectedItemIds([]);
     toastPresets.spaces.reveal.revealProjectFailed({ error });
   };
 
-  const checkIfNameHasChangedAndShowWarning = (
-    newItemName: string | null,
-    oldItemName: string | null,
-  ) => {
-    if (
-      newItemName !== null &&
-      oldItemName !== null &&
-      newItemName !== oldItemName
-    ) {
-      toastPresets.spaces.reveal.nameHasChanged({ newItemName, oldItemName });
-    }
-  };
-
   const navigateToSpaceBrowsingPage = async (
     origin: SpaceItemReference,
-    itemName: string | null,
     selectedItemIds: string[],
   ) => {
     const group = findSpaceGroupFromSpaceId(
       spaceProviders.value ?? {},
       origin.spaceId,
     );
-    const { itemName: updatedItemName, ancestorItemIds } =
-      await getAncestorInfo(origin);
+
+    if (!group) {
+      consola.error(
+        "navigateToSpaceBrowsingPage: group not found. cannot reveal",
+      );
+      return null;
+    }
+
+    const { itemName, ancestorItemIds } = await getAncestorInfo(
+      spaceProviders.value,
+      origin,
+    );
+
     await $router.push({
       name: APP_ROUTES.Home.SpaceBrowsingPage,
       params: {
         spaceProviderId: origin.providerId,
         spaceId: origin.spaceId,
-        groupId: group?.id ?? DEFAULT_GROUP_ID,
+        groupId: group.id,
         itemId: ancestorItemIds?.at(0) ?? ROOT_ITEM_ID,
       },
     });
 
     setCurrentSelectedItemIds(selectedItemIds);
-
-    checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
+    return itemName;
   };
 
   const displayInSidebarSpaceExplorer = async (
-    origin: SpaceItemReference,
-    itemName: string | null,
+    origin: Omit<SpaceItemReference, "ancestorItemIds">,
     selectedItemIds: string[],
   ) => {
     if (!activeProjectId.value) {
-      return;
+      return null;
     }
 
     if (activeTab.value[activeProjectId.value] !== TABS.SPACE_EXPLORER) {
@@ -139,8 +134,10 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     }
 
     const { providerId, spaceId } = origin;
-    const { itemName: updatedItemName, ancestorItemIds } =
-      await getAncestorInfo(origin);
+    const { itemName, ancestorItemIds } = await getAncestorInfo(
+      spaceProviders.value,
+      origin,
+    );
 
     const currentPath = projectPath.value[activeProjectId.value];
     const nextItemId = ancestorItemIds?.at(0) ?? ROOT_ITEM_ID;
@@ -175,87 +172,124 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
       setCurrentSelectedItemIds(selectedItemIds);
     }
 
-    checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
+    return itemName;
   };
 
-  const revealInSpaceExplorer = async ({
-    providerId,
-    spaceId,
-    itemIds,
-    itemName = null,
-    ancestorItemIds,
-  }: {
-    providerId: string;
-    spaceId: string;
-    itemIds: string[];
-    itemName?: string | null;
-    ancestorItemIds?: Array<string>;
-  }) => {
+  const validate = async (params: { providerId: string }) => {
     try {
-      if (!canRevealItem(providerId)) {
-        resetSelectedItemAndShowError();
-        return;
+      if (!canRevealItem(params.providerId)) {
+        handleRevealFailure();
+        return false;
       }
 
-      const provider = spaceProviders.value?.[providerId];
+      const provider = spaceProviders.value?.[params.providerId];
       // try connect to provider if we are not connected
       if (provider && !provider.connected) {
         const { isConnected } = await connectProvider({
           spaceProviderId: provider.id,
         });
+
         if (!isConnected) {
           toastPresets.spaces.auth.connectFailed({
             error: null,
             providerName: provider.name,
           });
-          return;
+          return false;
         }
       }
 
-      if (!panelStore.isLeftPanelExpanded) {
-        panelStore.toggleLeftPanel();
-      }
-
-      panelStore.setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
-
-      if (!activeProjectId.value) {
-        // No active project, navigate to Space Browsing Page
-        await navigateToSpaceBrowsingPage(
-          { providerId, spaceId, itemId: itemIds[0], ancestorItemIds },
-          itemName,
-          itemIds,
-        );
-        return;
-      }
-
-      // Active project exists, display Space Explorer
-      await displayInSidebarSpaceExplorer(
-        { providerId, spaceId, itemId: itemIds[0], ancestorItemIds },
-        itemName,
-        itemIds,
-      );
+      return true;
     } catch (error) {
-      consola.error("Could not reveal in Space Explorer:", error);
-      resetSelectedItemAndShowError(error);
+      handleRevealFailure(error);
+      return false;
     }
   };
 
-  const revealItemInSpaceExplorer = async (
+  /**
+   * Reveal and select multiple items in the space explorer, regardless of whether user
+   * is on home page or workflow page. Items must be siblings in the same folder,
+   * otherwise only the first item will be revealed and selected
+   */
+  const revealMultipleItems = async ({
+    providerId,
+    spaceId,
+    itemIdsToReveal,
+  }: {
+    providerId: string;
+    spaceId: string;
+    itemIdsToReveal: string[];
+  }) => {
+    if (!(await validate({ providerId }))) {
+      return;
+    }
+
+    try {
+      // use first item to determine ancestor of all items, because they are
+      // always siblings in the same origin folder
+      const [firstItem] = itemIdsToReveal;
+
+      const origin = {
+        providerId,
+        spaceId,
+        itemId: firstItem,
+      } satisfies SpaceItemReference;
+
+      const revealAction = activeProjectId.value
+        ? displayInSidebarSpaceExplorer
+        : navigateToSpaceBrowsingPage;
+
+      await revealAction(origin, itemIdsToReveal);
+    } catch (error) {
+      handleRevealFailure(error);
+    }
+  };
+
+  /**
+   * Attempts to reveal an item in the space explorer, regardless of whether user
+   * is on home page or workflow page.
+   * Can optionally receive an item name, which indicates the last known name for the
+   * item being revealed. If the name has changed, this action will show a warning
+   * toast
+   * @param origin Item origin
+   * @param itemName Last known name
+   */
+  const revealSingleItem = async (
     origin: SpaceItemReference,
     itemName = "",
   ) => {
-    await revealInSpaceExplorer({
-      providerId: origin.providerId,
-      spaceId: origin.spaceId,
-      itemIds: [origin.itemId],
-      itemName,
-      ancestorItemIds: origin.ancestorItemIds,
-    });
+    const checkIfNameHasChangedAndShowWarning = (
+      newItemName: string | null,
+      oldItemName: string | null,
+    ) => {
+      if (
+        newItemName !== null &&
+        oldItemName !== null &&
+        newItemName !== oldItemName
+      ) {
+        toastPresets.spaces.reveal.nameHasChanged({ newItemName, oldItemName });
+      }
+    };
+
+    if (!(await validate({ providerId: origin.providerId }))) {
+      return;
+    }
+
+    try {
+      const revealAction = activeProjectId.value
+        ? displayInSidebarSpaceExplorer
+        : navigateToSpaceBrowsingPage;
+
+      const maybeUpdatedName = await revealAction(origin, [origin.itemId]);
+
+      checkIfNameHasChangedAndShowWarning(maybeUpdatedName, itemName);
+    } catch (error) {
+      handleRevealFailure(error);
+    }
   };
 
   return {
-    revealInSpaceExplorer,
-    revealItemInSpaceExplorer,
+    revealMultipleItems,
+    revealSingleItem,
     canRevealItem,
   };
 };

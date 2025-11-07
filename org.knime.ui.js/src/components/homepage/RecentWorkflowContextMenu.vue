@@ -19,7 +19,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
-const { revealItemInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
+const { revealSingleItem, canRevealItem } = useRevealInSpaceExplorer();
 
 const handleItemClick = (item: MenuItemWithHandler) => {
   if (item.metadata?.handler) {
@@ -43,10 +43,7 @@ const recentWorkflowContextMenuItems = computed(() => {
     metadata: {
       id: "revealInSpaceExplorer",
       handler: async () => {
-        await revealItemInSpaceExplorer(
-          recentWorkflow.origin,
-          recentWorkflow.name,
-        );
+        await revealSingleItem(recentWorkflow.origin, recentWorkflow.name);
       },
     },
   };
