@@ -162,7 +162,10 @@ const showValidationHint = computed(
     top: 48%;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+  }
+
+  & :deep(.confirmation) {
+    padding-top: 0;
   }
 
   & :deep(.notice) {
