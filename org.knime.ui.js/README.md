@@ -1,4 +1,4 @@
-# KNIME UI (Modern UI) -- org.knime.ui.js
+# KNIME UI -- org.knime.ui.js
 
 This project contains the web frontend for the KNIME Analytics Platform.
 The frontend is based on the [Vue.js] JavaScript framework.
@@ -19,8 +19,8 @@ pnpm install
 pnpm dev
 ```
 
-This will start a Vite server supplying the Modern UI Vue application on
-default port 3000.
+This will start a Vite server supplying the KNIME UI Vue application on
+port 3000 (by default).
 
 This includes hot-reloading, so code changes will be visible in the app
 immediately.
@@ -55,7 +55,7 @@ which includes an embedded browser that displays the UI.
  │   │   Eclipse RCP Workbench UI  │   │      │     Vite Dev Server     │
  │   │             ││              │   │      │ ┌─────────────────────┐ │
  │   │ ┌───────────▼└────────────┐ │   │      │ │                     │ │
- │   │ │       CEF Browser       └─┼───┼──────┼─► Modern UI Frontend  │ │
+ │   │ │       CEF Browser       └─┼───┼──────┼─►  KNIME UI Frontend  │ │
  │   │ │ Equo Comm / Middleware  ◄─┼───┼──────┼─┐   Vue Application   │ │
  │   │ │                         │ │   │      │ │                     │ │
  │   └─────────────────────────────┘   │      │ └─────────────────────┘ │
@@ -109,7 +109,7 @@ backend via a websocket server.
                    ││                        │     Vite Dev Server     │
  ┌─────────────────▼└──────────────────┐     │ ┌─────────────────────┐ │
  │                                     │     │ │                     │ │
- │                                     ┼─────┼─► Modern UI Frontend  │ │
+ │                                     ┼─────┼─►  KNIME UI Frontend  │ │
  │        Your Desktop Browser         ◄─────┼─┐   Vue Application   │ │
  │                                     │     │ │                     │ │
  │                                     │     │ └─────────────────────┘ │

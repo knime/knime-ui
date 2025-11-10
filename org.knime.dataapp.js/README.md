@@ -1,6 +1,7 @@
-# knime-data-app-ui
+# KNIME DATA APP UI -- org.knime.dataapp.js
 
-This template should help get you started developing with Vue 3 in Vite.
+This project contains the web frontend for the KNIME DataApps created with the KNIME Analytics Platform.
+The frontend is based on the [Vue.js] JavaScript framework.
 
 ## Recommended IDE Setup
 
