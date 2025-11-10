@@ -166,10 +166,10 @@ export const useComponentInteractionsStore = defineStore(
               icon: ListIcon,
               text: "Reveal in space explorer",
               callback: () => {
-                useRevealInSpaceExplorer().revealInSpaceExplorer({
+                useRevealInSpaceExplorer().revealSingleItem({
                   providerId: spaceProviderId,
                   spaceId,
-                  itemIds: [itemId],
+                  itemId,
                 });
               },
             },
