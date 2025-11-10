@@ -1,61 +1,38 @@
 <script lang="ts" setup>
-import { computed, onMounted, watch } from "vue";
+import { computed, watch } from "vue";
 
 import { Dropdown } from "@knime/components";
 
+import { ShareComponentCommand } from "@/api/gateway-api/generated-api";
 import { localRootProjectPath } from "@/store/spaces/caching";
 import { valueOrEmpty } from "@/util/valueOrEmpty";
 
-const DEFAULT_LINK_TYPE_LOCAL = "MOUNTPOINT_ABSOLUTE_PATH";
-const DEFAULT_LINK_TYPE_REMOTE = "MOUNTPOINT_ABSOLUTE_ID";
+import { getDefaultLinkType } from "./getDefaultLinkType";
 
-const {
-  selectedSpaceId,
-  // eslint-disable-next-line no-undefined
-  modelValue = undefined,
-  sourceSpaceId,
-} = defineProps<{
+const props = defineProps<{
   sourceSpaceId: string;
   selectedSpaceId: string;
-  modelValue?: string;
+  modelValue?: ShareComponentCommand.LinkTypeEnum;
 }>();
 
-const isLocal = computed(
-  () => selectedSpaceId === localRootProjectPath.spaceId,
-);
-
 const defaultLinkType = computed(() =>
-  isLocal.value ? DEFAULT_LINK_TYPE_LOCAL : DEFAULT_LINK_TYPE_REMOTE,
+  getDefaultLinkType(props.selectedSpaceId),
 );
 
 const emit = defineEmits<{
-  "update:model-value": [id: string];
+  "update:model-value": [id: ShareComponentCommand.LinkTypeEnum];
 }>();
 
-// Emit default value immediately if no modelValue is provided
-// This is to return a value from the destination picker even if
-// the dropdown has not yet been revealed from "Show advanced settings"
-if (!modelValue) {
-  emit("update:model-value", defaultLinkType.value);
-}
-
-onMounted(() => {
-  // Ensure default is set on mount as well (for cases where computed changes)
-  if (!modelValue) {
-    emit("update:model-value", defaultLinkType.value);
-  }
-});
-
 const linkTypes = computed(() => {
-  if (!selectedSpaceId) {
+  if (!props.selectedSpaceId) {
     return [];
   }
-
-  const isSameSpace = selectedSpaceId === sourceSpaceId;
+  const isLocal = props.selectedSpaceId === localRootProjectPath.spaceId;
+  const isSameSpace = props.selectedSpaceId === props.sourceSpaceId;
 
   return [
     {
-      id: "MOUNTPOINT_ABSOLUTE_PATH",
+      id: ShareComponentCommand.LinkTypeEnum.MOUNTPOINTABSOLUTE,
       text: "Create absolute link",
       slotData: {
         title: "Create absolute link",
@@ -63,8 +40,8 @@ const linkTypes = computed(() => {
           "If you move the workflow to a new location it will always link back to the component at its current location.",
       },
     },
-    ...valueOrEmpty(!isLocal.value, {
-      id: "MOUNTPOINT_ABSOLUTE_ID",
+    ...valueOrEmpty(!isLocal, {
+      id: ShareComponentCommand.LinkTypeEnum.MOUNTPOINTABSOLUTEIDBASED,
       text: "Create ID-based absolute link",
       slotData: {
         title: "Create ID-based absolute link",
@@ -73,7 +50,7 @@ const linkTypes = computed(() => {
       },
     }),
     ...valueOrEmpty(isSameSpace, {
-      id: "SPACE_RELATIVE",
+      id: ShareComponentCommand.LinkTypeEnum.SPACERELATIVE,
       text: "Create space-relative link",
       slotData: {
         title: "Create space-relative link",
@@ -82,21 +59,19 @@ const linkTypes = computed(() => {
       },
     }),
     ...valueOrEmpty(isSameSpace, {
-      id: "WORKFLOW_RELATIVE",
+      id: ShareComponentCommand.LinkTypeEnum.WORKFLOWRELATIVE,
       text: "Create workflow-relative link",
       slotData: {
         title: "Create workflow-relative link",
         subtitle: "Workflow and Component should always be moved together.",
       },
     }),
-    // MOUNTPOINT_RELATIVE === SPACE_RELATIVE
-    // NODE_RELATIVE - not available in classic either
   ];
 });
 
 // set back to default if current selection does not support the type
 watch(linkTypes, (newValue) => {
-  const foundInNewValue = newValue.find((type) => type.id === modelValue);
+  const foundInNewValue = newValue.find((type) => type.id === props.modelValue);
   if (!foundInNewValue) {
     emit("update:model-value", defaultLinkType.value);
   }
@@ -106,9 +81,11 @@ watch(linkTypes, (newValue) => {
 <template>
   <Dropdown
     :possible-values="linkTypes"
-    aria-label="Link type dropdown"
     :model-value="modelValue"
-    @update:model-value="(id: string) => emit('update:model-value', String(id))"
+    aria-label="Choose shared component link type"
+    @update:model-value="
+      emit('update:model-value', $event as ShareComponentCommand.LinkTypeEnum)
+    "
   >
     <template
       #option="{ slotData: { title, subtitle } } = {

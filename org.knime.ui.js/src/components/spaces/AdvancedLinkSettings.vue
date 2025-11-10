@@ -1,12 +1,14 @@
 <script lang="ts" setup>
 import { Checkbox, InlineMessage } from "@knime/components";
 
+import type { ShareComponentCommand } from "@/api/gateway-api/generated-api";
+
 import LinkTypeDropdown from "./DestinationPicker/LinkTypeDropdown.vue";
 
 defineProps<{
   selectedSpaceId: string;
   sourceSpaceId: string;
-  linkType?: string;
+  linkType?: ShareComponentCommand.LinkTypeEnum;
   includeData: boolean;
 }>();
 

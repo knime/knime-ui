@@ -7,7 +7,6 @@ import LoadIcon from "@knime/styles/img/icons/load.svg";
 
 import type { NameCollisionHandling } from "@/api/custom-types.ts";
 import {
-  ShareComponentCommand,
   type ShareComponentResult,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
@@ -22,8 +21,6 @@ import { useApplicationStore } from "@/store/application/application.ts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";
 
 import { useWorkflowStore } from "./workflow";
-
-import LinkTypeEnum = ShareComponentCommand.LinkTypeEnum;
 
 const TOAST_HEADLINE = "Linked components";
 
@@ -49,21 +46,6 @@ type ComponentInteractionsState = {
   processedUpdateNotifications: Record<string, boolean>;
 };
 
-const mapLinkType = (linkType: string): LinkTypeEnum => {
-  switch (linkType?.toUpperCase()) {
-    case "WORKFLOW_RELATIVE":
-      return LinkTypeEnum.WORKFLOWRELATIVE;
-    case "SPACE_RELATIVE":
-      return LinkTypeEnum.SPACERELATIVE;
-    case "MOUNTPOINT_ABSOLUTE_PATH":
-      return LinkTypeEnum.MOUNTPOINTABSOLUTE;
-    case "MOUNTPOINT_ABSOLUTE_ID":
-      return LinkTypeEnum.MOUNTPOINTABSOLUTEIDBASED;
-    default:
-      throw new Error(`Unknown link type: ${linkType}`);
-  }
-};
-
 const checkForCollisionsAndLink = async ({
   nodeId,
   destination,
@@ -85,7 +67,7 @@ const checkForCollisionsAndLink = async ({
       destinationSpaceProviderId: spaceProviderId,
       destinationSpaceId: spaceId,
       destinationItemId: itemId,
-      linkType: mapLinkType(destination.linkType),
+      linkType: destination.linkType,
       includeInputData: destination.includeData || false,
       collisionHandling,
     });
@@ -150,8 +132,7 @@ export const useComponentInteractionsStore = defineStore(
               ? { valid: true }
               : { valid: false };
           },
-          askLinkSettings: true,
-          sourceSpaceId: projectSpaceId!,
+          askLinkSettings: { sourceSpaceId: projectSpaceId! },
         } satisfies DestinationPickerConfig;
 
         const destination = await promptDestination(pickerConfig);

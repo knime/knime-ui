@@ -5,12 +5,16 @@ import { computed, ref, watch } from "vue";
 import { InlineMessage, Modal } from "@knime/components";
 import { Button, Checkbox } from "@knime/kds-components";
 
-import { SpaceProvider } from "@/api/gateway-api/generated-api";
+import {
+  ShareComponentCommand,
+  SpaceProvider,
+} from "@/api/gateway-api/generated-api";
 import SpaceTree, {
   type SpaceTreeSelection,
 } from "@/components/spaces/SpaceTree.vue";
 import AdvancedLinkSettings from "../AdvancedLinkSettings.vue";
 
+import { getDefaultLinkType } from "./getDefaultLinkType";
 import { useDestinationPicker } from "./useDestinationPicker";
 
 const { isActive, config, cancel, confirm } = useDestinationPicker();
@@ -19,7 +23,7 @@ const isValid = ref<boolean>(false);
 const validationHint = ref<string | null>(null);
 const resetWorkflow = ref(false);
 const includeData = ref(false);
-const linkType = ref<string>();
+const linkType = ref<ShareComponentCommand.LinkTypeEnum>();
 const resetMode = ref<SpaceProvider.ResetOnUploadEnum>();
 
 const selected = ref<SpaceTreeSelection>(null);
@@ -42,11 +46,17 @@ const onSpaceTreeSelection = (selection: SpaceTreeSelection) => {
 const showAdvancedLinkSettings = ref(false);
 
 const onSubmit = () => {
+  // use the default if the user never selected anything
+  const defaultLinkType =
+    selected.value?.type === "item"
+      ? getDefaultLinkType(selected.value?.spaceId)
+      : undefined;
+
   confirm({
     ...selected.value!,
     resetWorkflow: resetWorkflow.value,
     includeData: includeData.value,
-    linkType: linkType.value,
+    linkType: linkType.value ?? defaultLinkType,
   });
 };
 
@@ -112,13 +122,14 @@ const showValidationHint = computed(
           <Checkbox
             v-if="config?.askResetWorkflow"
             v-model="resetWorkflow"
-            label="Reset Workflow(s) before upload":disabled="resetMode === SpaceProvider.ResetOnUploadEnum.MANDATORY"
+            label="Reset Workflow(s) before upload"
+            :disabled="resetMode === SpaceProvider.ResetOnUploadEnum.MANDATORY"
           />
           <template v-if="config?.askLinkSettings">
             <Button
               v-if="!showAdvancedLinkSettings"
               compact
-              style="text-align: left; padding-left: 0"
+              class="show-advanced-link-settings"
               @click="showAdvancedLinkSettings = true"
             >
               Show advanced settings
@@ -127,7 +138,7 @@ const showValidationHint = computed(
               v-if="showAdvancedLinkSettings"
               v-model:link-type="linkType"
               v-model:include-data="includeData"
-              :source-space-id="config.sourceSpaceId"
+              :source-space-id="config.askLinkSettings.sourceSpaceId"
               :selected-space-id="selected.spaceId"
             />
           </template>
@@ -161,6 +172,11 @@ const showValidationHint = computed(
     background-color: transparent !important;
     height: 100%;
   }
+}
+
+.show-advanced-link-settings {
+  text-align: left;
+  padding-left: 0;
 }
 
 .space-tree-container {

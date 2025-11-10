@@ -17,10 +17,9 @@ export type DestinationPickerConfig = {
     exclude?: Array<string>;
   };
   askResetWorkflow?: boolean;
-} & (
-  | { askLinkSettings?: true; sourceSpaceId: string }
-  | { askLinkSettings?: false }
-);
+  askLinkSettings?: { sourceSpaceId: string };
+};
+
 export type DestinationPickerResult =
   | (Exclude<SpaceTreeSelection, null> & {
       resetWorkflow?: boolean;
