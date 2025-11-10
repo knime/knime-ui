@@ -109,7 +109,13 @@ const onSelectionStart = (event: PointerEvent) => {
   }
 
   if (!selectionStore.canClearCurrentSelection()) {
-    selectionStore.promptUserAboutClearingSelection();
+    selectionStore.promptUserAboutClearingSelection().then(({ wasAborted }) => {
+      if (wasAborted) {
+        return;
+      }
+
+      selectionStore.deselectAllObjects();
+    });
     // end interaction regardless of user discarding or not
     // to prevent the selection rectangle from getting stuck in an odd state
     return;
