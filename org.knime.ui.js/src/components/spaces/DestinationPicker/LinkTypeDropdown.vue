@@ -81,12 +81,18 @@ const linkTypes = computed(() => {
 });
 
 // set back to default if current selection does not support the type
-watch(linkTypes, (newValue) => {
-  const foundInNewValue = newValue.find((type) => type.id === props.modelValue);
-  if (!foundInNewValue) {
-    emit("update:model-value", defaultLinkType.value);
-  }
-});
+watch(
+  linkTypes,
+  (newValue) => {
+    const foundInNewValue = newValue.find(
+      (type) => type.id === props.modelValue,
+    );
+    if (!foundInNewValue) {
+      emit("update:model-value", defaultLinkType.value);
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -99,14 +105,14 @@ watch(linkTypes, (newValue) => {
     "
   >
     <template
-      #option="{ slotData: { title, subtitle } } = {
+      #option="{ slotData } = {
         slotData: {},
       }"
     >
       <div class="slot-option">
         <div class="description">
-          <div class="title">{{ title }}</div>
-          <div class="subtitle">{{ subtitle }}</div>
+          <div class="title">{{ slotData?.title }}</div>
+          <div class="subtitle">{{ slotData?.subtitle }}</div>
         </div>
       </div>
     </template>
