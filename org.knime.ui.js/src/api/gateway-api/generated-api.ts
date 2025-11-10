@@ -4113,10 +4113,8 @@ export namespace ShareComponentCommand {
      * @enum {string}
      */
     export enum LinkTypeEnum {
-        NODERELATIVE = 'NODE_RELATIVE',
         WORKFLOWRELATIVE = 'WORKFLOW_RELATIVE',
         SPACERELATIVE = 'SPACE_RELATIVE',
-        MOUNTPOINTRELATIVE = 'MOUNTPOINT_RELATIVE',
         MOUNTPOINTABSOLUTE = 'MOUNTPOINT_ABSOLUTE',
         MOUNTPOINTABSOLUTEIDBASED = 'MOUNTPOINT_ABSOLUTE_ID_BASED',
         NONE = 'NONE'
@@ -4135,12 +4133,6 @@ export interface ShareComponentResult extends CommandResult {
      * @memberof ShareComponentResult
      */
     isNameCollision?: boolean;
-    /**
-     *
-     * @type {string}
-     * @memberof ShareComponentResult
-     */
-    browserLink?: string;
 
 }
 

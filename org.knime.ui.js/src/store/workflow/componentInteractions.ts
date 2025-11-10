@@ -52,50 +52,45 @@ const checkForCollisionsAndLink = async ({
   collisionHandling,
 }): Promise<{
   result: ShareComponentResult | undefined;
-  selectedCollisionHandling: NameCollisionHandling;
+  collisionHandling: NameCollisionHandling;
 }> => {
   const { promptCollisionStrategies } = usePromptCollisionStrategies();
 
-  try {
-    const { projectId, workflowId } =
-      useWorkflowStore().getProjectAndWorkflowIds;
-    const { spaceProviderId, spaceId, itemId } = destination;
-    const result = await API.workflowCommand.ShareComponent({
-      projectId,
-      workflowId,
-      nodeId,
-      destinationSpaceProviderId: spaceProviderId,
-      destinationSpaceId: spaceId,
-      destinationItemId: itemId,
-      linkType: destination.linkType,
-      includeInputData: destination.includeData || false,
-      collisionHandling,
-    });
+  const { projectId, workflowId } =
+    useWorkflowStore().getProjectAndWorkflowIds;
+  const { spaceProviderId, spaceId, itemId } = destination;
+  const result = await API.workflowCommand.ShareComponent({
+    projectId,
+    workflowId,
+    nodeId,
+    destinationSpaceProviderId: spaceProviderId,
+    destinationSpaceId: spaceId,
+    destinationItemId: itemId,
+    linkType: destination.linkType,
+    includeInputData: destination.includeData || false,
+    collisionHandling,
+  });
 
-    if (result.isNameCollision) {
-      const collisionHandlingChoice = await promptCollisionStrategies();
-      if (collisionHandlingChoice === "CANCEL") {
-        return {
-          // eslint-disable-next-line no-undefined
-          result: undefined,
-          selectedCollisionHandling: collisionHandling,
-        };
-      }
-      return await checkForCollisionsAndLink({
-        nodeId,
-        destination,
-        collisionHandling,
-      });
+  if (result.isNameCollision) {
+    const collisionHandlingChoice = await promptCollisionStrategies();
+    if (collisionHandlingChoice === "CANCEL") {
+      return {
+        // eslint-disable-next-line no-undefined
+        result: undefined,
+        collisionHandling: collisionHandlingChoice,
+      };
     }
-
-    return {
-      result,
-      selectedCollisionHandling: collisionHandling,
-    };
-  } catch (error) {
-    consola.error(error);
-    throw error;
+    return checkForCollisionsAndLink({
+      nodeId,
+      destination,
+      collisionHandling: collisionHandlingChoice,
+    });
   }
+
+  return {
+    result,
+    collisionHandling,
+  };
 };
 
 export const useComponentInteractionsStore = defineStore(
@@ -144,23 +139,29 @@ export const useComponentInteractionsStore = defineStore(
           throw new Error("Destination link type is missing");
         }
 
-        const { result, selectedCollisionHandling } =
-          await checkForCollisionsAndLink({
-            nodeId,
-            destination,
-            collisionHandling: null,
-          });
+        const { result, selectedCollisionHandling } = await checkForCollisionsAndLink({
+          nodeId,
+          destination,
+          collisionHandling: null,
+        });
 
         if (!result || selectedCollisionHandling === "CANCEL") {
           return;
         }
 
         const { spaceProviderId, spaceId, itemId } = destination;
+
+        let headline = "Component shared and linked";
+        let message =
+          "The component has been exported to the destination space and" +
+          "the instance in this workflow has been replaced with a link.";
+        if (destination.linkType === "NONE") {
+          headline = "Component shared";
+          message = "The component has been exported to the destination space.";
+        }
         $toast.show({
-          headline: "Component shared and linked",
-          message:
-            "The component has been exported to the destination space and" +
-            "the instance in this workflow has been replaced with a link.",
+          headline,
+          message,
           type: "success",
           buttons: [
             {

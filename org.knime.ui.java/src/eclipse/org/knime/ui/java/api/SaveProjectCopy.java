@@ -67,7 +67,7 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.gateway.api.util.ProgressReporter;
+import org.knime.ui.java.util.ProgressReporter;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;

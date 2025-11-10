@@ -93,7 +93,6 @@ import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.gateway.api.util.ProgressReporter;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;

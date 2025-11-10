@@ -3,7 +3,6 @@ package org.knime.ui.java.util;
 import java.util.Optional;
 
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.api.util.ProgressReporter;
 
 /**
  * Implementation of {@link ProgressReporter} for the Eclipse Workbench environment. Delegates progress reporting to

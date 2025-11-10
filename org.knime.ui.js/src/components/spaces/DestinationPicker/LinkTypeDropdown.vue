@@ -37,7 +37,7 @@ const linkTypes = computed(() => {
       slotData: {
         title: "Create absolute link",
         subtitle:
-          "If you move the workflow to a new location it will always link back to the component at its current location.",
+          "Links the workflow to the shared component at its current location. If you move the workflow, it will always reference the same component path.",
       },
     },
     ...valueOrEmpty(!isLocal, {
@@ -46,7 +46,7 @@ const linkTypes = computed(() => {
       slotData: {
         title: "Create ID-based absolute link",
         subtitle:
-          "If you move the workflow, it will still link to its shared component using the component’s Hub ID.",
+          "Links the workflow to the shared component using its Hub ID. The link remains valid even if the workflow or component is moved.",
       },
     }),
     ...valueOrEmpty(isSameSpace, {
@@ -55,7 +55,7 @@ const linkTypes = computed(() => {
       slotData: {
         title: "Create space-relative link",
         subtitle:
-          "If you move the workflow, the shared component must exist in the same path relative to that space’s root.",
+          "Links the workflow to the shared component using a path relative to the space root. If you move the workflow, the shared component must exist in the same relative location.",
       },
     }),
     ...valueOrEmpty(isSameSpace, {
@@ -63,9 +63,20 @@ const linkTypes = computed(() => {
       text: "Create workflow-relative link",
       slotData: {
         title: "Create workflow-relative link",
-        subtitle: "Workflow and Component should always be moved together.",
+        subtitle:
+          "Links the workflow and component together. Both must be moved as one to keep the link valid.",
       },
     }),
+    {
+      id: "NONE",
+      text: "Do not create link",
+      slotData: {
+        title: "Do not create link",
+        subtitle: "Do not create a link to the shared instance.",
+      },
+    },
+    // MOUNTPOINT_RELATIVE === SPACE_RELATIVE
+    // NODE_RELATIVE - not available in classic either
   ];
 });
 
