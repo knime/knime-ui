@@ -56,8 +56,7 @@ const checkForCollisionsAndLink = async ({
 }> => {
   const { promptCollisionStrategies } = usePromptCollisionStrategies();
 
-  const { projectId, workflowId } =
-    useWorkflowStore().getProjectAndWorkflowIds;
+  const { projectId, workflowId } = useWorkflowStore().getProjectAndWorkflowIds;
   const { spaceProviderId, spaceId, itemId } = destination;
   const result = await API.workflowCommand.ShareComponent({
     projectId,
@@ -110,7 +109,6 @@ export const useComponentInteractionsStore = defineStore(
         this.processedUpdateNotifications[projectId] = value;
       },
 
-      // TODO frontend tests
       async linkComponent({ nodeId }: { nodeId: string }) {
         const { promptDestination } = useDestinationPicker();
 
@@ -139,13 +137,13 @@ export const useComponentInteractionsStore = defineStore(
           throw new Error("Destination link type is missing");
         }
 
-        const { result, selectedCollisionHandling } = await checkForCollisionsAndLink({
+        const { result, collisionHandling } = await checkForCollisionsAndLink({
           nodeId,
           destination,
           collisionHandling: null,
         });
 
-        if (!result || selectedCollisionHandling === "CANCEL") {
+        if (!result || collisionHandling === "CANCEL") {
           return;
         }
 
@@ -182,7 +180,7 @@ export const useComponentInteractionsStore = defineStore(
           projectId,
         });
 
-        if (selectedCollisionHandling === "AUTORENAME") {
+        if (collisionHandling === "AUTORENAME") {
           // the name of the component has changed on the remote side
           // (due to the collision handling strategy), which immediately
           // makes a component update available. To avoid this happening at
