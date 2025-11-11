@@ -129,7 +129,11 @@ export const useComponentInteractionsStore = defineStore(
         } satisfies DestinationPickerConfig;
 
         const destination = await promptDestination(pickerConfig);
-        if (!destination || destination.type !== "item") {
+        if (
+          !destination ||
+          destination.type !== "item" ||
+          !destination.linkType
+        ) {
           return;
         }
 
