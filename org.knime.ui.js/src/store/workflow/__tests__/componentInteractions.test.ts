@@ -4,10 +4,13 @@ import { API } from "@api";
 
 import { rfcErrors } from "@knime/hub-features";
 
+import type { NameCollisionHandling } from "@/api/custom-types";
 import {
   NodeState,
+  ShareComponentCommand,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
+import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { getToastsProvider } from "@/plugins/toasts";
 import { createComponentNode, createWorkflow } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
@@ -29,6 +32,35 @@ vi.mock("@knime/hub-features", async (importOriginal) => {
   };
 });
 
+vi.mock("@/components/spaces/DestinationPicker/useDestinationPicker", () => {
+  return {
+    useDestinationPicker: () => ({
+      promptDestination: vi.fn().mockResolvedValue({
+        type: "item",
+        spaceProviderId: "mockDestinationSpaceProviderId",
+        spaceId: "mockDestinationSpaceId",
+        itemId: "mockDestinationItemId",
+        resetWorkflow: false,
+        isWorkflowContainer: true,
+        linkType: ShareComponentCommand.LinkTypeEnum.MOUNTPOINTABSOLUTE,
+        includeData: false,
+      } satisfies DestinationPickerResult),
+    }),
+  };
+});
+
+const { usePromptCollisionStrategiesMock } = vi.hoisted(() => ({
+  usePromptCollisionStrategiesMock: vi.fn().mockReturnValue({
+    promptCollisionStrategies: vi
+      .fn()
+      .mockResolvedValue("OVERWRITE" as NameCollisionHandling),
+  }),
+}));
+
+vi.mock("@/composables/useConfirmDialog/usePromptCollisionHandling", () => ({
+  usePromptCollisionStrategies: usePromptCollisionStrategiesMock,
+}));
+
 describe("workflow::componentInteractions", () => {
   const toast = mockedObject(getToastsProvider());
 
@@ -36,37 +68,53 @@ describe("workflow::componentInteractions", () => {
     vi.clearAllMocks();
   });
 
-  it("should link components", async () => {
+  it("should share and link components", async () => {
     const { workflowStore, componentInteractionsStore, spaceOperationsStore } =
       mockStores();
 
-    const spy = vi.spyOn(spaceOperationsStore, "fetchWorkflowGroupContent");
+    const fetchWorkflowGroupSpy = vi.spyOn(
+      spaceOperationsStore,
+      "fetchWorkflowGroupContent",
+    );
 
     workflowStore.setActiveWorkflow(createWorkflow());
 
+    mockedAPI.workflowCommand.ShareComponent.mockResolvedValue({
+      isNameCollision: false,
+    });
+
+    // the first time issue a name collision
+    mockedAPI.workflowCommand.ShareComponent.mockResolvedValueOnce({
+      isNameCollision: true,
+    });
+
     await componentInteractionsStore.linkComponent({ nodeId: "root:2" });
-    expect(mockedAPI.desktop.openLinkComponentDialog).toHaveBeenCalledWith({
+
+    const shareComponentArgs = {
       projectId: "project1",
       workflowId: "root",
       nodeId: "root:2",
+
+      destinationItemId: "mockDestinationItemId",
+      destinationSpaceId: "mockDestinationSpaceId",
+      destinationSpaceProviderId: "mockDestinationSpaceProviderId",
+      includeInputData: false,
+      linkType: "MOUNTPOINT_ABSOLUTE",
+    };
+
+    expect(mockedAPI.workflowCommand.ShareComponent).toHaveBeenCalledWith({
+      ...shareComponentArgs,
+      collisionHandling: null,
     });
 
-    expect(spy).not.toHaveBeenCalledWith(
-      "spaces/fetchWorkflowGroupContent",
-      expect.anything(),
-      expect.anything(),
-    );
-
-    mockedAPI.desktop.openLinkComponentDialog.mockReturnValueOnce(true);
-
-    await componentInteractionsStore.linkComponent({ nodeId: "root:2" });
-    expect(mockedAPI.desktop.openLinkComponentDialog).toHaveBeenCalledWith({
-      projectId: "project1",
-      workflowId: "root",
-      nodeId: "root:2",
+    expect(mockedAPI.workflowCommand.ShareComponent).toHaveBeenCalledWith({
+      ...shareComponentArgs,
+      collisionHandling: "OVERWRITE",
     });
 
-    expect(spy).toHaveBeenCalled();
+    expect(fetchWorkflowGroupSpy).toHaveBeenCalled();
+
+    expect(toast.show).toHaveBeenCalled();
   });
 
   describe("check for component updates", () => {
