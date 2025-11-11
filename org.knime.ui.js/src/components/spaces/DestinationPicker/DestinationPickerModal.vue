@@ -62,6 +62,8 @@ const onSubmit = () => {
 
 const resetModalState = () => {
   showAdvancedLinkSettings.value = false;
+  linkType.value = undefined;
+  includeData.value = false;
   isValid.value = false;
   validationHint.value = null;
   resetWorkflow.value = false;
