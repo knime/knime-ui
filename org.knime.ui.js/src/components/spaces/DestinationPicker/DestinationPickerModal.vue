@@ -12,8 +12,8 @@ import {
 import SpaceTree, {
   type SpaceTreeSelection,
 } from "@/components/spaces/SpaceTree.vue";
-import AdvancedLinkSettings from "../AdvancedLinkSettings.vue";
 
+import AdvancedLinkSettings from "./AdvancedLinkSettings.vue";
 import { getDefaultLinkType } from "./getDefaultLinkType";
 import { useDestinationPicker } from "./useDestinationPicker";
 

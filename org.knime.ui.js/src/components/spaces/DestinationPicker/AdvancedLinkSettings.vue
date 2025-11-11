@@ -3,7 +3,7 @@ import { Checkbox, InlineMessage } from "@knime/components";
 
 import type { ShareComponentCommand } from "@/api/gateway-api/generated-api";
 
-import LinkTypeDropdown from "./DestinationPicker/LinkTypeDropdown.vue";
+import LinkTypeDropdown from "./LinkTypeDropdown.vue";
 
 defineProps<{
   selectedSpaceId: string;
