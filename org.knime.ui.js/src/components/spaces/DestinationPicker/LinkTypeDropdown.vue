@@ -96,6 +96,7 @@ watch(
 </script>
 
 <template>
+  <!-- @vue-expect-error aria-label is there but TS still complains -->
   <Dropdown
     :possible-values="linkTypes"
     :model-value="modelValue"
