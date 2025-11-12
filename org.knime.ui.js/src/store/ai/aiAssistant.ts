@@ -47,6 +47,8 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
     build: createEmptyConversationState(),
     processedInteractionIds: new Set(),
     usage: null,
+    isUserLicensed: true,
+    unlicensedUserMessage: null,
   }),
   actions: {
     setHubID(hubID: string | null) {
@@ -331,9 +333,24 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
 
       try {
         this.usage = await API.kai.getUsage({ projectId });
-      } catch (error) {
+
+        // limit -1 indicates no hard limit
+        if (this.usage && this.usage.limit === -1) {
+          this.usage = null;
+        }
+
+        this.isUserLicensed = true;
+        this.unlicensedUserMessage = null;
+      } catch (error: any) {
+        const unauthorizedPrefix = "403:";
         consola.error("getUsage", error);
-        // Set limit to null on error to indicate unavailable AI usage information
+        if (error?.message.startsWith(unauthorizedPrefix)) {
+          this.isUserLicensed = false;
+          this.unlicensedUserMessage = error.message.slice(
+            unauthorizedPrefix.length,
+          );
+        }
+
         this.usage = null;
       }
     },

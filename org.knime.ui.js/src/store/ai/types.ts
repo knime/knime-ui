@@ -73,6 +73,8 @@ export type AiAssistantState = {
   build: ConversationState;
   processedInteractionIds: Set<string>;
   usage: KaiUsageState;
+  isUserLicensed: boolean;
+  unlicensedUserMessage: string | null;
 };
 
 export type Feedback = {
@@ -82,7 +84,11 @@ export type Feedback = {
 
 export type ChainType = Exclude<
   keyof AiAssistantState,
-  "hubID" | "processedInteractionIds" | "usage"
+  | "hubID"
+  | "processedInteractionIds"
+  | "usage"
+  | "isUserLicensed"
+  | "unlicensedUserMessage"
 >;
 
 export type AiAssistantQAEventPayload = {

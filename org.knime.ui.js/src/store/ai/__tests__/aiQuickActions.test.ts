@@ -31,25 +31,33 @@ describe("aiQuickActions store", () => {
     availableQuickActions = [],
     projectId = "test-project-id",
     isKaiEnabled = true,
+    isUserLicensed = true,
   }: {
     isAuthenticated?: boolean;
     hubId?: string;
     availableQuickActions?: string[];
     projectId?: string;
     isKaiEnabled?: boolean;
+    isUserLicensed?: boolean;
   } = {}) => {
     const isAuthenticatedRef = ref(isAuthenticated);
     const isAuthenticatedComputed = computed(() => isAuthenticatedRef.value);
     const hubIdRef = ref(hubId);
+    const isUserLicensedRef = ref(isUserLicensed);
     // @ts-expect-error Partial mock
     vi.mocked(useHubAuth).mockReturnValue({
       isAuthenticated: isAuthenticatedComputed,
       hubID: hubIdRef,
+      isUserLicensed: isUserLicensedRef,
     });
 
     const isKaiEnabledRef = ref(isKaiEnabled);
     vi.mocked(useIsKaiEnabled).mockReturnValue({
       isKaiEnabled: isKaiEnabledRef,
+    });
+
+    mockedAPI.kai.listQuickActions.mockResolvedValue({
+      availableActions: availableQuickActions,
     });
 
     const {
@@ -61,10 +69,6 @@ describe("aiQuickActions store", () => {
 
     applicationStore.activeProjectId = projectId;
 
-    mockedAPI.kai.listQuickActions.mockResolvedValue({
-      availableActions: availableQuickActions,
-    });
-
     return {
       selectionStore,
       annotationInteractionsStore,
@@ -73,6 +77,7 @@ describe("aiQuickActions store", () => {
       isAuthenticatedRef,
       hubIdRef,
       isKaiEnabledRef,
+      isUserLicensedRef,
     };
   };
 
@@ -341,6 +346,16 @@ describe("aiQuickActions store", () => {
       // Trigger fetch by authenticating
       isAuthenticatedRef.value = true;
       await nextTick();
+
+      const result = aiQuickActionsStore.isQuickActionAvailable(
+        QuickActionId.GenerateAnnotation,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it("should return false when user is not licensed (e.g. a consumer)", () => {
+      const { aiQuickActionsStore } = setupStore({ isUserLicensed: false });
 
       const result = aiQuickActionsStore.isQuickActionAvailable(
         QuickActionId.GenerateAnnotation,

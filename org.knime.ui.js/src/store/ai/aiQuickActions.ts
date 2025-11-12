@@ -42,7 +42,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
   const availableQuickActions: Ref<string[] | null> = ref(null);
   const processingActions: Ref<Partial<QuickActionMetadata>> = ref({});
 
-  const { isAuthenticated, hubID } = useHubAuth();
+  const { isAuthenticated, hubID, isUserLicensed } = useHubAuth();
 
   let fetchPromise: Promise<void> | null = null;
 
@@ -239,6 +239,11 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
 
   const isQuickActionAvailable = (actionId: QuickActionId): boolean => {
     if (!useIsKaiEnabled().isKaiEnabled.value) {
+      return false;
+    }
+
+    // user is e.g. a consumer (not part of a team)
+    if (!isUserLicensed.value) {
       return false;
     }
 
