@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from "vue";
 import { useTextareaAutosize } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
-import { FunctionButton, InlineMessage } from "@knime/components";
+import { FunctionButton, InlineMessage, Pill } from "@knime/components";
 import AbortIcon from "@knime/styles/img/icons/close.svg";
 import SendIcon from "@knime/styles/img/icons/paper-flier.svg";
 
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { KaiUsageState } from "@/store/ai/types";
+import { useSelectionStore } from "@/store/selection";
 
 import { getDaysLeftInMonth } from "./utils";
 
@@ -89,39 +91,47 @@ const isInputValid = computed(
   () => input.value && input.value.trim().length > 0,
 );
 const disabled = computed(() => !isInputValid.value && !props.isProcessing);
+
+const { getSelectedNodes } = storeToRefs(useSelectionStore());
+const numSelectedNodes = computed(() => getSelectedNodes.value.length);
 </script>
 
 <template>
   <div>
-    <div v-if="isWithinLimit" class="textarea-wrapper" @click="handleClick">
-      <textarea
-        ref="textarea"
-        v-model="input"
-        class="textarea"
-        aria-label="Type your message"
-        :maxlength="$characterLimits.kai"
-        :placeholder="placeholder"
-        @keydown="handleKeyDown"
-      />
-      <FunctionButton
-        class="send-button"
-        primary
-        :disabled="disabled"
-        @click="handleSendButtonClick"
-      >
-        <AbortIcon
-          v-if="isProcessing"
-          class="abort-icon"
-          aria-hidden="true"
-          focusable="false"
+    <div v-if="isWithinLimit" class="input-container">
+      <div class="node-selection-pill">
+        <Pill variant="promotion">{{ numSelectedNodes }} nodes selected</Pill>
+      </div>
+      <div class="textarea-wrapper" @click="handleClick">
+        <textarea
+          ref="textarea"
+          v-model="input"
+          class="textarea"
+          aria-label="Type your message"
+          :maxlength="$characterLimits.kai"
+          :placeholder="placeholder"
+          @keydown="handleKeyDown"
         />
-        <SendIcon
-          v-else
-          class="send-icon"
-          aria-hidden="true"
-          focusable="false"
-        />
-      </FunctionButton>
+        <FunctionButton
+          class="send-button"
+          primary
+          :disabled="disabled"
+          @click="handleSendButtonClick"
+        >
+          <AbortIcon
+            v-if="isProcessing"
+            class="abort-icon"
+            aria-hidden="true"
+            focusable="false"
+          />
+          <SendIcon
+            v-else
+            class="send-icon"
+            aria-hidden="true"
+            focusable="false"
+          />
+        </FunctionButton>
+      </div>
     </div>
     <InlineMessage
       v-if="!isWithinLimit"
@@ -145,6 +155,12 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
 .textarea-wrapper {
   display: flex;
