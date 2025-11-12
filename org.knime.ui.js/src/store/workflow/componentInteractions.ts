@@ -155,7 +155,7 @@ export const useComponentInteractionsStore = defineStore(
 
         let headline = "Component shared and linked";
         let message =
-          "The component has been exported to the destination space and" +
+          "The component has been exported to the destination space and " +
           "the instance in this workflow has been replaced with a link.";
         if (destination.linkType === "NONE") {
           headline = "Component shared";
