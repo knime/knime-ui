@@ -358,7 +358,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
 
       return (
         isWritable &&
-        useUIControlsStore().canDoComponentSharingOperations &&
+        useUIControlsStore().canDoAdvancedComponentSharingOperations &&
         isHubItemVersionChangeable
       );
     },
@@ -390,7 +390,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       return (
         isWritable &&
         Boolean(isLinkTypeChangeable) &&
-        useUIControlsStore().canDoComponentSharingOperations
+        useUIControlsStore().canDoAdvancedComponentSharingOperations
       );
     },
   },
