@@ -157,8 +157,8 @@ const showValidationHint = computed(
 
 <style lang="postcss" scoped>
 .modal {
-  --modal-width: 600px;
-  --modal-height: 85%;
+  --modal-width: 720px;
+  --modal-height: 95%;
 
   & :deep(.inner) {
     top: 48%;
@@ -177,11 +177,6 @@ const showValidationHint = computed(
     background-color: transparent !important;
     height: 100%;
   }
-}
-
-.show-advanced-link-settings {
-  text-align: left;
-  padding-left: 0;
 }
 
 .space-tree-container {

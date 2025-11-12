@@ -37,25 +37,20 @@ const linkTypes = computed(() => {
       slotData: {
         title: "Create absolute link",
         subtitle:
-          "Links the workflow to the shared component at its current location. If you move the workflow, it will always reference the same component path.",
+          "Creates a link to the shared component using the full, fixed path of the shared component.",
+        linkValidity:
+          "The link may break if the shared component is moved to a different location.",
       },
     },
-    ...valueOrEmpty(!isLocal, {
-      id: ShareComponentCommand.LinkTypeEnum.MOUNTPOINTABSOLUTEIDBASED,
-      text: "Create ID-based absolute link",
-      slotData: {
-        title: "Create ID-based absolute link",
-        subtitle:
-          "Links the workflow to the shared component using its Hub ID. The link remains valid even if the workflow or component is moved.",
-      },
-    }),
     ...valueOrEmpty(isSameSpace, {
       id: ShareComponentCommand.LinkTypeEnum.SPACERELATIVE,
       text: "Create space-relative link",
       slotData: {
         title: "Create space-relative link",
         subtitle:
-          "Links the workflow to the shared component using a path relative to the space root. If you move the workflow, the shared component must exist in the same relative location.",
+          "Creates a link to the shared component relative to the space where the shared component is stored.",
+        linkValidity:
+          "The link remains valid as long as the workflow and the shared component stay in the same space.",
       },
     }),
     ...valueOrEmpty(isSameSpace, {
@@ -64,7 +59,20 @@ const linkTypes = computed(() => {
       slotData: {
         title: "Create workflow-relative link",
         subtitle:
-          "Links the workflow and component together. Both must be moved as one to keep the link valid.",
+          "Creates a link to the shared component relative to the location of the workflow.",
+        linkValidity:
+          "The link remains valid if the relative folder structure between the workflow and the shared component does not change.",
+      },
+    }),
+    ...valueOrEmpty(!isLocal, {
+      id: ShareComponentCommand.LinkTypeEnum.MOUNTPOINTABSOLUTEIDBASED,
+      text: "Create ID-based absolute link",
+      slotData: {
+        title: "Create ID-based absolute link",
+        subtitle:
+          "Creates a link to the shared component using the shared component unique Hub identifier.",
+        linkValidity:
+          "The link remains valid even if the component is moved or renamed on the Hub.",
       },
     }),
     {
@@ -72,7 +80,10 @@ const linkTypes = computed(() => {
       text: "Do not create link",
       slotData: {
         title: "Do not create link",
-        subtitle: "Do not create a link to the shared instance.",
+        subtitle:
+          "Saves the shared component but keeps a stand-alone copy in the workflow.",
+        linkValidity:
+          "The component is not linked and will not receive updates if the shared component changes.",
       },
     },
     // MOUNTPOINT_RELATIVE === SPACE_RELATIVE
@@ -99,6 +110,7 @@ watch(
   <!-- @vue-expect-error aria-label is there but TS still complains -->
   <Dropdown
     :possible-values="linkTypes"
+    direction="up"
     :model-value="modelValue"
     aria-label="Choose shared component link type"
     @update:model-value="
@@ -114,6 +126,7 @@ watch(
         <div class="description">
           <div class="title">{{ slotData?.title }}</div>
           <div class="subtitle">{{ slotData?.subtitle }}</div>
+          <div class="subtitle">{{ slotData?.linkValidity }}</div>
         </div>
       </div>
     </template>
