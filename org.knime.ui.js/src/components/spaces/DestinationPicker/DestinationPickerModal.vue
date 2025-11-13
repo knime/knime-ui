@@ -2,8 +2,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import { InlineMessage, Modal } from "@knime/components";
-import { Button, Checkbox } from "@knime/kds-components";
+import { InlineMessage } from "@knime/components";
+import { BaseModal, Button, Checkbox } from "@knime/kds-components";
 
 import {
   ShareComponentCommand,
@@ -82,18 +82,19 @@ const showValidationHint = computed(
 </script>
 
 <template>
-  <Modal
-    v-show="config && isActive"
-    ref="modalRef"
+  <BaseModal
     :active="isActive"
-    :title="config?.title"
-    style-type="info"
     class="modal"
-    @cancel="cancel"
+    :title="config?.title"
+    variant="plain"
+    width="large"
+    height="full"
+    @close="cancel"
   >
-    <template #notice>
-      <div class="spaced-container">
-        {{ config?.description }}
+    <template #default>
+      <div class="destination-picker-wrapper">
+        <div class="spaced-container">{{ config?.description }}</div>
+
         <div class="space-tree-container">
           <SpaceTree
             class="space-tree"
@@ -102,99 +103,87 @@ const showValidationHint = computed(
             @select-change="onSpaceTreeSelection"
           />
         </div>
-        <div v-if="showValidationHint" class="validation-message">
+
+        <div
+          v-if="showValidationHint"
+          class="spaced-container validation-message"
+        >
           <InlineMessage
             variant="info"
             title="Selection hint"
             :description="validationHint!"
           />
         </div>
-      </div>
-    </template>
-    <template
-      v-if="
-        showValidationHint ||
-        config?.askResetWorkflow ||
-        config?.askLinkSettings
-      "
-      #confirmation
-    >
-      <div class="spaced-container">
-        <template v-if="selected?.type === 'item'">
-          <Checkbox
-            v-if="config?.askResetWorkflow"
-            v-model="resetWorkflow"
-            label="Reset Workflow(s) before upload"
-            :disabled="resetMode === SpaceProvider.ResetOnUploadEnum.MANDATORY"
-          />
-          <template v-if="config?.askLinkSettings">
-            <Button
-              v-if="!showAdvancedLinkSettings"
-              compact
-              label="Show advanced settings"
-              variant="transparent"
-              class="show-advanced-link-settings"
-              @click="showAdvancedLinkSettings = true"
-            />
-            <AdvancedLinkSettings
-              v-if="showAdvancedLinkSettings"
-              v-model:link-type="linkType"
-              v-model:include-data="includeData"
-              :source-space-id="config.askLinkSettings.sourceSpaceId"
-              :selected-space-id="selected.spaceId"
-            />
-          </template>
+
+        <template v-if="config?.askResetWorkflow || config?.askLinkSettings">
+          <div class="spaced-container">
+            <template v-if="selected?.type === 'item'">
+              <Checkbox
+                v-if="config?.askResetWorkflow"
+                v-model="resetWorkflow"
+                label="Reset Workflow(s) before upload"
+                :disabled="
+                  resetMode === SpaceProvider.ResetOnUploadEnum.MANDATORY
+                "
+              />
+              <template v-if="config?.askLinkSettings">
+                <Button
+                  v-if="!showAdvancedLinkSettings"
+                  compact
+                  label="Show advanced settings"
+                  variant="transparent"
+                  class="show-advanced-link-settings"
+                  @click="showAdvancedLinkSettings = true"
+                />
+                <AdvancedLinkSettings
+                  v-if="showAdvancedLinkSettings"
+                  v-model:link-type="linkType"
+                  v-model:include-data="includeData"
+                  :source-space-id="config.askLinkSettings.sourceSpaceId"
+                  :selected-space-id="selected.spaceId"
+                />
+              </template>
+            </template>
+          </div>
         </template>
       </div>
     </template>
-
-    <template #controls>
-      <Button variant="outlined" label="Cancel" @click="cancel" />
-      <Button :disabled="!isValid" label="Choose" @click="onSubmit" />
+    <template #footer>
+      <Button label="Cancel" variant="transparent" @click="cancel" />
+      <Button
+        label="Choose"
+        :disabled="!isValid"
+        variant="filled"
+        @click="onSubmit"
+      />
     </template>
-  </Modal>
+  </BaseModal>
 </template>
 
 <style lang="postcss" scoped>
-.modal {
-  --modal-width: 720px;
-  --modal-height: 95%;
+.destination-picker-wrapper {
+  padding: var(--modal-padding-top) 0 var(--modal-padding-bottom) 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--modal-gap);
+}
 
-  & :deep(.inner) {
-    top: 48%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  & :deep(.confirmation) {
-    padding-top: 0;
-  }
-
-  & :deep(.notice) {
-    overflow: hidden;
-
-    /* workaround to have a transparent notice until it gets refactored to a single slot -> NXT-3131 */
-    background-color: transparent !important;
-    height: 100%;
-  }
+.spaced-container {
+  padding: 0 var(--modal-padding-right) 0 var(--modal-padding-left);
+  display: flex;
+  flex-direction: column;
+  gap: var(--modal-gap);
 }
 
 .space-tree-container {
   overflow: auto;
-  padding: 0 var(--modal-padding);
-  margin: 0 calc(var(--modal-padding) * -1);
   height: 100%;
+  padding: 0 var(--modal-padding-right) 0 var(--modal-padding-left);
 }
 
 .space-tree {
   min-width: max-content;
-}
-
-.spaced-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  gap: var(--modal-padding);
 }
 
 .validation-message {
