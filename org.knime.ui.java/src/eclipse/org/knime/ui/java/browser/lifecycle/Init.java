@@ -355,7 +355,7 @@ final class Init {
     private static SpaceProvidersManager createSpaceProvidersManager(final LocalSpace localSpace,
         final ToastService toastService) {
         Consumer<String> loginErrorHandler = loginErrorMessage -> toastService
-            .showToast(ShowToastEventEnt.TypeEnum.ERROR, "Login failed", loginErrorMessage, false);
+            .showToast(ShowToastEventEnt.TypeEnum.WARNING, "Login failed or cancelled", loginErrorMessage, false);
         var spaceProvidersManager = new SpaceProvidersManager(loginErrorHandler, Init::addRequestFilterForSpaceProvider,
             Init::removeRequestFilterForSpaceProvider, new LocalSpaceProvider(localSpace));
         spaceProvidersManager.update();
