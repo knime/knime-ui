@@ -342,6 +342,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         this.isUserLicensed = true;
         this.unlicensedUserMessage = null;
       } catch (error: any) {
+        // TODO: Replace with a proper error communication channel (AP-25330)
         const unauthorizedPrefix = "403:";
         consola.error("getUsage", error);
         if (error?.message.startsWith(unauthorizedPrefix)) {
