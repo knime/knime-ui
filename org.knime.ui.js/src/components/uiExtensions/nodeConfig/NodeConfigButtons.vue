@@ -68,7 +68,7 @@ const canApplyAndExecute = computed(() => {
       class="button apply-execute"
       :disabled="!canApplyAndExecute"
       label="Apply and Execute"
-      variant="transparent"
+      variant="outlined"
       @click="emit('apply', true)"
     />
 
@@ -76,7 +76,7 @@ const canApplyAndExecute = computed(() => {
       v-if="showExecuteOnlyButton"
       class="button execute"
       label="Execute"
-      variant="transparent"
+      variant="outlined"
       @click="emit('execute')"
     />
 
@@ -84,7 +84,7 @@ const canApplyAndExecute = computed(() => {
       class="button apply"
       :disabled="!canApplyOrDiscard"
       label="Apply"
-      variant="outlined"
+      variant="filled"
       @click="emit('apply', false)"
     />
   </div>
