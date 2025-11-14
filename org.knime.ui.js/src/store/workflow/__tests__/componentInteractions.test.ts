@@ -6,8 +6,9 @@ import { rfcErrors } from "@knime/hub-features";
 
 import type { NameCollisionHandling } from "@/api/custom-types";
 import {
+  ComponentNode,
+  LinkType,
   NodeState,
-  ShareComponentCommand,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
 import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
@@ -42,7 +43,7 @@ vi.mock("@/components/spaces/DestinationPicker/useDestinationPicker", () => {
         itemId: "mockDestinationItemId",
         resetWorkflow: false,
         isWorkflowContainer: true,
-        linkType: ShareComponentCommand.LinkTypeEnum.MOUNTPOINTABSOLUTE,
+        linkType: { type: LinkType.TypeEnum.MOUNTPOINT_ABSOLUTE },
         includeData: false,
       } satisfies DestinationPickerResult),
     }),
@@ -57,8 +58,24 @@ const { usePromptCollisionStrategiesMock } = vi.hoisted(() => ({
   }),
 }));
 
+const { promptChangeLinkTypeMock } = vi.hoisted(() => ({
+  promptChangeLinkTypeMock: vi
+    .fn()
+    .mockResolvedValue({ type: LinkType.TypeEnum.MOUNTPOINT_ABSOLUTE }),
+}));
+
 vi.mock("@/composables/useConfirmDialog/usePromptCollisionHandling", () => ({
   usePromptCollisionStrategies: usePromptCollisionStrategiesMock,
+}));
+
+vi.mock("@/composables/useChangeLinkTypeModal", () => ({
+  useChangeLinkTypeModal: () => ({
+    promptChangeLinkType: promptChangeLinkTypeMock,
+    confirm: vi.fn(),
+    cancel: vi.fn(),
+    config: { value: null },
+    isActive: { value: false },
+  }),
 }));
 
 describe("workflow::componentInteractions", () => {
@@ -66,6 +83,7 @@ describe("workflow::componentInteractions", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    promptChangeLinkTypeMock.mockClear();
   });
 
   it("should share and link components", async () => {
@@ -99,7 +117,7 @@ describe("workflow::componentInteractions", () => {
       destinationSpaceId: "mockDestinationSpaceId",
       destinationSpaceProviderId: "mockDestinationSpaceProviderId",
       includeInputData: false,
-      linkType: "MOUNTPOINT_ABSOLUTE",
+      linkType: { type: LinkType.TypeEnum.MOUNTPOINT_ABSOLUTE },
     };
 
     expect(mockedAPI.workflowCommand.ShareComponent).toHaveBeenCalledWith({
@@ -447,17 +465,18 @@ describe("workflow::componentInteractions", () => {
     });
   });
 
-  it("should unlink component", () => {
+  it("should unlink component", async () => {
     const { workflowStore, componentInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(createWorkflow());
 
-    componentInteractionsStore.unlinkComponent({ nodeId: "root:2" });
+    await componentInteractionsStore.unlinkComponent({ nodeId: "root:2" });
     expect(
       mockedAPI.workflowCommand.UpdateComponentLinkInformation,
     ).toHaveBeenCalledWith({
       projectId: "project1",
       workflowId: "root",
       nodeId: "root:2",
+      linkType: { type: LinkType.TypeEnum.NONE },
     });
   });
 
@@ -475,18 +494,66 @@ describe("workflow::componentInteractions", () => {
     });
   });
 
-  it("should change component link type", () => {
+  it("should change component link type", async () => {
     const { workflowStore, componentInteractionsStore } = mockStores();
-    workflowStore.setActiveWorkflow(createWorkflow());
+    const workflow = createWorkflow();
+    const componentNode = workflow.nodes["root:2"] as ComponentNode;
+    componentNode.link = {
+      url: "knime://LOCAL/Component/",
+      updateStatus: "UP_TO_DATE",
+      isLinkTypeChangeable: true,
+      isHubItemVersionChangeable: false,
+      currentLinkType: { type: LinkType.TypeEnum.MOUNTPOINT_ABSOLUTE },
+    } as ComponentNode["link"];
+    workflowStore.setActiveWorkflow(workflow);
 
-    componentInteractionsStore.changeComponentLinkType({ nodeId: "root:2" });
+    promptChangeLinkTypeMock.mockResolvedValueOnce({
+      type: LinkType.TypeEnum.SPACE_RELATIVE,
+    });
+
+    await componentInteractionsStore.changeComponentLinkType({
+      nodeId: "root:2",
+    });
+
+    expect(promptChangeLinkTypeMock).toHaveBeenCalled();
     expect(
-      mockedAPI.desktop.openChangeComponentLinkTypeDialog,
+      mockedAPI.workflowCommand.UpdateComponentLinkInformation,
     ).toHaveBeenCalledWith({
       projectId: "project1",
       workflowId: "root",
       nodeId: "root:2",
+      linkType: { type: LinkType.TypeEnum.SPACE_RELATIVE },
     });
+    expect(toast.show).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Link type updated.",
+        type: "success",
+      }),
+    );
+  });
+
+  it("should not change component link type when user cancels", async () => {
+    const { workflowStore, componentInteractionsStore } = mockStores();
+    const workflow = createWorkflow();
+    const componentNode = workflow.nodes["root:2"] as ComponentNode;
+    componentNode.link = {
+      url: "knime://LOCAL/Component/",
+      updateStatus: "UP_TO_DATE",
+      isLinkTypeChangeable: true,
+      isHubItemVersionChangeable: false,
+      currentLinkType: { type: LinkType.TypeEnum.MOUNTPOINT_ABSOLUTE },
+    } as ComponentNode["link"];
+    workflowStore.setActiveWorkflow(workflow);
+
+    promptChangeLinkTypeMock.mockResolvedValueOnce(null);
+
+    await componentInteractionsStore.changeComponentLinkType({
+      nodeId: "root:2",
+    });
+
+    expect(
+      mockedAPI.workflowCommand.UpdateComponentLinkInformation,
+    ).not.toHaveBeenCalled();
   });
 
   it("should cancel or retry component loading", () => {

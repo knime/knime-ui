@@ -7,14 +7,18 @@ import LoadIcon from "@knime/styles/img/icons/load.svg";
 
 import type { NameCollisionHandling } from "@/api/custom-types.ts";
 import {
+  type ComponentNode,
+  LinkType,
   type ShareComponentResult,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
+import { toLinkType } from "@/components/common/linkTypeOptions";
 import {
   type DestinationPickerConfig,
   useDestinationPicker,
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer.ts";
+import { useChangeLinkTypeModal } from "@/composables/useChangeLinkTypeModal";
 import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling.ts";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application.ts";
@@ -157,7 +161,7 @@ export const useComponentInteractionsStore = defineStore(
         let message =
           "The component has been exported to the destination space and " +
           "the instance in this workflow has been replaced with a link.";
-        if (destination.linkType === "NONE") {
+        if (destination.linkType?.type === LinkType.TypeEnum.NONE) {
           headline = "Component shared";
           message = "The component has been exported to the destination space.";
         }
@@ -228,6 +232,7 @@ export const useComponentInteractionsStore = defineStore(
           projectId,
           workflowId,
           nodeId,
+          linkType: toLinkType(LinkType.TypeEnum.NONE),
         });
       },
 
@@ -241,13 +246,41 @@ export const useComponentInteractionsStore = defineStore(
         });
       },
 
-      changeComponentLinkType({ nodeId }: { nodeId: string }) {
+      async changeComponentLinkType({ nodeId }: { nodeId: string }) {
+        const workflowStore = useWorkflowStore();
+        const node = workflowStore.activeWorkflow?.nodes?.[nodeId];
+        if (!node || node.kind !== "component") {
+          return;
+        }
+
+        const componentNode = node as ComponentNode;
+        if (!componentNode.link || !componentNode.link.isLinkTypeChangeable) {
+          return;
+        }
+
+        const applicationStore = useApplicationStore();
+        const sourceSpaceId = applicationStore.activeProject?.origin?.spaceId;
+
+        const { promptChangeLinkType } = useChangeLinkTypeModal();
+        const linkType = await promptChangeLinkType({
+          sourceSpaceId,
+          selectedSpaceId: sourceSpaceId,
+          currentLinkType: componentNode.link.currentLinkType ?? null,
+          currentLinkUrl: componentNode.link.url ?? null,
+        });
+
+        if (!linkType) {
+          return;
+        }
+
         const { projectId, workflowId } =
-          useWorkflowStore().getProjectAndWorkflowIds;
-        API.desktop.openChangeComponentLinkTypeDialog({
+          workflowStore.getProjectAndWorkflowIds;
+
+        await API.workflowCommand.UpdateComponentLinkInformation({
           projectId,
           workflowId,
           nodeId,
+          linkType,
         });
       },
 

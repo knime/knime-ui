@@ -89,57 +89,6 @@ final class ManipulateComponents {
         // Stateless
     }
 
-    static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws GatewayException {
-        assertLinkedComponent(component, true);
-
-        final var templateInfo = component.getTemplateInformation();
-        final var sourceURI = templateInfo.getSourceURI();
-        final var optLinkVariant = KnimeUrlVariant.getVariant(sourceURI);
-        if (optLinkVariant.isEmpty()) {
-            throw OperationNotAllowedException.builder() //
-                .withTitle("Not a KNIME URL") //
-                .withDetails("Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.") //
-                .canCopy(true) //
-                .build();
-        }
-
-        final var linkVariant = optLinkVariant.get();
-        final Map<KnimeUrlVariant, URL> changeOptions;
-        try {
-            final var context = CoreUtil.getProjectWorkflow(component).getContextV2();
-            changeOptions = KnimeUrlResolver.getResolver(context) //
-                .changeLinkType( //
-                    URLResolverUtil.toURL(sourceURI), //
-                    ResolverUtil::translateHubUrl //
-                );
-            if (changeOptions.size() <= (changeOptions.containsKey(linkVariant) ? 1 : 0)) {
-                // there are no other options available
-                return;
-            }
-        } catch (ResourceAccessException e) {
-            throw new IllegalStateException("Cannot compute alternative KNIME URL types for '"
-                    + sourceURI + "': " + e.getMessage(), e);
-        }
-
-        final var msg = String.format("""
-                This is a linked (read-only) component. Only the link type can be changed.
-                Please select the new type of the link to the shared component.
-                (current type: %s, current link: %s)
-                The origin of the component will not be changed - just the way it is referenced.
-                """, linkVariant.getDescription(), sourceURI);
-
-        final var shell = SWTUtilities.getActiveShell();
-        final var newUri = ChangeSubNodeLinkAction.showDialogAndGetUri(shell, sourceURI, linkVariant, msg,
-            changeOptions);
-        if (newUri.isPresent()) {
-            final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
-            final var cmd = workflowMiddleware.getCommands();
-            cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, sourceURI, newUri.get(), false));
-            cmd.execute(wfKey, null);
-        }
-    }
-
     /**
      * This will not be callable from the FE until NXT-2038 is solved.
      * @throws GatewayException

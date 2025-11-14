@@ -2353,6 +2353,40 @@ export interface Link {
 
 
 /**
+ * Represents the type of link referencing a shared component. NONE unlinks the component instance.
+ * @export
+ * @interface LinkType
+ */
+export interface LinkType {
+
+    /**
+     *
+     * @type {string}
+     * @memberof LinkType
+     */
+    type: LinkType.TypeEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace LinkType
+ */
+export namespace LinkType {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum TypeEnum {
+        WORKFLOWRELATIVE = 'WORKFLOW_RELATIVE',
+        SPACERELATIVE = 'SPACE_RELATIVE',
+        MOUNTPOINTABSOLUTE = 'MOUNTPOINT_ABSOLUTE',
+        MOUNTPOINTABSOLUTEIDBASED = 'MOUNTPOINT_ABSOLUTE_ID_BASED',
+        NONE = 'NONE'
+    }
+}
+/**
  * Loop info. Only present on loop end nodes.
  * @export
  * @interface LoopInfo
@@ -4086,10 +4120,10 @@ export interface ShareComponentCommand extends WorkflowCommand {
     includeInputData?: boolean;
     /**
      *
-     * @type {string}
+     * @type {LinkType}
      * @memberof ShareComponentCommand
      */
-    linkType?: ShareComponentCommand.LinkTypeEnum;
+    linkType?: LinkType;
 
 }
 
@@ -4107,17 +4141,6 @@ export namespace ShareComponentCommand {
         NOOP = 'NOOP',
         AUTORENAME = 'AUTORENAME',
         OVERWRITE = 'OVERWRITE'
-    }
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum LinkTypeEnum {
-        WORKFLOWRELATIVE = 'WORKFLOW_RELATIVE',
-        SPACERELATIVE = 'SPACE_RELATIVE',
-        MOUNTPOINTABSOLUTE = 'MOUNTPOINT_ABSOLUTE',
-        MOUNTPOINTABSOLUTEIDBASED = 'MOUNTPOINT_ABSOLUTE_ID_BASED',
-        NONE = 'NONE'
     }
 }
 /**
@@ -4707,6 +4730,12 @@ export interface TemplateLink {
      * @memberof TemplateLink
      */
     isHubItemVersionChangeable?: any;
+    /**
+     *
+     * @type {LinkType}
+     * @memberof TemplateLink
+     */
+    currentLinkType?: LinkType;
 
 }
 
@@ -4906,11 +4935,11 @@ export interface UpdateComponentLinkInformationCommand extends WorkflowCommand {
      */
     nodeId: string;
     /**
-     * New link URL, empty if you want to unlink the component
-     * @type {string}
+     *
+     * @type {LinkType}
      * @memberof UpdateComponentLinkInformationCommand
      */
-    newUrl?: string;
+    linkType: LinkType;
 
 }
 

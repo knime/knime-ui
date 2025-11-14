@@ -2,7 +2,7 @@
 import { InlineMessage, Label } from "@knime/components";
 import { Checkbox } from "@knime/kds-components";
 
-import type { ShareComponentCommand } from "@/api/gateway-api/generated-api";
+import type { LinkType } from "@/api/gateway-api/generated-api";
 
 import LinkTypeDropdown from "./LinkTypeDropdown.vue";
 
@@ -10,12 +10,12 @@ defineProps<{
   includeData: boolean;
   selectedSpaceId: string;
   sourceSpaceId: string;
-  linkType?: ShareComponentCommand.LinkTypeEnum;
+  linkType?: LinkType.TypeEnum;
 }>();
 
 defineEmits<{
   "update:include-data": [includeData: boolean];
-  "update:link-type": [linkType: string];
+  "update:link-type": [linkType: LinkType.TypeEnum];
 }>();
 </script>
 

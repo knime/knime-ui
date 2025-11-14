@@ -5,10 +5,7 @@ import { computed, ref, watch } from "vue";
 import { InlineMessage, Modal } from "@knime/components";
 import { Button, Checkbox } from "@knime/kds-components";
 
-import {
-  ShareComponentCommand,
-  SpaceProvider,
-} from "@/api/gateway-api/generated-api";
+import { LinkType, SpaceProvider } from "@/api/gateway-api/generated-api";
 import SpaceTree, {
   type SpaceTreeSelection,
 } from "@/components/spaces/SpaceTree.vue";
@@ -16,6 +13,7 @@ import SpaceTree, {
 import AdvancedLinkSettings from "./AdvancedLinkSettings.vue";
 import { getDefaultLinkType } from "./getDefaultLinkType";
 import { useDestinationPicker } from "./useDestinationPicker";
+import { toLinkType } from "@/components/common/linkTypeOptions";
 
 const { isActive, config, cancel, confirm } = useDestinationPicker();
 
@@ -23,7 +21,7 @@ const isValid = ref<boolean>(false);
 const validationHint = ref<string | null>(null);
 const resetWorkflow = ref(false);
 const includeData = ref(false);
-const linkType = ref<ShareComponentCommand.LinkTypeEnum>();
+const linkType = ref<LinkType.TypeEnum>();
 const resetMode = ref<SpaceProvider.ResetOnUploadEnum>();
 
 const selected = ref<SpaceTreeSelection>(null);
@@ -52,11 +50,13 @@ const onSubmit = () => {
       ? getDefaultLinkType(selected.value?.spaceId)
       : undefined;
 
+  const selectedLinkType = linkType.value ?? defaultLinkType;
+
   confirm({
     ...selected.value!,
     resetWorkflow: resetWorkflow.value,
     includeData: includeData.value,
-    linkType: linkType.value ?? defaultLinkType,
+    linkType: selectedLinkType ? toLinkType(selectedLinkType) : undefined,
   });
 };
 
