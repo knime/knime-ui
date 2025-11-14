@@ -34,7 +34,7 @@ const mockShow = vi.hoisted(() =>
   }),
 );
 
-vi.mock("@/composables/useConfirmDialog", () => ({
+vi.mock("@knime/kds-components", () => ({
   useConfirmDialog: () => ({
     show: mockShow,
   }),

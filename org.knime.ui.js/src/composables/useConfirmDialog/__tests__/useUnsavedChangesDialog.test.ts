@@ -8,12 +8,12 @@ import {
 let showConfirmDialogMock = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ confirmed: true, doNotAskAgain: false })),
 );
-vi.mock("@/composables/useConfirmDialog", () => ({
+vi.mock("@knime/kds-components", () => ({
   useConfirmDialog: () => ({ show: showConfirmDialogMock }),
 }));
 
 describe("useUnsavedChangesDialog", () => {
-  const config = { title: "", message: "", doNotAskAgainText: "" };
+  const config = { title: "", message: "", doNotAskAgain: { label: "" } };
 
   afterEach(vi.resetAllMocks);
 

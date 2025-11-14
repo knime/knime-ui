@@ -1,8 +1,8 @@
+import { useConfirmDialog } from "@knime/kds-components";
+
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { getToastPresets } from "@/toastPresets";
-
-import { useConfirmDialog } from ".";
 
 export enum HubLoginAction {
   LOGIN = "login",
@@ -33,7 +33,6 @@ export const useHubLoginDialog = async ({
       {
         type: "confirm",
         label: `Log in to ${providerNameOrId}`,
-        flushRight: true,
       },
     ],
   });
