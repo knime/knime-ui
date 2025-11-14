@@ -47,6 +47,7 @@ import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import DestinationPickerModal from "./spaces/DestinationPicker/DestinationPickerModal.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
 import { useIdleUserTracking } from "./useIdleUserTracking";
+import ChangeLinkVariantModal from "./workflowEditor/ChangeLinkVariantModal.vue";
 
 /**
  * Main page and entry point of KNIME AP Next
@@ -333,6 +334,7 @@ const onCloseError = () => {
     <ShortcutsOverviewDialog />
 
     <DestinationPickerModal />
+    <ChangeLinkVariantModal />
 
     <ToastStack class="toast-stack" />
     <HintProvider />

@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+/* eslint-disable max-lines */
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
@@ -6,8 +7,10 @@ import { rfcErrors } from "@knime/hub-features";
 
 import type { NameCollisionHandling } from "@/api/custom-types";
 import {
+  type ComponentNode,
+  LinkVariant,
+  type LinkVariantInfo,
   NodeState,
-  ShareComponentCommand,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
 import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
@@ -42,7 +45,9 @@ vi.mock("@/components/spaces/DestinationPicker/useDestinationPicker", () => {
         itemId: "mockDestinationItemId",
         resetWorkflow: false,
         isWorkflowContainer: true,
-        linkType: ShareComponentCommand.LinkTypeEnum.MOUNTPOINTABSOLUTE,
+        linkVariant: {
+          variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
+        },
         includeData: false,
       } satisfies DestinationPickerResult),
     }),
@@ -57,15 +62,45 @@ const { usePromptCollisionStrategiesMock } = vi.hoisted(() => ({
   }),
 }));
 
+const { promptChangeLinkVariantMock } = vi.hoisted(() => ({
+  promptChangeLinkVariantMock: vi.fn(),
+}));
+
 vi.mock("@/composables/confirmDialogs/usePromptCollisionHandling", () => ({
   usePromptCollisionStrategies: usePromptCollisionStrategiesMock,
+}));
+
+vi.mock("@/composables/useChangeLinkVariantModal", () => ({
+  useChangeLinkVariantModal: () => ({
+    promptChangeLinkVariant: promptChangeLinkVariantMock,
+    confirm: vi.fn(),
+    cancel: vi.fn(),
+    config: { value: null },
+    isActive: { value: false },
+  }),
 }));
 
 describe("workflow::componentInteractions", () => {
   const toast = mockedObject(getToastsProvider());
 
+  beforeEach(() => {
+    mockedAPI.component.getLinkVariants.mockResolvedValue([
+      {
+        variant: { variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH },
+        title: "Absolute",
+        description: "desc",
+        linkValidity: "forever",
+      },
+    ] as LinkVariantInfo[]);
+
+    promptChangeLinkVariantMock.mockResolvedValue(
+      LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
+    );
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
+    promptChangeLinkVariantMock.mockClear();
   });
 
   it("should share and link components", async () => {
@@ -99,7 +134,7 @@ describe("workflow::componentInteractions", () => {
       destinationSpaceId: "mockDestinationSpaceId",
       destinationSpaceProviderId: "mockDestinationSpaceProviderId",
       includeInputData: false,
-      linkType: "MOUNTPOINT_ABSOLUTE",
+      linkVariant: { variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH },
     };
 
     expect(mockedAPI.workflowCommand.ShareComponent).toHaveBeenCalledWith({
@@ -447,17 +482,18 @@ describe("workflow::componentInteractions", () => {
     });
   });
 
-  it("should unlink component", () => {
+  it("should unlink component", async () => {
     const { workflowStore, componentInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(createWorkflow());
 
-    componentInteractionsStore.unlinkComponent({ nodeId: "root:2" });
+    await componentInteractionsStore.unlinkComponent({ nodeId: "root:2" });
     expect(
       mockedAPI.workflowCommand.UpdateComponentLinkInformation,
     ).toHaveBeenCalledWith({
       projectId: "project1",
       workflowId: "root",
       nodeId: "root:2",
+      linkVariant: { variant: LinkVariant.VariantEnum.NONE },
     });
   });
 
@@ -475,18 +511,117 @@ describe("workflow::componentInteractions", () => {
     });
   });
 
-  it("should change component link type", () => {
+  it("should change component link variant", async () => {
     const { workflowStore, componentInteractionsStore } = mockStores();
-    workflowStore.setActiveWorkflow(createWorkflow());
+    const workflow = createWorkflow();
+    const componentNode = workflow.nodes["root:2"] as ComponentNode;
+    componentNode.link = {
+      url: "knime://LOCAL/Component/",
+      updateStatus: "UP_TO_DATE",
+      isLinkVariantChangeable: true,
+      isHubItemVersionChangeable: false,
+      currentLinkVariant: {
+        variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
+      },
+    } as ComponentNode["link"];
+    workflowStore.setActiveWorkflow(workflow);
 
-    componentInteractionsStore.changeComponentLinkType({ nodeId: "root:2" });
-    expect(
-      mockedAPI.desktop.openChangeComponentLinkTypeDialog,
-    ).toHaveBeenCalledWith({
+    promptChangeLinkVariantMock.mockResolvedValueOnce(
+      LinkVariant.VariantEnum.SPACERELATIVE,
+    );
+
+    await componentInteractionsStore.changeComponentLinkVariant({
+      nodeId: "root:2",
+    });
+
+    expect(mockedAPI.component.getLinkVariants).toHaveBeenCalledWith({
       projectId: "project1",
       workflowId: "root",
       nodeId: "root:2",
     });
+    expect(promptChangeLinkVariantMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        linkVariants: [
+          expect.objectContaining({
+            variant: {
+              variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
+            },
+          }),
+        ],
+      }),
+    );
+    expect(
+      mockedAPI.workflowCommand.UpdateComponentLinkInformation,
+    ).toHaveBeenCalledWith({
+      projectId: "project1",
+      workflowId: "root",
+      nodeId: "root:2",
+      linkVariant: { variant: LinkVariant.VariantEnum.SPACERELATIVE },
+    });
+    expect(toast.show).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Link variant updated.",
+        type: "success",
+      }),
+    );
+  });
+
+  it("should not change component link variant when user cancels", async () => {
+    const { workflowStore, componentInteractionsStore } = mockStores();
+    const workflow = createWorkflow();
+    const componentNode = workflow.nodes["root:2"] as ComponentNode;
+    componentNode.link = {
+      url: "knime://LOCAL/Component/",
+      updateStatus: "UP_TO_DATE",
+      isLinkVariantChangeable: true,
+      isHubItemVersionChangeable: false,
+      currentLinkVariant: {
+        variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
+      },
+    } as ComponentNode["link"];
+    workflowStore.setActiveWorkflow(workflow);
+
+    promptChangeLinkVariantMock.mockResolvedValueOnce(null);
+
+    await componentInteractionsStore.changeComponentLinkVariant({
+      nodeId: "root:2",
+    });
+
+    expect(mockedAPI.component.getLinkVariants).toHaveBeenCalled();
+    expect(
+      mockedAPI.workflowCommand.UpdateComponentLinkInformation,
+    ).not.toHaveBeenCalled();
+  });
+
+  it("should show error toast when loading variants fails", async () => {
+    const { workflowStore, componentInteractionsStore } = mockStores();
+    const workflow = createWorkflow();
+    const componentNode = workflow.nodes["root:2"] as ComponentNode;
+    componentNode.link = {
+      url: "knime://LOCAL/Component/",
+      updateStatus: "UP_TO_DATE",
+      isLinkVariantChangeable: true,
+      isHubItemVersionChangeable: false,
+      currentLinkVariant: {
+        variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
+      },
+    } as ComponentNode["link"];
+    workflowStore.setActiveWorkflow(workflow);
+
+    mockedAPI.component.getLinkVariants.mockRejectedValueOnce(
+      new Error("boom"),
+    );
+
+    await componentInteractionsStore.changeComponentLinkVariant({
+      nodeId: "root:2",
+    });
+
+    expect(promptChangeLinkVariantMock).not.toHaveBeenCalled();
+    expect(rfcErrors.toToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headline: "Linked components",
+      }),
+    );
   });
 
   it("should cancel or retry component loading", () => {

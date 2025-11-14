@@ -49,9 +49,7 @@
 package org.knime.ui.java.api;
 
 import java.net.URI;
-import java.net.URL;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 
@@ -59,20 +57,13 @@ import org.knime.core.node.workflow.MetaNodeTemplateInformation.Role;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.hub.HubItemVersion;
-import org.knime.core.util.pathresolve.ResolverUtil;
-import org.knime.core.util.urlresolve.KnimeUrlResolver;
-import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
-import org.knime.core.util.urlresolve.URLResolverUtil;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionDialog;
-import org.knime.workbench.editor2.actions.ChangeSubNodeLinkAction;
 import org.knime.workbench.editor2.commands.ChangeSubNodeLinkCommand;
 import org.knime.workbench.editor2.commands.UpdateMetaNodeLinkCommand;
 
@@ -87,57 +78,6 @@ final class ManipulateComponents {
 
     private ManipulateComponents() {
         // Stateless
-    }
-
-    static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws GatewayException {
-        assertLinkedComponent(component, true);
-
-        final var templateInfo = component.getTemplateInformation();
-        final var sourceURI = templateInfo.getSourceURI();
-        final var optLinkVariant = KnimeUrlVariant.getVariant(sourceURI);
-        if (optLinkVariant.isEmpty()) {
-            throw OperationNotAllowedException.builder() //
-                .withTitle("Not a KNIME URL") //
-                .withDetails("Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.") //
-                .canCopy(true) //
-                .build();
-        }
-
-        final var linkVariant = optLinkVariant.get();
-        final Map<KnimeUrlVariant, URL> changeOptions;
-        try {
-            final var context = CoreUtil.getProjectWorkflow(component).getContextV2();
-            changeOptions = KnimeUrlResolver.getResolver(context) //
-                .changeLinkType( //
-                    URLResolverUtil.toURL(sourceURI), //
-                    ResolverUtil::translateHubUrl //
-                );
-            if (changeOptions.size() <= (changeOptions.containsKey(linkVariant) ? 1 : 0)) {
-                // there are no other options available
-                return;
-            }
-        } catch (ResourceAccessException e) {
-            throw new IllegalStateException("Cannot compute alternative KNIME URL types for '"
-                    + sourceURI + "': " + e.getMessage(), e);
-        }
-
-        final var msg = String.format("""
-                This is a linked (read-only) component. Only the link type can be changed.
-                Please select the new type of the link to the shared component.
-                (current type: %s, current link: %s)
-                The origin of the component will not be changed - just the way it is referenced.
-                """, linkVariant.getDescription(), sourceURI);
-
-        final var shell = SWTUtilities.getActiveShell();
-        final var newUri = ChangeSubNodeLinkAction.showDialogAndGetUri(shell, sourceURI, linkVariant, msg,
-            changeOptions);
-        if (newUri.isPresent()) {
-            final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
-            final var cmd = workflowMiddleware.getCommands();
-            cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, sourceURI, newUri.get(), false));
-            cmd.execute(wfKey, null);
-        }
     }
 
     /**

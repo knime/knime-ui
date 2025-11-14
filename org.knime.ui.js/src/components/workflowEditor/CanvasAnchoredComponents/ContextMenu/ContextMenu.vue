@@ -409,7 +409,7 @@ const setMenuItems = () => {
           { name: "openLayoutEditorByNodeId", isVisible: true },
           { name: "linkComponent", isVisible: true },
           { name: "updateComponent", isVisible: true },
-          { name: "changeComponentLinkType", isVisible: true },
+          { name: "changeComponentLinkVariant", isVisible: true },
           { name: "changeHubItemVersion", isVisible: true },
           { name: "unlinkComponent", isVisible: true },
           { name: "lockSubnode", isVisible: isLockingEnabled.value },

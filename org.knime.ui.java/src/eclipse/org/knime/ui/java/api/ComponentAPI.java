@@ -78,23 +78,6 @@ final class ComponentAPI {
         // Stateless
     }
 
-    /**
-     * Opens a components link type dialog, only available for absolute links.
-     *
-     * @param projectId
-     * @param rootWorkflowId
-     * @param nodeId
-     *
-     * @throws GatewayException
-     */
-    @API
-    static void openChangeComponentLinkTypeDialog(final String projectId, final String rootWorkflowId,
-        final String nodeId) throws GatewayException {
-
-        final var component = assertIsWritableAndGetComponent(projectId, nodeId);
-        final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
-        ManipulateComponents.openChangeComponentLinkTypeDialog(component, wfKey);
-    }
 
     /**
      * Opens a Java dialog to change the Hub item version of a component.

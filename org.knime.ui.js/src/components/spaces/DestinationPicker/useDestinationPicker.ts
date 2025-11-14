@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 
 import { promise } from "@knime/utils";
 
+import type { LinkVariant } from "@/api/gateway-api/generated-api";
 import type { SpaceTreeSelection } from "@/components/spaces/SpaceTree.vue";
 import { localRootProjectPath } from "@/store/spaces/caching";
 
@@ -24,7 +25,7 @@ export type DestinationPickerResult =
   | (Exclude<SpaceTreeSelection, null> & {
       resetWorkflow?: boolean;
       includeData?: boolean;
-      linkType?: string;
+      linkVariant?: LinkVariant;
     })
   | null;
 

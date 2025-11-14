@@ -33,7 +33,7 @@ type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "updateComponent"
   | "unlinkComponent"
   | "changeHubItemVersion"
-  | "changeComponentLinkType"
+  | "changeComponentLinkVariant"
   | "openLayoutEditor"
   | "openLayoutEditorByNodeId"
   | "checkForComponentUpdates"
@@ -363,14 +363,14 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       );
     },
   },
-  changeComponentLinkType: {
+  changeComponentLinkVariant: {
     text: "Change link type",
     title: "Change component link type",
     execute: ({ payload = null }) => {
       const selectedNodeId =
         payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
 
-      useComponentInteractionsStore().changeComponentLinkType({
+      useComponentInteractionsStore().changeComponentLinkVariant({
         nodeId: selectedNodeId,
       });
     },
@@ -382,14 +382,14 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         return false;
       }
 
-      const isLinkTypeChangeable =
+      const isLinkVariantChangeable =
         isComponent(selectedNode) &&
         isLinked(selectedNode) &&
-        selectedNode.link?.isLinkTypeChangeable;
+        selectedNode.link?.isLinkVariantChangeable;
 
       return (
         isWritable &&
-        Boolean(isLinkTypeChangeable) &&
+        Boolean(isLinkVariantChangeable) &&
         useUIControlsStore().canDoAdvancedComponentSharingOperations
       );
     },

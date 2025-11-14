@@ -94,6 +94,7 @@ import org.knime.gateway.impl.webui.repo.NodeRepository;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
+import org.knime.gateway.impl.webui.spaces.LinkVariants;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
@@ -190,6 +191,8 @@ final class Init {
             state.loadedApplicationState().recentlyUsedProjects().forEach(mostRecentlyUsedProjects::add);
         }
 
+        var linkVariants = new LinkVariants.KnimeUrlResolverVariants();
+
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies( //
             projectManager, //
@@ -205,7 +208,9 @@ final class Init {
             codeKaiHandler, //
             nodeCollections, //
             nodeCategoryExtensions, //
-            selectionEventBus);
+            selectionEventBus, //
+            linkVariants //
+        );
 
         DesktopAPI.injectDependencies( //
             projectManager, //

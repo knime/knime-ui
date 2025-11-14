@@ -5,16 +5,14 @@ import { computed, ref, watch } from "vue";
 import { InlineMessage } from "@knime/components";
 import { KdsButton, KdsCheckbox, KdsModal } from "@knime/kds-components";
 
-import {
-  ShareComponentCommand,
-  SpaceProvider,
-} from "@/api/gateway-api/generated-api";
+import { LinkVariant, SpaceProvider } from "@/api/gateway-api/generated-api";
+import { toLinkVariant } from "@/components/common/linkVariantOptions";
 import SpaceTree, {
   type SpaceTreeSelection,
 } from "@/components/spaces/SpaceTree.vue";
 
 import AdvancedLinkSettings from "./AdvancedLinkSettings.vue";
-import { getDefaultLinkType } from "./getDefaultLinkType";
+import { getDefaultLinkVariant } from "./getDefaultLinkVariant";
 import { useDestinationPicker } from "./useDestinationPicker";
 
 const { isActive, config, cancel, confirm } = useDestinationPicker();
@@ -23,7 +21,7 @@ const isValid = ref<boolean>(false);
 const validationHint = ref<string | null>(null);
 const resetWorkflow = ref(false);
 const includeData = ref(false);
-const linkType = ref<ShareComponentCommand.LinkTypeEnum>();
+const linkVariant = ref<LinkVariant.VariantEnum>();
 const resetMode = ref<SpaceProvider.ResetOnUploadEnum>();
 
 const selected = ref<SpaceTreeSelection>(null);
@@ -47,22 +45,26 @@ const showAdvancedLinkSettings = ref(false);
 
 const onSubmit = () => {
   // use the default if the user never selected anything
-  const defaultLinkType =
+  const defaultLinkVariant =
     selected.value?.type === "item"
-      ? getDefaultLinkType(selected.value?.spaceId)
+      ? getDefaultLinkVariant(selected.value?.spaceId)
       : undefined;
+
+  const selectedLinkVariant = linkVariant.value ?? defaultLinkVariant;
 
   confirm({
     ...selected.value!,
     resetWorkflow: resetWorkflow.value,
     includeData: includeData.value,
-    linkType: linkType.value ?? defaultLinkType,
+    linkVariant: selectedLinkVariant
+      ? toLinkVariant(selectedLinkVariant)
+      : undefined,
   });
 };
 
 const resetModalState = () => {
   showAdvancedLinkSettings.value = false;
-  linkType.value = undefined;
+  linkVariant.value = undefined;
   includeData.value = false;
   isValid.value = false;
   validationHint.value = null;
@@ -137,10 +139,12 @@ const showValidationHint = computed(
                 />
                 <AdvancedLinkSettings
                   v-if="showAdvancedLinkSettings"
-                  v-model:link-type="linkType"
+                  v-model:variant="linkVariant"
                   v-model:include-data="includeData"
                   :source-space-id="config.askLinkSettings.sourceSpaceId"
                   :selected-space-id="selected.spaceId"
+                  :selected-space-provider-id="selected.spaceProviderId"
+                  :selected-item-id="selected.itemId"
                 />
               </template>
             </template>

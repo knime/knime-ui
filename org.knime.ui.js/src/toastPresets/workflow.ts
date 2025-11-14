@@ -23,6 +23,12 @@ export type WorkflowToastPresets = {
   addNodeToCanvas: ToastPresetErrorHandler;
   replacementOperation: replacementOperation;
   layoutEditor: LayoutEditorToastPresets;
+
+  component: {
+    fetchLinkVariantsFailed: ToastPresetErrorHandler;
+    updateLinkVariantFailed: ToastPresetErrorHandler;
+    noLinkVariants: ToastPresetErrorHandler<never>;
+  };
 };
 
 export const getPresets = (
@@ -73,6 +79,26 @@ export const getPresets = (
         defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Failed to save layout",
+        }),
+    },
+
+    component: {
+      fetchLinkVariantsFailed: ({ error }) =>
+        defaultAPIErrorHandler($toast, error, {
+          type: "error",
+          headline: "Could not load available link variants",
+        }),
+
+      updateLinkVariantFailed: ({ error }) =>
+        defaultAPIErrorHandler($toast, error, {
+          type: "error",
+          headline: "Could not update the component link variant",
+        }),
+
+      noLinkVariants: () =>
+        $toast.show({
+          message: "No link variants are available for this component",
+          type: "warning",
         }),
     },
   };

@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";
 
@@ -7,6 +8,9 @@ import LoadIcon from "@knime/styles/img/icons/load.svg";
 
 import type { NameCollisionHandling } from "@/api/custom-types.ts";
 import {
+  type ComponentNode,
+  LinkVariant,
+  type LinkVariantInfo,
   type ShareComponentResult,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
@@ -16,13 +20,16 @@ import {
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer.ts";
 import { usePromptCollisionStrategies } from "@/composables/confirmDialogs/usePromptCollisionHandling";
+import { useChangeLinkVariantModal } from "@/composables/useChangeLinkVariantModal";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application.ts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";
+import { getToastPresets } from "@/toastPresets";
 
 import { useWorkflowStore } from "./workflow";
 
 const TOAST_HEADLINE = "Linked components";
+const LINK_VARIANT_UPDATED_MESSAGE = "Link variant updated.";
 
 const $toast = getToastsProvider();
 
@@ -65,7 +72,7 @@ const checkForCollisionsAndLink = async ({
     destinationSpaceProviderId: spaceProviderId,
     destinationSpaceId: spaceId,
     destinationItemId: itemId,
-    linkType: destination.linkType,
+    linkVariant: destination.linkVariant,
     includeInputData: destination.includeData || false,
     collisionHandling,
   });
@@ -74,7 +81,6 @@ const checkForCollisionsAndLink = async ({
     const collisionHandlingChoice = await promptCollisionStrategies();
     if (collisionHandlingChoice === "CANCEL") {
       return {
-        // eslint-disable-next-line no-undefined
         result: undefined,
         collisionHandling: collisionHandlingChoice,
       };
@@ -91,6 +97,8 @@ const checkForCollisionsAndLink = async ({
     collisionHandling,
   };
 };
+
+const { toastPresets } = getToastPresets();
 
 export const useComponentInteractionsStore = defineStore(
   "componentInteractions",
@@ -132,13 +140,13 @@ export const useComponentInteractionsStore = defineStore(
         if (
           !destination ||
           destination.type !== "item" ||
-          !destination.linkType
+          !destination.linkVariant
         ) {
           return;
         }
 
-        if (!destination.linkType) {
-          throw new Error("Destination link type is missing");
+        if (!destination.linkVariant) {
+          throw new Error("Destination link variant is missing");
         }
 
         const { result, collisionHandling } = await checkForCollisionsAndLink({
@@ -157,7 +165,7 @@ export const useComponentInteractionsStore = defineStore(
         let message =
           "The component has been exported to the destination space and " +
           "the instance in this workflow has been replaced with a link.";
-        if (destination.linkType === "NONE") {
+        if (destination.linkVariant?.variant === LinkVariant.VariantEnum.NONE) {
           headline = "Component shared";
           message = "The component has been exported to the destination space.";
         }
@@ -224,10 +232,12 @@ export const useComponentInteractionsStore = defineStore(
       async unlinkComponent({ nodeId }: { nodeId: string }) {
         const { projectId, workflowId } =
           useWorkflowStore().getProjectAndWorkflowIds;
+
         await API.workflowCommand.UpdateComponentLinkInformation({
           projectId,
           workflowId,
           nodeId,
+          linkVariant: { variant: LinkVariant.VariantEnum.NONE },
         });
       },
 
@@ -241,14 +251,69 @@ export const useComponentInteractionsStore = defineStore(
         });
       },
 
-      changeComponentLinkType({ nodeId }: { nodeId: string }) {
+      async changeComponentLinkVariant({ nodeId }: { nodeId: string }) {
+        const workflowStore = useWorkflowStore();
+        const node = workflowStore.activeWorkflow?.nodes?.[nodeId];
+        if (!node || node.kind !== "component") {
+          return;
+        }
+
+        const componentNode = node as ComponentNode;
+        if (
+          !componentNode.link ||
+          !componentNode.link.isLinkVariantChangeable
+        ) {
+          return;
+        }
+
         const { projectId, workflowId } =
-          useWorkflowStore().getProjectAndWorkflowIds;
-        API.desktop.openChangeComponentLinkTypeDialog({
-          projectId,
-          workflowId,
-          nodeId,
+          workflowStore.getProjectAndWorkflowIds;
+
+        let linkVariants: LinkVariantInfo[];
+        try {
+          linkVariants = await API.component.getLinkVariants({
+            projectId,
+            workflowId,
+            nodeId,
+          });
+        } catch (error) {
+          toastPresets.workflow.component.fetchLinkVariantsFailed({ error });
+          return;
+        }
+
+        if (!linkVariants.length) {
+          toastPresets.workflow.component.noLinkVariants();
+          return;
+        }
+
+        const { promptChangeLinkVariant } = useChangeLinkVariantModal();
+        const linkVariant = await promptChangeLinkVariant({
+          currentLinkVariant:
+            componentNode.link.currentLinkVariant?.variant ?? null,
+          linkVariants,
         });
+
+        if (!linkVariant) {
+          return;
+        }
+
+        try {
+          await API.workflowCommand.UpdateComponentLinkInformation({
+            projectId,
+            workflowId,
+            nodeId,
+            linkVariant: { variant: linkVariant },
+          });
+
+          $toast.show({
+            headline: TOAST_HEADLINE,
+            message: LINK_VARIANT_UPDATED_MESSAGE,
+            type: "success",
+            autoRemove: true,
+          });
+        } catch (error) {
+          toastPresets.workflow.component.updateLinkVariantFailed({ error });
+        }
       },
 
       clearComponentUpdateToasts() {

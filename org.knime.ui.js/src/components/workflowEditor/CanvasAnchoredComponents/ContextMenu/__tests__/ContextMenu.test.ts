@@ -675,7 +675,7 @@ describe("ContextMenu.vue", () => {
           state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
           link: {
             url: "some:uri",
-            isLinkTypeChangeable: false,
+            isLinkVariantChangeable: false,
             updateStatus: TemplateLink.UpdateStatusEnum.UPTODATE,
           },
           outPorts: [

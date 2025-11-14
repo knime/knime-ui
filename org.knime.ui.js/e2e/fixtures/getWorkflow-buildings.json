@@ -3183,7 +3183,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20parallel%20operation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -3545,7 +3545,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -3616,7 +3616,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Cost%20calculation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -3811,7 +3811,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -4070,7 +4070,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20parallel%20operation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -4141,7 +4141,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20parallel%20operation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -4212,7 +4212,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20parallel%20operation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -5194,7 +5194,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20parallel%20operation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -6320,7 +6320,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -6387,7 +6387,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -6690,7 +6690,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -6757,7 +6757,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -7312,7 +7312,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20merge",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -7614,7 +7614,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/BECalc%20-%20Data%20Validation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -7677,7 +7677,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -7740,7 +7740,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/BECalc%20-%20Data%20Validation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -7936,7 +7936,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/BECalc%20-%20Data%20Validation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -8106,7 +8106,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/BECalc%20-%20Data%20Validation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -8288,7 +8288,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/BECalc%20-%20Data%20Validation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -9303,7 +9303,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -9845,7 +9845,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20merge",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -11740,7 +11740,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -11859,7 +11859,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -11984,7 +11984,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -12102,7 +12102,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -12162,7 +12162,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -12219,7 +12219,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -12276,7 +12276,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -12783,7 +12783,7 @@
             "url": "knime://knime.workflow/../../../_common/lib/metanodes/Quality_check_no_missing_values",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -13490,7 +13490,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Unit%20conversion%20(2)",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -13663,7 +13663,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Unit%20conversion%20(2)",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -14188,7 +14188,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Calibration%20Dashboard",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -14962,7 +14962,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20parallel%20operation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -15131,7 +15131,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -15367,7 +15367,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -15741,7 +15741,7 @@
             "url": "knime://knime.workflow/../../../_common/lib/metanodes/Quality_check_same_value",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -16482,7 +16482,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Data%20from%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -16544,7 +16544,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -17123,7 +17123,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20parallel%20operation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -18170,7 +18170,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/BECalc%20-%20Data%20Validation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -18604,7 +18604,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -19840,7 +19840,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -19891,7 +19891,7 @@
             "url": "knime://LOCAL/buildings/metanodes/BLD_OTS",
             "updateStatus": "UP_TO_DATE",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -19949,7 +19949,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -20077,7 +20077,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -20133,7 +20133,7 @@
             "url": "knime://LOCAL/buildings/metanodes/BLD_FTS",
             "updateStatus": "UP_TO_DATE",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -20367,7 +20367,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -20608,7 +20608,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -20670,7 +20670,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -21141,7 +21141,7 @@
             "url": "knime://LOCAL/buildings/metanodes/BLD_bottom-up_input",
             "updateStatus": "UP_TO_DATE",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [],
           "outPorts": [
@@ -21206,7 +21206,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -21380,7 +21380,7 @@
             "url": "knime://LOCAL/buildings/metanodes/BLD_calibration",
             "updateStatus": "UP_TO_DATE",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [],
           "outPorts": [
@@ -21419,7 +21419,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -21486,7 +21486,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -22281,7 +22281,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/BECalc%20-%20Data%20Validation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -22586,7 +22586,7 @@
             "url": "knime://LOCAL/buildings/metanodes/BLD_fixed_assumptions",
             "updateStatus": "UP_TO_DATE",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [],
           "outPorts": [
@@ -22632,7 +22632,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -22942,7 +22942,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20parallel%20operation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -23228,7 +23228,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -23394,7 +23394,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Write%20data%20for%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -23664,7 +23664,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Write%20data%20for%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -24139,7 +24139,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Write%20data%20for%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -24435,7 +24435,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Write%20data%20for%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -24730,7 +24730,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Write%20data%20for%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -24790,7 +24790,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -25036,7 +25036,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Write%20data%20for%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -25266,7 +25266,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Write%20data%20for%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -26283,7 +26283,7 @@
             "url": "knime://LOCAL/buildings/metanodes/Quality_check_gas_demand",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -26350,7 +26350,7 @@
             "url": "knime://knime.workflow/../../metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -26538,7 +26538,7 @@
             "url": "knime://knime.workflow/../../metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -27059,7 +27059,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -27441,7 +27441,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -27567,7 +27567,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -27740,7 +27740,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -27937,7 +27937,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -28603,7 +28603,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Graph%20Visualization",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -28774,7 +28774,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -29529,7 +29529,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20split",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -29661,7 +29661,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Tree%20split",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -29971,7 +29971,7 @@
             "url": "knime://knime.workflow/../../metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -30039,7 +30039,7 @@
             "url": "knime://knime.workflow/../../metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -30107,7 +30107,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -30307,7 +30307,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/BECalc%20-%20Data%20Import%20-%20OTS-FTS%20(GoogleSheet)",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -30377,7 +30377,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Cost%20calculation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -30512,7 +30512,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Cost%20calculation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -30591,7 +30591,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Calibration",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -30981,7 +30981,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -31168,7 +31168,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -31669,7 +31669,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -32088,7 +32088,7 @@
             "url": "knime://knime.workflow/../../metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -32334,7 +32334,7 @@
             "url": "knime://knime.workflow/../../metanodes/Quality_check_table_dimensions",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -33166,7 +33166,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -33670,7 +33670,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Cost%20calculation",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -33873,7 +33873,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -35450,7 +35450,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -35697,7 +35697,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Calibration",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -35779,7 +35779,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -36288,7 +36288,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -36417,7 +36417,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -36601,7 +36601,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -36668,7 +36668,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -37213,7 +37213,7 @@
             "url": "knime://knime.workflow/../../../_common/lib/metanodes/Quality_check_no_missing_values",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -37795,7 +37795,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -38142,7 +38142,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -39661,7 +39661,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Split%20column%20by%20group",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -41368,7 +41368,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/XCalc%20-%20Data%20from%20other%20module",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -42714,7 +42714,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/Quality_check_same_value",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -42780,7 +42780,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/EUCalc%20-%20Unit%20conversion%20(2)",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -43192,7 +43192,7 @@
             "url": "knime://My-KNIME-Hub/Users/v.matton/Public/EUCalc%20-%20Tree%20merge",
             "updateStatus": "UP_TO_DATE",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -43524,7 +43524,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -43699,7 +43699,7 @@
             "url": "knime://LOCAL/_common/lib/metanodes/Quality_check_same_value",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -44681,7 +44681,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {
@@ -45032,7 +45032,7 @@
             "url": "knime://knime.workflow/../../../Quality_check_visual",
             "updateStatus": "ERROR",
             "isHubItemVersionChangeable": false,
-            "isLinkTypeChangeable": false
+            "isLinkVariantChangeable": false
           },
           "inPorts": [
             {

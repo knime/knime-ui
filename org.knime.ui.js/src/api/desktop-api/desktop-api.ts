@@ -273,24 +273,6 @@ export const openChangeComponentHubItemVersionDialog = ({
   );
 };
 
-export const openChangeComponentLinkTypeDialog = ({
-  projectId,
-  workflowId,
-  nodeId,
-}: {
-  projectId: string;
-  workflowId: string;
-  nodeId: string;
-}) => {
-  return callBrowserFunction(
-    window.openChangeComponentLinkTypeDialog,
-    [projectId, workflowId, nodeId],
-    `Could not change link type of component ${nodeId}`,
-    false,
-    { block: true },
-  );
-};
-
 export const openLegacyFlowVariableDialog = ({
   projectId,
   nodeId,

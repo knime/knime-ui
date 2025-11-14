@@ -2353,6 +2353,77 @@ export interface Link {
 
 
 /**
+ * Represents the type of link referencing a shared component. NONE unlinks the component instance.
+ * @export
+ * @interface LinkVariant
+ */
+export interface LinkVariant {
+
+    /**
+     *
+     * @type {string}
+     * @memberof LinkVariant
+     */
+    variant: LinkVariant.VariantEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace LinkVariant
+ */
+export namespace LinkVariant {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum VariantEnum {
+        NODERELATIVE = 'NODE_RELATIVE',
+        WORKFLOWRELATIVE = 'WORKFLOW_RELATIVE',
+        SPACERELATIVE = 'SPACE_RELATIVE',
+        MOUNTPOINTRELATIVE = 'MOUNTPOINT_RELATIVE',
+        MOUNTPOINTABSOLUTEPATH = 'MOUNTPOINT_ABSOLUTE_PATH',
+        MOUNTPOINTABSOLUTEID = 'MOUNTPOINT_ABSOLUTE_ID',
+        NONE = 'NONE'
+    }
+}
+/**
+ * Describes a selectable link variant and its accompanying texts.
+ * @export
+ * @interface LinkVariantInfo
+ */
+export interface LinkVariantInfo {
+
+    /**
+     *
+     * @type {LinkVariant}
+     * @memberof LinkVariantInfo
+     */
+    variant?: LinkVariant;
+    /**
+     * User-facing name of the link variant.
+     * @type {string}
+     * @memberof LinkVariantInfo
+     */
+    title: string;
+    /**
+     * Longer explanatory text shown with the variant choice.
+     * @type {string}
+     * @memberof LinkVariantInfo
+     */
+    description: string;
+    /**
+     * Message communicating how long or under which conditions the generated link remains valid.
+     * @type {string}
+     * @memberof LinkVariantInfo
+     */
+    linkValidity: string;
+
+}
+
+
+/**
  * Loop info. Only present on loop end nodes.
  * @export
  * @interface LoopInfo
@@ -4086,10 +4157,10 @@ export interface ShareComponentCommand extends WorkflowCommand {
     includeInputData?: boolean;
     /**
      *
-     * @type {string}
+     * @type {LinkVariant}
      * @memberof ShareComponentCommand
      */
-    linkType?: ShareComponentCommand.LinkTypeEnum;
+    linkVariant?: LinkVariant;
 
 }
 
@@ -4107,17 +4178,6 @@ export namespace ShareComponentCommand {
         NOOP = 'NOOP',
         AUTORENAME = 'AUTORENAME',
         OVERWRITE = 'OVERWRITE'
-    }
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum LinkTypeEnum {
-        WORKFLOWRELATIVE = 'WORKFLOW_RELATIVE',
-        SPACERELATIVE = 'SPACE_RELATIVE',
-        MOUNTPOINTABSOLUTE = 'MOUNTPOINT_ABSOLUTE',
-        MOUNTPOINTABSOLUTEIDBASED = 'MOUNTPOINT_ABSOLUTE_ID_BASED',
-        NONE = 'NONE'
     }
 }
 /**
@@ -4696,17 +4756,23 @@ export interface TemplateLink {
      */
     updateStatus?: TemplateLink.UpdateStatusEnum;
     /**
-     * Whether this link type can be changed or not.
+     * Whether this link variant can be changed or not.
      * @type {boolean}
      * @memberof TemplateLink
      */
-    isLinkTypeChangeable?: boolean;
+    isLinkVariantChangeable?: boolean;
     /**
      * Whether this Hub item version can be changed. This can only be true for shared templates on a Hub.
      * @type {any}
      * @memberof TemplateLink
      */
     isHubItemVersionChangeable?: any;
+    /**
+     *
+     * @type {LinkVariant}
+     * @memberof TemplateLink
+     */
+    currentLinkVariant?: LinkVariant;
 
 }
 
@@ -4906,11 +4972,11 @@ export interface UpdateComponentLinkInformationCommand extends WorkflowCommand {
      */
     nodeId: string;
     /**
-     * New link URL, empty if you want to unlink the component
-     * @type {string}
+     *
+     * @type {LinkVariant}
      * @memberof UpdateComponentLinkInformationCommand
      */
-    newUrl?: string;
+    linkVariant: LinkVariant;
 
 }
 
@@ -5801,6 +5867,24 @@ const component = function(rpcClient: RPCClient) {
             
             return rpcClient.call('ComponentService.getComponentDescription', { ...defaultParams, ...params });
         },
+        /**
+         * Returns the available link variants for the linked component represented by the given node.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         */
+        async getLinkVariants(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<Array<LinkVariantInfo>> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentService.getLinkVariants', { ...defaultParams, ...params });
+        },
     }
 };
 
@@ -6671,6 +6755,26 @@ const space = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('SpaceService.deleteSchedulesForWorkflow', { ...defaultParams, ...params });
+        },
+        /**
+         * Returns the available link variants for the destination represented by the given provider and path.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         */
+        async getLinkVariantsForItem(
+        	params: { projectId: string,  spaceId: string,  spaceProviderId: string,  itemId: string  }
+        ): Promise<Array<LinkVariantInfo>> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.getLinkVariantsForItem', { ...defaultParams, ...params });
         },
         /**
          * Returns the spaces provided by this space-provider.
