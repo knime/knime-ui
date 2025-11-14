@@ -231,7 +231,7 @@ const reportingEnabled = computed({
 }
 
 .alert {
-  margin-bottom: var(--space-8);
+  margin: var(--space-8) 0;
 }
 
 .legacy-info {
