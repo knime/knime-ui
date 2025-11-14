@@ -11,11 +11,11 @@ import {
   type KaiQuickActionResponse,
 } from "@/api/gateway-api/generated-api";
 import { useHubAuth } from "@/components/kai/useHubAuth";
-import { useAiQuickActionContext } from "@/composables/useAiQuickActionContext/useAiQuickActionContext";
 import {
   HubLoginAction,
   useHubLoginDialog,
-} from "@/composables/useConfirmDialog/useHubLoginDialog";
+} from "@/composables/confirmDialogs/useHubLoginDialog";
+import { useAiQuickActionContext } from "@/composables/useAiQuickActionContext/useAiQuickActionContext";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import {
   createQuickActionError,

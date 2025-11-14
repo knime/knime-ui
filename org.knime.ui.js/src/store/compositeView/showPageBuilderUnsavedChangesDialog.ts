@@ -3,7 +3,7 @@ import { API } from "@api";
 import {
   UnsavedChangesAction,
   useUnsavedChangesDialog,
-} from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
+} from "@/composables/confirmDialogs/useUnsavedChangesDialog";
 import { useApplicationStore } from "@/store/application/application";
 
 import type { PageBuilderApi } from "./compositeView";

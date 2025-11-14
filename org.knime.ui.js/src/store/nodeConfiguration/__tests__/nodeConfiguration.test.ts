@@ -5,7 +5,7 @@ import { createTestingPinia } from "@pinia/testing";
 import type { APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
-import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
+import { UnsavedChangesAction } from "@/composables/confirmDialogs/useUnsavedChangesDialog";
 import { runInEnvironment } from "@/environment";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -24,7 +24,7 @@ let useUnsavedChangesDialogMock = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ action: UnsavedChangesAction.CANCEL })),
 );
 vi.mock(
-  import("@/composables/useConfirmDialog/useUnsavedChangesDialog"),
+  import("@/composables/confirmDialogs/useUnsavedChangesDialog"),
   async (importOriginal) => {
     const mod = await importOriginal();
     return { ...mod, useUnsavedChangesDialog: useUnsavedChangesDialogMock };

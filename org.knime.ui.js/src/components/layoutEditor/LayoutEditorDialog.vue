@@ -4,7 +4,7 @@ import type { Component } from "vue";
 import { storeToRefs } from "pinia";
 
 import { TabBar } from "@knime/components";
-import { BaseModal, Button } from "@knime/kds-components";
+import { KdsButton, KdsModal } from "@knime/kds-components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
@@ -96,7 +96,7 @@ const activeTabComponent = computed(
 </script>
 
 <template>
-  <BaseModal
+  <KdsModal
     :active="layoutContext !== null"
     title="Layout editor"
     variant="plain"
@@ -112,14 +112,14 @@ const activeTabComponent = computed(
       <Component :is="activeTabComponent" />
     </div>
     <template #footer>
-      <Button
+      <KdsButton
         class="cancel-button"
         :disabled="isSubmitted"
         variant="transparent"
         label="Cancel"
         @click="closeModal"
       />
-      <Button
+      <KdsButton
         variant="filled"
         class="submit-button"
         label="Apply"
@@ -131,7 +131,7 @@ const activeTabComponent = computed(
         @click="onSubmit"
       />
     </template>
-  </BaseModal>
+  </KdsModal>
 </template>
 
 <style lang="postcss" scoped>

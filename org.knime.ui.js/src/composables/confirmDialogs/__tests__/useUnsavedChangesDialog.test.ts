@@ -9,7 +9,7 @@ let showConfirmDialogMock = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ confirmed: true, doNotAskAgain: false })),
 );
 vi.mock("@knime/kds-components", () => ({
-  useConfirmDialog: () => ({ show: showConfirmDialogMock }),
+  useKdsConfirmDialog: () => ({ show: showConfirmDialogMock }),
 }));
 
 describe("useUnsavedChangesDialog", () => {
@@ -48,7 +48,7 @@ describe("useUnsavedChangesDialog", () => {
     expect(action).toBe(UnsavedChangesAction.CANCEL);
   });
 
-  it("should forward doNotAskAgain value from useConfirmDialog", async () => {
+  it("should forward doNotAskAgain value from useKdsConfirmDialog", async () => {
     showConfirmDialogMock.mockResolvedValue({
       confirmed: true,
       doNotAskAgain: true,

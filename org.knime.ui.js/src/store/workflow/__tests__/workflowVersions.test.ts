@@ -16,7 +16,7 @@ import {
 import { promise as promiseUtils } from "@knime/utils";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
+import { UnsavedChangesAction } from "@/composables/confirmDialogs/useUnsavedChangesDialog";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
@@ -120,7 +120,7 @@ let useUnsavedChangesDialogMock = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ action: UnsavedChangesAction.CANCEL })),
 );
 vi.mock(
-  import("@/composables/useConfirmDialog/useUnsavedChangesDialog"),
+  import("@/composables/confirmDialogs/useUnsavedChangesDialog"),
   async (importOriginal) => {
     const mod = await importOriginal();
     return { ...mod, useUnsavedChangesDialog: useUnsavedChangesDialogMock };

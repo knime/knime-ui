@@ -3,11 +3,11 @@ import { computed, nextTick, ref } from "vue";
 import { API } from "@api";
 
 import { useHubAuth } from "@/components/kai/useHubAuth";
-import { useAiQuickActionContext } from "@/composables/useAiQuickActionContext/useAiQuickActionContext";
 import {
   HubLoginAction,
   useHubLoginDialog,
-} from "@/composables/useConfirmDialog/useHubLoginDialog";
+} from "@/composables/confirmDialogs/useHubLoginDialog";
+import { useAiQuickActionContext } from "@/composables/useAiQuickActionContext/useAiQuickActionContext";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
@@ -17,7 +17,7 @@ const mockedAPI = deepMocked(API);
 
 vi.mock("@/components/kai/useHubAuth");
 vi.mock("@/composables/useIsKaiEnabled");
-vi.mock("@/composables/useConfirmDialog/useHubLoginDialog");
+vi.mock("@/composables/confirmDialogs/useHubLoginDialog");
 vi.mock("@/composables/useAiQuickActionContext/useAiQuickActionContext");
 
 describe("aiQuickActions store", () => {

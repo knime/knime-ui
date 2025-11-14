@@ -3,7 +3,7 @@
 import { computed, ref, watch } from "vue";
 
 import { InlineMessage } from "@knime/components";
-import { BaseModal, Button, Checkbox } from "@knime/kds-components";
+import { KdsButton, KdsCheckbox, KdsModal } from "@knime/kds-components";
 
 import {
   ShareComponentCommand,
@@ -82,7 +82,7 @@ const showValidationHint = computed(
 </script>
 
 <template>
-  <BaseModal
+  <KdsModal
     :active="isActive"
     class="modal"
     :title="config?.title"
@@ -118,7 +118,7 @@ const showValidationHint = computed(
         <template v-if="config?.askResetWorkflow || config?.askLinkSettings">
           <div class="spaced-container">
             <template v-if="selected?.type === 'item'">
-              <Checkbox
+              <KdsCheckbox
                 v-if="config?.askResetWorkflow"
                 v-model="resetWorkflow"
                 label="Reset Workflow(s) before upload"
@@ -127,7 +127,7 @@ const showValidationHint = computed(
                 "
               />
               <template v-if="config?.askLinkSettings">
-                <Button
+                <KdsButton
                   v-if="!showAdvancedLinkSettings"
                   compact
                   label="Show advanced settings"
@@ -157,7 +157,7 @@ const showValidationHint = computed(
         @click="onSubmit"
       />
     </template>
-  </BaseModal>
+  </KdsModal>
 </template>
 
 <style lang="postcss" scoped>

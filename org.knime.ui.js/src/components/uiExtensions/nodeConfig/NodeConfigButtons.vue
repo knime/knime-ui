@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { Button as KButton } from "@knime/kds-components";
+import { KdsButton } from "@knime/kds-components";
 import type { APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
 import {
@@ -55,7 +55,7 @@ const canApplyAndExecute = computed(() => {
 
 <template>
   <div ref="buttons" class="buttons">
-    <KButton
+    <KdsButton
       class="button discard"
       label="Discard"
       variant="transparent"
@@ -63,7 +63,7 @@ const canApplyAndExecute = computed(() => {
       @click="emit('discard')"
     />
 
-    <KButton
+    <KdsButton
       v-if="!showExecuteOnlyButton"
       class="button apply-execute"
       :disabled="!canApplyAndExecute"
@@ -72,7 +72,7 @@ const canApplyAndExecute = computed(() => {
       @click="emit('apply', true)"
     />
 
-    <KButton
+    <KdsButton
       v-if="showExecuteOnlyButton"
       class="button execute"
       label="Execute"
@@ -80,7 +80,7 @@ const canApplyAndExecute = computed(() => {
       @click="emit('execute')"
     />
 
-    <KButton
+    <KdsButton
       class="button apply"
       :disabled="!canApplyOrDiscard"
       label="Apply"

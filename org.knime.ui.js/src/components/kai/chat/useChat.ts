@@ -1,7 +1,7 @@
 import { computed, onBeforeMount } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useConfirmDialog } from "@knime/kds-components";
+import { useKdsConfirmDialog } from "@knime/kds-components";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
@@ -26,7 +26,7 @@ const useChat = (chainType: ChainType) => {
   const { uiStrings } = useKaiServer();
   const { disconnectHub, isAuthError } = useHubAuth();
 
-  const { show: showConfirmDialog } = useConfirmDialog();
+  const { show: showConfirmDialog } = useKdsConfirmDialog();
 
   const { toastPresets } = getToastPresets();
 
