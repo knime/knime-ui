@@ -3,7 +3,7 @@
 /* eslint-disable func-style */
 // Split this file to avoid max-lines disable (NXT-3760)
 /* eslint-disable max-lines */
-import { computed, markRaw, ref } from "vue";
+import { computed, ref } from "vue";
 import { API } from "@api";
 import { merge } from "lodash-es";
 import { defineStore } from "pinia";
@@ -24,11 +24,10 @@ import {
   VERSION_DEFAULT_LIMIT,
   useVersionsApi,
 } from "@knime/hub-features/versions";
-import TrashIcon from "@knime/styles/img/icons/trash.svg";
+import { useConfirmDialog } from "@knime/kds-components";
 import { promise } from "@knime/utils";
 
 import type { SpaceItemVersion } from "@/api/gateway-api/generated-api";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import {
   UnsavedChangesAction,
   useUnsavedChangesDialog,
@@ -233,22 +232,16 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
 
     const { confirmed } = await showConfirmDialog({
       title: "Delete version",
-      titleIcon: markRaw(TrashIcon),
+      icon: "trash",
       message: "Do you want to delete the workflow version?",
       buttons: [
         {
           type: "cancel",
-          label: "Cancel",
-        },
-        {
-          type: "cancel",
           label: "No",
-          flushRight: true,
         },
         {
           type: "confirm",
           label: "Yes",
-          flushRight: true,
         },
       ],
     });
@@ -276,10 +269,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       title: "Confirm version restore",
       message:
         "Restoring a version will overwrite the current workflow. Unversioned changes will be lost.",
-      buttons: [
-        { type: "cancel", label: "Cancel" },
-        { type: "confirm", label: "Confirm", flushRight: true },
-      ],
     });
     if (!confirmed) {
       return;
@@ -327,10 +316,6 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       title: "Confirm discarding changes",
       message:
         "Any changes to the workflow since the last created version will be deleted.",
-      buttons: [
-        { type: "cancel", label: "Cancel" },
-        { type: "confirm", label: "Confirm", flushRight: true },
-      ],
     });
     if (!confirmed) {
       return;

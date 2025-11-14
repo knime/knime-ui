@@ -4,6 +4,7 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
+import { useConfirmDialog } from "@knime/kds-components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
@@ -12,7 +13,6 @@ import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isBrowser, isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
@@ -208,14 +208,11 @@ const showUploadDirtyWorkflowPrompt = () => {
     message:
       "To upload a workflow, you need to save it first. " +
       "Would you like to save the workflow and continue with the upload?",
-    buttons: [
+    confirmButtons: [
       {
-        type: "cancel",
-        label: "Cancel",
-      },
-      {
-        type: "confirm",
         label: "Save workflow and continue",
+        autofocus: true,
+        variant: "filled",
       },
     ],
   });

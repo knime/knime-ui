@@ -41,8 +41,10 @@ const showUnsavedChangesDialog = async (askToConfirm: boolean) => {
     title: "Unsaved configuration changes",
     message:
       "You have unsaved changes in your node configuration. Do you want to save them?",
-    doNotAskAgainText:
-      "Always save and do not ask again. <br/> (You can still change this in the preferences)",
+    doNotAskAgain: {
+      label: "Always save and do not ask again.",
+      helperText: "(You can still change this in the preferences)",
+    },
   });
 
   // box was checked and setting is set to "ask"

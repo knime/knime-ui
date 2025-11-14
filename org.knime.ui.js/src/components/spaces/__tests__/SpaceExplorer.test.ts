@@ -7,13 +7,13 @@ import { useRoute } from "vue-router";
 
 import { Breadcrumb, FileExplorer, NodePreview } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
+import { useConfirmDialog } from "@knime/kds-components";
 
 import {
   NativeNodeInvariants,
   type Project,
   SpaceItem,
 } from "@/api/gateway-api/generated-api";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { createProject, createSpaceProvider } from "@/test/factories";
