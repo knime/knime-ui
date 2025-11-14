@@ -3,7 +3,8 @@ import { computed, defineAsyncComponent, ref, watch } from "vue";
 import type { Component } from "vue";
 import { storeToRefs } from "pinia";
 
-import { Button, LoadingIcon, Modal, TabBar } from "@knime/components";
+import { TabBar } from "@knime/components";
+import { BaseModal, Button } from "@knime/kds-components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 
@@ -95,51 +96,60 @@ const activeTabComponent = computed(
 </script>
 
 <template>
-  <Modal
+  <BaseModal
     :active="layoutContext !== null"
     title="Layout editor"
-    style-type="info"
+    variant="plain"
     class="modal"
-    @cancel="closeModal"
+    width="full"
+    height="full"
+    @close="closeModal"
   >
-    <template #notice>
+    <div class="tab-bar">
       <TabBar v-model="activeTab" :possible-values="tabs" />
-    </template>
-
-    <template #confirmation>
+    </div>
+    <div class="active-tab">
       <Component :is="activeTabComponent" />
-    </template>
-
-    <template #controls>
+    </div>
+    <template #footer>
       <Button
-        compact
-        with-border
         class="cancel-button"
         :disabled="isSubmitted"
+        variant="transparent"
+        label="Cancel"
         @click="closeModal"
-      >
-        <strong>Cancel</strong>
-      </Button>
+      />
       <Button
-        compact
-        primary
+        variant="filled"
         class="submit-button"
+        label="Apply"
         :disabled="
           isSubmitted ||
           advancedEditorData.validity === 'invalid' ||
           advancedEditorData.validity === 'checking'
         "
         @click="onSubmit"
-      >
-        <LoadingIcon v-if="isSubmitted" aria-hidden="true" focusable="false" />
-        <strong>Apply</strong>
-      </Button>
+      />
     </template>
-  </Modal>
+  </BaseModal>
 </template>
 
 <style lang="postcss" scoped>
-.modal.info {
+.tab-bar {
+  flex-shrink: 0;
+}
+
+.active-tab {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+
+  /** we need a height for the overflow to work, the flex-grow makes this take up all available space */
+  height: 10%;
+}
+
+/*
+.modal {
   --modal-height: 95vh;
   --modal-width: 95vw;
   --z-index-common-modal: v-bind("$zIndices.layerModals");
@@ -166,11 +176,10 @@ const activeTabComponent = computed(
       padding: 0;
     }
 
-    & > .controls {
-      border-top: 1px solid var(--knime-silver-sand);
-    }
+
   }
 }
+*/
 
 .cancel-button,
 .submit-button {
