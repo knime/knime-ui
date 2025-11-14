@@ -2,7 +2,7 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import { useConfirmDialog } from "@knime/kds-components";
+import { useKdsConfirmDialog } from "@knime/kds-components";
 
 import type { KnimeNode, Workflow, WorkflowObject } from "@/api/custom-types";
 import {
@@ -33,7 +33,7 @@ import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";
 
-const { show: showConfirmDialog } = useConfirmDialog();
+const { show: showConfirmDialog } = useKdsConfirmDialog();
 
 /**
  * The workflow store holds a workflow graph and the associated tooltips.

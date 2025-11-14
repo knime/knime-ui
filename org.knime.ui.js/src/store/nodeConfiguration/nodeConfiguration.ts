@@ -19,7 +19,7 @@ import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import {
   UnsavedChangesAction,
   useUnsavedChangesDialog,
-} from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
+} from "@/composables/confirmDialogs/useUnsavedChangesDialog";
 import { runInEnvironment } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";

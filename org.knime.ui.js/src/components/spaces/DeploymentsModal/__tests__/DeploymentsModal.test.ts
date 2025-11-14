@@ -54,7 +54,6 @@ describe("DeploymentsModal.vue", () => {
     const wrapper = mount(DeploymentsModal, {
       global: {
         plugins: [mockedStores.testingPinia],
-        stubs: { BaseModal: true },
       },
       attachTo: document.body,
     });

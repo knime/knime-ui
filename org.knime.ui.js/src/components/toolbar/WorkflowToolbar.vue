@@ -4,7 +4,7 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
-import { useConfirmDialog } from "@knime/kds-components";
+import { useKdsConfirmDialog } from "@knime/kds-components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
@@ -202,17 +202,21 @@ const onDeploymentButtonClick = () => {
 };
 
 const showUploadDirtyWorkflowPrompt = () => {
-  const { show } = useConfirmDialog();
+  const { show } = useKdsConfirmDialog();
   return show({
     title: "Upload unsaved workflow",
     message:
       "To upload a workflow, you need to save it first. " +
       "Would you like to save the workflow and continue with the upload?",
-    confirmButtons: [
+    buttons: [
       {
+        type: "cancel",
+        label: "Cancel",
+      },
+      {
+        type: "confirm",
         label: "Save workflow and continue",
         autofocus: true,
-        variant: "filled",
       },
     ],
   });

@@ -24,14 +24,14 @@ import {
   VERSION_DEFAULT_LIMIT,
   useVersionsApi,
 } from "@knime/hub-features/versions";
-import { useConfirmDialog } from "@knime/kds-components";
+import { useKdsConfirmDialog } from "@knime/kds-components";
 import { promise } from "@knime/utils";
 
 import type { SpaceItemVersion } from "@/api/gateway-api/generated-api";
 import {
   UnsavedChangesAction,
   useUnsavedChangesDialog,
-} from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
+} from "@/composables/confirmDialogs/useUnsavedChangesDialog.ts";
 import { isBrowser } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useLifecycleStore } from "@/store/application/lifecycle.ts";
@@ -72,7 +72,7 @@ const createInitialProjectVersionsModeInfo = (): ProjectVersionsModeInfo => ({
 
 export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   const $router = useRouter();
-  const { show: showConfirmDialog } = useConfirmDialog();
+  const { show: showConfirmDialog } = useKdsConfirmDialog();
   const { toastPresets } = getToastPresets();
 
   /** State: */

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
-import { UnsavedChangesAction } from "@/composables/useConfirmDialog/useUnsavedChangesDialog";
+import { UnsavedChangesAction } from "@/composables/confirmDialogs/useUnsavedChangesDialog";
 import { deepMocked } from "@/test/utils";
 import type { PageBuilderApi } from "../compositeView";
 import { showPageBuilderUnsavedChangesDialog } from "../showPageBuilderUnsavedChangesDialog";
@@ -15,7 +15,7 @@ let useUnsavedChangesDialogMock = vi.hoisted(() =>
   ),
 );
 vi.mock(
-  import("@/composables/useConfirmDialog/useUnsavedChangesDialog"),
+  import("@/composables/confirmDialogs/useUnsavedChangesDialog"),
   async (importOriginal) => {
     const mod = await importOriginal();
     return { ...mod, useUnsavedChangesDialog: useUnsavedChangesDialogMock };

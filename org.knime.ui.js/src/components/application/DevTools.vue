@@ -4,9 +4,9 @@ import { useWindowSize } from "@vueuse/core";
 
 import { FunctionButton, ValueSwitch } from "@knime/components";
 import {
-  type DarkModeType,
-  useDarkMode,
-  useLegacyMode,
+  type KdsDarkModeType,
+  useKdsDarkMode,
+  useKdsLegacyMode,
 } from "@knime/kds-components";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
@@ -27,9 +27,9 @@ const { currentRenderer, isSVGRenderer } = useCanvasRendererUtils();
 const canvasRenderers: CanvasRendererType[] = ["SVG", "WebGL"];
 const webglCanvasStore = useWebGLCanvasStore();
 
-const { currentMode } = useDarkMode();
-const { legacyMode } = useLegacyMode();
-const extendedMode = ref<"legacy" | DarkModeType>(currentMode.value);
+const { currentMode } = useKdsDarkMode();
+const { legacyMode } = useKdsLegacyMode();
+const extendedMode = ref<"legacy" | KdsDarkModeType>(currentMode.value);
 watch(extendedMode, (value) => {
   const isLegacy = value === "legacy";
   // dark mode is saved and loaded from local storage, legacy mode can be set, but is not saved

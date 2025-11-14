@@ -7,7 +7,7 @@ import { useRoute } from "vue-router";
 
 import { Breadcrumb, FileExplorer, NodePreview } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
-import { useConfirmDialog } from "@knime/kds-components";
+import { useKdsConfirmDialog } from "@knime/kds-components";
 
 import {
   NativeNodeInvariants,
@@ -499,7 +499,7 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should show delete modal on deleteItems", async () => {
-      const { isActive } = useConfirmDialog();
+      const { isActive } = useKdsConfirmDialog();
 
       const items: FileExplorerItem[] = [
         createMockWorkflow({
@@ -517,7 +517,7 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should trigger closeItems before deleteItems onDeleteItems", async () => {
-      const { confirm } = useConfirmDialog();
+      const { confirm } = useKdsConfirmDialog();
 
       const items: FileExplorerItem[] = [
         createMockWorkflow({
@@ -571,7 +571,7 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should not delete item on negative response", async () => {
-      const { cancel } = useConfirmDialog();
+      const { cancel } = useKdsConfirmDialog();
 
       const items: FileExplorerItem[] = [
         createMockWorkflow({

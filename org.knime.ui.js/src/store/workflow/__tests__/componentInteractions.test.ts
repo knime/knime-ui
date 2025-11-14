@@ -57,7 +57,7 @@ const { usePromptCollisionStrategiesMock } = vi.hoisted(() => ({
   }),
 }));
 
-vi.mock("@/composables/useConfirmDialog/usePromptCollisionHandling", () => ({
+vi.mock("@/composables/confirmDialogs/usePromptCollisionHandling", () => ({
   usePromptCollisionStrategies: usePromptCollisionStrategiesMock,
 }));
 

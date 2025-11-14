@@ -68,7 +68,6 @@ describe("CreateWorkflowModal.vue", () => {
     const wrapper = mount(CreateWorkflowModal, {
       global: {
         plugins: [mockedStores.testingPinia],
-        stubs: { BaseModal: true },
       },
       attachTo: document.body,
     });

@@ -8,7 +8,7 @@ const cancelConfirmDialogMock = vi.hoisted(() => vi.fn());
 const connectFailedToastMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@knime/kds-components", () => ({
-  useConfirmDialog: () => ({
+  useKdsConfirmDialog: () => ({
     show: showConfirmDialogMock,
     cancel: cancelConfirmDialogMock,
   }),

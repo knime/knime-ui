@@ -15,7 +15,7 @@ import {
   useDestinationPicker,
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer.ts";
-import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling.ts";
+import { usePromptCollisionStrategies } from "@/composables/confirmDialogs/usePromptCollisionHandling";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application.ts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";

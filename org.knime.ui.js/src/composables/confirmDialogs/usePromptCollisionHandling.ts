@@ -1,9 +1,9 @@
-import { useConfirmDialog } from "@knime/kds-components";
+import { useKdsConfirmDialog } from "@knime/kds-components";
 
 import type { NameCollisionHandling } from "@/api/custom-types";
 
 export const usePromptCollisionStrategies = () => {
-  const { show: showConfirmDialog } = useConfirmDialog();
+  const { show: showConfirmDialog } = useKdsConfirmDialog();
 
   const promptCollisionStrategies =
     async (): Promise<NameCollisionHandling> => {

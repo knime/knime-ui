@@ -3,9 +3,9 @@ import { computed, ref } from "vue";
 import { groupBy } from "lodash-es";
 import { storeToRefs } from "pinia";
 
-import { Modal, SearchInput } from "@knime/components";
+import { SearchInput } from "@knime/components";
+import { KdsButton, KdsModal } from "@knime/kds-components";
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
-import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import { type Hotkey, hotkeys } from "@knime/utils";
 
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
@@ -90,107 +90,90 @@ const groupedShortcuts = computed(() =>
 </script>
 
 <template>
-  <Modal
-    v-show="isOpen"
-    ref="modalRef"
+  <KdsModal
     :active="isOpen"
     title="Shortcuts"
-    style-type="info"
-    class="modal"
-    @cancel="closeModal"
+    icon="shortcuts"
+    width="xlarge"
+    closedby="any"
+    height="full"
+    variant="plain"
+    @close="closeModal"
   >
-    <template #icon>
-      <ShortcutsIcon aria-hidden="true" focusable="false" />
-    </template>
-    <template #notice>
-      <div class="search">
-        <SearchInput
-          v-if="isOpen"
-          v-model="searchQuery"
-          aria-label="Search shortcuts"
-          focus-on-mount
-          placeholder="Filter shortcuts"
-        />
-      </div>
-      <div class="shortcut-overview">
+    <div class="search">
+      <SearchInput
+        v-if="isOpen"
+        v-model="searchQuery"
+        aria-label="Search shortcuts"
+        focus-on-mount
+        placeholder="Filter shortcuts"
+      />
+    </div>
+    <div class="shortcut-overview">
+      <div
+        v-for="(shortcutsOfGroup, groupKey) of groupedShortcuts"
+        :key="groupKey"
+        class="group"
+      >
+        <h2>{{ getGroupHeading(groupKey as ShortcutGroupsWithOthers) }}</h2>
         <div
-          v-for="(shortcutsOfGroup, groupKey) of groupedShortcuts"
-          :key="groupKey"
-          class="group"
+          v-for="(shortcut, shortcutIndex) of shortcutsOfGroup"
+          :key="shortcutIndex"
+          class="shortcut"
         >
-          <h2>{{ getGroupHeading(groupKey as ShortcutGroupsWithOthers) }}</h2>
-          <div
-            v-for="(shortcut, shortcutIndex) of shortcutsOfGroup"
-            :key="shortcutIndex"
-            class="shortcut"
-          >
-            <span>
-              <ArrowRightIcon
-                class="arrow"
-                aria-hidden="true"
-                focusable="false"
-              />
-              {{ shortcut.displayText }}
-            </span>
+          <span>
+            <ArrowRightIcon
+              class="arrow"
+              aria-hidden="true"
+              focusable="false"
+            />
+            {{ shortcut.displayText }}
+          </span>
 
-            <div class="hotkeys">
-              <div class="hotkey">
-                <KeyboardShortcut :hotkey="shortcut.hotkey!" />
-              </div>
-              <div
-                v-for="(hotkey, hotkeyIndex) of getVisibleAdditionalHotkeys(
-                  shortcut,
-                )"
-                :key="hotkeyIndex"
-                :class="['hotkey', 'additional']"
-              >
-                <KeyboardShortcut :hotkey="hotkey!" />
-              </div>
+          <div class="hotkeys">
+            <div class="hotkey">
+              <KeyboardShortcut :hotkey="shortcut.hotkey!" />
+            </div>
+            <div
+              v-for="(hotkey, hotkeyIndex) of getVisibleAdditionalHotkeys(
+                shortcut,
+              )"
+              :key="hotkeyIndex"
+              :class="['hotkey', 'additional']"
+            >
+              <KeyboardShortcut :hotkey="hotkey!" />
             </div>
           </div>
         </div>
       </div>
+    </div>
+    <template #footer>
+      <KdsButton label="Close" variant="transparent" @click="closeModal" />
     </template>
-  </Modal>
+  </KdsModal>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.modal {
-  --modal-width: 900px;
-
-  & :deep(.notice) {
-    padding: 0;
-    height: 100%;
-  }
-
-  & :deep(.inner) {
-    top: 48%;
-    height: 85%;
-  }
-
-  & :deep(.controls) {
-    display: none;
-  }
-}
-
 .search {
-  padding: var(--modal-padding) var(--modal-padding) 0 var(--modal-padding);
+  padding: var(--modal-padding-top) var(--modal-padding-right) var(--modal-gap)
+    var(--modal-padding-left);
   margin-bottom: 10px;
 }
 
 .shortcut-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 400px));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 450px));
   align-items: start;
   grid-auto-rows: min-content;
   grid-auto-flow: row dense;
-  grid-gap: 0 calc(var(--modal-padding) * 2);
-  padding: 0 var(--modal-padding) var(--modal-padding) var(--modal-padding);
-  font-size: 13px;
+  gap: 0 var(--modal-gap);
+  padding: 0 var(--modal-padding-right) var(--modal-padding-bottom)
+    var(--modal-padding-left);
+  font: var(--kds-font-base-small);
   overflow: hidden auto;
-  height: calc(100% - 70px);
+  height: 100%;
 
   & .group {
     align-self: start;

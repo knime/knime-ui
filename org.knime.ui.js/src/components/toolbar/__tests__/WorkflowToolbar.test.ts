@@ -40,7 +40,7 @@ const { showConfirmDialogMock } = vi.hoisted(() => ({
   showConfirmDialogMock: vi.fn(() => Promise.resolve({ confirmed: true })),
 }));
 vi.mock("@knime/kds-components", () => ({
-  useConfirmDialog: () => ({ show: showConfirmDialogMock }),
+  useKdsConfirmDialog: () => ({ show: showConfirmDialogMock }),
 }));
 
 vi.mock("@/environment");

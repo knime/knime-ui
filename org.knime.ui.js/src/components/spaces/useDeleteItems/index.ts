@@ -1,8 +1,11 @@
-import { type Ref, h } from "vue";
+import { type Ref, type VNode, h } from "vue";
 import { useRouter } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
-import { useConfirmDialog } from "@knime/kds-components";
+import {
+  type UseKdsConfirmDialogComponentBasedConfig,
+  useKdsConfirmDialog,
+} from "@knime/kds-components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { getToastsProvider } from "@/plugins/toasts";
@@ -14,7 +17,7 @@ import DeleteItemTemplate from "./DeleteItemTemplate.vue";
 
 type TemplateComponentProps = InstanceType<typeof DeleteItemTemplate>["$props"];
 
-const createModalTemplate = (props: TemplateComponentProps) =>
+const createModalTemplate = (props: TemplateComponentProps): VNode =>
   h(DeleteItemTemplate, { ...props });
 
 type UseDeleteItemsOptions = {
@@ -31,7 +34,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
   const { itemIconRenderer } = options;
 
   const askConfirmation = (items: FileExplorerItem[]) => {
-    const { show: showConfirmDialog } = useConfirmDialog();
+    const { show: showConfirmDialog } = useKdsConfirmDialog();
 
     return showConfirmDialog({
       title: "Delete",
@@ -52,7 +55,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
           type: "confirm",
         },
       ],
-    });
+    } as UseKdsConfirmDialogComponentBasedConfig);
   };
 
   const onDeleteItems = async (items: FileExplorerItem[]) => {

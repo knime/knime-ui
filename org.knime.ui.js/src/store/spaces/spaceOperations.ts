@@ -12,7 +12,7 @@ import {
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 import { matchesAPIErrorCode } from "@/api/gateway-api/generated-exceptions";
-import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling";
+import { usePromptCollisionStrategies } from "@/composables/confirmDialogs/usePromptCollisionHandling";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
