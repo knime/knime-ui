@@ -7,7 +7,7 @@ const showConfirmDialogMock = vi.hoisted(() => vi.fn());
 const cancelConfirmDialogMock = vi.hoisted(() => vi.fn());
 const connectFailedToastMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@/composables/useConfirmDialog", () => ({
+vi.mock("@knime/kds-components", () => ({
   useConfirmDialog: () => ({
     show: showConfirmDialogMock,
     cancel: cancelConfirmDialogMock,
@@ -65,7 +65,6 @@ describe("useHubLoginDialog", () => {
     const [cancelBtn, confirmBtn] = arg.buttons;
     expect(cancelBtn).toMatchObject({ type: "cancel", label: "Not now" });
     expect(confirmBtn.type).toBe("confirm");
-    expect(confirmBtn.flushRight).toBe(true);
     expect(confirmBtn.label).toBe("Log in to Example Hub");
   });
 

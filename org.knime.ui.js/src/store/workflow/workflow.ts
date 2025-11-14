@@ -2,6 +2,8 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
+import { useConfirmDialog } from "@knime/kds-components";
+
 import type { KnimeNode, Workflow, WorkflowObject } from "@/api/custom-types";
 import {
   AlignNodesCommand,
@@ -17,7 +19,6 @@ import {
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -269,10 +270,6 @@ export const useWorkflowStore = defineStore("workflow", {
         const { confirmed } = await showConfirmDialog({
           title: "Confirm action",
           message: `Creating this ${containerType} will reset executed nodes.`,
-          buttons: [
-            { type: "cancel", label: "Cancel" },
-            { type: "confirm", label: "Confirm", flushRight: true },
-          ],
         });
         if (!confirmed) {
           return;
@@ -321,10 +318,6 @@ export const useWorkflowStore = defineStore("workflow", {
         const { confirmed } = await showConfirmDialog({
           title: "Confirm action",
           message: `Expanding this ${selectedNode.kind} will reset executed nodes.`,
-          buttons: [
-            { type: "cancel", label: "Cancel" },
-            { type: "confirm", label: "Confirm", flushRight: true },
-          ],
         });
         if (!confirmed) {
           return;

@@ -1,10 +1,10 @@
-import { type Ref, h, markRaw } from "vue";
+import { type Ref, h } from "vue";
 import { useRouter } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
+import { useConfirmDialog } from "@knime/kds-components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
@@ -35,7 +35,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
 
     return showConfirmDialog({
       title: "Delete",
-      titleIcon: markRaw(TrashIcon),
+      icon: "trash",
 
       component: createModalTemplate({
         items,
@@ -50,7 +50,6 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
         {
           label: "Ok",
           type: "confirm",
-          flushRight: true,
         },
       ],
     });

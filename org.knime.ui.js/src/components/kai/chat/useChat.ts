@@ -1,8 +1,9 @@
 import { computed, onBeforeMount } from "vue";
 import { storeToRefs } from "pinia";
 
+import { useConfirmDialog } from "@knime/kds-components";
+
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import type { ChainType, Message } from "@/store/ai/types";
 import { getToastPresets } from "@/toastPresets";
@@ -120,10 +121,6 @@ const useChat = (chainType: ChainType) => {
       title: "Confirm action",
       message:
         "Are you sure you want to abort the request to the KNIME AI Assistant?",
-      buttons: [
-        { type: "cancel", label: "Cancel" },
-        { type: "confirm", label: "Confirm", flushRight: true },
-      ],
     });
     if (confirmed) {
       abortAiRequest({

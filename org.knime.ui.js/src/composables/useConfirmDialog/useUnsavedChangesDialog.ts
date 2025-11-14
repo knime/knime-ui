@@ -1,4 +1,7 @@
-import { type PropertyBasedConfig, useConfirmDialog } from ".";
+import {
+  type PropertyBasedConfig,
+  useConfirmDialog,
+} from "@knime/kds-components";
 
 export enum UnsavedChangesAction {
   SAVE = "save",
@@ -12,7 +15,7 @@ interface UnsavedChangesDialogResult {
 }
 
 export const useUnsavedChangesDialog = async (
-  config: Pick<PropertyBasedConfig, "title" | "message" | "doNotAskAgainText">,
+  config: Pick<PropertyBasedConfig, "title" | "message" | "doNotAskAgain">,
 ): Promise<UnsavedChangesDialogResult> => {
   const { show: showConfirmDialog } = useConfirmDialog();
 
@@ -20,19 +23,18 @@ export const useUnsavedChangesDialog = async (
 
   const { confirmed, doNotAskAgain } = await showConfirmDialog({
     ...config,
-    focusButton: 0,
     buttons: [
-      { type: "cancel", label: "Cancel" },
+      { type: "cancel", label: "Cancel", flushLeft: true, autofocus: true },
       {
         type: "cancel",
         label: "Discard changes",
-        flushRight: true,
+        variant: "outlined",
         customHandler: ({ cancel }) => {
           shouldDiscard = true;
           cancel();
         },
       },
-      { type: "confirm", label: "Save changes", flushRight: true },
+      { type: "confirm", label: "Save changes" },
     ],
   });
 

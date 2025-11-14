@@ -1,6 +1,6 @@
-import type { NameCollisionHandling } from "@/api/custom-types";
+import { useConfirmDialog } from "@knime/kds-components";
 
-import { useConfirmDialog } from ".";
+import type { NameCollisionHandling } from "@/api/custom-types";
 
 export const usePromptCollisionStrategies = () => {
   const { show: showConfirmDialog } = useConfirmDialog();
@@ -18,11 +18,12 @@ export const usePromptCollisionStrategies = () => {
             {
               type: "cancel",
               label: "Cancel",
+              flushLeft: true,
             },
             {
               type: "confirm",
               label: "Overwrite",
-              flushRight: true,
+              variant: "outlined",
               customHandler: ({ confirm }) => {
                 strategy = "OVERWRITE";
                 confirm();
