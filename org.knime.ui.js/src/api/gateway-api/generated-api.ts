@@ -688,6 +688,12 @@ export interface AppState {
      * @memberof AppState
      */
     spaceProviders?: Array<SpaceProvider>;
+    /**
+     * The current workflow synchronization state.
+     * @type {string}
+     * @memberof AppState
+     */
+    syncState?: AppState.SyncStateEnum;
 
 }
 
@@ -713,6 +719,15 @@ export namespace AppState {
     export enum CanvasRendererEnum {
         WebGL = 'WebGL',
         SVG = 'SVG'
+    }
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum SyncStateEnum {
+        SYNCED = 'SYNCED',
+        SYNCING = 'SYNCING',
+        OUTOFSYNC = 'OUT_OF_SYNC'
     }
 }
 /**
