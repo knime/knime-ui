@@ -180,7 +180,7 @@ final class Init {
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepository = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
-        var workflowSyncer = new DefaultWorkflowSyncer(5); // TODO: Replace with NO-OP implementation later
+        var workflowSyncer = new DefaultWorkflowSyncer(5, appStateUpdater); // TODO: Replace with NO-OP implementation later
         NodeCategoryExtensions nodeCategoryExtensions =
             () -> NodeSpecCollectionProvider.getInstance().getCategoryExtensions();
 
