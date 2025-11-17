@@ -26,6 +26,7 @@ const createOption = (
   text,
   description,
   linkValidity,
+  // TODO: No need for extra property if its just concatenated to description?
 });
 
 export const buildLinkTypeOptions = ({
@@ -50,7 +51,7 @@ export const buildLinkTypeOptions = ({
 
   const isLocal = effectiveSelectedSpaceId === localRootProjectPath.spaceId;
   const isSameSpace =
-    !!sourceSpaceId && sourceSpaceId === effectiveSelectedSpaceId;
+    Boolean(sourceSpaceId) && sourceSpaceId === effectiveSelectedSpaceId;
 
   const options: LinkTypeOption[] = [
     createOption(

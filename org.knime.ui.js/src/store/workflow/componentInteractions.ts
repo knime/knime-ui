@@ -259,7 +259,9 @@ export const useComponentInteractionsStore = defineStore(
         }
 
         const applicationStore = useApplicationStore();
+
         const sourceSpaceId = applicationStore.activeProject?.origin?.spaceId;
+        // TODO: this is incorrect, component link target may be anywhere
 
         const { promptChangeLinkType } = useChangeLinkTypeModal();
         const linkType = await promptChangeLinkType({

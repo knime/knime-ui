@@ -20,7 +20,6 @@ const selectedSpaceId = computed(
 const currentLinkType = computed<LinkType | null>(
   () => config.value?.currentLinkType ?? null,
 );
-computed(() => config.value?.currentLinkUrl ?? null);
 const selectedLinkType = ref<LinkType.TypeEnum | null>(null);
 
 const linkTypeOptions = computed(() =>
@@ -38,26 +37,6 @@ const radioValues = computed(() =>
   })),
 );
 
-const optionTextById = computed<Record<string, string>>(() =>
-  Object.fromEntries(
-    linkTypeOptions.value.map((option) => [option.id, option.text]),
-  ),
-);
-computed(() => {
-  if (!currentLinkType.value) {
-    return "Not linked";
-  }
-  return (
-    optionTextById.value[currentLinkType.value.type] ??
-    currentLinkType.value.type
-      .toLowerCase()
-      .split("_")
-      .map((segment) =>
-        segment.length ? segment[0].toUpperCase() + segment.slice(1) : segment,
-      )
-      .join(" ")
-  );
-});
 const isConfirmDisabled = computed(() => {
   if (!selectedLinkType.value) {
     return true;
