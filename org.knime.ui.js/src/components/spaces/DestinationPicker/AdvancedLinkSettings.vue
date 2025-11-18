@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { InlineMessage, Label } from "@knime/components";
-import { Checkbox } from "@knime/kds-components";
+import { KdsCheckbox } from "@knime/kds-components";
 
 import type { ShareComponentCommand } from "@/api/gateway-api/generated-api";
 
@@ -20,7 +20,7 @@ defineEmits<{
 </script>
 
 <template>
-  <Checkbox
+  <KdsCheckbox
     :model-value="includeData"
     label="Include input data"
     @update:model-value="$emit('update:include-data', $event === true)"

@@ -3,7 +3,7 @@ import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { ValueSwitch } from "@knime/components";
-import { useDarkMode, useLegacyMode } from "@knime/kds-components";
+import { useKdsDarkMode, useKdsLegacyMode } from "@knime/kds-components";
 
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { isBrowser, isDesktop } from "@/environment";
@@ -18,10 +18,10 @@ vi.mock("@knime/kds-components", () => {
   const mockUseLegacyMode = { value: false };
 
   return {
-    useDarkMode: () => ({
+    useKdsDarkMode: () => ({
       currentMode: mockCurrentMode,
     }),
-    useLegacyMode: () => ({
+    useKdsLegacyMode: () => ({
       legacyMode: mockUseLegacyMode,
     }),
   };
@@ -115,8 +115,8 @@ describe("DevTools.vue", () => {
 
     it("switches to dark mode correctly", async () => {
       const { wrapper } = doMount();
-      const { currentMode } = useDarkMode();
-      const { legacyMode } = useLegacyMode();
+      const { currentMode } = useKdsDarkMode();
+      const { legacyMode } = useKdsLegacyMode();
       const themeSwitch = getThemeSwitch(wrapper);
       await themeSwitch!.setValue("dark");
 
@@ -127,8 +127,8 @@ describe("DevTools.vue", () => {
 
     it("switches to light mode correctly", async () => {
       const { wrapper } = doMount();
-      const { currentMode } = useDarkMode();
-      const { legacyMode } = useLegacyMode();
+      const { currentMode } = useKdsDarkMode();
+      const { legacyMode } = useKdsLegacyMode();
       const themeSwitch = getThemeSwitch(wrapper);
       await themeSwitch!.setValue("light");
 
@@ -139,8 +139,8 @@ describe("DevTools.vue", () => {
 
     it("switches to system mode correctly", async () => {
       const { wrapper } = doMount();
-      const { currentMode } = useDarkMode();
-      const { legacyMode } = useLegacyMode();
+      const { currentMode } = useKdsDarkMode();
+      const { legacyMode } = useKdsLegacyMode();
       const themeSwitch = getThemeSwitch(wrapper);
       await themeSwitch!.setValue("system");
 
@@ -151,8 +151,8 @@ describe("DevTools.vue", () => {
 
     it("switches to legacy mode correctly", async () => {
       const { wrapper } = doMount();
-      const { currentMode } = useDarkMode();
-      const { legacyMode } = useLegacyMode();
+      const { currentMode } = useKdsDarkMode();
+      const { legacyMode } = useKdsLegacyMode();
       const themeSwitch = getThemeSwitch(wrapper);
 
       await themeSwitch!.setValue("dark");
