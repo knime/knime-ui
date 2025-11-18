@@ -82,7 +82,7 @@ import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
-import org.knime.gateway.impl.webui.WorkflowSyncer.DefaultWorkflowSyncer;
+import org.knime.gateway.impl.webui.WorkflowSyncerProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.kai.CodeKaiHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandler;
@@ -180,7 +180,7 @@ final class Init {
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepository = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
-        var workflowSyncer = new DefaultWorkflowSyncer(5, appStateUpdater); // TODO: Replace with NO-OP implementation later
+        var workflowSyncerProvider = new WorkflowSyncerProvider(5, appStateUpdater); // TODO: Replace with NO-OP implementation later
         NodeCategoryExtensions nodeCategoryExtensions =
             () -> NodeSpecCollectionProvider.getInstance().getCategoryExtensions();
 
@@ -208,7 +208,7 @@ final class Init {
             nodeCollections, //
             nodeCategoryExtensions, //
             selectionEventBus, //
-            workflowSyncer);
+            workflowSyncerProvider);
 
         DesktopAPI.injectDependencies( //
             projectManager, //
