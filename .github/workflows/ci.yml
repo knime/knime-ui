@@ -75,6 +75,9 @@ jobs:
         run: pnpm install
         working-directory: org.knime.ui.js
 
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
       - name: Run e2e tests
         run: pnpm run test:e2e
         working-directory: org.knime.ui.js
