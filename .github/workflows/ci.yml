@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  lint-test-build:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: org.knime.ui.js
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # full history for SonarCloud
+      - uses: pnpm/action-setup@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "org.knime.ui.js/package.json"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint and format
+        run: pnpm run ci:lint-format
+
+      - name: Type check
+        run: pnpm run type-check
+
+      - name: Run coverage
+        run: pnpm run coverage
+
+      - name: Build for CI
+        run: pnpm run build:ci
+
+      - name: Audit
+        run: pnpm run audit
+
+      - name: Sonar scan
+        if: github.actor != 'dependabot[bot]'
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --user 1001
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "org.knime.ui.js/package.json"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: org.knime.ui.js
+
+      - name: Run e2e tests
+        run: pnpm run test:e2e
+        working-directory: org.knime.ui.js
+
+      - name: Upload Playwright artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            org.knime.ui.js/playwright-report/**
+            org.knime.ui.js/test-results/**
