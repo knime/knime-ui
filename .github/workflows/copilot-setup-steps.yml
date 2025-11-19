@@ -33,6 +33,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
+          cache-dependency-path: org.knime.ui.js/pnpm-lock.yaml
           node-version-file: "org.knime.ui.js/package.json"
           cache: "pnpm"
 
