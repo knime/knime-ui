@@ -82,7 +82,6 @@ import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
-import org.knime.gateway.impl.webui.WorkflowSyncerProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.kai.CodeKaiHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandler;
@@ -102,6 +101,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
+import org.knime.gateway.impl.webui.syncing.WorkflowSyncerProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.CEFPlugin;
 import org.knime.js.cef.commservice.CEFCommService;
@@ -180,7 +180,11 @@ final class Init {
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepository = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
-        var workflowSyncerProvider = new WorkflowSyncerProvider(5, appStateUpdater); // TODO: Replace with NO-OP implementation later
+
+        // TODO: Should be disabled
+        var workflowSyncerProvider = new WorkflowSyncerProvider(5, appStateUpdater, spaceProvidersManager);
+        // var workflowSyncerProvider = WorkflowSyncerProvider.disabled();
+
         NodeCategoryExtensions nodeCategoryExtensions =
             () -> NodeSpecCollectionProvider.getInstance().getCategoryExtensions();
 
