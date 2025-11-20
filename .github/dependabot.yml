@@ -33,7 +33,7 @@ updates:
           - "@typescript-eslint/*"
 
   - package-ecosystem: "github-actions"
-    directory: "/org.knime.ui.js/"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "sunday"
