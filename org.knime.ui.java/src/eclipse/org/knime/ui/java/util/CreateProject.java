@@ -47,6 +47,7 @@
 package org.knime.ui.java.util;
 
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.SubMonitor;
 import org.knime.core.node.ExecutionMonitor;
@@ -115,12 +116,33 @@ public final class CreateProject {
      */
     public static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
         final ProgressReporter progressReporter, final Space space) {
-        return Project.builder() //
-            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
-            .setName(name) //
-            .setId(projectId) //
-            .setOrigin(origin) //
-            .build();
+//        return Project.builder() //
+//            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
+//            .setName(name) //
+//            .setId(projectId) //
+//            .setOrigin(origin) //
+//            .build();
+
+        // TODO: This is just a hack, remove this.
+        final var project = Project.builder() //
+                .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
+                .setName(name) //
+                .setId(projectId) //
+                .setOrigin(origin) //
+                .build();
+        final var wfmLoader = fromOriginWithProgressReporter(origin, progressReporter, space);
+
+        // TODO: Where do this loaders come from?
+        final Consumer<WorkflowManager> onLoadCallback = wfm -> {
+            NodeLogger.getLogger(CreateProject.class).warn("'onLoadCallback' called for <%s>".formatted(wfm.getName()));
+        };
+        final Consumer<WorkflowManager> onDisposeCallback = wfm -> {
+            NodeLogger.getLogger(CreateProject.class)
+                .warn("'onDisposeCallback' called for <%s>".formatted(wfm.getName()));
+        };
+
+        project.setWfmLoader(wfmLoader, onLoadCallback, onDisposeCallback);
+        return project;
     }
 
     /**
