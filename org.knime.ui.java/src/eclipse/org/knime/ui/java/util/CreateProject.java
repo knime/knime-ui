@@ -110,16 +110,7 @@ public final class CreateProject {
     }
 
     /**
-     * TODO: This is just a hack, remove this.
-     *
-     * @param origin -
-     * @param progressReporter -
-     * @param space -
-     * @param workflowSyncerProvider -
-     * @return -
-     * @throws LoggedOutException
-     * @throws NetworkException
-     * @throws ServiceCallException
+     * TODO: Logic like this should live in {@code knime-com-gateway} since it's only relevant for browser editing.
      */
     public static Project createProjectFromOrigin(final Origin origin, final ProgressReporter progressReporter,
         final Space space, final WorkflowSyncerProvider workflowSyncerProvider)
@@ -164,6 +155,10 @@ public final class CreateProject {
         return project;
     }
 
+    /**
+     * TODO: We need to improve on the registered listeners, s.t. we catch all the events we care about.
+     *       We might also think about integrating this with {@link WorkflowChangeListener}.
+     */
     private static WorkflowListener createWorkflowListener(final String projectId, final WorkflowSyncer workflowSyncer) {
         return event -> {
             final var eventType = event.getType();
