@@ -228,8 +228,8 @@ final class Init {
             state.getWelcomeApEndpoint(), //
             createExampleProjects(), //
             state.getUserProfile(), //
-            progressReporter //
-        );
+            progressReporter, //
+            workflowSyncerProvider);
 
         // Register listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);

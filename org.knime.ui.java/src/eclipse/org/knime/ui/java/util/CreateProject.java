@@ -52,6 +52,8 @@ import java.util.function.Consumer;
 import org.eclipse.core.runtime.SubMonitor;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.WorkflowEvent;
+import org.knime.core.node.workflow.WorkflowListener;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.RestLocationInfo;
@@ -68,7 +70,10 @@ import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.impl.webui.syncing.WorkflowSyncer;
+import org.knime.gateway.impl.webui.syncing.WorkflowSyncerProvider;
 
 /**
  * Static logic to load and create projects.
@@ -105,44 +110,83 @@ public final class CreateProject {
     }
 
     /**
-     * Create a {@link Project} instance that corresponds to an {@link Origin}, i.e. an item in a {@link Space}.
+     * TODO: This is just a hack, remove this.
      *
-     * @param projectId -
-     * @param name -
      * @param origin -
      * @param progressReporter -
      * @param space -
+     * @param workflowSyncerProvider -
      * @return -
+     * @throws LoggedOutException
+     * @throws NetworkException
+     * @throws ServiceCallException
      */
-    public static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
+    public static Project createProjectFromOrigin(final Origin origin, final ProgressReporter progressReporter,
+        final Space space, final WorkflowSyncerProvider workflowSyncerProvider)
+        throws NetworkException, LoggedOutException, ServiceCallException {
+        String name;
+        try {
+            name = space.getItemName(origin.itemId());
+        } catch (final MutableServiceCallException e) {
+            throw e.toGatewayException("Failed to open project");
+        }
+        var projectId = Project.getUniqueProjectId(name);
+        var workflowSyncer = workflowSyncerProvider.getWorkflowSyncerForContext(Key.of(projectId));
+        return createProjectFromOrigin(projectId, name, origin, progressReporter, space, workflowSyncer);
+    }
+
+    private static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
         final ProgressReporter progressReporter, final Space space) {
-//        return Project.builder() //
-//            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
-//            .setName(name) //
-//            .setId(projectId) //
-//            .setOrigin(origin) //
-//            .build();
+        return Project.builder() //
+            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
+            .setName(name) //
+            .setId(projectId) //
+            .setOrigin(origin) //
+            .build();
+    }
 
-        // TODO: This is just a hack, remove this.
+    private static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
+        final ProgressReporter progressReporter, final Space space,
+        final WorkflowSyncer workflowSyncer) {
         final var project = Project.builder() //
-                .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
-                .setName(name) //
-                .setId(projectId) //
-                .setOrigin(origin) //
-                .build();
-        final var wfmLoader = fromOriginWithProgressReporter(origin, progressReporter, space);
+            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
+            .setName(name) //
+            .setId(projectId) //
+            .setOrigin(origin) //
+            .build();
 
-        // TODO: Where do this loaders come from?
-        final Consumer<WorkflowManager> onLoadCallback = wfm -> {
-            NodeLogger.getLogger(CreateProject.class).warn("'onLoadCallback' called for <%s>".formatted(wfm.getName()));
-        };
-        final Consumer<WorkflowManager> onDisposeCallback = wfm -> {
-            NodeLogger.getLogger(CreateProject.class)
-                .warn("'onDisposeCallback' called for <%s>".formatted(wfm.getName()));
-        };
+        final var wfmLoader = fromOriginWithProgressReporter(origin, progressReporter, space);
+        final var workflowListener = createWorkflowListener(projectId, workflowSyncer);
+        final var onLoadCallback = createOnLoadCallback(workflowListener);
+        final var onDisposeCallback = createOnDisposeCallback(workflowListener);
 
         project.setWfmLoader(wfmLoader, onLoadCallback, onDisposeCallback);
         return project;
+    }
+
+    private static WorkflowListener createWorkflowListener(final String projectId, final WorkflowSyncer workflowSyncer) {
+        return event -> {
+            final var eventType = event.getType();
+            LOGGER.warn("'%s' event received for project <%s>".formatted(eventType, projectId));
+            if (eventType == WorkflowEvent.Type.NODE_ADDED || eventType == WorkflowEvent.Type.NODE_REMOVED) {
+                LOGGER.warn("A node was added or removed, we need to auto-sync now");
+                workflowSyncer.notifyWorkflowChanged(projectId);
+            }
+        };
+    }
+
+    private static Consumer<WorkflowManager> createOnLoadCallback(final WorkflowListener listener) {
+        return wfm -> {
+            LOGGER.warn("'onLoadCallback' called for worklfow <%s>".formatted(wfm.getName()));
+            wfm.addListener(listener);
+        };
+    }
+
+    private static Consumer<WorkflowManager> createOnDisposeCallback(final WorkflowListener listener) {
+        return wfm -> {
+            LOGGER.warn("'onDisposeCallback' called for workflow <%s>".formatted(wfm.getName()));
+            wfm.removeListener(listener);
+        };
     }
 
     /**

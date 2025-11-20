@@ -58,7 +58,6 @@ import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.util.Pair;
 import org.knime.core.util.hub.NamedItemVersion;
-import org.knime.ui.java.util.ProgressReporter;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceItemVersionEnt;
@@ -72,9 +71,11 @@ import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.syncing.WorkflowSyncerProvider;
 import org.knime.ui.java.util.CreateProject;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.ProgressReporter;
 import org.knime.workbench.core.imports.RepoObjectImport;
 
 /**
@@ -136,7 +137,11 @@ final class OpenProject {
             project = optProject.get();
         } else {
             final var origin = new Origin(spaceProviderId, spaceId, itemId, projectType);
-            project = CreateProject.createProjectFromOrigin(origin, DesktopAPI.getDeps(ProgressReporter.class), space);
+            final var progressReporter = DesktopAPI.getDeps(ProgressReporter.class);
+
+            // TODO: This is just a hack, remove this.
+            final var workflowSyncerProvider = DesktopAPI.getDeps(WorkflowSyncerProvider.class);
+            project = CreateProject.createProjectFromOrigin(origin, progressReporter, space, workflowSyncerProvider);
         }
 
         // already trigger loading of wfm here because we want to abort and not register the project if this fails

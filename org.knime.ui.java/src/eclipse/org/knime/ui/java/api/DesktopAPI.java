@@ -62,7 +62,6 @@ import java.util.function.Consumer;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.ui.java.util.ProgressReporter;
 import org.knime.gateway.api.webui.entity.GatewayProblemDescriptionEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
@@ -81,11 +80,13 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.impl.webui.syncing.WorkflowSyncerProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.ProgressReporter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -266,9 +267,10 @@ public final class DesktopAPI {
      * @param exampleProjects
      * @param userProfile
      * @param progressReporter
+     * @param workflowSyncerProvider
      * @throws IllegalStateException if the dependencies have been already injected
      */
-    @SuppressWarnings({"java:S107", "JavadocDeclaration", "javadoc"}) // Parameter count
+    @SuppressWarnings({"java:S107", "JavadocDeclaration"}) // Parameter count
     public static void injectDependencies( //
         final ProjectManager projectManager, //
         final WorkflowMiddleware workflowMiddleware, //
@@ -283,7 +285,8 @@ public final class DesktopAPI {
         final WelcomeAPEndpoint welcomeAPEndpoint, //
         final ExampleProjects exampleProjects, //
         final UserProfile userProfile, //
-        final ProgressReporter progressReporter) {
+        final ProgressReporter progressReporter, //
+        final WorkflowSyncerProvider workflowSyncerProvider) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -303,77 +306,47 @@ public final class DesktopAPI {
         injectDependency(exampleProjects);
         injectDependency(userProfile);
         injectDependency(progressReporter);
+        injectDependency(workflowSyncerProvider);
     }
 
     static void injectDependency(final UserProfile userProfile) {
         DEPENDENCIES.put(UserProfile.class, userProfile);
     }
 
-    /**
-     * Add individual dependency for testing purposes.
-     *
-     * @param eventConsumer
-     */
     static void injectDependency(final EventConsumer eventConsumer) {
         DEPENDENCIES.put(EventConsumer.class, eventConsumer);
     }
 
-    /**
-     * Add individual dependency for testing purposes.
-     *
-     * @param localSpace
-     */
     static void injectDependency(final LocalSpace localSpace) {
         DEPENDENCIES.put(LocalSpace.class, localSpace);
     }
 
-    /**
-     * Add individual dependency for testing purposes.
-     *
-     * @param projectManager
-     */
     static void injectDependency(final ProjectManager projectManager) {
         DEPENDENCIES.put(ProjectManager.class, projectManager);
     }
 
-    /**
-     * Add individual dependency for testing purposes.
-     *
-     * @param appStateUpdater
-     */
     static void injectDependency(final AppStateUpdater appStateUpdater) {
         DEPENDENCIES.put(AppStateUpdater.class, appStateUpdater);
     }
 
-    /**
-     * Add individual dependency for testing purposes.
-     *
-     * @param spaceProvidersManager
-     */
     static void injectDependency(final SpaceProvidersManager spaceProvidersManager) {
         DEPENDENCIES.put(SpaceProvidersManager.class, spaceProvidersManager);
     }
 
-    /**
-     * Add individual dependency for testing purposes.
-     *
-     * @param mruProjects
-     */
     static void injectDependency(final MostRecentlyUsedProjects mruProjects) {
         DEPENDENCIES.put(MostRecentlyUsedProjects.class, mruProjects);
     }
 
-    /**
-     * Add individual dependency for testing purposes.
-     *
-     * @param exampleProjects
-     */
     static void injectDependency(final ExampleProjects exampleProjects) {
         DEPENDENCIES.put(ExampleProjects.class, exampleProjects);
     }
 
     static void injectDependency(final ProgressReporter progressReporter) {
         DEPENDENCIES.put(ProgressReporter.class, progressReporter);
+    }
+
+    static void injectDependency(final WorkflowSyncerProvider workflowSyncerProvider) {
+        DEPENDENCIES.put(WorkflowSyncerProvider.class, workflowSyncerProvider);
     }
 
     /**
