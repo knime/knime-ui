@@ -43,7 +43,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
       component: createModalTemplate({
         items,
         itemIconRenderer,
-      }),
+      }) as UseKdsConfirmDialogComponentBasedConfig["component"],
 
       buttons: [
         {
@@ -55,7 +55,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
           type: "confirm",
         },
       ],
-    } as UseKdsConfirmDialogComponentBasedConfig);
+    });
   };
 
   const onDeleteItems = async (items: FileExplorerItem[]) => {
