@@ -47,14 +47,11 @@
 package org.knime.ui.java.util;
 
 import java.nio.file.Path;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.eclipse.core.runtime.SubMonitor;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.WorkflowEvent;
-import org.knime.core.node.workflow.WorkflowListener;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.LocationInfo;
 import org.knime.core.node.workflow.contextv2.RestLocationInfo;
@@ -108,8 +105,27 @@ public final class CreateProject {
         return createProjectFromOrigin(projectId, name, origin, progressReporter, space);
     }
 
+    private static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
+        final ProgressReporter progressReporter, final Space space) {
+        return Project.builder() //
+            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
+            .setName(name) //
+            .setId(projectId) //
+            .setOrigin(origin) //
+            .build();
+    }
+
     /**
      * TODO: Logic like this should live in {@code knime-com-gateway} since it's only relevant for browser editing.
+     *
+     * @param origin -
+     * @param progressReporter -
+     * @param space -
+     * @param getWorkflowSyncer -
+     * @return -
+     * @throws NetworkException
+     * @throws LoggedOutException
+     * @throws ServiceCallException
      */
     public static Project createProjectFromOrigin(final Origin origin, final ProgressReporter progressReporter,
         final Space space, final Function<String, WorkflowSyncer> getWorkflowSyncer)
@@ -126,61 +142,16 @@ public final class CreateProject {
     }
 
     private static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
-        final ProgressReporter progressReporter, final Space space) {
-        return Project.builder() //
-            .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
-            .setName(name) //
-            .setId(projectId) //
-            .setOrigin(origin) //
-            .build();
-    }
-
-    private static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
-        final ProgressReporter progressReporter, final Space space,
-        final WorkflowSyncer workflowSyncer) {
+        final ProgressReporter progressReporter, final Space space, final WorkflowSyncer workflowSyncer) {
         final var project = Project.builder() //
             .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
             .setName(name) //
             .setId(projectId) //
             .setOrigin(origin) //
             .build();
-
         final var wfmLoader = fromOriginWithProgressReporter(origin, progressReporter, space);
-        final var workflowListener = createWorkflowListener(workflowSyncer);
-        final var onLoadCallback = createOnLoadCallback(workflowListener);
-        final var onDisposeCallback = createOnDisposeCallback(workflowListener);
-
-        project.setWfmLoader(wfmLoader, onLoadCallback, onDisposeCallback);
+        project.setWfmLoader(wfmLoader, workflowSyncer::onLoadCallback, workflowSyncer::onDisposeCallback);
         return project;
-    }
-
-    /**
-     * TODO: We need to improve on the registered listeners, s.t. we catch all the events we care about.
-     *       We might also think about integrating this with {@link WorkflowChangeListener}.
-     */
-    private static WorkflowListener createWorkflowListener(final WorkflowSyncer workflowSyncer) {
-        return event -> {
-            final var eventType = event.getType();
-            LOGGER.warn("<%s> event received".formatted(eventType));
-            if (eventType == WorkflowEvent.Type.NODE_ADDED || eventType == WorkflowEvent.Type.NODE_REMOVED) {
-                LOGGER.warn("A node was added or removed, we need to auto-sync now");
-                workflowSyncer.notifyWorkflowChanged();
-            }
-        };
-    }
-
-    private static Consumer<WorkflowManager> createOnLoadCallback(final WorkflowListener listener) {
-        return wfm -> {
-            LOGGER.warn("'onLoadCallback' called for worklfow <%s>".formatted(wfm.getName()));
-            wfm.addListener(listener);
-        };
-    }
-
-    private static Consumer<WorkflowManager> createOnDisposeCallback(final WorkflowListener listener) {
-        return wfm -> {
-            LOGGER.warn("'onDisposeCallback' called for workflow <%s>".formatted(wfm.getName()));
-            wfm.removeListener(listener);
-        };
     }
 
     /**
