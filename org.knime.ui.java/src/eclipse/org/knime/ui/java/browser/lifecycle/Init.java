@@ -229,7 +229,7 @@ final class Init {
             createExampleProjects(), //
             state.getUserProfile(), //
             progressReporter, //
-            workflowSyncerProvider);
+            workflowSyncerProvider); // TODO: Normally we would not inject the syncer into the DesktopAPI
 
         // Register listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);

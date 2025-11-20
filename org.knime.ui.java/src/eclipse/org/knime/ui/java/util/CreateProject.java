@@ -48,6 +48,7 @@ package org.knime.ui.java.util;
 
 import java.nio.file.Path;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.eclipse.core.runtime.SubMonitor;
 import org.knime.core.node.ExecutionMonitor;
@@ -70,10 +71,8 @@ import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.WorkflowManagerLoader;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.gateway.impl.webui.syncing.WorkflowSyncer;
-import org.knime.gateway.impl.webui.syncing.WorkflowSyncerProvider;
 
 /**
  * Static logic to load and create projects.
@@ -113,7 +112,7 @@ public final class CreateProject {
      * TODO: Logic like this should live in {@code knime-com-gateway} since it's only relevant for browser editing.
      */
     public static Project createProjectFromOrigin(final Origin origin, final ProgressReporter progressReporter,
-        final Space space, final WorkflowSyncerProvider workflowSyncerProvider)
+        final Space space, final Function<String, WorkflowSyncer> getWorkflowSyncer)
         throws NetworkException, LoggedOutException, ServiceCallException {
         String name;
         try {
@@ -122,7 +121,7 @@ public final class CreateProject {
             throw e.toGatewayException("Failed to open project");
         }
         var projectId = Project.getUniqueProjectId(name);
-        var workflowSyncer = workflowSyncerProvider.getWorkflowSyncerForContext(Key.of(projectId));
+        var workflowSyncer = getWorkflowSyncer.apply(projectId);
         return createProjectFromOrigin(projectId, name, origin, progressReporter, space, workflowSyncer);
     }
 
@@ -147,7 +146,7 @@ public final class CreateProject {
             .build();
 
         final var wfmLoader = fromOriginWithProgressReporter(origin, progressReporter, space);
-        final var workflowListener = createWorkflowListener(projectId, workflowSyncer);
+        final var workflowListener = createWorkflowListener(workflowSyncer);
         final var onLoadCallback = createOnLoadCallback(workflowListener);
         final var onDisposeCallback = createOnDisposeCallback(workflowListener);
 
@@ -159,13 +158,13 @@ public final class CreateProject {
      * TODO: We need to improve on the registered listeners, s.t. we catch all the events we care about.
      *       We might also think about integrating this with {@link WorkflowChangeListener}.
      */
-    private static WorkflowListener createWorkflowListener(final String projectId, final WorkflowSyncer workflowSyncer) {
+    private static WorkflowListener createWorkflowListener(final WorkflowSyncer workflowSyncer) {
         return event -> {
             final var eventType = event.getType();
-            LOGGER.warn("'%s' event received for project <%s>".formatted(eventType, projectId));
+            LOGGER.warn("<%s> event received".formatted(eventType));
             if (eventType == WorkflowEvent.Type.NODE_ADDED || eventType == WorkflowEvent.Type.NODE_REMOVED) {
                 LOGGER.warn("A node was added or removed, we need to auto-sync now");
-                workflowSyncer.notifyWorkflowChanged(projectId);
+                workflowSyncer.notifyWorkflowChanged();
             }
         };
     }

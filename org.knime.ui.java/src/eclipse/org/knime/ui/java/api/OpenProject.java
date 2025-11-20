@@ -51,6 +51,7 @@ import static org.knime.gateway.api.entity.EntityBuilderManager.builder;
 import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -71,6 +72,8 @@ import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
+import org.knime.gateway.impl.webui.syncing.WorkflowSyncer;
 import org.knime.gateway.impl.webui.syncing.WorkflowSyncerProvider;
 import org.knime.ui.java.util.CreateProject;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -138,10 +141,15 @@ final class OpenProject {
         } else {
             final var origin = new Origin(spaceProviderId, spaceId, itemId, projectType);
             final var progressReporter = DesktopAPI.getDeps(ProgressReporter.class);
+            // project = CreateProject.createProjectFromOrigin(origin, progressReporter, space);
 
             // TODO: This is just a hack, remove this.
-            final var workflowSyncerProvider = DesktopAPI.getDeps(WorkflowSyncerProvider.class);
-            project = CreateProject.createProjectFromOrigin(origin, progressReporter, space, workflowSyncerProvider);
+            final Function<String, WorkflowSyncer> getWorkflowSyncer = projectId -> {
+                final var key = Key.of(projectId);
+                final var workflowSyncerProvider = DesktopAPI.getDeps(WorkflowSyncerProvider.class);
+                return workflowSyncerProvider.getWorkflowSyncerForContext(key);
+            };
+            project = CreateProject.createProjectFromOrigin(origin, progressReporter, space, getWorkflowSyncer);
         }
 
         // already trigger loading of wfm here because we want to abort and not register the project if this fails
