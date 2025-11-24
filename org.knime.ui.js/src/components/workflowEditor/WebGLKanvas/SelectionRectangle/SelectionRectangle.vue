@@ -4,6 +4,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
+import type { Graphics } from "pixi.js";
 import rafThrottle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -15,7 +16,6 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
 import { SpatialHash } from "@/util/geometry/spatialHash";
 import { DashLine } from "@/util/pixiDashedLine";
-import type { GraphicsInst } from "@/vue3-pixi";
 import {
   type PanningToEdgeUpdateHandler,
   useDragNearEdgePanning,
@@ -248,7 +248,7 @@ const dashStrokeArray = computed(() => [
   DASH_ARRAY / zoomFactor.value,
 ]);
 
-const renderFn = (graphics: GraphicsInst) => {
+const renderFn = (graphics: Graphics) => {
   graphics.clear();
   const dash = new DashLine(graphics, {
     dash: dashStrokeArray.value,

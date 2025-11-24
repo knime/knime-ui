@@ -2,14 +2,18 @@
 <script setup lang="ts">
 import { computed, toRefs, useTemplateRef, watch } from "vue";
 import { type AnimationPlaybackControls, animate } from "motion";
-import type { ColorSource, FederatedPointerEvent, LineCap } from "pixi.js";
+import type {
+  ColorSource,
+  FederatedPointerEvent,
+  Graphics,
+  LineCap,
+} from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { DashLine } from "@/util/pixiDashedLine";
-import type { GraphicsInst } from "@/vue3-pixi";
 import type { ConnectorPathSegmentProps } from "../../types";
 import { type BezierPoints, getBezier } from "../../util/connectorPath";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
@@ -91,7 +95,7 @@ const getStrokeBasedBezierOffsets = (strokeWidth: number) => {
   };
 };
 
-const renderHoverArea = (graphics: GraphicsInst) => {
+const renderHoverArea = (graphics: Graphics) => {
   const { offsetStart, offsetEnd } =
     getStrokeBasedBezierOffsets(HOVER_AREA_SIZE);
 
@@ -126,13 +130,13 @@ const strokeWidth = computed(() => {
   return $shapes.connectorWidth;
 });
 
-const pathSegment = useTemplateRef<GraphicsInst>("pathSegment");
+const pathSegment = useTemplateRef<Graphics>("pathSegment");
 
 let animatedStrokeWidth = $shapes.connectorWidth;
 let animatedDashOffset = 0;
 const dashLength = 5;
 
-const renderConnector = (graphics: GraphicsInst, points: BezierPoints) => {
+const renderConnector = (graphics: Graphics, points: BezierPoints) => {
   const dashOffset = props.streaming ? animatedDashOffset : 0;
   const connectorWidth = props.isConnectionHovered
     ? animatedStrokeWidth
@@ -149,7 +153,7 @@ const renderConnector = (graphics: GraphicsInst, points: BezierPoints) => {
     cap: "square" as LineCap,
   };
 
-  let graphicsOrDashed: GraphicsInst | DashLine = graphics;
+  let graphicsOrDashed: Graphics | DashLine = graphics;
 
   if (props.streaming) {
     graphicsOrDashed = new DashLine(graphics, {

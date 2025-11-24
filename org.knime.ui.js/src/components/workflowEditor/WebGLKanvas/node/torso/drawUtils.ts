@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
-import type { GraphicsInst } from "@/vue3-pixi";
+import type { Graphics } from "pixi.js";
 
-const drawDefault = (graphics: GraphicsInst) => {
+const drawDefault = (graphics: Graphics) => {
   graphics
     .moveTo(0, 29.2)
     .lineTo(0, 2.8)
@@ -14,7 +14,7 @@ const drawDefault = (graphics: GraphicsInst) => {
     .bezierCurveTo(1.3, 32, 0, 30.7, 0, 29.2);
 };
 
-const drawLoopEnd = (graphics: GraphicsInst) => {
+const drawLoopEnd = (graphics: Graphics) => {
   graphics
     .moveTo(32, 2.8)
     .lineTo(32, 29.1)
@@ -26,7 +26,7 @@ const drawLoopEnd = (graphics: GraphicsInst) => {
     .bezierCurveTo(30.7, 0, 32, 1.3, 32, 2.8);
 };
 
-const drawLoopStart = (graphics: GraphicsInst) => {
+const drawLoopStart = (graphics: Graphics) => {
   graphics
     .moveTo(0, 29.2)
     .lineTo(0, 2.8)
@@ -38,7 +38,7 @@ const drawLoopStart = (graphics: GraphicsInst) => {
     .bezierCurveTo(1.3, 32, 0, 30.7, 0, 29.2);
 };
 
-const drawVirtualIn = (graphics: GraphicsInst) => {
+const drawVirtualIn = (graphics: Graphics) => {
   graphics
     .moveTo(32, 2.8)
     .lineTo(32, 29.1)
@@ -52,7 +52,7 @@ const drawVirtualIn = (graphics: GraphicsInst) => {
     .bezierCurveTo(30.7, 0, 32, 1.3, 32, 2.8);
 };
 
-const drawVirtualOut = (graphics: GraphicsInst) => {
+const drawVirtualOut = (graphics: Graphics) => {
   graphics
     .moveTo(0, 29.2)
     .lineTo(0, 2.8)

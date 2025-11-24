@@ -82,8 +82,8 @@ const renderRunning = (graphics: Graphics) => {
 <template>
   <Container>
     <!-- Loop execution paused. -->
-    <Graphics v-if="loopStatus === 'PAUSED'" @render="renderPause" />
+    <Graphics v-if="loopStatus === 'PAUSED'" @effect="renderPause" />
     <!-- Loop execution running. -->
-    <Graphics v-else-if="loopStatus === 'RUNNING'" @render="renderRunning" />
+    <Graphics v-else-if="loopStatus === 'RUNNING'" @effect="renderRunning" />
   </Container>
 </template>

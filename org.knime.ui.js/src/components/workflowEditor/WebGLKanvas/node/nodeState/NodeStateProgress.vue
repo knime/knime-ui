@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
-import type { Container } from "pixi.js";
+import type { Container, Graphics } from "pixi.js";
 
 import type { NodeState } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../../common/useAnimatePixiContainer";
 import { nodeStateText } from "../../util/textStyles";
 
@@ -36,7 +35,7 @@ const progressDisplayPercentage = computed(() => {
 
 const ANIMATION_X_OFFSET = 20;
 
-const animatedCircleRef = useTemplateRef<ContainerInst>("animatedCircleRef");
+const animatedCircleRef = useTemplateRef<Container>("animatedCircleRef");
 useAnimatePixiContainer<number>({
   initialValue: 0,
   targetValue: ANIMATION_X_OFFSET,
@@ -62,7 +61,7 @@ useAnimatePixiContainer<number>({
   >
     <Graphics
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           graphics.clear();
           graphics.circle(6, $shapes.nodeStatusHeight / 2, 4);
           graphics.fill($colors.nodeProgressBar);
@@ -87,7 +86,7 @@ useAnimatePixiContainer<number>({
     <Graphics
       event-mode="none"
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           graphics.clear();
           graphics.roundRect(
             0,
@@ -110,7 +109,7 @@ useAnimatePixiContainer<number>({
         event-mode="none"
         :is-mask="true"
         @render="
-          (graphics: GraphicsInst) => {
+          (graphics: Graphics) => {
             graphics.clear();
             graphics.roundRect(
               0,

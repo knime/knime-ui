@@ -1,11 +1,11 @@
-import type { ApplicationInst } from "@/vue3-pixi";
+import type { Application } from "vue3-pixi";
 
 const RUN_TIME_MS = 5000;
 
 const isCanvasPerfMode = () =>
   window.localStorage.getItem("CANVAS_PERF_MODE") === "true";
 
-const trackSingleRender = (pixiApp: ApplicationInst) => {
+const trackSingleRender = (pixiApp: Application) => {
   if (!isCanvasPerfMode()) {
     return;
   }

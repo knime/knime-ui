@@ -4,14 +4,14 @@ import { storeToRefs } from "pinia";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useCanvasTooltipStore } from "@/store/canvasTooltip/canvasTooltip";
 import { useMovingStore } from "@/store/workflow/moving";
-import type { ContainerInst } from "@/vue3-pixi";
+import type { Container } from "pixi.js";
 
 const entryDelayMS = 750;
 const hoverableTooltipLeaveDelayMS = 550;
 
 export const useTooltip = (params: {
   tooltip: ComputedRef<TooltipDefinition | null>;
-  element: Ref<ContainerInst | null>;
+  element: Ref<Container | null>;
 }) => {
   const canvasTooltipStore = useCanvasTooltipStore();
   const { isDragging } = storeToRefs(useMovingStore());

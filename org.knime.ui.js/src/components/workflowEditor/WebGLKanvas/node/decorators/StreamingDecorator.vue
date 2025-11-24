@@ -3,7 +3,6 @@ import { computed } from "vue";
 import { Container, Graphics, type StrokeInput } from "pixi.js";
 
 import * as $colors from "@/style/colors";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 /**
  * An arrow that indicates that the node is in streaming execution,
@@ -42,7 +41,7 @@ const streamable = computed(() => {
 
 /* eslint-disable no-magic-numbers */
 // Colored Background. This makes sure the lock is well visible even if it overlaps with the node icon
-const renderBackground = (graphics: GraphicsInst) => {
+const renderBackground = (graphics: Graphics) => {
   graphics.roundRect(0, 5, 6, 6, 1);
   graphics.fill(backgroundColor.value);
 };
@@ -54,7 +53,7 @@ const strokeStyle: StrokeInput = {
   cap: "round",
 };
 
-const renderArrow = (graphics: GraphicsInst) => {
+const renderArrow = (graphics: Graphics) => {
   graphics
     .moveTo(0.5, 5.5)
     .lineTo(1.5, 5.5)
@@ -68,7 +67,7 @@ const renderArrow = (graphics: GraphicsInst) => {
     .stroke(strokeStyle);
 };
 
-const renderX = (graphics: GraphicsInst) => {
+const renderX = (graphics: Graphics) => {
   graphics
     .moveTo(2.40625, 8.59375)
     .lineTo(8.59375, 2.40625)
@@ -81,10 +80,10 @@ const renderX = (graphics: GraphicsInst) => {
 
 <template>
   <Container>
-    <Graphics v-if="streamable" @render="renderArrow" />
+    <Graphics v-if="streamable" @effect="renderArrow" />
     <template v-else>
-      <Graphics v-if="backgroundColor" @render="renderBackground" />
-      <Graphics @render="renderX" />
+      <Graphics v-if="backgroundColor" @effect="renderBackground" />
+      <Graphics @effect="renderX" />
     </template>
   </Container>
 </template>

@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { computed, toRef } from "vue";
 import { storeToRefs } from "pinia";
+import type { Graphics } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -11,7 +12,6 @@ import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { DashLine } from "@/util/pixiDashedLine";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 import { useNodeNameShortening } from "./useTextShortening";
@@ -64,7 +64,7 @@ const { nodeSelectionMeasures: measures } = useNodeSelectionPlaneMeasures({
       : $shapes.nodeNameHorizontalMargin * 2,
 });
 
-const selectionPlaneRenderFn = (graphics: GraphicsInst) => {
+const selectionPlaneRenderFn = (graphics: Graphics) => {
   graphics.clear();
 
   graphics.roundRect(
@@ -81,7 +81,7 @@ const selectionPlaneRenderFn = (graphics: GraphicsInst) => {
   graphics.fill($colors.kanvasNodeSelection.activeBackground);
 };
 
-const focusPlaneRenderFn = (graphics: GraphicsInst) => {
+const focusPlaneRenderFn = (graphics: Graphics) => {
   graphics.clear();
   const dash = new DashLine(graphics, { dash: [5, 5] });
 
@@ -115,8 +115,8 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
     }"
     event-mode="none"
   >
-    <Graphics v-if="showFocus" @render="focusPlaneRenderFn" />
+    <Graphics v-if="showFocus" @effect="focusPlaneRenderFn" />
 
-    <Graphics v-if="showSelection" @render="selectionPlaneRenderFn" />
+    <Graphics v-if="showSelection" @effect="selectionPlaneRenderFn" />
   </Container>
 </template>

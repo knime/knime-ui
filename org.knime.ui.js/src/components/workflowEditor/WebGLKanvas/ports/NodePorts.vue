@@ -9,7 +9,7 @@ import {
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $shapes from "@/style/shapes";
-import type { ContainerInst } from "@/vue3-pixi";
+import type { Container } from "pixi.js";
 import {
   type PortPositions,
   usePortPositions,
@@ -79,7 +79,7 @@ const getPortContainerLabel = (index: number, type: "in" | "out") => {
     : `Port__${typeName}-${index}`;
 };
 
-const ports = ref<ContainerInst>();
+const ports = ref<Container>();
 
 const getPortPositionOffset = (type: "in" | "out", portIndex: number) => {
   return portPositions.value[type][portIndex] ?? [0, 0];

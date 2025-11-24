@@ -64,11 +64,12 @@
     "monaco-editor": "0.52.2",
     "motion": "^12.4.7",
     "pinia": "^2.3.0",
-    "pixi.js": "^8.9.2",
+    "pixi.js": "^8.14.3",
     "raf-throttle": "2.0.6",
     "vscode-json-languageservice": "^5.6.1",
     "vue": "3.5.18",
     "vue-router": "^4.5.1",
+    "vue3-pixi": "1.0.0-beta.3",
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {

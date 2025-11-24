@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
+import type { Graphics } from "pixi.js";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import type { GraphicsInst } from "@/vue3-pixi";
 import { placeholderProgressText } from "../../util/textStyles";
 
 type Props = {
@@ -24,7 +24,7 @@ const progressPercentile = computed(() => {
   return `${Math.floor(props.progress * 100)}%`;
 });
 
-const renderProgressBorder = (graphics: GraphicsInst) => {
+const renderProgressBorder = (graphics: Graphics) => {
   graphics.clear();
 
   const radius = $shapes.nodeTorsoRadius;
@@ -115,7 +115,7 @@ const renderProgressBorder = (graphics: GraphicsInst) => {
 
     <Graphics
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           graphics.clear();
           graphics.roundRect(
             0,
@@ -130,6 +130,6 @@ const renderProgressBorder = (graphics: GraphicsInst) => {
       "
     />
 
-    <Graphics @render="renderProgressBorder" />
+    <Graphics @effect="renderProgressBorder" />
   </Container>
 </template>

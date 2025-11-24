@@ -3,7 +3,6 @@ import { computed } from "vue";
 import { Container, Graphics } from "pixi.js";
 
 import * as $colors from "@/style/colors";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 /**
  * A decorator component which displays arrows if a node can trigger workflow re-execution.
@@ -24,12 +23,12 @@ const backgroundColor = computed(() => {
 
 /* eslint-disable no-magic-numbers */
 // Colored Background. This makes sure the lock is well visible even if it overlaps with the node icon
-const renderBackground = (graphics: GraphicsInst) => {
+const renderBackground = (graphics: Graphics) => {
   graphics.roundRect(0, 5, 6, 6, 1);
   graphics.fill(backgroundColor.value);
 };
 
-const renderArrows = (graphics: GraphicsInst) => {
+const renderArrows = (graphics: Graphics) => {
   graphics
     .moveTo(7.5, 3)
     .lineTo(9.5, 3)
@@ -57,7 +56,7 @@ const renderArrows = (graphics: GraphicsInst) => {
 
 <template>
   <Container>
-    <Graphics v-if="backgroundColor" @render="renderBackground" />
-    <Graphics @render="renderArrows" />
+    <Graphics v-if="backgroundColor" @effect="renderBackground" />
+    <Graphics @effect="renderArrows" />
   </Container>
 </template>

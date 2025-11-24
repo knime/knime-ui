@@ -2,6 +2,7 @@ import type { Ref } from "vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
+import type { Application } from "vue3-pixi";
 
 import { isModifierKeyPressed, navigatorUtils } from "@knime/utils";
 
@@ -13,7 +14,6 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
-import { type ApplicationInst } from "@/vue3-pixi";
 import { isMarkedEvent } from "../util/interaction";
 
 const useHoldingDownSpace = () => {
@@ -61,7 +61,7 @@ const useHoldingDownSpace = () => {
 export const useCanvasPanning = ({
   pixiApp,
 }: {
-  pixiApp: Ref<ApplicationInst>;
+  pixiApp: Ref<Application>;
 }) => {
   const { isPanning, isHoldingDownSpace } = storeToRefs(useWebGLCanvasStore());
   const hasMoved = ref(false);

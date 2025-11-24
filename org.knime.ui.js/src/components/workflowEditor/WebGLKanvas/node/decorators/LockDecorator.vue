@@ -3,7 +3,6 @@ import { computed } from "vue";
 import { Container, Graphics, type StrokeInput } from "pixi.js";
 
 import * as $colors from "@/style/colors";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 /**
  * A lock icon that is used to indicate an un-/locked component / metanode.
@@ -29,7 +28,7 @@ const backgroundColor = computed(() => {
 
 /* eslint-disable no-magic-numbers */
 // Colored Background. This makes sure the lock is well visible even if it overlaps with the node icon
-const renderBackground = (graphics: GraphicsInst) => {
+const renderBackground = (graphics: Graphics) => {
   graphics.roundRect(0, 5, 6, 6, 1);
   graphics.fill(backgroundColor.value);
 };
@@ -41,7 +40,7 @@ const strokeStyle: StrokeInput = {
   cap: "round",
 };
 
-const renderLocked = (graphics: GraphicsInst) => {
+const renderLocked = (graphics: Graphics) => {
   graphics
     .rect(1.5625, 3.99902, 5.87503, 4.12622)
     .moveTo(4.5, 6.89504)
@@ -56,7 +55,7 @@ const renderLocked = (graphics: GraphicsInst) => {
     .stroke(strokeStyle);
 };
 
-const renderUnlocked = (graphics: GraphicsInst) => {
+const renderUnlocked = (graphics: Graphics) => {
   graphics
     .rect(2.5625, 3.99902, 5.87503, 4.12622)
     .moveTo(5.5, 6.89504)
@@ -75,8 +74,8 @@ const renderUnlocked = (graphics: GraphicsInst) => {
 
 <template>
   <Container>
-    <Graphics v-if="backgroundColor" @render="renderBackground" />
-    <Graphics v-if="isLocked" @render="renderLocked" />
-    <Graphics v-else @render="renderUnlocked" />
+    <Graphics v-if="backgroundColor" @effect="renderBackground" />
+    <Graphics v-if="isLocked" @effect="renderLocked" />
+    <Graphics v-else @effect="renderUnlocked" />
   </Container>
 </template>

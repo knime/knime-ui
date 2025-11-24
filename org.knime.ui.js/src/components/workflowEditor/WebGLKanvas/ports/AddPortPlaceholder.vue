@@ -16,7 +16,7 @@ import {
   isPlaceholderPort,
 } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
-import type { ContainerInst } from "@/vue3-pixi";
+import type { Container } from "pixi.js";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useNodeHoverListener } from "../common/useNodeHoverState";
 import {
@@ -133,7 +133,7 @@ const previewPort = computed<NodePort | null>(() => {
   return null;
 });
 
-const container = useTemplateRef<ContainerInst>("container");
+const container = useTemplateRef<Container>("container");
 
 // hover animation -> port bounces
 const isPlaceholderPortHovered = ref(false);

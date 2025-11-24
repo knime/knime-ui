@@ -2,7 +2,8 @@
 /* eslint-disable no-magic-numbers */
 import { computed, ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
-import { Container, FederatedPointerEvent, Rectangle } from "pixi.js";
+import { FederatedPointerEvent, Rectangle } from "pixi.js";
+import type { Container, Graphics } from "pixi.js";
 
 import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
@@ -13,7 +14,6 @@ import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingCon
 import { portSize } from "@/style/shapes";
 import * as $shapes from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
-import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import type { TooltipDefinition } from "../../types";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useTooltip } from "../tooltip/useTooltip";
@@ -133,7 +133,7 @@ const onPointerUp = () => {
   }
 };
 
-const portContainer = useTemplateRef<ContainerInst>("portContainer");
+const portContainer = useTemplateRef<Container>("portContainer");
 
 const portTransparency = usePortTransparency({
   portContainer,
@@ -159,7 +159,7 @@ const tooltip = computed<TooltipDefinition>(() => {
   } satisfies TooltipDefinition;
 });
 
-const tooltipRef = useTemplateRef<ContainerInst>("tooltipRef");
+const tooltipRef = useTemplateRef<Container>("tooltipRef");
 const { showTooltip, hideTooltip } = useTooltip({
   element: tooltipRef,
   tooltip,
@@ -187,7 +187,7 @@ const portActionsOffsetX = () => {
 };
 
 // node port actions animation
-const actionBarContainer = useTemplateRef<ContainerInst>("actionBarContainer");
+const actionBarContainer = useTemplateRef<Container>("actionBarContainer");
 const animating = ref<boolean>(false);
 
 useAnimatePixiContainer({
@@ -247,7 +247,7 @@ useAnimatePixiContainer({
         :x="hitArea.x"
         :y="hitArea.y"
         @render="
-          (graphics: GraphicsInst) => {
+          (graphics: Graphics) => {
             graphics.clear();
             graphics.rect(0, 0, hitArea.width, hitArea.height);
             graphics.stroke({ width: 1, color: 0x000000 });

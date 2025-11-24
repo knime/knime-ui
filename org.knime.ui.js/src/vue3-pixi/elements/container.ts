@@ -10,10 +10,10 @@ export interface ContainerProps {
 }
 
 export interface ContainerEvents extends PixiEvents {
-  render: [ContainerInst];
+  render: [Container];
 }
 
-export type ContainerInst = Container & EventTarget;
+export type Container = Container & EventTarget;
 
 export type ContainerComponent = DefineComponent<
   ContainerProps,

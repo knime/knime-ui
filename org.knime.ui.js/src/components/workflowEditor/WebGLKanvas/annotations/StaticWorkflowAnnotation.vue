@@ -12,6 +12,7 @@ import {
 import { useMagicKeys } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
+import type { Container } from "pixi.js";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
 
@@ -27,7 +28,6 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { gridSize } from "@/style/shapes";
 import * as shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { FLOATING_HTML_FADE_DELAY_MS } from "../common/constants";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../util/interaction";
@@ -44,9 +44,7 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const annotationContainer = useTemplateRef<ContainerInst>(
-  "annotationContainer",
-);
+const annotationContainer = useTemplateRef<Container>("annotationContainer");
 
 // This is required for CEF to avoid having visual artifacts of the borders
 // when panning/resizing annotations due to fractional pixels and GPU transforms
@@ -364,7 +362,7 @@ const openAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
       @pointermove="hoverAnnotationLinks"
       @pointerdown="openAnnotationLinks"
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: PIXI.Graphics) => {
           graphics.clear();
           graphics.rect(
             0,

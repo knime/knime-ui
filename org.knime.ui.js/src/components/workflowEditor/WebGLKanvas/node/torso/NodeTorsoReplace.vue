@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Graphics, GraphicsPath } from "pixi.js";
+import { type Graphics, GraphicsPath } from "pixi.js";
 
 import * as $colors from "@/style/colors";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import { torsoDrawUtils } from "./drawUtils";
 
@@ -19,7 +18,7 @@ const paths: string[] = [
 <template>
   <Graphics
     @render="
-      (graphics: GraphicsInst) => {
+      (graphics: Graphics) => {
         torsoDrawUtils.drawDefault(graphics);
         graphics.fill($colors.SilverSand);
       }
@@ -30,7 +29,7 @@ const paths: string[] = [
     v-for="(path, index) in paths"
     :key="index"
     @render="
-      (graphics: GraphicsInst) => {
+      (graphics: Graphics) => {
         graphics.path(new GraphicsPath(path));
         graphics.stroke({ color: $colors.Black, cap: 'round' });
       }

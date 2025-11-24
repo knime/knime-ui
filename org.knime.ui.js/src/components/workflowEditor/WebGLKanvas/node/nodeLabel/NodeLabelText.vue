@@ -4,6 +4,7 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { FederatedPointerEvent, Text, TextStyle } from "pixi.js";
+import type { Graphics } from "pixi.js";
 
 import { navigatorUtils, sleep } from "@knime/utils";
 
@@ -11,7 +12,6 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $colors from "@/style/colors";
 import { nodeSize } from "@/style/shapes";
-import type { GraphicsInst } from "@/vue3-pixi";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import { nodeLabelText } from "../../util/textStyles";
@@ -92,7 +92,7 @@ const textY = computed(() => {
 });
 
 const borderPadding = 2;
-const renderBorder = (graphics: GraphicsInst) => {
+const renderBorder = (graphics: Graphics) => {
   graphics.clear();
   graphics.rect(
     textX.value - borderPadding,
@@ -126,6 +126,6 @@ const onPointerEnter = (event: FederatedPointerEvent) => {
     >
       {{ shortenedText }}
     </Text>
-    <Graphics :renderable="isHovered" @render="renderBorder" />
+    <Graphics :renderable="isHovered" @effect="renderBorder" />
   </Container>
 </template>

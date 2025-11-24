@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GraphicsInst } from "@/vue3-pixi";
+import type { Graphics } from "pixi.js";
 
 type Props = {
   error?: string;
@@ -18,7 +18,7 @@ defineProps<Props>();
     <template v-if="error">
       <Graphics
         @render="
-          (graphics: GraphicsInst) => {
+          (graphics: Graphics) => {
             graphics.clear();
             graphics.circle(0, 0, 5);
             graphics.fill($colors.error);
@@ -27,7 +27,7 @@ defineProps<Props>();
       />
       <Graphics
         @render="
-          (graphics: GraphicsInst) => {
+          (graphics: Graphics) => {
             graphics.clear();
             graphics.moveTo(-2.25, -2.25);
             graphics.lineTo(2.25, 2.25);
@@ -37,7 +37,7 @@ defineProps<Props>();
       />
       <Graphics
         @render="
-          (graphics: GraphicsInst) => {
+          (graphics: Graphics) => {
             graphics.clear();
             graphics.moveTo(2.25, -2.25);
             graphics.lineTo(-2.25, 2.25);
@@ -50,7 +50,7 @@ defineProps<Props>();
     <Container v-else-if="warning" :position="{ x: -6, y: -6.5 }">
       <Graphics
         @render="
-          (graphics: GraphicsInst) => {
+          (graphics: Graphics) => {
             graphics.moveTo(6, 1.25);
             graphics.lineTo(0.5, 10.25);
             graphics.lineTo(11.5, 10.25);
@@ -67,7 +67,7 @@ defineProps<Props>();
       />
       <Graphics
         @render="
-          (graphics: GraphicsInst) => {
+          (graphics: Graphics) => {
             graphics.clear();
             graphics.moveTo(6, 4.2);
             graphics.lineTo(6, 7.3);
@@ -77,7 +77,7 @@ defineProps<Props>();
       />
       <Graphics
         @render="
-          (graphics: GraphicsInst) => {
+          (graphics: Graphics) => {
             graphics.clear();
             graphics.circle(6, 8.75, 0.5);
             graphics.fill($colors.Masala);

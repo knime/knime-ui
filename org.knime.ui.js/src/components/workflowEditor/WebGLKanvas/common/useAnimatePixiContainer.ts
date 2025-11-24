@@ -5,13 +5,13 @@ import {
   animate,
 } from "motion";
 
-import type { ContainerInst } from "@/vue3-pixi";
+import type { Container } from "pixi.js";
 
 type Options<T> = {
   /**
    * The object that will be animated
    */
-  targetDisplayObject: ShallowRef<ContainerInst | undefined | null>;
+  targetDisplayObject: ShallowRef<Container | undefined | null>;
   /**
    * Initial value of the tween
    */

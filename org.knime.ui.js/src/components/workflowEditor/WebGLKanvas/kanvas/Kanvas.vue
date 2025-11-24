@@ -2,6 +2,7 @@
 import {
   type Ref,
   computed,
+  onMounted,
   onUnmounted,
   ref,
   useTemplateRef,
@@ -9,7 +10,8 @@ import {
 } from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { Container, RenderLayer } from "pixi.js";
+import { type Container, RenderLayer } from "pixi.js";
+import { Application as VuePixiApplication } from "vue3-pixi";
 
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
@@ -18,7 +20,6 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSettingsStore } from "@/store/settings";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
-import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
 import { initE2ETestUtils } from "../util/e2eTest";
@@ -29,7 +30,7 @@ import { useKanvasNodePortHint } from "./useKanvasNodePortHint";
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
 
-const pixiApp = ref<ApplicationInst>();
+const pixiApp = ref<VuePixiApplication>();
 
 const emit = defineEmits<{
   canvasReady: [];
@@ -55,7 +56,7 @@ const isPixiAppInitialized = ref(false);
 const MAIN_CONTAINER_LABEL = "MainContainer";
 const { devMode } = storeToRefs(useApplicationSettingsStore());
 
-const addRenderLayers = (app: ApplicationInst["app"]) => {
+const addRenderLayers = (app: VuePixiApplication["app"]) => {
   let layerIndex = 0;
 
   const debugLayer = new RenderLayer();
@@ -83,35 +84,36 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
 
 const mainContainer = useTemplateRef<Container>("mainContainer");
 
-watch(
-  isPixiAppInitialized,
-  () => {
-    if (!isPixiAppInitialized.value) {
-      return;
-    }
-
-    // Store reference Pixi.js application instance
-    const app = pixiApp.value!.app;
-
-    if (!import.meta.env.PROD || devMode.value) {
-      globalThis.__PIXI_APP__ = app;
-    }
-
-    canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
+watch(mainContainer, (value) => {
+  if (value !== null) {
     canvasStore.stage = mainContainer.value;
-
-    // used by e2e tests in this repo and by QA
-    globalThis.__E2E_TEST__ = initE2ETestUtils(app);
-
-    canvasStore.isDebugModeEnabled =
-      import.meta.env.VITE_CANVAS_DEBUG === "true";
-
     emit("canvasReady");
+  }
+});
 
-    performanceTracker.trackSingleRender(pixiApp.value!);
-  },
-  { once: true },
-);
+onMounted(() => {
+  // Store reference Pixi.js application instance
+  const app = pixiApp.value!.app;
+  console.log(
+    "pixiApp.value",
+    pixiApp.value,
+    "mainContainer.value",
+    mainContainer.value,
+  );
+
+  if (!import.meta.env.PROD || devMode.value) {
+    globalThis.__PIXI_APP__ = app;
+  }
+
+  canvasStore.pixiApplication = pixiApp.value as VuePixiApplication;
+
+  // used by e2e tests in this repo and by QA
+  globalThis.__E2E_TEST__ = initE2ETestUtils(app);
+
+  canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
+
+  performanceTracker.trackSingleRender(pixiApp.value!);
+});
 
 useKanvasNodePortHint(isPixiAppInitialized);
 
@@ -127,7 +129,7 @@ onUnmounted(() => {
 
 const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
 const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
-  pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
+  pixiApp: pixiApp as NonNullable<Ref<VuePixiApplication>>,
 });
 
 const isGrabbing = ref(false);
@@ -172,13 +174,15 @@ watch(
 );
 
 // before the mount the pixi app is already there so we can add the layers and make sure they are available early
-const beforePixiMount = (app: ApplicationInst["app"]) => {
+const beforePixiMount = (app: VuePixiApplication["app"]) => {
   addRenderLayers(app);
 };
+
+const kanvasElement = getKanvasDomElement()!;
 </script>
 
 <template>
-  <Application
+  <VuePixiApplication
     ref="pixiApp"
     :background-color="0x000000"
     :background-alpha="0"
@@ -187,7 +191,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     :resolution="pixelRatio"
     :auto-density="true"
     :antialias="true"
-    :resize-to="() => getKanvasDomElement()!"
+    :resize-to="kanvasElement"
     :auto-start="!performanceTracker.isCanvasPerfMode()"
     :on-before-mount="beforePixiMount"
     :class="[
@@ -200,7 +204,6 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     @pointerdown="onPointerDown"
     @pointerup="onPointerUp"
     @contextmenu.prevent
-    @init-complete="isPixiAppInitialized = true"
   >
     <Container
       ref="mainContainer"
@@ -212,7 +215,7 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     </Container>
 
     <Minimap v-if="isMinimapVisible && !shouldHideMiniMap" />
-  </Application>
+  </VuePixiApplication>
 </template>
 
 <style scoped lang="postcss">

@@ -4,7 +4,6 @@ import { Container, Graphics } from "pixi.js";
 
 import * as $colors from "@/style/colors";
 import { DashLine } from "@/util/pixiDashedLine";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 /**
  * An arrow icon that is used to indicate a linked component / metanode.
@@ -31,12 +30,12 @@ const backgroundColor = computed(() => {
 
 /* eslint-disable no-magic-numbers */
 // Colored Background. This makes sure the arrow is well visible even if it overlaps with the node icon
-const renderBackground = (graphics: GraphicsInst) => {
+const renderBackground = (graphics: Graphics) => {
   graphics.roundRect(5, 0, 6, 6, 1);
   graphics.fill(backgroundColor.value);
 };
 
-const drawArrow = (graphics: GraphicsInst | DashLine) => {
+const drawArrow = (graphics: Graphics | DashLine) => {
   graphics
     .moveTo(2.43, 8.57)
     .lineTo(9.5, 1.5)
@@ -45,7 +44,7 @@ const drawArrow = (graphics: GraphicsInst | DashLine) => {
     .lineTo(9.5, 6);
 };
 
-const renderArrow = (graphics: GraphicsInst) => {
+const renderArrow = (graphics: Graphics) => {
   drawArrow(graphics);
   graphics.stroke({
     width: 1,
@@ -54,7 +53,7 @@ const renderArrow = (graphics: GraphicsInst) => {
   });
 };
 
-const renderDottedArrow = (graphics: GraphicsInst) => {
+const renderDottedArrow = (graphics: Graphics) => {
   const dash = new DashLine(graphics, { dash: [1, 1] });
   drawArrow(dash);
   graphics.stroke({
@@ -64,7 +63,7 @@ const renderDottedArrow = (graphics: GraphicsInst) => {
   });
 };
 
-const renderCross = (graphics: GraphicsInst) => {
+const renderCross = (graphics: Graphics) => {
   graphics
     .moveTo(2.43, 8.57)
     .lineTo(9.5, 1.5)
@@ -81,7 +80,7 @@ const renderCross = (graphics: GraphicsInst) => {
 
 <template>
   <Container>
-    <Graphics v-if="backgroundColor" @render="renderBackground" />
+    <Graphics v-if="backgroundColor" @effect="renderBackground" />
 
     <Graphics
       v-if="!updateStatus || updateStatus === 'UP_TO_DATE'"
@@ -91,6 +90,6 @@ const renderCross = (graphics: GraphicsInst) => {
       v-else-if="updateStatus === 'HAS_UPDATE'"
       @render="renderDottedArrow"
     />
-    <Graphics v-else-if="updateStatus === 'ERROR'" @render="renderCross" />
+    <Graphics v-else-if="updateStatus === 'ERROR'" @effect="renderCross" />
   </Container>
 </template>

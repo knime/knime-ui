@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Graphics } from "pixi.js";
+import { type Graphics } from "pixi.js";
 
 import { portColors } from "@/style/colors";
 import { portSize } from "@/style/shapes";
-import { type GraphicsInst } from "@/vue3-pixi";
 
 const createOutlinePoints = (width: number) => {
   const offset = width / 2;
@@ -49,13 +48,13 @@ const createOutlinePoints = (width: number) => {
   ];
 };
 
-const renderOutlineX = (graphics: GraphicsInst) => {
+const renderOutlineX = (graphics: Graphics) => {
   const points = createOutlinePoints(2);
 
   graphics.poly(points).fill({ color: portColors.inactiveOutline });
 };
 
-const renderX = (graphics: GraphicsInst) => {
+const renderX = (graphics: Graphics) => {
   graphics
     .moveTo(-portSize / 2, -portSize / 2)
     .lineTo(portSize / 2, portSize / 2)
@@ -70,8 +69,8 @@ const renderX = (graphics: GraphicsInst) => {
 
 <template>
   <!-- X outline -->
-  <Graphics @render="renderOutlineX" />
+  <Graphics @effect="renderOutlineX" />
 
   <!-- X -->
-  <Graphics @render="renderX" />
+  <Graphics @effect="renderX" />
 </template>

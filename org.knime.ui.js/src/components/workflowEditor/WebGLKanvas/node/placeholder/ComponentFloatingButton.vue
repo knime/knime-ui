@@ -2,9 +2,9 @@
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import { GraphicsContext, Rectangle } from "pixi.js";
+import type { Graphics } from "pixi.js";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 type Props = {
   x?: number;
@@ -37,7 +37,7 @@ const hitArea = new Rectangle(-12.5, -10, 25, 20);
       :x="hitArea.x"
       :y="hitArea.y"
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           graphics.clear();
           graphics.rect(0, 0, hitArea.width, hitArea.height);
           graphics.stroke({ width: 1, color: $colors.Black });

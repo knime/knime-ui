@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, toRefs, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
-import { Container } from "pixi.js";
+import { type Container, type Graphics } from "pixi.js";
 
 import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import * as $colors from "@/style/colors";
-import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 import PortIcon from "./PortIcon.vue";
@@ -45,7 +44,7 @@ const shouldFill = computed(() => {
   return !props.port.optional;
 });
 
-const portContainer = useTemplateRef<ContainerInst>("portContainer");
+const portContainer = useTemplateRef<Container>("portContainer");
 const { hovered, targeted, selected } = toRefs(props);
 
 /* eslint-disable no-magic-numbers */
@@ -68,7 +67,7 @@ useAnimatePixiContainer<number>({
   },
 });
 const animatingSelection = ref<boolean>(false);
-const selectionContainer = useTemplateRef<ContainerInst>("selectionContainer");
+const selectionContainer = useTemplateRef<Container>("selectionContainer");
 useAnimatePixiContainer<number>({
   initialValue: 0,
   targetValue: 1,
@@ -103,7 +102,7 @@ const selectionOffset = () => {
 };
 
 /* eslint-disable no-magic-numbers */
-const renderSelectionCircle = (graphics: GraphicsInst) => {
+const renderSelectionCircle = (graphics: Graphics) => {
   graphics.clear();
   graphics
     .circle(selectionOffset(), 0, 9)

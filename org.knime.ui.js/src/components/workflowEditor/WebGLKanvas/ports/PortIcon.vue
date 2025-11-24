@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
 import { computed } from "vue";
+import { type Graphics } from "pixi.js";
 
 import type { PortType } from "@/api/gateway-api/generated-api";
 import { portColors } from "@/style/colors";
 import { portSize } from "@/style/shapes";
-import { type GraphicsInst } from "@/vue3-pixi";
 
 const strokeWidth = 1.5;
 
@@ -48,14 +48,14 @@ const portColor = computed(() => {
   return portColors[props.type] || props.color;
 });
 
-const tablePortRenderFn = (graphics: GraphicsInst) => {
+const tablePortRenderFn = (graphics: Graphics) => {
   graphics.clear();
   graphics.poly(trianglePath.value);
   graphics.stroke({ width: strokeWidth, color: portColor.value });
   graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
 };
 
-const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
+const flowVariablePortRenderFn = (graphics: Graphics) => {
   graphics.clear();
   if (props.filled) {
     graphics.circle(0, 0, portSize / 2);
@@ -66,7 +66,7 @@ const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
   }
 };
 
-const otherPortsRenderFn = (graphics: GraphicsInst) => {
+const otherPortsRenderFn = (graphics: Graphics) => {
   graphics.clear();
   if (props.filled) {
     graphics.rect(0, 0, portSize, portSize);
@@ -85,7 +85,7 @@ const otherPortsRenderFn = (graphics: GraphicsInst) => {
 
 <template>
   <Container>
-    <Graphics v-if="type === 'table'" @render="tablePortRenderFn" />
+    <Graphics v-if="type === 'table'" @effect="tablePortRenderFn" />
 
     <Graphics
       v-else-if="type === 'flowVariable'"

@@ -9,10 +9,10 @@ export interface ParticleContainerProps {
 }
 
 export interface ParticleContainerEvents extends PixiEvents {
-  render: [ParticleContainerInst];
+  render: [ParticleContainer];
 }
 
-export type ParticleContainerInst = ParticleContainer & EventTarget;
+export type ParticleContainer = ParticleContainer & EventTarget;
 
 export type ParticleContainerComponent = DefineComponent<
   ParticleContainerProps,

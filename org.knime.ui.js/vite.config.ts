@@ -5,14 +5,13 @@ import vue from "@vitejs/plugin-vue";
 import { ViteUserConfig } from "vitest/config";
 import sbom from "rollup-plugin-sbom";
 import svgLoader from "vite-svg-loader";
+import { compilerOptions } from "vue3-pixi";
 
 // @ts-expect-error (please add error description)
 import { svgoConfig } from "@knime/styles/config/svgo.config";
 
 import { pagebuilderProxyVitePlugin } from "./pagebuilder-proxy-vite-plugin.js";
 // TODO: replace with app.component calls
-// @ts-expect-error (please add error description)
-import { isCustomElement } from "./src/vue3-pixi/index";
 
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
@@ -38,7 +37,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vue({
         template: {
-          compilerOptions: { isCustomElement },
+          compilerOptions,
         },
       }),
       svgLoader({ svgoConfig }),

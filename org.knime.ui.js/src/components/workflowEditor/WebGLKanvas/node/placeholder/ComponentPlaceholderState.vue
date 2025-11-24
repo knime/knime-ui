@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { FederatedPointerEvent, Rectangle } from "pixi.js";
+import type { Graphics } from "pixi.js";
 
 import { ComponentPlaceholder, type XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -9,7 +10,6 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import type { GraphicsInst } from "@/vue3-pixi";
 import { useObjectInteractions } from "../../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import NodeName from "../nodeName/NodeName.vue";
@@ -84,7 +84,7 @@ const renderable = computed(
 // eslint-disable-next-line no-magic-numbers
 const placeholderHitArea = computed(() => new Rectangle(-30, -60, 95, 100));
 
-const renderHoverArea = (graphics: GraphicsInst) => {
+const renderHoverArea = (graphics: Graphics) => {
   graphics.clear();
 
   graphics.rect(
@@ -112,7 +112,7 @@ const renderHoverArea = (graphics: GraphicsInst) => {
     @pointerdown="handlePointerInteraction"
     @rightclick="onRightClick"
   >
-    <Graphics :hit-area="placeholderHitArea" @render="renderHoverArea" />
+    <Graphics :hit-area="placeholderHitArea" @effect="renderHoverArea" />
 
     <NodeName
       :node-id="id"

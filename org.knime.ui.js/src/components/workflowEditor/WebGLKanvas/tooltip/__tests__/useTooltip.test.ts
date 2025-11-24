@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { computed, ref } from "vue";
+import type { Container } from "pixi.js";
 
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
-import type { ContainerInst } from "@/vue3-pixi";
 import { useTooltip } from "../useTooltip";
 
 vi.useFakeTimers();
@@ -14,11 +14,11 @@ Object.defineProperty(document, "querySelectorAll", {
   value: vi.fn().mockReturnValue([]),
 });
 
-const createMockElement = (): ContainerInst => {
+const createMockElement = (): Container => {
   return {
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-  } as unknown as ContainerInst;
+  } as unknown as Container;
 };
 
 const createMockTooltip = (

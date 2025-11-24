@@ -1,14 +1,13 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
-import { Graphics, Point, Polygon } from "pixi.js";
+import { type Container, type Graphics, Point, Polygon } from "pixi.js";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import { useTooltip } from "@/components/workflowEditor/WebGLKanvas/tooltip/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { nodeStateText } from "../../util/textStyles";
 
 import NodeStateIssues from "./NodeStateIssues.vue";
@@ -114,7 +113,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
   return null;
 });
 
-const tooltipRef = useTemplateRef<ContainerInst>("tooltipRef");
+const tooltipRef = useTemplateRef<Container>("tooltipRef");
 const { showTooltip, hideTooltip } = useTooltip({
   tooltip,
   element: tooltipRef,
@@ -159,7 +158,7 @@ const hitArea = new Polygon([
     <Graphics
       event-mode="none"
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           graphics.clear();
           graphics.roundRect(
             0,
@@ -180,7 +179,7 @@ const hitArea = new Polygon([
           event-mode="none"
           label="TrafficLightBorder"
           @render="
-            (graphics: GraphicsInst) => {
+            (graphics: Graphics) => {
               graphics.clear();
               graphics.circle(6 + 10 * index, 6, 4);
               graphics.fill(fillColors![index]);
@@ -192,7 +191,7 @@ const hitArea = new Polygon([
           event-mode="none"
           label="TrafficLightCircle"
           @render="
-            (graphics: GraphicsInst) => {
+            (graphics: Graphics) => {
               graphics.clear();
               graphics.circle(6 + 10 * index, 6, 3.5);
               graphics.stroke({ width: 1, color: strokeColors![index] });

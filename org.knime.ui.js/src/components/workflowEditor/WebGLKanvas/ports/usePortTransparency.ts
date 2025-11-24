@@ -7,13 +7,13 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import type { ContainerInst } from "@/vue3-pixi";
+import type { Container } from "pixi.js";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useNodeHoverListener } from "../common/useNodeHoverState";
 
 type UsePortTransparencyOptions = {
   nodeId: string;
-  portContainer: ShallowRef<ContainerInst | null>;
+  portContainer: ShallowRef<Container | null>;
   nodeKind: Node.KindEnum;
   port: NodePortType;
 };

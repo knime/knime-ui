@@ -6,18 +6,18 @@ import {
   watch,
 } from "vue";
 import { storeToRefs } from "pinia";
+import type { Container } from "pixi.js";
 
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import type { ContainerInst } from "@/vue3-pixi";
 
 export const entryDelayMS = 750;
 export const leaveDelayMS = 550;
 
 export const useTooltip = (params: {
   tooltip: ComputedRef<TooltipDefinition | null>;
-  element: Ref<Element | ContainerInst | null>;
+  element: Ref<Element | Container | null>;
 }) => {
   const workflowStore = useWorkflowStore();
   const { tooltip } = storeToRefs(workflowStore);

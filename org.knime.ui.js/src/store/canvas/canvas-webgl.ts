@@ -14,7 +14,8 @@ import { refDebounced } from "@vueuse/core";
 import { isNumber, round } from "lodash-es";
 import { animate, mix } from "motion";
 import { defineStore } from "pinia";
-import { type IRenderLayer } from "pixi.js";
+import { Container, type IRenderLayer } from "pixi.js";
+import type { Application } from "vue3-pixi";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -23,7 +24,6 @@ import { geometry } from "@/util/geometry";
 import { getEdgeNearPoint, isPointOutsideBounds } from "@/util/geometry/utils";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
-import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 import { useCanvasTooltipStore } from "../canvasTooltip/canvasTooltip";
 
@@ -108,7 +108,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     anchor: { x: 0, y: 0 },
     offset: 0,
   });
-  const pixiApplication = shallowRef<ApplicationInst | null>(null);
+  const pixiApplication = shallowRef<Application | null>(null);
 
   type CanvasLayers = Record<CanvasLayerNames, IRenderLayer | undefined>;
   const canvasLayers: ShallowRef<CanvasLayers> = shallowRef({
@@ -128,7 +128,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasLayers.value.annotationControls = undefined;
   };
 
-  const stage = shallowRef<StageInst | null>(null);
+  const stage = shallowRef<Container | null>(null);
   const isDebugModeEnabled = ref(false);
 
   const setFactor = (newFactor: number) => {

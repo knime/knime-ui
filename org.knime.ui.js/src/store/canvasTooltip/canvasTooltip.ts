@@ -2,11 +2,11 @@ import { type ComputedRef, type Ref, ref } from "vue";
 import { defineStore } from "pinia";
 
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
-import type { ContainerInst } from "@/vue3-pixi";
+import type { Container } from "pixi.js";
 
 export const useCanvasTooltipStore = defineStore("canvasTooltip", () => {
   const tooltip = ref<{
-    element: ContainerInst;
+    element: Container;
     config: TooltipDefinition;
   } | null>(null);
 
@@ -16,7 +16,7 @@ export const useCanvasTooltipStore = defineStore("canvasTooltip", () => {
   const isHoverableTooltipHovered = ref(false);
 
   const showTooltip = (
-    element: Ref<ContainerInst | null>,
+    element: Ref<Container | null>,
     config: ComputedRef<TooltipDefinition | null>,
   ) => {
     if (element.value === null || config.value === null) {

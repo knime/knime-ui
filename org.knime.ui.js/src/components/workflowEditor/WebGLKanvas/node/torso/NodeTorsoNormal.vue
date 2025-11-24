@@ -2,13 +2,13 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from "vue";
 import * as PIXI from "pixi.js";
+import type { Graphics } from "pixi.js";
 
 import {
   type NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
 import { nodeBackgroundColor, nodeColorFromType } from "@/util/nodeUtil";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import { torsoDrawUtils } from "./drawUtils";
 
@@ -34,7 +34,7 @@ const renderFunctionMapper = {
   VirtualOut: torsoDrawUtils.drawVirtualOut,
 } as const;
 
-const renderTorso = (graphics: GraphicsInst, backgroundColor: string) => {
+const renderTorso = (graphics: Graphics, backgroundColor: string) => {
   graphics.clear();
   const draw = renderFunctionMapper[props.type!] ?? torsoDrawUtils.drawDefault;
   draw(graphics);

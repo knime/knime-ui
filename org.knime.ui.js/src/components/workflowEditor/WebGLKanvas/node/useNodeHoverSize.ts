@@ -1,8 +1,8 @@
 import { type Ref, computed } from "vue";
+import type { Graphics } from "pixi.js";
 
 import { Node } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import type { GraphicsInst } from "@/vue3-pixi";
 import type { PortPositions } from "../../common/usePortPositions";
 
 type UseNodeHoverSizeOptions = {
@@ -88,7 +88,7 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
     };
   });
 
-  const renderHoverArea = (graphics: GraphicsInst) => {
+  const renderHoverArea = (graphics: Graphics) => {
     graphics.clear();
 
     graphics.rect(

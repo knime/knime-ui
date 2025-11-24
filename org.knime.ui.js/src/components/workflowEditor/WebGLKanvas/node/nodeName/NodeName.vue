@@ -11,7 +11,7 @@ import { useTooltip } from "@/components/workflowEditor/WebGLKanvas/tooltip/useT
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import type { ContainerInst } from "@/vue3-pixi";
+import type { Container } from "pixi.js";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
 import { markPointerEventAsHandled } from "../../util/interaction";
 import { nodeNameText } from "../../util/textStyles";
@@ -78,7 +78,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
   };
 });
 
-const tooltipRef = useTemplateRef<ContainerInst>("tooltipRef");
+const tooltipRef = useTemplateRef<Container>("tooltipRef");
 const { showTooltip, hideTooltip } = useTooltip({
   element: tooltipRef,
   tooltip,

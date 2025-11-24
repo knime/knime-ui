@@ -2,6 +2,7 @@
 import { computed, onMounted, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
+import type { Container } from "pixi.js";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import {
@@ -11,7 +12,6 @@ import {
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeMetaNode } from "@/util/nodeUtil";
-import type { ContainerInst } from "@/vue3-pixi";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import StaticWorkflowAnnotation from "./annotations/StaticWorkflowAnnotation.vue";
@@ -56,13 +56,13 @@ const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
 const canvasStore = useWebGLCanvasStore();
 const { canvasLayers } = storeToRefs(canvasStore);
 
-const selectedNodesLayerContainer = useTemplateRef<ContainerInst>(
+const selectedNodesLayerContainer = useTemplateRef<Container>(
   "selectedNodesLayerContainer",
 );
-const selectedPortsLayerContainer = useTemplateRef<ContainerInst>(
+const selectedPortsLayerContainer = useTemplateRef<Container>(
   "selectedPortsLayerContainer",
 );
-const annotationControlsLayerContainer = useTemplateRef<ContainerInst>(
+const annotationControlsLayerContainer = useTemplateRef<Container>(
   "annotationControlsLayerContainer",
 );
 
@@ -70,10 +70,7 @@ const componentPlaceholders = computed(
   () => activeWorkflow.value?.componentPlaceholders ?? [],
 );
 
-const createRenderLayer = (
-  name: CanvasLayerNames,
-  container: ContainerInst,
-) => {
+const createRenderLayer = (name: CanvasLayerNames, container: Container) => {
   const layer = new RenderLayer();
   // @ts-expect-error Property 'label' does not exist on type 'IRenderLayer'
   layer.label = `${name}RenderLayer`;

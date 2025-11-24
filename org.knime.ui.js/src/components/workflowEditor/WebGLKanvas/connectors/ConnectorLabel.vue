@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
 import { storeToRefs } from "pinia";
+import type { Graphics } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -8,7 +9,6 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import * as $colors from "@/style/colors";
 import { geometry } from "@/util/geometry";
-import type { GraphicsInst } from "@/vue3-pixi";
 import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
 import type { AbsolutePointTuple, ConnectorProps } from "../../types";
 import { measureText } from "../util/measureText";
@@ -177,7 +177,7 @@ const halfWayPosition = computed(() => {
 
 const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
 
-const renderLabelBackground = (graphics: GraphicsInst) => {
+const renderLabelBackground = (graphics: Graphics) => {
   const padding = 5;
   const borderRadius = 2;
   graphics

@@ -1,8 +1,9 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
+import type { Graphics } from "pixi.js";
+
 import type { MetaNodeState } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 type Props = {
   executionState?: MetaNodeState.ExecutionStateEnum;
@@ -10,7 +11,7 @@ type Props = {
 
 defineProps<Props>();
 
-const renderBorder = (graphics: GraphicsInst) => {
+const renderBorder = (graphics: Graphics) => {
   const fill = () =>
     graphics.fill($colors.nodeBackgroundColors.MetanodeSecondary);
 
@@ -79,7 +80,7 @@ const renderBorder = (graphics: GraphicsInst) => {
   fill();
 };
 
-const renderExecutingArrows = (graphics: GraphicsInst) => {
+const renderExecutingArrows = (graphics: Graphics) => {
   graphics
     .clear()
     .poly([
@@ -94,7 +95,7 @@ const renderExecutingArrows = (graphics: GraphicsInst) => {
     .stroke({ width: 2, color: $colors.metanodeState });
 };
 
-const renderCheckmark = (graphics: GraphicsInst) => {
+const renderCheckmark = (graphics: Graphics) => {
   graphics
     .clear()
     .moveTo(8, 16)
@@ -109,7 +110,7 @@ const renderCheckmark = (graphics: GraphicsInst) => {
     <Graphics
       event-mode="none"
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           graphics
             .clear()
             .roundRect(0, 0, $shapes.nodeSize, $shapes.nodeSize, 2)
@@ -117,7 +118,7 @@ const renderCheckmark = (graphics: GraphicsInst) => {
         }
       "
     />
-    <Graphics event-mode="none" @render="renderBorder" />
+    <Graphics event-mode="none" @effect="renderBorder" />
 
     <Graphics
       v-if="executionState === 'EXECUTING'"

@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { Graphics } from "pixi.js";
+
 import CircleCloseFilledIcon from "@knime/styles/img/icons/circle-close_filled.svg?raw";
 
 import * as $shapes from "@/style/shapes";
-import type { GraphicsInst } from "@/vue3-pixi";
 import { loadSvgInGraphicsContext } from "../../util/loadSvgInGraphicsContext";
 </script>
 
@@ -15,7 +16,7 @@ import { loadSvgInGraphicsContext } from "../../util/loadSvgInGraphicsContext";
       :y="$shapes.nodeSize / 2 - 8"
       :geometry="loadSvgInGraphicsContext(CircleCloseFilledIcon)"
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           graphics.tint = $colors.White;
         }
       "

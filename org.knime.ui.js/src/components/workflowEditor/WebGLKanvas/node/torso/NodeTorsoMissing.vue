@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import type { GraphicsInst } from "@/vue3-pixi";
+import type { Graphics } from "pixi.js";
+
 import NodeTorsoMissing from "../../../common/NodeTorsoMissing.vue?raw";
 
-const renderFn = (graphics: GraphicsInst) => {
+const renderFn = (graphics: Graphics) => {
   graphics.svg(NodeTorsoMissing.replaceAll("template", "svg"));
 };
 </script>
 
 <template>
-  <Graphics event-mode="none" @render="renderFn" />
+  <Graphics event-mode="none" @effect="renderFn" />
 </template>

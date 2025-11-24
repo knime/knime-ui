@@ -2,6 +2,7 @@
 import { computed, ref, useTemplateRef } from "vue";
 import {
   BlurFilter,
+  Container,
   type FederatedPointerEvent,
   Graphics,
   GraphicsContext,
@@ -9,7 +10,6 @@ import {
 } from "pixi.js";
 
 import * as $colors from "@/style/colors";
-import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import type { ActionButtonConfig, TooltipDefinition } from "../../types";
 import { useTooltip } from "../tooltip/useTooltip";
 import { markPointerEventAsHandled } from "../util/interaction";
@@ -41,11 +41,11 @@ const isHovered = ref(false);
 
 const shadowFilter = new BlurFilter({ strength: 12 });
 
-const renderPlainCircle = (graphics: GraphicsInst) => {
+const renderPlainCircle = (graphics: Graphics) => {
   return graphics.circle(0, 0, buttonRadius);
 };
 
-const renderCircle = (graphics: GraphicsInst) => {
+const renderCircle = (graphics: Graphics) => {
   graphics.clear();
   renderPlainCircle(graphics);
   if (props.primary) {
@@ -77,7 +77,7 @@ const tooltip = computed<TooltipDefinition>(() => {
 
 const { showTooltip, hideTooltip } = useTooltip({
   tooltip,
-  element: useTemplateRef<ContainerInst>("tooltipRef"),
+  element: useTemplateRef<Container>("tooltipRef"),
 });
 
 const onPointerEnter = () => {
@@ -108,21 +108,21 @@ const onPointerLeave = () => {
       :renderable="!disabled"
       :filters="[shadowFilter]"
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           graphics.clear();
           renderPlainCircle(graphics);
           graphics.stroke($colors.GrayDarkSemi);
         }
       "
     />
-    <Graphics @render="renderCircle" />
+    <Graphics @effect="renderCircle" />
     <Graphics
       :width="20"
       :height="20"
       :pivot="16"
       :geometry="icon"
       @render="
-        (graphics: GraphicsInst) => {
+        (graphics: Graphics) => {
           if (disabled) {
             graphics.tint = $colors.SilverSand;
           } else if (isHovered) {

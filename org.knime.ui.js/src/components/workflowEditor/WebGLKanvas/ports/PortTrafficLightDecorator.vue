@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { Graphics } from "pixi.js";
+import { type Graphics } from "pixi.js";
 
 import * as $colors from "@/style/colors";
-import { type GraphicsInst } from "@/vue3-pixi";
 
 interface Props {
   nodeState: string;
@@ -23,7 +22,7 @@ const trafficLightColor = computed(() => {
 });
 
 /* eslint-disable no-magic-numbers */
-const renderTrafficLight = (graphics: GraphicsInst) => {
+const renderTrafficLight = (graphics: Graphics) => {
   graphics
     .circle(0, 0, 3.75)
     .fill({ color: $colors.White })

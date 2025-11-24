@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { BlurFilter } from "pixi.js";
+import type { Graphics } from "pixi.js";
 
 import {
   MetaNodeState,
@@ -8,7 +9,6 @@ import {
   Node,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
@@ -45,7 +45,7 @@ const shadowFilter = new BlurFilter({
   kernelSize: 13,
 });
 
-const renderTorso = (graphics: GraphicsInst) => {
+const renderTorso = (graphics: Graphics) => {
   graphics.clear();
   torsoDrawUtils.drawDefault(graphics);
   graphics.closePath();
