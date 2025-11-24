@@ -15,7 +15,7 @@ export const waitForEmbeddingContext = async (): Promise<EmbeddingContext> => {
 
     return {
       wsConnectionUri: import.meta.env.VITE_BROWSER_DEV_WS_URL,
-      restApiBaseUrl: "_NOOP_",
+      restApiBaseUrl: import.meta.env.VITE_BROWSER_DEV_HTTP_URL,
       userIdleTimeout: twentyMinutes,
       jobId: "_NOOP_",
     } satisfies EmbeddingContext;
