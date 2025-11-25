@@ -60,7 +60,7 @@ const annotationShortcuts: AnnotationShortcuts = {
     condition: () => useWorkflowStore().isWritable,
   },
   generateWorkflowAnnotation: {
-    text: "Annotate with K-AI",
+    text: "Explain with K-AI",
     execute: async () => {
       try {
         await useAiQuickActionsStore().generateAnnotation();
