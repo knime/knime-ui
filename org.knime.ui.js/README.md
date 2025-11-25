@@ -139,9 +139,9 @@ Instruct the frontend where to reach the websocket server:
 
 - Adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url
   and port of the running websocket server.
-- Adjust the value of the `VITE_BROWSER_DEV_HTTP_URL` variable to match the url 
+- Adjust the value of the `VITE_BROWSER_DEV_HTTP_URL` variable to match the url
   and port of the running http/websocket-server. Required to make ui-extensions
-	(node dialogs, node views, port views, ...) work.
+  (node dialogs, node views, port views, ...) work.
 
 Configure and start the websocket server: see instructions at [com.knime.
 gateway.executor/README.md](https://bitbucket.org/KNIME/knime-com-gateway/src/master/com.knime.gateway.executor/README.md)

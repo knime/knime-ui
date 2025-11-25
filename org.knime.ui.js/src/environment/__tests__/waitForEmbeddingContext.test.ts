@@ -35,6 +35,8 @@ describe("waitForEmbeddingContext", () => {
   beforeAll(() => {
     // @ts-expect-error
     import.meta.env.VITE_BROWSER_DEV_WS_URL = "ws://local.ws";
+    // @ts-expect-error
+    import.meta.env.VITE_BROWSER_DEV_HTTP_URL = "http://local.http";
   });
 
   beforeEach(() => {
@@ -62,7 +64,7 @@ describe("waitForEmbeddingContext", () => {
     const { wsConnectionUri, restApiBaseUrl } = await waitForEmbeddingContext();
     expect(embeddingSDK.guest.waitForContext).not.toHaveBeenCalled();
     expect(wsConnectionUri).toBe("ws://local.ws");
-    expect(restApiBaseUrl).toBe("_NOOP_");
+    expect(restApiBaseUrl).toBe("http://local.http");
   });
 
   it("works for DEV", async () => {
@@ -71,7 +73,7 @@ describe("waitForEmbeddingContext", () => {
     const { wsConnectionUri, restApiBaseUrl } = await waitForEmbeddingContext();
     expect(embeddingSDK.guest.waitForContext).not.toHaveBeenCalled();
     expect(wsConnectionUri).toBe("ws://local.ws");
-    expect(restApiBaseUrl).toBe("_NOOP_");
+    expect(restApiBaseUrl).toBe("http://local.http");
   });
 
   it("works for DEV (embedded mode)", async () => {
