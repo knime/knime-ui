@@ -94,7 +94,7 @@ final class ComponentAPI {
 
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
-        ManipulateComponents.openChangeComponentHubItemVersionDialog(component, wfKey);
+        ManipulateComponents.openChangeComponentItemVersionDialog(component, wfKey);
     }
 
     /**

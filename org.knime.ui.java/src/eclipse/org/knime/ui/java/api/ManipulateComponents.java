@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +58,8 @@ import java.util.function.BiPredicate;
 import org.knime.core.node.workflow.MetaNodeTemplateInformation.Role;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.core.util.hub.HubItemVersion;
+import org.knime.core.util.hub.ItemVersion;
+import org.knime.core.util.urlresolve.URLResolverUtil;
 import org.knime.gateway.api.entity.EntityBuilderManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
@@ -87,13 +89,12 @@ final class ManipulateComponents {
      * This will not be callable from the FE until NXT-2038 is solved.
      * @throws GatewayException
      */
-    static void openChangeComponentHubItemVersionDialog(final SubNodeContainer component, final WorkflowKey wfKey)
+    static void openChangeComponentItemVersionDialog(final SubNodeContainer component, final WorkflowKey wfKey)
         throws GatewayException {
         assertLinkedComponent(component, true);
 
         // WorkflowEntityFactory#isHubItemVersionChangeable disables the action for non-Hub items,
         // so we assume that the call is fine
-
 
         final var shell = SWTUtilities.getActiveShell();
         final var wfm = component.getParent();
@@ -103,18 +104,28 @@ final class ManipulateComponents {
         }
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
-        final var currentVersion = HubItemVersion.of(srcUri).orElse(HubItemVersion.currentState());
+        final var currentVersion = URLResolverUtil.parseVersion(srcUri.getQuery()).orElseGet(ItemVersion::currentState);
         final var targetVersion = dialog.getSelectedVersion();
         if (Objects.equals(targetVersion, currentVersion)) {
             return;
         }
 
         // (1) Change URI to new version.
-        final var newSrcUri = targetVersion.applyTo(srcUri);
         final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
         final var cmd = workflowMiddleware.getCommands();
-        cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, srcUri, newSrcUri, true));
-        cmd.execute(wfKey, null);
+        try {
+            final var newSrcUri = URLResolverUtil.applyTo(targetVersion, srcUri);
+            cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, srcUri, newSrcUri, true));
+            cmd.execute(wfKey, null);
+        } catch (URISyntaxException e) {
+            throw ServiceCallException.builder() //
+                .withTitle("Unable to construct new URI for component") //
+                .withDetails("The component %s is linked to <%s>, ".formatted(component.getNameWithID(), srcUri) //
+                    + "from which it is currently impossible to construct a new, versioned URI.") //
+                .canCopy(true) //
+                .withCause(e) //
+                .build();
+        }
 
         // (2) Perform component update to fetch its info.
         final var cmdEnt = EntityBuilderManager.builder(UpdateLinkedComponentsCommandEntBuilder.class) //
