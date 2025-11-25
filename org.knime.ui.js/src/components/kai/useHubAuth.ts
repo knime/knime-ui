@@ -11,8 +11,8 @@ import { getToastPresets } from "@/toastPresets";
 let isHubIdFetched = false;
 
 const useHubAuth = () => {
-  const { hubID } = storeToRefs(useAIAssistantStore());
-  const { getHubID } = useAIAssistantStore();
+  const { hubID, isUserLicensed } = storeToRefs(useAIAssistantStore());
+  const { getHubID, fetchUsage } = useAIAssistantStore();
   const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
   const { connectProvider, disconnectProvider } = useSpaceAuthStore();
 
@@ -47,6 +47,7 @@ const useHubAuth = () => {
       await connectProvider({
         spaceProviderId: hubID.value,
       });
+      await fetchUsage();
     } catch (error) {
       const providerName = spaceProviders.value?.[hubID.value ?? ""]?.name;
       toastPresets.spaces.auth.connectFailed({ error, providerName });
@@ -74,6 +75,7 @@ const useHubAuth = () => {
   return {
     isAuthenticated,
     isHubConfigured,
+    isUserLicensed,
     hubID,
     userName,
     authenticateWithHub,

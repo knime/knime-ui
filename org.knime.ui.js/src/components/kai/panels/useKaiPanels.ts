@@ -7,10 +7,11 @@ import DisclaimerPanel from "./DisclaimerPanel.vue";
 import ErrorPanel from "./ErrorPanel.vue";
 import LoginPanel from "./LoginPanel.vue";
 import NoHubConfiguredPanel from "./NoHubConfiguredPanel.vue";
+import UnlicensedPanel from "./UnlicensedPanel.vue";
 import { useDisclaimer } from "./useDisclaimer";
 
 export const useKaiPanels = () => {
-  const { isHubConfigured, isAuthenticated } = useHubAuth();
+  const { isHubConfigured, isAuthenticated, isUserLicensed } = useHubAuth();
   const { isServerAvailable } = useKaiServer();
   const { shouldShowDisclaimer } = useDisclaimer();
 
@@ -24,6 +25,9 @@ export const useKaiPanels = () => {
     }
     if (!isAuthenticated.value) {
       return LoginPanel;
+    }
+    if (!isUserLicensed.value) {
+      return UnlicensedPanel;
     }
     if (shouldShowDisclaimer.value) {
       return DisclaimerPanel;

@@ -170,7 +170,7 @@ watch(menuState, (menuState) => {
     flex-direction: column;
     justify-content: flex-end;
 
-    & .panel {
+    & .panel:not(.unlicensed-panel) {
       min-height: 200px;
     }
   }
