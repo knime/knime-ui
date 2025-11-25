@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm type-check && vite build",
+    "build-only": "vite build",
     "build:ci": "pnpm build && mv ./dist/sbom/bom.json ./bom.json",
     "build:e2e": "vite build --mode e2e",
     "serve": "vite preview",
@@ -64,7 +65,7 @@
     "monaco-editor": "0.52.2",
     "motion": "^12.4.7",
     "pinia": "^2.3.0",
-    "pixi.js": "^8.9.2",
+    "pixi.js": "^8.14.3",
     "raf-throttle": "2.0.6",
     "vscode-json-languageservice": "^5.6.1",
     "vue": "3.5.18",

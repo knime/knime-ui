@@ -59,6 +59,7 @@ export default defineConfig(({ mode }) => {
 
     build: {
       target: "esnext",
+      minify: false,
     },
 
     // TODO: remove this when we have builds fo that libs, without them the optimizer can break things

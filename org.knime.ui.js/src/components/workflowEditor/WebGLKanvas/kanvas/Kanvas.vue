@@ -21,7 +21,6 @@ import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
-import { initE2ETestUtils } from "../util/e2eTest";
 import { isMarkedEvent } from "../util/interaction";
 
 import Minimap from "./Minimap.vue";
@@ -91,24 +90,24 @@ watch(
     }
 
     // Store reference Pixi.js application instance
-    const app = pixiApp.value!.app;
+    // const app = pixiApp.value!.app;
 
-    if (!import.meta.env.PROD || devMode.value) {
-      globalThis.__PIXI_APP__ = app;
-    }
+    // if (!import.meta.env.PROD || devMode.value) {
+    //   globalThis.__PIXI_APP__ = app;
+    // }
 
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
     canvasStore.stage = mainContainer.value;
 
     // used by e2e tests in this repo and by QA
-    globalThis.__E2E_TEST__ = initE2ETestUtils(app);
+    // globalThis.__E2E_TEST__ = initE2ETestUtils(app);
 
     canvasStore.isDebugModeEnabled =
       import.meta.env.VITE_CANVAS_DEBUG === "true";
 
     emit("canvasReady");
 
-    performanceTracker.trackSingleRender(pixiApp.value!);
+    // performanceTracker.trackSingleRender(pixiApp.value!);
   },
   { once: true },
 );

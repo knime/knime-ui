@@ -52,12 +52,12 @@ try {
   app.use(toastPlugin);
 
   // Enable easier store debugging while on dev
-  if (import.meta.env.DEV) {
-    window.router = router;
-    window.store = pinia;
-    window.toast = toastServiceProvider;
-    app.config.performance = true;
-  }
+  // if (import.meta.env.DEV) {
+  //   window.router = router;
+  //   window.store = pinia;
+  //   window.toast = toastServiceProvider;
+  //   app.config.performance = true;
+  // }
 
   app.use(router);
 
