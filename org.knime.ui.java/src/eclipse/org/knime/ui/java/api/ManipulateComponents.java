@@ -56,11 +56,10 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 
 import org.knime.core.node.workflow.MetaNodeTemplateInformation.Role;
-import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.exception.ResourceAccessException;
-import org.knime.core.util.hub.HubItemVersion;
+import org.knime.core.util.hub.ItemVersion;
 import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.core.util.urlresolve.KnimeUrlResolver;
 import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
@@ -74,7 +73,6 @@ import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionDialog;
 import org.knime.workbench.editor2.actions.ChangeSubNodeLinkAction;
 import org.knime.workbench.editor2.commands.ChangeSubNodeLinkCommand;
-import org.knime.workbench.editor2.commands.UpdateMetaNodeLinkCommand;
 
 /**
  * Helper methods to operate on components
@@ -160,20 +158,19 @@ final class ManipulateComponents {
         }
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
-        final var currentVersion = HubItemVersion.of(srcUri).orElse(HubItemVersion.currentState());
+        final var currentVersion = URLResolverUtil.parseVersion(srcUri.getQuery()).orElseGet(ItemVersion::currentState);
         final var targetVersion = dialog.getSelectedVersion();
         if (Objects.equals(targetVersion, currentVersion)) {
             return;
         }
 
-        final var newSrcUri = targetVersion.applyTo(srcUri);
+        // TODO: Do this.
+        final URI newSrcUri = null;
         final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
         final var cmd = workflowMiddleware.getCommands();
         cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, srcUri, newSrcUri, true));
         cmd.execute(wfKey, null);
 
-        // ChangeComponentHubVersionCommand does not check canExecute of the actual update command
-        cmd.setCommandToExecute(getUpdateComponentCommand(component));
         try {
             cmd.execute(wfKey, null);
         } catch (final ServiceCallException e) {
@@ -194,17 +191,6 @@ final class ManipulateComponents {
                 .canCopy(false) //
                 .build();
         }
-    }
-
-    /**
-     * @deprecated See NXT-2173
-     */
-    @Deprecated
-    private static WorkflowCommandAdapter getUpdateComponentCommand(final SubNodeContainer component) {
-        final var componentID = component.getID();
-        final var wfm = component.getParent();
-        final var updateComponentCommand = new UpdateMetaNodeLinkCommand(wfm, new NodeID[]{componentID});
-        return new WorkflowCommandAdapter(updateComponentCommand, false);
     }
 
     private static WorkflowCommandAdapter getChangeSubNodeLinkCommand(final SubNodeContainer component,
