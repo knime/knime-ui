@@ -18,6 +18,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 
+import { pixiGlobals } from "./pixiGlobals";
 import { useNodeCollisionCheck } from "./useNodeCollisionCheck";
 
 type PortContext = {
@@ -144,10 +145,9 @@ export const useNodeReplacementOrInsertion = () => {
   const { hasAbortedDrag } = storeToRefs(useMovingStore());
 
   const canvasStore = useWebGLCanvasStore();
-  const { pixiApplication } = storeToRefs(canvasStore);
 
   const tryFindConnectorAtPosition = (position: XY): string | undefined => {
-    if (!pixiApplication.value) {
+    if (!pixiGlobals.hasApplicationInstance()) {
       return undefined;
     }
 

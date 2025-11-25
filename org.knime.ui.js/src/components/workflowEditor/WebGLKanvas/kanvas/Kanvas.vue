@@ -21,6 +21,7 @@ import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
+import { pixiGlobals } from "../common/pixiGlobals";
 import { isMarkedEvent } from "../util/interaction";
 
 import Minimap from "./Minimap.vue";
@@ -58,14 +59,12 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
   let layerIndex = 0;
 
   const debugLayer = new RenderLayer();
-  // @ts-expect-error type misses label
   debugLayer.label = "DebugLayer";
   app.stage.addChildAt(debugLayer, layerIndex++);
   canvasLayers.value.debugLayer = debugLayer;
 
   // annotations need to be behind everything else
   const annotationsLayer = new RenderLayer({ sortableChildren: true });
-  // @ts-expect-error type misses label
   annotationsLayer.label = "AnnotationsLayer";
 
   app.stage.addChildAt(annotationsLayer, layerIndex++);
@@ -73,7 +72,6 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
 
   // add a layer so we can move the selection plane of the nodes to the back
   const nodeSelectionPlaneRenderLayer = new RenderLayer();
-  // @ts-expect-error type misses label
   nodeSelectionPlaneRenderLayer.label = "NodeSelectionPlaneRenderLayer";
 
   app.stage.addChildAt(nodeSelectionPlaneRenderLayer, layerIndex++);
@@ -96,8 +94,8 @@ watch(
     //   globalThis.__PIXI_APP__ = app;
     // }
 
-    canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
-    canvasStore.stage = mainContainer.value;
+    pixiGlobals.setApplicationInstance(pixiApp.value!.app);
+    pixiGlobals.setMainContainer(mainContainer.value!);
 
     // used by e2e tests in this repo and by QA
     // globalThis.__E2E_TEST__ = initE2ETestUtils(app);
@@ -115,9 +113,8 @@ watch(
 useKanvasNodePortHint(isPixiAppInitialized);
 
 onUnmounted(() => {
-  canvasStore.pixiApplication = null;
   canvasStore.removeLayers();
-  canvasStore.stage = null;
+  pixiGlobals.clear();
   canvasStore.clearCanvasAnchor();
   canvasStore.setCanvasOffset({ x: 0, y: 0 });
   canvasStore.setFactor(1);

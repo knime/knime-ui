@@ -118,7 +118,7 @@ export const Application = defineComponent({
         );
       });
 
-      app = createApp({ render: () => renderSlot(slots, "default") });
+      app = createApp({ render: renderSlotDefault });
 
       inheritParent(app, appContext);
 
@@ -134,14 +134,23 @@ export const Application = defineComponent({
       app?.unmount();
       app = undefined;
 
-      pixiApp.value?.destroy();
+      pixiApp.value?.destroy(true, true);
       pixiApp.value = undefined;
     }
+
+    function renderSlotDefault() {
+      return renderSlot(slots, "default");
+    }
+
+    function renderCanvas() {
+      return h("canvas", { ref: canvas });
+    }
+
     onMounted(mount);
     onUnmounted(unmount);
 
     expose({ canvas, app: pixiApp });
 
-    return () => h("canvas", { ref: canvas });
+    return renderCanvas;
   },
 });

@@ -2,9 +2,9 @@ import { type Ref, computed, ref, watch } from "vue";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import * as $shapes from "@/style/shapes";
+import { pixiGlobals } from "../../WebGLKanvas/common/pixiGlobals";
 import { useCanvasRendererUtils } from "../../util/canvasRenderer";
 
 import {
@@ -71,8 +71,7 @@ export const useTransformControls = (options: UseTransformControlsOptions) => {
     const origHeight = transformedBounds.value.height;
 
     if (isWebGLRenderer.value) {
-      const canvas = useWebGLCanvasStore().pixiApplication!.canvas;
-      canvas.setPointerCapture(pointerDownEvent.pointerId);
+      pixiGlobals.getCanvas().setPointerCapture(pointerDownEvent.pointerId);
     } else {
       (pointerDownEvent.target as HTMLElement).setPointerCapture(
         pointerDownEvent.pointerId,
@@ -105,7 +104,7 @@ export const useTransformControls = (options: UseTransformControlsOptions) => {
 
     const mouseUpHandler = () => {
       if (isWebGLRenderer.value) {
-        const canvas = useWebGLCanvasStore().pixiApplication!.canvas;
+        const canvas = pixiGlobals.getCanvas();
         canvas.releasePointerCapture(pointerDownEvent.pointerId);
         canvas.removeEventListener("pointermove", transformHandler);
         canvas.removeEventListener("pointerup", mouseUpHandler);
@@ -118,7 +117,7 @@ export const useTransformControls = (options: UseTransformControlsOptions) => {
     };
 
     if (isWebGLRenderer.value) {
-      const canvas = useWebGLCanvasStore().pixiApplication!.canvas;
+      const canvas = pixiGlobals.getCanvas();
       canvas.addEventListener("pointermove", transformHandler);
       canvas.addEventListener("pointerup", mouseUpHandler);
     } else {
