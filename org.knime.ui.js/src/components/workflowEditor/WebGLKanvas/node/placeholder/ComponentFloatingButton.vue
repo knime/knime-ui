@@ -25,6 +25,7 @@ const hitArea = new Rectangle(-12.5, -10, 25, 20);
 
 <template>
   <Container
+    label="ComponentPlaceholderActionButton"
     :position="{ x, y: 0 }"
     event-mode="static"
     :hit-area="hitArea"
@@ -34,6 +35,7 @@ const hitArea = new Rectangle(-12.5, -10, 25, 20);
   >
     <Graphics
       v-if="isCanvasDebugEnabled"
+      label="ComponentPlaceholderActionButton__Debug"
       :x="hitArea.x"
       :y="hitArea.y"
       @render="
@@ -46,6 +48,7 @@ const hitArea = new Rectangle(-12.5, -10, 25, 20);
     />
 
     <Graphics
+      label="ComponentPlaceholderActionButtonBody"
       @render="
         (graphics) => {
           graphics.clear();
@@ -60,6 +63,7 @@ const hitArea = new Rectangle(-12.5, -10, 25, 20);
     />
 
     <Graphics
+      label="ComponentPlaceholderActionButtonIcon"
       :width="10"
       :height="10"
       :x="-5"

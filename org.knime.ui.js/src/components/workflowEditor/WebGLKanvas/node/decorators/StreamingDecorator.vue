@@ -80,11 +80,19 @@ const renderX = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container>
-    <Graphics v-if="streamable" @render="renderArrow" />
+  <Container label="StreamingDecorator">
+    <Graphics
+      v-if="streamable"
+      label="StreamingDecoratorIcon"
+      @render="renderArrow"
+    />
     <template v-else>
-      <Graphics v-if="backgroundColor" @render="renderBackground" />
-      <Graphics @render="renderX" />
+      <Graphics
+        v-if="backgroundColor"
+        label="StreamingDecoratorBackground"
+        @render="renderBackground"
+      />
+      <Graphics label="StreamingDecoratorIcon" @render="renderX" />
     </template>
   </Container>
 </template>

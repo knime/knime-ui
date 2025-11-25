@@ -188,6 +188,7 @@ const { handlePointerInteraction } = useObjectInteractions({
     @pointerleave.self="onNodeHoverAreaPointerLeave"
   >
     <Graphics
+      label="PortBarHoverArea"
       :x="-$shapes.metaNodeBarHorizontalPadding"
       event-mode="static"
       :alpha="isDebugModeEnabled ? 1 : 0"
@@ -206,6 +207,7 @@ const { handlePointerInteraction } = useObjectInteractions({
     />
 
     <Graphics
+      label="PortBarBody"
       @render="
         (graphics) => {
           graphics.clear();
@@ -221,6 +223,7 @@ const { handlePointerInteraction } = useObjectInteractions({
     />
 
     <Graphics
+      label="PortBarSelectionRing"
       :visible="isSelected"
       :x="-$shapes.metaNodeBarHorizontalPadding"
       @render="

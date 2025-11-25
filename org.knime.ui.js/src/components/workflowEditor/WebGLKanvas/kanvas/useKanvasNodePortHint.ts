@@ -1,4 +1,4 @@
-import { type Ref, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { DOMContainer } from "pixi.js";
 
@@ -12,12 +12,12 @@ import { portSize } from "@/style/shapes";
 import { getNodeState } from "@/util/nodeUtil";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { nodeToWorkflowObject } from "@/util/workflowUtil";
+import { pixiGlobals } from "../common/pixiGlobals";
 
 /**
  * Hints for the webgl based canvas. Works by injecting DOMContainers to use as elements for the hints.
- * @param isPixiAppInitialized
  */
-export const useKanvasNodePortHint = (isPixiAppInitialized: Ref<boolean>) => {
+export const useKanvasNodePortHint = () => {
   const { createHint, isCompleted } = useHint();
 
   const { workflowHasNodes, activeWorkflow } = storeToRefs(useWorkflowStore());
@@ -61,10 +61,9 @@ export const useKanvasNodePortHint = (isPixiAppInitialized: Ref<boolean>) => {
     }
 
     // find first port of that node in pixi space
-    const node = useWebGLCanvasStore().stage?.getChildByLabel(
-      `Node__${nearestObjectId}`,
-      true,
-    );
+    const node = pixiGlobals
+      .getMainContainer()
+      .getChildByLabel(`Node__${nearestObjectId}`, true);
 
     const firstOutPort = node?.getChildByLabel("Port__Out-1", true);
 
@@ -85,22 +84,20 @@ export const useKanvasNodePortHint = (isPixiAppInitialized: Ref<boolean>) => {
     });
   };
 
-  watch(
-    isPixiAppInitialized,
-    async () => {
-      if (workflowHasNodes.value) {
-        // we need to wait until it has rendered to get the center of the scroll container
+  const initializeHint = async () => {
+    if (workflowHasNodes.value) {
+      // we need to wait until it has rendered to get the center of the scroll container
+      await showHint();
+    } else {
+      const unWatch = watch(workflowHasNodes, async (hasNodes) => {
+        if (!hasNodes) {
+          return;
+        }
         await showHint();
-      } else {
-        const unWatch = watch(workflowHasNodes, async (hasNodes) => {
-          if (!hasNodes) {
-            return;
-          }
-          await showHint();
-          unWatch();
-        });
-      }
-    },
-    { once: true },
-  );
+        unWatch();
+      });
+    }
+  };
+
+  return { initializeHint };
 };

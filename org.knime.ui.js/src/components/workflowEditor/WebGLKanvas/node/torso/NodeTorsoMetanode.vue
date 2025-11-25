@@ -105,9 +105,10 @@ const renderCheckmark = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container event-mode="none">
+  <Container label="NodeTorsoMetanode" event-mode="none">
     <Graphics
       event-mode="none"
+      label="NodeTorsoMetanodeBackground"
       @render="
         (graphics: GraphicsInst) => {
           graphics
@@ -117,14 +118,20 @@ const renderCheckmark = (graphics: GraphicsInst) => {
         }
       "
     />
-    <Graphics event-mode="none" @render="renderBorder" />
+    <Graphics
+      label="NodeTorsoMetanodeBorder"
+      event-mode="none"
+      @render="renderBorder"
+    />
 
     <Graphics
       v-if="executionState === 'EXECUTING'"
+      label="NodeTorsoMetanodeIcon"
       @render="renderExecutingArrows"
     />
     <Graphics
       v-else-if="executionState === 'EXECUTED'"
+      label="NodeTorsoMetanodeIcon"
       @render="renderCheckmark"
     />
   </Container>

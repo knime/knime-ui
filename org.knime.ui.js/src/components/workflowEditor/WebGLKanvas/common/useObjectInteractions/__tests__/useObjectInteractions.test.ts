@@ -9,6 +9,7 @@ import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
 import { useObjectInteractions } from "..";
 import { markPointerEventAsHandled } from "../../../util/interaction";
+import { pixiGlobals } from "../../pixiGlobals";
 
 vi.mock("../../../util/interaction");
 
@@ -83,17 +84,7 @@ describe("useObjectInteractions", () => {
   };
 
   const doMount = (options: MountOpts = {}) => {
-    const setPointerCapture = vi.fn();
-    const releasePointerCapture = vi.fn();
-    HTMLElement.prototype.setPointerCapture = setPointerCapture;
-    HTMLElement.prototype.releasePointerCapture = releasePointerCapture;
-    const canvas = document.createElement("canvas");
-    const addEventSpy = vi.spyOn(canvas, "addEventListener");
-    const removeEventSpy = vi.spyOn(canvas, "removeEventListener");
-
     const mockedStores = mockStores();
-    // @ts-expect-error
-    mockedStores.webglCanvasStore.pixiApplication = { canvas };
 
     const node = createNativeNode();
     const workflow = createWorkflow({ nodes: { [node.id]: node } });
@@ -110,11 +101,13 @@ describe("useObjectInteractions", () => {
       mockedStores,
     });
 
+    const { canvas } = pixiGlobals.getApplicationInstance();
+
     return {
       ...result,
       mockedStores,
-      addEventSpy,
-      removeEventSpy,
+      addEventSpy: vi.mocked(canvas.addEventListener),
+      removeEventSpy: vi.mocked(canvas.removeEventListener),
       canvas,
       selectSpy: vi.mocked(mockedStores.selectionStore.selectNodes),
       deselectSpy: vi.mocked(mockedStores.selectionStore.deselectNodes),

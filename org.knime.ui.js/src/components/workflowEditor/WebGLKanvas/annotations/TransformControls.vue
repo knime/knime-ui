@@ -152,6 +152,7 @@ const renderBorder = (graphics: Graphics, border: TransformBorder) => {
 <template>
   <Graphics
     v-if="showFocus"
+    label="TransformControlsFocus"
     :position="focusRectBounds"
     @render="
       (graphics) => {
@@ -237,6 +238,7 @@ const renderBorder = (graphics: Graphics, border: TransformBorder) => {
   <Graphics
     v-for="direction in DIRECTIONS"
     :key="direction"
+    label="TransformControlPoint"
     event-mode="static"
     :cursor="getCursorStyle(direction).cursor"
     :visible="showTransformControls"

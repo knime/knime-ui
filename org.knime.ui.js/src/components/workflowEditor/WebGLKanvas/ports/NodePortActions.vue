@@ -47,6 +47,6 @@ const actions: ActionButtonConfig[] = [
 
 <template>
   <Container event-mode="static">
-    <ActionBar :actions="actions" />
+    <ActionBar label="PortActionBar" :actions="actions" />
   </Container>
 </template>

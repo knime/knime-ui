@@ -126,6 +126,10 @@ const onPointerEnter = (event: FederatedPointerEvent) => {
     >
       {{ shortenedText }}
     </Text>
-    <Graphics :renderable="isHovered" @render="renderBorder" />
+    <Graphics
+      label="NodeLabelBorder"
+      :renderable="isHovered"
+      @render="renderBorder"
+    />
   </Container>
 </template>

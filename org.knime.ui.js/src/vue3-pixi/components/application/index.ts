@@ -25,8 +25,7 @@ import {
 import type { App, PropType } from "vue";
 
 import { createApp } from "../../renderer";
-import { inheritParent } from "../../utils";
-
+import { inheritParent } from "../../utils/index";
 export interface ApplicationInst {
   canvas: HTMLCanvasElement;
   app: _Application;
@@ -83,12 +82,10 @@ export const Application = defineComponent({
       type: Object as PropType<Partial<WebGLOptions>>,
       default: undefined,
     },
-    onBeforeMount: {
-      type: Function as PropType<(app: ApplicationInst["app"]) => void>,
-      default: undefined,
-    },
   },
-  emits: ["initComplete"],
+
+  emits: ["initComplete", "beforeMount"],
+
   setup(props, { slots, expose, emit }) {
     const { appContext } = getCurrentInstance()!;
     const canvas = ref<HTMLCanvasElement>();
@@ -118,30 +115,47 @@ export const Application = defineComponent({
         );
       });
 
-      app = createApp({ render: () => renderSlot(slots, "default") });
+      app = createApp({ render: renderSlotDefault });
 
       inheritParent(app, appContext);
 
-      if (props.onBeforeMount) {
-        props.onBeforeMount(pixiApp.value);
-      }
+      emit("beforeMount", inst);
 
       app.mount(pixiApp.value.stage);
 
-      emit("initComplete");
+      emit("initComplete", inst);
     }
+
     function unmount() {
       app?.unmount();
       app = undefined;
 
-      pixiApp.value?.destroy();
+      pixiApp.value?.destroy(
+        { removeView: true, releaseGlobalResources: true },
+        {
+          children: true,
+          context: true,
+          style: true,
+          texture: true,
+          textureSource: true,
+        },
+      );
       pixiApp.value = undefined;
     }
+
+    function renderSlotDefault() {
+      return renderSlot(slots, "default");
+    }
+
+    function renderCanvas() {
+      return h("canvas", { ref: canvas });
+    }
+
     onMounted(mount);
     onUnmounted(unmount);
 
     expose({ canvas, app: pixiApp });
 
-    return () => h("canvas", { ref: canvas });
+    return renderCanvas;
   },
 });

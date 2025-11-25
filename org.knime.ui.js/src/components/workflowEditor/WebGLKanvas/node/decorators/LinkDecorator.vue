@@ -80,17 +80,27 @@ const renderCross = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container>
-    <Graphics v-if="backgroundColor" @render="renderBackground" />
+  <Container label="LinkDecorator">
+    <Graphics
+      v-if="backgroundColor"
+      label="LinkDecoratorBackground"
+      @render="renderBackground"
+    />
 
     <Graphics
       v-if="!updateStatus || updateStatus === 'UP_TO_DATE'"
+      label="LinkDecoratorIcon"
       @render="renderArrow"
     />
     <Graphics
       v-else-if="updateStatus === 'HAS_UPDATE'"
+      label="LinkDecoratorIcon"
       @render="renderDottedArrow"
     />
-    <Graphics v-else-if="updateStatus === 'ERROR'" @render="renderCross" />
+    <Graphics
+      v-else-if="updateStatus === 'ERROR'"
+      label="LinkDecoratorIcon"
+      @render="renderCross"
+    />
   </Container>
 </template>

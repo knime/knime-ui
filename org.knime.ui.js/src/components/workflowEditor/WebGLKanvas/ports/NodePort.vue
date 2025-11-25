@@ -225,6 +225,7 @@ useAnimatePixiContainer({
 <template>
   <Container
     ref="portContainer"
+    :label="`NodePort__${nodeId}__${direction}__${port.index}`"
     :layer="selected ? canvasLayers.selectedPorts : null"
     :alpha="portTransparency.initialAlpha"
     event-mode="static"
@@ -234,6 +235,7 @@ useAnimatePixiContainer({
   >
     <Container
       ref="tooltipRef"
+      label="NodePortHitAreaWrapper"
       :hit-area="hitArea"
       :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
       event-mode="static"
@@ -246,6 +248,7 @@ useAnimatePixiContainer({
         v-if="isCanvasDebugEnabled"
         :x="hitArea.x"
         :y="hitArea.y"
+        label="NodePortHitArea"
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
@@ -261,7 +264,7 @@ useAnimatePixiContainer({
         :selected="selected"
       />
     </Container>
-    <Container ref="actionBarContainer">
+    <Container ref="actionBarContainer" label="PortActionBarWrapper">
       <NodePortActions
         v-if="animating"
         :port="port"

@@ -15,6 +15,7 @@ const { workflowBounds } = storeToRefs(useWorkflowStore());
     <Graphics
       v-if="visibleArea"
       :position="{ x: visibleArea.x, y: visibleArea.y }"
+      label="Debug__VisibleArea"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
@@ -28,6 +29,7 @@ const { workflowBounds } = storeToRefs(useWorkflowStore());
     <Graphics
       :x="workflowBounds.left"
       :y="workflowBounds.top"
+      label="Debug__WorkflowBounds"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
@@ -41,6 +43,7 @@ const { workflowBounds } = storeToRefs(useWorkflowStore());
     <Graphics
       :x="0"
       :y="0"
+      label="Debug__Origin"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();

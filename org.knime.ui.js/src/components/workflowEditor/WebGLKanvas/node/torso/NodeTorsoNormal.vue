@@ -88,14 +88,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Container event-mode="none">
+  <Container label="NodeTorsoNormal" event-mode="none">
     <Graphics
+      label="NodeTorsoNormalBackground"
       event-mode="none"
       @render="renderTorso($event, nodeBackgroundColor({ kind, type }))"
     />
 
     <Graphics
       v-if="isComponent && type"
+      label="NodeTorsoNormalComponentBackground"
       event-mode="none"
       :scale="componentBackgroundPortion"
       :x="4"
@@ -105,8 +107,8 @@ onUnmounted(() => {
 
     <Sprite
       v-if="texture"
+      label="NodeTorsoNormalIcon"
       event-mode="none"
-      label="NodeIcon"
       :texture="texture as any"
       :anchor="0.5"
       :scale="nodeIconScaleFactor"

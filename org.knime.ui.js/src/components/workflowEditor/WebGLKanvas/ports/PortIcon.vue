@@ -9,11 +9,11 @@ import { type GraphicsInst } from "@/vue3-pixi";
 
 const strokeWidth = 1.5;
 
-interface Props {
+type Props = {
   type: PortType.KindEnum;
   color: string;
   filled: boolean;
-}
+};
 
 const props = defineProps<Props>();
 
@@ -84,16 +84,22 @@ const otherPortsRenderFn = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container>
-    <Graphics v-if="type === 'table'" @render="tablePortRenderFn" />
+  <Container label="PortIcon">
+    <Graphics
+      v-if="type === 'table'"
+      label="PortIconTable"
+      @render="tablePortRenderFn"
+    />
 
     <Graphics
       v-else-if="type === 'flowVariable'"
+      label="PortIconFlowVar"
       @render="flowVariablePortRenderFn"
     />
 
     <Graphics
       v-else
+      label="PortIconOther"
       :position="{ x: -portSize / 2, y: -portSize / 2 }"
       @render="otherPortsRenderFn"
     />

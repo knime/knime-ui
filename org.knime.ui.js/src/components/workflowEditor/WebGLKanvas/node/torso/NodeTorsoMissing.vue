@@ -8,5 +8,5 @@ const renderFn = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Graphics event-mode="none" @render="renderFn" />
+  <Graphics label="NodeTorsoMissing" event-mode="none" @render="renderFn" />
 </template>

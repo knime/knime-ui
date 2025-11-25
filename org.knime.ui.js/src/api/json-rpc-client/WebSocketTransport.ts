@@ -1,6 +1,7 @@
 import { WebSocketTransport as BaseWebSocketTransport } from "@open-rpc/client-js";
 import type { JSONRPCRequestData } from "@open-rpc/client-js/build/Request";
 
+// eslint-disable-next-line no-magic-numbers
 const DEFAULT_TIMEOUT = 60 * 1000;
 
 export class WebSocketTransport extends BaseWebSocketTransport {
@@ -9,26 +10,6 @@ export class WebSocketTransport extends BaseWebSocketTransport {
     timeout: number | null = DEFAULT_TIMEOUT,
   ): Promise<any> {
     const promise = super.sendData(data, timeout);
-
-    promise
-      .then((response) => {
-        // log batch requests
-        if (Array.isArray(data)) {
-          consola.log({
-            requests: data.map(({ request }) => request),
-            response,
-          });
-
-          return;
-        }
-
-        // log standard requests
-        consola.log({ request: data.request, response });
-      })
-      .catch((error) => {
-        consola.error(error.data);
-        throw error;
-      });
 
     return promise;
   }

@@ -58,9 +58,11 @@ useAnimatePixiContainer<number>({
   <Container
     v-if="progress === undefined"
     ref="animatedCircleRef"
+    label="NodeStateProgress"
     event-mode="none"
   >
     <Graphics
+      label="NodeStateProgressBackground"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
@@ -73,6 +75,7 @@ useAnimatePixiContainer<number>({
 
   <template v-else>
     <Text
+      label="NodeStateProgressText"
       event-mode="none"
       :fill="$colors.text.default"
       :x="$shapes.nodeSize / 2"
@@ -85,6 +88,7 @@ useAnimatePixiContainer<number>({
     </Text>
 
     <Graphics
+      label="NodeStateProgressFill"
       event-mode="none"
       @render="
         (graphics: GraphicsInst) => {
@@ -102,11 +106,13 @@ useAnimatePixiContainer<number>({
     />
 
     <Container
+      label="NodeStateProgressMaskContainer"
       :mask="$refs.textMask as any"
       :renderable="progressDisplayPercentage > 25"
     >
       <Graphics
         ref="textMask"
+        label="NodeStateProgressMask"
         event-mode="none"
         :is-mask="true"
         @render="
@@ -125,6 +131,7 @@ useAnimatePixiContainer<number>({
       />
 
       <Text
+        label="NodeStateProgressMaskText"
         event-mode="none"
         :fill="$colors.text.default"
         :x="$shapes.nodeSize / 2"

@@ -10,6 +10,7 @@ defineProps<Props>();
 <template>
   <Graphics
     v-if="selected"
+    label="PortPlaceholderIconSelectionRing"
     @render="
       (graphics) => {
         graphics.circle(0, 0, 9).stroke({ color: $colors.CornflowerDark });
@@ -18,38 +19,24 @@ defineProps<Props>();
     "
   />
   <Graphics
+    label="PortPlaceholderIcon"
     @render="
       (graphics) => {
         graphics.clear();
+
+        // background
         graphics.circle(0, 0, 6);
         graphics.fill(0xffffff);
-      }
-    "
-  />
-  <Graphics
-    @render="
-      (graphics) => {
-        graphics.clear();
+
+        // dashed border
         const dash = new DashLine(graphics, { dash: [1, 1] });
         dash.circle(0, 0, 6);
         graphics.stroke({ width: 1, color: 0x000000 });
-      }
-    "
-  />
-  <Graphics
-    @render="
-      (graphics) => {
-        graphics.clear();
+
+        // icon
         graphics.moveTo(-3.5, 0);
         graphics.lineTo(3.5, 0);
         graphics.stroke({ width: 1, color: 0x000000 });
-      }
-    "
-  />
-  <Graphics
-    @render="
-      (graphics) => {
-        graphics.clear();
         graphics.moveTo(0, -3.5);
         graphics.lineTo(0, 3.5);
         graphics.stroke({ width: 1, color: 0x000000 });

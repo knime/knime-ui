@@ -115,8 +115,16 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
     }"
     event-mode="none"
   >
-    <Graphics v-if="showFocus" @render="focusPlaneRenderFn" />
+    <Graphics
+      v-if="showFocus"
+      label="NodeSelectionPlaneFocusRing"
+      @render="focusPlaneRenderFn"
+    />
 
-    <Graphics v-if="showSelection" @render="selectionPlaneRenderFn" />
+    <Graphics
+      v-if="showSelection"
+      label="NodeSelectionPlaneSelectionRing"
+      @render="selectionPlaneRenderFn"
+    />
   </Container>
 </template>

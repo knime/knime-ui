@@ -361,6 +361,7 @@ const openAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
     <Graphics
       v-if="!isEditing"
       event-mode="static"
+      label="AnnotationHoverArea"
       @pointermove="hoverAnnotationLinks"
       @pointerdown="openAnnotationLinks"
       @render="

@@ -119,7 +119,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
             consola.info(
               "action::fetchSpaceGroupsForProviders -> Fetched provider space groups",
-              { spaceGroups, updatedProvider: currentSpaceProvider },
+              { updatedProvider: currentSpaceProvider.id },
             );
           })
           .catch((error) => {
@@ -160,11 +160,6 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
           spaceProviderId: id,
         });
 
-        consola.info("action::fetchProviderSpaces", {
-          params: { id },
-          response: spaceGroups,
-        });
-
         return spaceGroups;
       } catch (error) {
         consola.error(
@@ -184,11 +179,6 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       }
 
       try {
-        consola.trace(
-          "action::reloadProviderSpaces -> reloading provider spaces",
-          { spaceProviderId: id },
-        );
-
         const { spaceGroups: _oldSpaceGroups, ...spaceProviderMeta } =
           this.spaceProviders[id];
         const newSpaceGroups = await this.fetchProviderSpaces({ id });

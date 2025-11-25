@@ -4,6 +4,7 @@ import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
 import { markPointerEventAsHandled } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
 import { PORT_TYPE_IDS, createPort, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
@@ -36,14 +37,11 @@ describe("floatingConnector store", () => {
     const workflow = createWorkflow();
 
     mockedStores.workflowStore.setActiveWorkflow(workflow);
-    const canvas = document.createElement("canvas");
-    mockedStores.webglCanvasStore.pixiApplication = {
-      // @ts-expect-error
-      app: { canvas },
-      canvas,
-    };
 
-    return { mockedStores, canvas };
+    return {
+      mockedStores,
+      canvas: pixiGlobals.getApplicationInstance().canvas,
+    };
   };
 
   const startDrag = (

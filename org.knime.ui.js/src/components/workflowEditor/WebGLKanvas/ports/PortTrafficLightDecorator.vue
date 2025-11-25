@@ -53,6 +53,7 @@ const renderTrafficLight = (graphics: GraphicsInst) => {
 <template>
   <Graphics
     v-if="trafficLightColor"
+    label="PortTrafficLightDecorator"
     :position-x="-($shapes.portSize / 2 + 1)"
     position-y="0"
     @render="renderTrafficLight"

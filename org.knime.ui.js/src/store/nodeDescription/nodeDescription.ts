@@ -56,14 +56,6 @@ export const useNodeDescriptionStore = defineStore("nodeDescription", {
 
         this.cache.set(factoryId, nodeDescriptionWithExtendedPorts);
 
-        consola.trace(
-          "action::getNativeNodeDescription -> Request to API.node.getNodeDescription",
-          {
-            params,
-            response: nodeDescription,
-          },
-        );
-
         return nodeDescriptionWithExtendedPorts;
       } catch (error) {
         consola.error(

@@ -157,6 +157,7 @@ const hitArea = new Polygon([
     @pointerleave="hideTooltip"
   >
     <Graphics
+      label="NodeStateBody"
       event-mode="none"
       @render="
         (graphics: GraphicsInst) => {
@@ -204,6 +205,7 @@ const hitArea = new Polygon([
 
     <Text
       v-else-if="executionState === 'QUEUED'"
+      label="NodeStateText"
       event-mode="none"
       :x="$shapes.nodeSize / 2"
       :anchor="{ x: 0.5, y: 0 }"

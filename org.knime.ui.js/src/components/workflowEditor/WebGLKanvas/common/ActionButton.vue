@@ -115,8 +115,9 @@ const onPointerLeave = () => {
         }
       "
     />
-    <Graphics @render="renderCircle" />
+    <Graphics label="ActionButtonBody" @render="renderCircle" />
     <Graphics
+      label="ActionButtonIcon"
       :width="20"
       :height="20"
       :pivot="16"

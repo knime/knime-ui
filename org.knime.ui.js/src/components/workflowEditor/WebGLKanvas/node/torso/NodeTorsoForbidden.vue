@@ -11,5 +11,5 @@ const render = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Graphics event-mode="none" @render="render" />
+  <Graphics label="NodeTorsoForbidden" event-mode="none" @render="render" />
 </template>

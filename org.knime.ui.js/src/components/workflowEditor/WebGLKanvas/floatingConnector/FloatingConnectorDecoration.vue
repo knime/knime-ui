@@ -26,11 +26,13 @@ const translatePosition = computed(() => {
 
 <template>
   <Container
+    label="FloatingConnectorDecoration"
     :position="translatePosition"
     :pivot="{ x: -$shapes.portSize / 2, y: $shapes.addNodeGhostSize / 2 }"
     event-mode="none"
   >
     <Graphics
+      label="FloatingConnectorDecorationRender"
       @render="
         (graphics) => {
           graphics.clear();
@@ -47,6 +49,7 @@ const translatePosition = computed(() => {
     />
 
     <Graphics
+      label="FloatingConnectorDecorationBorder"
       @render="
         (graphics) => {
           graphics.clear();
@@ -64,6 +67,7 @@ const translatePosition = computed(() => {
     />
 
     <Graphics
+      label="FloatingConnectorDecorationIcon"
       :scale="0.7"
       :pivot="1.5"
       @render="

@@ -18,6 +18,7 @@ const paths: string[] = [
 
 <template>
   <Graphics
+    label="NodeTorsoReplaceBody"
     @render="
       (graphics: GraphicsInst) => {
         torsoDrawUtils.drawDefault(graphics);
@@ -27,12 +28,13 @@ const paths: string[] = [
   />
 
   <Graphics
-    v-for="(path, index) in paths"
-    :key="index"
+    label="NodeTorsoReplaceIcon"
     @render="
       (graphics: GraphicsInst) => {
-        graphics.path(new GraphicsPath(path));
-        graphics.stroke({ color: $colors.Black, cap: 'round' });
+        for (const path of paths) {
+          graphics.path(new GraphicsPath(path));
+          graphics.stroke({ color: $colors.Black, cap: 'round' });
+        }
       }
     "
   />

@@ -54,9 +54,9 @@ const renderTorso = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container event-mode="none">
+  <Container label="NodeTorso" event-mode="none">
     <Graphics
-      label="torsoShadow"
+      label="NodeTorsoShadow"
       event-mode="none"
       :renderable="isHovered"
       :filters="[shadowFilter]"

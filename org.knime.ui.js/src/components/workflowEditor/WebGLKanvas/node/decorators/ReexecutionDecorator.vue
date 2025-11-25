@@ -56,8 +56,12 @@ const renderArrows = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container>
-    <Graphics v-if="backgroundColor" @render="renderBackground" />
-    <Graphics @render="renderArrows" />
+  <Container label="ReexecutionDecorator">
+    <Graphics
+      v-if="backgroundColor"
+      label="ReexecutionDecoratorBackground"
+      @render="renderBackground"
+    />
+    <Graphics label="ReexecutionDecoratorIcon" @render="renderArrows" />
   </Container>
 </template>

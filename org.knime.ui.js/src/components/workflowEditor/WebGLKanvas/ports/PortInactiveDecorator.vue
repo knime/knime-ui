@@ -50,12 +50,11 @@ const createOutlinePoints = (width: number) => {
 };
 
 const renderOutlineX = (graphics: GraphicsInst) => {
+  // outline
   const points = createOutlinePoints(2);
-
   graphics.poly(points).fill({ color: portColors.inactiveOutline });
-};
 
-const renderX = (graphics: GraphicsInst) => {
+  // X
   graphics
     .moveTo(-portSize / 2, -portSize / 2)
     .lineTo(portSize / 2, portSize / 2)
@@ -69,9 +68,5 @@ const renderX = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <!-- X outline -->
-  <Graphics @render="renderOutlineX" />
-
-  <!-- X -->
-  <Graphics @render="renderX" />
+  <Graphics label="PortInactiveDecorator" @render="renderOutlineX" />
 </template>

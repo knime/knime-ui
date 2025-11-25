@@ -7,6 +7,7 @@ import { BlurFilter, type FederatedPointerEvent, type Graphics } from "pixi.js";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $shapes from "@/style/shapes";
 import { clamp } from "@/util/math";
+import { pixiGlobals } from "../common/pixiGlobals";
 import { markPointerEventAsHandled } from "../util/interaction";
 
 import MiniPreview from "./MiniPreview.vue";
@@ -98,7 +99,7 @@ const onCameraPointerdown = (pointerdown: FederatedPointerEvent) => {
     );
   };
 
-  const canvas = canvasStore.pixiApplication!.canvas;
+  const canvas = pixiGlobals.getCanvas();
   canvas.setPointerCapture(pointerdown.pointerId);
 
   let lastPan = {
@@ -169,7 +170,7 @@ const blur = new BlurFilter({ strength: 4 });
     @pointerdown.stop="onMinimapPointerdown"
   >
     <Graphics
-      label="MinimapBackground"
+      label="MinimapBackgroundBoxShadow"
       :filters="[blur]"
       @render="
         (graphics) => {

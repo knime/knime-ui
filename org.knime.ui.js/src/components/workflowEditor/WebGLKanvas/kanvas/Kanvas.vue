@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import {
-  type Ref,
-  computed,
-  onUnmounted,
-  ref,
-  useTemplateRef,
-  watch,
-} from "vue";
+import { computed, onUnmounted, ref, useTemplateRef, watch } from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { Container, RenderLayer } from "pixi.js";
+import {
+  Container,
+  Application as PixiApplication,
+  RenderLayer,
+} from "pixi.js";
 
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
@@ -21,6 +18,7 @@ import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
+import { pixiGlobals } from "../common/pixiGlobals";
 import { initE2ETestUtils } from "../util/e2eTest";
 import { isMarkedEvent } from "../util/interaction";
 
@@ -28,8 +26,6 @@ import Minimap from "./Minimap.vue";
 import { useKanvasNodePortHint } from "./useKanvasNodePortHint";
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
-
-const pixiApp = ref<ApplicationInst>();
 
 const emit = defineEmits<{
   canvasReady: [];
@@ -50,23 +46,21 @@ const isMinimapVisible = computed(
   () => useSettingsStore().settings.isMinimapVisible,
 );
 
-const isPixiAppInitialized = ref(false);
-
 const MAIN_CONTAINER_LABEL = "MainContainer";
 const { devMode } = storeToRefs(useApplicationSettingsStore());
 
+// before the mount the pixi app is already there so we can add the layers
+// and make sure they are available early
 const addRenderLayers = (app: ApplicationInst["app"]) => {
   let layerIndex = 0;
 
   const debugLayer = new RenderLayer();
-  // @ts-expect-error type misses label
   debugLayer.label = "DebugLayer";
   app.stage.addChildAt(debugLayer, layerIndex++);
   canvasLayers.value.debugLayer = debugLayer;
 
   // annotations need to be behind everything else
   const annotationsLayer = new RenderLayer({ sortableChildren: true });
-  // @ts-expect-error type misses label
   annotationsLayer.label = "AnnotationsLayer";
 
   app.stage.addChildAt(annotationsLayer, layerIndex++);
@@ -74,7 +68,6 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
 
   // add a layer so we can move the selection plane of the nodes to the back
   const nodeSelectionPlaneRenderLayer = new RenderLayer();
-  // @ts-expect-error type misses label
   nodeSelectionPlaneRenderLayer.label = "NodeSelectionPlaneRenderLayer";
 
   app.stage.addChildAt(nodeSelectionPlaneRenderLayer, layerIndex++);
@@ -82,53 +75,44 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
 };
 
 const mainContainer = useTemplateRef<Container>("mainContainer");
+const { initializeHint } = useKanvasNodePortHint();
 
-watch(
-  isPixiAppInitialized,
-  () => {
-    if (!isPixiAppInitialized.value) {
-      return;
-    }
+const onAppInitialized = (pixiApp: PixiApplication) => {
+  if (!import.meta.env.PROD || devMode.value) {
+    // this allows the pixi devtools to work
+    globalThis.__PIXI_APP__ = pixiApp;
+  }
 
-    // Store reference Pixi.js application instance
-    const app = pixiApp.value!.app;
+  pixiGlobals.setApplicationInstance(pixiApp);
+  pixiGlobals.setMainContainer(mainContainer.value!);
 
-    if (!import.meta.env.PROD || devMode.value) {
-      globalThis.__PIXI_APP__ = app;
-    }
+  // used by e2e tests in this repo and by QA
+  globalThis.__E2E_TEST__ = initE2ETestUtils();
 
-    canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
-    canvasStore.stage = mainContainer.value;
+  canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
 
-    // used by e2e tests in this repo and by QA
-    globalThis.__E2E_TEST__ = initE2ETestUtils(app);
+  emit("canvasReady");
 
-    canvasStore.isDebugModeEnabled =
-      import.meta.env.VITE_CANVAS_DEBUG === "true";
+  // only enable for FE e2e Playwright tests
+  if (import.meta.env.MODE === "e2e") {
+    performanceTracker.trackSingleRender(pixiApp);
+  }
 
-    emit("canvasReady");
-
-    performanceTracker.trackSingleRender(pixiApp.value!);
-  },
-  { once: true },
-);
-
-useKanvasNodePortHint(isPixiAppInitialized);
+  initializeHint();
+};
 
 onUnmounted(() => {
-  canvasStore.pixiApplication = null;
+  canvasStore.canvasOffset = { x: 0, y: 0 };
+  canvasStore.zoomFactor = 1;
+
   canvasStore.removeLayers();
-  canvasStore.stage = null;
   canvasStore.clearCanvasAnchor();
-  canvasStore.setCanvasOffset({ x: 0, y: 0 });
-  canvasStore.setFactor(1);
+  pixiGlobals.clear();
   clearIconCache();
 });
 
 const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
-const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
-  pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
-});
+const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning();
 
 const isGrabbing = ref(false);
 const onPointerDown = (event: PointerEvent) => {
@@ -170,11 +154,6 @@ watch(
   },
   { immediate: true },
 );
-
-// before the mount the pixi app is already there so we can add the layers and make sure they are available early
-const beforePixiMount = (app: ApplicationInst["app"]) => {
-  addRenderLayers(app);
-};
 </script>
 
 <template>
@@ -189,7 +168,6 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     :antialias="true"
     :resize-to="() => getKanvasDomElement()!"
     :auto-start="!performanceTracker.isCanvasPerfMode()"
-    :on-before-mount="beforePixiMount"
     :class="[
       {
         panning: shouldShowMoveCursor || hasPanModeEnabled,
@@ -200,14 +178,15 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     @pointerdown="onPointerDown"
     @pointerup="onPointerUp"
     @contextmenu.prevent
-    @init-complete="isPixiAppInitialized = true"
+    @before-mount="addRenderLayers"
+    @init-complete="onAppInitialized"
   >
     <Container
       ref="mainContainer"
       :label="MAIN_CONTAINER_LABEL"
       :event-mode="interactionsEnabled === 'all' ? undefined : 'none'"
     >
-      <Debug :visible="isCanvasDebugEnabled" />
+      <Debug v-if="devMode" :visible="isCanvasDebugEnabled" />
       <slot />
     </Container>
 

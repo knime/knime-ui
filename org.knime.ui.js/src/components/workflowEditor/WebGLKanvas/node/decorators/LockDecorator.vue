@@ -74,9 +74,17 @@ const renderUnlocked = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container>
-    <Graphics v-if="backgroundColor" @render="renderBackground" />
-    <Graphics v-if="isLocked" @render="renderLocked" />
-    <Graphics v-else @render="renderUnlocked" />
+  <Container label="LockDecorator">
+    <Graphics
+      v-if="backgroundColor"
+      label="LockDecoratorBackground"
+      @render="renderBackground"
+    />
+    <Graphics
+      v-if="isLocked"
+      label="LockDecoratorIcon"
+      @render="renderLocked"
+    />
+    <Graphics v-else label="LockDecoratorIcon" @render="renderUnlocked" />
   </Container>
 </template>

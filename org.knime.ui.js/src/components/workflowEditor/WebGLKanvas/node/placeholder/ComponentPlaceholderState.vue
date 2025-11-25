@@ -103,6 +103,7 @@ const renderHoverArea = (graphics: GraphicsInst) => {
 
 <template>
   <Container
+    label="ComponentPlaceholderState"
     event-mode="static"
     :visible="renderable"
     :renderable="renderable"
@@ -112,7 +113,11 @@ const renderHoverArea = (graphics: GraphicsInst) => {
     @pointerdown="handlePointerInteraction"
     @rightclick="onRightClick"
   >
-    <Graphics :hit-area="placeholderHitArea" @render="renderHoverArea" />
+    <Graphics
+      label="ComponentPlaceholderStateHitArea"
+      :hit-area="placeholderHitArea"
+      @render="renderHoverArea"
+    />
 
     <NodeName
       :node-id="id"

@@ -1,10 +1,9 @@
-import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
 import { isMultiselectEvent } from "@/components/workflowEditor/util/isMultiselectEvent";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { markPointerEventAsHandled } from "../../util/interaction";
+import { pixiGlobals } from "../pixiGlobals";
 
 import { useObjectHandler } from "./_internalUseObjectSelectionHandler";
 import { usePositionUtils } from "./_internalUsePositionUtils";
@@ -40,9 +39,6 @@ export const useHandleUnselectedAnnotation = (options: Options) => {
 
   const selectionStore = useSelectionStore();
 
-  const canvasStore = useWebGLCanvasStore();
-  const { pixiApplication } = storeToRefs(canvasStore);
-
   const objectHandler = useObjectHandler(objectMetadata);
   const { setStartPosition, calculateMoveDeltas } = usePositionUtils({
     objectMetadata,
@@ -67,7 +63,7 @@ export const useHandleUnselectedAnnotation = (options: Options) => {
       return;
     }
 
-    const canvas = pixiApplication.value!.canvas;
+    const canvas = pixiGlobals.getCanvas();
     canvas.setPointerCapture(pointerDownEvent.pointerId);
     let didMove = false;
 

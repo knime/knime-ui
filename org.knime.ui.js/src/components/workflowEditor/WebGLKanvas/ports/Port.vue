@@ -48,7 +48,6 @@ const shouldFill = computed(() => {
 const portContainer = useTemplateRef<ContainerInst>("portContainer");
 const { hovered, targeted, selected } = toRefs(props);
 
-/* eslint-disable no-magic-numbers */
 useAnimatePixiContainer<number>({
   initialValue: 1,
   targetValue: 1.2,
@@ -89,7 +88,7 @@ useAnimatePixiContainer<number>({
   },
   animateOut: true,
 });
-/* eslint-enable no-magic-numbers */
+
 const selectionOffset = () => {
   let offset = 0;
   if (portKind.value === "table") {
@@ -114,13 +113,14 @@ const renderSelectionCircle = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container ref="selectionContainer">
+  <Container ref="selectionContainer" label="PortSelection">
     <Graphics
       v-if="selected || animatingSelection"
+      label="PortSelectionRing"
       @render="renderSelectionCircle"
     />
   </Container>
-  <Container ref="portContainer">
+  <Container ref="portContainer" label="Port">
     <PortIcon :type="portKind" :color="portColor" :filled="shouldFill" />
     <PortInactiveDecorator v-if="port.inactive" />
     <PortTrafficLightDecorator

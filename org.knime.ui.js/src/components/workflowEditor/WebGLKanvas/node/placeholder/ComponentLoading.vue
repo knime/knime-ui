@@ -102,8 +102,9 @@ const renderProgressBorder = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container label="PlaceholderLoading">
+  <Container label="ComponentPlaceholderLoading">
     <Text
+      label="ComponentPlaceholderLoadingText"
       :resolution="zoomAwareResolution"
       :round-pixels="true"
       :text="progressPercentile"
@@ -114,6 +115,7 @@ const renderProgressBorder = (graphics: GraphicsInst) => {
     />
 
     <Graphics
+      label="ComponentPlaceholderLoadingBackground"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
@@ -130,6 +132,9 @@ const renderProgressBorder = (graphics: GraphicsInst) => {
       "
     />
 
-    <Graphics @render="renderProgressBorder" />
+    <Graphics
+      label="ComponentPlaceholderLoadingBorder"
+      @render="renderProgressBorder"
+    />
   </Container>
 </template>

@@ -15,7 +15,7 @@ import {
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
 import type {
-  FloatingConnector,
+  FullFloatingConnector,
   SnappedPlaceholderPort,
   SnappedPort,
 } from "../types";
@@ -79,7 +79,7 @@ describe("floatingConnector:usePortSnapping", () => {
   };
 
   type MountOpts = {
-    floatingConnector: Ref<FloatingConnector>;
+    floatingConnector: Ref<FullFloatingConnector>;
     pointerMoveAbsoluteCoords: Ref<XY>;
   };
 
@@ -189,8 +189,8 @@ describe("floatingConnector:usePortSnapping", () => {
     );
 
     onLeaveConnectionSnapCandidate({
-      referenceNode: referenceNode.instance,
-      parentNodePortPositions: referenceNode.portPositions,
+      candidate: referenceNode.instance,
+      portPositions: referenceNode.portPositions,
     });
 
     expect(isInsideSnapRegion.value).toBe(false);

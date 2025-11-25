@@ -14,6 +14,7 @@ import {
   useDragNearEdgePanning,
 } from "../../kanvas/useDragNearEdgePanning";
 import { markPointerEventAsHandled } from "../../util/interaction";
+import { pixiGlobals } from "../pixiGlobals";
 
 import { useAbortDragListener } from "./_internalUseAbortDragListener";
 import { useNodeDragging } from "./_internalUseNodeDragging";
@@ -69,7 +70,6 @@ export const useHandlePointerInteraction = (options: Options) => {
   const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 
   const canvasStore = useWebGLCanvasStore();
-  const { pixiApplication } = storeToRefs(canvasStore);
 
   const objectHandler = useObjectHandler(objectMetadata);
   const { setStartPosition, calculateMoveDeltas } = usePositionUtils({
@@ -172,7 +172,7 @@ export const useHandlePointerInteraction = (options: Options) => {
     }
 
     setStartPosition(pointerDownEvent);
-    const canvas = pixiApplication.value!.canvas;
+    const canvas = pixiGlobals.getCanvas();
     canvas.setPointerCapture(pointerDownEvent.pointerId);
     const removeDragAbortListener = registerDragAbortListener();
 

@@ -14,16 +14,16 @@ import { refDebounced } from "@vueuse/core";
 import { isNumber, round } from "lodash-es";
 import { animate, mix } from "motion";
 import { defineStore } from "pinia";
-import { type IRenderLayer } from "pixi.js";
+import type { RenderLayer } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { getEdgeNearPoint, isPointOutsideBounds } from "@/util/geometry/utils";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
-import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 import { useCanvasTooltipStore } from "../canvasTooltip/canvasTooltip";
 
@@ -108,9 +108,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     anchor: { x: 0, y: 0 },
     offset: 0,
   });
-  const pixiApplication = shallowRef<ApplicationInst | null>(null);
 
-  type CanvasLayers = Record<CanvasLayerNames, IRenderLayer | undefined>;
+  type CanvasLayers = Record<CanvasLayerNames, RenderLayer | undefined>;
   const canvasLayers: ShallowRef<CanvasLayers> = shallowRef({
     nodeSelectionPlane: undefined,
     selectedNodes: undefined,
@@ -128,7 +127,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasLayers.value.annotationControls = undefined;
   };
 
-  const stage = shallowRef<StageInst | null>(null);
   const isDebugModeEnabled = ref(false);
 
   const setFactor = (newFactor: number) => {
@@ -137,9 +135,10 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     const clampedFactor = clampZoomFactor(newFactor);
     zoomFactor.value = clampedFactor;
 
-    if (stage.value) {
-      stage.value.scale.x = clampedFactor;
-      stage.value.scale.y = clampedFactor;
+    if (pixiGlobals.hasMainContainer()) {
+      const mainContainer = pixiGlobals.getMainContainer();
+      mainContainer.scale.x = clampedFactor;
+      mainContainer.scale.y = clampedFactor;
     }
   };
 
@@ -343,13 +342,13 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       return value.y;
     })();
 
-    if (stage.value) {
-      stage.value.x = newX;
-      stage.value.y = newY;
-    }
-
     canvasOffset.value.x = newX;
     canvasOffset.value.y = newY;
+
+    if (pixiGlobals.hasMainContainer()) {
+      pixiGlobals.getMainContainer().x = newX;
+      pixiGlobals.getMainContainer().y = newY;
+    }
   };
 
   const fitToScreenZoomFactor = computed(() => {
@@ -569,7 +568,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
     const { x, y, doAnimate = true, forceMove = false } = moveConfig;
 
-    if (!kanvas || !stage.value) {
+    if (!kanvas) {
       return;
     }
 
@@ -645,9 +644,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     cursorX: number;
     cursorY: number;
   }) => {
-    if (!stage.value) {
-      return;
-    }
+    const mainContainer = pixiGlobals.getMainContainer();
 
     const hasFactor = factor && !isNaN(factor);
 
@@ -661,18 +658,18 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     const newFactor = hasFactor ? factor : deltaBasedFactor;
 
     const worldPosition = {
-      x: (cursorX - stage.value.x) / zoomFactor.value,
-      y: (cursorY - stage.value.y) / zoomFactor.value,
+      x: (cursorX - mainContainer.x) / zoomFactor.value,
+      y: (cursorY - mainContainer.y) / zoomFactor.value,
     };
 
     const newScreenPosition = {
-      x: worldPosition.x * newFactor + stage.value.x,
-      y: worldPosition.y * newFactor + stage.value.y,
+      x: worldPosition.x * newFactor + mainContainer.x,
+      y: worldPosition.y * newFactor + mainContainer.y,
     };
 
     setCanvasOffset({
-      x: stage.value.x - (newScreenPosition.x - cursorX),
-      y: stage.value.y - (newScreenPosition.y - cursorY),
+      x: mainContainer.x - (newScreenPosition.x - cursorX),
+      y: mainContainer.y - (newScreenPosition.y - cursorY),
     });
 
     setFactor(newFactor);
@@ -772,14 +769,11 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   };
 
   const findObjectFromScreenCoordinates = (coordinates: XY) => {
-    if (!pixiApplication.value) {
-      return undefined;
-    }
-
     const [x, y] = fromCanvasCoordinates.value([coordinates.x, coordinates.y]);
 
-    const foundObject =
-      pixiApplication.value.app.renderer.events.rootBoundary.hitTest(x, y);
+    const foundObject = pixiGlobals
+      .getApplicationInstance()
+      .renderer.events.rootBoundary.hitTest(x, y);
 
     return foundObject;
   };
@@ -825,9 +819,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     // webgl only
     shouldHideMiniMap,
     canvasAnchor,
-    pixiApplication,
     canvasLayers,
-    stage,
     isDebugModeEnabled,
     canvasOffset,
     visibleArea,

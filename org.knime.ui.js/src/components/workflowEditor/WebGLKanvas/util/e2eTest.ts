@@ -1,6 +1,5 @@
 /* eslint-disable no-undefined */
 import {
-  type Application,
   type Container,
   type ContainerChild,
   DOMContainer,
@@ -8,14 +7,17 @@ import {
 } from "pixi.js";
 
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { pixiGlobals } from "../common/pixiGlobals";
 
 /**
  * Utility functions to help with E2E testing the WebGL Kanvas as it's tricky to
  * guess the coordinates of the elements on screen.
  * They are used by e2e tests in this repo but also by QA.
  */
-export const initE2ETestUtils = (app: Application) => {
+export const initE2ETestUtils = () => {
   let kanvasBox: DOMRect | undefined;
+
+  const getStage = () => pixiGlobals.getApplicationInstance().stage;
 
   const updateKanvasBox = () => {
     kanvasBox = getKanvasDomElement()?.getBoundingClientRect();
@@ -42,7 +44,7 @@ export const initE2ETestUtils = (app: Application) => {
   };
 
   const getPixiContainer = (labels: (RegExp | string)[]) => {
-    let container: Container<ContainerChild> | undefined = app.stage;
+    let container: Container<ContainerChild> | undefined = getStage();
 
     for (const label of labels) {
       container = container?.getChildByLabel(label, true) ?? undefined;

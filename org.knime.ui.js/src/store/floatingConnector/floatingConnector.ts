@@ -6,6 +6,7 @@ import throttle from "raf-throttle";
 
 import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
 import {
   type PanningToEdgeUpdateHandler,
   useDragNearEdgePanning,
@@ -196,14 +197,17 @@ export const useFloatingConnectorStore = defineStore(
         return;
       }
 
-      consola.debug("floatingConnector:: starting connector drag", { params });
+      consola.debug("floatingConnector:: starting connector drag", {
+        params: {
+          direction: params.direction,
+          nodeId: params.nodeId,
+          port: params.port.index,
+        },
+      });
 
-      const {
-        pixiApplication,
-        toCanvasCoordinates,
-        isPointOutsideVisibleArea,
-      } = useWebGLCanvasStore();
-      const canvas = pixiApplication!.app.canvas;
+      const { toCanvasCoordinates, isPointOutsideVisibleArea } =
+        useWebGLCanvasStore();
+      const canvas = pixiGlobals.getCanvas();
       canvas.setPointerCapture(pointerDownEvent.pointerId);
 
       // Because this event originates from a port, we stop propagation s.t it

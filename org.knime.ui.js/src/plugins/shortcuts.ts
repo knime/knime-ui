@@ -137,7 +137,6 @@ export const createShortcutsService = ({
 
     if (!shortcut) {
       consola.warn("shortcuts::dispatch -> Shortcut not found", {
-        shortcuts,
         shortcutName,
       });
       throw new Error(`Shortcut ${shortcutName} doesn't exist`);

@@ -28,6 +28,7 @@ const translateY = computed(() => props.position.y);
 <template>
   <Container label="ConnectorBendpoint">
     <Graphics
+      label="ConnectorBendpointHoverArea"
       v-bind="$attrs"
       :event-mode="interactive ? 'static' : 'none'"
       :cursor="isDragging ? 'grabbing' : 'grab'"
@@ -45,6 +46,7 @@ const translateY = computed(() => props.position.y);
     />
 
     <Graphics
+      label="ConnectorBendpointRender"
       event-mode="none"
       :position-x="translateX"
       :position-y="translateY"

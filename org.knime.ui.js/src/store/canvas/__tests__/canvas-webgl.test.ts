@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTestingPinia } from "@pinia/testing";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useWorkflowStore } from "@/store/workflow/workflow";
+import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
 import { createWorkflow } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import {
   getKanvasDomElement,
   // @ts-expect-error
@@ -13,7 +13,6 @@ import {
   maxZoomFactor,
   minZoomFactor,
   padding,
-  useWebGLCanvasStore,
   zoomMultiplier,
 } from "../canvas-webgl";
 
@@ -59,21 +58,11 @@ describe("WebGL canvas store", () => {
     };
     setMockKanvasDomElement(kanvasWrapper);
 
-    const testingPinia = createTestingPinia({
-      stubActions: false,
-      createSpy: vi.fn,
-    });
-
-    const canvasStore = useWebGLCanvasStore(testingPinia);
-    const workflowStore = useWorkflowStore(testingPinia);
+    const { webglCanvasStore: canvasStore, workflowStore } = mockStores();
 
     workflowStore.activeWorkflow = createWorkflow();
     // @ts-expect-error: Getter is read only
     workflowStore.workflowBounds = workflowBoundsMock;
-
-    // fake stage
-    // @ts-expect-error
-    canvasStore.stage = { scale: { x: 1, y: 1 }, x: 0, y: 0 };
 
     return {
       canvasStore,
@@ -85,6 +74,11 @@ describe("WebGL canvas store", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    pixiGlobals.getMainContainer().x = 0;
+    pixiGlobals.getMainContainer().y = 0;
   });
 
   it("setFactor", () => {

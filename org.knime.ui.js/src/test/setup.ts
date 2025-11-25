@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import { config } from "@vue/test-utils";
+import { Container } from "pixi.js";
 
 import { KANVAS_RENDERER_STORAGE_KEY } from "@/components/workflowEditor/util/canvasRenderer";
 import { characterLimits } from "@/plugins/constants";
@@ -52,6 +53,43 @@ vi.mock("@knime/components", async (importActual) => {
     ...actual,
     setupHints: vi.fn(),
     useHint: () => ({ createHint: vi.fn(), isCompleted: vi.fn(() => true) }),
+  };
+});
+
+vi.mock("@/components/workflowEditor/WebGLKanvas/common/pixiGlobals", () => {
+  const mockedCanvas = document.createElement("canvas");
+
+  mockedCanvas.addEventListener = vi.spyOn(
+    mockedCanvas,
+    "addEventListener",
+  ) as any;
+  mockedCanvas.removeEventListener = vi.spyOn(
+    mockedCanvas,
+    "removeEventListener",
+  ) as any;
+  mockedCanvas.setPointerCapture = vi.spyOn(
+    mockedCanvas,
+    "setPointerCapture",
+  ) as any;
+  mockedCanvas.releasePointerCapture = vi.spyOn(
+    mockedCanvas,
+    "releasePointerCapture",
+  ) as any;
+
+  const mainContainer = new Container({ scale: { x: 1, y: 1 } });
+  const mockPixiApp = { canvas: mockedCanvas };
+
+  return {
+    pixiGlobals: {
+      hasApplicationInstance: vi.fn(() => true),
+      setApplicationInstance: vi.fn(),
+      getApplicationInstance: vi.fn(() => mockPixiApp),
+      hasMainContainer: vi.fn(() => true),
+      setMainContainer: vi.fn(),
+      getMainContainer: vi.fn(() => mainContainer),
+      getCanvas: vi.fn(() => mockedCanvas),
+      clear: vi.fn(),
+    },
   };
 });
 

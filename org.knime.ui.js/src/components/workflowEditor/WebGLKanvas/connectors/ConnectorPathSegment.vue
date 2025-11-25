@@ -258,6 +258,7 @@ watch(suggestDelete, (shouldAnimate) => {
 
     <Graphics
       ref="pathSegment"
+      label="ConnectorPathSegmentRender"
       event-mode="none"
       @render="renderConnector($event, bezier)"
     />

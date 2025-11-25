@@ -7,8 +7,9 @@ import { loadSvgInGraphicsContext } from "../../util/loadSvgInGraphicsContext";
 </script>
 
 <template>
-  <Container label="PlaceholderError">
+  <Container label="ComponentPlaceholderError">
     <Graphics
+      label="ComponentPlaceholderErrorIcon"
       :width="16"
       :height="16"
       :x="$shapes.nodeSize / 2 - 8"
@@ -22,6 +23,7 @@ import { loadSvgInGraphicsContext } from "../../util/loadSvgInGraphicsContext";
     />
 
     <Graphics
+      label="ComponentPlaceholderErrorTorso"
       @render="
         (graphics) => {
           graphics.clear();

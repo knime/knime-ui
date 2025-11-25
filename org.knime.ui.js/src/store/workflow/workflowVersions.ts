@@ -226,7 +226,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     if (!activeProjectId || !activeProjectProvider) {
       consola.error(
         "WorkflowVersionsStore::deleteVersion -> Prerequisite failed",
-        { activeProjectId, activeProjectProvider },
+        { activeProjectId, activeProjectProvider: activeProjectProvider?.id },
       );
       return;
     }
@@ -290,7 +290,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     if (!activeProjectId || !activeProjectProvider || !activeProjectOrigin) {
       consola.error(
         "WorkflowVersionsStore::restoreVersion -> Prerequisite failed",
-        { activeProjectId, activeProjectProvider, activeProjectOrigin },
+        {
+          activeProjectId,
+          activeProjectProvider: activeProjectProvider?.id,
+          activeProjectOrigin,
+        },
       );
       return;
     }
@@ -338,7 +342,11 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     if (!activeProjectId || !activeProjectOrigin || !activeProjectProvider) {
       consola.error(
         "WorkflowVersionsStore::discardUnversionedChanges -> Prerequisite failed",
-        { activeProjectId, activeProjectProvider, activeProjectOrigin },
+        {
+          activeProjectId,
+          activeProjectProvider: activeProjectProvider?.id,
+          activeProjectOrigin,
+        },
       );
       return;
     }

@@ -91,8 +91,6 @@ export const actions = {
     this["patch.add"](state, { path, value: source });
   },
   "patch.apply"(patch: PatchOp[]) {
-    consola.trace("Applying patch", patch);
-
     // apply patch "atomically"
     for (const cmd of patch) {
       const { op, ...payload } = cmd;

@@ -48,8 +48,7 @@ export const useSpaceAuthStore = defineStore("space.auth", {
         });
 
         consola.info("action::connectProvider -> updating space provider", {
-          spaceProvider,
-          spaceGroups,
+          spaceProviderId: spaceProvider.id,
         });
 
         const updatedProvider = { ...spaceProvider, spaceGroups };
@@ -63,9 +62,7 @@ export const useSpaceAuthStore = defineStore("space.auth", {
       } catch (error) {
         consola.error(
           "action::connectProvider -> Error connecting to provider",
-          {
-            error,
-          },
+          { error },
         );
         throw error;
       } finally {

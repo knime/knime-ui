@@ -1,14 +1,14 @@
 import { ref } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
-import type { FloatingConnector } from "../types";
+import type { FullFloatingConnector } from "../types";
 
 export const createMockFloatingConnector = (
   node: KnimeNode,
   portIndex: number,
 ) => {
-  return ref<FloatingConnector>({
-    id: "mock-drag-connector",
+  return ref<FullFloatingConnector>({
+    id: "full-floating-connector",
     absolutePoint: { x: 0, y: 0 },
     allowedActions: {
       canDelete: false,
@@ -20,7 +20,6 @@ export const createMockFloatingConnector = (
       origin: "out",
       parentNodeId: node.id,
       portInstance: node.outPorts[portIndex],
-      portPosition: { x: 10, y: 10 },
     },
   });
 };

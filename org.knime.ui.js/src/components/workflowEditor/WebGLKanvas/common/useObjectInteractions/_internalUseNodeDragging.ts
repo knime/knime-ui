@@ -1,10 +1,9 @@
-import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { pixiGlobals } from "../pixiGlobals";
 
 const containerSelectors = (stage: PIXI.Container) => {
   return {
@@ -130,17 +129,8 @@ let movedContainers: DraggedContainers;
  * the correct position
  */
 export const useNodeDragging = () => {
-  const canvasStore = useWebGLCanvasStore();
-  const { pixiApplication } = storeToRefs(canvasStore);
-
   const getStage = () => {
-    if (!pixiApplication.value) {
-      throw new Error(
-        "Container repositioning:: Pixi application instance not found",
-      );
-    }
-
-    return pixiApplication.value.app.stage;
+    return pixiGlobals.getApplicationInstance().stage;
   };
 
   /**

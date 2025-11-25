@@ -16,6 +16,7 @@ import * as $colors from "@/style/colors";
 import { SpatialHash } from "@/util/geometry/spatialHash";
 import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
+import { pixiGlobals } from "../common/pixiGlobals";
 import {
   type PanningToEdgeUpdateHandler,
   useDragNearEdgePanning,
@@ -152,7 +153,7 @@ const onSelectionStart = (event: PointerEvent) => {
     selectionStore.deselectAllObjects();
   }
 
-  const canvas = canvasStore.pixiApplication!.canvas;
+  const canvas = pixiGlobals.getCanvas();
 
   const onSelectionMove = rafThrottle((event: PointerEvent) => {
     if (
@@ -275,6 +276,7 @@ useGlobalBusListener({
 <template>
   <Graphics
     v-if="isSelectionRectangleVisible"
+    label="SelectionRectangle"
     :x="selectionRectangle.x"
     :y="selectionRectangle.y"
     @render="renderFn"

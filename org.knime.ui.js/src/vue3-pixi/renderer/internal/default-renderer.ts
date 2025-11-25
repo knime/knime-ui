@@ -31,16 +31,11 @@ import {
   DisplacementFilter,
   Graphics,
   Mesh,
-  // -- Strange thing
-  // -- why are these three empty?
-  // MeshPlane,
-  // MeshRope,
-  // NineSliceSprite,
   NoiseFilter,
   Sprite,
   Text,
   TilingSprite,
-  type IRenderLayer,
+  type RenderLayer,
 } from "pixi.js";
 
 import { patchProp as defaultPatchProp, patchBooleanProp } from "../patchProp";
@@ -59,8 +54,8 @@ const ContainerRender: RendererOptions = {
   patchProp(el: Container, key, prev, next) {
     switch (key) {
       case "layer":
-        if (prev?.detach) (prev as IRenderLayer).detach(el);
-        if (next?.attach) (next as IRenderLayer).attach(el);
+        if (prev?.detach) (prev as RenderLayer).detach(el);
+        if (next?.attach) (next as RenderLayer).attach(el);
         break;
 
       default:
@@ -211,54 +206,6 @@ const MeshRender: RendererOptions = {
     }
   },
 };
-
-// const NineSliceSpriteRender: RendererOptions = {
-//   name: 'NineSliceSprite',
-//   createElement: props => new NineSliceSprite(
-//     normalizeTexture(props.texture),
-//   ),
-//   patchProp(el: NineSliceSprite, key, prev, next) {
-//     switch (key) {
-//       case 'roundPixels':
-//       case 'autoResize':
-//         patchBooleanProp(el, key, prev, next)
-//         break
-//       default:
-//         defuPatchProp(el, key, prev, next)
-//     }
-//   },
-// }
-
-// TODO: MeshPlane -> MeshPlane files
-// const MeshPlaneRender: RendererOptions = {
-//   name: 'MeshPlane',
-//   createElement: (props) => {
-//     return new MeshPlane({
-//       texture: normalizeTexture(props.texture),
-//       width: props.width,
-//       height: props.height,
-//     })
-//   },
-// }
-
-// const MeshRopeRender: RendererOptions = {
-//   name: 'MeshRope',
-//   createElement: (props) => {
-//     return new MeshRope({
-//       texture: normalizeTexture(props.texture),
-//       points: props.points,
-//     })
-//   },
-//   patchProp(el: NineSliceSprite, key, prev, next) {
-//     switch (key) {
-//       case 'texture':
-//       case 'points':
-//         break
-//       default:
-//         defuPatchProp(el, key, prev, next)
-//     }
-//   },
-// }
 
 const BlurFilterRender: RendererOptions = {
   name: "BlurFilter",

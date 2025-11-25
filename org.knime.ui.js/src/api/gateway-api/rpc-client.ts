@@ -42,7 +42,6 @@ export const createRPCClient = (): RPCClient => {
           request,
           method,
           params,
-          response,
         });
 
         return response;

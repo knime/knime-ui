@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ref } from "vue";
 import { flushPromises } from "@vue/test-utils";
 
 import { isModifierKeyPressed, navigatorUtils } from "@knime/utils";
@@ -15,6 +14,7 @@ import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
+import { pixiGlobals } from "../../common/pixiGlobals";
 import { useCanvasPanning } from "../usePanning";
 
 vi.mock("@knime/utils", async (importOriginal) => {
@@ -55,27 +55,23 @@ describe("usePanning", () => {
     isDragging?: boolean;
   } = {}) => {
     const mockedStores = mockStores();
-    const mockedStage = { x: 100, y: 100 };
+    pixiGlobals.getMainContainer().x = 100;
+    pixiGlobals.getMainContainer().y = 100;
 
     mockedStores.webglCanvasStore.isPanning = isPanning;
     mockedStores.webglCanvasStore.isHoldingDownSpace = isHoldingDownSpace;
-    // @ts-expect-error
-    mockedStores.webglCanvasStore.stage = mockedStage;
+
     mockedStores.movingStore.isDragging = isDragging;
     mockedStores.selectionStore.deselectAllObjects = vi
       .fn()
       .mockResolvedValue({ wasAborted: false });
     mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
 
-    const mockedCanvas = {
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-    };
-    const mockedPixiApp = { canvas: mockedCanvas };
+    const mockedCanvas = pixiGlobals.getApplicationInstance().canvas;
+
     const result = mountComposable({
       composable: useCanvasPanning,
-      // @ts-expect-error
-      composableProps: { pixiApp: ref(mockedPixiApp) },
+      composableProps: undefined,
       mockedStores,
     });
 
@@ -262,9 +258,11 @@ describe("usePanning", () => {
 
       mousePan(pointerDownEvent);
 
-      const moveHandler = mockedCanvas.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === "pointermove",
-      )?.[1];
+      const moveHandler = vi
+        .mocked(mockedCanvas.addEventListener)
+        .mock.calls.find(
+          (call: any[]) => call[0] === "pointermove",
+        )?.[1] as any;
 
       expect(moveHandler).toBeDefined();
 
@@ -302,9 +300,9 @@ describe("usePanning", () => {
 
       mousePan(pointerDownEvent);
 
-      const upHandler = mockedCanvas.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === "pointerup",
-      )?.[1];
+      const upHandler = vi
+        .mocked(mockedCanvas.addEventListener)
+        .mock.calls.find((call: any[]) => call[0] === "pointerup")?.[1] as any;
 
       const pointerUpEvent = createPointerEvent("pointerup", {
         button: 0,
@@ -346,11 +344,10 @@ describe("usePanning", () => {
       ).toHaveBeenCalledWith({ x: 90, y: 80 });
     });
 
-    it("should not scroll when stage is not available", () => {
+    it("should not scroll when the canvas main container is not available", () => {
+      vi.mocked(pixiGlobals.hasMainContainer).mockReturnValueOnce(false);
       const { getComposableResult, mockedStores } = doMount();
       const { scrollPan } = getComposableResult();
-
-      mockedStores.webglCanvasStore.stage = null;
 
       const wheelEvent = createWheelEvent();
       scrollPan(wheelEvent);
@@ -378,8 +375,9 @@ describe("usePanning", () => {
       ).toHaveBeenNthCalledWith(1, { x: 100, y: 50 });
 
       // Test on non-Mac
-      // @ts-expect-error
-      mockedStores.webglCanvasStore.stage = { x: 100, y: 100 };
+      pixiGlobals.getMainContainer().x = 100;
+      pixiGlobals.getMainContainer().y = 100;
+
       vi.mocked(navigatorUtils.isMac).mockReturnValue(false);
       scrollPan(wheelEvent);
       expect(

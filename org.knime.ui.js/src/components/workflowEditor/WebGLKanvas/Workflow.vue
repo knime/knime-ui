@@ -75,7 +75,6 @@ const createRenderLayer = (
   container: ContainerInst,
 ) => {
   const layer = new RenderLayer();
-  // @ts-expect-error Property 'label' does not exist on type 'IRenderLayer'
   layer.label = `${name}RenderLayer`;
 
   container.addChild(layer);
