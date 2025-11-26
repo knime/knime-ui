@@ -221,9 +221,10 @@ const onEscape = async (event: KeyboardEvent) => {
     position: relative;
     z-index: v-bind("$zIndices.layerCanvasSurface");
 
-    /* override z-index added by Pixi's DOMContainer implementation */
+    /* override z-index and transform added by Pixi's DOMContainer implementation */
     & ~ div:not([class]) {
       isolation: isolate;
+      transform: none !important;
       z-index: v-bind("$zIndices.layerCanvasDomContainers") !important;
     }
   }
