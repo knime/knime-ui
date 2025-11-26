@@ -8,6 +8,7 @@ import {
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type { ContainerInst } from "@/vue3-pixi";
+import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useNodeHoverListener } from "../common/useNodeHoverState";
 
 type UsePortTransparencyOptions = {
@@ -62,17 +63,17 @@ export const usePortTransparency = (options: UsePortTransparencyOptions) => {
     return false;
   });
 
-  // useAnimatePixiContainer<number>({
-  //   initialValue: 0,
-  //   targetValue: 1,
-  //   targetDisplayObject: portContainer,
-  //   changeTracker: isVisible,
-  //   animationParams: { duration: 0.5 },
-  //   onUpdate: (value) => {
-  //     portContainer.value!.alpha = value;
-  //   },
-  //   animateOut: true,
-  // });
+  useAnimatePixiContainer<number>({
+    initialValue: 0,
+    targetValue: 1,
+    targetDisplayObject: portContainer,
+    changeTracker: isVisible,
+    animationParams: { duration: 0.5 },
+    onUpdate: (value) => {
+      portContainer.value!.alpha = value;
+    },
+    animateOut: true,
+  });
 
   useNodeHoverListener({
     nodeId: options.nodeId,

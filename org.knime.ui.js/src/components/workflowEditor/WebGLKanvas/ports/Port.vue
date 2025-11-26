@@ -7,6 +7,7 @@ import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import * as $colors from "@/style/colors";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
+import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 import PortIcon from "./PortIcon.vue";
 import PortInactiveDecorator from "./PortInactiveDecorator.vue";
@@ -47,46 +48,46 @@ const shouldFill = computed(() => {
 const portContainer = useTemplateRef<ContainerInst>("portContainer");
 const { hovered, targeted, selected } = toRefs(props);
 
-// useAnimatePixiContainer<number>({
-//   initialValue: 1,
-//   targetValue: 1.2,
-//   targetDisplayObject: portContainer,
-//   changeTracker: computed(
-//     () => (hovered.value || targeted.value) && !selected.value,
-//   ),
-//   animationParams: { duration: 0.17, ease: [0.8, 2, 1, 2.5] },
-//   onUpdate: (value) => {
-//     if (selected.value) {
-//       portContainer.value!.scale.x = 1;
-//       portContainer.value!.scale.y = 1;
-//     } else {
-//       portContainer.value!.scale.x = value;
-//       portContainer.value!.scale.y = value;
-//     }
-//   },
-// });
+useAnimatePixiContainer<number>({
+  initialValue: 1,
+  targetValue: 1.2,
+  targetDisplayObject: portContainer,
+  changeTracker: computed(
+    () => (hovered.value || targeted.value) && !selected.value,
+  ),
+  animationParams: { duration: 0.17, ease: [0.8, 2, 1, 2.5] },
+  onUpdate: (value) => {
+    if (selected.value) {
+      portContainer.value!.scale.x = 1;
+      portContainer.value!.scale.y = 1;
+    } else {
+      portContainer.value!.scale.x = value;
+      portContainer.value!.scale.y = value;
+    }
+  },
+});
 const animatingSelection = ref<boolean>(false);
 const selectionContainer = useTemplateRef<ContainerInst>("selectionContainer");
-// useAnimatePixiContainer<number>({
-//   initialValue: 0,
-//   targetValue: 1,
-//   targetDisplayObject: selectionContainer,
-//   animationParams: { duration: 0.5, ease: "easeInOut" },
-//   changeTracker: computed(() => props.selected),
-//   onUpdate: (value) => {
-//     if (selected.value) {
-//       selectionContainer.value!.alpha = value;
-//       animatingSelection.value = true;
-//     } else {
-//       // delay removing the selection circle when quickly going through ports
-//       selectionContainer.value!.alpha = 1 - value;
-//       if (selectionContainer.value!.alpha < 0.5) {
-//         animatingSelection.value = false;
-//       }
-//     }
-//   },
-//   animateOut: true,
-// });
+useAnimatePixiContainer<number>({
+  initialValue: 0,
+  targetValue: 1,
+  targetDisplayObject: selectionContainer,
+  animationParams: { duration: 0.5, ease: "easeInOut" },
+  changeTracker: computed(() => props.selected),
+  onUpdate: (value) => {
+    if (selected.value) {
+      selectionContainer.value!.alpha = value;
+      animatingSelection.value = true;
+    } else {
+      // delay removing the selection circle when quickly going through ports
+      selectionContainer.value!.alpha = 1 - value;
+      if (selectionContainer.value!.alpha < 0.5) {
+        animatingSelection.value = false;
+      }
+    }
+  },
+  animateOut: true,
+});
 
 const selectionOffset = () => {
   let offset = 0;
