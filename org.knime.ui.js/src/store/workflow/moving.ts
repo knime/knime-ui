@@ -146,20 +146,16 @@ export const useMovingStore = defineStore("moving", {
       this.resetDragState();
 
       // send data to backend
-      try {
-        await API.workflowCommand.Translate({
-          projectId,
-          workflowId,
-          nodeIds: selectedNodeIds,
-          annotationIds: selectedAnnotationIds,
-          connectionBendpoints,
-          metanodeInPortsBar: metanodePortBars.includes("in"),
-          metanodeOutPortsBar: metanodePortBars.includes("out"),
-          translation,
-        });
-      } catch (e) {
-        consola.log("The following error occurred: ", e);
-      }
+      await API.workflowCommand.Translate({
+        projectId,
+        workflowId,
+        nodeIds: selectedNodeIds,
+        annotationIds: selectedAnnotationIds,
+        connectionBendpoints,
+        metanodeInPortsBar: metanodePortBars.includes("in"),
+        metanodeOutPortsBar: metanodePortBars.includes("out"),
+        translation,
+      });
     },
 
     /**
@@ -229,20 +225,16 @@ export const useMovingStore = defineStore("moving", {
       this.resetDragState();
 
       // send data to backend
-      try {
-        await API.workflowCommand.Translate({
-          projectId,
-          workflowId,
-          nodeIds: selectedNodeIds,
-          annotationIds: selectedAnnotationIds,
-          connectionBendpoints,
-          metanodeInPortsBar: metanodePortBars.includes("in"),
-          metanodeOutPortsBar: metanodePortBars.includes("out"),
-          translation,
-        });
-      } catch (e) {
-        consola.log("The following error occurred: ", e);
-      }
+      await API.workflowCommand.Translate({
+        projectId,
+        workflowId,
+        nodeIds: selectedNodeIds,
+        annotationIds: selectedAnnotationIds,
+        connectionBendpoints,
+        metanodeInPortsBar: metanodePortBars.includes("in"),
+        metanodeOutPortsBar: metanodePortBars.includes("out"),
+        translation,
+      });
     },
   },
 });

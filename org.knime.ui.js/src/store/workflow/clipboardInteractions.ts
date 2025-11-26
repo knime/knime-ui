@@ -204,7 +204,11 @@ export const useClipboardInteractionsStore = defineStore(
           this.setIsClipboardBusy(false);
           processPasteOperation();
 
-          consola.info("Copied workflow parts", clipboardContent);
+          consola.debug("Copied workflow parts", {
+            payloadIdentifier: clipboardContent.payloadIdentifier,
+            projectId: clipboardContent.projectId,
+            workflowId: clipboardContent.workflowId,
+          });
         } catch (error) {
           // we aborted the call so just return and do nothing
           if (

@@ -197,7 +197,13 @@ export const useFloatingConnectorStore = defineStore(
         return;
       }
 
-      consola.debug("floatingConnector:: starting connector drag", { params });
+      consola.debug("floatingConnector:: starting connector drag", {
+        params: {
+          direction: params.direction,
+          nodeId: params.nodeId,
+          port: params.port.index,
+        },
+      });
 
       const { toCanvasCoordinates, isPointOutsideVisibleArea } =
         useWebGLCanvasStore();

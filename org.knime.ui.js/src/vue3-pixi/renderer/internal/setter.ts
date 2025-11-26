@@ -8,7 +8,8 @@ export function setObjectProperty(
   prevValue: any,
   nextValue: any,
 ) {
-  const scope = effectScope();
+  let scope = effectScope();
+
   function update() {
     if (prevValue && nextValue !== prevValue) {
       inst[`__vp_scope_${key}`]?.stop();
@@ -18,18 +19,27 @@ export function setObjectProperty(
         inst[key][setKey as any] = value;
       } else {
         consola.warn("Vue Pixi renderer:: Failed trying to set property", {
-          inst,
+          inst: inst?.label ?? inst?._vp_name,
           key,
           value,
         });
       }
     }
   }
+
   scope.run(() => {
     watchEffect(update);
     nextTick(update);
   });
-  inst.on?.("destroyed", () => scope.stop());
+
+  const onDestroy = () => {
+    scope.stop();
+    // @ts-ignore
+    scope = null;
+    inst?.off("destroyed", onDestroy);
+  };
+
+  inst.on?.("destroyed", onDestroy);
   inst[`__vp_scope_${key}`] = scope;
   return true;
 }

@@ -43,7 +43,11 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
           if (!returnsValue && payload.result) {
             consola.error(
               "Desktop API:: Function did not expect a return value",
-              { browserFunction, params, payload },
+              {
+                handler: browserFunction.name,
+                params,
+                payload,
+              },
             );
             reject(
               new Error(
@@ -57,7 +61,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
           if ("error" in payload && payload.error) {
             consola.error("Desktop API:: Error response", {
               message: messageOnError,
-              browserFunction,
+              handler: browserFunction.name,
               params,
               payload,
             });
@@ -67,7 +71,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
               reject(data);
             } catch (error) {
               consola.warn("Unexpected error format received for:", {
-                functionCall: browserFunction.name,
+                handler: browserFunction.name,
                 error,
               });
               reject(error);
@@ -87,7 +91,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
       });
     }
 
-    consola.info("Desktop API::", { browserFunction, params });
+    consola.info("Desktop API::", { handler: browserFunction.name, params });
     // call the async browserFunction
     browserFunction(...params);
     return result;
