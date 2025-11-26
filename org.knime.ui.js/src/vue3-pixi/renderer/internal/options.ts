@@ -43,6 +43,10 @@ export function insertContainer(
 }
 
 export function nextSiblingContainer(node: Container) {
+  if (!node.parent) {
+    return null;
+  }
+
   const index = node.parent.getChildIndex(node);
   if (node.parent.children.length <= index + 1) {
     return null;
