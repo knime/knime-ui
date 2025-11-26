@@ -149,8 +149,8 @@ const showValidationHint = computed(
       </div>
     </template>
     <template #footer>
-      <Button label="Cancel" variant="transparent" @click="cancel" />
-      <Button
+      <KdsButton label="Cancel" variant="transparent" @click="cancel" />
+      <KdsButton
         label="Choose"
         :disabled="!isValid"
         variant="filled"

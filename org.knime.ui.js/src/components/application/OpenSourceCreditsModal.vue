@@ -1,56 +1,59 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
-import { Modal, OpenSourceCredits } from "@knime/components";
+import { OpenSourceCredits } from "@knime/components";
+import { KdsButton, KdsModal } from "@knime/kds-components";
 
 const usedPackages = ref<any[]>([]);
 
-import("../../../licenses/used-packages.json")
-  .then((module) => {
-    usedPackages.value = module.default;
-  })
-  .catch((err) => consola.warn(err.message));
-
-interface Props {
+const props = defineProps<{
   active: boolean;
-}
+}>();
 
-defineProps<Props>();
+const emit = defineEmits<{
+  "update:active": [active: boolean];
+}>();
 
-interface Emits {
-  (e: "update:active", active: boolean): void;
-}
-defineEmits<Emits>();
+// only load the credits if we open the dialog at least once
+const stopWatchForActive = watch(
+  () => props.active,
+  (active) => {
+    if (active && usedPackages.value.length === 0) {
+      import("../../../licenses/used-packages.json")
+        .then((module) => {
+          usedPackages.value = module.default;
+          stopWatchForActive();
+        })
+        .catch((err) => consola.warn(err.message));
+    }
+  },
+  { immediate: true },
+);
+
+const closeModal = () => emit("update:active", false);
 </script>
 
 <template>
   <div>
-    <Modal
+    <KdsModal
       :active="active"
       title="Open Source Credits"
-      class="modal"
-      style-type="info"
-      @cancel="$emit('update:active', false)"
+      width="xlarge"
+      closedby="any"
+      @close="closeModal"
     >
-      <template #notice>
-        <OpenSourceCredits :packages="usedPackages" />
-      </template>
-    </Modal>
+      <OpenSourceCredits
+        v-if="usedPackages.length > 0"
+        class="credits"
+        :packages="usedPackages"
+      />
+      <template #footer><KdsButton label="Ok" @click="closeModal" /></template>
+    </KdsModal>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.modal {
-  --modal-width: 960px;
-
-  & :deep(.inner) {
-    top: 48%;
-    height: 85%;
-  }
-
-  & :deep(.notice) {
-    overflow: hidden auto;
-    height: 100%;
-  }
+.credits {
+  font: var(--kds-font-base-body-large);
 }
 </style>
