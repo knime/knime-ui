@@ -40,7 +40,7 @@ import {
   Sprite,
   Text,
   TilingSprite,
-  type IRenderLayer,
+  type RenderLayer,
 } from "pixi.js";
 
 import { patchProp as defaultPatchProp, patchBooleanProp } from "../patchProp";
@@ -59,8 +59,8 @@ const ContainerRender: RendererOptions = {
   patchProp(el: Container, key, prev, next) {
     switch (key) {
       case "layer":
-        if (prev?.detach) (prev as IRenderLayer).detach(el);
-        if (next?.attach) (next as IRenderLayer).attach(el);
+        if (prev?.detach) (prev as RenderLayer).detach(el);
+        if (next?.attach) (next as RenderLayer).attach(el);
         break;
 
       default:

@@ -14,7 +14,7 @@ import { refDebounced } from "@vueuse/core";
 import { isNumber, round } from "lodash-es";
 import { animate, mix } from "motion";
 import { defineStore } from "pinia";
-import { type IRenderLayer } from "pixi.js";
+import { type RenderLayer } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -110,7 +110,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   });
   const pixiApplication = shallowRef<ApplicationInst | null>(null);
 
-  type CanvasLayers = Record<CanvasLayerNames, IRenderLayer | undefined>;
+  type CanvasLayers = Record<CanvasLayerNames, RenderLayer | undefined>;
   const canvasLayers: ShallowRef<CanvasLayers> = shallowRef({
     nodeSelectionPlane: undefined,
     selectedNodes: undefined,

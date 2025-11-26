@@ -59,14 +59,12 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
   let layerIndex = 0;
 
   const debugLayer = new RenderLayer();
-  // @ts-expect-error type misses label
   debugLayer.label = "DebugLayer";
   app.stage.addChildAt(debugLayer, layerIndex++);
   canvasLayers.value.debugLayer = debugLayer;
 
   // annotations need to be behind everything else
   const annotationsLayer = new RenderLayer({ sortableChildren: true });
-  // @ts-expect-error type misses label
   annotationsLayer.label = "AnnotationsLayer";
 
   app.stage.addChildAt(annotationsLayer, layerIndex++);
@@ -74,7 +72,6 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
 
   // add a layer so we can move the selection plane of the nodes to the back
   const nodeSelectionPlaneRenderLayer = new RenderLayer();
-  // @ts-expect-error type misses label
   nodeSelectionPlaneRenderLayer.label = "NodeSelectionPlaneRenderLayer";
 
   app.stage.addChildAt(nodeSelectionPlaneRenderLayer, layerIndex++);
