@@ -134,7 +134,16 @@ export const Application = defineComponent({
       app?.unmount();
       app = undefined;
 
-      pixiApp.value?.destroy();
+      pixiApp.value?.destroy(
+        { releaseGlobalResources: true, removeView: true },
+        {
+          children: true,
+          texture: true,
+          textureSource: true,
+          context: true,
+          style: true,
+        },
+      );
       pixiApp.value = undefined;
     }
     onMounted(mount);
