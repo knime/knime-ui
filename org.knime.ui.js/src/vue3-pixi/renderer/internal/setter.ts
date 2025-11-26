@@ -17,8 +17,8 @@ export function setObjectProperty(
       if (inst[key]) {
         inst[key][setKey as any] = value;
       } else {
-        consola.warn("Vue Pixi renderer:: Failed trying to set property", {
-          inst,
+        consola.debug("Vue Pixi renderer:: Failed trying to set property", {
+          target: inst?.label ?? typeof inst,
           key,
           value,
         });
