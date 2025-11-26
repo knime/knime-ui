@@ -86,6 +86,14 @@
           "minItems": 1,
           "type": "array",
           "items": { "$ref": "#/definitions/LayoutEditorColumn" }
+        },
+        "additionalClasses": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "additionalStyles": {
+          "type": "array",
+          "items": { "type": "string" }
         }
       }
     },
@@ -142,7 +150,15 @@
         "widthSM": { "type": "number" },
         "widthMD": { "type": "number" },
         "widthLG": { "type": "number" },
-        "widthXL": { "type": "number" }
+        "widthXL": { "type": "number" },
+        "additionalClasses": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "additionalStyles": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
       }
     }
   }
