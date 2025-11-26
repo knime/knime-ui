@@ -64,7 +64,10 @@ export function createComment() {
 }
 
 export function remove(node: Container) {
-  node.destroy();
+  if (node.label) {
+    console.log("---------------DESTROYING--------------", node.label);
+  }
+  node.destroy(true);
 }
 
 export function insert(

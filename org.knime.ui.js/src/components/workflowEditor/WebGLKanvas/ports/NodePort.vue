@@ -15,7 +15,6 @@ import * as $shapes from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import type { TooltipDefinition } from "../../types";
-import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useTooltip } from "../tooltip/useTooltip";
 
 import NodePortActions from "./NodePortActions.vue";
@@ -190,36 +189,36 @@ const portActionsOffsetX = () => {
 const actionBarContainer = useTemplateRef<ContainerInst>("actionBarContainer");
 const animating = ref<boolean>(false);
 
-useAnimatePixiContainer({
-  initialValue: 0,
-  targetValue: portActionsOffsetX(),
-  targetDisplayObject: actionBarContainer,
-  animationParams: { duration: 0.25, ease: "easeInOut" },
-  changeTracker: computed(() => props.selected),
-  onUpdate: (value) => {
-    actionBarContainer.value!.x = value;
-    if (actionBarContainer.value!.x === 0) {
-      animating.value = false;
-    } else {
-      animating.value = props.selected;
-    }
-  },
-  animateOut: true,
-  immediate: true,
-});
+// useAnimatePixiContainer({
+//   initialValue: 0,
+//   targetValue: portActionsOffsetX(),
+//   targetDisplayObject: actionBarContainer,
+//   animationParams: { duration: 0.25, ease: "easeInOut" },
+//   changeTracker: computed(() => props.selected),
+//   onUpdate: (value) => {
+//     actionBarContainer.value!.x = value;
+//     if (actionBarContainer.value!.x === 0) {
+//       animating.value = false;
+//     } else {
+//       animating.value = props.selected;
+//     }
+//   },
+//   animateOut: true,
+//   immediate: true,
+// });
 
-useAnimatePixiContainer({
-  initialValue: 0,
-  targetValue: 1,
-  targetDisplayObject: actionBarContainer,
-  animationParams: { duration: 0.25, ease: "easeInOut" },
-  changeTracker: computed(() => props.selected),
-  onUpdate: (value) => {
-    actionBarContainer.value!.scale = value;
-  },
-  animateOut: true,
-  immediate: true,
-});
+// useAnimatePixiContainer({
+//   initialValue: 0,
+//   targetValue: 1,
+//   targetDisplayObject: actionBarContainer,
+//   animationParams: { duration: 0.25, ease: "easeInOut" },
+//   changeTracker: computed(() => props.selected),
+//   onUpdate: (value) => {
+//     actionBarContainer.value!.scale = value;
+//   },
+//   animateOut: true,
+//   immediate: true,
+// });
 </script>
 
 <template>

@@ -14,7 +14,6 @@ import { Container, RenderLayer } from "pixi.js";
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
-import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSettingsStore } from "@/store/settings";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
@@ -53,7 +52,7 @@ const isMinimapVisible = computed(
 const isPixiAppInitialized = ref(false);
 
 const MAIN_CONTAINER_LABEL = "MainContainer";
-const { devMode } = storeToRefs(useApplicationSettingsStore());
+// const { devMode } = storeToRefs(useApplicationSettingsStore());
 
 const addRenderLayers = (app: ApplicationInst["app"]) => {
   let layerIndex = 0;

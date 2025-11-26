@@ -1,4 +1,3 @@
-import type { Ref } from "vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
@@ -13,7 +12,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
-import { type ApplicationInst } from "@/vue3-pixi";
+import { pixiGlobals } from "../common/pixiGlobals";
 import { isMarkedEvent } from "../util/interaction";
 
 const useHoldingDownSpace = () => {
@@ -58,11 +57,7 @@ const useHoldingDownSpace = () => {
   });
 };
 
-export const useCanvasPanning = ({
-  pixiApp,
-}: {
-  pixiApp: Ref<ApplicationInst>;
-}) => {
+export const useCanvasPanning = () => {
   const { isPanning, isHoldingDownSpace } = storeToRefs(useWebGLCanvasStore());
   const hasMoved = ref(false);
   const panLastPosition = ref<XY | null>({ x: 0, y: 0 });
@@ -76,13 +71,12 @@ export const useCanvasPanning = ({
   const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 
   const canvasStore = useWebGLCanvasStore();
-  const stage = computed(() => canvasStore.stage);
 
   const { isDragging } = storeToRefs(useMovingStore());
 
   const mousePan = (pointerDownEvent: PointerEvent) => {
     consola.debug("Kanvas::usePanning - startPan", { pointerDownEvent });
-    const { canvas } = pixiApp.value;
+    const canvas = pixiGlobals.getCanvas();
 
     if (isDragging.value) {
       return;
@@ -98,12 +92,13 @@ export const useCanvasPanning = ({
     eventTarget.setPointerCapture(pointerDownEvent.pointerId);
 
     const onPan = throttle((ptrMoveEvent: PointerEvent) => {
-      if (!stage.value) {
+      if (!pixiGlobals.getMainContainer()) {
         consola.warn(
           "usePanning:: tried to access stage but was not available",
         );
         return;
       }
+      const mainContainer = pixiGlobals.getMainContainer();
 
       if (isPanning.value) {
         hasMoved.value = true;
@@ -115,10 +110,10 @@ export const useCanvasPanning = ({
 
         canvasStore.setCanvasOffset({
           x:
-            stage.value.x +
+            mainContainer.x +
             (ptrMoveEvent.offsetX - (panLastPosition.value?.x ?? 0)),
           y:
-            stage.value.y +
+            mainContainer.y +
             (ptrMoveEvent.offsetY - (panLastPosition.value?.y ?? 0)),
         });
 
@@ -173,7 +168,8 @@ export const useCanvasPanning = ({
   };
 
   const scrollPan = throttle((event: WheelEvent) => {
-    if (!stage.value) {
+    const mainContainer = pixiGlobals.getMainContainer();
+    if (!mainContainer) {
       return;
     }
 
@@ -181,15 +177,15 @@ export const useCanvasPanning = ({
     // This is not necessary on Mac, where it works automatically.
     if (event.shiftKey && !navigatorUtils.isMac()) {
       canvasStore.setCanvasOffset({
-        x: stage.value.x - event.deltaY,
-        y: stage.value.y - event.deltaX,
+        x: mainContainer.x - event.deltaY,
+        y: mainContainer.y - event.deltaX,
       });
       return;
     }
 
     canvasStore.setCanvasOffset({
-      x: stage.value.x - event.deltaX,
-      y: stage.value.y - event.deltaY,
+      x: mainContainer.x - event.deltaX,
+      y: mainContainer.y - event.deltaY,
     });
   });
 

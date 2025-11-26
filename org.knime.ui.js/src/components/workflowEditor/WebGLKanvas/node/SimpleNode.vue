@@ -8,6 +8,7 @@ defineProps<{
 
 <template>
   <Graphics
+    label="Node__root"
     :position="position"
     @render="
       (graphics) => {

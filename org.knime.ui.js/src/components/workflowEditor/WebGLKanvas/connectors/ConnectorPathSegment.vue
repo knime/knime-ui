@@ -12,7 +12,6 @@ import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 import type { ConnectorPathSegmentProps } from "../../types";
 import { type BezierPoints, getBezier } from "../../util/connectorPath";
-import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 
@@ -175,37 +174,36 @@ const renderConnector = (graphics: GraphicsInst, points: BezierPoints) => {
 };
 
 /** hover animation */
-useAnimatePixiContainer({
-  targetDisplayObject: pathSegment,
-  changeTracker: computed(() => props.isConnectionHovered),
-  initialValue: $shapes.connectorWidth,
-  targetValue: $shapes.selectedConnectorWidth,
-  animationParams: { duration: 0.1, ease: "easeIn" },
-  onUpdate: (value) => {
-    if (!props.isSelected && !props.suggestDelete) {
-      animatedStrokeWidth = value;
-      renderConnector(pathSegment.value!, bezier.value);
-    }
-  },
-  animateOut: true,
-});
+// useAnimatePixiContainer({
+//   targetDisplayObject: pathSegment,
+//   changeTracker: computed(() => props.isConnectionHovered),
+//   initialValue: $shapes.connectorWidth,
+//   targetValue: $shapes.selectedConnectorWidth,
+//   animationParams: { duration: 0.1, ease: "easeIn" },
+//   onUpdate: (value) => {
+//     if (!props.isSelected && !props.suggestDelete) {
+//       animatedStrokeWidth = value;
+//       renderConnector(pathSegment.value!, bezier.value);
+//     }
+//   },
+//   animateOut: true,
+// });
 
 /** streaming animation */
-/* eslint-disable no-magic-numbers */
-useAnimatePixiContainer({
-  targetDisplayObject: pathSegment,
-  changeTracker: computed(() => props.streaming),
-  initialValue: dashLength * 2 * 10, // move 10 dashes per 3 seconds
-  targetValue: 0,
-  animationParams: { duration: 3, ease: "linear", repeat: Infinity },
-  onUpdate: (value) => {
-    animatedDashOffset = value;
-    renderConnector(pathSegment.value!, bezier.value);
-  },
-  animateOut: false,
-  immediate: props.streaming,
-});
-/* eslint-enable no-magic-numbers */
+
+// useAnimatePixiContainer({
+//   targetDisplayObject: pathSegment,
+//   changeTracker: computed(() => props.streaming),
+//   initialValue: dashLength * 2 * 10, // move 10 dashes per 3 seconds
+//   targetValue: 0,
+//   animationParams: { duration: 3, ease: "linear", repeat: Infinity },
+//   onUpdate: (value) => {
+//     animatedDashOffset = value;
+//     renderConnector(pathSegment.value!, bezier.value);
+//   },
+//   animateOut: false,
+//   immediate: props.streaming,
+// });
 
 const suggestShiftX = -12;
 const suggestShiftY = -6;

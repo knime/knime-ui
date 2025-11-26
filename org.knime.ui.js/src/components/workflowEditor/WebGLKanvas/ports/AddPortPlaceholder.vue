@@ -17,7 +17,6 @@ import {
 } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import type { ContainerInst } from "@/vue3-pixi";
-import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 import { useNodeHoverListener } from "../common/useNodeHoverState";
 import {
   markEscapeAsHandled,
@@ -137,17 +136,17 @@ const container = useTemplateRef<ContainerInst>("container");
 
 // hover animation -> port bounces
 const isPlaceholderPortHovered = ref(false);
-useAnimatePixiContainer<number>({
-  initialValue: 1,
-  targetValue: 1.15,
-  targetDisplayObject: container,
-  changeTracker: computed(() => isPlaceholderPortHovered.value),
-  animationParams: { duration: 0.17, ease: [0.8, 2, 1, 2.5] },
-  onUpdate: (value) => {
-    container.value!.scale.x = value;
-    container.value!.scale.y = value;
-  },
-});
+// useAnimatePixiContainer<number>({
+//   initialValue: 1,
+//   targetValue: 1.15,
+//   targetDisplayObject: container,
+//   changeTracker: computed(() => isPlaceholderPortHovered.value),
+//   animationParams: { duration: 0.17, ease: [0.8, 2, 1, 2.5] },
+//   onUpdate: (value) => {
+//     container.value!.scale.x = value;
+//     container.value!.scale.y = value;
+//   },
+// });
 
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const isNodeSingleSelected = computed(
@@ -157,24 +156,24 @@ const isNodeSingleSelected = computed(
 const { selected } = toRefs(props);
 // node hover area enter animation -> port appears
 const isNodeHovered = ref(false);
-useAnimatePixiContainer<number>({
-  initialValue: 0,
-  targetValue: 1,
-  targetDisplayObject: container,
-  changeTracker: computed(
-    () =>
-      isMenuOpenOnParentNode.value ||
-      isNodeHovered.value ||
-      isNodeSingleSelected.value ||
-      selected.value ||
-      isPlaceholderPortHovered.value,
-  ),
-  animationParams: { duration: 0.17 },
-  onUpdate: (value) => {
-    container.value!.alpha = value;
-  },
-  animateOut: true,
-});
+// useAnimatePixiContainer<number>({
+//   initialValue: 0,
+//   targetValue: 1,
+//   targetDisplayObject: container,
+//   changeTracker: computed(
+//     () =>
+//       isMenuOpenOnParentNode.value ||
+//       isNodeHovered.value ||
+//       isNodeSingleSelected.value ||
+//       selected.value ||
+//       isPlaceholderPortHovered.value,
+//   ),
+//   animationParams: { duration: 0.17 },
+//   onUpdate: (value) => {
+//     container.value!.alpha = value;
+//   },
+//   animateOut: true,
+// });
 
 useNodeHoverListener({
   nodeId: props.nodeId,

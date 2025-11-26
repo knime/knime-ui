@@ -12,6 +12,7 @@ import { portSize } from "@/style/shapes";
 import { getNodeState } from "@/util/nodeUtil";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { nodeToWorkflowObject } from "@/util/workflowUtil";
+import { pixiGlobals } from "../common/pixiGlobals";
 
 /**
  * Hints for the webgl based canvas. Works by injecting DOMContainers to use as elements for the hints.
@@ -61,10 +62,9 @@ export const useKanvasNodePortHint = (isPixiAppInitialized: Ref<boolean>) => {
     }
 
     // find first port of that node in pixi space
-    const node = useWebGLCanvasStore().stage?.getChildByLabel(
-      `Node__${nearestObjectId}`,
-      true,
-    );
+    const node = pixiGlobals
+      .getMainContainer()
+      .getChildByLabel(`Node__${nearestObjectId}`, true);
 
     const firstOutPort = node?.getChildByLabel("Port__Out-1", true);
 

@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import type { Edge } from "@/util/geometry/types";
+import { pixiGlobals } from "../common/pixiGlobals";
 
 export type PanningToEdgeUpdateHandler = (args: {
   /**
@@ -39,9 +40,9 @@ const getPanOffsetFromEdge = (edge: Edge, modifier: number = 1) => {
   return directionToOffset[edge];
 };
 
-const getNewCanvasOffset = (edge: Edge, stage: XY) => {
+const getNewCanvasOffset = (edge: Edge, stagePosition: XY) => {
   const direction = getPanOffsetFromEdge(edge);
-  return { x: stage.x + direction.x, y: stage.y + direction.y };
+  return { x: stagePosition.x + direction.x, y: stagePosition.y + direction.y };
 };
 
 const currentEdgeNearDragCoordinates = ref<Edge | null>(null);
@@ -52,13 +53,16 @@ export const useDragNearEdgePanning = () => {
   const { zoomFactor, isAtCanvasOffsetBoundaryAxis } = storeToRefs(canvasStore);
 
   const updateCanvasOffset = (onUpdate: PanningToEdgeUpdateHandler) => {
-    if (!canvasStore.stage || currentEdgeNearDragCoordinates.value === null) {
+    if (
+      !pixiGlobals.hasApplicationInstance() ||
+      currentEdgeNearDragCoordinates.value === null
+    ) {
       return;
     }
 
     const offset = getNewCanvasOffset(
       currentEdgeNearDragCoordinates.value,
-      canvasStore.stage,
+      pixiGlobals.getMainContainer(),
     );
     canvasStore.setCanvasOffset(offset);
 

@@ -5,7 +5,6 @@ import type { Container } from "pixi.js";
 import type { NodeState } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
-import { useAnimatePixiContainer } from "../../common/useAnimatePixiContainer";
 import { nodeStateText } from "../../util/textStyles";
 
 type Props = {
@@ -37,21 +36,21 @@ const progressDisplayPercentage = computed(() => {
 const ANIMATION_X_OFFSET = 20;
 
 const animatedCircleRef = useTemplateRef<ContainerInst>("animatedCircleRef");
-useAnimatePixiContainer<number>({
-  initialValue: 0,
-  targetValue: ANIMATION_X_OFFSET,
-  targetDisplayObject: animatedCircleRef,
-  animationParams: {
-    duration: 0.8,
-    // eslint-disable-next-line no-magic-numbers
-    ease: [0.5, 0, 0.5, 1],
-    repeat: Infinity,
-    repeatType: "reverse",
-  },
-  onUpdate: (value) => {
-    animatedCircleRef.value!.x = value;
-  },
-});
+// useAnimatePixiContainer<number>({
+//   initialValue: 0,
+//   targetValue: ANIMATION_X_OFFSET,
+//   targetDisplayObject: animatedCircleRef,
+//   animationParams: {
+//     duration: 0.8,
+//     // eslint-disable-next-line no-magic-numbers
+//     ease: [0.5, 0, 0.5, 1],
+//     repeat: Infinity,
+//     repeatType: "reverse",
+//   },
+//   onUpdate: (value) => {
+//     animatedCircleRef.value!.x = value;
+//   },
+// });
 </script>
 
 <template>

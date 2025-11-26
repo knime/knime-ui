@@ -37,6 +37,7 @@ const backgroundColor = (nodeId: string): string | undefined => {
     <Graphics
       v-for="annotation of activeWorkflow?.workflowAnnotations"
       :key="annotation.id"
+      label="MinimapAnnotation"
       @render="
         (graphics: Graphics) => {
           graphics.clear();
@@ -66,6 +67,7 @@ const backgroundColor = (nodeId: string): string | undefined => {
     <Graphics
       v-for="node of activeWorkflow?.nodes"
       :key="node.id"
+      label="MinimapNode"
       @render="
         (graphics: Graphics) => {
           graphics.clear();
