@@ -84,9 +84,17 @@ export function patchRenderProp(
   nextValue: any,
 ): boolean {
   if (key === "onRender" && !prevValue && isFunction(nextValue)) {
-    const scope = effectScope();
+    let scope = effectScope();
     scope.run(() => watchEffect(() => nextValue(el)));
-    el.on("destroyed", () => scope.stop());
+
+    const onDestroy = () => {
+      scope.stop();
+      // @ts-ignore
+      scope = null;
+      el.off("destroyed", onDestroy);
+    };
+
+    el.on("destroyed", onDestroy);
     return true;
   }
   return false;
