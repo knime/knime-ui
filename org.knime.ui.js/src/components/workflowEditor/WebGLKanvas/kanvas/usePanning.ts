@@ -169,9 +169,6 @@ export const useCanvasPanning = () => {
 
   const scrollPan = throttle((event: WheelEvent) => {
     const mainContainer = pixiGlobals.getMainContainer();
-    if (!mainContainer) {
-      return;
-    }
 
     // Invert xy when Shift key is pressed, to allow horizontal scroll.
     // This is not necessary on Mac, where it works automatically.

@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import {
-  type Ref,
-  computed,
-  onUnmounted,
-  ref,
-  useTemplateRef,
-  watch,
-} from "vue";
+import { computed, onUnmounted, ref, useTemplateRef, watch } from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { Container, RenderLayer } from "pixi.js";
+import {
+  Container,
+  Application as PixiApplication,
+  RenderLayer,
+} from "pixi.js";
 
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSettingsStore } from "@/store/settings";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
@@ -27,8 +25,6 @@ import Minimap from "./Minimap.vue";
 import { useKanvasNodePortHint } from "./useKanvasNodePortHint";
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
-
-const pixiApp = ref<ApplicationInst>();
 
 const emit = defineEmits<{
   canvasReady: [];
@@ -52,8 +48,10 @@ const isMinimapVisible = computed(
 const isPixiAppInitialized = ref(false);
 
 const MAIN_CONTAINER_LABEL = "MainContainer";
-// const { devMode } = storeToRefs(useApplicationSettingsStore());
+const { devMode } = storeToRefs(useApplicationSettingsStore());
 
+// before the mount the pixi app is already there so we can add the layers
+// and make sure they are available early
 const addRenderLayers = (app: ApplicationInst["app"]) => {
   let layerIndex = 0;
 
@@ -79,51 +77,38 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
 
 const mainContainer = useTemplateRef<Container>("mainContainer");
 
-watch(
-  isPixiAppInitialized,
-  () => {
-    if (!isPixiAppInitialized.value) {
-      return;
-    }
+const onAppInitialized = (pixiApp: PixiApplication) => {
+  // if (!import.meta.env.PROD || devMode.value) {
+  //   globalThis.__PIXI_APP__ = app;
+  // }
 
-    // Store reference Pixi.js application instance
-    // const app = pixiApp.value!.app;
+  pixiGlobals.setApplicationInstance(pixiApp);
+  pixiGlobals.setMainContainer(mainContainer.value!);
 
-    // if (!import.meta.env.PROD || devMode.value) {
-    //   globalThis.__PIXI_APP__ = app;
-    // }
+  // used by e2e tests in this repo and by QA
+  // globalThis.__E2E_TEST__ = initE2ETestUtils(app);
 
-    pixiGlobals.setApplicationInstance(pixiApp.value!.app);
-    pixiGlobals.setMainContainer(mainContainer.value!);
+  canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
 
-    // used by e2e tests in this repo and by QA
-    // globalThis.__E2E_TEST__ = initE2ETestUtils(app);
+  emit("canvasReady");
 
-    canvasStore.isDebugModeEnabled =
-      import.meta.env.VITE_CANVAS_DEBUG === "true";
-
-    emit("canvasReady");
-
-    // performanceTracker.trackSingleRender(pixiApp.value!);
-  },
-  { once: true },
-);
+  // performanceTracker.trackSingleRender(pixiApp.value!);
+};
 
 useKanvasNodePortHint(isPixiAppInitialized);
 
 onUnmounted(() => {
+  canvasStore.canvasOffset = { x: 0, y: 0 };
+  canvasStore.zoomFactor = 1;
+
   canvasStore.removeLayers();
-  pixiGlobals.clear();
   canvasStore.clearCanvasAnchor();
-  canvasStore.setCanvasOffset({ x: 0, y: 0 });
-  canvasStore.setFactor(1);
+  pixiGlobals.clear();
   clearIconCache();
 });
 
 const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
-const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning({
-  pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
-});
+const { mousePan, scrollPan, shouldShowMoveCursor } = useCanvasPanning();
 
 const isGrabbing = ref(false);
 const onPointerDown = (event: PointerEvent) => {
@@ -165,11 +150,6 @@ watch(
   },
   { immediate: true },
 );
-
-// before the mount the pixi app is already there so we can add the layers and make sure they are available early
-const beforePixiMount = (app: ApplicationInst["app"]) => {
-  addRenderLayers(app);
-};
 </script>
 
 <template>
@@ -195,14 +175,15 @@ const beforePixiMount = (app: ApplicationInst["app"]) => {
     @pointerdown="onPointerDown"
     @pointerup="onPointerUp"
     @contextmenu.prevent
-    @init-complete="isPixiAppInitialized = true"
+    @before-mount="addRenderLayers"
+    @init-complete="onAppInitialized"
   >
     <Container
       ref="mainContainer"
       :label="MAIN_CONTAINER_LABEL"
       :event-mode="interactionsEnabled === 'all' ? undefined : 'none'"
     >
-      <Debug :visible="isCanvasDebugEnabled" />
+      <Debug v-if="devMode" :visible="isCanvasDebugEnabled" />
       <slot />
     </Container>
 

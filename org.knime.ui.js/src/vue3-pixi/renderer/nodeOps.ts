@@ -65,9 +65,9 @@ export function createComment() {
 
 export function remove(node: Container) {
   if (node.label) {
-    console.log("---------------DESTROYING--------------", node.label);
+    consola.debug("Destroying pixi node", node.label);
   }
-  node.destroy(true);
+  node.destroy({ children: true });
 }
 
 export function insert(

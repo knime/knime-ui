@@ -25,30 +25,7 @@ import {
 import type { App, PropType } from "vue";
 
 import { createApp } from "../../renderer";
-import * as shapes from "../../../style/shapes";
-import * as zIndices from "../../../style/z-indices";
-import * as colors from "../../../style/colors";
-
-const characterLimits = Object.freeze({
-  workflowAnnotations: 50_000,
-  nodeLabel: 250,
-  nodeName: 90,
-  metadata: {
-    description: 50_000,
-    tags: 100,
-    url: {
-      text: 200,
-      href: 2048,
-    },
-    component: {
-      portName: 100,
-      portDescription: 500,
-    },
-  },
-  kai: 5000,
-  searchFields: 300,
-});
-
+import { inheritParent } from "../../utils/index";
 export interface ApplicationInst {
   canvas: HTMLCanvasElement;
   app: _Application;
@@ -105,13 +82,12 @@ export const Application = defineComponent({
       type: Object as PropType<Partial<WebGLOptions>>,
       default: undefined,
     },
-    onBeforeMount: {
-      type: Function as PropType<(app: ApplicationInst["app"]) => void>,
-      default: undefined,
-    },
   },
-  emits: ["initComplete"],
+
+  emits: ["initComplete", "beforeMount"],
+
   setup(props, { slots, expose, emit }) {
+    const { appContext } = getCurrentInstance()!;
     const canvas = ref<HTMLCanvasElement>();
     const pixiApp = ref<_Application>();
 
@@ -141,19 +117,15 @@ export const Application = defineComponent({
 
       app = createApp({ render: renderSlotDefault });
 
-      app.config.globalProperties.$colors = colors;
-      app.config.globalProperties.$shapes = shapes;
-      app.config.globalProperties.$zIndices = zIndices;
-      app.config.globalProperties.$characterLimits = characterLimits;
+      inheritParent(app, appContext);
 
-      if (props.onBeforeMount) {
-        props.onBeforeMount(pixiApp.value);
-      }
+      emit("beforeMount", inst);
 
       app.mount(pixiApp.value.stage);
 
       emit("initComplete", inst);
     }
+
     function unmount() {
       app?.unmount();
       app = undefined;

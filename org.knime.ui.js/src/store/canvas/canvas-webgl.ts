@@ -130,14 +130,16 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isDebugModeEnabled = ref(false);
 
   const setFactor = (newFactor: number) => {
-    const mainContainer = pixiGlobals.getMainContainer();
     useCanvasTooltipStore().hideTooltip();
 
     const clampedFactor = clampZoomFactor(newFactor);
     zoomFactor.value = clampedFactor;
 
-    mainContainer.scale.x = clampedFactor;
-    mainContainer.scale.y = clampedFactor;
+    if (pixiGlobals.hasMainContainer()) {
+      const mainContainer = pixiGlobals.getMainContainer();
+      mainContainer.scale.x = clampedFactor;
+      mainContainer.scale.y = clampedFactor;
+    }
   };
 
   const setPixelRatio = (ratio: number) => {
@@ -340,11 +342,13 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       return value.y;
     })();
 
-    pixiGlobals.getMainContainer().x = newX;
-    pixiGlobals.getMainContainer().y = newY;
-
     canvasOffset.value.x = newX;
     canvasOffset.value.y = newY;
+
+    if (pixiGlobals.hasMainContainer()) {
+      pixiGlobals.getMainContainer().x = newX;
+      pixiGlobals.getMainContainer().y = newY;
+    }
   };
 
   const fitToScreenZoomFactor = computed(() => {

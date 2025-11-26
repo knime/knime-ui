@@ -18,6 +18,8 @@ const getApplicationInstance = () => {
 
 let mainContainer: Container | null;
 
+const hasMainContainer = () => Boolean(mainContainer);
+
 const setMainContainer = (value: Container) => {
   mainContainer = value;
 };
@@ -47,6 +49,7 @@ export const pixiGlobals = {
   hasApplicationInstance,
   setApplicationInstance,
   getApplicationInstance,
+  hasMainContainer,
   setMainContainer,
   getMainContainer,
   getCanvas,
