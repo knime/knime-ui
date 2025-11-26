@@ -1,17 +1,17 @@
-import type { ApplicationInst } from "@/vue3-pixi";
+import type { Application } from "pixi.js";
 
 const RUN_TIME_MS = 5000;
 
 const isCanvasPerfMode = () =>
   window.localStorage.getItem("CANVAS_PERF_MODE") === "true";
 
-const trackSingleRender = (pixiApp: ApplicationInst) => {
+const trackSingleRender = (pixiApp: Application) => {
   if (!isCanvasPerfMode()) {
     return;
   }
 
   performance.mark("knime:render:start");
-  pixiApp.app.ticker.addOnce(() => {
+  pixiApp.ticker.addOnce(() => {
     performance.mark("knime:render:stop");
 
     performance.measure(
@@ -26,10 +26,10 @@ const trackSingleRender = (pixiApp: ApplicationInst) => {
     );
   });
 
-  pixiApp.app.ticker.add(() => {
+  pixiApp.ticker.add(() => {
     performance.measure("knime:ticker:elapsedMS", {
-      start: performance.now() - pixiApp.app.ticker.elapsedMS,
-      duration: pixiApp.app.ticker.elapsedMS,
+      start: performance.now() - pixiApp.ticker.elapsedMS,
+      duration: pixiApp.ticker.elapsedMS,
     });
   });
 
@@ -37,7 +37,7 @@ const trackSingleRender = (pixiApp: ApplicationInst) => {
     document.body.setAttribute("data-first-render", "done");
   }, RUN_TIME_MS);
 
-  pixiApp.app.ticker.start();
+  pixiApp.ticker.start();
 };
 
 export const performanceTracker = { trackSingleRender, isCanvasPerfMode };

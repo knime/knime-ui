@@ -19,6 +19,7 @@ import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
 import { pixiGlobals } from "../common/pixiGlobals";
+import { initE2ETestUtils } from "../util/e2eTest";
 import { isMarkedEvent } from "../util/interaction";
 
 import Minimap from "./Minimap.vue";
@@ -78,21 +79,25 @@ const addRenderLayers = (app: ApplicationInst["app"]) => {
 const mainContainer = useTemplateRef<Container>("mainContainer");
 
 const onAppInitialized = (pixiApp: PixiApplication) => {
-  // if (!import.meta.env.PROD || devMode.value) {
-  //   globalThis.__PIXI_APP__ = app;
-  // }
+  if (!import.meta.env.PROD || devMode.value) {
+    // this allows the pixi devtools to work
+    globalThis.__PIXI_APP__ = pixiApp;
+  }
 
   pixiGlobals.setApplicationInstance(pixiApp);
   pixiGlobals.setMainContainer(mainContainer.value!);
 
   // used by e2e tests in this repo and by QA
-  // globalThis.__E2E_TEST__ = initE2ETestUtils(app);
+  globalThis.__E2E_TEST__ = initE2ETestUtils();
 
   canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
 
   emit("canvasReady");
 
-  // performanceTracker.trackSingleRender(pixiApp.value!);
+  // only enable for FE e2e Playwright tests
+  if (import.meta.env.MODE === "e2e") {
+    performanceTracker.trackSingleRender(pixiApp);
+  }
 };
 
 useKanvasNodePortHint(isPixiAppInitialized);
@@ -164,7 +169,6 @@ watch(
     :antialias="true"
     :resize-to="() => getKanvasDomElement()!"
     :auto-start="!performanceTracker.isCanvasPerfMode()"
-    :on-before-mount="beforePixiMount"
     :class="[
       {
         panning: shouldShowMoveCursor || hasPanModeEnabled,
