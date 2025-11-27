@@ -2,14 +2,8 @@
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import {
-  Button,
-  InputField,
-  Label,
-  LoadingIcon,
-  Modal,
-  useNameValidator,
-} from "@knime/components";
+import { InputField, Label, useNameValidator } from "@knime/components";
+import { KdsButton, KdsModal } from "@knime/kds-components";
 
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
@@ -139,16 +133,13 @@ watch(
 </script>
 
 <template>
-  <Modal
-    v-show="isCreateWorkflowModalOpen"
-    ref="modalRef"
+  <KdsModal
     :active="isCreateWorkflowModalOpen"
     title="Create a new workflow"
-    style-type="info"
-    class="modal"
-    @cancel="closeModal"
+    width="large"
+    @close="closeModal"
   >
-    <template #confirmation>
+    <template #default>
       <Label text="Workflow name">
         <div>
           <InputField
@@ -168,29 +159,24 @@ watch(
         </div>
       </Label>
     </template>
-    <template #controls>
-      <Button compact with-border :disabled="isSubmitted" @click="closeModal">
-        <strong>Cancel</strong>
-      </Button>
-      <Button
-        compact
-        primary
-        class="submit-button"
+    <template #footer>
+      <KdsButton
+        variant="transparent"
+        :disabled="isSubmitted"
+        label="Cancel"
+        @click="closeModal"
+      />
+      <KdsButton
+        label="Create"
+        variant="filled"
         :disabled="!isValid || isSubmitted"
         @click="onSubmit"
-      >
-        <LoadingIcon v-if="isSubmitted" aria-hidden="true" focusable="false" />
-        <strong>Create</strong>
-      </Button>
+      />
     </template>
-  </Modal>
+  </KdsModal>
 </template>
 
 <style lang="postcss" scoped>
-.modal {
-  --modal-width: 400px;
-}
-
 .item-error {
   font-size: 12px;
   font-weight: 400;
