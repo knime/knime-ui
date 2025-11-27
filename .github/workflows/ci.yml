@@ -58,6 +58,9 @@ jobs:
 
   e2e-tests:
     runs-on: ubuntu-8c-32gb
+    defaults:
+      run:
+        working-directory: org.knime.ui.js
     container:
       image: mcr.microsoft.com/playwright:v1.51.1-noble
       options: --user 1001
@@ -77,15 +80,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        working-directory: org.knime.ui.js
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install
-        working-directory: org.knime.ui.js
 
       - name: Run e2e tests
         run: pnpm run test:e2e
-        working-directory: org.knime.ui.js
 
       - name: Upload Playwright artifacts
         uses: actions/upload-artifact@v4
