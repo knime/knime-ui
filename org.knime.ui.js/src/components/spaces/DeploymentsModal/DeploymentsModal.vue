@@ -2,8 +2,7 @@
 import { computed, defineAsyncComponent } from "vue";
 import { storeToRefs } from "pinia";
 
-import { Modal } from "@knime/components";
-import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
+import { KdsModal } from "@knime/kds-components";
 
 import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { useSpacesStore } from "@/store/spaces/spaces";
@@ -35,35 +34,26 @@ const closeModal = () => {
 </script>
 
 <template>
-  <Modal
-    v-show="isDeploymentModalOpen"
+  <KdsModal
     :active="isDeploymentModalOpen"
     :title="selectedItemName"
-    style-type="info"
-    class="modal"
-    @cancel="closeModal"
+    icon="deploy"
+    width="full"
+    @close="closeModal"
   >
-    <template #icon><DeploymentIcon /></template>
-    <template #confirmation>
-      <SchedulesTable
-        v-if="schedules.length > 0"
-        :schedules="schedules"
-        :jobs="jobs"
-      />
-      <JobsTable v-if="jobs.length > 0" :jobs="jobs" />
-      <span v-if="jobs.length === 0 && schedules.length === 0" class="no-data"
-        >There are no schedules or jobs to display.</span
-      >
-    </template>
-  </Modal>
+    <SchedulesTable
+      v-if="schedules.length > 0"
+      :schedules="schedules"
+      :jobs="jobs"
+    />
+    <JobsTable v-if="jobs.length > 0" :jobs="jobs" />
+    <span v-if="jobs.length === 0 && schedules.length === 0" class="no-data"
+      >There are no schedules or jobs to display.</span
+    >
+  </KdsModal>
 </template>
 
 <style lang="postcss" scoped>
-.modal {
-  --modal-width: 80%;
-  --z-index-common-modal: 55;
-}
-
 .no-data {
   display: flex;
   justify-content: center;
@@ -71,66 +61,5 @@ const closeModal = () => {
   font-style: italic;
   padding-top: 10px;
   color: var(--knime-masala);
-}
-
-:deep() {
-  & .confirmation {
-    background-color: var(--knime-porcelain);
-    overflow: hidden auto;
-    flex-grow: 1;
-  }
-
-  & .controls {
-    background-color: var(--knime-porcelain);
-    padding: 0;
-  }
-
-  & .inner {
-    top: 50%;
-    max-height: 90%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  &.modal-wrapper h2 {
-    color: var(--knime-masala);
-  }
-
-  & .state {
-    display: inline-block;
-    padding-left: 20px;
-    margin-left: -20px;
-
-    &::before {
-      content: "●";
-      font-size: 10px;
-      position: static;
-      top: -1px;
-      margin-right: 8px;
-    }
-  }
-
-  & .node-messages {
-    display: inline-block;
-    padding-left: 20px;
-    margin-left: 20px;
-  }
-
-  & .execution-finished {
-    color: var(--theme-color-success);
-  }
-
-  & .failed {
-    color: var(--theme-color-error);
-  }
-
-  & .executing {
-    color: var(--theme-color-running);
-  }
-
-  & .interaction-required {
-    color: var(--theme-color-action-required);
-  }
 }
 </style>
