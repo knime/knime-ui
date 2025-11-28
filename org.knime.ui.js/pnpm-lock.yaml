@@ -199,8 +199,8 @@ importers:
         specifier: ^8.0.4
         version: 8.0.4
       playwright-core:
-        specifier: ^1.51.1
-        version: 1.51.1
+        specifier: ^1.56.1
+        version: 1.56.1
       postcss-mixins:
         specifier: ^9.0.4
         version: 9.0.4(postcss@8.5.6)
@@ -4556,6 +4556,11 @@ packages:
 
   playwright-core@1.51.1:
     resolution: {integrity: sha512-/crRMj8+j/Nq5s8QcvegseuyeZPxpQCZb6HNk3Sos3BlZyAknRjoyJPFWkpNn8v0+P3WiwqFF8P+zQo4eqiNuw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright-core@1.56.1:
+    resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -11061,6 +11066,8 @@ snapshots:
       find-up: 3.0.0
 
   playwright-core@1.51.1: {}
+
+  playwright-core@1.56.1: {}
 
   playwright@1.51.1:
     dependencies:

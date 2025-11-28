@@ -97,7 +97,7 @@
     "modern-normalize": "3.0.1",
     "mouse-helper": "^1.0.7",
     "npm-run-all2": "^8.0.4",
-    "playwright-core": "^1.51.1",
+    "playwright-core": "^1.56.1",
     "postcss-mixins": "^9.0.4",
     "postcss-preset-env": "8.0.0",
     "prettier": "3.0.1",
