@@ -33,11 +33,11 @@ importers:
         specifier: ^1.15.5
         version: 1.15.5(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-components':
-        specifier: ^0.0.15
-        version: 0.0.15(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
+        specifier: ^0.2.1
+        version: 0.2.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-styles':
-        specifier: ^0.0.15
-        version: 0.0.15
+        specifier: ^0.2.1
+        version: 0.2.1
       '@knime/knime-ui-table':
         specifier: 0.5.23
         version: 0.5.23(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
@@ -1122,11 +1122,20 @@ packages:
   '@fontsource/roboto-condensed@4.5.9':
     resolution: {integrity: sha512-ql4sQq+h8puBVildZ5ssjYf8DWDONYDe3PD3Bu/p1ZW9GnRETRNPPcCTs/q62HIl3QimwwkiKWynn6wZhQaetg==}
 
+  '@fontsource/roboto-condensed@5.2.8':
+    resolution: {integrity: sha512-M2OxXXGJQeif+LhxHjWiCEX3BHIYeZf64CcUTeh9AQFGp7DXo2UAXZiZUUOalVdOiuUtQSIi2CDHLDWFiyoECQ==}
+
   '@fontsource/roboto-mono@4.5.10':
     resolution: {integrity: sha512-KrJdmkqz6DszT2wV/bbhXef4r0hV3B0vw2mAqei8A2kRnvq+gcJLmmIeQ94vu9VEXrUQzos5M9lH1TAAXpRphw==}
 
+  '@fontsource/roboto-mono@5.2.8':
+    resolution: {integrity: sha512-M0XPRcvkOKiTPooXwX7yJSNpuad3CPcQwsADBfnopz3apBs+VKI47pc42mlvAxJjNTRauu5rndSxHc8F52bR7Q==}
+
   '@fontsource/roboto@4.5.8':
     resolution: {integrity: sha512-CnD7zLItIzt86q4Sj3kZUiLcBk1dSk81qcqgMGaZe7SQ1P8hFNxhMl5AZthK1zrDM5m74VVhaOpuMGIL4gagaA==}
+
+  '@fontsource/roboto@5.2.8':
+    resolution: {integrity: sha512-oh9g4Cg3loVMz9MWeKWfDI+ooxxG1aRVetkiKIb2ESS2rrryGecQ/y4pAj4z5A5ebyw450dYRi/c4k/I3UBhHA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -1230,15 +1239,15 @@ packages:
       consola: 3.x
       vue: '>=3.5.0'
 
-  '@knime/kds-components@0.0.15':
-    resolution: {integrity: sha512-7IAHnatXTY7j/qXHnili3AhlpkmUIBGUlJSVijTt9aoO3WxML0lX85wxxCHqd2cC2v4asMweeBGQtwoTxj2Y+w==}
+  '@knime/kds-components@0.2.1':
+    resolution: {integrity: sha512-X/1kJ0s/WLH7NJ/wCc4jWXSgYTzpuwEoNAjDs/05x6gsZTQMwdxD9SqvsCQAL2SN1iu5dfXdIhPbOLrTTY3D5A==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
     peerDependencies:
       '@vueuse/core': ~13.8.0
       vue: ~3.5.0
 
-  '@knime/kds-styles@0.0.15':
-    resolution: {integrity: sha512-lVydXCxsXqxzql0T9Rt4YzE0U/VI1nEsdfoExehAhn0kiGCv6K3CiE26vHsyRZ53wZq/2pEv1ewyGRm5lsEIhA==}
+  '@knime/kds-styles@0.2.1':
+    resolution: {integrity: sha512-mhlNImTq7mpCIwXCF+vfK0n0WfBTZrTlkpvXvYp/8878CuS2YVeufoTlcOBHfJOPNoq/Ve/4vjhndQMg2VRnkQ==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
 
   '@knime/knime-ui-table@0.5.23':
@@ -1295,6 +1304,12 @@ packages:
 
   '@knime/utils@1.7.1':
     resolution: {integrity: sha512-XGyrw2/Hz3N/2c56MzsA4HejaIMuRhuAmN+eAV145g64Nc5jBdnH3a8H+qrUftx7jBaooJkSS8NrlU11wvp4jw==}
+    peerDependencies:
+      consola: 3.x
+
+  '@knime/utils@1.8.0':
+    resolution: {integrity: sha512-XvOAVfaHQTML8l8mD5phmqsyCPXseLvaPxLB7AjAyMNw7Zd7ZjcwG4ki5Qnw1Z17/Xiy7QrQ3ktNb0u1PwA4jw==}
+    engines: {node: '>=22 <25'}
     peerDependencies:
       consola: 3.x
 
@@ -2786,6 +2801,9 @@ packages:
 
   dompurify@3.2.7:
     resolution: {integrity: sha512-WhL/YuveyGXJaerVlMYGWhvQswa7myDG17P7Vu65EWC05o8vfeNbvNf4d/BOvH99+ZW+LlQsc1GDKMa1vNK6dw==}
+
+  dompurify@3.3.0:
+    resolution: {integrity: sha512-r+f6MYR1gGN1eJv0TVQbhA7if/U7P87cdPl3HN5rikqaBSBxLiCb/b9O+2eG0cxz0ghyU+mU1QkbsOwERMYlWQ==}
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
@@ -7166,9 +7184,15 @@ snapshots:
 
   '@fontsource/roboto-condensed@4.5.9': {}
 
+  '@fontsource/roboto-condensed@5.2.8': {}
+
   '@fontsource/roboto-mono@4.5.10': {}
 
+  '@fontsource/roboto-mono@5.2.8': {}
+
   '@fontsource/roboto@4.5.8': {}
+
+  '@fontsource/roboto@5.2.8': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -7431,11 +7455,11 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/kds-components@0.0.15(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
+  '@knime/kds-components@0.2.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
     dependencies:
-      '@knime/kds-styles': 0.0.15
+      '@knime/kds-styles': 0.2.1
       '@knime/styles': 1.14.3(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)
-      '@knime/utils': 1.7.1(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(consola@3.4.2)
+      '@knime/utils': 1.8.0(consola@3.4.2)
       '@vueuse/core': 13.8.0(vue@3.5.18(typescript@5.8.3))
       consola: 3.4.2
       vue: 3.5.18(typescript@5.8.3)
@@ -7443,8 +7467,11 @@ snapshots:
       - '@fontsource/roboto'
       - '@fontsource/roboto-mono'
 
-  '@knime/kds-styles@0.0.15':
+  '@knime/kds-styles@0.2.1':
     dependencies:
+      '@fontsource/roboto': 5.2.8
+      '@fontsource/roboto-condensed': 5.2.8
+      '@fontsource/roboto-mono': 5.2.8
       modern-normalize: 3.0.1
 
   '@knime/knime-ui-table@0.5.23(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))':
@@ -7589,6 +7616,13 @@ snapshots:
     transitivePeerDependencies:
       - '@fontsource/roboto'
       - '@fontsource/roboto-mono'
+
+  '@knime/utils@1.8.0(consola@3.4.2)':
+    dependencies:
+      consola: 3.4.2
+      date-fns: 2.30.0
+      date-fns-tz: 2.0.0(date-fns@2.30.0)
+      dompurify: 3.3.0
 
   '@knime/virtual-tree@1.6.11(@fontsource/roboto-mono@4.5.10)(@fontsource/roboto@4.5.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))':
     dependencies:
@@ -9181,6 +9215,10 @@ snapshots:
       domelementtype: 2.3.0
 
   dompurify@3.2.7:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
+
+  dompurify@3.3.0:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
