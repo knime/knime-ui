@@ -3,7 +3,9 @@ import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
-import { InputField, Modal } from "@knime/components";
+import { InputField } from "@knime/components";
+import { KdsModal } from "@knime/kds-components";
+import { sleep } from "@knime/utils";
 
 import { $bus } from "@/plugins/event-bus";
 import { deepMocked } from "@/test/utils";
@@ -82,17 +84,17 @@ describe("CreateWorkflowModal.vue", () => {
         isOpen: true,
         projectId,
       });
-      await nextTick();
+      await sleep(0);
       expect(wrapper.find("input").isVisible()).toBe(true);
     });
 
     it("closes on state change", async () => {
       const { wrapper, mockedStores } = doMount({ isOpen: true });
 
-      wrapper.findComponent(Modal).vm.$emit("cancel");
-      await nextTick();
+      wrapper.findComponent(KdsModal).vm.$emit("close");
+      await sleep(0);
 
-      expect(wrapper.find("input").isVisible()).toBe(false);
+      expect(wrapper.find("input").exists()).toBe(false);
       expect(
         mockedStores.spacesStore.setCreateWorkflowModalConfig,
       ).toHaveBeenCalledWith({ isOpen: false, projectId: null });

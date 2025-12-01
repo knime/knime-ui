@@ -111,7 +111,7 @@ vi.mock(
 );
 
 vi.mock("@knime/kds-components", () => ({
-  useConfirmDialog: () => ({
+  useKdsConfirmDialog: () => ({
     show: vi.fn().mockResolvedValue({ confirmed: true }),
   }),
 }));

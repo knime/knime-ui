@@ -119,6 +119,19 @@ window.PointerEvent = MockPointerEvent as any;
 HTMLElement.prototype.setPointerCapture = vi.fn();
 HTMLElement.prototype.releasePointerCapture = vi.fn();
 
+/** mock <dialog> for jsdom */
+if (!HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.showModal = function () {
+    this.open = true;
+  };
+}
+if (!HTMLDialogElement.prototype.close) {
+  HTMLDialogElement.prototype.close = function (returnValue) {
+    this.open = false;
+    this.returnValue = returnValue ?? "";
+  };
+}
+
 vi.mock("@/plugins/toasts", () => {
   const show = vi.fn();
   const remove = vi.fn();

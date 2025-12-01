@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { API } from "@api";
 
-import { Modal } from "@knime/components";
+import { KdsModal } from "@knime/kds-components";
+import { sleep } from "@knime/utils";
 
 import { createJob, createSchedule } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
@@ -49,6 +49,8 @@ describe("DeploymentsModal.vue", () => {
     mockedStores.spacesStore.setDeploymentsModalConfig({
       isOpen,
       name,
+      projectId: "defaultProject",
+      itemId: "defaultItem",
     });
 
     const wrapper = mount(DeploymentsModal, {
@@ -62,26 +64,31 @@ describe("DeploymentsModal.vue", () => {
   };
 
   it("opens a deployments modal", async () => {
-    const { wrapper, mockedStores } = doMount({ isOpen: false, name: null });
+    const { wrapper, mockedStores } = doMount({
+      isOpen: false,
+      name: undefined,
+    });
 
-    expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
+    expect(wrapper.findComponent(KdsModal).element.open).toBe(false);
 
     mockedStores.spacesStore.setDeploymentsModalConfig({
       isOpen: true,
       name: "Schedules and jobs of Workflow",
+      projectId: "",
+      itemId: "",
     });
-    await nextTick();
+    await sleep(0);
 
-    expect(wrapper.findComponent(Modal).isVisible()).toBe(true);
+    expect(wrapper.findComponent(KdsModal).element.open).toBe(true);
   });
 
   it("closes a deployments modal", async () => {
     const { wrapper, mockedStores } = doMount();
 
-    wrapper.findComponent(Modal).trigger("cancel");
-    await nextTick();
+    wrapper.findComponent(KdsModal).vm.$emit("close");
+    await sleep(0);
 
-    expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
+    expect(wrapper.findComponent(KdsModal).element.open).toBe(false);
     expect(
       mockedStores.spacesStore.setDeploymentsModalConfig,
     ).toHaveBeenCalledWith({
@@ -96,7 +103,7 @@ describe("DeploymentsModal.vue", () => {
     const workflowName = "Workflow Name";
     const { wrapper } = doMount({ name: workflowName });
 
-    expect(wrapper.find(".header").find("h2").text()).toBe(
+    expect(wrapper.findComponent(KdsModal).props("title")).toBe(
       `Schedules and jobs of “${"Workflow Name"}”`,
     );
   });
