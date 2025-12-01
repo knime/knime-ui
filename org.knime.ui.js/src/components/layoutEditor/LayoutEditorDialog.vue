@@ -148,39 +148,6 @@ const activeTabComponent = computed(
   height: 10%;
 }
 
-/*
-.modal {
-  --modal-height: 95vh;
-  --modal-width: 95vw;
-  --z-index-common-modal: v-bind("$zIndices.layerModals");
-  --background: var(--knime-gray-ultra-light);
-
-  background: var(--background);
-  isolation: isolate;
-
-  & :deep(.inner) {
-    top: 50%;
-    display: flex;
-    flex-direction: column;
-    background: var(--background);
-
-    & > .notice {
-      background: var(--background);
-      overflow: hidden;
-      padding: 0;
-    }
-
-    & > .confirmation {
-      overflow: hidden;
-      height: 100%;
-      padding: 0;
-    }
-
-
-  }
-}
-*/
-
 .cancel-button,
 .submit-button {
   z-index: v-bind("layoutEditorZIndices.modalControls");
