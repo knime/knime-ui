@@ -145,7 +145,7 @@ const activeTabComponent = computed(
   flex-direction: column;
 
   /** we need a height for the overflow to work, the flex-grow makes this take up all available space */
-  height: 10%;
+  min-height: 50px;
 }
 
 .cancel-button,
