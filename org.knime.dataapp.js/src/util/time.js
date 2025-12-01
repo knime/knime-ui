@@ -21,9 +21,7 @@ export const getTimeParts = (timeInMs) => {
 export const formatTime = (timeInMs) => {
   const { hour, minute, second } = getTimeParts(timeInMs);
 
-  return `${addLeadingZero(hour)}:${addLeadingZero(minute)}:${addLeadingZero(
-    second,
-  )}`;
+  return `${addLeadingZero(hour)}:${addLeadingZero(minute)}:${addLeadingZero(second)}`;
 };
 
 export const formatSemanticTime = (milliseconds) => {

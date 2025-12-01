@@ -1,0 +1,22 @@
+{
+  "eslint.config.ts": {
+    "@typescript-eslint/ban-ts-comment": {
+      "count": 2
+    }
+  },
+  "src/components/ExecutionProgress/ProgressStatus.vue": {
+    "vue/block-lang": {
+      "count": 1
+    }
+  },
+  "src/components/ReportPreview.vue": {
+    "vue/block-lang": {
+      "count": 1
+    }
+  },
+  "src/components/WizardNavigation/WizardNavigation.vue": {
+    "vue/block-lang": {
+      "count": 1
+    }
+  }
+}

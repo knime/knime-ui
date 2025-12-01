@@ -17,10 +17,7 @@ const updateMessages = (messages, nodeMessage, nodeName) => {
   }
   let type = nodeMessage.type || nodeMessage.messageType || "WARN";
   let nodeKey = `${type} ${nodeName}`;
-  if (
-    messages[nodeKey] &&
-    !messages[nodeKey].message.includes(nodeMessage.message)
-  ) {
+  if (messages[nodeKey] && !messages[nodeKey].message.includes(nodeMessage.message)) {
     messages[nodeKey].message.push(nodeMessage.message);
   } else {
     messages[nodeKey] = {
