@@ -281,6 +281,98 @@ test.describe("minimap", () => {
   });
 });
 
+test.describe("context menu", () => {
+  const assertContextMenuOpened = (page: Page) =>
+    page.waitForSelector("[data-test-id='context-menu']", {
+      state: "visible",
+    });
+
+  const getBlankCanvasPosition = async (
+    page: Page,
+  ): Promise<[number, number]> => {
+    const kanvasBox = await getKanvasBoundingBox(page);
+    return [kanvasBox!.x + 200, kanvasBox!.y + 200];
+  };
+  test.describe("non-empty workflows", () => {
+    test("should open with mouse", async ({ page }) => {
+      await startApplication(page, {
+        workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
+        withMouseCursor: true,
+      });
+
+      await page.mouse.click(...(await getBlankCanvasPosition(page)), {
+        button: "right",
+      });
+
+      await assertContextMenuOpened(page);
+    });
+
+    test("should open with contextmenu key", async ({ page }) => {
+      await startApplication(page, {
+        workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
+        withMouseCursor: true,
+      });
+
+      await page.keyboard.press("ContextMenu");
+
+      await assertContextMenuOpened(page);
+    });
+
+    test("should open with shift+f10", async ({ page }) => {
+      await startApplication(page, {
+        workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
+        withMouseCursor: true,
+      });
+
+      await page.keyboard.press("Shift+F10");
+
+      await assertContextMenuOpened(page);
+    });
+  });
+
+  test.describe("empty workflows", () => {
+    test("should open with mouse", async ({ page }) => {
+      await startApplication(page, {
+        waitForRender: false,
+        workflowFixturePath: "getWorkflow-empty-workflow.json",
+        withMouseCursor: true,
+      });
+      await page.waitForSelector('[data-test-id="empty-workflow"]');
+
+      await page.mouse.click(...(await getBlankCanvasPosition(page)), {
+        button: "right",
+      });
+
+      await assertContextMenuOpened(page);
+    });
+
+    test("should open with shift+f10", async ({ page }) => {
+      await startApplication(page, {
+        waitForRender: false,
+        workflowFixturePath: "getWorkflow-empty-workflow.json",
+        withMouseCursor: true,
+      });
+      await page.waitForSelector('[data-test-id="empty-workflow"]');
+
+      await page.keyboard.press("Shift+F10");
+
+      await assertContextMenuOpened(page);
+    });
+
+    test("should open with contextmenu key", async ({ page }) => {
+      await startApplication(page, {
+        waitForRender: false,
+        workflowFixturePath: "getWorkflow-empty-workflow.json",
+        withMouseCursor: true,
+      });
+      await page.waitForSelector('[data-test-id="empty-workflow"]');
+
+      await page.keyboard.press("ContextMenu");
+      await assertContextMenuOpened(page);
+    });
+  });
+});
+
 test.describe("canvas tools", () => {
   test("zoom in/out", async ({ page }) => {
     await startForMinimap(page);

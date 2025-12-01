@@ -654,7 +654,9 @@ describe("Kanvas", () => {
       const { wrapper, mockedStores } = doShallowMount({
         isWorkflowEmptyMock: true,
       });
-      await wrapper.trigger("contextmenu");
+
+      await wrapper.find("svg").trigger("contextmenu");
+
       expect(
         mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalledWith(expect.anything());

@@ -510,6 +510,7 @@ const setActiveDescendant = (itemId: string | null) => {
     <MenuItems
       id="context-menu-items"
       ref="menuItems"
+      data-test-id="context-menu"
       class="menu-items"
       register-keydown
       :items="visibleItems"

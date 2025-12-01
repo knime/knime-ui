@@ -129,7 +129,12 @@ export const useLifecycleStore = defineStore("lifecycle", {
         const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
         const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
 
-        consola.trace("lifecycle::route middleware", { to, from });
+        consola.trace("lifecycle::route middleware", {
+          to,
+          from,
+          isEnteringWorkflow,
+          isLeavingWorkflow,
+        });
 
         if (isLeavingWorkflow) {
           // before leaving a workflow check attempt to auto-apply pending
@@ -139,6 +144,9 @@ export const useLifecycleStore = defineStore("lifecycle", {
           if (wasAborted) {
             // cancel the navigation if the user cancelled on the auto-apply prompt
             next(false);
+            consola.debug(
+              "lifecycle:: navigation aborted; cannot clear selection",
+            );
             return;
           }
         }
@@ -147,6 +155,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
           // when leaving workflow we should dispatch to the store to run the switching logic
           // before destroying the route (aka navigating away)
           await this.switchWorkflow({ newWorkflow: null });
+          consola.debug("lifecycle:: navigation complete");
           next();
           return;
         }
@@ -172,6 +181,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
           try {
             await this.switchWorkflow({ newWorkflow });
+            consola.debug("lifecycle:: navigation complete");
             next();
             return;
           } catch (error) {
@@ -196,7 +206,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
                   } as WorkflowNavigationParams)
                 : null;
 
-            consola.trace("lifecycle:: switch back to previous workflow");
+            consola.debug("lifecycle:: switch back to previous workflow");
 
             await this.switchWorkflow({ newWorkflow: previousWorkflow }).catch(
               (error) => {
@@ -207,6 +217,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
                 next({ name: APP_ROUTES.Home.GetStarted });
               },
             );
+            consola.debug("lifecycle:: navigation completed");
             next(from);
             return;
           } finally {
@@ -341,7 +352,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       isInitialization?: boolean;
     }) {
       const { openProjects } = useApplicationStore();
-      consola.trace("action::setActiveProject");
+      consola.trace("lifecycle::setActiveProject");
 
       const goHomeIfNoActiveProject = () => {
         const { currentRoute } = $router;
@@ -356,7 +367,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       };
 
       if (openProjects.length === 0) {
-        consola.trace("action::setActiveProject -> No workflows opened");
+        consola.trace("lifecycle::setActiveProject -> No workflows opened");
         await goHomeIfNoActiveProject();
 
         return;
@@ -367,7 +378,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       // No active project is set -> stay on home page (aka: null project)
       if (!activeProject) {
         consola.trace(
-          "action::setActiveProject -> No active project set. Redirecting home",
+          "lifecycle::setActiveProject -> No active project set. Redirecting home",
         );
         await goHomeIfNoActiveProject();
 
@@ -391,7 +402,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
         activeProject.origin?.version?.version ?? CURRENT_STATE_VERSION;
 
       consola.trace(
-        "action::setActiveProject -> Navigating to project",
+        "lifecycle::setActiveProject -> Navigating to project",
         params,
         version,
       );
@@ -418,7 +429,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
         version?: string | null;
       } | null;
     }) {
-      consola.trace("action::switchWorkflow >> Params", { newWorkflow });
+      consola.trace("lifecycle::switchWorkflow >> Params", { newWorkflow });
 
       const activeWorkflow = useWorkflowStore()?.activeWorkflow;
       const isChangingProject =
@@ -427,7 +438,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       if (useWorkflowStore()?.activeWorkflow) {
         consola.trace(
-          "action::switchWorkflow -> saving canvas state and unloading active workflow",
+          "lifecycle::switchWorkflow -> saving canvas state and unloading active workflow",
         );
 
         useCanvasStateTrackingStore().saveCanvasState();
@@ -514,6 +525,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       let project: WorkflowSnapshot;
       try {
+        consola.debug("lifecycle:: Loading workflow", getWorkflowParams);
         project = await API.workflow.getWorkflow(getWorkflowParams);
       } catch (error) {
         consola.error("lifecycle::loadWorkflow failed to load workflow", {
@@ -569,6 +581,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       snapshotId?: string;
     }) {
       useApplicationStore().setActiveProjectId(projectId);
+      consola.debug("lifecycle:: Setting workflow in state");
       useWorkflowStore().setActiveWorkflow({
         ...workflow,
         projectId,

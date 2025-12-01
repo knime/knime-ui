@@ -1,0 +1,37 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "workflow": {
+      "dirty": false,
+      "metadata": {
+        "tags": [],
+        "description": {
+          "value": "",
+          "contentType": "text/plain"
+        },
+        "metadataType": "project",
+        "links": [],
+        "lastEdit": "2025-04-22T15:47:31.711+02:00"
+      },
+      "connections": {},
+      "nodes": {},
+      "workflowAnnotations": [],
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": false,
+        "canReset": false,
+        "canUndo": false,
+        "canRedo": false
+      },
+      "nodeTemplates": {},
+      "info": {
+        "name": "node-interactions",
+        "containerType": "project",
+        "providerType": "LOCAL",
+        "containerId": "root"
+      }
+    },
+    "snapshotId": "0"
+  }
+}

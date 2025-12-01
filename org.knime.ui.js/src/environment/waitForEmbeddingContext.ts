@@ -43,6 +43,6 @@ export const waitForEmbeddingContext = async (): Promise<EmbeddingContext> => {
 
   return {
     ...getMockContext(),
-    restApiBaseUrl: import.meta.env.VITE_BROWSER_DEV_HTTP_URL,
+    restApiBaseUrl: import.meta.env.VITE_BROWSER_DEV_HTTP_URL ?? "",
   };
 };

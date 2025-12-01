@@ -179,6 +179,23 @@ const onEscape = async (event: KeyboardEvent) => {
     useSelectionStore().deselectAllObjects();
   }
 };
+
+const onKeyDown = (event: KeyboardEvent) => {
+  // Handle opening the context menu *just* for the keys here. Using right click
+  // to open it is already covered by the panning logic
+  if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+    event.preventDefault();
+    useCanvasAnchoredComponentsStore().toggleContextMenu();
+  }
+
+  if (event.key === "Escape") {
+    onEscape(event);
+  }
+};
+
+const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
+  useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
+};
 </script>
 
 <template>
@@ -190,7 +207,7 @@ const onEscape = async (event: KeyboardEvent) => {
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @pointerdown="onPointerDown"
-    @keydown.esc="onEscape"
+    @keydown="onKeyDown"
   >
     <Kanvas
       v-if="activeWorkflow && !isWorkflowEmpty && !isLoadingWorkflow"
@@ -220,6 +237,8 @@ const onEscape = async (event: KeyboardEvent) => {
       :height="containerSize.height"
       :viewBox="workflowEmptyViewBox"
       aria-label="Empty workflow – start by adding nodes"
+      data-test-id="empty-workflow"
+      @contextmenu="onWorkflowEmptyContextMenu"
     >
       <WorkflowEmpty />
     </svg>

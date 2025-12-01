@@ -20,7 +20,6 @@ import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 
 import { RESIZE_DEBOUNCE } from "./constants";
 import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
-import { useKanvasContextMenu } from "./useKanvasContextMenu";
 import { useKanvasHint } from "./useKanvasHint";
 import { useMouseWheelZooming } from "./useMouseWheelZooming";
 import { usePanning } from "./usePanning";
@@ -96,7 +95,6 @@ const { doInitialSelection } = useArrowKeyNavigation({
   isHoldingDownSpace,
   rootEl: rootEl as Ref<HTMLElement>,
 });
-useKanvasContextMenu({ rootEl: rootEl as Ref<HTMLElement> });
 
 const startRectangleSelection = (event: PointerEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
@@ -143,6 +141,29 @@ const onEscapeKey = (event: KeyboardEvent) => {
     selectionStore.deselectAllObjects();
   }
 };
+
+const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
+  // prevent default always. But only open the menu for non-empty workflows,
+  // because the panning logic will handle opening it via right click
+  event.preventDefault();
+
+  if (isWorkflowEmpty.value) {
+    useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
+  }
+};
+
+const onKeyDown = (event: KeyboardEvent) => {
+  // Handle opening the context menu *just* for the keys here. Using right click
+  // to open it is already covered by the panning logic
+  if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+    event.preventDefault();
+    useCanvasAnchoredComponentsStore().toggleContextMenu();
+  }
+
+  if (event.key === "Escape") {
+    onEscapeKey(event);
+  }
+};
 </script>
 
 <template>
@@ -170,7 +191,7 @@ const onEscapeKey = (event: KeyboardEvent) => {
     @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
     @focusin="() => hasKeyboardFocus && doInitialSelection()"
-    @keydown.esc="onEscapeKey"
+    @keydown="onKeyDown"
   >
     <svg
       ref="svg"
@@ -191,6 +212,7 @@ const onEscapeKey = (event: KeyboardEvent) => {
       "
       @pointermove="$bus.emit('selection-pointermove', $event)"
       @lostpointercapture="$bus.emit('selection-lostpointercapture', $event)"
+      @contextmenu="onWorkflowEmptyContextMenu"
     >
       <slot />
     </svg>
