@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite --port 3000",
     "build": "run-p type-check \"build-only {@}\" --",
+    "build:ci": "pnpm build",
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",

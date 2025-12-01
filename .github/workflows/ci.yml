@@ -13,9 +13,9 @@ jobs:
       contents: read
     runs-on: ubuntu-8c-32gb
 
-    defaults:
-      run:
-        working-directory: org.knime.ui.js
+    strategy:
+      fail-fast: false # If one job fails, don't stop
+      matrix: { directory: ["org.knime.ui.js", "org.knime.dataapp.js"] }
 
     steps:
       - uses: actions/checkout@v5
@@ -33,21 +33,29 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install
+        working-directory: ${{ matrix.directory }}
 
       - name: Lint and format
         run: pnpm run ci:lint-format
+        working-directory: ${{ matrix.directory }}
 
       - name: Type check
         run: pnpm run type-check
+        working-directory: ${{ matrix.directory }}
 
       - name: Run coverage
+        if: matrix.directory == 'org.knime.ui.js'
         run: pnpm run coverage
+        working-directory: ${{ matrix.directory }}
 
       - name: Build for CI
         run: pnpm run build:ci
+        working-directory: ${{ matrix.directory }}
 
       - name: Audit
+        if: matrix.directory == 'org.knime.ui.js'
         run: pnpm run audit
+        working-directory: ${{ matrix.directory }}
 
       # Sonar runs in Jenkins for the whole repo due to the mix of Java and JS
       # - name: Sonar scan
