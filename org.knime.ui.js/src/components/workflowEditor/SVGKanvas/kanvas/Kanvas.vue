@@ -143,7 +143,7 @@ const onEscapeKey = (event: KeyboardEvent) => {
 };
 
 const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
-  // prevent default always. But only open the menu for non-empty workflows,
+  // prevent default always. But only open the menu for empty workflows,
   // because the panning logic will handle opening it via right click
   event.preventDefault();
 
