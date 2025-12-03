@@ -4,6 +4,7 @@ import { computed, toRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -15,6 +16,7 @@ import type { GraphicsInst } from "@/vue3-pixi";
 
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 import { useNodeNameShortening } from "./useTextShortening";
+import AiConfiguringHighlight from "./AiConfiguringHighlight.vue";
 
 /**
  * Colored rect that is used as selection plane for nodes
@@ -41,6 +43,12 @@ const selectionStore = useSelectionStore();
 const { shouldHideSelection } = storeToRefs(selectionStore);
 const { showSelection, showFocus } =
   selectionStore.getNodeVisualSelectionStates(props.nodeId);
+
+const aiAssistantStore = useAIAssistantStore();
+const { aiConfiguringNodeId } = storeToRefs(aiAssistantStore);
+const showAiConfiguring = computed(
+  () => aiConfiguringNodeId.value === props.nodeId,
+);
 
 const { metrics: nodeNameDimensions } = useNodeNameShortening(
   toRef(props, "name"),
@@ -98,16 +106,21 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
     color: $colors.kanvasNodeSelection.activeBorder,
   });
 };
+
 </script>
 
 <template>
   <Container
     :label="`NodeSelectionPlane__${nodeId}`"
     :renderable="
-      renderable && (showFocus || showSelection) && !shouldHideSelection
+      renderable &&
+      (showFocus || showSelection || showAiConfiguring) &&
+      !shouldHideSelection
     "
     :visible="
-      renderable && (showFocus || showSelection) && !shouldHideSelection
+      renderable &&
+      (showFocus || showSelection || showAiConfiguring) &&
+      !shouldHideSelection
     "
     :position="{
       x: position.x,
@@ -125,6 +138,14 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
       v-if="showSelection"
       label="NodeSelectionPlaneSelectionRing"
       @render="selectionPlaneRenderFn"
+    />
+
+    <AiConfiguringHighlight
+      v-if="showAiConfiguring"
+      :x="measures.x"
+      :y="measures.y"
+      :width="measures.width"
+      :height="measures.height"
     />
   </Container>
 </template>

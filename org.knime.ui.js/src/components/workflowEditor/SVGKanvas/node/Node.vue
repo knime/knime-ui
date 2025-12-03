@@ -7,6 +7,7 @@ import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
 import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -285,6 +286,10 @@ export default {
 
     showFocus() {
       return this.getNodeVisualSelectionStates(this.id).showFocus.value;
+    },
+
+    showAiConfiguring() {
+      return useAIAssistantStore().aiConfiguringNodeId === this.id;
     },
 
     isExecuting() {
@@ -568,7 +573,11 @@ export default {
         <!-- Node Selection Plane. Portalled to the back -->
         <Portal to="node-select">
           <NodeSelectionPlane
-            v-show="(showSelection || showFocus) && !hasAnnotationModeEnabled"
+            v-show="
+              (showSelection || showFocus || showAiConfiguring) &&
+              !hasAnnotationModeEnabled
+            "
+            :node-id="id"
             :show-selection="showSelection"
             :show-focus="showFocus"
             :position="position"

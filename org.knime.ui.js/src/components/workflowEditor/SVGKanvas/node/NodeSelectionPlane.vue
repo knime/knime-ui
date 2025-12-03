@@ -3,12 +3,25 @@ import type { PropType } from "vue";
 import { defineComponent } from "vue";
 
 import type { Node, XY } from "@/api/gateway-api/generated-api";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+
+import AiConfiguringHighlight from "./AiConfiguringHighlight.vue";
 
 /**
  * Colored rect that is used as selection plane for nodes
  */
 export default defineComponent({
+  components: {
+    AiConfiguringHighlight,
+  },
   props: {
+    /**
+     * The node ID (e.g., "root:3")
+     */
+    nodeId: {
+      type: String,
+      required: true,
+    },
     /**
      * The position of the node. Contains an x- and y-parameter
      */
@@ -51,6 +64,9 @@ export default defineComponent({
     },
   },
   computed: {
+    showAiConfiguring(): boolean {
+      return useAIAssistantStore().aiConfiguringNodeId === this.nodeId;
+    },
     // Getting the node selection measures and calculate if some additional space is needed for the status bar
     nodeSelectionMeasures() {
       const {
@@ -114,6 +130,15 @@ export default defineComponent({
       :stroke="$colors.kanvasNodeSelection.activeBorder"
       :stroke-width="$shapes.selectedNodeStrokeWidth"
       :rx="$shapes.selectedItemBorderRadius"
+    />
+
+    <AiConfiguringHighlight
+      v-if="showAiConfiguring"
+      :x="nodeSelectionMeasures.x"
+      :y="nodeSelectionMeasures.y"
+      :width="nodeSelectionMeasures.width"
+      :height="nodeSelectionMeasures.height"
+      :border-radius="$shapes.selectedItemBorderRadius"
     />
   </g>
 </template>

@@ -33,6 +33,11 @@ export const kanvasNodeSelection = {
   activeBorder: knimeColors.Cornflower,
 };
 
+/** Visual style for nodes being configured by K-AI */
+export const kanvasAiHighlight = {
+  border: knimeColors.Masala,
+};
+
 export const connectorColors = {
   default: knimeColors.SilverSand,
   flowVariable: portColors.flowVariable,

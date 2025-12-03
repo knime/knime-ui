@@ -306,6 +306,10 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
           break;
 
         case "status_update":
+          // TODO: Remove after verifying node ID pipeline works
+          if (payload.nodeId) {
+            console.log("[K-AI] Configuring node:", payload.nodeId);
+          }
           this.setStatusUpdate({
             chainType,
             statusUpdate: payload,
@@ -360,6 +364,18 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
     },
   },
   getters: {
+    /**
+     * Returns the node ID currently being configured by K-AI, or null if none.
+     * Only applicable during the "build" chain when status type is NODE_CONFIGURING.
+     */
+    aiConfiguringNodeId: (state): string | null => {
+      const statusUpdate = state.build.statusUpdate;
+      if (statusUpdate?.type === "NODE_CONFIGURING" && statusUpdate.nodeId) {
+        return statusUpdate.nodeId;
+      }
+      return null;
+    },
+
     isQuickBuildAvailableForPort: () => {
       return (nodeRelation: string | null, portTypeId: string | null) => {
         return (

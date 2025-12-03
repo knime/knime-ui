@@ -53,7 +53,8 @@ export type ProjectAndWorkflowIds = {
 
 export type StatusUpdate = {
   message: string;
-  type?: "INFO" | "WORKFLOW_BUILDING" | "NODE_ADDED";
+  type?: "INFO" | "WORKFLOW_BUILDING" | "NODE_ADDED" | "NODE_CONFIGURING";
+  nodeId?: string;
 };
 
 export type ConversationState = {
