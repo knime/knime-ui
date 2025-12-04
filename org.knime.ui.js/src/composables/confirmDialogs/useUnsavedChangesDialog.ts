@@ -14,12 +14,11 @@ interface UnsavedChangesDialogResult {
   doNotAskAgain?: boolean;
 }
 
-export const useUnsavedChangesDialog = async (
-  config: Pick<
-    KdsDynamicDialogConfirmConfig,
-    "title" | "message" | "doNotAskAgain"
-  >,
-): Promise<UnsavedChangesDialogResult> => {
+export const useUnsavedChangesDialog = async (config: {
+  title: string;
+  message: string;
+  doNotAskAgain?: KdsDynamicDialogConfirmConfig["doNotAskAgain"];
+}): Promise<UnsavedChangesDialogResult> => {
   const { askConfirmation } = useKdsDynamicModal();
 
   let shouldDiscard = false;
