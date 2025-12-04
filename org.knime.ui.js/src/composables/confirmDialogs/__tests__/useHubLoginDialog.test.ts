@@ -4,15 +4,21 @@ import { mockStores } from "@/test/utils/mockStores";
 import { HubLoginAction, useHubLoginDialog } from "../useHubLoginDialog";
 
 const askConfirmationMock = vi.hoisted(() => vi.fn());
-const cancelConfirmDialogMock = vi.hoisted(() => vi.fn());
+const closeConfirmDialogMock = vi.hoisted(() => vi.fn());
 const connectFailedToastMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@knime/kds-components", () => ({
-  useKdsDynamicModal: () => ({
-    askConfirmation: askConfirmationMock,
-    cancel: cancelConfirmDialogMock,
-  }),
-}));
+vi.mock("@knime/kds-components", async (importOriginal) => {
+  const original = await importOriginal();
+
+  return {
+    // @ts-expect-error test
+    ...original,
+    useKdsDynamicModal: () => ({
+      askConfirmation: askConfirmationMock,
+      close: closeConfirmDialogMock,
+    }),
+  };
+});
 
 vi.mock("@/toastPresets", () => ({
   getToastPresets: () => ({
@@ -108,7 +114,7 @@ describe("useHubLoginDialog", () => {
     const result = await useHubLoginDialog(config);
 
     expect(result).toBe(HubLoginAction.ERROR);
-    expect(cancelConfirmDialogMock).toHaveBeenCalledTimes(1);
+    expect(closeConfirmDialogMock).toHaveBeenCalledTimes(1);
     expect(connectFailedToastMock).toHaveBeenCalledTimes(1);
     expect(connectFailedToastMock).toHaveBeenCalledWith({
       error,
@@ -130,7 +136,7 @@ describe("useHubLoginDialog", () => {
     const result = await useHubLoginDialog(unknownHubConfig);
 
     expect(result).toBe(HubLoginAction.ERROR);
-    expect(cancelConfirmDialogMock).toHaveBeenCalledTimes(1);
+    expect(closeConfirmDialogMock).toHaveBeenCalledTimes(1);
     expect(connectFailedToastMock).toHaveBeenCalledTimes(1);
     expect(connectFailedToastMock).toHaveBeenCalledWith({
       error,
