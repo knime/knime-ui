@@ -26,6 +26,7 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { gridSize } from "@/style/shapes";
 import * as shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
@@ -142,10 +143,14 @@ const { editableAnnotationId, activeTransform } = storeToRefs(
 const movingStore = useMovingStore();
 const { movePreviewDelta } = storeToRefs(movingStore);
 
+const { isWritable } = storeToRefs(useWorkflowStore());
+
 const { handlePointerInteraction } = useObjectInteractions({
   objectMetadata: { type: "annotation", annotationId: props.annotation.id },
   onDoubleClick: () => {
-    editableAnnotationId.value = props.annotation.id;
+    if (isWritable.value) {
+      editableAnnotationId.value = props.annotation.id;
+    }
   },
 });
 
