@@ -19,7 +19,7 @@ export const useHubLoginDialog = async ({
   message: string;
   hubId: string;
 }): Promise<HubLoginAction> => {
-  const { askConfirmation, cancel } = useKdsDynamicModal();
+  const { askConfirmation, close } = useKdsDynamicModal();
   const spaceAuthStore = useSpaceAuthStore();
   const providersStore = useSpaceProvidersStore();
 
@@ -42,7 +42,7 @@ export const useHubLoginDialog = async ({
       await spaceAuthStore.connectProvider({ spaceProviderId: hubId });
       return HubLoginAction.LOGIN;
     } catch (error: unknown) {
-      cancel();
+      close();
 
       getToastPresets().toastPresets.spaces.auth.connectFailed({
         error,

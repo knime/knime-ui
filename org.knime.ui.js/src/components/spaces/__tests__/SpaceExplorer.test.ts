@@ -7,7 +7,6 @@ import { useRoute } from "vue-router";
 
 import { Breadcrumb, FileExplorer, NodePreview } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
-import { useKdsDynamicModal } from "@knime/kds-components";
 
 import {
   NativeNodeInvariants,
@@ -22,6 +21,20 @@ import { mockStores } from "@/test/utils/mockStores";
 import SpaceExplorer from "../SpaceExplorer.vue";
 
 const mockedAPI = deepMocked(API);
+
+const askConfirmationMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@knime/kds-components", async (importOriginal) => {
+  const original = await importOriginal();
+
+  return {
+    // @ts-expect-error test
+    ...original,
+    useKdsDynamicModal: () => ({
+      askConfirmation: askConfirmationMock,
+    }),
+  };
+});
 
 vi.mock("@/util/getKanvasDomElement", () => {
   return {
@@ -499,26 +512,22 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should show delete modal on deleteItems", async () => {
-      const { isActive } = useKdsDynamicModal();
-
       const items: FileExplorerItem[] = [
         createMockWorkflow({
           id: "item0",
           name: "WORKFLOW_NAME",
         }),
       ];
-      const { wrapper } = await doMountAndLoad();
 
-      expect(isActive.value).toBe(false);
+      askConfirmationMock.mockResolvedValue({ confirmed: true });
+      const { wrapper } = await doMountAndLoad();
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
 
-      expect(isActive.value).toBe(true);
+      expect(askConfirmationMock).toHaveBeenCalled();
     });
 
     it("should trigger closeItems before deleteItems onDeleteItems", async () => {
-      const { confirm } = useKdsDynamicModal();
-
       const items: FileExplorerItem[] = [
         createMockWorkflow({
           id: "item0",
@@ -551,10 +560,11 @@ describe("SpaceExplorer.vue", () => {
           projectId: "testPID3",
         },
       ];
+
+      askConfirmationMock.mockResolvedValue({ confirmed: true });
       const { wrapper, mockedStores } = await doMountAndLoad({ openProjects });
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
-      confirm();
       await flushPromises();
 
       expect(
@@ -571,20 +581,18 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should not delete item on negative response", async () => {
-      const { cancel } = useKdsDynamicModal();
-
       const items: FileExplorerItem[] = [
         createMockWorkflow({
           id: "item0",
           name: "WORKFLOW_NAME",
         }),
       ];
-      vi.spyOn(window, "confirm").mockImplementation(() => false);
+
+      askConfirmationMock.mockResolvedValue({ confirmed: false });
       const { wrapper, mockedStores } = await doMountAndLoad();
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
 
-      cancel();
       await flushPromises();
 
       expect(
