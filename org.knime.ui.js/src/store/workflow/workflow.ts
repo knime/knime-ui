@@ -33,8 +33,6 @@ import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";
 
-const { askConfirmation } = useKdsDynamicModal();
-
 /**
  * The workflow store holds a workflow graph and the associated tooltips.
  * The store is split up into several files.
@@ -267,6 +265,7 @@ export const useWorkflowStore = defineStore("workflow", {
       );
 
       if (isResetRequired) {
+        const { askConfirmation } = useKdsDynamicModal();
         const { confirmed } = await askConfirmation({
           title: "Confirm action",
           message: `Creating this ${containerType} will reset executed nodes.`,
@@ -315,6 +314,7 @@ export const useWorkflowStore = defineStore("workflow", {
       }
 
       if (selectedNode.allowedActions?.canExpand === "resetRequired") {
+        const { askConfirmation } = useKdsDynamicModal();
         const { confirmed } = await askConfirmation({
           title: "Confirm action",
           message: `Expanding this ${selectedNode.kind} will reset executed nodes.`,
