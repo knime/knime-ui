@@ -24,7 +24,7 @@ import {
   VERSION_DEFAULT_LIMIT,
   useVersionsApi,
 } from "@knime/hub-features/versions";
-import { useKdsConfirmDialog } from "@knime/kds-components";
+import { useKdsDynamicModal } from "@knime/kds-components";
 import { promise } from "@knime/utils";
 
 import type { SpaceItemVersion } from "@/api/gateway-api/generated-api";
@@ -72,7 +72,7 @@ const createInitialProjectVersionsModeInfo = (): ProjectVersionsModeInfo => ({
 
 export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   const $router = useRouter();
-  const { show: showConfirmDialog } = useKdsConfirmDialog();
+  const { askConfirmation } = useKdsDynamicModal();
   const { toastPresets } = getToastPresets();
 
   /** State: */
@@ -230,7 +230,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
-    const { confirmed } = await showConfirmDialog({
+    const { confirmed } = await askConfirmation({
       title: "Delete version",
       icon: "trash",
       message: "Do you want to delete the workflow version?",
@@ -265,7 +265,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   }
 
   async function restoreVersion(version: NamedItemVersion["version"]) {
-    const { confirmed } = await showConfirmDialog({
+    const { confirmed } = await askConfirmation({
       title: "Confirm version restore",
       message:
         "Restoring a version will overwrite the current workflow. Unversioned changes will be lost.",
@@ -312,7 +312,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   }
 
   async function discardUnversionedChanges() {
-    const { confirmed } = await showConfirmDialog({
+    const { confirmed } = await askConfirmation({
       title: "Confirm discarding changes",
       message:
         "Any changes to the workflow since the last created version will be deleted.",

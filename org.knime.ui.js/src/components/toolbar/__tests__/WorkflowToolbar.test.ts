@@ -36,11 +36,11 @@ vi.mock("@knime/components", async (importOriginal) => {
   };
 });
 
-const { showConfirmDialogMock } = vi.hoisted(() => ({
-  showConfirmDialogMock: vi.fn(() => Promise.resolve({ confirmed: true })),
+const { askConfirmationMock } = vi.hoisted(() => ({
+  askConfirmationMock: vi.fn(() => Promise.resolve({ confirmed: true })),
 }));
 vi.mock("@knime/kds-components", () => ({
-  useKdsConfirmDialog: () => ({ show: showConfirmDialogMock }),
+  useKdsDynamicModal: () => ({ askConfirmation: askConfirmationMock }),
 }));
 
 vi.mock("@/environment");
@@ -411,12 +411,12 @@ describe("WorkflowToolbar.vue", () => {
       // Await confirmation and workflow save calls
       await flushPromises();
 
-      expect(showConfirmDialogMock).toHaveBeenCalled();
+      expect(askConfirmationMock).toHaveBeenCalled();
       expect(desktopInteractionsStore.saveProject).toHaveBeenCalled();
     });
 
     it("shows a prompt if the current workflow is dirty and doesn't save on cancel", async () => {
-      showConfirmDialogMock.mockResolvedValue({ confirmed: false });
+      askConfirmationMock.mockResolvedValue({ confirmed: false });
 
       const {
         wrapper,
@@ -437,7 +437,7 @@ describe("WorkflowToolbar.vue", () => {
       const uploadButton = getUploadButton(wrapper);
       uploadButton.trigger("click");
 
-      expect(showConfirmDialogMock).toHaveBeenCalled();
+      expect(askConfirmationMock).toHaveBeenCalled();
       expect(desktopInteractionsStore.saveProject).not.toHaveBeenCalled();
     });
 
@@ -460,7 +460,7 @@ describe("WorkflowToolbar.vue", () => {
       const uploadButton = getUploadButton(wrapper);
       uploadButton.trigger("click");
 
-      expect(showConfirmDialogMock).not.toHaveBeenCalled();
+      expect(askConfirmationMock).not.toHaveBeenCalled();
     });
   });
 

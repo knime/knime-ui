@@ -93,7 +93,7 @@ const showValidationHint = computed(
     height="full"
     @close="cancel"
   >
-    <template #default>
+    <template #body>
       <div class="destination-picker-wrapper">
         <div class="spaced-container">{{ config?.description }}</div>
 

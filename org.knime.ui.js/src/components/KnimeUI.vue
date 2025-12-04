@@ -17,7 +17,7 @@ import {
   ToastStack,
   useBeforeUnload,
 } from "@knime/components";
-import { KdsConfirmDialog } from "@knime/kds-components";
+import { KdsDynamicModalProvider } from "@knime/kds-components";
 import { getMetaOrCtrlKey, promise as promiseUtils } from "@knime/utils";
 
 import BlockUi from "@/components/application/BlockUi.vue";
@@ -327,7 +327,7 @@ const onCloseError = () => {
       </div>
     </Transition>
 
-    <KdsConfirmDialog />
+    <KdsDynamicModalProvider />
 
     <CreateWorkflowModal />
 

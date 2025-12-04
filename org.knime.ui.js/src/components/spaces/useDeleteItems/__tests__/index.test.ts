@@ -28,15 +28,15 @@ const createMockItem = (
   ...data,
 });
 
-const mockShow = vi.hoisted(() =>
+const askConfirmationMock = vi.hoisted(() =>
   vi.fn().mockReturnValue({
     confirmed: true,
   }),
 );
 
 vi.mock("@knime/kds-components", () => ({
-  useKdsConfirmDialog: () => ({
-    show: mockShow,
+  useKdsDynamicModal: () => ({
+    askConfirmation: askConfirmationMock,
   }),
 }));
 
@@ -56,6 +56,7 @@ describe("useDeleteItems::index", () => {
     async (softDelete, _testDescriptionPart, expectedCalls) => {
       const mockedStores = mockStores();
 
+      // @ts-expect-error its read-only
       mockedStores.spaceOperationsStore.getDeletionInfo = () => ({
         canSoftDelete: softDelete,
         groupName: "groupName",
@@ -69,7 +70,7 @@ describe("useDeleteItems::index", () => {
 
       await onDeleteItems([]);
 
-      expect(mockShow).toHaveBeenCalledTimes(expectedCalls);
+      expect(askConfirmationMock).toHaveBeenCalledTimes(expectedCalls);
       expect(
         mockedStores.spaceOperationsStore.deleteItems,
       ).toHaveBeenCalledTimes(1);

@@ -139,7 +139,7 @@ watch(
     width="large"
     @close="closeModal"
   >
-    <template #default>
+    <template #body>
       <Label text="Workflow name">
         <div>
           <InputField

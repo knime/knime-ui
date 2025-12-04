@@ -42,11 +42,13 @@ const closeModal = () => emit("update:active", false);
       closedby="any"
       @close="closeModal"
     >
-      <OpenSourceCredits
-        v-if="usedPackages.length > 0"
-        class="credits"
-        :packages="usedPackages"
-      />
+      <template #body>
+        <OpenSourceCredits
+          v-if="usedPackages.length > 0"
+          class="credits"
+          :packages="usedPackages"
+        />
+      </template>
       <template #footer><KdsButton label="Ok" @click="closeModal" /></template>
     </KdsModal>
   </div>

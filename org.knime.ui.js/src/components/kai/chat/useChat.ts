@@ -1,7 +1,7 @@
 import { computed, onBeforeMount } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useKdsConfirmDialog } from "@knime/kds-components";
+import { useKdsDynamicModal } from "@knime/kds-components";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
@@ -26,7 +26,7 @@ const useChat = (chainType: ChainType) => {
   const { uiStrings } = useKaiServer();
   const { disconnectHub, isAuthError } = useHubAuth();
 
-  const { show: showConfirmDialog } = useKdsConfirmDialog();
+  const { askConfirmation } = useKdsDynamicModal();
 
   const { toastPresets } = getToastPresets();
 
@@ -117,7 +117,7 @@ const useChat = (chainType: ChainType) => {
   };
 
   const abortSendMessage = async () => {
-    const { confirmed } = await showConfirmDialog({
+    const { confirmed } = await askConfirmation({
       title: "Confirm action",
       message:
         "Are you sure you want to abort the request to the KNIME AI Assistant?",

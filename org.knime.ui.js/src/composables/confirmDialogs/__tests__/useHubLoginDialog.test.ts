@@ -3,13 +3,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { mockStores } from "@/test/utils/mockStores";
 import { HubLoginAction, useHubLoginDialog } from "../useHubLoginDialog";
 
-const showConfirmDialogMock = vi.hoisted(() => vi.fn());
+const askConfirmationMock = vi.hoisted(() => vi.fn());
 const cancelConfirmDialogMock = vi.hoisted(() => vi.fn());
 const connectFailedToastMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@knime/kds-components", () => ({
-  useKdsConfirmDialog: () => ({
-    show: showConfirmDialogMock,
+  useKdsDynamicModal: () => ({
+    askConfirmation: askConfirmationMock,
     cancel: cancelConfirmDialogMock,
   }),
 }));
@@ -51,12 +51,12 @@ describe("useHubLoginDialog", () => {
   it("shows the confirm dialog of the correct configuration", async () => {
     setupStores();
 
-    showConfirmDialogMock.mockResolvedValue({ confirmed: false });
+    askConfirmationMock.mockResolvedValue({ confirmed: false });
 
     await useHubLoginDialog(config);
 
-    expect(showConfirmDialogMock).toHaveBeenCalledTimes(1);
-    const [arg] = showConfirmDialogMock.mock.calls[0];
+    expect(askConfirmationMock).toHaveBeenCalledTimes(1);
+    const [arg] = askConfirmationMock.mock.calls[0];
     expect(arg.title).toBe(config.title);
     expect(arg.message).toBe(config.message);
     expect(Array.isArray(arg.buttons)).toBe(true);
@@ -71,7 +71,7 @@ describe("useHubLoginDialog", () => {
   it("returns LOGIN and connects to provider when dialog is confirmed", async () => {
     const { spaceAuthStore } = setupStores();
 
-    showConfirmDialogMock.mockResolvedValue({ confirmed: true });
+    askConfirmationMock.mockResolvedValue({ confirmed: true });
     vi.spyOn(spaceAuthStore, "connectProvider").mockResolvedValue({
       isConnected: false,
       providerData: null,
@@ -89,7 +89,7 @@ describe("useHubLoginDialog", () => {
   it("returns CANCEL and does not connect to provider when dialog is not confirmed", async () => {
     const { spaceAuthStore } = setupStores();
 
-    showConfirmDialogMock.mockResolvedValue({ confirmed: false });
+    askConfirmationMock.mockResolvedValue({ confirmed: false });
     const connectProviderSpy = vi.spyOn(spaceAuthStore, "connectProvider");
 
     const result = await useHubLoginDialog(config);
@@ -102,7 +102,7 @@ describe("useHubLoginDialog", () => {
     const { spaceAuthStore } = setupStores();
     const error = new Error("Authentication failed");
 
-    showConfirmDialogMock.mockResolvedValue({ confirmed: true });
+    askConfirmationMock.mockResolvedValue({ confirmed: true });
     vi.spyOn(spaceAuthStore, "connectProvider").mockRejectedValue(error);
 
     const result = await useHubLoginDialog(config);
@@ -124,7 +124,7 @@ describe("useHubLoginDialog", () => {
       hubId: "unknown-hub",
     };
 
-    showConfirmDialogMock.mockResolvedValue({ confirmed: true });
+    askConfirmationMock.mockResolvedValue({ confirmed: true });
     vi.spyOn(spaceAuthStore, "connectProvider").mockRejectedValue(error);
 
     const result = await useHubLoginDialog(unknownHubConfig);
