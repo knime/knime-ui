@@ -18,8 +18,8 @@ vi.mock("@knime/kds-components", () => {
   const mockUseLegacyMode = { value: false };
 
   return {
-    useKdsConfirmDialog: vi.fn().mockReturnValue({
-      show: vi.fn(),
+    useKdsDynamicModal: vi.fn().mockReturnValue({
+      askConfirmation: vi.fn(),
     }),
     useKdsDarkMode: () => ({
       currentMode: mockCurrentMode,

@@ -105,12 +105,14 @@ const activeTabComponent = computed(
     height="full"
     @close="closeModal"
   >
-    <div class="tab-bar">
-      <TabBar v-model="activeTab" :possible-values="tabs" />
-    </div>
-    <div class="active-tab">
-      <Component :is="activeTabComponent" />
-    </div>
+    <template #body>
+      <div class="tab-bar">
+        <TabBar v-model="activeTab" :possible-values="tabs" />
+      </div>
+      <div class="active-tab">
+        <Component :is="activeTabComponent" />
+      </div>
+    </template>
     <template #footer>
       <KdsButton
         class="cancel-button"

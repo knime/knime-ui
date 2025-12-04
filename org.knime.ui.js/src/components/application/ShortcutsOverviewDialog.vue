@@ -100,53 +100,55 @@ const groupedShortcuts = computed(() =>
     variant="plain"
     @close="closeModal"
   >
-    <div class="search">
-      <SearchInput
-        v-if="isOpen"
-        v-model="searchQuery"
-        aria-label="Search shortcuts"
-        focus-on-mount
-        placeholder="Filter shortcuts"
-      />
-    </div>
-    <div class="shortcut-overview">
-      <div
-        v-for="(shortcutsOfGroup, groupKey) of groupedShortcuts"
-        :key="groupKey"
-        class="group"
-      >
-        <h2>{{ getGroupHeading(groupKey as ShortcutGroupsWithOthers) }}</h2>
+    <template #body>
+      <div class="search">
+        <SearchInput
+          v-if="isOpen"
+          v-model="searchQuery"
+          aria-label="Search shortcuts"
+          focus-on-mount
+          placeholder="Filter shortcuts"
+        />
+      </div>
+      <div class="shortcut-overview">
         <div
-          v-for="(shortcut, shortcutIndex) of shortcutsOfGroup"
-          :key="shortcutIndex"
-          class="shortcut"
+          v-for="(shortcutsOfGroup, groupKey) of groupedShortcuts"
+          :key="groupKey"
+          class="group"
         >
-          <span>
-            <ArrowRightIcon
-              class="arrow"
-              aria-hidden="true"
-              focusable="false"
-            />
-            {{ shortcut.displayText }}
-          </span>
+          <h2>{{ getGroupHeading(groupKey as ShortcutGroupsWithOthers) }}</h2>
+          <div
+            v-for="(shortcut, shortcutIndex) of shortcutsOfGroup"
+            :key="shortcutIndex"
+            class="shortcut"
+          >
+            <span>
+              <ArrowRightIcon
+                class="arrow"
+                aria-hidden="true"
+                focusable="false"
+              />
+              {{ shortcut.displayText }}
+            </span>
 
-          <div class="hotkeys">
-            <div class="hotkey">
-              <KeyboardShortcut :hotkey="shortcut.hotkey!" />
-            </div>
-            <div
-              v-for="(hotkey, hotkeyIndex) of getVisibleAdditionalHotkeys(
-                shortcut,
-              )"
-              :key="hotkeyIndex"
-              :class="['hotkey', 'additional']"
-            >
-              <KeyboardShortcut :hotkey="hotkey!" />
+            <div class="hotkeys">
+              <div class="hotkey">
+                <KeyboardShortcut :hotkey="shortcut.hotkey!" />
+              </div>
+              <div
+                v-for="(hotkey, hotkeyIndex) of getVisibleAdditionalHotkeys(
+                  shortcut,
+                )"
+                :key="hotkeyIndex"
+                :class="['hotkey', 'additional']"
+              >
+                <KeyboardShortcut :hotkey="hotkey!" />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
     <template #footer>
       <KdsButton label="Close" variant="transparent" @click="closeModal" />
     </template>

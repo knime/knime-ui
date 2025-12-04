@@ -1,16 +1,16 @@
-import { useKdsConfirmDialog } from "@knime/kds-components";
+import { useKdsDynamicModal } from "@knime/kds-components";
 
 import type { NameCollisionHandling } from "@/api/custom-types";
 
 export const usePromptCollisionStrategies = () => {
-  const { show: showConfirmDialog } = useKdsConfirmDialog();
+  const { askConfirmation } = useKdsDynamicModal();
 
   const promptCollisionStrategies =
     async (): Promise<NameCollisionHandling> => {
       let strategy: NameCollisionHandling = "CANCEL";
 
       const prompt = () =>
-        showConfirmDialog({
+        askConfirmation({
           title: "Name conflict",
           message:
             "An item of this name already exists in this location. Overwrite the existing item(s) or keep all by renaming automatically?",

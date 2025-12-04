@@ -1,6 +1,6 @@
 import {
-  type UseKdsConfirmDialogPropertyBasedConfig,
-  useKdsConfirmDialog,
+  type KdsDynamicDialogConfirmConfig,
+  useKdsDynamicModal,
 } from "@knime/kds-components";
 
 export enum UnsavedChangesAction {
@@ -16,15 +16,15 @@ interface UnsavedChangesDialogResult {
 
 export const useUnsavedChangesDialog = async (
   config: Pick<
-    UseKdsConfirmDialogPropertyBasedConfig,
+    KdsDynamicDialogConfirmConfig,
     "title" | "message" | "doNotAskAgain"
   >,
 ): Promise<UnsavedChangesDialogResult> => {
-  const { show: showConfirmDialog } = useKdsConfirmDialog();
+  const { askConfirmation } = useKdsDynamicModal();
 
   let shouldDiscard = false;
 
-  const { confirmed, doNotAskAgain } = await showConfirmDialog({
+  const { confirmed, doNotAskAgain } = await askConfirmation({
     ...config,
     buttons: [
       { type: "cancel", label: "Cancel", flushLeft: true, autofocus: true },

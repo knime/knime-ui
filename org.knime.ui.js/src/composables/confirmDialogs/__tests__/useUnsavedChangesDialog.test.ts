@@ -5,11 +5,11 @@ import {
   useUnsavedChangesDialog,
 } from "../useUnsavedChangesDialog";
 
-let showConfirmDialogMock = vi.hoisted(() =>
+let askConfirmationMock = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ confirmed: true, doNotAskAgain: false })),
 );
 vi.mock("@knime/kds-components", () => ({
-  useKdsConfirmDialog: () => ({ show: showConfirmDialogMock }),
+  useKdsDynamicModal: () => ({ askConfirmation: askConfirmationMock }),
 }));
 
 describe("useUnsavedChangesDialog", () => {
@@ -24,7 +24,7 @@ describe("useUnsavedChangesDialog", () => {
   });
 
   it("should resolve correctly when discarding", async () => {
-    showConfirmDialogMock = vi.fn().mockImplementation((options) => {
+    askConfirmationMock = vi.fn().mockImplementation((options) => {
       const discardButton = options.buttons.find(
         ({ label }) => label === "Discard changes",
       );
@@ -38,7 +38,7 @@ describe("useUnsavedChangesDialog", () => {
   });
 
   it("should resolve correctly when cancelling", async () => {
-    showConfirmDialogMock.mockResolvedValue({
+    askConfirmationMock.mockResolvedValue({
       confirmed: false,
       doNotAskAgain: false,
     });
@@ -48,8 +48,8 @@ describe("useUnsavedChangesDialog", () => {
     expect(action).toBe(UnsavedChangesAction.CANCEL);
   });
 
-  it("should forward doNotAskAgain value from useKdsConfirmDialog", async () => {
-    showConfirmDialogMock.mockResolvedValue({
+  it("should forward doNotAskAgain value from useKdsDynamicModal", async () => {
+    askConfirmationMock.mockResolvedValue({
       confirmed: true,
       doNotAskAgain: true,
     });

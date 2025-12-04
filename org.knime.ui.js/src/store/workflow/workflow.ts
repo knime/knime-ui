@@ -2,7 +2,7 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import { useKdsConfirmDialog } from "@knime/kds-components";
+import { useKdsDynamicModal } from "@knime/kds-components";
 
 import type { KnimeNode, Workflow, WorkflowObject } from "@/api/custom-types";
 import {
@@ -33,7 +33,7 @@ import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";
 
-const { show: showConfirmDialog } = useKdsConfirmDialog();
+const { askConfirmation } = useKdsDynamicModal();
 
 /**
  * The workflow store holds a workflow graph and the associated tooltips.
@@ -267,7 +267,7 @@ export const useWorkflowStore = defineStore("workflow", {
       );
 
       if (isResetRequired) {
-        const { confirmed } = await showConfirmDialog({
+        const { confirmed } = await askConfirmation({
           title: "Confirm action",
           message: `Creating this ${containerType} will reset executed nodes.`,
         });
@@ -315,7 +315,7 @@ export const useWorkflowStore = defineStore("workflow", {
       }
 
       if (selectedNode.allowedActions?.canExpand === "resetRequired") {
-        const { confirmed } = await showConfirmDialog({
+        const { confirmed } = await askConfirmation({
           title: "Confirm action",
           message: `Expanding this ${selectedNode.kind} will reset executed nodes.`,
         });

@@ -41,15 +41,17 @@ const closeModal = () => {
     width="full"
     @close="closeModal"
   >
-    <SchedulesTable
-      v-if="schedules.length > 0"
-      :schedules="schedules"
-      :jobs="jobs"
-    />
-    <JobsTable v-if="jobs.length > 0" :jobs="jobs" />
-    <span v-if="jobs.length === 0 && schedules.length === 0" class="no-data"
-      >There are no schedules or jobs to display.</span
-    >
+    <template #body>
+      <SchedulesTable
+        v-if="schedules.length > 0"
+        :schedules="schedules"
+        :jobs="jobs"
+      />
+      <JobsTable v-if="jobs.length > 0" :jobs="jobs" />
+      <span v-if="jobs.length === 0 && schedules.length === 0" class="no-data"
+        >There are no schedules or jobs to display.</span
+      >
+    </template>
   </KdsModal>
 </template>
 

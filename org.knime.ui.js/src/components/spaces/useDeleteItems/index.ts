@@ -2,10 +2,7 @@ import { type Ref, type VNode, h } from "vue";
 import { useRouter } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
-import {
-  type UseKdsConfirmDialogComponentBasedConfig,
-  useKdsConfirmDialog,
-} from "@knime/kds-components";
+import { useKdsDynamicModal } from "@knime/kds-components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { getToastsProvider } from "@/plugins/toasts";
@@ -34,16 +31,16 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
   const { itemIconRenderer } = options;
 
   const askConfirmation = (items: FileExplorerItem[]) => {
-    const { show: showConfirmDialog } = useKdsConfirmDialog();
+    const { askConfirmation } = useKdsDynamicModal();
 
-    return showConfirmDialog({
+    return askConfirmation({
       title: "Delete",
       icon: "trash",
 
       component: createModalTemplate({
         items,
         itemIconRenderer,
-      }) as UseKdsConfirmDialogComponentBasedConfig["component"],
+      }),
 
       buttons: [
         {

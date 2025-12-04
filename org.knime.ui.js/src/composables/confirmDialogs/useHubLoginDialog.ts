@@ -1,4 +1,4 @@
-import { useKdsConfirmDialog } from "@knime/kds-components";
+import { useKdsDynamicModal } from "@knime/kds-components";
 
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -19,13 +19,13 @@ export const useHubLoginDialog = async ({
   message: string;
   hubId: string;
 }): Promise<HubLoginAction> => {
-  const { show: showConfirmDialog, cancel } = useKdsConfirmDialog();
+  const { askConfirmation, cancel } = useKdsDynamicModal();
   const spaceAuthStore = useSpaceAuthStore();
   const providersStore = useSpaceProvidersStore();
 
   const providerNameOrId = providersStore.spaceProviders[hubId]?.name ?? hubId;
 
-  const { confirmed } = await showConfirmDialog({
+  const { confirmed } = await askConfirmation({
     title,
     message,
     buttons: [
