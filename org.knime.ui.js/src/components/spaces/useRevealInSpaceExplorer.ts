@@ -32,7 +32,9 @@ const getAncestorInfo = (
     return Promise.resolve({ itemName: null, ancestorItemIds: [] });
   }
 
-  if (isLocalProvider(provider)) {
+  // If the backend can determine ancestor item IDs cheaply, they are
+  // already provided beforehand. Otherwise, we have to fetch ad-hoc.
+  if (isLocalProvider(provider) && origin.ancestorItemIds) {
     return origin.ancestorItemIds
       ? Promise.resolve({
           itemName: null,
@@ -264,6 +266,7 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
       if (
         newItemName !== null &&
         oldItemName !== null &&
+        oldItemName.length !== 0 &&
         newItemName !== oldItemName
       ) {
         toastPresets.spaces.reveal.nameHasChanged({ newItemName, oldItemName });

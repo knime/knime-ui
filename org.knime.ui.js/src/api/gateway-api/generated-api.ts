@@ -4192,7 +4192,13 @@ export interface ShareComponentResult extends CommandResult {
      * @type {boolean}
      * @memberof ShareComponentResult
      */
-    isNameCollision?: boolean;
+    isNameCollision: boolean;
+    /**
+     *
+     * @type {SpaceItemReference}
+     * @memberof ShareComponentResult
+     */
+    uploadedItem?: SpaceItemReference;
 
 }
 

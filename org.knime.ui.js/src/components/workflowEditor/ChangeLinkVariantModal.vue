@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 
 import { Modal, RadioButtons } from "@knime/components";
-import { Button } from "@knime/kds-components";
+import { KdsButton as Button } from "@knime/kds-components";
 
 import { LinkVariant } from "@/api/gateway-api/generated-api";
 import type { LinkVariantInfo } from "@/api/gateway-api/generated-api";

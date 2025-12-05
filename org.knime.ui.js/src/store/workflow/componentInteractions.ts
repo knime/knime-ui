@@ -158,9 +158,6 @@ export const useComponentInteractionsStore = defineStore(
         if (!result || collisionHandling === "CANCEL") {
           return;
         }
-
-        const { spaceProviderId, spaceId, itemId } = destination;
-
         let headline = "Component shared and linked";
         let message =
           "The component has been exported to the destination space and " +
@@ -168,6 +165,9 @@ export const useComponentInteractionsStore = defineStore(
         if (destination.linkVariant?.variant === LinkVariant.VariantEnum.NONE) {
           headline = "Component shared";
           message = "The component has been exported to the destination space.";
+        }
+        if (!result.uploadedItem) {
+          return;
         }
         $toast.show({
           headline,
@@ -178,11 +178,9 @@ export const useComponentInteractionsStore = defineStore(
               icon: ListIcon,
               text: "Reveal in space explorer",
               callback: () => {
-                useRevealInSpaceExplorer().revealSingleItem({
-                  providerId: spaceProviderId,
-                  spaceId,
-                  itemId,
-                });
+                useRevealInSpaceExplorer().revealSingleItem(
+                  result.uploadedItem!,
+                );
               },
             },
           ],
