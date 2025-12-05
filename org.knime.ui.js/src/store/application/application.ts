@@ -89,7 +89,7 @@ export interface ApplicationState {
   dismissedHomePageTile: boolean;
   dismissedHubLoginBanner: boolean;
   /**
-   * Current synchronization state for automatic sync
+   * Current synchronization state for project synchronization
    */
   projectSyncState: ProjectSyncState;
 }
@@ -239,14 +239,14 @@ export const useApplicationStore = defineStore("application", {
         });
       } else if (
         // TODO: Is this cool?
-        state === ProjectSyncState.StateEnum.BLOCKED &&
-        this.projectSyncState.state !== ProjectSyncState.StateEnum.BLOCKED
+        state === ProjectSyncState.StateEnum.WRITING &&
+        this.projectSyncState.state !== ProjectSyncState.StateEnum.WRITING
       ) {
         useLifecycleStore().setIsLoadingWorkflow(true);
       } else if (
         // TODO: Is this cool?
-        this.projectSyncState.state === ProjectSyncState.StateEnum.BLOCKED &&
-        state !== ProjectSyncState.StateEnum.BLOCKED
+        this.projectSyncState.state === ProjectSyncState.StateEnum.WRITING &&
+        state !== ProjectSyncState.StateEnum.WRITING
       ) {
         useLifecycleStore().setIsLoadingWorkflow(false);
       }

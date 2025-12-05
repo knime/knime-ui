@@ -3994,7 +3994,7 @@ export namespace ProjectSyncState {
     export enum StateEnum {
         SYNCED = 'SYNCED',
         DIRTY = 'DIRTY',
-        BLOCKED = 'BLOCKED',
+        WRITING = 'WRITING',
         UPLOAD = 'UPLOAD',
         ERROR = 'ERROR'
     }
