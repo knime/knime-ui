@@ -51,15 +51,6 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     blocksUi: true,
   },
   {
-    name: "openChangeComponentLinkVariantDialog",
-    params: [
-      ["projectId", "project1"],
-      ["workflowId", "root"],
-      ["nodeId", "1"],
-    ],
-    blocksUi: true,
-  },
-  {
     name: "openLegacyFlowVariableDialog",
     params: [
       ["projectId", "project1"],

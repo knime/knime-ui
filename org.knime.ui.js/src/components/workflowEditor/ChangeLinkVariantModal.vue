@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 
 import { Modal, RadioButtons } from "@knime/components";
-import { Button } from "@knime/kds-components";
+import { KdsButton } from "@knime/kds-components";
 
 import { LinkVariant } from "@/api/gateway-api/generated-api";
 import type { LinkVariantInfo } from "@/api/gateway-api/generated-api";
@@ -122,8 +122,12 @@ watch(radioValues, (options) => {
       />
     </template>
     <template #controls>
-      <Button variant="outlined" label="Cancel" @click="cancel" />
-      <Button label="Choose" :disabled="isConfirmDisabled" @click="onConfirm" />
+      <KdsButton variant="outlined" label="Cancel" @click="cancel" />
+      <KdsButton
+        label="Choose"
+        :disabled="isConfirmDisabled"
+        @click="onConfirm"
+      />
     </template>
   </Modal>
 </template>

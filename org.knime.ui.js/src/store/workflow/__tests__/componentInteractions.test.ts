@@ -18,6 +18,7 @@ import { getToastsProvider } from "@/plugins/toasts";
 import { createComponentNode, createWorkflow } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
+import { getToastPresets } from "@/toastPresets";
 
 const mockedAPI = deepMocked(API);
 
@@ -594,6 +595,12 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should show error toast when loading variants fails", async () => {
+    const { toastPresets } = getToastPresets();
+    const fetchLinkVariantsFailed = vi.spyOn(
+      toastPresets.workflow.component,
+      "fetchLinkVariantsFailed",
+    );
+
     const { workflowStore, componentInteractionsStore } = mockStores();
     const workflow = createWorkflow();
     const componentNode = workflow.nodes["root:2"] as ComponentNode;
@@ -606,22 +613,18 @@ describe("workflow::componentInteractions", () => {
         variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
       },
     } as ComponentNode["link"];
+
     workflowStore.setActiveWorkflow(workflow);
 
-    mockedAPI.component.getLinkVariants.mockRejectedValueOnce(
-      new Error("boom"),
-    );
+    const error = new Error("boom");
+    mockedAPI.component.getLinkVariants.mockRejectedValueOnce(error);
 
     await componentInteractionsStore.changeComponentLinkVariant({
       nodeId: "root:2",
     });
 
     expect(promptChangeLinkVariantMock).not.toHaveBeenCalled();
-    expect(rfcErrors.toToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        headline: "Linked components",
-      }),
-    );
+    expect(fetchLinkVariantsFailed).toHaveBeenCalledWith({ error });
   });
 
   it("should cancel or retry component loading", () => {
