@@ -62,7 +62,6 @@ import java.util.function.Consumer;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.service.GatewayException;
-import org.knime.ui.java.util.ProgressReporter;
 import org.knime.gateway.api.webui.entity.GatewayProblemDescriptionEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
@@ -86,6 +85,7 @@ import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.ProgressReporter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -268,7 +268,7 @@ public final class DesktopAPI {
      * @param progressReporter
      * @throws IllegalStateException if the dependencies have been already injected
      */
-    @SuppressWarnings({"java:S107", "JavadocDeclaration", "javadoc"}) // Parameter count
+    @SuppressWarnings({"java:S107", "JavadocDeclaration"}) // Parameter count
     public static void injectDependencies( //
         final ProjectManager projectManager, //
         final WorkflowMiddleware workflowMiddleware, //

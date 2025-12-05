@@ -226,8 +226,7 @@ final class Init {
             state.getWelcomeApEndpoint(), //
             createExampleProjects(), //
             state.getUserProfile(), //
-            progressReporter //
-        );
+            progressReporter);
 
         // Register listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
