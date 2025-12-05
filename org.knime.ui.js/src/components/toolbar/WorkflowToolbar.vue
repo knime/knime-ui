@@ -4,12 +4,15 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
-import { useKdsDynamicModal } from "@knime/kds-components";
+import { KdsButton, useKdsDynamicModal } from "@knime/kds-components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
-import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import {
+  ProjectSyncState,
+  WorkflowInfo,
+} from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
@@ -44,9 +47,12 @@ import ZoomMenu from "./ZoomMenu.vue";
 const $shortcuts = useShortcuts();
 const uiControls = useUIControlsStore();
 const workflowVersionsStore = useWorkflowVersionsStore();
-const { activeProjectId, activeProjectOrigin, isUnknownProject } = storeToRefs(
-  useApplicationStore(),
-);
+const {
+  activeProjectId,
+  activeProjectOrigin,
+  isUnknownProject,
+  projectSyncState,
+} = storeToRefs(useApplicationStore());
 const { activeWorkflow, isWorkflowEmpty, isActiveWorkflowFixedVersion } =
   storeToRefs(useWorkflowStore());
 const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
@@ -266,10 +272,63 @@ const ToolbarButtonWithHint = defineComponent(
 );
 
 const { isSVGRenderer } = useCanvasRendererUtils();
+
+// --- Hacky sync button logic ------------------------------------------------
+const { toastPresets } = getToastPresets();
+
+const isSyncButtonVisible = computed(() => {
+  return isBrowser();
+});
+
+const onSyncClick = async () => {
+  const projectId = activeProjectId.value!;
+
+  try {
+    await API.workflow.saveProject({ projectId });
+  } catch (error) {
+    toastPresets.app.syncProjectFailed({ error });
+  }
+};
+
+const isSyncButtonDisabled = computed(
+  () => projectSyncState.value?.state !== ProjectSyncState.StateEnum.DIRTY,
+);
+
+const syncState = computed(() => {
+  const state = projectSyncState.value?.state;
+  const isAutoSyncEnabled = projectSyncState.value?.isAutoSyncEnabled;
+  switch (state) {
+    case ProjectSyncState.StateEnum.SYNCED:
+      return "Synced";
+    case ProjectSyncState.StateEnum.DIRTY:
+      return isAutoSyncEnabled
+        ? "Dirty (auto-sync enabled)"
+        : "Dirty (auto-sync disabled)";
+    case ProjectSyncState.StateEnum.BLOCKED:
+      return "Syncing (blocked)";
+    case ProjectSyncState.StateEnum.UPLOAD:
+      return "Syncing (upload)";
+    case ProjectSyncState.StateEnum.ERROR:
+      return "Sync error";
+    default:
+      return "Unexpected state"; // This should never happen
+  }
+});
+// ----------------------------------------------------------------------------
 </script>
 
 <template>
   <div class="toolbar">
+    <!-- Hacky sync button directly displayed here --------------------------->
+    <KdsButton
+      v-if="isSyncButtonVisible"
+      :label="syncState"
+      :disabled="isSyncButtonDisabled"
+      class="sync-button"
+      @click="onSyncClick"
+    />
+    <!------------------------------------------------------------------------>
+
     <transition-group tag="div" name="button-list">
       <!--
         setting :key="the list of all visible buttons",
@@ -368,6 +427,10 @@ const { isSVGRenderer } = useCanvasRendererUtils();
   padding: 10px;
   background-color: var(--knime-gray-ultra-light);
   border-bottom: 1px solid var(--knime-silver-sand);
+
+  & .sync-button {
+    margin-right: 12px;
+  }
 
   & .button-list {
     transition: opacity 150ms ease-out;

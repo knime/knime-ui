@@ -6,14 +6,17 @@ import {
   AppState,
   type PortType,
   type Project,
+  ProjectSyncState,
   type SpaceItemReference,
   type UpdateAvailableEvent,
 } from "@/api/gateway-api/generated-api";
+import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { getToastPresets } from "@/toastPresets";
 import { useWorkflowVersionsStore } from "../workflow/workflowVersions";
 
 import { useApplicationSettingsStore } from "./settings";
@@ -85,6 +88,10 @@ export interface ApplicationState {
   dismissedUpdateBanner: boolean; // Property to track banner dismissal
   dismissedHomePageTile: boolean;
   dismissedHubLoginBanner: boolean;
+  /**
+   * Current synchronization state for automatic sync
+   */
+  projectSyncState: ProjectSyncState;
 }
 
 /*
@@ -113,6 +120,10 @@ export const useApplicationStore = defineStore("application", {
     dismissedUpdateBanner: false,
     dismissedHomePageTile: false,
     dismissedHubLoginBanner: false,
+    projectSyncState: {
+      state: ProjectSyncState.StateEnum.SYNCED,
+      isAutoSyncEnabled: true,
+    },
   }),
   actions: {
     setActiveProjectId(projectId: string | null) {
@@ -213,6 +224,36 @@ export const useApplicationStore = defineStore("application", {
     setDismissedUpdateBanner(dismissed: boolean) {
       this.dismissedUpdateBanner = dismissed;
     },
+
+    // --- Hacky sync error handling logic ------------------------------------
+    setProjectSyncState(projectSyncState: ProjectSyncState) {
+      const state = projectSyncState.state;
+      const details = projectSyncState.details;
+      if (state === ProjectSyncState.StateEnum.DIRTY && details) {
+        getToastPresets().toastPresets.app.syncProjectSizeLimit({
+          error: details,
+        });
+      } else if (state === ProjectSyncState.StateEnum.ERROR && details) {
+        getToastPresets().toastPresets.app.syncProjectFailed({
+          error: details,
+        });
+      } else if (
+        // TODO: Is this cool?
+        state === ProjectSyncState.StateEnum.BLOCKED &&
+        this.projectSyncState.state !== ProjectSyncState.StateEnum.BLOCKED
+      ) {
+        useLifecycleStore().setIsLoadingWorkflow(true);
+      } else if (
+        // TODO: Is this cool?
+        this.projectSyncState.state === ProjectSyncState.StateEnum.BLOCKED &&
+        state !== ProjectSyncState.StateEnum.BLOCKED
+      ) {
+        useLifecycleStore().setIsLoadingWorkflow(false);
+      }
+
+      this.projectSyncState = projectSyncState;
+    },
+    // ------------------------------------------------------------------------
 
     // eslint-disable-next-line complexity
     replaceApplicationState(applicationState: AppState) {
@@ -342,6 +383,12 @@ export const useApplicationStore = defineStore("application", {
       if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
         this.setNodeRepositoryLoaded(applicationState.nodeRepositoryLoaded!);
       }
+
+      // --- Hacky sync error handling logic ----------------------------------
+      if (applicationState.hasOwnProperty("projectSyncState")) {
+        this.setProjectSyncState(applicationState.projectSyncState!);
+      }
+      // ----------------------------------------------------------------------
     },
   },
   getters: {
