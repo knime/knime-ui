@@ -103,17 +103,7 @@ public final class CreateProject {
         return createProjectFromOrigin(projectId, name, origin, progressReporter, space);
     }
 
-    /**
-     * Create a {@link Project} instance that corresponds to an {@link Origin}, i.e. an item in a {@link Space}.
-     *
-     * @param projectId -
-     * @param name -
-     * @param origin -
-     * @param progressReporter -
-     * @param space -
-     * @return -
-     */
-    public static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
+    private static Project createProjectFromOrigin(final String projectId, final String name, final Origin origin,
         final ProgressReporter progressReporter, final Space space) {
         return Project.builder() //
             .setWfmLoader(fromOriginWithProgressReporter(origin, progressReporter, space)) //
