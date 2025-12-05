@@ -39,9 +39,14 @@ vi.mock("@knime/components", async (importOriginal) => {
 const { showConfirmDialogMock } = vi.hoisted(() => ({
   showConfirmDialogMock: vi.fn(() => Promise.resolve({ confirmed: true })),
 }));
-vi.mock("@knime/kds-components", () => ({
-  useKdsConfirmDialog: () => ({ show: showConfirmDialogMock }),
-}));
+vi.mock("@knime/kds-components", async (importOriginal) => {
+  const actual = await importOriginal<unknown>();
+  return {
+    // @ts-expect-error
+    ...actual,
+    useKdsConfirmDialog: () => ({ show: showConfirmDialogMock }),
+  };
+});
 
 vi.mock("@/environment");
 
