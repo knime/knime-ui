@@ -142,6 +142,10 @@ final class SaveProject {
         return state.isExecutionInProgress() || state.isExecutingRemotely();
     }
 
+    /**
+     * Starts a separate thread to show a progress bar while saving the project. This is a blocking operation since we
+     * wait for the saving to finish and block the UI thread in the meantime.
+     */
     private static Boolean saveProjectWithProgressBar(final WorkflowManager wfm, final boolean localOnly,
         final boolean allowOverwritePrompt) {
         var wasSaveSuccessful = new AtomicBoolean();
@@ -277,6 +281,9 @@ final class SaveProject {
         }
     }
 
+    /**
+     * Checks whether an upload to Hub can proceed, possibly prompting the user about overwriting existing items.
+     */
     private static boolean checkHubUpload(final String mountId, final HubSpaceLocationInfo hubInfo,
         final Space hubSpace, final boolean allowOverwritePrompt) throws GatewayException {
 
@@ -307,6 +314,9 @@ final class SaveProject {
         }
     }
 
+    /**
+     * Checks whether an upload to Server can proceed, possibly prompting the user about overwriting existing items.
+     */
     private static boolean checkServerUpload(final URI mountpointUri) {
         final var remoteStore = (RemoteExplorerFileStore)ExplorerMountTable.getFileSystem().getStore(mountpointUri);
         final var fetchedInfo = remoteStore.fetchInfo();
