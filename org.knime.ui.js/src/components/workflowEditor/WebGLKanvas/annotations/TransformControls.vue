@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
 import { storeToRefs } from "pinia";
-import type { FederatedPointerEvent, Graphics } from "pixi.js";
+import type { Cursor, FederatedPointerEvent, Graphics } from "pixi.js";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -58,6 +58,10 @@ const onControlPointerDown = (params: {
   direction: Directions;
   pointerDownEvent: FederatedPointerEvent;
 }) => {
+  if (!props.showTransformControls) {
+    return;
+  }
+
   markPointerEventAsHandled(params.pointerDownEvent, {
     initiator: "annotation-transform",
   });
@@ -147,6 +151,13 @@ const renderBorder = (graphics: Graphics, border: TransformBorder) => {
   // hover area
   graphics.stroke({ width: 2, color: "transparent", cap: "square" });
 };
+
+const getBorderCursor = (border: TransformBorder): Cursor => {
+  if (!props.showTransformControls) {
+    return "auto";
+  }
+  return getCursorStyle(border.direction).cursor;
+};
 </script>
 
 <template>
@@ -179,7 +190,7 @@ const renderBorder = (graphics: Graphics, border: TransformBorder) => {
     label="TransformBorderTop"
     :renderable="showSelection"
     event-mode="static"
-    :cursor="`${borders.TransformBorderTop.direction}-resize`"
+    :cursor="getBorderCursor(borders.TransformBorderTop)"
     :position="transformRectBounds"
     @render="(g) => renderBorder(g, borders.TransformBorderTop)"
     @pointerdown.stop="
@@ -194,7 +205,7 @@ const renderBorder = (graphics: Graphics, border: TransformBorder) => {
     label="TransformBorderBottom"
     :renderable="showSelection"
     event-mode="static"
-    :cursor="`${borders.TransformBorderBottom.direction}-resize`"
+    :cursor="getBorderCursor(borders.TransformBorderBottom)"
     :position="transformRectBounds"
     @render="(g) => renderBorder(g, borders.TransformBorderBottom)"
     @pointerdown.stop="
@@ -209,7 +220,7 @@ const renderBorder = (graphics: Graphics, border: TransformBorder) => {
     label="TransformBorderLeft"
     :renderable="showSelection"
     event-mode="static"
-    :cursor="`${borders.TransformBorderLeft.direction}-resize`"
+    :cursor="getBorderCursor(borders.TransformBorderLeft)"
     :position="transformRectBounds"
     @render="(g) => renderBorder(g, borders.TransformBorderLeft)"
     @pointerdown.stop="
@@ -224,7 +235,7 @@ const renderBorder = (graphics: Graphics, border: TransformBorder) => {
     label="TransformBorderRight"
     :renderable="showSelection"
     event-mode="static"
-    :cursor="`${borders.TransformBorderRight.direction}-resize`"
+    :cursor="getBorderCursor(borders.TransformBorderRight)"
     :position="transformRectBounds"
     @render="(g) => renderBorder(g, borders.TransformBorderRight)"
     @pointerdown.stop="
