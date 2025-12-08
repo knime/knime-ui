@@ -131,7 +131,6 @@ const showValidationHint = computed(
               <template v-if="config?.askLinkSettings">
                 <KdsButton
                   v-if="!showAdvancedLinkSettings"
-                  compact
                   label="Show advanced settings"
                   variant="transparent"
                   class="show-advanced-link-settings"
