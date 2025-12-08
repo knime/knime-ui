@@ -2400,7 +2400,7 @@ export interface LinkVariantInfo {
      * @type {LinkVariant}
      * @memberof LinkVariantInfo
      */
-    variant?: LinkVariant;
+    variant: LinkVariant;
     /**
      * User-facing name of the link variant.
      * @type {string}
