@@ -54,18 +54,15 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 
 import org.knime.core.node.workflow.MetaNodeTemplateInformation.Role;
-import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.hub.HubItemVersion;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionDialog;
 import org.knime.workbench.editor2.commands.ChangeSubNodeLinkCommand;
-import org.knime.workbench.editor2.commands.UpdateMetaNodeLinkCommand;
 
 /**
  * Helper methods to operate on components
@@ -111,16 +108,6 @@ final class ManipulateComponents {
         final var cmd = workflowMiddleware.getCommands();
         cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, srcUri, newSrcUri, true));
         cmd.execute(wfKey, null);
-
-        // ChangeComponentHubVersionCommand does not check canExecute of the actual update command
-        cmd.setCommandToExecute(getUpdateComponentCommand(component));
-        try {
-            cmd.execute(wfKey, null);
-        } catch (final ServiceCallException e) {
-            // undo setLink if we could not update the component
-            cmd.undo(wfKey);
-            throw e;
-        }
     }
 
     private static void assertLinkedComponent(final SubNodeContainer component, final boolean isLinked)
@@ -134,17 +121,6 @@ final class ManipulateComponents {
                 .canCopy(false) //
                 .build();
         }
-    }
-
-    /**
-     * @deprecated See NXT-2173
-     */
-    @Deprecated
-    private static WorkflowCommandAdapter getUpdateComponentCommand(final SubNodeContainer component) {
-        final var componentID = component.getID();
-        final var wfm = component.getParent();
-        final var updateComponentCommand = new UpdateMetaNodeLinkCommand(wfm, new NodeID[]{componentID});
-        return new WorkflowCommandAdapter(updateComponentCommand, false);
     }
 
     private static WorkflowCommandAdapter getChangeSubNodeLinkCommand(final SubNodeContainer component,
