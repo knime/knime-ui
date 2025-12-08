@@ -117,6 +117,10 @@ describe("workflow::componentInteractions", () => {
 
     mockedAPI.workflowCommand.ShareComponent.mockResolvedValue({
       isNameCollision: false,
+      uploadedItem: {
+        id: "mockUploadedItemId",
+        name: "mockUploadedItemName",
+      },
     });
 
     // the first time issue a name collision

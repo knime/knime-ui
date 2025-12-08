@@ -155,7 +155,7 @@ export const useComponentInteractionsStore = defineStore(
           collisionHandling: null,
         });
 
-        if (!result || collisionHandling === "CANCEL") {
+        if (!result || !result.uploadedItem || collisionHandling === "CANCEL") {
           return;
         }
         let headline = "Component shared and linked";
@@ -165,9 +165,6 @@ export const useComponentInteractionsStore = defineStore(
         if (destination.linkVariant?.variant === LinkVariant.VariantEnum.NONE) {
           headline = "Component shared";
           message = "The component has been exported to the destination space.";
-        }
-        if (!result.uploadedItem) {
-          return;
         }
         $toast.show({
           headline,
