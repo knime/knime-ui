@@ -2,6 +2,7 @@ import { API } from "@api";
 import { defineStore } from "pinia";
 
 import type { Connection, XY } from "@/api/gateway-api/generated-api";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 
 import { useMovingStore } from "./moving";
 import { useWorkflowStore } from "./workflow";
@@ -92,9 +93,13 @@ export const useConnectionInteractionsStore = defineStore(
           index,
         });
 
-        // move new bendpoint
         const movingStore = useMovingStore();
-        await movingStore.moveObjectsWebGL({ ...movingStore.movePreviewDelta });
+        if (canvasRendererUtils.isWebGLRenderer()) {
+          // move new bendpoint
+          await movingStore.moveObjectsWebGL({
+            ...movingStore.movePreviewDelta,
+          });
+        }
 
         this.removeVirtualBendpoint({ connectionId, index });
       },
