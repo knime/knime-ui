@@ -102,7 +102,6 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
-import org.knime.gateway.impl.webui.syncing.WorkflowSyncerProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.CEFPlugin;
 import org.knime.js.cef.commservice.CEFCommService;
@@ -183,7 +182,6 @@ final class Init {
         var selectionEventBus = createSelectionEventBus(eventConsumer);
         NodeCategoryExtensions nodeCategoryExtensions =
             () -> NodeSpecCollectionProvider.getInstance().getCategoryExtensions();
-        var workflowSyncerProvider = WorkflowSyncerProvider.disabled();
 
         MostRecentlyUsedProjects mostRecentlyUsedProjects;
         if (state.mostRecentlyUsedProjects() != null) {
@@ -212,7 +210,7 @@ final class Init {
             nodeCategoryExtensions, //
             selectionEventBus, //
             linkVariants, //
-            workflowSyncerProvider //
+            null // WorkflowSyncerProvider not needed in desktop UI
         );
 
         DesktopAPI.injectDependencies( //
