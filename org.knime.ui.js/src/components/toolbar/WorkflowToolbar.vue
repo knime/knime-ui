@@ -304,7 +304,7 @@ const syncState = computed(() => {
       return isAutoSyncEnabled
         ? "Dirty (auto-sync enabled)"
         : "Dirty (auto-sync disabled)";
-    case ProjectSyncState.StateEnum.BLOCKED:
+    case ProjectSyncState.StateEnum.WRITING:
       return "Syncing (blocked)";
     case ProjectSyncState.StateEnum.UPLOAD:
       return "Syncing (upload)";
