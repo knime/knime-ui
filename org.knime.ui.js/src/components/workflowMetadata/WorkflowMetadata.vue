@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -87,7 +88,9 @@ const updateComponentMetadata = ({
       :workflow-id="workflow.info.containerId"
       :single-metanode-selected-id="singleMetanodeSelectedId"
       :can-edit="isWorkflowWritable && !isMetanode"
-      :can-open-workflow-configuration="isWorkflowWritable && !isMetanode"
+      :can-open-workflow-configuration="
+        isWorkflowWritable && !isMetanode && isDesktop()
+      "
       @save="updateProjectMetadata"
     />
 
