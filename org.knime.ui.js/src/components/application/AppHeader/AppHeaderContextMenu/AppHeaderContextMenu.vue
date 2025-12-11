@@ -3,6 +3,8 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, MenuItems } from "@knime/components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
+import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { MenuItemWithHandler } from "@/components/common/types";
@@ -40,7 +42,8 @@ const canRevealProject = computed(() => {
 
 const contextMenuItems = computed(() => [
   ...valueOrEmpty(canRevealProject.value, {
-    text: "Show in explorer",
+    text: "Reveal in space explorer",
+    icon: ListIcon,
     metadata: {
       handler: async () => {
         if (!props.projectId) {
@@ -68,6 +71,7 @@ const contextMenuItems = computed(() => [
   }),
   {
     text: "Close",
+    icon: CloseIcon,
     metadata: {
       handler: () => {
         useDesktopInteractionsStore().closeProject(props.projectId);

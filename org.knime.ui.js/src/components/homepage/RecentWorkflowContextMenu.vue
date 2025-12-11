@@ -38,7 +38,9 @@ const recentWorkflowContextMenuItems = computed(() => {
   const isConnected = provider?.connected;
 
   const revealInSpaceOption: MenuItemWithHandler = {
-    text: isConnected ? "Show in explorer" : "Connect and show in explorer",
+    text: isConnected
+      ? "Reveal in space explorer"
+      : "Connect and reveal in space explorer",
     icon: RevealInSpaceIcon,
     metadata: {
       id: "revealInSpaceExplorer",
