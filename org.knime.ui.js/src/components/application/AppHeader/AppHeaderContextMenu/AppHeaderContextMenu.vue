@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 
 import { type MenuItem, MenuItems } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
-import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
+import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { MenuItemWithHandler } from "@/components/common/types";
@@ -43,7 +43,7 @@ const canRevealProject = computed(() => {
 const contextMenuItems = computed(() => [
   ...valueOrEmpty(canRevealProject.value, {
     text: "Reveal in space explorer",
-    icon: ListIcon,
+    icon: RevealInSpaceIcon,
     metadata: {
       handler: async () => {
         if (!props.projectId) {

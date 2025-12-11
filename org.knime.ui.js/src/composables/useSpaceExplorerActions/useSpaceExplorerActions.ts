@@ -15,11 +15,11 @@ import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 import DuplicateIcon from "@knime/styles/img/icons/duplicate.svg";
+import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import KeyIcon from "@knime/styles/img/icons/key.svg";
 import LinkExternal from "@knime/styles/img/icons/link-external.svg";
-import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import RenameIcon from "@knime/styles/img/icons/rename.svg";
@@ -409,7 +409,7 @@ export const useSpaceExplorerActions = (
               type: "success",
               buttons: [
                 {
-                  icon: ListIcon,
+                  icon: RevealInSpaceIcon,
                   text: "Reveal in space explorer",
                   callback: () => {
                     revealMultipleItems({

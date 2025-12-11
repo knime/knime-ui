@@ -6,8 +6,8 @@ import { storeToRefs } from "pinia";
 import { type MenuItem, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
+import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 import HistoryIcon from "@knime/styles/img/icons/history.svg";
-import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 
 import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
 import { SpaceProvider } from "@/api/gateway-api/generated-api";
@@ -88,7 +88,7 @@ const dropdownItems = computed(() => {
   ) {
     items.push({
       text: "Reveal in space explorer",
-      icon: ListIcon,
+      icon: RevealInSpaceIcon,
       metadata: {
         handler: async () => {
           const projectName = openProjects.value.find(
