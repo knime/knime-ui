@@ -97,7 +97,7 @@ describe("uiControls", () => {
         canEditWorkflow: true,
         canViewVersions: false,
         canLockAndUnlockSubnodes: false,
-        canOpenLayoutEditor: false,
+        canOpenLayoutEditor: true,
         canOpenLegacyPortViews: false,
         isKAISupported: false,
         isLocalSaveSupported: false,

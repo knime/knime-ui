@@ -158,6 +158,8 @@ export const useUIControlsStore = defineStore("uiControls", {
           Boolean(useApplicationStore().analyticsPlatformDownloadURL),
         isKAISupported: isDesktop() || (isBrowser() && isDefault),
         canReExecuteCompositeViews: isDefault || isPlayground,
+        canDoComponentSharingOperations: isDefault,
+        canOpenLayoutEditor: isDefault || isPlayground,
 
         /**
          * The following properties reference features that are
@@ -170,10 +172,6 @@ export const useUIControlsStore = defineStore("uiControls", {
         isLocalSaveSupported: isDesktop(),
         canOpenLegacyPortViews: isDesktop(),
         canLockAndUnlockSubnodes: isDesktop(),
-
-        canDoComponentSharingOperations:
-          isDesktop() || (isBrowser() && isDefault),
-        canOpenLayoutEditor: isDesktop() || (isBrowser() && isDefault),
       };
 
       this.updateControls(uiControls);

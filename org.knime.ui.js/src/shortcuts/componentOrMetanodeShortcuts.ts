@@ -390,7 +390,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       return (
         isWritable &&
         Boolean(isLinkVariantChangeable) &&
-        useUIControlsStore().canDoAdvancedComponentSharingOperations
+        useUIControlsStore().canDoComponentSharingOperations
       );
     },
   },
