@@ -6,7 +6,6 @@ import { storeToRefs } from "pinia";
 import { type MenuItem, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
-import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 import HistoryIcon from "@knime/styles/img/icons/history.svg";
 
 import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
@@ -29,7 +28,8 @@ type Props = {
   workflow: Workflow;
 };
 const props = defineProps<Props>();
-const { revealSingleItem, canRevealItem } = useRevealInSpaceExplorer();
+const { revealSingleItem, canRevealItem, revealActionMetadata } =
+  useRevealInSpaceExplorer();
 const { getSpaceProviderIcon } = useSpaceIcons();
 const { toastPresets } = getToastPresets();
 
@@ -87,8 +87,8 @@ const dropdownItems = computed(() => {
     canRevealItem(activeProjectOrigin.value.providerId)
   ) {
     items.push({
-      text: "Reveal in space explorer",
-      icon: RevealInSpaceIcon,
+      text: revealActionMetadata.label,
+      icon: revealActionMetadata.icon,
       metadata: {
         handler: async () => {
           const projectName = openProjects.value.find(

@@ -15,7 +15,6 @@ import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 import DuplicateIcon from "@knime/styles/img/icons/duplicate.svg";
-import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import KeyIcon from "@knime/styles/img/icons/key.svg";
@@ -403,14 +402,15 @@ export const useSpaceExplorerActions = (
             }
 
             const $toast = getToastsProvider();
-            const { revealMultipleItems } = useRevealInSpaceExplorer($router);
+            const { revealMultipleItems, revealActionMetadata } =
+              useRevealInSpaceExplorer($router);
             $toast.show({
               headline: "Upload complete",
               type: "success",
               buttons: [
                 {
-                  icon: RevealInSpaceIcon,
-                  text: "Reveal in space explorer",
+                  text: revealActionMetadata.label,
+                  icon: revealActionMetadata.icon,
                   callback: () => {
                     revealMultipleItems({
                       providerId: uploadResult.destinationProviderId,

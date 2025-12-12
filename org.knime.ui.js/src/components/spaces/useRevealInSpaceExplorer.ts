@@ -3,6 +3,8 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 import { type Router, useRouter } from "vue-router";
 
+import EyeIcon from "@knime/styles/img/icons/eye.svg";
+
 import type { AncestorInfo, SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { isBrowser } from "@/environment";
@@ -291,6 +293,10 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
   };
 
   return {
+    revealActionMetadata: {
+      label: "Reveal in space explorer",
+      icon: EyeIcon,
+    },
     revealMultipleItems,
     revealSingleItem,
     canRevealItem,

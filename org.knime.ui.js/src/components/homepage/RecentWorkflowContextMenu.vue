@@ -3,7 +3,6 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { type Anchor, type MenuItem, MenuItems } from "@knime/components";
-import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 
 import type { RecentWorkflow } from "@/api/custom-types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
@@ -19,7 +18,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
-const { revealSingleItem, canRevealItem } = useRevealInSpaceExplorer();
+const { revealSingleItem, canRevealItem, revealActionMetadata } =
+  useRevealInSpaceExplorer();
 
 const handleItemClick = (item: MenuItemWithHandler) => {
   if (item.metadata?.handler) {
@@ -39,9 +39,9 @@ const recentWorkflowContextMenuItems = computed(() => {
 
   const revealInSpaceOption: MenuItemWithHandler = {
     text: isConnected
-      ? "Reveal in space explorer"
+      ? revealActionMetadata.label
       : "Connect and reveal in space explorer",
-    icon: RevealInSpaceIcon,
+    icon: revealActionMetadata.icon,
     metadata: {
       id: "revealInSpaceExplorer",
       handler: async () => {
