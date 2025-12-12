@@ -226,6 +226,17 @@ describe("WorkflowBreadcrumb.vue", () => {
     expect(wrapper.text()).toContain("Server");
   });
 
+  it("does not render an icon in the browser environment", () => {
+    mockEnvironment("BROWSER", { isDesktop, isBrowser });
+
+    const { wrapper } = doMount({
+      provider: HUB_PROVIDER,
+    });
+
+    expect(wrapper.findComponent(CloudKnimeIcon).exists()).toBe(false);
+    expect(wrapper.text()).toContain("Hub");
+  });
+
   describe("if no activeProjectProvider set, renders icon and text if the project's providerId", () => {
     const providerId = "providerId";
     const activeProject = createProject({

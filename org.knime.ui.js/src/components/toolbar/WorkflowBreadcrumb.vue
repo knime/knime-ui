@@ -161,9 +161,9 @@ const providerText = computed(() => {
   return providerType ? mapper[providerType] : "";
 });
 
-const providerIcon = computed(() => {
-  return markRaw(getSpaceProviderIcon(activeProjectProvider.value));
-});
+const providerIcon = computed(() =>
+  markRaw(getSpaceProviderIcon(activeProjectProvider.value)),
+);
 
 const breadcrumbText = computed(() => {
   return providerText.value
@@ -183,7 +183,11 @@ const activeVersionTitle = computed(() => {
   <div class="breadcrumb-wrapper">
     <ComponentBreadcrumb v-if="isInSublevel" :workflow />
     <div v-else class="breadcrumb-root">
-      <Component :is="providerIcon" class="breadcrumb-icon" />
+      <Component
+        :is="providerIcon"
+        v-if="isDesktop()"
+        class="breadcrumb-icon"
+      />
       <span> {{ breadcrumbText }}</span>
       <SubMenu
         v-if="dropdownItems.length"
