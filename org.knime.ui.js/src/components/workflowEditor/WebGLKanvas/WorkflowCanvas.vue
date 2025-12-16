@@ -37,7 +37,9 @@ import { isMarkedEvent } from "./util/interaction";
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
-const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+const { activeWorkflow, isWorkflowEmpty, isWritable } = storeToRefs(
+  useWorkflowStore(),
+);
 const aiQuickActionsStore = useAiQuickActionsStore();
 const canvasStore = useWebGLCanvasStore();
 
@@ -51,6 +53,10 @@ const skeletonAnnotationData = computed(
 );
 
 const openQuickActionMenu = (event: PointerEvent) => {
+  if (!isWritable.value) {
+    return;
+  }
+
   if (isMarkedEvent(event)) {
     return;
   }
@@ -71,6 +77,10 @@ const { isPointerDownDoubleClick } = usePointerDownDoubleClick({
 
 const onPointerDown = (event: PointerEvent) => {
   if (isPointerDownDoubleClick(event) && interactionsEnabled.value === "all") {
+    if (!isWritable.value) {
+      return;
+    }
+
     // Prevent the kanvas from stealing focus from quick action menu
     event.preventDefault();
     openQuickActionMenu(event);
