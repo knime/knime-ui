@@ -12,7 +12,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
 const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
 const { fillScreen, screenToCanvasCoordinates } = useSVGCanvasStore();
-const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+const { isWorkflowEmpty, isWritable } = storeToRefs(useWorkflowStore());
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import Workflow from "./Workflow.vue";
@@ -63,6 +63,10 @@ const onContainerSizeUpdated = async () => {
 };
 
 const openQuickActionMenu = (event: MouseEvent) => {
+  if (!isWritable.value) {
+    return;
+  }
+
   // Check if the event target is specifically the <svg> element inside Kanvas
   if (event.target !== kanvas.value!.$el.querySelector("svg")) {
     return;
