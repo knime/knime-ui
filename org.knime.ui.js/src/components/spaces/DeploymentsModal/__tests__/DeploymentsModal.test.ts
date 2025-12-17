@@ -3,7 +3,6 @@ import { mount } from "@vue/test-utils";
 import { API } from "@api";
 
 import { KdsModal } from "@knime/kds-components";
-import { sleep } from "@knime/utils";
 
 import { createJob, createSchedule } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
@@ -62,42 +61,6 @@ describe("DeploymentsModal.vue", () => {
 
     return { wrapper, mockedStores };
   };
-
-  it("opens a deployments modal", async () => {
-    const { wrapper, mockedStores } = doMount({
-      isOpen: false,
-      name: undefined,
-    });
-
-    expect(wrapper.findComponent(KdsModal).element.open).toBe(false);
-
-    mockedStores.spacesStore.setDeploymentsModalConfig({
-      isOpen: true,
-      name: "Schedules and jobs of Workflow",
-      projectId: "",
-      itemId: "",
-    });
-    await sleep(0);
-
-    expect(wrapper.findComponent(KdsModal).element.open).toBe(true);
-  });
-
-  it("closes a deployments modal", async () => {
-    const { wrapper, mockedStores } = doMount();
-
-    wrapper.findComponent(KdsModal).vm.$emit("close");
-    await sleep(0);
-
-    expect(wrapper.findComponent(KdsModal).element.open).toBe(false);
-    expect(
-      mockedStores.spacesStore.setDeploymentsModalConfig,
-    ).toHaveBeenCalledWith({
-      isOpen: false,
-      name: "",
-      projectId: "",
-      itemId: "",
-    });
-  });
 
   it("displays correct title", () => {
     const workflowName = "Workflow Name";

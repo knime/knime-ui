@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import SearchResults from "@/components/nodeRepository/SearchResults.vue";
+import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import SidebarSearchResults from "../SidebarSearchResults.vue";

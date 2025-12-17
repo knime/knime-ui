@@ -3,8 +3,8 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
-import SearchResults from "@/components/nodeRepository/SearchResults.vue";
+import NodeTemplate from "@/components/common/NodeTemplate/NodeTemplate.vue";
+import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 

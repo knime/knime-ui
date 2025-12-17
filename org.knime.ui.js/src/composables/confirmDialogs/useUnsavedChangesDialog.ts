@@ -1,7 +1,4 @@
-import {
-  type KdsDynamicDialogConfirmConfig,
-  useKdsDynamicModal,
-} from "@knime/kds-components";
+import { useKdsDynamicModal } from "@knime/kds-components";
 
 export enum UnsavedChangesAction {
   SAVE = "save",
@@ -17,7 +14,11 @@ interface UnsavedChangesDialogResult {
 export const useUnsavedChangesDialog = async (config: {
   title: string;
   message: string;
-  doNotAskAgain?: KdsDynamicDialogConfirmConfig["doNotAskAgain"];
+  doNotAskAgain?: {
+    label: string;
+    title?: string;
+    helperText?: string;
+  };
 }): Promise<UnsavedChangesDialogResult> => {
   const { askConfirmation } = useKdsDynamicModal();
 

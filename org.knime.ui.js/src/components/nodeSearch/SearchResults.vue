@@ -2,13 +2,15 @@
 import { computed, nextTick, ref, toRefs, watch } from "vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import NodeList, {
+  type NavReachedEvent,
+} from "@/components/common/NodeList/NodeList.vue";
+import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
-import NodeList, { type NavReachedEvent } from "./NodeList.vue";
-import ScrollViewContainer from "./ScrollViewContainer.vue";
 import SearchResultsInfo from "./SearchResultsInfo.vue";
 
 export type SearchActions = {
@@ -28,7 +30,7 @@ type Props = {
   searchActions: SearchActions;
   numFilteredOutNodes: number;
   highlightFirst?: boolean;
-  displayMode: NodeRepositoryDisplayModesType;
+  displayMode?: NodeRepositoryDisplayModesType;
   isLoadingSearchResults: boolean;
   isQuickAddNodeMenu?: boolean;
 };

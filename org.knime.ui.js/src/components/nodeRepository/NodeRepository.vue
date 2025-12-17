@@ -3,8 +3,9 @@ import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
-import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
+import SidebarSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarSearchResults.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -12,10 +13,9 @@ import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 
 import CategoryTree from "./CategoryTree.vue";
-import type { NavigationKey } from "./NodeList.vue";
-import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
-import TagResults from "./TagResults.vue";
+import NodesGroupedByTag from "./NodesGroupedByTag/NodesGroupedByTag.vue";
+import NodeRepositoryHeader from "./header/NodeRepositoryHeader.vue";
 
 const nodeRepositoryStore = useNodeRepositoryStore();
 const { nodesPerTag, showDescriptionForNode, searchIsActive } =
@@ -89,7 +89,7 @@ const toggleNodeDescription = ({
 const header = ref<InstanceType<typeof NodeRepositoryHeader>>();
 
 const searchResults = ref<InstanceType<typeof SidebarSearchResults>>();
-const tagResults = ref<InstanceType<typeof TagResults>>();
+const nodesGroupedByTag = ref<InstanceType<typeof NodesGroupedByTag>>();
 
 const onSearchBarDownKey = () => {
   // search (regardless of display mode)
@@ -104,7 +104,7 @@ const onSearchBarDownKey = () => {
     return;
   }
   // tag
-  tagResults.value?.focusFirst();
+  nodesGroupedByTag.value?.focusFirst();
 };
 
 const handleNavReachedTop = (event: { key: NavigationKey }) => {
@@ -129,9 +129,9 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
-      <TagResults
+      <NodesGroupedByTag
         v-else-if="displayMode !== 'tree'"
-        ref="tagResults"
+        ref="nodesGroupedByTag"
         :display-mode="displayMode"
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"

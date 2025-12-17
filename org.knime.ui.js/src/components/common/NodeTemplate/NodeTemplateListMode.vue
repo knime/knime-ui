@@ -7,12 +7,12 @@ import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 
-export type Props = {
+type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;
   isHovered: boolean;
   showFloatingHelpIcon?: boolean;
   isSelected?: boolean;
-  isDescriptionActive: boolean;
+  isDescriptionActive?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {

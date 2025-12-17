@@ -4,14 +4,14 @@ import { computed, ref } from "vue";
 import NodeIcon from "@knime/styles/img/icons/node.svg";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
-import NodeList from "@/components/nodeRepository/NodeList.vue";
-import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
+import NodeList from "@/components/common/NodeList/NodeList.vue";
+import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
+import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useKaiExtensionPanel } from "../../useKaiExtensionPanel";
 
-interface Props {
+type Props = {
   nodeTemplates: NodeTemplateWithExtendedPorts[];
-}
+};
 
 const props = defineProps<Props>();
 

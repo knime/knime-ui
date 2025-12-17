@@ -2,10 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
+import NodeList from "@/components/common/NodeList/NodeList.vue";
+import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
 import * as $colors from "@/style/colors";
 import { mockStores } from "@/test/utils/mockStores";
-import NodeList from "../NodeList.vue";
-import ScrollViewContainer from "../ScrollViewContainer.vue";
 import SearchResults from "../SearchResults.vue";
 
 const ScrollViewContainerMock = {

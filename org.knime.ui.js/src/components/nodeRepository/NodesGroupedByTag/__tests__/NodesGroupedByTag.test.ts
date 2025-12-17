@@ -3,11 +3,11 @@ import { shallowMount } from "@vue/test-utils";
 
 import { sleep } from "@knime/utils";
 
+import NodeList from "@/components/common/NodeList/NodeList.vue";
+import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import NodesGroupedByTags from "../NodesGroupedByTags.vue";
-import ScrollViewContainer from "../ScrollViewContainer.vue";
-import TagResults from "../TagResults.vue";
+import TagResults from "../NodesGroupedByTag.vue";
 
 vi.mock("@/api/utils");
 
@@ -22,7 +22,7 @@ const groupedNodes = [
   },
 ];
 
-describe("TagResults", () => {
+describe("NodesGroupedByTag.vue", () => {
   const doShallowMount = () => {
     const { nodeRepositoryStore, testingPinia } = mockStores();
 
@@ -76,32 +76,34 @@ describe("TagResults", () => {
   it("renders tags", () => {
     const { wrapper, selectedNode } = doShallowMount();
 
-    const nodeTag = wrapper.findAllComponents(NodesGroupedByTags);
-    expect(nodeTag.at(0)?.props()).toStrictEqual({
-      tag: "tag:1",
-      selectedNode,
-      showDescriptionForNode: expect.objectContaining({
-        id: "selected-node-id",
+    const nodeList = wrapper.findAllComponents(NodeList);
+    expect(nodeList.at(0)?.props()).toEqual(
+      expect.objectContaining({
+        selectedNode,
+        showDescriptionForNode: expect.objectContaining({
+          id: "selected-node-id",
+        }),
+        displayMode: "icon",
+        nodes: [expect.objectContaining({ id: "node1" })],
       }),
-      displayMode: "icon",
-      nodes: [expect.objectContaining({ id: "node1" })],
-    });
-    expect(nodeTag.at(1)?.props()).toStrictEqual({
-      tag: "tag:2",
-      selectedNode,
-      showDescriptionForNode: expect.objectContaining({
-        id: "selected-node-id",
+    );
+    expect(nodeList.at(1)?.props()).toEqual(
+      expect.objectContaining({
+        selectedNode,
+        showDescriptionForNode: expect.objectContaining({
+          id: "selected-node-id",
+        }),
+        displayMode: "icon",
+        nodes: [expect.objectContaining({ id: "node2" })],
       }),
-      displayMode: "icon",
-      nodes: [expect.objectContaining({ id: "node2" })],
-    });
+    );
   });
 
   it("can select tag", async () => {
     const { wrapper, nodeRepositoryStore } = doShallowMount();
 
-    const nodeTag = wrapper.findComponent(NodesGroupedByTags);
-    nodeTag.vm.$emit("select-tag", "tag:1");
+    const nodeList = wrapper.findComponent(NodeList);
+    nodeList.vm.$emit("show-more", "tag:1");
 
     await sleep(0);
 

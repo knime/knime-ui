@@ -15,13 +15,12 @@ import type {
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
 import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
-import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
+import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
+import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefined";
-
-import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
-import type { NavigationKey } from "./NodeList.vue";
+import DraggableNodeTemplate from "../common/NodeTemplate/DraggableNodeTemplate.vue";
 
 type ExtendedTreeNodeOptions = TreeNodeOptions & {
   nodeTemplate?: NodeTemplateWithExtendedPorts;
