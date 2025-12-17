@@ -1253,7 +1253,7 @@ export interface ComponentSearchItem {
      * @type {string}
      * @memberof ComponentSearchItem
      */
-    name?: string;
+    name: string;
     /**
      * The description of the component as given by the component creator
      * @type {string}
@@ -1271,7 +1271,7 @@ export interface ComponentSearchItem {
      * @type {string}
      * @memberof ComponentSearchItem
      */
-    type?: ComponentSearchItem.TypeEnum;
+    type: ComponentSearchItem.TypeEnum;
     /**
      * The components&#39;s input ports.
      * @type {Array<ComponentSearchItemPort>}
