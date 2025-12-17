@@ -2,11 +2,11 @@
 import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 
 /**
@@ -32,7 +32,7 @@ const emit = defineEmits<{
   showNodeDescription: [];
 }>();
 
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 
 const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
@@ -100,7 +100,7 @@ const onDragEnd = (event: DragEvent) => {
     :show-floating-help-icon="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
-    @dblclick="addNodeToWorkflow(nodeTemplate)"
+    @dblclick="addNodeWithAutoPositioning(nodeTemplate.nodeFactory!)"
     @drag="dragNodeIntoCanvas.onDrag"
     @help-icon-click="emit('showNodeDescription')"
   />

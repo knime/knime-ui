@@ -1,13 +1,13 @@
 import { merge } from "lodash-es";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import {
   NativeNodeInvariants,
   type NodePortTemplate,
   type NodeTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import { nodeTemplate } from "@/util/dataMappers";
 
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
 import { createAvailablePortTypes } from "./ports";
@@ -59,5 +59,7 @@ export const createNodeTemplateWithExtendedPorts = (
 
   const template = createNodeTemplate(data);
 
-  return toNodeTemplateWithExtendedPorts(availablePortTypes)(template);
+  return nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
+    template,
+  );
 };

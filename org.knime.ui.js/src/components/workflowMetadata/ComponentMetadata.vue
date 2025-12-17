@@ -15,7 +15,7 @@ import {
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import ComponentIconEditor from "@/components/workflowMetadata/ComponentIconEditor.vue";
 import ComponentTypeEditor from "@/components/workflowMetadata/ComponentTypeEditor.vue";
-import { toExtendedPortObject } from "@/util/portDataMapper";
+import { ports } from "@/util/dataMappers";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
@@ -53,8 +53,10 @@ const nodeFeatures = computed(() => {
   } = componentMetadata.value;
 
   return {
-    inPorts: inPorts.map(toExtendedPortObject(props.availablePortTypes)),
-    outPorts: outPorts.map(toExtendedPortObject(props.availablePortTypes)),
+    inPorts: inPorts.map(ports.toExtendedPortObject(props.availablePortTypes)),
+    outPorts: outPorts.map(
+      ports.toExtendedPortObject(props.availablePortTypes),
+    ),
     views,
     options,
   };
@@ -143,8 +145,10 @@ const nodePreview = computed(() => {
   const icon = getMetadataFieldValue("icon") || null;
 
   return {
-    inPorts: inPorts.map(toExtendedPortObject(props.availablePortTypes)),
-    outPorts: outPorts.map(toExtendedPortObject(props.availablePortTypes)),
+    inPorts: inPorts.map(ports.toExtendedPortObject(props.availablePortTypes)),
+    outPorts: outPorts.map(
+      ports.toExtendedPortObject(props.availablePortTypes),
+    ),
     icon,
     type,
     isComponent: true,

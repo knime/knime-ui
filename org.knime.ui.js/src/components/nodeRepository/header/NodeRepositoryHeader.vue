@@ -3,32 +3,34 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import {
-  type BreadcrumbItem,
   type MenuItem,
   SearchInput,
   SubMenu,
+  ValueSwitch,
 } from "@knime/components";
 import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
 import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 
-import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
+import { isBrowser, isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useComponentSearchStore } from "@/store/componentSearch";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import {
   type NodeRepositoryDisplayModesType,
   useSettingsStore,
 } from "@/store/settings";
+import { getToastPresets } from "@/toastPresets";
 
 import CloseableTagList from "./CloseableTagList.vue";
 
+const { toastPresets } = getToastPresets();
 const nodeRepositoryStore = useNodeRepositoryStore();
-const {
-  searchIsActive,
-  tagsOfVisibleNodes: tags,
-  query,
-} = storeToRefs(nodeRepositoryStore);
+const { searchIsActive, tagsOfVisibleNodes: tags } =
+  storeToRefs(nodeRepositoryStore);
+
+const componentSearchStore = useComponentSearchStore();
 
 const selectedTags = computed({
   get() {
@@ -48,18 +50,39 @@ const { hasNodeCollectionActive, activeNodeCollection } = storeToRefs(
   useApplicationSettingsStore(),
 );
 const { nodeRepositoryLoaded } = storeToRefs(useApplicationStore());
+const isComponentSearchAvailable = computed(() => isBrowser() && !isDesktop());
 
-const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
-  // If search results are shown, it's possible to navigate back
-  return searchIsActive.value
-    ? [{ text: "Nodes", id: "clear" }, { text: "Results" }]
-    : [{ text: "Nodes" }];
+const searchContext = defineModel<"nodes" | "components">();
+const isComponentSearch = computed(() => searchContext.value === "components");
+
+const currentSearchQuery = computed(() => {
+  if (isComponentSearch.value) {
+    return componentSearchStore.query;
+  } else {
+    return nodeRepositoryStore.query;
+  }
 });
 
-const onBreadcrumbClick = (event: { id: string }) => {
-  if (event.id === "clear") {
-    nodeRepositoryStore.clearSearchParams();
+const updateSearchQuery = async (value: string) => {
+  try {
+    const updateQueryFn = isComponentSearch.value
+      ? componentSearchStore.updateQuery
+      : nodeRepositoryStore.updateQuery;
+    await updateQueryFn(value);
+  } catch (error) {
+    const handler = isComponentSearch.value
+      ? toastPresets.search.componentSearch
+      : toastPresets.search.nodeSearch;
+    handler({ error });
   }
+};
+
+const switchSearchContext = (value: "nodes" | "components") => {
+  if (value === "components" && !isComponentSearchAvailable.value) {
+    return;
+  }
+
+  searchContext.value = value;
 };
 
 type MenuItemWithDisplayMode = MenuItem<{
@@ -101,20 +124,40 @@ const focusSearchInput = () => {
   searchBar.value?.focus();
 };
 defineExpose({ focusSearchInput });
+
+const searchPlaceholderText = computed(() => {
+  if (isComponentSearch.value) {
+    return "Search components in the KNIME Hub";
+  }
+
+  return hasNodeCollectionActive.value
+    ? `Search in ${activeNodeCollection.value} nodes`
+    : "Search all nodes";
+});
 </script>
 
 <template>
   <div class="header">
     <div class="title-and-search">
-      <div class="search-header" style="margin-bottom: 8px">
-        <ActionBreadcrumb
-          :items="breadcrumbItems"
-          class="repo-breadcrumb"
-          @click="onBreadcrumbClick"
+      <div class="search-header">
+        <ValueSwitch
+          v-if="isComponentSearchAvailable"
+          compact
+          data-test-id="search-context-switch"
+          :disabled="!nodeRepositoryLoaded"
+          :model-value="searchContext"
+          :possible-values="[
+            { id: 'nodes', text: 'Nodes' },
+            { id: 'components', text: 'Components' },
+          ]"
+          @update:model-value="switchSearchContext"
         />
+
+        <span v-else>Nodes</span>
 
         <div class="actions">
           <SubMenu
+            v-if="!isComponentSearch"
             :items="displayModeSubMenuItems"
             :teleport-to-body="false"
             class="display-modes-sub-menu"
@@ -134,26 +177,24 @@ defineExpose({ focusSearchInput });
           </SubMenu>
         </div>
       </div>
+
       <SearchInput
         ref="searchBar"
-        :model-value="query"
+        :model-value="currentSearchQuery"
         spellcheck="false"
         compact
         :maxlength="$characterLimits.searchFields"
         :disabled="!nodeRepositoryLoaded"
-        :placeholder="
-          hasNodeCollectionActive
-            ? `Search in ${activeNodeCollection} nodes`
-            : 'Search all nodes'
-        "
+        :placeholder="searchPlaceholderText"
         class="search-bar"
         @keydown.down.prevent="$emit('searchBarDownKey')"
         @clear="nodeRepositoryStore.clearSearchParams"
-        @update:model-value="nodeRepositoryStore.updateQuery($event)"
+        @update:model-value="updateSearchQuery"
       />
     </div>
+
     <CloseableTagList
-      v-if="searchIsActive && tags.length"
+      v-if="searchIsActive && tags.length && !isComponentSearch"
       v-model="selectedTags"
       :tags="tags"
     />
@@ -176,12 +217,11 @@ defineExpose({ focusSearchInput });
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: var(--space-8);
+      margin: var(--space-12) 0;
+      min-height: 30px;
 
       & .actions {
         display: flex;
-        margin-top: var(--space-4);
-        gap: var(--space-4);
         align-items: center;
       }
 

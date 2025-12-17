@@ -1,13 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
+import { VueWrapper, mount } from "@vue/test-utils";
 import { API } from "@api";
 
 import { SearchInput } from "@knime/components";
 
-import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
+import { isBrowser, isDesktop } from "@/environment";
 import type { NodeRepositoryState } from "@/store/nodeRepository";
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import CloseableTagList from "../CloseableTagList.vue";
 import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
@@ -23,6 +25,9 @@ const defaultNodesPerTag = [
 ];
 
 const mockedAPI = deepMocked(API);
+
+vi.mock("@/environment");
+mockEnvironment("BROWSER", { isBrowser, isDesktop });
 
 describe("NodeRepositoryHeader", () => {
   type MountOpts = {
@@ -44,14 +49,13 @@ describe("NodeRepositoryHeader", () => {
     hasNodeCollectionActive = false,
     activeNodeCollection = "",
   }: MountOpts = {}) => {
+    const mockedStores = mockStores();
     const {
       nodeRepositoryStore,
       testingPinia,
       applicationStore,
       applicationSettingsStore,
-      lifecycleStore,
-      panelStore,
-    } = mockStores();
+    } = mockedStores;
 
     nodeRepositoryStore.setNodesPerTags({
       groupedNodes: nodesPerTag ?? defaultNodesPerTag,
@@ -93,18 +97,27 @@ describe("NodeRepositoryHeader", () => {
     );
     applicationSettingsStore.setActiveNodeCollection(activeNodeCollection);
 
-    const wrapper = shallowMount(NodeRepositoryHeader, {
+    const wrapper = mount(NodeRepositoryHeader, {
       global: {
         plugins: [testingPinia],
       },
     });
 
     return {
+      mockedStores,
       wrapper,
-      nodeRepositoryStore,
-      lifecycleStore,
-      panelStore,
     };
+  };
+
+  const setSearchContext = async (
+    wrapper: VueWrapper<any>,
+    value: "nodes" | "components",
+  ) => {
+    wrapper
+      .findComponent('[data-test-id="search-context-switch"]')
+      // @ts-expect-error
+      .vm.$emit("update:model-value", value);
+    await nextTick();
   };
 
   describe("renders", () => {
@@ -113,9 +126,6 @@ describe("NodeRepositoryHeader", () => {
         searchIsActive: false,
       });
 
-      expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
-        { text: "Nodes" },
-      ]);
       expect(wrapper.findComponent(SearchInput).exists()).toBe(true);
       expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
     });
@@ -141,6 +151,14 @@ describe("NodeRepositoryHeader", () => {
       expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
     });
 
+    it("doesn't render CloseableTagList when searching for components", async () => {
+      const { wrapper } = doMount();
+
+      await setSearchContext(wrapper, "components");
+
+      expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
+    });
+
     it("renders only Filter CloseableTagList (first list) when a single search is in progress", () => {
       const { wrapper } = doMount({
         query: "some node",
@@ -150,53 +168,46 @@ describe("NodeRepositoryHeader", () => {
     });
 
     it("selects tag on click", () => {
-      const { wrapper, nodeRepositoryStore } = doMount();
+      const { wrapper, mockedStores } = doMount();
       wrapper
         .findComponent(CloseableTagList)
         .vm.$emit("update:modelValue", ["myTag1", "myTag2"]);
 
-      expect(nodeRepositoryStore.selectedTags).toStrictEqual([
+      expect(mockedStores.nodeRepositoryStore.selectedTags).toStrictEqual([
         "myTag1",
         "myTag2",
       ]);
     });
   });
 
-  describe("tag de-selection", () => {
-    it("de-selects tag and clears search using back to Repository link", () => {
-      const { wrapper, nodeRepositoryStore } = doMount();
-      expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
-        { id: "clear", text: "Nodes" },
-        { text: "Results" },
-      ]);
-      wrapper
-        .findComponent(ActionBreadcrumb)
-        .vm.$emit("click", { id: "clear" });
-      expect(nodeRepositoryStore.clearSearchParams).toHaveBeenCalled();
-    });
-  });
-
-  describe("search for nodes", () => {
-    it("updates query on SearchInput input", () => {
-      const { wrapper, nodeRepositoryStore } = doMount();
+  describe("search", () => {
+    it("updates query on SearchInput input based on mode", async () => {
+      const { wrapper, mockedStores } = doMount();
 
       wrapper
         .findComponent(SearchInput)
         .vm.$emit("update:modelValue", "myquery");
 
-      expect(nodeRepositoryStore.query).toBe("myquery");
-    });
+      expect(mockedStores.nodeRepositoryStore.updateQuery).toHaveBeenCalledWith(
+        "myquery",
+      );
+      expect(
+        mockedStores.componentSearchStore.updateQuery,
+      ).not.toHaveBeenCalled();
 
-    it("links back to repository view on search/filter results", () => {
-      const { wrapper } = doMount({
-        selectedTags: [],
-        query: "some node",
-      });
+      vi.clearAllMocks();
+      await setSearchContext(wrapper, "components");
 
-      expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
-        { id: "clear", text: "Nodes" },
-        { text: "Results" },
-      ]);
+      wrapper
+        .findComponent(SearchInput)
+        .vm.$emit("update:modelValue", "myquery");
+
+      expect(
+        mockedStores.nodeRepositoryStore.updateQuery,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockedStores.componentSearchStore.updateQuery,
+      ).toHaveBeenCalledWith("myquery");
     });
 
     it("uses collection name when a collection is active", () => {
@@ -207,6 +218,18 @@ describe("NodeRepositoryHeader", () => {
       });
       expect(wrapper.findComponent(SearchInput).props("placeholder")).includes(
         activeNodeCollection,
+      );
+    });
+
+    it("changes placeholder based on mode", async () => {
+      const { wrapper } = doMount();
+
+      expect(wrapper.findComponent(SearchInput).props("placeholder")).toMatch(
+        "Search all nodes",
+      );
+      await setSearchContext(wrapper, "components");
+      expect(wrapper.findComponent(SearchInput).props("placeholder")).toMatch(
+        "Search components in the KNIME Hub",
       );
     });
   });

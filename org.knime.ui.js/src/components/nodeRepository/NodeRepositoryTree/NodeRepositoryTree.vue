@@ -10,17 +10,16 @@ import {
   type TreeNodeOptions,
 } from "@knime/virtual-tree";
 
-import type {
-  NodeCategoryWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
 import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
 import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
+import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefined";
-import DraggableNodeTemplate from "../common/NodeTemplate/DraggableNodeTemplate.vue";
+
+import type { NodeCategoryWithExtendedPorts } from "./types";
 
 type ExtendedTreeNodeOptions = TreeNodeOptions & {
   nodeTemplate?: NodeTemplateWithExtendedPorts;
@@ -162,13 +161,13 @@ const onShowNodeDescription = (treeNode: BaseTreeNode) => {
   }
 };
 
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 const addTreeNodeToWorkflow = (treeNode: BaseTreeNode) => {
   const nodeFactory = (treeNode.origin as ExtendedTreeNodeOptions)?.nodeTemplate
     ?.nodeFactory;
 
   if (nodeFactory) {
-    addNodeToWorkflow({ nodeFactory });
+    addNodeWithAutoPositioning(nodeFactory);
   }
 };
 

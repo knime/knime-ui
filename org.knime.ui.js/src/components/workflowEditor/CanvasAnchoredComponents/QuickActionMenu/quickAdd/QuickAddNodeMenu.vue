@@ -4,12 +4,7 @@ import { storeToRefs } from "pinia";
 
 import { SearchInput } from "@knime/components";
 
-import type {
-  AvailablePortTypes,
-  ExtendedPortType,
-  NodeRelation,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
+import type { AvailablePortTypes, NodeRelation } from "@/api/custom-types";
 import {
   AddNodeCommand,
   type NodePort,
@@ -25,6 +20,10 @@ import { useSettingsStore } from "@/store/settings";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
+import type {
+  ExtendedPortType,
+  NodeTemplateWithExtendedPorts,
+} from "@/util/dataMappers";
 import { portPositions } from "@/util/portShift";
 
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";

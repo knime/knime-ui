@@ -3,10 +3,10 @@ import { computed, ref } from "vue";
 
 import NodeIcon from "@knime/styles/img/icons/node.svg";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import NodeList from "@/components/common/NodeList/NodeList.vue";
 import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { useKaiExtensionPanel } from "../../useKaiExtensionPanel";
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
 const props = defineProps<Props>();
 
 const { toggleNodeDescription } = useKaiExtensionPanel();
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 
 const hasNodeTemplates = computed(() => props.nodeTemplates.length > 0);
 
@@ -24,7 +24,7 @@ const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
 
 const handleEnterKey = (node: NodeTemplateWithExtendedPorts) => {
   if (node.nodeFactory) {
-    addNodeToWorkflow({ nodeFactory: node.nodeFactory });
+    addNodeWithAutoPositioning(node.nodeFactory);
   }
 };
 </script>

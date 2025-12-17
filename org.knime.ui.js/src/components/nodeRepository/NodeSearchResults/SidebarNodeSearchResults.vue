@@ -2,13 +2,13 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
 import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
 import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */
@@ -44,7 +44,7 @@ const {
   selectedNode,
 } = storeToRefs(nodeRepositoryStore);
 
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 
 const searchActions = {
   searchNodesNextPage: () => nodeRepositoryStore.searchNodesNextPage(),
@@ -56,7 +56,7 @@ const focusFirst = () => {
   searchResults.value?.focusFirst();
 };
 
-const onHelpKey = (node: NodeTemplateWithExtendedPorts) => {
+const onShowNodeDetails = (node: NodeTemplateWithExtendedPorts) => {
   emit("showNodeDescription", {
     nodeTemplate: node,
     isDescriptionActive: showDescriptionForNode.value?.id === node.id,
@@ -86,8 +86,8 @@ const displayModeSupported = computed(() => {
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
     :is-loading-search-results="isLoadingSearchResults"
-    @item-enter-key="addNodeToWorkflow({ nodeFactory: $event.nodeFactory! })"
-    @help-key="onHelpKey"
+    @item-enter-key="addNodeWithAutoPositioning($event.nodeFactory!)"
+    @show-node-details="onShowNodeDetails"
     @nav-reached-top="$emit('navReachedTop', $event)"
   >
     <template #nodesTemplate="slotProps">
