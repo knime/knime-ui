@@ -1269,12 +1269,12 @@ export namespace ComponentSearchItem {
      * @enum {string}
      */
     export enum TypeEnum {
-        Source = 'source',
-        Manipulator = 'manipulator',
-        Visualizer = 'visualizer',
-        Learner = 'learner',
-        Sink = 'sink',
-        Other = 'other'
+        Source = 'Source',
+        Manipulator = 'Manipulator',
+        Visualizer = 'Visualizer',
+        Learner = 'Learner',
+        Sink = 'Sink',
+        Other = 'Other'
     }
 }
 /**
