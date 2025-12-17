@@ -10,7 +10,7 @@ import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 type Props = {
   selectedNode: NodeTemplateWithExtendedPorts | null;
-  displayMode?: NodeRepositoryDisplayModesType;
+  displayMode?: Exclude<NodeRepositoryDisplayModesType, "tree">;
 };
 
 withDefaults(defineProps<Props>(), {

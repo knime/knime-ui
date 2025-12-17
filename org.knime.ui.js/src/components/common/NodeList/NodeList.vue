@@ -17,7 +17,7 @@ type Props = {
   hasMoreNodes?: boolean;
   displayMode?: NodeRepositoryDisplayModesType;
   selectedNode?: NodeTemplateWithExtendedPorts | null;
-  showDescriptionForNode?: NodeTemplateWithExtendedPorts | null;
+  showDetailsFor?: NodeTemplateWithExtendedPorts | null;
   highlightFirst?: boolean;
 };
 
@@ -35,13 +35,13 @@ const props = withDefaults(defineProps<Props>(), {
   hasMoreNodes: false,
   displayMode: "icon",
   selectedNode: null,
-  showDescriptionForNode: null,
+  showDetailsFor: null,
   highlightFirst: false,
 });
 
 const emit = defineEmits<{
   enterKey: [node: NodeTemplateWithExtendedPorts];
-  helpKey: [node: NodeTemplateWithExtendedPorts];
+  showNodeDetails: [node: NodeTemplateWithExtendedPorts];
   showMore: [];
   "update:selectedNode": [node: NodeTemplateWithExtendedPorts | null];
   navReachedTop: [event: NavReachedEvent];
@@ -73,7 +73,7 @@ const nodeTemplateProps = (
     isHighlighted:
       props.selectedNode === null && index === 0 && props.highlightFirst,
     isSelected: props.selectedNode?.id === node.id,
-    isDescriptionActive: props.showDescriptionForNode?.id === node.id,
+    isDescriptionActive: props.showDetailsFor?.id === node.id,
     displayMode: props.displayMode,
   };
 };
@@ -261,7 +261,7 @@ defineExpose({ focusFirst, focusLast });
         :aria-label="`Select node ${node.name}`"
         :data-index="index"
         @keydown.enter.stop.prevent="$emit('enterKey', node)"
-        @keydown.i.stop.prevent="$emit('helpKey', node)"
+        @keydown.i.stop.prevent="$emit('showNodeDetails', node)"
       >
         <slot name="item" v-bind="nodeTemplateProps(node, index)">
           <NodeTemplate v-bind="nodeTemplateProps(node, index)" />

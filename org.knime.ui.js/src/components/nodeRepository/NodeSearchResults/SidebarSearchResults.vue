@@ -56,7 +56,7 @@ const focusFirst = () => {
   searchResults.value?.focusFirst();
 };
 
-const onHelpKey = (node: NodeTemplateWithExtendedPorts) => {
+const onShowNodeDetails = (node: NodeTemplateWithExtendedPorts) => {
   emit("showNodeDescription", {
     nodeTemplate: node,
     isDescriptionActive: showDescriptionForNode.value?.id === node.id,
@@ -87,7 +87,7 @@ const displayModeSupported = computed(() => {
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
     :is-loading-search-results="isLoadingSearchResults"
     @item-enter-key="addNodeToWorkflow({ nodeFactory: $event.nodeFactory! })"
-    @help-key="onHelpKey"
+    @show-node-details="onShowNodeDetails"
     @nav-reached-top="$emit('navReachedTop', $event)"
   >
     <template #nodesTemplate="slotProps">

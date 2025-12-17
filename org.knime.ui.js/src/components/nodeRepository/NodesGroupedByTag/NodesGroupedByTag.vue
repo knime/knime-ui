@@ -56,7 +56,7 @@ const onSelectTag = (tag: string) => {
   nodeRepositoryStore.updateSelectedTags([tag]);
 };
 
-const onHelpKey = (node: NodeTemplateWithExtendedPorts) => {
+const onShowNodeDetails = (node: NodeTemplateWithExtendedPorts) => {
   emit("showNodeDescription", {
     nodeTemplate: node,
     isDescriptionActive: showDescriptionForNode.value?.id === node.id,
@@ -117,11 +117,11 @@ defineExpose({ focusFirst });
             :nodes="nodes"
             class="tag-node-list"
             :has-more-nodes="nodes.length >= TAG_LIMIT"
-            :show-description-for-node="showDescriptionForNode"
+            :show-details-for="showDescriptionForNode"
             :display-mode="displayMode"
             @show-more="onSelectTag(tag)"
             @enter-key="addNodeToWorkflow"
-            @help-key="onHelpKey"
+            @show-node-details="onShowNodeDetails"
             @nav-reached-top="onNavReachedTop(index, $event)"
             @nav-reached-end="onNavReachedEnd(index, $event)"
           >
