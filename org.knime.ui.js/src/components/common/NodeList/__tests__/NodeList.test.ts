@@ -3,8 +3,8 @@ import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
+import NodeTemplate from "../../NodeTemplate/NodeTemplate.vue";
 import NodeList from "../NodeList.vue";
-import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 
 describe("NodeList", () => {
   const defaultProps = {

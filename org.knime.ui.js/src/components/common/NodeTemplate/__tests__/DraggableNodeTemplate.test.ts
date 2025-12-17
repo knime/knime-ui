@@ -11,7 +11,7 @@ import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 import { deepMocked, mockBoundingRect } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
+import DraggableNodeTemplate from "../../NodeTemplate/DraggableNodeTemplate.vue";
 
 const mockedAPI = deepMocked(API);
 

@@ -3,12 +3,11 @@ import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
+import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-
-import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
+import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 
 /**
  * This component wraps around NodeTemplate to add dragging functionality.

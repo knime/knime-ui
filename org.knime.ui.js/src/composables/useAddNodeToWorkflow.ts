@@ -11,8 +11,10 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { geometry } from "@/util/geometry";
 
 /**
- * Add a node to the workflow. This has some handling for position as well as connecting to a selected node
- * It was ripped out of DraggableNodeTemplate where this code was used for the double click action.
+ * Add a node to the workflow by a node template factory.
+ * It will automatically position the node in the canvas according to available
+ * space and inside the visible frame as well as connecting the newly added node
+ * to a selected node (if any)
  */
 export const useAddNodeToWorkflow = () => {
   const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());

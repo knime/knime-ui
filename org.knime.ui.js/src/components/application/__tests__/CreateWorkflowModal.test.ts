@@ -69,6 +69,11 @@ describe("CreateWorkflowModal.vue", () => {
 
     const wrapper = mount(CreateWorkflowModal, {
       global: {
+        stubs: {
+          KdsModal: {
+            template: "<div><slot name='body' /> <slot name='footer' /></div>",
+          },
+        },
         plugins: [mockedStores.testingPinia],
       },
       attachTo: document.body,
@@ -89,12 +94,14 @@ describe("CreateWorkflowModal.vue", () => {
     });
 
     it("closes on state change", async () => {
-      const { wrapper, mockedStores } = doMount({ isOpen: true });
+      const { wrapper, mockedStores } = doMount({
+        isOpen: true,
+        stubModal: true,
+      });
 
       wrapper.findComponent(KdsModal).vm.$emit("close");
       await sleep(0);
 
-      expect(wrapper.find("input").exists()).toBe(false);
       expect(
         mockedStores.spacesStore.setCreateWorkflowModalConfig,
       ).toHaveBeenCalledWith({ isOpen: false, projectId: null });

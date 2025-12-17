@@ -4,11 +4,11 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { Tree } from "@knime/virtual-tree";
 
 import type { NodeCategoryWithExtendedPorts } from "@/api/custom-types";
+import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { mockStores } from "@/test/utils/mockStores";
 import CategoryTree from "../CategoryTree.vue";
-import { useAddNodeToWorkflow } from "../useAddNodeToWorkflow";
 
-vi.mock("@/components/nodeRepository/useAddNodeToWorkflow", () => {
+vi.mock("@/composables/useAddNodeToWorkflow", () => {
   return { useAddNodeToWorkflow: vi.fn(vi.fn) };
 });
 

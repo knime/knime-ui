@@ -9,11 +9,11 @@ import type { NodeRepositoryState } from "@/store/nodeRepository";
 import { TABS } from "@/store/panel";
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
+import SearchResults from "../../nodeSearch/SearchResults.vue";
 import NodeRepository from "../NodeRepository.vue";
-import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
 import NodeRepositoryLoader from "../NodeRepositoryLoader.vue";
-import SearchResults from "../SearchResults.vue";
-import TagResults from "../TagResults.vue";
+import NodesGroupedByTag from "../NodesGroupedByTag/NodesGroupedByTag.vue";
+import NodeRepositoryHeader from "../header/NodeRepositoryHeader.vue";
 
 const defaultNodesPerTag = [
   {
@@ -98,7 +98,7 @@ describe("NodeRepository", () => {
       expect(nodeRepositoryStore.getAllNodes).toHaveBeenCalled();
 
       expect(wrapper.findComponent(NodeRepositoryHeader).exists()).toBe(true);
-      expect(wrapper.findComponent(TagResults).exists()).toBe(true);
+      expect(wrapper.findComponent(NodesGroupedByTag).exists()).toBe(true);
       expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
       expect(wrapper.findComponent(NodeRepositoryLoader).exists()).toBe(false);
     });
@@ -113,7 +113,7 @@ describe("NodeRepository", () => {
         lifecycleStore.subscribeToNodeRepositoryLoadingEvent,
       ).toHaveBeenCalled();
       expect(wrapper.findComponent(NodeRepositoryHeader).exists()).toBe(true);
-      expect(wrapper.findComponent(TagResults).exists()).toBe(true);
+      expect(wrapper.findComponent(NodesGroupedByTag).exists()).toBe(true);
       expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
       expect(wrapper.findComponent(NodeRepositoryLoader).exists()).toBe(false);
     });
@@ -158,7 +158,7 @@ describe("NodeRepository", () => {
       });
 
       expect(wrapper.findComponent(NodeRepositoryHeader).exists()).toBe(true);
-      expect(wrapper.findComponent(TagResults).exists()).toBe(false);
+      expect(wrapper.findComponent(NodesGroupedByTag).exists()).toBe(false);
       expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
       expect(wrapper.findComponent(NodeRepositoryLoader).exists()).toBe(true);
     });

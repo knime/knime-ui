@@ -94,7 +94,7 @@ const setDisplayMode = (value: NodeRepositoryDisplayModesType) => {
   });
 };
 
-defineEmits<{ (e: "searchBarDownKey"): void }>();
+defineEmits<{ searchBarDownKey: [] }>();
 
 const searchBar = ref<InstanceType<typeof SearchInput>>();
 const focusSearchInput = () => {
@@ -112,7 +112,8 @@ defineExpose({ focusSearchInput });
           class="repo-breadcrumb"
           @click="onBreadcrumbClick"
         />
-        <div class="view-settings">
+
+        <div class="actions">
           <SubMenu
             :items="displayModeSubMenuItems"
             :teleport-to-body="false"
@@ -177,10 +178,11 @@ defineExpose({ focusSearchInput });
       align-items: center;
       margin-bottom: var(--space-8);
 
-      & .view-settings {
+      & .actions {
         display: flex;
         margin-top: var(--space-4);
         gap: var(--space-4);
+        align-items: center;
       }
 
       & .display-mode-button {

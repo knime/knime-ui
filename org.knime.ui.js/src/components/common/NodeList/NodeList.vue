@@ -6,20 +6,20 @@ import { Button, useKeyPressedUntilMouseClick } from "@knime/components";
 import CircleArrowIcon from "@knime/styles/img/icons/circle-arrow-right.svg";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
+import NodeTemplate from "@/components/common/NodeTemplate/NodeTemplate.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 const NODES_PER_ROW_ICON_MODE = 3;
 const NODES_PER_ROW_LIST_MODE = 1;
 
-export interface Props {
+type Props = {
   nodes: Array<NodeTemplateWithExtendedPorts>;
   hasMoreNodes?: boolean;
   displayMode?: NodeRepositoryDisplayModesType;
   selectedNode?: NodeTemplateWithExtendedPorts | null;
   showDescriptionForNode?: NodeTemplateWithExtendedPorts | null;
   highlightFirst?: boolean;
-}
+};
 
 const navigationKeys = [
   "ArrowUp",

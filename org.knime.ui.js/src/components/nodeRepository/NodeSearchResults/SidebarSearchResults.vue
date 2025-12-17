@@ -3,20 +3,19 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
-import SearchResults from "@/components/nodeRepository/SearchResults.vue";
+import type { NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
+import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
+import SearchResults from "@/components/nodeSearch/SearchResults.vue";
+import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-
-import type { NavReachedEvent } from "./NodeList.vue";
-import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */
 
-interface Props {
-  displayMode: NodeRepositoryDisplayModesType;
-}
+type Props = {
+  displayMode?: NodeRepositoryDisplayModesType;
+};
 
 const props = withDefaults(defineProps<Props>(), {
   displayMode: "icon",
