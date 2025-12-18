@@ -4,7 +4,7 @@ import { computed, markRaw } from "vue";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu } from "@knime/components";
-import { Button } from "@knime/kds-components";
+import { KdsButton } from "@knime/kds-components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import HistoryIcon from "@knime/styles/img/icons/history.svg";
@@ -207,10 +207,9 @@ const activeVersionTitle = computed(() => {
         <span class="workflow-versions-information" :title="activeVersionTitle">
           Version: "{{ activeVersionTitle }}"
         </span>
-        <Button
+        <KdsButton
           label="Restore this version"
-          leading-icon="schedule"
-          variant="transparent"
+          variant="outlined"
           @click="handleRestoreVersion"
         />
       </template>
