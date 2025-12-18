@@ -11,6 +11,7 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
+import ComponentSearchResults from "../componentSearch/ComponentSearchResults.vue";
 
 import CategoryTree from "./CategoryTree.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
@@ -112,18 +113,22 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
     header.value?.focusSearchInput();
   }
 };
+
+const searchContext = ref<"nodes" | "components">("nodes");
 </script>
 
 <template>
   <div class="node-repo">
     <NodeRepositoryHeader
       ref="header"
+      v-model="searchContext"
       @search-bar-down-key="onSearchBarDownKey"
     />
 
     <template v-if="nodeRepositoryLoaded">
       <SidebarSearchResults
         v-if="searchIsActive"
+        v-show="searchContext === 'nodes'"
         ref="searchResults"
         :display-mode="displayMode"
         @nav-reached-top="handleNavReachedTop($event)"
@@ -131,6 +136,7 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
       />
       <NodesGroupedByTag
         v-else-if="displayMode !== 'tree'"
+        v-show="searchContext === 'nodes'"
         ref="nodesGroupedByTag"
         :display-mode="displayMode"
         @nav-reached-top="handleNavReachedTop($event)"
@@ -138,9 +144,15 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
       />
       <CategoryTree
         v-else
+        v-show="searchContext === 'nodes'"
         ref="categoryTree"
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
+      />
+
+      <ComponentSearchResults
+        v-show="searchContext === 'components'"
+        :active="searchContext === 'components'"
       />
     </template>
 
