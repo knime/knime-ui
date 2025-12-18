@@ -23,7 +23,7 @@ const props = withDefaults(defineProps<Props>(), { displayMode: "icon" });
 
 const emit = defineEmits(["showNodeDescription", "navReachedTop"]);
 
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 
 const nodeRepositoryStore = useNodeRepositoryStore();
 const { showDescriptionForNode, tagScrollPosition, nodesPerTag, selectedNode } =
@@ -120,7 +120,7 @@ defineExpose({ focusFirst });
             :show-details-for="showDescriptionForNode"
             :display-mode="displayMode"
             @show-more="onSelectTag(tag)"
-            @enter-key="addNodeToWorkflow"
+            @enter-key="addNodeWithAutoPositioning($event.nodeFactory!)"
             @show-node-details="onShowNodeDetails"
             @nav-reached-top="onNavReachedTop(index, $event)"
             @nav-reached-end="onNavReachedEnd(index, $event)"

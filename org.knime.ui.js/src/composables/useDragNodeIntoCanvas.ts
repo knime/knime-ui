@@ -11,7 +11,8 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { getToastPresets } from "@/toastPresets";
+
+import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
@@ -26,8 +27,8 @@ const getNodeFactoryFromEvent = (event: DragEvent) => {
 };
 
 // One key characteristic of this composable, which can be confusing at first glance,
-// is that the dragStart and onDrag handlers to not happen at the same location in the code.
-// This is because the drag start handler, which mainly manipulates that event will likely
+// is that the dragStart and onDrag handlers are not bound/called at the same location in the code.
+// This is because the drag start handler, which mainly manipulates that event, will likely
 // be bound at a separate location than the onDrag. This means that the variables declared
 // inside this composable are not stable across usages, unless declared outside of it
 
@@ -35,10 +36,10 @@ let dragStartTime: number | null;
 
 const DRAG_TO_EDGE_BUFFER_MS = 300;
 
-export const useDragNodeIntoCanvas = () => {
-  const isKnimeNode = (event: DragEvent) =>
-    event.dataTransfer?.types.includes(KNIME_MIME);
+const isKnimeNode = (event: DragEvent) =>
+  event.dataTransfer?.types.includes(KNIME_MIME);
 
+export const useDragNodeIntoCanvas = () => {
   const { isWritable } = storeToRefs(useWorkflowStore());
 
   const canvasStore = useCurrentCanvasStore();
@@ -46,7 +47,7 @@ export const useDragNodeIntoCanvas = () => {
   const nodeInteractionsStore = useNodeInteractionsStore();
   const webglCanvasStore = useWebGLCanvasStore();
   const { isWebGLRenderer } = useCanvasRendererUtils();
-  const { toastPresets } = getToastPresets();
+  const { addNodeByPosition } = useAddNodeToWorkflow();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
   const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
@@ -135,15 +136,6 @@ export const useDragNodeIntoCanvas = () => {
     }
   };
 
-  const addNodeToCanvas = async (position: XY, nodeFactory: NodeFactoryKey) => {
-    try {
-      await nodeInteractionsStore.addNode({ position, nodeFactory });
-    } catch (error) {
-      consola.error({ message: "Error adding node to workflow", error });
-      toastPresets.workflow.addNodeToCanvas({ error });
-    }
-  };
-
   const onDrop = async (event: DragEvent) => {
     dragStartTime = null;
     stopPanningToEdge();
@@ -177,7 +169,7 @@ export const useDragNodeIntoCanvas = () => {
         nodeFactory,
       });
     } else {
-      await addNodeToCanvas(dropPosition, nodeFactory);
+      await addNodeByPosition(dropPosition, nodeFactory);
     }
   };
 

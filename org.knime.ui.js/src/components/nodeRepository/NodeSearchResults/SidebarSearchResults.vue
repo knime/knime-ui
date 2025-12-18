@@ -44,7 +44,7 @@ const {
   selectedNode,
 } = storeToRefs(nodeRepositoryStore);
 
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 
 const searchActions = {
   searchNodesNextPage: () => nodeRepositoryStore.searchNodesNextPage(),
@@ -86,7 +86,7 @@ const displayModeSupported = computed(() => {
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
     :is-loading-search-results="isLoadingSearchResults"
-    @item-enter-key="addNodeToWorkflow({ nodeFactory: $event.nodeFactory! })"
+    @item-enter-key="addNodeWithAutoPositioning($event.nodeFactory!)"
     @show-node-details="onShowNodeDetails"
     @nav-reached-top="$emit('navReachedTop', $event)"
   >
