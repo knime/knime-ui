@@ -18,7 +18,7 @@ export const mockWebsocket = async (
     workflowFixturePath,
     workflowCommandFn,
     workflowUndoCommand,
-    comopnentDescriptionFixturePath,
+    componentDescriptionFixturePath,
   } = options;
   const websocketUrl =
     process.env.VITE_BROWSER_DEV_WS_URL ?? "ws://localhost:7000"; // eslint-disable-line n/no-process-env
@@ -71,7 +71,7 @@ export const mockWebsocket = async (
         }
 
         case "ComponentService.getComponentDescription": {
-          if (!comopnentDescriptionFixturePath) {
+          if (!componentDescriptionFixturePath) {
             answer({ result: null });
             return;
           }
@@ -79,7 +79,7 @@ export const mockWebsocket = async (
           answerFromFile(
             path.resolve(
               import.meta.dirname,
-              `../fixtures/${comopnentDescriptionFixturePath}`,
+              `../fixtures/${componentDescriptionFixturePath}`,
             ),
           );
           return;

@@ -49,7 +49,8 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        // this enables the new headlessy mode (its more like a real browser)
+        // this enables the new headless mode (it's more like a real browser)
+        // see: https://playwright.dev/docs/browsers#chromium-new-headless-mode
         channel: "chromium",
         // custom
         viewport: {
