@@ -2,9 +2,8 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import { SubMenu } from "@knime/components";
-import type { MenuItem } from "@knime/components";
-import { Button } from "@knime/kds-components";
+import { type MenuItem, SubMenu } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
 import { useShortcuts } from "@/plugins/shortcuts";
@@ -51,7 +50,7 @@ const title = computed(() => {
 
 <template>
   <div :class="{ 'split-button': hasSubmenu }" data-test-id="save">
-    <Button
+    <KdsButton
       :class="['toolbar-button']"
       :disabled="!$shortcuts.isEnabled('save')"
       :title="title"
