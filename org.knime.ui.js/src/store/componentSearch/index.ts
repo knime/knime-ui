@@ -5,19 +5,11 @@ import { defineStore } from "pinia";
 
 import { promise } from "@knime/utils";
 
-import { createComponentSearchItem } from "@/test/factories/componentSearch";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { componentSearch } from "@/util/dataMappers";
 
-export const createData = (total: number, startOffset = 0) =>
-  new Array(total).fill(0).map((_, i) =>
-    createComponentSearchItem({
-      name: `Component ${startOffset + i}`,
-      id: `id-${i}`,
-    }),
-  );
-
 const PAGE_SIZE = 50;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export const useComponentSearchStore = defineStore("componentSearch", () => {
   const isLoading = ref(false);
@@ -54,27 +46,13 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
       });
 
       const response = await runAbortablePromise(async () => {
-        if (query.value === "foo") {
-          return [];
-        }
-
-        const responseFromAPI = await API.space.searchComponents({
+        const apiResponse = await API.space.searchComponents({
           query: query.value,
           offset: currentOffset.value * PAGE_SIZE,
           limit: PAGE_SIZE,
         });
 
-        // const response = createData(
-        //   PAGE_SIZE,
-        //   PAGE_SIZE * currentOffset.value,
-        // ).map(componentSearch.toNodeTemplateWithExtendedPorts);
-        //
-        // // return response;
-
-        let mapped = responseFromAPI.map(
-          componentSearch.toNodeTemplateWithExtendedPorts,
-        );
-        return mapped;
+        return apiResponse.map(componentSearch.toNodeTemplateWithExtendedPorts);
       });
 
       results.value = append ? results.value.concat(response) : response;
@@ -91,7 +69,10 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
     }
   };
 
-  const debouncedSearch = debounce(() => searchComponents(), 300);
+  const debouncedSearch = debounce(
+    () => searchComponents(),
+    SEARCH_DEBOUNCE_MS,
+  );
 
   const updateQuery = (value: string) => {
     query.value = value;
