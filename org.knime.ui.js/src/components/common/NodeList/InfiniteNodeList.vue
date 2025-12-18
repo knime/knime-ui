@@ -11,7 +11,7 @@ import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 type Props = {
   nodes: NodeTemplateWithExtendedPorts[];
-  fetchMore: () => Promise<any>;
+  fetchMore: () => Promise<void>;
   showDetailsFor?: NodeTemplateWithExtendedPorts | null;
   highlightFirst?: boolean;
   displayMode?: Exclude<NodeRepositoryDisplayModesType, "tree">;
@@ -62,7 +62,7 @@ defineExpose({ focusFirst, scrollToTop });
     :fetch-more="fetchMore"
   >
     <template #default="{ isLoadingNextPage, isLoadingSearchResultsDeferred }">
-      <div v-if="!isEmpty && !isLoadingSearchResults" class="node-list-wrapper">
+      <div v-if="!isEmpty" class="node-list-wrapper">
         <NodeList
           ref="nodeList"
           v-model:selected-node="selectedNode"
