@@ -11,7 +11,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { toExtendedPortObject } from "@/util/portDataMapper";
+import { ports } from "@/util/dataMappers";
 import NodePortActiveConnector from "../NodePortActiveConnector.vue";
 
 import NodePortActions from "./NodePortActions.vue";
@@ -45,7 +45,7 @@ const anchorPoint = inject<XY>("anchorPoint");
 const { availablePortTypes } = storeToRefs(useApplicationStore());
 
 const portTemplate = computed(() => {
-  const template = toExtendedPortObject(availablePortTypes.value)(
+  const template = ports.toExtendedPortObject(availablePortTypes.value)(
     props.port.typeId,
   );
   if (!template) {
