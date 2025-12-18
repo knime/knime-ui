@@ -16,7 +16,7 @@ type Props = {
 const props = defineProps<Props>();
 
 const { toggleNodeDescription } = useKaiExtensionPanel();
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 
 const hasNodeTemplates = computed(() => props.nodeTemplates.length > 0);
 
@@ -24,7 +24,7 @@ const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
 
 const handleEnterKey = (node: NodeTemplateWithExtendedPorts) => {
   if (node.nodeFactory) {
-    addNodeToWorkflow({ nodeFactory: node.nodeFactory });
+    addNodeWithAutoPositioning(node.nodeFactory);
   }
 };
 </script>
