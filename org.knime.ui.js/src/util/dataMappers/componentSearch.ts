@@ -13,7 +13,7 @@ const toNodeTemplateWithExtendedPorts = (
     return {
       name: port.name ?? "",
       typeId: port.portTypeName,
-      optional: port.optional ?? false,
+      optional: port.optional,
       color: port.color,
       type: port.portTypeName,
       description: port.description ?? "",
@@ -25,7 +25,7 @@ const toNodeTemplateWithExtendedPorts = (
     return {
       name: port.name ?? "",
       typeId: port.portTypeName,
-      optional: port.optional ?? false,
+      optional: port.optional,
       color: port.color,
       type: port.portTypeName,
       description: port.description ?? "",
@@ -34,7 +34,7 @@ const toNodeTemplateWithExtendedPorts = (
   });
 
   return {
-    id: input.name,
+    id: input.id,
     name: input.name,
     type: input.type,
     component: true,
