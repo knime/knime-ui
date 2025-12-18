@@ -4,7 +4,7 @@
 @import "@knime/styles/css/basics";
 @import "@knime/styles/css/grid";
 @import "./animation";
-@import "./fonts";
+@import "@knime/kds-styles/fonts.css";
 @import "./variables";
 @import "./mixins";
 
