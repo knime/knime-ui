@@ -1,9 +1,7 @@
-import type {
-  AvailablePortTypes,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
+import type { AvailablePortTypes } from "@/api/custom-types";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 
+import type { NodeTemplateWithExtendedPorts } from "./common";
 import { ports } from "./ports";
 
 /**

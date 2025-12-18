@@ -5,8 +5,8 @@ import { defineStore } from "pinia";
 
 import { promise } from "@knime/utils";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { createComponentSearchItem } from "@/test/factories/componentSearch";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { componentSearch } from "@/util/dataMappers";
 
 export const createData = (total: number, startOffset = 0) =>

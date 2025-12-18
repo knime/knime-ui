@@ -1,50 +1,46 @@
-import type {
-  ExtendedPortType,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
 import {
-  type ComponentSearchItem,
+  ComponentSearchItem,
   type NodePortTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
 
-import KindEnum = PortType.KindEnum;
+import type { ExtendedPortType, NodeTemplateWithExtendedPorts } from "./common";
 
 const toNodeTemplateWithExtendedPorts = (
   input: ComponentSearchItem,
 ): NodeTemplateWithExtendedPorts => {
-  let inPorts = input.inPorts ?? [];
-  let mappedIn = inPorts.map((p) => {
+  const inPorts = (input.inPorts ?? []).map((port) => {
     return {
-      name: p.name ?? "",
-      typeId: "typeid",
-      optional: p.optional ?? false,
-      color: p.color,
-      type: p.portTypeName,
-      description: p.description ?? "",
-      kind: KindEnum.Other, // ~todo
+      name: port.name ?? "",
+      typeId: port.portTypeName,
+      optional: port.optional ?? false,
+      color: port.color,
+      type: port.portTypeName,
+      description: port.description ?? "",
+      kind: PortType.KindEnum.Other, // TODO: add port info
     } satisfies NodePortTemplate & ExtendedPortType;
   });
-  const mappedOut = (input.outPorts ?? []).map((p) => {
+
+  const outPorts = (input.outPorts ?? []).map((port) => {
     return {
-      name: p.name ?? "",
-      typeId: "typeid",
-      optional: p.optional ?? false,
-      color: p.color,
-      type: p.portTypeName,
-      description: p.description ?? "",
-      kind: KindEnum.Other, // ~todo
+      name: port.name ?? "",
+      typeId: port.portTypeName,
+      optional: port.optional ?? false,
+      color: port.color,
+      type: port.portTypeName,
+      description: port.description ?? "",
+      kind: PortType.KindEnum.Other, // TODO: add port info
     } satisfies NodePortTemplate & ExtendedPortType;
   });
-  // const outPorts = input.outPorts ?? [];
+
   return {
     id: input.name,
     name: input.name,
     type: input.type,
     component: true,
     icon: input.icon,
-    inPorts: mappedIn,
-    outPorts: mappedOut,
+    inPorts,
+    outPorts,
   };
 };
 
