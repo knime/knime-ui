@@ -32,7 +32,7 @@ const emit = defineEmits<{
   showNodeDescription: [];
 }>();
 
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 
 const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
@@ -100,7 +100,7 @@ const onDragEnd = (event: DragEvent) => {
     :show-floating-help-icon="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
-    @dblclick="addNodeToWorkflow(nodeTemplate)"
+    @dblclick="addNodeWithAutoPositioning(nodeTemplate.nodeFactory!)"
     @drag="dragNodeIntoCanvas.onDrag"
     @help-icon-click="emit('showNodeDescription')"
   />

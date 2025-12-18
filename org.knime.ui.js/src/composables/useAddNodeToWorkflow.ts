@@ -1,25 +1,47 @@
+/* eslint-disable no-undefined */
 import { storeToRefs } from "pinia";
 
 import {
   AddNodeCommand,
   type NodeFactoryKey,
+  type XY,
 } from "@/api/gateway-api/generated-api";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { getToastPresets } from "@/toastPresets";
 import { geometry } from "@/util/geometry";
 
-/**
- * Add a node to the workflow by a node template factory.
- * It will automatically position the node in the canvas according to available
- * space and inside the visible frame as well as connecting the newly added node
- * to a selected node (if any)
- */
 export const useAddNodeToWorkflow = () => {
   const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());
+  const { toastPresets } = getToastPresets();
 
-  return ({ nodeFactory }: { nodeFactory?: NodeFactoryKey }) => {
+  const addNodeByPosition = async (
+    position: XY,
+    nodeFactory: NodeFactoryKey,
+    autoConnectOptions?: {
+      sourceNodeId: string;
+      nodeRelation: AddNodeCommand.NodeRelationEnum;
+    },
+  ) => {
+    try {
+      await useNodeInteractionsStore().addNode({
+        position,
+        nodeFactory,
+        sourceNodeId: autoConnectOptions?.sourceNodeId,
+        nodeRelation: autoConnectOptions?.nodeRelation,
+      });
+    } catch (error) {
+      consola.error({
+        message: "Error adding node to canvas with auto-placement",
+        error,
+      });
+      toastPresets.workflow.addNodeToCanvas({ error });
+    }
+  };
+
+  const addNodeWithAutoPositioning = async (nodeFactory: NodeFactoryKey) => {
     // do not try to add a node to a read only workflow
     if (!isWritable.value) {
       return;
@@ -38,18 +60,19 @@ export const useAddNodeToWorkflow = () => {
           visibleFrame: canvasStore.value.getVisibleFrame,
           nodes: activeWorkflow.value!.nodes,
         });
-    // eslint-disable-next-line no-undefined
-    const sourceNodeId = singleSelectedNode.value?.id ?? undefined;
-    const nodeRelation = singleSelectedNode.value
-      ? AddNodeCommand.NodeRelationEnum.SUCCESSORS
-      : // eslint-disable-next-line no-undefined
-        undefined;
 
-    useNodeInteractionsStore().addNode({
-      position,
-      nodeFactory,
-      sourceNodeId,
-      nodeRelation,
-    });
+    const autoConnectOptions = singleSelectedNode.value
+      ? {
+          sourceNodeId: singleSelectedNode.value.id,
+          nodeRelation: AddNodeCommand.NodeRelationEnum.SUCCESSORS,
+        }
+      : undefined;
+
+    await addNodeByPosition(position, nodeFactory, autoConnectOptions);
+  };
+
+  return {
+    addNodeByPosition,
+    addNodeWithAutoPositioning,
   };
 };
