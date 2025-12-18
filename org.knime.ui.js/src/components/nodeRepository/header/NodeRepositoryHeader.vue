@@ -7,6 +7,7 @@ import {
   type MenuItem,
   SearchInput,
   SubMenu,
+  ValueSwitch,
 } from "@knime/components";
 import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
 import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
@@ -15,6 +16,7 @@ import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useComponentSearchStore } from "@/store/componentSearch";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import {
   type NodeRepositoryDisplayModesType,
@@ -24,11 +26,10 @@ import {
 import CloseableTagList from "./CloseableTagList.vue";
 
 const nodeRepositoryStore = useNodeRepositoryStore();
-const {
-  searchIsActive,
-  tagsOfVisibleNodes: tags,
-  query,
-} = storeToRefs(nodeRepositoryStore);
+const { searchIsActive, tagsOfVisibleNodes: tags } =
+  storeToRefs(nodeRepositoryStore);
+
+const componentSearchStore = useComponentSearchStore();
 
 const selectedTags = computed({
   get() {
@@ -49,7 +50,34 @@ const { hasNodeCollectionActive, activeNodeCollection } = storeToRefs(
 );
 const { nodeRepositoryLoaded } = storeToRefs(useApplicationStore());
 
+const searchContext = defineModel<"nodes" | "components">();
+const isComponentSearch = computed(() => searchContext.value === "components");
+
+const currentSearchQuery = computed(() => {
+  if (isComponentSearch.value) {
+    return componentSearchStore.query;
+  } else {
+    return nodeRepositoryStore.query;
+  }
+});
+
+const updateSearchQuery = (value: string) => {
+  if (isComponentSearch.value) {
+    componentSearchStore.updateQuery(value);
+  } else {
+    nodeRepositoryStore.updateQuery(value);
+  }
+};
+
+const switchSearchContext = (value: "nodes" | "components") => {
+  searchContext.value = value;
+};
+
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+  if (isComponentSearch.value) {
+    return [{ text: "Components" }];
+  }
+
   // If search results are shown, it's possible to navigate back
   return searchIsActive.value
     ? [{ text: "Nodes", id: "clear" }, { text: "Results" }]
@@ -114,7 +142,19 @@ defineExpose({ focusSearchInput });
         />
 
         <div class="actions">
+          <ValueSwitch
+            compact
+            :disabled="!nodeRepositoryLoaded"
+            :model-value="searchContext"
+            :possible-values="[
+              { id: 'nodes', text: 'nodes' },
+              { id: 'components', text: 'components' },
+            ]"
+            @update:model-value="switchSearchContext"
+          />
+
           <SubMenu
+            v-if="!isComponentSearch"
             :items="displayModeSubMenuItems"
             :teleport-to-body="false"
             class="display-modes-sub-menu"
@@ -134,9 +174,10 @@ defineExpose({ focusSearchInput });
           </SubMenu>
         </div>
       </div>
+
       <SearchInput
         ref="searchBar"
-        :model-value="query"
+        :model-value="currentSearchQuery"
         spellcheck="false"
         compact
         :maxlength="$characterLimits.searchFields"
@@ -149,11 +190,12 @@ defineExpose({ focusSearchInput });
         class="search-bar"
         @keydown.down.prevent="$emit('searchBarDownKey')"
         @clear="nodeRepositoryStore.clearSearchParams"
-        @update:model-value="nodeRepositoryStore.updateQuery($event)"
+        @update:model-value="updateSearchQuery"
       />
     </div>
+
     <CloseableTagList
-      v-if="searchIsActive && tags.length"
+      v-if="searchIsActive && tags.length && !isComponentSearch"
       v-model="selectedTags"
       :tags="tags"
     />
