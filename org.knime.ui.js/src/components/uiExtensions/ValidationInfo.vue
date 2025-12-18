@@ -8,8 +8,8 @@ import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { ports } from "@/util/dataMappers";
 import * as nodeUtils from "@/util/nodeUtil";
-import { toExtendedPortObject } from "@/util/portDataMapper";
 
 import ExecuteButton from "./ExecuteButton.vue";
 import LegacyPortViewButtons from "./LegacyPortViewButtons.vue";
@@ -40,7 +40,9 @@ const fullPortObject = computed(() => {
 
     const selectedPort = props.selectedNode.outPorts[props.selectedPortIndex];
 
-    return toExtendedPortObject(availablePortTypes.value)(selectedPort.typeId);
+    return ports.toExtendedPortObject(availablePortTypes.value)(
+      selectedPort.typeId,
+    );
   } catch (_error) {
     return null;
   }

@@ -10,9 +10,9 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import {
   type ComponentNodeDescriptionWithExtendedPorts,
   type NativeNodeDescriptionWithExtendedPorts,
-  toComponentNodeDescriptionWithExtendedPorts,
-  toNativeNodeDescriptionWithExtendedPorts,
-} from "@/util/portDataMapper";
+  componentDescription,
+  nodeDescription,
+} from "@/util/dataMappers";
 
 /**
  * Store that manages state for node and component descriptions.
@@ -47,12 +47,12 @@ export const useNodeDescriptionStore = defineStore("nodeDescription", {
       };
 
       try {
-        const nodeDescription = await API.node.getNodeDescription(params);
+        const nativeNodeDescription = await API.node.getNodeDescription(params);
 
         const nodeDescriptionWithExtendedPorts =
-          toNativeNodeDescriptionWithExtendedPorts(
+          nodeDescription.toNativeNodeDescriptionWithExtendedPorts(
             useApplicationStore().availablePortTypes,
-          )(nodeDescription);
+          )(nativeNodeDescription);
 
         this.cache.set(factoryId, nodeDescriptionWithExtendedPorts);
 
@@ -83,14 +83,13 @@ export const useNodeDescriptionStore = defineStore("nodeDescription", {
       };
 
       try {
-        const componentDescription =
-          (await API.component.getComponentDescription(
-            params,
-          )) as ComponentNodeDescription; // TODO: NXT-2023 - remove type cast
+        const rawDescription = (await API.component.getComponentDescription(
+          params,
+        )) as ComponentNodeDescription; // TODO: NXT-2023 - remove type cast
 
-        return toComponentNodeDescriptionWithExtendedPorts(
+        return componentDescription.toComponentNodeDescriptionWithExtendedPorts(
           useApplicationStore().availablePortTypes,
-        )(componentDescription);
+        )(rawDescription);
       } catch (error) {
         consola.error(
           "action::getComponentDescription -> Error calling API.node.getComponentDescription",

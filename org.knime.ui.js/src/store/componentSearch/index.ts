@@ -5,10 +5,15 @@ import { defineStore } from "pinia";
 import { promise } from "@knime/utils";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import {
-  createData,
-  fromComponentSearchItemToNodeTemplate,
-} from "@/components/componentSearch/mocks";
+import { createComponentSearchItem } from "@/test/factories/componentSearch";
+import { componentSearch } from "@/util/dataMappers";
+
+export const createData = (total: number, startOffset = 0) =>
+  new Array(total)
+    .fill(0)
+    .map((_, i) =>
+      createComponentSearchItem({ name: `Component ${startOffset + i}` }),
+    );
 
 const PAGE_SIZE = 50;
 
@@ -40,11 +45,6 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
     abortController = newAbortController;
 
     try {
-      console.log("FETCHING  :>> ", {
-        query: query.value,
-        offset: currentOffset.value,
-        limit: PAGE_SIZE,
-      });
       consola.info("componentSearch:: Fetching components", {
         query: query.value,
         offset: currentOffset.value,
@@ -62,15 +62,9 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
         const response = createData(
           PAGE_SIZE,
           PAGE_SIZE * currentOffset.value,
-        ).map(fromComponentSearchItemToNodeTemplate);
+        ).map(componentSearch.toNodeTemplateWithExtendedPorts);
 
         return response;
-      });
-
-      console.log("FETCHED  :>> ", {
-        query: query.value,
-        offset: currentOffset.value,
-        limit: PAGE_SIZE,
       });
 
       results.value = append ? results.value.concat(response) : response;
