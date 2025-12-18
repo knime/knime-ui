@@ -162,13 +162,13 @@ const onShowNodeDescription = (treeNode: BaseTreeNode) => {
   }
 };
 
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 const addTreeNodeToWorkflow = (treeNode: BaseTreeNode) => {
   const nodeFactory = (treeNode.origin as ExtendedTreeNodeOptions)?.nodeTemplate
     ?.nodeFactory;
 
   if (nodeFactory) {
-    addNodeToWorkflow({ nodeFactory });
+    addNodeWithAutoPositioning(nodeFactory);
   }
 };
 
