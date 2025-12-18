@@ -10,6 +10,7 @@ export const createComponentSearchItem = (
 ) => {
   return merge(
     {
+      id: "foo",
       type: ComponentSearchItem.TypeEnum.Manipulator,
       description: "This is the component description",
       name: "Awesome component",
