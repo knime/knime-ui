@@ -31,7 +31,8 @@ export type WorkflowCommandFnMock = (payload: any) => {
 };
 
 export type MockWebsocketOptions = {
-  workflowFixturePath: string;
+  workflowFixturePath: string | Record<string, string>;
+  comopnentDescriptionFixturePath?: string;
   workflowUndoCommand?: WorkflowUndoCommandMock;
   workflowCommandFn?: WorkflowCommandFnMock;
 };
