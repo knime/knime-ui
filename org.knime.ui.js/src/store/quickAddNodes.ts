@@ -9,7 +9,7 @@ import type {
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeSearch } from "@/store/common/useNodeSearch";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
+import { nodeTemplate } from "@/util/dataMappers";
 
 /**
  * Store that manages quick add nodes menu states.
@@ -62,7 +62,7 @@ export const useQuickAddNodesStore = defineStore("quick", () => {
 
     setRecommendedNodes(
       recommendedNodesResult.map(
-        toNodeTemplateWithExtendedPorts(
+        nodeTemplate.toNodeTemplateWithExtendedPorts(
           useApplicationStore().availablePortTypes,
         ),
       ),
