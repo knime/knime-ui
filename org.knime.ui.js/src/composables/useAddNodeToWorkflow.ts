@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import {
   AddNodeCommand,
   type NodeFactoryKey,
+  SpaceItemReference,
   type XY,
 } from "@/api/gateway-api/generated-api";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -77,8 +78,31 @@ export const useAddNodeToWorkflow = () => {
     await addNodeByPosition(position, nodeFactory, autoConnectOptions);
   };
 
+  const addComponentWithAutoPositioning = async (
+    componentName: string,
+    spaceItemReference: SpaceItemReference,
+  ) => {
+    const canvasStore = useCurrentCanvasStore();
+
+    const position = geometry.findFreeSpaceAroundCenterWithFallback({
+      visibleFrame: canvasStore.value.getVisibleFrame,
+      nodes: activeWorkflow.value!.nodes,
+    });
+
+    try {
+      await nodeInteractionsStore.addNode({
+        position,
+        spaceItemReference,
+        componentName,
+      });
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   return {
     addNodeByPosition,
     addNodeWithAutoPositioning,
+    addComponentWithAutoPositioning,
   };
 };

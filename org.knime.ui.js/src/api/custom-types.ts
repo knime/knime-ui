@@ -6,7 +6,6 @@ import type {
   EditableMetadata,
   MetaNode,
   NativeNode,
-  NodeCategory,
   NodeDescription,
   PortGroup,
   PortType,
@@ -175,10 +174,6 @@ export type ExampleProject = {
 };
 
 export type NodeRelation = "PREDECESSORS" | "SUCCESSORS";
-
-export type NodeCategoryWithExtendedPorts = NodeCategory & {
-  nodes?: NodeTemplateWithExtendedPorts[];
-};
 
 export type AncestorInfo = {
   ancestorItemIds: string[];
