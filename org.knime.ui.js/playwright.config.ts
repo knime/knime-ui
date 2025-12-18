@@ -2,7 +2,7 @@
 import path from "node:path";
 
 import dotenvx from "@dotenvx/dotenvx";
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 import { getBrowserStorageState } from "./e2e/utils";
 
@@ -48,15 +48,20 @@ export default defineConfig({
     {
       name: "chromium",
       use: {
-        isMobile: false,
-        hasTouch: false,
-        defaultBrowserType: "chromium",
+        ...devices["Desktop Chrome"],
+        // this enables the new headlessy mode (its more like a real browser)
+        channel: "chromium",
+        // custom
         viewport: {
           width: 1920,
           height: 1040,
         },
         deviceScaleFactor: 2,
         storageState: getBrowserStorageState(),
+        launchOptions: {
+          // allow the use of software based webgl rendering
+          args: ["--enable-unsafe-swiftshader"],
+        },
       },
     },
 

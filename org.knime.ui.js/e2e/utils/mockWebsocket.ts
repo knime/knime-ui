@@ -14,8 +14,12 @@ export const mockWebsocket = async (
   page: Page,
   options: MockWebsocketOptions,
 ) => {
-  const { workflowFixturePath, workflowCommandFn, workflowUndoCommand } =
-    options;
+  const {
+    workflowFixturePath,
+    workflowCommandFn,
+    workflowUndoCommand,
+    comopnentDescriptionFixturePath,
+  } = options;
   const websocketUrl =
     process.env.VITE_BROWSER_DEV_WS_URL ?? "ws://localhost:7000"; // eslint-disable-line n/no-process-env
 
@@ -55,10 +59,27 @@ export const mockWebsocket = async (
         }
 
         case "WorkflowService.getWorkflow": {
+          const isSinglePath = typeof workflowFixturePath === "string";
+          const fixtureToUse = isSinglePath
+            ? workflowFixturePath
+            : workflowFixturePath[messageObject.params.workflowId];
+
+          answerFromFile(
+            path.resolve(import.meta.dirname, `../fixtures/${fixtureToUse}`),
+          );
+          return;
+        }
+
+        case "ComponentService.getComponentDescription": {
+          if (!comopnentDescriptionFixturePath) {
+            answer({ result: null });
+            return;
+          }
+
           answerFromFile(
             path.resolve(
               import.meta.dirname,
-              `../fixtures/${workflowFixturePath}`,
+              `../fixtures/${comopnentDescriptionFixturePath}`,
             ),
           );
           return;
@@ -121,7 +142,8 @@ export const mockWebsocket = async (
         }
 
         default: {
-          answer({});
+          // this seems to be fine for events like EventService.removeEventListener
+          answer({ result: null });
         }
       }
     });

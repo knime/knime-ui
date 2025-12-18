@@ -1,0 +1,50 @@
+{
+  "jsonrpc": "2.0",
+  "id": "13",
+  "result": {
+    "views": [
+      { "name": "JavaScript Table View (ID 41)" },
+      { "name": "Single Selection Widget (ID 3216)" },
+      { "name": "JavaScript Table View (ID 3278)" },
+      { "name": "Single Selection Widget (ID 3298)" },
+      { "name": "Single Selection Widget (ID 3303)" },
+      { "name": "String Widget (ID 3304)" },
+      { "name": "String Widget (ID 3305)" },
+      { "name": "Single Selection Widget (ID 3359)" },
+      { "name": "Single Selection Widget (ID 3362)" },
+      { "name": "Refresh Button Widget" },
+      { "name": "Single Selection Widget (ID 3367)" }
+    ],
+    "description": { "value": "", "contentType": "text/plain" },
+    "name": "Update",
+    "inPorts": [
+      {
+        "name": "Port 1",
+        "typeName": "Table",
+        "optional": false,
+        "typeId": "org.knime.core.node.BufferedDataTable"
+      },
+      {
+        "name": "Port 2",
+        "typeName": "Table",
+        "optional": false,
+        "typeId": "org.knime.core.node.BufferedDataTable"
+      },
+      {
+        "name": "Port 3",
+        "typeName": "Flow Variable",
+        "optional": false,
+        "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+      }
+    ],
+    "outPorts": [
+      {
+        "name": "Port 1",
+        "typeName": "Flow Variable",
+        "optional": false,
+        "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject"
+      }
+    ],
+    "metadataType": "component"
+  }
+}
