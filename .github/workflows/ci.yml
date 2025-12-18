@@ -103,3 +103,43 @@ jobs:
           path: |
             org.knime.ui.js/playwright-report/**
             org.knime.ui.js/test-results/**
+
+  mem-tests:
+    runs-on: ubuntu-8c-32gb
+    defaults:
+      run:
+        working-directory: org.knime.ui.js
+    container:
+      image: mcr.microsoft.com/playwright:v1.51.1-noble
+      options: --user 1001
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: org.knime.ui.js/package.json
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache-dependency-path: org.knime.ui.js/pnpm-lock.yaml
+          node-version-file: "org.knime.ui.js/package.json"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install
+
+      - name: Run memory tests
+        run: pnpm run test:memory
+
+      - name: Upload Playwright artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-artifacts
+          path: |
+            org.knime.ui.js/playwright-report/**
+            org.knime.ui.js/test-results/**
