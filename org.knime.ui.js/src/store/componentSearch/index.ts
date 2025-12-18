@@ -1,4 +1,5 @@
 import { readonly, ref } from "vue";
+import { API } from "@api";
 import { debounce } from "lodash-es";
 import { defineStore } from "pinia";
 
@@ -9,11 +10,12 @@ import { createComponentSearchItem } from "@/test/factories/componentSearch";
 import { componentSearch } from "@/util/dataMappers";
 
 export const createData = (total: number, startOffset = 0) =>
-  new Array(total)
-    .fill(0)
-    .map((_, i) =>
-      createComponentSearchItem({ name: `Component ${startOffset + i}` }),
-    );
+  new Array(total).fill(0).map((_, i) =>
+    createComponentSearchItem({
+      name: `Component ${startOffset + i}`,
+      id: `id-${i}`,
+    }),
+  );
 
 const PAGE_SIZE = 50;
 
@@ -52,19 +54,27 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
       });
 
       const response = await runAbortablePromise(async () => {
-        // eslint-disable-next-line no-magic-numbers
-        await new Promise((r) => setTimeout(r, 5000));
-
         if (query.value === "foo") {
           return [];
         }
 
-        const response = createData(
-          PAGE_SIZE,
-          PAGE_SIZE * currentOffset.value,
-        ).map(componentSearch.toNodeTemplateWithExtendedPorts);
+        const responseFromAPI = await API.space.searchComponents({
+          query: query.value,
+          offset: currentOffset.value * PAGE_SIZE,
+          limit: PAGE_SIZE,
+        });
 
-        return response;
+        // const response = createData(
+        //   PAGE_SIZE,
+        //   PAGE_SIZE * currentOffset.value,
+        // ).map(componentSearch.toNodeTemplateWithExtendedPorts);
+        //
+        // // return response;
+
+        let mapped = responseFromAPI.map(
+          componentSearch.toNodeTemplateWithExtendedPorts,
+        );
+        return mapped;
       });
 
       results.value = append ? results.value.concat(response) : response;
