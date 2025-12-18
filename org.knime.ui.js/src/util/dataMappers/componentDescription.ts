@@ -1,9 +1,9 @@
 import type {
   AvailablePortTypes,
   ComponentNodeDescription,
-  ExtendedPortType,
 } from "@/api/custom-types";
 
+import type { ExtendedPortType } from "./common";
 import { ports } from "./ports";
 
 export type ComponentNodeDescriptionWithExtendedPorts =

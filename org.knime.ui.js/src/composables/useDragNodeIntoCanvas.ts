@@ -1,6 +1,5 @@
 import { storeToRefs } from "pinia";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
@@ -11,6 +10,7 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 

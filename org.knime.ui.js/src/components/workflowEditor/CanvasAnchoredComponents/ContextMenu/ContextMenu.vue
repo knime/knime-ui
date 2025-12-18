@@ -7,7 +7,7 @@ import { MenuItems } from "@knime/components";
 import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
-import type { ExtendedPortType, KnimeNode } from "@/api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
 import {
   ComponentPlaceholder,
   type NodePort,
@@ -23,7 +23,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { ports } from "@/util/dataMappers";
+import { type ExtendedPortType, ports } from "@/util/dataMappers";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
 import {
