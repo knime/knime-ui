@@ -1249,6 +1249,12 @@ export interface ComponentPortDescription {
 export interface ComponentSearchItem {
 
     /**
+     * Space item ID of this component
+     * @type {string}
+     * @memberof ComponentSearchItem
+     */
+    id: string;
+    /**
      * The name of the component as given by the component creator
      * @type {string}
      * @memberof ComponentSearchItem
@@ -1318,7 +1324,7 @@ export interface ComponentSearchItemPort {
      * @type {string}
      * @memberof ComponentSearchItemPort
      */
-    name: string;
+    name?: string;
     /**
      * The description of the component as given by the component creator.
      * @type {string}
@@ -1330,7 +1336,7 @@ export interface ComponentSearchItemPort {
      * @type {string}
      * @memberof ComponentSearchItemPort
      */
-    portTypeName?: string;
+    portTypeName: string;
     /**
      * Hex string of port type color
      * @type {string}
@@ -7172,7 +7178,6 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Search among components in this provider
-         * @param {string} params.spaceProviderId Identifies a space-provider.
          * @param {string} [params.query] 
          * @param {number} [params.limit] 
          * @param {number} [params.offset] 
@@ -7183,7 +7188,7 @@ const space = function(rpcClient: RPCClient) {
          * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async searchComponents(
-        	params: { spaceProviderId: string,  query?: string,  limit?: number,  offset?: number  }
+        	params: { query?: string,  limit?: number,  offset?: number  }
         ): Promise<Array<ComponentSearchItem>> {
             const defaultParams = { 
                 query: null,
