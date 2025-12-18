@@ -40,7 +40,7 @@ const formatAsMb = (bytes: number) => {
 
 const start = (page: Page) =>
   startApplication(page, {
-    comopnentDescriptionFixturePath: "memory/component-desc.json",
+    componentDescriptionFixturePath: "memory/component-desc.json",
     workflowFixturePath: {
       root: "memory/data-app-workflow.json",
       "root:3326": "memory/data-app-component.json",

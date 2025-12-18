@@ -32,7 +32,7 @@ export type WorkflowCommandFnMock = (payload: any) => {
 
 export type MockWebsocketOptions = {
   workflowFixturePath: string | Record<string, string>;
-  comopnentDescriptionFixturePath?: string;
+  componentDescriptionFixturePath?: string;
   workflowUndoCommand?: WorkflowUndoCommandMock;
   workflowCommandFn?: WorkflowCommandFnMock;
 };

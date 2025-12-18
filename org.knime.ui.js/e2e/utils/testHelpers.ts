@@ -12,7 +12,7 @@ export const startApplication = async (
 ) => {
   const {
     workflowFixturePath,
-    comopnentDescriptionFixturePath,
+    componentDescriptionFixturePath,
     waitForRender = true,
     withMouseCursor = false,
     workflowCommandFn,
@@ -27,7 +27,7 @@ export const startApplication = async (
 
   await mockWebsocket(page, {
     workflowFixturePath,
-    comopnentDescriptionFixturePath,
+    componentDescriptionFixturePath,
     workflowCommandFn,
     workflowUndoCommand,
   });
