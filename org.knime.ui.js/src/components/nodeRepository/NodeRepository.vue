@@ -2,7 +2,6 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarSearchResults.vue";
@@ -11,10 +10,11 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import ComponentSearchResults from "../componentSearch/ComponentSearchResults.vue";
 
-import CategoryTree from "./CategoryTree.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
+import NodeRepositoryTree from "./NodeRepositoryTree/NodeRepositoryTree.vue";
 import NodesGroupedByTag from "./NodesGroupedByTag/NodesGroupedByTag.vue";
 import NodeRepositoryHeader from "./header/NodeRepositoryHeader.vue";
 
@@ -22,7 +22,7 @@ const nodeRepositoryStore = useNodeRepositoryStore();
 const { nodesPerTag, showDescriptionForNode, searchIsActive } =
   storeToRefs(nodeRepositoryStore);
 
-const categoryTree = ref<InstanceType<typeof CategoryTree>>();
+const categoryTree = ref<InstanceType<typeof NodeRepositoryTree>>();
 
 const displayMode = computed(
   () => useSettingsStore().settings.nodeRepositoryDisplayMode,
@@ -142,7 +142,7 @@ const searchContext = ref<"nodes" | "components">("nodes");
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
-      <CategoryTree
+      <NodeRepositoryTree
         v-else
         v-show="searchContext === 'nodes'"
         ref="categoryTree"

@@ -2,11 +2,9 @@ import { reactive, ref } from "vue";
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type {
-  NodeCategoryWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
+import type { NodeCategoryWithExtendedPorts } from "@/components/nodeRepository/NodeRepositoryTree/types";
 import { useNodeSearch } from "@/store/common/useNodeSearch";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { nodeTemplate } from "@/util/dataMappers";
 
 import { useApplicationStore } from "./application/application";

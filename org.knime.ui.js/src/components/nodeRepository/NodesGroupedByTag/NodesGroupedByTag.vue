@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 
 import { Tag } from "@knime/components";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
 import NodeList from "@/components/common/NodeList/NodeList.vue";
 import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
@@ -12,6 +11,7 @@ import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollV
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 const TAG_LIMIT = 8;
 

@@ -1,9 +1,10 @@
-import type { AvailablePortTypes, ExtendedPortType } from "@/api/custom-types";
+import type { AvailablePortTypes } from "@/api/custom-types";
 import type {
   DynamicPortGroupDescription,
   NativeNodeDescription,
 } from "@/api/gateway-api/generated-api";
 
+import type { ExtendedPortType } from "./common";
 import { ports } from "./ports";
 
 type PortGroupDescription = {

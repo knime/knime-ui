@@ -2,13 +2,11 @@ import { computed, ref } from "vue";
 import { API } from "@api";
 import { debounce } from "lodash-es";
 
-import type {
-  NodeRelation,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
+import type { NodeRelation } from "@/api/custom-types";
 import { createAbortablePromise } from "@/api/utils";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { nodeTemplate } from "@/util/dataMappers";
 
 /**

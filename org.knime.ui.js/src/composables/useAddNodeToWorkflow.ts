@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import {
   AddNodeCommand,
   type NodeFactoryKey,
+  SpaceItemReference,
   type XY,
 } from "@/api/gateway-api/generated-api";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -17,6 +18,16 @@ export const useAddNodeToWorkflow = () => {
   const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());
   const { toastPresets } = getToastPresets();
 
+  const nodeInteractionsStore = useNodeInteractionsStore();
+
+  const handleError = (error: unknown) => {
+    consola.error({
+      message: "Error adding node to canvas with auto-placement",
+      error,
+    });
+    toastPresets.workflow.addNodeToCanvas({ error });
+  };
+
   const addNodeByPosition = async (
     position: XY,
     nodeFactory: NodeFactoryKey,
@@ -26,18 +37,14 @@ export const useAddNodeToWorkflow = () => {
     },
   ) => {
     try {
-      await useNodeInteractionsStore().addNode({
+      await nodeInteractionsStore.addNode({
         position,
         nodeFactory,
         sourceNodeId: autoConnectOptions?.sourceNodeId,
         nodeRelation: autoConnectOptions?.nodeRelation,
       });
     } catch (error) {
-      consola.error({
-        message: "Error adding node to canvas with auto-placement",
-        error,
-      });
-      toastPresets.workflow.addNodeToCanvas({ error });
+      handleError(error);
     }
   };
 
@@ -71,8 +78,31 @@ export const useAddNodeToWorkflow = () => {
     await addNodeByPosition(position, nodeFactory, autoConnectOptions);
   };
 
+  const addComponentWithAutoPositioning = async (
+    componentName: string,
+    spaceItemReference: SpaceItemReference,
+  ) => {
+    const canvasStore = useCurrentCanvasStore();
+
+    const position = geometry.findFreeSpaceAroundCenterWithFallback({
+      visibleFrame: canvasStore.value.getVisibleFrame,
+      nodes: activeWorkflow.value!.nodes,
+    });
+
+    try {
+      await nodeInteractionsStore.addNode({
+        position,
+        spaceItemReference,
+        componentName,
+      });
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   return {
     addNodeByPosition,
     addNodeWithAutoPositioning,
+    addComponentWithAutoPositioning,
   };
 };
