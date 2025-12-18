@@ -7,7 +7,7 @@ import type {
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
 import { useNodeSearch } from "@/store/common/useNodeSearch";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+import { nodeTemplate } from "@/util/dataMappers";
 
 import { useApplicationStore } from "./application/application";
 import { useNodeTemplatesStore } from "./nodeTemplates/nodeTemplates";
@@ -139,7 +139,9 @@ export const useNodeRepositoryStore = defineStore("nodeRepository", () => {
     });
 
     const nodesWithMappedPorts = (nodeCategoryResult.nodes ?? []).map(
-      toNodeTemplateWithExtendedPorts(useApplicationStore().availablePortTypes),
+      nodeTemplate.toNodeTemplateWithExtendedPorts(
+        useApplicationStore().availablePortTypes,
+      ),
     );
 
     useNodeTemplatesStore().updateCacheFromSearchResults({
@@ -182,7 +184,7 @@ export const useNodeRepositoryStore = defineStore("nodeRepository", () => {
 
     const withMappedPorts = groups.map(({ nodes, tag }) => ({
       nodes: nodes.map(
-        toNodeTemplateWithExtendedPorts(
+        nodeTemplate.toNodeTemplateWithExtendedPorts(
           useApplicationStore().availablePortTypes,
         ),
       ),

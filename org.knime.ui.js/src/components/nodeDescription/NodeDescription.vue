@@ -12,7 +12,7 @@ import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription
 import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
-} from "@/util/portDataMapper";
+} from "@/util/dataMappers";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 

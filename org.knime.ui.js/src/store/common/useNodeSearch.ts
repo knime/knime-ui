@@ -9,7 +9,7 @@ import type {
 import { createAbortablePromise } from "@/api/utils";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+import { nodeTemplate } from "@/util/dataMappers";
 
 /**
  * This composable is meant to be shared and used by other stores
@@ -188,7 +188,7 @@ export const useNodeSearch = () => {
       } = searchResponse;
 
       const withMappedPorts = fetchedNodes.map(
-        toNodeTemplateWithExtendedPorts(
+        nodeTemplate.toNodeTemplateWithExtendedPorts(
           useApplicationStore().availablePortTypes,
         ),
       );
