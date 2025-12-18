@@ -1,4 +1,6 @@
-import type { AvailablePortTypes, ExtendedPortType } from "@/api/custom-types";
+import type { AvailablePortTypes } from "@/api/custom-types";
+
+import type { ExtendedPortType } from "./common";
 
 /**
  * Maps a port `typeId` string or a object with a `typeId` property to a port object with all the properties of the

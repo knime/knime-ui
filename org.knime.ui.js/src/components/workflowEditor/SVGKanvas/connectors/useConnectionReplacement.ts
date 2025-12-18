@@ -1,7 +1,6 @@
 import { type Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { ExtendedPortType } from "@/api/custom-types";
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
 import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
@@ -13,6 +12,7 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
+import type { ExtendedPortType } from "@/util/dataMappers";
 
 type UseConnectionReplacementOptions = {
   /**

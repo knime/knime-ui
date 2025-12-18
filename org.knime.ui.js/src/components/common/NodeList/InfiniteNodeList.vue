@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, toRefs, useTemplateRef } from "vue";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import InfiniteLoadingList from "@/components/common/InfiniteLoadingList/InfiniteLoadingList.vue";
 import NodeList, {
   type NavReachedEvent,
 } from "@/components/common/NodeList/NodeList.vue";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 type Props = {
   nodes: NodeTemplateWithExtendedPorts[];
