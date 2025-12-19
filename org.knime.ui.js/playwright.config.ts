@@ -48,6 +48,21 @@ export default defineConfig({
     {
       name: "chromium",
       use: {
+        isMobile: false,
+        hasTouch: false,
+        defaultBrowserType: "chromium",
+        viewport: {
+          width: 1920,
+          height: 1040,
+        },
+        deviceScaleFactor: 2,
+        storageState: getBrowserStorageState(),
+      },
+    },
+    {
+      // this ueses the new chromium headless mode used for perfromance and memory tests
+      name: "chromium-new",
+      use: {
         ...devices["Desktop Chrome"],
         // this enables the new headless mode (it's more like a real browser)
         // see: https://playwright.dev/docs/browsers#chromium-new-headless-mode
