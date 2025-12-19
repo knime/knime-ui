@@ -5,9 +5,9 @@ import { mount } from "@vue/test-utils";
 import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import SidebarSearchResults from "../SidebarSearchResults.vue";
+import SidebarNodeSearchResults from "../SidebarNodeSearchResults.vue";
 
-describe("SidebarSearchResults", () => {
+describe("SidebarNodeSearchResults", () => {
   const doMount = () => {
     const { nodeRepositoryStore, testingPinia } = mockStores();
 
@@ -32,11 +32,11 @@ describe("SidebarSearchResults", () => {
 
     nodeRepositoryStore.isLoadingSearchResults = false;
 
-    vi.mocked(nodeRepositoryStore.searchNodesNextPage).mockImplementation(
-      () => {},
+    vi.mocked(nodeRepositoryStore.searchNodesNextPage).mockImplementation(() =>
+      Promise.resolve(),
     );
 
-    const wrapper = mount(SidebarSearchResults, {
+    const wrapper = mount(SidebarNodeSearchResults, {
       props: { displayMode: "icon" },
       global: { plugins: [testingPinia] },
     });

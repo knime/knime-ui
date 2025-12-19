@@ -15,11 +15,10 @@ type Props = {
   showDetailsFor?: NodeTemplateWithExtendedPorts | null;
   highlightFirst?: boolean;
   displayMode?: Exclude<NodeRepositoryDisplayModesType, "tree">;
-  isLoadingSearchResults: boolean;
+  isLoading: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  searchScrollPosition: 0,
   highlightFirst: false,
   displayMode: "icon",
   showDetailsFor: null,
@@ -37,7 +36,7 @@ const emit = defineEmits<{
   showNodeDetails: [node: NodeTemplateWithExtendedPorts];
 }>();
 
-const { nodes, displayMode, isLoadingSearchResults } = toRefs(props);
+const { nodes, displayMode, isLoading } = toRefs(props);
 
 const isEmpty = computed(() => nodes.value?.length === 0);
 
@@ -58,10 +57,10 @@ defineExpose({ focusFirst, scrollToTop });
   <InfiniteLoadingList
     ref="infiniteList"
     v-model="scrollPosition"
-    :is-loading="isLoadingSearchResults"
+    :is-loading="isLoading"
     :fetch-more="fetchMore"
   >
-    <template #default="{ isLoadingNextPage, isLoadingSearchResultsDeferred }">
+    <template #default="{ isLoadingNextPage, isLoadingDeferred }">
       <div v-if="!isEmpty" class="node-list-wrapper">
         <NodeList
           ref="nodeList"
@@ -89,13 +88,19 @@ defineExpose({ focusFirst, scrollToTop });
       </div>
 
       <SkeletonNodes
-        v-if="isLoadingSearchResultsDeferred"
+        v-if="isLoadingDeferred"
         class="node-list-skeleton"
         :number-of-nodes="5"
         :display-mode="displayMode"
       />
 
-      <slot v-if="!isLoadingSearchResults" name="noResults" />
+      <slot
+        name="listBottom"
+        :is-empty="isEmpty"
+        :is-loading="isLoading"
+        :is-loading-deferred="isLoadingDeferred"
+        :is-loading-next-page="isLoadingNextPage"
+      />
     </template>
   </InfiniteLoadingList>
 </template>

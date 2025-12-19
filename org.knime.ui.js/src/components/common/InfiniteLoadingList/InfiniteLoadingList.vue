@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, toRefs, watch } from "vue";
+import { nextTick, ref, toRefs, useTemplateRef, watch } from "vue";
 
 import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
@@ -15,7 +15,13 @@ const searchScrollPosition = defineModel<number>({ default: 0 });
 const { isLoading } = toRefs(props);
 
 const isLoadingNextPage = ref(false);
-const isLoadingSearchResultsDeferred = ref(false);
+
+/**
+ * State used to mirror the loading state but with a small
+ * time offset, so as not to immediately show the loading state
+ * if the results arrive quickly
+ * */
+const isLoadingDeferred = ref(false);
 
 const setIsLoadingNextPage = createStaggeredLoader({
   firstStageCallback: () => {
@@ -26,19 +32,19 @@ const setIsLoadingNextPage = createStaggeredLoader({
   },
 });
 
-const setIsLoadingSearchResultsDeferred = createStaggeredLoader({
+const setIsLoadingDeferred = createStaggeredLoader({
   firstStageCallback: () => {
-    isLoadingSearchResultsDeferred.value = true;
+    isLoadingDeferred.value = true;
   },
   resetCallback: () => {
-    isLoadingSearchResultsDeferred.value = false;
+    isLoadingDeferred.value = false;
   },
 });
 
 watch(
   isLoading,
   (value) => {
-    setIsLoadingSearchResultsDeferred(value);
+    setIsLoadingDeferred(value);
   },
   { immediate: true },
 );
@@ -47,7 +53,7 @@ const onSaveScrollPosition = (position: number) => {
   searchScrollPosition.value = position;
 };
 
-const scroller = ref<InstanceType<typeof ScrollViewContainer> | null>(null);
+const scroller = useTemplateRef("scroller");
 const scrollToTop = async () => {
   // wait for new content to be displayed, then scroll to top
   await nextTick();
@@ -76,7 +82,7 @@ defineExpose({ scrollToTop });
     <div class="content">
       <slot
         :is-loading-next-page="isLoadingNextPage"
-        :is-loading-search-results-deferred="isLoadingSearchResultsDeferred"
+        :is-loading-deferred="isLoadingDeferred"
       />
     </div>
   </ScrollViewContainer>
