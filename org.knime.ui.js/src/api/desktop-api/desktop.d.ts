@@ -225,12 +225,6 @@ declare function getHomePageTile(): Record<string, string>;
 
 declare function getExampleProjects(): string;
 
-declare function getAncestorInfo(
-  providerId: string,
-  spaceId: string,
-  itemId: string,
-): string;
-
 declare function updateOpenProjectsOrder(...args: string[]): void;
 
 declare function getUserProfilePart(key: string): any;

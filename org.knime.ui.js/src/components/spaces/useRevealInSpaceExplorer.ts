@@ -5,8 +5,11 @@ import { type Router, useRouter } from "vue-router";
 
 import EyeIcon from "@knime/styles/img/icons/eye.svg";
 
-import type { AncestorInfo, SpaceProviderNS } from "@/api/custom-types";
-import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
+import type { SpaceProviderNS } from "@/api/custom-types";
+import type {
+  AncestorInfo,
+  SpaceItemReference,
+} from "@/api/gateway-api/generated-api";
 import { isBrowser } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -31,7 +34,7 @@ const getAncestorInfo = (
   const provider = spaceProviders[origin.providerId];
 
   if (!provider) {
-    return Promise.resolve({ itemName: null, ancestorItemIds: [] });
+    return Promise.resolve({ ancestorItemIds: [] });
   }
 
   // If the backend can determine ancestor item IDs cheaply, they are
@@ -39,15 +42,14 @@ const getAncestorInfo = (
   if (isLocalProvider(provider) && origin.ancestorItemIds) {
     return origin.ancestorItemIds
       ? Promise.resolve({
-          itemName: null,
           ancestorItemIds: origin.ancestorItemIds,
         })
-      : Promise.resolve({ itemName: null, ancestorItemIds: [] });
+      : Promise.resolve({ ancestorItemIds: [] });
   }
 
   // Throws error if the ancestor item IDs could not be retrieved
-  return API.desktop.getAncestorInfo({
-    providerId: origin.providerId,
+  return API.space.getAncestorInfo({
+    spaceProviderId: origin.providerId,
     spaceId: origin.spaceId,
     itemId: origin.itemId,
   });
@@ -73,7 +75,6 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     const provider = spaceProviders.value?.[providerId];
 
     if (
-      isBrowser() || // Ancestor information unavailable in browser
       !provider || // Provider is not known
       loadingProviderSpacesData.value[provider.id] // Space groups have not yet been initialized
     ) {
@@ -122,7 +123,7 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     });
 
     setCurrentSelectedItemIds(selectedItemIds);
-    return itemName;
+    return itemName ?? null;
   };
 
   const displayInSidebarSpaceExplorer = async (
@@ -176,7 +177,7 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
       setCurrentSelectedItemIds(selectedItemIds);
     }
 
-    return itemName;
+    return itemName ?? null;
   };
 
   const validate = async (params: { providerId: string }) => {

@@ -215,7 +215,7 @@ describe("AppHeaderContextMenu.vue", () => {
     const toast = mockedObject(getToastsProvider());
 
     it("should show a toast when an error is thrown", async () => {
-      mockedAPI.desktop.getAncestorInfo.mockRejectedValue(new Error(""));
+      mockedAPI.space.getAncestorInfo.mockRejectedValue(new Error(""));
 
       const { wrapper } = await doMount({
         props: { projectId: openProjects.hubProject.projectId },
@@ -275,7 +275,7 @@ describe("AppHeaderContextMenu.vue", () => {
     ])(
       "should reveal project in sidepanel for -> %s",
       async (_, project, expectedPath) => {
-        mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
+        mockedAPI.space.getAncestorInfo.mockResolvedValue({
           ancestorItemIds: [],
           itemName: null,
         });
@@ -339,7 +339,7 @@ describe("AppHeaderContextMenu.vue", () => {
     it("should not display option for projects without an origin", async () => {
       const projectId = openProjects.noOrigin.projectId;
 
-      mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
+      mockedAPI.space.getAncestorInfo.mockResolvedValue({
         ancestorItemIds: [],
         itemName: null,
       });
@@ -374,7 +374,7 @@ describe("AppHeaderContextMenu.vue", () => {
     it("should reveal nested items in hub projects", async () => {
       const projectId = openProjects.hubProjectNested.projectId;
 
-      mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
+      mockedAPI.space.getAncestorInfo.mockResolvedValue({
         ancestorItemIds: ["3"],
         itemName: null,
       });
@@ -393,7 +393,7 @@ describe("AppHeaderContextMenu.vue", () => {
         [projectId]: panelStore.TABS.SPACE_EXPLORER,
       });
       expect(routerPush).not.toHaveBeenCalled();
-      expect(mockedAPI.desktop.getAncestorInfo).toHaveBeenCalled();
+      expect(mockedAPI.space.getAncestorInfo).toHaveBeenCalled();
       expect(mockedStores.spaceCachingStore.projectPath).toEqual(
         expect.objectContaining({
           [projectId]: {

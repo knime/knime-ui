@@ -177,6 +177,8 @@ export const useComponentInteractionsStore = defineStore(
               callback: () => {
                 useRevealInSpaceExplorer().revealSingleItem(
                   result.uploadedItem!,
+                  "",
+                  true,
                 );
               },
             },
