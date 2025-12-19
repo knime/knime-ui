@@ -54,8 +54,6 @@ const {
 
 const { KNIME_HUB_SEARCH_URL } = knimeExternalUrls;
 
-const isNodeListEmpty = computed(() => nodes.value?.length === 0);
-
 const scrollPosition = defineModel<number>("scrollPosition", { default: 0 });
 const selectedNode = defineModel<NodeTemplateWithExtendedPorts | null>(
   "selectedNode",
@@ -91,7 +89,7 @@ defineExpose({ focusFirst });
     :display-mode="displayMode"
     :show-details-for="showDescriptionForNode"
     :fetch-more="searchActions.searchNodesNextPage"
-    :is-loading-search-results="isLoadingSearchResults"
+    :is-loading="isLoadingSearchResults"
     @nav-reached-top="emit('navReachedTop', $event)"
     @enter-key="emit('itemEnterKey', $event)"
     @show-node-details="emit('showNodeDetails', $event)"
@@ -100,11 +98,11 @@ defineExpose({ focusFirst });
       <slot name="nodesTemplate" v-bind="slotProps" />
     </template>
 
-    <template #noResults>
+    <template #listBottom="{ isEmpty, isLoading }">
       <SearchResultsInfo
-        v-if="!isLoadingSearchResults"
+        v-if="!isLoading"
         :num-filtered-out-nodes="numFilteredOutNodes"
-        :is-node-list-empty="isNodeListEmpty"
+        :is-node-list-empty="isEmpty"
         :search-hub-link="searchHubLink"
         :mini="isQuickAddNodeMenu"
       />
