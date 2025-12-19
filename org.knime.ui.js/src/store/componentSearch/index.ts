@@ -1,6 +1,6 @@
 import { readonly, ref } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 import { API } from "@api";
-import { debounce } from "lodash-es";
 import { defineStore } from "pinia";
 
 import { promise } from "@knime/utils";
@@ -39,7 +39,7 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
     abortController = newAbortController;
 
     try {
-      consola.info("componentSearch:: Fetching components", {
+      consola.info("componentSearch:: Fetching results", {
         query: query.value,
         offset: currentOffset.value,
         limit: PAGE_SIZE,
@@ -57,7 +57,6 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
 
       results.value = append ? results.value.concat(response) : response;
 
-      isLoading.value = false;
       hasLoaded.value = true;
       currentOffset.value++;
     } catch (error) {
@@ -66,21 +65,20 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
       }
 
       throw error;
+    } finally {
+      isLoading.value = false;
     }
   };
 
-  const debouncedSearch = debounce(
-    () => searchComponents(),
-    SEARCH_DEBOUNCE_MS,
-  );
+  const debouncedSearch = useDebounceFn(searchComponents, SEARCH_DEBOUNCE_MS);
 
-  const updateQuery = (value: string) => {
+  const updateQuery = async (value: string) => {
     query.value = value;
     currentOffset.value = 0;
     results.value = [];
     hasLoaded.value = false;
     isLoading.value = true;
-    debouncedSearch();
+    await debouncedSearch();
   };
 
   return {
