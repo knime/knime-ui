@@ -3,6 +3,7 @@ import { API } from "@api";
 import { defineStore } from "pinia";
 
 import { rfcErrors } from "@knime/hub-features";
+import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 import LoadIcon from "@knime/styles/img/icons/load.svg";
 
 import type { NameCollisionHandling } from "@/api/custom-types.ts";
@@ -17,6 +18,7 @@ import {
   type DestinationPickerConfig,
   useDestinationPicker,
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
+import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer.ts";
 import { usePromptCollisionStrategies } from "@/composables/confirmDialogs/usePromptCollisionHandling";
 import { useChangeLinkVariantModal } from "@/composables/useChangeLinkVariantModal";
 import { getToastsProvider } from "@/plugins/toasts";
@@ -168,7 +170,17 @@ export const useComponentInteractionsStore = defineStore(
           headline,
           message,
           type: "success",
-          // TODO NXT-4291 Enable linked components to be revealed in the space explorer
+          buttons: [
+            {
+              icon: ListIcon,
+              text: "Reveal in space explorer",
+              callback: () => {
+                useRevealInSpaceExplorer().revealSingleItem(
+                  result.uploadedItem!,
+                );
+              },
+            },
+          ],
         });
 
         await useSpaceOperationsStore().fetchWorkflowGroupContent({
