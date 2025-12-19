@@ -48,8 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import static org.knime.ui.java.api.DesktopAPI.MAPPER;
-
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +76,6 @@ import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
-import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
@@ -103,7 +100,6 @@ import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions around spaces.
@@ -398,42 +394,6 @@ final class SpaceAPI {
             destination.space().getId(), //
             excludeData //
         );
-    }
-
-    /**
-     * Retrieves ancestor information necessary to reveal a project in the space explorer
-     *
-     * @return An object containing the ancestor item IDs and a boolean whether the project name has changed or not
-     * @throws GatewayException If the ancestors could not be retrieved
-     */
-    @API
-    static String getAncestorInfo(final String providerId, final String spaceId, final String itemId)
-        throws GatewayException {
-        final var space = DesktopAPI.getSpace(providerId, spaceId);
-        try {
-            final var ancestorItemIds = space.getAncestorItemIds(itemId);
-            // The known project name may be outdated. Return the new name to check this e.g. on "Reveal in Space
-            // Explorer" and display a notification.
-            final var itemName = space.getItemName(itemId);
-            return buildAncestorInfo(ancestorItemIds, itemName).toString();
-        } catch (MutableServiceCallException e) { // NOSONAR
-            // The project name may have changed on the remote side, so for an informative message, the name as
-            // currently known by the application is used.
-            final var projectName = DesktopAPI.getDeps(ProjectManager.class) //
-                    .getProject(providerId, spaceId, itemId) //
-                    .map(Project::getName) //
-                    .orElse("the project");
-            throw e.toGatewayException( //
-                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName));
-        }
-    }
-
-    private static ObjectNode buildAncestorInfo(final List<String> ancestorItemIds, final String itemName) {
-        final var objectNode = MAPPER.createObjectNode();
-        final var arrayNode = objectNode.putArray("ancestorItemIds");
-        ancestorItemIds.forEach(arrayNode::add);
-        objectNode.put("itemName", itemName);
-        return objectNode;
     }
 
     /**

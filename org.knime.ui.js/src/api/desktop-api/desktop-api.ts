@@ -3,7 +3,6 @@ import { isBrowser, runInEnvironment } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
 import {
-  type AncestorInfo,
   type ExampleProject,
   type FullSpacePath,
   type RecentWorkflow,
@@ -902,25 +901,6 @@ export const getExampleProjects = async () => {
     { block: false },
   );
   return (data ? JSON.parse(data) : []) as Array<ExampleProject>;
-};
-
-export const getAncestorInfo = async ({
-  providerId,
-  spaceId,
-  itemId,
-}: {
-  providerId: string;
-  spaceId: string;
-  itemId: string;
-}) => {
-  const data = await callBrowserFunction(
-    window.getAncestorInfo,
-    [providerId, spaceId, itemId],
-    "Failed to fetch ancestor item IDs",
-    true,
-    { block: false },
-  );
-  return (data ? JSON.parse(data) : {}) as AncestorInfo;
 };
 
 export const updateOpenProjectsOrder = ({

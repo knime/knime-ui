@@ -506,6 +506,29 @@ export interface AllowedWorkflowActions extends AllowedActions {
 
 
 /**
+ * Information about an ancestor item in a space.
+ * @export
+ * @interface AncestorInfo
+ */
+export interface AncestorInfo {
+
+    /**
+     * Optional new name of the item. The known project name may be outdated. Return the new name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
+     * @type {string}
+     * @memberof AncestorInfo
+     */
+    itemName?: string;
+    /**
+     * The ancestor item IDs.
+     * @type {Array<string>}
+     * @memberof AncestorInfo
+     */
+    ancestorItemIds: Array<string>;
+
+}
+
+
+/**
  * A text annotation.
  * @export
  * @interface Annotation
@@ -6761,6 +6784,25 @@ const space = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('SpaceService.deleteSchedulesForWorkflow', { ...defaultParams, ...params });
+        },
+        /**
+         * Get ancestor information for a given space item.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         */
+        async getAncestorInfo(
+        	params: { spaceProviderId: string,  spaceId: string,  itemId: string  }
+        ): Promise<AncestorInfo> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.getAncestorInfo', { ...defaultParams, ...params });
         },
         /**
          * Returns the available link variants for the destination represented by the given provider and path.
