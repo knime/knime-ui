@@ -38,6 +38,8 @@ const formatAsMb = (bytes: number) => {
   return (bytes / 1024 / 1024).toFixed(2);
 };
 
+const mbToByte = (mb: number) => mb * 1024 * 1024;
+
 const start = (page: Page) =>
   startApplication(page, {
     componentDescriptionFixturePath: "memory/component-desc.json",
@@ -51,7 +53,7 @@ test("render memory test workflow", async ({ page }) => {
   await start(page);
   expect(await page.evaluate(() => crossOriginIsolated)).toBe(true);
   const memory = await measureMemoryUsage(page);
-  expect(memory.bytes < 1024 * 1024 * 300).toBe(true);
+  expect(memory.bytes < mbToByte(300)).toBe(true);
 });
 
 const goToComponentAndBackTimes = 15;
@@ -67,7 +69,7 @@ test(`open component and return to main ${goToComponentAndBackTimes} times`, asy
   const startBytes = (await measureMemoryUsage(page)).jsHeap;
 
   console.log(`start ${formatAsMb(startBytes)} MB`);
-  expect(startBytes < 1024 * 1024 * 300).toBe(true);
+  expect(startBytes < mbToByte(300)).toBe(true);
 
   for (let i = 0; i < goToComponentAndBackTimes; i++) {
     console.log(`open component and back iteration ${i + 1}`);
