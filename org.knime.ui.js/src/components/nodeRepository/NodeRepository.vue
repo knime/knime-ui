@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
-import SidebarSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarSearchResults.vue";
+import SidebarNodeSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarNodeSearchResults.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -21,8 +21,6 @@ import NodeRepositoryHeader from "./header/NodeRepositoryHeader.vue";
 const nodeRepositoryStore = useNodeRepositoryStore();
 const { nodesPerTag, showDescriptionForNode, searchIsActive } =
   storeToRefs(nodeRepositoryStore);
-
-const categoryTree = ref<InstanceType<typeof NodeRepositoryTree>>();
 
 const displayMode = computed(
   () => useSettingsStore().settings.nodeRepositoryDisplayMode,
@@ -87,24 +85,30 @@ const toggleNodeDescription = ({
   panelStore.closeExtensionPanel();
 };
 
-const header = ref<InstanceType<typeof NodeRepositoryHeader>>();
+const searchContext = ref<"nodes" | "components">("nodes");
 
-const searchResults = ref<InstanceType<typeof SidebarSearchResults>>();
-const nodesGroupedByTag = ref<InstanceType<typeof NodesGroupedByTag>>();
+const header = useTemplateRef("header");
+const nodeSearchResults = useTemplateRef("nodeSearchResults");
+const nodesGroupedByTag = useTemplateRef("nodesGroupedByTag");
+const nodeRepositoryTree = useTemplateRef("nodeRepositoryTree");
+const componentSearchResults = useTemplateRef("componentSearchResults");
 
 const onSearchBarDownKey = () => {
-  // search (regardless of display mode)
-  if (searchIsActive.value) {
-    searchResults.value?.focusFirst();
+  if (searchContext.value === "components") {
+    componentSearchResults.value?.focusFirst();
     return;
   }
 
-  // tree
-  if (displayMode.value === "tree") {
-    categoryTree.value?.focusFirst();
+  if (searchIsActive.value) {
+    nodeSearchResults.value?.focusFirst();
     return;
   }
-  // tag
+
+  if (displayMode.value === "tree") {
+    nodeRepositoryTree.value?.focusFirst();
+    return;
+  }
+
   nodesGroupedByTag.value?.focusFirst();
 };
 
@@ -113,8 +117,6 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
     header.value?.focusSearchInput();
   }
 };
-
-const searchContext = ref<"nodes" | "components">("nodes");
 </script>
 
 <template>
@@ -126,33 +128,34 @@ const searchContext = ref<"nodes" | "components">("nodes");
     />
 
     <template v-if="nodeRepositoryLoaded">
-      <SidebarSearchResults
-        v-if="searchIsActive"
-        v-show="searchContext === 'nodes'"
-        ref="searchResults"
-        :display-mode="displayMode"
-        @nav-reached-top="handleNavReachedTop($event)"
-        @show-node-description="toggleNodeDescription"
-      />
-      <NodesGroupedByTag
-        v-else-if="displayMode !== 'tree'"
-        v-show="searchContext === 'nodes'"
-        ref="nodesGroupedByTag"
-        :display-mode="displayMode"
-        @nav-reached-top="handleNavReachedTop($event)"
-        @show-node-description="toggleNodeDescription"
-      />
-      <NodeRepositoryTree
-        v-else
-        v-show="searchContext === 'nodes'"
-        ref="categoryTree"
-        @nav-reached-top="handleNavReachedTop($event)"
-        @show-node-description="toggleNodeDescription"
-      />
+      <div v-show="searchContext === 'nodes'" style="height: 100%">
+        <SidebarNodeSearchResults
+          v-if="searchIsActive"
+          ref="nodeSearchResults"
+          :display-mode="displayMode"
+          @nav-reached-top="handleNavReachedTop($event)"
+          @show-node-description="toggleNodeDescription"
+        />
+        <NodesGroupedByTag
+          v-else-if="displayMode !== 'tree'"
+          ref="nodesGroupedByTag"
+          :display-mode="displayMode"
+          @nav-reached-top="handleNavReachedTop($event)"
+          @show-node-description="toggleNodeDescription"
+        />
+        <NodeRepositoryTree
+          v-else
+          ref="nodeRepositoryTree"
+          @nav-reached-top="handleNavReachedTop($event)"
+          @show-node-description="toggleNodeDescription"
+        />
+      </div>
 
       <ComponentSearchResults
         v-show="searchContext === 'components'"
+        ref="componentSearchResults"
         :active="searchContext === 'components'"
+        @nav-reached-top="handleNavReachedTop($event)"
       />
     </template>
 
