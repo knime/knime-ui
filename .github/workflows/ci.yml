@@ -134,12 +134,3 @@ jobs:
 
       - name: Run memory tests
         run: pnpm run test:memory
-
-      - name: Upload Playwright artifacts
-        uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: playwright-artifacts
-          path: |
-            org.knime.ui.js/playwright-report/**
-            org.knime.ui.js/test-results/**
