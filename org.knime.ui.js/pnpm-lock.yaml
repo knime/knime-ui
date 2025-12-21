@@ -127,8 +127,8 @@ importers:
         version: 4.1.0(vue@3.5.18(typescript@5.8.3))
     devDependencies:
       '@dotenvx/dotenvx':
-        specifier: ^1.39.0
-        version: 1.39.0
+        specifier: ^1.51.2
+        version: 1.51.2
       '@knime/eslint-config':
         specifier: ^9.0.2
         version: 9.0.2(@vue/compiler-sfc@3.5.18)(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.33.1(eslint@9.22.0)(typescript@5.8.3))(eslint@9.22.0))(eslint@9.22.0)(postcss-html@1.8.0)(prettier@3.0.1)(stylelint@16.18.0(typescript@5.8.3))(typescript@5.8.3)(vitest@3.2.4(@types/node@22.13.10)(jsdom@24.1.3)(yaml@2.7.1))(vue-eslint-parser@10.1.3(eslint@9.22.0))
@@ -858,15 +858,15 @@ packages:
     resolution: {integrity: sha512-42Y5AzI6qlRT8Tk0lacLA2676BUQvhJJ6iC8u9SuzHqd8oi+9l4+7uiewZDsiMlVwi48P78EzTrSOEu/783CsQ==}
     engines: {node: '>=14.0.0'}
 
-  '@dotenvx/dotenvx@1.39.0':
-    resolution: {integrity: sha512-qGfDpL/3S17MQYXpR3HkBS5xNQ7wiFlqLdpr+iIQzv17aMRcSlgL4EjMIsYFZ540Dq17J+y5FVElA1AkVoXiUA==}
+  '@dotenvx/dotenvx@1.51.2':
+    resolution: {integrity: sha512-+693mNflujDZxudSEqSNGpn92QgFhJlBn9q2mDQ9yGWyHuz3hZ8B5g3EXCwdAz4DMJAI+OFCIbfEFZS+YRdrEA==}
     hasBin: true
 
   '@dual-bundle/import-meta-resolve@4.1.0':
     resolution: {integrity: sha512-+nxncfwHM5SgAtrVzgpzJOI1ol0PkumhVo469KCf9lUi21IGcY90G98VuHm9VRrUypmAzawAHO9bs6hqeADaVg==}
 
-  '@ecies/ciphers@0.2.3':
-    resolution: {integrity: sha512-tapn6XhOueMwht3E2UzY0ZZjYokdaw9XtL9kEyjhQ/Fb9vL9xTFbOaI+fV0AWvTpYu4BNloC6getKW6NtSg4mA==}
+  '@ecies/ciphers@0.2.5':
+    resolution: {integrity: sha512-GalEZH4JgOMHYYcYmVqnFirFsjZHeoGMDt9IxEnM9F7GRUUyUksJ7Ou53L83WHJq3RWKD3AcBpo0iQh0oMpf8A==}
     engines: {bun: '>=1', deno: '>=2', node: '>=16'}
     peerDependencies:
       '@noble/ciphers': ^1.0.0
@@ -1327,16 +1327,16 @@ packages:
   '@napi-rs/wasm-runtime@0.2.10':
     resolution: {integrity: sha512-bCsCyeZEwVErsGmyPNSzwfwFn4OdxBj0mmv6hOFucB/k81Ojdu68RbZdxYsRQUPc9l6SU5F/cG+bXgWs3oUgsQ==}
 
-  '@noble/ciphers@1.2.1':
-    resolution: {integrity: sha512-rONPWMC7PeExE077uLE4oqWrZ1IvAfz3oH9LibVAcVCopJiA9R62uavnbEzdkVmJYI6M6Zgkbeb07+tWjlq2XA==}
+  '@noble/ciphers@1.3.0':
+    resolution: {integrity: sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/curves@1.8.1':
-    resolution: {integrity: sha512-warwspo+UYUPep0Q+vtdVB4Ugn8GGQj8iyB3gnRWsztmUHTI3S1nhdiWNsPUGL0vud7JlRRk1XEu7Lq1KGTnMQ==}
+  '@noble/curves@1.9.7':
+    resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/hashes@1.7.1':
-    resolution: {integrity: sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==}
+  '@noble/hashes@1.8.0':
+    resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
 
   '@nodelib/fs.scandir@2.1.5':
@@ -2808,8 +2808,8 @@ packages:
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
 
-  dotenv@16.4.7:
-    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
+  dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
     engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
@@ -2822,8 +2822,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  eciesjs@0.4.14:
-    resolution: {integrity: sha512-eJAgf9pdv214Hn98FlUzclRMYWF7WfoLlkS9nWMTm1qcCwn6Ad4EGD9lr9HXMBfSrZhYQujRE+p0adPRkctC6A==}
+  eciesjs@0.4.16:
+    resolution: {integrity: sha512-dS5cbA9rA2VR4Ybuvhg6jvdmp46ubLn3E+px8cG/35aEDNclrqoCjg6mt0HYZ/M+OoESS3jSkCrqk1kWAEhWAw==}
     engines: {bun: '>=1', deno: '>=2', node: '>=16'}
 
   editorconfig@1.0.4:
@@ -3177,22 +3177,6 @@ packages:
 
   fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
-
-  fdir@6.4.3:
-    resolution: {integrity: sha512-PMXmW2y1hDDfTSRc9gaXIuCCRpuoz3Kaz8cUelp3smouvfT632ozg2vrT6lJsHKKOF59YLbOGfAWGUcKEfRMQw==}
-    peerDependencies:
-      picomatch: ^3 || ^4
-    peerDependenciesMeta:
-      picomatch:
-        optional: true
-
-  fdir@6.4.5:
-    resolution: {integrity: sha512-4BG7puHpVsIYxZUbiUE3RqGloLaSSwzYie5jvasC4LWuBWzZawynvYouhjbQKw2JuIGYdm0DzIxl8iVidKlUEw==}
-    peerDependencies:
-      picomatch: ^3 || ^4
-    peerDependenciesMeta:
-      picomatch:
-        optional: true
 
   fdir@6.4.6:
     resolution: {integrity: sha512-hiFoqpyZcfNm1yc4u8oWCf9A2c4D3QjCrks3zmoVKVxpQRzmPNar1hUJcBG2RQHvEVGDN+Jm81ZheVLAQMK6+w==}
@@ -6966,23 +6950,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@dotenvx/dotenvx@1.39.0':
+  '@dotenvx/dotenvx@1.51.2':
     dependencies:
       commander: 11.1.0
-      dotenv: 16.4.7
-      eciesjs: 0.4.14
+      dotenv: 17.2.3
+      eciesjs: 0.4.16
       execa: 5.1.1
-      fdir: 6.4.3(picomatch@4.0.2)
+      fdir: 6.5.0(picomatch@4.0.3)
       ignore: 5.3.2
       object-treeify: 1.1.33
-      picomatch: 4.0.2
+      picomatch: 4.0.3
       which: 4.0.0
 
   '@dual-bundle/import-meta-resolve@4.1.0': {}
 
-  '@ecies/ciphers@0.2.3(@noble/ciphers@1.2.1)':
+  '@ecies/ciphers@0.2.5(@noble/ciphers@1.3.0)':
     dependencies:
-      '@noble/ciphers': 1.2.1
+      '@noble/ciphers': 1.3.0
 
   '@emnapi/core@1.4.3':
     dependencies:
@@ -7654,13 +7638,13 @@ snapshots:
       '@tybys/wasm-util': 0.9.0
     optional: true
 
-  '@noble/ciphers@1.2.1': {}
+  '@noble/ciphers@1.3.0': {}
 
-  '@noble/curves@1.8.1':
+  '@noble/curves@1.9.7':
     dependencies:
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
 
-  '@noble/hashes@1.7.1': {}
+  '@noble/hashes@1.8.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -7856,7 +7840,7 @@ snapshots:
       eslint-visitor-keys: 4.2.0
       espree: 10.3.0
       estraverse: 5.3.0
-      picomatch: 4.0.2
+      picomatch: 4.0.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -8456,7 +8440,7 @@ snapshots:
       alien-signals: 2.0.6
       muggle-string: 0.4.1
       path-browserify: 1.0.1
-      picomatch: 4.0.2
+      picomatch: 4.0.3
     optionalDependencies:
       typescript: 5.8.3
 
@@ -9224,7 +9208,7 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
-  dotenv@16.4.7: {}
+  dotenv@17.2.3: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -9236,12 +9220,12 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  eciesjs@0.4.14:
+  eciesjs@0.4.16:
     dependencies:
-      '@ecies/ciphers': 0.2.3(@noble/ciphers@1.2.1)
-      '@noble/ciphers': 1.2.1
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@ecies/ciphers': 0.2.5(@noble/ciphers@1.3.0)
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.7
+      '@noble/hashes': 1.8.0
 
   editorconfig@1.0.4:
     dependencies:
@@ -9744,14 +9728,6 @@ snapshots:
   fastq@1.19.1:
     dependencies:
       reusify: 1.1.0
-
-  fdir@6.4.3(picomatch@4.0.2):
-    optionalDependencies:
-      picomatch: 4.0.2
-
-  fdir@6.4.5(picomatch@4.0.2):
-    optionalDependencies:
-      picomatch: 4.0.2
 
   fdir@6.4.6(picomatch@4.0.3):
     optionalDependencies:
@@ -12666,8 +12642,8 @@ snapshots:
 
   tinyglobby@0.2.14:
     dependencies:
-      fdir: 6.4.5(picomatch@4.0.2)
-      picomatch: 4.0.2
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
 
   tinyglobby@0.2.15:
     dependencies:
@@ -12711,7 +12687,7 @@ snapshots:
 
   ts-declaration-location@1.0.7(typescript@5.8.3):
     dependencies:
-      picomatch: 4.0.2
+      picomatch: 4.0.3
       typescript: 5.8.3
 
   tsconfig-paths@3.15.0:
