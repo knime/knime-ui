@@ -58,7 +58,7 @@ describe("SidebarNodeSearchResults", () => {
     const { wrapper, nodeRepositoryStore } = doMount();
 
     let results = wrapper.findComponent(SearchResults);
-    expect(results.props("searchScrollPosition")).toBe(
+    expect(results.props("scrollPosition")).toBe(
       nodeRepositoryStore.searchScrollPosition,
     );
 
