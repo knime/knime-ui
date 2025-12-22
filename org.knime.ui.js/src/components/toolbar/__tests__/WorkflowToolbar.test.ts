@@ -39,9 +39,14 @@ vi.mock("@knime/components", async (importOriginal) => {
 const { askConfirmationMock } = vi.hoisted(() => ({
   askConfirmationMock: vi.fn(() => Promise.resolve({ confirmed: true })),
 }));
-vi.mock("@knime/kds-components", () => ({
-  useKdsDynamicModal: () => ({ askConfirmation: askConfirmationMock }),
-}));
+vi.mock("@knime/kds-components", async (importOriginal) => {
+  const actual = await importOriginal<unknown>();
+  return {
+    // @ts-expect-error
+    ...actual,
+    useKdsDynamicModal: () => ({ askConfirmation: askConfirmationMock }),
+  };
+});
 
 vi.mock("@/environment");
 

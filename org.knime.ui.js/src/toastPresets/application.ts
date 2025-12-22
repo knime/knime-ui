@@ -6,6 +6,8 @@ import type { ToastPresetErrorHandler } from "./types";
 export type ApplicationToastPresets = {
   openProjectFailed: ToastPresetErrorHandler;
   saveProjectFailed: ToastPresetErrorHandler;
+  syncProjectFailed: ToastPresetErrorHandler;
+  syncProjectSizeLimit: ToastPresetErrorHandler;
 };
 
 export const getPresets = (
@@ -24,5 +26,19 @@ export const getPresets = (
         type: "error",
         headline: "Could not save workflow",
       }),
+
+    // --- Hacky sync error handling logic ------------------------------------
+    syncProjectFailed: ({ error }) =>
+      defaultAPIErrorHandler($toast, error, {
+        type: "error",
+        headline: "Could not sync workflow",
+      }),
+
+    syncProjectSizeLimit: ({ error }) =>
+      defaultAPIErrorHandler($toast, error, {
+        type: "info",
+        headline: "Project size limit reached",
+      }),
+    // ------------------------------------------------------------------------
   };
 };

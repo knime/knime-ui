@@ -209,7 +209,8 @@ final class Init {
             nodeCollections, //
             nodeCategoryExtensions, //
             selectionEventBus, //
-            linkVariants //
+            linkVariants, //
+            null // WorkflowSyncerProvider not needed in desktop UI
         );
 
         DesktopAPI.injectDependencies( //
@@ -226,8 +227,7 @@ final class Init {
             state.getWelcomeApEndpoint(), //
             createExampleProjects(), //
             state.getUserProfile(), //
-            progressReporter //
-        );
+            progressReporter);
 
         // Register listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
