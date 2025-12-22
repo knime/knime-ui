@@ -15,6 +15,10 @@ import {
   getPresets as getConnectivityPresets,
 } from "./connectivity";
 import {
+  type SearchToastPresets,
+  getPresets as getSearchPresets,
+} from "./search";
+import {
   type SpacesToastPresets,
   getPresets as getSpacesPresets,
 } from "./spaces";
@@ -30,6 +34,7 @@ import {
 type ToastPresetRegistry = {
   app: ApplicationToastPresets;
   connectivity: ConnectivityPresets;
+  search: SearchToastPresets;
   spaces: SpacesToastPresets;
   versions: VersionsToastPresets;
   workflow: WorkflowToastPresets;
@@ -42,6 +47,7 @@ const initToastPresets = ($toastService: ToastServiceProvider) => {
   registry = Object.freeze({
     app: getApplicationPresets($toastService),
     connectivity: getConnectivityPresets($toastService),
+    search: getSearchPresets($toastService),
     spaces: getSpacesPresets($toastService),
     versions: getVersionsPresets($toastService),
     workflow: getWorkflowPresets($toastService),
