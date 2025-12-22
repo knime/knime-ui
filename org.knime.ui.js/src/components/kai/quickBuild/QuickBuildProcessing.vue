@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Button, ProgressBar } from "@knime/components";
-import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
+import { ProgressBar } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 
 type Props = {
   status: string | null;
@@ -19,9 +19,14 @@ defineEmits(["abort"]);
       <div class="status">
         {{ status }}
       </div>
-      <Button class="cancel-button" with-border @click="$emit('abort')"
-        ><CancelIcon
-      /></Button>
+
+      <KdsButton
+        label="Cancel"
+        leading-icon="x-close"
+        variant="outlined"
+        size="xsmall"
+        @click="$emit('abort')"
+      />
     </div>
   </div>
 </template>
@@ -47,24 +52,6 @@ defineEmits(["abort"]);
       font-size: 13px;
       line-height: 19.5px;
       color: var(--knime-dove-gray);
-    }
-
-    & .cancel-button {
-      padding: 0;
-      width: 26px;
-      height: 26px;
-      border-color: var(--knime-silver-sand);
-
-      &:hover {
-        background-color: var(--knime-silver-sand);
-      }
-
-      & svg {
-        @mixin svg-icon-size 16;
-
-        margin-left: 4px;
-        margin-top: 1px;
-      }
     }
   }
 }

@@ -405,10 +405,10 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         }
 
         // 3. Starting from a single outport
-        return (
+        return Boolean(
           nodeRelation === "SUCCESSORS" &&
-          portTypeId &&
-          supportedPortKinds.includes(availablePortTypes[portTypeId]?.kind)
+            portTypeId &&
+            supportedPortKinds.includes(availablePortTypes[portTypeId]?.kind),
         );
       };
     },
