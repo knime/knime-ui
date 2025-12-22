@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { computed, ref } from "vue";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
+import { ValueSwitch } from "@knime/components";
+
 import { PortType } from "@/api/gateway-api/generated-api";
-import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
-import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
+import QuickAddNodeMenu from "@/components/nodeSearch/quickAdd/QuickAddNodeMenu.vue";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
@@ -17,11 +18,6 @@ import { mockStores } from "@/test/utils/mockStores";
 import QuickActionMenu, {
   type QuickActionMenuProps,
 } from "../QuickActionMenu.vue";
-import QuickAddNodeMenu from "../quickAdd/QuickAddNodeMenu.vue";
-import { useQuickActionMenu } from "../useQuickActionMenu";
-
-vi.mock("@/composables/useIsKaiEnabled");
-vi.mock("../useQuickActionMenu");
 
 const defaultPortMock = createPort();
 
@@ -36,12 +32,7 @@ vi.mock("@/plugins/shortcuts", () => ({
 }));
 
 describe("QuickActionMenu.vue", () => {
-  const doMount = ({
-    addNodeMock = vi.fn(),
-    props = {},
-    isKaiEnabled = true,
-    initialMenuMode = "quick-add" as "quick-add" | "quick-build",
-  } = {}) => {
+  const doMount = ({ props = {} } = {}) => {
     const defaultProps: QuickActionMenuProps = {
       nodeId: "node-id",
       position: {
@@ -88,23 +79,6 @@ describe("QuickActionMenu.vue", () => {
     mockedStores.applicationSettingsStore.hasNodeCollectionActive = true;
     mockedStores.applicationSettingsStore.hasNodeRecommendationsEnabled = true;
 
-    const isKaiEnabledRef = ref(isKaiEnabled); // this one we can modify externally to affect the computed one
-    const isKaiEnabledComputed = computed(() => isKaiEnabledRef.value);
-    vi.mocked(useIsKaiEnabled).mockReturnValueOnce({
-      isKaiEnabled: isKaiEnabledComputed,
-    });
-
-    const menuModeRef = ref<"quick-add" | "quick-build">(initialMenuMode);
-    const setQuickAddModeMock = vi.fn().mockImplementationOnce(() => {
-      menuModeRef.value = "quick-add";
-    });
-    vi.mocked(useQuickActionMenu).mockReturnValueOnce({
-      menuMode: menuModeRef,
-      setQuickAddMode: setQuickAddModeMock,
-      setQuickBuildMode: vi.fn(),
-      isQuickBuildModeAvailable: computed(() => true),
-    });
-
     const wrapper = mount(QuickActionMenu, {
       props: { ...defaultProps, ...props },
       global: {
@@ -129,11 +103,6 @@ describe("QuickActionMenu.vue", () => {
     return {
       wrapper,
       mockedStores,
-      addNodeMock,
-      $shortcuts,
-      isKaiEnabledRef,
-      menuModeRef,
-      setQuickAddModeMock,
     };
   };
 
@@ -141,85 +110,71 @@ describe("QuickActionMenu.vue", () => {
     vi.resetAllMocks();
   });
 
-  describe("quickActionMenu", () => {
-    it("re-emits menuClose", () => {
-      const { wrapper } = doMount();
-      wrapper.findComponent({ name: "FloatingMenu" }).vm.$emit("menuClose");
+  it("re-emits menuClose", () => {
+    const { wrapper } = doMount();
+    wrapper.findComponent({ name: "FloatingMenu" }).vm.$emit("menuClose");
 
-      expect(wrapper.emitted("menuClose")).toBeTruthy();
+    expect(wrapper.emitted("menuClose")).toBeTruthy();
+  });
+
+  it("closes from button", async () => {
+    const { wrapper } = doMount();
+    await wrapper.find(".close-menu-btn").trigger("click");
+
+    expect(wrapper.emitted("menuClose")).toBeTruthy();
+  });
+
+  it("centers to port", () => {
+    const { wrapper } = doMount();
+
+    expect(
+      wrapper.findComponent({ name: "FloatingMenu" }).props("canvasPosition"),
+    ).toStrictEqual({
+      x: 14.5,
+      y: 10,
     });
+  });
 
-    it("centers to port", () => {
-      const { wrapper } = doMount();
+  describe("mode switcher", () => {
+    it("renders k-ai mode if AI assistant is enabled", async () => {
+      const { wrapper, mockedStores } = doMount();
 
-      expect(
-        wrapper.findComponent({ name: "FloatingMenu" }).props("canvasPosition"),
-      ).toStrictEqual({
-        x: 14.5,
-        y: 10,
-      });
+      const getModes = () =>
+        wrapper.findComponent(ValueSwitch).props("possibleValues");
+
+      expect(getModes()).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: "k-ai" })]),
+      );
+
+      mockedStores.applicationSettingsStore.setIsKaiEnabled(false);
+      await nextTick();
+
+      expect(getModes()).not.toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: "k-ai" })]),
+      );
     });
+  });
 
-    it("renders the 'Build with K-AI' button if K-AI is enabled", () => {
-      const { wrapper } = doMount();
+  it("updates style config", async () => {
+    const { wrapper } = doMount();
 
-      const footer = wrapper.find(".footer");
-      expect(footer.text()).toContain("Build with K-AI");
-    });
+    const getFloatingMenu = () =>
+      wrapper.findComponent({ name: "FloatingMenu" });
+    expect(getFloatingMenu().props("anchor")).toBe("top-left");
+    expect(getFloatingMenu().props("topOffset")).toBe(0);
 
-    it("does not render the 'Build with K-AI' button if K-AI is disabled", () => {
-      const { wrapper } = doMount({ isKaiEnabled: false });
+    const { updateMenuStyle } = wrapper
+      .findComponent(QuickAddNodeMenu)
+      .props("quickActionContext");
 
-      const footer = wrapper.find(".footer");
-      expect(footer.exists()).toBe(false);
-    });
+    updateMenuStyle({ anchor: "bottom-left", topOffset: 82, height: "100px" });
 
-    it("immediately switches to Quick Add mode from Quick Build mode if K-AI is disabled", async () => {
-      const { wrapper, setQuickAddModeMock } = doMount({
-        isKaiEnabled: false,
-        initialMenuMode: "quick-build",
-      });
-      await wrapper.vm.$nextTick();
+    await nextTick();
 
-      expect(setQuickAddModeMock).toHaveBeenCalled();
-      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(false);
-      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
-    });
-
-    it("switches to Quick Add mode from Quick Build mode when K-AI gets disabled while mounted", async () => {
-      const { wrapper, isKaiEnabledRef, setQuickAddModeMock } = doMount({
-        initialMenuMode: "quick-build",
-      });
-
-      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(true);
-      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
-
-      isKaiEnabledRef.value = false;
-      await wrapper.vm.$nextTick();
-
-      expect(setQuickAddModeMock).toHaveBeenCalled();
-      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(false);
-      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
-    });
-
-    it("respects initialMode prop for quick-add mode", () => {
-      const { wrapper } = doMount({
-        props: { initialMode: "quick-add" },
-        initialMenuMode: "quick-add",
-      });
-
-      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
-      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(false);
-    });
-
-    it("respects initialMode prop for quick-build mode", () => {
-      const { wrapper } = doMount({
-        props: { initialMode: "quick-build" },
-        initialMenuMode: "quick-build",
-      });
-
-      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(true);
-      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
-    });
+    expect(getFloatingMenu().props("anchor")).toBe("bottom-left");
+    expect(getFloatingMenu().props("topOffset")).toBe(82);
+    expect(wrapper.find(".quick-action-content").attributes("style")).toMatch(
+      "height: 100px",
+    );
   });
 });
