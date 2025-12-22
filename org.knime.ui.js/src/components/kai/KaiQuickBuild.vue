@@ -1,14 +1,9 @@
 <script setup lang="ts">
-import { computed, toRefs, watch } from "vue";
+import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import { Button } from "@knime/components";
-import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
-import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
-
-import type { XY } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
-import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import type { QuickActionMenuContext } from "../workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 
 import { useKaiPanels } from "./panels/useKaiPanels";
 import QuickBuildInput from "./quickBuild/QuickBuildInput.vue";
@@ -18,22 +13,18 @@ import { useQuickBuild } from "./quickBuild/useQuickBuild";
 
 export type QuickBuildMenuState = "PROCESSING" | "RESULT" | "INPUT" | "NONE";
 
+const QUICK_BUILD_PROCESSING_OFFSET = 70;
+const QUICK_BUILD_RESULT_OFFSET = -40;
+
 type Props = {
-  nodeId: string | null;
-  startPosition: XY;
+  quickActionContext: QuickActionMenuContext;
 };
 
-const props = withDefaults(defineProps<Props>(), {
-  nodeId: null,
-});
+const props = defineProps<Props>();
 
-const emit = defineEmits<{
-  menuBack: [];
-  quickBuildStateChanged: [QuickBuildMenuState];
-}>();
-
-const { nodeId, startPosition } = toRefs(props);
-const { closeQuickActionMenu } = useCanvasAnchoredComponentsStore();
+const nodeId = computed(() => props.quickActionContext.nodeId);
+const canvasPosition = computed(() => props.quickActionContext.canvasPosition);
+const nodeRelation = computed(() => props.quickActionContext.nodeRelation);
 
 const { panelComponent } = useKaiPanels();
 
@@ -45,7 +36,7 @@ const {
   lastUserMessage,
   abortSendMessage,
   statusUpdate,
-} = useQuickBuild({ nodeId, startPosition });
+} = useQuickBuild({ nodeId, startPosition: canvasPosition });
 
 const { usage } = storeToRefs(useAIAssistantStore());
 
@@ -71,59 +62,61 @@ const menuState = computed<QuickBuildMenuState>(() => {
 });
 
 watch(menuState, (menuState) => {
-  emit("quickBuildStateChanged", menuState);
+  switch (menuState) {
+    case "PROCESSING": {
+      props.quickActionContext.updateMenuStyle({
+        topOffset: QUICK_BUILD_PROCESSING_OFFSET,
+      });
+      return;
+    }
 
-  if (menuState === "NONE") {
-    closeQuickActionMenu();
+    case "RESULT": {
+      props.quickActionContext.updateMenuStyle({
+        topOffset: QUICK_BUILD_RESULT_OFFSET,
+      });
+      return;
+    }
+
+    case "INPUT": {
+      props.quickActionContext.updateMenuStyle({
+        anchor: nodeRelation.value ? "top-left" : "top-right",
+      });
+      return;
+    }
+
+    case "NONE": {
+      props.quickActionContext.updateMenuStyle({});
+      props.quickActionContext.closeMenu();
+    }
   }
 });
 </script>
 
 <template>
   <div class="quick-build-menu">
-    <div v-if="menuState === 'INPUT' || menuState === 'RESULT'" class="header">
-      K-AI Build Mode
-      <Button
+    <Component :is="panelComponent" v-if="panelComponent" class="panel" />
+    <template v-else>
+      <QuickBuildProcessing
+        v-if="menuState === 'PROCESSING'"
+        :status="statusUpdate?.message ?? null"
+        @abort="abortSendMessage"
+      />
+      <QuickBuildResult
+        v-if="menuState === 'RESULT'"
+        :message="result!.message"
+        :interaction-id="result!.interactionId"
+        @close="quickActionContext.closeMenu"
+      />
+      <QuickBuildInput
         v-if="menuState === 'INPUT'"
-        with-border
-        @click="$emit('menuBack')"
-      >
-        <GoBackIcon />
-      </Button>
-      <Button
-        v-else-if="menuState === 'RESULT'"
-        with-border
-        @click="closeQuickActionMenu"
-      >
-        <CancelIcon />
-      </Button>
-    </div>
-
-    <div class="main">
-      <component :is="panelComponent" v-if="panelComponent" class="panel" />
-      <template v-else>
-        <QuickBuildProcessing
-          v-if="menuState === 'PROCESSING'"
-          :status="statusUpdate?.message ?? null"
-          @abort="abortSendMessage"
-        />
-        <QuickBuildResult
-          v-if="menuState === 'RESULT'"
-          :message="result!.message"
-          :interaction-id="result!.interactionId"
-          @close="closeQuickActionMenu"
-        />
-        <QuickBuildInput
-          v-if="menuState === 'INPUT'"
-          :prompt="result?.message"
-          :interaction-id="result?.interactionId"
-          :last-user-message="lastUserMessage"
-          :error-message="errorMessage"
-          :usage="usage"
-          @send-message="sendMessage"
-        />
-      </template>
-    </div>
+        :prompt="result?.message"
+        :interaction-id="result?.interactionId"
+        :last-user-message="lastUserMessage"
+        :error-message="errorMessage"
+        :usage="usage"
+        @send-message="sendMessage"
+      />
+    </template>
   </div>
 </template>
 
@@ -132,47 +125,13 @@ watch(menuState, (menuState) => {
 
 & .quick-build-menu {
   display: flex;
-  flex-direction: column;
   padding: var(--space-8);
-  gap: var(--space-8);
+  margin-top: var(--space-8);
+  flex-direction: column;
+  justify-content: flex-end;
 
-  & .header {
-    margin-top: calc(var(--space-8) * -1);
-    height: 42px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--knime-silver-sand);
-    font-weight: 500;
-    font-size: 16px;
-
-    & button {
-      padding: 0;
-      width: 30px;
-      height: 30px;
-      border-color: var(--knime-silver-sand);
-
-      &:hover {
-        background-color: var(--knime-silver-sand);
-      }
-
-      & svg {
-        @mixin svg-icon-size 18;
-
-        margin-left: 5px;
-      }
-    }
-  }
-
-  & .main {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-
-    & .panel:not(.unlicensed-panel) {
-      min-height: 200px;
-    }
+  & .panel:not(.unlicensed-panel) {
+    min-height: 200px;
   }
 }
 </style>
