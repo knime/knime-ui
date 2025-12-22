@@ -125,7 +125,7 @@ const searchPlaceholderText = computed(() => {
   }
 
   return hasNodeCollectionActive.value
-    ? `Search in ${activeNodeCollection} nodes`
+    ? `Search in ${activeNodeCollection.value} nodes`
     : "Search all nodes";
 });
 </script>
@@ -136,6 +136,7 @@ const searchPlaceholderText = computed(() => {
       <div class="search-header">
         <ValueSwitch
           compact
+          data-test-id="search-context-switch"
           :disabled="!nodeRepositoryLoaded"
           :model-value="searchContext"
           :possible-values="[

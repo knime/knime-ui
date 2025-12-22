@@ -91,7 +91,7 @@ defineExpose({ focusFirst });
     :fetch-more="searchActions.searchNodesNextPage"
     :is-loading="isLoadingSearchResults"
     @nav-reached-top="emit('navReachedTop', $event)"
-    @enter-key="emit('itemEnterKey', $event)"
+    @item-enter-key="emit('itemEnterKey', $event)"
     @show-node-details="emit('showNodeDetails', $event)"
   >
     <template #nodesTemplate="slotProps">
