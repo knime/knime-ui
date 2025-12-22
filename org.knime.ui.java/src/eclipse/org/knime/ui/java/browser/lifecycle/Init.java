@@ -210,7 +210,7 @@ final class Init {
             nodeCategoryExtensions, //
             selectionEventBus, //
             linkVariants, //
-            null // WorkflowSyncerProvider not needed in desktop UI
+            null // WorkflowSyncerManager not needed in desktop UI
         );
 
         DesktopAPI.injectDependencies( //
