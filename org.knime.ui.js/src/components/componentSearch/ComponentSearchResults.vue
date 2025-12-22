@@ -20,11 +20,15 @@ const componentSearchStore = useComponentSearchStore();
 const { isLoading, hasLoaded, results, searchScrollPosition } =
   storeToRefs(componentSearchStore);
 
-watch(toRef(props, "active"), () => {
-  if (props.active && !hasLoaded.value) {
-    componentSearchStore.searchComponents();
-  }
-});
+watch(
+  toRef(props, "active"),
+  () => {
+    if (props.active && !hasLoaded.value) {
+      componentSearchStore.searchComponents();
+    }
+  },
+  { immediate: true },
+);
 
 const infiniteList = useTemplateRef("infiniteList");
 const focusFirst = () => {
