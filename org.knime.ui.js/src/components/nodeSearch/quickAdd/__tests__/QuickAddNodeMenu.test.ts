@@ -1,18 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { type Mock, afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
 import { Button, NodePreview } from "@knime/components";
 
 import {
   NativeNodeInvariants,
+  type NodeTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
+  PORT_TYPE_IDS,
   createAvailablePortTypes,
   createNodePortTemplate,
   createNodeTemplate,
@@ -22,9 +24,7 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import QuickAddNodeMenu, {
-  type QuickAddNodeMenuProps,
-} from "../QuickAddNodeMenu.vue";
+import QuickAddNodeMenu from "../QuickAddNodeMenu.vue";
 
 vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
@@ -72,25 +72,35 @@ vi.mock("@/plugins/shortcuts", () => ({
 }));
 
 describe("QuickAddNodeMenu.vue", () => {
+  type ComponentProps = InstanceType<typeof QuickAddNodeMenu>["$props"];
+  const defaultProps: ComponentProps = {
+    quickActionContext: {
+      nodeId: "node-id",
+      canvasPosition: { x: 14.5, y: 10 },
+      port: createPort({
+        index: 1,
+        typeId: PORT_TYPE_IDS.BufferedDataTable,
+        connectedVia: [],
+      }),
+      nodeRelation: "SUCCESSORS",
+      closeMenu: vi.fn(),
+      updateMenuStyle: vi.fn(),
+    },
+  };
+
+  type MounOpts = {
+    nodeRecommendationsResponse?: NodeTemplate[];
+    getNodeByIdMock?: Mock;
+    isWriteableMock?: boolean;
+    nodeRepositoryLoadedMock?: boolean;
+  };
+
   const doMount = ({
-    props = {},
     nodeRecommendationsResponse = defaultNodeRecommendationsResponse,
     isWriteableMock = true,
     getNodeByIdMock = vi.fn(),
     nodeRepositoryLoadedMock = true,
-  } = {}) => {
-    const defaultProps: QuickAddNodeMenuProps = {
-      nodeId: "node-id",
-      canvasPosition: { x: 14.5, y: 10 },
-      portIndex: 1,
-      port: createPort({
-        index: 1,
-        typeId: "org.knime.core.node.BufferedDataTable",
-        connectedVia: [],
-      }),
-      nodeRelation: "SUCCESSORS",
-    };
-
+  }: MounOpts = {}) => {
     mockedAPI.noderepository.getNodeRecommendations.mockReturnValue(
       nodeRecommendationsResponse,
     );
@@ -142,7 +152,7 @@ describe("QuickAddNodeMenu.vue", () => {
     mockedStores.applicationSettingsStore.hasNodeRecommendationsEnabled = true;
 
     const wrapper = mount(QuickAddNodeMenu, {
-      props: { ...defaultProps, ...props },
+      props: defaultProps,
       global: {
         plugins: [mockedStores.testingPinia],
         mocks: {
@@ -164,7 +174,8 @@ describe("QuickAddNodeMenu.vue", () => {
     };
   };
 
-  beforeEach(() => {
+  afterEach(() => {
+    vi.clearAllMocks();
     vi.resetAllMocks();
   });
 
@@ -209,6 +220,13 @@ describe("QuickAddNodeMenu.vue", () => {
       );
     });
 
+    it("updates the QuickActionMenu style on mount", () => {
+      doMount();
+      expect(
+        defaultProps.quickActionContext.updateMenuStyle,
+      ).toHaveBeenCalledWith({ height: "445px", anchor: "top-left" });
+    });
+
     it("allows dynamic updates of the port", async () => {
       const { wrapper, mockedStores } = doMount();
       await nextTick();
@@ -218,11 +236,13 @@ describe("QuickAddNodeMenu.vue", () => {
 
       // update props
       await wrapper.setProps({
-        portIndex: 2,
-        port: {
-          index: 2,
-          typeId: "org.some.otherPorType",
-          connectedVia: [],
+        quickActionContext: {
+          ...defaultProps.quickActionContext,
+          port: {
+            index: 2,
+            typeId: "org.some.otherPorType",
+            connectedVia: [],
+          },
         },
       });
       await new Promise((r) => setTimeout(r, 0));
@@ -236,20 +256,22 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("adds node in global mode where no source port exists", async () => {
-      const props = {
-        portIndex: null,
-        nodeId: null,
-        port: null,
-        nodeRelation: null,
-      };
-      const { wrapper, mockedStores } = doMount({ props });
+      const { wrapper, mockedStores } = doMount();
 
+      await nextTick();
+      await wrapper.setProps({
+        quickActionContext: {
+          ...defaultProps.quickActionContext,
+          nodeId: null,
+          port: null,
+          nodeRelation: null,
+        },
+      });
       await nextTick();
 
       const node1 = wrapper.findAll(".node").at(0);
       await node1?.trigger("click");
 
-      expect(mockedStores.quickAddNodesStore.portTypeId).toBeNull();
       expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith(
         expect.objectContaining({
           nodeFactory: {
@@ -257,10 +279,12 @@ describe("QuickAddNodeMenu.vue", () => {
               "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
           },
           sourceNodeId: null,
-          sourcePortIdx: null,
+          sourcePortIdx: undefined,
           nodeRelation: null,
         }),
       );
+      await flushPromises();
+      expect(defaultProps.quickActionContext.closeMenu).toHaveBeenCalled();
     });
 
     it("triggers shortcut hotkey in search field to switch between ports", async () => {
@@ -293,6 +317,8 @@ describe("QuickAddNodeMenu.vue", () => {
         sourcePortIdx: 1,
         nodeRelation: "SUCCESSORS",
       });
+      await flushPromises();
+      expect(defaultProps.quickActionContext.closeMenu).toHaveBeenCalled();
     });
 
     it("does not add node if workflow is not writeable", async () => {
@@ -303,9 +329,7 @@ describe("QuickAddNodeMenu.vue", () => {
       const node1 = wrapper.findAll(".node").at(0);
       await node1?.trigger("click");
 
-      expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledTimes(
-        0,
-      );
+      expect(mockedStores.nodeInteractionsStore.addNode).not.toHaveBeenCalled();
     });
 
     it("does display overlay if workflow coach is disabled", async () => {
@@ -386,6 +410,8 @@ describe("QuickAddNodeMenu.vue", () => {
             nodeRelation: "SUCCESSORS",
           },
         );
+        await flushPromises();
+        expect(defaultProps.quickActionContext.closeMenu).toHaveBeenCalled();
       });
 
       it.each(["click", "keydown.enter"])(
