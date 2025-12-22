@@ -155,16 +155,17 @@ const searchDownKey = () => {
   searchResults.value?.focusFirst();
 };
 
-const searchHandleShortcuts = (e: KeyboardEvent) => {
-  // bypass disabled shortcuts for <input> elements only for the quick add node
-  let [shortcut = null] = $shortcuts.findByHotkey(e);
+const searchHandleShortcuts = (event: KeyboardEvent) => {
+  // shortcuts are disabled on inputs; avoid this behavior for this specific
+  // case to allow cycling through ports via the shortcut
+  const [shortcut = null] = $shortcuts.findByHotkey(event);
   if (
     shortcut === "openQuickNodeInsertionMenu" &&
     $shortcuts.isEnabled(shortcut)
   ) {
     $shortcuts.dispatch(shortcut);
-    e.preventDefault();
-    e.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
   }
 };
 
