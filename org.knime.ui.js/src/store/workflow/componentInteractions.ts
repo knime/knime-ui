@@ -176,9 +176,7 @@ export const useComponentInteractionsStore = defineStore(
               text: "Reveal in space explorer",
               callback: () => {
                 useRevealInSpaceExplorer().revealSingleItem(
-                  result.uploadedItem!,
-                  "",
-                  true,
+                  result.uploadedItem!
                 );
               },
             },
