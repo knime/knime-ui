@@ -237,7 +237,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
     const toast = mockedObject(getToastsProvider());
 
     it("should show a toast when an error is thrown", async () => {
-      mockedAPI.desktop.getAncestorInfo.mockRejectedValue(new Error(""));
+      mockedAPI.space.getAncestorInfo.mockRejectedValue(new Error(""));
 
       const { wrapper } = await doMount({
         recentWorkflow: recentWorkflows.hubProject,
@@ -281,7 +281,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
     });
 
     it("should reveal nested items in hub projects", async () => {
-      mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
+      mockedAPI.space.getAncestorInfo.mockResolvedValue({
         ancestorItemIds: ["3"],
         itemName: null,
       });
@@ -294,7 +294,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
       await flushPromises();
 
       expect(toast.show).not.toHaveBeenCalled();
-      expect(mockedAPI.desktop.getAncestorInfo).toHaveBeenCalled();
+      expect(mockedAPI.space.getAncestorInfo).toHaveBeenCalled();
 
       // fetch is done in SpaceExplorer on change of ProjectPath
       // simulate loading being done:
@@ -311,7 +311,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
     });
 
     it("should show toast on name change on hub", async () => {
-      mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
+      mockedAPI.space.getAncestorInfo.mockResolvedValue({
         ancestorItemIds: ["3"],
         itemName: "Some other name",
       });
@@ -323,7 +323,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
       await triggerOption(wrapper);
       await flushPromises();
 
-      expect(mockedAPI.desktop.getAncestorInfo).toHaveBeenCalled();
+      expect(mockedAPI.space.getAncestorInfo).toHaveBeenCalled();
 
       expect(toast.show).toHaveBeenCalledWith(
         expect.objectContaining({

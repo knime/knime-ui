@@ -191,11 +191,6 @@ export type NodeCategoryWithExtendedPorts = NodeCategory & {
   nodes?: NodeTemplateWithExtendedPorts[];
 };
 
-export type AncestorInfo = {
-  ancestorItemIds: string[];
-  itemName: string | null;
-};
-
 export type NameCollisionHandling =
   | "OVERWRITE"
   | "NOOP"
