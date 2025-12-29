@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import * as $shapes from "@/style/shapes";
+import { createNativeNode, createWorkflowAnnotation } from "@/test/factories";
 import { geometry } from "@/util/geometry";
 
 describe("Workflow-Objects Bounds", () => {
@@ -16,7 +17,6 @@ describe("Workflow-Objects Bounds", () => {
     expect(
       geometry.getWorkflowObjectBounds(
         {
-          projectId: "foo",
           nodes: {},
           workflowAnnotations: [],
         },
@@ -36,11 +36,8 @@ describe("Workflow-Objects Bounds", () => {
     expect(
       geometry.getWorkflowObjectBounds(
         {
-          projectId: "foo",
           nodes: {
-            "root:0": {
-              position: { x: 200, y: 200 },
-            },
+            "root:0": createNativeNode({ position: { x: 200, y: 200 } }),
           },
           workflowAnnotations: [],
         },
@@ -60,36 +57,20 @@ describe("Workflow-Objects Bounds", () => {
     expect(
       geometry.getWorkflowObjectBounds(
         {
-          projectId: "foo",
           nodes: {},
           workflowAnnotations: [
-            {
+            createWorkflowAnnotation({
               id: "root:1",
-              bounds: {
-                x: -10,
-                y: -10,
-                width: 20,
-                height: 20,
-              },
-            },
-            {
+              bounds: { x: -10, y: -10, width: 20, height: 20 },
+            }),
+            createWorkflowAnnotation({
               id: "root:2",
-              bounds: {
-                x: 0,
-                y: 0,
-                width: 20,
-                height: 20,
-              },
-            },
-            {
+              bounds: { x: 0, y: 0, width: 20, height: 20 },
+            }),
+            createWorkflowAnnotation({
               id: "root:3",
-              bounds: {
-                x: -5,
-                y: -5,
-                width: 20,
-                height: 20,
-              },
-            },
+              bounds: { x: -5, y: -5, width: 20, height: 20 },
+            }),
           ],
         },
         {
@@ -110,18 +91,12 @@ describe("Workflow-Objects Bounds", () => {
     expect(
       geometry.getWorkflowObjectBounds(
         {
-          projectId: "foo",
-          nodes: { "root:0": { position: { x: 10, y: 10 } } },
+          nodes: { "root:0": createNativeNode({ position: { x: 10, y: 10 } }) },
           workflowAnnotations: [
-            {
+            createWorkflowAnnotation({
               id: "root:1",
-              bounds: {
-                x: 26,
-                y: 26,
-                width: 26,
-                height: 26,
-              },
-            },
+              bounds: { x: 26, y: 26, width: 26, height: 26 },
+            }),
           ],
         },
         { padding: true },
@@ -140,12 +115,12 @@ describe("Workflow-Objects Bounds", () => {
     expect(
       geometry.getWorkflowObjectBounds(
         {
-          projectId: "foo",
           nodes: {
-            "root:0": { position: { x: 10, y: 10 } },
-            "root:1": { position: { x: -10, y: -10 } },
-            "root:2": { position: { x: 20, y: 20 } },
+            "root:0": createNativeNode({ position: { x: 10, y: 10 } }),
+            "root:1": createNativeNode({ position: { x: -10, y: -10 } }),
+            "root:2": createNativeNode({ position: { x: 20, y: 20 } }),
           },
+          workflowAnnotations: [],
         },
         {
           padding: true,
@@ -165,12 +140,12 @@ describe("Workflow-Objects Bounds", () => {
     expect(
       geometry.getWorkflowObjectBounds(
         {
-          projectId: "foo",
           nodes: {
-            "root:0": { position: { x: 10, y: 10 } },
-            "root:1": { position: { x: -10, y: -10 } },
-            "root:2": { position: { x: 20, y: 20 } },
+            "root:0": createNativeNode({ position: { x: 10, y: 10 } }),
+            "root:1": createNativeNode({ position: { x: -10, y: -10 } }),
+            "root:2": createNativeNode({ position: { x: 20, y: 20 } }),
           },
+          workflowAnnotations: [],
         },
         {
           padding: false,

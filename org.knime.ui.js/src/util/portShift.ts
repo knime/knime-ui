@@ -16,8 +16,8 @@ import { nodeSize, portSize } from "@/style/shapes";
 const portShift = (
   portIndex: number,
   portCount: number,
-  isMetanode: boolean,
-  isOutPort: boolean,
+  isMetanode?: boolean,
+  isOutPort?: boolean,
 ): [number, number] => {
   const x = isOutPort ? nodeSize + portSize / 2 : -portSize / 2;
 

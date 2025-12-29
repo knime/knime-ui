@@ -99,6 +99,7 @@ launch.json
 **/target/
 **/bin/
 .history/
+.cursor/
 
 # Maven Frontend Plugin
 /node/

@@ -2,13 +2,10 @@
 <script lang="ts">
 import { type PropType, type StyleValue, defineComponent } from "vue";
 
-import {
-  Node,
-  type NodeAnnotation,
-  type StyleRange,
-} from "@/api/gateway-api/generated-api";
+import { Node, type NodeAnnotation } from "@/api/gateway-api/generated-api";
 import AutoSizeForeignObject from "@/components/common/AutoSizeForeignObject.vue";
 import { applyStyleRanges } from "@/util/styleRanges";
+import type { TextRange } from "@/util/styleRanges";
 
 export default defineComponent({
   components: { AutoSizeForeignObject },
@@ -88,7 +85,7 @@ export default defineComponent({
     },
   },
   methods: {
-    getTextStyles(styledTextPart: StyleRange): StyleValue {
+    getTextStyles(styledTextPart: TextRange): StyleValue {
       const lineHeight = 1.1;
 
       return {

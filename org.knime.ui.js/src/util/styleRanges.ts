@@ -1,12 +1,17 @@
+import type { StyleRange } from "@/api/gateway-api/generated-api";
+
+type NormalizedStyleRange = Pick<StyleRange, "start" | "length"> &
+  Partial<Omit<StyleRange, "start" | "length">>;
+
+export type TextRange = Omit<NormalizedStyleRange, "start" | "length"> & {
+  text: string;
+};
+
 /**
  * Normalize a given styleRange list:
  * 1. handle empty list
  * 2. return fallback if format is not supported (overlapping ranges)
  * 3. fill gaps between ranges
- * @param {Array} styleRanges
- * @param {String} text
- * @return {{ normalized: Array, isValid: boolean }}
- *   Normalized styleRange array, and a flag indicating whether the input range was valid
  *
  * @example
  * normalize([{ start: 1, length: 2 }], 'foobarbaz') === {
@@ -24,7 +29,13 @@
  *   isValid: false
  * }
  */
-const normalize = (styleRanges, text) => {
+const normalize = (
+  styleRanges: Array<Partial<StyleRange>>,
+  text: string,
+): {
+  normalized: Array<NormalizedStyleRange>;
+  isValid: boolean;
+} => {
   const getFallback = () => [{ start: 0, length: text.length }];
 
   let normalized = JSON.parse(JSON.stringify(styleRanges));
@@ -103,10 +114,6 @@ const normalize = (styleRanges, text) => {
 
 /**
  * Apply styleRanges to a given text
- * @param {Array} styleRanges
- * @param {string} text
- * @return {{ textRanges: Array, isValid: boolean }}
- *   An array of text chunks with style info, and a flag indicating whether the input was valid
  *
  * @example
  * applyStyleRanges([{ start: 1, length: 2, bold: true}, { start: 5, length: 3, color: 'red'}], 'foobarbaz') === {
@@ -126,15 +133,17 @@ const normalize = (styleRanges, text) => {
  *   isValid: false
  * }
  */
-export const applyStyleRanges = (styleRanges, text) => {
+export const applyStyleRanges = (
+  styleRanges: Array<Partial<StyleRange>>,
+  text: string,
+): {
+  textRanges: Array<TextRange>;
+  isValid: boolean;
+} => {
   let { normalized, isValid } = normalize(styleRanges, text);
-  let textRanges = normalized.map((styleRange) => ({
-    ...styleRange,
-    text: text.substr(styleRange.start, styleRange.length),
+  let textRanges = normalized.map(({ start, length, ...rest }) => ({
+    ...rest,
+    text: text.substring(start, start + length),
   }));
-  textRanges.forEach((range) => {
-    delete range.start;
-    delete range.length;
-  });
   return { textRanges, isValid };
 };
