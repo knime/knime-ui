@@ -12,7 +12,6 @@ const getRandomNoise = () => (Math.random() * 2 - 1) * 25;
 /**
  * Tries to fit clipboard objects beginning at the screen's center
  * If no free space is found within the canvas's border, it will be pasted directly at center
- * @returns { Object } x and y position
  */
 export const centerStrategy = ({
   visibleFrame,
@@ -20,7 +19,7 @@ export const centerStrategy = ({
 }: {
   visibleFrame: GeometryBounds;
   clipboardContent: { objectBounds: GeometryArea };
-}) => {
+}): XY => {
   const { x, y } = geometry.utils.getCenteredPositionInVisibleFrame(
     visibleFrame,
     clipboardContent.objectBounds,
@@ -36,8 +35,7 @@ export const centerStrategy = ({
 
 /**
  * Tries to fit clipboard objects beginning at a fixed positive offset with random noise from the original position
- * If the offsetted position is not visible within the canvas' borders, it returns null
- * @returns { Object | null } x and y position
+ * If the offset position is not visible within the canvas' borders, it returns null
  */
 export const offsetStrategy = ({
   clipboardContent,
@@ -45,7 +43,7 @@ export const offsetStrategy = ({
 }: {
   visibleFrame: GeometryBounds;
   clipboardContent: { objectBounds: GeometryBounds };
-}) => {
+}): XY | null => {
   const { objectBounds } = clipboardContent;
   const meanOffset = 120;
 
@@ -81,7 +79,6 @@ export const pastePartsAt = ({
   clipboardContent: { objectBounds: GeometryBounds };
   isWorkflowEmpty: boolean;
 }) => {
-  /* Workflow is empty */
   if (isWorkflowEmpty) {
     consola.info("workflow is empty: paste to center");
     return {

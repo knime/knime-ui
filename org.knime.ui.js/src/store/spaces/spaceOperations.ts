@@ -18,7 +18,6 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { findSpaceGroupFromSpaceId, isProjectOpen } from "@/store/spaces/util";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-import ITEM_TYPES from "@/util/spaceItemTypes";
 
 import { useSpaceAuthStore } from "./auth";
 import { type PathTriplet, useSpaceCachingStore } from "./caching";
@@ -780,7 +779,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
       return workflowGroupContent.items
         .filter(
           (item) =>
-            item.type === ITEM_TYPES.WorkflowGroup &&
+            item.type === SpaceItem.TypeEnum.WorkflowGroup &&
             openProjectsFolders.includes(item.id),
         )
         .map((item) => item.id);
