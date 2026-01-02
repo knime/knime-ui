@@ -130,12 +130,19 @@ const menuItems = computed((): Array<MenuItemWithPort> => {
     return sidePortGroups.value!.map(([groupName]) => ({ text: groupName }));
   }
 
-  return searchResults.value.map(({ typeId, name }) => ({
-    port: { typeId },
-    text: name,
-    icon: portIcon({ typeId }) as any,
-    title: name.length > portNameSizeThreshold ? name : null,
-  }));
+  return searchResults.value.map(({ typeId, name }) => {
+    const menuItem: MenuItemWithPort = {
+      port: { typeId },
+      text: name,
+      icon: portIcon({ typeId }) as any,
+    };
+
+    if (name.length > portNameSizeThreshold) {
+      menuItem.title = name;
+    }
+
+    return menuItem;
+  });
 });
 
 const shouldDisplaySearchBar = computed(() =>
