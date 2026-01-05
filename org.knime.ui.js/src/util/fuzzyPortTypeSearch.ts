@@ -1,5 +1,6 @@
 import Fuse from "fuse.js";
 
+import type { AvailablePortTypes, ExtendedPortType } from "@/api/custom-types";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 
 const fuseOptions = {
@@ -9,21 +10,18 @@ const fuseOptions = {
 };
 
 /**
- * Remove duplicate objects in an array by a given key's value
- * @param {Array} array the input array of objects
- * @param {String} compareKey the object property to use for comparison. Repeated values will be removed
- * @returns {Array}
+ * Remove duplicate ports by name
  */
-const removeDuplicates = (array, compareKey = "name") => {
-  const uniqueIds = [];
+const removeDuplicates = (array: ExtendedPortType[]): ExtendedPortType[] => {
+  const uniqueIds: string[] = [];
   const out = array.filter((item) => {
-    const isDuplicate = uniqueIds.includes(item[compareKey]);
+    const isDuplicate = uniqueIds.includes(item.name);
 
     if (isDuplicate) {
       return false;
     }
 
-    uniqueIds.push(item[compareKey]);
+    uniqueIds.push(item.name);
 
     return true;
   });
@@ -33,17 +31,17 @@ const removeDuplicates = (array, compareKey = "name") => {
 
 /**
  * Creates a port search function from the given criteria
- * @param {Object} options
- * @param {Record<string, Object>} options.availablePortTypes A dictionary object containing all the possible port types
- * @param {Array<String>} options.suggestedTypeIds A dictionary object containing all the possible port types
- * @param {Array<String>} options.typeIds A list of port type ids that will be used for the search
- * @param {Boolean} [options.showHidden] Whether hidden ports should be included in the search
  */
 export const makeTypeSearch = ({
   availablePortTypes,
   typeIds,
   suggestedTypeIds = [],
   showHidden = false,
+}: {
+  availablePortTypes: AvailablePortTypes;
+  typeIds: string[];
+  suggestedTypeIds?: string[];
+  showHidden?: boolean;
 }) => {
   const includeType = false;
   const suggestedPorts = suggestedTypeIds.map(
@@ -68,7 +66,7 @@ export const makeTypeSearch = ({
   });
 
   // displays all items for an empty search
-  return function search(input = "", options) {
+  return function search(input = "", options?: Fuse.FuseSearchOptions) {
     const results =
       input === ""
         ? allPortTypes

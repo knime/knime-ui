@@ -4,20 +4,24 @@ import { mount } from "@vue/test-utils";
 
 import { MenuItems, SearchInput } from "@knime/components";
 
+import { PortType } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/workflowEditor/SVGKanvas/FloatingMenu/FloatingMenu.vue";
+import type { PortTypeMenuState } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { mockStores } from "@/test/utils/mockStores";
 import PortTypeMenu from "../PortTypeMenu.vue";
 
 describe("PortTypeMenu.vue", () => {
-  const doMount = ({ props } = {}) => {
+  const doMount = ({
+    props,
+  }: { props?: Partial<PortTypeMenuState["props"]> } = {}) => {
     const defaultProps = {
       position: {
         x: 10,
         y: 10,
       },
-      side: "output",
+      side: "output" as const,
       portGroups: null,
     };
 
@@ -28,10 +32,22 @@ describe("PortTypeMenu.vue", () => {
 
     const mockedStores = mockStores();
     mockedStores.applicationStore.availablePortTypes = {
-      flowVariable: { name: "Flow Variable", color: "red" },
-      table: { name: "Table", color: "black" },
-      "suggested-1": { name: "Suggested 1", color: "green" },
-      "suggested-2": { name: "Suggested 2", color: "brown" },
+      flowVariable: {
+        name: "Flow Variable",
+        color: "red",
+        kind: PortType.KindEnum.Generic,
+      },
+      table: { name: "Table", color: "black", kind: PortType.KindEnum.Generic },
+      "suggested-1": {
+        name: "Suggested 1",
+        color: "green",
+        kind: PortType.KindEnum.Generic,
+      },
+      "suggested-2": {
+        name: "Suggested 2",
+        color: "brown",
+        kind: PortType.KindEnum.Generic,
+      },
     };
     mockedStores.applicationStore.suggestedPortTypes = [
       "suggested-1",
@@ -181,7 +197,7 @@ describe("PortTypeMenu.vue", () => {
         expect(
           searchInput.find("input").attributes("aria-activedescendant"),
         ).toBeDefined();
-        expect(wrapper.emitted("itemActive").at(-1)[0]).toEqual(
+        expect(wrapper.emitted("itemActive")?.at(-1)?.[0]).toEqual(
           expect.objectContaining({
             port: { typeId: expectedTypeId },
           }),
@@ -206,7 +222,9 @@ describe("PortTypeMenu.vue", () => {
             },
           };
 
-          const { wrapper } = doMount({ props: { portGroups, side } });
+          const { wrapper } = doMount({
+            props: { portGroups, side: side as "input" | "output" },
+          });
 
           expect(wrapper.findComponent(MenuItems).props("items")).toEqual(
             Object.keys(portGroups).map((key) => ({ text: key })),
@@ -233,13 +251,11 @@ describe("PortTypeMenu.vue", () => {
             icon: expect.anything(),
             port: { typeId: "flowVariable" },
             text: "Flow Variable",
-            title: null,
           },
           {
             icon: expect.anything(),
             port: { typeId: "table" },
             text: "Table",
-            title: null,
           },
         ]);
       });
@@ -269,13 +285,11 @@ describe("PortTypeMenu.vue", () => {
             icon: expect.anything(),
             port: { typeId: "flowVariable" },
             text: "Flow Variable",
-            title: null,
           },
           {
             icon: expect.anything(),
             port: { typeId: "table" },
             text: "Table",
-            title: null,
           },
         ]);
       });
@@ -342,7 +356,7 @@ describe("PortTypeMenu.vue", () => {
           .vm.$emit("item-click", {}, { text: "group1" });
         await nextTick();
 
-        expect(wrapper.emitted("itemClick")[0][0]).toEqual({
+        expect(wrapper.emitted("itemClick")?.[0][0]).toEqual({
           typeId: "table",
           portGroup: "group1",
         });
@@ -368,25 +382,21 @@ describe("PortTypeMenu.vue", () => {
                 icon: expect.anything(),
                 port: { typeId: "suggested-1" },
                 text: "Suggested 1",
-                title: null,
               },
               {
                 icon: expect.anything(),
                 port: { typeId: "suggested-2" },
                 text: "Suggested 2",
-                title: null,
               },
               {
                 icon: expect.anything(),
                 port: { typeId: "flowVariable" },
                 text: "Flow Variable",
-                title: null,
               },
               {
                 icon: expect.anything(),
                 port: { typeId: "table" },
                 text: "Table",
-                title: null,
               },
             ],
           );
@@ -403,7 +413,6 @@ describe("PortTypeMenu.vue", () => {
                 icon: expect.anything(),
                 port: { typeId: "flowVariable" },
                 text: "Flow Variable",
-                title: null,
               },
             ],
           );
@@ -422,7 +431,7 @@ describe("PortTypeMenu.vue", () => {
       it("emits itemActive", () => {
         const { wrapper } = doMount();
         wrapper.findComponent(MenuItems).vm.$emit("item-hovered", 0);
-        expect(wrapper.emitted("itemActive").at(-1)[0]).toBe(0);
+        expect(wrapper.emitted("itemActive")?.at(-1)?.[0]).toBe(0);
       });
 
       it("re-emits item click and menu-close", () => {
@@ -456,6 +465,7 @@ describe("PortTypeMenu.vue", () => {
       mockedStores.applicationStore.availablePortTypes.long = {
         name: longName,
         color: "black",
+        kind: PortType.KindEnum.Generic,
       };
       await nextTick();
 
