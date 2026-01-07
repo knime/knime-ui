@@ -99,6 +99,8 @@ public final class KnimeUIPreferences {
 
     private static BiConsumer<String, String> canvasRendererChangeListener;
 
+    static final String HUB_PREF_KEY = "modernUiHub";
+
     private static final String BUNDLE_NAME = UIPlugin.getContext().getBundle().getSymbolicName();
 
     static final IPersistentPreferenceStore PREF_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, BUNDLE_NAME);
@@ -161,6 +163,10 @@ public final class KnimeUIPreferences {
     /** The identifier for the starter node collection. The node repository will only show starter nodes. */
     public static final String SELECTED_NODE_COLLECTION_STARTER_ID = "starter";
 
+    /** Preference key storing the selected KNIME Hub mount for the modern UI. */
+    public static final String HUB_KEY = HUB_PREF_KEY;
+
+
     /**
      * @return the identifier of the selected node collection. {@link #SELECTED_NODE_COLLECTION_NONE_ID} if no
      *         collection is selected.
@@ -215,6 +221,21 @@ public final class KnimeUIPreferences {
      */
     public static void confirmNodeConfigChanges(final boolean confirmNodeConfigChanges) {
         PREF_STORE.setValue(CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, confirmNodeConfigChanges);
+        savePreferenceChanges();
+    }
+
+    /**
+     * @return the identifier of the selected KNIME Hub mount point for the modern UI. Empty string if none.
+     */
+    public static String getSelectedHub() {
+        return PREF_STORE.getString(HUB_KEY);
+    }
+
+    /**
+     * @param hubId the identifier of the selected KNIME Hub mount point for the modern UI.
+     */
+    public static void setSelectedHub(final String hubId) {
+        PREF_STORE.setValue(HUB_KEY, hubId);
         savePreferenceChanges();
     }
 
