@@ -135,6 +135,7 @@ describe("WorkflowBreadcrumb.vue", () => {
 
     expect(menuItems).toEqual([
       expect.objectContaining({ text: "Version history" }),
+      expect.objectContaining({ text: "Reveal in space explorer" }),
     ]);
   });
 

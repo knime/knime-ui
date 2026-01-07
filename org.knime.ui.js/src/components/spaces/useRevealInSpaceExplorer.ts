@@ -22,6 +22,7 @@ import {
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { getToastPresets } from "@/toastPresets";
 
 const ROOT_ITEM_ID = "root";
@@ -67,10 +68,15 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
   const { projectPath } = storeToRefs(useSpaceCachingStore());
   const { setProjectPath } = useSpaceCachingStore();
   const { connectProvider } = useSpaceAuthStore();
+  const uiControls = useUIControlsStore();
 
   const { toastPresets } = getToastPresets();
 
   const canRevealItem = (providerId: string): boolean => {
+    if (!uiControls.canAccessSpaceExplorer) {
+      return false;
+    }
+
     const provider = spaceProviders.value?.[providerId];
 
     if (
