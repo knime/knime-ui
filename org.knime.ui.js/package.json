@@ -34,6 +34,8 @@
     "postinstall": "license-check -o licenses/used-packages.json"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.29.0",
+    "@amplitude/plugin-session-replay-browser": "^1.23.0",
     "@antfu/utils": "^9.1.0",
     "@floating-ui/vue": "^1.1.1",
     "@fontsource/roboto": "4.x",

@@ -19,6 +19,7 @@ import { useSpaceOperationsStore } from "../spaces/spaceOperations";
 
 import { useMovingStore } from "./moving";
 import { useWorkflowStore } from "./workflow";
+import { track } from "@/util/analyticsUtil";
 
 type NodeInteractionsState = {
   nameEditorNodeId: string | null;
@@ -68,6 +69,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
     }) {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
+      track({ event: 'connect_nodes', eventProperties: { sourceNode, sourcePort, destNode, destPort } });
       return API.workflowCommand.Connect({
         projectId,
         workflowId,
@@ -233,6 +235,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         }
       }
 
+      track({ event: 'add_node', eventProperties: { nodeId: newNodeId, nodeFactory } });
+
       return { newNodeId };
     },
 
@@ -282,6 +286,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       nodeFactory?: NodeFactoryKey;
       nodeId?: string;
     }) {
+
+      track({ event: 'insert_node', eventProperties: { connectionId, position, nodeFactory, nodeId } });
       const projectId = useWorkflowStore().activeWorkflow!.projectId;
       const workflowId = useWorkflowStore().activeWorkflow!.info.containerId;
 
@@ -311,6 +317,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
 
+      track({ event: 'add_node_port', eventProperties: { nodeId, side, portGroup, portType: typeId } });
+
       return API.workflowCommand.AddPort({
         projectId,
         workflowId,
@@ -332,6 +340,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
     }) {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
+
+      track({ event: 'remove_node_port', eventProperties: { nodeId, side, index } });
 
       return API.workflowCommand.RemovePort({
         projectId,

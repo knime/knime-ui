@@ -7,9 +7,11 @@ import Portal from "@/components/common/Portal.vue";
 import PortalTarget from "@/components/common/PortalTarget.vue";
 
 import constants from "./constants";
+import amplitude from "./amplitude";
 import eventBus from "./event-bus";
 import events from "./events";
 import featureFlags from "./feature-flags";
+// import pendo from "./pendo";
 import shortcuts from "./shortcuts";
 import type { PluginInitFunction } from "./types";
 
@@ -35,6 +37,8 @@ export const initPlugins = ({
   app.use(wrapPlugin(events));
   app.use(wrapPlugin(eventBus));
   app.use(wrapPlugin(featureFlags));
+  app.use(wrapPlugin(amplitude));
+  // app.use(wrapPlugin(pendo));
 
   app.component("Portal", Portal); // eslint-disable-line vue/multi-word-component-names
   app.component("PortalTarget", PortalTarget);

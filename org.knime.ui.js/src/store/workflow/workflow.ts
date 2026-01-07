@@ -32,6 +32,7 @@ import {
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";
+import { track } from "@/util/analyticsUtil";
 
 /**
  * The workflow store holds a workflow graph and the associated tooltips.
@@ -290,6 +291,8 @@ export const useWorkflowStore = defineStore("workflow", {
         annotationIds: selectedAnnotationIds,
         connectionBendpoints,
       });
+
+      track({ event: `collapse_to_${containerType}`, eventProperties: { newNodeId, nodesAmount: selectedNodeIds.length } });
 
       // 3. select new container node, if user hasn't selected something else in the meantime
       if (selectionStore.isSelectionEmpty) {

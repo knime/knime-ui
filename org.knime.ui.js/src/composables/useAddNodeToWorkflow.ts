@@ -9,6 +9,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { geometry } from "@/util/geometry";
+import { track } from "@/util/analyticsUtil";
 
 /**
  * Add a node to the workflow by a node template factory.
@@ -44,6 +45,8 @@ export const useAddNodeToWorkflow = () => {
       ? AddNodeCommand.NodeRelationEnum.SUCCESSORS
       : // eslint-disable-next-line no-undefined
         undefined;
+    
+    track({event: 'add_node_to_workflow'});
 
     useNodeInteractionsStore().addNode({
       position,

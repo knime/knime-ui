@@ -14,6 +14,7 @@ import * as $shapes from "@/style/shapes";
 import { isPointInsideBounds } from "@/util/geometry/utils";
 
 import { useWorkflowStore } from "./workflow";
+import { track } from "@/util/analyticsUtil";
 
 export interface AnnotationInteractionsState {
   editableAnnotationId: string | null;
@@ -76,6 +77,8 @@ export const useAnnotationInteractionsStore = defineStore(
         }
         useSelectionStore().selectAnnotations([newAnnotationId]);
         this.setEditableAnnotationId(newAnnotationId);
+
+        track({ event: 'add_workflow_annotation', eventProperties: {annotationId: newAnnotationId} });
       },
 
       async addWorkflowAnnotationWithContent({
