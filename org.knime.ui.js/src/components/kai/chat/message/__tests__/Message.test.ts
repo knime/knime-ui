@@ -14,9 +14,9 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
+import MarkdownRenderer from "../../MarkdownRenderer.vue";
 import FeedbackControls from "../FeedbackControls.vue";
 import KaiStatus from "../KaiStatus.vue";
-import MarkdownRenderer from "../MarkdownRenderer.vue";
 import Message from "../Message.vue";
 import MessagePlaceholder from "../MessagePlaceholder.vue";
 import SuggestedNodes from "../SuggestedNodes.vue";

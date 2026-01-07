@@ -6,10 +6,10 @@ import UserIcon from "@knime/styles/img/icons/user.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import type { Message, StatusUpdate } from "@/store/ai/types";
+import MarkdownRenderer from "../MarkdownRenderer.vue";
 
 import FeedbackControls from "./FeedbackControls.vue";
 import KaiStatus from "./KaiStatus.vue";
-import MarkdownRenderer from "./MarkdownRenderer.vue";
 import MessagePlaceholder from "./MessagePlaceholder.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
 import AdditionalResources from "./additionalResources/AdditionalResources.vue";
