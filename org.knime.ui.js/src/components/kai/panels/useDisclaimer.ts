@@ -8,7 +8,7 @@ const _shouldShowDisclaimer = ref(true);
 
 export const useDisclaimer = () => {
   const { uiStrings } = useKaiServer();
-  const disclaimerText = computed(() => uiStrings.disclaimer);
+  const disclaimerText = computed(() => uiStrings.disclaimer ?? "");
 
   const { hubID, userName } = useHubAuth();
 

@@ -3,6 +3,8 @@ import { ref } from "vue";
 
 import { KdsButton, KdsCheckbox } from "@knime/kds-components";
 
+import MarkdownRenderer from "../chat/MarkdownRenderer.vue";
+
 import { useDisclaimer } from "./useDisclaimer";
 
 const { disclaimerText, closeDisclaimer } = useDisclaimer();
@@ -14,9 +16,7 @@ const close = () => closeDisclaimer(shouldNotAskAgain.value);
   <div class="disclaimer">
     <div class="main">
       <div class="title">Disclaimer</div>
-      <p class="content">
-        {{ disclaimerText }}
-      </p>
+      <MarkdownRenderer :markdown="disclaimerText" />
     </div>
     <div class="controls">
       <KdsCheckbox
@@ -41,11 +41,7 @@ const close = () => closeDisclaimer(shouldNotAskAgain.value);
 
     & .title {
       font-weight: 700;
-    }
-
-    & .content {
-      overflow-wrap: break-word;
-      white-space: pre-wrap;
+      padding-bottom: var(--space-8);
     }
   }
 
