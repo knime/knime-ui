@@ -51,16 +51,16 @@ package org.knime.ui.java.prefs;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.ui.java.util.HubSelectionComposite;
-import org.knime.workbench.ui.preferences.LabelField;
 import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.ui.preferences.LabelField;
 
 /**
  * The preference page for the Modern UI.
@@ -92,11 +92,12 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         m_hubSelectionComposite = new HubSelectionComposite( //
             hubContainer, //
-            "Select which KNIME Hub to use for integrated modern UI features", //
+            "Primary KNIME Hub", //
             "Loading available KNIME Hubs...", //
             "No compatible KNIME Hubs found", //
             hub -> true, //
-            hubInfo -> KnimeUIPreferences.getSelectedHub().equals(hubInfo.id()));
+            hubInfo -> KnimeUIPreferences.getPrimaryHub().equals(hubInfo.id()) //
+        );
         m_hubSelectionComposite.updateChoices();
 
         /// Node collection
@@ -161,7 +162,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
             new String[]{"SVG rendering (legacy)", AppStateEnt.CanvasRendererEnum.SVG.toString()}};
 
         final var canvasRendererEditor = new RadioGroupFieldEditor(KnimeUIPreferences.CANVAS_RENDERER_PREF_KEY,
-                "Workflow editor", 1, canvasRendererOptions, getFieldEditorParent());
+            "Workflow editor", 1, canvasRendererOptions, getFieldEditorParent());
         addField(canvasRendererEditor);
     }
 
@@ -177,7 +178,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         }
         var mountpoints = ExplorerMountTable.getMountedContent();
         var selectedHub = m_hubSelectionComposite.getSelectedHub();
-        KnimeUIPreferences.setSelectedHub(selectedHub.filter(mountpoints::containsKey).orElse(""));
+        KnimeUIPreferences.setPrimaryHub(selectedHub.filter(mountpoints::containsKey).orElse(""));
         return true;
     }
 

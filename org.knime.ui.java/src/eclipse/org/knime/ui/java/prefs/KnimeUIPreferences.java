@@ -163,9 +163,6 @@ public final class KnimeUIPreferences {
     /** The identifier for the starter node collection. The node repository will only show starter nodes. */
     public static final String SELECTED_NODE_COLLECTION_STARTER_ID = "starter";
 
-    /** Preference key storing the selected KNIME Hub mount for the modern UI. */
-    public static final String HUB_KEY = HUB_PREF_KEY;
-
 
     /**
      * @return the identifier of the selected node collection. {@link #SELECTED_NODE_COLLECTION_NONE_ID} if no
@@ -227,15 +224,15 @@ public final class KnimeUIPreferences {
     /**
      * @return the identifier of the selected KNIME Hub mount point for the modern UI. Empty string if none.
      */
-    public static String getSelectedHub() {
-        return PREF_STORE.getString(HUB_KEY);
+    public static String getPrimaryHub() {
+        return PREF_STORE.getString(HUB_PREF_KEY);
     }
 
     /**
      * @param hubId the identifier of the selected KNIME Hub mount point for the modern UI.
      */
-    public static void setSelectedHub(final String hubId) {
-        PREF_STORE.setValue(HUB_KEY, hubId);
+    public static void setPrimaryHub(final String hubId) {
+        PREF_STORE.setValue(HUB_PREF_KEY, hubId);
         savePreferenceChanges();
     }
 
