@@ -96,7 +96,8 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
             "Loading available KNIME Hubs...", //
             "No compatible KNIME Hubs found", //
             hub -> true, //
-            hubInfo -> KnimeUIPreferences.getPrimaryHub().equals(hubInfo.id()) //
+            hubInfo -> KnimeUIPreferences.getPrimaryHub().equals(hubInfo.id()), //
+            true // auto-select first available hub when none saved
         );
         m_hubSelectionComposite.updateChoices();
 

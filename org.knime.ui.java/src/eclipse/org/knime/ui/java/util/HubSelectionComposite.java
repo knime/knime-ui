@@ -97,6 +97,8 @@ public final class HubSelectionComposite extends Composite {
 
     private final Composite m_progressComposite;
 
+    private final boolean m_selectFirstIfNone;
+
     public HubSelectionComposite( //
         final Composite parent, //
         final String selectionLabelText, //
@@ -104,12 +106,24 @@ public final class HubSelectionComposite extends Composite {
         final String noHubsText, //
         final Predicate<WorkflowHubContentProvider> choicesFilter, //
         final Predicate<HubInfo> isSelected) {
+        this(parent, selectionLabelText, progressText, noHubsText, choicesFilter, isSelected, true);
+    }
+
+    public HubSelectionComposite( //
+        final Composite parent, //
+        final String selectionLabelText, //
+        final String progressText, //
+        final String noHubsText, //
+        final Predicate<WorkflowHubContentProvider> choicesFilter, //
+        final Predicate<HubInfo> isSelected, //
+        final boolean selectFirstIfNone) {
         super(parent, SWT.NONE);
         m_isSelected = isSelected;
         m_choicesFilter = choicesFilter;
         m_selectionLabelText = selectionLabelText;
         m_progressText = progressText;
         m_noHubsText = noHubsText;
+        m_selectFirstIfNone = selectFirstIfNone;
 
         setLayout(new GridLayout(1, false));
         setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -159,6 +173,9 @@ public final class HubSelectionComposite extends Composite {
         if (choices.isEmpty()) {
             var label = new Label(m_contentComposite, SWT.NONE);
             label.setText(m_noHubsText);
+            m_stackLayout.topControl = m_contentComposite;
+            m_stackComposite.layout(true, true);
+            layout(true, true);
             adjustHeightHintToContent();
             relayoutAncestors();
             return;
@@ -168,8 +185,8 @@ public final class HubSelectionComposite extends Composite {
         label.setText(m_selectionLabelText);
 
         // pre-select first eligible entry if no setting yet
-        var anySelected = choices.stream().filter(isSelected).findAny().isPresent();
-        final Predicate<HubInfo> effectivelySelected = (!anySelected && !choices.isEmpty()) //
+        var anySelected = choices.stream().anyMatch(isSelected);
+        final Predicate<HubInfo> effectivelySelected = (!anySelected && !choices.isEmpty() && m_selectFirstIfNone) //
             ? hub -> hub.equals(choices.get(0)) //
             : isSelected; //
         m_hubRadios = choices.stream().map(hub -> {
