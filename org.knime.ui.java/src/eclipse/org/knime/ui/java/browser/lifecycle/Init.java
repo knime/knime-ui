@@ -49,6 +49,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -176,7 +177,7 @@ final class Init {
         var kaiAuthTokenProvider = createKaiAuthTokenProvider(spaceProvidersManager);
         var kaiHandler = createKaiHandler(eventConsumer, kaiAuthTokenProvider, appStateUpdater);
         var codeKaiHandler = createCodeKaiHandler(kaiAuthTokenProvider);
-        var preferenceProvider = createPreferencesProvider();
+        var preferenceProvider = createPreferencesProvider(spaceProvidersManager);
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepository = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
@@ -366,7 +367,7 @@ final class Init {
         return spaceProvidersManager;
     }
 
-    private static PreferencesProvider createPreferencesProvider() {
+    private static PreferencesProvider createPreferencesProvider(final SpaceProvidersManager spaceProvidersManager) {
         return new PreferencesProvider() { // NOSONAR
 
             @Override
@@ -399,6 +400,22 @@ final class Init {
                 return KnimeUIPreferences.getCanvasRenderer();
             }
 
+            @Override
+            public String primaryHub() {
+                var selectedInPreferences = KnimeUIPreferences.getPrimaryHub();
+                if (selectedInPreferences != null && !selectedInPreferences.isBlank()) {
+                    return selectedInPreferences;
+                }
+                var allProviders = spaceProvidersManager.getKeys().stream() //
+                    .map(key -> spaceProvidersManager.getSpaceProviders(key)) //
+                    .flatMap(providers -> providers.getAllSpaceProviders().stream()) //
+                    .filter(p -> p.getType() == TypeEnum.HUB).toList();
+                var fallbackProvider = allProviders.stream() //
+                    .filter(p -> p.isCommunityHub()).findFirst() //
+                    .or(() -> allProviders.stream().findFirst()) //
+                    .orElseThrow(() -> new NoSuchElementException("Expected at least one Hub SpaceProvider"));
+                return fallbackProvider.getId();
+            }
         };
     }
 
