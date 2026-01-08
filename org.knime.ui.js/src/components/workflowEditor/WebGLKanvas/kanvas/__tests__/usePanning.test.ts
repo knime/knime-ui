@@ -12,7 +12,7 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
-import { isInputElement } from "@/util/dom/isInputElement";
+import { isInputElement } from "@/util/dom";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { pixiGlobals } from "../../common/pixiGlobals";
 import { useCanvasPanning } from "../usePanning";
@@ -30,7 +30,7 @@ vi.mock("@/components/uiExtensions", () => ({
   isUIExtensionFocused: vi.fn().mockReturnValue(false),
 }));
 
-vi.mock("@/util/isInputElement", () => ({
+vi.mock("@/util/dom", () => ({
   isInputElement: vi.fn().mockReturnValue(false),
 }));
 

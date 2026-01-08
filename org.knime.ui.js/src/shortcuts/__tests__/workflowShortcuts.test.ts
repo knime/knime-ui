@@ -12,13 +12,6 @@ import workflowShortcuts from "../workflowShortcuts";
 
 vi.mock("@/environment");
 
-const getNextSelectedPortMock = vi.hoisted(() => vi.fn());
-vi.mock("@/util/portSelection", () => {
-  return {
-    getNextSelectedPort: getNextSelectedPortMock,
-  };
-});
-
 describe("workflowShortcuts", () => {
   const mockedAPI = deepMocked(API);
 
@@ -449,9 +442,9 @@ describe("workflowShortcuts", () => {
       const { workflowStore, selectionStore } = createStore();
 
       // @ts-expect-error
-      selectionStore.activeNodePorts = {
+      selectionStore.selectedNodePort = {
         nodeId: "someid",
-        selectedPort: "some-port",
+        selectedPortId: "input-1",
       };
       workflowShortcuts.deleteSelected.execute(mockShortcutContext());
       expect(workflowStore.deleteSelectedPort).toHaveBeenCalled();
@@ -481,10 +474,10 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.deleteSelected.condition?.()).toBe(false);
 
       // port is selected -> shortcut active...
-      selectionStore.activeNodePorts.selectedPort = "some-port";
+      selectionStore.selectedNodePort.selectedPortId = "input-1";
       expect(workflowShortcuts.deleteSelected.condition?.()).toBe(true);
       // ... unless a modification is already in progress
-      selectionStore.activeNodePorts.isModificationInProgress = true;
+      selectionStore.selectedNodePort.isModificationInProgress = true;
       expect(workflowShortcuts.deleteSelected.condition?.()).toBe(false);
     });
 
@@ -940,11 +933,13 @@ describe("workflowShortcuts", () => {
     it("executes:", () => {
       const { selectionStore } = createStore();
 
-      getNextSelectedPortMock.mockReturnValueOnce("someSelectedPortIdentifier");
+      vi.mocked(selectionStore.getNextSelectedPort).mockReturnValueOnce(
+        "input-1",
+      );
       workflowShortcuts.shuffleSelectedPort.execute(mockShortcutContext());
-      expect(selectionStore.updateActiveNodePorts).toHaveBeenLastCalledWith({
+      expect(selectionStore.updateSelectedNodePort).toHaveBeenLastCalledWith({
         nodeId: selectionStore.singleSelectedNode!.id,
-        selectedPort: "someSelectedPortIdentifier",
+        selectedPortId: "input-1",
       });
     });
 

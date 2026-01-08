@@ -8,7 +8,6 @@ import { useNodeOutputStore } from "@/store/nodeOutput";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getNextSelectedPort } from "@/util/portSelection";
 import type { UnionToShortcutRegistry } from "../types";
 
 type SelectedNodeWorkflowShortcuts = UnionToShortcutRegistry<
@@ -161,22 +160,22 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     hotkey: [navigatorUtils.isMac() ? "Ctrl" : "Alt", "P"], // Alt+P yields a pi-symbol on mac
     group: "selectedNode",
     execute: () => {
-      const { singleSelectedNode, activeNodePorts, updateActiveNodePorts } =
-        useSelectionStore();
+      const selectionStore = useSelectionStore();
 
-      if (!singleSelectedNode) {
+      if (!selectionStore.singleSelectedNode) {
         return;
       }
 
       const currentSelectedPort =
-        activeNodePorts.nodeId === singleSelectedNode.id
-          ? activeNodePorts.selectedPort
+        selectionStore.selectedNodePort.nodeId ===
+        selectionStore.singleSelectedNode.id
+          ? selectionStore.selectedNodePort.selectedPortId
           : null;
 
-      updateActiveNodePorts({
-        nodeId: singleSelectedNode.id,
-        selectedPort: getNextSelectedPort(
-          singleSelectedNode,
+      selectionStore.updateSelectedNodePort({
+        nodeId: selectionStore.singleSelectedNode.id,
+        selectedPortId: selectionStore.getNextSelectedPort(
+          selectionStore.singleSelectedNode,
           currentSelectedPort,
           useWorkflowStore().isWritable,
         ),

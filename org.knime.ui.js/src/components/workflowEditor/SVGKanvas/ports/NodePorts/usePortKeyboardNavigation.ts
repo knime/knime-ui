@@ -9,14 +9,13 @@ import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { useSelectionStore } from "@/store/selection";
+import type {
+  SelectedPortContext,
+  SelectedPortId,
+} from "@/store/selection/ports";
 import { isInputElement } from "@/util/dom";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
-import {
-  type SelectedPortContext,
-  type SelectedPortIdentifier,
-  getPortContext,
-} from "@/util/portSelection";
 import { useNodeInfo } from "../../../common/useNodeInfo";
 
 type Direction = "up" | "right" | "down" | "left";
@@ -28,17 +27,18 @@ type UsePortKeyboardNavigationOptions = {
   onAddPortInput: Ref<(() => void) | undefined>;
   onAddPortOutput: Ref<(() => void) | undefined>;
   canAddPort: ComputedRef<{ input: boolean; output: boolean }>;
-  selectedPort: ComputedRef<SelectedPortIdentifier | null>;
-  updatePortSelection: (selectedPort: SelectedPortIdentifier) => void;
+  selectedPort: ComputedRef<SelectedPortId | null>;
+  updatePortSelection: (selectedPort: SelectedPortId) => void;
 };
 
 export const usePortKeyboardNavigation = (
   options: UsePortKeyboardNavigationOptions,
 ) => {
-  const { activeNodePorts } = storeToRefs(useSelectionStore());
+  const selectionStore = useSelectionStore();
+  const { selectedNodePort } = storeToRefs(selectionStore);
 
   const isActiveNodePortsInstance = computed(
-    () => activeNodePorts.value.nodeId === options.nodeId,
+    () => selectedNodePort.value.nodeId === options.nodeId,
   );
 
   const { node, isMetanode } = useNodeInfo({ nodeId: options.nodeId });
@@ -118,7 +118,11 @@ export const usePortKeyboardNavigation = (
       return;
     }
 
-    const current = getPortContext(node.value, options.selectedPort.value);
+    const current = selectionStore.getSelectedPortContext(
+      node.value,
+      options.selectedPort.value,
+    );
+
     switch (direction) {
       case "up":
         navigateUp(current);
@@ -160,7 +164,10 @@ export const usePortKeyboardNavigation = (
       options.selectedPort.value?.endsWith("AddPort")
     ) {
       triggerAddPortMenu(
-        getPortContext(node.value, options.selectedPort.value).side,
+        selectionStore.getSelectedPortContext(
+          node.value,
+          options.selectedPort.value,
+        ).side,
       );
     }
   };

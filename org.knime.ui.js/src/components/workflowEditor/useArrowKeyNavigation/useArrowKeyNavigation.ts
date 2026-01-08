@@ -40,8 +40,11 @@ export const useArrowKeyNavigation = (
   const { handlePanning } = useArrowKeyPanning();
 
   const selectionStore = useSelectionStore();
-  const { selectedObjects, getFocusedObject, activeNodePorts } =
-    storeToRefs(selectionStore);
+  const {
+    selectedObjects,
+    getFocusedObject,
+    selectedNodePort: activeNodePorts,
+  } = storeToRefs(selectionStore);
 
   const hasSelectedObjects = () => {
     return selectedObjects.value.length > 0;
@@ -60,7 +63,7 @@ export const useArrowKeyNavigation = (
     return (
       !isInputElement(event.target as HTMLElement) &&
       !event.altKey &&
-      !activeNodePorts.value.selectedPort
+      !activeNodePorts.value.selectedPortId
     );
   };
 
