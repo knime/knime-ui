@@ -12,7 +12,7 @@ import {
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $shapes from "@/style/shapes";
 import { isNodeMetaNode } from "@/util/nodeUtil";
-import * as portPositionUtils from "@/util/portShift";
+import { ports } from "@/util/workflow-canvas";
 import Connector from "../connectors/Connector.vue";
 import Port from "../ports/Port.vue";
 
@@ -59,8 +59,8 @@ const defaultFlowVariablePortPosition = computed(() => {
 
   // this does not rely on portPositions of the context as they might be not there for
   // non-drag connectors (e.g. quick add with CTRL+Space)
-  const flowVariablePosition = portPositionUtils
-    .portPositions({
+  const flowVariablePosition = ports
+    .positions({
       portCount: 1,
       isOutports: floatingConnector.value!.context.origin === "out",
     })

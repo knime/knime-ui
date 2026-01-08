@@ -24,7 +24,7 @@ import type {
   ExtendedPortType,
   NodeTemplateWithExtendedPorts,
 } from "@/util/dataMappers";
-import { portPositions } from "@/util/portShift";
+import { ports } from "@/util/workflow-canvas";
 
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
 import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
@@ -55,7 +55,7 @@ const calculatePortOffset = (params: {
   );
 
   const portCount = templatePorts.length + 1; // +1 for the mickey mouse port
-  const positions = portPositions({
+  const positions = ports.positions({
     isOutports: nodeRelation === "PREDECESSORS",
     portCount,
   });

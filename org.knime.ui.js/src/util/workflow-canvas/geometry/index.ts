@@ -4,6 +4,7 @@ import {
   findFreeSpaceAroundCenterWithFallback,
   findFreeSpaceAroundPointWithFallback,
 } from "./findFreeSpaceOnCanvas";
+import * as ports from "./portShift";
 import * as workflowBounds from "./workflowBounds";
 
 export const freeSpaceInCanvas = {
@@ -12,4 +13,4 @@ export const freeSpaceInCanvas = {
   VISIBILITY_THRESHOLD: CONSTANTS.VISIBILITY_THRESHOLD,
 };
 
-export { workflowBounds };
+export { workflowBounds, ports };

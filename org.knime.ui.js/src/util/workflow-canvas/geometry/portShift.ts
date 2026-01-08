@@ -13,7 +13,7 @@ import { nodeSize, portSize } from "@/style/shapes";
  * @param isOutPort `true` for an output port, `false` for an input port
  * @returns [x-shift, y-shift]
  */
-const portShift = (
+export const portShift = (
   portIndex: number,
   portCount: number,
   isMetanode?: boolean,
@@ -79,7 +79,7 @@ export const placeholderPosition = ({
   }
 };
 
-export const portPositions = ({
+export const positions = ({
   portCount,
   isMetanode = false,
   isOutports = false,
@@ -91,5 +91,3 @@ export const portPositions = ({
   [...Array(portCount).keys()].map((index) =>
     portShift(index, portCount, isMetanode, isOutports),
   );
-
-export default portShift;
