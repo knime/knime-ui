@@ -9,7 +9,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
-import { recreateLinebreaks } from "@/util/recreateLineBreaks";
+import { recreateLinebreaks } from "@/util/rich-text";
 
 type UseAnnotationDataEditingOptions = {
   annotation: Ref<WorkflowAnnotation>;
