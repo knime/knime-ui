@@ -1,7 +1,6 @@
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import type { WorkflowObject } from "../workflow-canvas";
-
-import { isIntersecting, rectContains } from "./utils";
+import { geometry } from "@/util/geometry";
+import type { WorkflowObject } from "../types";
 
 const getKey = (cx: number, cy: number) => `${cx},${cy}`;
 
@@ -20,8 +19,8 @@ type Options = {
 const defaults = {
   cellSize: 64,
   aabbTesters: {
-    node: isIntersecting,
-    annotation: rectContains,
+    node: geometry.utils.isIntersecting,
+    annotation: geometry.utils.rectContains,
   } satisfies TesterFnHandlers,
 } as const;
 
