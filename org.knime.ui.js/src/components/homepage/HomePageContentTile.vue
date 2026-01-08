@@ -6,9 +6,9 @@ import { storeToRefs } from "pinia";
 import { Button, FunctionButton, Pill } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
+import { promise } from "@knime/utils";
 
 import { useApplicationStore } from "@/store/application/application";
-import { retryAsyncCall } from "@/util/retryAsyncCall";
 
 const applicationStore = useApplicationStore();
 const { dismissedHomePageTile } = storeToRefs(applicationStore);
@@ -17,8 +17,10 @@ type ContentTileData = Awaited<ReturnType<typeof API.desktop.getHomePageTile>>;
 const data = ref<ContentTileData | null>(null);
 
 const fetchData = async () => {
-  const retryDelayMS = 50;
-  data.value = await retryAsyncCall(API.desktop.getHomePageTile, retryDelayMS);
+  data.value = await promise.retryPromise({
+    fn: API.desktop.getHomePageTile,
+    retryDelayMS: 50,
+  });
 };
 
 onMounted(() => {
