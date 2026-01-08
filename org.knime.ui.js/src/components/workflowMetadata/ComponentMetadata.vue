@@ -16,7 +16,7 @@ import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue
 import ComponentIconEditor from "@/components/workflowMetadata/ComponentIconEditor.vue";
 import ComponentTypeEditor from "@/components/workflowMetadata/ComponentTypeEditor.vue";
 import { ports } from "@/util/dataMappers";
-import { recreateLinebreaks } from "@/util/recreateLineBreaks";
+import { recreateLinebreaks } from "@/util/rich-text";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 import SidebarPanelSubHeading from "../common/side-panel/SidebarPanelSubHeading.vue";
