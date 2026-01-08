@@ -6,7 +6,7 @@ import type { Cursor, FederatedPointerEvent, Graphics } from "pixi.js";
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $colors from "@/style/colors";
-import { DashLine } from "@/util/pixiDashedLine";
+import { DashLine } from "@/util/pixi-dash-line";
 import {
   DIRECTIONS,
   type Directions,

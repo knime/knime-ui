@@ -6,7 +6,7 @@ import PlusIcon from "@knime/styles/img/icons/plus-small.svg?raw";
 import type { NodeRelation } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import { DashLine } from "@/util/pixiDashedLine";
+import { DashLine } from "@/util/pixi-dash-line";
 
 type Props = {
   position: XY;
