@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { encodeString } from "@/util/encodeString";
+import { encodeString } from "@/util/encoding";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";

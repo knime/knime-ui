@@ -23,7 +23,7 @@ import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { encodeString } from "@/util/encodeString";
+import { encodeString } from "@/util/encoding";
 import { setProjectActiveOrThrow } from "@/util/projectUtil";
 import { workflowBounds } from "@/util/workflow-canvas";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
