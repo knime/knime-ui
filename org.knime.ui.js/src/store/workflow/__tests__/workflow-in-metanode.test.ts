@@ -11,7 +11,7 @@ import {
 } from "@/style/shapes";
 import { type DeepPartial } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { geometry } from "@/util/geometry";
+import { workflowBounds } from "@/util/workflow-canvas";
 
 describe("workflow store", () => {
   const node = { id: "root:1", position: { x: 50, y: 21 } };
@@ -274,7 +274,7 @@ describe("workflow store", () => {
         });
 
         workflowStore.setCalculatedMetanodePortBarBounds(
-          geometry.calculateMetaNodePortBarBounds(
+          workflowBounds.calculateMetaNodePortBarBounds(
             workflowStore.activeWorkflow!,
           ),
         );

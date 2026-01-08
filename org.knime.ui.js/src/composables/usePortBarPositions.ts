@@ -1,7 +1,7 @@
 import { storeToRefs } from "pinia";
 
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { mergePortBarBounds } from "@/util/workflowUtil";
+import { workflowBounds } from "@/util/workflow-canvas";
 
 export const usePortBarPositions = () => {
   const {
@@ -17,11 +17,11 @@ export const usePortBarPositions = () => {
 
   const getBounds = (isOutgoing: boolean) => {
     return isOutgoing
-      ? mergePortBarBounds(
+      ? workflowBounds.mergePortBarBounds(
           workflow.value?.metaOutPorts?.bounds ?? null,
           calculatedBounds.value.out!,
         )
-      : mergePortBarBounds(
+      : workflowBounds.mergePortBarBounds(
           workflow.value?.metaInPorts?.bounds ?? null,
           calculatedBounds.value.in!,
         );

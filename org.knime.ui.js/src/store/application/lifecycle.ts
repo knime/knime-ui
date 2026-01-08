@@ -24,8 +24,8 @@ import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInter
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
-import { geometry } from "@/util/geometry";
 import { setProjectActiveOrThrow } from "@/util/projectUtil";
+import { workflowBounds } from "@/util/workflow-canvas";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";
 
@@ -567,7 +567,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       // calculate and save meta node port bar default bounds, as they become part of the workflow bounds we need to
       // do this very early and only once.
       useWorkflowStore().setCalculatedMetanodePortBarBounds(
-        geometry.calculateMetaNodePortBarBounds(workflow),
+        workflowBounds.calculateMetaNodePortBarBounds(workflow),
       );
     },
 
