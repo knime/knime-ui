@@ -4,7 +4,7 @@ import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
-import { valueOrEmpty } from "@/util/valueOrEmpty";
+import { optional } from "@/util/fp";
 
 const activeMode = ref<"nodes" | "components" | "k-ai">("nodes");
 
@@ -27,7 +27,7 @@ export const useQuickActionMenuMode = ({
     return [
       { id: "nodes", text: "Nodes" },
       { id: "components", text: "Components" },
-      ...valueOrEmpty(isKaiEnabled.value && isQuickBuildModeAvailable.value, {
+      ...optional(isKaiEnabled.value && isQuickBuildModeAvailable.value, {
         id: "k-ai",
         text: "K-AI Build mode",
       }),
