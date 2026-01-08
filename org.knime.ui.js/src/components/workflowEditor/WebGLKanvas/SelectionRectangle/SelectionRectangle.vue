@@ -13,8 +13,8 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
-import { SpatialHash } from "@/util/geometry/spatialHash";
 import { DashLine } from "@/util/pixi-dash-line";
+import { SpatialHash } from "@/util/workflow-canvas";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { pixiGlobals } from "../common/pixiGlobals";
 import {

@@ -5,7 +5,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { SpatialHash } from "@/util/geometry/spatialHash";
+import { SpatialHash } from "@/util/workflow-canvas";
 
 const DISTANCE_BUFFER = 20;
 const spatialHash = new SpatialHash({
