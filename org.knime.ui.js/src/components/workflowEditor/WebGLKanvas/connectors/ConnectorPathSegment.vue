@@ -8,7 +8,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { DashLine } from "@/util/pixiDashedLine";
+import { DashLine } from "@/util/pixi-dash-line";
 import type { GraphicsInst } from "@/vue3-pixi";
 import type { ConnectorPathSegmentProps } from "../../types";
 import { type BezierPoints, getBezier } from "../../util/connectorPath";

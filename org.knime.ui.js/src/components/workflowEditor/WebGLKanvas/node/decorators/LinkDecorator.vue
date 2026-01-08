@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { Container, Graphics } from "pixi.js";
 
 import * as $colors from "@/style/colors";
-import { DashLine } from "@/util/pixiDashedLine";
+import { DashLine } from "@/util/pixi-dash-line";
 import type { GraphicsInst } from "@/vue3-pixi";
 
 /**
