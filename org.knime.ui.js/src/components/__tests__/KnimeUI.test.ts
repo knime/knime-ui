@@ -12,7 +12,7 @@ import { createSpaceProvider } from "@/test/factories";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import DevTools from "../application/DevTools.vue";
-import ErrorOverlay from "../application/ErrorOverlay.vue";
+import ErrorOverlay from "../application/ErrorOverlay/ErrorOverlay.vue";
 
 vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();

@@ -23,7 +23,7 @@ import { getMetaOrCtrlKey, promise as promiseUtils } from "@knime/utils";
 import BlockUi from "@/components/application/BlockUi.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
 import DownloadBanner from "@/components/application/DownloadBanner.vue";
-import ErrorOverlay from "@/components/application/ErrorOverlay.vue";
+import ErrorOverlay from "@/components/application/ErrorOverlay/ErrorOverlay.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
