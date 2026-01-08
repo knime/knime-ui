@@ -15,7 +15,7 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { KANVAS_ID } from "@/util/getKanvasDomElement";
+import { KANVAS_ID } from "@/util/workflow-canvas";
 import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 
 import { RESIZE_DEBOUNCE } from "./constants";

@@ -17,7 +17,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import { nodeSize } from "@/style/shapes";
 import { notifyPatch } from "@/util/event-syncer";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 
 import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";

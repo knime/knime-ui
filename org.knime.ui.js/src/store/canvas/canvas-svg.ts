@@ -8,8 +8,8 @@ import { defineStore } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import type { WorkflowObject } from "@/util/workflow-canvas";
 
 export const zoomMultiplier = 1.09;
