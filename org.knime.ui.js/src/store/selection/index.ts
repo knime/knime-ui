@@ -10,7 +10,7 @@ import {
   annotationToWorkflowObject,
   componentPlaceholderToWorkflowObject,
   nodeToWorkflowObject,
-} from "@/util/workflowUtil";
+} from "@/util/workflow-canvas/mappers";
 import { useMovingStore } from "../workflow/moving";
 
 import { useAnnotationSelection } from "./annotations";

@@ -10,8 +10,10 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { portSize } from "@/style/shapes";
 import { getNodeState } from "@/util/nodeUtil";
-import { workflowNavigationService } from "@/util/workflow-canvas";
-import { nodeToWorkflowObject } from "@/util/workflowUtil";
+import {
+  nodeToWorkflowObject,
+  workflowNavigationService,
+} from "@/util/workflow-canvas";
 import { pixiGlobals } from "../common/pixiGlobals";
 
 /**
