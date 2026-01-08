@@ -10,7 +10,7 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { DashLine } from "@/util/pixiDashedLine";
+import { DashLine } from "@/util/pixi-dash-line";
 import type { GraphicsInst } from "@/vue3-pixi";
 
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";

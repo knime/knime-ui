@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DashLine } from "@/util/pixiDashedLine";
+import { DashLine } from "@/util/pixi-dash-line";
 
 type Props = {
   selected: boolean;
