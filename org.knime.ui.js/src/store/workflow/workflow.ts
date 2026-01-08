@@ -22,7 +22,6 @@ import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { getPortContext } from "@/util/portSelection";
 import { type WorkflowObject, workflowBounds } from "@/util/workflow-canvas";
 import {
   annotationToWorkflowObject,
@@ -189,7 +188,8 @@ export const useWorkflowStore = defineStore("workflow", {
 
     async deleteSelectedPort() {
       const selectionStore = useSelectionStore();
-      const { selectedPort, nodeId } = useSelectionStore().activeNodePorts;
+      const { selectedPortId: selectedPort, nodeId } =
+        useSelectionStore().selectedNodePort;
 
       const node = useNodeInteractionsStore().getNodeById(nodeId ?? "");
 
@@ -199,21 +199,19 @@ export const useWorkflowStore = defineStore("workflow", {
 
       if (
         !selectedPort ||
-        selectionStore.activeNodePorts.isModificationInProgress
+        selectionStore.selectedNodePort.isModificationInProgress
       ) {
         return;
       }
 
-      const { side, index, sidePorts, isAddPort } = getPortContext(
-        node,
-        selectedPort,
-      );
+      const { side, index, sidePorts, isAddPort } =
+        selectionStore.getSelectedPortContext(node, selectedPort);
 
       if (isAddPort || !sidePorts[index].canRemove) {
         return;
       }
 
-      selectionStore.updateActiveNodePorts({
+      selectionStore.updateSelectedNodePort({
         isModificationInProgress: true,
       });
 
@@ -228,19 +226,19 @@ export const useWorkflowStore = defineStore("workflow", {
           if (isLastSideport) {
             const minIndex = node.kind === "metanode" ? 0 : 1;
             if (index - 1 >= minIndex) {
-              selectionStore.updateActiveNodePorts({
-                selectedPort: `${side}-${index - 1}`,
+              selectionStore.updateSelectedNodePort({
+                selectedPortId: `${side}-${index - 1}`,
               });
             } else {
-              selectionStore.updateActiveNodePorts({
+              selectionStore.updateSelectedNodePort({
                 nodeId: null,
-                selectedPort: null,
+                selectedPortId: null,
               });
             }
           }
         })
         .finally(() => {
-          selectionStore.updateActiveNodePorts({
+          selectionStore.updateSelectedNodePort({
             isModificationInProgress: false,
           });
         });
