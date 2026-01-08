@@ -6,6 +6,8 @@ import { nodeSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import type { GeometryArea, GeometryBounds } from "@/util/geometry/types";
 
+import { freeSpaceInCanvas } from "./workflow-canvas";
+
 // eslint-disable-next-line no-magic-numbers
 const getRandomNoise = () => (Math.random() * 2 - 1) * 25;
 
@@ -61,7 +63,7 @@ export const offsetStrategy = ({
     visibleFrame,
   );
 
-  if (visibility >= geometry.constants.VISIBILITY_THRESHOLD) {
+  if (visibility >= freeSpaceInCanvas.VISIBILITY_THRESHOLD) {
     return { x: offsetPosition.left, y: offsetPosition.top };
   }
   return null;

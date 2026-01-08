@@ -2,26 +2,33 @@ import { describe, expect, it } from "vitest";
 
 import { nodeSize } from "@/style/shapes";
 import { createNativeNode } from "@/test/factories";
-import { geometry } from "../geometry";
+import { geometry } from "../../../geometry";
+import {
+  CONSTANTS,
+  findFreeSpace,
+  findFreeSpaceAroundCenterWithFallback,
+  findFreeSpaceAroundPointWithFallback,
+  findFreeSpaceFrom,
+} from "../findFreeSpaceOnCanvas";
 
 describe("findFreeSpaceOnCanvas", () => {
   describe("findFreeSpace", () => {
     it("fill space in-between", () => {
       expect(
-        geometry.findFreeSpace({
+        findFreeSpace({
           area: { width: 10, height: 10 },
           workflow: {
             nodes: {
               0: createNativeNode({
                 position: {
-                  x: -32 - geometry.constants.NODE_PADDING,
-                  y: -32 - geometry.constants.NODE_PADDING,
+                  x: -32 - CONSTANTS.NODE_PADDING,
+                  y: -32 - CONSTANTS.NODE_PADDING,
                 },
               }),
               1: createNativeNode({
                 position: {
-                  x: 10 + geometry.constants.NODE_PADDING,
-                  y: 10 + geometry.constants.NODE_PADDING,
+                  x: 10 + CONSTANTS.NODE_PADDING,
+                  y: 10 + CONSTANTS.NODE_PADDING,
                 },
               }),
             },
@@ -34,20 +41,20 @@ describe("findFreeSpaceOnCanvas", () => {
 
     it("space in-between not sufficient", () => {
       expect(
-        geometry.findFreeSpace({
+        findFreeSpace({
           area: { width: 12, height: 12 },
           workflow: {
             nodes: {
               0: createNativeNode({
                 position: {
-                  x: -nodeSize - geometry.constants.NODE_PADDING,
-                  y: -nodeSize - geometry.constants.NODE_PADDING,
+                  x: -nodeSize - CONSTANTS.NODE_PADDING,
+                  y: -nodeSize - CONSTANTS.NODE_PADDING,
                 },
               }),
               1: createNativeNode({
                 position: {
-                  x: 10 + geometry.constants.NODE_PADDING,
-                  y: 10 + geometry.constants.NODE_PADDING,
+                  x: 10 + CONSTANTS.NODE_PADDING,
+                  y: 10 + CONSTANTS.NODE_PADDING,
                 },
               }),
             },
@@ -56,14 +63,14 @@ describe("findFreeSpaceOnCanvas", () => {
           step: { x: 1, y: 1 },
         }),
       ).toStrictEqual({
-        x: 10 + nodeSize + 2 * geometry.constants.NODE_PADDING,
-        y: 10 + nodeSize + 2 * geometry.constants.NODE_PADDING,
+        x: 10 + nodeSize + 2 * CONSTANTS.NODE_PADDING,
+        y: 10 + nodeSize + 2 * CONSTANTS.NODE_PADDING,
       });
     });
 
     it("returns start position when workflow is empty", () => {
       expect(
-        geometry.findFreeSpace({
+        findFreeSpace({
           area: { width: 100, height: 100 },
           workflow: { nodes: {} },
           startPosition: { x: 50, y: 50 },
@@ -76,7 +83,7 @@ describe("findFreeSpaceOnCanvas", () => {
       const node = createNativeNode({ position: { x: 200, y: 200 } });
 
       expect(
-        geometry.findFreeSpace({
+        findFreeSpace({
           area: { width: 50, height: 50 },
           workflow: { nodes: { 0: node } },
           startPosition: { x: 0, y: 0 },
@@ -88,7 +95,7 @@ describe("findFreeSpaceOnCanvas", () => {
     it("finds space after single node", () => {
       const node = createNativeNode({ position: { x: 0, y: 0 } });
 
-      const result = geometry.findFreeSpace({
+      const result = findFreeSpace({
         area: { width: 50, height: 50 },
         workflow: { nodes: { 0: node } },
         startPosition: { x: 0, y: 0 },
@@ -96,8 +103,8 @@ describe("findFreeSpaceOnCanvas", () => {
       });
 
       expect(result).toStrictEqual({
-        x: nodeSize + geometry.constants.NODE_PADDING,
-        y: nodeSize + geometry.constants.NODE_PADDING,
+        x: nodeSize + CONSTANTS.NODE_PADDING,
+        y: nodeSize + CONSTANTS.NODE_PADDING,
       });
 
       // Verify result doesn't overlap with the existing node
@@ -108,10 +115,10 @@ describe("findFreeSpaceOnCanvas", () => {
         height: 50,
       };
       const nodeBounds = {
-        left: node.position.x - geometry.constants.NODE_PADDING,
-        top: node.position.y - geometry.constants.NODE_PADDING,
-        width: nodeSize + 2 * geometry.constants.NODE_PADDING,
-        height: nodeSize + 2 * geometry.constants.NODE_PADDING,
+        left: node.position.x - CONSTANTS.NODE_PADDING,
+        top: node.position.y - CONSTANTS.NODE_PADDING,
+        width: nodeSize + 2 * CONSTANTS.NODE_PADDING,
+        height: nodeSize + 2 * CONSTANTS.NODE_PADDING,
       };
       const coverage = geometry.utils.areaCoverage(resultBounds, nodeBounds);
       expect(coverage).toBe(0);
@@ -120,7 +127,7 @@ describe("findFreeSpaceOnCanvas", () => {
     it("handles different step sizes", () => {
       const node = createNativeNode({ position: { x: 0, y: 0 } });
 
-      const result = geometry.findFreeSpace({
+      const result = findFreeSpace({
         area: { width: 50, height: 50 },
         workflow: { nodes: { 0: node } },
         startPosition: { x: 0, y: 0 },
@@ -136,7 +143,7 @@ describe("findFreeSpaceOnCanvas", () => {
 
   describe("findFreeSpaceFrom", () => {
     it("returns high visibility when area fits in visible frame", () => {
-      const finder = geometry.findFreeSpaceFrom({
+      const finder = findFreeSpaceFrom({
         objectBounds: { width: 100, height: 100 },
         nodes: {},
         visibleFrame: { left: 0, top: 0, width: 1000, height: 1000 },
@@ -148,7 +155,7 @@ describe("findFreeSpaceOnCanvas", () => {
     });
 
     it("returns low visibility when area is outside visible frame", () => {
-      const finder = geometry.findFreeSpaceFrom({
+      const finder = findFreeSpaceFrom({
         objectBounds: { width: 50, height: 50 },
         nodes: {},
         visibleFrame: { left: 0, top: 0, width: 100, height: 100 },
@@ -162,7 +169,7 @@ describe("findFreeSpaceOnCanvas", () => {
     it("finds space avoiding nodes", () => {
       const node = createNativeNode({ position: { x: 100, y: 100 } });
 
-      const finder = geometry.findFreeSpaceFrom({
+      const finder = findFreeSpaceFrom({
         objectBounds: { width: 50, height: 50 },
         nodes: { 0: node },
         visibleFrame: { left: 0, top: 0, width: 1000, height: 1000 },
@@ -180,10 +187,10 @@ describe("findFreeSpaceOnCanvas", () => {
         height: 50,
       };
       const nodeBounds = {
-        left: node.position.x - geometry.constants.NODE_PADDING,
-        top: node.position.y - geometry.constants.NODE_PADDING,
-        width: nodeSize + 2 * geometry.constants.NODE_PADDING,
-        height: nodeSize + 2 * geometry.constants.NODE_PADDING,
+        left: node.position.x - CONSTANTS.NODE_PADDING,
+        top: node.position.y - CONSTANTS.NODE_PADDING,
+        width: nodeSize + 2 * CONSTANTS.NODE_PADDING,
+        height: nodeSize + 2 * CONSTANTS.NODE_PADDING,
       };
       const coverage = geometry.utils.areaCoverage(resultBounds, nodeBounds);
       expect(coverage).toBe(0);
@@ -192,7 +199,7 @@ describe("findFreeSpaceOnCanvas", () => {
 
   describe("findFreeSpaceAroundPointWithFallback", () => {
     it("returns position when visibility threshold is met", () => {
-      const result = geometry.findFreeSpaceAroundPointWithFallback({
+      const result = findFreeSpaceAroundPointWithFallback({
         startPoint: { x: 500, y: 500 },
         visibleFrame: { left: 0, top: 0, width: 1000, height: 1000 },
         objectBounds: { width: 50, height: 50 },
@@ -213,7 +220,7 @@ describe("findFreeSpaceOnCanvas", () => {
         }
       }
 
-      const result = geometry.findFreeSpaceAroundPointWithFallback({
+      const result = findFreeSpaceAroundPointWithFallback({
         startPoint: { x: 50, y: 50 },
         visibleFrame: { left: 0, top: 0, width: 100, height: 100 },
         objectBounds: { width: 50, height: 50 },
@@ -228,7 +235,7 @@ describe("findFreeSpaceOnCanvas", () => {
     });
 
     it("uses default objectBounds when not provided", () => {
-      const result = geometry.findFreeSpaceAroundPointWithFallback({
+      const result = findFreeSpaceAroundPointWithFallback({
         startPoint: { x: 500, y: 500 },
         visibleFrame: { left: 0, top: 0, width: 1000, height: 1000 },
         nodes: {},
@@ -242,7 +249,7 @@ describe("findFreeSpaceOnCanvas", () => {
       // Create a node that blocks the start point
       const node = createNativeNode({ position: { x: 500, y: 500 } });
 
-      const result = geometry.findFreeSpaceAroundPointWithFallback({
+      const result = findFreeSpaceAroundPointWithFallback({
         startPoint: { x: 500, y: 500 },
         visibleFrame: { left: 0, top: 0, width: 1000, height: 1000 },
         objectBounds: { width: 50, height: 50 },
@@ -259,10 +266,10 @@ describe("findFreeSpaceOnCanvas", () => {
         height: 50,
       };
       const nodeBounds = {
-        left: node.position.x - geometry.constants.NODE_PADDING,
-        top: node.position.y - geometry.constants.NODE_PADDING,
-        width: nodeSize + 2 * geometry.constants.NODE_PADDING,
-        height: nodeSize + 2 * geometry.constants.NODE_PADDING,
+        left: node.position.x - CONSTANTS.NODE_PADDING,
+        top: node.position.y - CONSTANTS.NODE_PADDING,
+        width: nodeSize + 2 * CONSTANTS.NODE_PADDING,
+        height: nodeSize + 2 * CONSTANTS.NODE_PADDING,
       };
       const coverage = geometry.utils.areaCoverage(resultBounds, nodeBounds);
       expect(coverage).toBe(0);
@@ -271,7 +278,7 @@ describe("findFreeSpaceOnCanvas", () => {
 
   describe("findFreeSpaceAroundCenterWithFallback", () => {
     it("finds free space centered in visible frame", () => {
-      const result = geometry.findFreeSpaceAroundCenterWithFallback({
+      const result = findFreeSpaceAroundCenterWithFallback({
         visibleFrame: { left: 0, top: 0, width: 1000, height: 1000 },
         objectBounds: { width: 50, height: 50 },
         nodes: {},
@@ -285,7 +292,7 @@ describe("findFreeSpaceOnCanvas", () => {
     });
 
     it("uses default objectBounds when not provided", () => {
-      const result = geometry.findFreeSpaceAroundCenterWithFallback({
+      const result = findFreeSpaceAroundCenterWithFallback({
         visibleFrame: { left: 0, top: 0, width: 1000, height: 1000 },
         nodes: {},
       });
@@ -302,7 +309,7 @@ describe("findFreeSpaceOnCanvas", () => {
         position: { x: initialNodeX, y: initialNodeY },
       });
 
-      const result = geometry.findFreeSpaceAroundCenterWithFallback({
+      const result = findFreeSpaceAroundCenterWithFallback({
         visibleFrame: { left: 0, top: 0, width: 1000, height: 1000 },
         objectBounds: { width: 50, height: 50 },
         nodes: { 0: node },
