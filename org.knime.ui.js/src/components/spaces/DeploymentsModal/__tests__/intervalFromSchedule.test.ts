@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getIntervalFromSchedule } from "@/util/intervalFromSchedule";
+import { getIntervalFromSchedule } from "../intervalFromSchedule";
 
 const getValidSchedule = () => ({
   startTime: 1693395840,
