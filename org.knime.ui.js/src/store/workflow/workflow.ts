@@ -28,7 +28,7 @@ import {
   annotationToWorkflowObject,
   componentPlaceholderToWorkflowObject,
   nodeToWorkflowObject,
-} from "@/util/workflowUtil";
+} from "@/util/workflow-canvas";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";
