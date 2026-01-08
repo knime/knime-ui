@@ -4,12 +4,12 @@ import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 
 import {
-  type Direction,
   type FindNearestObjectPayload,
   type GenericWorkflowObject,
   type WorkerMessage,
-  isValidEvent,
-} from "./common";
+  type WorkflowNavigationDirection,
+} from "./types";
+import { isValidEvent } from "./util";
 
 const distance = function (pt1: XY, pt2: XY) {
   const { x: x1, y: y1 } = pt1;
@@ -92,8 +92,11 @@ const getDisplacementVector = (pointA: XY, pointB: XY): XY => ({
  * @param direction
  * @returns
  */
-const isPointInDirection = ({ x, y }: XY, direction: Direction) => {
-  const directionMatcher: Record<Direction, boolean> = {
+const isPointInDirection = (
+  { x, y }: XY,
+  direction: WorkflowNavigationDirection,
+) => {
+  const directionMatcher: Record<WorkflowNavigationDirection, boolean> = {
     top: x >= 0 && y < 0,
     left: x < 0 && y < 0,
     bottom: x < 0 && y >= 0,

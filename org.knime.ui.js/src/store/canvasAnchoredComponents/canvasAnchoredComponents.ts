@@ -8,7 +8,7 @@ import type { QuickActionMenuProps } from "@/components/workflowEditor/CanvasAnc
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import * as $shapes from "@/style/shapes";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
+import { workflowNavigationService } from "@/util/workflow-canvas";
 import { useCanvasModesStore } from "../application/canvasModes";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";

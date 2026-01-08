@@ -11,10 +11,11 @@ import {
 } from "@/test/factories";
 import { mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
+import { workflowNavigationService } from "@/util/workflow-canvas";
 
-vi.mock("@/util/workflowNavigationService", () => {
+vi.mock("@/util/workflow-canvas", async () => {
   return {
+    ...(await vi.importActual("@/util/workflow-canvas")),
     workflowNavigationService: {
       nearestObject: vi.fn(),
     },
