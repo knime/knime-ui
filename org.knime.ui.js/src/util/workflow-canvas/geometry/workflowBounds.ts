@@ -2,10 +2,24 @@ import type { KnimeNode, Workflow } from "@/api/custom-types";
 import type {
   Bounds,
   MetaPorts,
+  Workflow as RawWorkflow,
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
+import {
+  autoPositionMetanodeMargin,
+  defaultMetaNodeBarHeight,
+  defaultMetanodeBarPosition,
+  metaNodeBarWidth,
+} from "@/style/shapes";
 import * as $shapes from "@/style/shapes";
-import { mergePortBarBounds } from "../workflowUtil";
+
+export const mergePortBarBounds = (
+  originalBounds: Bounds | null,
+  calculatedBounds: Bounds,
+) => ({
+  ...(originalBounds ?? calculatedBounds),
+  width: metaNodeBarWidth,
+});
 
 const {
   nodeSize,
@@ -17,7 +31,7 @@ const {
   horizontalNodePadding,
 } = $shapes;
 
-export const nodePadding = {
+const nodePadding = {
   top: nodeNameMargin + nodeNameLineHeight,
   bottom: nodeStatusMarginTop + nodeStatusHeight,
   left: horizontalNodePadding,
@@ -123,7 +137,8 @@ type ObjectBoundsOption = {
   };
 };
 
-export default (
+// eslint-disable-next-line complexity
+export const getBounds = (
   {
     nodes = {},
     workflowAnnotations = [],
@@ -182,4 +197,37 @@ export default (
     width: right - left,
     height: bottom - top,
   };
+};
+
+export const calculateMetaNodePortBarBounds = (workflow: RawWorkflow) => {
+  const workflowBounds = getBounds(workflow, {
+    padding: true,
+  });
+  const inMargin = -autoPositionMetanodeMargin;
+  const outMargin = autoPositionMetanodeMargin;
+  const topMargin = -autoPositionMetanodeMargin;
+  const height = defaultMetaNodeBarHeight;
+  const width = metaNodeBarWidth;
+
+  const left = workflowBounds.left + inMargin;
+  const y = workflowBounds.top + topMargin;
+
+  const inBounds = {
+    x: left,
+    y,
+    height,
+    width,
+  };
+
+  const outBounds = {
+    x: Math.max(
+      workflowBounds.right + outMargin,
+      left + defaultMetanodeBarPosition,
+    ),
+    y,
+    height,
+    width,
+  };
+
+  return { in: inBounds, out: outBounds };
 };

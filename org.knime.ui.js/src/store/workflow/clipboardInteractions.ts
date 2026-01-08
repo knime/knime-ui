@@ -9,8 +9,8 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { createAbortablePromise } from "@/api/utils";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useSelectionStore } from "@/store/selection";
-import { geometry } from "@/util/geometry";
 import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
+import { workflowBounds } from "@/util/workflow-canvas";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 
 import { useWorkflowStore } from "./workflow";
@@ -135,7 +135,7 @@ export const useClipboardInteractionsStore = defineStore(
           return;
         }
 
-        const objectBounds = geometry.getWorkflowObjectBounds({
+        const objectBounds = workflowBounds.getBounds({
           nodes: selectionStore.getSelectedNodes,
           workflowAnnotations: selectionStore.getSelectedAnnotations,
         });

@@ -1,20 +1,11 @@
 import type { KnimeNode } from "@/api/custom-types";
 import type {
-  Bounds,
   ComponentPlaceholder,
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-import { metaNodeBarWidth, nodeSize } from "@/style/shapes";
+import { nodeSize } from "@/style/shapes";
 
 import type { WorkflowObject } from "./workflow-canvas";
-
-export const mergePortBarBounds = (
-  originalBounds: Bounds | null,
-  calculatedBounds: Bounds,
-) => ({
-  ...(originalBounds ?? calculatedBounds),
-  width: metaNodeBarWidth,
-});
 
 export const nodeToWorkflowObject = (node: KnimeNode): WorkflowObject => ({
   type: "node",

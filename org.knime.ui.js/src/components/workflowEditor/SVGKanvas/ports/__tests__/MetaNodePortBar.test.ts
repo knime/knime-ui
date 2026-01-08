@@ -8,7 +8,7 @@ import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { geometry } from "@/util/geometry";
+import { workflowBounds } from "@/util/workflow-canvas";
 import ConnectorSnappingProvider from "../../connectors/ConnectorSnappingProvider.vue";
 import MetaNodePortBar from "../MetaNodePortBar.vue";
 import NodePort from "../NodePort/NodePort.vue";
@@ -29,6 +29,7 @@ describe("MetaNodePortBar.vue", () => {
     };
 
     const mockedStores = mockStores();
+    // @ts-expect-error
     mockedStores.canvasStore.contentBounds = {
       left: 0,
       top: 0,
@@ -40,19 +41,19 @@ describe("MetaNodePortBar.vue", () => {
 
     mockedStores.workflowStore.setActiveWorkflow(
       createWorkflow({
-        metaInPorts: { ports, bounds },
-        metaOutPorts: { ports, bounds },
+        metaInPorts: { ports, bounds: bounds as any },
+        metaOutPorts: { ports, bounds: bounds as any },
       }),
     );
 
     mockedStores.workflowStore.setCalculatedMetanodePortBarBounds(
-      geometry.calculateMetaNodePortBarBounds(
+      workflowBounds.calculateMetaNodePortBarBounds(
         mockedStores.workflowStore.activeWorkflow!,
       ),
     );
 
     const wrapper = mount(MetaNodePortBar, {
-      props: { ...defaultProps, ...props },
+      props: { ...defaultProps, ...props } as any,
       global: {
         mocks: { $shapes, $colors, $bus },
         plugins: [mockedStores.testingPinia],

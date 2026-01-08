@@ -22,9 +22,8 @@ import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { geometry } from "@/util/geometry";
 import { getPortContext } from "@/util/portSelection";
-import type { WorkflowObject } from "@/util/workflow-canvas";
+import { type WorkflowObject, workflowBounds } from "@/util/workflow-canvas";
 import {
   annotationToWorkflowObject,
   componentPlaceholderToWorkflowObject,
@@ -583,7 +582,7 @@ export const useWorkflowStore = defineStore("workflow", {
         };
       }
 
-      return geometry.getWorkflowObjectBounds(state.activeWorkflow, {
+      return workflowBounds.getBounds(state.activeWorkflow, {
         padding: true,
         calculatedPortBarBounds: state.calculatedMetanodePortBarBounds,
       });
