@@ -26,7 +26,6 @@ import { useComponentInteractionsStore } from "@/store/workflow/componentInterac
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { encodeString } from "@/util/encoding";
-import { setProjectActiveOrThrow } from "@/util/projectUtil";
 import { workflowBounds } from "@/util/workflow-canvas";
 import { webResourceLocation } from "@/webResourceLocation";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
@@ -48,6 +47,31 @@ export class ProjectDataLoadError extends Error {
     this.context = _context;
   }
 }
+
+/**
+ * Try to set a project (version) as active and ensure it is loaded, throws on failure.
+ * Throwing an error here propagates everything one level up. In case of a version
+ * switch, re-activating the previously active version is handled by the caller
+ * correctly.
+ */
+const setProjectActiveOrThrow = async (
+  projectId: string,
+  versionId: string = CURRENT_STATE_VERSION,
+  removeOnFailure: boolean = true,
+) => {
+  const didLoadNewVersion =
+    await API.desktop.setProjectActiveAndEnsureItsLoaded({
+      projectId,
+      versionId,
+      removeProjectIfNotLoaded: removeOnFailure,
+    });
+
+  if (!didLoadNewVersion) {
+    throw new ProjectActivationError(
+      `Failed to set active project ${projectId} with version ${versionId}`,
+    );
+  }
+};
 
 type LifecycleState = {
   /**
