@@ -1,9 +1,12 @@
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+
 import type {
   ComponentNode,
   ComponentNodeAndDescription,
   EditableMetadata,
   MetaNode,
   NativeNode,
+  NodeCategory,
   NodeDescription,
   PortGroup,
   PortType,
