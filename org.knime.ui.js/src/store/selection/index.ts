@@ -1,10 +1,10 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import type { WorkflowObject } from "@/util/workflow-canvas";
 import {
   annotationToWorkflowObject,
   componentPlaceholderToWorkflowObject,

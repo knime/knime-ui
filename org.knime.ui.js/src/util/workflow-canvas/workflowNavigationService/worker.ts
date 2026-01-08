@@ -1,7 +1,7 @@
 import { kdTree as KDTree } from "kd-tree-javascript";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import type { WorkflowObject } from "../types";
 
 import {
   type FindNearestObjectPayload,

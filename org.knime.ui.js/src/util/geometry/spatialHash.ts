@@ -1,5 +1,5 @@
-import type { WorkflowObject } from "@/api/custom-types";
 import type { Bounds } from "@/api/gateway-api/generated-api";
+import type { WorkflowObject } from "../workflow-canvas";
 
 import { isIntersecting, rectContains } from "./utils";
 
