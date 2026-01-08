@@ -99,7 +99,7 @@ public final class KnimeUIPreferences {
 
     private static BiConsumer<String, String> canvasRendererChangeListener;
 
-    static final String HUB_PREF_KEY = "modernUiHub";
+    static final String PRIMARY_HUB_PREF_KEY = "primaryHub";
 
     private static final String BUNDLE_NAME = UIPlugin.getContext().getBundle().getSymbolicName();
 
@@ -225,14 +225,14 @@ public final class KnimeUIPreferences {
      * @return the identifier of the selected KNIME Hub mount point for the modern UI. Empty string if none.
      */
     public static String getPrimaryHub() {
-        return PREF_STORE.getString(HUB_PREF_KEY);
+        return PREF_STORE.getString(PRIMARY_HUB_PREF_KEY);
     }
 
     /**
      * @param hubId the identifier of the selected KNIME Hub mount point for the modern UI.
      */
     public static void setPrimaryHub(final String hubId) {
-        PREF_STORE.setValue(HUB_PREF_KEY, hubId);
+        PREF_STORE.setValue(PRIMARY_HUB_PREF_KEY, hubId);
         savePreferenceChanges();
     }
 
