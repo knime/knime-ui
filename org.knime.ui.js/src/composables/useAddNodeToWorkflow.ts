@@ -11,7 +11,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
-import { geometry } from "@/util/geometry";
+import { freeSpaceInCanvas } from "@/util/workflow-canvas";
 
 export const useAddNodeToWorkflow = () => {
   const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());
@@ -62,7 +62,7 @@ export const useAddNodeToWorkflow = () => {
           x: singleSelectedNode.value.position.x + 120,
           y: singleSelectedNode.value.position.y,
         }
-      : geometry.findFreeSpaceAroundCenterWithFallback({
+      : freeSpaceInCanvas.aroundCenterWithFallback({
           visibleFrame: canvasStore.value.getVisibleFrame,
           nodes: activeWorkflow.value!.nodes,
         });

@@ -1,12 +1,16 @@
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { nodeSize } from "@/style/shapes";
+import type { GeometryArea, GeometryBounds } from "../../geometry/types";
+import {
+  areaCoverage,
+  getCenteredPositionInVisibleFrame,
+} from "../../geometry/utils";
 
-import type { GeometryArea, GeometryBounds } from "./types";
-import { areaCoverage, getCenteredPositionInVisibleFrame } from "./utils";
-
-export const NODE_PADDING = 50;
-export const VISIBILITY_THRESHOLD = 0.7;
+export const CONSTANTS = {
+  NODE_PADDING: 50,
+  VISIBILITY_THRESHOLD: 0.7,
+};
 
 type findFreeSpaceOptions = {
   area: GeometryArea;
@@ -14,6 +18,7 @@ type findFreeSpaceOptions = {
   startPosition: XY;
   step: XY;
 };
+
 /**
  * Simple and inefficient algorithm to find free space on the workflow canvas,
  * based on the rectangular area around workflow objects
@@ -32,10 +37,10 @@ export const findFreeSpace = ({
   step,
 }: findFreeSpaceOptions) => {
   const estimatedNodeBounds = (node: KnimeNode): GeometryBounds => ({
-    top: node.position.y - NODE_PADDING,
-    left: node.position.x - NODE_PADDING,
-    width: nodeSize + NODE_PADDING + NODE_PADDING,
-    height: nodeSize + NODE_PADDING + NODE_PADDING,
+    top: node.position.y - CONSTANTS.NODE_PADDING,
+    left: node.position.x - CONSTANTS.NODE_PADDING,
+    width: nodeSize + CONSTANTS.NODE_PADDING + CONSTANTS.NODE_PADDING,
+    height: nodeSize + CONSTANTS.NODE_PADDING + CONSTANTS.NODE_PADDING,
   });
 
   // draw a spacious rectangle around every node
@@ -87,7 +92,7 @@ type FindFreeSpaceFromOptions = {
  * @param nodes all nodes of the workflow
  * @param visibleFrame
  *
- * @returns {{x: Number, y: Number, visibility: Number}} free space position and visibility of the area, if pasted there
+ * @returns free space position and visibility of the area, if pasted there
  */
 export const findFreeSpaceFrom =
   ({ objectBounds, nodes, visibleFrame }: FindFreeSpaceFromOptions) =>
@@ -144,7 +149,7 @@ export const findFreeSpaceAroundPointWithFallback = ({
       },
     );
 
-    if (fromCenter.visibility >= VISIBILITY_THRESHOLD) {
+    if (fromCenter.visibility >= CONSTANTS.VISIBILITY_THRESHOLD) {
       consola.info("found free space around center");
       const { x, y } = fromCenter;
       return { x, y };
