@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addLeadingZero, formatTime, isValidDate } from "@/util/date-time";
+import { addLeadingZero, formatTime, isValidDate } from "../date-time";
 
 describe("time", () => {
   it("correctly formats time from milliseconds", () => {
