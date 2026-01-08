@@ -78,7 +78,7 @@ const { handlePointerInteraction } = useObjectInteractions({
 });
 
 const renderable = computed(
-  () => !geometry.utils.isPointOutsideBounds(position.value, visibleArea.value),
+  () => !geometry.isPointOutsideBounds(position.value, visibleArea.value),
 );
 
 // eslint-disable-next-line no-magic-numbers

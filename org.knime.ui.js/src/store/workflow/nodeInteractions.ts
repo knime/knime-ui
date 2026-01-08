@@ -11,6 +11,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { isBrowser } from "@/environment";
 import { useSelectionStore } from "@/store/selection";
+import { gridSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
@@ -155,8 +156,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
 
       // Adjusted For Grid Snapping
       const gridAdjustedPosition = {
-        x: geometry.utils.snapToGrid(position.x),
-        y: geometry.utils.snapToGrid(position.y),
+        x: geometry.snapToGrid(position.x, gridSize.x),
+        y: geometry.snapToGrid(position.y, gridSize.y),
       };
 
       let newNodeId: string | null;

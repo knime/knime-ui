@@ -14,7 +14,7 @@ import {
   boundsToGeometryBounds,
   isPointInsideBounds,
   rectangleIntersection,
-} from "@/util/geometry/utils";
+} from "@/util/geometry/geometry";
 
 /**
  * For this AI quick action, the context is composed of:

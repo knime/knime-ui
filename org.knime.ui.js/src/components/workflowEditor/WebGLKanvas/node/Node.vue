@@ -174,10 +174,7 @@ const { hoverSize, renderHoverArea } = useNodeHoverSize({
 
 const renderable = computed(
   () =>
-    !geometry.utils.isPointOutsideBounds(
-      translatedPosition.value,
-      visibleArea.value,
-    ),
+    !geometry.isPointOutsideBounds(translatedPosition.value, visibleArea.value),
 );
 
 const nodeNamePosition = computed(() => {

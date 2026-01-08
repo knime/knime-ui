@@ -1,7 +1,6 @@
 import type { Bounds, XY } from "@/api/gateway-api/generated-api";
-import * as shapes from "@/style/shapes";
 
-import type { Edge, GeometryArea, GeometryBounds } from "./types";
+import type { GeometryArea, GeometryBounds, GeometryEdge } from "./types";
 
 /**
  * Finds the intersection of A and B
@@ -77,10 +76,8 @@ export const areaCoverage = (A: GeometryBounds, B: GeometryBounds) => {
 /**
  * Adjust a given coordinate point to its closest position on the grid
  */
-export const snapToGrid = (
-  value: number,
-  snapSize = shapes.gridSize.x,
-): number => Math.round(value / snapSize) * snapSize;
+export const snapToGrid = (value: number, snapSize: number): number =>
+  Math.round(value / snapSize) * snapSize;
 
 /**
  * Calculates the position of an HTML object within the visible frame, centered based on its width and height.
@@ -141,7 +138,7 @@ export const getEdgeNearPoint = (
   point: XY,
   bounds: XY & { width: number; height: number },
   offset: number,
-): Edge | null => {
+): GeometryEdge | null => {
   const minX = bounds.x + offset;
   const maxX = bounds.x + bounds.width - offset;
   const minY = bounds.y + offset;
