@@ -12,9 +12,19 @@ import PlusIcon from "@knime/styles/img/icons/plus.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import type { Link } from "@/api/gateway-api/generated-api";
-import { buildUrlRegex } from "@/util/regex";
 
 import SidebarPanelSubHeading from "./side-panel/SidebarPanelSubHeading.vue";
+
+const buildUrlRegex = (requireHttpPrefix: boolean = false) => {
+  const httpPrefixCheck = "(http://www\\.|https://www\\.|http://|https://)";
+
+  const urlCheck =
+    "[a-z0-9]+([-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?";
+
+  return new RegExp(
+    `^${httpPrefixCheck}${requireHttpPrefix ? "" : "?"}${urlCheck}$`,
+  );
+};
 
 const URL_REGEX = buildUrlRegex(true);
 /**
