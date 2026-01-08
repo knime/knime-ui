@@ -20,7 +20,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { KANVAS_ID } from "@/util/getKanvasDomElement";
+import { KANVAS_ID } from "@/util/workflow-canvas";
 import WorkflowEmpty from "../SVGKanvas/WorkflowEmpty.vue";
 import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 

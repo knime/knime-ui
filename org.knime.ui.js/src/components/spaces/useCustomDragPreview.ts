@@ -15,7 +15,7 @@ import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 
 const isComponent = (item: FileExplorerItem) => {
   return item.meta?.type === SpaceItem.TypeEnum.Component;

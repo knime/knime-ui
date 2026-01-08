@@ -11,7 +11,7 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { isInputElement } from "@/util/dom";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import { pixiGlobals } from "../common/pixiGlobals";
 import { isMarkedEvent } from "../util/interaction";
 

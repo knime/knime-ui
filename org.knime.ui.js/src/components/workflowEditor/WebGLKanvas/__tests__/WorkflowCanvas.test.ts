@@ -4,7 +4,7 @@ import { shallowMount } from "@vue/test-utils";
 
 import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { KANVAS_ID } from "@/util/getKanvasDomElement";
+import { KANVAS_ID } from "@/util/workflow-canvas";
 import WorkflowCanvas from "../WorkflowCanvas.vue";
 import Kanvas from "../kanvas/Kanvas.vue";
 

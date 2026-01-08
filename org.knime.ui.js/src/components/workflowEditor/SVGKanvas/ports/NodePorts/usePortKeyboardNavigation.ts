@@ -14,8 +14,8 @@ import type {
   SelectedPortId,
 } from "@/store/selection/ports";
 import { isInputElement } from "@/util/dom";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import { useNodeInfo } from "../../../common/useNodeInfo";
 
 type Direction = "up" | "right" | "down" | "left";

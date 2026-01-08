@@ -18,7 +18,7 @@ import { useClipboardInteractionsStore } from "@/store/workflow/clipboardInterac
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import type { UnionToShortcutRegistry } from "../types";
 
 type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<

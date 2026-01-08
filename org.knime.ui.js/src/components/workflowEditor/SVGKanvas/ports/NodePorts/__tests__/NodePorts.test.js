@@ -11,7 +11,7 @@ import {
   createNativeNode,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import NodePort from "../../NodePort/NodePort.vue";
 import AddPortPlaceholder from "../AddPortPlaceholder.vue";
 import NodePorts from "../NodePorts.vue";

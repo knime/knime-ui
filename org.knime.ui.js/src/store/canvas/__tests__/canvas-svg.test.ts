@@ -8,7 +8,7 @@ import {
   getKanvasDomElement,
   // @ts-expect-error
   setMockKanvasDomElement,
-} from "@/util/getKanvasDomElement";
+} from "@/util/workflow-canvas";
 import {
   defaultZoomFactor,
   maxZoomFactor,
@@ -18,9 +18,10 @@ import {
   zoomMultiplier,
 } from "../canvas-svg";
 
-vi.mock("@/util/getKanvasDomElement", () => {
+vi.mock("@/util/workflow-canvas", async () => {
   let fakeEl = null;
   return {
+    ...(await vi.importActual("@/util/workflow-canvas")),
     getKanvasDomElement: () => fakeEl,
     setMockKanvasDomElement: (el: any) => {
       fakeEl = el;

@@ -13,7 +13,7 @@ import {
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
 import { isInputElement } from "@/util/dom";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import { pixiGlobals } from "../../common/pixiGlobals";
 import { useCanvasPanning } from "../usePanning";
 
