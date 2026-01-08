@@ -1,8 +1,8 @@
 import { columnTypes } from "@knime/knime-ui-table";
 
+import { getIntervalFromSchedule } from "@/components/spaces/DeploymentsModal/intervalFromSchedule";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { formatTime } from "@/util/date-time";
-import { getIntervalFromSchedule } from "@/util/intervalFromSchedule";
 
 export const defaultScheduleColumns = [
   "lastRun",
