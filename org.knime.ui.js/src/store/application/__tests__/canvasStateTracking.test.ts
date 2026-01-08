@@ -6,7 +6,7 @@ import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
 
-vi.mock("@/util/encodeString", () => ({
+vi.mock("@/util/encoding", () => ({
   encodeString: vi.fn((value) => value),
 }));
 

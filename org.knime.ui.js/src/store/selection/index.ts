@@ -168,7 +168,7 @@ export const useSelectionStore = defineStore("selection", () => {
     annotationSelection.internal.deselectAll(mode);
     connectionSelection.internal.deselectAll();
     portbarSelection.internal.deselectAll();
-    nodePortSelection.internal.deselect();
+    nodePortSelection.deselectNodePort();
 
     if (preserveNodeSelectionFor.length > 1) {
       connectionSelection.selectAllBendpointsInConnections(
@@ -239,8 +239,6 @@ export const useSelectionStore = defineStore("selection", () => {
   const { internal: _connectionInternal, ...connectionActions } =
     connectionSelection;
   const { internal: _portbarInternal, ...portbarActions } = portbarSelection;
-  const { internal: _nodePortInternal, ...nodePortSelectionActions } =
-    nodePortSelection;
 
   /**
    * Queries the selection state based on a given mode.
@@ -399,7 +397,7 @@ export const useSelectionStore = defineStore("selection", () => {
     ...annotationSelectionActions,
     ...connectionActions,
     ...portbarActions,
-    ...nodePortSelectionActions,
+    ...nodePortSelection,
 
     getAnnotationVisualSelectionState,
 

@@ -3,7 +3,7 @@ import { storeToRefs } from "pinia";
 
 import type { NativeNode, NodePort } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
-import type { SelectedPortIdentifier } from "@/util/portSelection";
+import type { SelectedPortId } from "@/store/selection/ports";
 
 import { useNodeInfo } from "./useNodeInfo";
 
@@ -17,7 +17,7 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
   const { isComponent, isMetanode } = useNodeInfo({ nodeId: options.nodeId });
 
   const selectionStore = useSelectionStore();
-  const { activeNodePorts } = storeToRefs(selectionStore);
+  const { selectedNodePort: activeNodePorts } = storeToRefs(selectionStore);
 
   const isActiveNodePortsInstance = computed(
     () => activeNodePorts.value.nodeId === options.nodeId,
@@ -29,30 +29,25 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
 
   const currentlySelectedPort = computed(() => {
     if (isActiveNodePortsInstance.value) {
-      return activeNodePorts.value.selectedPort;
+      return activeNodePorts.value.selectedPortId;
     }
 
     return null;
   });
 
-  const updateSelection = (selectedPort: SelectedPortIdentifier) => {
-    selectionStore.updateActiveNodePorts({
+  const updateSelection = (selectedPort: SelectedPortId) => {
+    selectionStore.updateSelectedNodePort({
       nodeId: options.nodeId,
-      selectedPort,
+      selectedPortId: selectedPort,
     });
   };
 
   const clearSelection = () => {
-    selectionStore.updateActiveNodePorts({
-      nodeId: null,
-      selectedPort: null,
-    });
+    selectionStore.deselectNodePort();
   };
 
   const setModificationInProgress = (value: boolean) => {
-    selectionStore.updateActiveNodePorts({
-      isModificationInProgress: value,
-    });
+    selectionStore.updateSelectedNodePort({ isModificationInProgress: value });
   };
 
   const selectPort = (

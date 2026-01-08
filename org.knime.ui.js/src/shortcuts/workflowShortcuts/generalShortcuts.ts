@@ -117,7 +117,7 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     icon: DeleteIcon,
     execute: async () => {
       const workflowStore = useWorkflowStore();
-      if (useSelectionStore().activeNodePorts.selectedPort) {
+      if (useSelectionStore().selectedNodePort.selectedPortId) {
         await workflowStore.deleteSelectedPort();
       } else {
         await workflowStore.deleteSelectedObjects();
@@ -132,8 +132,8 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       }
 
       // enable depending on the selected NodePort
-      if (selectionStore.activeNodePorts.selectedPort) {
-        return !selectionStore.activeNodePorts.isModificationInProgress;
+      if (selectionStore.selectedNodePort.selectedPortId) {
+        return !selectionStore.selectedNodePort.isModificationInProgress;
       }
 
       // disable while dragging
