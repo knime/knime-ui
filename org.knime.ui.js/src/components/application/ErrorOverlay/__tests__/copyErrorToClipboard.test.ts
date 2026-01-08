@@ -9,9 +9,9 @@ import {
 } from "vitest";
 import { version } from "vue";
 
-import { copyErrorReportToClipboard } from "../copyErrorReportToClipboard";
+import { copyErrorToClipboard } from "../copyErrorToClipboard";
 
-describe("copyErrorReportToClipboard", () => {
+describe("copyErrorToClipboard", () => {
   const mockDate = new Date();
   Object.assign(navigator, { clipboard: { writeText: vi.fn() } });
 
@@ -27,7 +27,7 @@ describe("copyErrorReportToClipboard", () => {
 
   it("writes to clipboard", async () => {
     const testData = { test1: "testprop1", test2: { nested: "nestedprop" } };
-    await copyErrorReportToClipboard(testData);
+    await copyErrorToClipboard(testData);
 
     const writeTextMock = navigator.clipboard.writeText as Mock;
     expect(writeTextMock).toHaveBeenCalledOnce();
@@ -43,7 +43,7 @@ describe("copyErrorReportToClipboard", () => {
     const testError = new Error("mock error") as Error & { data: object };
     testError.data = { testdataProp: "mocked" };
     const testData = { test1: testError };
-    await copyErrorReportToClipboard(testData);
+    await copyErrorToClipboard(testData);
 
     const writeTextMock = navigator.clipboard.writeText as Mock;
     expect(writeTextMock).toHaveBeenCalledOnce();

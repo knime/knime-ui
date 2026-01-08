@@ -10,7 +10,7 @@ const toEnumeratedObject = (obj: object) => {
   );
 };
 
-export const copyErrorReportToClipboard = (data: object = {}) => {
+export const copyErrorToClipboard = (data: object = {}) => {
   const general = {
     app: "KnimeUI",
     vueVersion: version,
