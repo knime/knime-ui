@@ -15,7 +15,7 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
-import { nodeToWorkflowObject } from "@/util/workflowUtil";
+import { nodeToWorkflowObject } from "@/util/workflow-canvas";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 

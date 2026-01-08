@@ -5,7 +5,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { nodeSize } from "@/style/shapes";
 
-import type { WorkflowObject } from "./workflow-canvas";
+import type { WorkflowObject } from "./types";
 
 export const nodeToWorkflowObject = (node: KnimeNode): WorkflowObject => ({
   type: "node",
