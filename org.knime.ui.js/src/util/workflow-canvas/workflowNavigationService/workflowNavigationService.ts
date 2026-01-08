@@ -2,7 +2,7 @@ import { toRaw } from "vue";
 
 import type { WorkflowObject } from "@/api/custom-types";
 
-import type { FindNearestObjectPayload, WorkerMessage } from "./common";
+import type { FindNearestObjectPayload, WorkerMessage } from "./types";
 
 const webWorker = new Worker(new URL("./worker", import.meta.url), {
   type: "module",

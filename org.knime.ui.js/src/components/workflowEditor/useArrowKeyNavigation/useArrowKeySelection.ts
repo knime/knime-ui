@@ -10,9 +10,9 @@ import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isInputElement } from "@/util/isInputElement";
 import {
-  type Direction,
+  type WorkflowNavigationDirection,
   workflowNavigationService,
-} from "@/util/workflowNavigationService";
+} from "@/util/workflow-canvas";
 import { canvasRendererUtils } from "../util/canvasRenderer";
 
 const getFurthestObjectByDirection = (
@@ -56,7 +56,7 @@ const getFurthestObjectByDirection = (
   return result;
 };
 
-const getDirection = (event: KeyboardEvent): Direction => {
+const getDirection = (event: KeyboardEvent): WorkflowNavigationDirection => {
   return (
     {
       ArrowUp: "top",
