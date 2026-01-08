@@ -17,7 +17,13 @@ import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefined";
+
+const hasAllObjectPropertiesDefined = <T extends object>(
+  object: T,
+): object is Required<T> => {
+  // eslint-disable-next-line no-undefined
+  return Object.values(object).every((prop) => prop !== undefined);
+};
 
 import type { NodeCategoryWithExtendedPorts } from "./types";
 
