@@ -9,4 +9,4 @@ function* generator(): Iterator<number> {
 
 const idGen = generator();
 
-export const getId = () => idGen.next().value.toString();
+export const getSequentialId = () => idGen.next().value.toString();
