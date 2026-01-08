@@ -20,9 +20,9 @@ import { useApplicationStore } from "@/store/application/application";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import type { PortTypeMenuState } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import * as $shapes from "@/style/shapes";
-import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
+import { makeTypeSearch } from "./fuzzyPortTypeSearch";
 import type { MenuItemWithPort } from "./types";
 
 const { FloatingMenu } = getFloatingMenuComponent();
