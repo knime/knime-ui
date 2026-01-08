@@ -10,7 +10,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
-import { geometry } from "@/util/geometry";
+import { freeSpaceInCanvas } from "@/util/workflow-canvas";
 
 export const useAddNodeTemplateWithAutoPositioning = () => {
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
@@ -33,9 +33,9 @@ export const useAddNodeTemplateWithAutoPositioning = () => {
       throw new Error("Invalid state: there is no active workflow");
     }
 
-    return geometry.findFreeSpaceAroundCenterWithFallback({
+    return freeSpaceInCanvas.aroundCenterWithFallback({
       visibleFrame: canvasStore.value.getVisibleFrame,
-      nodes: activeWorkflow.value.nodes,
+      nodes: activeWorkflow.value!.nodes,
     });
   };
 
