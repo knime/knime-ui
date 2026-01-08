@@ -10,7 +10,7 @@ export type GeometryBounds = {
   bottom?: number;
 } & GeometryArea;
 
-export type Edge =
+export type GeometryEdge =
   | "top"
   | "top-right"
   | "right"

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { geometry } from "../geometry";
+import * as geometry from "../geometry";
 
-describe("Geometry", () => {
+describe("geometry", () => {
   describe("rectangle intersection", () => {
     it("returns null for non-intersecting, touching rectangles", () => {
       expect(
-        geometry.utils.rectangleIntersection(
+        geometry.rectangleIntersection(
           { left: 0, top: 0, width: 10, height: 10 },
           { left: 10, top: 10, width: 10, height: 10 },
         ),
@@ -15,7 +15,7 @@ describe("Geometry", () => {
 
     it("intersecting rectangles", () => {
       expect(
-        geometry.utils.rectangleIntersection(
+        geometry.rectangleIntersection(
           { left: 0, top: 0, width: 10, height: 10 },
           { left: 9, top: 9, width: 10, height: 10 },
         ),
@@ -24,7 +24,7 @@ describe("Geometry", () => {
 
     it("concentric rectangles", () => {
       expect(
-        geometry.utils.rectangleIntersection(
+        geometry.rectangleIntersection(
           { left: -5, top: -5, width: 10, height: 10 },
           { left: -10, top: -10, width: 20, height: 20 },
         ),
@@ -35,7 +35,7 @@ describe("Geometry", () => {
   describe("area coverage", () => {
     it("returns null for non-intersecting, touching rectangles", () => {
       expect(
-        geometry.utils.areaCoverage(
+        geometry.areaCoverage(
           { left: 0, top: 0, width: 10, height: 10 },
           { left: 10, top: 10, width: 10, height: 10 },
         ),
@@ -44,7 +44,7 @@ describe("Geometry", () => {
 
     it("intersecting rectangles", () => {
       expect(
-        geometry.utils.areaCoverage(
+        geometry.areaCoverage(
           { left: 0, top: 0, width: 10, height: 10 },
           { left: 9, top: 9, width: 10, height: 10 },
         ),
@@ -53,7 +53,7 @@ describe("Geometry", () => {
 
     it("concentric rectangles", () => {
       expect(
-        geometry.utils.areaCoverage(
+        geometry.areaCoverage(
           { left: -5, top: -5, width: 10, height: 10 },
           { left: -10, top: -10, width: 20, height: 20 },
         ),
@@ -71,8 +71,8 @@ describe("Geometry", () => {
       "returns the correct coordinates for a grid of size %s",
       (gridSize, initialCoordinates, expectedCoordinates) => {
         expect({
-          x: geometry.utils.snapToGrid(initialCoordinates.x, gridSize),
-          y: geometry.utils.snapToGrid(initialCoordinates.y, gridSize),
+          x: geometry.snapToGrid(initialCoordinates.x, gridSize),
+          y: geometry.snapToGrid(initialCoordinates.y, gridSize),
         }).toEqual(expectedCoordinates);
       },
     );

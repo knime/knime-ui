@@ -19,8 +19,8 @@ type Options = {
 const defaults = {
   cellSize: 64,
   aabbTesters: {
-    node: geometry.utils.isIntersecting,
-    annotation: geometry.utils.rectContains,
+    node: geometry.isIntersecting,
+    annotation: geometry.rectContains,
   } satisfies TesterFnHandlers,
 } as const;
 

@@ -13,7 +13,7 @@ const spatialHash = new SpatialHash({
   aabbTesters: {
     node: (reference, candidate) => {
       return Boolean(
-        geometry.utils.rectangleIntersection(
+        geometry.rectangleIntersection(
           {
             left: reference.x,
             top: reference.y,

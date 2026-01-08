@@ -1,11 +1,8 @@
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { nodeSize } from "@/style/shapes";
-import type { GeometryArea, GeometryBounds } from "../../geometry/types";
-import {
-  areaCoverage,
-  getCenteredPositionInVisibleFrame,
-} from "../../geometry/utils";
+import { geometry } from "@/util/geometry";
+import type { GeometryArea, GeometryBounds } from "@/util/geometry";
 
 export const CONSTANTS = {
   NODE_PADDING: 50,
@@ -59,7 +56,7 @@ export const findFreeSpace = ({
     // check how much the area at the current position overlaps with workflow objects
     overlap = 0;
     nodeBounds.forEach((nodeArea) => {
-      overlap += areaCoverage(currentBounds, nodeArea);
+      overlap += geometry.areaCoverage(currentBounds, nodeArea);
     });
 
     // if it doesn't overlap at all, take this position
@@ -110,7 +107,7 @@ export const findFreeSpaceFrom =
       },
     });
 
-    const visibility = areaCoverage(
+    const visibility = geometry.areaCoverage(
       {
         left: position.x,
         top: position.y,
@@ -187,7 +184,7 @@ export const findFreeSpaceAroundCenterWithFallback = ({
   objectBounds = { width: nodeSize, height: nodeSize },
   nodes,
 }: findFreeSpaceAroundCenterWithFallbackOptions): XY => {
-  const startPoint = getCenteredPositionInVisibleFrame(
+  const startPoint = geometry.getCenteredPositionInVisibleFrame(
     visibleFrame,
     objectBounds,
   );

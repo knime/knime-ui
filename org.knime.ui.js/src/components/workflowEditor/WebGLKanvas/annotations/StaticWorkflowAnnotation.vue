@@ -186,7 +186,7 @@ const translatedPosition = computed(() => {
 });
 
 const isWithinVisibleArea = computed(() => {
-  return geometry.utils.isIntersecting(
+  return geometry.isIntersecting(
     {
       x: translatedPosition.value.x,
       y: translatedPosition.value.y,

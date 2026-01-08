@@ -40,7 +40,7 @@ const path = computed(() => {
 });
 
 const centerPoint = computed(() =>
-  geometry.utils.getCenterPoint(props.segment.start, props.segment.end),
+  geometry.getCenterPoint(props.segment.start, props.segment.end),
 );
 
 const visiblePath = ref<SVGPathElement | null>(null);

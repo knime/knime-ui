@@ -34,7 +34,7 @@ const props = withDefaults(defineProps<Props>(), {
 const canvasStore = useWebGLCanvasStore();
 const { visibleArea } = storeToRefs(canvasStore);
 const renderable = computed(
-  () => !geometry.utils.isPointOutsideBounds(props.position, visibleArea.value),
+  () => !geometry.isPointOutsideBounds(props.position, visibleArea.value),
 );
 
 const selectionStore = useSelectionStore();

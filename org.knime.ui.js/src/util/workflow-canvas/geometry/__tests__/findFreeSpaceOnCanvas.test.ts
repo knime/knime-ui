@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { nodeSize } from "@/style/shapes";
 import { createNativeNode } from "@/test/factories";
-import { geometry } from "../../../geometry";
+import { geometry } from "@/util/geometry";
 import {
   CONSTANTS,
   findFreeSpace,
@@ -120,7 +120,7 @@ describe("findFreeSpaceOnCanvas", () => {
         width: nodeSize + 2 * CONSTANTS.NODE_PADDING,
         height: nodeSize + 2 * CONSTANTS.NODE_PADDING,
       };
-      const coverage = geometry.utils.areaCoverage(resultBounds, nodeBounds);
+      const coverage = geometry.areaCoverage(resultBounds, nodeBounds);
       expect(coverage).toBe(0);
     });
 
@@ -192,7 +192,7 @@ describe("findFreeSpaceOnCanvas", () => {
         width: nodeSize + 2 * CONSTANTS.NODE_PADDING,
         height: nodeSize + 2 * CONSTANTS.NODE_PADDING,
       };
-      const coverage = geometry.utils.areaCoverage(resultBounds, nodeBounds);
+      const coverage = geometry.areaCoverage(resultBounds, nodeBounds);
       expect(coverage).toBe(0);
     });
   });
@@ -271,7 +271,7 @@ describe("findFreeSpaceOnCanvas", () => {
         width: nodeSize + 2 * CONSTANTS.NODE_PADDING,
         height: nodeSize + 2 * CONSTANTS.NODE_PADDING,
       };
-      const coverage = geometry.utils.areaCoverage(resultBounds, nodeBounds);
+      const coverage = geometry.areaCoverage(resultBounds, nodeBounds);
       expect(coverage).toBe(0);
     });
   });

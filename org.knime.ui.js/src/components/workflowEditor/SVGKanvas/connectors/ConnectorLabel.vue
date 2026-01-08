@@ -83,7 +83,7 @@ const halfWayPosition = computed(() => {
     // therfore, to place the label, we must:
     // (1) Find the main path's center, which is the center point of the vector between the
     // source port's coords (x, y) and the destination port's coords (x, y)
-    const mainPathCenter = geometry.utils.getCenterPoint(
+    const mainPathCenter = geometry.getCenterPoint(
       { x: startX, y: startY },
       { x: endX, y: endY },
     );
@@ -93,12 +93,12 @@ const halfWayPosition = computed(() => {
     // the euclidian distance when compared with the segment's center point (x, y)
     const { index: centermostPathSegmentIndex } = pathSegments.value.reduce(
       (acc, segment, index) => {
-        const segmentCenter = geometry.utils.getCenterPoint(
+        const segmentCenter = geometry.getCenterPoint(
           segment.start,
           segment.end,
         );
 
-        const deltaCenter = geometry.utils.distanceBetweenPoints(
+        const deltaCenter = geometry.distanceBetweenPoints(
           mainPathCenter.x,
           mainPathCenter.y,
           segmentCenter.x,

@@ -11,7 +11,7 @@ import {
 import { useSelectionStore } from "@/store/selection";
 import * as colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { isPointInsideBounds } from "@/util/geometry/utils";
+import { isPointInsideBounds } from "@/util/geometry/geometry";
 
 import { useWorkflowStore } from "./workflow";
 

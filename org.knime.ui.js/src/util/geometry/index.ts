@@ -1,5 +1,2 @@
-import * as utils from "./utils";
-
-export const geometry = {
-  utils,
-};
+export * as geometry from "./geometry";
+export * from "./types";
