@@ -7,7 +7,7 @@ import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isInputElement } from "@/util/isInputElement";
+import { isInputElement } from "@/util/dom";
 import {
   type WorkflowNavigationDirection,
   type WorkflowObject,

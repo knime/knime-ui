@@ -12,7 +12,7 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isInputElement } from "@/util/isInputElement";
+import { isInputElement } from "@/util/dom";
 
 type UsePanningWithSpaceOptions = {
   shouldShowMoveCursor: Ref<boolean>;

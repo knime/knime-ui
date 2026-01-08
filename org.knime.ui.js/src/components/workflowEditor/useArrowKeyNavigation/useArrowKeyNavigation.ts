@@ -7,7 +7,7 @@ import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSelectionStore } from "@/store/selection";
-import { isInputElement } from "@/util/isInputElement";
+import { isInputElement } from "@/util/dom";
 
 import { useArrowKeyMoving } from "./useArrowKeyMoving";
 import { useArrowKeyPanning } from "./useArrowKeyPanning";
