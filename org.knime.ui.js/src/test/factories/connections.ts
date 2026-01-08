@@ -1,6 +1,6 @@
 import type { KnimeNode } from "@/api/custom-types";
 import type { Connection } from "@/api/gateway-api/generated-api";
-import { getId } from "@/util/getUniqueId";
+import { getSequentialId } from "@/util/unique-id";
 
 import { createNativeNode } from "./nodes";
 import { createPort } from "./ports";
@@ -12,7 +12,7 @@ export const createConnection = (
   const { id, ...rest } = data;
 
   return {
-    id: id ?? `root:2_1_${getId()}`,
+    id: id ?? `root:2_1_${getSequentialId()}`,
     sourceNode: "root:1",
     sourcePort: 1,
     destNode: "root:2",
