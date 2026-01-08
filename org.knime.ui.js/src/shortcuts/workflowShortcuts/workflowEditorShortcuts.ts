@@ -14,8 +14,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
 import { ports } from "@/util/dataMappers";
 import { isNodeMetaNode } from "@/util/nodeUtil";
-import { portPositions } from "@/util/portShift";
-import { freeSpaceInCanvas } from "@/util/workflow-canvas";
+import { freeSpaceInCanvas, ports } from "@/util/workflow-canvas";
 import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "../types";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<
@@ -77,7 +76,7 @@ const calculateNodeInsertionPosition = (
   nextSide: NodeRelation,
 ) => {
   const isOutports = nextSide === "SUCCESSORS";
-  const portPositionValues = portPositions({
+  const portPositionValues = ports.positions({
     portCount,
     isMetanode: isNodeMetaNode(node),
     isOutports,

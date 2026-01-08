@@ -2,7 +2,7 @@ import { type Ref, computed } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import { getPortPositionInNode } from "@/util/portShift";
+import { ports } from "@/util/workflow-canvas";
 
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
 import { usePortBarPositions } from "./usePortBarPositions";
@@ -76,7 +76,7 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
       return getMetaNodePortPosition(referencePortIndex.value, type);
     }
 
-    return getPortPositionInNode(
+    return ports.getPortPositionInNode(
       referencePortIndex.value,
       type,
       reference.value,

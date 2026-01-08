@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import portShift, { placeholderPosition, portPositions } from "../portShift";
+import { placeholderPosition, portShift, positions } from "../portShift";
 
 // nodeSize: 32
 // portSize: 9
@@ -118,7 +118,7 @@ describe("portShift", () => {
 
   describe("helpers", () => {
     it("port positions", () => {
-      let result = portPositions({
+      let result = positions({
         portCount: 2,
         isOutports: true,
         isMetanode: true,
