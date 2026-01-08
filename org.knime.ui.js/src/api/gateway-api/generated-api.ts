@@ -711,6 +711,12 @@ export interface AppState {
      * @memberof AppState
      */
     spaceProviders?: Array<SpaceProvider>;
+    /**
+     *
+     * @type {ProjectSyncState}
+     * @memberof AppState
+     */
+    projectSyncState?: ProjectSyncState;
 
 }
 
@@ -3971,6 +3977,52 @@ export interface ProjectMetadata extends EditableMetadata {
 export namespace ProjectMetadata {
 }
 /**
+ * The synchronization state of a project.
+ * @export
+ * @interface ProjectSyncState
+ */
+export interface ProjectSyncState {
+
+    /**
+     *
+     * @type {string}
+     * @memberof ProjectSyncState
+     */
+    state: ProjectSyncState.StateEnum;
+    /**
+     * Whether automatic synchronization is currently enabled.
+     * @type {boolean}
+     * @memberof ProjectSyncState
+     */
+    isAutoSyncEnabled: boolean;
+    /**
+     *
+     * @type {SyncStateError}
+     * @memberof ProjectSyncState
+     */
+    error?: SyncStateError;
+
+}
+
+
+/**
+ * @export
+ * @namespace ProjectSyncState
+ */
+export namespace ProjectSyncState {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum StateEnum {
+        SYNCED = 'SYNCED',
+        DIRTY = 'DIRTY',
+        WRITING = 'WRITING',
+        UPLOAD = 'UPLOAD',
+        ERROR = 'ERROR'
+    }
+}
+/**
  * Remove a port from a node
  * @export
  * @interface RemovePortCommand
@@ -4761,6 +4813,53 @@ export interface StyleRange {
      * @memberof StyleRange
      */
     color?: string;
+
+}
+
+
+/**
+ * Additional error details in case of a sync state error.
+ * @export
+ * @interface SyncStateError
+ */
+export interface SyncStateError {
+
+    /**
+     *
+     * @type {string}
+     * @memberof SyncStateError
+     */
+    code: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SyncStateError
+     */
+    title: string;
+    /**
+     *
+     * @type {Array<string>}
+     * @memberof SyncStateError
+     */
+    details: Array<string>;
+    /**
+     *
+     * @type {boolean}
+     * @memberof SyncStateError
+     */
+    canCopy: boolean;
+    /**
+     *
+     * @type {number}
+     * @memberof SyncStateError
+     */
+    status?: number;
+    /**
+     *
+     * @type {string}
+     * @memberof SyncStateError
+     */
+    stackTrace?: string;
 
 }
 
@@ -5943,7 +6042,7 @@ const componenteditor = function(rpcClient: RPCClient) {
             return rpcClient.call('ComponentEditorService.applyComponentEditorConfig', { ...defaultParams, ...params });
         },
         /**
-         * Returns the state required to render the component editor. 
+         * Returns the state required to render the component editor.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
