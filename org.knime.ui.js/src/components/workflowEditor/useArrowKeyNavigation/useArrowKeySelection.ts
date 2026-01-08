@@ -2,7 +2,6 @@ import { type Ref, onMounted } from "vue";
 import { useEventListener, useTimeoutFn } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -11,6 +10,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isInputElement } from "@/util/isInputElement";
 import {
   type WorkflowNavigationDirection,
+  type WorkflowObject,
   workflowNavigationService,
 } from "@/util/workflow-canvas";
 import { canvasRendererUtils } from "../util/canvasRenderer";

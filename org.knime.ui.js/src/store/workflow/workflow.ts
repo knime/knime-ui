@@ -4,7 +4,7 @@ import { defineStore } from "pinia";
 
 import { useKdsDynamicModal } from "@knime/kds-components";
 
-import type { KnimeNode, Workflow, WorkflowObject } from "@/api/custom-types";
+import type { KnimeNode, Workflow } from "@/api/custom-types";
 import {
   AlignNodesCommand,
   type Bounds,
@@ -24,6 +24,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { geometry } from "@/util/geometry";
 import { getPortContext } from "@/util/portSelection";
+import type { WorkflowObject } from "@/util/workflow-canvas";
 import {
   annotationToWorkflowObject,
   componentPlaceholderToWorkflowObject,

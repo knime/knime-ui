@@ -1,4 +1,4 @@
-import type { WorkflowObject } from "@/api/custom-types";
+import type { WorkflowObject } from "../types";
 
 import type { EVENT_TYPES } from "./util";
 

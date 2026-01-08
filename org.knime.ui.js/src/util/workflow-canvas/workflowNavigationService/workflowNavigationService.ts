@@ -1,6 +1,6 @@
 import { toRaw } from "vue";
 
-import type { WorkflowObject } from "@/api/custom-types";
+import type { WorkflowObject } from "../types";
 
 import type { FindNearestObjectPayload, WorkerMessage } from "./types";
 
