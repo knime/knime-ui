@@ -13,7 +13,7 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { formatSpaceProviderName } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
-import { matchesQuery } from "@/util/matchesQuery";
+import { matchesQuery } from "@/util/search";
 
 import SpaceCard from "./SpaceCard.vue";
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";

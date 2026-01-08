@@ -14,7 +14,7 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
-import { matchesQuery } from "@/util/matchesQuery";
+import { matchesQuery } from "@/util/search";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
