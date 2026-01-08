@@ -38,7 +38,7 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { getToastPresets } from "@/toastPresets";
-import { KANVAS_ID } from "@/util/getKanvasDomElement";
+import { KANVAS_ID } from "@/util/workflow-canvas";
 
 import AppHeaderSkeleton from "./application/AppHeader/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";

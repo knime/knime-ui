@@ -6,7 +6,7 @@ import {
   type Text,
 } from "pixi.js";
 
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import { pixiGlobals } from "../common/pixiGlobals";
 
 /**

@@ -25,8 +25,8 @@ import {
   getEdgeNearPoint,
   isPointOutsideBounds,
 } from "@/util/geometry/geometry";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 import { useCanvasTooltipStore } from "../canvasTooltip/canvasTooltip";
 

@@ -6,7 +6,7 @@ import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import {
   type FloatingContainerProperties,
   useCanvasFloatingContainer,

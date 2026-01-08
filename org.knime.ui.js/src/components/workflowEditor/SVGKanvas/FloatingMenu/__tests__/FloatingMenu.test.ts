@@ -4,7 +4,7 @@ import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { mockStores } from "@/test/utils/mockStores";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import { getKanvasDomElement } from "@/util/workflow-canvas";
 import FloatingMenu from "../FloatingMenu.vue";
 
 const useFocusTrapMock = {
