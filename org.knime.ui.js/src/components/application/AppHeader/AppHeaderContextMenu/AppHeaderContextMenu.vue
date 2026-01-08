@@ -10,7 +10,7 @@ import type { MenuItemWithHandler } from "@/components/common/types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useApplicationStore } from "@/store/application/application";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-import { valueOrEmpty } from "@/util/valueOrEmpty";
+import { optional } from "@/util/fp";
 
 type Props = {
   projectId: string;
@@ -41,7 +41,7 @@ const canRevealProject = computed(() => {
 });
 
 const contextMenuItems = computed(() => [
-  ...valueOrEmpty(canRevealProject.value, {
+  ...optional(canRevealProject.value, {
     text: revealActionMetadata.label,
     icon: revealActionMetadata.icon,
     metadata: {
