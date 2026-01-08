@@ -10,7 +10,8 @@ import SwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import DynamicEnvRenderer from "@/environment/DynamicEnvRenderer.vue";
-import { copyErrorReportToClipboard } from "@/util/copyErrorReportToClipboard";
+
+import { copyErrorToClipboard } from "./copyErrorToClipboard";
 
 /**
  * ErrorOverlay.vue
@@ -48,7 +49,7 @@ const reloadApp = () => {
 };
 
 const copyToClipboard = async () => {
-  await copyErrorReportToClipboard({
+  await copyErrorToClipboard({
     // TODO: NXT-584 add AP version
     message: props.message,
     stack: props.stack,

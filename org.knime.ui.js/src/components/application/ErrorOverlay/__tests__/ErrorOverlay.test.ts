@@ -6,13 +6,12 @@ import { API } from "@api";
 import { Button } from "@knime/components";
 
 import { deepMocked } from "@/test/utils";
-import { copyErrorReportToClipboard } from "@/util/copyErrorReportToClipboard";
 import ErrorOverlay from "../ErrorOverlay.vue";
+import { copyErrorToClipboard } from "../copyErrorToClipboard";
 
-vi.mock("@/util/copyErrorReportToClipboard", async (importOriginal) => {
+vi.mock("../copyErrorToClipboard", () => {
   return {
-    ...((await importOriginal()) as object),
-    copyErrorReportToClipboard: vi.fn(),
+    copyErrorToClipboard: vi.fn(),
   };
 });
 
@@ -57,7 +56,7 @@ describe("ErrorOverlay.vue", () => {
 
     await nextTick();
 
-    expect(copyErrorReportToClipboard).toHaveBeenCalledWith({
+    expect(copyErrorToClipboard).toHaveBeenCalledWith({
       message: "one-liner",
       stack: "stacky",
     });
