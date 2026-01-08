@@ -96,8 +96,8 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
 
       const gridAdjustedPosition = useGridSnapping
         ? {
-            x: geometry.utils.snapToGrid(initialPosition.value.x),
-            y: geometry.utils.snapToGrid(initialPosition.value.y),
+            x: geometry.snapToGrid(initialPosition.value.x, $shapes.gridSize.x),
+            y: geometry.snapToGrid(initialPosition.value.y, $shapes.gridSize.y),
           }
         : initialPosition.value;
 
@@ -155,7 +155,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         }
 
         const snapFn = useGridSnapping
-          ? geometry.utils.snapToGrid
+          ? geometry.snapToGrid
           : (val: number) => val;
 
         const deltaX = snapFn(

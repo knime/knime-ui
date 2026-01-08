@@ -22,7 +22,7 @@ export const centerStrategy = ({
   visibleFrame: GeometryBounds;
   clipboardContent: { objectBounds: GeometryArea };
 }): XY => {
-  const { x, y } = geometry.utils.getCenteredPositionInVisibleFrame(
+  const { x, y } = geometry.getCenteredPositionInVisibleFrame(
     visibleFrame,
     clipboardContent.objectBounds,
   );
@@ -54,7 +54,7 @@ export const offsetStrategy = ({
     top: objectBounds.top + meanOffset + getRandomNoise(),
   };
 
-  const visibility = geometry.utils.areaCoverage(
+  const visibility = geometry.areaCoverage(
     {
       ...offsetPosition,
       width: objectBounds.width,

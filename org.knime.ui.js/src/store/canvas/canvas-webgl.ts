@@ -21,7 +21,10 @@ import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixi
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { getEdgeNearPoint, isPointOutsideBounds } from "@/util/geometry/utils";
+import {
+  getEdgeNearPoint,
+  isPointOutsideBounds,
+} from "@/util/geometry/geometry";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { clamp } from "@/util/math";
 import type { CanvasPosition } from "../application/canvasStateTracking";
@@ -572,7 +575,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       return;
     }
 
-    const isOutsideView = geometry.utils.isPointOutsideBounds(
+    const isOutsideView = geometry.isPointOutsideBounds(
       { x, y },
       calculateVisibleArea(),
     );
