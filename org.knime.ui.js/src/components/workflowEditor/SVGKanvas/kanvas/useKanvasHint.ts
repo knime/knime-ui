@@ -7,7 +7,7 @@ import { NodeState } from "@/api/gateway-api/generated-api";
 import { HINTS } from "@/hints/hints.config";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
+import { workflowNavigationService } from "@/util/workflow-canvas";
 import { nodeToWorkflowObject } from "@/util/workflowUtil";
 
 export const useKanvasHint = () => {
