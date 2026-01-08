@@ -13,7 +13,7 @@ import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { openInspector } from "@/util/devTools";
+import { openInspector } from "@/util/debug";
 
 import type { UnionToShortcutRegistry } from "./types";
 
