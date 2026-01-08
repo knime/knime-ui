@@ -6,7 +6,7 @@ import { getMetaOrCtrlKey } from "@knime/utils";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useMovingStore } from "@/store/workflow/moving";
-import { isInputElement } from "@/util/isInputElement";
+import { isInputElement } from "@/util/dom";
 
 export const useCanvasMoveLocking = () => {
   const { isDragging } = storeToRefs(useMovingStore());

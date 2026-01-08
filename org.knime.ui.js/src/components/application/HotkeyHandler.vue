@@ -1,6 +1,6 @@
 <script>
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { isInputElement } from "@/util/isInputElement";
+import { isInputElement } from "@/util/dom";
 
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events

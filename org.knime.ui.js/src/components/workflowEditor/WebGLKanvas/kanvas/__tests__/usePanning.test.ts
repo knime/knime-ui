@@ -12,8 +12,8 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
+import { isInputElement } from "@/util/dom/isInputElement";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
-import { isInputElement } from "@/util/isInputElement";
 import { pixiGlobals } from "../../common/pixiGlobals";
 import { useCanvasPanning } from "../usePanning";
 
