@@ -5,7 +5,7 @@ import { Container, Graphics } from "pixi.js";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { nodeBackgroundColor } from "@/util/nodeUtil";
+import { nodeBackgroundColor } from "../util/nodeBackgroundColor";
 
 type Props = {
   minimapTransform: { scale: XY; translate: XY };

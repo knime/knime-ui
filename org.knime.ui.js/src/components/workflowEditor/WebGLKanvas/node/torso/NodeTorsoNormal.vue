@@ -7,8 +7,11 @@ import {
   type NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
-import { nodeBackgroundColor, nodeColorFromType } from "@/util/nodeUtil";
 import type { GraphicsInst } from "@/vue3-pixi";
+import {
+  nodeBackgroundColor,
+  nodeColorFromType,
+} from "../../util/nodeBackgroundColor";
 
 import { torsoDrawUtils } from "./drawUtils";
 
