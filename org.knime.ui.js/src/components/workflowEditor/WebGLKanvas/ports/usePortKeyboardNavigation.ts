@@ -3,7 +3,7 @@ import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { useSelectionStore } from "@/store/selection";
-import { isInputElement } from "@/util/isInputElement";
+import { isInputElement } from "@/util/dom";
 import { clamp } from "@/util/math";
 import {
   type SelectedPortContext,
