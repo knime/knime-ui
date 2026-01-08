@@ -17,7 +17,7 @@ import type {
   ShortcutGroups,
 } from "@/shortcuts/types";
 import { useApplicationStore } from "@/store/application/application";
-import { matchesQuery } from "@/util/matchesQuery";
+import { matchesQuery } from "@/util/search";
 
 type ShortcutGroupsWithOthers = ShortcutGroups | "others";
 
