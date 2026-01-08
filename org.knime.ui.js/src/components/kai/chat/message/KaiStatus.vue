@@ -33,6 +33,7 @@ const props = defineProps<Props>();
   flex-direction: row;
   align-items: center;
   gap: 5px;
+  padding-top: var(--space-12);
 
   & svg.loading-icon {
     animation: rotate-animation 2s linear infinite;
