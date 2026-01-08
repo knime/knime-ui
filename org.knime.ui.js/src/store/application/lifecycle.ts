@@ -25,7 +25,7 @@ import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInter
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { encodeString } from "@/util/encodeString";
+import { encodeString } from "@/util/encoding";
 import { setProjectActiveOrThrow } from "@/util/projectUtil";
 import { workflowBounds } from "@/util/workflow-canvas";
 import { webResourceLocation } from "@/webResourceLocation";
