@@ -4,17 +4,17 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { Connection, NodePort, XY } from "@/api/gateway-api/generated-api";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/lib/data-mappers";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
-import type {
-  ComponentNodeTemplateWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import { pixiGlobals } from "./pixiGlobals";
 import { useNodeCollisionCheck } from "./useNodeCollisionCheck";

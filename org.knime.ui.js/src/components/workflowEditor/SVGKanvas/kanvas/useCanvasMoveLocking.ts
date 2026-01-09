@@ -4,9 +4,9 @@ import { storeToRefs } from "pinia";
 import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { isInputElement } from "@/lib/dom";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useMovingStore } from "@/store/workflow/moving";
-import { isInputElement } from "@/util/dom";
 
 export const useCanvasMoveLocking = () => {
   const { isDragging } = storeToRefs(useMovingStore());

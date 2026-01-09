@@ -9,12 +9,12 @@ import { onContextMenuOutside } from "@knime/components";
 
 import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
-import { workflowDomain } from "@/util/workflow-domain";
 import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";

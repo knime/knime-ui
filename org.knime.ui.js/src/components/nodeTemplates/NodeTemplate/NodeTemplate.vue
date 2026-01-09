@@ -3,11 +3,11 @@ import { computed, ref } from "vue";
 
 import { NodePreview } from "@knime/components";
 
-import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/data-mappers";
+} from "@/lib/data-mappers";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 import NodeTemplateIconMode from "./NodeTemplateIconMode.vue";
 import NodeTemplateListMode from "./NodeTemplateListMode.vue";

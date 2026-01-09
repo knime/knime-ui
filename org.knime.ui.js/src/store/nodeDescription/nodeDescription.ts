@@ -5,14 +5,14 @@ import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
 import type { ComponentNodeDescription } from "@/api/custom-types";
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
-import { useApplicationStore } from "@/store/application/application";
-import { useWorkflowStore } from "@/store/workflow/workflow";
 import {
   type ComponentNodeDescriptionWithExtendedPorts,
   type NativeNodeDescriptionWithExtendedPorts,
   componentDescription,
   nodeDescription,
-} from "@/util/data-mappers";
+} from "@/lib/data-mappers";
+import { useApplicationStore } from "@/store/application/application";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 /**
  * Store that manages state for node and component descriptions.

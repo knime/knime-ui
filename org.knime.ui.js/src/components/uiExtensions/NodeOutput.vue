@@ -13,6 +13,7 @@ import type {
 import CompositeViewTabOutput from "@/components/uiExtensions/compositeView/CompositeViewTabOutput.vue";
 import NodeViewTabOutput from "@/components/uiExtensions/nodeViews/NodeViewTabOutput.vue";
 import { HINTS } from "@/hints/hints.config";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import {
   type NodeOutputTabIdentifier,
@@ -22,7 +23,6 @@ import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import LoadingIndicator from "./LoadingIndicator.vue";
 import PortTabs from "./PortTabs.vue";

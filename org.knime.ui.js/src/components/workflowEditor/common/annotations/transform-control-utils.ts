@@ -1,6 +1,6 @@
 import type { Bounds } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
 import { gridSize } from "@/style/shapes";
-import { geometry } from "@/util/geometry";
 
 export const DIRECTIONS = ["nw", "n", "ne", "w", "e", "sw", "s", "se"] as const;
 export type Directions = (typeof DIRECTIONS)[number];

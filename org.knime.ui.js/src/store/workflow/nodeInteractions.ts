@@ -13,9 +13,9 @@ import {
   type XY,
 } from "@/api/gateway-api/generated-api";
 import { isDesktop } from "@/environment";
+import { geometry } from "@/lib/geometry";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { gridSize } from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { workflowDomain } from "@/util/workflow-domain";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
 import { usePanelStore } from "../panel";
 import { useSelectionStore } from "../selection";

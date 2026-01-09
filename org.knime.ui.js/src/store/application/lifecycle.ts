@@ -16,6 +16,8 @@ import {
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
 import { isDesktop, runInEnvironment } from "@/environment";
 import { getHintConfiguration } from "@/hints/hints.config";
+import { encodeString } from "@/lib/encoding";
+import { workflowBounds } from "@/lib/workflow-canvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { usePanelStore } from "@/store/panel";
@@ -25,8 +27,6 @@ import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInter
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { encodeString } from "@/util/encoding";
-import { workflowBounds } from "@/util/workflow-canvas";
 import { webResourceLocation } from "@/webResourceLocation";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";

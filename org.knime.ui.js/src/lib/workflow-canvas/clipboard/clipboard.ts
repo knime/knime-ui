@@ -1,6 +1,6 @@
 import type { XY } from "@/api/gateway-api/generated-api";
-import { geometry } from "@/util/geometry";
-import type { GeometryArea, GeometryBounds } from "@/util/geometry";
+import { geometry } from "@/lib/geometry";
+import type { GeometryArea, GeometryBounds } from "@/lib/geometry";
 import { freeSpaceInCanvas } from "..";
 
 // eslint-disable-next-line no-magic-numbers

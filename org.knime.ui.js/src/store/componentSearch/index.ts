@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 
-import type { ComponentNodeTemplateWithExtendedPorts } from "@/util/data-mappers";
+import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 
 import { useComponentSearch } from "./useComponentSearch";
 

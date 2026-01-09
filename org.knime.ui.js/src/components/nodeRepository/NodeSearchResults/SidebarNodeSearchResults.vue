@@ -8,9 +8,9 @@ import {
   type NavReachedEvent,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */

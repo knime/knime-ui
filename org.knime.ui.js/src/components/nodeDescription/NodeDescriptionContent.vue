@@ -6,7 +6,7 @@ import MetadataDescription from "@/components/workflowMetadata/MetadataDescripti
 import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
-} from "@/util/data-mappers";
+} from "@/lib/data-mappers";
 
 import DescriptionText from "./DescriptionText.vue";
 

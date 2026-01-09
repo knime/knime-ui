@@ -2,7 +2,7 @@
 import { nextTick, ref, toRefs, useTemplateRef, watch } from "vue";
 
 import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
-import { createStaggeredTimer } from "@/util/timers";
+import { createStaggeredTimer } from "@/lib/timers";
 
 type Props = {
   isLoading: boolean;

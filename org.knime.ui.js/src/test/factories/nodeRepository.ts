@@ -6,8 +6,8 @@ import {
   type NodeTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
-import { nodeTemplate } from "@/util/data-mappers";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import { nodeTemplate } from "@/lib/data-mappers";
 
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
 import { createAvailablePortTypes } from "./ports";

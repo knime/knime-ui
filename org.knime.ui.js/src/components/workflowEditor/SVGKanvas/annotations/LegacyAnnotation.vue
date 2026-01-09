@@ -2,7 +2,7 @@
 import { type PropType, type StyleValue, defineComponent } from "vue";
 
 import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
-import { applyStyleRanges } from "@/util/rich-text";
+import { applyStyleRanges } from "@/lib/rich-text";
 
 export default defineComponent({
   props: {

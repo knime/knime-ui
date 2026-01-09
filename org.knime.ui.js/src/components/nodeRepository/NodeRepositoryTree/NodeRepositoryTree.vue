@@ -16,9 +16,11 @@ import {
   type NavReachedEvent,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
+
+import type { NodeCategoryWithExtendedPorts } from "./types";
 
 const hasAllObjectPropertiesDefined = <T extends object>(
   object: T,
@@ -26,8 +28,6 @@ const hasAllObjectPropertiesDefined = <T extends object>(
   // eslint-disable-next-line no-undefined
   return Object.values(object).every((prop) => prop !== undefined);
 };
-
-import type { NodeCategoryWithExtendedPorts } from "./types";
 
 type ExtendedTreeNodeOptions = TreeNodeOptions & {
   nodeTemplate?: NodeTemplateWithExtendedPorts;

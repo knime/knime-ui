@@ -6,14 +6,14 @@ import { useHint } from "@knime/components";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import { HINTS } from "@/hints/hints.config";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useWorkflowStore } from "@/store/workflow/workflow";
-import { portSize } from "@/style/shapes";
 import {
   nodeToWorkflowObject,
   workflowNavigationService,
-} from "@/util/workflow-canvas";
-import { workflowDomain } from "@/util/workflow-domain";
+} from "@/lib/workflow-canvas";
+import { workflowDomain } from "@/lib/workflow-domain";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { portSize } from "@/style/shapes";
 import { pixiGlobals } from "../common/pixiGlobals";
 
 /**

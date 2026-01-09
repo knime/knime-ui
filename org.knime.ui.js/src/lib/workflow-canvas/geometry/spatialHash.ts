@@ -1,5 +1,5 @@
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { geometry } from "@/util/geometry";
+import { geometry } from "@/lib/geometry";
 import type { WorkflowObject } from "../types";
 
 const getKey = (cx: number, cy: number) => `${cx},${cy}`;

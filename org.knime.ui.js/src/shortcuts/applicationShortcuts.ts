@@ -1,6 +1,7 @@
 import type { Router } from "vue-router";
 
 import { isDesktop } from "@/environment";
+import { openInspector } from "@/lib/debug";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -13,7 +14,6 @@ import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { openInspector } from "@/util/debug";
 
 import type { UnionToShortcutRegistry } from "./types";
 

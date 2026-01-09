@@ -1,8 +1,8 @@
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
+import type { GeometryArea, GeometryBounds } from "@/lib/geometry";
 import { nodeSize } from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import type { GeometryArea, GeometryBounds } from "@/util/geometry";
 
 export const CONSTANTS = {
   NODE_PADDING: 50,

@@ -1,6 +1,6 @@
 import type { NodePortGroups } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
-import type { ConnectionPortDirection } from "@/util/workflow-domain";
+import type { ConnectionPortDirection } from "@/lib/workflow-domain";
 
 export type FloatingDecoratorOnly = {
   id: "floating-decorator-only";

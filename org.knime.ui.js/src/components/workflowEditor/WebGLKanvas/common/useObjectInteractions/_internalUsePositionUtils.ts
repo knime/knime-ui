@@ -1,9 +1,9 @@
 import { readonly, ref } from "vue";
 import type { FederatedPointerEvent } from "pixi.js";
 
+import { geometry } from "@/lib/geometry";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
 
 import { useObjectHandler } from "./_internalUseObjectSelectionHandler";
 import type { ObjectMetadata, StartPosition } from "./types";

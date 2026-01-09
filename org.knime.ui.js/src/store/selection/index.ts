@@ -1,15 +1,15 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
-import { useCompositeViewStore } from "@/store/compositeView/compositeView";
-import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
-import { useWorkflowStore } from "@/store/workflow/workflow";
-import type { WorkflowObject } from "@/util/workflow-canvas";
+import type { WorkflowObject } from "@/lib/workflow-canvas";
 import {
   annotationToWorkflowObject,
   componentPlaceholderToWorkflowObject,
   nodeToWorkflowObject,
-} from "@/util/workflow-canvas";
+} from "@/lib/workflow-canvas";
+import { useCompositeViewStore } from "@/store/compositeView/compositeView";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useMovingStore } from "../workflow/moving";
 
 import { useAnnotationSelection } from "./annotations";

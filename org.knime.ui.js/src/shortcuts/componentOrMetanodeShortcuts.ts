@@ -8,6 +8,7 @@ import {
   type ComponentNode,
   type MetaNode,
 } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
@@ -16,7 +17,6 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import type { UnionToShortcutRegistry } from "./types";
 

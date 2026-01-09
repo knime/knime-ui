@@ -21,13 +21,13 @@ import {
   useUnsavedChangesDialog,
 } from "@/composables/confirmDialogs/useUnsavedChangesDialog";
 import { runInEnvironment } from "@/environment";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowDomain } from "@/util/workflow-domain";
 
 let unwrappedPromise = promise.createUnwrappedPromise<boolean>();
 const $toast = getToastsProvider();

@@ -5,6 +5,10 @@ import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/lib/data-mappers";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
@@ -12,10 +16,6 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
-import type {
-  ComponentNodeTemplateWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
-} from "@/util/data-mappers";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 

@@ -8,11 +8,11 @@ import type { NodePortGroups } from "@/api/custom-types";
 import type { NativeNode, NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { PortPositions } from "@/components/workflowEditor/common/usePortPositions";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import { workflowDomain } from "@/lib/workflow-domain";
+import type { ConnectionPortDirection } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { workflowDomain } from "@/util/workflow-domain";
-import type { ConnectionPortDirection } from "@/util/workflow-domain";
 
 import {
   type FullFloatingConnector,

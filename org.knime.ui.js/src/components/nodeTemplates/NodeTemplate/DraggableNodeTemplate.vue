@@ -3,13 +3,13 @@ import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useAnalyticsService } from "@/analytics";
-import { usePanelStore } from "@/store/panel";
-import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/data-mappers";
+} from "@/lib/data-mappers";
+import { usePanelStore } from "@/store/panel";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useAddNodeTemplateWithAutoPositioning } from "../useAddNodeTemplateWithAutoPositioning";
 import { useDragNodeIntoCanvas } from "../useDragNodeIntoCanvas";
 

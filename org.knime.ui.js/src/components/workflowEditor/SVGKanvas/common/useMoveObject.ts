@@ -3,13 +3,13 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
 
 interface UseMoveObjectOptions {
   objectElement?: ComputedRef<HTMLElement | null>;

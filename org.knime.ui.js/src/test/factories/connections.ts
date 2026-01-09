@@ -1,6 +1,6 @@
 import type { KnimeNode } from "@/api/custom-types";
 import type { Connection } from "@/api/gateway-api/generated-api";
-import { getSequentialId } from "@/util/unique-id";
+import { getSequentialId } from "@/lib/unique-id";
 
 import { createNativeNode } from "./nodes";
 import { createPort } from "./ports";

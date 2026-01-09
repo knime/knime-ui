@@ -6,12 +6,12 @@ import { isModifierKeyPressed, navigatorUtils } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { isInputElement } from "@/lib/dom";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
-import { isInputElement } from "@/util/dom";
-import { getKanvasDomElement } from "@/util/workflow-canvas";
 import { pixiGlobals } from "../common/pixiGlobals";
 import { isMarkedEvent } from "../util/interaction";
 

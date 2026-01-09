@@ -4,13 +4,13 @@ import { storeToRefs } from "pinia";
 
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { isBrowser } from "@/environment";
+import { createStaggeredTimer } from "@/lib/timers";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { TABS, type TabValues, usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { createStaggeredTimer } from "@/util/timers";
 
 import AppKanvasSkeleton from "./AppKanvasSkeleton.vue";
 import AppRightPanelSkeleton from "./AppRightPanelSkeleton.vue";

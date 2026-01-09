@@ -8,7 +8,7 @@ import {
   TypedText,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
-import { workflowDomain } from "@/util/workflow-domain";
+import { workflowDomain } from "@/lib/workflow-domain";
 import type { DeepPartial } from "../utils";
 
 import { createWorkflowAnnotation } from "./annotations";

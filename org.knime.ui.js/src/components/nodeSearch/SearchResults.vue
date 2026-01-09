@@ -5,9 +5,9 @@ import {
   InfiniteNodeList,
   type NavReachedEvent,
 } from "@/components/nodeTemplates";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 import SearchResultsInfo from "./SearchResultsInfo.vue";
 

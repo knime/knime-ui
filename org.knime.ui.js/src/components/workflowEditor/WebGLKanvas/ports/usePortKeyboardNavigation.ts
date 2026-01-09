@@ -2,13 +2,13 @@ import { type ComputedRef, computed, onBeforeUnmount, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
+import { isInputElement } from "@/lib/dom";
+import { clamp } from "@/lib/math";
 import { useSelectionStore } from "@/store/selection";
 import type {
   SelectedPortContext,
   SelectedPortId,
 } from "@/store/selection/ports";
-import { isInputElement } from "@/util/dom";
-import { clamp } from "@/util/math";
 import { useNodeInfo } from "../../common/useNodeInfo";
 
 type Direction = "up" | "right" | "down" | "left";

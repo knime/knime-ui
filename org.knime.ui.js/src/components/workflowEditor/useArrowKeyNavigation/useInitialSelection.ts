@@ -1,13 +1,13 @@
 import { storeToRefs } from "pinia";
 
+import {
+  type WorkflowNavigationDirection,
+  workflowNavigationService,
+} from "@/lib/workflow-canvas";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import {
-  type WorkflowNavigationDirection,
-  workflowNavigationService,
-} from "@/util/workflow-canvas";
 import { canvasRendererUtils } from "../util/canvasRenderer";
 
 export const useInitialSelection = () => {

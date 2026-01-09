@@ -6,13 +6,13 @@ import { SidebarComponentSearchResults } from "@/components/componentSearch";
 import SidebarNodeSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarNodeSearchResults.vue";
 import type { NavReachedEvent } from "@/components/nodeTemplates";
 import { isBrowser } from "@/environment";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useSidebarComponentSearchStore } from "@/store/componentSearch";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import ComponentTemplateDescription from "../nodeDescription/ComponentTemplateDescription.vue";
 import NativeNodeDescription from "../nodeDescription/NativeNodeDescription.vue";
 

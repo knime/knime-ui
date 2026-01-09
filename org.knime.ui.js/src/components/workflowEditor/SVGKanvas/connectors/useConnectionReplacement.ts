@@ -4,6 +4,8 @@ import { storeToRefs } from "pinia";
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
+import type { ExtendedPortType } from "@/lib/data-mappers";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
@@ -11,8 +13,6 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import type { ExtendedPortType } from "@/util/data-mappers";
-import { workflowDomain } from "@/util/workflow-domain";
 
 type UseConnectionReplacementOptions = {
   /**

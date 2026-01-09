@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { geometry } from "@/lib/geometry";
 import { nodeSize } from "@/style/shapes";
 import { createNativeNode } from "@/test/factories";
-import { geometry } from "@/util/geometry";
 import {
   CONSTANTS,
   findFreeSpace,
