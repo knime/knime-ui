@@ -53,14 +53,8 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
-import org.knime.ui.java.util.HubSelectionComposite;
 import org.knime.workbench.ui.preferences.LabelField;
-import org.knime.workbench.explorer.ExplorerMountTable;
 
 /**
  * The preference page for the Modern UI.
@@ -69,9 +63,6 @@ import org.knime.workbench.explorer.ExplorerMountTable;
  * @author Kai Franze, KNIME GmbH, Germany
  */
 public final class KnimeUIPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-
-    private HubSelectionComposite m_hubSelectionComposite;
-
     /**
      * Create a new preference page for the Modern UI.
      */
@@ -81,24 +72,6 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
     @Override
     protected void createFieldEditors() {
-        final Composite fieldParent = getFieldEditorParent();
-        final int numColumns = ((GridLayout)fieldParent.getLayout()).numColumns;
-
-        final Composite hubContainer = new Composite(fieldParent, SWT.NONE);
-        hubContainer.setLayout(new GridLayout(1, false));
-        final GridData hubLayoutData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        hubLayoutData.horizontalSpan = numColumns;
-        hubContainer.setLayoutData(hubLayoutData);
-
-        m_hubSelectionComposite = new HubSelectionComposite( //
-            hubContainer, //
-            "Select which KNIME Hub to use for integrated modern UI features", //
-            "Loading available KNIME Hubs...", //
-            "No compatible KNIME Hubs found", //
-            hub -> true, //
-            hubInfo -> KnimeUIPreferences.getSelectedHub().equals(hubInfo.id()));
-        m_hubSelectionComposite.updateChoices();
-
         /// Node collection
         final var nodeRepoFilterOptions = new String[][]{ //
             new String[]{"All nodes", KnimeUIPreferences.SELECTED_NODE_COLLECTION_NONE_ID}, //
@@ -168,32 +141,5 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
     @Override
     public void init(final IWorkbench workbench) {
         setPreferenceStore(KnimeUIPreferences.PREF_STORE);
-    }
-
-    @Override
-    public boolean performOk() {
-        if (!super.performOk()) {
-            return false;
-        }
-        var mountpoints = ExplorerMountTable.getMountedContent();
-        var selectedHub = m_hubSelectionComposite.getSelectedHub();
-        KnimeUIPreferences.setSelectedHub(selectedHub.filter(mountpoints::containsKey).orElse(""));
-        return true;
-    }
-
-    @Override
-    protected void performDefaults() {
-        super.performDefaults();
-        if (m_hubSelectionComposite != null) {
-            m_hubSelectionComposite.updateChoices();
-        }
-    }
-
-    @Override
-    public void setVisible(final boolean visible) {
-        super.setVisible(visible);
-        if (visible && m_hubSelectionComposite != null) {
-            m_hubSelectionComposite.updateChoices();
-        }
     }
 }

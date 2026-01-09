@@ -46,7 +46,6 @@ Require-Bundle: com.equo.chromium;bundle-version="128.0.9",
  org.knime.workbench.ui;bundle-version="[5.9.0,6.0.0)",
  org.knime.workbench.workflowcoach;bundle-version="[5.9.0,6.0.0)",
  org.knime.workbench.repository;bundle-version="[5.9.0,6.0.0)",
- com.knime.explorer.server;bundle-version="[5.9.0, 6.0.0)",
  jakarta.annotation-api;bundle-version="[2.1.1,3.0.0)",
  jakarta.inject.jakarta.inject-api;bundle-version="[2.0.1,3.0.0)",
  org.eclipse.jdt.annotation;bundle-version="[2.2.700,3.0.0)"
