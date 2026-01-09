@@ -8,6 +8,8 @@ import {
 
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { isBrowser, isDesktop } from "@/environment";
+import { optional } from "@/lib/fp";
+import { menuGroupsBuilder } from "@/lib/menu-groups-builder";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import {
@@ -15,8 +17,6 @@ import {
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
-import { optional } from "@/util/fp";
-import { menuGroupsBuilder } from "@/util/menu-groups-builder";
 
 import { useSpaceExplorerActions } from "./useSpaceExplorerActions";
 

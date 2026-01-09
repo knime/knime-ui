@@ -6,6 +6,7 @@ import type { ToastService } from "@knime/components";
 import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { isDesktop } from "@/environment";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
@@ -20,7 +21,6 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import { nodeSize } from "@/style/shapes";
-import { getKanvasDomElement } from "@/util/workflow-canvas";
 
 import { notifyPatch } from "./event-syncer";
 

@@ -9,6 +9,7 @@ import type {
   NodePort,
   XY,
 } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
@@ -16,7 +17,6 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import { pixiGlobals } from "./pixiGlobals";
 import { useNodeCollisionCheck } from "./useNodeCollisionCheck";

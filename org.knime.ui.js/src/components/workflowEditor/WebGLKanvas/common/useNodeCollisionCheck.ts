@@ -2,10 +2,10 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
+import { SpatialHash } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { SpatialHash } from "@/util/workflow-canvas";
 
 const DISTANCE_BUFFER = 20;
 const spatialHash = new SpatialHash({

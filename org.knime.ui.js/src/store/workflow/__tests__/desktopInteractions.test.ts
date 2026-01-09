@@ -8,7 +8,7 @@ import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 
-vi.mock("@/util/encodeString", () => ({
+vi.mock("@/lib/encodeString", () => ({
   encodeString: (value: string) => value,
 }));
 
@@ -18,6 +18,7 @@ const emitSpy = vi.fn();
 vi.mock("@vueuse/core", async (importOriginal) => {
   const actual = await importOriginal();
   return {
+    // @ts-expect-error
     ...actual,
     useEventBus: vi.fn(() => ({
       emit: emitSpy,

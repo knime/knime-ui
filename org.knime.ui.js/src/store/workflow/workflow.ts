@@ -19,15 +19,15 @@ import {
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
-import { useAIAssistantStore } from "@/store/ai/aiAssistant";
-import { useSelectionStore } from "@/store/selection";
-import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { type WorkflowObject, workflowBounds } from "@/util/workflow-canvas";
+import { type WorkflowObject, workflowBounds } from "@/lib/workflow-canvas";
 import {
   annotationToWorkflowObject,
   componentPlaceholderToWorkflowObject,
   nodeToWorkflowObject,
-} from "@/util/workflow-canvas";
+} from "@/lib/workflow-canvas";
+import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useSelectionStore } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
 import { useNodeInteractionsStore } from "./nodeInteractions";

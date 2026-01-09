@@ -8,7 +8,7 @@ import MetadataDescription from "@/components/workflowMetadata/MetadataDescripti
 import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
-} from "@/util/data-mappers";
+} from "@/lib/data-mappers";
 
 type Props = {
   descriptionData:

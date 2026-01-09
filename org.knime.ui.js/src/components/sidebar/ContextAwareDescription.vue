@@ -3,10 +3,10 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NativeNode } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { TABS, usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import { workflowDomain } from "@/util/workflow-domain";
 import NodeDescription from "../nodeDescription/NodeDescription.vue";
 import WorkflowMetadata from "../workflowMetadata/WorkflowMetadata.vue";
 /**

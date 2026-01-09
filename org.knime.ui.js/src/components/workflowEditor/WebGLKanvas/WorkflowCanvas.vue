@@ -12,6 +12,7 @@ import { storeToRefs } from "pinia";
 import { sleep } from "@knime/utils";
 
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
+import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
@@ -20,7 +21,6 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { KANVAS_ID } from "@/util/workflow-canvas";
 import WorkflowEmpty from "../SVGKanvas/WorkflowEmpty.vue";
 import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 

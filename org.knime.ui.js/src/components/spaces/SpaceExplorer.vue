@@ -9,12 +9,12 @@ import type { FileExplorerItem } from "@knime/components";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
+import { matchesQuery } from "@/lib/search";
+import { createStaggeredTimer } from "@/lib/timers";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
-import { matchesQuery } from "@/util/search";
-import { createStaggeredTimer } from "@/util/timers";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";

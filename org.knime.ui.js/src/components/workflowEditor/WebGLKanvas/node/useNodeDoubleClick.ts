@@ -7,6 +7,7 @@ import { getMetaOrCtrlKey } from "@knime/utils";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { Node } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -14,7 +15,6 @@ import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfigu
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-import { workflowDomain } from "@/util/workflow-domain";
 
 type UseNodeDoubleClickOptions = {
   node: KnimeNode;

@@ -3,12 +3,12 @@ import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
+import { workflowBounds } from "@/lib/workflow-canvas";
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { workflowBounds } from "@/util/workflow-canvas";
 import ConnectorSnappingProvider from "../../connectors/ConnectorSnappingProvider.vue";
 import MetaNodePortBar from "../MetaNodePortBar.vue";
 import NodePort from "../NodePort/NodePort.vue";

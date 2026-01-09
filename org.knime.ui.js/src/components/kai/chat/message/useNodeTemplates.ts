@@ -1,8 +1,8 @@
 import { type Ref, ref, watch } from "vue";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import type {
   ExtensionWithNodes,
   Extensions,

@@ -3,6 +3,7 @@ import { nextTick } from "vue";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
+import { clipboard } from "@/lib/workflow-canvas";
 import { getToastsProvider } from "@/plugins/toasts";
 import {
   createConnection,
@@ -11,10 +12,9 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { clipboard } from "@/util/workflow-canvas";
 
-vi.mock("@/util/workflow-canvas", async () => ({
-  ...(await vi.importActual("@/util/workflow-canvas")),
+vi.mock("@/lib/workflow-canvas", async () => ({
+  ...(await vi.importActual("@/lib/workflow-canvas")),
   clipboard: {
     determinePastePosition: vi.fn(),
     defaultPastePosition: vi.fn(() => ({ x: 100, y: 100 })),

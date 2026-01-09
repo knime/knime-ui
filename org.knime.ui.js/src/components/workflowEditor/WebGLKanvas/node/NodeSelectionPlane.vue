@@ -4,13 +4,13 @@ import { computed, toRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
+import { DashLine } from "@/lib/pixi-dash-line";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { DashLine } from "@/util/pixi-dash-line";
 import type { GraphicsInst } from "@/vue3-pixi";
 
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";

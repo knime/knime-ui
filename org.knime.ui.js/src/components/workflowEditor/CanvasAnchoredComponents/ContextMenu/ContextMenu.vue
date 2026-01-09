@@ -14,6 +14,9 @@ import {
   type XY,
 } from "@/api/gateway-api/generated-api";
 import portIcon from "@/components/common/PortIconRenderer";
+import { type ExtendedPortType, ports } from "@/lib/data-mappers";
+import { menuGroupsBuilder } from "@/lib/menu-groups-builder";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
@@ -23,9 +26,6 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { type ExtendedPortType, ports } from "@/util/data-mappers";
-import { menuGroupsBuilder } from "@/util/menu-groups-builder";
-import { workflowDomain } from "@/util/workflow-domain";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };

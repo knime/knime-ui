@@ -8,10 +8,10 @@ import CogIcon from "@knime/styles/img/icons/cog.svg";
 import { Node } from "@/api/gateway-api/generated-api";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import { isDesktop } from "@/environment";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-import { workflowDomain } from "@/util/workflow-domain";
 
 const { shouldDisplayDownloadAPButton } = storeToRefs(useUIControlsStore());
 const { activeContext } = storeToRefs(useNodeConfigurationStore());

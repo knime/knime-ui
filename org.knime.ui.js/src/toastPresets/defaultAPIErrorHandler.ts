@@ -3,7 +3,7 @@ import type { Toast, ToastServiceProvider } from "@knime/components";
 import { rfcErrors } from "@knime/hub-features";
 
 import { isValidAPIError } from "@/api/gateway-api/generated-exceptions";
-import { isValidDate } from "@/util/date-time";
+import { isValidDate } from "@/lib/date-time";
 
 /**
  * Offers specialized handling for instances of API Gateway errors (both expected and unexpected),

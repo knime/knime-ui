@@ -7,9 +7,9 @@ import CopyIcon from "@knime/styles/img/icons/copy.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { createAbortablePromise } from "@/api/utils";
+import { clipboard, workflowBounds } from "@/lib/workflow-canvas";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useSelectionStore } from "@/store/selection";
-import { clipboard, workflowBounds } from "@/util/workflow-canvas";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 
 import { useWorkflowStore } from "./workflow";

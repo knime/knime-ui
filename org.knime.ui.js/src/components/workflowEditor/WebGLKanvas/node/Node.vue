@@ -11,6 +11,8 @@ import {
   Node,
   type XY,
 } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -21,8 +23,6 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { workflowDomain } from "@/util/workflow-domain";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useNodeHoverProvider } from "../common/useNodeHoverState";
 import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";

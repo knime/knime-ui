@@ -6,6 +6,7 @@ import { useRoute } from "vue-router";
 import type { FileExplorerItem } from "@knime/components";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -15,7 +16,6 @@ import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { getKanvasDomElement } from "@/util/workflow-canvas";
 
 const isComponent = (item: FileExplorerItem) => {
   return item.meta?.type === SpaceItem.TypeEnum.Component;

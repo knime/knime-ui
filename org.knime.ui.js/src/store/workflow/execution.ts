@@ -8,11 +8,11 @@ import {
   validateNodeExecuted,
   validatePortSupport,
 } from "@/components/uiExtensions/common/output-validator";
+import { ports } from "@/lib/data-mappers";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
-import { ports } from "@/util/data-mappers";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import { useWorkflowStore } from "./workflow";
 

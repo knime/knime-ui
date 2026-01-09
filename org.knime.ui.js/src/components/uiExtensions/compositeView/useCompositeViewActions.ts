@@ -1,7 +1,7 @@
 import type { KnimeNode } from "@/api/custom-types";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import CompositeViewActions from "./CompositeViewActions.vue";
 import DataAppsIcon from "./DataAppsIcon.svg";

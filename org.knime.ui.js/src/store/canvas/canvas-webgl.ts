@@ -18,15 +18,15 @@ import type { RenderLayer } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
-import { useWorkflowStore } from "@/store/workflow/workflow";
-import { canvasMinimapAspectRatio } from "@/style/shapes";
-import { geometry } from "@/util/geometry";
+import { geometry } from "@/lib/geometry";
 import {
   getEdgeNearPoint,
   isPointOutsideBounds,
-} from "@/util/geometry/geometry";
-import { clamp } from "@/util/math";
-import { getKanvasDomElement } from "@/util/workflow-canvas";
+} from "@/lib/geometry/geometry";
+import { clamp } from "@/lib/math";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { canvasMinimapAspectRatio } from "@/style/shapes";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 import { useCanvasTooltipStore } from "../canvasTooltip/canvasTooltip";
 

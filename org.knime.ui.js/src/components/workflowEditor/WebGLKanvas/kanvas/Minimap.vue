@@ -4,9 +4,9 @@ import { computed, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { BlurFilter, type FederatedPointerEvent, type Graphics } from "pixi.js";
 
+import { clamp } from "@/lib/math";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $shapes from "@/style/shapes";
-import { clamp } from "@/util/math";
 import { pixiGlobals } from "../common/pixiGlobals";
 import { markPointerEventAsHandled } from "../util/interaction";
 

@@ -4,6 +4,8 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeRelation } from "@/api/custom-types";
+import { ports } from "@/lib/workflow-canvas";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import {
   isDecoratorOnly,
@@ -11,8 +13,6 @@ import {
 } from "@/store/floatingConnector/types";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $shapes from "@/style/shapes";
-import { ports } from "@/util/workflow-canvas";
-import { workflowDomain } from "@/util/workflow-domain";
 import Connector from "../connectors/Connector.vue";
 import Port from "../ports/Port.vue";
 

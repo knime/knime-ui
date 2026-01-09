@@ -12,6 +12,12 @@ import {
 } from "@/api/gateway-api/generated-api";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
+import type {
+  ExtendedPortType,
+  NodeTemplateWithExtendedPorts,
+} from "@/lib/data-mappers";
+import { ports } from "@/lib/workflow-canvas";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
@@ -19,12 +25,6 @@ import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import { useSettingsStore } from "@/store/settings";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import type {
-  ExtendedPortType,
-  NodeTemplateWithExtendedPorts,
-} from "@/util/data-mappers";
-import { ports } from "@/util/workflow-canvas";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
 import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";

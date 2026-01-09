@@ -19,6 +19,7 @@ import type {
   Bounds,
   WorkflowAnnotation as WorkflowAnnotationType,
 } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -27,7 +28,6 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { gridSize } from "@/style/shapes";
 import * as shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { FLOATING_HTML_FADE_DELAY_MS } from "../common/constants";
 import { useObjectInteractions } from "../common/useObjectInteractions";

@@ -3,10 +3,10 @@ import { storeToRefs } from "pinia";
 
 import type { NodePortGroups } from "@/api/custom-types";
 import type { NodePort } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
+import type { ConnectionPortDirection } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowDomain } from "@/util/workflow-domain";
-import type { ConnectionPortDirection } from "@/util/workflow-domain";
 
 type PlaceholderPort = {
   isPlaceHolderPort: boolean;

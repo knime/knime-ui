@@ -3,9 +3,9 @@ import { computed, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
-import { geometry } from "@/util/geometry";
 import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
 import type { AbsolutePointTuple, ConnectorProps } from "../../types";
 

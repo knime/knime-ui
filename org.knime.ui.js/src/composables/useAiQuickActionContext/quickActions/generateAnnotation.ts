@@ -4,17 +4,17 @@ import {
   type KaiQuickActionGenerateAnnotationContext,
   type Workflow,
 } from "@/api/gateway-api/generated-api";
+import {
+  boundsToGeometryBounds,
+  isPointInsideBounds,
+  rectangleIntersection,
+} from "@/lib/geometry/geometry";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createQuickActionError } from "@/toastPresets/aiQuickActions";
-import {
-  boundsToGeometryBounds,
-  isPointInsideBounds,
-  rectangleIntersection,
-} from "@/util/geometry/geometry";
 
 /**
  * For this AI quick action, the context is composed of:

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
+import { ports } from "@/lib/data-mappers";
 import { getToastsProvider } from "@/plugins/toasts";
 import {
   createAvailablePortTypes,
@@ -10,7 +11,6 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { ports } from "@/util/data-mappers";
 
 const mockedAPI = deepMocked(API);
 const variableMockData = vi.hoisted(() => ({
@@ -54,9 +54,9 @@ vi.mock("@/plugins/toasts", async (importOriginal) => {
   };
 });
 
-vi.mock("@/util/data-mappers", async () => {
-  const original: typeof import("@/util/data-mappers") = await vi.importActual(
-    "@/util/data-mappers",
+vi.mock("@/lib/data-mappers", async () => {
+  const original: typeof import("@/lib/data-mappers") = await vi.importActual(
+    "@/lib/data-mappers",
   );
 
   const toRenderablePortViewState = vi

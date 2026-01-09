@@ -14,9 +14,9 @@ import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
 import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
 import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 const hasAllObjectPropertiesDefined = <T extends object>(
   object: T,

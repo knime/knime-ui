@@ -12,8 +12,8 @@ import {
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { useConstants } from "@/composables/useConstants";
+import { createStaggeredTimer } from "@/lib/timers";
 import { type GlobalLoaderConfig } from "@/store/application/globalLoader";
-import { createStaggeredTimer } from "@/util/timers";
 
 const props = withDefaults(defineProps<GlobalLoaderConfig>(), {
   loading: false,

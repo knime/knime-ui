@@ -4,10 +4,10 @@ import { storeToRefs } from "pinia";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { isDesktop } from "@/environment";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import ComponentMetadata, {
   type SaveEventPayload as SaveComponentEventPayload,

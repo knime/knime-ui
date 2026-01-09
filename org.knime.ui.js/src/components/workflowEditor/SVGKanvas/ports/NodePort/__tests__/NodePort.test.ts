@@ -5,13 +5,13 @@ import { flushPromises, mount } from "@vue/test-utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { workflowDomain } from "@/util/workflow-domain";
 import Connector from "../../../connectors/Connector.vue";
 import NodePortActiveConnector from "../../NodePortActiveConnector.vue";
 import NodePortActiveConnectorDecoration from "../../NodePortActiveConnectorDecoration.vue";

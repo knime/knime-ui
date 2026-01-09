@@ -2,8 +2,8 @@ import { ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import type { GeometryEdge } from "@/lib/geometry/types";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import type { GeometryEdge } from "@/util/geometry/types";
 import { pixiGlobals } from "../common/pixiGlobals";
 
 export type PanningToEdgeUpdateHandler = (args: {

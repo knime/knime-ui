@@ -1,7 +1,7 @@
 import { storeToRefs } from "pinia";
 
+import { workflowBounds } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowBounds } from "@/util/workflow-canvas";
 
 export const usePortBarPositions = () => {
   const {

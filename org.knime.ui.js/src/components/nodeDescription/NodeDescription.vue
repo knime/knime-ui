@@ -8,11 +8,11 @@ import type { ComponentNodeDescription } from "@/api/custom-types";
 import { type NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import CloseButton from "@/components/common/CloseButton.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
 import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
-} from "@/util/data-mappers";
+} from "@/lib/data-mappers";
+import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 

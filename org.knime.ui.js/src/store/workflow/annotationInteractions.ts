@@ -8,10 +8,10 @@ import {
   TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
+import { isPointInsideBounds } from "@/lib/geometry/geometry";
 import { useSelectionStore } from "@/store/selection";
 import * as colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { isPointInsideBounds } from "@/util/geometry/geometry";
 
 import { useWorkflowStore } from "./workflow";
 

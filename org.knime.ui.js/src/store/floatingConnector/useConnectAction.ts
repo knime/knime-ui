@@ -5,8 +5,8 @@ import { computed, ref } from "vue";
 import { promise as promiseUtils } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import type { ConnectionPortDirection } from "@/lib/workflow-domain";
 import { useSelectionStore } from "@/store/selection";
-import type { ConnectionPortDirection } from "@/util/workflow-domain";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeInteractionsStore } from "../workflow/nodeInteractions";
 

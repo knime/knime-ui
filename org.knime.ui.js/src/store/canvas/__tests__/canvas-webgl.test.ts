@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
-import { createWorkflow } from "@/test/factories";
-import { mockStores } from "@/test/utils/mockStores";
 import {
   getKanvasDomElement,
   // @ts-expect-error
   setMockKanvasDomElement,
-} from "@/util/workflow-canvas";
+} from "@/lib/workflow-canvas";
+import { createWorkflow } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import {
   defaultZoomFactor,
   maxZoomFactor,
@@ -16,10 +16,10 @@ import {
   zoomMultiplier,
 } from "../canvas-webgl";
 
-vi.mock("@/util/workflow-canvas", async () => {
+vi.mock("@/lib/workflow-canvas", async () => {
   let fakeEl = null;
   return {
-    ...(await vi.importActual("@/util/workflow-canvas")),
+    ...(await vi.importActual("@/lib/workflow-canvas")),
     getKanvasDomElement: () => fakeEl,
     setMockKanvasDomElement: (el: any) => {
       fakeEl = el;

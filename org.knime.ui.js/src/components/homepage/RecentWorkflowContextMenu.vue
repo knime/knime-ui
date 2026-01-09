@@ -6,8 +6,8 @@ import { type Anchor, type MenuItem, MenuItems } from "@knime/components";
 
 import type { RecentWorkflow } from "@/api/custom-types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
+import { optional } from "@/lib/fp";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { optional } from "@/util/fp";
 import type { MenuItemWithHandler } from "../common/types";
 
 interface Props {

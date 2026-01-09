@@ -14,7 +14,7 @@ import {
   TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-import type { WorkflowObject } from "@/util/workflow-canvas";
+import type { WorkflowObject } from "@/lib/workflow-canvas";
 import type { DeepPartial } from "../utils";
 
 import { createNodeAnnotation } from "./annotations";

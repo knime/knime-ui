@@ -13,9 +13,9 @@ import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { isDesktop } from "@/environment";
+import { openInspector, reloadApp } from "@/lib/debug";
+import { clamp } from "@/lib/math";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { openInspector, reloadApp } from "@/util/debug";
-import { clamp } from "@/util/math";
 import FPSMeter from "../toolbar/FPSMeter.vue";
 import {
   type CanvasRendererType,

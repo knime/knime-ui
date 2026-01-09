@@ -3,11 +3,11 @@ import { API } from "@api";
 import { defineStore } from "pinia";
 
 import type { NodeRelation } from "@/api/custom-types";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import { nodeTemplate } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeSearch } from "@/store/common/useNodeSearch";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
-import { nodeTemplate } from "@/util/data-mappers";
 
 /**
  * Store that manages quick add nodes menu states.

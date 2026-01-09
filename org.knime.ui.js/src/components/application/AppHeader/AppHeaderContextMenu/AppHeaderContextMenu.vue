@@ -8,9 +8,9 @@ import CloseIcon from "@knime/styles/img/icons/close.svg";
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
+import { optional } from "@/lib/fp";
 import { useApplicationStore } from "@/store/application/application";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-import { optional } from "@/util/fp";
 
 type Props = {
   projectId: string;

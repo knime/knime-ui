@@ -8,13 +8,13 @@ import {
   RenderLayer,
 } from "pixi.js";
 
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSettingsStore } from "@/store/settings";
-import { getKanvasDomElement } from "@/util/workflow-canvas";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";

@@ -1,8 +1,8 @@
 import { type Ref, computed, readonly, ref } from "vue";
 
+import type { WorkflowObject } from "@/lib/workflow-canvas";
+import { nodeToWorkflowObject } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import type { WorkflowObject } from "@/util/workflow-canvas";
-import { nodeToWorkflowObject } from "@/util/workflow-canvas";
 
 import type { SelectionMode } from "./types";
 import { useStateWithPreview } from "./utils";

@@ -1,6 +1,6 @@
 import { computed, ref } from "vue";
 
-import { encodeString } from "@/util/encoding";
+import { encodeString } from "@/lib/encoding";
 import { useHubAuth } from "../useHubAuth";
 import { useKaiServer } from "../useKaiServer";
 

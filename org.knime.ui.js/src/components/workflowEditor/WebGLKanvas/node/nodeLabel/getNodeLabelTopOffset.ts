@@ -1,6 +1,6 @@
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
-import { workflowDomain } from "@/util/workflow-domain";
 
 /**
  * max port number that can be displayed correctly
