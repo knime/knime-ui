@@ -12,7 +12,6 @@ import { useSelectionStore } from "@/store/selection";
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getBendpointId } from "@/util/connectorUtil";
 import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
 import type { AbsolutePointTuple, ConnectorProps } from "../../types";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
@@ -37,8 +36,12 @@ const { isDragging } = storeToRefs(useMovingStore());
 const selectionStore = useSelectionStore();
 const { singleSelectedNode, getSelectedConnections: selectedConnections } =
   storeToRefs(selectionStore);
-const { isNodeSelected, isConnectionSelected, isBendpointSelected } =
-  selectionStore;
+const {
+  isNodeSelected,
+  isConnectionSelected,
+  isBendpointSelected,
+  getBendpointId,
+} = selectionStore;
 const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 const { screenToCanvasCoordinates } = storeToRefs(useSVGCanvasStore());
 const { toggleContextMenu } = useCanvasAnchoredComponentsStore();

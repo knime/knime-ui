@@ -8,7 +8,6 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
-import { getBendpointId } from "@/util/connectorUtil";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
 import { useObjectInteractions } from "../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../util/interaction";
@@ -24,6 +23,7 @@ export const useBendpointActions = (options: UseBendpointActionsOptions) => {
     options;
 
   const {
+    getBendpointId,
     isConnectionSelected,
     isBendpointSelected,
     selectBendpoints,
