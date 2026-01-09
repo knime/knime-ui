@@ -9,8 +9,12 @@ import {
 } from "vitest";
 import { ref } from "vue";
 import { API } from "@api";
+import type { Router } from "vue-router";
+
+import type { ToastService } from "@knime/components";
 
 import type { DesktopEventHandlers } from "@/api/desktop-api";
+import { notifyPatch } from "@/api/events/event-syncer";
 import {
   type EventHandlers,
   ShowToastEvent,
@@ -26,11 +30,10 @@ import {
 import { deepMocked } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { notifyPatch } from "@/util/event-syncer";
-import eventsPlugin from "../events";
+import { initializeEventHandlers } from "../event-handlers";
 
-vi.mock("@/util/event-syncer");
 vi.mock("@/environment");
+vi.mock("../event-syncer");
 
 const registeredHandlers: Partial<EventHandlers & DesktopEventHandlers> = {};
 
@@ -54,7 +57,7 @@ describe("Event Plugin", () => {
     );
   });
 
-  const loadPlugin = () => {
+  const setup = () => {
     const currentRouteMock = ref({
       name: "",
       params: {} as Record<string, string>,
@@ -62,22 +65,21 @@ describe("Event Plugin", () => {
     const routerMock = {
       push: vi.fn(),
       currentRoute: currentRouteMock,
-    };
+    } as unknown as Router;
 
     const toastMock = {
       show: vi.fn(),
-    };
+    } as unknown as ToastService;
 
     const mockedStores = mockStores({ stubActions: true });
 
-    // @ts-expect-error
-    eventsPlugin({ $router: routerMock, $toast: toastMock });
+    initializeEventHandlers(routerMock, toastMock);
 
     return { mockedStores, routerMock, toastMock, currentRouteMock };
   };
 
   it("all eventsHandlers are functions", () => {
-    loadPlugin();
+    setup();
     Object.values(registeredHandlers).forEach((handler) => {
       expect(typeof handler === "function").toBe(true);
     });
@@ -92,7 +94,7 @@ describe("Event Plugin", () => {
   });
 
   it("handles WorkflowChangedEvents", () => {
-    const { mockedStores } = loadPlugin();
+    const { mockedStores } = setup();
     registeredHandlers.WorkflowChangedEvent!({
       // @ts-expect-error
       patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
@@ -110,12 +112,12 @@ describe("Event Plugin", () => {
       patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
       snapshotId,
     });
-    loadPlugin();
+    setup();
     expect(notifyPatch).toHaveBeenCalledWith(snapshotId);
   });
 
   it("should not call `notifyPatch` for patches without snapshotId", () => {
-    loadPlugin();
+    setup();
     registeredHandlers.WorkflowChangedEvent!({
       // @ts-expect-error
       patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
@@ -124,7 +126,7 @@ describe("Event Plugin", () => {
   });
 
   it("handles ProjectDirtyStateEvent", () => {
-    const { mockedStores } = loadPlugin();
+    const { mockedStores } = setup();
     const dirtyProjectsMap = { 1: false, 2: false, 3: true };
 
     registeredHandlers.ProjectDirtyStateEvent!({ dirtyProjectsMap });
@@ -187,7 +189,7 @@ describe("Event Plugin", () => {
       });
 
       it("adds or removes providers based on event payload", () => {
-        const { mockedStores, routerMock } = loadPlugin();
+        const { mockedStores, routerMock } = setup();
 
         mockedStores.spaceProvidersStore.spaceProviders = {
           [provider1.id]: provider1,
@@ -215,7 +217,7 @@ describe("Event Plugin", () => {
       });
 
       it("does not modify existing providers", () => {
-        const { mockedStores } = loadPlugin();
+        const { mockedStores } = setup();
 
         const spaceGroups = [createSpaceGroup({ spaces: [createSpace()] })];
         const providerInState = createSpaceProvider({
@@ -247,7 +249,7 @@ describe("Event Plugin", () => {
       });
 
       it("navigates to get-started page if provider is removed", () => {
-        const { mockedStores, currentRouteMock, routerMock } = loadPlugin();
+        const { mockedStores, currentRouteMock, routerMock } = setup();
 
         mockedStores.spaceProvidersStore.spaceProviders = {
           [provider1.id]: provider1,
@@ -268,7 +270,7 @@ describe("Event Plugin", () => {
     });
 
     it("replaces application state", () => {
-      const { mockedStores, routerMock } = loadPlugin();
+      const { mockedStores, routerMock } = setup();
 
       registeredHandlers.AppStateChangedEvent!({
         // @ts-expect-error
@@ -284,7 +286,7 @@ describe("Event Plugin", () => {
     });
 
     it("does nothing if app state is empty", () => {
-      const { mockedStores } = loadPlugin();
+      const { mockedStores } = setup();
       registeredHandlers.AppStateChangedEvent!({
         appState: {},
       });
@@ -294,7 +296,7 @@ describe("Event Plugin", () => {
     });
 
     it("does not call setActiveProject when there's a pending workflow navigation", () => {
-      const { mockedStores } = loadPlugin();
+      const { mockedStores } = setup();
 
       mockedStores.lifecycleStore.pendingWorkflowNavigation = {
         projectId: "foo",
@@ -316,7 +318,7 @@ describe("Event Plugin", () => {
 
     it("does not call setActiveProject on the browser", () => {
       mockEnvironment("BROWSER", { isBrowser, isDesktop });
-      const { mockedStores } = loadPlugin();
+      const { mockedStores } = setup();
 
       mockedStores.lifecycleStore.pendingWorkflowNavigation = {
         projectId: "foo",
@@ -342,7 +344,7 @@ describe("Event Plugin", () => {
 
   describe("updateAvailable event", () => {
     it("replaces availableUpdates state", () => {
-      const { mockedStores } = loadPlugin();
+      const { mockedStores } = setup();
       const newReleases = [
         {
           isUpdatePossible: true,
@@ -368,7 +370,7 @@ describe("Event Plugin", () => {
     });
 
     it("does not replace availableUpdates state if there are no updates", () => {
-      const { mockedStores } = loadPlugin();
+      const { mockedStores } = setup();
       const newReleases = undefined;
       const bugfixes = undefined;
 
@@ -385,7 +387,7 @@ describe("Event Plugin", () => {
 
   describe("showToastEvent", () => {
     it("should call method show", () => {
-      const { toastMock } = loadPlugin();
+      const { toastMock } = setup();
 
       const toastEvent = {
         type: ShowToastEvent.TypeEnum.Success,
