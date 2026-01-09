@@ -16,7 +16,7 @@ import {
   isServerProvider,
 } from "@/store/spaces/util";
 import { optional } from "@/util/fp";
-import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
+import { menuGroupsBuilder } from "@/util/menu-groups-builder";
 
 import { useSpaceExplorerActions } from "./useSpaceExplorerActions";
 
