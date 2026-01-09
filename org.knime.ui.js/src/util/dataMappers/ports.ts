@@ -1,4 +1,12 @@
-import type { AvailablePortTypes } from "@/api/custom-types";
+import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
+import {
+  MetaNodePort,
+  NodeState,
+  type PortViewDescriptor,
+  type PortViewDescriptorMapping,
+  type PortViews,
+} from "@/api/gateway-api/generated-api";
+import { isNodeMetaNode } from "../nodeUtil";
 
 import type { ExtendedPortType } from "./common";
 
@@ -38,4 +46,67 @@ const toExtendedPortObject =
       : result;
   };
 
-export const ports = { toExtendedPortObject };
+/**
+ * Based on a node and a port index, it will return the key that can be used
+ * to read the appropriate descriptor mapping that describes the port view of that
+ * the given node and port
+ */
+const getDescriptorMappingKeyForPortView = (
+  node: KnimeNode,
+  portIndex: number,
+): keyof PortViewDescriptorMapping => {
+  if (isNodeMetaNode(node)) {
+    const portState = node.outPorts[portIndex].nodeState;
+
+    return portState === MetaNodePort.NodeStateEnum.CONFIGURED
+      ? "configured"
+      : "executed";
+  }
+
+  return node.state?.executionState === NodeState.ExecutionStateEnum.CONFIGURED
+    ? "configured"
+    : "executed";
+};
+
+/**
+ * Given a PortView descriptor configuration plus node and one of its ports' index
+ * then return the data needed to render these views for this node
+ */
+const toRenderablePortViewState = (
+  portViews: PortViews,
+  node: KnimeNode,
+  portIndex: number,
+): Array<{
+  id: string;
+  text: string;
+  disabled: boolean;
+  detachable: boolean;
+}> => {
+  const descriptorKey = getDescriptorMappingKeyForPortView(node, portIndex);
+
+  if (!portViews) {
+    return [];
+  }
+
+  const descriptorIndexes = portViews.descriptorMapping[descriptorKey] ?? [];
+
+  // non-spec views are disabled at the configured state
+  const isDisabled = (item: PortViewDescriptor) =>
+    !item.isSpecView && descriptorKey === "configured";
+
+  return descriptorIndexes.map((index) => {
+    const descriptor = portViews.descriptors.at(index)!;
+
+    return {
+      id: index.toString(),
+      text: descriptor.label,
+      disabled: isDisabled(descriptor),
+      detachable: !descriptor.isSpecView,
+    };
+  });
+};
+
+export const ports = {
+  toExtendedPortObject,
+  toRenderablePortViewState,
+};
