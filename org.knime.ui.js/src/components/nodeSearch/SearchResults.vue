@@ -1,15 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, toRefs, watch } from "vue";
+import { computed, toRefs, useTemplateRef, watch } from "vue";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import NodeList, {
-  type NavReachedEvent,
-} from "@/components/common/NodeList/NodeList.vue";
-import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
-import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
+import { type NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import InfiniteNodeList from "../common/NodeList/InfiniteNodeList.vue";
 
 import SearchResultsInfo from "./SearchResultsInfo.vue";
 
@@ -24,20 +20,17 @@ type Props = {
   nodes: NodeTemplateWithExtendedPorts[] | null;
   query: string;
   selectedTags?: string[];
-  searchScrollPosition?: number;
-  selectedNode: NodeTemplateWithExtendedPorts | null;
   showDescriptionForNode?: NodeTemplateWithExtendedPorts | null;
   searchActions: SearchActions;
   numFilteredOutNodes: number;
   highlightFirst?: boolean;
-  displayMode?: NodeRepositoryDisplayModesType;
+  displayMode?: Exclude<NodeRepositoryDisplayModesType, "tree">;
   isLoadingSearchResults: boolean;
   isQuickAddNodeMenu?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   selectedTags: () => [],
-  searchScrollPosition: 0,
   highlightFirst: false,
   displayMode: "icon",
   isQuickAddNodeMenu: false,
@@ -45,16 +38,13 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: "navReachedTop", event: NavReachedEvent): void;
-  (e: "update:searchScrollPosition", position: number): void;
-  (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts | null): void;
-  (e: "itemEnterKey", node: NodeTemplateWithExtendedPorts): void;
-  (e: "helpKey", node: NodeTemplateWithExtendedPorts): void;
+  navReachedTop: [event: NavReachedEvent];
+  itemEnterKey: [node: NodeTemplateWithExtendedPorts];
+  showNodeDetails: [node: NodeTemplateWithExtendedPorts];
 }>();
 
 const {
   nodes,
-  selectedNode,
   query,
   selectedTags,
   searchActions,
@@ -62,133 +52,62 @@ const {
   isLoadingSearchResults,
 } = toRefs(props);
 
-const isLoadingNextPage = ref(false);
-const isLoadingSearchResultsDeferred = ref(false);
 const { KNIME_HUB_SEARCH_URL } = knimeExternalUrls;
 
-const setIsLoadingNextPage = createStaggeredLoader({
-  firstStageCallback: () => {
-    isLoadingNextPage.value = true;
-  },
-  resetCallback: () => {
-    isLoadingNextPage.value = false;
-  },
-});
-
-const setIsLoadingSearchResultsDeferred = createStaggeredLoader({
-  firstStageCallback: () => {
-    isLoadingSearchResultsDeferred.value = true;
-  },
-  resetCallback: () => {
-    isLoadingSearchResultsDeferred.value = false;
-  },
-});
-
-watch(
-  isLoadingSearchResults,
-  (value) => {
-    setIsLoadingSearchResultsDeferred(value);
-  },
-  { immediate: true },
+const scrollPosition = defineModel<number>("scrollPosition", { default: 0 });
+const selectedNode = defineModel<NodeTemplateWithExtendedPorts | null>(
+  "selectedNode",
+  { default: null },
 );
 
-const isNodeListEmpty = computed(() => nodes.value?.length === 0);
-const selectedNodeModel = computed({
-  get() {
-    return selectedNode.value;
-  },
-  set(value) {
-    emit("update:selectedNode", value);
-  },
-});
 const searchHubLink = computed(() =>
   KNIME_HUB_SEARCH_URL.replace("%s", encodeURIComponent(query.value)),
 );
 
-const onSaveScrollPosition = (position: number) => {
-  emit("update:searchScrollPosition", position);
-};
+const infiniteList = useTemplateRef("infiniteList");
 
-const scroller = ref<InstanceType<typeof ScrollViewContainer> | null>(null);
 const onSearchChanged = async () => {
-  // wait for new content to be displayed, then scroll to top
-  await nextTick();
-  if (scroller.value) {
-    scroller.value.$el.scrollTop = 0;
-  }
+  await infiniteList.value?.scrollToTop();
 };
-
-const loadMoreSearchResults = async () => {
-  setIsLoadingNextPage(true);
-  await searchActions.value.searchNodesNextPage();
-  setIsLoadingNextPage(false);
-};
-
-const nodeList = ref<InstanceType<typeof NodeList> | null>(null);
-const focusFirst = () => {
-  nodeList.value?.focusFirst();
-};
-
 watch(query, onSearchChanged);
 watch(selectedTags, onSearchChanged);
+
+const focusFirst = () => {
+  infiniteList.value?.focusFirst();
+};
 
 defineExpose({ focusFirst });
 </script>
 
 <template>
-  <ScrollViewContainer
-    ref="scroller"
-    class="results"
-    :initial-position="searchScrollPosition"
-    @save-position="onSaveScrollPosition"
-    @scroll-bottom="loadMoreSearchResults"
+  <InfiniteNodeList
+    ref="infiniteList"
+    v-model:selected-node="selectedNode"
+    v-model:scroll-position="scrollPosition"
+    :nodes="nodes ?? []"
+    :highlight-first="highlightFirst"
+    :display-mode="displayMode"
+    :show-details-for="showDescriptionForNode"
+    :fetch-more="searchActions.searchNodesNextPage"
+    :is-loading="isLoadingSearchResults"
+    @nav-reached-top="emit('navReachedTop', $event)"
+    @item-enter-key="emit('itemEnterKey', $event)"
+    @show-node-details="emit('showNodeDetails', $event)"
   >
-    <div class="content">
-      <div
-        v-if="!isNodeListEmpty && !isLoadingSearchResults"
-        class="node-list-wrapper"
-      >
-        <NodeList
-          ref="nodeList"
-          v-model:selected-node="selectedNodeModel"
-          class="node-list"
-          :nodes="nodes!"
-          :highlight-first="highlightFirst"
-          :display-mode="displayMode"
-          :show-description-for-node="showDescriptionForNode"
-          @nav-reached-top="emit('navReachedTop', $event)"
-          @enter-key="emit('itemEnterKey', $event)"
-          @help-key="emit('helpKey', $event)"
-        >
-          <template #item="slotProps">
-            <slot name="nodesTemplate" v-bind="slotProps" />
-          </template>
-        </NodeList>
+    <template #nodesTemplate="slotProps">
+      <slot name="nodesTemplate" v-bind="slotProps" />
+    </template>
 
-        <SkeletonNodes
-          v-if="isLoadingNextPage"
-          class="node-list-skeleton"
-          :number-of-nodes="5"
-          :display-mode="displayMode"
-        />
-      </div>
-
-      <SkeletonNodes
-        v-if="isLoadingSearchResultsDeferred"
-        class="node-list-skeleton"
-        :number-of-nodes="5"
-        :display-mode="displayMode"
-      />
-
+    <template #listBottom="{ isEmpty, isLoading }">
       <SearchResultsInfo
-        v-if="!isLoadingSearchResults"
+        v-if="!isLoading"
         :num-filtered-out-nodes="numFilteredOutNodes"
-        :is-node-list-empty="isNodeListEmpty"
+        :is-node-list-empty="isEmpty"
         :search-hub-link="searchHubLink"
         :mini="isQuickAddNodeMenu"
       />
-    </div>
-  </ScrollViewContainer>
+    </template>
+  </InfiniteNodeList>
 </template>
 
 <style lang="postcss" scoped>

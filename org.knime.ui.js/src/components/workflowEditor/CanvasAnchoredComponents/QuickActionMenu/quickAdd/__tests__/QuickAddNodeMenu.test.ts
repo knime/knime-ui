@@ -75,7 +75,7 @@ describe("QuickAddNodeMenu.vue", () => {
   const doMount = ({
     props = {},
     nodeRecommendationsResponse = defaultNodeRecommendationsResponse,
-    isWriteableMock = vi.fn().mockReturnValue(true),
+    isWriteableMock = true,
     getNodeByIdMock = vi.fn(),
     nodeRepositoryLoadedMock = true,
   } = {}) => {
@@ -102,8 +102,8 @@ describe("QuickAddNodeMenu.vue", () => {
     mockedAPI.workflowCommand.AddNode.mockReturnValue({});
 
     const mockedStores = mockStores();
-    mockedStores.workflowStore.isWritable = isWriteableMock;
-    mockedStores.workflowStore.workflowBounds = {};
+    (mockedStores.workflowStore.isWritable as any) = isWriteableMock;
+    (mockedStores.workflowStore.workflowBounds as any) = {};
     mockedStores.workflowStore.activeWorkflow = createWorkflow({
       info: {
         containerId: "container0",
@@ -120,8 +120,8 @@ describe("QuickAddNodeMenu.vue", () => {
       },
     });
 
-    mockedStores.nodeInteractionsStore.getNodeById = getNodeByIdMock;
-    mockedStores.canvasStore.contentBounds = {
+    (mockedStores.nodeInteractionsStore.getNodeById as any) = getNodeByIdMock;
+    (mockedStores.canvasStore.contentBounds as any) = {
       top: 33,
       height: 1236,
     };
@@ -174,20 +174,20 @@ describe("QuickAddNodeMenu.vue", () => {
       await nextTick();
       const nodes = wrapper.findAll(".node");
 
-      expect(nodes.at(0).text()).toMatch("Column Filter");
-      expect(nodes.at(1).text()).toMatch("Row Filter");
+      expect(nodes.at(0)?.text()).toMatch("Column Filter");
+      expect(nodes.at(1)?.text()).toMatch("Row Filter");
 
       const previews = wrapper.findAllComponents(NodePreview);
 
       expect(previews.length).toBe(2);
-      expect(previews.at(0).props("type")).toBe("Manipulator");
+      expect(previews.at(0)?.props("type")).toBe("Manipulator");
     });
 
     it("adds node on click", async () => {
       const { wrapper, mockedStores } = doMount();
       await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
-      await node1.trigger("click");
+      await node1?.trigger("click");
 
       expect(mockedStores.quickAddNodesStore.portTypeId).toBe(
         "org.knime.core.node.BufferedDataTable",
@@ -222,7 +222,6 @@ describe("QuickAddNodeMenu.vue", () => {
         port: {
           index: 2,
           typeId: "org.some.otherPorType",
-          kind: "table",
           connectedVia: [],
         },
       });
@@ -248,7 +247,7 @@ describe("QuickAddNodeMenu.vue", () => {
       await nextTick();
 
       const node1 = wrapper.findAll(".node").at(0);
-      await node1.trigger("click");
+      await node1?.trigger("click");
 
       expect(mockedStores.quickAddNodesStore.portTypeId).toBeNull();
       expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith(
@@ -279,7 +278,7 @@ describe("QuickAddNodeMenu.vue", () => {
       const { wrapper, mockedStores } = doMount();
       await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
-      await node1.trigger("keydown.enter");
+      await node1?.trigger("keydown.enter");
 
       expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith({
         nodeFactory: {
@@ -302,7 +301,7 @@ describe("QuickAddNodeMenu.vue", () => {
       });
       await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
-      await node1.trigger("click");
+      await node1?.trigger("click");
 
       expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledTimes(
         0,
@@ -351,13 +350,13 @@ describe("QuickAddNodeMenu.vue", () => {
 
       const nodes = wrapper.findAll(".node");
 
-      expect(nodes.at(0).text()).toMatch("GroupBy Bar Chart (JFreeChart)");
-      expect(nodes.at(1).text()).toMatch("Decision Tree Learner");
+      expect(nodes.at(0)?.text()).toMatch("GroupBy Bar Chart (JFreeChart)");
+      expect(nodes.at(1)?.text()).toMatch("Decision Tree Learner");
 
       const previews = wrapper.findAllComponents(NodePreview);
 
       expect(previews.length).toBe(2);
-      expect(previews.at(0).props("type")).toBe("Visualizer");
+      expect(previews.at(0)?.props("type")).toBe("Visualizer");
     });
 
     describe("add node", () => {
@@ -401,7 +400,7 @@ describe("QuickAddNodeMenu.vue", () => {
           const nodes = wrapper.findAll(".node");
           const node = nodes.at(1);
 
-          await node.trigger(event);
+          await node?.trigger(event);
 
           expect(
             mockedStores.nodeInteractionsStore.addNode,

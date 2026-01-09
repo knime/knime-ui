@@ -109,13 +109,13 @@ describe("NodeList", () => {
       ]);
     });
 
-    it("emits help event if `i` is pressed", async () => {
+    it("emits show details event if `i` is pressed", async () => {
       const wrapper = doMount();
 
       await wrapper.find("ul > li").trigger("keydown.i");
       await nextTick();
 
-      expect(wrapper.emitted("helpKey")).toBeTruthy();
+      expect(wrapper.emitted("showNodeDetails")).toBeTruthy();
     });
   });
 

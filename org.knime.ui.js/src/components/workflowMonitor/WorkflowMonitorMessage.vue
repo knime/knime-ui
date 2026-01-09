@@ -5,12 +5,12 @@ import { FunctionButton, NodePreview } from "@knime/components";
 import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type {
   ComponentNodeAndDescription,
   WorkflowMonitorMessage,
 } from "@/api/gateway-api/generated-api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 type Props = {
   message?: WorkflowMonitorMessage | null;
