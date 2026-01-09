@@ -1,4 +1,4 @@
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 
 import type {
   ComponentNode,
