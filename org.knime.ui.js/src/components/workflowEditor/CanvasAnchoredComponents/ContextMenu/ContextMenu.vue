@@ -24,7 +24,7 @@ import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { type ExtendedPortType, ports } from "@/util/dataMappers";
-import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
+import { menuGroupsBuilder } from "@/util/menu-groups-builder";
 import { workflowDomain } from "@/util/workflow-domain";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 

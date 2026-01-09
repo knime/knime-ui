@@ -1,5 +1,6 @@
 import type { MenuItem } from "@knime/components";
 
+// TODO: move this to WAC
 /**
  * Helper that enables easily creating separators between different menu item groups
  */
