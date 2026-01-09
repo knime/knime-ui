@@ -158,7 +158,7 @@ const displayContent = computed(() => {
   & .body {
     border-radius: 0 5px 5px;
     background-color: var(--knime-white);
-    padding: 10px 8px;
+    padding: var(--space-12);
 
     &.user {
       border-radius: 5px 0 5px 5px;
