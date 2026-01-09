@@ -7,7 +7,7 @@ import {
 } from "@/components/nodeTemplates";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 import SearchResultsInfo from "./SearchResultsInfo.vue";
 

@@ -4,8 +4,8 @@ import { defineStore } from "pinia";
 
 import type { NodeCategoryWithExtendedPorts } from "@/components/nodeRepository/NodeRepositoryTree/types";
 import { useNodeSearch } from "@/store/common/useNodeSearch";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import { nodeTemplate } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
+import { nodeTemplate } from "@/util/data-mappers";
 
 import { useApplicationStore } from "./application/application";
 import { useNodeTemplatesStore } from "./nodeTemplates/nodeTemplates";

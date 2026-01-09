@@ -12,7 +12,7 @@ import { useSidebarComponentSearchStore } from "@/store/componentSearch";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import ComponentTemplateDescription from "../nodeDescription/ComponentTemplateDescription.vue";
 import NativeNodeDescription from "../nodeDescription/NativeNodeDescription.vue";
 

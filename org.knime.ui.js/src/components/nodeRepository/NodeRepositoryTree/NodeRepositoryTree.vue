@@ -18,7 +18,7 @@ import {
 } from "@/components/nodeTemplates";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 const hasAllObjectPropertiesDefined = <T extends object>(
   object: T,

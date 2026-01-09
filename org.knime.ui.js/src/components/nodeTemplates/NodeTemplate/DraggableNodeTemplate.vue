@@ -9,7 +9,7 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
+} from "@/util/data-mappers";
 import { useAddNodeTemplateWithAutoPositioning } from "../useAddNodeTemplateWithAutoPositioning";
 import { useDragNodeIntoCanvas } from "../useDragNodeIntoCanvas";
 

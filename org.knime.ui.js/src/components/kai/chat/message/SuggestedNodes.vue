@@ -8,7 +8,7 @@ import {
   NodeList,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import { useKaiExtensionPanel } from "../../useKaiExtensionPanel";
 
 type Props = {

@@ -10,7 +10,7 @@ import {
   createNodeTemplateWithExtendedPorts,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-import { nodeTemplate } from "@/util/dataMappers";
+import { nodeTemplate } from "@/util/data-mappers";
 import { useNodeTemplatesStore } from "../nodeTemplates";
 
 const mockedAPI = deepMocked(API);

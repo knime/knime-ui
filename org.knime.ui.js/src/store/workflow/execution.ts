@@ -11,7 +11,7 @@ import {
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
-import { ports } from "@/util/dataMappers";
+import { ports } from "@/util/data-mappers";
 import { workflowDomain } from "@/util/workflow-domain";
 
 import { useWorkflowStore } from "./workflow";

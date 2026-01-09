@@ -15,7 +15,7 @@ import { getToastPresets } from "@/toastPresets";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
+} from "@/util/data-mappers";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 

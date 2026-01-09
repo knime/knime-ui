@@ -6,8 +6,8 @@ import type { NodeRelation } from "@/api/custom-types";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeSearch } from "@/store/common/useNodeSearch";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import { nodeTemplate } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
+import { nodeTemplate } from "@/util/data-mappers";
 
 /**
  * Store that manages quick add nodes menu states.

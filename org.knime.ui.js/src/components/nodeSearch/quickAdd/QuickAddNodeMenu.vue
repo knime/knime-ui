@@ -23,7 +23,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import type {
   ExtendedPortType,
   NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
+} from "@/util/data-mappers";
 import { ports } from "@/util/workflow-canvas";
 import { workflowDomain } from "@/util/workflow-domain";
 

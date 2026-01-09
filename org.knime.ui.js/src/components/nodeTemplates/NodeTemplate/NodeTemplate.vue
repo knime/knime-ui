@@ -7,7 +7,7 @@ import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
+} from "@/util/data-mappers";
 
 import NodeTemplateIconMode from "./NodeTemplateIconMode.vue";
 import NodeTemplateListMode from "./NodeTemplateListMode.vue";

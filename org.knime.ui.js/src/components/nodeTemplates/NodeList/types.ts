@@ -1,7 +1,7 @@
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
+} from "@/util/data-mappers";
 
 export type ListItem =
   | NodeTemplateWithExtendedPorts
