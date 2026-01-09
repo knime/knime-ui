@@ -1,18 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { API } from "@api";
 
-import { createWorkflow } from "@/test/factories";
-import { deepMocked } from "@/test/utils";
-import {
-  centerStrategy,
-  offsetStrategy,
-  pastePartsAt,
-  pasteURI,
-} from "@/util/pasteToWorkflow";
+import { centerStrategy, clipboard, offsetStrategy } from "../clipboard";
 
 describe("pasteToWorkflow", () => {
-  const mockedAPI = deepMocked(API);
-
   const randomSpy = vi.spyOn(Math, "random").mockImplementation(() => 0);
 
   beforeEach(randomSpy.mockClear);
@@ -66,7 +56,7 @@ describe("pasteToWorkflow", () => {
 
   describe("pastePartsAt", () => {
     it("uses center strategy when workflow is empty", () => {
-      const paste = pastePartsAt({
+      const paste = clipboard.determinePastePosition({
         visibleFrame: mockVisibleFrame,
         clipboardContent: mockClipboardContent,
         isWorkflowEmpty: true,
@@ -76,7 +66,7 @@ describe("pasteToWorkflow", () => {
     });
 
     it("uses offset strategy first", () => {
-      const paste = pastePartsAt({
+      const paste = clipboard.determinePastePosition({
         visibleFrame: mockVisibleFrame,
         clipboardContent: mockClipboardContent,
         isWorkflowEmpty: false,
@@ -86,7 +76,7 @@ describe("pasteToWorkflow", () => {
     });
 
     it("uses center strategy when paste is not visible", () => {
-      const paste = pastePartsAt({
+      const paste = clipboard.determinePastePosition({
         visibleFrame: mockVisibleFrame,
         clipboardContent: {
           objectBounds: {
@@ -99,55 +89,6 @@ describe("pasteToWorkflow", () => {
       });
       expect(paste.position.x).toBe(470);
       expect(paste.position.y).toBe(345);
-    });
-  });
-
-  describe("pasteURI", () => {
-    const uri = "test://uri";
-    const mockWorkflow = createWorkflow();
-
-    it("calls importURIAtWorkflowCanvas with adjusted position when position is provided", () => {
-      const position = { x: 100, y: 200 };
-
-      pasteURI(uri, mockWorkflow, position, mockVisibleFrame);
-
-      expect(mockedAPI.desktop.importURIAtWorkflowCanvas).toHaveBeenCalledWith({
-        uri,
-        projectId: mockWorkflow.projectId,
-        workflowId: mockWorkflow.info.containerId,
-        x: 84,
-        y: 184,
-      });
-    });
-
-    it("calls importURIAtWorkflowCanvas with center strategy position when position is null", () => {
-      const position = null;
-
-      // @ts-expect-error tests
-      pasteURI(uri, mockWorkflow, position, mockVisibleFrame);
-
-      expect(mockedAPI.desktop.importURIAtWorkflowCanvas).toHaveBeenCalledWith({
-        uri,
-        projectId: mockWorkflow.projectId,
-        workflowId: mockWorkflow.info.containerId,
-        x: 459,
-        y: 334,
-      });
-    });
-
-    it("calls importURIAtWorkflowCanvas with center strategy position when position is undefined", () => {
-      const position = undefined;
-
-      // @ts-expect-error tests
-      pasteURI(uri, mockWorkflow, position, mockVisibleFrame);
-
-      expect(mockedAPI.desktop.importURIAtWorkflowCanvas).toHaveBeenCalledWith({
-        uri,
-        projectId: mockWorkflow.projectId,
-        workflowId: mockWorkflow.info.containerId,
-        x: 459,
-        y: 334,
-      });
     });
   });
 });
