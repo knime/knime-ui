@@ -3,7 +3,6 @@ import { computed, watch } from "vue";
 import { API } from "@api";
 
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-import { ports } from "@/util/dataMappers";
 import {
   buildMiddleware,
   validateNodeConfigurationState,
@@ -111,18 +110,6 @@ const selectedPort = computed(() => {
   return props.selectedNode.outPorts[props.selectedPortIndex];
 });
 
-const portViews = computed(() => {
-  if (!selectedPort.value) {
-    return null;
-  }
-
-  const fullPortObject = ports.toExtendedPortObject(props.availablePortTypes)(
-    selectedPort.value.typeId,
-  );
-
-  return fullPortObject.views;
-});
-
 watch(
   validationError,
   () => {
@@ -143,12 +130,10 @@ const openViewInNewWindow = (viewIndex: number) => {
 
 <template>
   <PortViewTabToggles
-    v-if="!validationError && portViews"
-    :selected-node="selectedNode"
-    :selected-port-index="selectedPortIndex"
+    v-if="!validationError && selectedPort"
     :unique-port-key="uniquePortKey"
-    :view-descriptors="portViews.descriptors"
-    :view-descriptor-mapping="portViews.descriptorMapping"
+    :selected-node="selectedNode"
+    :selected-port="selectedPort"
     @open-view-in-new-window="openViewInNewWindow"
   >
     <template #default="{ activeView }">
