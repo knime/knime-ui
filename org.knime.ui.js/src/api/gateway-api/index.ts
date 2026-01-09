@@ -1,5 +1,5 @@
 import { createRPCClient } from "@/api/gateway-api/rpc-client";
-import { waitForPatch } from "@/util/event-syncer";
+import { waitForPatch } from "../events/event-syncer";
 
 import { createAPI } from "./generated-api";
 
