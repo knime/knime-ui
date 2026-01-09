@@ -7,8 +7,8 @@ import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNodeMetaNode } from "@/util/nodeUtil";
 import * as projectUtil from "@/util/projectUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 import ComponentMetadata, {
   type SaveEventPayload as SaveComponentEventPayload,
@@ -33,7 +33,8 @@ const isMetanode = computed(
 );
 
 const singleMetanodeSelectedId = computed(() =>
-  singleSelectedNode.value && isNodeMetaNode(singleSelectedNode.value)
+  singleSelectedNode.value &&
+  workflowDomain.node.isMetaNode(singleSelectedNode.value)
     ? singleSelectedNode.value.id
     : null,
 );

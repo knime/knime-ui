@@ -22,7 +22,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNodeMetaNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 import LoadingIndicator from "./LoadingIndicator.vue";
 import PortTabs from "./PortTabs.vue";
@@ -149,7 +149,7 @@ const selectPort = () => {
   }
 
   // choose the first node of a metanode
-  if (isNodeMetaNode(singleSelectedNode.value)) {
+  if (workflowDomain.node.isMetaNode(singleSelectedNode.value)) {
     selectedTab.value = "0";
     return;
   }
