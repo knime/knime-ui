@@ -48,7 +48,7 @@ const calculatePortOffset = (params: {
     params;
 
   const portIndex = templatePorts.findIndex((templatePort) =>
-    workflowDomain.connection.checkPortCompatibility({
+    workflowDomain.port.checkCompatibility({
       fromPort: nodeRelation === "SUCCESSORS" ? selectedPort : templatePort,
       toPort: nodeRelation === "SUCCESSORS" ? templatePort : selectedPort,
       availablePortTypes,

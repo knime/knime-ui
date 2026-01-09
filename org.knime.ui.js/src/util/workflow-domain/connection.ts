@@ -4,7 +4,8 @@ import type {
   Workflow,
 } from "@/api/custom-types";
 import type { Connection, NodePort } from "@/api/gateway-api/generated-api";
-import { ports } from "@/util/dataMappers";
+
+import { port } from "./port";
 
 export type ConnectionPortDirection = "in" | "out";
 
@@ -89,49 +90,6 @@ const checkConnectionSupport = ({
   return true;
 };
 
-/**
- * Checks if two ports are compatible and might be connected
- * @returns whether the ports can be connected
- */
-const checkPortCompatibility = ({
-  fromPort,
-  toPort,
-  availablePortTypes,
-}: {
-  fromPort: { typeId: string };
-  toPort: { typeId: string };
-  availablePortTypes: AvailablePortTypes;
-}) => {
-  const fromPortObjectInfo =
-    ports.toExtendedPortObject(availablePortTypes)(fromPort);
-  const toPortObjectInfo =
-    ports.toExtendedPortObject(availablePortTypes)(toPort);
-  const { compatibleTypes } = toPortObjectInfo;
-  const { kind: fromPortKind } = fromPortObjectInfo;
-  const { kind: toPortKind } = toPortObjectInfo;
-
-  // 'generic' and 'table' port kinds are not compatible, so we check either direction
-  if (
-    (fromPortKind === "generic" && toPortKind === "table") ||
-    (fromPortKind === "table" && toPortKind === "generic")
-  ) {
-    return false;
-  }
-
-  // generic ports accept any type of connection
-  if (fromPortKind === "generic" || toPortKind === "generic") {
-    return true;
-  }
-
-  // if compatible types exist, check if they contain each other
-  if (compatibleTypes && compatibleTypes.includes(fromPort.typeId)) {
-    return true;
-  }
-
-  // lastly, if port types ids don't match then they can't be connected
-  return fromPort.typeId === toPort.typeId;
-};
-
 type PortTypeGroup = [string, Array<string>];
 type GroupedPortTypes = Array<PortTypeGroup>;
 
@@ -209,7 +167,7 @@ const checkCompatibleConnectionAndPort = ({
     targetPortDirection,
   });
 
-  const isCompatiblePort = checkPortCompatibility({
+  const isCompatiblePort = port.checkCompatibility({
     fromPort,
     toPort,
     availablePortTypes,
@@ -262,7 +220,7 @@ const generateValidPortGroupsForPlaceholderPort = ({
   const compatibleMatches: GroupedPortTypes = addablePortTypesGrouped.flatMap(
     ([group, supportedTypeIds]) => {
       const compatibleTypeIds = supportedTypeIds.filter((typeId) =>
-        checkPortCompatibility({
+        port.checkCompatibility({
           fromPort,
           toPort: { typeId },
           availablePortTypes,
@@ -282,7 +240,6 @@ const generateValidPortGroupsForPlaceholderPort = ({
 
 export const connection = {
   detectConnectionCircle,
-  checkPortCompatibility,
   checkCompatibleConnectionAndPort,
   generateValidPortGroupsForPlaceholderPort,
 };

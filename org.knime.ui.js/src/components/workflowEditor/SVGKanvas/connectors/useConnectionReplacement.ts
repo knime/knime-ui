@@ -67,7 +67,7 @@ export const useConnectionReplacement = (
     const hasCompatibleSrcPort =
       sourceNodeObject.value &&
       replacementInPorts.some((toPort) =>
-        workflowDomain.connection.checkPortCompatibility({
+        workflowDomain.port.checkCompatibility({
           fromPort: sourceNodeObject.value!.outPorts[options.sourcePort.value!],
           toPort,
           availablePortTypes: availablePortTypes.value,
@@ -77,7 +77,7 @@ export const useConnectionReplacement = (
     const hasCompatibleDestPort =
       destNodeObject.value &&
       replacementOutPorts.some((fromPort) =>
-        workflowDomain.connection.checkPortCompatibility({
+        workflowDomain.port.checkCompatibility({
           fromPort,
           toPort: destNodeObject.value!.inPorts[options.destPort.value!],
           availablePortTypes: availablePortTypes.value,
