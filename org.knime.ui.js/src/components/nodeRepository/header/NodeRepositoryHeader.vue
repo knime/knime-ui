@@ -12,6 +12,7 @@ import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
 import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 
+import { useFeatures } from "@/plugins/feature-flags";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useComponentSearchStore } from "@/store/componentSearch";
@@ -49,6 +50,7 @@ const { hasNodeCollectionActive, activeNodeCollection } = storeToRefs(
   useApplicationSettingsStore(),
 );
 const { nodeRepositoryLoaded } = storeToRefs(useApplicationStore());
+const { componentSearchEnabled } = useFeatures();
 
 const searchContext = defineModel<"nodes" | "components">();
 const isComponentSearch = computed(() => searchContext.value === "components");
@@ -76,6 +78,10 @@ const updateSearchQuery = async (value: string) => {
 };
 
 const switchSearchContext = (value: "nodes" | "components") => {
+  if (value === "components" && !componentSearchEnabled()) {
+    return;
+  }
+
   searchContext.value = value;
 };
 
@@ -135,6 +141,7 @@ const searchPlaceholderText = computed(() => {
     <div class="title-and-search">
       <div class="search-header">
         <ValueSwitch
+          v-if="componentSearchEnabled()"
           compact
           data-test-id="search-context-switch"
           :disabled="!nodeRepositoryLoaded"

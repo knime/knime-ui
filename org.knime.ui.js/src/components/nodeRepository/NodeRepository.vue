@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarNodeSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarNodeSearchResults.vue";
+import { useFeatures } from "@/plugins/feature-flags";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -36,6 +37,8 @@ const isNodeVisible = computed(() => {
 const { nodeRepositoryLoaded, nodeRepositoryLoadingProgress } = storeToRefs(
   useApplicationStore(),
 );
+
+const { componentSearchEnabled } = useFeatures();
 
 const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
@@ -152,6 +155,7 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
       </div>
 
       <ComponentSearchResults
+        v-if="componentSearchEnabled()"
         v-show="searchContext === 'components'"
         ref="componentSearchResults"
         :active="searchContext === 'components'"
