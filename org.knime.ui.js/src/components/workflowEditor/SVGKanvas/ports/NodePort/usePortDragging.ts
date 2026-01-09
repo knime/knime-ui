@@ -14,7 +14,7 @@ import type { ConnectionPortDirection } from "@/util/workflow-domain";
 import {
   type PortSnapCallback,
   usePortSnapping,
-} from "../../../common/usePortSnapping";
+} from "../../common/usePortSnapping";
 
 import type { DragConnector } from "./types";
 
