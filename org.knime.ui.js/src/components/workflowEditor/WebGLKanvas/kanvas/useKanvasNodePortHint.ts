@@ -9,11 +9,11 @@ import { HINTS } from "@/hints/hints.config";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { portSize } from "@/style/shapes";
-import { getNodeState } from "@/util/nodeUtil";
 import {
   nodeToWorkflowObject,
   workflowNavigationService,
 } from "@/util/workflow-canvas";
+import { workflowDomain } from "@/util/workflow-domain";
 import { pixiGlobals } from "../common/pixiGlobals";
 
 /**
@@ -34,7 +34,8 @@ export const useKanvasNodePortHint = () => {
     const executedNodesWithOutPorts = nodes.filter(
       (node) =>
         node.outPorts.length > 1 &&
-        getNodeState(node, 0) === NodeState.ExecutionStateEnum.EXECUTED,
+        workflowDomain.node.getExecutionState(node, 0) ===
+          NodeState.ExecutionStateEnum.EXECUTED,
     );
 
     const targetNodes =

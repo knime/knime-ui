@@ -13,7 +13,7 @@ import type {
 import { isBrowser } from "@/environment";
 import { gridSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { isNativeNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
 import { usePanelStore } from "../panel";
 import { useSelectionStore } from "../selection";
@@ -67,7 +67,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     // and also only refer to the data of the current workflow level
     const nodeTemplates = workflowStore.activeWorkflow!.nodeTemplates;
 
-    if (isNativeNode(node)) {
+    if (workflowDomain.node.isNative(node)) {
       const { templateId } = node;
 
       return nodeTemplates[templateId][property];

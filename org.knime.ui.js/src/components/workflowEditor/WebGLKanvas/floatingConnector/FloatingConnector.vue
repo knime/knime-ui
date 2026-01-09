@@ -11,8 +11,8 @@ import {
 } from "@/store/floatingConnector/types";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $shapes from "@/style/shapes";
-import { isNodeMetaNode } from "@/util/nodeUtil";
 import { ports } from "@/util/workflow-canvas";
+import { workflowDomain } from "@/util/workflow-domain";
 import Connector from "../connectors/Connector.vue";
 import Port from "../ports/Port.vue";
 
@@ -48,7 +48,7 @@ const isDefaultFlowVariableConnection = computed(() => {
     floatingConnector.value.flowVariableConnection &&
     floatingConnectorPort.value?.index === 0 &&
     referenceNode.value &&
-    !isNodeMetaNode(referenceNode.value)
+    !workflowDomain.node.isMetaNode(referenceNode.value)
   );
 });
 

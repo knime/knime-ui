@@ -11,7 +11,7 @@ import { isDesktop } from "@/environment";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-import { isNodeMetaNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 const { shouldDisplayDownloadAPButton } = storeToRefs(useUIControlsStore());
 const { activeContext } = storeToRefs(useNodeConfigurationStore());
@@ -19,7 +19,8 @@ const { activeContext } = storeToRefs(useNodeConfigurationStore());
 const selectedNode = computed(() => activeContext.value?.node ?? null);
 
 const isMetanode = computed(
-  () => selectedNode.value && isNodeMetaNode(selectedNode.value),
+  () =>
+    selectedNode.value && workflowDomain.node.isMetaNode(selectedNode.value),
 );
 
 const hasNoDialog = computed(

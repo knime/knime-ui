@@ -37,10 +37,6 @@ const TEMPLATE_IDS = [
   "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory",
 ] as const;
 
-export const isNativeNode = (node: KnimeNode): node is NativeNode => {
-  return node.kind === Node.KindEnum.Node;
-};
-
 const createBaseNode = (
   kind: Node.KindEnum,
   data: DeepPartial<Node> = {},

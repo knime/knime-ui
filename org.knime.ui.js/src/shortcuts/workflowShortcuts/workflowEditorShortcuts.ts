@@ -9,8 +9,8 @@ import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
-import { isNodeMetaNode } from "@/util/nodeUtil";
 import { freeSpaceInCanvas, ports } from "@/util/workflow-canvas";
+import { workflowDomain } from "@/util/workflow-domain";
 import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "../types";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<
@@ -74,7 +74,7 @@ const calculateNodeInsertionPosition = (
   const isOutports = nextSide === "SUCCESSORS";
   const portPositionValues = ports.positions({
     portCount,
-    isMetanode: isNodeMetaNode(node),
+    isMetanode: workflowDomain.node.isMetaNode(node),
     isOutports,
   });
   const xOffset = nodeSize * (isOutports ? 3 : -3);

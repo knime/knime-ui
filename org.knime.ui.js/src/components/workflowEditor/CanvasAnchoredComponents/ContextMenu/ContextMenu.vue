@@ -25,12 +25,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { type ExtendedPortType, ports } from "@/util/dataMappers";
 import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
-import {
-  getNodeState,
-  isNativeNode,
-  isNodeComponent,
-  isNodeMetaNode,
-} from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
@@ -63,7 +58,7 @@ const buildPortViewIcon = (
   port: ExtendedPortType,
   portIndex: number,
 ) => {
-  if (isNodeMetaNode(node)) {
+  if (workflowDomain.node.isMetaNode(node)) {
     return markRaw(portIcon(port, $shapes.portSize));
   }
 
@@ -121,7 +116,7 @@ const portViews = (): MenuItem[] => {
 
   return allOutPorts.flatMap((port, portIndex) => {
     // TODO: NXT-2024 show port views at configure time
-    if (getNodeState(node, portIndex) !== "EXECUTED") {
+    if (workflowDomain.node.getExecutionState(node, portIndex) !== "EXECUTED") {
       return [];
     }
 
@@ -219,7 +214,7 @@ const setMenuItems = () => {
 
   const isLoopEnd = Boolean(
     singleSelectedNode.value &&
-      isNativeNode(singleSelectedNode.value) &&
+      workflowDomain.node.isNative(singleSelectedNode.value) &&
       Boolean(singleSelectedNode.value.loopInfo?.allowedActions),
   );
 
@@ -235,11 +230,13 @@ const setMenuItems = () => {
   );
 
   const isMetanode = Boolean(
-    singleSelectedNode.value && isNodeMetaNode(singleSelectedNode.value),
+    singleSelectedNode.value &&
+      workflowDomain.node.isMetaNode(singleSelectedNode.value),
   );
 
   const isComponent = Boolean(
-    singleSelectedNode.value && isNodeComponent(singleSelectedNode.value),
+    singleSelectedNode.value &&
+      workflowDomain.node.isComponent(singleSelectedNode.value),
   );
 
   const portViewItems = portViews();

@@ -27,7 +27,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNodeExecuting, isNodeMetaNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 let unwrappedPromise = promise.createUnwrappedPromise<boolean>();
 const $toast = getToastsProvider();
@@ -272,7 +272,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
         return null;
       }
 
-      if (isNodeMetaNode(node)) {
+      if (workflowDomain.node.isMetaNode(node)) {
         return { node, isEmbeddable: false };
       }
 
@@ -293,7 +293,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
         .activeContext as NonNullable<ActiveContext>;
 
       const { canConfigureNodes } = useUIControlsStore();
-      const isActiveNodeExecuting = isNodeExecuting(activeNode);
+      const isActiveNodeExecuting = workflowDomain.node.isExecuting(activeNode);
 
       if (
         isActiveNodeExecuting ||

@@ -15,7 +15,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNativeNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "./types";
 
@@ -168,7 +168,7 @@ const executionShortcuts: ExecutionShortcuts = {
     condition: () => {
       const selectedNode = useSelectionStore().singleSelectedNode;
 
-      if (!selectedNode || !isNativeNode(selectedNode)) {
+      if (!selectedNode || !workflowDomain.node.isNative(selectedNode)) {
         return false;
       }
       return Boolean(selectedNode.loopInfo?.allowedActions?.canResume);
@@ -188,7 +188,7 @@ const executionShortcuts: ExecutionShortcuts = {
     condition: () => {
       const selectedNode = useSelectionStore().singleSelectedNode;
 
-      if (!selectedNode || !isNativeNode(selectedNode)) {
+      if (!selectedNode || !workflowDomain.node.isNative(selectedNode)) {
         return false;
       }
       return Boolean(selectedNode.loopInfo?.allowedActions?.canPause);
@@ -208,7 +208,7 @@ const executionShortcuts: ExecutionShortcuts = {
     condition: () => {
       const selectedNode = useSelectionStore().singleSelectedNode;
 
-      if (!selectedNode || !isNativeNode(selectedNode)) {
+      if (!selectedNode || !workflowDomain.node.isNative(selectedNode)) {
         return false;
       }
       return Boolean(selectedNode.loopInfo?.allowedActions?.canStep);

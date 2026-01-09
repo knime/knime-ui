@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { defineStore, storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { isNodeMetaNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 import { useSelectionStore } from "./selection";
 import { useExecutionStore } from "./workflow/execution";
@@ -25,7 +25,7 @@ export const useNodeOutputStore = defineStore("nodeOutput", () => {
 
     if (port === "1" && "hasView" in node && node.hasView) {
       port = "view";
-    } else if (isNodeMetaNode(node)) {
+    } else if (workflowDomain.node.isMetaNode(node)) {
       // Metanodes don't have a flowvariable port,
       // their port tabs are 0-indexed instead
       port = `${Number(port) - 1}`;
