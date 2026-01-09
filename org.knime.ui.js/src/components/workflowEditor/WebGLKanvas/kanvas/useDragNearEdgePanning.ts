@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import type { GeometryEdge } from "@/lib/geometry/types";
+import type { GeometryEdge } from "@/lib/geometry";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { pixiGlobals } from "../common/pixiGlobals";
 
