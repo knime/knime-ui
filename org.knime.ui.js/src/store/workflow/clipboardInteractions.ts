@@ -9,8 +9,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { createAbortablePromise } from "@/api/utils";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useSelectionStore } from "@/store/selection";
-import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
-import { workflowBounds } from "@/util/workflow-canvas";
+import { clipboard, workflowBounds } from "@/util/workflow-canvas";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 
 import { useWorkflowStore } from "./workflow";
@@ -272,12 +271,20 @@ export const useClipboardInteractionsStore = defineStore(
           }
         } catch (_e) {
           // try to paste the clipboard content as a URI
-          pasteURI(
-            clipboardText,
-            workflowStore.activeWorkflow!,
-            customPosition ?? { x: 0, y: 0 },
-            canvasStore.value.getVisibleFrame,
-          );
+          const position =
+            customPosition ??
+            clipboard.defaultPastePosition({
+              clipboardContent: clipboardText,
+              visibleFrame: canvasStore.value.getVisibleFrame,
+            });
+
+          API.desktop.importURIAtWorkflowCanvas({
+            uri: clipboardText,
+            projectId: workflowStore.activeWorkflow!.projectId,
+            workflowId: workflowStore.activeWorkflow!.info.containerId,
+            ...position,
+          });
+
           return;
         }
 
@@ -286,7 +293,7 @@ export const useClipboardInteractionsStore = defineStore(
         // 1. Decide where to paste
         const { position, fillScreenAfterPaste } = customPosition
           ? { position: customPosition, fillScreenAfterPaste: false }
-          : pastePartsAt({
+          : clipboard.determinePastePosition({
               visibleFrame: canvasStore.value.getVisibleFrame,
               clipboardContent,
               isWorkflowEmpty: workflowStore.isWorkflowEmpty,
@@ -316,7 +323,7 @@ export const useClipboardInteractionsStore = defineStore(
           canvasStore.value.fillScreen();
         }
 
-        await selectionStore.deselectAllObjects(nodeIds);
+        selectionStore.deselectAllObjects(nodeIds);
         selectionStore.selectAnnotations(annotationIds!);
       },
     },

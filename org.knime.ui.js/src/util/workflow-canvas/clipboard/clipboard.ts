@@ -1,12 +1,7 @@
-import { API } from "@api";
-
-import type { Workflow } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
-import { nodeSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import type { GeometryArea, GeometryBounds } from "@/util/geometry/types";
-
-import { freeSpaceInCanvas } from "./workflow-canvas";
+import type { GeometryArea, GeometryBounds } from "@/util/geometry";
+import { freeSpaceInCanvas } from "..";
 
 // eslint-disable-next-line no-magic-numbers
 const getRandomNoise = () => (Math.random() * 2 - 1) * 25;
@@ -69,18 +64,17 @@ export const offsetStrategy = ({
   return null;
 };
 
-/*
- * returns position and what to do after pasting
+/**
+ * Determines in which position of the canvas to place the contents of the
+ * clipboard upon a paste operation
  */
-export const pastePartsAt = ({
-  visibleFrame,
-  clipboardContent,
-  isWorkflowEmpty,
-}: {
+const determinePastePosition = (params: {
   visibleFrame: GeometryBounds;
   clipboardContent: { objectBounds: GeometryBounds };
   isWorkflowEmpty: boolean;
-}) => {
+}): { position: XY; fillScreenAfterPaste?: boolean } => {
+  const { clipboardContent, isWorkflowEmpty, visibleFrame } = params;
+
   if (isWorkflowEmpty) {
     consola.info("workflow is empty: paste to center");
     return {
@@ -96,34 +90,7 @@ export const pastePartsAt = ({
   };
 };
 
-export const pasteURI = (
-  uri: string,
-  activeWorkflow: Workflow,
-  position: XY,
-  visibleFrame: GeometryBounds,
-) => {
-  const {
-    projectId,
-    info: { containerId },
-  } = activeWorkflow;
-
-  const { x, y } = position
-    ? {
-        x: position.x - nodeSize / 2,
-        y: position.y - nodeSize / 2,
-      }
-    : centerStrategy({
-        visibleFrame,
-        clipboardContent: {
-          objectBounds: { width: nodeSize, height: nodeSize },
-        },
-      });
-
-  API.desktop.importURIAtWorkflowCanvas({
-    uri,
-    projectId,
-    workflowId: containerId,
-    x,
-    y,
-  });
+export const clipboard = {
+  determinePastePosition,
+  defaultPastePosition: centerStrategy,
 };
