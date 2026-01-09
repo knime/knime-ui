@@ -1,3 +1,5 @@
+/* eslint-disable no-bitwise */
+/* eslint-disable no-magic-numbers */
 /**
  * Generates a 32-bit FNV-1a hash of the input string.
  *
