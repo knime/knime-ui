@@ -23,7 +23,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { type ExtendedPortType, ports } from "@/util/dataMappers";
+import { type ExtendedPortType, ports } from "@/util/data-mappers";
 import { menuGroupsBuilder } from "@/util/menu-groups-builder";
 import { workflowDomain } from "@/util/workflow-domain";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";

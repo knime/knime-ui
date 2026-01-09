@@ -1,7 +1,7 @@
 import Fuse from "fuse.js";
 
 import type { AvailablePortTypes } from "@/api/custom-types";
-import { type ExtendedPortType, ports } from "@/util/dataMappers";
+import { type ExtendedPortType, ports } from "@/util/data-mappers";
 
 const fuseOptions = {
   shouldSort: true,

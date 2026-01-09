@@ -4,7 +4,7 @@ import { computed, ref } from "vue";
 import { NodePreview } from "@knime/components";
 
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 import NodeTemplateIconMode from "./NodeTemplateIconMode.vue";
 import NodeTemplateListMode from "./NodeTemplateListMode.vue";

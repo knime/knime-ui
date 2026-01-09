@@ -11,7 +11,7 @@ import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollV
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 const TAG_LIMIT = 8;
 

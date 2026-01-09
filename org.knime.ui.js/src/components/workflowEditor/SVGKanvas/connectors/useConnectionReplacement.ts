@@ -11,7 +11,7 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import type { ExtendedPortType } from "@/util/dataMappers";
+import type { ExtendedPortType } from "@/util/data-mappers";
 import { workflowDomain } from "@/util/workflow-domain";
 
 type UseConnectionReplacementOptions = {

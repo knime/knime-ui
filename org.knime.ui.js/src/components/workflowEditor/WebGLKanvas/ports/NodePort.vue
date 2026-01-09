@@ -12,7 +12,7 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { portSize } from "@/style/shapes";
 import * as $shapes from "@/style/shapes";
-import { ports } from "@/util/dataMappers";
+import { ports } from "@/util/data-mappers";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import type { TooltipDefinition } from "../../types";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";

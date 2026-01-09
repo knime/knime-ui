@@ -8,7 +8,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
-import { ports } from "@/util/dataMappers";
+import { ports } from "@/util/data-mappers";
 import { workflowDomain } from "@/util/workflow-domain";
 
 import ExecuteButton from "./ExecuteButton.vue";

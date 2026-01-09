@@ -9,7 +9,7 @@ import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { ports } from "@/util/dataMappers";
+import { ports } from "@/util/data-mappers";
 
 type Props = {
   uniquePortKey: string;

@@ -10,7 +10,7 @@ import type {
   WorkflowMonitorMessage,
 } from "@/api/gateway-api/generated-api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 type Props = {
   message?: WorkflowMonitorMessage | null;

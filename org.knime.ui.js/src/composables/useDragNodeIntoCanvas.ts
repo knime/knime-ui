@@ -10,7 +10,7 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 

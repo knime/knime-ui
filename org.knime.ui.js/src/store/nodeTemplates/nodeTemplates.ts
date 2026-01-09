@@ -4,8 +4,8 @@ import { defineStore } from "pinia";
 import type { AvailablePortTypes } from "@/api/custom-types";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import { nodeTemplate } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
+import { nodeTemplate } from "@/util/data-mappers";
 
 type NodeTemplateDictionary = Record<string, NodeTemplateWithExtendedPorts>;
 

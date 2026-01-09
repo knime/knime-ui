@@ -1,5 +1,5 @@
 import type { AvailablePortTypes } from "@/api/custom-types";
-import { ports } from "@/util/dataMappers";
+import { ports } from "@/util/data-mappers";
 
 /**
  * Checks if two ports are compatible and might be connected
