@@ -19,10 +19,6 @@ import type { RenderLayer } from "pixi.js";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
 import { geometry } from "@/lib/geometry";
-import {
-  getEdgeNearPoint,
-  isPointOutsideBounds,
-} from "@/lib/geometry/geometry";
 import { clamp } from "@/lib/math";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -495,13 +491,13 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isPointOutsideVisibleArea = (point: XY) => {
     const [x, y] = screenToCanvasCoordinates.value([point.x, point.y]);
     const visibleArea = calculateVisibleArea();
-    return isPointOutsideBounds({ x, y }, visibleArea);
+    return geometry.isPointOutsideBounds({ x, y }, visibleArea);
   };
 
   const getVisibleAreaEdgeNearPoint = (point: XY) => {
     const [x, y] = screenToCanvasCoordinates.value([point.x, point.y]);
     const visibleArea = calculateVisibleArea();
-    return getEdgeNearPoint({ x, y }, visibleArea, 35);
+    return geometry.getEdgeNearPoint({ x, y }, visibleArea, 35);
   };
 
   const getVisibleFrame = computed(() => {

@@ -4,11 +4,7 @@ import {
   type KaiQuickActionGenerateAnnotationContext,
   type Workflow,
 } from "@/api/gateway-api/generated-api";
-import {
-  boundsToGeometryBounds,
-  isPointInsideBounds,
-  rectangleIntersection,
-} from "@/lib/geometry/geometry";
+import { geometry } from "@/lib/geometry";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
@@ -62,7 +58,7 @@ const filterWorkflowToVicinity = (
 
   const nodesInVicinity = Object.fromEntries(
     Object.entries(workflow.nodes).filter(([_, node]) =>
-      isPointInsideBounds(node.position, vicinityBounds),
+      geometry.isPointInsideBounds(node.position, vicinityBounds),
     ),
   );
 
@@ -90,9 +86,9 @@ const filterWorkflowToVicinity = (
 
   const annotationsInVicinity = (workflow.workflowAnnotations ?? []).filter(
     (annotation) =>
-      rectangleIntersection(
-        boundsToGeometryBounds(annotation.bounds),
-        boundsToGeometryBounds(vicinityBounds),
+      geometry.rectangleIntersection(
+        geometry.boundsToGeometryBounds(annotation.bounds),
+        geometry.boundsToGeometryBounds(vicinityBounds),
       ) !== null,
   );
 
