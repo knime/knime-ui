@@ -10,7 +10,7 @@ import { TABS, type TabValues, usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import { createStaggeredTimer } from "@/util/timers";
 
 import AppKanvasSkeleton from "./AppKanvasSkeleton.vue";
 import AppRightPanelSkeleton from "./AppRightPanelSkeleton.vue";
@@ -70,7 +70,7 @@ const isSidebarTransparent = computed(() => {
 const isLeftPanelOpen = computed(() => usePanelStore().isLeftPanelExpanded);
 
 const isLogoShown = ref(false);
-const setLogoVisible = createStaggeredLoader({
+const setLogoVisible = createStaggeredTimer({
   firstStageCallback: () => {
     isLogoShown.value = true;
   },
