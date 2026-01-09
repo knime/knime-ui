@@ -8,7 +8,7 @@ import {
   TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-import { isPointInsideBounds } from "@/lib/geometry/geometry";
+import { geometry } from "@/lib/geometry";
 import { useSelectionStore } from "@/store/selection";
 import * as colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
@@ -300,7 +300,10 @@ export const useAnnotationInteractionsStore = defineStore(
           const nodes = Object.values(activeWorkflow.nodes);
           return nodes
             .filter((node) => {
-              return isPointInsideBounds(node.position, annotation.bounds);
+              return geometry.isPointInsideBounds(
+                node.position,
+                annotation.bounds,
+              );
             })
             .map((node) => node.id);
         },

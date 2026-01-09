@@ -36,6 +36,13 @@ export default [
               message: 'Use "@api" instead of "@/api"',
             },
           ],
+          patterns: [
+            {
+              group: ["@/lib/*/*"],
+              message:
+                "Deep imports from @/lib are not allowed. Import from the package root (e.g. `@/lib/some-lib`).",
+            },
+          ],
         },
       ],
     },
