@@ -3,7 +3,7 @@ import { computed, onUnmounted, toRef, watch } from "vue";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
-import type { Direction } from "@/util/compatibleConnections";
+import type { ConnectionPortDirection } from "@/util/workflow-domain";
 import Connector from "../connectors/Connector.vue";
 
 import type { DragConnector } from "./NodePort/types";
@@ -27,7 +27,7 @@ interface Props {
    * Direction of the connection. Depends on whether connection was drawn out of an
    * input or an output port
    */
-  direction: Direction;
+  direction: ConnectionPortDirection;
   /**
    * Indicates that the connector is representing a connection to a port that already
    * has one, so it's an attempt to replace it. This helps with showing a visual offset

@@ -5,11 +5,8 @@ import type { NodePortGroups } from "@/api/custom-types";
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import {
-  type Direction,
-  checkCompatibleConnectionAndPort,
-  generateValidPortGroupsForPlaceholderPort,
-} from "@/util/compatibleConnections";
+import { workflowDomain } from "@/util/workflow-domain";
+import type { ConnectionPortDirection } from "@/util/workflow-domain";
 
 type PlaceholderPort = {
   isPlaceHolderPort: boolean;
@@ -41,28 +38,31 @@ export const usePortSnapping = () => {
   }: {
     sourcePort: NodePort;
     targetPort: NodePort | PlaceholderPort;
-    targetPortDirection: Direction;
+    targetPortDirection: ConnectionPortDirection;
     targetPortGroups: NodePortGroups;
   }) => {
     let isCompatible: boolean = false;
     let validPortGroups: NodePortGroups | null = null;
 
     if (isPlaceholderPort(targetPort)) {
-      validPortGroups = generateValidPortGroupsForPlaceholderPort({
-        fromPort: sourcePort,
-        availablePortTypes: availablePortTypes.value,
-        targetPortDirection,
-        targetPortGroups,
-      });
+      validPortGroups =
+        workflowDomain.connection.generateValidPortGroupsForPlaceholderPort({
+          fromPort: sourcePort,
+          availablePortTypes: availablePortTypes.value,
+          targetPortDirection,
+          targetPortGroups,
+        });
       isCompatible = validPortGroups !== null;
     } else {
-      isCompatible = checkCompatibleConnectionAndPort({
-        fromPort: sourcePort,
-        toPort: targetPort,
-        availablePortTypes: availablePortTypes.value,
-        targetPortDirection,
-        connections: connections.value,
-      });
+      isCompatible = workflowDomain.connection.checkCompatibleConnectionAndPort(
+        {
+          fromPort: sourcePort,
+          toPort: targetPort,
+          availablePortTypes: availablePortTypes.value,
+          targetPortDirection,
+          connections: connections.value,
+        },
+      );
     }
 
     return { isCompatible, validPortGroups };

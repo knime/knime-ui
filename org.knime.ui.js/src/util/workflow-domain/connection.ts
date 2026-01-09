@@ -6,9 +6,9 @@ import type {
 import type { Connection, NodePort } from "@/api/gateway-api/generated-api";
 import { ports } from "@/util/dataMappers";
 
-export type Direction = "in" | "out";
+export type ConnectionPortDirection = "in" | "out";
 
-export const detectConnectionCircle = ({
+const detectConnectionCircle = ({
   startNode,
   downstreamConnection,
   workflow: { nodes, connections, info: workflowInfo },
@@ -70,7 +70,7 @@ const checkConnectionSupport = ({
 }: {
   toPort: NodePort;
   connections: Record<string, Connection>;
-  targetPortDirection: Direction;
+  targetPortDirection: ConnectionPortDirection;
 }): boolean => {
   if (targetPortDirection === "in") {
     const isPortFree = toPort.connectedVia.length === 0;
@@ -93,7 +93,7 @@ const checkConnectionSupport = ({
  * Checks if two ports are compatible and might be connected
  * @returns whether the ports can be connected
  */
-export const checkPortCompatibility = ({
+const checkPortCompatibility = ({
   fromPort,
   toPort,
   availablePortTypes,
@@ -143,7 +143,7 @@ const groupAddablePortTypesByPortGroup = ({
 }: {
   targetPortGroups: NodePortGroups | null;
   availablePortTypes: AvailablePortTypes;
-  targetPortDirection: Direction;
+  targetPortDirection: ConnectionPortDirection;
 }): GroupedPortTypes => {
   // use all port types for metanodes and components (we assume them if portGroups is null!)
   if (!targetPortGroups) {
@@ -190,7 +190,7 @@ const transformToPortGroupObject = (
 /**
  * Checks for port compatibility and if it can be connected to that port (e.g. has this port already a connection)
  */
-export const checkCompatibleConnectionAndPort = ({
+const checkCompatibleConnectionAndPort = ({
   fromPort,
   toPort,
   availablePortTypes,
@@ -200,7 +200,7 @@ export const checkCompatibleConnectionAndPort = ({
   fromPort: NodePort;
   toPort: NodePort;
   availablePortTypes: AvailablePortTypes;
-  targetPortDirection: Direction;
+  targetPortDirection: ConnectionPortDirection;
   connections: Record<string, Connection>;
 }): boolean => {
   const isSupportedConnection = checkConnectionSupport({
@@ -226,7 +226,7 @@ export const checkCompatibleConnectionAndPort = ({
  * @param targetPortDirection
  * @returns returns a validPortGroups object or null if incompatible
  */
-export const generateValidPortGroupsForPlaceholderPort = ({
+const generateValidPortGroupsForPlaceholderPort = ({
   fromPort,
   availablePortTypes,
   targetPortGroups,
@@ -235,7 +235,7 @@ export const generateValidPortGroupsForPlaceholderPort = ({
   fromPort: { typeId: string };
   availablePortTypes: AvailablePortTypes;
   targetPortGroups: NodePortGroups | null;
-  targetPortDirection: Direction;
+  targetPortDirection: ConnectionPortDirection;
 }) => {
   const addablePortTypesGrouped = groupAddablePortTypesByPortGroup({
     availablePortTypes,
@@ -278,4 +278,11 @@ export const generateValidPortGroupsForPlaceholderPort = ({
 
   // case 3: no match
   return null;
+};
+
+export const connection = {
+  detectConnectionCircle,
+  checkPortCompatibility,
+  checkCompatibleConnectionAndPort,
+  generateValidPortGroupsForPlaceholderPort,
 };

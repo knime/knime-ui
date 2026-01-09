@@ -1,6 +1,6 @@
 import type { NodePortGroups } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
-import type { Direction } from "@/util/compatibleConnections";
+import type { ConnectionPortDirection } from "@/util/workflow-domain";
 
 export type FloatingDecoratorOnly = {
   id: "floating-decorator-only";
@@ -31,7 +31,7 @@ export type FloatingConnector = FloatingDecoratorOnly | FullFloatingConnector;
 
 type SnapTargetCommon = {
   parentNodeId: string;
-  side: Direction;
+  side: ConnectionPortDirection;
 };
 
 export type SnappedPlaceholderPort = {

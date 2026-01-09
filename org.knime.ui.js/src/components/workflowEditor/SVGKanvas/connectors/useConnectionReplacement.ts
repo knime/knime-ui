@@ -11,8 +11,8 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { checkPortCompatibility } from "@/util/compatibleConnections";
 import type { ExtendedPortType } from "@/util/dataMappers";
+import { workflowDomain } from "@/util/workflow-domain";
 
 type UseConnectionReplacementOptions = {
   /**
@@ -67,7 +67,7 @@ export const useConnectionReplacement = (
     const hasCompatibleSrcPort =
       sourceNodeObject.value &&
       replacementInPorts.some((toPort) =>
-        checkPortCompatibility({
+        workflowDomain.connection.checkPortCompatibility({
           fromPort: sourceNodeObject.value!.outPorts[options.sourcePort.value!],
           toPort,
           availablePortTypes: availablePortTypes.value,
@@ -77,7 +77,7 @@ export const useConnectionReplacement = (
     const hasCompatibleDestPort =
       destNodeObject.value &&
       replacementOutPorts.some((fromPort) =>
-        checkPortCompatibility({
+        workflowDomain.connection.checkPortCompatibility({
           fromPort,
           toPort: destNodeObject.value!.inPorts[options.destPort.value!],
           availablePortTypes: availablePortTypes.value,

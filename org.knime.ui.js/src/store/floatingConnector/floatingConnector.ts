@@ -17,9 +17,9 @@ import {
 } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
 import * as shapes from "@/style/shapes";
 import {
-  type Direction,
-  detectConnectionCircle,
-} from "@/util/compatibleConnections";
+  type ConnectionPortDirection,
+  workflowDomain,
+} from "@/util/workflow-domain";
 import { useApplicationStore } from "../application/application";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
@@ -34,7 +34,7 @@ import { useConnectAction } from "./useConnectAction";
 import { usePortSnapping } from "./usePortSnapping";
 
 type Params = {
-  direction: Direction;
+  direction: ConnectionPortDirection;
   nodeId: string;
   port: NodePort;
   isFlowVariable: boolean;
@@ -149,11 +149,12 @@ export const useFloatingConnectorStore = defineStore(
         y: event.offsetY,
       });
 
-      activeConnectionValidTargets.value = detectConnectionCircle({
-        downstreamConnection: params.direction === "out",
-        startNode: params.nodeId,
-        workflow: activeWorkflow.value!,
-      });
+      activeConnectionValidTargets.value =
+        workflowDomain.connection.detectConnectionCircle({
+          downstreamConnection: params.direction === "out",
+          startNode: params.nodeId,
+          workflow: activeWorkflow.value!,
+        });
     };
 
     const { finishConnection, waitingForPortSelection } = useConnectAction();
