@@ -12,7 +12,7 @@ import {
   type NativeNodeDescriptionWithExtendedPorts,
   componentDescription,
   nodeDescription,
-} from "@/util/dataMappers";
+} from "@/util/data-mappers";
 
 /**
  * Store that manages state for node and component descriptions.

@@ -10,7 +10,7 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { ports } from "@/util/dataMappers";
+import { ports } from "@/util/data-mappers";
 
 const mockedAPI = deepMocked(API);
 const variableMockData = vi.hoisted(() => ({
@@ -54,9 +54,9 @@ vi.mock("@/plugins/toasts", async (importOriginal) => {
   };
 });
 
-vi.mock("@/util/dataMappers", async () => {
-  const original: typeof import("@/util/dataMappers") = await vi.importActual(
-    "@/util/dataMappers",
+vi.mock("@/util/data-mappers", async () => {
+  const original: typeof import("@/util/data-mappers") = await vi.importActual(
+    "@/util/data-mappers",
   );
 
   const toRenderablePortViewState = vi

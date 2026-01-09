@@ -6,7 +6,7 @@ import NodeTemplate from "@/components/common/NodeTemplate/NodeTemplate.vue";
 import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 type Props = {
   selectedNode: NodeTemplateWithExtendedPorts | null;

@@ -11,7 +11,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { ports } from "@/util/dataMappers";
+import { ports } from "@/util/data-mappers";
 import NodePortActiveConnector from "../NodePortActiveConnector.vue";
 
 import NodePortActions from "./NodePortActions.vue";

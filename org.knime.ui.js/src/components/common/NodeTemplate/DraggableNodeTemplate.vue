@@ -6,7 +6,7 @@ import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 
 /**

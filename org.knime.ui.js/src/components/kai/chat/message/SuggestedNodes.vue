@@ -6,7 +6,7 @@ import NodeIcon from "@knime/styles/img/icons/node.svg";
 import NodeList from "@/components/common/NodeList/NodeList.vue";
 import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import { useKaiExtensionPanel } from "../../useKaiExtensionPanel";
 
 type Props = {

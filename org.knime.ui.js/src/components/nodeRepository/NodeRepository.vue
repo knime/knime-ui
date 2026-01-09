@@ -10,7 +10,7 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import ComponentSearchResults from "../componentSearch/ComponentSearchResults.vue";
 
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";

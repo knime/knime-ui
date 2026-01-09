@@ -5,8 +5,8 @@ import { defineStore } from "pinia";
 
 import { promise } from "@knime/utils";
 
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import { componentSearch } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
+import { componentSearch } from "@/util/data-mappers";
 
 const PAGE_SIZE = 50;
 const SEARCH_DEBOUNCE_MS = 300;

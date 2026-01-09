@@ -4,7 +4,7 @@ import { computed, toRefs, useTemplateRef, watch } from "vue";
 import { type NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import InfiniteNodeList from "../common/NodeList/InfiniteNodeList.vue";
 
 import SearchResultsInfo from "./SearchResultsInfo.vue";
