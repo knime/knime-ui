@@ -7,7 +7,6 @@ import { useSelectionStore } from "@/store/selection";
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getBendpointId } from "@/util/connectorUtil";
 import type { PathSegment } from "../types";
 
 type UseConnectorPathSegmentsOptions = {
@@ -187,7 +186,10 @@ export const useConnectorPathSegments = (
       isVirtual: boolean,
       isStartOrEnd: boolean,
     ) => {
-      const bendpointId = getBendpointId(options.id, bendpointIndex);
+      const bendpointId = selectionStore.getBendpointId(
+        options.id,
+        bendpointIndex,
+      );
 
       const isSelectedOrVirtual = isBendpointSelected(bendpointId) || isVirtual;
 

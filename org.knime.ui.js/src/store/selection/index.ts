@@ -9,10 +9,11 @@ import {
   annotationToWorkflowObject,
   componentPlaceholderToWorkflowObject,
   nodeToWorkflowObject,
-} from "@/util/workflow-canvas/mappers";
+} from "@/util/workflow-canvas";
 import { useMovingStore } from "../workflow/moving";
 
 import { useAnnotationSelection } from "./annotations";
+import { useBendpointSelection } from "./bendpoint";
 import { useConnectionSelection } from "./connections";
 import { useNodeSelection } from "./nodes";
 import { usePortbarSelection } from "./portbars";
@@ -36,6 +37,7 @@ export const useSelectionStore = defineStore("selection", () => {
   const connectionSelection = useConnectionSelection();
   const portbarSelection = usePortbarSelection();
   const nodePortSelection = useNodePortSelection();
+  const bendpointSelection = useBendpointSelection();
 
   /**
    * Returns the selected WorkflowObject when there's exactly one selected
@@ -110,7 +112,7 @@ export const useSelectionStore = defineStore("selection", () => {
     () =>
       nodeSelection.selectedNodeIds.value.length === 0 &&
       connectionSelection.selectedConnectionIds.value.length === 0 &&
-      connectionSelection.selectedBendpointIds.value.length === 0 &&
+      bendpointSelection.selectedBendpointIds.value.length === 0 &&
       annotationSelection.selectedAnnotationIds.value.length === 0 &&
       Boolean(!nodeSelection.getSelectedComponentPlaceholder.value),
   );
@@ -149,7 +151,7 @@ export const useSelectionStore = defineStore("selection", () => {
   const selectAllObjects = (mode: SelectionMode = "committed") => {
     nodeSelection.internal.selectAll(mode);
     annotationSelection.internal.selectAll(mode);
-    connectionSelection.selectAllBendpointsInConnections(
+    bendpointSelection.selectAllBendpointsInConnections(
       connectionsBetweenSelectedNodes.value,
     );
   };
@@ -167,11 +169,12 @@ export const useSelectionStore = defineStore("selection", () => {
     nodeSelection.internal.deselectAll(preserveNodeSelectionFor, mode);
     annotationSelection.internal.deselectAll(mode);
     connectionSelection.internal.deselectAll();
+    bendpointSelection.internal.deselectAll();
     portbarSelection.internal.deselectAll();
     nodePortSelection.deselectNodePort();
 
     if (preserveNodeSelectionFor.length > 1) {
-      connectionSelection.selectAllBendpointsInConnections(
+      bendpointSelection.selectAllBendpointsInConnections(
         connectionsBetweenSelectedNodes.value,
       );
     }
@@ -233,12 +236,15 @@ export const useSelectionStore = defineStore("selection", () => {
   };
 
   // only expose public actions
-  const { internal: _nodeInternal, ...nodeSelectionActions } = nodeSelection;
-  const { internal: _annotationInternal, ...annotationSelectionActions } =
+  const { internal: _nodeInternal, ...nodeSelectionPublic } = nodeSelection;
+  const { internal: _annotationInternal, ...annotationSelectionPublic } =
     annotationSelection;
-  const { internal: _connectionInternal, ...connectionActions } =
+  const { internal: _connectionInternal, ...connectionPublic } =
     connectionSelection;
-  const { internal: _portbarInternal, ...portbarActions } = portbarSelection;
+  const { internal: _portbarInternal, ...portbarSelectionPublic } =
+    portbarSelection;
+  const { internal: _bendpointInternal, ...bendpointSelectionPublic } =
+    bendpointSelection;
 
   /**
    * Queries the selection state based on a given mode.
@@ -329,7 +335,7 @@ export const useSelectionStore = defineStore("selection", () => {
       () =>
         selectedNodeIds.value.length === 0 &&
         connectionSelection.selectedConnectionIds.value.length === 0 &&
-        connectionSelection.selectedBendpointIds.value.length === 0 &&
+        bendpointSelection.selectedBendpointIds.value.length === 0 &&
         selectedAnnotationIds.value.length === 0 &&
         Boolean(!nodeSelection.getSelectedComponentPlaceholder.value),
     );
@@ -393,11 +399,12 @@ export const useSelectionStore = defineStore("selection", () => {
     isSelectionEmpty,
     getFocusedObject,
 
-    ...nodeSelectionActions,
-    ...annotationSelectionActions,
-    ...connectionActions,
-    ...portbarActions,
+    ...nodeSelectionPublic,
+    ...annotationSelectionPublic,
+    ...connectionPublic,
+    ...portbarSelectionPublic,
     ...nodePortSelection,
+    ...bendpointSelectionPublic,
 
     getAnnotationVisualSelectionState,
 
@@ -405,7 +412,7 @@ export const useSelectionStore = defineStore("selection", () => {
       nodeSelection.selectNodes(ids, mode);
 
       if (mode === "committed") {
-        connectionSelection.selectAllBendpointsInConnections(
+        bendpointSelection.selectAllBendpointsInConnections(
           connectionsBetweenSelectedNodes.value,
         );
       }
@@ -418,7 +425,7 @@ export const useSelectionStore = defineStore("selection", () => {
 
     commitSelectionPreview: () => {
       nodeSelection.internal.commitSelection();
-      connectionSelection.selectAllBendpointsInConnections(
+      bendpointSelection.selectAllBendpointsInConnections(
         connectionsBetweenSelectedNodes.value,
       );
       annotationSelection.internal.commitSelection();
