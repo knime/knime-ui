@@ -2,10 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 /* eslint-disable dot-notation */
 
-import {
-  checkPortCompatibility,
-  detectConnectionCircle,
-} from "../compatibleConnections";
+import { connection } from "../connection";
 
 describe("detectConnectionCircle", () => {
   let workflow;
@@ -70,7 +67,7 @@ describe("detectConnectionCircle", () => {
     ["D", ["E"]],
     ["E", ["D"]],
   ])("downstream Connection from %s", (startNode, result) => {
-    let compatibleNodes = detectConnectionCircle({
+    let compatibleNodes = connection.detectConnectionCircle({
       startNode,
       downstreamConnection: true,
       workflow,
@@ -85,7 +82,7 @@ describe("detectConnectionCircle", () => {
     ["B", ["A"]],
     ["A", ["B"]],
   ])("upstream Connection from %s", (startNode, result) => {
-    let compatibleNodes = detectConnectionCircle({
+    let compatibleNodes = connection.detectConnectionCircle({
       startNode,
       downstreamConnection: false,
       workflow,
@@ -131,7 +128,7 @@ describe("detectConnectionCircle", () => {
     it.each(["A", "B", "C", "D", "E"])(
       "metanode ports not part of Set for %s",
       (startNode) => {
-        let compatibleNodes = detectConnectionCircle({
+        let compatibleNodes = connection.detectConnectionCircle({
           startNode,
           downstreamConnection: false,
           workflow,
@@ -143,7 +140,7 @@ describe("detectConnectionCircle", () => {
     it.each([true, false])(
       "all nodes can connect to metanode bar: downstreamConnection %s",
       (downstreamConnection) => {
-        let compatibleNodes = detectConnectionCircle({
+        let compatibleNodes = connection.detectConnectionCircle({
           startNode: "metanode",
           downstreamConnection,
           workflow,
@@ -190,7 +187,11 @@ describe("Port Compatibility", () => {
 
   it("checks compatible ports", () => {
     expect(
-      checkPortCompatibility({ fromPort, toPort, availablePortTypes }),
+      connection.checkPortCompatibility({
+        fromPort,
+        toPort,
+        availablePortTypes,
+      }),
     ).toBeTruthy();
 
     // matching typeIds should still result in compatibility
@@ -199,7 +200,11 @@ describe("Port Compatibility", () => {
     ].compatibleTypes = ["not.compatible.type"];
 
     expect(
-      checkPortCompatibility({ fromPort, toPort, availablePortTypes }),
+      connection.checkPortCompatibility({
+        fromPort,
+        toPort,
+        availablePortTypes,
+      }),
     ).toBeTruthy();
   });
 });

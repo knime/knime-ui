@@ -19,12 +19,12 @@ import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import { useSettingsStore } from "@/store/settings";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { checkPortCompatibility } from "@/util/compatibleConnections";
 import type {
   ExtendedPortType,
   NodeTemplateWithExtendedPorts,
 } from "@/util/dataMappers";
 import { ports } from "@/util/workflow-canvas";
+import { workflowDomain } from "@/util/workflow-domain";
 
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
 import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
@@ -47,7 +47,7 @@ const calculatePortOffset = (params: {
     params;
 
   const portIndex = templatePorts.findIndex((templatePort) =>
-    checkPortCompatibility({
+    workflowDomain.connection.checkPortCompatibility({
       fromPort: nodeRelation === "SUCCESSORS" ? selectedPort : templatePort,
       toPort: nodeRelation === "SUCCESSORS" ? templatePort : selectedPort,
       availablePortTypes,
