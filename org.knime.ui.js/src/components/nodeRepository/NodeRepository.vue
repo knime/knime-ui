@@ -38,7 +38,7 @@ const { nodeRepositoryLoaded, nodeRepositoryLoadingProgress } = storeToRefs(
   useApplicationStore(),
 );
 
-const { componentSearchEnabled } = useFeatures();
+const { isComponentSearchEnabled } = useFeatures();
 
 const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
@@ -155,7 +155,7 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
       </div>
 
       <ComponentSearchResults
-        v-if="componentSearchEnabled()"
+        v-if="isComponentSearchEnabled()"
         v-show="searchContext === 'components'"
         ref="componentSearchResults"
         :active="searchContext === 'components'"

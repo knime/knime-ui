@@ -8,7 +8,7 @@ import type { PluginInitFunction } from "./types";
 export type Features = {
   // Define your feature flags here, e.g.:
   // newFeature: () => boolean;
-  componentSearchEnabled: () => boolean;
+  isComponentSearchEnabled: () => boolean;
 };
 
 const featureFlagsPrefix = "org.knime.ui.feature";
@@ -31,7 +31,7 @@ export const features: (
 ) => Features = (featureFlags) => ({
   // Define your feature flag getters here, e.g.:
   // newFeature: () => getFlagValue(featureFlags, "new_feature"),
-  componentSearchEnabled: () =>
+  isComponentSearchEnabled: () =>
     Boolean(getFlagValue(featureFlags, "component_search")),
 });
 
