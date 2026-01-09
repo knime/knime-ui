@@ -11,7 +11,7 @@ import {
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+import { ports } from "@/util/dataMappers";
 import { isNativeNode } from "@/util/nodeUtil";
 
 import { useWorkflowStore } from "./workflow";
@@ -175,11 +175,9 @@ export const useExecutionStore = defineStore("execution", {
         return;
       }
 
-      const firstDetachableView = getPortViewByViewDescriptors(
-        portViews,
-        node,
-        selectedPortIndex,
-      ).find((v) => v.canDetach);
+      const firstDetachableView = ports
+        .toRenderablePortViewState(portViews, node, selectedPortIndex)
+        .find((v) => v.detachable);
 
       if (firstDetachableView) {
         API.desktop.openPortView({

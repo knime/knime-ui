@@ -24,7 +24,6 @@ import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { type ExtendedPortType, ports } from "@/util/dataMappers";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
 import {
   getNodeState,
@@ -148,13 +147,13 @@ const portViews = (): MenuItem[] => {
       ] as MenuItem[];
     }
 
-    const portViewItems = getPortViewByViewDescriptors(
+    const renderablePortViews = ports.toRenderablePortViewState(
       port.views,
       node,
       portIndex,
     );
 
-    const mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
+    const mappedPortViewItems = renderablePortViews.map<MenuItem>((item) => ({
       text: item.text,
       disabled: item.disabled,
       metadata: {

@@ -10,7 +10,7 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+import { ports } from "@/util/dataMappers";
 
 const mockedAPI = deepMocked(API);
 const variableMockData = vi.hoisted(() => ({
@@ -54,16 +54,21 @@ vi.mock("@/plugins/toasts", async (importOriginal) => {
   };
 });
 
-vi.mock("@/util/getPortViewByViewDescriptors", async (importOriginal) => {
-  const original = await importOriginal<
-    typeof import("@/util/getPortViewByViewDescriptors")
-  >();
-  const getPortViewByViewDescriptors = vi
+vi.mock("@/util/dataMappers", async () => {
+  const original: typeof import("@/util/dataMappers") = await vi.importActual(
+    "@/util/dataMappers",
+  );
+
+  const toRenderablePortViewState = vi
     .fn()
-    .mockImplementation(original.getPortViewByViewDescriptors);
+    .mockImplementation(original.ports.toRenderablePortViewState);
+
   return {
     ...original,
-    getPortViewByViewDescriptors,
+    ports: {
+      ...original.ports,
+      toRenderablePortViewState,
+    },
   };
 });
 
@@ -236,8 +241,8 @@ describe("workflow store: Execution", () => {
         });
 
         // open port with detected view index
-        vi.mocked(getPortViewByViewDescriptors).mockReturnValueOnce([
-          { id: "42", disabled: false, text: "mock text", canDetach: true },
+        vi.mocked(ports.toRenderablePortViewState).mockReturnValueOnce([
+          { id: "42", disabled: false, text: "mock text", detachable: true },
         ]);
 
         executionStore.openPortView({ node, port });
@@ -250,8 +255,8 @@ describe("workflow store: Execution", () => {
         });
 
         // error: no view for port
-        vi.mocked(getPortViewByViewDescriptors).mockReturnValueOnce([
-          { id: "1", disabled: false, text: "mock text", canDetach: false },
+        vi.mocked(ports.toRenderablePortViewState).mockReturnValueOnce([
+          { id: "1", disabled: false, text: "mock text", detachable: false },
         ]);
         executionStore.openPortView({ node, port });
         expect(getToastsProvider().show).toHaveBeenLastCalledWith(
