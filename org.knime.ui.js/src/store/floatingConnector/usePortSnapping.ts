@@ -10,11 +10,8 @@ import type { PortPositions } from "@/components/workflowEditor/common/usePortPo
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import {
-  type Direction,
-  checkCompatibleConnectionAndPort,
-  generateValidPortGroupsForPlaceholderPort,
-} from "@/util/compatibleConnections";
+import { workflowDomain } from "@/util/workflow-domain";
+import type { ConnectionPortDirection } from "@/util/workflow-domain";
 
 import {
   type FullFloatingConnector,
@@ -109,28 +106,31 @@ export const usePortSnapping = (options: {
   }: {
     sourcePort: NodePort;
     targetPort: NodePort | { isPlaceHolderPort: true };
-    targetPortDirection: Direction;
+    targetPortDirection: ConnectionPortDirection;
     targetPortGroups: NodePortGroups | null;
   }) => {
     let isCompatible: boolean = false;
     let validPortGroups: NodePortGroups | null = null;
 
     if ("isPlaceHolderPort" in targetPort) {
-      validPortGroups = generateValidPortGroupsForPlaceholderPort({
-        fromPort: sourcePort,
-        availablePortTypes: availablePortTypes.value,
-        targetPortDirection,
-        targetPortGroups,
-      });
+      validPortGroups =
+        workflowDomain.connection.generateValidPortGroupsForPlaceholderPort({
+          fromPort: sourcePort,
+          availablePortTypes: availablePortTypes.value,
+          targetPortDirection,
+          targetPortGroups,
+        });
       isCompatible = validPortGroups !== null;
     } else {
-      isCompatible = checkCompatibleConnectionAndPort({
-        fromPort: sourcePort,
-        toPort: targetPort,
-        availablePortTypes: availablePortTypes.value,
-        targetPortDirection,
-        connections: connections.value,
-      });
+      isCompatible = workflowDomain.connection.checkCompatibleConnectionAndPort(
+        {
+          fromPort: sourcePort,
+          toPort: targetPort,
+          availablePortTypes: availablePortTypes.value,
+          targetPortDirection,
+          connections: connections.value,
+        },
+      );
     }
 
     return { isCompatible, validPortGroups };
@@ -139,7 +139,7 @@ export const usePortSnapping = (options: {
   let lastHitTarget:
     | {
         candidate: SnapTargetCandidate;
-        targetPortDirection: Direction;
+        targetPortDirection: ConnectionPortDirection;
         snapIndex: number;
       }
     | undefined;
@@ -164,7 +164,7 @@ export const usePortSnapping = (options: {
   const isOutsideConnectorHoverRegion = (
     x: number,
     y: number,
-    targetPortDirection: Direction,
+    targetPortDirection: ConnectionPortDirection,
   ) => {
     const upperBound = -15;
 

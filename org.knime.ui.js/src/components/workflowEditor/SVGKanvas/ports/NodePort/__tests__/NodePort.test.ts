@@ -11,7 +11,7 @@ import * as $shapes from "@/style/shapes";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import * as compatibleConnections from "@/util/compatibleConnections";
+import { workflowDomain } from "@/util/workflow-domain";
 import Connector from "../../../connectors/Connector.vue";
 import NodePortActiveConnector from "../../NodePortActiveConnector.vue";
 import NodePortActiveConnectorDecoration from "../../NodePortActiveConnectorDecoration.vue";
@@ -19,7 +19,7 @@ import NodePort from "../NodePort.vue";
 import NodePortActions from "../NodePortActions.vue";
 
 const detectConnectionCircleSpy = vi
-  .spyOn(compatibleConnections, "detectConnectionCircle")
+  .spyOn(workflowDomain.connection, "detectConnectionCircle")
   .mockReturnValue(new Set());
 
 vi.mock("@/plugins/event-bus");
