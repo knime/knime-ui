@@ -7,6 +7,7 @@ import throttle from "raf-throttle";
 import type { NodePortGroups } from "@/api/custom-types";
 import type { NativeNode, NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { PortPositions } from "@/components/workflowEditor/common/usePortPositions";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
@@ -113,6 +114,14 @@ export const usePortSnapping = (options: {
     let validPortGroups: NodePortGroups | null = null;
 
     if ("isPlaceHolderPort" in targetPort) {
+      // N.B: This check is **NOT** necessary. It's just left here so that once the SVG canvas is removed
+      // that the domain util called below (workflowDomain.connection.generateValidPortGroupsForPlaceholderPort)
+      // is moved to this file, because this is the only place (except the SVG canvas) that uses it, and its purpose
+      // is solely to help the port snapping behavior
+      if (!canvasRendererUtils.isWebGLRenderer()) {
+        consola.trace("Unexpected code execution");
+      }
+
       validPortGroups =
         workflowDomain.connection.generateValidPortGroupsForPlaceholderPort({
           fromPort: sourcePort,
