@@ -412,8 +412,9 @@ final class Init {
                     .filter(p -> p.getType() == TypeEnum.HUB).toList();
                 var fallbackProvider = allProviders.stream() //
                     .filter(p -> p.isCommunityHub()).findFirst() //
-                    .or(() -> allProviders.stream().findFirst());
-                return fallbackProvider.map(SpaceProvider::getId).orElse(null);
+                    .or(() -> allProviders.stream().findFirst()) //
+                    .orElseThrow(() -> new NoSuchElementException("Expected at least one Hub SpaceProvider"));
+                return fallbackProvider.getId();
             }
         };
     }
