@@ -50,7 +50,7 @@ const { hasNodeCollectionActive, activeNodeCollection } = storeToRefs(
   useApplicationSettingsStore(),
 );
 const { nodeRepositoryLoaded } = storeToRefs(useApplicationStore());
-const { componentSearchEnabled } = useFeatures();
+const { isComponentSearchEnabled } = useFeatures();
 
 const searchContext = defineModel<"nodes" | "components">();
 const isComponentSearch = computed(() => searchContext.value === "components");
@@ -78,7 +78,7 @@ const updateSearchQuery = async (value: string) => {
 };
 
 const switchSearchContext = (value: "nodes" | "components") => {
-  if (value === "components" && !componentSearchEnabled()) {
+  if (value === "components" && !isComponentSearchEnabled()) {
     return;
   }
 
@@ -141,7 +141,7 @@ const searchPlaceholderText = computed(() => {
     <div class="title-and-search">
       <div class="search-header">
         <ValueSwitch
-          v-if="componentSearchEnabled()"
+          v-if="isComponentSearchEnabled()"
           compact
           data-test-id="search-context-switch"
           :disabled="!nodeRepositoryLoaded"
