@@ -6,6 +6,7 @@ import {
   AppState,
   type PortType,
   type Project,
+  ProjectSyncState,
   type SpaceItemReference,
   type UpdateAvailableEvent,
 } from "@/api/gateway-api/generated-api";
@@ -85,6 +86,11 @@ export interface ApplicationState {
   dismissedUpdateBanner: boolean; // Property to track banner dismissal
   dismissedHomePageTile: boolean;
   dismissedHubLoginBanner: boolean;
+
+  /**
+   * Current synchronization state for automatic sync
+   */
+  projectSyncState: ProjectSyncState;
 }
 
 /*
@@ -113,6 +119,11 @@ export const useApplicationStore = defineStore("application", {
     dismissedUpdateBanner: false,
     dismissedHomePageTile: false,
     dismissedHubLoginBanner: false,
+    // browser only
+    projectSyncState: {
+      state: ProjectSyncState.StateEnum.SYNCED,
+      isAutoSyncEnabled: true,
+    },
   }),
   actions: {
     setActiveProjectId(projectId: string | null) {
@@ -180,6 +191,10 @@ export const useApplicationStore = defineStore("application", {
 
     setNodeRepositoryLoaded(nodeRepositoryLoaded: boolean) {
       this.nodeRepositoryLoaded = nodeRepositoryLoaded;
+    },
+
+    setProjectSyncState(projectSyncState: ProjectSyncState) {
+      this.projectSyncState = projectSyncState;
     },
 
     setNodeRepositoryLoadingProgress(
@@ -341,6 +356,10 @@ export const useApplicationStore = defineStore("application", {
 
       if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
         this.setNodeRepositoryLoaded(applicationState.nodeRepositoryLoaded!);
+      }
+
+      if (applicationState.projectSyncState) {
+        this.setProjectSyncState(applicationState.projectSyncState);
       }
     },
   },
