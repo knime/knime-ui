@@ -44,7 +44,7 @@ const canInsertOnConnection = (
   )!;
 
   const hasCompatibleSrcPort = portsOnReplacementNode.inPorts.some((toPort) =>
-    workflowDomain.connection.checkPortCompatibility({
+    workflowDomain.port.checkCompatibility({
       fromPort: connectionSourceNode.outPorts[connection.sourcePort],
       toPort,
       availablePortTypes,
@@ -53,7 +53,7 @@ const canInsertOnConnection = (
 
   const hasCompatibleDestPort = portsOnReplacementNode.outPorts.some(
     (fromPort) =>
-      workflowDomain.connection.checkPortCompatibility({
+      workflowDomain.port.checkCompatibility({
         fromPort,
         toPort: connectionDestNode.inPorts[connection.destPort],
         availablePortTypes,
