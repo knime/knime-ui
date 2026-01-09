@@ -4,7 +4,7 @@ import type {
   ComponentNode,
   NativeNode,
 } from "@/api/gateway-api/generated-api";
-import { workflowDomain } from "@/util/workflow-domain";
+import { workflowDomain } from "@/lib/workflow-domain";
 
 type UseUniqueNodeStateIdOptions = {
   projectId: Ref<string>;

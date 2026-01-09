@@ -4,9 +4,9 @@ import { storeToRefs } from "pinia";
 
 import NodeList from "@/components/common/NodeList/NodeList.vue";
 import NodeTemplate from "@/components/common/NodeTemplate/NodeTemplate.vue";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 type Props = {
   selectedNode: NodeTemplateWithExtendedPorts | null;

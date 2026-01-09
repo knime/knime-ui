@@ -5,7 +5,7 @@ import Eye from "@knime/styles/img/icons/eye.svg";
 
 import portIcon from "@/components/common/PortIconRenderer";
 import { useCompositeViewActions } from "@/components/uiExtensions/compositeView/useCompositeViewActions";
-import { workflowDomain } from "@/util/workflow-domain";
+import { workflowDomain } from "@/lib/workflow-domain";
 
 export const portIconSize = 9;
 

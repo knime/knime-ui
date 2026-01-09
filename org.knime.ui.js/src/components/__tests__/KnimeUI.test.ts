@@ -36,10 +36,6 @@ vi.mock(
   () => ({ default: "font data" }),
 );
 
-vi.mock("@/util/font", () => ({
-  preloadFontsAsBase64: () => Promise.resolve(),
-}));
-
 describe("KnimeUI.vue", () => {
   const mockFetch = vi.fn(() =>
     Promise.resolve({

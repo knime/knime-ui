@@ -3,7 +3,7 @@ import { computed } from "vue";
 
 import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 

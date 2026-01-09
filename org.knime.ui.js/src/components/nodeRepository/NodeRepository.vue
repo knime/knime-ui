@@ -5,12 +5,12 @@ import { storeToRefs } from "pinia";
 import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarNodeSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarNodeSearchResults.vue";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import ComponentSearchResults from "../componentSearch/ComponentSearchResults.vue";
 
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";

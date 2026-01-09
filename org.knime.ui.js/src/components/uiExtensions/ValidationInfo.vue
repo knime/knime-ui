@@ -4,12 +4,12 @@ import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
+import { ports } from "@/lib/data-mappers";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
-import { ports } from "@/util/data-mappers";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import ExecuteButton from "./ExecuteButton.vue";
 import LegacyPortViewButtons from "./LegacyPortViewButtons.vue";

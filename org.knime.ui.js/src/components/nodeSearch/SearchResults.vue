@@ -2,9 +2,9 @@
 import { computed, toRefs, useTemplateRef, watch } from "vue";
 
 import { type NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 import InfiniteNodeList from "../common/NodeList/InfiniteNodeList.vue";
 
 import SearchResultsInfo from "./SearchResultsInfo.vue";

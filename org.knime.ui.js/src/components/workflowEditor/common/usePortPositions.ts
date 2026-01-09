@@ -1,7 +1,7 @@
 import { type ComputedRef, computed, watch } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { ports } from "@/util/workflow-canvas";
+import { ports } from "@/lib/workflow-canvas";
 
 import { useNodeInfo } from "./useNodeInfo";
 

@@ -4,13 +4,13 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
+import type { ConnectionPortDirection } from "@/lib/workflow-domain";
 import { $bus } from "@/plugins/event-bus";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as shapes from "@/style/shapes";
-import { workflowDomain } from "@/util/workflow-domain";
-import type { ConnectionPortDirection } from "@/util/workflow-domain";
 import {
   type PortSnapCallback,
   usePortSnapping,

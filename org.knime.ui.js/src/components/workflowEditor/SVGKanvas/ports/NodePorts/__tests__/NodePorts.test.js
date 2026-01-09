@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
@@ -11,7 +12,6 @@ import {
   createNativeNode,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { getKanvasDomElement } from "@/util/workflow-canvas";
 import NodePort from "../../NodePort/NodePort.vue";
 import AddPortPlaceholder from "../AddPortPlaceholder.vue";
 import NodePorts from "../NodePorts.vue";

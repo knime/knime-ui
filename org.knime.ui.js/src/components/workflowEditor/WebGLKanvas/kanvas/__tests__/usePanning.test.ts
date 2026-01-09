@@ -4,6 +4,8 @@ import { flushPromises } from "@vue/test-utils";
 import { isModifierKeyPressed, navigatorUtils } from "@knime/utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { isInputElement } from "@/lib/dom";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import {
   createKeyboardEvent,
   createPointerEvent,
@@ -12,8 +14,6 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
-import { isInputElement } from "@/util/dom";
-import { getKanvasDomElement } from "@/util/workflow-canvas";
 import { pixiGlobals } from "../../common/pixiGlobals";
 import { useCanvasPanning } from "../usePanning";
 
@@ -30,7 +30,7 @@ vi.mock("@/components/uiExtensions", () => ({
   isUIExtensionFocused: vi.fn().mockReturnValue(false),
 }));
 
-vi.mock("@/util/dom", () => ({
+vi.mock("@/lib/dom", () => ({
   isInputElement: vi.fn().mockReturnValue(false),
 }));
 

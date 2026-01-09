@@ -6,12 +6,12 @@ import {
   type NodeFactoryKey,
   type XY,
 } from "@/api/gateway-api/generated-api";
+import { freeSpaceInCanvas } from "@/lib/workflow-canvas";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
-import { freeSpaceInCanvas } from "@/util/workflow-canvas";
 
 export const useAddNodeToWorkflow = () => {
   const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());

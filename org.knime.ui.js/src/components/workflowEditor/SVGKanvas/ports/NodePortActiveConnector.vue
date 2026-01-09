@@ -3,7 +3,7 @@ import { computed, onUnmounted, toRef, watch } from "vue";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
-import type { ConnectionPortDirection } from "@/util/workflow-domain";
+import type { ConnectionPortDirection } from "@/lib/workflow-domain";
 import Connector from "../connectors/Connector.vue";
 
 import type { DragConnector } from "./NodePort/types";

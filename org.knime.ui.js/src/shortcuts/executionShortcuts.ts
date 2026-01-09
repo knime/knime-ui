@@ -10,12 +10,12 @@ import OpenViewIcon from "@/assets/open-view.svg";
 import PauseLoopIcon from "@/assets/pause-execution.svg";
 import ResumeLoopIcon from "@/assets/resume-execution.svg";
 import StepLoopIcon from "@/assets/step-execution.svg";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowDomain } from "@/util/workflow-domain";
 
 import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "./types";
 

@@ -4,11 +4,11 @@ import { storeToRefs } from "pinia";
 import { FederatedPointerEvent, Rectangle } from "pixi.js";
 
 import { ComponentPlaceholder, type XY } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { useObjectInteractions } from "../../common/useObjectInteractions";
 import { markPointerEventAsHandled } from "../../util/interaction";

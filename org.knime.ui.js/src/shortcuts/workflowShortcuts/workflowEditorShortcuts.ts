@@ -3,14 +3,14 @@ import { API } from "@api";
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
+import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
-import { freeSpaceInCanvas, ports } from "@/util/workflow-canvas";
-import { workflowDomain } from "@/util/workflow-domain";
 import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "../types";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<

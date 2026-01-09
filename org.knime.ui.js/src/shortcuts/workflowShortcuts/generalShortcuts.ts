@@ -8,6 +8,7 @@ import type { KnimeNode } from "@/api/custom-types";
 import type { Connection } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -18,7 +19,6 @@ import { useClipboardInteractionsStore } from "@/store/workflow/clipboardInterac
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getKanvasDomElement } from "@/util/workflow-canvas";
 import type { UnionToShortcutRegistry } from "../types";
 
 type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<

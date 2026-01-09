@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Bounds, MetaPorts, XY } from "@/api/gateway-api/generated-api";
+import { workflowBounds } from "@/lib/workflow-canvas";
 import {
   autoPositionMetanodeMargin,
   defaultMetaNodeBarHeight,
@@ -11,7 +12,6 @@ import {
 } from "@/style/shapes";
 import { type DeepPartial } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { workflowBounds } from "@/util/workflow-canvas";
 
 describe("workflow store", () => {
   const node = { id: "root:1", position: { x: 50, y: 21 } };

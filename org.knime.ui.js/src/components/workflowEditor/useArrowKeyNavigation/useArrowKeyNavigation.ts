@@ -5,9 +5,9 @@ import throttle from "raf-throttle";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
 
+import { isInputElement } from "@/lib/dom";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSelectionStore } from "@/store/selection";
-import { isInputElement } from "@/util/dom";
 
 import { useArrowKeyMoving } from "./useArrowKeyMoving";
 import { useArrowKeyPanning } from "./useArrowKeyPanning";

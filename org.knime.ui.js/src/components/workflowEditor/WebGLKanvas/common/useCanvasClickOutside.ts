@@ -4,7 +4,7 @@ import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
 
 import { sleep } from "@knime/utils";
 
-import { getKanvasDomElement } from "@/util/workflow-canvas";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { CANVAS_ANCHOR_WRAPPER_ID } from "../../CanvasAnchoredComponents";
 
 /**

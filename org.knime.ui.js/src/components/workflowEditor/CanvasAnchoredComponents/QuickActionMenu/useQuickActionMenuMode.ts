@@ -3,8 +3,8 @@ import { type Ref, computed, ref, watch } from "vue";
 import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
+import { optional } from "@/lib/fp";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
-import { optional } from "@/util/fp";
 
 const activeMode = ref<"nodes" | "components" | "k-ai">("nodes");
 

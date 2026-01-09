@@ -6,9 +6,9 @@ import type { NavReachedEvent } from "@/components/common/NodeList/NodeList.vue"
 import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
 import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */

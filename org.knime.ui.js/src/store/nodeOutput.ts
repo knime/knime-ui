@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { defineStore, storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { workflowDomain } from "@/util/workflow-domain";
+import { workflowDomain } from "@/lib/workflow-domain";
 
 import { useSelectionStore } from "./selection";
 import { useExecutionStore } from "./workflow/execution";

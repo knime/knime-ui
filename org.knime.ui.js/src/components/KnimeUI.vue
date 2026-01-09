@@ -28,6 +28,7 @@ import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import { DynamicEnvRenderer, isBrowser, isDesktop } from "@/environment";
+import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { performanceTracker } from "@/performanceTracker";
 import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
@@ -38,7 +39,6 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { getToastPresets } from "@/toastPresets";
-import { KANVAS_ID } from "@/util/workflow-canvas";
 
 import AppHeaderSkeleton from "./application/AppHeader/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";

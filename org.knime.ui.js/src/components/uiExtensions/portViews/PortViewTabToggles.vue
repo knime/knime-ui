@@ -6,10 +6,10 @@ import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg"
 
 import type { KnimeNode } from "@/api/custom-types";
 import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
+import { ports } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { ports } from "@/util/data-mappers";
 
 type Props = {
   uniquePortKey: string;

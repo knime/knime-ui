@@ -5,12 +5,12 @@ import { FederatedPointerEvent } from "pixi.js";
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuProps } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
-import * as $shapes from "@/style/shapes";
 import {
   type WorkflowObject,
   workflowNavigationService,
-} from "@/util/workflow-canvas";
+} from "@/lib/workflow-canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
+import * as $shapes from "@/style/shapes";
 import { useCanvasModesStore } from "../application/canvasModes";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";

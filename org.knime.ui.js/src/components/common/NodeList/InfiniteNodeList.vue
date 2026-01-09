@@ -6,8 +6,8 @@ import NodeList, {
   type NavReachedEvent,
 } from "@/components/common/NodeList/NodeList.vue";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/data-mappers";
 
 type Props = {
   nodes: NodeTemplateWithExtendedPorts[];

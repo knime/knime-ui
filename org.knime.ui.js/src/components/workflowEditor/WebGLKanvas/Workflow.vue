@@ -4,13 +4,13 @@ import { storeToRefs } from "pinia";
 import { RenderLayer } from "pixi.js";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import {
   type CanvasLayerNames,
   useWebGLCanvasStore,
 } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowDomain } from "@/util/workflow-domain";
 import type { ContainerInst } from "@/vue3-pixi";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";

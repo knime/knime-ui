@@ -15,11 +15,11 @@ import {
   markEscapeAsHandled,
   markPointerEventAsHandled,
 } from "@/components/workflowEditor/WebGLKanvas/util/interaction";
-import * as shapes from "@/style/shapes";
 import {
   type ConnectionPortDirection,
   workflowDomain,
-} from "@/util/workflow-domain";
+} from "@/lib/workflow-domain";
+import * as shapes from "@/style/shapes";
 import { useApplicationStore } from "../application/application";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";

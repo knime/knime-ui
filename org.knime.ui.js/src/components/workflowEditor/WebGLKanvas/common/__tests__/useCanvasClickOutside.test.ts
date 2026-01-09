@@ -25,8 +25,8 @@ const mockCanvasAnchorWrapper = document.createElement("div");
 mockCanvasAnchorWrapper.id = CANVAS_ANCHOR_WRAPPER_ID;
 kanvas.appendChild(mockCanvasAnchorWrapper);
 
-vi.mock("@/util/workflow-canvas", async () => ({
-  ...(await vi.importActual("@/util/workflow-canvas")),
+vi.mock("@/lib/workflow-canvas", async () => ({
+  ...(await vi.importActual("@/lib/workflow-canvas")),
   getKanvasDomElement: () => kanvas,
 }));
 

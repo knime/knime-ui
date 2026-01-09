@@ -1,7 +1,7 @@
 import { computed } from "vue";
 
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import { workflowDomain } from "@/util/workflow-domain";
 
 type UseNodeInfoOptions = {
   nodeId: string;

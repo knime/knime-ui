@@ -2,8 +2,8 @@ import { type Ref, computed } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import { ports } from "@/lib/workflow-canvas";
 import * as $shapes from "@/style/shapes";
-import { ports } from "@/util/workflow-canvas";
 
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
 import { usePortBarPositions } from "./usePortBarPositions";
