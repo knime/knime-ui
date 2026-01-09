@@ -7,7 +7,6 @@ import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import * as projectUtil from "@/util/projectUtil";
 import { workflowDomain } from "@/util/workflow-domain";
 
 import ComponentMetadata, {
@@ -83,7 +82,7 @@ const updateComponentMetadata = ({
 <template>
   <div v-if="workflow && workflow.metadata" class="metadata">
     <ProjectMetadata
-      v-if="projectUtil.isProjectMetadata(workflow.metadata)"
+      v-if="workflowDomain.project.isProjectMetadata(workflow.metadata)"
       :project-metadata="workflow.metadata"
       :project-id="workflow.projectId"
       :workflow-id="workflow.info.containerId"
@@ -96,7 +95,7 @@ const updateComponentMetadata = ({
     />
 
     <ComponentMetadata
-      v-if="projectUtil.isComponentMetadata(workflow.metadata)"
+      v-if="workflowDomain.project.isComponentMetadata(workflow.metadata)"
       :component-metadata="workflow.metadata"
       :project-id="workflow.projectId"
       :component-id="workflow.info.containerId"
