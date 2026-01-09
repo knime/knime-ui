@@ -13,8 +13,8 @@ import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { matchesQuery } from "@/util/search";
+import { createStaggeredTimer } from "@/util/timers";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
@@ -191,7 +191,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
 // staggered skeleton loader
 const showLoader = ref(false);
 
-const setShowLoader = createStaggeredLoader({
+const setShowLoader = createStaggeredTimer({
   firstStageCallback: () => {
     showLoader.value = true;
   },

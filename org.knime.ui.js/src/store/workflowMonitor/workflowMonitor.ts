@@ -14,7 +14,7 @@ import { lifecycleBus } from "@/store/application/lifecycle-events";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import { createStaggeredTimer } from "@/util/timers";
 import { nodeToWorkflowObject } from "@/util/workflow-canvas";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
@@ -71,7 +71,7 @@ export const useWorkflowMonitorStore = defineStore("workflowMonitor", {
     async activateWorkflowMonitor() {
       this.setIsActive(true);
 
-      const setLoading = createStaggeredLoader({
+      const setLoading = createStaggeredTimer({
         firstStageCallback: () => {
           this.setIsLoading(true);
         },

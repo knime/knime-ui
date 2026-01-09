@@ -1,4 +1,4 @@
-type StaggeredLoaderParams = {
+type StaggeredTimerParams = {
   /**
    * callback fn that executes without delay at the start
    */
@@ -34,13 +34,13 @@ type StaggeredLoaderParams = {
  *
  * @returns The function to start the staggered call
  */
-export const createStaggeredLoader = ({
+export const createStaggeredTimer = ({
   initialCallback = () => {},
   firstStageCallback = () => {},
   secondStageCallback = () => {},
   resetCallback = () => {},
   options = {},
-}: StaggeredLoaderParams) => {
+}: StaggeredTimerParams) => {
   const DEFAULT_STAGE1_DELAY = 1000;
   const DEFAULT_STAGE2_DELAY = 2500;
 
@@ -49,7 +49,7 @@ export const createStaggeredLoader = ({
 
   let internalTimer: number;
 
-  const setLoaderValue = (value: boolean) => {
+  const setValue = (value: boolean) => {
     if (!value) {
       clearTimeout(internalTimer);
       resetCallback();
@@ -67,5 +67,5 @@ export const createStaggeredLoader = ({
     }, stage1Delay);
   };
 
-  return setLoaderValue;
+  return setValue;
 };
