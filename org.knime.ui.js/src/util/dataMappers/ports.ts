@@ -6,7 +6,7 @@ import {
   type PortViewDescriptorMapping,
   type PortViews,
 } from "@/api/gateway-api/generated-api";
-import { isNodeMetaNode } from "../nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 import type { ExtendedPortType } from "./common";
 
@@ -55,7 +55,7 @@ const getDescriptorMappingKeyForPortView = (
   node: KnimeNode,
   portIndex: number,
 ): keyof PortViewDescriptorMapping => {
-  if (isNodeMetaNode(node)) {
+  if (workflowDomain.node.isMetaNode(node)) {
     const portState = node.outPorts[portIndex].nodeState;
 
     return portState === MetaNodePort.NodeStateEnum.CONFIGURED

@@ -1,6 +1,6 @@
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
-import { isNodeMetaNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 /**
  * max port number that can be displayed correctly
@@ -22,7 +22,7 @@ export const getNodeLabelTopOffset = (nodeId: string) => {
 
   const maxPortCount = Math.max(node.inPorts.length, node.outPorts.length);
 
-  const nodePortsWithoutOffset = isNodeMetaNode(node)
+  const nodePortsWithoutOffset = workflowDomain.node.isMetaNode(node)
     ? maxPortsWithoutOffset.metanode
     : maxPortsWithoutOffset.node;
 

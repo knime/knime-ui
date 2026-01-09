@@ -11,7 +11,7 @@ import {
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNodeMetaNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 import type { ContainerInst } from "@/vue3-pixi";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
@@ -139,7 +139,7 @@ const annotations = computed(
         :position="node.position"
         :node-id="node.id"
         :name="nodeInteractionStore.getNodeName(node.id)"
-        :is-metanode="isNodeMetaNode(node)"
+        :is-metanode="workflowDomain.node.isMetaNode(node)"
       />
     </Container>
 

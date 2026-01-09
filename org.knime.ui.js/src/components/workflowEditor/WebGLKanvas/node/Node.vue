@@ -22,7 +22,7 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useNodeHoverProvider } from "../common/useNodeHoverState";
 import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";
@@ -55,8 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
   link: null,
 });
 
-const isMetanode = computed(() => isNodeMetaNode(props.node));
-const isComponent = computed(() => isNodeComponent(props.node));
+const isMetanode = computed(() => workflowDomain.node.isMetaNode(props.node));
+const isComponent = computed(() => workflowDomain.node.isComponent(props.node));
 
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
@@ -86,7 +86,7 @@ const isEditable = computed(() => {
     return false;
   }
 
-  return isNodeComponent(props.node) ? !props.node.link : true;
+  return workflowDomain.node.isComponent(props.node) ? !props.node.link : true;
 });
 
 const { onNodeLeftDoubleClick } = useNodeDoubleClick({ node: props.node });
@@ -254,7 +254,9 @@ const onNodeHoverAreaPointerLeave = () => {
 };
 
 const allAllowedActions = computed(() => {
-  const loopInfo = isNativeNode(props.node) ? props.node.loopInfo : undefined;
+  const loopInfo = workflowDomain.node.isNative(props.node)
+    ? props.node.loopInfo
+    : undefined;
   const baseConfig = {
     ...props.node.allowedActions,
     ...loopInfo?.allowedActions,
@@ -372,7 +374,9 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
       :in-ports="node.inPorts"
       :out-ports="node.outPorts"
       :is-editable="isEditable"
-      :port-groups="isNativeNode(node) ? node.portGroups : undefined"
+      :port-groups="
+        workflowDomain.node.isNative(node) ? node.portGroups : undefined
+      "
       @update-port-positions="portPositions = $event"
     />
 

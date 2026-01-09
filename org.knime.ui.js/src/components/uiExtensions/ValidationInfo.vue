@@ -9,7 +9,7 @@ import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfigu
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { ports } from "@/util/dataMappers";
-import * as nodeUtils from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 import ExecuteButton from "./ExecuteButton.vue";
 import LegacyPortViewButtons from "./LegacyPortViewButtons.vue";
@@ -53,8 +53,8 @@ const isView = computed(() => {
     return false;
   }
 
-  if (!nodeUtils.isNativeNode(props.selectedNode)) {
-    return nodeUtils.isNodeComponent(props.selectedNode);
+  if (!workflowDomain.node.isNative(props.selectedNode)) {
+    return workflowDomain.node.isComponent(props.selectedNode);
   }
 
   return Boolean(props.selectedNode.hasView);
@@ -72,10 +72,13 @@ const canExecute = computed(() => {
     return false;
   }
 
-  if (nodeUtils.isNodeMetaNode(props.selectedNode)) {
+  if (workflowDomain.node.isMetaNode(props.selectedNode)) {
     return Boolean(
       props.selectedPortIndex !== null &&
-        nodeUtils.canExecute(props.selectedNode, props.selectedPortIndex),
+        workflowDomain.node.canExecute(
+          props.selectedNode,
+          props.selectedPortIndex,
+        ),
     );
   }
 
@@ -84,12 +87,15 @@ const canExecute = computed(() => {
 
     return (
       !isFlowVariable &&
-      nodeUtils.canExecute(props.selectedNode, props.selectedPortIndex)
+      workflowDomain.node.canExecute(
+        props.selectedNode,
+        props.selectedPortIndex,
+      )
     );
   }
 
   // port index does not matter here
-  return nodeUtils.canExecute(props.selectedNode, 0);
+  return workflowDomain.node.canExecute(props.selectedNode, 0);
 });
 
 const canExecuteDebounced = ref(false);
@@ -107,7 +113,7 @@ const isPortExecuted = computed(() => {
     return false;
   }
 
-  const state = nodeUtils.getNodeState(
+  const state = workflowDomain.node.getExecutionState(
     props.selectedNode,
     props.selectedPortIndex,
   );

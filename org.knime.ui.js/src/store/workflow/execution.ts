@@ -12,7 +12,7 @@ import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { ports } from "@/util/dataMappers";
-import { isNativeNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/util/workflow-domain";
 
 import { useWorkflowStore } from "./workflow";
 
@@ -222,7 +222,7 @@ export const useExecutionStore = defineStore("execution", {
 
       return nodes.some(
         (node) =>
-          isNativeNode(node) &&
+          workflowDomain.node.isNative(node) &&
           node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED,
       );
     },

@@ -8,14 +8,14 @@ import {
   NodeState,
 } from "@/api/gateway-api/generated-api";
 
-export const isNativeNode = (node: KnimeNode): node is NativeNode =>
+const isNative = (node: KnimeNode): node is NativeNode =>
   node.kind === Node.KindEnum.Node;
 
-export const isNodeMetaNode = (node: KnimeNode): node is MetaNode =>
+const isMetaNode = (node: KnimeNode): node is MetaNode =>
   node.kind === Node.KindEnum.Metanode;
 
 // TODO: NXT-2023 - remove union with name property
-export const isNodeComponent = (
+const isComponent = (
   node: KnimeNode,
 ): node is ComponentNode & { name: string } =>
   node.kind === Node.KindEnum.Component;
@@ -23,8 +23,8 @@ export const isNodeComponent = (
 /**
  * Return the node execution state
  */
-export const canExecute = (node: KnimeNode, portIndex: number) => {
-  return isNodeMetaNode(node)
+const canExecute = (node: KnimeNode, portIndex: number) => {
+  return isMetaNode(node)
     ? node.outPorts[portIndex]?.nodeState ===
         MetaNodePort.NodeStateEnum.CONFIGURED
     : Boolean(node.allowedActions?.canExecute);
@@ -33,15 +33,24 @@ export const canExecute = (node: KnimeNode, portIndex: number) => {
 /**
  * metanodes have no configured state, so they use the state of the selected output port
  */
-export const getNodeState = (node: KnimeNode, portIndex: number) => {
-  return isNodeMetaNode(node)
+const getExecutionState = (node: KnimeNode, portIndex: number) => {
+  return isMetaNode(node)
     ? node.outPorts[portIndex]?.nodeState
     : node.state?.executionState;
 };
 
-export const isNodeExecuting = (node: KnimeNode) => {
+const isExecuting = (node: KnimeNode) => {
   return (
     node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
     node.state?.executionState === NodeState.ExecutionStateEnum.QUEUED
   );
+};
+
+export const node = {
+  isNative,
+  isMetaNode,
+  isComponent,
+  canExecute,
+  getExecutionState,
+  isExecuting,
 };
