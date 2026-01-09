@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import type { Project } from "@/api/gateway-api/generated-api";
-import { toStableProjectId } from "../projectUtil";
+import { toStableProjectId } from "../project";
 
-describe("projectUtil", () => {
+describe("project", () => {
   describe("toStableProjectId", () => {
     const createProject = (
       origin?: { providerId: string; spaceId: string; itemId: string } | null,
