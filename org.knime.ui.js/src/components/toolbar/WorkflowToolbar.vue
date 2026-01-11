@@ -38,6 +38,7 @@ import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 import SaveButton from "./SaveButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
+import { toolbarButtonTitle } from "./toolbarButtonTitle";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -123,6 +124,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: true,
         label: $shortcuts.getText("undo"),
         leadingIcon: "undo",
+        title: toolbarButtonTitle($shortcuts.get("undo")),
+        disabled: !$shortcuts.isEnabled("undo"),
         variant,
       },
       {
@@ -130,6 +133,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: true,
         label: $shortcuts.getText("redo"),
         leadingIcon: "redo",
+        title: toolbarButtonTitle($shortcuts.get("redo")),
+        disabled: !$shortcuts.isEnabled("redo"),
         variant,
       },
 
@@ -139,6 +144,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: !hasNodesSelected,
         label: $shortcuts.getText("executeAll"),
         leadingIcon: "execute-all",
+        title: toolbarButtonTitle($shortcuts.get("executeAll")),
+        disabled: !$shortcuts.isEnabled("executeAll"),
         variant,
       },
       {
@@ -146,6 +153,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: !hasNodesSelected,
         label: $shortcuts.getText("cancelAll"),
         leadingIcon: "x-close",
+        title: toolbarButtonTitle($shortcuts.get("cancelAll")),
+        disabled: !$shortcuts.isEnabled("cancelAll"),
         variant,
       },
       {
@@ -153,6 +162,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: !hasNodesSelected,
         label: $shortcuts.getText("resetAll"),
         leadingIcon: "reset-all",
+        title: toolbarButtonTitle($shortcuts.get("resetAll")),
+        disabled: !$shortcuts.isEnabled("resetAll"),
         variant,
       },
 
@@ -162,6 +173,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: hasNodesSelected,
         label: $shortcuts.getText("executeSelected"),
         leadingIcon: "selected-execution",
+        title: toolbarButtonTitle($shortcuts.get("executeSelected")),
+        disabled: !$shortcuts.isEnabled("executeSelected"),
         variant,
       },
       {
@@ -169,6 +182,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: hasNodesSelected,
         label: $shortcuts.getText("cancelSelected"),
         leadingIcon: "selected-cancel",
+        title: toolbarButtonTitle($shortcuts.get("cancelSelected")),
+        disabled: !$shortcuts.isEnabled("cancelSelected"),
         variant,
       },
       {
@@ -176,6 +191,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: hasNodesSelected,
         label: $shortcuts.getText("resetSelected"),
         leadingIcon: "selected-reset",
+        title: toolbarButtonTitle($shortcuts.get("resetSelected")),
+        disabled: !$shortcuts.isEnabled("resetSelected"),
         variant,
       },
 
@@ -184,6 +201,8 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         visible: $shortcuts.isEnabled("openLayoutEditor"),
         label: $shortcuts.getText("openLayoutEditor"),
         leadingIcon: "layout-editor",
+        title: toolbarButtonTitle($shortcuts.get("openLayoutEditor")),
+        disabled: !$shortcuts.isEnabled("openLayoutEditor"),
         variant,
       },
     ];

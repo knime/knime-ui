@@ -9,6 +9,8 @@ import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 
+import { toolbarButtonTitle } from "./toolbarButtonTitle";
+
 const $shortcuts = useShortcuts();
 
 const { activeProjectId, isUnknownProject } = storeToRefs(
@@ -36,6 +38,7 @@ const subMenuItems = computed((): MenuItem[] => {
       icon: saveAs.icon,
       hotkeyText: saveAs.hotkeyText,
       disabled: !$shortcuts.isEnabled("saveAs"),
+      title: toolbarButtonTitle(saveAs),
     },
   ];
 });
@@ -43,8 +46,7 @@ const subMenuItems = computed((): MenuItem[] => {
 const save = computed(() => $shortcuts.get("save"));
 
 const title = computed(() => {
-  const { title, hotkeyText } = save.value;
-  return [title, hotkeyText].filter(Boolean).join(" – ");
+  return toolbarButtonTitle(save.value);
 });
 </script>
 
