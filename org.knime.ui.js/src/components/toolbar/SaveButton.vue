@@ -145,8 +145,6 @@ const title = computed(() => {
     }
 
     /* best way to ensure flexible 1/4 corners */
-    border-radius: 0 var(--kds-border-radius-container-0-37x)
-      var(--kds-border-radius-container-0-37x) 0;
     border-radius: 0
       var(
         --kds-legacy-button-border-radius,
