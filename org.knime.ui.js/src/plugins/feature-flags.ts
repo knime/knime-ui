@@ -20,10 +20,11 @@ const featureFlagDefaults = {
 };
 
 const getFlagValue = (
-  featureFlags: ApplicationState["featureFlags"] = featureFlagDefaults,
+  featureFlags: ApplicationState["featureFlags"] = {},
   name: string,
 ) => {
-  return featureFlags[`${featureFlagsPrefix}.${name}`];
+  const nameWithPrefix = `${featureFlagsPrefix}.${name}`;
+  return featureFlags[nameWithPrefix] ?? featureFlagDefaults[nameWithPrefix];
 };
 
 export const features: (
