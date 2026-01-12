@@ -83,6 +83,9 @@ public final class UserProfilePersistor {
     private static final UserProfileFile<Map> ONBOARDING_HINTS_SETTINGS_FILE = new UserProfileFile<>(
         "onboarding-hints-settings.yaml", UserProfile::onboardingHintsSettings, Map::of, Map.class);
 
+    private static final UserProfileFile<Map> AI_SETTINGS_FILE =
+        new UserProfileFile<>("ai-settings.yaml", UserProfile::aiSettings, Map::of, Map.class);
+
     private static final UserProfileFile<InternalUsageTracking> USAGE_FILE = new UserProfileFile<>("usage.yaml",
         UserProfile::internalUsage, InternalUsageTracking::new, InternalUsageTracking.class);
 
@@ -97,7 +100,7 @@ public final class UserProfilePersistor {
      * @param profilePath
      */
     public static void saveUserProfile(final UserProfile userProfile, final Path profilePath) {
-        List.of(UI_SETTINGS_FILE, ONBOARDING_HINTS_SETTINGS_FILE, USAGE_FILE).forEach(f -> {
+        List.of(UI_SETTINGS_FILE, ONBOARDING_HINTS_SETTINGS_FILE, AI_SETTINGS_FILE, USAGE_FILE).forEach(f -> {
             try {
                 MAPPER.writeValue(profilePath.resolve(f.fileName).toFile(), f.getValue.apply(userProfile));
             } catch (IOException e) {
@@ -117,8 +120,9 @@ public final class UserProfilePersistor {
     public static UserProfile loadUserProfile(final Path profilePath) {
         var uiSettings = readUserProfileFile(UI_SETTINGS_FILE, profilePath);
         var onboardingHints = readUserProfileFile(ONBOARDING_HINTS_SETTINGS_FILE, profilePath);
+        var aiSettings = readUserProfileFile(AI_SETTINGS_FILE, profilePath);
         var usage = readUserProfileFile(USAGE_FILE, profilePath);
-        return new UserProfile(usage, uiSettings, onboardingHints);
+        return new UserProfile(usage, uiSettings, onboardingHints, aiSettings);
     }
 
     /**
@@ -127,7 +131,7 @@ public final class UserProfilePersistor {
     @SuppressWarnings("unchecked")
     public static UserProfile createEmptyUserProfile() {
         return new UserProfile(USAGE_FILE.emptyValueSupplier.get(), UI_SETTINGS_FILE.emptyValueSupplier.get(),
-            ONBOARDING_HINTS_SETTINGS_FILE.emptyValueSupplier.get());
+            ONBOARDING_HINTS_SETTINGS_FILE.emptyValueSupplier.get(), AI_SETTINGS_FILE.emptyValueSupplier.get());
     }
 
     private static <T> T readUserProfileFile(final UserProfileFile<T> upFile, final Path profilePath) {

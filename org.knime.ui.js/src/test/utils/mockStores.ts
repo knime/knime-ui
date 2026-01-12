@@ -3,6 +3,7 @@ import { createTestingPinia } from "@pinia/testing";
 
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
+import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
@@ -96,6 +97,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const workflowVersionsStore = useWorkflowVersionsStore(testingPinia);
   const aiAssistantStore = useAIAssistantStore(testingPinia);
   const aiQuickActionsStore = useAiQuickActionsStore(testingPinia);
+  const aiSettingsStore = useAISettingsStore(testingPinia);
   const canvasStore = useSVGCanvasStore(testingPinia);
   const webglCanvasStore = useWebGLCanvasStore(testingPinia);
   const nodeRepositoryStore = useNodeRepositoryStore(testingPinia);
@@ -156,6 +158,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     workflowVersionsStore,
     aiAssistantStore,
     aiQuickActionsStore,
+    aiSettingsStore,
     canvasStore,
     nodeRepositoryStore,
     panelStore,
