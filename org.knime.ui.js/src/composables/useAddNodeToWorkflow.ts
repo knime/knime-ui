@@ -1,13 +1,16 @@
 /* eslint-disable no-undefined */
+import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import {
   AddNodeCommand,
   type NodeFactoryKey,
+  SpaceProvider,
   type XY,
 } from "@/api/gateway-api/generated-api";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSelectionStore } from "@/store/selection";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
@@ -15,6 +18,7 @@ import { geometry } from "@/util/geometry";
 
 export const useAddNodeToWorkflow = () => {
   const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());
+  const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
   const { toastPresets } = getToastPresets();
 
   const nodeInteractionsStore = useNodeInteractionsStore();
@@ -25,6 +29,41 @@ export const useAddNodeToWorkflow = () => {
       error,
     });
     toastPresets.workflow.addNodeToCanvas({ error });
+  };
+
+  const addComponentByPosition = async (
+    position: XY,
+    payload: { id: string; name: string },
+  ) => {
+    if (!isWritable.value) {
+      return;
+    }
+
+    const providerId = (() => {
+      const providers = Object.values(spaceProviders.value ?? {});
+      return (
+        providers.find(({ type }) => type === SpaceProvider.TypeEnum.HUB)?.id ??
+        providers[0]?.id ??
+        "dummy-provider-id"
+      );
+    })();
+
+    try {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
+
+      await API.workflowCommand.AddComponent({
+        projectId,
+        workflowId,
+        providerId,
+        // omitting space ID
+        itemId: payload.id ?? "dummy-item-id",
+        position,
+        name: payload.name ?? "Dummy Component",
+      });
+    } catch (error) {
+      handleError(error);
+    }
   };
 
   const addNodeByPosition = async (
@@ -80,5 +119,6 @@ export const useAddNodeToWorkflow = () => {
   return {
     addNodeByPosition,
     addNodeWithAutoPositioning,
+    addComponentByPosition,
   };
 };

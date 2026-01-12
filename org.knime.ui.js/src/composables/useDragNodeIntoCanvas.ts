@@ -15,6 +15,13 @@ import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
+export const KNIME_COMPONENT_MIME =
+  "application/vnd.knime.ap.componentsearch+json";
+
+type ComponentDragPayload = {
+  id: string;
+  name: string;
+};
 
 const getNodeFactoryFromEvent = (event: DragEvent) => {
   const data = event.dataTransfer?.getData(KNIME_MIME);
@@ -23,7 +30,27 @@ const getNodeFactoryFromEvent = (event: DragEvent) => {
     return null;
   }
 
-  return JSON.parse(data) as NodeFactoryKey;
+  try {
+    return JSON.parse(data) as NodeFactoryKey;
+  } catch (error) {
+    consola.warn("Failed to parse node factory from drag event", error);
+    return null;
+  }
+};
+
+const getComponentFromEvent = (event: DragEvent) => {
+  const data = event.dataTransfer?.getData(KNIME_COMPONENT_MIME);
+
+  if (!data) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(data) as ComponentDragPayload;
+  } catch (error) {
+    consola.warn("Failed to parse component payload from drag event", error);
+    return null;
+  }
 };
 
 // One key characteristic of this composable, which can be confusing at first glance,
@@ -36,8 +63,10 @@ let dragStartTime: number | null;
 
 const DRAG_TO_EDGE_BUFFER_MS = 300;
 
-const isKnimeNode = (event: DragEvent) =>
-  event.dataTransfer?.types.includes(KNIME_MIME);
+const isKnimeDragPayload = (event: DragEvent) =>
+  event.dataTransfer?.types.some((type) =>
+    [KNIME_MIME, KNIME_COMPONENT_MIME].includes(type),
+  );
 
 export const useDragNodeIntoCanvas = () => {
   const { isWritable } = storeToRefs(useWorkflowStore());
@@ -47,7 +76,7 @@ export const useDragNodeIntoCanvas = () => {
   const nodeInteractionsStore = useNodeInteractionsStore();
   const webglCanvasStore = useWebGLCanvasStore();
   const { isWebGLRenderer } = useCanvasRendererUtils();
-  const { addNodeByPosition } = useAddNodeToWorkflow();
+  const { addNodeByPosition, addComponentByPosition } = useAddNodeToWorkflow();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
   const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
@@ -82,10 +111,23 @@ export const useDragNodeIntoCanvas = () => {
     );
 
     event.dataTransfer!.setData("text/plain", nodeTemplate.id);
-    event.dataTransfer!.setData(
-      KNIME_MIME,
-      JSON.stringify(nodeTemplate.nodeFactory),
-    );
+
+    if (nodeTemplate.nodeFactory) {
+      event.dataTransfer!.setData(
+        KNIME_MIME,
+        JSON.stringify(nodeTemplate.nodeFactory),
+      );
+    }
+
+    if (nodeTemplate.component) {
+      event.dataTransfer!.setData(
+        KNIME_COMPONENT_MIME,
+        JSON.stringify({
+          id: nodeTemplate.id,
+          name: nodeTemplate.name,
+        } satisfies ComponentDragPayload),
+      );
+    }
   };
 
   const onDrag = (event: DragEvent) => {
@@ -102,7 +144,7 @@ export const useDragNodeIntoCanvas = () => {
 
     if (!isWritable.value) {
       event.dataTransfer!.dropEffect = "none";
-    } else if (isKnimeNode(event)) {
+    } else if (isKnimeDragPayload(event)) {
       event.dataTransfer!.dropEffect = "copy";
     }
     const elapsedTime = window.performance.now() - dragStartTime;
@@ -140,8 +182,9 @@ export const useDragNodeIntoCanvas = () => {
     dragStartTime = null;
     stopPanningToEdge();
     const nodeFactory = getNodeFactoryFromEvent(event);
+    const componentPayload = getComponentFromEvent(event);
 
-    if (!isWritable.value || !nodeFactory) {
+    if (!isWritable.value || (!nodeFactory && !componentPayload)) {
       return;
     }
 
@@ -160,6 +203,11 @@ export const useDragNodeIntoCanvas = () => {
       x: canvasX - $shapes.nodeSize / 2,
       y: canvasY - $shapes.nodeSize / 2,
     };
+
+    if (componentPayload) {
+      await addComponentByPosition(dropPosition, componentPayload);
+      return;
+    }
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed

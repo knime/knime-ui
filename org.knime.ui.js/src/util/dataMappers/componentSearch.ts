@@ -38,6 +38,8 @@ const toNodeTemplateWithExtendedPorts = (
     name: input.name,
     type: input.type,
     component: true,
+    // TODO NXT-XXXX add actual nodeFactory once backend provides it
+    nodeFactory: undefined,
     icon: input.icon,
     inPorts,
     outPorts,
