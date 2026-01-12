@@ -54,16 +54,18 @@ import java.util.Map;
  * @param uiSettings a map representing the ui-settings; can be modified to update the ui settings
  * @param onboardingHintsSettings a map representing the onboarding hints settings; can be modified to update the
  *            onboarding hints settings
+ * @param aiSettings a map representing the AI-related settings; can be modified to update the AI settings
  */
 public record UserProfile(InternalUsageTracking internalUsage, Map<String, String> uiSettings,
-    Map<String, String> onboardingHintsSettings) {
+    Map<String, String> onboardingHintsSettings, Map<String, String> aiSettings) {
 
     @SuppressWarnings("javadoc")
     public UserProfile(final InternalUsageTracking internalUsage, final Map<String, String> uiSettings,
-        final Map<String, String> onboardingHintsSettings) {
+        final Map<String, String> onboardingHintsSettings, final Map<String, String> aiSettings) {
         this.internalUsage = internalUsage;
         this.uiSettings = new LinkedHashMap<>(uiSettings);
         this.onboardingHintsSettings = new LinkedHashMap<>(onboardingHintsSettings);
+        this.aiSettings = new LinkedHashMap<>(aiSettings);
     }
 
     /**
@@ -73,11 +75,12 @@ public record UserProfile(InternalUsageTracking internalUsage, Map<String, Strin
      * @param userProfile the user-profile to get the internal-usage-tracking from
      * @param uiSettings
      * @param onboardingHintsSettings
+     * @param aiSettings
      * @return a new {@link UserProfile}-instance
      */
     public static UserProfile of(final UserProfile userProfile, final Map<String, String> uiSettings,
-        final Map<String, String> onboardingHintsSettings) {
-        return new UserProfile(userProfile.internalUsage(), uiSettings, onboardingHintsSettings);
+        final Map<String, String> onboardingHintsSettings, final Map<String, String> aiSettings) {
+        return new UserProfile(userProfile.internalUsage(), uiSettings, onboardingHintsSettings, aiSettings);
     }
 
 }

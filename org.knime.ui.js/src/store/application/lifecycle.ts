@@ -17,6 +17,7 @@ import { resourceLocationResolver } from "@/components/uiExtensions/common/useRe
 import { isDesktop, runInEnvironment } from "@/environment";
 import { getHintConfiguration } from "@/hints/hints.config";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
@@ -96,8 +97,10 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       await API.desktop.waitForDesktopAPI();
 
-      // Fetch ui-settings from backend
+      // Fetch ui-settings and ai-settings from backend
       await useSettingsStore().fetchSettings();
+      await useAISettingsStore().fetchAISettings();
+      await useAISettingsStore().pruneStaleActionPermissions();
 
       await runInEnvironment({
         DESKTOP: () => {
