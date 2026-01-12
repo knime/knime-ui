@@ -6,21 +6,24 @@ import { KdsButton, KdsCheckbox } from "@knime/kds-components";
 type Props = {
   title: string;
   description: string;
-  showAccentBar?: boolean;
+  highlighted?: boolean;
   confirmLabel?: string;
   cancelLabel?: string;
-  checkboxLabel?: string | null;
-  checkboxHelperText?: string | null;
-  autoCancelAfter?: number | null;
+  checkbox?: {
+    label: string;
+    helperText?: string;
+  };
+  autoCancelAfter?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  showAccentBar: false,
+  highlighted: false,
   confirmLabel: "Allow",
-  cancelLabel: "Skip",
-  checkboxLabel: null,
-  checkboxHelperText: null,
-  autoCancelAfter: null,
+  cancelLabel: "Deny",
+  // eslint-disable-next-line no-undefined
+  checkbox: undefined,
+  // eslint-disable-next-line no-undefined
+  autoCancelAfter: undefined,
 });
 
 type EmitPayload = { isCheckboxChecked: boolean };
@@ -34,7 +37,7 @@ const isCheckboxChecked = ref(false);
 const isResolved = ref(false);
 
 const remainingSeconds = ref(props.autoCancelAfter ?? 0);
-let intervalId: ReturnType<typeof setInterval> | null = null;
+let intervalId: number | null;
 
 const cancelLabelDisplay = computed(() => {
   if (props.autoCancelAfter !== null && remainingSeconds.value > 0) {
@@ -45,7 +48,7 @@ const cancelLabelDisplay = computed(() => {
 
 const stopTimer = () => {
   if (intervalId !== null) {
-    clearInterval(intervalId);
+    window.clearInterval(intervalId);
     intervalId = null;
   }
 };
@@ -73,7 +76,7 @@ const startTimer = () => {
     return;
   }
 
-  intervalId = setInterval(() => {
+  intervalId = window.setInterval(() => {
     remainingSeconds.value -= 1;
     if (remainingSeconds.value <= 0) {
       handleCancel();
@@ -91,10 +94,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div
-    class="card-container"
-    :class="{ 'with-accent-bar': props.showAccentBar }"
-  >
+  <div class="card-container" :class="{ highlighted: props.highlighted }">
     <div class="header">{{ props.title }}</div>
 
     <div class="body">
@@ -105,10 +105,10 @@ onUnmounted(() => {
 
     <div class="controls">
       <KdsCheckbox
-        v-if="props.checkboxLabel"
+        v-if="props.checkbox"
         v-model="isCheckboxChecked"
-        :label="props.checkboxLabel"
-        :helper-text="props.checkboxHelperText"
+        :label="props.checkbox.label"
+        :helper-text="props.checkbox.helperText"
       />
 
       <div class="action-buttons">
@@ -139,7 +139,7 @@ onUnmounted(() => {
   flex-direction: column;
   gap: var(--space-8);
 
-  &.with-accent-bar {
+  &.highlighted {
     border-left: 3px solid var(--permission-card-accent-color);
   }
 }
@@ -156,7 +156,6 @@ onUnmounted(() => {
 
   & .action-buttons {
     display: flex;
-    flex-direction: row;
     gap: var(--kds-spacing-container-0-5x);
     justify-content: end;
     font-variant-numeric: tabular-nums;

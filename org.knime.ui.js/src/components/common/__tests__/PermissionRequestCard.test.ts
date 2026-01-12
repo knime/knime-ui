@@ -43,7 +43,7 @@ describe("PermissionRequestCard", () => {
 
       const buttons = wrapper.findAllComponents(KdsButton);
       expect(buttons).toHaveLength(2);
-      expect(buttons[0].props("label")).toBe("Skip");
+      expect(buttons[0].props("label")).toBe("Deny");
       expect(buttons[1].props("label")).toBe("Allow");
     });
 
@@ -70,11 +70,11 @@ describe("PermissionRequestCard", () => {
 
     it("renders accent bar when showAccentBar is true", () => {
       const { wrapper } = doMount({
-        props: { showAccentBar: true },
+        props: { highlighted: true },
       });
 
       expect(wrapper.find(".card-container").classes()).toContain(
-        "with-accent-bar",
+        "highlighted",
       );
     });
   });
@@ -88,7 +88,7 @@ describe("PermissionRequestCard", () => {
 
     it("renders checkbox when checkboxLabel is provided", () => {
       const { wrapper } = doMount({
-        props: { checkboxLabel: "Remember this" },
+        props: { checkbox: { label: "Remember this" } },
       });
 
       const checkbox = wrapper.findComponent(KdsCheckbox);
@@ -99,8 +99,10 @@ describe("PermissionRequestCard", () => {
     it("renders checkbox with helper text when provided", () => {
       const { wrapper } = doMount({
         props: {
-          checkboxLabel: "Remember this",
-          checkboxHelperText: "You can change this later",
+          checkbox: {
+            label: "Remember this",
+            helperText: "You can change this later",
+          },
         },
       });
 
@@ -136,7 +138,7 @@ describe("PermissionRequestCard", () => {
 
     it("emits confirm with isCheckboxChecked: true when checkbox is checked", async () => {
       const { wrapper } = doMount({
-        props: { checkboxLabel: "Remember this" },
+        props: { checkbox: { label: "Remember this" } },
       });
 
       const checkbox = wrapper.findComponent(KdsCheckbox);
@@ -152,7 +154,7 @@ describe("PermissionRequestCard", () => {
 
     it("emits cancel with isCheckboxChecked: true when checkbox is checked", async () => {
       const { wrapper } = doMount({
-        props: { checkboxLabel: "Remember this" },
+        props: { checkbox: { label: "Remember this" } },
       });
 
       const checkbox = wrapper.findComponent(KdsCheckbox);
@@ -172,7 +174,7 @@ describe("PermissionRequestCard", () => {
       const { wrapper } = doMount();
 
       const cancelButton = wrapper.findAllComponents(KdsButton)[0];
-      expect(cancelButton.props("label")).toBe("Skip");
+      expect(cancelButton.props("label")).toBe("Deny");
     });
 
     it("shows countdown in cancel button label when autoCancelAfter is set", () => {
@@ -181,7 +183,7 @@ describe("PermissionRequestCard", () => {
       });
 
       const cancelButton = wrapper.findAllComponents(KdsButton)[0];
-      expect(cancelButton.props("label")).toBe("Skip (10)");
+      expect(cancelButton.props("label")).toBe("Deny (10)");
     });
 
     it("decrements countdown every second", async () => {
@@ -190,15 +192,15 @@ describe("PermissionRequestCard", () => {
       });
 
       const cancelButton = wrapper.findAllComponents(KdsButton)[0];
-      expect(cancelButton.props("label")).toBe("Skip (10)");
+      expect(cancelButton.props("label")).toBe("Deny (10)");
 
       vi.advanceTimersByTime(1000);
       await nextTick();
-      expect(cancelButton.props("label")).toBe("Skip (9)");
+      expect(cancelButton.props("label")).toBe("Deny (9)");
 
       vi.advanceTimersByTime(3000);
       await nextTick();
-      expect(cancelButton.props("label")).toBe("Skip (6)");
+      expect(cancelButton.props("label")).toBe("Deny (6)");
     });
 
     it("emits cancel when timer reaches zero", async () => {
@@ -221,7 +223,7 @@ describe("PermissionRequestCard", () => {
       const { wrapper } = doMount({
         props: {
           autoCancelAfter: 3,
-          checkboxLabel: "Remember this",
+          checkbox: { label: "Remember this" },
         },
       });
 
@@ -276,7 +278,7 @@ describe("PermissionRequestCard", () => {
       await nextTick();
 
       const cancelButton = wrapper.findAllComponents(KdsButton)[0];
-      expect(cancelButton.props("label")).toBe("Skip");
+      expect(cancelButton.props("label")).toBe("Deny");
     });
   });
 
@@ -296,7 +298,7 @@ describe("PermissionRequestCard", () => {
 
     it("emits cancel with isCheckboxChecked: true on unmount if checkbox was checked", async () => {
       const { wrapper } = doMount({
-        props: { checkboxLabel: "Remember this" },
+        props: { checkbox: { label: "Remember this" } },
       });
 
       const checkbox = wrapper.findComponent(KdsCheckbox);
