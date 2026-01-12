@@ -82,7 +82,7 @@ export interface AddComponentCommand extends WorkflowCommand {
      * @type {string}
      * @memberof AddComponentCommand
      */
-    spaceId: string;
+    spaceId?: string;
     /**
      *
      * @type {string}
@@ -513,7 +513,7 @@ export interface AllowedWorkflowActions extends AllowedActions {
 export interface AncestorInfo {
 
     /**
-     * Optional new name of the item. The known project name may be outdated. Return the new name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
+     * Optional new name of the item. The known item name may be outdated. Return the new item name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
      * @type {string}
      * @memberof AncestorInfo
      */
@@ -1242,7 +1242,7 @@ export interface ComponentPortDescription {
 
 
 /**
- * ...
+ * A result item of a component search on some Hub instance.
  * @export
  * @interface ComponentSearchItem
  */
