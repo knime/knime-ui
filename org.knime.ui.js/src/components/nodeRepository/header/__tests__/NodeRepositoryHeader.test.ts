@@ -24,6 +24,10 @@ const defaultNodesPerTag = [
 
 const mockedAPI = deepMocked(API);
 
+vi.mock("@/plugins/feature-flags", () => ({
+  useFeatures: () => ({ isComponentSearchEnabled: () => true }),
+}));
+
 describe("NodeRepositoryHeader", () => {
   type MountOpts = {
     searchIsActive?: boolean;
