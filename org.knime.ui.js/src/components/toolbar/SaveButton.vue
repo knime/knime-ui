@@ -17,6 +17,10 @@ const { activeProjectId, isUnknownProject } = storeToRefs(
   useApplicationStore(),
 );
 
+type MetadataWithHandler = {
+  handler: () => void;
+};
+
 const hasSubmenu = computed(() => {
   if (isUnknownProject.value(activeProjectId.value)) {
     return false;
@@ -31,6 +35,7 @@ const subMenuItems = computed((): MenuItem[] => {
   }
 
   const saveAs = $shortcuts.get("saveAs");
+  const exportShortcut = $shortcuts.get("export");
 
   return [
     {
@@ -39,6 +44,19 @@ const subMenuItems = computed((): MenuItem[] => {
       hotkeyText: saveAs.hotkeyText,
       disabled: !$shortcuts.isEnabled("saveAs"),
       title: toolbarButtonTitle(saveAs),
+      metadata: {
+        handler: () => $shortcuts.dispatch("saveAs"),
+      } as MetadataWithHandler,
+    },
+    {
+      text: $shortcuts.getText("export"),
+      icon: exportShortcut.icon,
+      hotkeyText: exportShortcut.hotkeyText,
+      disabled: !$shortcuts.isEnabled("export"),
+      title: toolbarButtonTitle(exportShortcut),
+      metadata: {
+        handler: () => $shortcuts.dispatch("export"),
+      } as MetadataWithHandler,
     },
   ];
 });
@@ -72,7 +90,10 @@ const title = computed(() => {
       orientation="left"
       button-title="Open save options"
       aria-label="Save menu"
-      @item-click="(_: MouseEvent) => $shortcuts.dispatch('saveAs')"
+      @item-click="
+        (_: MouseEvent, item: MenuItem) =>
+          (item.metadata as MetadataWithHandler).handler()
+      "
       @keydown.enter.stop.prevent="
         (e: KeyboardEvent) => ($refs.submenu as any).toggleMenu(e)
       "

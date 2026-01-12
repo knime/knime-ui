@@ -290,7 +290,8 @@ const onUploadButtonClick = async () => {
   }
 };
 
-const uploadButton = useTemplateRef<any>("uploadButton");
+const uploadButton =
+  useTemplateRef<InstanceType<typeof KdsButton>>("uploadButton");
 
 onMounted(() => {
   useHint().createHint({
