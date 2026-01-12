@@ -153,6 +153,8 @@ const searchPlaceholderText = computed(() => {
           @update:model-value="switchSearchContext"
         />
 
+        <span v-else>Nodes</span>
+
         <div class="actions">
           <SubMenu
             v-if="!isComponentSearch"
