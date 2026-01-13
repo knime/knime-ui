@@ -5,7 +5,10 @@ import { defineStore } from "pinia";
 import { runInEnvironment } from "@/environment";
 
 /**
- * Store that manages AI-related settings, persisted to user profile and scoped per-workflow.
+ * Store that manages AP-client-side AI settings.
+ *
+ * AI settings currently implemented:
+ * - Action permissions: per-workflow per-action decision about whether to "always allow" or "never allow" a certain action by K-AI.
  */
 
 const AI_SETTINGS_KEY = "knime-ai-settings";
@@ -34,35 +37,6 @@ const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {
 
 const saveItem = (key: string, value: unknown) => {
   window?.localStorage?.setItem(key, JSON.stringify(value));
-};
-
-/**
- * Prune workflow entries that haven't been updated in the last N months.
- * Returns the pruned permissions and whether any entries were removed.
- */
-const pruneStaleEntries = (
-  actionPermissions: Record<string, WorkflowActionPermissions>,
-): { pruned: Record<string, WorkflowActionPermissions>; didPrune: boolean } => {
-  const now = new Date();
-  const thresholdDate = new Date(now);
-  thresholdDate.setMonth(thresholdDate.getMonth() - PRUNE_THRESHOLD_MONTHS);
-
-  const pruned: Record<string, WorkflowActionPermissions> = {};
-  let didPrune = false;
-
-  for (const [workflowId, entry] of Object.entries(actionPermissions)) {
-    const lastUpdated = new Date(entry.lastUpdated);
-    if (lastUpdated >= thresholdDate) {
-      pruned[workflowId] = entry;
-    } else {
-      didPrune = true;
-      consola.debug(
-        `Pruning stale AI settings for workflow ${workflowId} (last updated: ${entry.lastUpdated})`,
-      );
-    }
-  }
-
-  return { pruned, didPrune };
 };
 
 export const useAISettingsStore = defineStore("aiSettings", () => {
@@ -95,15 +69,19 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
       actionPermissions,
     };
 
-    await runInEnvironment({
-      DESKTOP: () => {
-        API.desktop.setUserProfilePart({
-          key: AI_SETTINGS_KEY,
-          data,
-        });
-      },
-      BROWSER: () => saveItem(AI_SETTINGS_KEY, data),
-    });
+    try {
+      await runInEnvironment({
+        DESKTOP: () => {
+          API.desktop.setUserProfilePart({
+            key: AI_SETTINGS_KEY,
+            data,
+          });
+        },
+        BROWSER: () => saveItem(AI_SETTINGS_KEY, data),
+      });
+    } catch (error) {
+      consola.error("Failed to persist AI settings to user profile:", error);
+    }
   };
 
   const fetchAISettings = async () => {
@@ -124,14 +102,27 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     }
   };
 
+  /**
+   * Prune workflow entries that haven't been updated in the last N months.
+   */
   const pruneStaleActionPermissions = async () => {
-    const { pruned, didPrune } = pruneStaleEntries(actionPermissions);
+    const now = new Date();
+    const thresholdDate = new Date(now);
+    thresholdDate.setMonth(thresholdDate.getMonth() - PRUNE_THRESHOLD_MONTHS);
+
+    let didPrune = false;
+
+    for (const [workflowId, entry] of Object.entries(actionPermissions)) {
+      if (new Date(entry.lastUpdated) < thresholdDate) {
+        consola.debug(
+          `Pruning stale AI settings for workflow ${workflowId} (last updated: ${entry.lastUpdated})`,
+        );
+        delete actionPermissions[workflowId];
+        didPrune = true;
+      }
+    }
 
     if (didPrune) {
-      Object.keys(actionPermissions).forEach(
-        (key) => delete actionPermissions[key],
-      );
-      Object.assign(actionPermissions, pruned);
       await persistSettings();
     }
   };
