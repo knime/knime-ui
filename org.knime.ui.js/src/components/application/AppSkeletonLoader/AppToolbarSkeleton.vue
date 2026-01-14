@@ -17,37 +17,23 @@ defineProps<Props>();
         width="100px"
         type="button"
         class="button-skeleton-normal"
-        :style="{ border: none }"
       />
+      <SkeletonItem width="30px" height="30px" type="icon-button" />
+      <SkeletonItem width="30px" height="30px" type="icon-button" />
       <SkeletonItem
-        width="30px"
-        height="30px"
-        type="icon-button"
-        :style="{ border: none }"
-      />
-      <SkeletonItem
-        width="30px"
-        height="30px"
-        type="icon-button"
-        :style="{ border: none }"
+        width="100px"
+        type="button"
+        class="button-skeleton-normal"
       />
       <SkeletonItem
         width="100px"
         type="button"
         class="button-skeleton-normal"
-        :style="{ border: none }"
       />
       <SkeletonItem
         width="100px"
         type="button"
         class="button-skeleton-normal"
-        :style="{ border: none }"
-      />
-      <SkeletonItem
-        width="100px"
-        type="button"
-        class="button-skeleton-normal"
-        :style="{ border: none }"
       />
     </template>
   </div>
