@@ -2,14 +2,12 @@ import { computed, ref } from "vue";
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type {
-  NodeRelation,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
+import type { NodeRelation } from "@/api/custom-types";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeSearch } from "@/store/common/useNodeSearch";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import { nodeTemplate } from "@/util/dataMappers";
 
 /**
  * Store that manages quick add nodes menu states.
@@ -62,7 +60,7 @@ export const useQuickAddNodesStore = defineStore("quick", () => {
 
     setRecommendedNodes(
       recommendedNodesResult.map(
-        toNodeTemplateWithExtendedPorts(
+        nodeTemplate.toNodeTemplateWithExtendedPorts(
           useApplicationStore().availablePortTypes,
         ),
       ),

@@ -1,13 +1,11 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type {
-  AvailablePortTypes,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
+import type { AvailablePortTypes } from "@/api/custom-types";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import { nodeTemplate } from "@/util/dataMappers";
 
 type NodeTemplateDictionary = Record<string, NodeTemplateWithExtendedPorts>;
 
@@ -34,7 +32,7 @@ const toNodeTemplateDictionary = (
   return arrayToDictionary(
     Object.values(nodeTemplates)
       // add expanded port information
-      .map(toNodeTemplateWithExtendedPorts(availablePortTypes)),
+      .map(nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)),
     "id",
   );
 };
