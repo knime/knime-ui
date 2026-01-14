@@ -2,7 +2,7 @@
 import KNIMETriangleIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
 
-import type { NativeNodeDescriptionWithExtendedPorts } from "@/util/portDataMapper";
+import type { NativeNodeDescriptionWithExtendedPorts } from "@/util/dataMappers";
 
 type Props = {
   descriptionData: NativeNodeDescriptionWithExtendedPorts;

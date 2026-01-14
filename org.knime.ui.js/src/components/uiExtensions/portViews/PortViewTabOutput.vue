@@ -3,7 +3,7 @@ import { computed, watch } from "vue";
 import { API } from "@api";
 
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-import { toExtendedPortObject } from "@/util/portDataMapper";
+import { ports } from "@/util/dataMappers";
 import {
   buildMiddleware,
   validateNodeConfigurationState,
@@ -116,7 +116,7 @@ const portViews = computed(() => {
     return null;
   }
 
-  const fullPortObject = toExtendedPortObject(props.availablePortTypes)(
+  const fullPortObject = ports.toExtendedPortObject(props.availablePortTypes)(
     selectedPort.value.typeId,
   );
 

@@ -82,7 +82,7 @@ export interface AddComponentCommand extends WorkflowCommand {
      * @type {string}
      * @memberof AddComponentCommand
      */
-    spaceId: string;
+    spaceId?: string;
     /**
      *
      * @type {string}
@@ -513,7 +513,7 @@ export interface AllowedWorkflowActions extends AllowedActions {
 export interface AncestorInfo {
 
     /**
-     * Optional new name of the item. The known project name may be outdated. Return the new name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
+     * Optional new name of the item. The known item name may be outdated. Return the new item name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
      * @type {string}
      * @memberof AncestorInfo
      */
@@ -1237,6 +1237,118 @@ export interface ComponentPortDescription {
      * @memberof ComponentPortDescription
      */
     description?: string;
+
+}
+
+
+/**
+ * A result item of a component search on some Hub instance.
+ * @export
+ * @interface ComponentSearchItem
+ */
+export interface ComponentSearchItem {
+
+    /**
+     * Space item ID of this component
+     * @type {string}
+     * @memberof ComponentSearchItem
+     */
+    id: string;
+    /**
+     * The name of the component as given by the component creator
+     * @type {string}
+     * @memberof ComponentSearchItem
+     */
+    name: string;
+    /**
+     * The description of the component as given by the component creator
+     * @type {string}
+     * @memberof ComponentSearchItem
+     */
+    description?: string;
+    /**
+     * serialised data of component icon
+     * @type {string}
+     * @memberof ComponentSearchItem
+     */
+    icon?: string;
+    /**
+     * The type (a.k.a. \&quot;kind\&quot;) of the component
+     * @type {string}
+     * @memberof ComponentSearchItem
+     */
+    type: ComponentSearchItem.TypeEnum;
+    /**
+     * The components&#39;s input ports.
+     * @type {Array<ComponentSearchItemPort>}
+     * @memberof ComponentSearchItem
+     */
+    inPorts?: Array<ComponentSearchItemPort>;
+    /**
+     * The node&#39;s output ports.
+     * @type {Array<ComponentSearchItemPort>}
+     * @memberof ComponentSearchItem
+     */
+    outPorts?: Array<ComponentSearchItemPort>;
+
+}
+
+
+/**
+ * @export
+ * @namespace ComponentSearchItem
+ */
+export namespace ComponentSearchItem {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum TypeEnum {
+        Source = 'Source',
+        Manipulator = 'Manipulator',
+        Visualizer = 'Visualizer',
+        Learner = 'Learner',
+        Sink = 'Sink',
+        Other = 'Other'
+    }
+}
+/**
+ *
+ * @export
+ * @interface ComponentSearchItemPort
+ */
+export interface ComponentSearchItemPort {
+
+    /**
+     * The name of the port as given by the component creator. Not to be confused with the human-readable name of the port _type_.
+     * @type {string}
+     * @memberof ComponentSearchItemPort
+     */
+    name?: string;
+    /**
+     * The description of the component as given by the component creator.
+     * @type {string}
+     * @memberof ComponentSearchItemPort
+     */
+    description?: string;
+    /**
+     * The human-readable name of the port type. This is given by the port type implementation.
+     * @type {string}
+     * @memberof ComponentSearchItemPort
+     */
+    portTypeName: string;
+    /**
+     * Hex string of port type color
+     * @type {string}
+     * @memberof ComponentSearchItemPort
+     */
+    color?: string;
+    /**
+     * Whether the port is optional
+     * @type {boolean}
+     * @memberof ComponentSearchItemPort
+     */
+    optional?: boolean;
 
 }
 
@@ -7063,6 +7175,28 @@ const space = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('SpaceService.renameSpace', { ...defaultParams, ...params });
+        },
+        /**
+         * Search among components in this provider
+         * @param {string} [params.query] 
+         * @param {number} [params.limit] 
+         * @param {number} [params.offset] 
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {LoggedOutException} If a web request could not be authorized because the space provider isn&#39;t logged in
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
+         */
+        async searchComponents(
+        	params: { query?: string,  limit?: number,  offset?: number  }
+        ): Promise<Array<ComponentSearchItem>> {
+            const defaultParams = { 
+                query: null,
+                limit: null,
+                offset: null,
+            }
+            
+            return rpcClient.call('SpaceService.searchComponents', { ...defaultParams, ...params });
         },
     }
 };

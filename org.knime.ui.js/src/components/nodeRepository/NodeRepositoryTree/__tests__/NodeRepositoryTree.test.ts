@@ -1,18 +1,26 @@
-import { type Mock, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { Tree } from "@knime/virtual-tree";
 
-import type { NodeCategoryWithExtendedPorts } from "@/api/custom-types";
-import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { mockStores } from "@/test/utils/mockStores";
-import CategoryTree from "../CategoryTree.vue";
+import NodeRepositoryTree from "../NodeRepositoryTree.vue";
+import type { NodeCategoryWithExtendedPorts } from "../types";
+
+const { addNodeWithAutoPositioningMock } = vi.hoisted(() => ({
+  addNodeWithAutoPositioningMock: vi.fn(),
+}));
 
 vi.mock("@/composables/useAddNodeToWorkflow", () => {
-  return { useAddNodeToWorkflow: vi.fn(vi.fn) };
+  return {
+    useAddNodeToWorkflow: () => ({
+      addNodeWithAutoPositioning: addNodeWithAutoPositioningMock,
+      addNodeByPosition: vi.fn(),
+    }),
+  };
 });
 
-describe("CategoryTree", () => {
+describe("NodeRepositoryTree", () => {
   const rootTreeResponse: NodeCategoryWithExtendedPorts = {
     childCategories: [
       {
@@ -52,7 +60,7 @@ describe("CategoryTree", () => {
       Promise.resolve(categoryPath.length === 0 ? rootTreeResponse : {}),
     );
 
-    const wrapper = mount(CategoryTree, {
+    const wrapper = mount(NodeRepositoryTree, {
       global: { plugins: [testingPinia] },
     });
 
@@ -137,12 +145,6 @@ describe("CategoryTree", () => {
   });
 
   it("keyboard node actions", () => {
-    const addNodeToWorkflowMock = vi.fn();
-    const useAddNodeToWorkflowMock = useAddNodeToWorkflow as Mock;
-    useAddNodeToWorkflowMock.mockImplementationOnce(
-      () => addNodeToWorkflowMock,
-    );
-
     const { wrapper } = doMount();
     const tree = wrapper.getComponent(Tree);
 
@@ -153,9 +155,9 @@ describe("CategoryTree", () => {
       },
     };
     tree.vm.$emit("keydown", nodeEnterEvent);
-    expect(addNodeToWorkflowMock).toHaveBeenLastCalledWith({
-      nodeFactory: nodeEnterEvent.node.origin.nodeTemplate.nodeFactory,
-    });
+    expect(addNodeWithAutoPositioningMock).toHaveBeenLastCalledWith(
+      nodeEnterEvent.node.origin.nodeTemplate.nodeFactory,
+    );
 
     const nodeInfoEvent = {
       event: { key: "i" },

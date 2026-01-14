@@ -3,7 +3,7 @@ import SkeletonItem from "./SkeletonItem.vue";
 
 type Props = {
   numberOfNodes?: number;
-  displayMode?: string;
+  displayMode?: "icon" | "list";
 };
 
 withDefaults(defineProps<Props>(), {

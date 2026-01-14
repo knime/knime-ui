@@ -12,7 +12,7 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { portSize } from "@/style/shapes";
 import * as $shapes from "@/style/shapes";
-import { toExtendedPortObject } from "@/util/portDataMapper";
+import { ports } from "@/util/dataMappers";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import type { TooltipDefinition } from "../../types";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
@@ -56,7 +56,7 @@ const hitArea = new Rectangle(
 );
 
 const portTemplate = computed(() => {
-  const template = toExtendedPortObject(availablePortTypes.value)(
+  const template = ports.toExtendedPortObject(availablePortTypes.value)(
     props.port.typeId,
   );
   if (!template) {

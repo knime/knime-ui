@@ -7,7 +7,7 @@ import { MenuItems } from "@knime/components";
 import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
-import type { ExtendedPortType, KnimeNode } from "@/api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
 import {
   ComponentPlaceholder,
   type NodePort,
@@ -23,6 +23,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
+import { type ExtendedPortType, ports } from "@/util/dataMappers";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
 import {
@@ -31,7 +32,6 @@ import {
   isNodeComponent,
   isNodeMetaNode,
 } from "@/util/nodeUtil";
-import { toExtendedPortObject } from "@/util/portDataMapper";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
@@ -117,7 +117,7 @@ const portViews = (): MenuItem[] => {
 
   const nodeId = node.id;
   const allOutPorts = node.outPorts.map((port: NodePort) =>
-    toExtendedPortObject(availablePortTypes.value)(port),
+    ports.toExtendedPortObject(availablePortTypes.value)(port),
   );
 
   return allOutPorts.flatMap((port, portIndex) => {

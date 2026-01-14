@@ -83,6 +83,7 @@ import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
+import org.knime.gateway.impl.webui.featureflags.FeatureFlags;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactory.AuthTokenProvider;
@@ -192,6 +193,7 @@ final class Init {
         }
 
         var linkVariants = new LinkVariants.KnimeUrlResolverVariants();
+        var featureFlags = new FeatureFlags.FromSystemProperties();
 
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies( //
@@ -209,7 +211,8 @@ final class Init {
             nodeCollections, //
             nodeCategoryExtensions, //
             selectionEventBus, //
-            linkVariants //
+            linkVariants, //
+            featureFlags //
         );
 
         DesktopAPI.injectDependencies( //

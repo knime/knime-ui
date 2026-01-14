@@ -2,12 +2,10 @@ import { reactive, ref } from "vue";
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type {
-  NodeCategoryWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
+import type { NodeCategoryWithExtendedPorts } from "@/components/nodeRepository/NodeRepositoryTree/types";
 import { useNodeSearch } from "@/store/common/useNodeSearch";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import { nodeTemplate } from "@/util/dataMappers";
 
 import { useApplicationStore } from "./application/application";
 import { useNodeTemplatesStore } from "./nodeTemplates/nodeTemplates";
@@ -139,7 +137,9 @@ export const useNodeRepositoryStore = defineStore("nodeRepository", () => {
     });
 
     const nodesWithMappedPorts = (nodeCategoryResult.nodes ?? []).map(
-      toNodeTemplateWithExtendedPorts(useApplicationStore().availablePortTypes),
+      nodeTemplate.toNodeTemplateWithExtendedPorts(
+        useApplicationStore().availablePortTypes,
+      ),
     );
 
     useNodeTemplatesStore().updateCacheFromSearchResults({
@@ -182,7 +182,7 @@ export const useNodeRepositoryStore = defineStore("nodeRepository", () => {
 
     const withMappedPorts = groups.map(({ nodes, tag }) => ({
       nodes: nodes.map(
-        toNodeTemplateWithExtendedPorts(
+        nodeTemplate.toNodeTemplateWithExtendedPorts(
           useApplicationStore().availablePortTypes,
         ),
       ),

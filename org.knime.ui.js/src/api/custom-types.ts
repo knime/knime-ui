@@ -1,3 +1,5 @@
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+
 import type {
   ComponentNode,
   ComponentNodeAndDescription,
@@ -6,7 +8,6 @@ import type {
   NativeNode,
   NodeCategory,
   NodeDescription,
-  NodeTemplate,
   PortGroup,
   PortType,
   ProjectMetadata,
@@ -152,18 +153,6 @@ export interface Schedule {
   user: string;
   workflowPath: string;
 }
-
-export type ExtendedPortType = PortType & {
-  typeId: string;
-  type?: string;
-  description: string;
-};
-
-export type NodeTemplateWithExtendedPorts = NodeTemplate & {
-  inPorts: ExtendedPortType[];
-  outPorts: ExtendedPortType[];
-};
-
 export type WorkflowObject = XY & {
   id: string;
   type: "node" | "annotation" | "componentPlaceholder";
@@ -189,6 +178,11 @@ export type NodeRelation = "PREDECESSORS" | "SUCCESSORS";
 
 export type NodeCategoryWithExtendedPorts = NodeCategory & {
   nodes?: NodeTemplateWithExtendedPorts[];
+};
+
+export type AncestorInfo = {
+  ancestorItemIds: string[];
+  itemName: string | null;
 };
 
 export type NameCollisionHandling =

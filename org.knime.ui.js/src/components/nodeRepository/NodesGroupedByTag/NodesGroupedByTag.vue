@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 
 import { Tag } from "@knime/components";
 
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
 import NodeList from "@/components/common/NodeList/NodeList.vue";
 import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
@@ -12,6 +11,7 @@ import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollV
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 const TAG_LIMIT = 8;
 
@@ -23,7 +23,7 @@ const props = withDefaults(defineProps<Props>(), { displayMode: "icon" });
 
 const emit = defineEmits(["showNodeDescription", "navReachedTop"]);
 
-const addNodeToWorkflow = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
 
 const nodeRepositoryStore = useNodeRepositoryStore();
 const { showDescriptionForNode, tagScrollPosition, nodesPerTag, selectedNode } =
@@ -56,7 +56,7 @@ const onSelectTag = (tag: string) => {
   nodeRepositoryStore.updateSelectedTags([tag]);
 };
 
-const onHelpKey = (node: NodeTemplateWithExtendedPorts) => {
+const onShowNodeDetails = (node: NodeTemplateWithExtendedPorts) => {
   emit("showNodeDescription", {
     nodeTemplate: node,
     isDescriptionActive: showDescriptionForNode.value?.id === node.id,
@@ -117,11 +117,11 @@ defineExpose({ focusFirst });
             :nodes="nodes"
             class="tag-node-list"
             :has-more-nodes="nodes.length >= TAG_LIMIT"
-            :show-description-for-node="showDescriptionForNode"
+            :show-details-for="showDescriptionForNode"
             :display-mode="displayMode"
             @show-more="onSelectTag(tag)"
-            @enter-key="addNodeToWorkflow"
-            @help-key="onHelpKey"
+            @enter-key="addNodeWithAutoPositioning($event.nodeFactory!)"
+            @show-node-details="onShowNodeDetails"
             @nav-reached-top="onNavReachedTop(index, $event)"
             @nav-reached-end="onNavReachedEnd(index, $event)"
           >

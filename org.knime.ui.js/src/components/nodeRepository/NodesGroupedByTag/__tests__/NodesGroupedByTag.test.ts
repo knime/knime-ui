@@ -80,7 +80,7 @@ describe("NodesGroupedByTag.vue", () => {
     expect(nodeList.at(0)?.props()).toEqual(
       expect.objectContaining({
         selectedNode,
-        showDescriptionForNode: expect.objectContaining({
+        showDetailsFor: expect.objectContaining({
           id: "selected-node-id",
         }),
         displayMode: "icon",
@@ -90,7 +90,7 @@ describe("NodesGroupedByTag.vue", () => {
     expect(nodeList.at(1)?.props()).toEqual(
       expect.objectContaining({
         selectedNode,
-        showDescriptionForNode: expect.objectContaining({
+        showDetailsFor: expect.objectContaining({
           id: "selected-node-id",
         }),
         displayMode: "icon",

@@ -10,7 +10,7 @@ import {
   createNodeTemplateWithExtendedPorts,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+import { nodeTemplate } from "@/util/dataMappers";
 import { useNodeTemplatesStore } from "../nodeTemplates";
 
 const mockedAPI = deepMocked(API);
@@ -78,11 +78,17 @@ describe("nodeTemplates", () => {
 
       expect(nodeTemplatesStore.cache).toEqual({
         [nodeTemplate1.id]:
-          toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate1),
+          nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
+            nodeTemplate1,
+          ),
         [nodeTemplate2.id]:
-          toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate2),
+          nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
+            nodeTemplate2,
+          ),
         [nodeTemplate3.id]:
-          toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate3),
+          nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
+            nodeTemplate3,
+          ),
       });
 
       const result2 = await nodeTemplatesStore.getNodeTemplates({
@@ -172,11 +178,17 @@ describe("nodeTemplates", () => {
 
       expect(found).toEqual({
         [nodeTemplate1.id]:
-          toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate1),
+          nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
+            nodeTemplate1,
+          ),
         [nodeTemplate2.id]:
-          toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate2),
+          nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
+            nodeTemplate2,
+          ),
         [nodeTemplate3.id]:
-          toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate3),
+          nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
+            nodeTemplate3,
+          ),
       });
 
       expect(missing).toEqual([NODE_FACTORIES.GoogleSheetsReaderFactory]);
@@ -200,7 +212,9 @@ describe("nodeTemplates", () => {
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
 
       expect(result).toEqual(
-        toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate1),
+        nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
+          nodeTemplate1,
+        ),
       );
 
       await nodeTemplatesStore.getSingleNodeTemplate({
