@@ -2,7 +2,7 @@
 <feature
       id="org.knime.features.ui"
       label="KNIME Modern UI"
-      version="5.5.2.qualifier"
+      version="5.5.3.qualifier"
       provider-name="KNIME AG, Zurich, Switzerland">
 
   <description>
@@ -89,7 +89,7 @@ competent court at the domicile of the Licensee.
    </license>
 
    <requires>
-      <import feature="org.knime.features.gateway" version="5.5.0" match="compatible"/>
+      <import feature="org.knime.features.gateway" version="5.5.3" match="compatible"/>
    </requires>
 
    <plugin
