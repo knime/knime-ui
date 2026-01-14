@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 
 import { type Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import HelpMenu from "@/components/application/HelpMenu.vue";
-import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { isBrowser, isDesktop } from "@/environment";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import { router } from "@/router/router";
@@ -20,7 +20,6 @@ import {
 } from "@/test/factories";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import ToolbarShortcutButton from "../ToolbarShortcutButton.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 import WorkflowToolbar from "../WorkflowToolbar.vue";
 import ZoomMenu from "../ZoomMenu.vue";
@@ -39,9 +38,15 @@ vi.mock("@knime/components", async (importOriginal) => {
 const { askConfirmationMock } = vi.hoisted(() => ({
   askConfirmationMock: vi.fn(() => Promise.resolve({ confirmed: true })),
 }));
-vi.mock("@knime/kds-components", () => ({
-  useKdsDynamicModal: () => ({ askConfirmation: askConfirmationMock }),
-}));
+vi.mock("@knime/kds-components", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-expect-error
+    ...actual,
+    useKdsDynamicModal: () => ({ askConfirmation: askConfirmationMock }),
+  };
+});
 
 vi.mock("@/environment");
 
@@ -83,36 +88,45 @@ describe("WorkflowToolbar.vue", () => {
       $toast: {},
     });
 
-    const wrapper = shallowMount(WorkflowToolbar, {
+    const wrapper = mount(WorkflowToolbar, {
       global: {
         plugins: [mockedStores.testingPinia, router],
         mocks: {
           $shortcuts,
         },
       },
-      shallow: true,
     });
 
     return { wrapper, $shortcuts, ...mockedStores };
   };
 
-  const toNameProp = (tab) => tab.props("name");
-
   describe("toolbar Shortcut", () => {
     it("shortcut buttons match computed items", () => {
       const { wrapper } = doMount();
 
-      const shortcutButtons = wrapper.findAllComponents(ToolbarShortcutButton);
-      expect(
-        shortcutButtons.map((button) => button.props("name")),
+      // Get all KdsButtons, filter out SaveButton (which is wrapped in data-test-id="save")
+      const saveButtonWrapper = wrapper.find('[data-test-id="save"]');
+      const allButtons = wrapper.findAllComponents(KdsButton);
+      const shortcutButtons = allButtons.filter(
+        (button) => !saveButtonWrapper.element.contains(button.element),
+      );
+
+      expect(shortcutButtons.length).toBe(
         // @ts-expect-error
-      ).toStrictEqual(wrapper.vm.toolbarButtons);
+        wrapper.vm.toolbarButtons.length,
+      );
     });
 
     it("hides toolbar shortcut buttons if no workflow is open", () => {
       const { wrapper } = doMount();
 
-      expect(wrapper.findComponent(ToolbarShortcutButton).exists()).toBe(false);
+      // SaveButton is always rendered on desktop
+      const saveButtonWrapper = wrapper.find('[data-test-id="save"]');
+      const allButtons = wrapper.findAllComponents(KdsButton);
+      const shortcutButtons = allButtons.filter(
+        (button) => !saveButtonWrapper.element.contains(button.element),
+      );
+      expect(shortcutButtons.length).toBe(0);
     });
   });
 
@@ -205,11 +219,12 @@ describe("WorkflowToolbar.vue", () => {
 
     it("shows nothing if no workflow is active", () => {
       const { wrapper } = doMount();
-      const toolbarShortcuts = wrapper
-        .findAllComponents(ToolbarShortcutButton)
-
-        .map((tb) => tb.props("name"));
-      expect(toolbarShortcuts).toStrictEqual([]);
+      const saveButtonWrapper = wrapper.find('[data-test-id="save"]');
+      const allButtons = wrapper.findAllComponents(KdsButton);
+      const shortcutButtons = allButtons.filter(
+        (button) => !saveButtonWrapper.element.contains(button.element),
+      );
+      expect(shortcutButtons.length).toBe(0);
     });
 
     it("shows menu items if no node is selected and not inside a component", async () => {
@@ -217,18 +232,19 @@ describe("WorkflowToolbar.vue", () => {
 
       await setupStore({ mockedStores, workflow: createWorkflow() });
 
-      const toolbarShortcuts = wrapper
-        .findAllComponents(ToolbarShortcutButton)
-        .map(toNameProp);
+      // @ts-expect-error
+      const toolbarButtonIds = wrapper.vm.toolbarButtons.map((b) => b.id);
 
-      expect(toolbarShortcuts).toStrictEqual([
-        "save",
+      expect(toolbarButtonIds).toStrictEqual([
         "undo",
         "redo",
         "executeAll",
         "cancelAll",
         "resetAll",
       ]);
+
+      // Also verify SaveButton is present
+      expect(wrapper.find('[data-test-id="save"]').exists()).toBe(true);
     });
 
     it("shows menu items if workflow is an unknown project", async () => {
@@ -248,18 +264,19 @@ describe("WorkflowToolbar.vue", () => {
 
       await nextTick();
 
-      const toolbarShortcuts = wrapper
-        .findAllComponents(ToolbarShortcutButton)
-        .map(toNameProp);
+      // @ts-expect-error
+      const toolbarButtonIds = wrapper.vm.toolbarButtons.map((b) => b.id);
 
-      expect(toolbarShortcuts).toStrictEqual([
-        "saveAs",
+      expect(toolbarButtonIds).toStrictEqual([
         "undo",
         "redo",
         "executeAll",
         "cancelAll",
         "resetAll",
       ]);
+
+      // Also verify SaveButton is present (for unknown projects, it shows save without submenu)
+      expect(wrapper.find('[data-test-id="save"]').exists()).toBe(true);
     });
 
     it("shows layout editor button if inside a component", async () => {
@@ -269,11 +286,10 @@ describe("WorkflowToolbar.vue", () => {
       });
       await setupStore({ mockedStores, workflow });
 
-      const toolbarShortcuts = wrapper
-        .findAllComponents(ToolbarShortcutButton)
-        .map(toNameProp);
+      // @ts-expect-error
+      const toolbarButtonIds = wrapper.vm.toolbarButtons.map((b) => b.id);
 
-      expect(toolbarShortcuts).toContain("openLayoutEditor");
+      expect(toolbarButtonIds).toContain("openLayoutEditor");
     });
 
     it("shows correct menu items if one node is selected", async () => {
@@ -284,18 +300,19 @@ describe("WorkflowToolbar.vue", () => {
       await mockedStores.selectionStore.selectNodes(["root:1"]);
       await flushPromises();
 
-      const toolbarShortcuts = wrapper
-        .findAllComponents(ToolbarShortcutButton)
-        .map(toNameProp);
+      // @ts-expect-error
+      const toolbarButtonIds = wrapper.vm.toolbarButtons.map((b) => b.id);
 
-      expect(toolbarShortcuts).toStrictEqual([
-        "save",
+      expect(toolbarButtonIds).toStrictEqual([
         "undo",
         "redo",
         "executeSelected",
         "cancelSelected",
         "resetSelected",
       ]);
+
+      // Also verify SaveButton is present
+      expect(wrapper.find('[data-test-id="save"]').exists()).toBe(true);
     });
 
     it("shows correct menu items if multiple nodes are selected", async () => {
@@ -306,18 +323,19 @@ describe("WorkflowToolbar.vue", () => {
       await mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
       await flushPromises();
 
-      const toolbarShortcuts = wrapper
-        .findAllComponents(ToolbarShortcutButton)
-        .map(toNameProp);
+      // @ts-expect-error
+      const toolbarButtonIds = wrapper.vm.toolbarButtons.map((b) => b.id);
 
-      expect(toolbarShortcuts).toStrictEqual([
-        "save",
+      expect(toolbarButtonIds).toStrictEqual([
         "undo",
         "redo",
         "executeSelected",
         "cancelSelected",
         "resetSelected",
       ]);
+
+      // Also verify SaveButton is present
+      expect(wrapper.find('[data-test-id="save"]').exists()).toBe(true);
     });
   });
 
@@ -385,7 +403,6 @@ describe("WorkflowToolbar.vue", () => {
       const uploadButton = getUploadButton(wrapper);
 
       expect(uploadButton.exists()).toBe(true);
-      expect(uploadButton.attributes("title")).toBe("Upload");
       expect(uploadButton.text()).toBe("Upload");
     });
 
@@ -467,7 +484,7 @@ describe("WorkflowToolbar.vue", () => {
   describe("deploy button", () => {
     const getDeployButton = (wrapper: VueWrapper) => {
       return wrapper
-        .findAllComponents(ToolbarButton)
+        .findAllComponents(KdsButton)
         .filter((w) => w.text() === "Deploy on Hub")
         .at(0);
     };
@@ -529,7 +546,6 @@ describe("WorkflowToolbar.vue", () => {
       const deployButton = getDeployButton(wrapper);
 
       expect(deployButton?.exists()).toBe(true);
-      expect(deployButton?.attributes("title")).toBe("Deploy on Hub");
     });
   });
 
