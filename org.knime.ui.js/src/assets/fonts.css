@@ -1,22 +1,10 @@
-@import "@fontsource/roboto/300";
-@import "@fontsource/roboto/300-italic";
-@import "@fontsource/roboto/400";
-@import "@fontsource/roboto/400-italic";
-@import "@fontsource/roboto/700";
-@import "@fontsource/roboto/700-italic";
-@import "@fontsource/roboto-condensed/400";
-@import "@fontsource/roboto-condensed/400-italic";
-@import "@fontsource/roboto-condensed/700";
-@import "@fontsource/roboto-condensed/700-italic";
-@import "@fontsource/roboto-mono/400";
-
-html {
-  font-family: "Roboto", sans-serif;
+:root {
+  font-family: var(--kds-core-font-family-roboto);
 }
 
 pre,
 code,
 tt,
 samp {
-  font-family: "Roboto Mono", monospace;
+  font-family: var(--kds-core-font-family-roboto-mono);
 }

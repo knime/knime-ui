@@ -4,6 +4,7 @@ import { computed, markRaw } from "vue";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import HistoryIcon from "@knime/styles/img/icons/history.svg";
@@ -20,7 +21,6 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { getToastPresets } from "@/toastPresets";
-import ToolbarButton from "../common/ToolbarButton.vue";
 
 import ComponentBreadcrumb from "./ComponentBreadcrumb.vue";
 
@@ -202,19 +202,16 @@ const activeVersionTitle = computed(() => {
           <DropdownIcon class="dropdown-icon" />
         </template>
       </SubMenu>
+
       <template v-if="props.workflow.info.version">
-        <span class="workflow-versions-information" :title="activeVersionTitle"
-          >Version: "{{ activeVersionTitle }}"</span
-        >
-        <ToolbarButton
-          class="toolbar-button"
-          :with-text="true"
-          title="Restore this version"
+        <span class="workflow-versions-information" :title="activeVersionTitle">
+          Version: "{{ activeVersionTitle }}"
+        </span>
+        <KdsButton
+          label="Restore this version"
+          variant="outlined"
           @click="handleRestoreVersion"
-        >
-          <HistoryIcon />
-          Restore this version
-        </ToolbarButton>
+        />
       </template>
     </div>
   </div>
@@ -229,6 +226,15 @@ const activeVersionTitle = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 5px;
+
+  /* Overwrite for clickable hover elements of the nested action breadcrumb */
+  &:deep(span.clickable:hover) {
+    color: var(--kds-color-text-and-icon-neutral);
+
+    & svg {
+      stroke: var(--kds-color-text-and-icon-neutral);
+    }
+  }
 }
 
 .breadcrumb-root {
@@ -236,28 +242,68 @@ const activeVersionTitle = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 5px;
+  font: var(--kds-font-base-interactive-small);
+  color: var(--kds-color-text-and-icon-subtle);
 
   & span {
-    font-size: 13px;
-    line-height: 18px;
-    font-weight: 500;
+    font: var(--kds-font-base-body-small);
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   & .breadcrumb-icon {
-    stroke: var(--knime-masala);
+    stroke: var(--kds-color-text-and-icon-neutral);
 
     @mixin svg-icon-size 12;
-  }
-
-  & .dropdown-icon {
-    @mixin svg-icon-size 10;
   }
 
   & .workflow-versions-information {
     margin: 0 10px;
     max-width: 300px;
+  }
+
+  & :deep(.submenu-toggle) {
+    border-radius: var(
+      --kds-legacy-button-border-radius,
+      var(--kds-border-radius-container-0-37x)
+    );
+
+    & svg {
+      stroke-width: 3.5px;
+      width: 12px;
+      height: 12px;
+    }
+
+    &.expanded {
+      background-color: var(--kds-color-background-neutral-active);
+
+      & svg {
+        stroke: var(--kds-color-text-and-icon-neutral);
+      }
+    }
+
+    &:not(.expanded) svg {
+      stroke: var(--kds-color-text-and-icon-neutral);
+    }
+
+    &:focus-visible {
+      outline: var(--kds-border-action-focused);
+      outline-offset: 1px;
+      background: transparent;
+
+      & svg {
+        stroke: var(--kds-color-text-and-icon-neutral);
+      }
+
+      &:hover {
+        background-color: var(--kds-color-background-neutral-hover);
+        border-color: var(--kds-color-background-neutral-hover);
+      }
+
+      &:active {
+        stroke: var(--kds-color-background-neutral);
+      }
+    }
   }
 }
 </style>

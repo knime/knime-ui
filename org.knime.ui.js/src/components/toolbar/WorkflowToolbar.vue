@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { computed, defineComponent, h, onMounted, ref } from "vue";
+import { computed, onMounted, useTemplateRef } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
-import { useKdsDynamicModal } from "@knime/kds-components";
+import {
+  KdsButton,
+  type KdsButtonProps,
+  useKdsDynamicModal,
+} from "@knime/kds-components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
-import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
-import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
-import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isBrowser, isDesktop } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
@@ -34,9 +35,10 @@ import { getToastPresets } from "@/toastPresets";
 import HelpMenu from "../application/HelpMenu.vue";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
-import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
+import SaveButton from "./SaveButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
+import { toolbarButtonTitle } from "./toolbarButtonTitle";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -100,71 +102,114 @@ const canvasModes = computed<Array<MenuItem>>(() => {
   });
 });
 
-const hideText = computed<Partial<Record<ShortcutName, boolean>>>(() => ({
-  save: true,
-  saveAs: true,
-  undo: true,
-  redo: true,
-}));
+const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
+  () => {
+    if (!activeWorkflow.value || !activeProjectId.value) {
+      return [];
+    }
 
-const toolbarDropdowns = computed<
-  Partial<Record<ShortcutName, { name: ShortcutName; separator?: boolean }[]>>
->(() => {
-  // when the project is unknown we won't show the "save" action, and therefore
-  // cannot show the dropdown
-  if (activeProjectId.value && isUnknownProject.value(activeProjectId.value)) {
-    return {};
-  }
+    if (!activeWorkflow.value || !uiControls.canEditWorkflow) {
+      return [];
+    }
 
-  return {
-    save: [
-      { name: "save" },
-      { name: "saveAs", separator: true },
-      { name: "export" },
-    ],
-  };
-});
+    const hasNodesSelected = selectedNodes.value.length > 0;
 
-const toolbarButtons = computed<Array<ShortcutName>>(() => {
-  if (!activeWorkflow.value || !activeProjectId.value) {
-    return [];
-  }
+    const variant: KdsButtonProps["variant"] = "transparent";
+    const visibleItems: Array<
+      { id: ShortcutName; visible: boolean } & KdsButtonProps
+    > = [
+      // Always visible
+      {
+        id: "undo",
+        visible: true,
+        label: $shortcuts.getText("undo"),
+        leadingIcon: "undo",
+        title: toolbarButtonTitle($shortcuts.get("undo")),
+        disabled: !$shortcuts.isEnabled("undo"),
+        variant,
+      },
+      {
+        id: "redo",
+        visible: true,
+        label: $shortcuts.getText("redo"),
+        leadingIcon: "redo",
+        title: toolbarButtonTitle($shortcuts.get("redo")),
+        disabled: !$shortcuts.isEnabled("redo"),
+        variant,
+      },
 
-  if (!activeWorkflow.value || !uiControls.canEditWorkflow) {
-    return [];
-  }
+      // Workflow
+      {
+        id: "executeAll",
+        visible: !hasNodesSelected,
+        label: $shortcuts.getText("executeAll"),
+        leadingIcon: "execute-all",
+        title: toolbarButtonTitle($shortcuts.get("executeAll")),
+        disabled: !$shortcuts.isEnabled("executeAll"),
+        variant,
+      },
+      {
+        id: "cancelAll",
+        visible: !hasNodesSelected,
+        label: $shortcuts.getText("cancelAll"),
+        leadingIcon: "x-close",
+        title: toolbarButtonTitle($shortcuts.get("cancelAll")),
+        disabled: !$shortcuts.isEnabled("cancelAll"),
+        variant,
+      },
+      {
+        id: "resetAll",
+        visible: !hasNodesSelected,
+        label: $shortcuts.getText("resetAll"),
+        leadingIcon: "reset-all",
+        title: toolbarButtonTitle($shortcuts.get("resetAll")),
+        disabled: !$shortcuts.isEnabled("resetAll"),
+        variant,
+      },
 
-  if (activeProjectVersionsModeStatus.value === "active") {
-    return ["closeVersionHistory"];
-  }
+      // Node execution
+      {
+        id: "executeSelected",
+        visible: hasNodesSelected,
+        label: $shortcuts.getText("executeSelected"),
+        leadingIcon: "selected-execution",
+        title: toolbarButtonTitle($shortcuts.get("executeSelected")),
+        disabled: !$shortcuts.isEnabled("executeSelected"),
+        variant,
+      },
+      {
+        id: "cancelSelected",
+        visible: hasNodesSelected,
+        label: $shortcuts.getText("cancelSelected"),
+        leadingIcon: "selected-cancel",
+        title: toolbarButtonTitle($shortcuts.get("cancelSelected")),
+        disabled: !$shortcuts.isEnabled("cancelSelected"),
+        variant,
+      },
+      {
+        id: "resetSelected",
+        visible: hasNodesSelected,
+        label: $shortcuts.getText("resetSelected"),
+        leadingIcon: "selected-reset",
+        title: toolbarButtonTitle($shortcuts.get("resetSelected")),
+        disabled: !$shortcuts.isEnabled("resetSelected"),
+        variant,
+      },
 
-  const hasNodesSelected = selectedNodes.value.length > 0;
+      {
+        id: "openLayoutEditor",
+        visible: $shortcuts.isEnabled("openLayoutEditor"),
+        label: $shortcuts.getText("openLayoutEditor"),
+        leadingIcon: "layout-editor",
+        title: toolbarButtonTitle($shortcuts.get("openLayoutEditor")),
+        disabled: !$shortcuts.isEnabled("openLayoutEditor"),
+        variant,
+      },
+    ];
 
-  const visibleItems: Partial<Record<ShortcutName, boolean>> = {
-    save: !isUnknownProject.value(activeProjectId.value) && isDesktop(),
-    saveAs: isUnknownProject.value(activeProjectId.value) && isDesktop(),
-
-    // Always visible
-    undo: true,
-    redo: true,
-
-    // Workflow
-    executeAll: !hasNodesSelected,
-    cancelAll: !hasNodesSelected,
-    resetAll: !hasNodesSelected,
-
-    // Node execution
-    executeSelected: hasNodesSelected,
-    cancelSelected: hasNodesSelected,
-    resetSelected: hasNodesSelected,
-
-    openLayoutEditor: $shortcuts.isEnabled("openLayoutEditor"),
-  };
-
-  return Object.entries(visibleItems)
-    .filter(([_, visible]) => visible)
-    .map(([name]) => name);
-});
+    return visibleItems.filter(({ visible }) => visible);
+  },
+);
 
 const onCanvasModeUpdate = (
   _: unknown,
@@ -245,25 +290,15 @@ const onUploadButtonClick = async () => {
   }
 };
 
-const uploadButton = ref<InstanceType<typeof ToolbarButton>>();
+const uploadButton =
+  useTemplateRef<InstanceType<typeof KdsButton>>("uploadButton");
 
-type CreateHintOptions = Parameters<
-  ReturnType<typeof useHint>["createHint"]
->[0];
-
-const ToolbarButtonWithHint = defineComponent(
-  (props: { createHintOptions: CreateHintOptions }, ctx) => {
-    onMounted(() => {
-      // By creating the hint in this wrapper, it's lifecycle is independent of the WorkflowToolbar
-      //  (e.g. when switching between two tabs with different ToolbarButtons each)
-      useHint().createHint(props.createHintOptions);
-    });
-    return () => h(ToolbarButton, ctx.attrs, ctx.slots);
-  },
-  {
-    props: ["createHintOptions"] as const,
-  },
-);
+onMounted(() => {
+  useHint().createHint({
+    hintId: HINTS.UPLOAD_BUTTON,
+    referenceElement: uploadButton,
+  });
+});
 
 const { isSVGRenderer } = useCanvasRendererUtils();
 </script>
@@ -271,18 +306,31 @@ const { isSVGRenderer } = useCanvasRendererUtils();
 <template>
   <div class="toolbar">
     <transition-group tag="div" name="button-list">
+      <KdsButton
+        v-if="activeProjectVersionsModeStatus === 'active'"
+        label="Close version history"
+        leading-icon="chevron-left"
+        variant="outlined"
+        @click="$shortcuts.dispatch('closeVersionHistory')"
+      />
+
       <!--
         setting :key="the list of all visible buttons",
         re-renders the whole list in a new div whenever buttons appear or disappear,
         such that those two lists can be faded
       -->
-      <div :key="toolbarButtons.join()" class="button-list">
-        <ToolbarShortcutButton
+      <div
+        v-else
+        :key="toolbarButtons.map(({ id }) => id).join()"
+        class="button-list"
+      >
+        <SaveButton v-if="isDesktop()" />
+
+        <KdsButton
           v-for="button in toolbarButtons"
-          :key="button"
-          :name="button"
-          :with-text="!hideText[button]"
-          :dropdown="toolbarDropdowns[button] ?? []"
+          :key="button.id"
+          v-bind="button"
+          @click="$shortcuts.dispatch(button.id)"
         />
       </div>
     </transition-group>
@@ -294,30 +342,22 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     />
 
     <div class="toolbar-end">
-      <ToolbarButtonWithHint
+      <KdsButton
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocalWorkflow"
         ref="uploadButton"
-        with-text
-        title="Upload"
-        :create-hint-options="{
-          hintId: HINTS.UPLOAD_BUTTON,
-          referenceElement: computed(() => uploadButton),
-        }"
+        label="Upload"
+        leading-icon="cloud-upload"
+        variant="transparent"
         @click="onUploadButtonClick"
-      >
-        <Component :is="CloudUploadIcon" />
-        Upload
-      </ToolbarButtonWithHint>
+      />
 
-      <ToolbarButton
+      <KdsButton
         v-else-if="isDeploymentButtonVisible"
-        with-text
-        title="Deploy on Hub"
+        label="Deploy on Hub"
+        leading-icon="deploy"
+        variant="transparent"
         @click="onDeploymentButtonClick"
-      >
-        <DeploymentIcon />
-        Deploy on Hub
-      </ToolbarButton>
+      />
 
       <SubMenu
         v-if="isSVGRenderer"
@@ -365,9 +405,6 @@ const { isSVGRenderer } = useCanvasRendererUtils();
   height: var(--app-toolbar-height);
   max-width: 100vw;
   flex: 0 0 auto;
-  padding: 10px;
-  background-color: var(--knime-gray-ultra-light);
-  border-bottom: 1px solid var(--knime-silver-sand);
 
   & .button-list {
     transition: opacity 150ms ease-out;
@@ -396,8 +433,65 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     flex: 0 0;
     gap: var(--space-4);
 
-    & .help-menu:deep(button.submenu-toggle) {
-      border: 1px solid var(--knime-silver-sand);
+    & button {
+      white-space: nowrap;
+    }
+
+    & :deep(.submenu-toggle) {
+      border-radius: var(
+        --kds-legacy-button-border-radius,
+        var(--kds-border-radius-container-0-37x)
+      );
+
+      & svg {
+        stroke-width: 3.5px;
+        width: 12px;
+        height: 12px;
+      }
+
+      &.expanded {
+        background-color: var(--kds-color-background-neutral-active);
+
+        & svg {
+          stroke: var(--kds-color-text-and-icon-neutral);
+        }
+      }
+
+      &:not(.expanded) svg {
+        stroke: var(--kds-color-text-and-icon-neutral);
+      }
+
+      &:focus-visible {
+        outline: var(--kds-border-action-focused);
+        outline-offset: 1px;
+        background-color: transparent;
+
+        & svg {
+          stroke: var(--kds-color-text-and-icon-neutral);
+        }
+
+        &:hover {
+          background-color: var(--kds-color-background-neutral-hover);
+          border-color: var(--kds-color-background-neutral-hover);
+        }
+
+        &:active {
+          stroke: var(--kds-color-background-neutral);
+        }
+      }
+    }
+
+    & .help-menu:deep(.function-button) {
+      width: var(--kds-dimension-component-width-1-75x);
+      height: var(--kds-dimension-component-height-1-75x);
+
+      & svg {
+        stroke: var(--kds-color-text-and-icon-neutral);
+      }
+    }
+
+    & .help-menu:deep(.function-button.active) {
+      background: var(--kds-color-background-neutral-active);
     }
   }
 }

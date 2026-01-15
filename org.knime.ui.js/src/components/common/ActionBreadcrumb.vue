@@ -74,8 +74,23 @@ const onWheel = throttle(function (e: WheelEvent) {
     display: none; /* ... Chrome, Safari and Opera */
   }
 
-  & :deep(a):focus-visible {
-    @mixin focus-outline;
+  &:deep(span) {
+    color: var(--kds-color-text-and-icon-subtle);
+    font: var(--kds-font-base-interactive-small);
+    padding: var(--kds-spacing-container-0-25x);
+    line-height: 16px;
+
+    & svg.breadcrumb-icon {
+      stroke: var(--kds-color-text-and-icon-subtle);
+      margin: 0 var(--kds-spacing-container-0-37x) 0
+        var(--kds-spacing-container-0-37x);
+
+      @mixin kds-svg-icon-size-medium;
+    }
+  }
+
+  &:deep(svg.arrow) {
+    stroke: var(--kds-color-text-and-icon-neutral);
   }
 }
 </style>

@@ -3,22 +3,26 @@ name: Create PR with updated E2E Tests
 on:
   workflow_dispatch: # Manual trigger only
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-e2e:
     runs-on: ubuntu-8c-32gb
+
     defaults:
       run:
         working-directory: org.knime.ui.js
+
     container:
-      # Fixed container version
       image: mcr.microsoft.com/playwright:v1.51.1-noble
       options: --user 1001
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -29,8 +33,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: "org.knime.ui.js/package.json"
-          cache: "pnpm"
+          node-version-file: org.knime.ui.js/package.json
+          cache: pnpm
           cache-dependency-path: org.knime.ui.js/pnpm-lock.yaml
 
       - name: Install dependencies
@@ -40,46 +44,18 @@ jobs:
         run: pnpm exec playwright install
 
       - name: Run E2E update
-        run: pnpm run e2e:test:update
+        run: pnpm run test:e2e:update
 
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Commit only changed files
-        id: git-commit
-        run: |
-          # Generate a human-readable unique branch name
-          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
-          BRANCH_NAME="update-e2e-${TIMESTAMP}-${{ github.run_id }}"
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-
-          # Create branch
-          git checkout -b $BRANCH_NAME
-
-          # Stage only changed files
-          git add -u
-
-          # Exit if nothing changed
-          git diff --cached --quiet && echo "No changes detected, exiting." && exit 0
-
-          # Commit changes
-          git commit -m "chore: update e2e test files"
-
-      - name: Push branch
-        if: success() && steps.git-commit.conclusion == 'success'
-        run: git push origin ${{ steps.git-commit.outputs.branch_name }}
-
-      - name: Create Pull Request
-        if: success() && steps.git-commit.conclusion == 'success'
+      - name: Create Pull Request (if changes exist)
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          base: ${{ github.ref_name }}
+          branch: update-e2e-${{ github.run_id }}
           commit-message: "chore: update e2e test files"
-          branch: ${{ steps.git-commit.outputs.branch_name }}
           title: "Update E2E test files"
-          body: "This PR updates E2E test files automatically."
-          base: ${{ github.ref_name }} # target current branch
-          labels: automated, e2e-update
-          draft: false
+          body: |
+            Automated update of E2E test files
+            generated via `pnpm run test:e2e:update`.
+          labels: automated,e2e-update
+          delete-branch: true

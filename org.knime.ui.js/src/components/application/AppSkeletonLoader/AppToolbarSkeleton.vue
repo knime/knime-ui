@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
+import { isDesktop } from "@/environment";
 
 type Props = {
   isChangingBetweenWorkflows: boolean;
@@ -12,28 +13,27 @@ defineProps<Props>();
   <div class="toolbar-skeleton-wrapper">
     <template v-if="!isChangingBetweenWorkflows">
       <SkeletonItem
-        width="30px"
-        height="30px"
-        type="icon-button"
-        :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        v-if="isDesktop()"
+        width="100px"
+        type="button"
+        class="button-skeleton-normal"
       />
+      <SkeletonItem width="30px" height="30px" type="icon-button" />
+      <SkeletonItem width="30px" height="30px" type="icon-button" />
       <SkeletonItem
-        width="30px"
-        height="30px"
-        type="icon-button"
-        :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        width="100px"
+        type="button"
+        class="button-skeleton-normal"
       />
       <SkeletonItem
         width="100px"
         type="button"
         class="button-skeleton-normal"
-        :style="{ border: '1px solid var(--knime-silver-sand)' }"
       />
       <SkeletonItem
         width="100px"
         type="button"
         class="button-skeleton-normal"
-        :style="{ border: '1px solid var(--knime-silver-sand)' }"
       />
     </template>
   </div>
