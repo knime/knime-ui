@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-import { isDesktop } from "@/environment";
+import { isBrowser, isDesktop } from "@/environment";
 
 type Props = {
   isChangingBetweenWorkflows: boolean;
@@ -18,8 +18,14 @@ defineProps<Props>();
         type="button"
         class="button-skeleton-normal"
       />
-      <SkeletonItem width="30px" height="30px" type="icon-button" />
-      <SkeletonItem width="30px" height="30px" type="icon-button" />
+      <SkeletonItem
+        v-else-if="isBrowser()"
+        width="28px"
+        height="28px"
+        type="icon-button"
+      />
+      <SkeletonItem width="28px" height="28px" type="icon-button" />
+      <SkeletonItem width="28px" height="28px" type="icon-button" />
       <SkeletonItem
         width="100px"
         type="button"
@@ -45,7 +51,7 @@ defineProps<Props>();
   border-bottom: 1px solid var(--knime-silver-sand);
   min-height: var(--app-toolbar-height);
   display: flex;
-  gap: 10px;
+  gap: var(--space-4);
   padding: 10px;
   align-items: center;
 }
