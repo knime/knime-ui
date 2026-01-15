@@ -9,8 +9,10 @@ import LoadIcon from "@knime/styles/img/icons/load.svg";
 import type { NameCollisionHandling } from "@/api/custom-types.ts";
 import {
   type ComponentNode,
+  ItemVersion,
   LinkVariant,
   type LinkVariantInfo,
+  type NamedItemVersion,
   type ShareComponentResult,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
@@ -20,17 +22,21 @@ import {
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer.ts";
 import { usePromptCollisionStrategies } from "@/composables/confirmDialogs/usePromptCollisionHandling";
+import { useChangeHubItemVersionModal } from "@/composables/useChangeHubItemVersionModal";
 import { useChangeLinkVariantModal } from "@/composables/useChangeLinkVariantModal";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application.ts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";
 import { getToastPresets } from "@/toastPresets";
+import { isNodeComponent } from "@/util/nodeUtil";
 
 import { useConnectionInteractionsStore } from "./connectionInteractions";
 import { useWorkflowStore } from "./workflow";
 
-const TOAST_HEADLINE = "Linked components";
-const LINK_VARIANT_UPDATED_MESSAGE = "Link variant updated.";
+const TOAST_HEADLINE = "Component link updated";
+const LINK_VARIANT_UPDATED_MESSAGE =
+  "The component link type has been updated.";
+const ITEM_VERSION_UPDATED_MESSAGE = "Item version updated.";
 
 const $toast = getToastsProvider();
 
@@ -238,14 +244,69 @@ export const useComponentInteractionsStore = defineStore(
         });
       },
 
-      changeHubItemVersion({ nodeId }: { nodeId: string }) {
+      async changeHubItemVersion({ nodeId }: { nodeId: string }) {
+        const workflowStore = useWorkflowStore();
+        const node = workflowStore.activeWorkflow?.nodes?.[nodeId];
+        if (!node || !isNodeComponent(node)) {
+          return;
+        }
+
+        const componentNode = node;
+        if (
+          !componentNode.link ||
+          !componentNode.link.isHubItemVersionChangeable
+        ) {
+          return;
+        }
+
         const { projectId, workflowId } =
-          useWorkflowStore().getProjectAndWorkflowIds;
-        API.desktop.openChangeComponentHubItemVersionDialog({
-          projectId,
-          workflowId,
-          nodeId,
+          workflowStore.getProjectAndWorkflowIds;
+
+        let itemVersions: NamedItemVersion[];
+        try {
+          itemVersions = await API.component.getItemVersions({
+            projectId,
+            workflowId,
+            nodeId,
+          });
+        } catch (error) {
+          toastPresets.workflow.component.fetchItemVersionsFailed({ error });
+          return;
+        }
+
+        const currentItemVersion =
+          componentNode.link.targetHubItemVersion ??
+          ({
+            type: ItemVersion.TypeEnum.CurrentState,
+          } satisfies ItemVersion);
+
+        const { promptChangeHubItemVersion } = useChangeHubItemVersionModal();
+        const itemVersion = await promptChangeHubItemVersion({
+          currentItemVersion,
+          itemVersions,
         });
+
+        if (!itemVersion) {
+          return;
+        }
+
+        try {
+          await API.workflowCommand.ChangeComponentLink({
+            projectId,
+            workflowId,
+            nodeId,
+            itemVersion,
+          });
+
+          $toast.show({
+            headline: TOAST_HEADLINE,
+            message: ITEM_VERSION_UPDATED_MESSAGE,
+            type: "success",
+            autoRemove: true,
+          });
+        } catch (error) {
+          toastPresets.workflow.component.updateHubItemVersionFailed({ error });
+        }
       },
 
       async changeComponentLinkVariant({ nodeId }: { nodeId: string }) {

@@ -47,6 +47,7 @@ import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import DestinationPickerModal from "./spaces/DestinationPicker/DestinationPickerModal.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
 import { useIdleUserTracking } from "./useIdleUserTracking";
+import ChangeHubItemVersionModal from "./workflowEditor/ChangeHubItemVersionModal.vue";
 import ChangeLinkVariantModal from "./workflowEditor/ChangeLinkVariantModal.vue";
 
 /**
@@ -334,6 +335,7 @@ const onCloseError = () => {
     <ShortcutsOverviewDialog />
 
     <DestinationPickerModal />
+    <ChangeHubItemVersionModal />
     <ChangeLinkVariantModal />
 
     <ToastStack class="toast-stack" />
