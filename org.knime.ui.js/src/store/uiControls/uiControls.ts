@@ -81,7 +81,13 @@ export interface UIControlsState {
    * Whether detaching *node* views is allowed (open in a new window)
    */
   canDetachNodeViews: boolean;
-
+  /**
+   * Weather we use auto sync to save (browser only; not job viewer)
+   */
+  isAutoSyncSupported: boolean;
+  /**
+   * Regular Save and Save as… actions
+   */
   isLocalSaveSupported: boolean;
   /**
    * Whether opening the *legacy* dialog for port views is allowed
@@ -125,6 +131,8 @@ export const useUIControlsStore = defineStore("uiControls", {
     canDetachNodeViews: false,
 
     isLocalSaveSupported: false,
+
+    isAutoSyncSupported: false,
 
     canOpenLegacyPortViews: false,
 
@@ -170,6 +178,7 @@ export const useUIControlsStore = defineStore("uiControls", {
         canDetachPortViews: isDesktop(),
         canDetachNodeViews: isDesktop(),
         isLocalSaveSupported: isDesktop(),
+        isAutoSyncSupported: isBrowser() && isDefault,
         canOpenLegacyPortViews: isDesktop(),
         canLockAndUnlockSubnodes: isDesktop(),
       };

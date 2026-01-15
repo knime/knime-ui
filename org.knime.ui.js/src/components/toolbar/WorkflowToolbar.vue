@@ -15,7 +15,7 @@ import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
-import { isBrowser, isDesktop } from "@/environment";
+import { isBrowser } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
@@ -35,6 +35,7 @@ import { getToastPresets } from "@/toastPresets";
 import HelpMenu from "../application/HelpMenu.vue";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
+import AutoSaveButton from "./AutoSyncButton.vue";
 import SaveButton from "./SaveButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
@@ -301,6 +302,8 @@ onMounted(() => {
 });
 
 const { isSVGRenderer } = useCanvasRendererUtils();
+
+const { isLocalSaveSupported, isAutoSyncSupported } = useUIControlsStore();
 </script>
 
 <template>
@@ -324,7 +327,8 @@ const { isSVGRenderer } = useCanvasRendererUtils();
         :key="toolbarButtons.map(({ id }) => id).join()"
         class="button-list"
       >
-        <SaveButton v-if="isDesktop()" />
+        <SaveButton v-if="isLocalSaveSupported" />
+        <AutoSaveButton v-if="isAutoSyncSupported" />
 
         <KdsButton
           v-for="button in toolbarButtons"
