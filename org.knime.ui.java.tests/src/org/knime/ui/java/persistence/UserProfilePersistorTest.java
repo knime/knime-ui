@@ -88,6 +88,7 @@ class UserProfilePersistorTest {
         var userProfile = UserProfilePersistor.loadUserProfile(m_profileDir);
         assertThat(userProfile.uiSettings()).isEmpty();
         assertThat(userProfile.onboardingHintsSettings()).isEmpty();
+        assertThat(userProfile.aiSettings()).isEmpty();
         assertThat(userProfile.internalUsage().getTimesUiCreated()).isZero();
 
         // save an existing user profile
@@ -102,6 +103,11 @@ class UserProfilePersistorTest {
                 hint1: "value1"
                 hint2: "value2"
                 """);
+        var aiSettingsFile = Files.readString(m_profileDir.resolve("ai-settings.yaml"));
+        assertIsEqualIgnoreLineOrder(aiSettingsFile, """
+                ai1: "value1"
+                ai2: "value2"
+                """);
         var usage = Files.readString(m_profileDir.resolve("usage.yaml"));
         assertIsEqualIgnoreLineOrder(usage, """
                 timesUiCreated: 2
@@ -113,6 +119,8 @@ class UserProfilePersistorTest {
             .containsExactlyEntriesOf(Map.of("setting1", "value1", "setting2", "value2"));
         assertThat(userProfile.onboardingHintsSettings())
             .containsExactlyEntriesOf(Map.of("hint1", "value1", "hint2", "value2"));
+        assertThat(userProfile.aiSettings())
+            .containsExactlyEntriesOf(Map.of("ai1", "value1", "ai2", "value2"));
         assertThat(userProfile.internalUsage().getTimesUiCreated()).isEqualTo(2);
     }
 
@@ -153,7 +161,8 @@ class UserProfilePersistorTest {
         usage.trackUiCreated();
         usage.trackUiCreated();
         return new UserProfile(usage, Map.of("setting1", "value1", "setting2", "value2"),
-            Map.of("hint1", "value1", "hint2", "value2"));
+            Map.of("hint1", "value1", "hint2", "value2"),
+            Map.of("ai1", "value1", "ai2", "value2"));
     }
 
 }
