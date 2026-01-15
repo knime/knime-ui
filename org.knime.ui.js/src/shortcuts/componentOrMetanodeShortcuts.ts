@@ -356,11 +356,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         isLinked(selectedNode) &&
         selectedNode.link?.isHubItemVersionChangeable;
 
-      return (
-        isWritable &&
-        useUIControlsStore().canDoAdvancedComponentSharingOperations &&
-        isHubItemVersionChangeable
-      );
+      return isWritable && isHubItemVersionChangeable;
     },
   },
   changeComponentLinkVariant: {

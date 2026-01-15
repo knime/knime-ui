@@ -885,6 +885,35 @@ export interface CategoryMetadata {
 
 
 /**
+ * Changes the source URI (link) of a linked component
+ * @export
+ * @interface ChangeComponentLinkCommand
+ */
+export interface ChangeComponentLinkCommand extends WorkflowCommand {
+
+    /**
+     * Id of the component to relink.
+     * @type {string}
+     * @memberof ChangeComponentLinkCommand
+     */
+    nodeId: string;
+    /**
+     *
+     * @type {any}
+     * @memberof ChangeComponentLinkCommand
+     */
+    itemVersion: any;
+
+}
+
+
+/**
+ * @export
+ * @namespace ChangeComponentLinkCommand
+ */
+export namespace ChangeComponentLinkCommand {
+}
+/**
  * Resets selected nodes and collapses selected nodes and annotations into a metanode or component.
  * @export
  * @interface CollapseCommand
@@ -1614,6 +1643,23 @@ export interface CopyResult extends CommandResult {
 export namespace CopyResult {
 }
 /**
+ *
+ * @export
+ * @interface CurrentState
+ */
+export interface CurrentState extends ItemVersion {
+
+
+}
+
+
+/**
+ * @export
+ * @namespace CurrentState
+ */
+export namespace CurrentState {
+}
+/**
  * Details about a custom job manager provided by a third party.
  * @export
  * @interface CustomJobManager
@@ -1991,6 +2037,38 @@ export interface InsertNodeCommand extends WorkflowCommand {
  * @namespace InsertNodeCommand
  */
 export namespace InsertNodeCommand {
+}
+/**
+ *
+ * @export
+ * @interface ItemVersion
+ */
+export interface ItemVersion {
+
+    /**
+     *
+     * @type {string}
+     * @memberof ItemVersion
+     */
+    type: ItemVersion.TypeEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace ItemVersion
+ */
+export namespace ItemVersion {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum TypeEnum {
+        CurrentState = 'current-state',
+        MostRecent = 'most-recent',
+        SpecificVersion = 'specific-version'
+    }
 }
 /**
  * The node/workflow&#39;s job manager, if a special one is defined. Otherwise not given.
@@ -2913,6 +2991,64 @@ export interface MetaPorts {
      * @memberof MetaPorts
      */
     ports?: Array<NodePort>;
+
+}
+
+
+/**
+ *
+ * @export
+ * @interface MostRecent
+ */
+export interface MostRecent extends ItemVersion {
+
+
+}
+
+
+/**
+ * @export
+ * @namespace MostRecent
+ */
+export namespace MostRecent {
+}
+/**
+ * Corresponds to org.knime.hub.client.sdk.ent.catalog.NamedItemVersion
+ * @export
+ * @interface NamedItemVersion
+ */
+export interface NamedItemVersion {
+
+    /**
+     * Version number of the item.
+     * @type {number}
+     * @memberof NamedItemVersion
+     */
+    version: number;
+    /**
+     *
+     * @type {string}
+     * @memberof NamedItemVersion
+     */
+    title?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof NamedItemVersion
+     */
+    description?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof NamedItemVersion
+     */
+    author?: string;
+    /**
+     *
+     * @type {Date}
+     * @memberof NamedItemVersion
+     */
+    createdOn?: Date;
 
 }
 
@@ -5009,6 +5145,29 @@ export namespace SpaceProvider {
     }
 }
 /**
+ *
+ * @export
+ * @interface SpecificVersion
+ */
+export interface SpecificVersion extends ItemVersion {
+
+    /**
+     * Version number of the item.
+     * @type {number}
+     * @memberof SpecificVersion
+     */
+    version: number;
+
+}
+
+
+/**
+ * @export
+ * @namespace SpecificVersion
+ */
+export namespace SpecificVersion {
+}
+/**
  * Defines the style of a range (e.g. within a workflow annotation).
  * @export
  * @interface StyleRange
@@ -5179,6 +5338,12 @@ export interface TemplateLink {
      * @memberof TemplateLink
      */
     isHubItemVersionChangeable?: any;
+    /**
+     *
+     * @type {ItemVersion}
+     * @memberof TemplateLink
+     */
+    targetHubItemVersion?: ItemVersion;
     /**
      *
      * @type {LinkVariant}
@@ -5930,6 +6095,7 @@ export namespace WorkflowCommand {
         ShareComponent = 'share_component',
         AddBendpoint = 'add_bendpoint',
         UpdateComponentLinkInformation = 'update_component_link_information',
+        ChangeComponentLink = 'change_component_link',
         TransformMetanodePortsBar = 'transform_metanode_ports_bar',
         UpdateLinkedComponents = 'update_linked_components',
         AlignNodes = 'align_nodes'
@@ -6284,6 +6450,24 @@ const component = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('ComponentService.getComponentDescription', { ...defaultParams, ...params });
+        },
+        /**
+         * Returns the available item versions for the linked component represented by the given node.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         */
+        async getItemVersions(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<Array<NamedItemVersion>> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentService.getItemVersions', { ...defaultParams, ...params });
         },
         /**
          * Returns the available link variants for the linked component represented by the given node.
@@ -7961,6 +8145,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.UpdateComponentLinkInformation }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Changes the source URI (link) of a linked component
+     */
+	ChangeComponentLink(
+		params: { projectId: string, workflowId: string } & Omit<ChangeComponentLinkCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.ChangeComponentLink }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	

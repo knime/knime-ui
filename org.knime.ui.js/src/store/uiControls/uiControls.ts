@@ -70,10 +70,6 @@ export interface UIControlsState {
    */
   canDoComponentSharingOperations: boolean;
   /**
-   * Whether component operations like change link and change hub version are allowed
-   */
-  canDoAdvancedComponentSharingOperations: boolean;
-  /**
    * Whether detaching *port* views is allowed (open in a new window)
    */
   canDetachPortViews: boolean;
@@ -124,7 +120,6 @@ export const useUIControlsStore = defineStore("uiControls", {
     canConfigureFlowVariables: false,
 
     canDoComponentSharingOperations: false,
-    canDoAdvancedComponentSharingOperations: false,
 
     canDetachPortViews: false,
 
@@ -174,7 +169,6 @@ export const useUIControlsStore = defineStore("uiControls", {
          * (for the time being) only supported in desktop AP.
          */
         canConfigureFlowVariables: isDesktop(),
-        canDoAdvancedComponentSharingOperations: isDesktop(),
         canDetachPortViews: isDesktop(),
         canDetachNodeViews: isDesktop(),
         isLocalSaveSupported: isDesktop(),
