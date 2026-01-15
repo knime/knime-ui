@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import { Modal, RadioButtons } from "@knime/components";
-import { KdsButton } from "@knime/kds-components";
+import {
+  KdsButton,
+  KdsModal,
+  KdsRadioButtonGroup,
+  type KdsRadioButtonGroupOption,
+} from "@knime/kds-components";
 
 import { LinkVariant } from "@/api/gateway-api/generated-api";
 import type { LinkVariantInfo } from "@/api/gateway-api/generated-api";
@@ -20,9 +24,7 @@ const selectedLinkVariant = ref<LinkVariant.VariantEnum | null>(null);
 
 type RadioValue = {
   id: LinkVariant.VariantEnum;
-  text: string;
-  subtext: string;
-};
+} & KdsRadioButtonGroupOption;
 
 const toRadioValue = (
   variant: LinkVariantInfo | null | undefined,
@@ -39,7 +41,7 @@ const toRadioValue = (
   return {
     id: variantValue,
     text: variant?.title ?? variantValue,
-    subtext: descriptionParts.join(" "),
+    helperText: descriptionParts.join(" "),
   };
 };
 
@@ -104,16 +106,16 @@ watch(radioValues, (options) => {
 </script>
 
 <template>
-  <Modal
+  <KdsModal
     v-show="isActive"
     :active="isActive"
     title="Change link type"
     style-type="info"
     class="modal"
-    @cancel="cancel"
+    @close="cancel"
   >
-    <template #notice>
-      <RadioButtons
+    <template #body>
+      <KdsRadioButtonGroup
         v-if="radioValues.length"
         :possible-values="radioValues"
         :model-value="selectedLinkVariant ?? undefined"
@@ -121,7 +123,7 @@ watch(radioValues, (options) => {
         @update:model-value="onSelectionChange"
       />
     </template>
-    <template #controls>
+    <template #footer>
       <KdsButton variant="outlined" label="Cancel" @click="cancel" />
       <KdsButton
         label="Choose"
@@ -129,7 +131,7 @@ watch(radioValues, (options) => {
         @click="onConfirm"
       />
     </template>
-  </Modal>
+  </KdsModal>
 </template>
 
 <style lang="postcss" scoped>
