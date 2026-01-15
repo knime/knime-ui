@@ -513,7 +513,7 @@ export interface AllowedWorkflowActions extends AllowedActions {
 export interface AncestorInfo {
 
     /**
-     * Optional new name of the item. The known project name may be outdated. Return the new name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
+     * Optional new name of the item. The known item name may be outdated. Return the new item name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
      * @type {string}
      * @memberof AncestorInfo
      */
@@ -1915,6 +1915,151 @@ export interface KaiFeedback {
      * @memberof KaiFeedback
      */
     projectId: string;
+
+}
+
+
+/**
+ * A structured inquiry from K-AI requesting user input.
+ * @export
+ * @interface KaiInquiry
+ */
+export interface KaiInquiry {
+
+    /**
+     * Unique identifier for correlating the response.
+     * @type {string}
+     * @memberof KaiInquiry
+     */
+    inquiryId: string;
+    /**
+     * Type of inquiry.
+     * @type {string}
+     * @memberof KaiInquiry
+     */
+    inquiryType: KaiInquiry.InquiryTypeEnum;
+    /**
+     * Title briefly describing the inquiry.
+     * @type {string}
+     * @memberof KaiInquiry
+     */
+    title: string;
+    /**
+     * Additional information describing the inquiry and providing context.
+     * @type {string}
+     * @memberof KaiInquiry
+     */
+    description: string;
+    /**
+     * Available choices.
+     * @type {Array<KaiInquiryOption>}
+     * @memberof KaiInquiry
+     */
+    options: Array<KaiInquiryOption>;
+    /**
+     * Auto-cancel after N seconds.
+     * @type {number}
+     * @memberof KaiInquiry
+     */
+    timeoutSeconds: number;
+    /**
+     * Option to select on timeout.
+     * @type {string}
+     * @memberof KaiInquiry
+     */
+    defaultOptionId: string;
+    /**
+     * Optional object containing inquiry type-specific information that might be used by clients.
+     * @type {{ [key: string]: any; }}
+     * @memberof KaiInquiry
+     */
+    metadata?: { [key: string]: any; };
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiInquiry
+ */
+export namespace KaiInquiry {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum InquiryTypeEnum {
+        Permission = 'permission',
+        Confirmation = 'confirmation'
+    }
+}
+/**
+ * A single selectable option within a KaiInquiry.
+ * @export
+ * @interface KaiInquiryOption
+ */
+export interface KaiInquiryOption {
+
+    /**
+     * Identifier returned in response.
+     * @type {string}
+     * @memberof KaiInquiryOption
+     */
+    id: string;
+    /**
+     * Display text for the option.
+     * @type {string}
+     * @memberof KaiInquiryOption
+     */
+    label: string;
+    /**
+     * UI hint for styling.
+     * @type {string}
+     * @memberof KaiInquiryOption
+     */
+    style?: KaiInquiryOption.StyleEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace KaiInquiryOption
+ */
+export namespace KaiInquiryOption {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum StyleEnum {
+        Primary = 'primary',
+        Secondary = 'secondary'
+    }
+}
+/**
+ * The user&#39;s response to a KaiInquiry.
+ * @export
+ * @interface KaiInquiryResponse
+ */
+export interface KaiInquiryResponse {
+
+    /**
+     * Identifies the top-level workflow, needed for authentication.
+     * @type {string}
+     * @memberof KaiInquiryResponse
+     */
+    projectId: string;
+    /**
+     * Must match the inquiry being responded to.
+     * @type {string}
+     * @memberof KaiInquiryResponse
+     */
+    inquiryId: string;
+    /**
+     * The id of the chosen option.
+     * @type {string}
+     * @memberof KaiInquiryResponse
+     */
+    selectedOptionId: string;
 
 }
 
@@ -6332,6 +6477,21 @@ const kai = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('KaiService.makeAiRequest', { ...defaultParams, ...params });
+        },
+        /**
+         * Responds to a pending inquiry from K-AI.
+         * @param {string} params.kaiChainId Id of a K-AI chain.
+         * @param {KaiInquiryResponse} params.kaiInquiryResponse 
+         * @param {*} [params.options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async respondToInquiry(
+        	params: { kaiChainId: string,  kaiInquiryResponse: KaiInquiryResponse  }
+        ): Promise<Response> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.respondToInquiry', { ...defaultParams, ...params });
         },
         /**
          * Submits feedback for a chain.
