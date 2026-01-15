@@ -60,7 +60,7 @@ export default defineConfig({
       },
     },
     {
-      // this ueses the new chromium headless mode used for perfromance and memory tests
+      // this uses the new chromium headless mode used for performance and memory tests
       name: "chromium-new",
       use: {
         ...devices["Desktop Chrome"],
