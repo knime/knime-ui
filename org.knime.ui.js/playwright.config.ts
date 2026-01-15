@@ -46,22 +46,8 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: "chromium",
-      use: {
-        isMobile: false,
-        hasTouch: false,
-        defaultBrowserType: "chromium",
-        viewport: {
-          width: 1920,
-          height: 1040,
-        },
-        deviceScaleFactor: 2,
-        storageState: getBrowserStorageState(),
-      },
-    },
-    {
       // this uses the new chromium headless mode used for performance and memory tests
-      name: "chromium-new",
+      name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
         // this enables the new headless mode (it's more like a real browser)
