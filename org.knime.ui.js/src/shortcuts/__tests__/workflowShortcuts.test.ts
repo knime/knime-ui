@@ -32,7 +32,11 @@ describe("workflowShortcuts", () => {
       selectionStore,
       canvasStore,
       canvasAnchoredComponentsStore,
+      uiControlsStore,
     } = mockedStores;
+
+    uiControlsStore.isLocalSaveSupported = true;
+    uiControlsStore.isAutoSyncSupported = false;
 
     applicationSettingsStore.hasClipboardSupport = true;
     // @ts-expect-error
