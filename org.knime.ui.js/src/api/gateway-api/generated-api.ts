@@ -513,7 +513,7 @@ export interface AllowedWorkflowActions extends AllowedActions {
 export interface AncestorInfo {
 
     /**
-     * Optional new name of the item. The known project name may be outdated. Return the new name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
+     * Optional new name of the item. The known item name may be outdated. Return the new item name to check this e.g. on \&quot;Reveal in Space Explorer\&quot; and display a notification.
      * @type {string}
      * @memberof AncestorInfo
      */
@@ -711,12 +711,6 @@ export interface AppState {
      * @memberof AppState
      */
     spaceProviders?: Array<SpaceProvider>;
-    /**
-     *
-     * @type {ProjectSyncState}
-     * @memberof AppState
-     */
-    projectSyncState?: ProjectSyncState;
 
 }
 
@@ -3977,52 +3971,6 @@ export interface ProjectMetadata extends EditableMetadata {
 export namespace ProjectMetadata {
 }
 /**
- * The synchronization state of a project.
- * @export
- * @interface ProjectSyncState
- */
-export interface ProjectSyncState {
-
-    /**
-     *
-     * @type {string}
-     * @memberof ProjectSyncState
-     */
-    state: ProjectSyncState.StateEnum;
-    /**
-     * Whether automatic synchronization is currently enabled.
-     * @type {boolean}
-     * @memberof ProjectSyncState
-     */
-    isAutoSyncEnabled: boolean;
-    /**
-     *
-     * @type {SyncStateError}
-     * @memberof ProjectSyncState
-     */
-    error?: SyncStateError;
-
-}
-
-
-/**
- * @export
- * @namespace ProjectSyncState
- */
-export namespace ProjectSyncState {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum StateEnum {
-        SYNCED = 'SYNCED',
-        DIRTY = 'DIRTY',
-        WRITING = 'WRITING',
-        UPLOAD = 'UPLOAD',
-        ERROR = 'ERROR'
-    }
-}
-/**
  * Remove a port from a node
  * @export
  * @interface RemovePortCommand
@@ -4818,6 +4766,52 @@ export interface StyleRange {
 
 
 /**
+ * The synchronization state of a workflow project.
+ * @export
+ * @interface SyncState
+ */
+export interface SyncState {
+
+    /**
+     *
+     * @type {string}
+     * @memberof SyncState
+     */
+    state: SyncState.StateEnum;
+    /**
+     * Whether automatic synchronization is currently enabled.
+     * @type {boolean}
+     * @memberof SyncState
+     */
+    isAutoSyncEnabled: boolean;
+    /**
+     *
+     * @type {SyncStateError}
+     * @memberof SyncState
+     */
+    error?: SyncStateError;
+
+}
+
+
+/**
+ * @export
+ * @namespace SyncState
+ */
+export namespace SyncState {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum StateEnum {
+        SYNCED = 'SYNCED',
+        DIRTY = 'DIRTY',
+        WRITING = 'WRITING',
+        UPLOAD = 'UPLOAD',
+        ERROR = 'ERROR'
+    }
+}
+/**
  * Additional error details in case of a sync state error.
  * @export
  * @interface SyncStateError
@@ -5459,6 +5453,12 @@ export interface Workflow {
      * @memberof Workflow
      */
     dirty: boolean;
+    /**
+     *
+     * @type {SyncState}
+     * @memberof Workflow
+     */
+    syncState?: SyncState;
     /**
      * List of placeholders or absent if there are none.
      * @type {Array<ComponentPlaceholder>}
