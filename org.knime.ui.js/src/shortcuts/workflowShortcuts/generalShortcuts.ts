@@ -1,3 +1,5 @@
+import { API } from "@api";
+
 import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
 import RedoIcon from "@knime/styles/img/icons/redo.svg";
 import SaveAsIcon from "@knime/styles/img/icons/save-as.svg";
@@ -5,7 +7,10 @@ import SaveIcon from "@knime/styles/img/icons/save.svg";
 import UndoIcon from "@knime/styles/img/icons/undo.svg";
 
 import type { KnimeNode } from "@/api/custom-types";
-import type { Connection } from "@/api/gateway-api/generated-api";
+import {
+  type Connection,
+  ProjectSyncState,
+} from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useApplicationStore } from "@/store/application/application";
@@ -41,23 +46,44 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     group: "general",
     icon: SaveIcon,
     execute: () => {
-      const { isUnknownProject, activeProjectId } = useApplicationStore();
+      const { isLocalSaveSupported, isAutoSyncSupported } =
+        useUIControlsStore();
 
-      if (isUnknownProject(activeProjectId)) {
-        useDesktopInteractionsStore().saveProjectAs();
-      } else {
-        useDesktopInteractionsStore().saveProject();
+      // desktop
+      if (isLocalSaveSupported) {
+        const { isUnknownProject, activeProjectId } = useApplicationStore();
+        if (isUnknownProject(activeProjectId)) {
+          useDesktopInteractionsStore().saveProjectAs();
+        } else {
+          useDesktopInteractionsStore().saveProject();
+        }
+        return;
+      }
+      // browser (not job viewer, not playground)
+      if (isAutoSyncSupported) {
+        const { activeProjectId } = useApplicationStore();
+        API.workflow.saveProject({ projectId: activeProjectId! });
       }
     },
     condition: () => {
-      const { activeProjectId, activeProjectOrigin } = useApplicationStore();
+      const { activeProjectId, activeProjectOrigin, projectSyncState } =
+        useApplicationStore();
       const { isDirtyActiveProject } = useDirtyProjectsTrackingStore();
-      const { isLocalSaveSupported } = useUIControlsStore();
+      const { isLocalSaveSupported, isAutoSyncSupported } =
+        useUIControlsStore();
+
+      const localSaveCondition =
+        isLocalSaveSupported && (isDirtyActiveProject || !activeProjectOrigin);
+
+      const autoSyncCondition =
+        isAutoSyncSupported &&
+        [
+          ProjectSyncState.StateEnum.DIRTY,
+          ProjectSyncState.StateEnum.ERROR,
+        ].includes(projectSyncState.state);
 
       return Boolean(
-        activeProjectId &&
-          isLocalSaveSupported &&
-          (isDirtyActiveProject || !activeProjectOrigin),
+        activeProjectId && (localSaveCondition || autoSyncCondition),
       );
     },
   },
