@@ -166,7 +166,7 @@ export const useComponentInteractionsStore = defineStore(
           headline = "Component shared";
           message = "The component has been exported to the destination space.";
         }
-        $toast.show({
+        const toastId = $toast.show({
           headline,
           message,
           type: "success",
@@ -175,6 +175,7 @@ export const useComponentInteractionsStore = defineStore(
               icon: ListIcon,
               text: "Reveal in space explorer",
               callback: () => {
+                $toast.remove(toastId);
                 useRevealInSpaceExplorer().revealSingleItem(
                   result.uploadedItem!,
                 );
