@@ -1,5 +1,6 @@
 import { storeToRefs } from "pinia";
 
+import { useAnalyticsService } from "@/analytics/analytics-service";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
@@ -137,7 +138,15 @@ export const useDragNodeIntoCanvas = () => {
 
   const addNodeToCanvas = async (position: XY, nodeFactory: NodeFactoryKey) => {
     try {
-      await nodeInteractionsStore.addNode({ position, nodeFactory });
+      const { newNodeId } = await nodeInteractionsStore.addNode({
+        position,
+        nodeFactory,
+      });
+      useAnalyticsService().track("node.added", {
+        nodeId: newNodeId!,
+        nodeType: "node",
+        via: "node-repository-drag",
+      });
     } catch (error) {
       consola.error({ message: "Error adding node to workflow", error });
       toastPresets.workflow.addNodeToCanvas({ error });

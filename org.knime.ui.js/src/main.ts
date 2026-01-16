@@ -4,6 +4,7 @@ import { createPinia } from "pinia";
 import { embeddingSDK } from "@knime/hub-features";
 import { useKdsLegacyMode } from "@knime/kds-components";
 
+import { createAnalyticsService } from "./analytics/analytics-service";
 import { initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
@@ -30,6 +31,9 @@ try {
   const toastServiceProvider = getToastsProvider();
   const toastPlugin = toastServiceProvider.getToastServicePlugin();
 
+  // Create Vue app
+  const app = createApp(KnimeUI);
+
   await runInEnvironment({
     DESKTOP: async () => {
       await initJSONRPCClient("DESKTOP", null);
@@ -38,11 +42,22 @@ try {
       const embeddingContext = await waitForEmbeddingContext();
       await initJSONRPCClient("BROWSER", embeddingContext);
       setRestApiBaseUrl(embeddingContext.restApiBaseUrl);
+
+      // TODO:
+      // if (embeddingContext.isTrackingDisabled) {
+      //   return
+      // }
+
+      createAnalyticsService(app, {
+        trackingAPIKey: "GTM-123456", // TODO: embeddingContext.trackingAPIKey
+        context: {
+          userId: "...", // TODO: embeddingContext.userId
+          sessionId: embeddingContext.sessionId ?? "",
+          jobId: embeddingContext.jobId,
+        },
+      });
     },
   });
-
-  // Create Vue app
-  const app = createApp(KnimeUI);
 
   // initialize pinia stores
   const pinia = createPinia();
