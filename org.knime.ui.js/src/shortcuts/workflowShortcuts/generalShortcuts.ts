@@ -49,7 +49,6 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       const { isLocalSaveSupported, isAutoSyncSupported } =
         useUIControlsStore();
 
-      // desktop
       if (isLocalSaveSupported) {
         const { isUnknownProject, activeProjectId } = useApplicationStore();
         if (isUnknownProject(activeProjectId)) {
@@ -59,7 +58,7 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
         }
         return;
       }
-      // browser (not job viewer, not playground)
+
       if (isAutoSyncSupported) {
         const { activeProjectId } = useApplicationStore();
         API.workflow.saveProject({ projectId: activeProjectId! });
