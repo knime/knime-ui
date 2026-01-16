@@ -25,19 +25,6 @@ const onSave = async () => {
   }
 };
 
-watch(projectSyncState, (syncState) => {
-  const { error, state } = syncState;
-  if (state === ProjectSyncState.StateEnum.DIRTY && error) {
-    toastPresets.app.syncProjectSizeLimit({
-      error,
-    });
-  } else if (state === ProjectSyncState.StateEnum.ERROR && error) {
-    toastPresets.app.syncProjectFailed({
-      error,
-    });
-  }
-});
-
 const isSynced = computed(
   () => projectSyncState.value.state === ProjectSyncState.StateEnum.SYNCED,
 );
@@ -55,6 +42,24 @@ const isUploadOrWriting = computed(
     projectSyncState.value.state === ProjectSyncState.StateEnum.UPLOAD ||
     projectSyncState.value.state === ProjectSyncState.StateEnum.WRITING,
 );
+
+watch(projectSyncState, (syncState) => {
+  const { error } = syncState;
+  if (!error) {
+    return;
+  }
+
+  // if error is set and its still dirty we hit the size limit
+  if (isDirty.value) {
+    toastPresets.app.syncProjectSizeLimit({
+      error,
+    });
+  } else if (isError.value) {
+    toastPresets.app.syncProjectFailed({
+      error,
+    });
+  }
+});
 
 const title = computed(() => {
   if (isDirty.value) {
