@@ -78,6 +78,9 @@ export const setProjectActiveOrThrow = async (
  *
  * If either the username or the Hub provider ID is different, the generated ID
  * will be different for the same project.
+ *
+ * Note: the `providerId` parameter refers to the Hub the user is logged into, not
+ * the Hub that the specifed project originates from.
  */
 export const getProjectIdScopedByUserAndProvider = (
   projectId: string,

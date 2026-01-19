@@ -132,7 +132,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   };
 
   // === ACTION PERMISSIONS ===
-  // When allowing or denying K-AI to perform a certain action (e.g. sample data),the user
+  // When allowing or denying K-AI to perform a certain action (e.g. sample data), the user
   // can "Remember for this workflow", which persists the decision for that particular action for the active project.
 
   // Generic methods that refer to the entry in the settings identified by "userScopedProjectId", an ID
