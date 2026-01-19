@@ -7,10 +7,7 @@ import SaveIcon from "@knime/styles/img/icons/save.svg";
 import UndoIcon from "@knime/styles/img/icons/undo.svg";
 
 import type { KnimeNode } from "@/api/custom-types";
-import {
-  type Connection,
-  ProjectSyncState,
-} from "@/api/gateway-api/generated-api";
+import { type Connection, SyncState } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useApplicationStore } from "@/store/application/application";
@@ -65,8 +62,8 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       }
     },
     condition: () => {
-      const { activeProjectId, activeProjectOrigin, projectSyncState } =
-        useApplicationStore();
+      const { activeWorkflow } = useWorkflowStore();
+      const { activeProjectId, activeProjectOrigin } = useApplicationStore();
       const { isDirtyActiveProject } = useDirtyProjectsTrackingStore();
       const { isLocalSaveSupported, isAutoSyncSupported } =
         useUIControlsStore();
@@ -76,10 +73,10 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
 
       const autoSyncCondition =
         isAutoSyncSupported &&
-        [
-          ProjectSyncState.StateEnum.DIRTY,
-          ProjectSyncState.StateEnum.ERROR,
-        ].includes(projectSyncState.state);
+        activeWorkflow?.syncState &&
+        [SyncState.StateEnum.DIRTY, SyncState.StateEnum.ERROR].includes(
+          activeWorkflow.syncState.state,
+        );
 
       return Boolean(
         activeProjectId && (localSaveCondition || autoSyncCondition),

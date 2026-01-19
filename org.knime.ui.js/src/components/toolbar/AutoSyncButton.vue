@@ -5,18 +5,16 @@ import { storeToRefs } from "pinia";
 
 import { KdsButton, KdsIcon, KdsLoadingSpinner } from "@knime/kds-components";
 
-import { ProjectSyncState } from "@/api/gateway-api/generated-api";
-import { useApplicationStore } from "@/store/application/application";
+import { SyncState } from "@/api/gateway-api/generated-api";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
 
-const { projectSyncState, activeProjectId } = storeToRefs(
-  useApplicationStore(),
-);
+const { activeWorkflow } = storeToRefs(useWorkflowStore());
 
 const { toastPresets } = getToastPresets();
 
 const onSave = async () => {
-  const projectId = activeProjectId.value!;
+  const projectId = activeWorkflow.value!.projectId;
 
   try {
     await API.workflow.saveProject({ projectId });
@@ -25,26 +23,31 @@ const onSave = async () => {
   }
 };
 
+const syncState = computed(() => activeWorkflow.value?.syncState);
+
 const isSynced = computed(
-  () => projectSyncState.value.state === ProjectSyncState.StateEnum.SYNCED,
+  () => syncState.value?.state === SyncState.StateEnum.SYNCED,
 );
 
 const isDirty = computed(
-  () => projectSyncState.value.state === ProjectSyncState.StateEnum.DIRTY,
+  () => syncState.value?.state === SyncState.StateEnum.DIRTY,
 );
 
 const isError = computed(
-  () => projectSyncState.value.state === ProjectSyncState.StateEnum.ERROR,
+  () => syncState.value?.state === SyncState.StateEnum.ERROR,
 );
 
 const isUploadOrWriting = computed(
   () =>
-    projectSyncState.value.state === ProjectSyncState.StateEnum.UPLOAD ||
-    projectSyncState.value.state === ProjectSyncState.StateEnum.WRITING,
+    syncState.value?.state === SyncState.StateEnum.UPLOAD ||
+    syncState.value?.state === SyncState.StateEnum.WRITING,
 );
 
-watch(projectSyncState, (syncState) => {
-  const { error } = syncState;
+watch(syncState, (currentSyncState) => {
+  if (!currentSyncState) {
+    return;
+  }
+  const { error } = currentSyncState;
   if (!error) {
     return;
   }
@@ -84,7 +87,7 @@ const title = computed(() => {
 
 <template>
   <KdsButton
-    v-if="!projectSyncState.isAutoSyncEnabled && (isDirty || isError)"
+    v-if="!syncState?.isAutoSyncEnabled && (isDirty || isError)"
     class="save-button"
     title="Save workflow"
     aria-label="Save"
