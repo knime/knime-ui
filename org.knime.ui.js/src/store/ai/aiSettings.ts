@@ -1,34 +1,42 @@
 import { reactive } from "vue";
 import { API } from "@api";
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 
+import { useHubAuth } from "@/components/kai/useHubAuth";
 import { runInEnvironment } from "@/environment";
+import { useApplicationStore } from "@/store/application/application";
+import { getProjectIdScopedByUserAndProvider } from "@/util/projectUtil";
 
 /**
  * Store that manages AP-client-side AI settings.
  *
  * AI settings currently implemented:
- * - Action permissions: per-workflow per-action decision about whether to "always allow" or "never allow" a certain action by K-AI.
+ * - Action permissions: per-project (user & Hub-scoped) per-action decision about
+ *   whether to "always allow" or "never allow" a certain action by K-AI.
  */
 
 const AI_SETTINGS_KEY = "knime-ai-settings";
 
 /**
- * Workflow entries older than this will be pruned.
+ * Project entries older than this will be pruned.
  * See lifecycle.ts::initializeApplication
  */
 const PRUNE_THRESHOLD_MONTHS = 6;
 
-export type ActionPermission = "allow" | "deny";
+type ActionPermission = "allow" | "deny";
 
-export interface WorkflowActionPermissions {
+type ProjectActionPermissions = {
   lastUpdated: string;
   permissions: Record<string, ActionPermission>;
-}
+};
 
-export interface AISettingsState {
-  actionPermissions: Record<string, WorkflowActionPermissions>;
-}
+type AISettingsState = {
+  actionPermissionsByProject: Record<string, ProjectActionPermissions>;
+};
+
+const defaults: AISettingsState = {
+  actionPermissionsByProject: {},
+};
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {
   const item = window?.localStorage?.getItem(key);
@@ -40,44 +48,19 @@ const saveItem = (key: string, value: unknown) => {
 };
 
 export const useAISettingsStore = defineStore("aiSettings", () => {
-  const actionPermissions = reactive<Record<string, WorkflowActionPermissions>>(
-    {},
-  );
+  const settings = reactive<AISettingsState>({ ...defaults });
 
-  /**
-   * Get the stored permission for an action within a specific workflow.
-   * Returns null if no permission is stored (i.e., should ask the user).
-   */
-  const getActionPermission = (
-    workflowId: string,
-    actionId: string,
-  ): ActionPermission | null => {
-    return actionPermissions[workflowId]?.permissions[actionId] ?? null;
-  };
-
-  /**
-   * Get all permissions for a specific workflow.
-   */
-  const getWorkflowPermissions = (
-    workflowId: string,
-  ): WorkflowActionPermissions | null => {
-    return actionPermissions[workflowId] ?? null;
-  };
-
-  const persistSettings = async () => {
-    const data: AISettingsState = {
-      actionPermissions,
-    };
-
+  // Read and write settings
+  const updateSettings = async () => {
     try {
       await runInEnvironment({
         DESKTOP: () => {
           API.desktop.setUserProfilePart({
             key: AI_SETTINGS_KEY,
-            data,
+            data: settings,
           });
         },
-        BROWSER: () => saveItem(AI_SETTINGS_KEY, data),
+        BROWSER: () => saveItem(AI_SETTINGS_KEY, settings),
       });
     } catch (error) {
       consola.error("Failed to persist AI settings to user profile:", error);
@@ -86,24 +69,43 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
 
   const fetchAISettings = async () => {
     try {
-      const settings = await runInEnvironment({
+      const loaded = (await runInEnvironment({
         DESKTOP: () => API.desktop.getUserProfilePart({ key: AI_SETTINGS_KEY }),
         BROWSER: () => Promise.resolve(loadItem(AI_SETTINGS_KEY)),
+      })) as AISettingsState;
+
+      Object.assign(settings, {
+        ...defaults,
+        ...(loaded ?? {}),
       });
-
-      const loaded = settings as AISettingsState | null;
-
-      Object.keys(actionPermissions).forEach(
-        (key) => delete actionPermissions[key],
-      );
-      Object.assign(actionPermissions, loaded?.actionPermissions ?? {});
     } catch (error) {
       consola.error("Failed to get AI settings from user profile", error);
     }
   };
 
+  // Helpers
+  const getProjectIdScopedByUserAndProviderForActiveProject = () => {
+    const { activeProjectId } = storeToRefs(useApplicationStore());
+
+    if (!activeProjectId.value) {
+      consola.error(
+        "Failed to get user-scoped project ID for AI settings: no active project.",
+      );
+      return null;
+    }
+
+    // username and Hub ID are specific to the Hub configured to be used as K-AI's backend
+    const { hubID, username } = useHubAuth();
+
+    return getProjectIdScopedByUserAndProvider(
+      activeProjectId.value,
+      username.value ?? "local",
+      hubID.value || "local",
+    );
+  };
+
   /**
-   * Prune workflow entries that haven't been updated in the last N months.
+   * Prune project entries that haven't been updated in the last N months.
    */
   const pruneStaleActionPermissions = async () => {
     const now = new Date();
@@ -112,85 +114,179 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
 
     let didPrune = false;
 
-    for (const [workflowId, entry] of Object.entries(actionPermissions)) {
+    for (const [userScopedProjectId, entry] of Object.entries(
+      settings.actionPermissionsByProject,
+    )) {
       if (new Date(entry.lastUpdated) < thresholdDate) {
         consola.debug(
-          `Pruning stale AI settings for workflow ${workflowId} (last updated: ${entry.lastUpdated})`,
+          `Pruning stale AI settings for project ${userScopedProjectId} (last updated: ${entry.lastUpdated})`,
         );
-        delete actionPermissions[workflowId];
+        delete settings.actionPermissionsByProject[userScopedProjectId];
         didPrune = true;
       }
     }
 
     if (didPrune) {
-      await persistSettings();
+      await updateSettings();
     }
   };
 
-  /**
-   * Set the permission for an action within a workflow and persist to storage.
-   */
-  const setActionPermission = async (
-    workflowId: string,
+  // === ACTION PERMISSIONS ===
+  // When allowing or denying K-AI to perform a certain action (e.g. sample data),the user
+  // can "Remember for this workflow", which persists the decision for that particular action for the active project.
+
+  // Generic methods that refer to the entry in the settings identified by "userScopedProjectId", an ID
+  // identifying a particular project, for a particular user of a particular Hub (see projectUtil.ts::getProjectIdScopedByUserAndProvider)
+  const getPermissionForAction = (
+    userScopedProjectId: string,
+    actionId: string,
+  ): ActionPermission | null => {
+    return (
+      settings.actionPermissionsByProject[userScopedProjectId]?.permissions[
+        actionId
+      ] ?? null
+    );
+  };
+
+  const setPermissionForAction = async (
+    userScopedProjectId: string,
     actionId: string,
     permission: ActionPermission,
   ) => {
     const now = new Date().toISOString();
 
-    if (!actionPermissions[workflowId]) {
-      actionPermissions[workflowId] = {
+    if (!settings.actionPermissionsByProject[userScopedProjectId]) {
+      settings.actionPermissionsByProject[userScopedProjectId] = {
         lastUpdated: now,
         permissions: {},
       };
     }
 
-    actionPermissions[workflowId].permissions[actionId] = permission;
-    actionPermissions[workflowId].lastUpdated = now;
+    settings.actionPermissionsByProject[userScopedProjectId].permissions[
+      actionId
+    ] = permission;
+    settings.actionPermissionsByProject[userScopedProjectId].lastUpdated = now;
 
-    await persistSettings();
+    await updateSettings();
   };
 
-  /**
-   * Revoke the stored permission for an action within a workflow,
-   * returning it to "ask" state.
-   */
-  const revokeActionPermission = async (
-    workflowId: string,
+  const getPermissionsForAllActions = (
+    userScopedProjectId: string,
+  ): ProjectActionPermissions | null => {
+    return settings.actionPermissionsByProject[userScopedProjectId] ?? null;
+  };
+
+  const revokePermissionForAction = async (
+    userScopedProjectId: string,
     actionId: string,
   ) => {
-    const workflowPermissions = actionPermissions[workflowId];
-    if (!workflowPermissions) {
+    const projectPermissions =
+      settings.actionPermissionsByProject[userScopedProjectId];
+    if (!projectPermissions) {
       return;
     }
 
-    delete workflowPermissions.permissions[actionId];
-    workflowPermissions.lastUpdated = new Date().toISOString();
+    delete projectPermissions.permissions[actionId];
+    projectPermissions.lastUpdated = new Date().toISOString();
 
-    // Clean up workflow entry if no permissions remain
-    if (Object.keys(workflowPermissions.permissions).length === 0) {
-      delete actionPermissions[workflowId];
+    // Clean up project entry if no permissions remain
+    if (Object.keys(projectPermissions.permissions).length === 0) {
+      delete settings.actionPermissionsByProject[userScopedProjectId];
     }
 
-    await persistSettings();
+    await updateSettings();
   };
 
-  /**
-   * Revoke all permissions for a specific workflow.
-   */
-  const revokeWorkflowPermissions = async (workflowId: string) => {
-    delete actionPermissions[workflowId];
-    await persistSettings();
+  const revokePermissionsForAllActions = async (
+    userScopedProjectId: string,
+  ) => {
+    delete settings.actionPermissionsByProject[userScopedProjectId];
+    await updateSettings();
+  };
+
+  // Convenience wrappers for the active project
+  const getPermissionForActionForActiveProject = (
+    actionId: string,
+  ): ActionPermission | null => {
+    const userScopedProjectId =
+      getProjectIdScopedByUserAndProviderForActiveProject();
+
+    if (!userScopedProjectId) {
+      return null;
+    }
+
+    return getPermissionForAction(userScopedProjectId, actionId);
+  };
+
+  const setPermissionForActionForActiveProject = async (
+    actionId: string,
+    permission: ActionPermission,
+  ) => {
+    const userScopedProjectId =
+      getProjectIdScopedByUserAndProviderForActiveProject();
+
+    if (!userScopedProjectId) {
+      return;
+    }
+
+    await setPermissionForAction(userScopedProjectId, actionId, permission);
+  };
+
+  const getPermissionsForAllActionsForActiveProject =
+    (): ProjectActionPermissions | null => {
+      const userScopedProjectId =
+        getProjectIdScopedByUserAndProviderForActiveProject();
+
+      if (!userScopedProjectId) {
+        return null;
+      }
+
+      return getPermissionsForAllActions(userScopedProjectId);
+    };
+
+  const revokePermissionForActionForActiveProject = async (
+    actionId: string,
+  ) => {
+    const userScopedProjectId =
+      getProjectIdScopedByUserAndProviderForActiveProject();
+
+    if (!userScopedProjectId) {
+      return;
+    }
+
+    await revokePermissionForAction(userScopedProjectId, actionId);
+  };
+
+  const revokePermissionsForAllActionsForActiveProject = async () => {
+    const userScopedProjectId =
+      getProjectIdScopedByUserAndProviderForActiveProject();
+
+    if (!userScopedProjectId) {
+      return;
+    }
+
+    await revokePermissionsForAllActions(userScopedProjectId);
   };
 
   return {
-    actionPermissions,
-    getActionPermission,
-    getWorkflowPermissions,
+    // private, exposed for testing
+    settings,
+    updateSettings,
+    getPermissionForAction,
+    getPermissionsForAllActions,
+    setPermissionForAction,
+    revokePermissionForAction,
+    revokePermissionsForAllActions,
+    getProjectIdScopedByUserAndProviderForActiveProject,
+
+    // public API
     fetchAISettings,
     pruneStaleActionPermissions,
-    persistSettings,
-    setActionPermission,
-    revokeActionPermission,
-    revokeWorkflowPermissions,
+
+    getPermissionForActionForActiveProject,
+    getPermissionsForAllActionsForActiveProject,
+    setPermissionForActionForActiveProject,
+    revokePermissionForActionForActiveProject,
+    revokePermissionsForAllActionsForActiveProject,
   };
 });

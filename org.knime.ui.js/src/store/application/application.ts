@@ -361,19 +361,6 @@ export const useApplicationStore = defineStore("application", {
       return this.activeProject?.origin ?? null;
     },
 
-    /**
-     * Stable workflow ID for the active project, constructed from the origin.
-     * Format: "providerId:spaceId:itemId"
-     * Returns null if no active project or no origin.
-     */
-    stableWorkflowId(): string | null {
-      const origin = this.activeProjectOrigin;
-      if (!origin) {
-        return null;
-      }
-      return `${origin.providerId}:${origin.spaceId}:${origin.itemId}`;
-    },
-
     isUnknownProject: (state) => (projectId: string | null) => {
       const foundProject = state.openProjects.find(
         (project) => project.projectId === projectId,

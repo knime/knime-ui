@@ -8,7 +8,10 @@ import {
   type ProjectMetadata,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
+import { useApplicationStore } from "@/store/application/application";
 import { ProjectActivationError } from "@/store/application/lifecycle";
+
+import { hashString } from "./hashString";
 
 const isWorkflowProjectType = (containerType: WorkflowInfo["containerType"]) =>
   containerType === WorkflowInfo.ContainerTypeEnum.Project;
@@ -66,4 +69,31 @@ export const setProjectActiveOrThrow = async (
       `Failed to set active project ${projectId} with version ${versionId}`,
     );
   }
+};
+
+/**
+ * Generates a "stable" ID for the provided project, user, and Hub provider
+ * by hashing the project's origin information (if available) with the
+ * provider id and username.
+ *
+ * If either the username or the Hub provider ID is different, the generated ID
+ * will be different for the same project.
+ */
+export const getProjectIdScopedByUserAndProvider = (
+  projectId: string,
+  username: string,
+  providerId: string,
+) => {
+  const { openProjects } = useApplicationStore();
+
+  const project = openProjects.find(
+    (project) => project.projectId === projectId,
+  );
+  if (!project?.origin) {
+    return null;
+  }
+
+  const stableProjectId = `${project.origin.providerId}:${project.origin.spaceId}:${project.origin.itemId}`;
+
+  return hashString(`${stableProjectId}:${providerId}:${username}`);
 };

@@ -67,31 +67,6 @@ describe("application", () => {
     expect(applicationStore.activeProjectOrigin).toBeNull();
   });
 
-  it("returns the stable workflow ID from the active project's origin", () => {
-    const { applicationStore } = loadStore();
-
-    const origin = {
-      itemId: "item-123",
-      spaceId: "space-456",
-      providerId: "provider-789",
-    };
-    const projectWithOrigin = createProject({ projectId: "foo", origin });
-    const projectWithoutOrigin = createProject({ projectId: "bar" });
-
-    applicationStore.setOpenProjects([projectWithOrigin, projectWithoutOrigin]);
-
-    applicationStore.setActiveProjectId("foo");
-    expect(applicationStore.stableWorkflowId).toBe(
-      "provider-789:space-456:item-123",
-    );
-
-    applicationStore.setActiveProjectId("bar");
-    expect(applicationStore.stableWorkflowId).toBeNull();
-
-    applicationStore.setActiveProjectId(null);
-    expect(applicationStore.stableWorkflowId).toBeNull();
-  });
-
   it("determines whether a project is of unknown origin", () => {
     const { applicationStore, spaceProvidersStore } = loadStore();
     applicationStore.setOpenProjects([

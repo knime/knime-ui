@@ -8,105 +8,329 @@ describe("aiSettings store", () => {
     localStorage.clear();
   });
 
-  it("sets action permission for a workflow", async () => {
+  it("sets action permission for a project", async () => {
     const { aiSettingsStore } = mockStores();
 
-    await aiSettingsStore.setActionPermission(
-      "workflow-1",
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
       "data-sampling",
       "allow",
     );
 
-    expect(aiSettingsStore.actionPermissions["workflow-1"]).toBeDefined();
     expect(
-      aiSettingsStore.actionPermissions["workflow-1"].permissions[
-        "data-sampling"
-      ],
+      aiSettingsStore.settings.actionPermissionsByProject["project-1:user-a"],
+    ).toBeDefined();
+    expect(
+      aiSettingsStore.settings.actionPermissionsByProject["project-1:user-a"]
+        .permissions["data-sampling"],
     ).toBe("allow");
   });
 
   it("gets action permission", async () => {
     const { aiSettingsStore } = mockStores();
 
-    await aiSettingsStore.setActionPermission(
-      "workflow-1",
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
       "data-sampling",
       "allow",
     );
 
     expect(
-      aiSettingsStore.getActionPermission("workflow-1", "data-sampling"),
+      aiSettingsStore.getPermissionForAction(
+        "project-1:user-a",
+        "data-sampling",
+      ),
     ).toBe("allow");
     expect(
-      aiSettingsStore.getActionPermission("workflow-1", "other-action"),
+      aiSettingsStore.getPermissionForAction(
+        "project-1:user-a",
+        "other-action",
+      ),
     ).toBeNull();
     expect(
-      aiSettingsStore.getActionPermission("non-existent", "data-sampling"),
+      aiSettingsStore.getPermissionForAction(
+        "project-2:user-b",
+        "data-sampling",
+      ),
     ).toBeNull();
   });
 
   it("revokes action permission", async () => {
     const { aiSettingsStore } = mockStores();
 
-    await aiSettingsStore.setActionPermission(
-      "workflow-1",
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
       "data-sampling",
       "allow",
     );
-    await aiSettingsStore.setActionPermission(
-      "workflow-1",
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
       "code-execution",
       "deny",
     );
 
-    await aiSettingsStore.revokeActionPermission("workflow-1", "data-sampling");
+    await aiSettingsStore.revokePermissionForAction(
+      "project-1:user-a",
+      "data-sampling",
+    );
 
     expect(
-      aiSettingsStore.getActionPermission("workflow-1", "data-sampling"),
+      aiSettingsStore.getPermissionForAction(
+        "project-1:user-a",
+        "data-sampling",
+      ),
     ).toBeNull();
     expect(
-      aiSettingsStore.getActionPermission("workflow-1", "code-execution"),
+      aiSettingsStore.getPermissionForAction(
+        "project-1:user-a",
+        "code-execution",
+      ),
     ).toBe("deny");
   });
 
-  it("revokes all workflow permissions", async () => {
+  it("revokes all project permissions", async () => {
     const { aiSettingsStore } = mockStores();
 
-    await aiSettingsStore.setActionPermission(
-      "workflow-1",
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
       "data-sampling",
       "allow",
     );
-    await aiSettingsStore.setActionPermission(
-      "workflow-1",
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
       "code-execution",
       "deny",
     );
 
-    await aiSettingsStore.revokeWorkflowPermissions("workflow-1");
+    await aiSettingsStore.revokePermissionsForAllActions("project-1:user-a");
 
-    expect(aiSettingsStore.actionPermissions["workflow-1"]).toBeUndefined();
+    expect(
+      aiSettingsStore.settings.actionPermissionsByProject["project-1:user-a"],
+    ).toBeUndefined();
   });
 
-  it("keeps separate entries for different workflows", async () => {
+  it("keeps separate entries for different projects", async () => {
     const { aiSettingsStore } = mockStores();
 
-    await aiSettingsStore.setActionPermission(
-      "workflow-1",
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
       "data-sampling",
       "allow",
     );
-    await aiSettingsStore.setActionPermission(
-      "workflow-2",
+    await aiSettingsStore.setPermissionForAction(
+      "project-2:user-b",
       "data-sampling",
       "deny",
     );
 
     expect(
-      aiSettingsStore.getActionPermission("workflow-1", "data-sampling"),
+      aiSettingsStore.getPermissionForAction(
+        "project-1:user-a",
+        "data-sampling",
+      ),
     ).toBe("allow");
     expect(
-      aiSettingsStore.getActionPermission("workflow-2", "data-sampling"),
+      aiSettingsStore.getPermissionForAction(
+        "project-2:user-b",
+        "data-sampling",
+      ),
     ).toBe("deny");
+  });
+
+  it("gets all permissions for a project", async () => {
+    const { aiSettingsStore } = mockStores();
+
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
+      "data-sampling",
+      "allow",
+    );
+    await aiSettingsStore.setPermissionForAction(
+      "project-1:user-a",
+      "code-execution",
+      "deny",
+    );
+
+    const allPermissions =
+      aiSettingsStore.getPermissionsForAllActions("project-1:user-a");
+
+    expect(allPermissions).not.toBeNull();
+    expect(allPermissions?.permissions["data-sampling"]).toBe("allow");
+    expect(allPermissions?.permissions["code-execution"]).toBe("deny");
+  });
+
+  it("returns null for non-existent project permissions", () => {
+    const { aiSettingsStore } = mockStores();
+
+    expect(
+      aiSettingsStore.getPermissionsForAllActions("non-existent"),
+    ).toBeNull();
+  });
+
+  it("cleans up project entry when last permission is revoked", async () => {
+    const { aiSettingsStore } = mockStores();
+
+    await aiSettingsStore.setPermissionForAction(
+      "cleanup-test-project",
+      "only-action",
+      "allow",
+    );
+
+    await aiSettingsStore.revokePermissionForAction(
+      "cleanup-test-project",
+      "only-action",
+    );
+
+    expect(
+      aiSettingsStore.settings.actionPermissionsByProject[
+        "cleanup-test-project"
+      ],
+    ).toBeUndefined();
+  });
+
+  it("prunes stale action permissions", async () => {
+    const { aiSettingsStore } = mockStores();
+
+    // Set up a permission with an old timestamp
+    const sevenMonthsAgo = new Date();
+    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+
+    aiSettingsStore.settings.actionPermissionsByProject["old-project"] = {
+      lastUpdated: sevenMonthsAgo.toISOString(),
+      permissions: { "some-action": "allow" },
+    };
+
+    // Set up a recent permission
+    await aiSettingsStore.setPermissionForAction(
+      "recent-project",
+      "some-action",
+      "allow",
+    );
+
+    await aiSettingsStore.pruneStaleActionPermissions();
+
+    expect(
+      aiSettingsStore.settings.actionPermissionsByProject["old-project"],
+    ).toBeUndefined();
+    expect(
+      aiSettingsStore.settings.actionPermissionsByProject["recent-project"],
+    ).toBeDefined();
+  });
+
+  describe("active project convenience wrappers", () => {
+    const setupActiveProject = ({
+      applicationStore,
+      aiAssistantStore,
+      spaceProvidersStore,
+    }: ReturnType<typeof mockStores>) => {
+      const projectId = "test-project-id";
+      const hubID = "test-hub-id";
+      const username = "test-user";
+
+      applicationStore.activeProjectId = projectId;
+      applicationStore.openProjects = [
+        {
+          projectId,
+          name: "Test Project",
+          origin: {
+            providerId: "origin-provider",
+            spaceId: "origin-space",
+            itemId: "origin-item",
+          },
+        },
+      ];
+      aiAssistantStore.hubID = hubID;
+      spaceProvidersStore.spaceProviders = {
+        [hubID]: { id: hubID, username } as any,
+      };
+    };
+
+    it("sets and gets permission for active project", async () => {
+      const stores = mockStores();
+      setupActiveProject(stores);
+      const { aiSettingsStore } = stores;
+
+      await aiSettingsStore.setPermissionForActionForActiveProject(
+        "test-action",
+        "allow",
+      );
+
+      expect(
+        aiSettingsStore.getPermissionForActionForActiveProject("test-action"),
+      ).toBe("allow");
+    });
+
+    it("gets all permissions for active project", async () => {
+      const stores = mockStores();
+      setupActiveProject(stores);
+      const { aiSettingsStore } = stores;
+
+      await aiSettingsStore.setPermissionForActionForActiveProject(
+        "action-1",
+        "allow",
+      );
+      await aiSettingsStore.setPermissionForActionForActiveProject(
+        "action-2",
+        "deny",
+      );
+
+      const allPermissions =
+        aiSettingsStore.getPermissionsForAllActionsForActiveProject();
+
+      expect(allPermissions).not.toBeNull();
+      expect(allPermissions?.permissions["action-1"]).toBe("allow");
+      expect(allPermissions?.permissions["action-2"]).toBe("deny");
+    });
+
+    it("revokes permission for active project", async () => {
+      const stores = mockStores();
+      setupActiveProject(stores);
+      const { aiSettingsStore } = stores;
+
+      await aiSettingsStore.setPermissionForActionForActiveProject(
+        "test-action",
+        "allow",
+      );
+      await aiSettingsStore.revokePermissionForActionForActiveProject(
+        "test-action",
+      );
+
+      expect(
+        aiSettingsStore.getPermissionForActionForActiveProject("test-action"),
+      ).toBeNull();
+    });
+
+    it("revokes all permissions for active project", async () => {
+      const stores = mockStores();
+      setupActiveProject(stores);
+      const { aiSettingsStore } = stores;
+
+      await aiSettingsStore.setPermissionForActionForActiveProject(
+        "action-1",
+        "allow",
+      );
+      await aiSettingsStore.setPermissionForActionForActiveProject(
+        "action-2",
+        "deny",
+      );
+
+      await aiSettingsStore.revokePermissionsForAllActionsForActiveProject();
+
+      expect(
+        aiSettingsStore.getPermissionsForAllActionsForActiveProject(),
+      ).toBeNull();
+    });
+
+    it("returns null when no active project", () => {
+      const { aiSettingsStore } = mockStores();
+      // No active project set up
+
+      expect(
+        aiSettingsStore.getPermissionForActionForActiveProject("test-action"),
+      ).toBeNull();
+      expect(
+        aiSettingsStore.getPermissionsForAllActionsForActiveProject(),
+      ).toBeNull();
+    });
   });
 });
