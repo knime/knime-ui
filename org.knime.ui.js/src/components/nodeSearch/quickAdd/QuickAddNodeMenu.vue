@@ -216,12 +216,12 @@ watch(port, async (newPort, oldPort) => {
       tabindex="0"
       @update:model-value="quickAddNodesStore.updateQuery($event)"
       @focusin="selectedNode = null"
-      @keydown.enter.prevent.stop="searchEnterKey"
-      @keydown.down.prevent.stop="searchDownKey"
+      @keydown.enter="searchEnterKey"
+      @keydown.down="searchDownKey"
       @keydown="searchHandleShortcuts"
     />
   </div>
-  <hr />
+
   <template v-if="nodeRepositoryLoaded">
     <QuickAddNodeDisabledWorkflowCoach
       v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
@@ -260,15 +260,10 @@ watch(port, async (newPort, oldPort) => {
   outline: none;
 }
 
-& hr {
-  border: none;
-  border-top: 1px solid var(--knime-silver-sand);
-  margin: 0;
-}
-
 & .header {
   padding: 10px;
   flex: none;
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 & :deep(.filtered-nodes-wrapper) {
