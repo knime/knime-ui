@@ -13,7 +13,7 @@ const { activeWorkflow } = storeToRefs(useWorkflowStore());
 
 const { toastPresets } = getToastPresets();
 
-const onSave = async () => {
+const saveProject = async () => {
   const projectId = activeWorkflow.value!.projectId;
 
   try {
@@ -64,15 +64,7 @@ watch(syncState, (currentSyncState) => {
   }
 });
 
-const title = computed(() => {
-  if (isDirty.value) {
-    return "Workflow has unsynced changes.";
-  }
-
-  if (isError.value) {
-    return "Last sync failed, workflow might have unsynced changes.";
-  }
-
+const indicatorTitle = computed(() => {
   if (isSynced.value) {
     return "Workflow is synced.";
   }
@@ -83,27 +75,43 @@ const title = computed(() => {
 
   return "";
 });
+
+const syncButtonTitle = computed(() => {
+  if (isError.value) {
+    return "Last sync failed, workflow might have unsynced changes.";
+  }
+
+  const base =
+    "Workflow has unsynced changes. Click to sync workflow with the hub now.";
+
+  if (syncState.value?.isAutoSyncEnabled) {
+    return `${base} Will be synced to the hub automatically after some time.`;
+  } else {
+    return `${base} Will be synced with the hub on close.`;
+  }
+});
 </script>
 
 <template>
   <KdsButton
-    v-if="!syncState?.isAutoSyncEnabled && (isDirty || isError)"
-    class="save-button"
-    title="Save workflow"
-    aria-label="Save"
-    leading-icon="save"
+    v-if="isDirty || isError"
+    class="sync-button"
+    :title="syncButtonTitle"
+    aria-label="Sync"
+    :leading-icon="
+      syncState?.isAutoSyncEnabled ? 'cloud-pending-changes' : 'cloud-upload'
+    "
     variant="transparent"
-    @click="onSave"
+    @click="saveProject"
   />
-  <div v-else class="button-like" :title="title">
+  <div v-else class="button-like" :title="indicatorTitle">
     <KdsIcon v-if="isSynced" name="cloud-synced" />
-    <KdsIcon v-if="isDirty || isError" name="cloud-pending-changes" />
     <KdsLoadingSpinner v-if="isUploadOrWriting" />
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.save-button,
+.sync-button,
 .button-like {
   width: 28px;
 }
