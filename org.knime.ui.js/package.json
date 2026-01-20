@@ -47,7 +47,7 @@
     "@knime/rich-text-editor": "^1.8.0",
     "@knime/styles": "^1.15.0",
     "@knime/ui-extension-renderer": "2.4.0",
-    "@knime/utils": "^1.8.0",
+    "@knime/utils": "^1.9.1",
     "@knime/virtual-tree": "^1.7.0",
     "@open-rpc/client-js": "^1.8.1",
     "@tiptap/extension-heading": "^2.26.1",
