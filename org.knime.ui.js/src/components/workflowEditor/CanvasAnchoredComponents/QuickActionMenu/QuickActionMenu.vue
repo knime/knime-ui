@@ -146,11 +146,7 @@ const defaultStyleConfig: MenuStyleConfig = Object.freeze({
   anchor: "top-left",
 });
 
-const menuStyleConfig = ref<MenuStyleConfig>({
-  height: "auto",
-  topOffset: 0,
-  anchor: "top-left",
-});
+const menuStyleConfig = ref<MenuStyleConfig>({ ...defaultStyleConfig });
 
 const context = computed<QuickActionMenuContext>(() => ({
   nodeId: props.nodeId,

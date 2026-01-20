@@ -25,7 +25,7 @@ const { subscribeToNodeRepositoryLoadingEvent } = useLifecycleStore();
 const componentSearchStore = useComponentSearchStore();
 
 const searchEnterKey = () => {
-  // TODO: add first component
+  // TODO: NXT-4328 add first component
 };
 
 const componentSearchResults = useTemplateRef("componentSearchResults");
@@ -55,7 +55,6 @@ onMounted(() => {
       @keydown.down.prevent.stop="searchDownKey"
     />
   </div>
-  <hr />
 
   <template v-if="nodeRepositoryLoaded">
     <ComponentSearchResults ref="componentSearchResults" :active="true">
@@ -80,15 +79,10 @@ onMounted(() => {
   outline: none;
 }
 
-& hr {
-  border: none;
-  border-top: 1px solid var(--knime-silver-sand);
-  margin: 0;
-}
-
 & .header {
   padding: 10px;
   flex: none;
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 & :deep(.filtered-nodes-wrapper) {

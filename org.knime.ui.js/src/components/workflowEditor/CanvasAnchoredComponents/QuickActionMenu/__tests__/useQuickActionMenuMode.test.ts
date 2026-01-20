@@ -1,9 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick, ref } from "vue";
 
+import { isBrowser, isDesktop } from "@/environment";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
 import { useQuickActionMenuMode } from "../useQuickActionMenuMode";
+
+vi.mock("@/environment");
 
 describe("useQuickActionMenuMode", () => {
   const doMount = () => {
@@ -28,7 +32,8 @@ describe("useQuickActionMenuMode", () => {
     expect(result2.getComposableResult().activeMode.value).toBe("components");
   });
 
-  it("returns all available modes", async () => {
+  it("returns all available modes (BROWSER)", async () => {
+    mockEnvironment("BROWSER", { isBrowser, isDesktop });
     const { getComposableResult, mockedStores } = doMount();
     expect(getComposableResult().availableModes.value).toEqual([
       { id: "nodes", text: "Nodes" },
@@ -50,6 +55,29 @@ describe("useQuickActionMenuMode", () => {
     expect(getComposableResult().availableModes.value).toEqual([
       { id: "nodes", text: "Nodes" },
       { id: "components", text: "Components" },
+    ]);
+  });
+
+  it("returns all available modes (DESKTOP)", async () => {
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+    const { getComposableResult, mockedStores } = doMount();
+    expect(getComposableResult().availableModes.value).toEqual([
+      { id: "nodes", text: "Nodes" },
+      { id: "k-ai", text: "K-AI Build mode" },
+    ]);
+
+    mockedStores.applicationSettingsStore.isKaiEnabled = false;
+    expect(getComposableResult().availableModes.value).toEqual([
+      { id: "nodes", text: "Nodes" },
+    ]);
+
+    mockedStores.applicationSettingsStore.isKaiEnabled = true;
+    (mockedStores.aiAssistantStore.isQuickBuildModeAvailable as any) = () =>
+      false;
+
+    await nextTick();
+    expect(getComposableResult().availableModes.value).toEqual([
+      { id: "nodes", text: "Nodes" },
     ]);
   });
 
