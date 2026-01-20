@@ -3,10 +3,9 @@ import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
 
-import { FunctionButton } from "@knime/components";
+import { FunctionButton, NavMenuItem } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import { NavMenuItem } from "@/components/common/side-nav";
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
   createSpace,
@@ -94,6 +93,18 @@ describe("SpacePageNavItems.vue", () => {
     const wrapper = mount(SpacePageNavItems, {
       global: {
         plugins: [mockedStores.testingPinia],
+        stubs: {
+          // NavMenuItem: true,
+          NavMenuItem: {
+            props: {
+              active: { type: Boolean },
+              text: { type: String },
+              to: { type: Object },
+            },
+            template:
+              "<li><slot name='prepend' /><slot name='children' /><slot name='append' /></li>",
+          },
+        },
       },
     });
 
@@ -160,8 +171,13 @@ describe("SpacePageNavItems.vue", () => {
       expect.objectContaining({
         text: localProvider.name,
         active: false,
-        highlighted: false,
-        withIndicator: false,
+        to: {
+          name: "SpaceSelectionPage",
+          params: {
+            groupId: "all",
+            spaceProviderId: localProvider.id,
+          },
+        },
       }),
     );
 
@@ -169,8 +185,13 @@ describe("SpacePageNavItems.vue", () => {
       expect.objectContaining({
         text: hubProvider1.name,
         active: true,
-        highlighted: false,
-        withIndicator: true,
+        to: {
+          name: "SpaceSelectionPage",
+          params: {
+            groupId: "all",
+            spaceProviderId: hubProvider1.id,
+          },
+        },
       }),
     );
 
@@ -178,8 +199,13 @@ describe("SpacePageNavItems.vue", () => {
       expect.objectContaining({
         text: spaceGroup1.name,
         active: true,
-        highlighted: true,
-        withIndicator: false,
+        to: {
+          name: "SpaceSelectionPage",
+          params: {
+            groupId: spaceGroup1.id,
+            spaceProviderId: hubProvider1.id,
+          },
+        },
       }),
     );
 
@@ -187,8 +213,13 @@ describe("SpacePageNavItems.vue", () => {
       expect.objectContaining({
         text: hubProvider2.name,
         active: false,
-        highlighted: false,
-        withIndicator: false,
+        to: {
+          name: "SpaceSelectionPage",
+          params: {
+            groupId: "all",
+            spaceProviderId: hubProvider2.id,
+          },
+        },
       }),
     );
   });
