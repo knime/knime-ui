@@ -3,6 +3,7 @@ import { type Ref, computed, ref, watch } from "vue";
 import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
+import { isBrowser } from "@/environment";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { valueOrEmpty } from "@/util/valueOrEmpty";
 
@@ -26,7 +27,7 @@ export const useQuickActionMenuMode = ({
   const availableModes = computed(() => {
     return [
       { id: "nodes", text: "Nodes" },
-      { id: "components", text: "Components" },
+      ...valueOrEmpty(isBrowser(), { id: "components", text: "Components" }),
       ...valueOrEmpty(isKaiEnabled.value && isQuickBuildModeAvailable.value, {
         id: "k-ai",
         text: "K-AI Build mode",
