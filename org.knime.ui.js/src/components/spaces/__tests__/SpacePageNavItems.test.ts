@@ -94,7 +94,6 @@ describe("SpacePageNavItems.vue", () => {
       global: {
         plugins: [mockedStores.testingPinia],
         stubs: {
-          // NavMenuItem: true,
           NavMenuItem: {
             props: {
               active: { type: Boolean },
