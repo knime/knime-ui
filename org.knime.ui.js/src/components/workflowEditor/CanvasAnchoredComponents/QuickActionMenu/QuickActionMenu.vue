@@ -9,17 +9,17 @@ On drag of node port or double-click on canvas, the menu will open in the mode i
 On cmd/ctrl + . the menu will open in Quick Node Insertion mode.
 On cmd/ctrl + shift + . the menu will open in Quick Build mode.
 */
-import { computed, onMounted, ref, toRefs, watch } from "vue";
+import { computed, ref, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 
-import { Button } from "@knime/components";
-import AiIcon from "@knime/styles/img/icons/ai-general.svg";
+import { FunctionButton, ValueSwitch } from "@knime/components";
+import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
 
 import type { NodeRelation } from "@/api/custom-types";
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
+import QuickAddComponentMenu from "@/components/componentSearch/quickAdd/QuickAddComponentMenu.vue";
 import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
-import { type QuickBuildMenuState } from "@/components/kai/KaiQuickBuild.vue";
-import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
+import QuickAddNodeMenu from "@/components/nodeSearch/quickAdd/QuickAddNodeMenu.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -29,8 +29,12 @@ import NodePortActiveConnector from "../../SVGKanvas/ports/NodePortActiveConnect
 import { useCanvasRendererUtils } from "../../util/canvasRenderer";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
-import QuickAddNodeMenu from "./quickAdd/QuickAddNodeMenu.vue";
-import { useQuickActionMenu } from "./useQuickActionMenu";
+import {
+  type QuickActionMenuAnchor,
+  type QuickActionMenuContentHeight,
+  type QuickActionMenuContext,
+} from "./types";
+import { useQuickActionMenuMode } from "./useQuickActionMenuMode";
 
 const { FloatingMenu } = getFloatingMenuComponent();
 
@@ -54,10 +58,7 @@ const props = withDefaults(defineProps<QuickActionMenuProps>(), {
   initialMode: null,
 });
 
-const QUICK_BUILD_PROCESSING_OFFSET = 70;
-const QUICK_BUILD_RESULT_OFFSET = -40;
-
-defineEmits(["menuClose"]);
+const emit = defineEmits(["menuClose"]);
 
 const { quickActionMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
 const { availablePortTypes } = storeToRefs(useApplicationStore());
@@ -66,23 +67,9 @@ const hasConnector = computed(() => quickActionMenu.value.hasConnector);
 
 const { port, nodeRelation } = toRefs(props);
 
-const {
-  menuMode,
-  setQuickAddMode,
-  setQuickBuildMode,
-  isQuickBuildModeAvailable,
-} = useQuickActionMenu({ port, nodeRelation });
-
-const quickBuildState = ref<QuickBuildMenuState>("INPUT");
-const updateQuickBuildState = (newState: QuickBuildMenuState) =>
-  (quickBuildState.value = newState);
-
-onMounted(() => {
-  if (props.initialMode === "quick-build" && isQuickBuildModeAvailable.value) {
-    setQuickBuildMode();
-  } else if (props.initialMode === "quick-add") {
-    setQuickAddMode();
-  }
+const { activeMode, availableModes } = useQuickActionMenuMode({
+  port,
+  nodeRelation,
 });
 
 const canvasPosition = computed(() => {
@@ -147,51 +134,45 @@ const marginTop = computed(() => {
   return marginTop;
 });
 
-const floatingMenuAnchor = computed(() => {
-  if (menuMode.value === "quick-add") {
-    return nodeRelation.value === "SUCCESSORS" ? "top-left" : "top-right";
-  }
+type MenuStyleConfig = {
+  height: QuickActionMenuContentHeight;
+  topOffset: number;
+  anchor: QuickActionMenuAnchor;
+};
 
-  if (quickBuildState.value === "INPUT") {
-    return nodeRelation.value ? "top-left" : "top-right";
-  }
-
-  return "bottom-left";
-});
-const floatingMenuTopOffset = computed(() => {
-  if (menuMode.value === "quick-build") {
-    if (quickBuildState.value === "PROCESSING") {
-      return QUICK_BUILD_PROCESSING_OFFSET;
-    }
-
-    if (quickBuildState.value === "RESULT") {
-      return QUICK_BUILD_RESULT_OFFSET;
-    }
-  }
-
-  return 0;
+const defaultStyleConfig: MenuStyleConfig = Object.freeze({
+  height: "auto",
+  topOffset: 0,
+  anchor: "top-left",
 });
 
-const { isKaiEnabled } = useIsKaiEnabled();
-watch(
-  isKaiEnabled,
-  (enabled) => {
-    if (!enabled && menuMode.value === "quick-build") {
-      setQuickAddMode();
-    }
+const menuStyleConfig = ref<MenuStyleConfig>({ ...defaultStyleConfig });
+
+const context = computed<QuickActionMenuContext>(() => ({
+  nodeId: props.nodeId,
+  port: port.value,
+  nodeRelation: nodeRelation.value,
+  canvasPosition: canvasPosition.value,
+  updateMenuStyle: (newConfig) => {
+    menuStyleConfig.value = {
+      ...defaultStyleConfig,
+      ...newConfig,
+    };
   },
-  {
-    immediate: true, // do an initial check when the component is mounted
-  },
-);
+  closeMenu: () => emit("menuClose"),
+}));
+
+const resetMenuStyleConfig = () => {
+  menuStyleConfig.value = defaultStyleConfig;
+};
 </script>
 
 <template>
   <FloatingMenu
     :canvas-position="canvasPosition"
     aria-label="Quick Action menu"
-    :anchor="floatingMenuAnchor"
-    :top-offset="floatingMenuTopOffset"
+    :anchor="menuStyleConfig.anchor"
+    :top-offset="menuStyleConfig.topOffset"
     :focus-trap="quickActionMenu.isOpen"
     :prevent-overflow="true"
     @menu-close="$emit('menuClose')"
@@ -205,34 +186,44 @@ watch(
     />
 
     <div
-      :class="['quick-action-content', menuMode]"
+      class="quick-action-content"
       :style="{
         width: `${$shapes.quickActionMenuWidth}px`,
         'margin-top': `${marginTop}px`,
+        height: menuStyleConfig.height,
       }"
     >
-      <template v-if="menuMode == 'quick-add'">
-        <QuickAddNodeMenu
-          :node-id="nodeId"
-          :port="port"
-          :node-relation="nodeRelation"
-          :canvas-position="canvasPosition"
-          :port-index="portIndex"
-          @menu-close="$emit('menuClose')"
+      <div class="mode-switcher">
+        <ValueSwitch
+          v-model="activeMode"
+          data-test-id="mode-switcher"
+          compact
+          :possible-values="availableModes"
+          @update:model-value="resetMenuStyleConfig"
         />
-        <div v-if="isKaiEnabled && isQuickBuildModeAvailable" class="footer">
-          <Button primary class="kai-button" @click="setQuickBuildMode">
-            <AiIcon />
-            Build with K-AI
-          </Button>
-        </div>
-      </template>
+
+        <FunctionButton
+          class="close-menu-btn"
+          compact
+          @click="$emit('menuClose')"
+        >
+          <CancelIcon />
+        </FunctionButton>
+      </div>
+
+      <QuickAddNodeMenu
+        v-if="activeMode === 'nodes'"
+        :quick-action-context="context"
+      />
+
+      <QuickAddComponentMenu
+        v-if="activeMode === 'components'"
+        :quick-action-context="context"
+      />
+
       <KaiQuickBuild
-        v-else-if="menuMode == 'quick-build'"
-        :node-id="nodeId"
-        :start-position="canvasPosition"
-        @menu-back="setQuickAddMode"
-        @quick-build-state-changed="updateQuickBuildState"
+        v-if="activeMode === 'k-ai'"
+        :quick-action-context="context"
       />
     </div>
   </FloatingMenu>
@@ -249,8 +240,14 @@ watch(
   border-radius: 8px;
   overflow: hidden;
 
-  &.quick-add {
-    height: 420px;
+  & .mode-switcher {
+    padding: 10px 10px 0;
+    display: flex;
+    align-items: center;
+
+    & .close-menu-btn {
+      margin-left: auto;
+    }
   }
 
   & .footer {
@@ -261,20 +258,6 @@ watch(
     justify-content: center;
     align-items: center;
     border-top: 1px solid var(--knime-silver-sand);
-
-    & .kai-button {
-      height: 30px;
-      padding: 0 15px;
-      display: flex;
-      align-items: center;
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 0.9;
-
-      & svg {
-        @mixin svg-icon-size 18;
-      }
-    }
   }
 }
 </style>

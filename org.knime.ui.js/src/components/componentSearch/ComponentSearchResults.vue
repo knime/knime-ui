@@ -47,7 +47,9 @@ defineExpose({ focusFirst });
     @nav-reached-top="emit('navReachedTop', $event)"
   >
     <template #nodesTemplate="slotProps">
-      <DraggableNodeTemplate v-bind="slotProps" />
+      <slot name="nodesTemplate" v-bind="slotProps">
+        <DraggableNodeTemplate v-bind="slotProps" />
+      </slot>
     </template>
 
     <template #listBottom="{ isEmpty }">

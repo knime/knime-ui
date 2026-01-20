@@ -12,7 +12,7 @@ import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
 import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 
-import { isBrowser, isDesktop } from "@/environment";
+import { isBrowser } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useComponentSearchStore } from "@/store/componentSearch";
@@ -50,7 +50,7 @@ const { hasNodeCollectionActive, activeNodeCollection } = storeToRefs(
   useApplicationSettingsStore(),
 );
 const { nodeRepositoryLoaded } = storeToRefs(useApplicationStore());
-const isComponentSearchAvailable = computed(() => isBrowser() && !isDesktop());
+const isComponentSearchAvailable = computed(() => isBrowser());
 
 const searchContext = defineModel<"nodes" | "components">();
 const isComponentSearch = computed(() => searchContext.value === "components");

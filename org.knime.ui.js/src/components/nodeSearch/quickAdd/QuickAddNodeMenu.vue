@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, toRefs, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { SearchInput } from "@knime/components";
@@ -9,9 +9,9 @@ import {
   AddNodeCommand,
   type NodePort,
   type NodePortTemplate,
-  type XY,
 } from "@/api/gateway-api/generated-api";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
+import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
@@ -31,19 +31,11 @@ import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
 import QuickAddNodeSearchResults from "./QuickAddNodeSearchResults.vue";
 import { useNodeRecommendations } from "./useNodeRecommendations";
 
-export type QuickAddNodeMenuProps = {
-  nodeId?: string | null;
-  port?: NodePort | null;
-  nodeRelation?: NodeRelation | null;
-  canvasPosition: XY;
-  portIndex: number | null;
+type Props = {
+  quickActionContext: QuickActionMenuContext;
 };
 
-const props = withDefaults(defineProps<QuickAddNodeMenuProps>(), {
-  nodeId: null,
-  port: null,
-  nodeRelation: null,
-});
+const props = defineProps<Props>();
 
 const calculatePortOffset = (params: {
   selectedPort: NodePort;
@@ -81,8 +73,6 @@ const calculatePortOffset = (params: {
 
 const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
 
-const emit = defineEmits(["menuClose"]);
-
 const $shortcuts = useShortcuts();
 
 const {
@@ -97,6 +87,11 @@ const { searchIsActive, getFirstResult } = storeToRefs(quickAddNodesStore);
 const { settings } = useSettingsStore();
 const nodeInteractionsStore = useNodeInteractionsStore();
 
+const nodeId = computed(() => props.quickActionContext.nodeId);
+const canvasPosition = computed(() => props.quickActionContext.canvasPosition);
+const port = computed(() => props.quickActionContext.port);
+const nodeRelation = computed(() => props.quickActionContext.nodeRelation);
+
 const displayMode = computed(() => {
   const { nodeRepositoryDisplayMode } = settings;
   if (nodeRepositoryDisplayMode === "tree") {
@@ -105,10 +100,12 @@ const displayMode = computed(() => {
   return nodeRepositoryDisplayMode;
 });
 
-const { canvasPosition, nodeId, portIndex, nodeRelation } = toRefs(props);
-
 const { hasNodeRecommendationsEnabled, fetchNodeRecommendations } =
-  useNodeRecommendations(nodeId, portIndex, nodeRelation);
+  useNodeRecommendations(
+    nodeId,
+    computed(() => port.value?.index ?? null),
+    nodeRelation,
+  );
 
 const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   if (!isWritable.value || nodeTemplate === null) {
@@ -117,12 +114,12 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
 
   const { nodeFactory, inPorts, outPorts } = nodeTemplate;
 
-  const [offsetX, offsetY] = props.port
+  const [offsetX, offsetY] = port.value
     ? calculatePortOffset({
-        selectedPort: props.port,
-        templatePorts: props.nodeRelation === "SUCCESSORS" ? inPorts : outPorts,
+        selectedPort: port.value,
+        templatePorts: nodeRelation.value === "SUCCESSORS" ? inPorts : outPorts,
         availablePortTypes: availablePortTypes.value,
-        nodeRelation: props.nodeRelation || "SUCCESSORS",
+        nodeRelation: nodeRelation.value || "SUCCESSORS",
       })
     : [0, 0];
 
@@ -135,11 +132,11 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
     },
     nodeFactory,
     sourceNodeId: nodeId.value!,
-    sourcePortIdx: portIndex.value!,
+    sourcePortIdx: port.value?.index,
     nodeRelation: nodeRelation.value! as AddNodeCommand.NodeRelationEnum,
   });
 
-  emit("menuClose");
+  props.quickActionContext.closeMenu();
 };
 
 const searchEnterKey = () => {
@@ -158,23 +155,29 @@ const searchDownKey = () => {
   searchResults.value?.focusFirst();
 };
 
-const searchHandleShortcuts = (e: KeyboardEvent) => {
-  // bypass disabled shortcuts for <input> elements only for the quick add node
-  let [shortcut = null] = $shortcuts.findByHotkey(e);
+const searchHandleShortcuts = (event: KeyboardEvent) => {
+  // shortcuts are disabled on inputs; avoid this behavior for this specific
+  // case to allow cycling through ports via the shortcut
+  const [shortcut = null] = $shortcuts.findByHotkey(event);
   if (
     shortcut === "openQuickNodeInsertionMenu" &&
     $shortcuts.isEnabled(shortcut)
   ) {
     $shortcuts.dispatch(shortcut);
-    e.preventDefault();
-    e.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
   }
 };
 
 onMounted(() => {
-  if (props.port) {
-    quickAddNodesStore.setPortTypeId(props.port.typeId);
-    quickAddNodesStore.setSearchNodeRelation(props.nodeRelation);
+  props.quickActionContext.updateMenuStyle({
+    height: "445px",
+    anchor: nodeRelation.value === "SUCCESSORS" ? "top-left" : "top-right",
+  });
+
+  if (port.value) {
+    quickAddNodesStore.setPortTypeId(port.value.typeId);
+    quickAddNodesStore.setSearchNodeRelation(nodeRelation.value);
   }
 
   subscribeToNodeRepositoryLoadingEvent();
@@ -184,24 +187,21 @@ onBeforeUnmount(() => {
   quickAddNodesStore.clearRecommendedNodesAndSearchParams();
 });
 
-watch(
-  () => props.port,
-  async (newPort, oldPort) => {
-    if (newPort && newPort?.index !== oldPort?.index) {
-      // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
-      quickAddNodesStore.clearSearchParams();
+watch(port, async (newPort, oldPort) => {
+  if (newPort && newPort?.index !== oldPort?.index) {
+    // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
+    quickAddNodesStore.clearSearchParams();
 
-      // update type id for next search (if one was active it got reset by index change)
-      // this needs to be done in all cases as clearSearchParams resets it
-      quickAddNodesStore.setPortTypeId(newPort.typeId);
-      // also update the node relation, as it will be 'null' otherwise
-      quickAddNodesStore.setSearchNodeRelation(props.nodeRelation);
+    // update type id for next search (if one was active it got reset by index change)
+    // this needs to be done in all cases as clearSearchParams resets it
+    quickAddNodesStore.setPortTypeId(newPort.typeId);
+    // also update the node relation, as it will be 'null' otherwise
+    quickAddNodesStore.setSearchNodeRelation(nodeRelation.value);
 
-      // fetch new recommendations
-      await fetchNodeRecommendations();
-    }
-  },
-);
+    // fetch new recommendations
+    await fetchNodeRecommendations();
+  }
+});
 </script>
 
 <template>
@@ -260,15 +260,10 @@ watch(
   outline: none;
 }
 
-& hr {
-  border: none;
-  border-top: 1px solid var(--knime-silver-sand);
-  margin: 0;
-}
-
 & .header {
   padding: 10px;
   flex: none;
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 & :deep(.filtered-nodes-wrapper) {
