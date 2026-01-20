@@ -5,7 +5,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { useHubAuth } from "@/components/kai/useHubAuth";
 import { runInEnvironment } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
-import { getProjectIdScopedByUserAndProvider } from "@/util/projectUtil";
+import { toStableProjectId } from "@/util/projectUtil";
 
 /**
  * Store that manages AP-client-side AI settings.
@@ -84,10 +84,10 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   };
 
   // Helpers
-  const getProjectIdScopedByUserAndProviderForActiveProject = () => {
-    const { activeProjectId } = storeToRefs(useApplicationStore());
+  const getStableProjectIdForActiveProject = () => {
+    const { activeProject } = storeToRefs(useApplicationStore());
 
-    if (!activeProjectId.value) {
+    if (!activeProject.value) {
       consola.error(
         "Failed to get user-scoped project ID for AI settings: no active project.",
       );
@@ -97,8 +97,8 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     // username and Hub ID are specific to the Hub configured to be used as K-AI's backend
     const { hubID, username } = useHubAuth();
 
-    return getProjectIdScopedByUserAndProvider(
-      activeProjectId.value,
+    return toStableProjectId(
+      activeProject.value,
       username.value ?? "local",
       hubID.value || "local",
     );
@@ -136,7 +136,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   // can "Remember for this workflow", which persists the decision for that particular action for the active project.
 
   // Generic methods that refer to the entry in the settings identified by "userScopedProjectId", an ID
-  // identifying a particular project, for a particular user of a particular Hub (see projectUtil.ts::getProjectIdScopedByUserAndProvider)
+  // identifying a particular project, for a particular user of a particular Hub (see projectUtil.ts::toStableProjectId)
   const getPermissionForAction = (
     userScopedProjectId: string,
     actionId: string,
@@ -208,8 +208,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   const getPermissionForActionForActiveProject = (
     actionId: string,
   ): ActionPermission | null => {
-    const userScopedProjectId =
-      getProjectIdScopedByUserAndProviderForActiveProject();
+    const userScopedProjectId = getStableProjectIdForActiveProject();
 
     if (!userScopedProjectId) {
       return null;
@@ -222,8 +221,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     actionId: string,
     permission: ActionPermission,
   ) => {
-    const userScopedProjectId =
-      getProjectIdScopedByUserAndProviderForActiveProject();
+    const userScopedProjectId = getStableProjectIdForActiveProject();
 
     if (!userScopedProjectId) {
       return;
@@ -234,8 +232,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
 
   const getPermissionsForAllActionsForActiveProject =
     (): ProjectActionPermissions | null => {
-      const userScopedProjectId =
-        getProjectIdScopedByUserAndProviderForActiveProject();
+      const userScopedProjectId = getStableProjectIdForActiveProject();
 
       if (!userScopedProjectId) {
         return null;
@@ -247,8 +244,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   const revokePermissionForActionForActiveProject = async (
     actionId: string,
   ) => {
-    const userScopedProjectId =
-      getProjectIdScopedByUserAndProviderForActiveProject();
+    const userScopedProjectId = getStableProjectIdForActiveProject();
 
     if (!userScopedProjectId) {
       return;
@@ -258,8 +254,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   };
 
   const revokePermissionsForAllActionsForActiveProject = async () => {
-    const userScopedProjectId =
-      getProjectIdScopedByUserAndProviderForActiveProject();
+    const userScopedProjectId = getStableProjectIdForActiveProject();
 
     if (!userScopedProjectId) {
       return;
@@ -269,24 +264,27 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   };
 
   return {
-    // private, exposed for testing
-    settings,
-    updateSettings,
+    _internal: {
+      settings,
+      updateSettings,
+      getStableProjectIdForActiveProject,
+    },
+
+    // Generic API (operates on any project by stable ID)
     getPermissionForAction,
-    getPermissionsForAllActions,
     setPermissionForAction,
+    getPermissionsForAllActions,
     revokePermissionForAction,
     revokePermissionsForAllActions,
-    getProjectIdScopedByUserAndProviderForActiveProject,
 
-    // public API
-    fetchAISettings,
-    pruneStaleActionPermissions,
-
+    // Active project API (convenience wrappers)
     getPermissionForActionForActiveProject,
-    getPermissionsForAllActionsForActiveProject,
     setPermissionForActionForActiveProject,
+    getPermissionsForAllActionsForActiveProject,
     revokePermissionForActionForActiveProject,
     revokePermissionsForAllActionsForActiveProject,
+
+    fetchAISettings,
+    pruneStaleActionPermissions,
   };
 });

@@ -18,11 +18,14 @@ describe("aiSettings store", () => {
     );
 
     expect(
-      aiSettingsStore.settings.actionPermissionsByProject["project-1:user-a"],
+      aiSettingsStore._internal.settings.actionPermissionsByProject[
+        "project-1:user-a"
+      ],
     ).toBeDefined();
     expect(
-      aiSettingsStore.settings.actionPermissionsByProject["project-1:user-a"]
-        .permissions["data-sampling"],
+      aiSettingsStore._internal.settings.actionPermissionsByProject[
+        "project-1:user-a"
+      ].permissions["data-sampling"],
     ).toBe("allow");
   });
 
@@ -105,7 +108,9 @@ describe("aiSettings store", () => {
     await aiSettingsStore.revokePermissionsForAllActions("project-1:user-a");
 
     expect(
-      aiSettingsStore.settings.actionPermissionsByProject["project-1:user-a"],
+      aiSettingsStore._internal.settings.actionPermissionsByProject[
+        "project-1:user-a"
+      ],
     ).toBeUndefined();
   });
 
@@ -182,7 +187,7 @@ describe("aiSettings store", () => {
     );
 
     expect(
-      aiSettingsStore.settings.actionPermissionsByProject[
+      aiSettingsStore._internal.settings.actionPermissionsByProject[
         "cleanup-test-project"
       ],
     ).toBeUndefined();
@@ -195,7 +200,9 @@ describe("aiSettings store", () => {
     const sevenMonthsAgo = new Date();
     sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
 
-    aiSettingsStore.settings.actionPermissionsByProject["old-project"] = {
+    aiSettingsStore._internal.settings.actionPermissionsByProject[
+      "old-project"
+    ] = {
       lastUpdated: sevenMonthsAgo.toISOString(),
       permissions: { "some-action": "allow" },
     };
@@ -210,10 +217,14 @@ describe("aiSettings store", () => {
     await aiSettingsStore.pruneStaleActionPermissions();
 
     expect(
-      aiSettingsStore.settings.actionPermissionsByProject["old-project"],
+      aiSettingsStore._internal.settings.actionPermissionsByProject[
+        "old-project"
+      ],
     ).toBeUndefined();
     expect(
-      aiSettingsStore.settings.actionPermissionsByProject["recent-project"],
+      aiSettingsStore._internal.settings.actionPermissionsByProject[
+        "recent-project"
+      ],
     ).toBeDefined();
   });
 

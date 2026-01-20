@@ -5,10 +5,10 @@ import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import type { ComponentMetadata, Workflow } from "@/api/custom-types";
 import {
   EditableMetadata,
+  type Project,
   type ProjectMetadata,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
-import { useApplicationStore } from "@/store/application/application";
 import { ProjectActivationError } from "@/store/application/lifecycle";
 
 import { hashString } from "./hashString";
@@ -72,27 +72,20 @@ export const setProjectActiveOrThrow = async (
 };
 
 /**
- * Generates a "stable" ID for the provided project, user, and Hub provider
- * by hashing the project's origin information (if available) with the
- * provider id and username.
+ * Generates a "stable" ID for the provided project by hashing the project's
+ * origin information (if available) with the user's context (username and provider ID).
  *
- * If either the username or the Hub provider ID is different, the generated ID
- * will be different for the same project.
- *
- * Note: the `providerId` parameter refers to the Hub the user is logged into, not
- * the Hub that the specifed project originates from.
+ * Example use-case:
+ * Per-workflow permissions for K-AI. The same project needs a different ID for
+ * the same username across different Hubs (user can have the same username "john.doe"
+ * on Hub A and Hub B, but the per-workflow K-AI permissions shouldn't be shared across Hubs).
  */
-export const getProjectIdScopedByUserAndProvider = (
-  projectId: string,
+export const toStableProjectId = (
+  project: Project,
   username: string,
   providerId: string,
 ) => {
-  const { openProjects } = useApplicationStore();
-
-  const project = openProjects.find(
-    (project) => project.projectId === projectId,
-  );
-  if (!project?.origin) {
+  if (!project.origin) {
     return null;
   }
 
