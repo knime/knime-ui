@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import { useRoute, useRouter } from "vue-router";
+import {
+  type RouteLocationRaw,
+  RouterLink,
+  useRoute,
+  useRouter,
+} from "vue-router";
 
-import { FunctionButton, LoadingIcon } from "@knime/components";
+import {
+  FunctionButton,
+  LoadingIcon,
+  NavMenu,
+  NavMenuItem,
+  type NavMenuItemProps,
+} from "@knime/components";
 import LeaveIcon from "@knime/styles/img/icons/leave.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import type { SpaceGroup } from "@/api/gateway-api/generated-api";
-import {
-  NavMenu,
-  NavMenuItem,
-  type NavMenuItemProps,
-} from "@/components/common/side-nav";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -98,16 +103,6 @@ const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
   });
 };
 
-const onSpaceGroupClick = (
-  group: SpaceGroup,
-  spaceProvider: SpaceProviderNS.SpaceProvider,
-) => {
-  $router.push({
-    name: APP_ROUTES.Home.SpaceSelectionPage,
-    params: { spaceProviderId: spaceProvider.id, groupId: group.id },
-  });
-};
-
 const isSpaceProviderActive = (spaceProviderId: string) =>
   spaceProviderId === $route.params.spaceProviderId;
 
@@ -121,13 +116,14 @@ const isLoggedInHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
 
 type SpaceProviderNavItems = NavMenuItemProps & {
   id: string;
+  to: RouteLocationRaw;
   onClick: () => void;
   metadata: { spaceProvider: SpaceProviderNS.SpaceProvider };
 };
 
 type SpaceGroupsNavItems = NavMenuItemProps & {
   id: string;
-  onClick: (event: MouseEvent | KeyboardEvent) => void;
+  to: RouteLocationRaw;
   metadata: { spaceGroup: SpaceProviderNS.SpaceGroup };
 };
 
@@ -135,17 +131,19 @@ const getItemsForSpaceGroups = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
 ): SpaceGroupsNavItems[] => {
   return isLoggedInHubProvider(spaceProvider)
-    ? spaceProvider.spaceGroups.map((group) => ({
-        id: group.id,
-        text: group.name,
-        active: isSpaceGroupActive(group.id),
-        highlighted: isSpaceGroupActive(group.id),
-        onClick: (event) => {
-          event.stopPropagation();
-          onSpaceGroupClick(group, spaceProvider);
-        },
-        metadata: { spaceGroup: group },
-      }))
+    ? spaceProvider.spaceGroups.map(
+        (group) =>
+          ({
+            to: {
+              name: APP_ROUTES.Home.SpaceSelectionPage,
+              params: { spaceProviderId: spaceProvider.id, groupId: group.id },
+            },
+            id: group.id,
+            text: group.name,
+            active: isSpaceGroupActive(group.id),
+            metadata: { spaceGroup: group },
+          }) satisfies SpaceGroupsNavItems,
+      )
     : [];
 };
 
@@ -153,12 +151,15 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
   Object.values(spaceProviders.value ?? {}).map((spaceProvider) => {
     const item: SpaceProviderNavItems = {
       id: spaceProvider.id,
+      to: {
+        name: APP_ROUTES.Home.SpaceSelectionPage,
+        params: {
+          spaceProviderId: spaceProvider.id,
+          groupId: "all",
+        },
+      },
       text: formatSpaceProviderName(spaceProvider),
       active: isSpaceProviderActive(spaceProvider.id),
-      withIndicator: isSpaceProviderActive(spaceProvider.id),
-      highlighted:
-        isSpaceProviderActive(spaceProvider.id) &&
-        getItemsForSpaceGroups(spaceProvider).every((item) => !item.active),
       onClick: () => onProviderClick(spaceProvider),
       metadata: { spaceProvider },
     };
@@ -173,10 +174,8 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
     v-for="item in providerItems"
     :key="item.id"
     :data-test-id="item.id"
-    :text="item.text"
-    :active="item.active"
-    :highlighted="item.highlighted"
-    :with-indicator="item.withIndicator"
+    v-bind="item"
+    manual-navigation
     @click="item.onClick()"
   >
     <template #prepend>
@@ -211,25 +210,21 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
       v-if="isLoggedInHubProvider(item.metadata.spaceProvider!)"
       #children
     >
-      <NavMenu>
+      <NavMenu :link-component="RouterLink">
         <NavMenuItem
           v-for="child in getItemsForSpaceGroups(item.metadata.spaceProvider!)"
           :key="child.id"
           :data-test-id="child.id"
-          :text="child.text"
-          :active="child.active"
-          :highlighted="child.highlighted"
-          :with-indicator="child.withIndicator"
-          @click="child.onClick($event)"
+          v-bind="child"
         >
           <template #prepend>
             <Component :is="getSpaceGroupIcon(child.metadata!.spaceGroup!)" />
           </template>
         </NavMenuItem>
+
         <NavMenuItem
           v-if="shouldShowCreateTeamOption(item.metadata.spaceProvider!)"
           text="Get KNIME Pro"
-          :with-indicator="false"
           target="_blank"
           :href="`${KNIME_PRO_URL}&alt=spaceExplorer`"
         >

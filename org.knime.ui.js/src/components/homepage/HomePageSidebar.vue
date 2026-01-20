@@ -1,20 +1,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute } from "vue-router";
 
+import { NavMenu, NavMenuItem, type NavMenuItemProps } from "@knime/components";
 import TimeIcon from "@knime/styles/img/icons/time.svg";
 
-import {
-  NavMenu,
-  NavMenuItem,
-  type NavMenuItemProps,
-} from "@/components/common/side-nav";
 import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import HomePageContentTile from "./HomePageContentTile.vue";
 
-const $router = useRouter();
 const $route = useRoute();
 
 const isGetStartedPageActive = computed(() => {
@@ -22,17 +17,17 @@ const isGetStartedPageActive = computed(() => {
 });
 
 const recent = computed<NavMenuItemProps>(() => ({
+  to: {
+    name: APP_ROUTES.Home.GetStarted,
+  },
   text: "Recent",
   icon: TimeIcon,
   active: isGetStartedPageActive.value,
-  withIndicator: isGetStartedPageActive.value,
-  highlighted: isGetStartedPageActive.value,
-  onClick: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
 }));
 </script>
 
 <template>
-  <NavMenu>
+  <NavMenu :link-component="RouterLink">
     <NavMenuItem v-bind="recent">
       <template #prepend>
         <TimeIcon />
