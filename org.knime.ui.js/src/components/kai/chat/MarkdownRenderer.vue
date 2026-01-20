@@ -5,9 +5,12 @@ import { renderMarkdown } from "./markdown";
 
 interface Props {
   markdown: string;
+  skipSanitization?: boolean;
 }
 const props = defineProps<Props>();
-const htmlContent = computed(() => renderMarkdown(props.markdown));
+const htmlContent = computed(() =>
+  renderMarkdown(props.markdown, props.skipSanitization),
+);
 </script>
 
 <template>
