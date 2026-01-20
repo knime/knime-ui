@@ -43,26 +43,32 @@ const isUploadOrWriting = computed(
     syncState.value?.state === SyncState.StateEnum.WRITING,
 );
 
-watch(syncState, (currentSyncState) => {
-  if (!currentSyncState) {
-    return;
-  }
-  const { error } = currentSyncState;
-  if (!error) {
-    return;
-  }
+watch(
+  syncState,
+  (currentSyncState) => {
+    if (!currentSyncState) {
+      return;
+    }
 
-  // if error is set and its still dirty we hit the size limit
-  if (isDirty.value) {
-    toastPresets.app.syncProjectSizeLimit({
-      error,
-    });
-  } else if (isError.value) {
-    toastPresets.app.syncProjectFailed({
-      error,
-    });
-  }
-});
+    const { error } = currentSyncState;
+
+    if (!error) {
+      return;
+    }
+
+    // if error is set and its still dirty we hit the size limit
+    if (currentSyncState.state === SyncState.StateEnum.DIRTY) {
+      toastPresets.app.syncProjectSizeLimit({
+        error,
+      });
+    } else if (currentSyncState.state === SyncState.StateEnum.ERROR) {
+      toastPresets.app.syncProjectFailed({
+        error,
+      });
+    }
+  },
+  { deep: true },
+);
 
 const indicatorTitle = computed(() => {
   if (isSynced.value) {
@@ -105,7 +111,7 @@ const syncButtonTitle = computed(() => {
     @click="saveProject"
   />
   <div v-else class="button-like" :title="indicatorTitle">
-    <KdsIcon v-if="isSynced" name="cloud-synced" />
+    <KdsIcon v-if="isSynced" class="is-synced" name="cloud-synced" />
     <KdsLoadingSpinner v-if="isUploadOrWriting" />
   </div>
 </template>
@@ -114,6 +120,10 @@ const syncButtonTitle = computed(() => {
 .sync-button,
 .button-like {
   width: 28px;
+}
+
+.is-synced {
+  color: var(--kds-color-text-and-icon-success);
 }
 
 .button-like {
