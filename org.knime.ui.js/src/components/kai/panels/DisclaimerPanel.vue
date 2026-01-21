@@ -16,7 +16,7 @@ const close = () => closeDisclaimer(shouldNotAskAgain.value);
   <div class="disclaimer">
     <div class="main">
       <div class="title">Disclaimer</div>
-      <MarkdownRenderer :markdown="disclaimerText" />
+      <MarkdownRenderer :markdown="disclaimerText" allow-hyperlinks />
     </div>
     <div class="controls">
       <KdsCheckbox
