@@ -70,7 +70,7 @@ importers:
         version: 13.8.0(vue@3.5.18(typescript@5.8.3))
       '@vueuse/integrations':
         specifier: ^13.8.0
-        version: 13.9.0(focus-trap@7.6.4)(fuse.js@6.6.2)(sortablejs@1.14.0)(vue@3.5.18(typescript@5.8.3))
+        version: 13.9.0(focus-trap@7.6.4)(fuse.js@7.1.0)(sortablejs@1.14.0)(vue@3.5.18(typescript@5.8.3))
       consola:
         specifier: 3.4.2
         version: 3.4.2
@@ -81,8 +81,8 @@ importers:
         specifier: ^7.5.4
         version: 7.6.4
       fuse.js:
-        specifier: 6.6.2
-        version: 6.6.2
+        specifier: 7.1.0
+        version: 7.1.0
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -3267,8 +3267,8 @@ packages:
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
-  fuse.js@6.6.2:
-    resolution: {integrity: sha512-cJaJkxCCxC8qIIcPBF9yGxY0W/tVZS3uEISDxhYIdtk8OL93pe+6Zj7LjCqVV4dzbqcriOZ+kQ/NE4RXZHsIGA==}
+  fuse.js@7.1.0:
+    resolution: {integrity: sha512-trLf4SzuuUxfusZADLINj+dE8clK1frKdmqiJNb1Es75fmI5oY6X2mxLVUciLLjxqw/xr72Dhy+lER6dGd02FQ==}
     engines: {node: '>=10'}
 
   generator-function@2.0.1:
@@ -5877,6 +5877,7 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-fetch@3.6.20:
     resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
@@ -8122,14 +8123,14 @@ snapshots:
       '@vueuse/shared': 13.9.0(vue@3.5.18(typescript@5.8.3))
       vue: 3.5.18(typescript@5.8.3)
 
-  '@vueuse/integrations@13.9.0(focus-trap@7.6.4)(fuse.js@6.6.2)(sortablejs@1.14.0)(vue@3.5.18(typescript@5.8.3))':
+  '@vueuse/integrations@13.9.0(focus-trap@7.6.4)(fuse.js@7.1.0)(sortablejs@1.14.0)(vue@3.5.18(typescript@5.8.3))':
     dependencies:
       '@vueuse/core': 13.9.0(vue@3.5.18(typescript@5.8.3))
       '@vueuse/shared': 13.9.0(vue@3.5.18(typescript@5.8.3))
       vue: 3.5.18(typescript@5.8.3)
     optionalDependencies:
       focus-trap: 7.6.4
-      fuse.js: 6.6.2
+      fuse.js: 7.1.0
       sortablejs: 1.14.0
 
   '@vueuse/metadata@10.7.0': {}
@@ -9416,7 +9417,7 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  fuse.js@6.6.2: {}
+  fuse.js@7.1.0: {}
 
   generator-function@2.0.1: {}
 
