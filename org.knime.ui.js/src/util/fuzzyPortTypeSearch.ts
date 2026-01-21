@@ -65,8 +65,10 @@ export const makeTypeSearch = ({
     ...fuseOptions,
   });
 
+  type SearchOpts = Parameters<typeof searchEngine.search>[1];
+
   // displays all items for an empty search
-  return function search(input = "", options?: Fuse.FuseSearchOptions) {
+  return function search(input = "", options?: SearchOpts) {
     const results =
       input === ""
         ? allPortTypes
