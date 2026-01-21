@@ -4,8 +4,8 @@ import { defineStore, storeToRefs } from "pinia";
 
 import { useHubAuth } from "@/components/kai/useHubAuth";
 import { runInEnvironment } from "@/environment";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
-import { toStableProjectId } from "@/util/projectUtil";
 
 /**
  * Store that manages AP-client-side AI settings.
@@ -97,7 +97,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     // username and Hub ID are specific to the Hub configured to be used as K-AI's backend
     const { hubID, username } = useHubAuth();
 
-    return toStableProjectId(
+    return workflowDomain.project.toStableProjectId(
       activeProject.value,
       username.value ?? "local",
       hubID.value || "local",

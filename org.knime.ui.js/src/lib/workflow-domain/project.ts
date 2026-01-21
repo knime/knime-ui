@@ -5,7 +5,7 @@ import {
   type ProjectMetadata,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
-import { hashString } from "@/util/encoding";
+import { hashString } from "@/lib/encoding";
 
 const isWorkflowProjectType = (containerType: WorkflowInfo["containerType"]) =>
   containerType === WorkflowInfo.ContainerTypeEnum.Project;
