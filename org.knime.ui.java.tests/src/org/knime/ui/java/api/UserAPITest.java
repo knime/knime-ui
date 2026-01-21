@@ -73,7 +73,7 @@ class UserAPITest {
      */
     @Test
     void testSetAndGetUserProfilePart() throws JsonProcessingException {
-        var userProfile = new UserProfile(new InternalUsageTracking(), Map.of(), Map.of());
+        var userProfile = new UserProfile(new InternalUsageTracking(), Map.of(), Map.of(), Map.of());
         DesktopAPI.injectDependency(userProfile);
         UserAPI.setUserProfilePart("knime-ui-settings", """
                 {
@@ -89,13 +89,23 @@ class UserAPITest {
                 }
                 """);
 
+        UserAPI.setUserProfilePart("knime-ai-settings", """
+                {
+                "key5": "value5",
+                "key6": "value6"
+                }
+                """);
+
         assertThat(userProfile.uiSettings()).isEqualTo(Map.of("key1", "value1", "key2", "value2"));
         assertThat(userProfile.onboardingHintsSettings()).isEqualTo(Map.of("key3", "value3", "key4", "value4"));
+        assertThat(userProfile.aiSettings()).isEqualTo(Map.of("key5", "value5", "key6", "value6"));
 
         var uiSettings = UserAPI.getUserProfilePart("knime-ui-settings");
         assertThat(uiSettings).isEqualTo(Map.of("key1", "value1", "key2", "value2"));
         var onboardingHintsSettings = UserAPI.getUserProfilePart("onboarding.hints.user");
         assertThat(onboardingHintsSettings).isEqualTo(Map.of("key3", "value3", "key4", "value4"));
+        var aiSettings = UserAPI.getUserProfilePart("knime-ai-settings");
+        assertThat(aiSettings).isEqualTo(Map.of("key5", "value5", "key6", "value6"));
 
         assertThrows(IllegalArgumentException.class, () -> UserAPI.getUserProfilePart("unknown-key"));
 

@@ -32,8 +32,8 @@ const useHubAuth = () => {
     return spaceProviders.value?.[hubID.value ?? ""]?.connected || isBrowser();
   });
 
-  const userName = computed(() => {
-    return spaceProviders.value?.[hubID.value ?? ""]?.user?.name ?? null;
+  const username = computed(() => {
+    return spaceProviders.value?.[hubID.value ?? ""]?.username ?? null;
   });
 
   const { toastPresets } = getToastPresets();
@@ -77,7 +77,7 @@ const useHubAuth = () => {
     isHubConfigured,
     isUserLicensed,
     hubID,
-    userName,
+    username,
     authenticateWithHub,
     disconnectHub,
     isAuthError,

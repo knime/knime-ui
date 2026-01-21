@@ -5,10 +5,13 @@ import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import type { ComponentMetadata, Workflow } from "@/api/custom-types";
 import {
   EditableMetadata,
+  type Project,
   type ProjectMetadata,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 import { ProjectActivationError } from "@/store/application/lifecycle";
+
+import { hashString } from "./hashString";
 
 const isWorkflowProjectType = (containerType: WorkflowInfo["containerType"]) =>
   containerType === WorkflowInfo.ContainerTypeEnum.Project;
@@ -66,4 +69,27 @@ export const setProjectActiveOrThrow = async (
       `Failed to set active project ${projectId} with version ${versionId}`,
     );
   }
+};
+
+/**
+ * Generates a "stable" ID for the provided project by hashing the project's
+ * origin information (if available) with the user's context (username and provider ID).
+ *
+ * Example use-case:
+ * Per-workflow permissions for K-AI. The same project needs a different ID for
+ * the same username across different Hubs (user can have the same username "john.doe"
+ * on Hub A and Hub B, but the per-workflow K-AI permissions shouldn't be shared across Hubs).
+ */
+export const toStableProjectId = (
+  project: Project,
+  username: string,
+  providerId: string,
+) => {
+  if (!project.origin) {
+    return null;
+  }
+
+  const stableProjectId = `${project.origin.providerId}:${project.origin.spaceId}:${project.origin.itemId}`;
+
+  return hashString(`${stableProjectId}:${providerId}:${username}`);
 };

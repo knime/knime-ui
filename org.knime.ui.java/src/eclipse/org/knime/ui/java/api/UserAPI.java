@@ -64,7 +64,8 @@ final class UserAPI {
 
     private enum UserProfilePart {
             UI_SETTINGS("knime-ui-settings", UserProfile::uiSettings),
-            ONBOARDING_HINTS_SETTINGS("onboarding.hints.user", UserProfile::onboardingHintsSettings);
+            ONBOARDING_HINTS_SETTINGS("onboarding.hints.user", UserProfile::onboardingHintsSettings),
+            AI_SETTINGS("knime-ai-settings", UserProfile::aiSettings);
 
         private final String m_key;
 
@@ -80,6 +81,8 @@ final class UserAPI {
                 return UI_SETTINGS;
             } else if (ONBOARDING_HINTS_SETTINGS.m_key.equals(key)) {
                 return ONBOARDING_HINTS_SETTINGS;
+            } else if (AI_SETTINGS.m_key.equals(key)) {
+                return AI_SETTINGS;
             } else {
                 throw new IllegalArgumentException("Unknown key: " + key);
             }
