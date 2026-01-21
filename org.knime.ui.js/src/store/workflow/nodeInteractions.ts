@@ -10,7 +10,7 @@ import type {
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
-import { isBrowser } from "@/environment";
+import { isDesktop } from "@/environment";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
@@ -176,53 +176,68 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     });
   };
 
-  // TODO NXT-3668 reduce complexity
-  const addNode = async ({
-    position,
-    // use either nodeFactory or spaceItemReference
-    nodeFactory,
-    spaceItemReference,
-
-    sourceNodeId,
-    sourcePortIdx,
-    nodeRelation,
-    // possible values are: 'new-only' | 'add' | 'none'
-    // 'new-only' clears the active selection and selects only the new node
-    // 'add' adds the new node to the active selection
-    // 'none' doesn't modify the active selection nor it selects the new node
-    selectionMode = "new-only",
-    componentName,
-  }: {
+  type SelectionModeAfterAdd = "new-only" | "add" | "none";
+  type CommonOptionsToAddNodes = {
     position: XY;
-    nodeFactory?: { className: string };
-    spaceItemReference?: SpaceItemReference;
-    sourceNodeId?: string;
-    sourcePortIdx?: number;
-    nodeRelation?: AddNodeCommand.NodeRelationEnum;
+    autoConnectOptions?: {
+      sourceNodeId: string;
+      nodeRelation: AddNodeCommand.NodeRelationEnum;
+      sourcePortIdx?: number;
+    };
     /**
      * 'new-only' clears the active selection and selects only the new node
      * 'add' adds the new node to the active selection
      * 'none' doesn't modify the active selection nor selects the new node
      */
-    selectionMode?: "new-only" | "add" | "none";
-    /**
-     * The name of the component, iff the object to be added is a component
-     */
-    componentName?: string;
-  }): Promise<{
-    newNodeId?: string | null;
-    problem?: {
-      type: "error" | "warning";
-      headline: string;
-      message: string;
-    };
-  }> => {
+    selectionMode?: SelectionModeAfterAdd;
+  };
+
+  const handleSelectionForNewNode = (
+    selectionMode: SelectionModeAfterAdd,
+    newNodeId: string,
+  ) => {
     const selectionStore = useSelectionStore();
     const currentSelection = selectionStore.selectedNodeIds;
+
+    if (selectionMode !== "none") {
+      if (selectionMode === "new-only") {
+        selectionStore.selectNodes([newNodeId]);
+        usePanelStore().isRightPanelExpanded = true;
+      } else {
+        selectionStore.selectNodes([...currentSelection, newNodeId]);
+      }
+    }
+  };
+
+  type AddNodeParams = CommonOptionsToAddNodes &
+    // you can either add via a nodeFactory or a spaceItem reference; not both
+    (| {
+          nodeFactory: NodeFactoryKey;
+          spaceItemReference?: never;
+        }
+      | {
+          nodeFactory?: never;
+          spaceItemReference: SpaceItemReference;
+        }
+    );
+
+  const addNativeNode = async ({
+    position,
+    nodeFactory,
+    spaceItemReference,
+    autoConnectOptions,
+    selectionMode = "new-only",
+  }: AddNodeParams): Promise<{ newNodeId: string | null }> => {
+    // do not try to add a node to a read only workflow
+    if (!workflowStore.isWritable) {
+      return { newNodeId: null };
+    }
+
+    const selectionStore = useSelectionStore();
     if (selectionMode !== "none") {
       const { wasAborted } = await selectionStore.tryClearSelection();
       if (wasAborted) {
-        return {};
+        return { newNodeId: null };
       }
     }
 
@@ -234,79 +249,96 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
       y: geometry.utils.snapToGrid(position.y),
     };
 
-    let newNodeId: string | null;
-    if (componentName && spaceItemReference) {
-      if (isBrowser()) {
-        // needs to be before focus() to not set focus back to space explorer items
-        useSpaceOperationsStore().setCurrentSelectedItemIds([]);
-        try {
-          const componentPlaceholder = await API.workflowCommand.AddComponent({
-            projectId,
-            workflowId,
-            providerId: spaceItemReference.providerId,
-            position: {
-              x: gridAdjustedPosition.x,
-              y: gridAdjustedPosition.y,
-            },
-            spaceId: spaceItemReference.spaceId,
-            itemId: spaceItemReference.itemId,
-            name: componentName,
-          });
-          newNodeId = null;
-
-          useSVGCanvasStore().focus();
-          useSelectionStore().selectComponentPlaceholder(
-            componentPlaceholder.newPlaceholderId,
-          );
-        } catch (error) {
-          return {
-            problem: {
-              type: "error",
-              headline: "Failed to add component",
-              message: (error as Error).message,
-            },
-          };
-        }
-      } else {
-        // TODO remove with NXT-3389
-        newNodeId = await API.desktop.importComponent({
-          projectId,
-          workflowId,
-          x: gridAdjustedPosition.x,
-          y: gridAdjustedPosition.y,
-          spaceProviderId: spaceItemReference.providerId,
-          spaceId: spaceItemReference.spaceId,
-          itemId: spaceItemReference.itemId,
-        });
-      }
-    } else {
-      const result = await API.workflowCommand.AddNode({
-        projectId,
-        workflowId,
-        position: gridAdjustedPosition,
-        nodeFactory,
-        spaceItemReference,
-        sourceNodeId,
-        sourcePortIdx,
-        nodeRelation,
-      });
-      newNodeId = result.newNodeId;
-    }
+    const { newNodeId } = await API.workflowCommand.AddNode({
+      projectId,
+      workflowId,
+      position: gridAdjustedPosition,
+      nodeFactory,
+      spaceItemReference,
+      sourceNodeId: autoConnectOptions?.sourceNodeId,
+      sourcePortIdx: autoConnectOptions?.sourcePortIdx,
+      nodeRelation: autoConnectOptions?.nodeRelation,
+    });
 
     if (!newNodeId) {
-      return {};
+      return { newNodeId: null };
     }
 
+    handleSelectionForNewNode(selectionMode, newNodeId);
+
+    return { newNodeId };
+  };
+
+  type AddComponentParams = CommonOptionsToAddNodes & {
+    spaceItemReference: Omit<SpaceItemReference, "spaceId">;
+    componentName: string;
+  };
+
+  const addComponentNode = async ({
+    position,
+    spaceItemReference,
+    componentName,
+    selectionMode = "new-only",
+  }: AddComponentParams): Promise<{ newNodeId: string | null }> => {
+    // do not try to add a node to a read only workflow
+    if (!workflowStore.isWritable) {
+      return { newNodeId: null };
+    }
+
+    const selectionStore = useSelectionStore();
     if (selectionMode !== "none") {
-      if (selectionMode === "new-only") {
-        selectionStore.selectNodes([newNodeId]);
-        usePanelStore().isRightPanelExpanded = true;
-      } else {
-        selectionStore.selectNodes([...currentSelection, newNodeId]);
+      const { wasAborted } = await selectionStore.tryClearSelection();
+      if (wasAborted) {
+        return { newNodeId: null };
       }
     }
 
-    return { newNodeId };
+    const { projectId, workflowId } = workflowStore.getProjectAndWorkflowIds;
+
+    // Adjusted For Grid Snapping
+    const gridAdjustedPosition = {
+      x: geometry.utils.snapToGrid(position.x),
+      y: geometry.utils.snapToGrid(position.y),
+    };
+
+    if (isDesktop()) {
+      // TODO remove with NXT-3389
+      const newNodeId = await API.desktop.importComponent({
+        projectId,
+        workflowId,
+        x: gridAdjustedPosition.x,
+        y: gridAdjustedPosition.y,
+        spaceProviderId: spaceItemReference.providerId,
+        itemId: spaceItemReference.itemId,
+      });
+
+      if (newNodeId) {
+        handleSelectionForNewNode(selectionMode, newNodeId);
+      }
+
+      return { newNodeId };
+    }
+
+    // needs to be before focus() to not set focus back to space explorer items
+    useSpaceOperationsStore().setCurrentSelectedItemIds([]);
+    const componentPlaceholder = await API.workflowCommand.AddComponent({
+      projectId,
+      workflowId,
+      providerId: spaceItemReference.providerId,
+      position: {
+        x: gridAdjustedPosition.x,
+        y: gridAdjustedPosition.y,
+      },
+      itemId: spaceItemReference.itemId,
+      name: componentName,
+    });
+
+    useSVGCanvasStore().focus();
+    selectionStore.selectComponentPlaceholder(
+      componentPlaceholder.newPlaceholderId,
+    );
+
+    return { newNodeId: null };
   };
 
   const replaceNode = async ({
@@ -460,7 +492,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     connectNodes,
     renameContainerNode,
     renameNodeLabel,
-    addNode,
+    addNativeNode,
+    addComponentNode,
     replaceNode,
     insertNode,
     addNodePort,

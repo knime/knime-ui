@@ -52,7 +52,7 @@ export const getPresets = (
     addNodeToCanvas: ({ error }) =>
       defaultAPIErrorHandler($toast, error, {
         type: "error",
-        headline: "Failed to add node to canvas",
+        headline: "Couldn't add node to canvas",
       }),
 
     replacementOperation: {

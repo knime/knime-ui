@@ -82,7 +82,7 @@ export interface AddComponentCommand extends WorkflowCommand {
      * @type {string}
      * @memberof AddComponentCommand
      */
-    spaceId: string;
+    spaceId?: string;
     /**
      *
      * @type {string}

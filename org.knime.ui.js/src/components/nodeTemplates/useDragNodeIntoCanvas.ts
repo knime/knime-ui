@@ -12,8 +12,6 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
-import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
-
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
 const getNodeFactoryFromEvent = (event: DragEvent) => {
@@ -47,7 +45,6 @@ export const useDragNodeIntoCanvas = () => {
   const nodeInteractionsStore = useNodeInteractionsStore();
   const webglCanvasStore = useWebGLCanvasStore();
   const { isWebGLRenderer } = useCanvasRendererUtils();
-  const { addNodeByPosition } = useAddNodeToWorkflow();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
   const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
@@ -169,7 +166,10 @@ export const useDragNodeIntoCanvas = () => {
         nodeFactory,
       });
     } else {
-      await addNodeByPosition(dropPosition, nodeFactory);
+      await nodeInteractionsStore.addNativeNode({
+        position: dropPosition,
+        nodeFactory,
+      });
     }
   };
 

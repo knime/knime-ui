@@ -628,21 +628,21 @@ export const saveProjectAs = ({ projectId }: { projectId: string }) => {
 
 export const importComponent = ({
   spaceProviderId,
-  spaceId,
   itemId,
   projectId,
   workflowId,
   x,
   y,
-}: FullSpacePath & {
-  projectId: string;
-  workflowId: string;
-  x: number;
-  y: number;
-}) => {
+}: SpaceProviderId &
+  SpaceItemId & {
+    projectId: string;
+    workflowId: string;
+    x: number;
+    y: number;
+  }) => {
   return callBrowserFunction(
     window.importComponent,
-    [spaceProviderId, spaceId, itemId, projectId, workflowId, x, y],
+    [spaceProviderId, itemId, projectId, workflowId, x, y],
     "Could not import component",
     true,
     { block: true },
