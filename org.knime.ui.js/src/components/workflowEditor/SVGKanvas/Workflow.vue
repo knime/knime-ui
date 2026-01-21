@@ -19,9 +19,7 @@ import ComponentPlaceholder from "./node/placeholder/ComponentPlaceholder.vue";
 import MetaNodePortBars from "./ports/MetaNodePortBars.vue";
 
 const { activeWorkflow: workflow } = storeToRefs(useWorkflowStore());
-const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
-  useNodeInteractionsStore(),
-);
+const nodeInteractionStore = useNodeInteractionsStore();
 const { editableAnnotationId } = storeToRefs(useAnnotationInteractionsStore());
 const { isNodeSelected } = useSelectionStore();
 const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
@@ -108,9 +106,9 @@ const componentPlaceholders = computed(
             <Node
               :class="{ disabled: hasAnnotationModeEnabled }"
               v-bind="node"
-              :icon="getNodeIcon(node.id)"
-              :name="getNodeName(node.id)"
-              :type="getNodeType(node.id)"
+              :icon="nodeInteractionStore.getNodeIcon(node.id)"
+              :name="nodeInteractionStore.getNodeName(node.id)"
+              :type="nodeInteractionStore.getNodeType(node.id)"
               :position="position"
             />
           </template>

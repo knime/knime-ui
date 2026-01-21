@@ -49,9 +49,7 @@ import MetanodePortBars from "./portbars/MetanodePortBars.vue";
  */
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
-const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
-  useNodeInteractionsStore(),
-);
+const nodeInteractionStore = useNodeInteractionsStore();
 
 const canvasStore = useWebGLCanvasStore();
 const { canvasLayers } = storeToRefs(canvasStore);
@@ -135,7 +133,7 @@ const annotations = computed(
         :key="node.id"
         :position="node.position"
         :node-id="node.id"
-        :name="getNodeName(node.id)"
+        :name="nodeInteractionStore.getNodeName(node.id)"
         :is-metanode="isNodeMetaNode(node)"
       />
     </Container>
@@ -153,9 +151,9 @@ const annotations = computed(
         v-for="node in activeWorkflow!.nodes"
         :key="node.id"
         :position="node.position"
-        :icon="getNodeIcon(node.id)"
-        :type="getNodeType(node.id)"
-        :name="getNodeName(node.id)"
+        :icon="nodeInteractionStore.getNodeIcon(node.id)"
+        :type="nodeInteractionStore.getNodeType(node.id)"
+        :name="nodeInteractionStore.getNodeName(node.id)"
         :node="node"
       />
     </Container>

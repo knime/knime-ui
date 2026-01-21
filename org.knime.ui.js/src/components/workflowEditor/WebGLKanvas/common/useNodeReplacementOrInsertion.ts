@@ -137,9 +137,7 @@ export const useNodeReplacementOrInsertion = () => {
   const { toastPresets } = getToastPresets();
 
   const nodeInteractionsStore = useNodeInteractionsStore();
-  const { replacementOperation, isNodeConnected } = storeToRefs(
-    nodeInteractionsStore,
-  );
+  const { replacementOperation } = storeToRefs(nodeInteractionsStore);
   const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
   const connections = computed(() => activeWorkflow.value!.connections);
   const { hasAbortedDrag } = storeToRefs(useMovingStore());
@@ -179,7 +177,7 @@ export const useNodeReplacementOrInsertion = () => {
       if (
         !isDragging.value ||
         !isWritable.value ||
-        isNodeConnected.value(
+        nodeInteractionsStore.isNodeConnected(
           params.type === "from-node-instance" ? params.replacementNodeId : "",
         )
       ) {
