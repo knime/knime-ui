@@ -22,9 +22,7 @@ const movingStore = useMovingStore();
 const { movePreviewDelta, isDragging, hasAbortedDrag } =
   storeToRefs(movingStore);
 const { isNodeSelected, tryClearSelection, selectNodes } = useSelectionStore();
-const { isNodeConnected, getNodeById } = storeToRefs(
-  useNodeInteractionsStore(),
-);
+const nodeInteractionStore = useNodeInteractionsStore();
 
 const container = ref<SVGGElement | null>(null);
 
@@ -59,13 +57,15 @@ const notifyNodeDraggingListeners = (x: number, y: number) => {
   }
 
   if (!isSameTarget && hitTarget) {
-    const { inPorts = [], outPorts = [] } = getNodeById.value(props.id)!;
+    const { inPorts = [], outPorts = [] } = nodeInteractionStore.getNodeById(
+      props.id,
+    )!;
     const isEventIgnored = hitTarget.dispatchEvent(
       new CustomEvent("node-dragging-enter", {
         bubbles: true,
         cancelable: true,
         detail: {
-          isNodeConnected: isNodeConnected.value(props.id),
+          isNodeConnected: nodeInteractionStore.isNodeConnected(props.id),
           inPorts,
           outPorts,
         },

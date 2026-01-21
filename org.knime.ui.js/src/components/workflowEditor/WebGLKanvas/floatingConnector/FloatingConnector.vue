@@ -22,7 +22,7 @@ const { floatingConnector, isInsideSnapRegion, snapTarget } = storeToRefs(
   useFloatingConnectorStore(),
 );
 
-const { getNodeById } = storeToRefs(useNodeInteractionsStore());
+const { getNodeById } = useNodeInteractionsStore();
 
 const floatingConnectorPort = computed(() => {
   if (!floatingConnector.value || isDecoratorOnly(floatingConnector.value)) {
@@ -38,7 +38,7 @@ const referenceNode = computed(() => {
     return undefined;
   }
 
-  return getNodeById.value(floatingConnector.value.context.parentNodeId);
+  return getNodeById(floatingConnector.value.context.parentNodeId);
 });
 
 const isDefaultFlowVariableConnection = computed(() => {
