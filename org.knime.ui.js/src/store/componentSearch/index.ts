@@ -7,6 +7,7 @@ import { promise } from "@knime/utils";
 
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { componentSearch } from "@/util/dataMappers";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 
 const PAGE_SIZE = 150;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -45,6 +46,11 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
         limit: PAGE_SIZE,
       });
 
+      const spaceProvidersStore = useSpaceProvidersStore();
+      const defaultProviderId =
+        spaceProvidersStore.activeProjectProvider?.id ??
+        Object.keys(spaceProvidersStore.spaceProviders ?? {})[0];
+
       const response = await runAbortablePromise(async () => {
         const apiResponse = await API.space.searchComponents({
           query: query.value,
@@ -52,7 +58,17 @@ export const useComponentSearchStore = defineStore("componentSearch", () => {
           limit: PAGE_SIZE,
         });
 
-        return apiResponse.map(componentSearch.toNodeTemplateWithExtendedPorts);
+        return apiResponse
+          .map(componentSearch.toNodeTemplateWithExtendedPorts)
+          .map((nodeTemplate) => ({
+            ...nodeTemplate,
+            spaceItemReference: defaultProviderId
+              ? {
+                  providerId: defaultProviderId,
+                  itemId: nodeTemplate.id,
+                }
+              : undefined,
+          }));
       });
 
       results.value = append ? results.value.concat(response) : response;

@@ -10,11 +10,17 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type {
+  ComponentSpaceItemReference,
+  NodeTemplateWithExtendedPorts,
+} from "@/util/dataMappers";
+import { getToastsProvider } from "@/plugins/toasts";
 
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
+export const KNIME_COMPONENT_MIME =
+  "application/vnd.knime.ap.componentrepo+json";
 
 const getNodeFactoryFromEvent = (event: DragEvent) => {
   const data = event.dataTransfer?.getData(KNIME_MIME);
@@ -23,7 +29,52 @@ const getNodeFactoryFromEvent = (event: DragEvent) => {
     return null;
   }
 
-  return JSON.parse(data) as NodeFactoryKey;
+  try {
+    return JSON.parse(data) as NodeFactoryKey;
+  } catch (error) {
+    consola.warn("useDragNodeIntoCanvas:: Invalid node drag payload", error);
+    return null;
+  }
+};
+
+type ComponentDragPayload = {
+  spaceItemReference: ComponentSpaceItemReference;
+  componentName: string;
+};
+
+const getComponentPayloadFromEvent = (event: DragEvent) => {
+  const data = event.dataTransfer?.getData(KNIME_COMPONENT_MIME);
+
+  if (!data) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(data) as ComponentDragPayload;
+  } catch (error) {
+    consola.warn(
+      "useDragNodeIntoCanvas:: Invalid component drag payload",
+      error,
+    );
+    return null;
+  }
+};
+
+const getComponentPayloadFromTemplate = (
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+): ComponentDragPayload | null => {
+  if (!nodeTemplate.component) {
+    return null;
+  }
+
+  if (!nodeTemplate.spaceItemReference || !nodeTemplate.componentName) {
+    return null;
+  }
+
+  return {
+    spaceItemReference: nodeTemplate.spaceItemReference,
+    componentName: nodeTemplate.componentName,
+  };
 };
 
 // One key characteristic of this composable, which can be confusing at first glance,
@@ -37,7 +88,8 @@ let dragStartTime: number | null;
 const DRAG_TO_EDGE_BUFFER_MS = 300;
 
 const isKnimeNode = (event: DragEvent) =>
-  event.dataTransfer?.types.includes(KNIME_MIME);
+  event.dataTransfer?.types.includes(KNIME_MIME) ||
+  event.dataTransfer?.types.includes(KNIME_COMPONENT_MIME);
 
 export const useDragNodeIntoCanvas = () => {
   const { isWritable } = storeToRefs(useWorkflowStore());
@@ -63,7 +115,7 @@ export const useDragNodeIntoCanvas = () => {
     nodeTemplatesStore.setDraggingNodeTemplate(nodeTemplate);
 
     // collision check only works for the webgl canvas
-    if (isWebGLRenderer.value) {
+    if (isWebGLRenderer.value && nodeTemplate.nodeFactory) {
       nodeReplacementOrInsertion.onDragStart();
     }
 
@@ -82,10 +134,20 @@ export const useDragNodeIntoCanvas = () => {
     );
 
     event.dataTransfer!.setData("text/plain", nodeTemplate.id);
-    event.dataTransfer!.setData(
-      KNIME_MIME,
-      JSON.stringify(nodeTemplate.nodeFactory),
-    );
+    if (nodeTemplate.nodeFactory) {
+      event.dataTransfer!.setData(
+        KNIME_MIME,
+        JSON.stringify(nodeTemplate.nodeFactory),
+      );
+    }
+
+    const componentPayload = getComponentPayloadFromTemplate(nodeTemplate);
+    if (componentPayload) {
+      event.dataTransfer!.setData(
+        KNIME_COMPONENT_MIME,
+        JSON.stringify(componentPayload),
+      );
+    }
   };
 
   const onDrag = (event: DragEvent) => {
@@ -109,11 +171,7 @@ export const useDragNodeIntoCanvas = () => {
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
-    if (
-      isWebGLRenderer.value &&
-      // on dragover there's no access to a drag event's dataTransfer
-      nodeTemplatesStore.draggedTemplateData?.nodeFactory
-    ) {
+    if (isWebGLRenderer.value && nodeTemplatesStore.draggedTemplateData) {
       const [canvasX, canvasY] = webglCanvasStore.screenToCanvasCoordinates([
         event.clientX,
         event.clientY,
@@ -126,13 +184,15 @@ export const useDragNodeIntoCanvas = () => {
         startPanningToEdge(event);
       }
 
-      nodeReplacementOrInsertion.onDragMove(
-        { x: canvasX, y: canvasY },
-        {
-          type: "from-node-template",
-          nodeFactory: nodeTemplatesStore.draggedTemplateData?.nodeFactory,
-        },
-      );
+      if (nodeTemplatesStore.draggedTemplateData?.nodeFactory) {
+        nodeReplacementOrInsertion.onDragMove(
+          { x: canvasX, y: canvasY },
+          {
+            type: "from-node-template",
+            nodeFactory: nodeTemplatesStore.draggedTemplateData?.nodeFactory,
+          },
+        );
+      }
     }
   };
 
@@ -140,8 +200,9 @@ export const useDragNodeIntoCanvas = () => {
     dragStartTime = null;
     stopPanningToEdge();
     const nodeFactory = getNodeFactoryFromEvent(event);
+    const componentPayload = getComponentPayloadFromEvent(event);
 
-    if (!isWritable.value || !nodeFactory) {
+    if (!isWritable.value || (!nodeFactory && !componentPayload)) {
       return;
     }
 
@@ -163,6 +224,29 @@ export const useDragNodeIntoCanvas = () => {
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
+    if (componentPayload) {
+      const { newNodeId, problem } = await nodeInteractionsStore.addNode({
+        position: dropPosition,
+        spaceItemReference: componentPayload.spaceItemReference,
+        componentName: componentPayload.componentName,
+      });
+
+      if (problem) {
+        getToastsProvider().show({
+          type: problem.type,
+          headline: problem.headline,
+          message: problem.message,
+          autoRemove: true,
+        });
+      }
+
+      if (newNodeId) {
+        useCurrentCanvasStore().value.focus();
+      }
+
+      return;
+    }
+
     if (isWebGLRenderer.value && nodeInteractionsStore.replacementOperation) {
       await nodeReplacementOrInsertion.onDrop(dropPosition, {
         type: "from-node-template",

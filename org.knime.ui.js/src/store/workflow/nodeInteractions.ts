@@ -13,6 +13,7 @@ import { isBrowser } from "@/environment";
 import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
+import type { ComponentSpaceItemReference } from "@/util/dataMappers";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
 import { usePanelStore } from "../panel";
 import { useSpaceOperationsStore } from "../spaces/spaceOperations";
@@ -119,7 +120,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
     }: {
       position: XY;
       nodeFactory?: { className: string };
-      spaceItemReference?: SpaceItemReference;
+      spaceItemReference?: ComponentSpaceItemReference;
       sourceNodeId?: string;
       sourcePortIdx?: number;
       nodeRelation?: AddNodeCommand.NodeRelationEnum;
@@ -174,7 +175,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
                   x: gridAdjustedPosition.x,
                   y: gridAdjustedPosition.y,
                 },
-                spaceId: spaceItemReference.spaceId,
+                spaceId: spaceItemReference.spaceId as unknown as string,
                 itemId: spaceItemReference.itemId,
                 name: componentName,
               },
@@ -207,12 +208,16 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
           });
         }
       } else {
+        const resolvedSpaceItemReference = spaceItemReference?.spaceId
+          ? (spaceItemReference as SpaceItemReference)
+          : undefined;
+
         const result = await API.workflowCommand.AddNode({
           projectId,
           workflowId,
           position: gridAdjustedPosition,
           nodeFactory,
-          spaceItemReference,
+          spaceItemReference: resolvedSpaceItemReference,
           sourceNodeId,
           sourcePortIdx,
           nodeRelation,

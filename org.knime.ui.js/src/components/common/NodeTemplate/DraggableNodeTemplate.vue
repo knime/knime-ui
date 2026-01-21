@@ -85,6 +85,14 @@ const onDragEnd = (event: DragEvent) => {
     emit("showNodeDescription");
   }
 };
+
+const onDoubleClick = () => {
+  if (!props.nodeTemplate.nodeFactory) {
+    return;
+  }
+
+  addNodeWithAutoPositioning(props.nodeTemplate.nodeFactory);
+};
 </script>
 
 <template>
@@ -100,7 +108,7 @@ const onDragEnd = (event: DragEvent) => {
     :show-floating-help-icon="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
-    @dblclick="addNodeWithAutoPositioning(nodeTemplate.nodeFactory!)"
+    @dblclick="onDoubleClick"
     @drag="dragNodeIntoCanvas.onDrag"
     @help-icon-click="emit('showNodeDescription')"
   />

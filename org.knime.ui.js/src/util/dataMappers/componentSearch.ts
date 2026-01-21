@@ -41,6 +41,7 @@ const toNodeTemplateWithExtendedPorts = (
     icon: input.icon,
     inPorts,
     outPorts,
+    componentName: input.name,
   };
 };
 

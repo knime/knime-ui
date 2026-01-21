@@ -1,4 +1,12 @@
-import type { NodeTemplate, PortType } from "@/api/gateway-api/generated-api";
+import type {
+  NodeTemplate,
+  PortType,
+  SpaceItemReference,
+} from "@/api/gateway-api/generated-api";
+
+export type ComponentSpaceItemReference = Omit<SpaceItemReference, "spaceId"> & {
+  spaceId?: string;
+};
 
 export type ExtendedPortType = PortType & {
   typeId: string;
@@ -9,4 +17,6 @@ export type ExtendedPortType = PortType & {
 export type NodeTemplateWithExtendedPorts = NodeTemplate & {
   inPorts: ExtendedPortType[];
   outPorts: ExtendedPortType[];
+  spaceItemReference?: ComponentSpaceItemReference;
+  componentName?: string;
 };
