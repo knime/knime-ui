@@ -4,8 +4,12 @@ import { sanitization } from "@knime/utils";
 
 const md = new MarkdownIt();
 
-export const renderMarkdown = (src: string) => {
+export const renderMarkdown = (
+  src: string,
+  allowHyperlinks: boolean = false,
+) => {
   return sanitization.sanitizeHTML(md.render(src), {
     allowStyleAttribute: true,
+    allowHyperlinks,
   });
 };
