@@ -58,9 +58,7 @@ watch(
 
     // if error is set and its still dirty we hit the size limit
     if (currentSyncState.state === SyncState.StateEnum.DIRTY) {
-      toastPresets.app.syncProjectSizeLimit({
-        error,
-      });
+      toastPresets.app.syncProjectSizeLimit();
     } else if (currentSyncState.state === SyncState.StateEnum.ERROR) {
       toastPresets.app.syncProjectFailed({
         error,
@@ -87,13 +85,12 @@ const syncButtonTitle = computed(() => {
     return "Last sync failed, workflow might have unsynced changes.";
   }
 
-  const base =
-    "Workflow has unsynced changes. Click to sync workflow with the hub now.";
+  const base = "Unsynced changes. Click to sync.";
 
   if (syncState.value?.isAutoSyncEnabled) {
-    return `${base} Will be synced to the hub automatically after some time.`;
+    return `${base} Synced automatically after some time.`;
   } else {
-    return `${base} Will be synced with the hub on close.`;
+    return `${base} Synced on close.`;
   }
 });
 </script>

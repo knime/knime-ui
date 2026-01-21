@@ -33,10 +33,12 @@ export const getPresets = (
         headline: "Could not sync workflow",
       }),
 
-    syncProjectSizeLimit: ({ error }) =>
-      defaultAPIErrorHandler($toast, error, {
+    syncProjectSizeLimit: () =>
+      $toast.show({
+        headline: "Project size limit reached: disable auto sync",
+        message:
+          "You still can manually trigger a sync to the hub by clicking the cloud icon. It will always be synced on close of the session.",
         type: "info",
-        headline: "Project size limit reached",
       }),
   };
 };
