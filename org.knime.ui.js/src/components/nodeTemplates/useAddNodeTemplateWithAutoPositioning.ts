@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 import {
   AddNodeCommand,
   type NodeFactoryKey,
-  type XY,
 } from "@/api/gateway-api/generated-api";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSelectionStore } from "@/store/selection";
@@ -13,8 +12,8 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
 import { geometry } from "@/util/geometry";
 
-export const useAddNodeToWorkflow = () => {
-  const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());
+export const useAddNodeTemplateWithAutoPositioning = () => {
+  const { activeWorkflow } = storeToRefs(useWorkflowStore());
   const { toastPresets } = getToastPresets();
 
   const nodeInteractionsStore = useNodeInteractionsStore();
@@ -27,34 +26,21 @@ export const useAddNodeToWorkflow = () => {
     toastPresets.workflow.addNodeToCanvas({ error });
   };
 
-  const addNodeByPosition = async (
-    position: XY,
-    nodeFactory: NodeFactoryKey,
-    autoConnectOptions?: {
-      sourceNodeId: string;
-      nodeRelation: AddNodeCommand.NodeRelationEnum;
-    },
-  ) => {
-    try {
-      await nodeInteractionsStore.addNode({
-        position,
-        nodeFactory,
-        sourceNodeId: autoConnectOptions?.sourceNodeId,
-        nodeRelation: autoConnectOptions?.nodeRelation,
-      });
-    } catch (error) {
-      handleError(error);
+  const defaultPosition = () => {
+    const canvasStore = useCurrentCanvasStore();
+
+    if (!activeWorkflow.value) {
+      throw new Error("Invalid state: there is no active workflow");
     }
+
+    return geometry.findFreeSpaceAroundCenterWithFallback({
+      visibleFrame: canvasStore.value.getVisibleFrame,
+      nodes: activeWorkflow.value.nodes,
+    });
   };
 
-  const addNodeWithAutoPositioning = async (nodeFactory: NodeFactoryKey) => {
-    // do not try to add a node to a read only workflow
-    if (!isWritable.value) {
-      return;
-    }
-
+  const addNodeWithAutoPositioning = (nodeFactory: NodeFactoryKey) => {
     const { singleSelectedNode } = storeToRefs(useSelectionStore());
-    const canvasStore = useCurrentCanvasStore();
 
     const position = singleSelectedNode.value
       ? {
@@ -62,10 +48,7 @@ export const useAddNodeToWorkflow = () => {
           x: singleSelectedNode.value.position.x + 120,
           y: singleSelectedNode.value.position.y,
         }
-      : geometry.findFreeSpaceAroundCenterWithFallback({
-          visibleFrame: canvasStore.value.getVisibleFrame,
-          nodes: activeWorkflow.value!.nodes,
-        });
+      : defaultPosition();
 
     const autoConnectOptions = singleSelectedNode.value
       ? {
@@ -74,11 +57,36 @@ export const useAddNodeToWorkflow = () => {
         }
       : undefined;
 
-    await addNodeByPosition(position, nodeFactory, autoConnectOptions);
+    try {
+      return nodeInteractionsStore.addNativeNode({
+        position,
+        nodeFactory,
+        autoConnectOptions,
+      });
+    } catch (error) {
+      handleError(error);
+      return { newNodeId: null };
+    }
+  };
+
+  const addComponentWithAutoPositioning = (
+    componentId: string,
+    componentName: string,
+  ) => {
+    try {
+      return nodeInteractionsStore.addComponentNodeFromMainHub({
+        position: defaultPosition(),
+        componentIdInHub: componentId,
+        componentName,
+      });
+    } catch (error) {
+      handleError(error);
+      return { newNodeId: null };
+    }
   };
 
   return {
-    addNodeByPosition,
     addNodeWithAutoPositioning,
+    addComponentWithAutoPositioning,
   };
 };

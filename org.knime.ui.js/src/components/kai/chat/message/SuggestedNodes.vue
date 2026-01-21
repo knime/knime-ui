@@ -6,7 +6,7 @@ import NodeIcon from "@knime/styles/img/icons/node.svg";
 import {
   DraggableNodeTemplate,
   NodeList,
-  useAddNodeToWorkflow,
+  useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { useKaiExtensionPanel } from "../../useKaiExtensionPanel";
@@ -18,7 +18,7 @@ type Props = {
 const props = defineProps<Props>();
 
 const { toggleNodeDescription } = useKaiExtensionPanel();
-const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeTemplateWithAutoPositioning();
 
 const hasNodeTemplates = computed(() => props.nodeTemplates.length > 0);
 

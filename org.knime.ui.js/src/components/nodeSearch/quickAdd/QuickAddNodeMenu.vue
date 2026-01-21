@@ -114,6 +114,10 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
 
   const { nodeFactory, inPorts, outPorts } = nodeTemplate;
 
+  if (!nodeFactory) {
+    return;
+  }
+
   const [offsetX, offsetY] = port.value
     ? calculatePortOffset({
         selectedPort: port.value,
@@ -125,15 +129,17 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
 
   // add node
   const { x, y } = canvasPosition.value;
-  await nodeInteractionsStore.addNode({
+  await nodeInteractionsStore.addNativeNode({
     position: {
       x: x - offsetX,
       y: y - offsetY,
     },
     nodeFactory,
-    sourceNodeId: nodeId.value!,
-    sourcePortIdx: port.value?.index,
-    nodeRelation: nodeRelation.value! as AddNodeCommand.NodeRelationEnum,
+    autoConnectOptions: {
+      sourceNodeId: nodeId.value!,
+      sourcePortIdx: port.value?.index,
+      nodeRelation: nodeRelation.value! as AddNodeCommand.NodeRelationEnum,
+    },
   });
 
   props.quickActionContext.closeMenu();

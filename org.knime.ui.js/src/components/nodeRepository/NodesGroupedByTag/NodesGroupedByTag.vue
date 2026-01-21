@@ -9,7 +9,7 @@ import {
   DraggableNodeTemplate,
   type NavReachedEvent,
   NodeList,
-  useAddNodeToWorkflow,
+  useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
@@ -25,7 +25,7 @@ const props = withDefaults(defineProps<Props>(), { displayMode: "icon" });
 
 const emit = defineEmits(["showNodeDescription", "navReachedTop"]);
 
-const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodeTemplateWithAutoPositioning();
 
 const nodeRepositoryStore = useNodeRepositoryStore();
 const { showDescriptionForNode, tagScrollPosition, nodesPerTag, selectedNode } =

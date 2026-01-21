@@ -6,7 +6,6 @@ import { useRoute } from "vue-router";
 import type { FileExplorerItem } from "@knime/components";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -15,6 +14,7 @@ import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
+import { getToastPresets } from "@/toastPresets";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 const isComponent = (item: FileExplorerItem) => {
@@ -25,6 +25,12 @@ type UseCustomDragPreviewOptions = {
   projectId: Ref<string | null>;
 };
 
+/**
+ * Handles items being dragged from the SpaceExplorer into the canvas. Because
+ * some of these items could be either files that can be added immediately as nodes
+ * or could be components in the space. Both cases would result in content that can
+ * be added to the canvas which needs to be handled accordingly
+ */
 export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   const isAboveCanvas = ref(false);
   const hasDragEnded = ref(false);
@@ -36,7 +42,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   const canvasStore = useCurrentCanvasStore();
   const { fileExtensionToNodeTemplateId } = storeToRefs(useApplicationStore());
   const { getSingleNodeTemplate } = useNodeTemplatesStore();
-  const { addNode } = useNodeInteractionsStore();
+  const nodeInteractionStore = useNodeInteractionsStore();
   const $route = useRoute();
 
   const activeSpacePath = computed(
@@ -156,30 +162,29 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         screenY,
       ]);
       const position = { x, y };
-      const spaceItemReference = {
-        providerId: activeSpacePath.value.spaceProviderId,
-        spaceId: activeSpacePath.value.spaceId,
-        itemId: sourceItem.id,
+
+      const addNode = () => {
+        if (isItemAComponent) {
+          const spaceItemReference = {
+            providerId: activeSpacePath.value.spaceProviderId,
+            spaceId: activeSpacePath.value.spaceId,
+            itemId: sourceItem.id,
+          };
+
+          return nodeInteractionStore.addComponentNode({
+            position,
+            spaceItemReference,
+            componentName: sourceItem.name,
+          });
+        } else {
+          return nodeInteractionStore.addNativeNode({
+            position,
+            nodeFactory: { className: nodeTemplateId },
+          });
+        }
       };
 
-      const { newNodeId, problem } = await addNode({
-        position,
-        spaceItemReference,
-        nodeFactory: isItemAComponent
-          ? undefined
-          : { className: nodeTemplateId },
-        componentName: isItemAComponent ? sourceItem.name : undefined,
-      });
-
-      if (problem) {
-        const $toast = getToastsProvider();
-        $toast.show({
-          type: problem.type,
-          headline: problem.headline,
-          message: problem.message,
-          autoRemove: true,
-        });
-      }
+      const { newNodeId } = await addNode();
       onComplete(Boolean(newNodeId));
     } catch (error) {
       onComplete(false);
@@ -187,7 +192,8 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         message: "Error adding node via file to workflow",
         error,
       });
-      throw error;
+
+      getToastPresets().toastPresets.workflow.addNodeToCanvas({ error });
     }
   };
 

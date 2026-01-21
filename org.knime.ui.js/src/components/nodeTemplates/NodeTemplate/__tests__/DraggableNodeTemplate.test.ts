@@ -7,10 +7,10 @@ import {
   type NodeTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 import { deepMocked, mockBoundingRect } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
+import { KNIME_MIME } from "../../useDragNodeIntoCanvas";
 import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
 
 const mockedAPI = deepMocked(API);
@@ -27,7 +27,6 @@ describe("DraggableNodeTemplate", () => {
     type: NativeNodeInvariants.TypeEnum.Configuration,
     inPorts: [{ typeId: "org.port.mockId" }],
     outPorts: [{ typeId: "org.port.mockId" }],
-    component: true,
   };
 
   afterEach(() => {
@@ -69,7 +68,7 @@ describe("DraggableNodeTemplate", () => {
     };
 
     const wrapper = mount(DraggableNodeTemplate, {
-      props: { ...defaultProps, ...props },
+      props: { ...defaultProps, ...props } as any,
       global: {
         plugins: [testingPinia],
         mocks: { $shapes: { nodeSize: 32 } },
@@ -161,7 +160,7 @@ describe("DraggableNodeTemplate", () => {
         x: 100,
         y: 100,
       };
-      await selectionStore.selectNodes(["root:2"]);
+      selectionStore.selectNodes(["root:2"]);
       await wrapper.find(".node").trigger("dblclick");
       await flushPromises();
 
@@ -250,8 +249,13 @@ describe("DraggableNodeTemplate", () => {
       expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith(
         KNIME_MIME,
         JSON.stringify({
-          className: "class-name",
-          settings: "encoded-settings",
+          type: "node",
+          payload: {
+            nodeFactory: {
+              className: "class-name",
+              settings: "encoded-settings",
+            },
+          },
         }),
       );
     });

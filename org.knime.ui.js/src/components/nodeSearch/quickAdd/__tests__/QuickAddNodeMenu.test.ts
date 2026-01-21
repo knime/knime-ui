@@ -203,7 +203,9 @@ describe("QuickAddNodeMenu.vue", () => {
       expect(mockedStores.quickAddNodesStore.portTypeId).toBe(
         "org.knime.core.node.BufferedDataTable",
       );
-      expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith(
+      expect(
+        mockedStores.nodeInteractionsStore.addNativeNode,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           nodeFactory: {
             className:
@@ -213,9 +215,11 @@ describe("QuickAddNodeMenu.vue", () => {
             x: 19,
             y: -6,
           },
-          sourceNodeId: "node-id",
-          sourcePortIdx: 1,
-          nodeRelation: "SUCCESSORS",
+          autoConnectOptions: {
+            sourceNodeId: "node-id",
+            sourcePortIdx: 1,
+            nodeRelation: "SUCCESSORS",
+          },
         }),
       );
     });
@@ -272,15 +276,19 @@ describe("QuickAddNodeMenu.vue", () => {
       const node1 = wrapper.findAll(".node").at(0);
       await node1?.trigger("click");
 
-      expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith(
+      expect(
+        mockedStores.nodeInteractionsStore.addNativeNode,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           nodeFactory: {
             className:
               "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
           },
-          sourceNodeId: null,
-          sourcePortIdx: undefined,
-          nodeRelation: null,
+          autoConnectOptions: {
+            sourceNodeId: null,
+            sourcePortIdx: undefined,
+            nodeRelation: null,
+          },
         }),
       );
       await flushPromises();
@@ -304,7 +312,9 @@ describe("QuickAddNodeMenu.vue", () => {
       const node1 = wrapper.findAll(".node").at(0);
       await node1?.trigger("keydown.enter");
 
-      expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith({
+      expect(
+        mockedStores.nodeInteractionsStore.addNativeNode,
+      ).toHaveBeenCalledWith({
         nodeFactory: {
           className:
             "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
@@ -313,9 +323,11 @@ describe("QuickAddNodeMenu.vue", () => {
           x: 19,
           y: -6,
         },
-        sourceNodeId: "node-id",
-        sourcePortIdx: 1,
-        nodeRelation: "SUCCESSORS",
+        autoConnectOptions: {
+          sourceNodeId: "node-id",
+          sourcePortIdx: 1,
+          nodeRelation: "SUCCESSORS",
+        },
       });
       await flushPromises();
       expect(defaultProps.quickActionContext.closeMenu).toHaveBeenCalled();
@@ -329,7 +341,9 @@ describe("QuickAddNodeMenu.vue", () => {
       const node1 = wrapper.findAll(".node").at(0);
       await node1?.trigger("click");
 
-      expect(mockedStores.nodeInteractionsStore.addNode).not.toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.addNativeNode,
+      ).not.toHaveBeenCalled();
     });
 
     it("does display overlay if workflow coach is disabled", async () => {
@@ -395,21 +409,23 @@ describe("QuickAddNodeMenu.vue", () => {
         // press enter
         await input.trigger("keydown.enter");
 
-        expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith(
-          {
-            nodeFactory: {
-              className:
-                "org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory",
-            },
-            position: {
-              x: 19,
-              y: -6,
-            },
+        expect(
+          mockedStores.nodeInteractionsStore.addNativeNode,
+        ).toHaveBeenCalledWith({
+          nodeFactory: {
+            className:
+              "org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory",
+          },
+          position: {
+            x: 19,
+            y: -6,
+          },
+          autoConnectOptions: {
             sourceNodeId: "node-id",
             sourcePortIdx: 1,
             nodeRelation: "SUCCESSORS",
           },
-        );
+        });
         await flushPromises();
         expect(defaultProps.quickActionContext.closeMenu).toHaveBeenCalled();
       });
@@ -429,7 +445,7 @@ describe("QuickAddNodeMenu.vue", () => {
           await node?.trigger(event);
 
           expect(
-            mockedStores.nodeInteractionsStore.addNode,
+            mockedStores.nodeInteractionsStore.addNativeNode,
           ).toHaveBeenCalledWith(
             expect.objectContaining({
               nodeFactory: {
@@ -437,9 +453,11 @@ describe("QuickAddNodeMenu.vue", () => {
                   "org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3",
               },
               position: expect.anything(),
-              sourceNodeId: "node-id",
-              sourcePortIdx: 1,
-              nodeRelation: "SUCCESSORS",
+              autoConnectOptions: {
+                sourceNodeId: "node-id",
+                sourcePortIdx: 1,
+                nodeRelation: "SUCCESSORS",
+              },
             }),
           );
         },

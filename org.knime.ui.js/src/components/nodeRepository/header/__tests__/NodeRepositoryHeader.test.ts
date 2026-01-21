@@ -192,7 +192,7 @@ describe("NodeRepositoryHeader", () => {
         "myquery",
       );
       expect(
-        mockedStores.componentSearchStore.updateQuery,
+        mockedStores.sidebarComponentSearchStore.updateQuery,
       ).not.toHaveBeenCalled();
 
       vi.clearAllMocks();
@@ -206,7 +206,7 @@ describe("NodeRepositoryHeader", () => {
         mockedStores.nodeRepositoryStore.updateQuery,
       ).not.toHaveBeenCalled();
       expect(
-        mockedStores.componentSearchStore.updateQuery,
+        mockedStores.sidebarComponentSearchStore.updateQuery,
       ).toHaveBeenCalledWith("myquery");
     });
 

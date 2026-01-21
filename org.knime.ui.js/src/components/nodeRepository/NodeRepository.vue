@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 
+import { SidebarComponentSearchResults } from "@/components/componentSearch";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarNodeSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarNodeSearchResults.vue";
 import type { NavReachedEvent } from "@/components/nodeTemplates";
@@ -12,7 +13,6 @@ import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import ComponentSearchResults from "../componentSearch/ComponentSearchResults.vue";
 
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
 import NodeRepositoryTree from "./NodeRepositoryTree/NodeRepositoryTree.vue";
@@ -154,7 +154,7 @@ const handleNavReachedTop = (event: NavReachedEvent) => {
         />
       </div>
 
-      <ComponentSearchResults
+      <SidebarComponentSearchResults
         v-if="isComponentSearchAvailable"
         v-show="searchContext === 'components'"
         ref="componentSearchResults"

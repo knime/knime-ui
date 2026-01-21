@@ -6,6 +6,18 @@ import {
 
 import type { ExtendedPortType, NodeTemplateWithExtendedPorts } from "./common";
 
+const PortTypeMapper: Record<string, PortType.KindEnum> = {
+  table: PortType.KindEnum.Table,
+  flowvariable: PortType.KindEnum.FlowVariable,
+  generic: PortType.KindEnum.Generic,
+  other: PortType.KindEnum.Other,
+};
+
+const mapPortType = (input: string | null | undefined): PortType.KindEnum => {
+  const key = (input ?? "").trim().toLowerCase();
+  return PortTypeMapper[key] ?? PortType.KindEnum.Other;
+};
+
 const toNodeTemplateWithExtendedPorts = (
   input: ComponentSearchItem,
 ): NodeTemplateWithExtendedPorts => {
@@ -15,9 +27,9 @@ const toNodeTemplateWithExtendedPorts = (
       typeId: port.portTypeName,
       optional: port.optional,
       color: port.color,
-      type: port.portTypeName,
+      type: mapPortType(port.portTypeName),
       description: port.description ?? "",
-      kind: PortType.KindEnum.Other, // TODO: NXT-4364 add port info
+      kind: mapPortType(port.portTypeName),
     } satisfies NodePortTemplate & ExtendedPortType;
   });
 
@@ -27,9 +39,9 @@ const toNodeTemplateWithExtendedPorts = (
       typeId: port.portTypeName,
       optional: port.optional,
       color: port.color,
-      type: port.portTypeName,
+      type: mapPortType(port.portTypeName),
       description: port.description ?? "",
-      kind: PortType.KindEnum.Other, // TODO: NXT-4364 add port info
+      kind: mapPortType(port.portTypeName),
     } satisfies NodePortTemplate & ExtendedPortType;
   });
 

@@ -15,7 +15,10 @@ import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useCanvasTooltipStore } from "@/store/canvasTooltip/canvasTooltip";
-import { useComponentSearchStore } from "@/store/componentSearch";
+import {
+  useQuickActionComponentSearchStore,
+  useSidebarComponentSearchStore,
+} from "@/store/componentSearch";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
@@ -83,7 +86,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
     useClipboardInteractionsStore(testingPinia);
   const componentInteractionsStore =
     useComponentInteractionsStore(testingPinia);
-  const componentSearchStore = useComponentSearchStore(testingPinia);
   const connectionInteractionsStore =
     useConnectionInteractionsStore(testingPinia);
   const desktopInteractionsStore = useDesktopInteractionsStore(testingPinia);
@@ -108,6 +110,10 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const floatingConnectorStore = useFloatingConnectorStore(testingPinia);
   const nodeOutputStore = useNodeOutputStore(testingPinia);
   const canvasTooltipStore = useCanvasTooltipStore(testingPinia);
+  const quickActionComponentSearchStore =
+    useQuickActionComponentSearchStore(testingPinia);
+  const sidebarComponentSearchStore =
+    useSidebarComponentSearchStore(testingPinia);
 
   const compositeViewStore = useCompositeViewStore(testingPinia);
 
@@ -170,6 +176,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     compositeViewStore,
     nodeOutputStore,
     canvasTooltipStore,
-    componentSearchStore,
+    quickActionComponentSearchStore,
+    sidebarComponentSearchStore,
   };
 };

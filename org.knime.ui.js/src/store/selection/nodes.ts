@@ -75,15 +75,15 @@ export const useNodeSelection = (options: UseNodeSelectionOptions) => {
   };
 
   const getSelectedComponentPlaceholder = computed(() => {
-    if (!selectedComponentPlaceholder.value) {
+    if (!selectedComponentPlaceholder.value || !workflowStore.activeWorkflow) {
       return null;
     }
 
-    return workflowStore.activeWorkflow
-      ? workflowStore.activeWorkflow.componentPlaceholders!.find(
-          (component) => component.id === selectedComponentPlaceholder.value,
-        )
-      : null;
+    return (
+      workflowStore.activeWorkflow.componentPlaceholders?.find(
+        (component) => component.id === selectedComponentPlaceholder.value,
+      ) ?? null
+    );
   });
 
   const focusedNode = computed<WorkflowObject | null>(() => {

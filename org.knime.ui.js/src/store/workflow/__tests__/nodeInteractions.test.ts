@@ -1,18 +1,28 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
+import { AddNodeCommand } from "@/api/gateway-api/generated-api";
+import { isBrowser, isDesktop } from "@/environment";
 import {
   createComponentNode,
   createNativeNode,
+  createSpaceProvider,
   createWorkflow,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
+vi.mock("@/environment");
+
 describe("workflow::nodeInteractions", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("connects nodes", async () => {
     const { workflowStore, nodeInteractionsStore } = mockStores();
     workflowStore.setActiveWorkflow(
@@ -90,23 +100,25 @@ describe("workflow::nodeInteractions", () => {
     it("should add nodes based from a space", async () => {
       const { nodeInteractionsStore, workflowStore } = setupStoreWithWorkflow();
 
-      await nodeInteractionsStore.addNode({
+      await nodeInteractionsStore.addNativeNode({
         position: { x: 7, y: 31 },
-        nodeFactory: { className: "factory" },
-        sourceNodeId: "1",
-        sourcePortIdx: 1,
         spaceItemReference: {
           providerId: "provider",
           spaceId: "space",
           itemId: "item",
+        },
+        autoConnectOptions: {
+          nodeRelation: AddNodeCommand.NodeRelationEnum.SUCCESSORS,
+          sourceNodeId: "1",
+          sourcePortIdx: 1,
         },
       });
       expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith({
         projectId: workflowStore.activeWorkflow!.projectId,
         workflowId: workflowStore.activeWorkflow!.info.containerId,
         position: { x: 5, y: 30 },
-        nodeFactory: { className: "factory" },
         sourceNodeId: "1",
+        nodeRelation: AddNodeCommand.NodeRelationEnum.SUCCESSORS,
         sourcePortIdx: 1,
         spaceItemReference: {
           providerId: "provider",
@@ -116,34 +128,10 @@ describe("workflow::nodeInteractions", () => {
       });
     });
 
-    it("should add components from a space", async () => {
-      const { nodeInteractionsStore, workflowStore } = setupStoreWithWorkflow();
-      mockedAPI.desktop.importComponent.mockReturnValueOnce("new-node");
-      await nodeInteractionsStore.addNode({
-        position: { x: 7, y: 31 },
-        nodeFactory: undefined,
-        componentName: "component-name",
-        spaceItemReference: {
-          providerId: "provider",
-          spaceId: "space",
-          itemId: "item",
-        },
-      });
-      expect(mockedAPI.desktop.importComponent).toHaveBeenCalledWith({
-        projectId: workflowStore.activeWorkflow!.projectId,
-        workflowId: workflowStore.activeWorkflow!.info.containerId,
-        x: 5,
-        y: 30,
-        spaceProviderId: "provider",
-        spaceId: "space",
-        itemId: "item",
-      });
-    });
-
     it("should adjust the position of the node to grid positions", async () => {
       const { nodeInteractionsStore, workflowStore } = setupStoreWithWorkflow();
 
-      await nodeInteractionsStore.addNode({
+      await nodeInteractionsStore.addNativeNode({
         position: { x: 7, y: 31 },
         nodeFactory: { className: "factory" },
       });
@@ -160,17 +148,17 @@ describe("workflow::nodeInteractions", () => {
 
     it.each([
       ["new-only" as const, ["root:1"], ["new-mock-node"]],
-      ["add" as const, ["root:1"], ["root:1", "new-mock-node"]],
       ["none" as const, [], []],
     ])(
       "adjusts selection correctly after adding node with %s selection mode",
       async (selectionMode, currentSelectedNodeIds, expectedNodeIds) => {
         const { nodeInteractionsStore, selectionStore } =
           setupStoreWithWorkflow();
-        await selectionStore.selectNodes(currentSelectedNodeIds);
+
+        selectionStore.selectNodes(currentSelectedNodeIds);
         await flushPromises();
 
-        await nodeInteractionsStore.addNode({
+        await nodeInteractionsStore.addNativeNode({
           position: { x: 0, y: 0 },
           nodeFactory: { className: "factory" },
           selectionMode,
@@ -180,6 +168,109 @@ describe("workflow::nodeInteractions", () => {
         expect(selectionStore.selectedNodeIds).toEqual(expectedNodeIds);
       },
     );
+  });
+
+  describe("add component", () => {
+    const setupStoreWithWorkflow = () => {
+      mockedAPI.workflowCommand.AddNode.mockImplementation(() => ({
+        newNodeId: "new-mock-node",
+      }));
+      const loadStoreResponse = mockStores();
+
+      loadStoreResponse.workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "bar",
+          info: { containerId: "baz" },
+          nodes: {
+            "root:1": { id: "root:1", position: { x: 0, y: 0 } },
+            "new-mock-node": { id: "new-mock-node", position: { x: 0, y: 0 } },
+          },
+        }),
+      );
+
+      return { ...loadStoreResponse };
+    };
+
+    it("[DESKTOP] should add component from a space", async () => {
+      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+      const { nodeInteractionsStore, workflowStore } = setupStoreWithWorkflow();
+
+      await nodeInteractionsStore.addComponentNode({
+        position: { x: 7, y: 31 },
+        componentName: "foo",
+        spaceItemReference: {
+          providerId: "provider",
+          spaceId: "space",
+          itemId: "item",
+        },
+      });
+      expect(mockedAPI.workflowCommand.AddNode).not.toHaveBeenCalled();
+      expect(mockedAPI.desktop.importComponent).toHaveBeenCalledWith({
+        projectId: workflowStore.activeWorkflow!.projectId,
+        workflowId: workflowStore.activeWorkflow!.info.containerId,
+        x: 5,
+        y: 30,
+        spaceProviderId: "provider",
+        spaceId: "space",
+        itemId: "item",
+      });
+    });
+
+    it("[BROWSER] should add component from a space", async () => {
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+      const { nodeInteractionsStore, workflowStore } = setupStoreWithWorkflow();
+
+      mockedAPI.workflowCommand.AddComponent.mockResolvedValueOnce({
+        newPlaceholderId: "placeholderId",
+      });
+
+      await nodeInteractionsStore.addComponentNode({
+        position: { x: 7, y: 31 },
+        componentName: "foo",
+        spaceItemReference: {
+          providerId: "provider",
+          spaceId: "space",
+          itemId: "item",
+        },
+      });
+      expect(mockedAPI.workflowCommand.AddComponent).toHaveBeenCalledWith({
+        projectId: workflowStore.activeWorkflow!.projectId,
+        workflowId: workflowStore.activeWorkflow!.info.containerId,
+        position: { x: 5, y: 30 },
+        name: "foo",
+        providerId: "provider",
+        itemId: "item",
+      });
+    });
+
+    it("should add component from main hub", async () => {
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+      const { nodeInteractionsStore, workflowStore, spaceProvidersStore } =
+        setupStoreWithWorkflow();
+
+      const provider = createSpaceProvider();
+      spaceProvidersStore.setSpaceProviders({
+        [provider.id]: provider,
+      });
+
+      mockedAPI.workflowCommand.AddComponent.mockResolvedValueOnce({
+        newPlaceholderId: "placeholderId",
+      });
+
+      await nodeInteractionsStore.addComponentNodeFromMainHub({
+        position: { x: 7, y: 31 },
+        componentName: "foo",
+        componentIdInHub: "*1234",
+      });
+      expect(mockedAPI.workflowCommand.AddComponent).toHaveBeenCalledWith({
+        projectId: workflowStore.activeWorkflow!.projectId,
+        workflowId: workflowStore.activeWorkflow!.info.containerId,
+        position: { x: 5, y: 30 },
+        name: "foo",
+        providerId: provider.id,
+        itemId: "*1234",
+      });
+    });
   });
 
   describe("add ports", () => {

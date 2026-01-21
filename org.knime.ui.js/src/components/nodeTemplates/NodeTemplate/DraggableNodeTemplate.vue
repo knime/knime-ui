@@ -2,11 +2,11 @@
 import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useAddNodeToWorkflow } from "@/components/nodeTemplates/useAddNodeToWorkflow";
-import { useDragNodeIntoCanvas } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import { useAddNodeTemplateWithAutoPositioning } from "../useAddNodeTemplateWithAutoPositioning";
+import { useDragNodeIntoCanvas } from "../useDragNodeIntoCanvas";
 
 import NodeTemplate from "./NodeTemplate.vue";
 
@@ -20,6 +20,7 @@ type Props = {
   isHighlighted?: boolean;
   isDescriptionActive?: boolean;
   displayMode?: NodeRepositoryDisplayModesType;
+  showHelpIcon?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,13 +28,15 @@ const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isHighlighted: false,
   isDescriptionActive: false,
+  showHelpIcon: true,
 });
 
 const emit = defineEmits<{
   showNodeDescription: [];
 }>();
 
-const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning, addComponentWithAutoPositioning } =
+  useAddNodeTemplateWithAutoPositioning();
 
 const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
@@ -86,6 +89,24 @@ const onDragEnd = (event: DragEvent) => {
     emit("showNodeDescription");
   }
 };
+
+const autoAddNodeFromTemplate = (
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+) => {
+  if (nodeTemplate.nodeFactory) {
+    addNodeWithAutoPositioning(nodeTemplate.nodeFactory);
+    return;
+  }
+
+  if (nodeTemplate.component) {
+    addComponentWithAutoPositioning(nodeTemplate.id, nodeTemplate.name);
+    return;
+  }
+
+  consola.error(
+    "Invalid state. NodeTemplate is neither native node nor component",
+  );
+};
 </script>
 
 <template>
@@ -98,10 +119,10 @@ const onDragEnd = (event: DragEvent) => {
     :is-selected="isSelected"
     :is-highlighted="isHighlighted"
     :is-description-active="isDescriptionActive"
-    :show-floating-help-icon="true"
+    :show-floating-help-icon="showHelpIcon"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
-    @dblclick="addNodeWithAutoPositioning(nodeTemplate.nodeFactory!)"
+    @dblclick="autoAddNodeFromTemplate(nodeTemplate)"
     @drag="dragNodeIntoCanvas.onDrag"
     @help-icon-click="emit('showNodeDescription')"
   />

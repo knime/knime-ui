@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { toRef, useTemplateRef, watch } from "vue";
-import { storeToRefs } from "pinia";
 
 import {
   DraggableNodeTemplate,
   InfiniteNodeList,
   type NavReachedEvent,
 } from "@/components/nodeTemplates";
-import { useComponentSearchStore } from "@/store/componentSearch";
+import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 type Props = {
   active: boolean;
+  isLoading: boolean;
+  hasLoaded: boolean;
+  results: NodeTemplateWithExtendedPorts[];
+  fetchData: (params: { append: boolean }) => Promise<void>;
 };
 const props = defineProps<Props>();
 
@@ -18,15 +21,11 @@ const emit = defineEmits<{
   navReachedTop: [event: NavReachedEvent];
 }>();
 
-const componentSearchStore = useComponentSearchStore();
-const { isLoading, hasLoaded, results, searchScrollPosition } =
-  storeToRefs(componentSearchStore);
-
 watch(
   toRef(props, "active"),
   () => {
-    if (props.active && !hasLoaded.value) {
-      componentSearchStore.searchComponents();
+    if (props.active && !props.hasLoaded) {
+      props.fetchData({ append: false });
     }
   },
   { immediate: true },
@@ -36,21 +35,21 @@ const infiniteList = useTemplateRef("infiniteList");
 const focusFirst = () => {
   infiniteList.value?.focusFirst();
 };
+
 defineExpose({ focusFirst });
 </script>
 
 <template>
   <InfiniteNodeList
     ref="infiniteList"
-    v-model:scroll-position="searchScrollPosition"
     :nodes="results"
-    :fetch-more="() => componentSearchStore.searchComponents({ append: true })!"
+    :fetch-more="() => fetchData({ append: true })"
     :is-loading="isLoading"
     @nav-reached-top="emit('navReachedTop', $event)"
   >
     <template #nodesTemplate="slotProps">
       <slot name="nodesTemplate" v-bind="slotProps">
-        <DraggableNodeTemplate v-bind="slotProps" />
+        <DraggableNodeTemplate v-bind="slotProps" :show-help-icon="false" />
       </slot>
     </template>
 
