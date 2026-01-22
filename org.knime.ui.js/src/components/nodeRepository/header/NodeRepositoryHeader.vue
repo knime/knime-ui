@@ -2,12 +2,8 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import {
-  type MenuItem,
-  SearchInput,
-  SubMenu,
-  ValueSwitch,
-} from "@knime/components";
+import { type MenuItem, SearchInput, SubMenu } from "@knime/components";
+import { KdsValueSwitch } from "@knime/kds-components";
 import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
 import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
@@ -77,14 +73,6 @@ const updateSearchQuery = async (value: string) => {
   }
 };
 
-const switchSearchContext = (value: "nodes" | "components") => {
-  if (value === "components" && !isComponentSearchAvailable.value) {
-    return;
-  }
-
-  searchContext.value = value;
-};
-
 type MenuItemWithDisplayMode = MenuItem<{
   displayMode: NodeRepositoryDisplayModesType;
 }>;
@@ -140,17 +128,16 @@ const searchPlaceholderText = computed(() => {
   <div class="header">
     <div class="title-and-search">
       <div class="search-header">
-        <ValueSwitch
+        <KdsValueSwitch
           v-if="isComponentSearchAvailable"
-          compact
+          v-model="searchContext"
+          size="small"
           data-test-id="search-context-switch"
           :disabled="!nodeRepositoryLoaded"
-          :model-value="searchContext"
           :possible-values="[
             { id: 'nodes', text: 'Nodes' },
             { id: 'components', text: 'Components' },
           ]"
-          @update:model-value="switchSearchContext"
         />
 
         <span v-else>Nodes</span>

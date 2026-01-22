@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { SubMenu, ValueSwitch } from "@knime/components";
+import { SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
+import { KdsValueSwitch } from "@knime/kds-components";
 import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
@@ -40,9 +41,9 @@ const showChatControls = computed(() => !panelComponent.value);
     <template #header>
       <h2>KNIME AI Assistant</h2>
       <template v-if="showChatControls">
-        <ValueSwitch
+        <KdsValueSwitch
           v-model="chainType"
-          compact
+          size="small"
           :possible-values="[
             { id: 'qa', text: 'Q&A' },
             { id: 'build', text: 'Build' },
