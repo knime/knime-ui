@@ -6,12 +6,14 @@ import { useHint } from "@knime/components";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import { HINTS } from "@/hints/hints.config";
+import {
+  nodeToWorkflowObject,
+  workflowNavigationService,
+} from "@/lib/workflow-canvas";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { portSize } from "@/style/shapes";
-import { getNodeState } from "@/util/nodeUtil";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
-import { nodeToWorkflowObject } from "@/util/workflowUtil";
 import { pixiGlobals } from "../common/pixiGlobals";
 
 /**
@@ -32,7 +34,8 @@ export const useKanvasNodePortHint = () => {
     const executedNodesWithOutPorts = nodes.filter(
       (node) =>
         node.outPorts.length > 1 &&
-        getNodeState(node, 0) === NodeState.ExecutionStateEnum.EXECUTED,
+        workflowDomain.node.getExecutionState(node, 0) ===
+          NodeState.ExecutionStateEnum.EXECUTED,
     );
 
     const targetNodes =

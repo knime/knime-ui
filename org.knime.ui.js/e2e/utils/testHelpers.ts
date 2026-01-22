@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import { Page } from "playwright-core";
 
-import { KANVAS_ID } from "../../src/util/getKanvasDomElement";
+import { KANVAS_ID } from "../../src/lib/workflow-canvas/getKanvasDomElement";
 
 import { mockWebsocket } from "./mockWebsocket";
 import { StartApplicationHelperOptions } from "./types";

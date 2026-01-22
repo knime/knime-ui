@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
@@ -11,7 +12,6 @@ import {
   createNativeNode,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import NodePort from "../../NodePort/NodePort.vue";
 import AddPortPlaceholder from "../AddPortPlaceholder.vue";
 import NodePorts from "../NodePorts.vue";
@@ -289,44 +289,44 @@ describe("NodePorts.vue", () => {
         );
 
         // initialize selection to simulate shortcut dispatch that starts keyboard navigation
-        mockedStores.selectionStore.activeNodePorts = {
+        mockedStores.selectionStore.selectedNodePort = {
           nodeId,
-          selectedPort: "output-1",
+          selectedPortId: "output-1",
         };
         await nextTick();
 
         navigate(mockedStores, "ArrowDown");
-        expect(mockedStores.selectionStore.activeNodePorts.selectedPort).toBe(
-          "output-2",
-        );
+        expect(
+          mockedStores.selectionStore.selectedNodePort.selectedPortId,
+        ).toBe("output-2");
 
         navigate(mockedStores, "ArrowUp");
-        expect(mockedStores.selectionStore.activeNodePorts.selectedPort).toBe(
-          "output-1",
-        );
+        expect(
+          mockedStores.selectionStore.selectedNodePort.selectedPortId,
+        ).toBe("output-1");
 
         navigate(mockedStores, "ArrowLeft");
-        expect(mockedStores.selectionStore.activeNodePorts.selectedPort).toBe(
-          "input-1",
-        );
+        expect(
+          mockedStores.selectionStore.selectedNodePort.selectedPortId,
+        ).toBe("input-1");
 
         navigate(mockedStores, "ArrowRight");
-        expect(mockedStores.selectionStore.activeNodePorts.selectedPort).toBe(
-          "output-1",
-        );
+        expect(
+          mockedStores.selectionStore.selectedNodePort.selectedPortId,
+        ).toBe("output-1");
 
         // index is clamped to existing ports when switching sides
         navigate(mockedStores, "ArrowDown");
         navigate(mockedStores, "ArrowLeft");
-        expect(mockedStores.selectionStore.activeNodePorts.selectedPort).toBe(
-          "input-1",
-        );
+        expect(
+          mockedStores.selectionStore.selectedNodePort.selectedPortId,
+        ).toBe("input-1");
 
         // going left is a no-op if selection is already on input side
         navigate(mockedStores, "ArrowLeft");
-        expect(mockedStores.selectionStore.activeNodePorts.selectedPort).toBe(
-          "input-1",
-        );
+        expect(
+          mockedStores.selectionStore.selectedNodePort.selectedPortId,
+        ).toBe("input-1");
       });
 
       it("for AddPort placeholders", async () => {
@@ -354,9 +354,9 @@ describe("NodePorts.vue", () => {
         });
 
         // initialize selection to simulate shortcut dispatch that starts keyboard navigation
-        mockedStores.selectionStore.activeNodePorts = {
+        mockedStores.selectionStore.selectedNodePort = {
           nodeId,
-          selectedPort: "output-AddPort",
+          selectedPortId: "output-AddPort",
         };
 
         await nextTick();
@@ -366,9 +366,9 @@ describe("NodePorts.vue", () => {
         navigate(mockedStores, "ArrowDown");
         navigate(mockedStores, "ArrowLeft");
 
-        expect(mockedStores.selectionStore.activeNodePorts.selectedPort).toBe(
-          "input-AddPort",
-        );
+        expect(
+          mockedStores.selectionStore.selectedNodePort.selectedPortId,
+        ).toBe("input-AddPort");
       });
     });
 
@@ -425,14 +425,14 @@ describe("NodePorts.vue", () => {
       customProps: { nodeId: matchingNodeId },
     });
     const nodePorts = wrapper.getComponent(NodePorts);
-    mockedStores.selectionStore.activeNodePorts.selectedPort = "output-1";
+    mockedStores.selectionStore.selectedNodePort.selectedPortId = "output-1";
     expect(nodePorts.vm.currentlySelectedPort).toBeNull();
 
-    mockedStores.selectionStore.activeNodePorts.nodeId = matchingNodeId;
+    mockedStores.selectionStore.selectedNodePort.nodeId = matchingNodeId;
     await flushPromises();
     expect(nodePorts.vm.currentlySelectedPort).toBe("output-1");
 
-    mockedStores.selectionStore.activeNodePorts.selectedPort = "input-2";
+    mockedStores.selectionStore.selectedNodePort.selectedPortId = "input-2";
     await flushPromises();
     expect(nodePorts.vm.currentlySelectedPort).toBe("input-2");
   });
@@ -739,7 +739,7 @@ describe("NodePorts.vue", () => {
       });
 
       expect(
-        mockedStores.selectionStore.activeNodePorts.isModificationInProgress,
+        mockedStores.selectionStore.selectedNodePort.isModificationInProgress,
       ).toBeTruthy();
 
       await flushPromises();
@@ -775,9 +775,9 @@ describe("NodePorts.vue", () => {
         },
       });
 
-      mockedStores.selectionStore.activeNodePorts = {
+      mockedStores.selectionStore.selectedNodePort = {
         nodeId,
-        selectedPort: "input-AddPort",
+        selectedPortId: "input-AddPort",
       };
       let resolveAddPort = null;
       addNodePortMock.mockReturnValueOnce(
@@ -809,10 +809,10 @@ describe("NodePorts.vue", () => {
       resolveAddPort();
       await flushPromises();
       // selects last port (the one that was just added)
-      expect(mockedStores.selectionStore.activeNodePorts).toEqual({
+      expect(mockedStores.selectionStore.selectedNodePort).toEqual({
         isModificationInProgress: false,
         nodeId,
-        selectedPort: "input-2",
+        selectedPortId: "input-2",
       });
     });
 

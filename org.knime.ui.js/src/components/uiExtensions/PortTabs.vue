@@ -5,7 +5,7 @@ import Eye from "@knime/styles/img/icons/eye.svg";
 
 import portIcon from "@/components/common/PortIconRenderer";
 import { useCompositeViewActions } from "@/components/uiExtensions/compositeView/useCompositeViewActions";
-import { isNodeMetaNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/lib/workflow-domain";
 
 export const portIconSize = 9;
 
@@ -53,7 +53,7 @@ export default {
 
       let { outPorts } = this.node;
 
-      const isMetanode = isNodeMetaNode(this.node);
+      const isMetanode = workflowDomain.node.isMetaNode(this.node);
       const ports = (
         isMetanode
           ? // Metanodes don't have Mickey Mouse ears, so all ports are actual output ports.

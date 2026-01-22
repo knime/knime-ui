@@ -2,10 +2,10 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
+import { SpatialHash } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { SpatialHash } from "@/util/geometry/spatialHash";
 
 const DISTANCE_BUFFER = 20;
 const spatialHash = new SpatialHash({
@@ -13,7 +13,7 @@ const spatialHash = new SpatialHash({
   aabbTesters: {
     node: (reference, candidate) => {
       return Boolean(
-        geometry.utils.rectangleIntersection(
+        geometry.rectangleIntersection(
           {
             left: reference.x,
             top: reference.y,

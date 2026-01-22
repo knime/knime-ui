@@ -5,8 +5,8 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import {
   type FloatingContainerProperties,
   useCanvasFloatingContainer,

@@ -7,6 +7,7 @@ import { storeToRefs } from "pinia";
 import { useKeyPressedUntilMouseClick } from "@knime/components";
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
+import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { $bus } from "@/plugins/event-bus";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
@@ -15,7 +16,6 @@ import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { KANVAS_ID } from "@/util/getKanvasDomElement";
 import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 
 import { RESIZE_DEBOUNCE } from "./constants";

@@ -1,5 +1,6 @@
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { geometry } from "@/util/geometry";
+import { geometry } from "@/lib/geometry";
+import { gridSize } from "@/style/shapes";
 
 export const DIRECTIONS = ["nw", "n", "ne", "w", "e", "sw", "s", "se"] as const;
 export type Directions = (typeof DIRECTIONS)[number];
@@ -174,10 +175,10 @@ const directionHandlers: Record<Directions, DirectionHandler> = {
 };
 
 export const getGridAdjustedBounds = (bounds: Bounds): Bounds => ({
-  x: geometry.utils.snapToGrid(bounds.x),
-  y: geometry.utils.snapToGrid(bounds.y),
-  width: geometry.utils.snapToGrid(bounds.width),
-  height: geometry.utils.snapToGrid(bounds.height),
+  x: geometry.snapToGrid(bounds.x, gridSize.x),
+  y: geometry.snapToGrid(bounds.y, gridSize.y),
+  width: geometry.snapToGrid(bounds.width, gridSize.x),
+  height: geometry.snapToGrid(bounds.height, gridSize.y),
 });
 
 export const transformBounds = (

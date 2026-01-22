@@ -4,7 +4,7 @@ import type {
   ComponentNode,
   NativeNode,
 } from "@/api/gateway-api/generated-api";
-import { isNativeNode } from "@/util/nodeUtil";
+import { workflowDomain } from "@/lib/workflow-domain";
 
 type UseUniqueNodeStateIdOptions = {
   projectId: Ref<string>;
@@ -15,7 +15,7 @@ type UseUniqueNodeStateIdOptions = {
 export const useUniqueNodeStateId = (options: UseUniqueNodeStateIdOptions) => {
   const { projectId, workflowId, selectedNode } = options;
   const templateId = computed(() =>
-    isNativeNode(selectedNode.value)
+    workflowDomain.node.isNative(selectedNode.value)
       ? selectedNode.value.templateId
       : selectedNode.value.kind,
   );

@@ -3,15 +3,14 @@ import { API } from "@api";
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
+import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { isNodeMetaNode } from "@/util/nodeUtil";
-import { portPositions } from "@/util/portShift";
 import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "../types";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<
@@ -73,9 +72,9 @@ const calculateNodeInsertionPosition = (
   nextSide: NodeRelation,
 ) => {
   const isOutports = nextSide === "SUCCESSORS";
-  const portPositionValues = portPositions({
+  const portPositionValues = ports.positions({
     portCount,
-    isMetanode: isNodeMetaNode(node),
+    isMetanode: workflowDomain.node.isMetaNode(node),
     isOutports,
   });
   const xOffset = nodeSize * (isOutports ? 3 : -3);
@@ -83,7 +82,7 @@ const calculateNodeInsertionPosition = (
     x: node.position.x + portPositionValues[portIndex][0] + xOffset,
     y: node.position.y + portPositionValues[portIndex][1],
   };
-  return geometry.findFreeSpaceAroundPointWithFallback({
+  return freeSpaceInCanvas.aroundPointWithFallback({
     startPoint,
     visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
     nodes: useWorkflowStore().activeWorkflow!.nodes,
@@ -92,6 +91,7 @@ const calculateNodeInsertionPosition = (
 
 const openQuickActionMenu =
   ({ menuMode }: { menuMode: QuickActionMenuMode }) =>
+  // eslint-disable-next-line complexity
   ({ payload }: ShortcutExecuteContext) => {
     const positionFromContextMenu = payload?.metadata?.position as XY;
     const store = useCanvasAnchoredComponentsStore();
@@ -115,7 +115,7 @@ const openQuickActionMenu =
     if (predecessorNode === null) {
       const position =
         positionFromContextMenu ??
-        geometry.findFreeSpaceAroundCenterWithFallback({
+        freeSpaceInCanvas.aroundCenterWithFallback({
           visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
           nodes: useWorkflowStore().activeWorkflow!.nodes,
         });

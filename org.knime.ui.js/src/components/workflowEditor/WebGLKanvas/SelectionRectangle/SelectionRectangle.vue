@@ -8,13 +8,13 @@ import rafThrottle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
+import { DashLine } from "@/lib/pixi-dash-line";
+import { SpatialHash } from "@/lib/workflow-canvas";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
-import { SpatialHash } from "@/util/geometry/spatialHash";
-import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { pixiGlobals } from "../common/pixiGlobals";
 import {

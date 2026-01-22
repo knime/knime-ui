@@ -4,9 +4,9 @@ import { storeToRefs } from "pinia";
 
 import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
 import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 
 /**

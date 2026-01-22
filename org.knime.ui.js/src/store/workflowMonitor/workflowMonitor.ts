@@ -7,6 +7,8 @@ import {
   type WorkflowMonitorState as WorkflowMonitorAPIState,
   type WorkflowMonitorMessage,
 } from "@/api/gateway-api/generated-api";
+import { createStaggeredTimer } from "@/lib/timers";
+import { nodeToWorkflowObject } from "@/lib/workflow-canvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
 import { useApplicationStore } from "@/store/application/application";
@@ -14,8 +16,6 @@ import { lifecycleBus } from "@/store/application/lifecycle-events";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
-import { nodeToWorkflowObject } from "@/util/workflowUtil";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 import { actions as jsonPatchActions } from "../json-patch/json-patch";
 
@@ -71,7 +71,7 @@ export const useWorkflowMonitorStore = defineStore("workflowMonitor", {
     async activateWorkflowMonitor() {
       this.setIsActive(true);
 
-      const setLoading = createStaggeredLoader({
+      const setLoading = createStaggeredTimer({
         firstStageCallback: () => {
           this.setIsLoading(true);
         },

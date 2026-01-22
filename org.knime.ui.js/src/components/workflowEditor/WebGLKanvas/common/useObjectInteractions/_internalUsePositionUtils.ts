@@ -1,9 +1,9 @@
 import { readonly, ref } from "vue";
 import type { FederatedPointerEvent } from "pixi.js";
 
+import { geometry } from "@/lib/geometry";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
 
 import { useObjectHandler } from "./_internalUseObjectSelectionHandler";
 import type { ObjectMetadata, StartPosition } from "./types";
@@ -36,10 +36,10 @@ export const usePositionUtils = (options: {
     // so that they can be brought back in during the drag operation
     const gridPositionDelta = {
       x:
-        geometry.utils.snapToGrid(currentObjectPosition.x) -
+        geometry.snapToGrid(currentObjectPosition.x, $shapes.gridSize.x) -
         currentObjectPosition.x,
       y:
-        geometry.utils.snapToGrid(currentObjectPosition.y) -
+        geometry.snapToGrid(currentObjectPosition.y, $shapes.gridSize.y) -
         currentObjectPosition.y,
     };
 
@@ -59,14 +59,14 @@ export const usePositionUtils = (options: {
       objectMetadata.type === "bendpoint" ? 1 : MIN_MOVE_THRESHOLD;
 
     const snapFn = shouldSnapToGrid
-      ? geometry.utils.snapToGrid
+      ? geometry.snapToGrid
       : (val: number) => val;
 
     const deltaX =
-      snapFn(moveX - startPosition.value.x) +
+      snapFn(moveX - startPosition.value.x, $shapes.gridSize.x) +
       startPosition.value.gridPositionDelta.x;
     const deltaY =
-      snapFn(moveY - startPosition.value.y) +
+      snapFn(moveY - startPosition.value.y, $shapes.gridSize.y) +
       startPosition.value.gridPositionDelta.y;
 
     const isSignificantMove =

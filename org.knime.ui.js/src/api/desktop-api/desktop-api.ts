@@ -1,7 +1,8 @@
 /* eslint-disable max-lines */
+import { promise } from "@knime/utils";
+
 import { isBrowser, runInEnvironment } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
-import { retryAsyncCall } from "@/util/retryAsyncCall";
 import {
   type ExampleProject,
   type FullSpacePath,
@@ -109,9 +110,8 @@ export const waitForDesktopAPI = async () => {
   await runInEnvironment({
     DESKTOP: async () => {
       consola.trace("Waiting for desktop API to be available");
-      const RETRY_DELAY_MS = 50;
-      await retryAsyncCall<boolean>(
-        () => {
+      await promise.retryPromise({
+        fn: () => {
           // check for any desktop api function since we just care that they're
           // defined and available for use
           // eslint-disable-next-line no-undefined
@@ -121,9 +121,9 @@ export const waitForDesktopAPI = async () => {
             return Promise.resolve(true);
           }
         },
-        RETRY_DELAY_MS,
-        100,
-      );
+        retryDelayMS: 50,
+        retryCount: 100,
+      });
     },
   });
 };

@@ -8,11 +8,11 @@ import {
   validateNodeExecuted,
   validatePortSupport,
 } from "@/components/uiExtensions/common/output-validator";
+import { ports } from "@/lib/data-mappers";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import { isNativeNode } from "@/util/nodeUtil";
 
 import { useWorkflowStore } from "./workflow";
 
@@ -175,11 +175,9 @@ export const useExecutionStore = defineStore("execution", {
         return;
       }
 
-      const firstDetachableView = getPortViewByViewDescriptors(
-        portViews,
-        node,
-        selectedPortIndex,
-      ).find((v) => v.canDetach);
+      const firstDetachableView = ports
+        .toRenderablePortViewState(portViews, node, selectedPortIndex)
+        .find((v) => v.detachable);
 
       if (firstDetachableView) {
         API.desktop.openPortView({
@@ -224,7 +222,7 @@ export const useExecutionStore = defineStore("execution", {
 
       return nodes.some(
         (node) =>
-          isNativeNode(node) &&
+          workflowDomain.node.isNative(node) &&
           node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED,
       );
     },

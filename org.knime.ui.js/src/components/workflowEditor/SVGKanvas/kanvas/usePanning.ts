@@ -6,13 +6,13 @@ import { navigatorUtils } from "@knime/utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { runInEnvironment } from "@/environment";
+import { isInputElement } from "@/lib/dom";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isInputElement } from "@/util/isInputElement";
 
 type UsePanningWithSpaceOptions = {
   shouldShowMoveCursor: Ref<boolean>;

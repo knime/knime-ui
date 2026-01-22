@@ -7,6 +7,7 @@ import { getMetaOrCtrlKey } from "@knime/utils";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { Node } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -14,7 +15,6 @@ import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfigu
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 
 type UseNodeDoubleClickOptions = {
   node: KnimeNode;
@@ -39,12 +39,12 @@ export const useNodeDoubleClick = (options: UseNodeDoubleClickOptions) => {
     const canOpenAsModal =
       canBeEnlarged.value &&
       useEmbeddedDialogs.value &&
-      !isNodeMetaNode(node) &&
-      !isNodeComponent(node);
+      !workflowDomain.node.isMetaNode(node) &&
+      !workflowDomain.node.isComponent(node);
 
     if (
-      isNodeMetaNode(node) ||
-      (isNodeComponent(node) && event[getMetaOrCtrlKey()])
+      workflowDomain.node.isMetaNode(node) ||
+      (workflowDomain.node.isComponent(node) && event[getMetaOrCtrlKey()])
     ) {
       if (node.isLocked && uiControlsStore.canLockAndUnlockSubnodes) {
         const isUnlocked = await useComponentInteractionsStore().unlockSubnode({

@@ -2,15 +2,15 @@ import { ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import type { GeometryEdge } from "@/lib/geometry";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import type { Edge } from "@/util/geometry/types";
 import { pixiGlobals } from "../common/pixiGlobals";
 
 export type PanningToEdgeUpdateHandler = (args: {
   /**
    * The edge of the screen being approached with the cursor interaction
    */
-  edge: Edge;
+  edge: GeometryEdge;
   /**
    * The offset vector to apply to the interaction being affected as the cursor
    * approaches the edge of the screen. It takes zoom factor into account
@@ -25,9 +25,9 @@ export type PanningToEdgeUpdateHandler = (args: {
 
 const BASE_OFFSET = 5;
 
-const getPanOffsetFromEdge = (edge: Edge, modifier: number = 1) => {
+const getPanOffsetFromEdge = (edge: GeometryEdge, modifier: number = 1) => {
   const offsetValue = BASE_OFFSET / modifier;
-  const directionToOffset: Record<Edge, { x: number; y: number }> = {
+  const directionToOffset: Record<GeometryEdge, { x: number; y: number }> = {
     top: { x: 0, y: offsetValue },
     right: { x: -offsetValue, y: 0 },
     bottom: { x: 0, y: -offsetValue },
@@ -40,12 +40,12 @@ const getPanOffsetFromEdge = (edge: Edge, modifier: number = 1) => {
   return directionToOffset[edge];
 };
 
-const getNewCanvasOffset = (edge: Edge, stagePosition: XY) => {
+const getNewCanvasOffset = (edge: GeometryEdge, stagePosition: XY) => {
   const direction = getPanOffsetFromEdge(edge);
   return { x: stagePosition.x + direction.x, y: stagePosition.y + direction.y };
 };
 
-const currentEdgeNearDragCoordinates = ref<Edge | null>(null);
+const currentEdgeNearDragCoordinates = ref<GeometryEdge | null>(null);
 let isPanning = false;
 
 export const useDragNearEdgePanning = () => {

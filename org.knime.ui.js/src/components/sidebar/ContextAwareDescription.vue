@@ -3,13 +3,12 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NativeNode } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { TABS, usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import NodeDescription from "../nodeDescription/NodeDescription.vue";
 import WorkflowMetadata from "../workflowMetadata/WorkflowMetadata.vue";
-
 /**
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)
  */
@@ -25,7 +24,9 @@ const nodeInteractionStore = useNodeInteractionsStore();
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 
 const showNodeDescription = computed(
-  () => singleSelectedNode.value && !isNodeMetaNode(singleSelectedNode.value),
+  () =>
+    singleSelectedNode.value &&
+    !workflowDomain.node.isMetaNode(singleSelectedNode.value),
 );
 
 const selectedNode = computed(() => {
@@ -33,7 +34,7 @@ const selectedNode = computed(() => {
     return null;
   }
 
-  if (isNodeComponent(singleSelectedNode.value)) {
+  if (workflowDomain.node.isComponent(singleSelectedNode.value)) {
     const { id, name } = singleSelectedNode.value;
 
     return { id, name };

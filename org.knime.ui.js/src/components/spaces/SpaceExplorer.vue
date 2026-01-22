@@ -9,12 +9,12 @@ import type { FileExplorerItem } from "@knime/components";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
+import { matchesQuery } from "@/lib/search";
+import { createStaggeredTimer } from "@/lib/timers";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
-import { matchesQuery } from "@/util/matchesQuery";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
@@ -191,7 +191,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
 // staggered skeleton loader
 const showLoader = ref(false);
 
-const setShowLoader = createStaggeredLoader({
+const setShowLoader = createStaggeredTimer({
   firstStageCallback: () => {
     showLoader.value = true;
   },

@@ -5,10 +5,10 @@ import { type AnimationPlaybackControls, animate } from "motion";
 import type { ColorSource, FederatedPointerEvent, LineCap } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
+import { DashLine } from "@/lib/pixi-dash-line";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 import type { ConnectorPathSegmentProps } from "../../types";
 import { type BezierPoints, getBezier } from "../../util/connectorPath";
@@ -55,7 +55,7 @@ const bezier = computed(() => {
 });
 
 const centerPoint = computed(() =>
-  geometry.utils.getCenterPoint(props.segment.start, props.segment.end),
+  geometry.getCenterPoint(props.segment.start, props.segment.end),
 );
 
 const color = computed(() => {

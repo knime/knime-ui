@@ -2,8 +2,8 @@ import { type Ref, computed } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import { ports } from "@/lib/workflow-canvas";
 import * as $shapes from "@/style/shapes";
-import portShift from "@/util/portShift";
 
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
 import { usePortBarPositions } from "./usePortBarPositions";
@@ -47,7 +47,7 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
     node: KnimeNode,
   ): XY => {
     const allPorts = type === "source" ? node.outPorts : node.inPorts;
-    const [dx, dy] = portShift(
+    const [dx, dy] = ports.portShift(
       sourceNodeIndex,
       allPorts.length,
       node.kind === "metanode",

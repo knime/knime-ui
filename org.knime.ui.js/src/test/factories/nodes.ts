@@ -1,6 +1,6 @@
 import { merge } from "lodash-es";
 
-import type { KnimeNode, WorkflowObject } from "@/api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
 import {
   AllowedNodeActions,
   Annotation,
@@ -14,6 +14,7 @@ import {
   TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
+import type { WorkflowObject } from "@/lib/workflow-canvas";
 import type { DeepPartial } from "../utils";
 
 import { createNodeAnnotation } from "./annotations";
@@ -35,10 +36,6 @@ const TEMPLATE_IDS = [
   "org.knime.base.node.rules.engine.RuleEngineFilterNodeFactory",
   "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory",
 ] as const;
-
-export const isNativeNode = (node: KnimeNode): node is NativeNode => {
-  return node.kind === Node.KindEnum.Node;
-};
 
 const createBaseNode = (
   kind: Node.KindEnum,

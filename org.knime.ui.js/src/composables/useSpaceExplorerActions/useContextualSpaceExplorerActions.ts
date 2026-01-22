@@ -8,6 +8,8 @@ import {
 
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { isBrowser, isDesktop } from "@/environment";
+import { optional } from "@/lib/fp";
+import { menuGroupsBuilder } from "@/lib/menu-groups-builder";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import {
@@ -15,8 +17,6 @@ import {
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
-import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
-import { valueOrEmpty } from "@/util/valueOrEmpty";
 
 import { useSpaceExplorerActions } from "./useSpaceExplorerActions";
 
@@ -102,31 +102,28 @@ export const useContextualSpaceExplorerActions = (
       removeDisabledItems: false,
     })
       .append([
-        ...valueOrEmpty(isDesktop(), createWorkflow.value),
+        ...optional(isDesktop(), createWorkflow.value),
         createFolderAction.value,
       ])
       .append([
-        ...valueOrEmpty(
+        ...optional(
           isDesktop() && isLocal.value,
           uploadToHubFromLocalSpace.value,
         ),
-        ...valueOrEmpty(isBrowser(), uploadToHubInBrowser.value),
-        ...valueOrEmpty(isDesktop(), importWorkflow.value),
-        ...valueOrEmpty(isDesktop(), importFiles.value),
+        ...optional(isBrowser(), uploadToHubInBrowser.value),
+        ...optional(isDesktop(), importWorkflow.value),
+        ...optional(isDesktop(), importFiles.value),
       ])
       .append([
-        ...valueOrEmpty(isDesktop() && isHub.value, downloadToLocalSpace.value),
-        ...valueOrEmpty(
-          isBrowser() && isHub.value,
-          downloadFromHubInBrowser.value,
-        ),
+        ...optional(isDesktop() && isHub.value, downloadToLocalSpace.value),
+        ...optional(isBrowser() && isHub.value, downloadFromHubInBrowser.value),
       ])
       .append([
-        ...valueOrEmpty(isHub.value || isServer.value, moveToSpace.value),
-        ...valueOrEmpty(isHub.value || isServer.value, copyToSpace.value),
+        ...optional(isHub.value || isServer.value, moveToSpace.value),
+        ...optional(isHub.value || isServer.value, copyToSpace.value),
       ])
       .append([
-        ...valueOrEmpty(
+        ...optional(
           isServer.value && isWorkflowSelected.value,
           openAPIDefinitionAction.value,
         ),
@@ -142,44 +139,44 @@ export const useContextualSpaceExplorerActions = (
       removeDisabledItems: false,
     })
       .append([
-        ...valueOrEmpty(!isMultipleSelectionActive, renameItem.value),
+        ...optional(!isMultipleSelectionActive, renameItem.value),
         deleteItem.value,
         duplicateItem.value,
-        ...valueOrEmpty(isLocal.value, exportItem.value),
+        ...optional(isLocal.value, exportItem.value),
         moveToSpace.value,
         copyToSpace.value,
       ])
       .append([
-        ...valueOrEmpty(isLocal.value, uploadToHubFromLocalSpace.value),
-        ...valueOrEmpty(
+        ...optional(isLocal.value, uploadToHubFromLocalSpace.value),
+        ...optional(
           (isHub.value || (isServer.value && doesSelectionContainWorkflow)) &&
             isDesktop(),
           downloadToLocalSpace.value,
         ),
-        ...valueOrEmpty(
+        ...optional(
           !isMultipleSelectionActive && isHub.value && isBrowser(),
           downloadFromHubInBrowser.value,
         ),
       ])
       .append([
-        ...valueOrEmpty(
+        ...optional(
           ((isHub.value && !doesSelectionContainFile) || isServer.value) &&
             isDesktop(),
           openInBrowserAction.value,
         ),
-        ...valueOrEmpty(
+        ...optional(
           isServer.value && doesSelectionContainWorkflow,
           executeWorkflowAction.value,
         ),
-        ...valueOrEmpty(
+        ...optional(
           isServer.value && doesSelectionContainWorkflow,
           displayDeploymentsAction.value,
         ),
-        ...valueOrEmpty(
+        ...optional(
           isServer.value && doesSelectionContainWorkflow,
           openAPIDefinitionAction.value,
         ),
-        ...valueOrEmpty(isServer.value, openPermissionsDialogAction.value),
+        ...optional(isServer.value, openPermissionsDialogAction.value),
       ])
       .build();
   });

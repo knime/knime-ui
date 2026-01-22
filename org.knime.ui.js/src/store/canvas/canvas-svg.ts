@@ -6,11 +6,11 @@ import { nextTick } from "vue";
 import { isNumber } from "lodash-es";
 import { defineStore } from "pinia";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import { clamp } from "@/lib/math";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
+import type { WorkflowObject } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
-import { clamp } from "@/util/math";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;

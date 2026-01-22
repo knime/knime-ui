@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
+import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { KANVAS_ID } from "@/util/getKanvasDomElement";
 import WorkflowCanvas from "../WorkflowCanvas.vue";
 import Kanvas from "../kanvas/Kanvas.vue";
 

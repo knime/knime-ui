@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
+import { ports } from "@/lib/data-mappers";
 import { getToastsProvider } from "@/plugins/toasts";
 import {
   createAvailablePortTypes,
@@ -10,7 +11,6 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 
 const mockedAPI = deepMocked(API);
 const variableMockData = vi.hoisted(() => ({
@@ -54,16 +54,21 @@ vi.mock("@/plugins/toasts", async (importOriginal) => {
   };
 });
 
-vi.mock("@/util/getPortViewByViewDescriptors", async (importOriginal) => {
-  const original = await importOriginal<
-    typeof import("@/util/getPortViewByViewDescriptors")
-  >();
-  const getPortViewByViewDescriptors = vi
+vi.mock("@/lib/data-mappers", async () => {
+  const original: typeof import("@/lib/data-mappers") = await vi.importActual(
+    "@/lib/data-mappers",
+  );
+
+  const toRenderablePortViewState = vi
     .fn()
-    .mockImplementation(original.getPortViewByViewDescriptors);
+    .mockImplementation(original.ports.toRenderablePortViewState);
+
   return {
     ...original,
-    getPortViewByViewDescriptors,
+    ports: {
+      ...original.ports,
+      toRenderablePortViewState,
+    },
   };
 });
 
@@ -236,8 +241,8 @@ describe("workflow store: Execution", () => {
         });
 
         // open port with detected view index
-        vi.mocked(getPortViewByViewDescriptors).mockReturnValueOnce([
-          { id: "42", disabled: false, text: "mock text", canDetach: true },
+        vi.mocked(ports.toRenderablePortViewState).mockReturnValueOnce([
+          { id: "42", disabled: false, text: "mock text", detachable: true },
         ]);
 
         executionStore.openPortView({ node, port });
@@ -250,8 +255,8 @@ describe("workflow store: Execution", () => {
         });
 
         // error: no view for port
-        vi.mocked(getPortViewByViewDescriptors).mockReturnValueOnce([
-          { id: "1", disabled: false, text: "mock text", canDetach: false },
+        vi.mocked(ports.toRenderablePortViewState).mockReturnValueOnce([
+          { id: "1", disabled: false, text: "mock text", detachable: false },
         ]);
         executionStore.openPortView({ node, port });
         expect(getToastsProvider().show).toHaveBeenLastCalledWith(

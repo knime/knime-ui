@@ -8,16 +8,12 @@ import {
   TypedText,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import type { DeepPartial } from "../utils";
 
 import { createWorkflowAnnotation } from "./annotations";
 import { connectMultipleNodes } from "./connections";
-import {
-  createComponentNode,
-  createMetanode,
-  createNativeNode,
-  isNativeNode,
-} from "./nodes";
+import { createComponentNode, createMetanode, createNativeNode } from "./nodes";
 import { createMetanodePort, createPort } from "./ports";
 import { arrayToDictionary } from "./util";
 
@@ -131,7 +127,9 @@ const createAndConnectNodes = () => {
 
 const extractNodeTemplates = (nodes: KnimeNode[]): NativeNodeInvariants[] => {
   const nodeTemplateIds = Object.values(nodes)
-    .map((value) => (isNativeNode(value) ? value.templateId : null))
+    .map((value) =>
+      workflowDomain.node.isNative(value) ? value.templateId : null,
+    )
     .filter(Boolean);
 
   return nodeTemplateIds.map<NativeNodeInvariants>((id) => ({

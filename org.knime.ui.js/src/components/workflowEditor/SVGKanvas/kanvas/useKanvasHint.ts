@@ -5,10 +5,12 @@ import { useHint } from "@knime/components";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import { HINTS } from "@/hints/hints.config";
+import {
+  nodeToWorkflowObject,
+  workflowNavigationService,
+} from "@/lib/workflow-canvas";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
-import { nodeToWorkflowObject } from "@/util/workflowUtil";
 
 export const useKanvasHint = () => {
   const { createHint, isCompleted } = useHint();

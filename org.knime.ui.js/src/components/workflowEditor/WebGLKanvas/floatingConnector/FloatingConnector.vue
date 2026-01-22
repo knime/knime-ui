@@ -4,6 +4,8 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeRelation } from "@/api/custom-types";
+import { ports } from "@/lib/workflow-canvas";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import {
   isDecoratorOnly,
@@ -11,8 +13,6 @@ import {
 } from "@/store/floatingConnector/types";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $shapes from "@/style/shapes";
-import { isNodeMetaNode } from "@/util/nodeUtil";
-import * as portPositionUtils from "@/util/portShift";
 import Connector from "../connectors/Connector.vue";
 import Port from "../ports/Port.vue";
 
@@ -48,7 +48,7 @@ const isDefaultFlowVariableConnection = computed(() => {
     floatingConnector.value.flowVariableConnection &&
     floatingConnectorPort.value?.index === 0 &&
     referenceNode.value &&
-    !isNodeMetaNode(referenceNode.value)
+    !workflowDomain.node.isMetaNode(referenceNode.value)
   );
 });
 
@@ -59,8 +59,8 @@ const defaultFlowVariablePortPosition = computed(() => {
 
   // this does not rely on portPositions of the context as they might be not there for
   // non-drag connectors (e.g. quick add with CTRL+Space)
-  const flowVariablePosition = portPositionUtils
-    .portPositions({
+  const flowVariablePosition = ports
+    .positions({
       portCount: 1,
       isOutports: floatingConnector.value!.context.origin === "out",
     })

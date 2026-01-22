@@ -7,14 +7,12 @@ import throttle from "raf-throttle";
 import type { NodePortGroups } from "@/api/custom-types";
 import type { NativeNode, NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { PortPositions } from "@/components/workflowEditor/common/usePortPositions";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import { workflowDomain } from "@/lib/workflow-domain";
+import type { ConnectionPortDirection } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import {
-  type Direction,
-  checkCompatibleConnectionAndPort,
-  generateValidPortGroupsForPlaceholderPort,
-} from "@/util/compatibleConnections";
 
 import {
   type FullFloatingConnector,
@@ -109,28 +107,39 @@ export const usePortSnapping = (options: {
   }: {
     sourcePort: NodePort;
     targetPort: NodePort | { isPlaceHolderPort: true };
-    targetPortDirection: Direction;
+    targetPortDirection: ConnectionPortDirection;
     targetPortGroups: NodePortGroups | null;
   }) => {
     let isCompatible: boolean = false;
     let validPortGroups: NodePortGroups | null = null;
 
     if ("isPlaceHolderPort" in targetPort) {
-      validPortGroups = generateValidPortGroupsForPlaceholderPort({
-        fromPort: sourcePort,
-        availablePortTypes: availablePortTypes.value,
-        targetPortDirection,
-        targetPortGroups,
-      });
+      // N.B: This check is **NOT** necessary. It's just left here so that once the SVG canvas is removed
+      // that the domain util called below (workflowDomain.connection.generateValidPortGroupsForPlaceholderPort)
+      // is moved to this file, because this is the only place (except the SVG canvas) that uses it, and its purpose
+      // is solely to help the port snapping behavior
+      if (!canvasRendererUtils.isWebGLRenderer()) {
+        consola.trace("Unexpected code execution");
+      }
+
+      validPortGroups =
+        workflowDomain.connection.generateValidPortGroupsForPlaceholderPort({
+          fromPort: sourcePort,
+          availablePortTypes: availablePortTypes.value,
+          targetPortDirection,
+          targetPortGroups,
+        });
       isCompatible = validPortGroups !== null;
     } else {
-      isCompatible = checkCompatibleConnectionAndPort({
-        fromPort: sourcePort,
-        toPort: targetPort,
-        availablePortTypes: availablePortTypes.value,
-        targetPortDirection,
-        connections: connections.value,
-      });
+      isCompatible = workflowDomain.connection.checkCompatibleConnectionAndPort(
+        {
+          fromPort: sourcePort,
+          toPort: targetPort,
+          availablePortTypes: availablePortTypes.value,
+          targetPortDirection,
+          connections: connections.value,
+        },
+      );
     }
 
     return { isCompatible, validPortGroups };
@@ -139,7 +148,7 @@ export const usePortSnapping = (options: {
   let lastHitTarget:
     | {
         candidate: SnapTargetCandidate;
-        targetPortDirection: Direction;
+        targetPortDirection: ConnectionPortDirection;
         snapIndex: number;
       }
     | undefined;
@@ -164,7 +173,7 @@ export const usePortSnapping = (options: {
   const isOutsideConnectorHoverRegion = (
     x: number,
     y: number,
-    targetPortDirection: Direction,
+    targetPortDirection: ConnectionPortDirection,
   ) => {
     const upperBound = -15;
 

@@ -3,9 +3,9 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 import Tooltip from "./Tooltip.vue";
 

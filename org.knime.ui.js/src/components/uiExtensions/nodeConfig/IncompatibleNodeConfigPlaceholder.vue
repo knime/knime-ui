@@ -8,10 +8,10 @@ import CogIcon from "@knime/styles/img/icons/cog.svg";
 import { Node } from "@/api/gateway-api/generated-api";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import { isDesktop } from "@/environment";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
-import { isNodeMetaNode } from "@/util/nodeUtil";
 
 const { shouldDisplayDownloadAPButton } = storeToRefs(useUIControlsStore());
 const { activeContext } = storeToRefs(useNodeConfigurationStore());
@@ -19,7 +19,8 @@ const { activeContext } = storeToRefs(useNodeConfigurationStore());
 const selectedNode = computed(() => activeContext.value?.node ?? null);
 
 const isMetanode = computed(
-  () => selectedNode.value && isNodeMetaNode(selectedNode.value),
+  () =>
+    selectedNode.value && workflowDomain.node.isMetaNode(selectedNode.value),
 );
 
 const hasNoDialog = computed(

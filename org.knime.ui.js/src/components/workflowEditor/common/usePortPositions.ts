@@ -1,7 +1,7 @@
 import { type ComputedRef, computed, watch } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
-import * as portPositionUtils from "@/util/portShift";
+import { ports } from "@/lib/workflow-canvas";
 
 import { useNodeInfo } from "./useNodeInfo";
 
@@ -27,11 +27,11 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
    */
   const portPositions = computed<PortPositions>(() => {
     const positions = {
-      in: portPositionUtils.portPositions({
+      in: ports.positions({
         portCount: options.inPorts.length,
         isMetanode: isMetanode.value,
       }),
-      out: portPositionUtils.portPositions({
+      out: ports.positions({
         portCount: options.outPorts.length,
         isMetanode: isMetanode.value,
         isOutports: true,
@@ -41,7 +41,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
     // add placeholder positions to enable the drop to a placeholder
     if (options.canAddPort.value.input) {
       positions.in.push(
-        portPositionUtils.placeholderPosition({
+        ports.placeholderPosition({
           portCount: options.inPorts.length,
           isMetanode: isMetanode.value,
         }),
@@ -50,7 +50,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
 
     if (options.canAddPort.value.output) {
       positions.out.push(
-        portPositionUtils.placeholderPosition({
+        ports.placeholderPosition({
           portCount: options.outPorts.length,
           isMetanode: isMetanode.value,
           isOutport: true,

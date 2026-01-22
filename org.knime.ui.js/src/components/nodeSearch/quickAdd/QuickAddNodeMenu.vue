@@ -12,6 +12,12 @@ import {
 } from "@/api/gateway-api/generated-api";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
+import type {
+  ExtendedPortType,
+  NodeTemplateWithExtendedPorts,
+} from "@/lib/data-mappers";
+import { ports } from "@/lib/workflow-canvas";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
@@ -19,12 +25,6 @@ import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import { useSettingsStore } from "@/store/settings";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { checkPortCompatibility } from "@/util/compatibleConnections";
-import type {
-  ExtendedPortType,
-  NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
-import { portPositions } from "@/util/portShift";
 
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
 import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
@@ -47,7 +47,7 @@ const calculatePortOffset = (params: {
     params;
 
   const portIndex = templatePorts.findIndex((templatePort) =>
-    checkPortCompatibility({
+    workflowDomain.port.checkCompatibility({
       fromPort: nodeRelation === "SUCCESSORS" ? selectedPort : templatePort,
       toPort: nodeRelation === "SUCCESSORS" ? templatePort : selectedPort,
       availablePortTypes,
@@ -55,7 +55,7 @@ const calculatePortOffset = (params: {
   );
 
   const portCount = templatePorts.length + 1; // +1 for the mickey mouse port
-  const positions = portPositions({
+  const positions = ports.positions({
     isOutports: nodeRelation === "PREDECESSORS",
     portCount,
   });

@@ -1,7 +1,7 @@
 import type { KnimeNode } from "@/api/custom-types";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNodeComponent } from "@/util/nodeUtil";
 
 import CompositeViewActions from "./CompositeViewActions.vue";
 import DataAppsIcon from "./DataAppsIcon.svg";
@@ -23,7 +23,7 @@ export const useCompositeViewActions = (
       ? "Data App View (Read-only)"
       : "Data App View";
 
-  return isNodeComponent(node) && node.hasView
+  return workflowDomain.node.isComponent(node) && node.hasView
     ? {
         icon: DataAppsIcon,
         label,

@@ -4,8 +4,8 @@ import { type PropType, type StyleValue, defineComponent } from "vue";
 
 import { Node, type NodeAnnotation } from "@/api/gateway-api/generated-api";
 import AutoSizeForeignObject from "@/components/common/AutoSizeForeignObject.vue";
-import { applyStyleRanges } from "@/util/styleRanges";
-import type { TextRange } from "@/util/styleRanges";
+import { applyStyleRanges } from "@/lib/rich-text";
+import type { TextRange } from "@/lib/rich-text";
 
 export default defineComponent({
   components: { AutoSizeForeignObject },

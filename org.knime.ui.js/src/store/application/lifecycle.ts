@@ -16,6 +16,8 @@ import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServ
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { isDesktop, runInEnvironment } from "@/environment";
 import { getHintConfiguration } from "@/hints/hints.config";
+import { encodeString } from "@/lib/encoding";
+import { workflowBounds } from "@/lib/workflow-canvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { usePanelStore } from "@/store/panel";
@@ -24,9 +26,6 @@ import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { encodeString } from "@/util/encodeString";
-import { geometry } from "@/util/geometry";
-import { setProjectActiveOrThrow } from "@/util/projectUtil";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";
 
@@ -46,6 +45,31 @@ export class ProjectDataLoadError extends Error {
     this.context = _context;
   }
 }
+
+/**
+ * Try to set a project (version) as active and ensure it is loaded, throws on failure.
+ * Throwing an error here propagates everything one level up. In case of a version
+ * switch, re-activating the previously active version is handled by the caller
+ * correctly.
+ */
+const setProjectActiveOrThrow = async (
+  projectId: string,
+  versionId: string = CURRENT_STATE_VERSION,
+  removeOnFailure: boolean = true,
+) => {
+  const didLoadNewVersion =
+    await API.desktop.setProjectActiveAndEnsureItsLoaded({
+      projectId,
+      versionId,
+      removeProjectIfNotLoaded: removeOnFailure,
+    });
+
+  if (!didLoadNewVersion) {
+    throw new ProjectActivationError(
+      `Failed to set active project ${projectId} with version ${versionId}`,
+    );
+  }
+};
 
 type LifecycleState = {
   /**
@@ -570,7 +594,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       // calculate and save meta node port bar default bounds, as they become part of the workflow bounds we need to
       // do this very early and only once.
       useWorkflowStore().setCalculatedMetanodePortBarBounds(
-        geometry.calculateMetaNodePortBarBounds(workflow),
+        workflowBounds.calculateMetaNodePortBarBounds(workflow),
       );
     },
 

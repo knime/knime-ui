@@ -2,13 +2,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
 
-import { useWorkflowStore } from "@/store/workflow/workflow";
-import { createWorkflow } from "@/test/factories";
 import {
   getKanvasDomElement,
   // @ts-expect-error
   setMockKanvasDomElement,
-} from "@/util/getKanvasDomElement";
+} from "@/lib/workflow-canvas";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { createWorkflow } from "@/test/factories";
 import {
   defaultZoomFactor,
   maxZoomFactor,
@@ -18,9 +18,10 @@ import {
   zoomMultiplier,
 } from "../canvas-svg";
 
-vi.mock("@/util/getKanvasDomElement", () => {
+vi.mock("@/lib/workflow-canvas", async () => {
   let fakeEl = null;
   return {
+    ...(await vi.importActual("@/lib/workflow-canvas")),
     getKanvasDomElement: () => fakeEl,
     setMockKanvasDomElement: (el: any) => {
       fakeEl = el;
