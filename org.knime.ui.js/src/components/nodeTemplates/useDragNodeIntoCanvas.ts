@@ -4,24 +4,50 @@ import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import { isDesktop } from "@/environment";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
+import { getToastPresets } from "@/toastPresets";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
-const getNodeFactoryFromEvent = (event: DragEvent) => {
+const isKnimeNode = (event: DragEvent) =>
+  event.dataTransfer?.types.includes(KNIME_MIME);
+
+type KnimeNodeDragEventData =
+  | { type: "component"; payload: { id: string; name: string } }
+  | { type: "node"; payload: { nodeFactory: NodeFactoryKey } };
+
+const setEventData = (
+  event: DragEvent,
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+) => {
+  const isComponent = nodeTemplate.component;
+  const dataTransferPayload: KnimeNodeDragEventData = isComponent
+    ? {
+        type: "component",
+        payload: { id: nodeTemplate.id, name: nodeTemplate.name },
+      }
+    : { type: "node", payload: { nodeFactory: nodeTemplate.nodeFactory! } };
+
+  event.dataTransfer!.setData("text/plain", nodeTemplate.id);
+  event.dataTransfer!.setData(KNIME_MIME, JSON.stringify(dataTransferPayload));
+};
+
+const readEventData = (event: DragEvent) => {
   const data = event.dataTransfer?.getData(KNIME_MIME);
 
   if (!data) {
     return null;
   }
 
-  return JSON.parse(data) as NodeFactoryKey;
+  return JSON.parse(data) as KnimeNodeDragEventData;
 };
 
 // One key characteristic of this composable, which can be confusing at first glance,
@@ -34,9 +60,6 @@ let dragStartTime: number | null;
 
 const DRAG_TO_EDGE_BUFFER_MS = 300;
 
-const isKnimeNode = (event: DragEvent) =>
-  event.dataTransfer?.types.includes(KNIME_MIME);
-
 export const useDragNodeIntoCanvas = () => {
   const { isWritable } = storeToRefs(useWorkflowStore());
 
@@ -44,7 +67,7 @@ export const useDragNodeIntoCanvas = () => {
   const nodeTemplatesStore = useNodeTemplatesStore();
   const nodeInteractionsStore = useNodeInteractionsStore();
   const webglCanvasStore = useWebGLCanvasStore();
-  const { isWebGLRenderer } = useCanvasRendererUtils();
+  const { isWebGLRenderer, isSVGRenderer } = useCanvasRendererUtils();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
   const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
@@ -78,11 +101,7 @@ export const useDragNodeIntoCanvas = () => {
       size.height / 2,
     );
 
-    event.dataTransfer!.setData("text/plain", nodeTemplate.id);
-    event.dataTransfer!.setData(
-      KNIME_MIME,
-      JSON.stringify(nodeTemplate.nodeFactory),
-    );
+    setEventData(event, nodeTemplate);
   };
 
   const onDrag = (event: DragEvent) => {
@@ -102,12 +121,23 @@ export const useDragNodeIntoCanvas = () => {
     } else if (isKnimeNode(event)) {
       event.dataTransfer!.dropEffect = "copy";
     }
+
     const elapsedTime = window.performance.now() - dragStartTime;
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
+    if (isSVGRenderer.value) {
+      return;
+    }
+
+    // skip first few MS of the drag interaction, to avoid panning to the edge when crossing over the
+    // left edge, which would normally happen as you drag a node out of the repository and into
+    // the canvas
+    if (elapsedTime > DRAG_TO_EDGE_BUFFER_MS) {
+      startPanningToEdge(event);
+    }
+
     if (
-      isWebGLRenderer.value &&
       // on dragover there's no access to a drag event's dataTransfer
       nodeTemplatesStore.draggedTemplateData?.nodeFactory
     ) {
@@ -115,13 +145,6 @@ export const useDragNodeIntoCanvas = () => {
         event.clientX,
         event.clientY,
       ]);
-
-      // skip first few MS of the drag interaction, to avoid panning to the edge when crossing over the
-      // left edge, which would normally happen as you drag a node out of the repository and into
-      // the canvas
-      if (elapsedTime > DRAG_TO_EDGE_BUFFER_MS) {
-        startPanningToEdge(event);
-      }
 
       nodeReplacementOrInsertion.onDragMove(
         { x: canvasX, y: canvasY },
@@ -136,9 +159,9 @@ export const useDragNodeIntoCanvas = () => {
   const onDrop = async (event: DragEvent) => {
     dragStartTime = null;
     stopPanningToEdge();
-    const nodeFactory = getNodeFactoryFromEvent(event);
+    const eventData = readEventData(event);
 
-    if (!isWritable.value || !nodeFactory) {
+    if (!isWritable.value || !eventData) {
       return;
     }
 
@@ -160,16 +183,52 @@ export const useDragNodeIntoCanvas = () => {
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
-    if (isWebGLRenderer.value && nodeInteractionsStore.replacementOperation) {
+    if (
+      isWebGLRenderer.value &&
+      nodeInteractionsStore.replacementOperation &&
+      eventData.type === "node"
+    ) {
       await nodeReplacementOrInsertion.onDrop(dropPosition, {
         type: "from-node-template",
-        nodeFactory,
+        nodeFactory: eventData.payload.nodeFactory,
       });
-    } else {
-      await nodeInteractionsStore.addNativeNode({
+
+      return;
+    }
+
+    const addNodeAction = () => {
+      if (eventData.type === "node") {
+        return nodeInteractionsStore.addNativeNode({
+          position: dropPosition,
+          nodeFactory: eventData.payload.nodeFactory,
+        });
+      }
+
+      if (isDesktop()) {
+        consola.error(
+          "Invalid state. Component search feature should not be available in desktop",
+        );
+        return { newNodeId: null };
+      }
+
+      const { spaceProviders } = useSpaceProvidersStore();
+      const firstProvider = Object.values(spaceProviders)[0];
+
+      return nodeInteractionsStore.addComponentNode({
         position: dropPosition,
-        nodeFactory,
+        spaceItemReference: {
+          providerId: firstProvider.id,
+          itemId: eventData.payload.id,
+          spaceId: "", // Not needed for this feature on the browser
+        },
+        componentName: eventData.payload.name,
       });
+    };
+
+    try {
+      await addNodeAction();
+    } catch (error) {
+      getToastPresets().toastPresets.workflow.addNodeToCanvas({ error });
     }
   };
 

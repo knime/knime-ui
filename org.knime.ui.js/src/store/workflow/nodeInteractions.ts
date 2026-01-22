@@ -270,7 +270,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
   };
 
   type AddComponentParams = CommonOptionsToAddNodes & {
-    spaceItemReference: Omit<SpaceItemReference, "spaceId">;
+    spaceItemReference: SpaceItemReference;
     componentName: string;
   };
 
@@ -309,6 +309,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
         x: gridAdjustedPosition.x,
         y: gridAdjustedPosition.y,
         spaceProviderId: spaceItemReference.providerId,
+        spaceId: spaceItemReference.spaceId,
         itemId: spaceItemReference.itemId,
       });
 

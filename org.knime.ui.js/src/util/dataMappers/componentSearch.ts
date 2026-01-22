@@ -15,9 +15,9 @@ const toNodeTemplateWithExtendedPorts = (
       typeId: port.portTypeName,
       optional: port.optional,
       color: port.color,
-      type: port.portTypeName,
+      type: port.portTypeName.toLowerCase(),
       description: port.description ?? "",
-      kind: PortType.KindEnum.Other, // TODO: NXT-4364 add port info
+      kind: port.portTypeName as PortType.KindEnum,
     } satisfies NodePortTemplate & ExtendedPortType;
   });
 
@@ -27,9 +27,9 @@ const toNodeTemplateWithExtendedPorts = (
       typeId: port.portTypeName,
       optional: port.optional,
       color: port.color,
-      type: port.portTypeName,
+      type: port.portTypeName.toLowerCase(),
       description: port.description ?? "",
-      kind: PortType.KindEnum.Other, // TODO: NXT-4364 add port info
+      kind: port.portTypeName as PortType.KindEnum,
     } satisfies NodePortTemplate & ExtendedPortType;
   });
 

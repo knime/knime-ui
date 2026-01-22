@@ -155,6 +155,7 @@ declare function importURIAtWorkflowCanvas(
 
 declare function importComponent(
   spaceProviderId: string,
+  spaceId: string,
   itemId: string,
   projectId: string,
   workflowId: string,
