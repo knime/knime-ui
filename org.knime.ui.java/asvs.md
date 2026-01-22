@@ -1,3 +1,7 @@
+The contents of this file have been fully transferred to the ASVS helper tool; this file is now
+outdated and obsolete and can be deleted.
+
+
 # V1 Architecture, Design and Threat Modeling
 
 ## V1.1 Secure Software Development Lifecycle
