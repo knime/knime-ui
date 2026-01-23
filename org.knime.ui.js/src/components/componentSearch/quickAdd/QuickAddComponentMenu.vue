@@ -10,6 +10,7 @@ import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasA
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useComponentSearchStore } from "@/store/componentSearch";
+import { getToastPresets } from "@/toastPresets";
 import ComponentSearchResults from "../ComponentSearchResults.vue";
 
 type Props = {
@@ -18,11 +19,21 @@ type Props = {
 
 const props = defineProps<Props>();
 
+const { toastPresets } = getToastPresets();
+
 const { nodeRepositoryLoaded, nodeRepositoryLoadingProgress } = storeToRefs(
   useApplicationStore(),
 );
 const { subscribeToNodeRepositoryLoadingEvent } = useLifecycleStore();
 const componentSearchStore = useComponentSearchStore();
+
+const updateSearchQuery = async (value: string) => {
+  try {
+    await componentSearchStore.updateQuery(value);
+  } catch (error) {
+    toastPresets.search.nodeSearch({ error });
+  }
+};
 
 const searchEnterKey = () => {
   // TODO: NXT-4328 add first component
@@ -50,7 +61,7 @@ onMounted(() => {
       class="search-bar"
       focus-on-mount
       tabindex="0"
-      @update:model-value="componentSearchStore.updateQuery($event)"
+      @update:model-value="updateSearchQuery"
       @keydown.enter.prevent.stop="searchEnterKey"
       @keydown.down.prevent.stop="searchDownKey"
     />

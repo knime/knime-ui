@@ -4,11 +4,9 @@ import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-import { isDesktop } from "@/environment";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
-import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
@@ -17,12 +15,12 @@ import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
-const isKnimeNode = (event: DragEvent) =>
-  event.dataTransfer?.types.includes(KNIME_MIME);
-
 type KnimeNodeDragEventData =
   | { type: "component"; payload: { id: string; name: string } }
   | { type: "node"; payload: { nodeFactory: NodeFactoryKey } };
+
+const isValidNodeTemplateDragEvent = (event: DragEvent) =>
+  event.dataTransfer?.types.includes(KNIME_MIME);
 
 const setEventData = (
   event: DragEvent,
@@ -40,7 +38,7 @@ const setEventData = (
   event.dataTransfer!.setData(KNIME_MIME, JSON.stringify(dataTransferPayload));
 };
 
-const readEventData = (event: DragEvent) => {
+const getEventData = (event: DragEvent) => {
   const data = event.dataTransfer?.getData(KNIME_MIME);
 
   if (!data) {
@@ -118,7 +116,7 @@ export const useDragNodeIntoCanvas = () => {
 
     if (!isWritable.value) {
       event.dataTransfer!.dropEffect = "none";
-    } else if (isKnimeNode(event)) {
+    } else if (isValidNodeTemplateDragEvent(event)) {
       event.dataTransfer!.dropEffect = "copy";
     }
 
@@ -159,7 +157,7 @@ export const useDragNodeIntoCanvas = () => {
   const onDrop = async (event: DragEvent) => {
     dragStartTime = null;
     stopPanningToEdge();
-    const eventData = readEventData(event);
+    const eventData = getEventData(event);
 
     if (!isWritable.value || !eventData) {
       return;
@@ -204,23 +202,9 @@ export const useDragNodeIntoCanvas = () => {
         });
       }
 
-      if (isDesktop()) {
-        consola.error(
-          "Invalid state. Component search feature should not be available in desktop",
-        );
-        return { newNodeId: null };
-      }
-
-      const { spaceProviders } = useSpaceProvidersStore();
-      const firstProvider = Object.values(spaceProviders)[0];
-
-      return nodeInteractionsStore.addComponentNode({
+      return nodeInteractionsStore.addComponentNodeFromMainHub({
         position: dropPosition,
-        spaceItemReference: {
-          providerId: firstProvider.id,
-          itemId: eventData.payload.id,
-          spaceId: "", // Not needed for this feature on the browser
-        },
+        componentIdInHub: eventData.payload.id,
         componentName: eventData.payload.name,
       });
     };

@@ -6,7 +6,7 @@ import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import {
   DraggableNodeTemplate,
   type NavReachedEvent,
-  useAddNodeToWorkflow,
+  useAddNodesWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
@@ -46,7 +46,7 @@ const {
   selectedNode,
 } = storeToRefs(nodeRepositoryStore);
 
-const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning } = useAddNodesWithAutoPositioning();
 
 const searchActions = {
   searchNodesNextPage: () => nodeRepositoryStore.searchNodesNextPage(),

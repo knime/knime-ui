@@ -2,11 +2,11 @@
 import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useAddNodeToWorkflow } from "@/components/nodeTemplates/useAddNodeToWorkflow";
-import { useDragNodeIntoCanvas } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import { useAddNodesWithAutoPositioning } from "../useAddNodesWithAutoPositioning";
+import { useDragNodeIntoCanvas } from "../useDragNodeIntoCanvas";
 
 import NodeTemplate from "./NodeTemplate.vue";
 
@@ -33,7 +33,8 @@ const emit = defineEmits<{
   showNodeDescription: [];
 }>();
 
-const { addNodeWithAutoPositioning } = useAddNodeToWorkflow();
+const { addNodeWithAutoPositioning, addComponentWithAutoPositioning } =
+  useAddNodesWithAutoPositioning();
 
 const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
@@ -86,6 +87,24 @@ const onDragEnd = (event: DragEvent) => {
     emit("showNodeDescription");
   }
 };
+
+const autoAddNodeFromTemplate = (
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+) => {
+  if (nodeTemplate.nodeFactory) {
+    addNodeWithAutoPositioning(nodeTemplate.nodeFactory);
+    return;
+  }
+
+  if (nodeTemplate.component) {
+    addComponentWithAutoPositioning(nodeTemplate.id, nodeTemplate.name);
+    return;
+  }
+
+  consola.error(
+    "Invalid state. NodeTemplate is neither native node nor component",
+  );
+};
 </script>
 
 <template>
@@ -101,7 +120,7 @@ const onDragEnd = (event: DragEvent) => {
     :show-floating-help-icon="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
-    @dblclick="addNodeWithAutoPositioning(nodeTemplate.nodeFactory!)"
+    @dblclick="autoAddNodeFromTemplate(nodeTemplate)"
     @drag="dragNodeIntoCanvas.onDrag"
     @help-icon-click="emit('showNodeDescription')"
   />

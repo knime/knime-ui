@@ -12,7 +12,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
 import { geometry } from "@/util/geometry";
 
-export const useAddNodeToWorkflow = () => {
+export const useAddNodesWithAutoPositioning = () => {
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
   const { toastPresets } = getToastPresets();
 
@@ -60,7 +60,31 @@ export const useAddNodeToWorkflow = () => {
     }
   };
 
+  const addComponentWithAutoPositioning = (
+    componentId: string,
+    componentName: string,
+  ) => {
+    const canvasStore = useCurrentCanvasStore();
+
+    const position = geometry.findFreeSpaceAroundCenterWithFallback({
+      visibleFrame: canvasStore.value.getVisibleFrame,
+      nodes: activeWorkflow.value!.nodes,
+    });
+
+    try {
+      return nodeInteractionsStore.addComponentNodeFromMainHub({
+        position,
+        componentIdInHub: componentId,
+        componentName,
+      });
+    } catch (error) {
+      handleError(error);
+      return { newNodeId: null };
+    }
+  };
+
   return {
     addNodeWithAutoPositioning,
+    addComponentWithAutoPositioning,
   };
 };

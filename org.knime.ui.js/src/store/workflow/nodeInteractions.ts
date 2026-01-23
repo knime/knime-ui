@@ -16,6 +16,7 @@ import { isNativeNode } from "@/util/nodeUtil";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
 import { usePanelStore } from "../panel";
 import { useSelectionStore } from "../selection";
+import { useSpaceProvidersStore } from "../spaces/providers";
 import { useSpaceOperationsStore } from "../spaces/spaceOperations";
 
 import { useMovingStore } from "./moving";
@@ -342,6 +343,74 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     return { newNodeId: null };
   };
 
+  const addComponentNodeFromMainHub = async ({
+    position,
+    componentIdInHub,
+    componentName,
+    selectionMode = "new-only",
+  }: CommonOptionsToAddNodes & {
+    componentIdInHub: string;
+    componentName: string;
+  }): Promise<{
+    newNodeId: string | null;
+  }> => {
+    if (isDesktop()) {
+      throw new Error("This action is not supported in desktop AP");
+    }
+
+    // do not try to add a node to a read only workflow
+    if (!workflowStore.isWritable) {
+      return { newNodeId: null };
+    }
+
+    const selectionStore = useSelectionStore();
+    if (selectionMode !== "none") {
+      const { wasAborted } = await selectionStore.tryClearSelection();
+      if (wasAborted) {
+        return { newNodeId: null };
+      }
+    }
+
+    const { projectId, workflowId } = workflowStore.getProjectAndWorkflowIds;
+
+    // Adjusted For Grid Snapping
+    const gridAdjustedPosition = {
+      x: geometry.utils.snapToGrid(position.x),
+      y: geometry.utils.snapToGrid(position.y),
+    };
+
+    const { spaceProviders } = useSpaceProvidersStore();
+    const firstProvider = Object.values(spaceProviders)[0];
+
+    if (!firstProvider) {
+      consola.error(
+        "Unexpected error. No providers where found to add a component",
+      );
+      return { newNodeId: null };
+    }
+
+    // needs to be before focus() to not set focus back to space explorer items
+    useSpaceOperationsStore().setCurrentSelectedItemIds([]);
+    const componentPlaceholder = await API.workflowCommand.AddComponent({
+      projectId,
+      workflowId,
+      providerId: firstProvider.id,
+      position: {
+        x: gridAdjustedPosition.x,
+        y: gridAdjustedPosition.y,
+      },
+      itemId: componentIdInHub,
+      name: componentName,
+    });
+
+    useSVGCanvasStore().focus();
+    selectionStore.selectComponentPlaceholder(
+      componentPlaceholder.newPlaceholderId,
+    );
+
+    return { newNodeId: null };
+  };
+
   const replaceNode = async ({
     targetNodeId,
     replacementNodeId,
@@ -495,6 +564,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     renameNodeLabel,
     addNativeNode,
     addComponentNode,
+    addComponentNodeFromMainHub,
     replaceNode,
     insertNode,
     addNodePort,
