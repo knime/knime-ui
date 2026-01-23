@@ -3,9 +3,11 @@ import { computed, ref } from "vue";
 
 import NodeIcon from "@knime/styles/img/icons/node.svg";
 
-import NodeList from "@/components/common/NodeList/NodeList.vue";
-import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
-import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
+import {
+  DraggableNodeTemplate,
+  NodeList,
+  useAddNodeToWorkflow,
+} from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { useKaiExtensionPanel } from "../../useKaiExtensionPanel";
 

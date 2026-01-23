@@ -11,7 +11,7 @@ import { storeToRefs } from "pinia";
 
 import { sleep } from "@knime/utils";
 
-import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
+import { useDragNodeIntoCanvas } from "@/components/nodeTemplates";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";

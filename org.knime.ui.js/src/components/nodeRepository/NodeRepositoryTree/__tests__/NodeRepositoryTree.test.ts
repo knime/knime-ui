@@ -11,8 +11,9 @@ const { addNodeWithAutoPositioningMock } = vi.hoisted(() => ({
   addNodeWithAutoPositioningMock: vi.fn(),
 }));
 
-vi.mock("@/composables/useAddNodeToWorkflow", () => {
+vi.mock("@/components/nodeTemplates", async () => {
   return {
+    ...(await vi.importActual("@/components/nodeTemplates")),
     useAddNodeToWorkflow: () => ({
       addNodeWithAutoPositioning: addNodeWithAutoPositioningMock,
       addNodeByPosition: vi.fn(),

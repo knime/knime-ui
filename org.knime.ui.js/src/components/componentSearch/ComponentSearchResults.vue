@@ -2,10 +2,12 @@
 import { toRef, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import InfiniteNodeList from "@/components/common/NodeList/InfiniteNodeList.vue";
+import {
+  DraggableNodeTemplate,
+  InfiniteNodeList,
+  type NavReachedEvent,
+} from "@/components/nodeTemplates";
 import { useComponentSearchStore } from "@/store/componentSearch";
-import type { NavReachedEvent } from "../common/NodeList/NodeList.vue";
-import DraggableNodeTemplate from "../common/NodeTemplate/DraggableNodeTemplate.vue";
 
 type Props = {
   active: boolean;

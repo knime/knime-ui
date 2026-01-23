@@ -2,10 +2,12 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
-import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
 import SearchResults from "@/components/nodeSearch/SearchResults.vue";
-import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
+import {
+  DraggableNodeTemplate,
+  type NavReachedEvent,
+  useAddNodeToWorkflow,
+} from "@/components/nodeTemplates";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";

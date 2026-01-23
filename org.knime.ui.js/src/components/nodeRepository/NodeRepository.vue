@@ -2,9 +2,9 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarNodeSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarNodeSearchResults.vue";
+import type { NavReachedEvent } from "@/components/nodeTemplates";
 import { isBrowser } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
@@ -115,7 +115,7 @@ const onSearchBarDownKey = () => {
   nodesGroupedByTag.value?.focusFirst();
 };
 
-const handleNavReachedTop = (event: { key: NavigationKey }) => {
+const handleNavReachedTop = (event: NavReachedEvent) => {
   if (event.key === "ArrowUp") {
     header.value?.focusSearchInput();
   }

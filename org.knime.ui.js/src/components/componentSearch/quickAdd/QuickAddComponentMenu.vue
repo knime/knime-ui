@@ -4,8 +4,8 @@ import { storeToRefs } from "pinia";
 
 import { SearchInput } from "@knime/components";
 
-import NodeTemplate from "@/components/common/NodeTemplate/NodeTemplate.vue";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
+import { NodeTemplate } from "@/components/nodeTemplates";
 import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";

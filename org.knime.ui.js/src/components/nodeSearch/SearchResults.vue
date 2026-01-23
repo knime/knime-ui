@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, toRefs, useTemplateRef, watch } from "vue";
 
-import { type NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
+import {
+  InfiniteNodeList,
+  type NavReachedEvent,
+} from "@/components/nodeTemplates";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import InfiniteNodeList from "../common/NodeList/InfiniteNodeList.vue";
 
 import SearchResultsInfo from "./SearchResultsInfo.vue";
 

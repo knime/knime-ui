@@ -5,7 +5,7 @@ import { mapActions, mapState } from "pinia";
 
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
-import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
+import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";

@@ -5,9 +5,9 @@ import { useActiveElement } from "@vueuse/core";
 import { Button, useKeyPressedUntilMouseClick } from "@knime/components";
 import CircleArrowIcon from "@knime/styles/img/icons/circle-arrow-right.svg";
 
-import NodeTemplate from "@/components/common/NodeTemplate/NodeTemplate.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 
 const NODES_PER_ROW_ICON_MODE = 3;
 const NODES_PER_ROW_LIST_MODE = 1;

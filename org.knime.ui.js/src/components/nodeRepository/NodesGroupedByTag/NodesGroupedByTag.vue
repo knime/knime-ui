@@ -4,11 +4,13 @@ import { storeToRefs } from "pinia";
 
 import { Tag } from "@knime/components";
 
-import type { NavReachedEvent } from "@/components/common/NodeList/NodeList.vue";
-import NodeList from "@/components/common/NodeList/NodeList.vue";
-import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
 import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
-import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
+import {
+  DraggableNodeTemplate,
+  type NavReachedEvent,
+  NodeList,
+  useAddNodeToWorkflow,
+} from "@/components/nodeTemplates";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
