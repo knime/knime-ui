@@ -2,7 +2,7 @@
 import { nextTick, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useDragNodeIntoCanvas } from "@/composables/useDragNodeIntoCanvas";
+import { useDragNodeIntoCanvas } from "@/components/nodeTemplates";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";

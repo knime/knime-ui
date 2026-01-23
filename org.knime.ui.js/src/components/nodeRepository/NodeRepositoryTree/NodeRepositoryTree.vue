@@ -11,9 +11,11 @@ import {
 } from "@knime/virtual-tree";
 
 import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
-import type { NavigationKey } from "@/components/common/NodeList/NodeList.vue";
-import DraggableNodeTemplate from "@/components/common/NodeTemplate/DraggableNodeTemplate.vue";
-import { useAddNodeToWorkflow } from "@/composables/useAddNodeToWorkflow";
+import {
+  DraggableNodeTemplate,
+  type NavReachedEvent,
+  useAddNodeToWorkflow,
+} from "@/components/nodeTemplates";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
@@ -50,7 +52,7 @@ const emit = defineEmits<{
       nodeTemplate: NodeTemplateWithExtendedPorts;
     },
   ];
-  navReachedTop: [{ key: NavigationKey }];
+  navReachedTop: [NavReachedEvent];
 }>();
 
 const treeSource = ref<TreeNodeOptions[]>([]);

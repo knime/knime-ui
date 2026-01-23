@@ -2,12 +2,11 @@
 import { computed, toRefs, useTemplateRef } from "vue";
 
 import InfiniteLoadingList from "@/components/common/InfiniteLoadingList/InfiniteLoadingList.vue";
-import NodeList, {
-  type NavReachedEvent,
-} from "@/components/common/NodeList/NodeList.vue";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+
+import NodeList, { type NavReachedEvent } from "./NodeList.vue";
 
 type Props = {
   nodes: NodeTemplateWithExtendedPorts[];

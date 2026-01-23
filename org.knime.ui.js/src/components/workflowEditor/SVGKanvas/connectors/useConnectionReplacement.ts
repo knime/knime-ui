@@ -2,8 +2,8 @@ import { type Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
+import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
-import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
 import { useApplicationStore } from "@/store/application/application";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";

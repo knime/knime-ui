@@ -3,8 +3,8 @@ import { shallowMount } from "@vue/test-utils";
 
 import { sleep } from "@knime/utils";
 
-import NodeList from "@/components/common/NodeList/NodeList.vue";
 import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
+import { NodeList } from "@/components/nodeTemplates";
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import TagResults from "../NodesGroupedByTag.vue";

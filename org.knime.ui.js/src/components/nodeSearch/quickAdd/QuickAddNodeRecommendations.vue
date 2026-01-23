@@ -2,8 +2,7 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import NodeList from "@/components/common/NodeList/NodeList.vue";
-import NodeTemplate from "@/components/common/NodeTemplate/NodeTemplate.vue";
+import { NodeList, NodeTemplate } from "@/components/nodeTemplates";
 import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";

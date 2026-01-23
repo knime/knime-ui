@@ -7,11 +7,11 @@ import {
   type NodeTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
+import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 import { deepMocked, mockBoundingRect } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import DraggableNodeTemplate from "../../NodeTemplate/DraggableNodeTemplate.vue";
+import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
 
 const mockedAPI = deepMocked(API);
 

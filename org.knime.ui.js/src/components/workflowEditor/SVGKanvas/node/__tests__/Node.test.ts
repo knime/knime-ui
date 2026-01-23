@@ -5,7 +5,7 @@ import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 
 import { Node as NodeType } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/composables/useDragNodeIntoCanvas";
+import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import * as $colors from "@/style/colors";
