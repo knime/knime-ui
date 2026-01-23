@@ -17,7 +17,7 @@ import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
 
 import type { NodeRelation } from "@/api/custom-types";
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
-import QuickAddComponentMenu from "@/components/componentSearch/quickAdd/QuickAddComponentMenu.vue";
+import { QuickAddComponentMenu } from "@/components/componentSearch";
 import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
 import QuickAddNodeMenu from "@/components/nodeSearch/quickAdd/QuickAddNodeMenu.vue";
 import { useApplicationStore } from "@/store/application/application";

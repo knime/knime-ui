@@ -15,7 +15,7 @@ import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 import { isBrowser } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
-import { useComponentSearchStore } from "@/store/componentSearch";
+import { useSidebarComponentSearchStore } from "@/store/componentSearch";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import {
   type NodeRepositoryDisplayModesType,
@@ -30,7 +30,7 @@ const nodeRepositoryStore = useNodeRepositoryStore();
 const { searchIsActive, tagsOfVisibleNodes: tags } =
   storeToRefs(nodeRepositoryStore);
 
-const componentSearchStore = useComponentSearchStore();
+const componentSearchStore = useSidebarComponentSearchStore();
 
 const selectedTags = computed({
   get() {

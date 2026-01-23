@@ -9,7 +9,7 @@ import { NodeTemplate } from "@/components/nodeTemplates";
 import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
-import { useComponentSearchStore } from "@/store/componentSearch";
+import { useQuickActionComponentSearchStore } from "@/store/componentSearch";
 import { getToastPresets } from "@/toastPresets";
 import ComponentSearchResults from "../ComponentSearchResults.vue";
 
@@ -25,7 +25,9 @@ const { nodeRepositoryLoaded, nodeRepositoryLoadingProgress } = storeToRefs(
   useApplicationStore(),
 );
 const { subscribeToNodeRepositoryLoadingEvent } = useLifecycleStore();
-const componentSearchStore = useComponentSearchStore();
+const componentSearchStore = useQuickActionComponentSearchStore();
+const { isLoading, hasLoaded, results, query } =
+  storeToRefs(componentSearchStore);
 
 const updateSearchQuery = async (value: string) => {
   try {
@@ -56,7 +58,7 @@ onMounted(() => {
     <SearchInput
       ref="search"
       :disabled="!nodeRepositoryLoaded"
-      :model-value="componentSearchStore.query"
+      :model-value="query"
       placeholder="Search components in the KNIME Hub"
       class="search-bar"
       focus-on-mount
@@ -68,7 +70,15 @@ onMounted(() => {
   </div>
 
   <template v-if="nodeRepositoryLoaded">
-    <ComponentSearchResults ref="componentSearchResults" :active="true">
+    <ComponentSearchResults
+      ref="componentSearchResults"
+      :active="true"
+      :is-loading="isLoading"
+      :has-loaded="hasLoaded"
+      :results="results"
+      :fetch-data="componentSearchStore.searchComponents"
+      @nav-reached-top="($refs.search as any).focus()"
+    >
       <template #nodesTemplate="itemProps">
         <NodeTemplate v-bind="itemProps" />
       </template>
