@@ -118,7 +118,9 @@
   },
   "pnpm": {
     "overrides": {
-      "@knime/knime-ui-table@0.5.22>@knime/components": "1.33.0"
+      "@knime/knime-ui-table@0.5.22>@knime/components": "1.33.0",
+      "lodash-es@>=4.0.0 <=4.17.22": ">=4.17.23",
+      "lodash@>=4.0.0 <=4.17.22": ">=4.17.23"
     },
     "onlyBuiltDependencies": [
       "esbuild",
