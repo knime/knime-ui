@@ -35,11 +35,11 @@ importers:
         specifier: ^1.16.0
         version: 1.16.3(@fontsource/roboto-mono@5.2.8)(@fontsource/roboto@5.2.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-components':
-        specifier: ^0.5.5
-        version: 0.5.5(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
+        specifier: ^0.5.9
+        version: 0.5.9(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-styles':
-        specifier: ^0.5.5
-        version: 0.5.5
+        specifier: ^0.5.9
+        version: 0.5.9
       '@knime/knime-ui-table':
         specifier: 0.6.0
         version: 0.6.0(@fontsource/roboto-mono@5.2.8)(@fontsource/roboto@5.2.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
@@ -1219,15 +1219,15 @@ packages:
       consola: 3.x
       vue: ~3.5.0
 
-  '@knime/kds-components@0.5.5':
-    resolution: {integrity: sha512-SULUTvh5eOmsRihlcugpyW9F9oGCECnnRcyjat9j+ELvffAPuChqadj9uOh9O10Q+gxo36bDs1jekPY8nsdLnQ==}
+  '@knime/kds-components@0.5.9':
+    resolution: {integrity: sha512-ZPWx7cGwc/nLfqOFv04Kaxc02vM1Nhas+2tXSoEEtYqeYA60vsjqbHdaItYrDjsG3QhjXPmTU2Baciy7beO1ag==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
     peerDependencies:
       '@vueuse/core': ~13.8.0
       vue: ~3.5.0
 
-  '@knime/kds-styles@0.5.5':
-    resolution: {integrity: sha512-06lUJ4LpeRfaakek0C8AHLByed1o1Dz6zugPkHuTJPlgCf/km2n9mpX7ZCgCyLfl9BloLGs04zgTUSWXFqyp0w==}
+  '@knime/kds-styles@0.5.9':
+    resolution: {integrity: sha512-U09VIoax+OmXe9hxWx5iRvZIZ7ByMvMGmza2wb9z6WXH5CwrrhtWSMG7NtEJDOSCb9+7LxLx/j8TWsCKJohVnw==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
 
   '@knime/knime-ui-table@0.6.0':
@@ -5507,6 +5507,7 @@ packages:
   tar@6.2.1:
     resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exhorbitant rates) by contacting i@izs.me
 
   test-exclude@7.0.1:
     resolution: {integrity: sha512-pFYqmTw68LXVjeWJMST4+borgQP2AyMNbg1BpZh9LbyhUeNkeaPF9gzfPGUAnSMV3qPYdWUwDIjjCLiSDOl7vg==}
@@ -7101,15 +7102,15 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/kds-components@0.5.5(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
+  '@knime/kds-components@0.5.9(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
     dependencies:
-      '@knime/kds-styles': 0.5.5
+      '@knime/kds-styles': 0.5.9
       '@knime/utils': 1.9.2(consola@3.4.2)
       '@vueuse/core': 13.8.0(vue@3.5.18(typescript@5.8.3))
       consola: 3.4.2
       vue: 3.5.18(typescript@5.8.3)
 
-  '@knime/kds-styles@0.5.5':
+  '@knime/kds-styles@0.5.9':
     dependencies:
       '@fontsource/roboto': 5.2.8
       '@fontsource/roboto-condensed': 5.2.8
