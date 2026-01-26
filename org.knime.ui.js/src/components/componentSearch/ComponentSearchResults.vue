@@ -49,7 +49,7 @@ defineExpose({ focusFirst });
   >
     <template #nodesTemplate="slotProps">
       <slot name="nodesTemplate" v-bind="slotProps">
-        <DraggableNodeTemplate v-bind="slotProps" />
+        <DraggableNodeTemplate v-bind="slotProps" :show-help-icon="false" />
       </slot>
     </template>
 

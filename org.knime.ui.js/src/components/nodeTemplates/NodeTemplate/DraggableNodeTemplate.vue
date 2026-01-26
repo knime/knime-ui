@@ -20,6 +20,7 @@ type Props = {
   isHighlighted?: boolean;
   isDescriptionActive?: boolean;
   displayMode?: NodeRepositoryDisplayModesType;
+  showHelpIcon?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,6 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isHighlighted: false,
   isDescriptionActive: false,
+  showHelpIcon: true,
 });
 
 const emit = defineEmits<{
@@ -117,7 +119,7 @@ const autoAddNodeFromTemplate = (
     :is-selected="isSelected"
     :is-highlighted="isHighlighted"
     :is-description-active="isDescriptionActive"
-    :show-floating-help-icon="true"
+    :show-floating-help-icon="showHelpIcon"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @dblclick="autoAddNodeFromTemplate(nodeTemplate)"
