@@ -139,7 +139,6 @@ const renderConnector = (graphics: GraphicsInst, points: BezierPoints) => {
     : strokeWidth.value;
   const { offsetStart, offsetEnd } =
     getStrokeBasedBezierOffsets(connectorWidth);
-  const smoothness = 0.9;
 
   graphics.clear();
 
@@ -168,7 +167,6 @@ const renderConnector = (graphics: GraphicsInst, points: BezierPoints) => {
       points.control2.y,
       points.end.x + offsetEnd,
       points.end.y,
-      smoothness,
     );
 
   graphics.stroke(stroke);
