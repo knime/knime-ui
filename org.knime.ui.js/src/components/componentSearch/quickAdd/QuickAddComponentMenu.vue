@@ -9,6 +9,7 @@ import { NodeTemplate } from "@/components/nodeTemplates";
 import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 import { useApplicationStore } from "@/store/application/application";
 import { useQuickActionComponentSearchStore } from "@/store/componentSearch";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { getToastPresets } from "@/toastPresets";
 import ComponentSearchResults from "../ComponentSearchResults.vue";
 
@@ -24,6 +25,7 @@ const { nodeRepositoryLoaded, nodeRepositoryLoadingProgress } = storeToRefs(
   useApplicationStore(),
 );
 const componentSearchStore = useQuickActionComponentSearchStore();
+const nodeInteractionsStore = useNodeInteractionsStore();
 const { isLoading, hasLoaded, results, query } =
   storeToRefs(componentSearchStore);
 
@@ -35,8 +37,27 @@ const updateSearchQuery = async (value: string) => {
   }
 };
 
-const searchEnterKey = () => {
-  // TODO: NXT-4328 add first component
+const searchEnterKey = async () => {
+  const firstResult = results.value[0];
+  if (!firstResult) {
+    return;
+  }
+
+  await nodeInteractionsStore.addComponentNodeFromMainHub({
+    position: props.quickActionContext.canvasPosition,
+    componentIdInHub: firstResult.id,
+    componentName: firstResult.name,
+    autoConnectOptions:
+      props.quickActionContext.nodeId && props.quickActionContext.nodeRelation
+        ? {
+            sourceNodeId: props.quickActionContext.nodeId,
+            nodeRelation: props.quickActionContext.nodeRelation,
+            sourcePortIdx: props.quickActionContext.port?.index,
+          }
+        : undefined,
+  });
+
+  props.quickActionContext.closeMenu();
 };
 
 const componentSearchResults = useTemplateRef("componentSearchResults");

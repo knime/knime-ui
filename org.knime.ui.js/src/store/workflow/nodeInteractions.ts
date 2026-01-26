@@ -3,6 +3,7 @@ import { API } from "@api";
 import { defineStore } from "pinia";
 
 import type {
+  AddComponentCommand,
   AddNodeCommand,
   Connection,
   NodeFactoryKey,
@@ -10,6 +11,7 @@ import type {
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
+import type { NodeRelation } from "@/api/custom-types";
 import { isDesktop } from "@/environment";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
@@ -180,7 +182,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
   type AutoConnectParams = {
     autoConnectOptions?: {
       sourceNodeId: string;
-      nodeRelation: AddNodeCommand.NodeRelationEnum;
+      nodeRelation: NodeRelation;
       sourcePortIdx?: number;
     };
   };
@@ -261,7 +263,9 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
       spaceItemReference,
       sourceNodeId: autoConnectOptions?.sourceNodeId,
       sourcePortIdx: autoConnectOptions?.sourcePortIdx,
-      nodeRelation: autoConnectOptions?.nodeRelation,
+      nodeRelation: autoConnectOptions?.nodeRelation as
+        | AddNodeCommand.NodeRelationEnum
+        | undefined,
     });
 
     if (!newNodeId) {
@@ -337,6 +341,11 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
       },
       itemId: spaceItemReference.itemId,
       name: componentName,
+      sourceNodeId: autoConnectOptions?.sourceNodeId,
+      sourcePortIdx: autoConnectOptions?.sourcePortIdx,
+      nodeRelation: autoConnectOptions?.nodeRelation as
+        | AddComponentCommand.NodeRelationEnum
+        | undefined,
     });
 
     useSVGCanvasStore().focus();
@@ -351,11 +360,14 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     position,
     componentIdInHub,
     componentName,
-  }: {
-    position: XY;
-    componentIdInHub: string;
-    componentName: string;
-  }): Promise<{
+    autoConnectOptions,
+    selectionMode = "new-only",
+  }: AutoConnectParams &
+    SelectionModeParams & {
+      position: XY;
+      componentIdInHub: string;
+      componentName: string;
+    }): Promise<{
     newNodeId: string | null;
   }> => {
     if (isDesktop()) {
@@ -368,9 +380,11 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     }
 
     const selectionStore = useSelectionStore();
-    const { wasAborted } = await selectionStore.tryClearSelection();
-    if (wasAborted) {
-      return { newNodeId: null };
+    if (selectionMode !== "none") {
+      const { wasAborted } = await selectionStore.tryClearSelection();
+      if (wasAborted) {
+        return { newNodeId: null };
+      }
     }
 
     const { projectId, workflowId } = workflowStore.getProjectAndWorkflowIds;
@@ -403,6 +417,11 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
       },
       itemId: componentIdInHub,
       name: componentName,
+      sourceNodeId: autoConnectOptions?.sourceNodeId,
+      sourcePortIdx: autoConnectOptions?.sourcePortIdx,
+      nodeRelation: autoConnectOptions?.nodeRelation as
+        | AddComponentCommand.NodeRelationEnum
+        | undefined,
     });
 
     useSVGCanvasStore().focus();
