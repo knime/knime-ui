@@ -67,7 +67,7 @@ const isConfirmDisabled = computed(() => {
   return false;
 });
 
-const onSelectionChange = (value: string | undefined) => {
+const onSelectionChange = (value: string) => {
   selectedLinkVariant.value = value as LinkVariant.VariantEnum;
 };
 
