@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
 import { KdsButton } from "@knime/kds-components";
 
-import { SpaceGroup, SpaceProvider } from "@/api/gateway-api/generated-api";
+import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import IconComponent from "@/assets/redo.svg";
+import {
+  createProject,
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+} from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import SaveButton from "../SaveButton.vue";
 
@@ -14,13 +19,13 @@ const mockedShortcuts = {
   save: {
     icon: IconComponent,
     title: "save workflow",
-    text: "save",
+    text: "Save",
     hotkeyText: "Ctrl S",
   },
   saveAs: {
     icon: IconComponent,
     title: "save workflow as",
-    text: "save as",
+    text: "Save as",
     hotkeyText: "Ctrl Shift S",
   },
   export: {
@@ -50,162 +55,114 @@ describe("SaveButton.vue", () => {
     $shortcuts.isEnabled.mockReturnValue(true);
   });
 
-  const setupStoresForProject = ({
-    projectId,
-    hasValidOrigin = true,
-  }: {
-    projectId: string;
-    hasValidOrigin?: boolean;
-  }) => {
-    const stores = mockStores();
+  type MountOpts = {
+    isUnknownProject?: boolean;
+  };
 
-    stores.applicationStore.activeProjectId = projectId;
-    stores.applicationStore.openProjects = [
-      {
+  const doMount = ({ isUnknownProject }: MountOpts = {}) => {
+    const mockedStores = mockStores();
+
+    const projectId = "project1";
+
+    mockedStores.applicationStore.activeProjectId = projectId;
+    mockedStores.applicationStore.openProjects = [
+      createProject({
         projectId,
         name: "The World Is Not Enough",
-        origin: hasValidOrigin
+        origin: isUnknownProject
           ? {
-              providerId: "provider1",
-              spaceId: "test-space-id",
-              itemId: "test-item-id",
-            }
-          : {
               providerId: "unknown-provider-id",
               spaceId: "unknown-space-id",
               itemId: "unknown-item-id",
+            }
+          : {
+              providerId: "provider1",
+              spaceId: "test-space-id",
+              itemId: "test-item-id",
             },
-      },
+      }),
     ];
 
-    if (hasValidOrigin) {
-      stores.spaceProvidersStore.spaceProviders = {
-        provider1: {
-          id: "provider1",
-          name: "MI6",
-          type: SpaceProvider.TypeEnum.HUB,
-          connected: true,
-          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
-          spaceGroups: [
-            {
-              id: "group1",
-              name: "Double 0 program",
-              type: SpaceGroup.TypeEnum.USER,
-              spaces: [
-                {
-                  id: "test-space-id",
-                  name: "Test Space",
-                  owner: "bond",
-                },
-              ],
-            },
+    const provider = createSpaceProvider({
+      id: "provider1",
+      name: "MI6",
+      type: SpaceProvider.TypeEnum.HUB,
+      connected: true,
+      spaceGroups: [
+        createSpaceGroup({
+          id: "group1",
+          name: "Double 0 program",
+          spaces: [
+            createSpace({
+              id: "test-space-id",
+              name: "Test Space",
+              owner: "bond",
+            }),
           ],
-        },
-      };
-    }
+        }),
+      ],
+    });
 
-    return stores;
-  };
-
-  const doMount = ({ props } = { props: {} }) => {
-    mockStores();
-
-    const propsWithDefaults = {
-      name: "save",
-      withText: true,
-      dropdown: [],
-      ...props,
-    };
+    mockedStores.spaceProvidersStore.setSpaceProviders({
+      [provider.id]: provider,
+    });
 
     const wrapper = mount(SaveButton, {
-      props: propsWithDefaults,
+      global: {
+        plugins: [mockedStores.testingPinia],
+      },
     });
-    return { wrapper, $shortcuts };
+
+    return { wrapper, $shortcuts, mockedStores };
   };
 
-  describe("renders button", () => {
-    it("fetches shortcut", () => {
-      doMount();
-      expect($shortcuts.get).toHaveBeenCalledWith("save");
-    });
+  describe("main action", () => {
+    it.each([
+      ["Save", false, "save"],
+      ["Save as", true, "saveAs"],
+    ])(
+      "renders correct action for known projects (%)",
+      async (action, isUnknownProject, shortcutAction) => {
+        const { wrapper } = doMount({ isUnknownProject });
 
-    it("renders full info", () => {
-      const { wrapper } = doMount();
+        const mainAction = wrapper.findComponent(KdsButton);
+        expect(mainAction.exists()).toBe(true);
+        expect(mainAction.props("label")).toBe(action);
+        await wrapper.findComponent(KdsButton).trigger("click");
+        expect($shortcuts.dispatch).toHaveBeenCalledWith(shortcutAction);
+      },
+    );
 
-      const saveButton = wrapper.findComponent(KdsButton);
-      expect(saveButton.text()).toBe("save");
-      expect(saveButton.attributes("title")).toBe("save workflow – Ctrl S");
-      expect(saveButton.attributes("disabled")).toBeUndefined();
-      expect(saveButton.find(".kds-icon").exists()).toBe(true);
-    });
-
-    it("renders disabled", async () => {
+    it("renders disabled", () => {
       $shortcuts.isEnabled.mockReturnValueOnce(false);
       const { wrapper } = doMount();
-
-      expect($shortcuts.isEnabled).toHaveBeenCalledWith("save");
-      await nextTick();
 
       const saveButton = wrapper.getComponent(KdsButton);
       expect(saveButton.attributes("disabled")).toBeDefined();
     });
-
-    it("dispatches shortcut handler", async () => {
-      const { wrapper } = doMount();
-
-      await wrapper.getComponent(KdsButton).find("button").trigger("click");
-      expect($shortcuts.dispatch).toHaveBeenCalledWith("save");
-    });
   });
 
   describe("renders submenu", () => {
-    it("renders a submenu when project is known", () => {
-      const stores = setupStoresForProject({
-        projectId: "test-project-id",
-        hasValidOrigin: true,
-      });
+    it("renders a submenu when project can do a save as a main action", () => {
+      const { wrapper } = doMount();
 
-      const wrapper = mount(SaveButton, {
-        global: {
-          plugins: [stores.testingPinia],
-        },
-      });
-
+      expect(wrapper.classes()).toContain("split-button");
       expect(wrapper.findComponent(SubMenu).exists()).toBeTruthy();
       expect(wrapper.findComponent(SubMenu).props("items").length).toBe(2);
     });
 
-    it("does not render submenu when project is unknown", () => {
-      const stores = setupStoresForProject({
-        projectId: "unknown-project-id",
-        hasValidOrigin: false,
-      });
-
-      const wrapper = mount(SaveButton, {
-        global: {
-          plugins: [stores.testingPinia],
-        },
-      });
-
-      expect(wrapper.findComponent(SubMenu).exists()).toBeFalsy();
+    it("does not render submenu when main action is save as", () => {
+      const { wrapper } = doMount({ isUnknownProject: true });
+      expect(wrapper.classes()).not.toContain("split-button");
+      expect(wrapper.findComponent(SubMenu).exists()).toBe(false);
     });
 
     it("dispatches shortcut handler for submenu entries", async () => {
-      const stores = setupStoresForProject({
-        projectId: "test-project-id",
-        hasValidOrigin: true,
-      });
-
-      const wrapper = mount(SaveButton, {
-        global: {
-          plugins: [stores.testingPinia],
-        },
-      });
+      const { wrapper } = doMount();
 
       await wrapper.find(".submenu-toggle").trigger("click");
       await wrapper.findAll(".submenu li").at(0)?.trigger("click");
       expect($shortcuts.dispatch).toHaveBeenLastCalledWith("saveAs");
-
       await wrapper.find(".submenu-toggle").trigger("click");
       await wrapper.findAll(".submenu li").at(1)?.trigger("click");
       expect($shortcuts.dispatch).toHaveBeenLastCalledWith("export");
