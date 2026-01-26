@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import { ValueSwitch } from "@knime/components";
+import { KdsValueSwitch } from "@knime/kds-components";
 
 import { PortType } from "@/api/gateway-api/generated-api";
 import QuickAddNodeMenu from "@/components/nodeSearch/quickAdd/QuickAddNodeMenu.vue";
@@ -140,7 +140,7 @@ describe("QuickActionMenu.vue", () => {
       const { wrapper, mockedStores } = doMount();
 
       const getModes = () =>
-        wrapper.findComponent(ValueSwitch).props("possibleValues");
+        wrapper.findComponent(KdsValueSwitch).props("possibleValues");
 
       expect(getModes()).toEqual(
         expect.arrayContaining([expect.objectContaining({ id: "k-ai" })]),
