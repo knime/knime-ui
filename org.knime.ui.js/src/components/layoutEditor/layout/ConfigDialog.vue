@@ -9,6 +9,7 @@ import type {
   LayoutEditorItemSizingConfig,
   LayoutEditorViewItem,
 } from "@/store/layoutEditor/types/view";
+import * as layoutEditorZIndices from "../z-indices";
 
 type Props = {
   item: LayoutEditorViewItem;
