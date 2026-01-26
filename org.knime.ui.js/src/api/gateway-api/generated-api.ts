@@ -101,6 +101,24 @@ export interface AddComponentCommand extends WorkflowCommand {
      * @memberof AddComponentCommand
      */
     name: string;
+    /**
+     * Optional parameter identifying the existing node to connect to
+     * @type {string}
+     * @memberof AddComponentCommand
+     */
+    sourceNodeId?: string;
+    /**
+     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
+     * @type {number}
+     * @memberof AddComponentCommand
+     */
+    sourcePortIdx?: number;
+    /**
+     * Optional parameter that describe the relation of the new node with the given node,  either a Successor or a predecessor of the given node
+     * @type {string}
+     * @memberof AddComponentCommand
+     */
+    nodeRelation?: AddComponentCommand.NodeRelationEnum;
 
 }
 
@@ -110,6 +128,14 @@ export interface AddComponentCommand extends WorkflowCommand {
  * @namespace AddComponentCommand
  */
 export namespace AddComponentCommand {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum NodeRelationEnum {
+        PREDECESSORS = 'PREDECESSORS',
+        SUCCESSORS = 'SUCCESSORS'
+    }
 }
 /**
  *
