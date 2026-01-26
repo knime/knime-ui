@@ -21,19 +21,29 @@ type MetadataWithHandler = {
   handler: () => void;
 };
 
-const hasSubmenu = computed(() => {
-  if (isUnknownProject.value(activeProjectId.value)) {
-    return false;
-  }
+const canSave = computed(() => !isUnknownProject.value(activeProjectId.value));
 
-  return true;
+const mainAction = computed(() => {
+  if (canSave.value) {
+    return {
+      title: toolbarButtonTitle($shortcuts.get("save")),
+      label: $shortcuts.getText("save"),
+      icon: "save",
+      disabled: !$shortcuts.isEnabled("save"),
+      onClick: () => $shortcuts.dispatch("save"),
+    };
+  } else {
+    return {
+      title: toolbarButtonTitle($shortcuts.get("saveAs")),
+      label: $shortcuts.getText("saveAs"),
+      icon: "save-as",
+      disabled: !$shortcuts.isEnabled("saveAs"),
+      onClick: () => $shortcuts.dispatch("saveAs"),
+    };
+  }
 });
 
 const subMenuItems = computed((): MenuItem[] => {
-  if (!hasSubmenu.value) {
-    return [];
-  }
-
   const saveAs = $shortcuts.get("saveAs");
   const exportShortcut = $shortcuts.get("export");
 
@@ -60,29 +70,25 @@ const subMenuItems = computed((): MenuItem[] => {
     },
   ];
 });
-
-const save = computed(() => $shortcuts.get("save"));
-
-const title = computed(() => {
-  return toolbarButtonTitle(save.value);
-});
 </script>
 
 <template>
-  <div :class="{ 'split-button': hasSubmenu }" data-test-id="save">
+  <div :class="{ 'split-button': canSave }" data-test-id="save">
     <KdsButton
-      :class="['toolbar-button']"
-      :disabled="!$shortcuts.isEnabled('save')"
-      :title="title"
-      :aria-label="save.text"
-      :label="$shortcuts.getText('save')"
-      leading-icon="save"
+      v-if="mainAction"
+      class="toolbar-button"
+      data-test-id="main-action"
+      :disabled="mainAction.disabled"
+      :title="mainAction.title"
+      :aria-label="mainAction.label"
+      :label="mainAction.label"
+      :leading-icon="mainAction.icon"
       variant="transparent"
-      @click="$shortcuts.dispatch('save')"
+      @click="mainAction.onClick"
     />
 
     <SubMenu
-      v-if="hasSubmenu"
+      v-if="canSave"
       ref="submenu"
       :teleport-to-body="false"
       :items="subMenuItems"
