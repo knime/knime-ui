@@ -8,7 +8,6 @@ import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoad
 import { NodeTemplate } from "@/components/nodeTemplates";
 import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 import { useApplicationStore } from "@/store/application/application";
-import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useQuickActionComponentSearchStore } from "@/store/componentSearch";
 import { getToastPresets } from "@/toastPresets";
 import ComponentSearchResults from "../ComponentSearchResults.vue";
@@ -24,7 +23,6 @@ const { toastPresets } = getToastPresets();
 const { nodeRepositoryLoaded, nodeRepositoryLoadingProgress } = storeToRefs(
   useApplicationStore(),
 );
-const { subscribeToNodeRepositoryLoadingEvent } = useLifecycleStore();
 const componentSearchStore = useQuickActionComponentSearchStore();
 const { isLoading, hasLoaded, results, query } =
   storeToRefs(componentSearchStore);
@@ -48,8 +46,6 @@ const searchDownKey = () => {
 
 onMounted(() => {
   props.quickActionContext.updateMenuStyle({ height: "445px" });
-
-  subscribeToNodeRepositoryLoadingEvent();
 });
 </script>
 
