@@ -153,12 +153,14 @@ public final class SaveAndCloseProjects {
                     var progressService = PlatformUI.getWorkbench().getProgressService();
                     try {
                         saveAndCloseProjects(projectIds.toArray(String[]::new), progressService);
+                        yield State.SUCCESS;
                     } catch (SaveAndCloseProjectsException e) {
                         LOGGER.error(e);
                         yield State.CANCEL_OR_FAIL;
                     }
+                } else {
+                    yield State.CANCEL_OR_FAIL;
                 }
-                yield State.SUCCESS;
             }
             case NO -> {
                 CloseProject.closeProjects(projectIds);
