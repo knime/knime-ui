@@ -168,6 +168,7 @@ const dragStart = (pointerDown: PointerEvent) => {
             text: '🖥️ System',
           },
         ]"
+        data-test-id="canvas-theme-toggler"
       />
 
       <FunctionButton
