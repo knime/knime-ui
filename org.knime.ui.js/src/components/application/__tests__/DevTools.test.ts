@@ -56,7 +56,7 @@ describe("DevTools.vue", () => {
     currentRenderer.value = "SVG";
     // reset mocks
     vi.clearAllMocks();
-    // reset dev flag (wird in mehreren Tests manipuliert)
+    // reset dev flag (is manipulated in several tests)
     import.meta.env.DEV = false;
   });
 
