@@ -12,7 +12,8 @@ On cmd/ctrl + shift + . the menu will open in Quick Build mode.
 import { computed, ref, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 
-import { FunctionButton, ValueSwitch } from "@knime/components";
+import { FunctionButton } from "@knime/components";
+import { KdsValueSwitch } from "@knime/kds-components";
 import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
 
 import type { NodeRelation } from "@/api/custom-types";
@@ -194,10 +195,10 @@ const resetMenuStyleConfig = () => {
       }"
     >
       <div class="mode-switcher">
-        <ValueSwitch
+        <KdsValueSwitch
           v-model="activeMode"
           data-test-id="mode-switcher"
-          compact
+          size="small"
           :possible-values="availableModes"
           @update:model-value="resetMenuStyleConfig"
         />

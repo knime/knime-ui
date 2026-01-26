@@ -2,9 +2,10 @@
 import { onMounted, ref, useTemplateRef, watch } from "vue";
 import { useWindowSize } from "@vueuse/core";
 
-import { FunctionButton, ValueSwitch } from "@knime/components";
+import { FunctionButton } from "@knime/components";
 import {
   type KdsDarkModeType,
+  KdsValueSwitch,
   useKdsDarkMode,
   useKdsLegacyMode,
 } from "@knime/kds-components";
@@ -135,10 +136,10 @@ const dragStart = (pointerDown: PointerEvent) => {
         </FunctionButton>
       </div>
 
-      <ValueSwitch
+      <KdsValueSwitch
         v-if="isFrontendDevMode"
         v-model="currentRenderer"
-        compact
+        size="small"
         data-test-id="canvas-renderer-toggler"
         class="canvas-toggler"
         :possible-values="
@@ -146,9 +147,9 @@ const dragStart = (pointerDown: PointerEvent) => {
         "
       />
 
-      <ValueSwitch
+      <KdsValueSwitch
         v-model="extendedMode"
-        compact
+        size="small"
         :possible-values="[
           {
             id: 'legacy',
@@ -167,6 +168,7 @@ const dragStart = (pointerDown: PointerEvent) => {
             text: '🖥️ System',
           },
         ]"
+        data-test-id="canvas-theme-toggler"
       />
 
       <FunctionButton

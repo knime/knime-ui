@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import { ValueSwitch } from "@knime/components";
 import { useKdsDarkMode, useKdsLegacyMode } from "@knime/kds-components";
 
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
@@ -13,11 +12,13 @@ import DevTools from "../DevTools.vue";
 
 vi.mock("@/environment");
 
-vi.mock("@knime/kds-components", () => {
+vi.mock("@knime/kds-components", async (importOriginal) => {
+  const actual: any = await importOriginal();
   const mockCurrentMode = { value: "light" };
   const mockUseLegacyMode = { value: false };
 
   return {
+    ...actual,
     useKdsDynamicModal: vi.fn().mockReturnValue({
       askConfirmation: vi.fn(),
     }),
@@ -44,11 +45,19 @@ describe("DevTools.vue", () => {
 
   const { currentRenderer } = useCanvasRendererUtils();
 
+  const getRenderSwitch = (wrapper: any) =>
+    wrapper.findComponent({
+      name: "KdsValueSwitch",
+      props: { "data-test-id": "canvas-renderer-toggler" },
+    });
+
   afterEach(() => {
     // reset renderer
     currentRenderer.value = "SVG";
     // reset mocks
     vi.clearAllMocks();
+    // reset dev flag (is manipulated in several tests)
+    import.meta.env.DEV = false;
   });
 
   it("renders button to open browser inspector only on desktop", () => {
@@ -80,8 +89,12 @@ describe("DevTools.vue", () => {
     const { wrapper } = doMount();
 
     expect(currentRenderer.value).toBe("SVG");
-    const toggler = wrapper.findComponent(ValueSwitch);
-    toggler.setValue("WebGL");
+
+    const renderSwitch = getRenderSwitch(wrapper);
+    expect(renderSwitch.exists()).toBe(true);
+
+    await renderSwitch.setValue("WebGL");
+
     await nextTick();
     expect(currentRenderer.value).toBe("WebGL");
   });
@@ -105,15 +118,19 @@ describe("DevTools.vue", () => {
   });
 
   describe("theme switch", () => {
-    const getThemeSwitch = (wrapper: any) => {
-      const themeSwitches = wrapper.findAllComponents(ValueSwitch);
-      return themeSwitches.length > 1 ? themeSwitches[1] : null;
-    };
+    const getThemeSwitch = (wrapper: any) =>
+      wrapper.findComponent({
+        name: "KdsValueSwitch",
+        props: { "data-test-id": "canvas-theme-toggler" },
+      });
 
-    it("initializes with current mode value from useDarkMode", () => {
+    it("initializes with current mode value from useDarkMode", async () => {
       const { wrapper } = doMount();
       const themeSwitch = getThemeSwitch(wrapper);
-      expect(themeSwitch!.props("modelValue")).toBe("light");
+
+      expect(themeSwitch).toBeDefined();
+      await nextTick();
+      expect(themeSwitch.props("modelValue")).toBe("light");
     });
 
     it("switches to dark mode correctly", async () => {
@@ -121,7 +138,7 @@ describe("DevTools.vue", () => {
       const { currentMode } = useKdsDarkMode();
       const { legacyMode } = useKdsLegacyMode();
       const themeSwitch = getThemeSwitch(wrapper);
-      await themeSwitch!.setValue("dark");
+      await themeSwitch.setValue("dark");
 
       await nextTick();
       expect(currentMode.value).toBe("dark");
@@ -133,7 +150,7 @@ describe("DevTools.vue", () => {
       const { currentMode } = useKdsDarkMode();
       const { legacyMode } = useKdsLegacyMode();
       const themeSwitch = getThemeSwitch(wrapper);
-      await themeSwitch!.setValue("light");
+      await themeSwitch.setValue("light");
 
       await nextTick();
       expect(currentMode.value).toBe("light");
@@ -145,7 +162,7 @@ describe("DevTools.vue", () => {
       const { currentMode } = useKdsDarkMode();
       const { legacyMode } = useKdsLegacyMode();
       const themeSwitch = getThemeSwitch(wrapper);
-      await themeSwitch!.setValue("system");
+      await themeSwitch.setValue("system");
 
       await nextTick();
       expect(currentMode.value).toBe("system");
@@ -158,11 +175,11 @@ describe("DevTools.vue", () => {
       const { legacyMode } = useKdsLegacyMode();
       const themeSwitch = getThemeSwitch(wrapper);
 
-      await themeSwitch!.setValue("dark");
+      await themeSwitch.setValue("dark");
       await nextTick();
       expect(currentMode.value).toBe("dark");
 
-      await themeSwitch!.setValue("legacy");
+      await themeSwitch.setValue("legacy");
       await nextTick();
       expect(legacyMode.value).toBe(true);
       expect(currentMode.value).toBe("light");

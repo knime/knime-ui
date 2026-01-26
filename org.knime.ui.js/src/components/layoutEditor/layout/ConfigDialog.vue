@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "vue";
 
-import { InlineMessage, InputField, ValueSwitch } from "@knime/components";
+import { InlineMessage, InputField } from "@knime/components";
+import { KdsValueSwitch } from "@knime/kds-components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import type {
@@ -79,7 +80,7 @@ watch(
   <div class="config-dialog">
     <div class="grid">
       <div class="resize-method-config">
-        <ValueSwitch
+        <KdsValueSwitch
           v-model="resizeMode"
           :possible-values="[
             { id: 'auto', text: 'Auto' },
@@ -87,7 +88,7 @@ watch(
             { id: 'aspectRatio4by3', text: '4:3' },
             { id: 'aspectRatio1by1', text: '1:1' },
           ]"
-          compact
+          size="small"
         />
       </div>
 
