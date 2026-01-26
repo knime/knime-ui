@@ -27,7 +27,6 @@ describe("DraggableNodeTemplate", () => {
     type: NativeNodeInvariants.TypeEnum.Configuration,
     inPorts: [{ typeId: "org.port.mockId" }],
     outPorts: [{ typeId: "org.port.mockId" }],
-    // component: true,
   };
 
   afterEach(() => {

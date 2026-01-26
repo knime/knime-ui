@@ -12,7 +12,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
 import { geometry } from "@/util/geometry";
 
-export const useAddNodesWithAutoPositioning = () => {
+export const useAddNodeTemplateWithAutoPositioning = () => {
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
   const { toastPresets } = getToastPresets();
 
@@ -26,9 +26,21 @@ export const useAddNodesWithAutoPositioning = () => {
     toastPresets.workflow.addNodeToCanvas({ error });
   };
 
+  const defaultPosition = () => {
+    const canvasStore = useCurrentCanvasStore();
+
+    if (!activeWorkflow.value) {
+      throw new Error("Invalid state: there is no active workflow");
+    }
+
+    return geometry.findFreeSpaceAroundCenterWithFallback({
+      visibleFrame: canvasStore.value.getVisibleFrame,
+      nodes: activeWorkflow.value.nodes,
+    });
+  };
+
   const addNodeWithAutoPositioning = (nodeFactory: NodeFactoryKey) => {
     const { singleSelectedNode } = storeToRefs(useSelectionStore());
-    const canvasStore = useCurrentCanvasStore();
 
     const position = singleSelectedNode.value
       ? {
@@ -36,10 +48,7 @@ export const useAddNodesWithAutoPositioning = () => {
           x: singleSelectedNode.value.position.x + 120,
           y: singleSelectedNode.value.position.y,
         }
-      : geometry.findFreeSpaceAroundCenterWithFallback({
-          visibleFrame: canvasStore.value.getVisibleFrame,
-          nodes: activeWorkflow.value!.nodes,
-        });
+      : defaultPosition();
 
     const autoConnectOptions = singleSelectedNode.value
       ? {
@@ -64,16 +73,9 @@ export const useAddNodesWithAutoPositioning = () => {
     componentId: string,
     componentName: string,
   ) => {
-    const canvasStore = useCurrentCanvasStore();
-
-    const position = geometry.findFreeSpaceAroundCenterWithFallback({
-      visibleFrame: canvasStore.value.getVisibleFrame,
-      nodes: activeWorkflow.value!.nodes,
-    });
-
     try {
       return nodeInteractionsStore.addComponentNodeFromMainHub({
-        position,
+        position: defaultPosition(),
         componentIdInHub: componentId,
         componentName,
       });

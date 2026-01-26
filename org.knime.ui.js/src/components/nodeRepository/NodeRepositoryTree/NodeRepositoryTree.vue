@@ -14,7 +14,7 @@ import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
 import {
   DraggableNodeTemplate,
   type NavReachedEvent,
-  useAddNodesWithAutoPositioning,
+  useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -163,7 +163,7 @@ const onShowNodeDescription = (treeNode: BaseTreeNode) => {
   }
 };
 
-const { addNodeWithAutoPositioning } = useAddNodesWithAutoPositioning();
+const { addNodeWithAutoPositioning } = useAddNodeTemplateWithAutoPositioning();
 const addTreeNodeToWorkflow = (treeNode: BaseTreeNode) => {
   const nodeFactory = (treeNode.origin as ExtendedTreeNodeOptions)?.nodeTemplate
     ?.nodeFactory;

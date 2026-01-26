@@ -5,7 +5,7 @@ import { storeToRefs } from "pinia";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import { useAddNodesWithAutoPositioning } from "../useAddNodesWithAutoPositioning";
+import { useAddNodeTemplateWithAutoPositioning } from "../useAddNodeTemplateWithAutoPositioning";
 import { useDragNodeIntoCanvas } from "../useDragNodeIntoCanvas";
 
 import NodeTemplate from "./NodeTemplate.vue";
@@ -36,7 +36,7 @@ const emit = defineEmits<{
 }>();
 
 const { addNodeWithAutoPositioning, addComponentWithAutoPositioning } =
-  useAddNodesWithAutoPositioning();
+  useAddNodeTemplateWithAutoPositioning();
 
 const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
