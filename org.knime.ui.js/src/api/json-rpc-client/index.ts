@@ -140,7 +140,13 @@ const initBrowserClient = (context: EmbeddingContext) =>
         return;
       }
 
-      const transport = new WebSocketTransport(context.wsConnectionUri);
+      if (!context.wsConnectionUri && !context.url) {
+        reject(new Error("Missing websocket uri"));
+      }
+
+      const transport = new WebSocketTransport(
+        context.wsConnectionUri ?? context.url,
+      );
 
       const connection: WebSocket = transport.connection;
 
