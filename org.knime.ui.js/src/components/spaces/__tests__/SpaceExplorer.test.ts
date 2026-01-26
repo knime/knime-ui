@@ -142,7 +142,14 @@ describe("SpaceExplorer.vue", () => {
     vi.mocked(
       mockedStores.globalLoaderStore.updateGlobalLoader,
     ).mockImplementation(vi.fn());
-    vi.mocked(mockedStores.nodeInteractionsStore.addNode).mockResolvedValue({
+    vi.mocked(
+      mockedStores.nodeInteractionsStore.addNativeNode,
+    ).mockResolvedValue({
+      newNodeId: "mockNewNodeId",
+    });
+    vi.mocked(
+      mockedStores.nodeInteractionsStore.addComponentNode,
+    ).mockResolvedValue({
       newNodeId: "mockNewNodeId",
     });
     // @ts-expect-error
@@ -765,7 +772,12 @@ describe("SpaceExplorer.vue", () => {
         onComplete,
       });
 
-      expect(mockedStores.nodeInteractionsStore.addNode).not.toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.addNativeNode,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.addComponentNode,
+      ).not.toHaveBeenCalled();
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
     });
@@ -804,7 +816,12 @@ describe("SpaceExplorer.vue", () => {
         onComplete,
       });
 
-      expect(mockedStores.nodeInteractionsStore.addNode).not.toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.addNativeNode,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.addComponentNode,
+      ).not.toHaveBeenCalled();
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
     });
@@ -843,18 +860,12 @@ describe("SpaceExplorer.vue", () => {
       });
 
       expect(
-        mockedStores.nodeInteractionsStore.addNode,
+        mockedStores.nodeInteractionsStore.addNativeNode,
       ).toHaveBeenNthCalledWith(1, {
         nodeFactory: {
           className: "org.knime.test.test.nodeFactory",
         },
         position: { x: 5, y: 5 },
-        spaceItemReference: {
-          itemId: "0",
-          providerId: "local",
-          spaceId: "local",
-        },
-        componentName: undefined,
       });
       await flushPromises();
       expect(onComplete).toHaveBeenCalledWith(true);
@@ -894,9 +905,8 @@ describe("SpaceExplorer.vue", () => {
       });
 
       expect(
-        mockedStores.nodeInteractionsStore.addNode,
+        mockedStores.nodeInteractionsStore.addComponentNode,
       ).toHaveBeenNthCalledWith(1, {
-        nodeFactory: undefined,
         position: { x: 5, y: 5 },
         spaceItemReference: {
           itemId: "0",

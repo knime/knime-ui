@@ -177,17 +177,18 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     });
   };
 
-  type SelectionModeAfterAdd = "new-only" | "add" | "none";
-  type CommonOptionsToAddNodes = {
-    position: XY;
+  type AutoConnectParams = {
     autoConnectOptions?: {
       sourceNodeId: string;
       nodeRelation: AddNodeCommand.NodeRelationEnum;
       sourcePortIdx?: number;
     };
+  };
+
+  type SelectionModeAfterAdd = "new-only" | "none";
+  type SelectionModeParams = {
     /**
      * 'new-only' clears the active selection and selects only the new node
-     * 'add' adds the new node to the active selection
      * 'none' doesn't modify the active selection nor selects the new node
      */
     selectionMode?: SelectionModeAfterAdd;
@@ -210,9 +211,11 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     }
   };
 
-  type AddNodeParams = CommonOptionsToAddNodes &
-    // you can either add via a nodeFactory or a spaceItem reference; not both
-    (| {
+  type AddNodeParams = AutoConnectParams &
+    SelectionModeParams & {
+      position: XY;
+    } & ( // you can either add via a nodeFactory or a spaceItem reference; not both
+      | {
           nodeFactory: NodeFactoryKey;
           spaceItemReference?: never;
         }
@@ -270,7 +273,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     return { newNodeId };
   };
 
-  type AddComponentParams = CommonOptionsToAddNodes & {
+  type AddComponentParams = SelectionModeParams & {
+    position: XY;
     spaceItemReference: SpaceItemReference;
     componentName: string;
   };
@@ -347,8 +351,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     position,
     componentIdInHub,
     componentName,
-    selectionMode = "new-only",
-  }: CommonOptionsToAddNodes & {
+  }: {
+    position: XY;
     componentIdInHub: string;
     componentName: string;
   }): Promise<{
@@ -364,11 +368,9 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     }
 
     const selectionStore = useSelectionStore();
-    if (selectionMode !== "none") {
-      const { wasAborted } = await selectionStore.tryClearSelection();
-      if (wasAborted) {
-        return { newNodeId: null };
-      }
+    const { wasAborted } = await selectionStore.tryClearSelection();
+    if (wasAborted) {
+      return { newNodeId: null };
     }
 
     const { projectId, workflowId } = workflowStore.getProjectAndWorkflowIds;
