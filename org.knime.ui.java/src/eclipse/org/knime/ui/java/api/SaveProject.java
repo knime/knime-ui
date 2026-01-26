@@ -125,21 +125,10 @@ final class SaveProject {
      */
     static boolean saveProject(final String projectId, final boolean localOnly, final boolean allowOverwritePrompt) {
         var projectWfm = WorkflowManagerResolver.get(projectId, NodeIDEnt.getRootID());
-        if (isExecutionInProgress(projectWfm)) {
-            // Show a warning otherwise
-            DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
-            return false;
-        } else {
-            var wasSaveSuccessful = saveProjectWithProgressBar(projectWfm, localOnly, allowOverwritePrompt);
-            // Emit a ProjectDirtyStateEvent
-            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-            return wasSaveSuccessful;
-        }
-    }
-
-    private static boolean isExecutionInProgress(final WorkflowManager wfm) {
-        var state = wfm.getNodeContainerState();
-        return state.isExecutionInProgress() || state.isExecutingRemotely();
+        var wasSaveSuccessful = saveProjectWithProgressBar(projectWfm, localOnly, allowOverwritePrompt);
+        // Emit a ProjectDirtyStateEvent
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+        return wasSaveSuccessful;
     }
 
     /**
