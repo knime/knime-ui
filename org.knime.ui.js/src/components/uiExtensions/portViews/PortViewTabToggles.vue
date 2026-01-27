@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, toRef, watch } from "vue";
 
-import { Button } from "@knime/components";
-import { KdsValueSwitch } from "@knime/kds-components";
+import { Button, ValueSwitch } from "@knime/components";
 import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
 
 import type { KnimeNode } from "@/api/custom-types";
@@ -69,10 +68,10 @@ const openInNewWindow = (item: { id: string } | null = null) => {
 
 <template>
   <div class="tab-toggles">
-    <KdsValueSwitch
+    <ValueSwitch
       v-if="tabToggles.length > 1"
       :class="['value-switch', { 'has-detach-button': canOpenDetatchedWindow }]"
-      size="small"
+      compact
       :model-value="activeView === null ? undefined : activeView.toString()"
       :possible-values="tabToggles"
       @update:model-value="activeView = Number($event)"
@@ -87,7 +86,7 @@ const openInNewWindow = (item: { id: string } | null = null) => {
           <OpenInNewWindowIcon />
         </Button>
       </template>
-    </KdsValueSwitch>
+    </ValueSwitch>
     <Button
       v-if="tabToggles.length === 1 && canOpenDetatchedWindow"
       with-border
