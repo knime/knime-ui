@@ -48,10 +48,12 @@
  */
 package org.knime.ui.java.api;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.gateway.api.service.GatewayException;
 import org.knime.gateway.impl.webui.spaces.Space;
@@ -94,17 +96,28 @@ final class ExportAPI {
      * @return true if the legacy workbench dialog has not been exited via "Cancel"
      */
     static boolean openExportWizard(final Space space, final String itemId) {
-        final var workbench = PlatformUI.getWorkbench();
-        final var shell = workbench.getModalDialogShellProvider().getShell();
-        final var itemUri = space.toKnimeUrl(itemId);
-        return workbench.getDisplay().syncCall(() -> {
-            final var exportWizard = new WorkflowExportWizard();
-            final var fileStore = new LocalWorkspaceFileStore(itemUri.getHost(), itemUri.getPath());
-            final var item = ContentObject.forFile(fileStore);
-            exportWizard.init(workbench, new StructuredSelection(item));
-            final var dialog = new WizardDialog(shell, exportWizard);
-            dialog.create();
-            return dialog.open() != Window.CANCEL;
-        });
+        try {
+            final var workbench = PlatformUI.getWorkbench();
+            final var shell = workbench.getModalDialogShellProvider().getShell();
+            NodeLogger.getLogger(ExportAPI.class).error("Export dialog shell: " + shell);
+            final var itemUri = space.toKnimeUrl(itemId);
+            return workbench.getDisplay().syncCall(() -> {
+                try {
+                    final var exportWizard = new WorkflowExportWizard();
+                    final var fileStore = new LocalWorkspaceFileStore(itemUri.getHost(), itemUri.getPath());
+                    final var item = ContentObject.forFile(fileStore);
+                    exportWizard.init(workbench, new StructuredSelection(item));
+                    final var dialog = new WizardDialog(shell, exportWizard);
+                    dialog.create();
+                    return dialog.open() != Window.CANCEL;
+                } catch (Throwable thrw) {
+                    NodeLogger.getLogger(ExportAPI.class).error("Error inside", thrw);
+                    throw ExceptionUtils.asRuntimeException(thrw);
+                }
+            });
+        } catch (Throwable thrw) {
+            NodeLogger.getLogger(ExportAPI.class).error("Error outside", thrw);
+            throw ExceptionUtils.asRuntimeException(thrw);
+        }
     }
 }
