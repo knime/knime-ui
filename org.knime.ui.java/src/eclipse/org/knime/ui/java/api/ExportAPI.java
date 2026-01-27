@@ -96,28 +96,25 @@ final class ExportAPI {
      * @return true if the legacy workbench dialog has not been exited via "Cancel"
      */
     static boolean openExportWizard(final Space space, final String itemId) {
-        try {
-            final var workbench = PlatformUI.getWorkbench();
-            final var shell = workbench.getModalDialogShellProvider().getShell();
-            NodeLogger.getLogger(ExportAPI.class).error("Export dialog shell: " + shell);
-            final var itemUri = space.toKnimeUrl(itemId);
-            return workbench.getDisplay().syncCall(() -> {
-                try {
-                    final var exportWizard = new WorkflowExportWizard();
-                    final var fileStore = new LocalWorkspaceFileStore(itemUri.getHost(), itemUri.getPath());
-                    final var item = ContentObject.forFile(fileStore);
-                    exportWizard.init(workbench, new StructuredSelection(item));
-                    final var dialog = new WizardDialog(shell, exportWizard);
-                    dialog.create();
-                    return dialog.open() != Window.CANCEL;
-                } catch (Throwable thrw) {
-                    NodeLogger.getLogger(ExportAPI.class).error("Error inside", thrw);
-                    throw ExceptionUtils.asRuntimeException(thrw);
-                }
-            });
-        } catch (Throwable thrw) {
-            NodeLogger.getLogger(ExportAPI.class).error("Error outside", thrw);
-            throw ExceptionUtils.asRuntimeException(thrw);
-        }
+        final var workbench = PlatformUI.getWorkbench();
+        final var shell = workbench.getModalDialogShellProvider().getShell();
+        final var itemUri = space.toKnimeUrl(itemId);
+        NodeLogger.getLogger(ExportAPI.class).error(itemId + ", " + space.getId() + " -> " + itemUri.toString());
+        return workbench.getDisplay().syncCall(() -> {
+            try {
+                final var exportWizard = new WorkflowExportWizard();
+                final var fileStore = new LocalWorkspaceFileStore(itemUri.getHost(), itemUri.getPath());
+                NodeLogger.getLogger(ExportAPI.class).error("File store: " + fileStore);
+                final var item = ContentObject.forFile(fileStore);
+                NodeLogger.getLogger(ExportAPI.class).error("ContentObject: " + fileStore);
+                exportWizard.init(workbench, new StructuredSelection(item));
+                final var dialog = new WizardDialog(shell, exportWizard);
+                dialog.create();
+                return dialog.open() != Window.CANCEL;
+            } catch (Throwable thrw) {
+                NodeLogger.getLogger(ExportAPI.class).error("Error inside", thrw);
+                throw ExceptionUtils.asRuntimeException(thrw);
+            }
+        });
     }
 }
