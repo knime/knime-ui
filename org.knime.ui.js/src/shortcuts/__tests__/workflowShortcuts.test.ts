@@ -163,6 +163,7 @@ describe("workflowShortcuts", () => {
     it("executes export action", () => {
       const { spaceOperationsStore, applicationStore } = createStore();
 
+      spaceOperationsStore.exportSpaceItem.mockResolvedValue(undefined);
       workflowShortcuts.export.execute(mockShortcutContext());
       expect(spaceOperationsStore.exportSpaceItem).toHaveBeenCalledWith({
         projectId: applicationStore.activeProjectId,

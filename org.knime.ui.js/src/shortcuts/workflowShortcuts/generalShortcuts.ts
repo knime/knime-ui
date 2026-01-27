@@ -20,6 +20,7 @@ import { useClipboardInteractionsStore } from "@/store/workflow/clipboardInterac
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { getToastPresets } from "@/toastPresets";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import type { UnionToShortcutRegistry } from "../types";
 
@@ -244,10 +245,15 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     execute: () => {
       const { activeProjectId, activeProjectOrigin } = useApplicationStore();
 
-      useSpaceOperationsStore().exportSpaceItem({
-        projectId: activeProjectId!,
-        itemId: activeProjectOrigin!.itemId,
-      });
+      useSpaceOperationsStore()
+        .exportSpaceItem({
+          projectId: activeProjectId!,
+          itemId: activeProjectOrigin!.itemId,
+        })
+        .catch((error) => {
+          const { toastPresets } = getToastPresets();
+          toastPresets.spaces.crud.exportItemFailed({ error });
+        });
     },
     condition: () => {
       const { activeProjectId, activeProjectOrigin } = useApplicationStore();
