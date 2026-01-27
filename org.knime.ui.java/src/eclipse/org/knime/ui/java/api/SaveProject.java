@@ -73,12 +73,14 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.webui.entity.ShowToastEventEnt.TypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.ResetOnUploadEnum;
 import org.knime.gateway.api.webui.service.util.MutableServiceCallException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.LoggedOutException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NetworkException;
 import org.knime.gateway.impl.service.util.WorkflowManagerResolver;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
@@ -126,9 +128,18 @@ final class SaveProject {
     static boolean saveProject(final String projectId, final boolean localOnly, final boolean allowOverwritePrompt) {
         var projectWfm = WorkflowManagerResolver.get(projectId, NodeIDEnt.getRootID());
         var wasSaveSuccessful = saveProjectWithProgressBar(projectWfm, localOnly, allowOverwritePrompt);
+        if (wasSaveSuccessful && isExecutionInProgress(projectWfm)) {
+            DesktopAPI.getDeps(ToastService.class).showToast(TypeEnum.INFO, "Workflow saved",
+                "The workflow contains executing nodes.", true);
+        }
         // Emit a ProjectDirtyStateEvent
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         return wasSaveSuccessful;
+    }
+
+    private static boolean isExecutionInProgress(final WorkflowManager wfm) {
+        var state = wfm.getNodeContainerState();
+        return state.isExecutionInProgress() || state.isExecutingRemotely();
     }
 
     /**
