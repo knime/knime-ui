@@ -48,12 +48,17 @@
  */
 package org.knime.ui.java.api;
 
+import java.util.Objects;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.workbench.preferences.MountPointsPreferencesUtil;
 import org.knime.gateway.api.service.GatewayException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceFileStore;
 import org.knime.workbench.explorer.view.ContentObject;
@@ -92,15 +97,31 @@ final class ExportAPI {
      * @param itemId id of the item to export
      *
      * @return true if the legacy workbench dialog has not been exited via "Cancel"
+     * @throws ServiceCallException if the export fails
      */
-    static boolean openExportWizard(final Space space, final String itemId) {
+    static boolean openExportWizard(final Space space, final String itemId) throws ServiceCallException {
         final var workbench = PlatformUI.getWorkbench();
         final var shell = workbench.getModalDialogShellProvider().getShell();
         final var itemUri = space.toKnimeUrl(itemId);
         return workbench.getDisplay().syncCall(() -> {
             final var exportWizard = new WorkflowExportWizard();
-            final var fileStore = new LocalWorkspaceFileStore(itemUri.getHost(), itemUri.getPath());
+            final var mountId = itemUri.getHost();
+            final var fileStore = new LocalWorkspaceFileStore(mountId, itemUri.getPath());
             final var item = ContentObject.forFile(fileStore);
+            if (item == null) {
+                final var mountPointPrefs = MountPointsPreferencesUtil.loadSortedMountSettingsFromPreferences(false);
+                final var isDeactivated =
+                    mountPointPrefs.stream().anyMatch(p -> Objects.equals(mountId, p.mountID()) && !p.isActive());
+                final var serviceCallEx = ServiceCallException.builder() //
+                    .withTitle("The LOCAL mountpoint has been " + (isDeactivated ? "deactivated" : "deleted")
+                        + ", disabling the export.") //
+                    .withDetails( //
+                        (isDeactivated ? "Reactivate it" : "Readd the 'Local Workspace'") + " in the preferences.", //
+                            "The setting can be found under Preferences → KNIME → KNIME Explorer.") //
+                    .canCopy(false) //
+                    .build();
+                throw ExceptionUtils.asRuntimeException(serviceCallEx); // thrown out of the `syncCall()` invocation
+            }
             exportWizard.init(workbench, new StructuredSelection(item));
             final var dialog = new WizardDialog(shell, exportWizard);
             dialog.create();

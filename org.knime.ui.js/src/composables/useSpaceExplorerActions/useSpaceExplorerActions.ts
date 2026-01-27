@@ -192,11 +192,15 @@ export const useSpaceExplorerActions = (
         disabled: doesSelectionContainFile.value || isSelectionMultiple.value,
         metadata: {
           id: "export",
-          handler: () => {
-            exportSpaceItem({
-              projectId: projectId.value,
-              itemId: selectedItemIds.value[0],
-            });
+          handler: async () => {
+            try {
+              await exportSpaceItem({
+                projectId: projectId.value,
+                itemId: selectedItemIds.value[0],
+              });
+            } catch (error) {
+              toastPresets.spaces.crud.exportItemFailed({ error });
+            }
           },
         },
       }) satisfies MenuItemWithHandler,

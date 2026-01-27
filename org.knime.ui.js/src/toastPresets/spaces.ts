@@ -37,6 +37,7 @@ type SpacesCrudToastPresets = {
   renameItemFailed: ToastPresetErrorHandler<{ newName: string }>;
 
   createFolderFailed: ToastPresetErrorHandler;
+  exportItemFailed: ToastPresetErrorHandler;
 };
 
 type SpacesRevealToastPresets = {
@@ -124,6 +125,12 @@ export const getPresets = (
           type: "error",
           headline: "Create folder failed",
           message: "Error while creating folder.",
+        }),
+      exportItemFailed: ({ error }) =>
+        defaultAPIErrorHandler($toast, error, {
+          type: "error",
+          headline: "Export failed",
+          message: "Error while exporting item.",
         }),
       moveItemsFailed: ({ error }) =>
         defaultAPIErrorHandler($toast, error, {
