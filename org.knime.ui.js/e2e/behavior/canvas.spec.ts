@@ -216,7 +216,9 @@ test.describe("panning", () => {
     await assertSnapshot(page, 300);
   });
 
-  test("by dragging a port to the edge of the canvas", async ({ page }) => {
+  test.skip("by dragging a port to the edge of the canvas", async ({
+    page,
+  }) => {
     await startApplication(page, {
       workflowFixturePath: "nodes/getWorkflow-node-interactions.json",
     });

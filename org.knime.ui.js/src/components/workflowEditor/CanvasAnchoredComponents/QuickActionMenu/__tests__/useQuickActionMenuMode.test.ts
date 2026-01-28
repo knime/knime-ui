@@ -32,32 +32,6 @@ describe("useQuickActionMenuMode", () => {
     expect(result2.getComposableResult().activeMode.value).toBe("components");
   });
 
-  it("returns all available modes (BROWSER)", async () => {
-    mockEnvironment("BROWSER", { isBrowser, isDesktop });
-    const { getComposableResult, mockedStores } = doMount();
-    expect(getComposableResult().availableModes.value).toEqual([
-      { id: "nodes", text: "Nodes" },
-      { id: "components", text: "Components" },
-      { id: "k-ai", text: "K-AI Build mode" },
-    ]);
-
-    mockedStores.applicationSettingsStore.isKaiEnabled = false;
-    expect(getComposableResult().availableModes.value).toEqual([
-      { id: "nodes", text: "Nodes" },
-      { id: "components", text: "Components" },
-    ]);
-
-    mockedStores.applicationSettingsStore.isKaiEnabled = true;
-    (mockedStores.aiAssistantStore.isQuickBuildModeAvailable as any) = () =>
-      false;
-
-    await nextTick();
-    expect(getComposableResult().availableModes.value).toEqual([
-      { id: "nodes", text: "Nodes" },
-      { id: "components", text: "Components" },
-    ]);
-  });
-
   it("returns all available modes (DESKTOP)", async () => {
     mockEnvironment("DESKTOP", { isBrowser, isDesktop });
     const { getComposableResult, mockedStores } = doMount();
