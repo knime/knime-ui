@@ -165,7 +165,7 @@ describe("nodeConfiguration", () => {
       });
       await useUnsavedChangesDialogMock();
 
-      await selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
+      selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
       nodeConfiguration.setDirtyState(dirtyState);
 
       const done = vi.fn();
@@ -179,7 +179,7 @@ describe("nodeConfiguration", () => {
       nodeConfiguration.setApplyComplete(true);
       await flushPromises();
 
-      expect(done).toHaveBeenCalledWith(true);
+      expect(done).toHaveBeenCalledWith({ didPrompt: true, canContinue: true });
 
       expect(nodeConfiguration.applySettings).toHaveBeenCalled();
     });
@@ -192,7 +192,7 @@ describe("nodeConfiguration", () => {
       });
       await useUnsavedChangesDialogMock();
 
-      await selectionStore.selectNodes([configuredEmbeddableNode.id]);
+      selectionStore.selectNodes([configuredEmbeddableNode.id]);
       await flushPromises();
       nodeConfiguration.setLatestPublishedData({
         projectId: "",
@@ -209,7 +209,7 @@ describe("nodeConfiguration", () => {
 
       await flushPromises();
 
-      expect(done).toHaveBeenCalledWith(true);
+      expect(done).toHaveBeenCalledWith({ didPrompt: true, canContinue: true });
       expect(selectionStore.selectedNodeIds).toStrictEqual([
         configuredEmbeddableNode.id,
       ]);
@@ -223,7 +223,7 @@ describe("nodeConfiguration", () => {
 
       await useUnsavedChangesDialogMock();
 
-      await selectionStore.selectNodes([configuredEmbeddableNode.id]);
+      selectionStore.selectNodes([configuredEmbeddableNode.id]);
       await flushPromises();
       nodeConfiguration.setDirtyState(dirtyState);
 
@@ -233,7 +233,10 @@ describe("nodeConfiguration", () => {
 
       await flushPromises();
 
-      expect(done).toHaveBeenCalledWith(false);
+      expect(done).toHaveBeenCalledWith({
+        didPrompt: true,
+        canContinue: false,
+      });
       expect(selectionStore.selectedNodeIds).toStrictEqual([
         configuredEmbeddableNode.id,
       ]);
@@ -257,7 +260,7 @@ describe("nodeConfiguration", () => {
     it("should handle auto apply configuration changes", async () => {
       const { nodeConfiguration, selectionStore } = loadStore();
 
-      await selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
+      selectionStore.deselectAllObjects([configuredEmbeddableNode.id]);
       nodeConfiguration.setDirtyState(dirtyState);
 
       const done = vi.fn();
@@ -273,7 +276,10 @@ describe("nodeConfiguration", () => {
       nodeConfiguration.setApplyComplete(true);
       await flushPromises();
 
-      expect(done).toHaveBeenCalledWith(true);
+      expect(done).toHaveBeenCalledWith({
+        didPrompt: false,
+        canContinue: true,
+      });
 
       expect(nodeConfiguration.applySettings).toHaveBeenCalled();
     });

@@ -116,7 +116,8 @@ export const useHandlePointerInteraction = (options: Options) => {
       !canDiscardSelection &&
       selectionStore.singleSelectedObject?.id !== objectHandler.getObjectId()
     ) {
-      const { wasAborted } = await selectionStore.tryClearSelection();
+      const { wasAborted, didPrompt } =
+        await selectionStore.tryClearSelection();
 
       if (!wasAborted) {
         consola.debug(
@@ -127,12 +128,14 @@ export const useHandlePointerInteraction = (options: Options) => {
         openRightPanelForNodes();
       }
 
-      consola.debug(
-        "object interaction:: selection cannot be discarded and user aborted interaction",
-      );
-      // when selection can't be discarded then no other interaction will happen
-      //  because the application would have shown a prompt dialog to the user
-      return;
+      if (didPrompt) {
+        consola.debug(
+          "object interaction:: user was prompted on whether to discard selection",
+        );
+        // when selection can't be discarded then no other interaction will happen
+        //  because the application would have shown a prompt dialog to the user
+        return;
+      }
     }
 
     const wasSelectedOnStart = objectHandler.isObjectSelected();

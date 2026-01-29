@@ -2,7 +2,6 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
-import { isBrowser } from "@/environment";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -188,13 +187,6 @@ export const useSelectionStore = defineStore("selection", () => {
    * @returns whether the selection can be cleared or not.
    */
   const canClearCurrentSelection = () => {
-    // in the browser all operations to save
-    // node configurations, etc are made on clickaway
-    // without prompting the user, so we can always clear the selection
-    if (isBrowser()) {
-      return true;
-    }
-
     return (
       !useCompositeViewStore().isCompositeViewDirty &&
       !useNodeConfigurationStore().isDirty
@@ -208,11 +200,11 @@ export const useSelectionStore = defineStore("selection", () => {
    * @returns Whether the user aborted or not
    */
   const promptUserAboutClearingSelection = async () => {
-    const canContinue =
+    const { canContinue, didPrompt } =
       (await useCompositeViewStore().clickAwayCompositeView()) &&
       (await useNodeConfigurationStore().autoApplySettings());
 
-    return { wasAborted: !canContinue };
+    return { wasAborted: !canContinue, didPrompt };
   };
 
   /**
@@ -224,18 +216,20 @@ export const useSelectionStore = defineStore("selection", () => {
    */
   const tryClearSelection = async (
     params: { keepNodesInSelection?: string[] } = { keepNodesInSelection: [] },
-  ) => {
-    if (!canClearCurrentSelection()) {
-      const { wasAborted } = await promptUserAboutClearingSelection();
-
-      if (wasAborted) {
-        return { wasAborted: true };
-      }
+  ): Promise<{ wasAborted: boolean; didPrompt: boolean }> => {
+    if (canClearCurrentSelection()) {
+      deselectAllObjects(params.keepNodesInSelection, "committed");
+      return { wasAborted: false, didPrompt: false };
     }
 
-    deselectAllObjects(params.keepNodesInSelection, "committed");
+    const { wasAborted, didPrompt } = await promptUserAboutClearingSelection();
 
-    return { wasAborted: false };
+    if (wasAborted) {
+      return { wasAborted: true, didPrompt };
+    } else {
+      deselectAllObjects(params.keepNodesInSelection, "committed");
+      return { wasAborted: false, didPrompt };
+    }
   };
 
   // only expose public actions
