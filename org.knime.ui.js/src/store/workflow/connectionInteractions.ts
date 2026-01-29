@@ -1,7 +1,12 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type { Connection, XY } from "@/api/gateway-api/generated-api";
+import type { ComponentPlaceholderConnection } from "@/api/custom-types";
+import {
+  AddNodeCommand,
+  type Connection,
+  type XY,
+} from "@/api/gateway-api/generated-api";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 
 import { useMovingStore } from "./moving";
@@ -15,6 +20,10 @@ type ConnectionInteractionsState = {
     ConnectionID,
     Record<BendpointIndex, XY & { currentBendpointCount: number }>
   >;
+  componentPlaceholderConnections: Record<
+    string,
+    ComponentPlaceholderConnection
+  >;
 };
 
 export const useConnectionInteractionsStore = defineStore(
@@ -22,6 +31,7 @@ export const useConnectionInteractionsStore = defineStore(
   {
     state: (): ConnectionInteractionsState => ({
       virtualBendpoints: {},
+      componentPlaceholderConnections: {},
     }),
     actions: {
       updateConnection({
@@ -102,6 +112,48 @@ export const useConnectionInteractionsStore = defineStore(
         }
 
         this.removeVirtualBendpoint({ connectionId, index });
+      },
+
+      addComponentPlaceholderConnection(
+        origin: {
+          type: AddNodeCommand.NodeRelationEnum;
+          nodeId: string;
+          portIndex: number;
+        },
+        componentPlaceholderId: string,
+      ) {
+        const willConnectToSuccessor =
+          origin.type === AddNodeCommand.NodeRelationEnum.SUCCESSORS;
+
+        const sourceNode = willConnectToSuccessor
+          ? origin.nodeId
+          : componentPlaceholderId;
+        const sourcePort = willConnectToSuccessor ? origin.portIndex : 1;
+
+        const destNode = willConnectToSuccessor
+          ? componentPlaceholderId
+          : origin.nodeId;
+        const destPort = willConnectToSuccessor ? 1 : origin.portIndex;
+
+        const connection: ComponentPlaceholderConnection = {
+          id: componentPlaceholderId,
+          sourceNode,
+          sourcePort,
+          destNode,
+          destPort,
+          placeholderType: willConnectToSuccessor
+            ? "placeholder-in"
+            : "placeholder-out",
+        };
+
+        this.componentPlaceholderConnections[componentPlaceholderId] =
+          connection;
+      },
+
+      removeComponentPlaceholderConnection(componentPlaceholderId: string) {
+        if (this.componentPlaceholderConnections[componentPlaceholderId]) {
+          delete this.componentPlaceholderConnections[componentPlaceholderId];
+        }
       },
     },
   },

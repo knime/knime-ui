@@ -8,6 +8,7 @@ import {
   type CanvasLayerNames,
   useWebGLCanvasStore,
 } from "@/store/canvas/canvas-webgl";
+import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeMetaNode } from "@/util/nodeUtil";
@@ -17,6 +18,7 @@ import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import StaticWorkflowAnnotation from "./annotations/StaticWorkflowAnnotation.vue";
 import Connector from "./connectors/Connector.vue";
 import ConnectorLabel from "./connectors/ConnectorLabel.vue";
+import PlaceholderConnector from "./connectors/PlaceholderConnector.vue";
 import FloatingConnector from "./floatingConnector/FloatingConnector.vue";
 import Node from "./node/Node.vue";
 import NodeSelectionPlane from "./node/NodeSelectionPlane.vue";
@@ -66,6 +68,9 @@ const annotationControlsLayerContainer = useTemplateRef<ContainerInst>(
 
 const componentPlaceholders = computed(
   () => activeWorkflow.value?.componentPlaceholders ?? [],
+);
+const { componentPlaceholderConnections } = storeToRefs(
+  useConnectionInteractionsStore(),
 );
 
 const createRenderLayer = (
@@ -157,6 +162,13 @@ const annotations = computed(
         :node="node"
       />
     </Container>
+
+    <PlaceholderConnector
+      v-for="connector of componentPlaceholderConnections"
+      :key="connector.id"
+      v-bind="connector"
+      :placeholder="connector.placeholderType"
+    />
 
     <Connector
       v-for="connector of activeWorkflow.connections"

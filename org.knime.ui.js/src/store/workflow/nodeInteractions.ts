@@ -2,13 +2,13 @@ import { ref } from "vue";
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type {
+import {
   AddNodeCommand,
-  Connection,
-  NodeFactoryKey,
-  PortCommand,
-  SpaceItemReference,
-  XY,
+  type Connection,
+  type NodeFactoryKey,
+  type PortCommand,
+  type SpaceItemReference,
+  type XY,
 } from "@/api/gateway-api/generated-api";
 import { isDesktop } from "@/environment";
 import { geometry } from "@/util/geometry";
@@ -19,6 +19,7 @@ import { useSelectionStore } from "../selection";
 import { useSpaceProvidersStore } from "../spaces/providers";
 import { useSpaceOperationsStore } from "../spaces/spaceOperations";
 
+import { useConnectionInteractionsStore } from "./connectionInteractions";
 import { useMovingStore } from "./moving";
 import { useWorkflowStore } from "./workflow";
 
@@ -351,7 +352,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     position,
     componentIdInHub,
     componentName,
-  }: {
+    autoConnectOptions,
+  }: AutoConnectParams & {
     position: XY;
     componentIdInHub: string;
     componentName: string;
@@ -403,7 +405,22 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
       },
       itemId: componentIdInHub,
       name: componentName,
+      sourceNodeId: autoConnectOptions?.sourceNodeId,
+      sourcePortIdx: autoConnectOptions?.sourcePortIdx,
+      nodeRelation: autoConnectOptions?.nodeRelation,
     });
+
+    if (autoConnectOptions) {
+      const connectionInteractionStore = useConnectionInteractionsStore();
+      connectionInteractionStore.addComponentPlaceholderConnection(
+        {
+          nodeId: autoConnectOptions.sourceNodeId,
+          portIndex: autoConnectOptions.sourcePortIdx ?? 1,
+          type: autoConnectOptions.nodeRelation,
+        },
+        componentPlaceholder.newPlaceholderId,
+      );
+    }
 
     useSVGCanvasStore().focus();
     selectionStore.selectComponentPlaceholder(

@@ -19,6 +19,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   navReachedTop: [event: NavReachedEvent];
+  addToWorkflow: [event: NodeTemplateWithExtendedPorts];
 }>();
 
 watch(
@@ -46,6 +47,7 @@ defineExpose({ focusFirst });
     :fetch-more="() => fetchData({ append: true })"
     :is-loading="isLoading"
     @nav-reached-top="emit('navReachedTop', $event)"
+    @item-enter-key="$emit('addToWorkflow', $event)"
   >
     <template #nodesTemplate="slotProps">
       <slot name="nodesTemplate" v-bind="slotProps">
