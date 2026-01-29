@@ -7,6 +7,7 @@ import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { placeholderProgressText } from "../../util/textStyles";
+import { torsoDrawUtils } from "../torso/drawUtils";
 
 type Props = {
   progress?: number;
@@ -111,7 +112,7 @@ const renderProgressBorder = (graphics: GraphicsInst) => {
       :style="placeholderProgressText.styles"
       :anchor="0.5"
       :x="$shapes.nodeSize / 2 + 1"
-      :y="$shapes.nodeSize / 2 - 2"
+      :y="$shapes.nodeSize / 2 - 4"
     />
 
     <Graphics
@@ -119,13 +120,8 @@ const renderProgressBorder = (graphics: GraphicsInst) => {
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
-          graphics.roundRect(
-            0,
-            0,
-            $shapes.nodeSize,
-            $shapes.nodeSize,
-            $shapes.nodeTorsoRadius,
-          );
+          torsoDrawUtils.drawDefault(graphics);
+          graphics.closePath();
           graphics.stroke($colors.CornflowerSemi);
           graphics.fill({ alpha: 0 });
         }

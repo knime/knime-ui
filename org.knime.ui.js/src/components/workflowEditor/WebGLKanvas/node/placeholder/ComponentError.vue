@@ -4,6 +4,7 @@ import CircleCloseFilledIcon from "@knime/styles/img/icons/circle-close_filled.s
 import * as $shapes from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { loadSvgInGraphicsContext } from "../../util/loadSvgInGraphicsContext";
+import { torsoDrawUtils } from "../torso/drawUtils";
 </script>
 
 <template>
@@ -27,14 +28,9 @@ import { loadSvgInGraphicsContext } from "../../util/loadSvgInGraphicsContext";
       @render="
         (graphics) => {
           graphics.clear();
-          graphics.roundRect(
-            0,
-            0,
-            $shapes.nodeSize,
-            $shapes.nodeSize,
-            $shapes.nodeTorsoRadius,
-          );
-          graphics.stroke($colors.ErrorRed);
+          torsoDrawUtils.drawDefault(graphics);
+          graphics.closePath();
+          graphics.stroke({ color: $colors.ErrorRed });
           graphics.fill({ alpha: 0 });
         }
       "

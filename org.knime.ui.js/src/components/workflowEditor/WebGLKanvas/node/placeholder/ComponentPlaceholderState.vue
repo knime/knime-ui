@@ -45,10 +45,7 @@ const isHovering = ref(false);
 const isComponentPlaceholderSelected = computed(
   () => props.id === getSelectedComponentPlaceholder.value?.id,
 );
-const position = computed(() => ({
-  x: props.position.x,
-  y: props.position.y,
-}));
+
 const nodeNamePosition = computed(() => {
   return {
     x: $shapes.nodeSize / 2,
@@ -78,7 +75,7 @@ const { handlePointerInteraction } = useObjectInteractions({
 });
 
 const renderable = computed(
-  () => !geometry.utils.isPointOutsideBounds(position.value, visibleArea.value),
+  () => !geometry.utils.isPointOutsideBounds(props.position, visibleArea.value),
 );
 
 // eslint-disable-next-line no-magic-numbers
