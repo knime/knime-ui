@@ -1,9 +1,8 @@
 import { type Ref, computed } from "vue";
 
-import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import portShift from "@/util/portShift";
+import { getPortPositionInNode } from "@/util/portShift";
 
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
 import { usePortBarPositions } from "./usePortBarPositions";
@@ -41,68 +40,78 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
     destNode: options.destNode,
   });
 
-  const getRegularNodePortPosition = (
-    sourceNodeIndex: number,
-    type: SourceOrDest,
-    node: KnimeNode,
-  ): XY => {
-    const allPorts = type === "source" ? node.outPorts : node.inPorts;
-    const [dx, dy] = portShift(
-      sourceNodeIndex,
-      allPorts.length,
-      node.kind === "metanode",
-      type === "source",
-    );
-    const { x, y } = node.position;
-
-    return {
-      x: x + dx,
-      y: y + dy,
-    };
-  };
-
   const getMetaNodePortPosition = (
-    sourceNodeIndex: number,
+    portIndex: number,
     type: SourceOrDest,
   ): XY => {
     let x = portBarXPos(type === "dest");
     const delta = $shapes.portSize / 2;
     x += type === "source" ? delta : -delta;
 
-    const y = getPortBarPortYPosition(sourceNodeIndex, type === "dest", true);
+    const y = getPortBarPortYPosition(portIndex, type === "dest", true);
 
     return { x, y };
   };
 
   const getEndPointCoordinates = (type: SourceOrDest = "dest"): XY => {
-    const portIndex = options[`${type}Port`];
-    const node = referenceNodes[`${type}NodeObject`];
-    if (node.value) {
-      // connected to a node
-      return getRegularNodePortPosition(portIndex.value!, type, node.value);
-    } else {
-      // connected to a metanode port bar
-      return getMetaNodePortPosition(portIndex.value!, type);
+    const reference =
+      type === "source"
+        ? referenceNodes.sourceNodeObject
+        : referenceNodes.destNodeObject;
+    const referenceId =
+      type === "source" ? options.sourceNode : options.destNode;
+
+    const referencePortIndex =
+      type === "source" ? options.sourcePort : options.destPort;
+
+    if (!referenceId.value || referencePortIndex.value === null) {
+      consola.warn(
+        "Invalid state. No reference identifiers found to determine connector position",
+      );
+      return { x: 0, y: 0 };
     }
+
+    if (!reference.value) {
+      // connected to a metanode port bar
+      return getMetaNodePortPosition(referencePortIndex.value, type);
+    }
+
+    return getPortPositionInNode(
+      referencePortIndex.value,
+      type,
+      reference.value,
+    );
   };
 
-  const start = computed<XY>(
-    () =>
-      (options.sourceNode.value && getEndPointCoordinates("source")) ||
-      (options.absolutePoint.value && {
-        x: options.absolutePoint.value.at(0)!,
-        y: options.absolutePoint.value.at(1)!,
-      }) || { x: 0, y: 0 },
-  );
+  const start = computed<XY>(() => {
+    if (options.sourceNode.value) {
+      return getEndPointCoordinates("source");
+    }
 
-  const end = computed<XY>(
-    () =>
-      (options.destNode.value && getEndPointCoordinates("dest")) ||
-      (options.absolutePoint.value && {
+    if (options.absolutePoint.value) {
+      return {
         x: options.absolutePoint.value.at(0)!,
         y: options.absolutePoint.value.at(1)!,
-      }) || { x: 0, y: 0 },
-  );
+      };
+    }
+
+    return { x: 0, y: 0 };
+  });
+
+  const end = computed<XY>(() => {
+    if (options.destNode.value) {
+      return getEndPointCoordinates("dest");
+    }
+
+    if (options.absolutePoint.value) {
+      return {
+        x: options.absolutePoint.value.at(0)!,
+        y: options.absolutePoint.value.at(1)!,
+      };
+    }
+
+    return { x: 0, y: 0 };
+  });
 
   return {
     start,

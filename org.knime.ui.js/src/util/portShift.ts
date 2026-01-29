@@ -1,4 +1,6 @@
 /* eslint-disable no-magic-numbers */
+import type { KnimeNode } from "@/api/custom-types";
+import type { XY } from "@/api/gateway-api/generated-api";
 import { nodeSize, portSize } from "@/style/shapes";
 
 /**
@@ -91,5 +93,25 @@ export const portPositions = ({
   [...Array(portCount).keys()].map((index) =>
     portShift(index, portCount, isMetanode, isOutports),
   );
+
+export const getPortPositionInNode = (
+  sourceNodeIndex: number,
+  type: "source" | "dest",
+  node: KnimeNode,
+): XY => {
+  const allPorts = type === "source" ? node.outPorts : node.inPorts;
+  const [dx, dy] = portShift(
+    sourceNodeIndex,
+    allPorts.length,
+    node.kind === "metanode",
+    type === "source",
+  );
+  const { x, y } = node.position;
+
+  return {
+    x: x + dx,
+    y: y + dy,
+  };
+};
 
 export default portShift;
