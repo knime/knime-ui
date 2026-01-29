@@ -91,5 +91,6 @@ export const placeholderProgressText: TextStylePreset = {
     fontSize: 10,
     align: "center",
     textBaseline: "middle",
+    padding: 1,
   },
 };

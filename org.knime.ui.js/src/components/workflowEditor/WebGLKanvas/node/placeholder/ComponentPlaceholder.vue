@@ -9,6 +9,7 @@ import { getToastsProvider } from "@/plugins/toasts";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
+import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 
 import ComponentPlaceholderState from "./ComponentPlaceholderState.vue";
@@ -81,6 +82,12 @@ watch(placeholderState, async () => {
     }
   }
 
+  if (isSuccess.value || isSuccessWithWarning.value) {
+    useConnectionInteractionsStore().removeComponentPlaceholderConnection(
+      props.placeholder.id,
+    );
+  }
+
   if (isSuccessWithWarning.value || isError.value) {
     const toastData: Toast = {
       headline: props.placeholder.message,
@@ -96,9 +103,8 @@ watch(placeholderState, async () => {
 // Adjust so there is no jumping when component is loaded
 const adjustedPosition = computed(() => {
   return {
-    x: props.placeholder.position.x + 1,
-    // eslint-disable-next-line no-magic-numbers
-    y: props.placeholder.position.y + 6,
+    x: props.placeholder.position.x,
+    y: props.placeholder.position.y,
   };
 });
 </script>
