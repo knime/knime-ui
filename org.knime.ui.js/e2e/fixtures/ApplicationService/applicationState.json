@@ -412,6 +412,18 @@
     "appMode": "default",
     "fileExtensionToNodeTemplateId": {},
     "nodeRepositoryLoaded": true,
-    "isSubnodeLockingEnabled": false
+    "isSubnodeLockingEnabled": false,
+    "spaceProviders": [
+      {
+        "hostname": "https://api.hubdev.knime.com",
+        "username": "irrelevant",
+        "connected": true,
+        "name": "My-KNIME-Hub",
+        "id": "My-KNIME-Hub",
+        "type": "HUB",
+        "resetOnUpload": "NO_PREFERENCE",
+        "connectionMode": "AUTHENTICATED"
+      }
+    ]
   }
 }
