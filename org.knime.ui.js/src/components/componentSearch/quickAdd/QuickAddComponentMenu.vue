@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, useTemplateRef } from "vue";
+import { computed, onBeforeUnmount, onMounted, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import { SearchInput } from "@knime/components";
@@ -91,6 +91,10 @@ const searchEnterKey = () => {
 
   addNode(results.value[0]);
 };
+
+onBeforeUnmount(() => {
+  componentSearchStore.clearSearch();
+});
 </script>
 
 <template>

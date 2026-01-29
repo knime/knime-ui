@@ -78,6 +78,14 @@ export const useComponentSearch = () => {
     await debouncedSearch();
   };
 
+  const clearSearch = () => {
+    query.value = "";
+    currentOffset.value = 0;
+    results.value = [];
+    hasLoaded.value = false;
+    isLoading.value = false;
+  };
+
   return {
     query: readonly(query),
     isLoading: readonly(isLoading),
@@ -85,5 +93,6 @@ export const useComponentSearch = () => {
     results,
     searchComponents,
     updateQuery,
+    clearSearch,
   };
 };
