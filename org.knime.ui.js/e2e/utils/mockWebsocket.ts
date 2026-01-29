@@ -52,7 +52,17 @@ export const mockWebsocket = async (
           answerFromFile(
             path.resolve(
               import.meta.dirname,
-              "../fixtures/applicationState.json",
+              "../fixtures/ApplicationService/applicationState.json",
+            ),
+          );
+          return;
+        }
+
+        case "SpaceService.getSpaceGroups": {
+          answerFromFile(
+            path.resolve(
+              import.meta.dirname,
+              "../fixtures/SpaceService/getSpaceGroups.json",
             ),
           );
           return;
@@ -135,7 +145,17 @@ export const mockWebsocket = async (
           answerFromFile(
             path.resolve(
               import.meta.dirname,
-              "../fixtures/NodeRepositoryService-getNodesGroupedByTags.json",
+              "../fixtures/NodeRepositoryService/getNodesGroupedByTags.json",
+            ),
+          );
+          return;
+        }
+
+        case "SpaceService.searchComponents": {
+          answerFromFile(
+            path.resolve(
+              import.meta.dirname,
+              "../fixtures/SpaceService/searchComponents.json",
             ),
           );
           return;

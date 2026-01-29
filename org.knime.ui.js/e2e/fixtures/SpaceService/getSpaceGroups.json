@@ -1,0 +1,1756 @@
+{
+  "jsonrpc": "2.0",
+  "id": "5",
+  "result": [
+    {
+      "name": "hrivera",
+      "id": "*T99GHq2hlKRzKV5a",
+      "type": "USER",
+      "spaces": [
+        {
+          "description": "",
+          "name": "Benny's Shared Space",
+          "id": "*_VUeE9fLYyHSLjeY",
+          "private": false,
+          "owner": "benjaminmoser"
+        },
+        {
+          "description": "",
+          "name": "blah",
+          "id": "*V8YI2FP1loKL9u98",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space",
+          "id": "*X7Z0nMAYz6zNw8RG",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 1",
+          "id": "*PC2uDrj57wd7QX3P",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 2",
+          "id": "*rKbHSEUW4LCffCaS",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 3",
+          "id": "*49KjNG9gom_kuXqJ",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 4",
+          "id": "*a_rBW1nT0oE1Zigt",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 5",
+          "id": "*OQMi4s58AdZERJO7",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 6",
+          "id": "*v0TalRKnjjSsSD5d",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 7",
+          "id": "*-dIoD5FhZC_wl6Db",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 8",
+          "id": "*kqnzX-qsOt6jyeAN",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "New space 9",
+          "id": "*L3OH2lAeVICNbh2O",
+          "private": true,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "onereallylongwordwithoutspacesonereallylongwordwithoutspacesonereallylongwordwithoutspacesonereallylongwordwithoutspacesonereallylongwordwithoutspacesonereallylongwordwithoutspacesonereallylongwordwithoutspacesonereallylongwordwithoutspacesonereallylongwordwithoutspaces onereallylongwordwithoutspacesonereallylongwordwithoutspaces onereallylongwordwithoutspacesonereallylongwordwithoutspaces",
+          "id": "*-_Tk3oGpgv3LutXr",
+          "private": false,
+          "owner": "hrivera"
+        },
+        {
+          "description": "",
+          "name": "Private",
+          "id": "*k8wqLK8pDDdSnrtV",
+          "private": true,
+          "owner": "hrivera"
+        }
+      ],
+      "canSoftDelete": true
+    },
+    {
+      "name": "Marsupilami24 Team",
+      "id": "*sCeVj2UI215gTJ20",
+      "type": "TEAM",
+      "spaces": [
+        {
+          "description": "",
+          "name": "ChangeOfVisibility",
+          "id": "*7wS04dVwSGbGXWow",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "DataAppTest2",
+          "id": "*0zZRlWByGvdqfofx",
+          "private": false,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "DefaultSpace",
+          "id": "*CbMCSA9OrQKm768R",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "DefaultSpaceCopy",
+          "id": "*4MNqamhlO0v0NxR5",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "\nfirst link, second link\n",
+          "name": "HTML descriptions",
+          "id": "*b1EA_-E7uGBn5Itc",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "<b>test</b>\n<br />\n<i>more html</i>",
+          "name": "HTML descriptions_private",
+          "id": "*iN2lps9nHpOhJ65j",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "<b>test</b>\n<br />\n<i>more html</i>",
+          "name": "HTML descriptions_private2",
+          "id": "*CIsoMLmSlKfIy2WG",
+          "private": false,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "HTML from AP 5.3 Nightly",
+          "id": "*4NWAERLCoxEnqp8f",
+          "private": false,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "HTML from AP (verification)",
+          "id": "*7kdu7RMW5aTaZPxJ",
+          "private": false,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "HUB-8651Case2v2",
+          "id": "*vZvyKCpCi4eFtXS5",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "New space",
+          "id": "*s4eJy1ab04bEGYci",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "New space 1",
+          "id": "*qq50nIbg8JbDmQRf",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "New space 2",
+          "id": "*cJHrCxe6NOHn8ZOn",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "NewUploadFlow",
+          "id": "*vY972Ow255j-rZO4",
+          "private": false,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "NewUploadFlowTests",
+          "id": "*ItWctR3IaBAhr7GM",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "PrivateSearch",
+          "id": "*T6XKKd6HS9494Ez6",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "SavepointsMigration(Nicola)",
+          "id": "*rQ9kf1_VUaHiR_ap",
+          "private": false,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "Spaces",
+          "id": "*7li-g11nVl1h4Lql",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        },
+        {
+          "description": "",
+          "name": "TrashBin16TeamSpace",
+          "id": "*OTo9DY7MZcMzaajp",
+          "private": true,
+          "owner": "Marsupilami24 Team"
+        }
+      ],
+      "canSoftDelete": true
+    },
+    {
+      "name": "Development Team PRO",
+      "id": "*ieX49L0d74sMT4_G",
+      "type": "TEAM",
+      "spaces": [
+        {
+          "description": "This is a description\n\n\n",
+          "name": "00 test",
+          "id": "*fhNQFGEJIDPRBSCb",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "a Popular Private Space",
+          "id": "*1fjy0l1BsEC8q1xL",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "This looks offasdfasdasd\n",
+          "name": "Adrian Space",
+          "id": "*SwtiRlAxyTw97-1P",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "afsdfa",
+          "id": "*vUa9uKiS1b_sXYyT",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Andisa space",
+          "id": "*9thckEMy86kXrDlA",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Anmol space",
+          "id": "*LQSmNMhKVvdfmXWk",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Armin",
+          "id": "*Cka4s5M9rpxnqAqx",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Balint's Private Space",
+          "id": "*hVvpcsY6MKXOOrbL",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Benjamin W",
+          "id": "*Ak50N8gkruBGLIUW",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Bernd's Space",
+          "id": "*Y3yWJr8jEDO471l-",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Billardaires",
+          "id": "*LKeeJWnCq1PzYuIv",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Bjoern Space",
+          "id": "*2eyvvFKB0Npn2bgl",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Carstens Space",
+          "id": "*Kgeo4JVV-sg7Dz3W",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Christian's Space",
+          "id": "*V3QGmEIUhcIPZ_mZ",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "corran space",
+          "id": "*ZzdO17QxtxgrTkMP",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "DanielsSpace",
+          "id": "*qpXWqpUi4zA3n-N-",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "DaveK Space",
+          "id": "*_52TaHbPt8EanY1c",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Emilio's Space",
+          "id": "*45rh-yqZlOYvodUu",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Fau",
+          "id": "*ogtC22iFv2rrVK-W",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Francescos space",
+          "id": "*RKX4qVV41bqf1UQG",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Gosia's space",
+          "id": "*Tw1u561nbdcZwm0N",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "This is a description\n",
+          "name": "Helian's space v2",
+          "id": "*2xQZCx_zMVVrdN15",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "\n",
+          "name": "Helian's space v3",
+          "id": "*1YPC7bE4DtPvsUKs",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Helian's Space v4",
+          "id": "*0ZtCm0ZqpfK5zDbq",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "Outer space.\n\nNow with HTML formatting.\nfirst item\nsecond item\nitem uno\nitem segundo\n\n\nAnd respectful towards line breaks.\n",
+          "name": "Ivan's space",
+          "id": "*ddd75zrXEtEm56iE",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Jakobs space",
+          "id": "*HVbBM1ir3e7ATAFv",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Jannes Space",
+          "id": "*XS0FGhY9pMy25Qww",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Jim",
+          "id": "*_xrm-Qbktda1vN3o",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Jira case reproduction",
+          "id": "*ULo2JBeHsATeSNlm",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Juan Space Renamed",
+          "id": "*3yD68Rt_1oh1velI",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "My cool space to test new Modern UI features",
+          "name": "Kais Space",
+          "id": "*e3Iqm7TS5SLrgB1F",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Label Test",
+          "id": "*fC1MZpPfEB89S9TE",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Landing page",
+          "id": "*BGAGsawRljO9b2Yq",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "latesta",
+          "id": "*lHLNNBP1JkREhjZM",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Life Sciences",
+          "id": "*JxmS4M_40j8bBGWf",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Lukas",
+          "id": "*LV1U97LyLqER9J2v",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "abc\n",
+          "name": "Maarit",
+          "id": "*YOuFbcvLroqnX16Z",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "ManuelApostrophs Space",
+          "id": "*zPw-R92HPuMsAPpJ",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Marc space",
+          "id": "*Zv510MvL_VphCldR",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Marias Space",
+          "id": "*vQi0tVNFM3N0OIfU",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Martin's Space",
+          "id": "*ULK5iWD-XNkbkFBx",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Mathilde's space",
+          "id": "*GcaHFzIp8dt_MYYr",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Misha Space",
+          "id": "*jZ8ya3xsKIV2wQbP",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "This is a space for Moritz\n",
+          "name": "Moritz Space",
+          "id": "*OzEcA5H6yJIWjlml",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New Space",
+          "id": "*Jffz0X72LENq6PLu",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space",
+          "id": "*oB5lUMTXwJ3pokiu",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New Space 1",
+          "id": "*dRkDYfeZwmNSG6B8",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 1",
+          "id": "*7Hb-Sy8E8C-eSiVN",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 1 here",
+          "id": "*wJzemEvcl2qqjuY-",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New Space 2",
+          "id": "*ZbV6HVmR4FM5AnMc",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 2",
+          "id": "*meMxmu2vwO_UddWE",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 3",
+          "id": "*TBBqFlh3i9AcLgWv",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 4",
+          "id": "*GGx-HbWaYQnFBryn",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 5",
+          "id": "*rUyzHd6bqIra_dQ0",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 6",
+          "id": "*Gz-iv6GXThQfb_w4",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 7",
+          "id": "*pTLOsOi7Z2kML1FD",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 8",
+          "id": "*UxUMjmB_w1qws7Nd",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 10",
+          "id": "*Mq0bhbSxX9rggowU",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New Space 11",
+          "id": "*JbwgiPmGGCP6sqRF",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 11",
+          "id": "*tX2y5E9-KZpQZnLZ",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 12",
+          "id": "*8RNSPrqzlUu-zhCk",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 13",
+          "id": "*MXoWCPvgWp0YaHGn",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 14",
+          "id": "*QDv5RLI-pN4X-ILR",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 15",
+          "id": "*GvWW5z65yQLkEBTC",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 16",
+          "id": "*oGYVoRFB_7LYPy_K",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 17",
+          "id": "*zhdshLkRjCY19bmt",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 18",
+          "id": "*BoL6EYBe0GJnqGKu",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 19",
+          "id": "*hT1GtB5NtEEk7vZA",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 20",
+          "id": "*hOVKIgt5XPNVzp1G",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 21",
+          "id": "*XPrKBEHaA9FUXBDO",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 22",
+          "id": "*_hebHUYY-9FxL5GA",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 23",
+          "id": "*cewHr8GqBufY0O2M",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 24",
+          "id": "*uJVtDmI_LIqw0-Oq",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 25",
+          "id": "*smJqbHOISkywYb2Y",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 26",
+          "id": "*0Kcqc0mbS4Qh5BW4",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 27",
+          "id": "*4iCUl15ObFl1Qulu",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 28",
+          "id": "*o1xRj2D9WSX4hw3B",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 29",
+          "id": "*agm2ne5ZQMAgxkNR",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 30",
+          "id": "*oc3YoKqR4vGFTmaI",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 31",
+          "id": "*Crql2eNexEVC9iF3",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 32",
+          "id": "*YP8qqpNGWuEoOeGS",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 33",
+          "id": "*t-NIvM7doV-SFILF",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 34",
+          "id": "*5mgjJClTLSPYy20J",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 35",
+          "id": "*lSYAB20jptUiqN36",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New space 36",
+          "id": "*9Cmc-u_UJDj2Dy3o",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "New test space",
+          "id": "*t_WWhSwZ2oYgyNXA",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Nicola´s Space",
+          "id": "*InTh4lz54mzh5xqj",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Ole's Public Space",
+          "id": "*zwvdsYr7OEMNQKMV",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "Place for Ole's stuff",
+          "name": "Ole's Space",
+          "id": "*dr7kja1e9LGFfQ91",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "p-s-s",
+          "id": "*F42p0T5Ctyy9GTlL",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "Contains workflows that are candidates for the workflow editing playground.",
+          "name": "Playground",
+          "id": "*9l1OcBQ0vi9XG1Xk",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Product update call February",
+          "id": "*ZSQ1NW1kkOXhlPdF",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Python processes",
+          "id": "*fyZE06fE_mBNyjSf",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "QA-test",
+          "id": "*C76a1sMyhKCOgd-V",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Ramzi's Space",
+          "id": "*of92tXe96_f4s_7n",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "robins space",
+          "id": "*aAeNI_9y1xFL5C-e",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Rocket into space",
+          "id": "*dbwbX71i7cZvh9P_",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Roland test",
+          "id": "*_RqS6IPVJn8h67K9",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Rupert's Private Space",
+          "id": "*d-zeQcwtOeTaoFfc",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "2024-08-02 14:51:26.305231445 +0200 CEST m=+132.991164487",
+          "name": "Sebs Space",
+          "id": "*v2smqMpw_RMA0b5c",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Simons Space",
+          "id": "*3-H62-hOvlJjTkPd",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space2d9a6a20-7f82-4581-ac6b-83174c1734a7",
+          "id": "*0SpILvacImX8ZFHj",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space3f1c9e56-4521-4ea4-b608-1daea6603bd5",
+          "id": "*6_QfuTdiuekS0HhC",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space5dfcb51b-8c3d-4db8-bfef-67bf71cd3ac0",
+          "id": "*pp6_sSkTS6DbO0FH",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space5f7f5bc2-c6bb-4c90-8ca3-31fffbfae24b",
+          "id": "*VBNCV3kL3uoNGs52",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space06c149d0-fd2c-4e16-a5a4-bb4a020e93ab",
+          "id": "*2zi6cc-B2umI_t65",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space8e4fb845-cf7e-4333-81d8-bc97864e4a48",
+          "id": "*4Qhit0eIHw37corX",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space9a1a0023-b5d4-483c-9ab9-acc313e53e48",
+          "id": "*69zClex70f9QafBI",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space29f6e25b-42a5-477c-bd87-c5822d529070",
+          "id": "*3IqomC-yQ8tBHb_4",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space57df00d9-6775-4a99-8a42-eaa997326f18",
+          "id": "*SO49F7K-LGtuvMAd",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space66ab0810-c7fc-440f-ad57-dcb254bea19b",
+          "id": "*l7pwAUpLk649QG6M",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space79aae137-fcd0-4a90-967b-582ccd56f1b4",
+          "id": "*7oa68FIj8vvZLiwJ",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space94e1402b-2ac3-4210-9005-f20c58eac1e7",
+          "id": "*62yGpsEaLVnaUlUq",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space207ba430-0642-4b80-b034-2ac70941c4d2",
+          "id": "*Tr6YbTCGt6AyXkFd",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space548b0792-db2a-4dce-b4f6-42bc19f4661c",
+          "id": "*4bPodKqlaL1fro58",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space2514c874-6ce7-45fe-b6fb-d78b7a983a1d",
+          "id": "*SUx-mov2b7RR9Bmw",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space3687fc97-67b3-4719-bd5f-189e3f01f387",
+          "id": "*R6JN9n9uEyrfOTUw",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space4481b2f1-1df9-40b3-a15c-80bf2a054ce9",
+          "id": "*YFCe3ZrIfGOVnHbF",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space23623b72-5fbe-459c-b508-fa687c59c0ed",
+          "id": "*dHjqwkFPsU5en4xW",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space59081f0d-7c70-4f44-8053-c2f1356d00d6",
+          "id": "*ZkrAuqZfjIde2ZtM",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space0093953f-b81f-4a51-b78e-2c7ec3de3415",
+          "id": "*V-kO8hhHldkflDM9",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space554140c8-6ed7-40d7-85d7-2391c9002040",
+          "id": "*dH2VeVZK9FA4KOaR",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space5199729b-06e1-421c-bc22-5e38593db5ee",
+          "id": "*eZDC_7iZhue6LUA8",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Space41040596-da27-4aa0-b588-296d575ef4d6",
+          "id": "*V54cD5kh73aA3fKA",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacea8be855b-2901-4f80-b768-56a6d2c520b4",
+          "id": "*PDJ9FCAH440HHl2F",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacea9c90671-d799-4ac0-9c05-f3ee9262f308",
+          "id": "*DKNc7u7Xh9mmaGcz",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceaaaa9f32-a040-4771-9925-d1c4820f0b2e",
+          "id": "*oAiC-mXfsl6ReXw3",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceaaeaa9cf-3dfd-4443-b7a9-5a6b80adab84",
+          "id": "*Il8d3rM6UjGUwkvF",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceac880e75-0b38-491a-97e3-7f0116e2d1eb",
+          "id": "*3ZkT9yqMuXczd2PS",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceb1a80e33-3bca-4fcb-a1dd-3d1754f9f080",
+          "id": "*llV_oPdLWrl1EJBM",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceb04a0422-e6d6-4f09-bb01-5ebfd921b6a7",
+          "id": "*xaoweZ-BzWrH4CSQ",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceb33f721d-7a52-48a1-b69b-fa949bab12a8",
+          "id": "*cJjf6oRFeHm91mfE",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceb3695ed7-386f-4f35-89bb-3a2f0eef74a3",
+          "id": "*JKABelrf1Z6Mfbdx",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceb805905c-e9e0-4834-80fd-8f608f14d1c7",
+          "id": "*gVL3DZ_TSJp19Egh",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacebce9a38b-1373-4125-8062-78f018a62bb3",
+          "id": "*vRp3MDki4vJOpEEI",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacec68ed80a-dda8-4b33-94f4-6ccc3a160104",
+          "id": "*OeJvZ3Gx2tHK7Hb_",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacecb603e6f-f6a6-41dd-8e51-e9d92daaeb98",
+          "id": "*3TCD3W90BkNXwxsH",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaced19d3cd7-1649-4535-ab8e-967330850a2d",
+          "id": "*lSCg34iq9B7SD4lX",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaced005697c-f329-43a8-97f4-24d8f2a42be3",
+          "id": "*eHy5uyI2uW7yrAww",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaced7554667-afae-4eca-baaf-5bd8066ebba6",
+          "id": "*5Oaei9ShfjLtIYc6",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacee8d3f3bb-ff40-4f55-a7e1-44acdfd73aec",
+          "id": "*GkZhr9DFwJ7RGVbl",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spaceeb0d7391-63c0-4c9f-b4b5-877b56467543",
+          "id": "*RcP8qfkR2KYhsP7X",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacef2aa0924-85fb-447f-93cb-d3a25f10d0ab",
+          "id": "*u7RC-USDGQhdLS3y",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacef7594bf1-c0ef-44a7-8d70-7b4889ed2554",
+          "id": "*T6UbcNcb9zDgjsM8",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacefbb7c584-f933-464e-ad86-777c7c5b437f",
+          "id": "*iv7wjsjZ2M5HduXf",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Spacious spacey space",
+          "id": "*aiKkJvqo2BxfSnFF",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "huiii",
+          "name": "Steffens Space",
+          "id": "*nePBXab_oDH059Le",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Teresas space",
+          "id": "*u58As1jLqP37fbBh",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "test",
+          "id": "*i74FexJVWwyvntV-",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Test docs team",
+          "id": "*EFeifxH151kqdMS2",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "test-space",
+          "id": "*_63VaY89sClx_jye",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Test_Space_PhilippB",
+          "id": "*MxYOyCozHKmQx1gb",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "This is my team",
+          "id": "*zGGs2sD2zZcbgQGg",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Thorsten's space",
+          "id": "*pPT7ONq02V12MgsT",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Triggers",
+          "id": "*gsI0RSiWqhbI5S_d",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Vito's space",
+          "id": "*wbHKP9iGjPSPykwQ",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "woop",
+          "id": "*SdRYFKGmEwnPrIVv",
+          "private": true,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Workflow Building",
+          "id": "*lQT1zhS2Ovvl6R1k",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "Yassine's Space",
+          "id": "*GVltw-9JQNF1BZEL",
+          "private": false,
+          "owner": "Development Team PRO"
+        },
+        {
+          "description": "",
+          "name": "\uD83D\uDE00\uD83D\uDE00d\uD83D\uDE00\uD83D\uDE00",
+          "id": "*_vIqZv5wnhInSlVL",
+          "private": true,
+          "owner": "Development Team PRO"
+        }
+      ],
+      "canSoftDelete": true
+    },
+    {
+      "name": "ps-demo-test-lala",
+      "id": "*DLK6112i3OnKq01P",
+      "type": "TEAM",
+      "spaces": [
+        {
+          "description": "A new generation of agentic workflows that use AI agents to automate complex, multi-step tasks across data preparation, analysis, and orchestration. Instead of single-purpose prompts, these agents reason, plan, and take actions inside KNIME — making workflows smarter, more adaptive, and more autonomous.\n",
+          "name": "Agentic workflows",
+          "id": "*zEVrsi41yHS7HpaX",
+          "private": true,
+          "owner": "ps-demo-test-lala"
+        },
+        {
+          "description": "",
+          "name": "New space",
+          "id": "*bBy4-CXFlXvMdk33",
+          "private": true,
+          "owner": "ps-demo-test-lala"
+        },
+        {
+          "description": "",
+          "name": "New space 1",
+          "id": "*3UhYNvJJx5uRB2BW",
+          "private": true,
+          "owner": "ps-demo-test-lala"
+        },
+        {
+          "description": "",
+          "name": "New space 2",
+          "id": "*6ml3MA1RbxaS_DzX",
+          "private": true,
+          "owner": "ps-demo-test-lala"
+        },
+        {
+          "description": "",
+          "name": "New space 3",
+          "id": "*IFd0f7zf2mRzk73e",
+          "private": true,
+          "owner": "ps-demo-test-lala"
+        },
+        {
+          "description": "",
+          "name": "New space 4",
+          "id": "*HI90rEZVKIdkUgdK",
+          "private": true,
+          "owner": "ps-demo-test-lala"
+        }
+      ],
+      "canSoftDelete": true
+    },
+    {
+      "name": "bliBlaBlub",
+      "id": "*_QBQuzymeiBc3YN5",
+      "type": "TEAM",
+      "spaces": [],
+      "canSoftDelete": true
+    },
+    {
+      "name": "GhiottoTeam5 Team",
+      "id": "*i55fuCZvLYv9_EFW",
+      "type": "TEAM",
+      "spaces": [],
+      "canSoftDelete": true
+    },
+    {
+      "name": "Playground Journey Team",
+      "id": "*k-QQ6HoyMQ0HYrxz",
+      "type": "TEAM",
+      "spaces": [
+        {
+          "description": "",
+          "name": "Playground",
+          "id": "*8Sy2cBGSD7SjfLhZ",
+          "private": true,
+          "owner": "Playground Journey Team"
+        },
+        {
+          "description": "",
+          "name": "test delete me",
+          "id": "*O7EZw9EMjvp02hCK",
+          "private": true,
+          "owner": "Playground Journey Team"
+        }
+      ],
+      "canSoftDelete": true
+    },
+    {
+      "name": "Marsupilami",
+      "id": "*kGcV6Bss7Jj_2Sb1",
+      "type": "TEAM",
+      "spaces": [
+        {
+          "description": "",
+          "name": "Alison's space2",
+          "id": "*IvfcZt-mVCeLaDH0",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "APEB",
+          "id": "*oTc-kqAq3HXe0kLE",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Artifacts-based Uploads & Downloads",
+          "id": "*StdzAxSFe7yPcoxS",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "ArtifactsAndWGs",
+          "id": "*LJI2lgr5BhrHoBSX",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "BigFilesOldUpload",
+          "id": "*CP_rnjKWiMyNWIhm",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Catalog Stress Testing",
+          "id": "*djve2fZtfH_1wjXU",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "DataAppTest",
+          "id": "*RvCmIN9bfBQpY8Ob",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "DaveK2 Space",
+          "id": "*qHyNlZ-vvewBLeNo",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "DownloadTest",
+          "id": "*8BcNyKP6qRoC7knN",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "HTML",
+          "id": "*Lp80rAeqHBHDD8D7",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "HUB-6245",
+          "id": "*PY_p6vG5rUOQuAK5",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "HUB-9077-Private",
+          "id": "*UHtZVsWTENMMYOpf",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "HUB-10160",
+          "id": "*-6xxfjV0_fHSNw43",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Konrads Upload Tests",
+          "id": "*bHFqpBVpelBf5eI6",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Marcel's Test Space",
+          "id": "*IuyH_e3K_gyhBEGO",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Mariths Space",
+          "id": "*rlXjL3wNdxupX5h3",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "metrics",
+          "id": "*jQXhPkvQKN_54SeR",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "MountPointId",
+          "id": "*dDYe3st1xIdlDKoo",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "My space",
+          "id": "*rYNoye7VgOGrDyiC",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "NameVsTitle",
+          "id": "*lP0tsHnsWctnUBpd",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Private",
+          "id": "*En_6BmnWWjmN4PMP",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Private Search",
+          "id": "*F1rrxyw5g1sfetGL",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "This is a space of testing\n\n",
+          "name": "Ramzi's Space",
+          "id": "*cOT1Ylgkc1uTt2Qn",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Search",
+          "id": "*cUAgzcDMUockUmK4",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "SearchAndTags",
+          "id": "*pzwBSmRXXMJ5ThkI",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "SearchAndVersioning",
+          "id": "*m_4kXEOpJyHg8vBj",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Space Only for ghiottolino2",
+          "id": "*nLjbTKpetUEZfGVj",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "test\n",
+          "name": "Space To Test Rename",
+          "id": "*t_o43K_chj-JQHXq",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "StaleUploads",
+          "id": "*vAitOjz4bA7rVqvq",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "TableRowToVariable",
+          "id": "*FiA61uqryod32mtX",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "<script> some text </script>\n",
+          "name": "Test",
+          "id": "*Os2oWbZWJ43Mpjuv",
+          "private": false,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "TestSpace",
+          "id": "*mRJXH6Y13kYqzDYQ",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Trashbin space",
+          "id": "*yCb7_LBVb3TkJpIc",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "TrashBinSpaceReadOnlyUser",
+          "id": "*_UzKXAtm0aqljU79",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "Upload5k",
+          "id": "*qx7rrelz3hqwqt6g",
+          "private": true,
+          "owner": "Marsupilami"
+        },
+        {
+          "description": "",
+          "name": "UploadTest",
+          "id": "*l0ffTcTjdlHSlAJ7",
+          "private": false,
+          "owner": "Marsupilami"
+        }
+      ],
+      "canSoftDelete": true
+    },
+    {
+      "name": "Treffpunkt feiner Geister",
+      "id": "*aJ5YcnVXmLp5pe73",
+      "type": "TEAM",
+      "spaces": [
+        {
+          "description": "",
+          "name": "Private",
+          "id": "*tPTTQ2q4DuAd-JN6",
+          "private": true,
+          "owner": "Treffpunkt feiner Geister"
+        },
+        {
+          "description": "",
+          "name": "Public",
+          "id": "*woZQiNB2zeu5sx4W",
+          "private": false,
+          "owner": "Treffpunkt feiner Geister"
+        }
+      ],
+      "canSoftDelete": true
+    },
+    {
+      "name": "Heliansteam",
+      "id": "*A2VY3J0QZut_43nt",
+      "type": "TEAM",
+      "spaces": [],
+      "canSoftDelete": true
+    }
+  ]
+}
