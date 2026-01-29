@@ -172,15 +172,18 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
       return isApplied;
     },
 
-    async autoApplySettings() {
+    async autoApplySettings(): Promise<{
+      didPrompt: boolean;
+      canContinue: boolean;
+    }> {
       const { activeContext } = useNodeConfigurationStore();
 
       if (!activeContext) {
-        return true;
+        return { didPrompt: false, canContinue: true };
       }
 
       if (this.dirtyState.apply === "clean") {
-        return true;
+        return { didPrompt: false, canContinue: true };
       }
 
       const canContinue = await runInEnvironment({
@@ -190,7 +193,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
           );
 
           if (modalResult === UnsavedChangesAction.CANCEL) {
-            return false;
+            return { didPrompt: true, canContinue: false };
           }
 
           if (modalResult === UnsavedChangesAction.SAVE) {
@@ -211,7 +214,8 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
           } else {
             this.discardSettings();
           }
-          return true;
+
+          return { didPrompt: true, canContinue: true };
         },
 
         BROWSER: async () => {
@@ -219,7 +223,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
             await this.applySettings({ nodeId: activeContext.node.id });
           }
 
-          return Promise.resolve(true);
+          return Promise.resolve({ didPrompt: false, canContinue: true });
         },
       });
 

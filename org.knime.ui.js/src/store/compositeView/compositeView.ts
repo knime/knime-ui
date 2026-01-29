@@ -165,24 +165,30 @@ export const useCompositeViewStore = defineStore("component", () => {
   /**
    * Tries to apply unsaved changes to a composite view
    *
-   * @returns resolves to true if operation succeeds
+   * @returns
    */
-  const clickAwayCompositeView = async (): Promise<boolean> => {
+  const clickAwayCompositeView = async (): Promise<{
+    didPrompt: boolean;
+    canContinue: boolean;
+  }> => {
     if (activePageBuilder.value === null) {
-      return true;
+      return { didPrompt: false, canContinue: true };
     }
 
     const isDirty = await activePageBuilder.value.isDirty();
     if (!isDirty) {
-      return true;
+      return { didPrompt: false, canContinue: true };
     }
 
     if (isBrowser()) {
       await applyAndExecute();
-      return true;
+      return { didPrompt: false, canContinue: true };
     }
 
-    return showPageBuilderUnsavedChangesDialog(activePageBuilder.value);
+    const canContinue = await showPageBuilderUnsavedChangesDialog(
+      activePageBuilder.value,
+    );
+    return { didPrompt: true, canContinue };
   };
 
   const isReexecuting = (nodeId: string) => reexecutingNodes.value.has(nodeId);

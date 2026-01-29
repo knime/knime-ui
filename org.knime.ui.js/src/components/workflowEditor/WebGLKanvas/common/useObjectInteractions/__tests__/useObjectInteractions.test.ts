@@ -235,7 +235,7 @@ describe("useObjectInteractions", () => {
   });
 
   describe("drag & drop", () => {
-    it("should not move any object if current selection cannot be discarded", async () => {
+    it("should continue with operation if a prompt to discard selection is not shown", async () => {
       const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
       const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
         onMoveEnd,
@@ -244,6 +244,12 @@ describe("useObjectInteractions", () => {
       vi.mocked(
         mockedStores.selectionStore,
       ).canClearCurrentSelection.mockImplementation(() => false);
+      vi.mocked(
+        mockedStores.selectionStore,
+      ).tryClearSelection.mockResolvedValue({
+        wasAborted: false,
+        didPrompt: false,
+      });
 
       const { handlePointerInteraction } = getComposableResult();
 
@@ -261,6 +267,44 @@ describe("useObjectInteractions", () => {
       await flushPromises();
 
       expect(selectSpy).toHaveBeenCalled();
+      expect(mockedStores.movingStore.setIsDragging).toHaveBeenCalled();
+      expect(mockedStores.movingStore.setMovePreview).toHaveBeenCalled();
+      expect(onMoveEnd).toHaveBeenCalled();
+      expect(mockedStores.movingStore.moveObjectsWebGL).toHaveBeenCalled();
+    });
+
+    it("should stop interaction if a user was shown a prompt to discard the selection", async () => {
+      const onMoveEnd = vi.fn(() => Promise.resolve({ shouldMove: true }));
+      const { getComposableResult, canvas, selectSpy, mockedStores } = doMount({
+        onMoveEnd,
+      });
+
+      vi.mocked(
+        mockedStores.selectionStore,
+      ).canClearCurrentSelection.mockImplementation(() => false);
+      vi.mocked(
+        mockedStores.selectionStore,
+      ).tryClearSelection.mockResolvedValue({
+        wasAborted: true,
+        didPrompt: true,
+      });
+
+      const { handlePointerInteraction } = getComposableResult();
+
+      const pointerPositions = {
+        start: { x: 10, y: 20 },
+        move: { x: 20, y: 30 },
+        end: { x: 20, y: 30 },
+      };
+
+      await triggerInteraction(
+        canvas,
+        handlePointerInteraction,
+        pointerPositions,
+      );
+      await flushPromises();
+
+      expect(selectSpy).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
       expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
       expect(onMoveEnd).not.toHaveBeenCalled();

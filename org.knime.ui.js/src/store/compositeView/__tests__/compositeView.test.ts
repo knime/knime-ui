@@ -110,7 +110,7 @@ describe("composite view store", () => {
       mockPageBuilder.isDirty.mockResolvedValueOnce(true);
       showPageBuilderUnsavedChangesDialogMock.mockResolvedValueOnce(false);
       const result = await clickAwayCompositeView();
-      expect(result).toBeFalsy();
+      expect(result).toEqual({ didPrompt: true, canContinue: false });
     });
 
     it("should continue if no active PageBuilder is set", async () => {
@@ -158,9 +158,10 @@ describe("composite view store", () => {
       await getPageBuilder(someProjectId);
       mockPageBuilder.isDirty.mockResolvedValue(true);
       mockPageBuilder.hasPage.mockReturnValue(true);
-      await clickAwayCompositeView();
+      const result = await clickAwayCompositeView();
       await flushPromises();
       expect(showPageBuilderUnsavedChangesDialogMock).toHaveBeenCalled();
+      expect(result).toEqual({ didPrompt: true, canContinue: false });
     });
 
     it("should apply and execute when dirty without prompting (BROWSER)", async () => {
@@ -170,10 +171,11 @@ describe("composite view store", () => {
       await getPageBuilder(someProjectId);
       mockPageBuilder.isDirty.mockResolvedValue(true);
       mockPageBuilder.hasPage.mockReturnValue(true);
-      await clickAwayCompositeView();
+      const result = await clickAwayCompositeView();
       await flushPromises();
       expect(mockPageBuilder.applyAndExecute).toHaveBeenCalled();
       expect(showPageBuilderUnsavedChangesDialogMock).not.toHaveBeenCalled();
+      expect(result).toEqual({ didPrompt: false, canContinue: true });
     });
 
     it("should not execute when no page exists", async () => {

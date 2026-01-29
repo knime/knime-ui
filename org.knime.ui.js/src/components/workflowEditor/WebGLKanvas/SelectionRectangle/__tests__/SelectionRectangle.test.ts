@@ -23,7 +23,6 @@ const annotation2 = createWorkflowAnnotation({
 });
 
 const startPos = { x: 0, y: 0 };
-const endPos = { x: 100, y: 100 };
 
 describe("SelectionRectangle.vue", () => {
   const doMount = (
@@ -63,7 +62,6 @@ describe("SelectionRectangle.vue", () => {
       shiftKey: false,
       pointerId: 0,
     };
-    const endEvent = { offsetX: endPos.x, offsetY: endPos.y, pointerId: 0 };
 
     const pointerDown = async (event?: Partial<typeof startEvent>) => {
       $bus.emit("selection-pointerdown", {
@@ -85,46 +83,9 @@ describe("SelectionRectangle.vue", () => {
       await nextTick();
     };
 
-    const pointerMove = async (event?: Partial<typeof endEvent>) => {
-      $bus.emit("selection-pointermove", {
-        ...endEvent,
-        ...event,
-        currentTarget: {
-          // @ts-expect-error
-          getBoundingClientRect: () => ({
-            left: 0,
-            top: 0,
-          }),
-        },
-      });
-      await flushPromises();
-      await nextTick();
-    };
-
-    const pointerUp = async (event?: Partial<typeof endEvent>) => {
-      vi.useFakeTimers(); // implementation contains setTimout
-
-      // stop also changes global dragging state
-      $bus.emit("selection-pointerup", {
-        ...endEvent,
-        ...event,
-        target: {
-          // @ts-expect-error
-          releasePointerCapture: vi.fn(),
-          hasPointerCapture: vi.fn(),
-        },
-      });
-
-      vi.runAllTimers();
-      await flushPromises();
-      await nextTick();
-    };
-
     return {
       wrapper,
       pointerDown,
-      pointerMove,
-      pointerUp,
       mockedStores,
       selectionStore: mockedStores.selectionStore,
       workflow,
@@ -133,16 +94,35 @@ describe("SelectionRectangle.vue", () => {
 
   beforeEach(vi.clearAllMocks);
 
-  it("does nothing if move is called but pointerDown is missing", async () => {
-    const { wrapper, pointerMove, pointerUp, mockedStores } = doMount();
-    await pointerMove();
-    await pointerUp();
+  describe("selection discard", () => {
+    it("deselects everything if selection discard attempt IS NOT aborted", async () => {
+      const { pointerDown, mockedStores } = doMount();
+      vi.mocked(
+        mockedStores.selectionStore.canClearCurrentSelection,
+      ).mockReturnValue(false);
+      vi.mocked(
+        mockedStores.selectionStore.tryClearSelection,
+      ).mockResolvedValue({ wasAborted: false, didPrompt: true });
+      await pointerDown();
+      await flushPromises();
 
-    expect(wrapper.emitted("nodeSelectionPreview")).toBeFalsy();
-    expect(wrapper.emitted("annotationSelectionPreview")).toBeFalsy();
-    expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledTimes(0);
-    expect(mockedStores.selectionStore.selectAnnotations).toHaveBeenCalledTimes(
-      0,
-    );
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+    });
+
+    it("doesn't deselect everything if selection discard attempt IS aborted", async () => {
+      const { pointerDown, mockedStores } = doMount();
+      vi.mocked(
+        mockedStores.selectionStore.canClearCurrentSelection,
+      ).mockReturnValue(false);
+      vi.mocked(
+        mockedStores.selectionStore.tryClearSelection,
+      ).mockResolvedValue({ wasAborted: true, didPrompt: true });
+      await pointerDown();
+      await flushPromises();
+
+      expect(
+        mockedStores.selectionStore.deselectAllObjects,
+      ).not.toHaveBeenCalled();
+    });
   });
 });

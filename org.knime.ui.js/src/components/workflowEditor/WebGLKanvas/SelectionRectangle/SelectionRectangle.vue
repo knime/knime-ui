@@ -95,7 +95,7 @@ const selectionRectangle = computed(() => ({
   height: Math.abs(endPos.value.y - startPos.value.y),
 }));
 
-const onSelectionStart = (event: PointerEvent) => {
+const onSelectionStart = async (event: PointerEvent) => {
   consola.debug("global rectangle selection:: start", { event });
 
   // Interactions originated from canvas objects can signal that the
@@ -110,16 +110,17 @@ const onSelectionStart = (event: PointerEvent) => {
   }
 
   if (!selectionStore.canClearCurrentSelection()) {
-    selectionStore.promptUserAboutClearingSelection().then(({ wasAborted }) => {
-      if (wasAborted) {
-        return;
-      }
+    const { wasAborted, didPrompt } = await selectionStore.tryClearSelection();
 
+    if (!wasAborted) {
       selectionStore.deselectAllObjects();
-    });
-    // end interaction regardless of user discarding or not
-    // to prevent the selection rectangle from getting stuck in an odd state
-    return;
+    }
+
+    if (didPrompt) {
+      // end interaction regardless of user discarding or not
+      // to prevent the selection rectangle from getting stuck in an odd state
+      return;
+    }
   }
 
   selectionPointerId = event.pointerId;
