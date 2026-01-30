@@ -3,6 +3,7 @@ import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import type {
   ComponentNode,
   ComponentNodeAndDescription,
+  Connection,
   EditableMetadata,
   MetaNode,
   NativeNode,
@@ -190,3 +191,19 @@ export type NameCollisionHandling =
   | "NOOP"
   | "AUTORENAME"
   | "CANCEL";
+
+/**
+ * "placeholder-in" means a connection FROM a real node TO a placeholder
+ * "placeholder-out" means a connection FROM a placeholder TO a real node
+ */
+export type PlaceholderConnectionType = "placeholder-in" | "placeholder-out";
+export type ComponentPlaceholderConnection = Omit<
+  Connection,
+  | "bendpoints"
+  | "allowedActions"
+  | "streaming"
+  | "flowVariableConnection"
+  | "label"
+> & {
+  placeholderType: PlaceholderConnectionType;
+};

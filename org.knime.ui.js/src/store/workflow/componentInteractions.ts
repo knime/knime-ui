@@ -26,6 +26,7 @@ import { useApplicationStore } from "@/store/application/application.ts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";
 import { getToastPresets } from "@/toastPresets";
 
+import { useConnectionInteractionsStore } from "./connectionInteractions";
 import { useWorkflowStore } from "./workflow";
 
 const TOAST_HEADLINE = "Linked components";
@@ -492,6 +493,10 @@ export const useComponentInteractionsStore = defineStore(
       }) {
         const { projectId, workflowId } =
           useWorkflowStore().getProjectAndWorkflowIds;
+
+        useConnectionInteractionsStore().removeComponentPlaceholderConnection(
+          placeholderId,
+        );
 
         await API.workflowCommand.DeleteComponentPlaceholder({
           projectId,

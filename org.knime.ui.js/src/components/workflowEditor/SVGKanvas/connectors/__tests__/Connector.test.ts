@@ -43,7 +43,10 @@ vi.mock("motion", () => ({
 const mockedAPI = deepMocked(API);
 
 describe("Connector.vue", () => {
-  const portShiftMock = vi.spyOn(portShift, "default");
+  const getPortPositionInNodeMock = vi.spyOn(
+    portShift,
+    "getPortPositionInNode",
+  );
   const connectorPathSpy = vi.spyOn(connectorPath, "getBezierPathString");
 
   beforeAll(() => {
@@ -205,8 +208,16 @@ describe("Connector.vue", () => {
         customStores: mockedStores,
         props: connection,
       });
-      expect(portShiftMock).toHaveBeenCalledWith(0, 1, false, true);
-      expect(portShiftMock).toHaveBeenCalledWith(0, 1, true, false);
+      expect(getPortPositionInNodeMock).toHaveBeenCalledWith(
+        0,
+        "source",
+        expect.objectContaining({ kind: "node" }),
+      );
+      expect(getPortPositionInNodeMock).toHaveBeenCalledWith(
+        0,
+        "dest",
+        expect.objectContaining({ kind: "metanode" }),
+      );
       expect(wrapper.find("path").attributes().d).toBe(
         "M38,-2.5 C52.75,-2.5 -13.25,20 1.5,20",
       );

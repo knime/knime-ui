@@ -32,7 +32,10 @@ type UseConnectorPathSegmentsOptions = {
    * If either destNode or sourceNode is unspecified the connector will be drawn up to this point
    */
   absolutePoint: Ref<[number, number] | null>;
-
+  /**
+   * List of bendpoints present in the connection. This will dictacte how many segments
+   * need to be created
+   */
   bendpoints: Ref<Array<XY>>;
 };
 

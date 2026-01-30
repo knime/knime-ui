@@ -16,6 +16,7 @@ export const createComponentSearchItem = (
       name: "Awesome component",
       inPorts: [
         {
+          portTypeId: PORT_TYPE_IDS.BufferedDataTable,
           name: PORT_TYPE_IDS.BufferedDataTable,
           color: "#000",
           description: "This is the first port",
