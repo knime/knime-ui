@@ -6,20 +6,22 @@ import {
   InfiniteNodeList,
   type NavReachedEvent,
 } from "@/components/nodeTemplates";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { ComponentNodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 type Props = {
   active: boolean;
   isLoading: boolean;
   hasLoaded: boolean;
-  results: NodeTemplateWithExtendedPorts[];
+  results: ComponentNodeTemplateWithExtendedPorts[];
   fetchData: (params: { append: boolean }) => Promise<void>;
+  showDescriptionForComponent?: ComponentNodeTemplateWithExtendedPorts;
 };
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
   navReachedTop: [event: NavReachedEvent];
-  addToWorkflow: [event: NodeTemplateWithExtendedPorts];
+  addToWorkflow: [event: ComponentNodeTemplateWithExtendedPorts];
+  showComponentDetails: [node: ComponentNodeTemplateWithExtendedPorts];
 }>();
 
 watch(
@@ -46,12 +48,21 @@ defineExpose({ focusFirst });
     :nodes="results"
     :fetch-more="() => fetchData({ append: true })"
     :is-loading="isLoading"
+    :show-details-for="showDescriptionForComponent"
     @nav-reached-top="emit('navReachedTop', $event)"
     @item-enter-key="$emit('addToWorkflow', $event)"
   >
     <template #nodesTemplate="slotProps">
       <slot name="nodesTemplate" v-bind="slotProps">
-        <DraggableNodeTemplate v-bind="slotProps" :show-help-icon="false" />
+        <DraggableNodeTemplate
+          v-bind="slotProps"
+          @show-node-description="
+            $emit(
+              'showComponentDetails',
+              slotProps.nodeTemplate as ComponentNodeTemplateWithExtendedPorts,
+            )
+          "
+        />
       </slot>
     </template>
 

@@ -1,7 +1,6 @@
 import InfiniteNodeList from "./NodeList/InfiniteNodeList.vue";
-import NodeList, {
-  type NavReachedEvent as _NavReachedEvent,
-} from "./NodeList/NodeList.vue";
+import NodeList from "./NodeList/NodeList.vue";
+import { type NavReachedEvent as _NavReachedEvent } from "./NodeList/types";
 import DraggableNodeTemplate from "./NodeTemplate/DraggableNodeTemplate.vue";
 import NodeTemplate from "./NodeTemplate/NodeTemplate.vue";
 

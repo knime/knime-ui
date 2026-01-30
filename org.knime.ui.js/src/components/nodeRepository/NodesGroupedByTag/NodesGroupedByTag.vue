@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Tag } from "@knime/components";
@@ -65,7 +65,7 @@ const onShowNodeDetails = (node: NodeTemplateWithExtendedPorts) => {
   });
 };
 
-const groupedNodeListRefs = ref<Array<InstanceType<typeof NodeList>>>();
+const groupedNodeListRefs = useTemplateRef("groupedNodeListRefs");
 
 const focusFirst = (navReached?: NavReachedEvent) => {
   groupedNodeListRefs.value?.at(0)?.focusFirst(navReached);

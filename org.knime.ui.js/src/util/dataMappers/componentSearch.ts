@@ -1,10 +1,6 @@
-import {
-  ComponentSearchItem,
-  type NodePortTemplate,
-  PortType,
-} from "@/api/gateway-api/generated-api";
+import { ComponentSearchItem, PortType } from "@/api/gateway-api/generated-api";
 
-import type { ExtendedPortType, NodeTemplateWithExtendedPorts } from "./common";
+import type { ComponentNodeTemplateWithExtendedPorts } from "./common";
 
 const PortTypeMapper: Record<string, PortType.KindEnum> = {
   table: PortType.KindEnum.Table,
@@ -20,7 +16,7 @@ const mapPortType = (input: string | null | undefined): PortType.KindEnum => {
 
 const toNodeTemplateWithExtendedPorts = (
   input: ComponentSearchItem,
-): NodeTemplateWithExtendedPorts => {
+): ComponentNodeTemplateWithExtendedPorts => {
   const inPorts = (input.inPorts ?? []).map((port) => {
     return {
       name: port.name ?? "",
@@ -30,7 +26,7 @@ const toNodeTemplateWithExtendedPorts = (
       type: mapPortType(port.portTypeName),
       description: port.description ?? "",
       kind: mapPortType(port.portTypeName),
-    } satisfies NodePortTemplate & ExtendedPortType;
+    } satisfies ComponentNodeTemplateWithExtendedPorts["inPorts"][number];
   });
 
   const outPorts = (input.outPorts ?? []).map((port) => {
@@ -42,11 +38,12 @@ const toNodeTemplateWithExtendedPorts = (
       type: mapPortType(port.portTypeName),
       description: port.description ?? "",
       kind: mapPortType(port.portTypeName),
-    } satisfies NodePortTemplate & ExtendedPortType;
+    } satisfies ComponentNodeTemplateWithExtendedPorts["outPorts"][number];
   });
 
   return {
     id: input.id,
+    description: input.description ?? "",
     name: input.name,
     type: input.type,
     component: true,
