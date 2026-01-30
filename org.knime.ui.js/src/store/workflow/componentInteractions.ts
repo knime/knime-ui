@@ -28,6 +28,7 @@ import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application.ts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";
 import { getToastPresets } from "@/toastPresets";
+import { isNodeComponent } from "@/util/nodeUtil";
 
 import { useConnectionInteractionsStore } from "./connectionInteractions";
 import { useWorkflowStore } from "./workflow";
@@ -35,8 +36,7 @@ import { useWorkflowStore } from "./workflow";
 const TOAST_HEADLINE = "Component link updated";
 const LINK_VARIANT_UPDATED_MESSAGE =
   "The component link type has been updated.";
-const HUB_ITEM_VERSION_UPDATED_MESSAGE =
-  "The component link has been updated to point at the selected version.";
+const HUB_ITEM_VERSION_UPDATED_MESSAGE = "Item version updated.";
 
 const $toast = getToastsProvider();
 
@@ -247,11 +247,11 @@ export const useComponentInteractionsStore = defineStore(
       async changeHubItemVersion({ nodeId }: { nodeId: string }) {
         const workflowStore = useWorkflowStore();
         const node = workflowStore.activeWorkflow?.nodes?.[nodeId];
-        if (!node || node.kind !== "component") {
+        if (!node || !isNodeComponent(node)) {
           return;
         }
 
-        const componentNode = node as ComponentNode;
+        const componentNode = node;
         if (
           !componentNode.link ||
           !componentNode.link.isHubItemVersionChangeable

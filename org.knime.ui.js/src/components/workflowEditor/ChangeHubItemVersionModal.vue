@@ -70,7 +70,7 @@ const MAX_DESCRIPTION_LENGTH = 120;
 const dropdownOptions = computed<DropdownOption[]>(() =>
   itemVersions.value
     .filter((version): version is NamedItemVersion & { version: number } =>
-      Boolean(version.version),
+      version.version !== null && version.version !== undefined,
     )
     .map((version) => {
       const title = version.title ?? "Untitled";
@@ -132,7 +132,9 @@ const setDefaults = () => {
   const availableVersionIds = new Set(
     itemVersions.value
       .map((version) => version.version)
-      .filter((version): version is number => Boolean(version)),
+      .filter((version): version is number =>
+        version !== null && version !== undefined,
+      ),
   );
 
   const mostRecentVersion = itemVersions.value[0]?.version ?? null;
@@ -141,7 +143,7 @@ const setDefaults = () => {
     ? currentVersion
     : mostRecentVersion;
 
-  if (!desiredVersion || !availableVersionIds.has(desiredVersion)) {
+  if (desiredVersion == null || !availableVersionIds.has(desiredVersion)) {
     desiredVersion = mostRecentVersion;
   }
 
@@ -149,7 +151,7 @@ const setDefaults = () => {
 };
 
 watch(
-  [() => isActive.value, itemVersions],
+  [isActive, itemVersions],
   ([active]) => {
     if (!active) {
       return;
