@@ -23,6 +23,8 @@ const props = withDefaults(defineProps<Props>(), {
   showDetailsFor: null,
 });
 
+const showDetailsFor = computed<T | null>(() => props.showDetailsFor ?? null);
+
 const scrollPosition = defineModel<number>("scrollPosition");
 const selectedNode = defineModel<T | null>("selectedNode", {
   default: null,
