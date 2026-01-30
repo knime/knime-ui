@@ -24,7 +24,7 @@ const toNodeTemplateWithExtendedPorts = (
   const inPorts = (input.inPorts ?? []).map((port) => {
     return {
       name: port.name ?? "",
-      typeId: port.portTypeName,
+      typeId: port.portTypeId,
       optional: port.optional,
       color: port.color,
       type: mapPortType(port.portTypeName),
@@ -36,7 +36,7 @@ const toNodeTemplateWithExtendedPorts = (
   const outPorts = (input.outPorts ?? []).map((port) => {
     return {
       name: port.name ?? "",
-      typeId: port.portTypeName,
+      typeId: port.portTypeId,
       optional: port.optional,
       color: port.color,
       type: mapPortType(port.portTypeName),
