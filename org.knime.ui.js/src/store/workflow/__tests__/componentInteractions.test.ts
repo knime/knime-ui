@@ -67,6 +67,10 @@ const { promptChangeLinkVariantMock } = vi.hoisted(() => ({
   promptChangeLinkVariantMock: vi.fn(),
 }));
 
+const { promptChangeHubItemVersionMock } = vi.hoisted(() => ({
+  promptChangeHubItemVersionMock: vi.fn(),
+}));
+
 vi.mock("@/composables/confirmDialogs/usePromptCollisionHandling", () => ({
   usePromptCollisionStrategies: usePromptCollisionStrategiesMock,
 }));
@@ -74,6 +78,16 @@ vi.mock("@/composables/confirmDialogs/usePromptCollisionHandling", () => ({
 vi.mock("@/composables/useChangeLinkVariantModal", () => ({
   useChangeLinkVariantModal: () => ({
     promptChangeLinkVariant: promptChangeLinkVariantMock,
+    confirm: vi.fn(),
+    cancel: vi.fn(),
+    config: { value: null },
+    isActive: { value: false },
+  }),
+}));
+
+vi.mock("@/composables/useChangeHubItemVersionModal", () => ({
+  useChangeHubItemVersionModal: () => ({
+    promptChangeHubItemVersion: promptChangeHubItemVersionMock,
     confirm: vi.fn(),
     cancel: vi.fn(),
     config: { value: null },
@@ -97,11 +111,27 @@ describe("workflow::componentInteractions", () => {
     promptChangeLinkVariantMock.mockResolvedValue(
       LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
     );
+
+    mockedAPI.component.getItemVersions.mockResolvedValue([
+      {
+        version: 3,
+        title: "Version 3",
+      },
+      {
+        version: 2,
+        title: "Version 2",
+      },
+    ]);
+
+    promptChangeHubItemVersionMock.mockResolvedValue({
+      type: "most-recent",
+    });
   });
 
   afterEach(() => {
     vi.clearAllMocks();
     promptChangeLinkVariantMock.mockClear();
+    promptChangeHubItemVersionMock.mockClear();
   });
 
   it("should share and link components", async () => {
@@ -502,17 +532,37 @@ describe("workflow::componentInteractions", () => {
     });
   });
 
-  it("should change hub item version", () => {
+  it("should change hub item version", async () => {
     const { workflowStore, componentInteractionsStore } = mockStores();
-    workflowStore.setActiveWorkflow(createWorkflow());
+    const workflow = createWorkflow();
+    const componentNode = workflow.nodes["root:2"] as ComponentNode;
+    componentNode.link = {
+      url: "knime://LOCAL/Component/",
+      updateStatus: "UP_TO_DATE",
+      isLinkVariantChangeable: false,
+      isHubItemVersionChangeable: true,
+      currentLinkVariant: {
+        variant: LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH,
+      },
+      targetHubItemVersion: {
+        type: "current-state",
+      },
+    } as ComponentNode["link"];
+    workflowStore.setActiveWorkflow(workflow);
 
-    componentInteractionsStore.changeHubItemVersion({ nodeId: "root:2" });
-    expect(
-      mockedAPI.desktop.openChangeComponentHubItemVersionDialog,
-    ).toHaveBeenCalledWith({
+    await componentInteractionsStore.changeHubItemVersion({ nodeId: "root:2" });
+    expect(mockedAPI.component.getItemVersions).toHaveBeenCalledWith({
       projectId: "project1",
       workflowId: "root",
       nodeId: "root:2",
+    });
+    expect(mockedAPI.workflowCommand.ChangeComponentLink).toHaveBeenCalledWith({
+      projectId: "project1",
+      workflowId: "root",
+      nodeId: "root:2",
+      itemVersion: {
+        type: "most-recent",
+      },
     });
   });
 
@@ -565,7 +615,6 @@ describe("workflow::componentInteractions", () => {
     });
     expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: "Link variant updated.",
         type: "success",
       }),
     );

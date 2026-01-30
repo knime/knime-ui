@@ -26,7 +26,9 @@ export type WorkflowToastPresets = {
 
   component: {
     fetchLinkVariantsFailed: ToastPresetErrorHandler;
+    fetchItemVersionsFailed: ToastPresetErrorHandler;
     updateLinkVariantFailed: ToastPresetErrorHandler;
+    updateHubItemVersionFailed: ToastPresetErrorHandler;
     noLinkVariants: ToastPresetErrorHandler<never>;
   };
 };
@@ -88,11 +90,21 @@ export const getPresets = (
           type: "error",
           headline: "Could not load available link variants",
         }),
+      fetchItemVersionsFailed: ({ error }) =>
+        defaultAPIErrorHandler($toast, error, {
+          type: "error",
+          headline: "Could not load available item versions",
+        }),
 
       updateLinkVariantFailed: ({ error }) =>
         defaultAPIErrorHandler($toast, error, {
           type: "error",
           headline: "Could not update the component link variant",
+        }),
+      updateHubItemVersionFailed: ({ error }) =>
+        defaultAPIErrorHandler($toast, error, {
+          type: "error",
+          headline: "Could not update the component item version",
         }),
 
       noLinkVariants: () =>

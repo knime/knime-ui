@@ -53,7 +53,6 @@ import java.security.NoSuchAlgorithmException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.service.GatewayException;
@@ -78,24 +77,6 @@ final class ComponentAPI {
         // Stateless
     }
 
-
-    /**
-     * Opens a Java dialog to change the Hub item version of a component.
-     *
-     * @param projectId
-     * @param rootWorkflowId
-     * @param nodeId
-     *
-     * @throws GatewayException
-     */
-    @API
-    static void openChangeComponentHubItemVersionDialog(final String projectId, final String rootWorkflowId,
-        final String nodeId) throws GatewayException {
-
-        final var component = assertIsWritableAndGetComponent(projectId, nodeId);
-        final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
-        ManipulateComponents.openChangeComponentItemVersionDialog(component, wfKey);
-    }
 
     /**
      * Opens a java dialog to set a lock with password on a component or metanode
@@ -158,28 +139,6 @@ final class ComponentAPI {
                 .withDetails("Not a component nor a metanode: " + nc.getNameWithID()) //
                 .canCopy(false) //
                 .build());
-    }
-
-    private static SubNodeContainer assertIsWritableAndGetComponent(final String projectId, final String nodeId)
-        throws GatewayException {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        final var wfm = nc.getParent();
-        if (wfm.isWriteProtected()) {
-            throw OperationNotAllowedException.builder() //
-                .withTitle("Operation not allowed") //
-                .withDetails("Container is read-only: " + nc.getNameWithID()) //
-                .canCopy(false) //
-                .build();
-        }
-
-        if (!(nc instanceof SubNodeContainer)) {
-            throw OperationNotAllowedException.builder() //
-                .withTitle("Operation not allowed") //
-                .withDetails("Not a component: " + nc.getNameWithID()) //
-                .canCopy(false) //
-                .build();
-        }
-        return (SubNodeContainer)nc;
     }
 
     private static WorkflowKey getWorkflowKey(final String projectId, final String rootWorkflowId) {
