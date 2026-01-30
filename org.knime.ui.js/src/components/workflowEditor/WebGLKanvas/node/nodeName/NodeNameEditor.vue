@@ -155,7 +155,7 @@ onContextMenuOutside(textEditorWrapper, onSave);
         <ActionBar :actions="actions" />
       </svg>
       <TextEditor
-        :value="nodeName"
+        :value="nodeName ?? ''"
         :width-offset="2"
         class="name-text-editor"
         :min-width="$shapes.nodeNameEditorMinWidth"

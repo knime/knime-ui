@@ -4,7 +4,7 @@ import { API } from "@api";
 
 import { promise } from "@knime/utils";
 
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { ComponentNodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import { componentSearch } from "@/util/dataMappers";
 
 const PAGE_SIZE = 150;
@@ -16,7 +16,7 @@ export const useComponentSearch = () => {
   const query = ref("");
   const currentOffset = ref(0);
 
-  const results = ref<NodeTemplateWithExtendedPorts[]>([]);
+  const results = ref<ComponentNodeTemplateWithExtendedPorts[]>([]);
   let abortController: AbortController;
 
   const searchComponents = async (

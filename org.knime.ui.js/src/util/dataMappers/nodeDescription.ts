@@ -7,7 +7,7 @@ import type {
 import type { ExtendedPortType } from "./common";
 import { ports } from "./ports";
 
-type PortGroupDescription = {
+export type PortGroupDescription = {
   groupName: string;
   groupDescription: string;
   types: Array<ExtendedPortType & { typeName: string }>;

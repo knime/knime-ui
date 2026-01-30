@@ -4,7 +4,7 @@ import { shallowMount } from "@vue/test-utils";
 
 import { sleep } from "@knime/utils";
 
-import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
+import NativeNodeDescription from "@/components/nodeDescription/NativeNodeDescription.vue";
 import type { NodeRepositoryState } from "@/store/nodeRepository";
 import { TABS } from "@/store/panel";
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
@@ -121,17 +121,20 @@ describe("NodeRepository", () => {
 
   describe("info panel", () => {
     it("shows node description panel", async () => {
-      const { wrapper, panelStore } = doMount();
-      expect(wrapper.findComponent(NodeDescription).exists()).toBe(false);
+      const { wrapper, panelStore, nodeRepositoryStore } = doMount();
+      expect(wrapper.findComponent(NativeNodeDescription).exists()).toBe(false);
 
       panelStore.isExtensionPanelOpen = true;
+      nodeRepositoryStore.setShowDescriptionForNode(
+        createNodeTemplateWithExtendedPorts(),
+      );
       panelStore.setActiveTab({
         projectId: "project1",
         activeTab: TABS.NODE_REPOSITORY,
       });
       await nextTick();
 
-      expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
+      expect(wrapper.findComponent(NativeNodeDescription).exists()).toBe(true);
     });
 
     it("resets description node on close of description panel", async () => {

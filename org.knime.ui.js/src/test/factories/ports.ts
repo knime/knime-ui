@@ -8,6 +8,7 @@ import {
   PortType,
   type PortViews,
 } from "@/api/gateway-api/generated-api";
+import { type ExtendedPortType, ports } from "@/util/dataMappers";
 
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
 import { randomValue } from "./util";
@@ -123,4 +124,20 @@ export const createPortGroup = (data: Partial<PortGroup> = {}): PortGroup => {
 
     ...data,
   };
+};
+
+export const createExtendedPort = (
+  data?: Partial<ExtendedPortType>,
+): ExtendedPortType => {
+  const availablePortTypes = createAvailablePortTypes({
+    "org.some.otherPorType": {
+      kind: PortType.KindEnum.Other,
+      name: "some other port",
+    },
+  });
+
+  const port = createPort({
+    typeId: data?.type ?? PORT_TYPE_IDS.BufferedDataTable,
+  });
+  return ports.toExtendedPortObject(availablePortTypes)(port.typeId);
 };

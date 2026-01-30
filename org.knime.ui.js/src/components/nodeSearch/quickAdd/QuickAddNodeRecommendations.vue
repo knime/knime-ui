@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import { NodeList, NodeTemplate } from "@/components/nodeTemplates";
@@ -28,7 +28,7 @@ const { recommendedNodes } = storeToRefs(useQuickAddNodesStore());
 
 const hasRecommendations = computed(() => recommendedNodes.value.length > 0);
 
-const recommendationResults = ref<InstanceType<typeof NodeList>>();
+const recommendationResults = useTemplateRef("recommendationResults");
 const focusFirst = () => recommendationResults.value?.focusFirst();
 defineExpose({ focusFirst });
 </script>

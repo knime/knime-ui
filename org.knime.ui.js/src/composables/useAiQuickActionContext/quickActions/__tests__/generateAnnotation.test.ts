@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { Bounds } from "@/api/gateway-api/generated-api";
+import type { Bounds, NativeNode } from "@/api/gateway-api/generated-api";
 import { QuickActionId } from "@/store/ai/types";
 import {
   createNativeNode,
@@ -48,16 +48,15 @@ describe("generateAnnotation.buildContext", () => {
         mockGetContainedNodesForAnnotation;
     }
 
-    // @ts-expect-error Partial mock
     nodeInteractionsStore.getNodeFactory = vi
       .fn()
       .mockImplementation((nodeId: string) => {
         if (workflow) {
-          const node = workflow.nodes[nodeId];
-          // @ts-expect-error templateId may not exist on all node types
-          return node?.templateId || "default-template";
+          const node = workflow.nodes[nodeId] as NativeNode;
+
+          return { className: node?.templateId || "default-template" };
         }
-        return "default-template";
+        return { className: "default-template" };
       });
 
     return stores;

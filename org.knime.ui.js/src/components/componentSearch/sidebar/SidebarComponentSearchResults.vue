@@ -4,6 +4,8 @@ import { storeToRefs } from "pinia";
 
 import { type NavReachedEvent } from "@/components/nodeTemplates";
 import { useSidebarComponentSearchStore } from "@/store/componentSearch";
+import { usePanelStore } from "@/store/panel";
+import type { ComponentNodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import ComponentSearchResults from "../ComponentSearchResults.vue";
 
 type Props = {
@@ -17,10 +19,26 @@ const emit = defineEmits<{
 
 const componentSearchStore = useSidebarComponentSearchStore();
 const { isLoading, hasLoaded, results } = storeToRefs(componentSearchStore);
+const panelStore = usePanelStore();
 
 const componentSearchResultsRef = useTemplateRef("componentSearchResultsRef");
 const focusFirst = () => componentSearchResultsRef.value?.focusFirst();
 defineExpose({ focusFirst });
+
+const onShowComponentDetails = (
+  node: ComponentNodeTemplateWithExtendedPorts,
+) => {
+  const isDescriptionActive =
+    componentSearchStore.activeDescription?.id === node.id;
+
+  if (!isDescriptionActive || !panelStore.isExtensionPanelOpen) {
+    panelStore.openExtensionPanel();
+    componentSearchStore.activeDescription = node;
+    return;
+  }
+
+  panelStore.closeExtensionPanel();
+};
 </script>
 
 <template>
@@ -32,6 +50,7 @@ defineExpose({ focusFirst });
     :results="results"
     :fetch-data="componentSearchStore.searchComponents"
     @nav-reached-top="emit('navReachedTop', $event)"
+    @show-component-details="onShowComponentDetails"
   />
 </template>
 

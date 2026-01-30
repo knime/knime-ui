@@ -13,6 +13,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSidebarComponentSearchStore } from "@/store/componentSearch";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
+import { usePanelStore } from "@/store/panel";
 import {
   type NodeRepositoryDisplayModesType,
   useSettingsStore,
@@ -122,6 +123,11 @@ const searchPlaceholderText = computed(() => {
     ? `Search in ${activeNodeCollection.value} nodes`
     : "Search all nodes";
 });
+
+const closeDescriptionPanel = () => {
+  nodeRepositoryStore.setShowDescriptionForNode(null);
+  usePanelStore().closeExtensionPanel();
+};
 </script>
 
 <template>
@@ -138,6 +144,7 @@ const searchPlaceholderText = computed(() => {
             { id: 'nodes', text: 'Nodes' },
             { id: 'components', text: 'Components' },
           ]"
+          @update:model-value="closeDescriptionPanel"
         />
 
         <span v-else>Nodes</span>

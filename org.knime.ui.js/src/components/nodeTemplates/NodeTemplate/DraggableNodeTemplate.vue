@@ -4,7 +4,10 @@ import { storeToRefs } from "pinia";
 
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/util/dataMappers";
 import { useAddNodeTemplateWithAutoPositioning } from "../useAddNodeTemplateWithAutoPositioning";
 import { useDragNodeIntoCanvas } from "../useDragNodeIntoCanvas";
 
@@ -15,7 +18,9 @@ import NodeTemplate from "./NodeTemplate.vue";
  */
 
 type Props = {
-  nodeTemplate: NodeTemplateWithExtendedPorts;
+  nodeTemplate:
+    | NodeTemplateWithExtendedPorts
+    | ComponentNodeTemplateWithExtendedPorts;
   isSelected?: boolean;
   isHighlighted?: boolean;
   isDescriptionActive?: boolean;

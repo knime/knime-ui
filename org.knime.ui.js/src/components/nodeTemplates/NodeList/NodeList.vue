@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script lang="ts" setup generic="T extends ListItem">
 import { computed, ref, toRef, watch } from "vue";
 import { useActiveElement } from "@vueuse/core";
 
@@ -6,30 +6,22 @@ import { Button, useKeyPressedUntilMouseClick } from "@knime/components";
 import CircleArrowIcon from "@knime/styles/img/icons/circle-arrow-right.svg";
 
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
+
+import type { ListItem, NavReachedEvent, NavigationKey } from "./types";
+import { navigationKeys } from "./types";
 
 const NODES_PER_ROW_ICON_MODE = 3;
 const NODES_PER_ROW_LIST_MODE = 1;
 
 type Props = {
-  nodes: Array<NodeTemplateWithExtendedPorts>;
+  nodes: Array<T>;
   hasMoreNodes?: boolean;
   displayMode?: NodeRepositoryDisplayModesType;
-  selectedNode?: NodeTemplateWithExtendedPorts | null;
-  showDetailsFor?: NodeTemplateWithExtendedPorts | null;
+  selectedNode?: T | null;
+  showDetailsFor?: T | null;
   highlightFirst?: boolean;
 };
-
-const navigationKeys = [
-  "ArrowUp",
-  "ArrowDown",
-  "ArrowLeft",
-  "ArrowRight",
-] as const;
-
-export type NavigationKey = (typeof navigationKeys)[number];
-export type NavReachedEvent = { key: NavigationKey; startIndex: number };
 
 const props = withDefaults(defineProps<Props>(), {
   hasMoreNodes: false,
@@ -40,10 +32,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  enterKey: [node: NodeTemplateWithExtendedPorts];
-  showNodeDetails: [node: NodeTemplateWithExtendedPorts];
+  enterKey: [node: T];
+  showNodeDetails: [node: T];
   showMore: [];
-  "update:selectedNode": [node: NodeTemplateWithExtendedPorts | null];
+  "update:selectedNode": [node: T | null];
   navReachedTop: [event: NavReachedEvent];
   navReachedEnd: [event: NavReachedEvent];
 }>();
@@ -64,10 +56,7 @@ const nodesPerRow = computed(() => {
     : NODES_PER_ROW_LIST_MODE;
 });
 
-const nodeTemplateProps = (
-  node: NodeTemplateWithExtendedPorts,
-  index: number,
-) => {
+const nodeTemplateProps = (node: ListItem, index: number) => {
   return {
     nodeTemplate: node,
     isHighlighted:
@@ -78,7 +67,7 @@ const nodeTemplateProps = (
   };
 };
 
-const focusItem = (focusNode: NodeTemplateWithExtendedPorts | undefined) => {
+const focusItem = (focusNode: T | undefined) => {
   // select the item if the current selection is not in our list
   if (
     focusNode &&

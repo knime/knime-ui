@@ -1,17 +1,17 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends ListItem">
 import { computed, toRefs, useTemplateRef } from "vue";
 
 import InfiniteLoadingList from "@/components/common/InfiniteLoadingList/InfiniteLoadingList.vue";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
-import NodeList, { type NavReachedEvent } from "./NodeList.vue";
+import NodeList from "./NodeList.vue";
+import type { ListItem, NavReachedEvent } from "./types";
 
 type Props = {
-  nodes: NodeTemplateWithExtendedPorts[];
+  nodes: T[];
   fetchMore: () => Promise<void>;
-  showDetailsFor?: NodeTemplateWithExtendedPorts | null;
+  showDetailsFor?: T | null;
   highlightFirst?: boolean;
   displayMode?: Exclude<NodeRepositoryDisplayModesType, "tree">;
   isLoading: boolean;
@@ -23,16 +23,17 @@ const props = withDefaults(defineProps<Props>(), {
   showDetailsFor: null,
 });
 
+const showDetailsFor = computed<T | null>(() => props.showDetailsFor ?? null);
+
 const scrollPosition = defineModel<number>("scrollPosition");
-const selectedNode = defineModel<NodeTemplateWithExtendedPorts | null>(
-  "selectedNode",
-  { default: null },
-);
+const selectedNode = defineModel<T | null>("selectedNode", {
+  default: null,
+});
 
 const emit = defineEmits<{
   navReachedTop: [event: NavReachedEvent];
-  itemEnterKey: [node: NodeTemplateWithExtendedPorts];
-  showNodeDetails: [node: NodeTemplateWithExtendedPorts];
+  itemEnterKey: [node: T];
+  showNodeDetails: [node: T];
 }>();
 
 const { nodes, displayMode, isLoading } = toRefs(props);
