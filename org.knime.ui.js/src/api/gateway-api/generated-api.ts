@@ -1297,7 +1297,7 @@ export interface ComponentSearchItem {
      * @type {string}
      * @memberof ComponentSearchItem
      */
-    type: ComponentSearchItem.TypeEnum;
+    type?: ComponentSearchItem.TypeEnum;
     /**
      * The component&#39;s input ports.
      * @type {Array<ComponentSearchItemPort>}
@@ -1328,6 +1328,7 @@ export namespace ComponentSearchItem {
         Manipulator = 'Manipulator',
         Visualizer = 'Visualizer',
         Learner = 'Learner',
+        Predictor = 'Predictor',
         Sink = 'Sink',
         Other = 'Other'
     }
@@ -3034,7 +3035,7 @@ export interface NativeNodeInvariants {
      * @type {string}
      * @memberof NativeNodeInvariants
      */
-    type: NativeNodeInvariants.TypeEnum;
+    type?: NativeNodeInvariants.TypeEnum;
     /**
      * The icon encoded in a data-url.
      * @type {string}
