@@ -67,67 +67,84 @@ export namespace AddBendpointCommand {
 /**
  * Adds a new component to the workflow.
  * @export
- * @interface AddComponentCommand
+ * @interface AddComponentCommandBase
  */
-export interface AddComponentCommand extends WorkflowCommand {
+export interface AddComponentCommandBase extends WorkflowCommand {
 
     /**
      *
      * @type {string}
-     * @memberof AddComponentCommand
+     * @memberof AddComponentCommandBase
      */
     providerId: string;
     /**
      *
      * @type {string}
-     * @memberof AddComponentCommand
+     * @memberof AddComponentCommandBase
      */
     spaceId?: string;
     /**
      *
      * @type {string}
-     * @memberof AddComponentCommand
+     * @memberof AddComponentCommandBase
      */
     itemId: string;
     /**
      *
      * @type {XY}
-     * @memberof AddComponentCommand
+     * @memberof AddComponentCommandBase
      */
     position: XY;
     /**
      * The name of the component to be added. Such that it can already be used for the loading placeholder before the component is loaded.
      * @type {string}
-     * @memberof AddComponentCommand
+     * @memberof AddComponentCommandBase
      */
     name: string;
-    /**
-     * Optional parameter identifying the existing node to connect to
-     * @type {string}
-     * @memberof AddComponentCommand
-     */
-    sourceNodeId?: string;
-    /**
-     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
-     * @type {number}
-     * @memberof AddComponentCommand
-     */
-    sourcePortIdx?: number;
-    /**
-     * Optional parameter that describe the relation of the new node with the given node,  either a Successor or a predecessor of the given node
-     * @type {string}
-     * @memberof AddComponentCommand
-     */
-    nodeRelation?: AddComponentCommand.NodeRelationEnum;
 
 }
 
 
 /**
  * @export
- * @namespace AddComponentCommand
+ * @namespace AddComponentCommandBase
  */
-export namespace AddComponentCommand {
+export namespace AddComponentCommandBase {
+}
+/**
+ * Adds a new component and connects it to a given predecessor or successor node
+ * @export
+ * @interface AddComponentCommandConnect
+ */
+export interface AddComponentCommandConnect extends AddComponentCommandBase {
+
+    /**
+     * Existing node to connect to
+     * @type {string}
+     * @memberof AddComponentCommandConnect
+     */
+    sourceNodeId: string;
+    /**
+     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
+     * @type {number}
+     * @memberof AddComponentCommandConnect
+     */
+    sourcePortIdx?: number;
+    /**
+     * Relation of the new node with the given node, either a successor or a predecessor of the given node.
+     * @type {string}
+     * @memberof AddComponentCommandConnect
+     */
+    nodeRelation: AddComponentCommandConnect.NodeRelationEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace AddComponentCommandConnect
+ */
+export namespace AddComponentCommandConnect {
     /**
      * @export
      * @enum {string}
@@ -136,6 +153,52 @@ export namespace AddComponentCommand {
         PREDECESSORS = 'PREDECESSORS',
         SUCCESSORS = 'SUCCESSORS'
     }
+}
+/**
+ * Adds a new component and inserts it on a given connection.
+ * @export
+ * @interface AddComponentCommandInsert
+ */
+export interface AddComponentCommandInsert extends AddComponentCommandBase {
+
+    /**
+     * The connection id to insert on.
+     * @type {string}
+     * @memberof AddComponentCommandInsert
+     */
+    connectionId: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace AddComponentCommandInsert
+ */
+export namespace AddComponentCommandInsert {
+}
+/**
+ * Adds a new component and replaces a given node.
+ * @export
+ * @interface AddComponentCommandReplace
+ */
+export interface AddComponentCommandReplace extends AddComponentCommandBase {
+
+    /**
+     * The node to replace.
+     * @type {string}
+     * @memberof AddComponentCommandReplace
+     */
+    nodeToReplace: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace AddComponentCommandReplace
+ */
+export namespace AddComponentCommandReplace {
 }
 /**
  *
@@ -7653,15 +7716,15 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
  	/**
      * Adds a new component to the workflow.
      */
-	AddComponent(
-		params: { projectId: string, workflowId: string } & Omit<AddComponentCommand, 'kind'>
-    ): Promise<AddComponentPlaceholderResult> {
+	AddComponentBase(
+		params: { projectId: string, workflowId: string } & Omit<AddComponentCommandBase, 'kind'>
+    ): Promise<unknown> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
             projectId: params.projectId,
             workflowId: params.workflowId,
-            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddComponent }
-		}) as Promise<AddComponentPlaceholderResult>;
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddComponentBase }
+		});
 		return postProcessCommandResponse(commandResponse);
 	},	
 
