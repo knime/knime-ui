@@ -8,10 +8,12 @@ import type { NavReachedEvent } from "@/components/nodeTemplates";
 import { isBrowser } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useSidebarComponentSearchStore } from "@/store/componentSearch";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import ComponentTemplateDescription from "../nodeDescription/ComponentTemplateDescription.vue";
 import NativeNodeDescription from "../nodeDescription/NativeNodeDescription.vue";
 
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
@@ -22,6 +24,7 @@ import NodeRepositoryHeader from "./header/NodeRepositoryHeader.vue";
 const nodeRepositoryStore = useNodeRepositoryStore();
 const { nodesPerTag, showDescriptionForNode, searchIsActive } =
   storeToRefs(nodeRepositoryStore);
+const { activeDescription } = storeToRefs(useSidebarComponentSearchStore());
 
 const displayMode = computed(
   () => useSettingsStore().settings.nodeRepositoryDisplayMode,
@@ -171,6 +174,15 @@ const handleNavReachedTop = (event: NavReachedEvent) => {
           :name="showDescriptionForNode.name"
           :node-factory="showDescriptionForNode.nodeFactory!"
           @close="panelStore.closeExtensionPanel"
+        />
+      </Transition>
+
+      <Transition v-if="activeDescription" name="extension-panel">
+        <ComponentTemplateDescription
+          :name="activeDescription.name"
+          :description="activeDescription.description"
+          :in-ports="activeDescription.inPorts"
+          :out-ports="activeDescription.outPorts"
         />
       </Transition>
     </Portal>

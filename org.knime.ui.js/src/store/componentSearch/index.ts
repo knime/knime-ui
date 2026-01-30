@@ -1,11 +1,17 @@
+import { ref } from "vue";
 import { defineStore } from "pinia";
+
+import type { ComponentNodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 import { useComponentSearch } from "./useComponentSearch";
 
 export const useSidebarComponentSearchStore = defineStore(
   "sidebarComponentSearch",
   () => {
-    return useComponentSearch();
+    const activeDescription =
+      ref<ComponentNodeTemplateWithExtendedPorts | null>(null);
+
+    return { activeDescription, ...useComponentSearch() };
   },
 );
 
