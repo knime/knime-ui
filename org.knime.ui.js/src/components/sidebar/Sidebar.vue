@@ -44,7 +44,8 @@ const registerSidebarSection = (
 };
 
 const ContextAwareDescription = defineAsyncComponent({
-  loader: () => import("@/components/sidebar/ContextAwareDescription.vue"),
+  loader: () =>
+    import("@/components/nodeDescription/ContextAwareDescription.vue"),
   loadingComponent: SidebarContentLoading,
 });
 

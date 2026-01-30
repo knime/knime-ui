@@ -3,7 +3,6 @@ import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { SidebarComponentSearchResults } from "@/components/componentSearch";
-import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarNodeSearchResults from "@/components/nodeRepository/NodeSearchResults/SidebarNodeSearchResults.vue";
 import type { NavReachedEvent } from "@/components/nodeTemplates";
 import { isBrowser } from "@/environment";
@@ -13,6 +12,7 @@ import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import NativeNodeDescription from "../nodeDescription/NativeNodeDescription.vue";
 
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
 import NodeRepositoryTree from "./NodeRepositoryTree/NodeRepositoryTree.vue";
@@ -26,13 +26,6 @@ const { nodesPerTag, showDescriptionForNode, searchIsActive } =
 const displayMode = computed(
   () => useSettingsStore().settings.nodeRepositoryDisplayMode,
 );
-
-const isNodeVisible = computed(() => {
-  return (
-    showDescriptionForNode.value &&
-    nodeRepositoryStore.isNodeVisible(showDescriptionForNode.value.id)
-  );
-});
 
 const { nodeRepositoryLoaded, nodeRepositoryLoadingProgress } = storeToRefs(
   useApplicationStore(),
@@ -171,10 +164,12 @@ const handleNavReachedTop = (event: NavReachedEvent) => {
     </template>
 
     <Portal v-if="isExtensionPanelOpen" to="extension-panel">
-      <Transition name="extension-panel">
-        <NodeDescription
+      <Transition v-if="showDescriptionForNode" name="extension-panel">
+        <NativeNodeDescription
           show-close-button
-          :params="isNodeVisible ? showDescriptionForNode : null"
+          :node-template-id="showDescriptionForNode.id"
+          :name="showDescriptionForNode.name"
+          :node-factory="showDescriptionForNode.nodeFactory!"
           @close="panelStore.closeExtensionPanel"
         />
       </Transition>

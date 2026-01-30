@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch } from "vue";
 
-import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
+import NativeNodeDescription from "../nodeDescription/NativeNodeDescription.vue";
 
 import AdditionalResourcesPanel from "./chat/message/additionalResources/AdditionalResourcesPanel.vue";
 import { useKaiExtensionPanel } from "./useKaiExtensionPanel";
@@ -22,10 +22,15 @@ watch(isExtensionPanelOpen, (isOpen) => {
 
 <template>
   <Portal v-if="panelMode" to="extension-panel">
-    <Transition v-if="panelMode === 'node_description'" name="extension-panel">
-      <NodeDescription
+    <Transition
+      v-if="panelMode === 'node_description' && selectedNodeTemplate"
+      name="extension-panel"
+    >
+      <NativeNodeDescription
+        :name="selectedNodeTemplate.name"
+        :node-template-id="selectedNodeTemplate.id"
+        :node-factory="selectedNodeTemplate.nodeFactory!"
         show-close-button
-        :params="selectedNodeTemplate"
         @close="closeKaiExtensionPanel"
       />
     </Transition>
