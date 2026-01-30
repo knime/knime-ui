@@ -58,8 +58,6 @@ const emit = defineEmits<{
       />
     </template>
     <SidebarPanelScrollContainer class="node-info">
-      <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
-             have some data as the selection is not cleared. -->
       <slot name="description">
         <span class="placeholder">
           There is no description for this node.
