@@ -100,7 +100,7 @@ const filterWorkflowToVicinity = (
   const templateIdsInVicinity = new Set<string>();
   for (const nodeId of Object.keys(nodesInVicinity)) {
     const nodeFactory = useNodeInteractionsStore().getNodeFactory(nodeId);
-    templateIdsInVicinity.add(nodeFactory);
+    templateIdsInVicinity.add(nodeFactory.className);
   }
 
   const templatesInVicinity = Object.fromEntries(

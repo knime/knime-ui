@@ -5,6 +5,7 @@ import { defineStore } from "pinia";
 import {
   AddNodeCommand,
   type Connection,
+  NativeNodeInvariants,
   type NodeFactoryKey,
   type PortCommand,
   type SpaceItemReference,
@@ -102,21 +103,21 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     });
   };
 
-  const getNodeName = (nodeId: string) => {
+  const getNodeName = (nodeId: string): string => {
     return getNodeTemplateProperty({
       nodeId,
       property: "name",
     });
   };
 
-  const getNodeFactory = (nodeId: string) => {
+  const getNodeFactory = (nodeId: string): NodeFactoryKey => {
     return getNodeTemplateProperty({
       nodeId,
       property: "nodeFactory",
     });
   };
 
-  const getNodeType = (nodeId: string) => {
+  const getNodeType = (nodeId: string): NativeNodeInvariants.TypeEnum => {
     return getNodeTemplateProperty({
       nodeId,
       property: "type",
