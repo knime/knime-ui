@@ -310,7 +310,10 @@ const { isLocalSaveSupported, isAutoSyncSupported } = useUIControlsStore();
   <div class="toolbar">
     <transition-group tag="div" name="button-list">
       <KdsButton
-        v-if="activeProjectVersionsModeStatus === 'active'"
+        v-if="
+          activeProjectVersionsModeStatus === 'active' &&
+          isActiveWorkflowFixedVersion
+        "
         label="Close version history"
         leading-icon="chevron-left"
         variant="outlined"
