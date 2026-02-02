@@ -160,7 +160,8 @@ const onSelectionStart = async (event: PointerEvent) => {
     if (
       !isSelectionRectangleVisible.value ||
       isDragging.value ||
-      event.pointerId !== selectionPointerId
+      event.pointerId !== selectionPointerId ||
+      event.buttons === 0
     ) {
       return;
     }
