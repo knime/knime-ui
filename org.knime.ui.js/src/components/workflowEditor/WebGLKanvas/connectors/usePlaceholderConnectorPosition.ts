@@ -10,6 +10,8 @@ import {
   Node,
   type XY,
 } from "@/api/gateway-api/generated-api";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import portShift, { getPortPositionInNode } from "@/util/portShift";
 
@@ -33,6 +35,8 @@ export const usePlaceholderConnectorPosition = (
   options: UsePlaceholderConnectorPositionOptions,
 ) => {
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
+  const { movePreviewDelta } = storeToRefs(useMovingStore());
+  const selectionStore = useSelectionStore();
 
   const nodeToConnectedNodeObject = (node: KnimeNode): ConnectedNodeObject => {
     if (node.kind === Node.KindEnum.Node) {
@@ -43,6 +47,18 @@ export const usePlaceholderConnectorPosition = (
       return { type: Node.KindEnum.Metanode, payload: node as MetaNode };
     }
   };
+
+  const { isNodeSelected } = selectionStore;
+  const isSourceNodeSelected = computed(
+    () =>
+      options.placeholderType.value === "placeholder-in" &&
+      isNodeSelected(options.sourceNode.value ?? ""),
+  );
+  const isDestNodeSelected = computed(
+    () =>
+      options.placeholderType.value === "placeholder-out" &&
+      isNodeSelected(options.destNode.value ?? ""),
+  );
 
   const sourceNodeObject = computed(() => {
     if (options.placeholderType?.value === "placeholder-out") {
@@ -121,11 +137,29 @@ export const usePlaceholderConnectorPosition = (
   };
 
   const start = computed<XY>(() => {
-    return getEndPointCoordinates("source");
+    const { x, y } = getEndPointCoordinates("source");
+
+    if (!isSourceNodeSelected.value) {
+      return { x, y };
+    }
+
+    return {
+      x: x + movePreviewDelta.value.x,
+      y: y + movePreviewDelta.value.y,
+    };
   });
 
   const end = computed<XY>(() => {
-    return getEndPointCoordinates("dest");
+    const { x, y } = getEndPointCoordinates("dest");
+
+    if (!isDestNodeSelected.value) {
+      return { x, y };
+    }
+
+    return {
+      x: x + movePreviewDelta.value.x,
+      y: y + movePreviewDelta.value.y,
+    };
   });
 
   return {
