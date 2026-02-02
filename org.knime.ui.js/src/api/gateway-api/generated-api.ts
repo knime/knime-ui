@@ -94,31 +94,31 @@ export interface AddComponentCommand extends WorkflowCommand {
      * @type {XY}
      * @memberof AddComponentCommand
      */
-    position: XY;
+    position?: XY;
+    /**
+     *
+     * @type {InsertionOptions}
+     * @memberof AddComponentCommand
+     */
+    insertionOptions?: InsertionOptions;
+    /**
+     *
+     * @type {ReplacementOptions}
+     * @memberof AddComponentCommand
+     */
+    replacementOptions?: ReplacementOptions;
+    /**
+     *
+     * @type {AutoConnectOptions}
+     * @memberof AddComponentCommand
+     */
+    autoConnectOptions?: AutoConnectOptions;
     /**
      * The name of the component to be added. Such that it can already be used for the loading placeholder before the component is loaded.
      * @type {string}
      * @memberof AddComponentCommand
      */
     name: string;
-    /**
-     * Optional parameter identifying the existing node to connect to
-     * @type {string}
-     * @memberof AddComponentCommand
-     */
-    sourceNodeId?: string;
-    /**
-     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
-     * @type {number}
-     * @memberof AddComponentCommand
-     */
-    sourcePortIdx?: number;
-    /**
-     * Optional parameter that describe the relation of the new node with the given node,  either a Successor or a predecessor of the given node
-     * @type {string}
-     * @memberof AddComponentCommand
-     */
-    nodeRelation?: AddComponentCommand.NodeRelationEnum;
 
 }
 
@@ -128,14 +128,6 @@ export interface AddComponentCommand extends WorkflowCommand {
  * @namespace AddComponentCommand
  */
 export namespace AddComponentCommand {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum NodeRelationEnum {
-        PREDECESSORS = 'PREDECESSORS',
-        SUCCESSORS = 'SUCCESSORS'
-    }
 }
 /**
  *
@@ -204,7 +196,7 @@ export interface AddNodeCommand extends WorkflowCommand {
      */
     sourcePortIdx?: number;
     /**
-     * Optional parameter that describe the relation of the new node with the given node,  either a Successor or a predecessor of the given node
+     * Optional parameter that describe the relation of the new node with the given node, either predecessors or successors of the given node
      * @type {string}
      * @memberof AddNodeCommand
      */
@@ -618,7 +610,7 @@ export namespace Annotation {
 export interface AppState {
 
     /**
-     * The general mode the app is initialized with.  Control various aspects of the app  (ui elements being hidden/shown, whether a workflow can be edited, ...)
+     * The general mode the app is initialized with. Control various aspects of the app (ui elements being hidden/shown, whether a workflow can be edited, ...)
      * @type {string}
      * @memberof AppState
      */
@@ -808,6 +800,49 @@ export interface AutoConnectCommand extends ConnectablesBasedCommand {
  * @namespace AutoConnectCommand
  */
 export namespace AutoConnectCommand {
+}
+/**
+ *
+ * @export
+ * @interface AutoConnectOptions
+ */
+export interface AutoConnectOptions {
+
+    /**
+     * Existing node to connect to
+     * @type {string}
+     * @memberof AutoConnectOptions
+     */
+    targetNodeId: string;
+    /**
+     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a target node id is provided.
+     * @type {number}
+     * @memberof AutoConnectOptions
+     */
+    targetNodePortIdx?: number;
+    /**
+     * Relation of the new component with the given node, either predecessors or successors of the given node.
+     * @type {string}
+     * @memberof AutoConnectOptions
+     */
+    nodeRelation: AutoConnectOptions.NodeRelationEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace AutoConnectOptions
+ */
+export namespace AutoConnectOptions {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum NodeRelationEnum {
+        PREDECESSORS = 'PREDECESSORS',
+        SUCCESSORS = 'SUCCESSORS'
+    }
 }
 /**
  * Remove all connections among the selected workflow parts.
@@ -2041,6 +2076,23 @@ export namespace InsertNodeCommand {
 /**
  *
  * @export
+ * @interface InsertionOptions
+ */
+export interface InsertionOptions {
+
+    /**
+     *
+     * @type {string}
+     * @memberof InsertionOptions
+     */
+    connectionId: string;
+
+}
+
+
+/**
+ *
+ * @export
  * @interface ItemVersion
  */
 export interface ItemVersion {
@@ -2582,7 +2634,7 @@ export interface KaiQuickActionsAvailable {
 
 
 /**
- * Encapsulates a request to K-AI which contains the entire conversation  as well as information on the open workflow, subworkflow and selected nodes. 
+ * Encapsulates a request to K-AI which contains the entire conversation as well as information on the open workflow, subworkflow and selected nodes. 
  * @export
  * @interface KaiRequest
  */
@@ -3283,7 +3335,7 @@ export interface Node {
      */
     dialogType?: Node.DialogTypeEnum;
     /**
-     * A change in this value signals that the model settings of a node have changed.  Applies only to nodes under the UI-extensions, modern dialog framework. Only present for native nodes and components, not for metanodes. Only present if node is executed. Only present if node provides a view.
+     * A change in this value signals that the model settings of a node have changed. Applies only to nodes under the UI-extensions, modern dialog framework. Only present for native nodes and components, not for metanodes. Only present if node is executed. Only present if node provides a view.
      * @type {number}
      * @memberof Node
      */
@@ -4364,7 +4416,7 @@ export interface ProjectDisposedEvent extends Event {
 export interface ProjectDisposedEventType extends EventType {
 
     /**
-     * The event is going to emitted if the project  with this id is disposed.
+     * The event is going to emitted if the project with this id is disposed.
      * @type {string}
      * @memberof ProjectDisposedEventType
      */
@@ -4493,6 +4545,23 @@ export interface ReplaceNodeCommand extends WorkflowCommand {
  */
 export namespace ReplaceNodeCommand {
 }
+/**
+ *
+ * @export
+ * @interface ReplacementOptions
+ */
+export interface ReplacementOptions {
+
+    /**
+     *
+     * @type {string}
+     * @memberof ReplacementOptions
+     */
+    targetNodeId: string;
+
+}
+
+
 /**
  * A selection (aka hiliting) event.
  * @export
@@ -5443,13 +5512,13 @@ export interface TranslateCommand extends PartBasedCommand {
      */
     translation: XY;
     /**
-     * Whether to move the in-ports bar of a metanode. Requires the  metanode ports bar position to be set. Will fail otherwise.
+     * Whether to move the in-ports bar of a metanode. Requires the metanode ports bar position to be set. Will fail otherwise.
      * @type {boolean}
      * @memberof TranslateCommand
      */
     metanodeInPortsBar?: boolean;
     /**
-     * Whether to move the out-ports bar of a metanode. Requires the  metanode ports bar position to be set. Will fail otherwise.
+     * Whether to move the out-ports bar of a metanode. Requires the metanode ports bar position to be set. Will fail otherwise.
      * @type {boolean}
      * @memberof TranslateCommand
      */
@@ -6542,7 +6611,7 @@ const componenteditor = function(rpcClient: RPCClient) {
 const compositeview = function(rpcClient: RPCClient) {
     return {
         /**
-         * Iterates over all data services of nodes in the composite view and deactivates them. If a component is nested in another component, the data services of the view of nested component  are also recursively deactivated.
+         * Iterates over all data services of nodes in the composite view and deactivates them. If a component is nested in another component, the data services of the view of nested component are also recursively deactivated.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
@@ -6616,7 +6685,7 @@ const compositeview = function(rpcClient: RPCClient) {
             return rpcClient.call('CompositeViewService.pollComponentReexecutionStatus', { ...defaultParams, ...params });
         },
         /**
-         * Applies viewValues as new default.  First the viewValues will be validated, then applied and when necessary the component will be executed.
+         * Applies viewValues as new default. First the viewValues will be validated, then applied and when necessary the component will be executed.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
@@ -6635,7 +6704,7 @@ const compositeview = function(rpcClient: RPCClient) {
             return rpcClient.call('CompositeViewService.setViewValuesAsNewDefault', { ...defaultParams, ...params });
         },
         /**
-         * Triggers the re-execution process (and updates the viewValues) for the whole component, i.e.,  every containing node will be re-executed. If a specific node has triggered the re-execution process use  'trigger-reexecution/{resetNodeIdSuffix}' to only re-execute that node together  with every down-stream node of it.
+         * Triggers the re-execution process (and updates the viewValues) for the whole component, i.e., every containing node will be re-executed. If a specific node has triggered the re-execution process use 'trigger-reexecution/{resetNodeIdSuffix}' to only re-execute that node together with every down-stream node of it.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
@@ -7685,7 +7754,7 @@ const workflow = function(rpcClient: RPCClient) {
             return rpcClient.call('WorkflowService.redoWorkflowCommand', { ...defaultParams, ...params });
         },
         /**
-         * Restore the workflow (manager) corresponding to the given project and version, s.t. the current working area  will be overwritten with the specified version to restore.
+         * Restore the workflow (manager) corresponding to the given project and version, s.t. the current working area will be overwritten with the specified version to restore.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.version The version identifier. &#x60;null&#x60; corresponds to the current-state (working area).
          * @param {*} [params.options] Override http request option.

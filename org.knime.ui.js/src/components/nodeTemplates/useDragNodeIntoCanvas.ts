@@ -11,7 +11,10 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/util/dataMappers";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
@@ -57,6 +60,11 @@ const getEventData = (event: DragEvent) => {
 let dragStartTime: number | null;
 
 const DRAG_TO_EDGE_BUFFER_MS = 300;
+
+const isComponentNodeTemplate = (
+  template: NodeTemplateWithExtendedPorts,
+): template is ComponentNodeTemplateWithExtendedPorts =>
+  Boolean(template.component);
 
 export const useDragNodeIntoCanvas = () => {
   const { isWritable } = storeToRefs(useWorkflowStore());
@@ -137,7 +145,7 @@ export const useDragNodeIntoCanvas = () => {
 
     if (
       // on dragover there's no access to a drag event's dataTransfer
-      nodeTemplatesStore.draggedTemplateData?.nodeFactory
+      nodeTemplatesStore.draggedTemplateData
     ) {
       const [canvasX, canvasY] = webglCanvasStore.screenToCanvasCoordinates([
         event.clientX,
@@ -146,10 +154,15 @@ export const useDragNodeIntoCanvas = () => {
 
       nodeReplacementOrInsertion.onDragMove(
         { x: canvasX, y: canvasY },
-        {
-          type: "from-node-template",
-          nodeFactory: nodeTemplatesStore.draggedTemplateData?.nodeFactory,
-        },
+        isComponentNodeTemplate(nodeTemplatesStore.draggedTemplateData)
+          ? {
+              type: "from-component-template",
+              componentTemplate: nodeTemplatesStore.draggedTemplateData,
+            }
+          : {
+              type: "from-node-template",
+              nodeTemplate: nodeTemplatesStore.draggedTemplateData,
+            },
       );
     }
   };
@@ -184,12 +197,20 @@ export const useDragNodeIntoCanvas = () => {
     if (
       isWebGLRenderer.value &&
       nodeInteractionsStore.replacementOperation &&
-      eventData.type === "node"
+      nodeTemplatesStore.draggedTemplateData
     ) {
-      await nodeReplacementOrInsertion.onDrop(dropPosition, {
-        type: "from-node-template",
-        nodeFactory: eventData.payload.nodeFactory,
-      });
+      await nodeReplacementOrInsertion.onDrop(
+        dropPosition,
+        isComponentNodeTemplate(nodeTemplatesStore.draggedTemplateData)
+          ? {
+              type: "from-component-template",
+              componentTemplate: nodeTemplatesStore.draggedTemplateData,
+            }
+          : {
+              type: "from-node-template",
+              nodeTemplate: nodeTemplatesStore.draggedTemplateData,
+            },
+      );
 
       return;
     }
@@ -202,7 +223,7 @@ export const useDragNodeIntoCanvas = () => {
         });
       }
 
-      return nodeInteractionsStore.addComponentNodeFromMainHub({
+      return nodeInteractionsStore.addComponentNode({
         position: dropPosition,
         componentIdInHub: eventData.payload.id,
         componentName: eventData.payload.name,
