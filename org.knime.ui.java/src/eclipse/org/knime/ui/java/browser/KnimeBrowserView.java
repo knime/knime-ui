@@ -49,6 +49,7 @@ import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.util.Optional;
 
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.e4.core.contexts.Active;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -56,11 +57,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.ClassUtils;
 import org.knime.js.cef.CEFBrowserWindow;
 import org.knime.js.cef.CEFUtils;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 
+import com.equo.chromium.ChromiumBrowser;
 import com.equo.chromium.swt.Browser;
 
 import jakarta.annotation.PostConstruct;
@@ -166,6 +171,8 @@ public class KnimeBrowserView {
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
         browser.addOpenWindowListener(e -> CEFBrowserWindow.open(e, browser,
             !Boolean.getBoolean("org.knime.ui.java.use_cef_browser_for_external_links")));
+        ClassUtils.castOptional(ChromiumBrowser.class, browser.getWebBrowser()) //
+            .ifPresent(chromium -> addProxyChangeListener(chromium::updateProxyConfig));
         browser.setMenu(new Menu(browser.getShell()));
         CEFUtils.registerNodeLogger(LOGGER, browser);
 
@@ -233,6 +240,43 @@ public class KnimeBrowserView {
 			return false;
 		}
 	}
+
+    /**
+     * Registers a proxy change listener with the Eclipse proxy support and invokes the given
+     * {@link Runnable} whenever proxy settings change.
+     * <p>
+     * The proxy service is retrieved dynamically via OSGi service lookup to avoid eager
+     * initialization. If the method is not executed within an OSGi bundle or if the proxy
+     * service cannot be resolved, the listener is not installed.
+     * </p>
+     *
+     * @param runnable callback ran on any proxy change event
+     */
+    private static void addProxyChangeListener(final Runnable runnable) {
+        final var clazz = KnimeBrowserView.class;
+        final var bundle = FrameworkUtil.getBundle(clazz);
+        if (bundle == null) {
+            LOGGER.warnWithFormat("Cannot initialize proxy change listener from %s, " //
+                + "not inside an OSGi bundle", clazz);
+            return;
+        }
+        // using proxy service class name as String to avoid initialization of the class
+        final var identifier = "org.eclipse.core.net.proxy.IProxyService";
+        final var tracker = new ServiceTracker<IProxyService, IProxyService>(bundle.getBundleContext(), //
+            identifier, null);
+        try {
+            tracker.open();
+            final var service = tracker.getService();
+            if (service == null) {
+                LOGGER.warnWithFormat("Cannot initialize proxy change listener from %s, " //
+                    + "no service was found for: %s", clazz, identifier);
+                return;
+            }
+            service.addProxyChangeListener(event -> runnable.run());
+        } finally {
+            tracker.close();
+        }
+    }
 
     /**
      * @return Optional URL the externally served web app is running on, if set.
