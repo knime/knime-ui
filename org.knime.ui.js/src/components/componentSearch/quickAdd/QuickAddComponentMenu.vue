@@ -70,10 +70,11 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   // it's the middle port, so we can easily set the Y offset to the vertical middle
   const offsetY = nodeSize / 2;
 
-  await nodeInteractionsStore.addComponentNodeFromMainHub({
+  await nodeInteractionsStore.addComponentNode({
     position: { x: x - offsetX, y: y - offsetY },
     componentIdInHub: nodeTemplate.id,
     componentName: nodeTemplate.name,
+    mode: "add-autoconnect",
     autoConnectOptions: {
       sourceNodeId: nodeId.value!,
       sourcePortIdx: port.value?.index,

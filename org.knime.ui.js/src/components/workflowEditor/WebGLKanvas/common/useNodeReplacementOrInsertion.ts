@@ -3,20 +3,18 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
-import type {
-  Connection,
-  NodeFactoryKey,
-  NodePort,
-  XY,
-} from "@/api/gateway-api/generated-api";
+import type { Connection, NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/util/dataMappers";
 
 import { pixiGlobals } from "./pixiGlobals";
 import { useNodeCollisionCheck } from "./useNodeCollisionCheck";
@@ -64,52 +62,79 @@ const canInsertOnConnection = (
 };
 
 type ReplacementPayload =
+  | { type: "from-node-instance"; replacementNodeId: string }
+  | { type: "from-node-template"; nodeTemplate: NodeTemplateWithExtendedPorts }
   | {
-      type: "from-node-instance";
-      replacementNodeId: string;
-    }
-  | {
-      type: "from-node-template";
-      nodeFactory: NodeFactoryKey;
+      type: "from-component-template";
+      componentTemplate: ComponentNodeTemplateWithExtendedPorts;
     };
 
-const getPortsOnReplacementCandidate = async (
+const getPortsOnReplacementCandidate = (
   params: ReplacementPayload,
-): Promise<PortContext | null> => {
+): PortContext => {
   if (params.type === "from-node-instance") {
     const node = useNodeInteractionsStore().getNodeById(
       params.replacementNodeId,
     );
 
-    return node
-      ? {
-          inPorts: node.inPorts.map((p: NodePort) => ({ typeId: p.typeId })),
-          outPorts: node.outPorts.map((p: NodePort) => ({ typeId: p.typeId })),
-        }
-      : null;
-  }
-
-  if (params.type === "from-node-template") {
-    // awaited but should resolve immediately because node template is already cached
-    // since you can't drag a node template if it wasn't loaded before
-    const nodeTemplate = await useNodeTemplatesStore().getSingleNodeTemplate({
-      nodeTemplateId: params.nodeFactory.className,
-    });
-
-    if (!nodeTemplate) {
-      return null;
+    if (!node) {
+      throw new Error("Invalid state, replacement node id is not defined");
     }
 
-    const { inPorts = [], outPorts = [] } = nodeTemplate;
-
     return {
-      inPorts: inPorts.map(({ typeId }) => ({ typeId })),
-      outPorts: outPorts.map(({ typeId }) => ({ typeId })),
+      inPorts: node.inPorts.map((p: NodePort) => ({ typeId: p.typeId })),
+      outPorts: node.outPorts.map((p: NodePort) => ({ typeId: p.typeId })),
     };
   }
 
-  return null;
+  const template =
+    params.type === "from-node-template"
+      ? params.nodeTemplate
+      : params.componentTemplate;
+
+  return {
+    inPorts: template.inPorts,
+    outPorts: template.outPorts,
+  };
 };
+
+// const getPortsOnReplacementCandidate = async (
+//   params: ReplacementPayload,
+// ): Promise<PortContext | null> => {
+//   if (params.type === "from-node-instance") {
+//     const node = useNodeInteractionsStore().getNodeById(
+//       params.replacementNodeId,
+//     );
+
+//     return node
+//       ? {
+//           inPorts: node.inPorts.map((p: NodePort) => ({ typeId: p.typeId })),
+//           outPorts: node.outPorts.map((p: NodePort) => ({ typeId: p.typeId })),
+//         }
+//       : null;
+//   }
+
+//   if (params.type === "from-node-template") {
+//     // awaited but should resolve immediately because node template is already cached
+//     // since you can't drag a node template if it wasn't loaded before
+//     const nodeTemplate = await useNodeTemplatesStore().getSingleNodeTemplate({
+//       nodeTemplateId: params.nodeFactory.className,
+//     });
+
+//     if (!nodeTemplate) {
+//       return null;
+//     }
+
+//     const { inPorts = [], outPorts = [] } = nodeTemplate;
+
+//     return {
+//       inPorts: inPorts.map(({ typeId }) => ({ typeId })),
+//       outPorts: outPorts.map(({ typeId }) => ({ typeId })),
+//     };
+//   }
+
+//   return null;
+// };
 
 // keep the dragging state as a singleton outside the composable,
 // because the interaction of the drag can start from a different place
@@ -172,75 +197,101 @@ export const useNodeReplacementOrInsertion = () => {
     collisionChecker.init();
   };
 
-  const onDragMove = throttle(
-    async (position: XY, params: ReplacementPayload) => {
-      if (
-        !isDragging.value ||
-        !isWritable.value ||
-        nodeInteractionsStore.isNodeConnected(
-          params.type === "from-node-instance" ? params.replacementNodeId : "",
-        )
-      ) {
-        return;
+  const onDragMove = throttle((position: XY, params: ReplacementPayload) => {
+    if (
+      !isDragging.value ||
+      !isWritable.value ||
+      nodeInteractionsStore.isNodeConnected(
+        params.type === "from-node-instance" ? params.replacementNodeId : "",
+      )
+    ) {
+      return;
+    }
+
+    const id = (() => {
+      if (params.type === "from-node-instance") {
+        return params.replacementNodeId;
       }
 
-      // favor node detection first, since it's more efficient
-      // and has a larger detection zone
-      const nodeCandidateId = collisionChecker.check({
-        id:
-          params.type === "from-node-instance"
-            ? params.replacementNodeId
-            : params.nodeFactory.className,
-        position,
-      });
-
-      if (nodeCandidateId) {
-        replacementOperation.value = {
-          candidateId: nodeCandidateId,
-          type: "node",
-        };
-        return;
+      if (params.type === "from-node-template") {
+        return params.nodeTemplate.nodeFactory!.className;
       }
 
-      const connectionCandidateId = tryFindConnectorAtPosition(position);
-      const connection = connections.value[connectionCandidateId ?? ""];
+      return params.componentTemplate.id;
+    })();
 
-      if (connectionCandidateId && connection) {
-        const ports = await getPortsOnReplacementCandidate(params);
+    // favor node detection first, since it's more efficient
+    // and has a larger detection zone
+    const nodeCandidateId = collisionChecker.check({
+      id,
+      position,
+    });
 
-        replacementOperation.value =
-          ports && canInsertOnConnection(connection, ports)
-            ? { candidateId: connectionCandidateId, type: "connection" }
-            : null;
+    if (nodeCandidateId) {
+      replacementOperation.value = {
+        candidateId: nodeCandidateId,
+        type: "node",
+      };
+      return;
+    }
 
-        return;
-      }
+    const connectionCandidateId = tryFindConnectorAtPosition(position);
+    const connection = connections.value[connectionCandidateId ?? ""];
 
-      // unset any previous value if current move didn't detect anything
-      replacementOperation.value = null;
-    },
-  );
+    if (connectionCandidateId && connection) {
+      // const ports = await getPortsOnReplacementCandidate(params);
+      const ports = getPortsOnReplacementCandidate(params);
+      replacementOperation.value = canInsertOnConnection(connection, ports)
+        ? { candidateId: connectionCandidateId, type: "connection" }
+        : null;
+
+      return;
+    }
+
+    // unset any previous value if current move didn't detect anything
+    replacementOperation.value = null;
+  });
 
   const doNodeReplacement = async (
     targetNodeId: string,
     params: ReplacementPayload,
   ) => {
-    const replacementNodeId =
-      params.type === "from-node-instance"
-        ? params.replacementNodeId
-        : undefined;
-
-    const nodeFactory =
-      params.type === "from-node-template" ? params.nodeFactory : undefined;
-
     try {
-      await nodeInteractionsStore.replaceNode({
-        targetNodeId,
-        replacementNodeId,
-        nodeFactory,
-      });
+      switch (params.type) {
+        case "from-node-instance": {
+          await nodeInteractionsStore.replaceNode({
+            targetNodeId,
+            replacementNodeId: params.replacementNodeId,
+          });
 
-      return { wasReplaced: true };
+          return { wasReplaced: true };
+        }
+
+        case "from-node-template": {
+          await nodeInteractionsStore.replaceNode({
+            targetNodeId,
+            nodeFactory: params.nodeTemplate.nodeFactory,
+          });
+
+          return { wasReplaced: true };
+        }
+
+        case "from-component-template": {
+          await nodeInteractionsStore.addComponentNode({
+            componentIdInHub: params.componentTemplate.id,
+            componentName: params.componentTemplate.name,
+            position: { x: 0, y: 0 },
+            mode: "replace-node",
+            replacementOptions: { targetNodeId },
+          });
+
+          return { wasReplaced: false };
+        }
+
+        default: {
+          return { wasReplaced: false };
+        }
+      }
     } catch (error) {
       consola.error("Failed to replace node", { error });
       toastPresets.workflow.replacementOperation.replaceNode({ error });
@@ -253,29 +304,43 @@ export const useNodeReplacementOrInsertion = () => {
     position: XY,
     params: ReplacementPayload,
   ) => {
-    const replacementNodeId =
-      params.type === "from-node-instance"
-        ? params.replacementNodeId
-        : undefined;
-
-    const nodeFactory =
-      params.type === "from-node-template" ? params.nodeFactory : undefined;
-
-    const connection = connections.value[connectionId];
-    const ports = await getPortsOnReplacementCandidate(params);
-
-    if (!ports || !canInsertOnConnection(connection, ports)) {
-      return Promise.resolve({ wasReplaced: false });
-    }
-
     try {
-      await nodeInteractionsStore.insertNode({
-        connectionId,
-        nodeId: replacementNodeId,
-        position,
-        nodeFactory,
-      });
-      return { wasReplaced: true };
+      switch (params.type) {
+        case "from-node-instance": {
+          await nodeInteractionsStore.insertNode({
+            connectionId,
+            nodeId: params.replacementNodeId,
+            position,
+          });
+
+          return { wasReplaced: true };
+        }
+
+        case "from-node-template": {
+          await nodeInteractionsStore.insertNode({
+            connectionId,
+            position,
+            nodeFactory: params.nodeTemplate.nodeFactory!,
+          });
+
+          return { wasReplaced: true };
+        }
+
+        case "from-component-template": {
+          await nodeInteractionsStore.addComponentNode({
+            componentIdInHub: params.componentTemplate.id,
+            componentName: params.componentTemplate.name,
+            position,
+            mode: "insert-on-connection",
+            insertionOptions: { connectionId },
+          });
+          return { wasReplaced: false };
+        }
+
+        default: {
+          return { wasReplaced: false };
+        }
+      }
     } catch (error) {
       consola.error("Failed to insert node on connection", { error });
       toastPresets.workflow.replacementOperation.insertOnConnection({

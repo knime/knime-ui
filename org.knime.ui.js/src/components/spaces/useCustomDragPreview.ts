@@ -171,7 +171,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         };
 
         if (isItemAComponent) {
-          return nodeInteractionStore.addComponentNode({
+          return nodeInteractionStore.importComponentNode({
             position,
             spaceItemReference,
             componentName: sourceItem.name,
