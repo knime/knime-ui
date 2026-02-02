@@ -65,6 +65,7 @@ watch(
     v-if="!isLoading && descriptionData"
     :name="name"
     :links="descriptionData.links"
+    :options="descriptionData.options"
     :views="descriptionData.views"
     :in-ports="descriptionData.inPorts"
     :out-ports="descriptionData.outPorts"
