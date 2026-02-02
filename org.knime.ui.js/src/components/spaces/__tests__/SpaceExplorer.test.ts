@@ -865,6 +865,11 @@ describe("SpaceExplorer.vue", () => {
         nodeFactory: {
           className: "org.knime.test.test.nodeFactory",
         },
+        spaceItemReference: {
+          itemId: "0",
+          providerId: "local",
+          spaceId: "local",
+        },
         position: { x: 5, y: 5 },
       });
       await flushPromises();
