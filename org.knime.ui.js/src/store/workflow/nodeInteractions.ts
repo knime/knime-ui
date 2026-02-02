@@ -214,16 +214,9 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
   type AddNodeParams = AutoConnectParams &
     SelectionModeParams & {
       position: XY;
-    } & ( // you can either add via a nodeFactory or a spaceItem reference; not both
-      | {
-          nodeFactory: NodeFactoryKey;
-          spaceItemReference?: never;
-        }
-      | {
-          nodeFactory?: never;
-          spaceItemReference: SpaceItemReference;
-        }
-    );
+      nodeFactory: NodeFactoryKey;
+      spaceItemReference?: SpaceItemReference;
+    };
 
   const addNativeNode = async ({
     position,
