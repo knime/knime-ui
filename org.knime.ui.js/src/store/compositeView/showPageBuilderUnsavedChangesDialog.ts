@@ -24,7 +24,7 @@ export const showPageBuilderUnsavedChangesDialog = async (
       "You have unsaved changes in your composite view. Do you want to save them and re-execute the component?",
     doNotAskAgain: {
       label: "Always save and do not ask again.",
-      helperText: "(You can still change this in the preferences)",
+      subText: "(You can still change this in the preferences)",
     },
   });
 

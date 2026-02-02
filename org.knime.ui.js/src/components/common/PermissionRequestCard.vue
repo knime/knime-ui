@@ -11,7 +11,7 @@ type Props = {
   cancelLabel?: string;
   checkbox?: {
     label: string;
-    helperText?: string;
+    subText?: string;
   };
   autoCancelAfter?: number;
 };
@@ -108,7 +108,7 @@ onUnmounted(() => {
         v-if="props.checkbox"
         v-model="isCheckboxChecked"
         :label="props.checkbox.label"
-        :helper-text="props.checkbox.helperText"
+        :sub-text="props.checkbox.subText"
       />
 
       <div class="action-buttons">

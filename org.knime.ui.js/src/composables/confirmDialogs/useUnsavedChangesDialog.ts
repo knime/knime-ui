@@ -16,8 +16,7 @@ export const useUnsavedChangesDialog = async (config: {
   message: string;
   doNotAskAgain?: {
     label: string;
-    title?: string;
-    helperText?: string;
+    subText?: string;
   };
 }): Promise<UnsavedChangesDialogResult> => {
   const { askConfirmation } = useKdsDynamicModal();
