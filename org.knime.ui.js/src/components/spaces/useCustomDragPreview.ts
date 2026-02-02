@@ -164,13 +164,13 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
       const position = { x, y };
 
       const addNode = () => {
-        if (isItemAComponent) {
-          const spaceItemReference = {
-            providerId: activeSpacePath.value.spaceProviderId,
-            spaceId: activeSpacePath.value.spaceId,
-            itemId: sourceItem.id,
-          };
+        const spaceItemReference = {
+          providerId: activeSpacePath.value.spaceProviderId,
+          spaceId: activeSpacePath.value.spaceId,
+          itemId: sourceItem.id,
+        };
 
+        if (isItemAComponent) {
           return nodeInteractionStore.addComponentNode({
             position,
             spaceItemReference,
@@ -179,6 +179,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         } else {
           return nodeInteractionStore.addNativeNode({
             position,
+            spaceItemReference,
             nodeFactory: { className: nodeTemplateId },
           });
         }
