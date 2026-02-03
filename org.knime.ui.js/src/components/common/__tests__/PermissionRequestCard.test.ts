@@ -101,13 +101,13 @@ describe("PermissionRequestCard", () => {
         props: {
           checkbox: {
             label: "Remember this",
-            helperText: "You can change this later",
+            subText: "You can change this later",
           },
         },
       });
 
       const checkbox = wrapper.findComponent(KdsCheckbox);
-      expect(checkbox.props("helperText")).toBe("You can change this later");
+      expect(checkbox.props("subText")).toBe("You can change this later");
     });
   });
 
