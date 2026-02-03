@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
@@ -70,16 +71,23 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   // it's the middle port, so we can easily set the Y offset to the vertical middle
   const offsetY = nodeSize / 2;
 
+  const autoConnectOptions =
+    nodeId.value && nodeRelation.value && port.value
+      ? ({
+          mode: "add-autoconnect",
+          autoConnectOptions: {
+            sourceNodeId: nodeId.value,
+            sourcePortIdx: port.value.index,
+            nodeRelation: nodeRelation.value as AddNodeCommand.NodeRelationEnum,
+          },
+        } as const)
+      : ({ mode: "add" } as const);
+
   await nodeInteractionsStore.addComponentNode({
     position: { x: x - offsetX, y: y - offsetY },
     componentIdInHub: nodeTemplate.id,
     componentName: nodeTemplate.name,
-    mode: "add-autoconnect",
-    autoConnectOptions: {
-      sourceNodeId: nodeId.value!,
-      sourcePortIdx: port.value?.index,
-      nodeRelation: nodeRelation.value! as AddNodeCommand.NodeRelationEnum,
-    },
+    ...autoConnectOptions,
   });
 
   props.quickActionContext.closeMenu();
