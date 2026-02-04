@@ -52,14 +52,13 @@ watch(
 
     const { error } = currentSyncState;
 
-    if (!error) {
+    if (currentSyncState.state !== SyncState.StateEnum.ERROR && !error) {
       return;
     }
 
-    // if error is set and its still dirty we hit the size limit
-    if (currentSyncState.state === SyncState.StateEnum.DIRTY) {
+    if (error?.code === "SyncThresholdException") {
       toastPresets.app.syncProjectSizeLimit();
-    } else if (currentSyncState.state === SyncState.StateEnum.ERROR) {
+    } else {
       toastPresets.app.syncProjectFailed({
         error,
       });
