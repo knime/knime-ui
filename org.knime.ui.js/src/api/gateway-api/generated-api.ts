@@ -67,75 +67,67 @@ export namespace AddBendpointCommand {
 /**
  * Adds a new component to the workflow.
  * @export
- * @interface AddComponentCommand
+ * @interface AddComponent
  */
-export interface AddComponentCommand extends WorkflowCommand {
+export interface AddComponent extends WorkflowCommand {
 
     /**
      *
      * @type {string}
-     * @memberof AddComponentCommand
+     * @memberof AddComponent
      */
     providerId: string;
     /**
      *
      * @type {string}
-     * @memberof AddComponentCommand
+     * @memberof AddComponent
      */
     spaceId?: string;
     /**
      *
      * @type {string}
-     * @memberof AddComponentCommand
+     * @memberof AddComponent
      */
     itemId: string;
     /**
      *
      * @type {XY}
-     * @memberof AddComponentCommand
+     * @memberof AddComponent
      */
     position: XY;
     /**
+     *
+     * @type {InsertionOptions}
+     * @memberof AddComponent
+     */
+    insertionOptions?: InsertionOptions;
+    /**
+     *
+     * @type {ReplacementOptions}
+     * @memberof AddComponent
+     */
+    replacementOptions?: ReplacementOptions;
+    /**
+     *
+     * @type {AutoConnectOptions}
+     * @memberof AddComponent
+     */
+    autoConnectOptions?: AutoConnectOptions;
+    /**
      * The name of the component to be added. Such that it can already be used for the loading placeholder before the component is loaded.
      * @type {string}
-     * @memberof AddComponentCommand
+     * @memberof AddComponent
      */
     name: string;
-    /**
-     * Optional parameter identifying the existing node to connect to
-     * @type {string}
-     * @memberof AddComponentCommand
-     */
-    sourceNodeId?: string;
-    /**
-     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
-     * @type {number}
-     * @memberof AddComponentCommand
-     */
-    sourcePortIdx?: number;
-    /**
-     * Optional parameter that describe the relation of the new node with the given node,  either a Successor or a predecessor of the given node
-     * @type {string}
-     * @memberof AddComponentCommand
-     */
-    nodeRelation?: AddComponentCommand.NodeRelationEnum;
 
 }
 
 
 /**
  * @export
- * @namespace AddComponentCommand
+ * @namespace AddComponent
  */
-export namespace AddComponentCommand {
-    /**
-     * @export
-     * @enum {string}
- */
-    export enum NodeRelationEnum {
-        PREDECESSORS = 'PREDECESSORS',
-        SUCCESSORS = 'SUCCESSORS'
-    }
+export namespace AddComponent {
 }
 /**
  *
@@ -808,6 +800,49 @@ export interface AutoConnectCommand extends ConnectablesBasedCommand {
  * @namespace AutoConnectCommand
  */
 export namespace AutoConnectCommand {
+}
+/**
+ *
+ * @export
+ * @interface AutoConnectOptions
+ */
+export interface AutoConnectOptions {
+
+    /**
+     * Existing node to connect to
+     * @type {string}
+     * @memberof AutoConnectOptions
+     */
+    targetNodeId: string;
+    /**
+     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
+     * @type {number}
+     * @memberof AutoConnectOptions
+     */
+    targetNodePortIdx?: number;
+    /**
+     * Relation of the new node with the given node, either a successor or a predecessor of the given node.
+     * @type {string}
+     * @memberof AutoConnectOptions
+     */
+    nodeRelation: AutoConnectOptions.NodeRelationEnum;
+
+}
+
+
+/**
+ * @export
+ * @namespace AutoConnectOptions
+ */
+export namespace AutoConnectOptions {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum NodeRelationEnum {
+        PREDECESSORS = 'PREDECESSORS',
+        SUCCESSORS = 'SUCCESSORS'
+    }
 }
 /**
  * Remove all connections among the selected workflow parts.
@@ -2038,6 +2073,23 @@ export interface InsertNodeCommand extends WorkflowCommand {
  */
 export namespace InsertNodeCommand {
 }
+/**
+ *
+ * @export
+ * @interface InsertionOptions
+ */
+export interface InsertionOptions {
+
+    /**
+     *
+     * @type {string}
+     * @memberof InsertionOptions
+     */
+    connectionId: string;
+
+}
+
+
 /**
  *
  * @export
@@ -4493,6 +4545,23 @@ export interface ReplaceNodeCommand extends WorkflowCommand {
  */
 export namespace ReplaceNodeCommand {
 }
+/**
+ *
+ * @export
+ * @interface ReplacementOptions
+ */
+export interface ReplacementOptions {
+
+    /**
+     *
+     * @type {string}
+     * @memberof ReplacementOptions
+     */
+    targetNodeId: string;
+
+}
+
+
 /**
  * A selection (aka hiliting) event.
  * @export
@@ -7838,7 +7907,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
      * Adds a new component to the workflow.
      */
 	AddComponent(
-		params: { projectId: string, workflowId: string } & Omit<AddComponentCommand, 'kind'>
+		params: { projectId: string, workflowId: string } & Omit<AddComponent, 'kind'>
     ): Promise<AddComponentPlaceholderResult> {
     	const { projectId, workflowId, ...commandParams } = params;
 		const commandResponse = workflow(rpcClient).executeWorkflowCommand({

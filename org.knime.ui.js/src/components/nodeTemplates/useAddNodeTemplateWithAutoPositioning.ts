@@ -74,10 +74,11 @@ export const useAddNodeTemplateWithAutoPositioning = () => {
     componentName: string,
   ) => {
     try {
-      return nodeInteractionsStore.addComponentNodeFromMainHub({
+      return nodeInteractionsStore.addComponentNode({
         position: defaultPosition(),
         componentIdInHub: componentId,
         componentName,
+        mode: "add",
       });
     } catch (error) {
       handleError(error);

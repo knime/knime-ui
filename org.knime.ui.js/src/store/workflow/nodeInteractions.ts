@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { ref } from "vue";
 import { API } from "@api";
 import { defineStore } from "pinia";
@@ -179,7 +180,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     });
   };
 
-  type AutoConnectParams = {
+  // TODO: rename props
+  type AutoConnectOptions = {
     autoConnectOptions?: {
       sourceNodeId: string;
       nodeRelation: AddNodeCommand.NodeRelationEnum;
@@ -213,7 +215,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     }
   };
 
-  type AddNodeParams = AutoConnectParams &
+  type AddNodeParams = AutoConnectOptions &
     SelectionModeParams & {
       position: XY;
       nodeFactory: NodeFactoryKey;
@@ -268,18 +270,21 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     return { newNodeId };
   };
 
-  type AddComponentParams = SelectionModeParams & {
+  type ImportComponentNodeParams = SelectionModeParams & {
     position: XY;
     spaceItemReference: SpaceItemReference;
     componentName: string;
   };
 
-  const addComponentNode = async ({
+  /**
+   * Imports a component from the space explorer using its full SpaceItemReference
+   */
+  const importComponentNode = async ({
     position,
     spaceItemReference,
     componentName,
     selectionMode = "new-only",
-  }: AddComponentParams): Promise<{ newNodeId: string | null }> => {
+  }: ImportComponentNodeParams): Promise<{ newNodeId: string | null }> => {
     // do not try to add a node to a read only workflow
     if (!workflowStore.isWritable) {
       return { newNodeId: null };
@@ -342,21 +347,39 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     return { newNodeId: null };
   };
 
-  const addComponentNodeFromMainHub = async ({
-    position,
-    componentIdInHub,
-    componentName,
-    autoConnectOptions,
-  }: AutoConnectParams & {
+  type InsertionOptions = {
+    insertionOptions?: {
+      connectionId: string;
+    };
+  };
+
+  type ReplacementOptions = {
+    replacementOptions?: {
+      targetNodeId: string;
+    };
+  };
+
+  type AddComponentNodeParams = {
     position: XY;
     componentIdInHub: string;
     componentName: string;
-  }): Promise<{
+  } & (
+    | { mode: "add" }
+    | (Required<AutoConnectOptions> & { mode: "add-autoconnect" })
+    | (Required<InsertionOptions> & { mode: "insert-on-connection" })
+    | (Required<ReplacementOptions> & { mode: "replace-node" })
+  );
+
+  const addComponentNode = async (
+    params: AddComponentNodeParams,
+  ): Promise<{
     newNodeId: string | null;
   }> => {
     if (isDesktop()) {
       throw new Error("This action is not supported in desktop AP");
     }
+
+    const { componentIdInHub, componentName, position } = params;
 
     // do not try to add a node to a read only workflow
     if (!workflowStore.isWritable) {
@@ -387,6 +410,22 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
       return { newNodeId: null };
     }
 
+    const autoConnectOptions =
+      params.mode === "add-autoconnect"
+        ? {
+            targetNodeId: params.autoConnectOptions.sourceNodeId,
+            targetNodePortIdx: params.autoConnectOptions.sourcePortIdx!,
+            nodeRelation: params.autoConnectOptions.nodeRelation,
+          }
+        : undefined;
+
+    const insertionOptions =
+      params.mode === "insert-on-connection"
+        ? params.insertionOptions
+        : undefined;
+    const replacementOptions =
+      params.mode === "replace-node" ? params.replacementOptions : undefined;
+
     // needs to be before focus() to not set focus back to space explorer items
     useSpaceOperationsStore().setCurrentSelectedItemIds([]);
     const componentPlaceholder = await API.workflowCommand.AddComponent({
@@ -399,17 +438,17 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
       },
       itemId: componentIdInHub,
       name: componentName,
-      sourceNodeId: autoConnectOptions?.sourceNodeId,
-      sourcePortIdx: autoConnectOptions?.sourcePortIdx,
-      nodeRelation: autoConnectOptions?.nodeRelation,
+      autoConnectOptions,
+      insertionOptions,
+      replacementOptions,
     });
 
     if (autoConnectOptions) {
       const connectionInteractionStore = useConnectionInteractionsStore();
       connectionInteractionStore.addComponentPlaceholderConnection(
         {
-          nodeId: autoConnectOptions.sourceNodeId,
-          portIndex: autoConnectOptions.sourcePortIdx ?? 1,
+          nodeId: autoConnectOptions.targetNodeId,
+          portIndex: autoConnectOptions.targetNodePortIdx ?? 1,
           type: autoConnectOptions.nodeRelation,
         },
         componentPlaceholder.newPlaceholderId,
@@ -576,8 +615,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     renameContainerNode,
     renameNodeLabel,
     addNativeNode,
+    importComponentNode,
     addComponentNode,
-    addComponentNodeFromMainHub,
     replaceNode,
     insertNode,
     addNodePort,
