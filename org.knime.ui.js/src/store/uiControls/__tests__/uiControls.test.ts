@@ -42,6 +42,7 @@ describe("uiControls", () => {
         shouldDisplayDownloadAPButton: false,
         canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: true,
+        shouldShowCloudHomeButton: false,
       });
     });
 
@@ -70,6 +71,7 @@ describe("uiControls", () => {
         shouldDisplayDownloadAPButton: false,
         canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: false,
+        shouldShowCloudHomeButton: true,
       });
     });
   });
@@ -104,6 +106,7 @@ describe("uiControls", () => {
         shouldDisplayDownloadAPButton: true,
         canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: false,
+        shouldShowCloudHomeButton: false,
       });
     });
   });
@@ -136,6 +139,7 @@ describe("uiControls", () => {
         shouldDisplayDownloadAPButton: false,
         canReExecuteCompositeViews: false,
         shouldDisplayRemoteWorkflowInfoBar: false,
+        shouldShowCloudHomeButton: false,
       });
     });
   });
