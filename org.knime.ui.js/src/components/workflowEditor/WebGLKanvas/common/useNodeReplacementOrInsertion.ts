@@ -98,44 +98,6 @@ const getPortsOnReplacementCandidate = (
   };
 };
 
-// const getPortsOnReplacementCandidate = async (
-//   params: ReplacementPayload,
-// ): Promise<PortContext | null> => {
-//   if (params.type === "from-node-instance") {
-//     const node = useNodeInteractionsStore().getNodeById(
-//       params.replacementNodeId,
-//     );
-
-//     return node
-//       ? {
-//           inPorts: node.inPorts.map((p: NodePort) => ({ typeId: p.typeId })),
-//           outPorts: node.outPorts.map((p: NodePort) => ({ typeId: p.typeId })),
-//         }
-//       : null;
-//   }
-
-//   if (params.type === "from-node-template") {
-//     // awaited but should resolve immediately because node template is already cached
-//     // since you can't drag a node template if it wasn't loaded before
-//     const nodeTemplate = await useNodeTemplatesStore().getSingleNodeTemplate({
-//       nodeTemplateId: params.nodeFactory.className,
-//     });
-
-//     if (!nodeTemplate) {
-//       return null;
-//     }
-
-//     const { inPorts = [], outPorts = [] } = nodeTemplate;
-
-//     return {
-//       inPorts: inPorts.map(({ typeId }) => ({ typeId })),
-//       outPorts: outPorts.map(({ typeId }) => ({ typeId })),
-//     };
-//   }
-
-//   return null;
-// };
-
 // keep the dragging state as a singleton outside the composable,
 // because the interaction of the drag can start from a different place
 // than the handling of a move or a drop (e.g node repository)
@@ -280,7 +242,6 @@ export const useNodeReplacementOrInsertion = () => {
           await nodeInteractionsStore.addComponentNode({
             componentIdInHub: params.componentTemplate.id,
             componentName: params.componentTemplate.name,
-            position: { x: 0, y: 0 },
             mode: "replace-node",
             replacementOptions: { targetNodeId },
           });

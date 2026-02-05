@@ -180,8 +180,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     });
   };
 
-  // TODO: rename props
-  type AutoConnectOptions = {
+  type NodeAutoConnectOptions = {
     autoConnectOptions?: {
       sourceNodeId: string;
       nodeRelation: AddNodeCommand.NodeRelationEnum;
@@ -215,7 +214,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     }
   };
 
-  type AddNodeParams = AutoConnectOptions &
+  type AddNodeParams = NodeAutoConnectOptions &
     SelectionModeParams & {
       position: XY;
       nodeFactory: NodeFactoryKey;
@@ -347,6 +346,14 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     return { newNodeId: null };
   };
 
+  type ComponentAutoConnectOptions = {
+    autoConnectOptions?: {
+      targetNodeId: string;
+      targetNodePortIdx?: number;
+      nodeRelation: AddNodeCommand.NodeRelationEnum;
+    };
+  };
+
   type InsertionOptions = {
     insertionOptions?: {
       connectionId: string;
@@ -360,26 +367,29 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
   };
 
   type AddComponentNodeParams = {
-    position: XY;
     componentIdInHub: string;
     componentName: string;
   } & (
-    | { mode: "add" }
-    | (Required<AutoConnectOptions> & { mode: "add-autoconnect" })
-    | (Required<InsertionOptions> & { mode: "insert-on-connection" })
+    | { mode?: "default"; position: XY }
+    | (Required<ComponentAutoConnectOptions> & {
+        mode: "add-autoconnect";
+        position: XY;
+      })
+    | (Required<InsertionOptions> & {
+        mode: "insert-on-connection";
+        position: XY;
+      })
     | (Required<ReplacementOptions> & { mode: "replace-node" })
   );
 
   const addComponentNode = async (
     params: AddComponentNodeParams,
-  ): Promise<{
-    newNodeId: string | null;
-  }> => {
+  ): Promise<{ newNodeId: string | null }> => {
     if (isDesktop()) {
       throw new Error("This action is not supported in desktop AP");
     }
 
-    const { componentIdInHub, componentName, position } = params;
+    const { componentIdInHub, componentName } = params;
 
     // do not try to add a node to a read only workflow
     if (!workflowStore.isWritable) {
@@ -394,11 +404,21 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
 
     const { projectId, workflowId } = workflowStore.getProjectAndWorkflowIds;
 
-    // Adjusted For Grid Snapping
-    const gridAdjustedPosition = {
-      x: geometry.utils.snapToGrid(position.x),
-      y: geometry.utils.snapToGrid(position.y),
-    };
+    const position = (() => {
+      // replace node mode doesn't need a position, but the wf command still
+      // requires it
+      if (params.mode === "replace-node") {
+        return { x: 0, y: 0 };
+      }
+
+      // Adjusted For Grid Snapping
+      const gridAdjustedPosition = {
+        x: geometry.utils.snapToGrid(params.position.x),
+        y: geometry.utils.snapToGrid(params.position.y),
+      };
+
+      return gridAdjustedPosition;
+    })();
 
     const { spaceProviders } = useSpaceProvidersStore();
     const firstProvider = Object.values(spaceProviders)[0];
@@ -411,18 +431,13 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     }
 
     const autoConnectOptions =
-      params.mode === "add-autoconnect"
-        ? {
-            targetNodeId: params.autoConnectOptions.sourceNodeId,
-            targetNodePortIdx: params.autoConnectOptions.sourcePortIdx!,
-            nodeRelation: params.autoConnectOptions.nodeRelation,
-          }
-        : undefined;
+      params.mode === "add-autoconnect" ? params.autoConnectOptions : undefined;
 
     const insertionOptions =
       params.mode === "insert-on-connection"
         ? params.insertionOptions
         : undefined;
+
     const replacementOptions =
       params.mode === "replace-node" ? params.replacementOptions : undefined;
 
@@ -432,10 +447,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
       projectId,
       workflowId,
       providerId: firstProvider.id,
-      position: {
-        x: gridAdjustedPosition.x,
-        y: gridAdjustedPosition.y,
-      },
+      position,
       itemId: componentIdInHub,
       name: componentName,
       autoConnectOptions,

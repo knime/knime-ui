@@ -76,12 +76,12 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
       ? ({
           mode: "add-autoconnect",
           autoConnectOptions: {
-            sourceNodeId: nodeId.value,
-            sourcePortIdx: port.value.index,
+            targetNodeId: nodeId.value,
+            targetNodePortIdx: port.value.index,
             nodeRelation: nodeRelation.value as AddNodeCommand.NodeRelationEnum,
           },
         } as const)
-      : ({ mode: "add" } as const);
+      : {};
 
   await nodeInteractionsStore.addComponentNode({
     position: { x: x - offsetX, y: y - offsetY },

@@ -165,23 +165,6 @@ export const useDragNodeIntoCanvas = () => {
             },
       );
     }
-    // if (
-    //   // on dragover there's no access to a drag event's dataTransfer
-    //   nodeTemplatesStore.draggedTemplateData?.nodeFactory
-    // ) {
-    //   const [canvasX, canvasY] = webglCanvasStore.screenToCanvasCoordinates([
-    //     event.clientX,
-    //     event.clientY,
-    //   ]);
-
-    //   nodeReplacementOrInsertion.onDragMove(
-    //     { x: canvasX, y: canvasY },
-    //     {
-    //       type: "from-node-template",
-    //       nodeFactory: nodeTemplatesStore.draggedTemplateData?.nodeFactory,
-    //     },
-    //   );
-    // }
   };
 
   const onDrop = async (event: DragEvent) => {
@@ -244,7 +227,6 @@ export const useDragNodeIntoCanvas = () => {
         position: dropPosition,
         componentIdInHub: eventData.payload.id,
         componentName: eventData.payload.name,
-        mode: "add",
       });
     };
 

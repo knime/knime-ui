@@ -78,7 +78,6 @@ export const useAddNodeTemplateWithAutoPositioning = () => {
         position: defaultPosition(),
         componentIdInHub: componentId,
         componentName,
-        mode: "add",
       });
     } catch (error) {
       handleError(error);
