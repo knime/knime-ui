@@ -94,7 +94,7 @@ export interface AddComponent extends WorkflowCommand {
      * @type {XY}
      * @memberof AddComponent
      */
-    position: XY;
+    position?: XY;
     /**
      *
      * @type {InsertionOptions}
