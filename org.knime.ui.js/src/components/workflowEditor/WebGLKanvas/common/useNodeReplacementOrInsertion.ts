@@ -277,10 +277,12 @@ export const useNodeReplacementOrInsertion = () => {
         }
 
         case "from-component-template": {
+          const targetNode = nodeInteractionsStore.getNodeById(targetNodeId);
+          const targetPosition = targetNode?.position ?? { x: 0, y: 0 };
           await nodeInteractionsStore.addComponentNode({
             componentIdInHub: params.componentTemplate.id,
             componentName: params.componentTemplate.name,
-            position: { x: 0, y: 0 },
+            position: targetPosition,
             mode: "replace-node",
             replacementOptions: { targetNodeId },
           });
