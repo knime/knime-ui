@@ -1,14 +1,18 @@
+/* eslint-disable complexity */
 import { API } from "@api";
 
+import { useAnalyticsService } from "@/analytics";
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
+import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
+import { ports } from "@/util/dataMappers";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import { portPositions } from "@/util/portShift";
@@ -126,6 +130,11 @@ const openQuickActionMenu =
           initialMode: menuMode,
         },
       });
+
+      useAnalyticsService().track("quickactionmenu_opened", {
+        via: "keyboard_shortcut_",
+      });
+
       return;
     }
 
@@ -173,6 +182,18 @@ const openQuickActionMenu =
         positionOrigin: useLastPosition ? lastPositionOrigin : "calculated",
         initialMode: menuMode,
       },
+    });
+
+    const { availablePortTypes } = useApplicationStore();
+    const extendedPortObject = ports.toExtendedPortObject(availablePortTypes)(
+      nextPort.typeId,
+    );
+    useAnalyticsService().track("quickactionmenu_opened", {
+      via: "keyboard_shortcut_",
+      nodeId: predecessorNode.id,
+      nodeType: predecessorNode.kind,
+      nodePortIndex: nextPort.index,
+      connectionType: extendedPortObject.kind,
     });
   };
 

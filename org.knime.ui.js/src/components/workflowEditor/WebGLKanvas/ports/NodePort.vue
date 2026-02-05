@@ -4,6 +4,7 @@ import { computed, ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { Container, FederatedPointerEvent, Rectangle } from "pixi.js";
 
+import { useAnalyticsService } from "@/analytics";
 import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { useApplicationStore } from "@/store/application/application";
@@ -120,6 +121,15 @@ const onPointerDown = (event: FederatedPointerEvent) => {
           nodeId: props.nodeId,
           positionOrigin: "mouse",
         },
+      });
+
+      useAnalyticsService().track("quickactionmenu_opened", {
+        via:
+          props.direction === "out" ? "port_dragdrop_fwd" : "port_dragdrop_bwd",
+        nodeId: props.nodeId,
+        nodeType: props.nodeKind,
+        nodePortIndex: props.port.index,
+        connectionType: portTemplate.value.kind,
       });
 
       return { removeConnector: false };

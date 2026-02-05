@@ -144,6 +144,10 @@ vi.mock("@/plugins/toasts", () => {
   };
 });
 
+vi.mock("@/analytics", () => ({
+  useAnalyticsService: () => ({ track: vi.fn() }),
+}));
+
 class MockWorker {}
 // @ts-expect-error
 window.Worker = MockWorker;

@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 
 import { SearchInput } from "@knime/components";
 
+import { useAnalyticsService } from "@/analytics";
 import type { AvailablePortTypes, NodeRelation } from "@/api/custom-types";
 import {
   AddNodeCommand,
@@ -129,7 +130,7 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
 
   // add node
   const { x, y } = canvasPosition.value;
-  await nodeInteractionsStore.addNativeNode({
+  const { newNodeId } = await nodeInteractionsStore.addNativeNode({
     position: {
       x: x - offsetX,
       y: y - offsetY,
@@ -143,6 +144,17 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   });
 
   props.quickActionContext.closeMenu();
+
+  const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
+
+  if (node) {
+    useAnalyticsService().track("node_created", {
+      via: "quickactionmenu_click_",
+      nodeId: node.id,
+      nodeType: node.kind,
+      nodeFactoryId: nodeFactory.className,
+    });
+  }
 };
 
 const searchEnterKey = () => {

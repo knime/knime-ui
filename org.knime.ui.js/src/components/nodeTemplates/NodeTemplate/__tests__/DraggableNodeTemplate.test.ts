@@ -36,6 +36,10 @@ describe("DraggableNodeTemplate", () => {
   const doMount = ({ props = {}, isWritable = true } = {}) => {
     const defaultProps = { nodeTemplate: baseNodeTemplate };
 
+    mockedAPI.workflowCommand.AddNode.mockResolvedValue({
+      newNodeId: "root:1",
+    });
+
     const {
       testingPinia,
       workflowStore,

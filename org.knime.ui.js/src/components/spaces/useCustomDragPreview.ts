@@ -5,7 +5,8 @@ import { useRoute } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
 
-import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { useAnalyticsService } from "@/analytics";
+import { Node, SpaceItem } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -163,7 +164,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
       ]);
       const position = { x, y };
 
-      const addNode = () => {
+      const addNode = async () => {
         const spaceItemReference = {
           providerId: activeSpacePath.value.spaceProviderId,
           spaceId: activeSpacePath.value.spaceId,
@@ -177,11 +178,24 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
             componentName: sourceItem.name,
           });
         } else {
-          return nodeInteractionStore.addNativeNode({
+          const { newNodeId } = await nodeInteractionStore.addNativeNode({
             position,
             spaceItemReference,
             nodeFactory: { className: nodeTemplateId },
           });
+
+          const node = nodeInteractionStore.getNodeById(newNodeId ?? "");
+
+          if (node) {
+            useAnalyticsService().track("node_created", {
+              via: "explorer_dragdrop_",
+              nodeId: node.id,
+              nodeFactoryId: nodeTemplateId,
+              nodeType: Node.KindEnum.Node,
+            });
+          }
+
+          return { newNodeId };
         }
       };
 

@@ -2,8 +2,10 @@
 import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
+import { useAnalyticsService } from "@/analytics";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
@@ -95,11 +97,25 @@ const onDragEnd = (event: DragEvent) => {
   }
 };
 
-const autoAddNodeFromTemplate = (
+const autoAddNodeFromTemplate = async (
   nodeTemplate: NodeTemplateWithExtendedPorts,
 ) => {
   if (nodeTemplate.nodeFactory) {
-    addNodeWithAutoPositioning(nodeTemplate.nodeFactory);
+    const { newNodeId } = await addNodeWithAutoPositioning(
+      nodeTemplate.nodeFactory,
+    );
+
+    const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
+
+    if (node) {
+      useAnalyticsService().track("node_created", {
+        via: "noderepo_doubleclick_",
+        nodeId: node.id,
+        nodeType: node.kind,
+        nodeFactoryId: nodeTemplate.nodeFactory.className,
+      });
+    }
+
     return;
   }
 
