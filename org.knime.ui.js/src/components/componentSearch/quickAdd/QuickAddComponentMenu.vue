@@ -1,4 +1,3 @@
-<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";

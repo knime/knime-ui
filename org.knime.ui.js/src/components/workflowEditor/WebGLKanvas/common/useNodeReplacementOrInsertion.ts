@@ -201,7 +201,6 @@ export const useNodeReplacementOrInsertion = () => {
     const connection = connections.value[connectionCandidateId ?? ""];
 
     if (connectionCandidateId && connection) {
-      // const ports = await getPortsOnReplacementCandidate(params);
       const ports = getPortsOnReplacementCandidate(params);
       replacementOperation.value = canInsertOnConnection(connection, ports)
         ? { candidateId: connectionCandidateId, type: "connection" }
@@ -246,7 +245,7 @@ export const useNodeReplacementOrInsertion = () => {
             replacementOptions: { targetNodeId },
           });
 
-          return { wasReplaced: false };
+          return { wasReplaced: true };
         }
 
         default: {
