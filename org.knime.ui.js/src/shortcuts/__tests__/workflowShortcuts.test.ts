@@ -4,7 +4,13 @@ import { API } from "@api";
 
 import { Node, WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
-import { createNativeNode, createPort, createWorkflow } from "@/test/factories";
+import {
+  PORT_TYPE_IDS,
+  createAvailablePortTypes,
+  createNativeNode,
+  createPort,
+  createWorkflow,
+} from "@/test/factories";
 import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
@@ -44,6 +50,9 @@ describe("workflowShortcuts", () => {
       providerId: "some-provider",
       spaceId: "some-space",
     };
+
+    applicationStore.availablePortTypes = createAvailablePortTypes();
+
     // @ts-expect-error
     workflowStore.isWritable = true;
     workflowStore.activeWorkflow = createWorkflow({
@@ -163,7 +172,9 @@ describe("workflowShortcuts", () => {
     it("executes export action", () => {
       const { spaceOperationsStore, applicationStore } = createStore();
 
-      spaceOperationsStore.exportSpaceItem.mockResolvedValue(undefined);
+      vi.mocked(spaceOperationsStore.exportSpaceItem).mockResolvedValue(
+        undefined,
+      );
       workflowShortcuts.export.execute(mockShortcutContext());
       expect(spaceOperationsStore.exportSpaceItem).toHaveBeenCalledWith({
         projectId: applicationStore.activeProjectId,
@@ -613,7 +624,7 @@ describe("workflowShortcuts", () => {
       kind: "node",
       outPorts: Array.from({ length }, (_, index) => ({
         index,
-        typeId: "some.type",
+        typeId: PORT_TYPE_IDS.BufferedDataTable,
       })),
     });
 
@@ -631,7 +642,7 @@ describe("workflowShortcuts", () => {
         props: {
           nodeId: "root:4",
           nodeRelation: "SUCCESSORS",
-          port: { index: 0, typeId: "some.type" },
+          port: { index: 0, typeId: PORT_TYPE_IDS.BufferedDataTable },
           position: expect.anything(),
           positionOrigin: "calculated",
           initialMode: "quick-add",
@@ -653,7 +664,7 @@ describe("workflowShortcuts", () => {
         props: {
           nodeId: "root:4",
           nodeRelation: "SUCCESSORS",
-          port: { index: 1, typeId: "some.type" },
+          port: { index: 1, typeId: PORT_TYPE_IDS.BufferedDataTable },
           position: expect.anything(),
           positionOrigin: "calculated",
           initialMode: "quick-add",
@@ -671,15 +682,16 @@ describe("workflowShortcuts", () => {
       const node = createNativeNode({
         id: "root:4",
         outPorts: [
-          { index: 0, typeId: "some.type" },
-          { index: 1, typeId: "some.type" },
-          { index: 2, typeId: "some.type" },
+          { index: 0, typeId: PORT_TYPE_IDS.BufferedDataTable },
+          { index: 1, typeId: PORT_TYPE_IDS.BufferedDataTable },
+          { index: 2, typeId: PORT_TYPE_IDS.BufferedDataTable },
         ],
       });
       // @ts-expect-error
       selectionStore.singleSelectedNode = node;
-      // @ts-expect-error
+
       nodeInteractionsStore.getNodeById = vi.fn().mockReturnValue(node);
+
       // @ts-expect-error
       canvasAnchoredComponentsStore.quickActionMenu = {
         isOpen: true,
@@ -699,7 +711,7 @@ describe("workflowShortcuts", () => {
         props: {
           nodeId: "root:4",
           nodeRelation: "SUCCESSORS",
-          port: { index: 2, typeId: "some.type" },
+          port: { index: 2, typeId: PORT_TYPE_IDS.BufferedDataTable },
           position: { x: 5, y: 8 },
           initialMode: "quick-add",
         },

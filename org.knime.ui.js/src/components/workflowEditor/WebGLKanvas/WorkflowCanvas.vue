@@ -11,6 +11,7 @@ import { storeToRefs } from "pinia";
 
 import { sleep } from "@knime/utils";
 
+import { useAnalyticsService } from "@/analytics";
 import { useDragNodeIntoCanvas } from "@/components/nodeTemplates";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
@@ -68,6 +69,10 @@ const openQuickActionMenu = (event: PointerEvent) => {
 
   useCanvasAnchoredComponentsStore().openQuickActionMenu({
     props: { position: { x, y } },
+  });
+
+  useAnalyticsService().track("quickactionmenu_opened", {
+    via: "canvas_doubleclick_",
   });
 };
 

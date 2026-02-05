@@ -1,5 +1,6 @@
 import { storeToRefs } from "pinia";
 
+import { useAnalyticsService } from "@/analytics";
 import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
@@ -215,12 +216,26 @@ export const useDragNodeIntoCanvas = () => {
       return;
     }
 
-    const addNodeAction = () => {
+    const addNodeAction = async () => {
       if (eventData.type === "node") {
-        return nodeInteractionsStore.addNativeNode({
+        const res = await nodeInteractionsStore.addNativeNode({
           position: dropPosition,
           nodeFactory: eventData.payload.nodeFactory,
         });
+
+        const node = nodeInteractionsStore.getNodeById(res.newNodeId ?? "");
+
+        if (node && res.newNodeId) {
+          const { className } = nodeInteractionsStore.getNodeFactory(node.id);
+          useAnalyticsService().track("node_created", {
+            via: "noderepo_dragdrop_",
+            nodeId: node.id,
+            nodeType: node.kind,
+            nodeFactoryId: className,
+          });
+        }
+
+        return res;
       }
 
       return nodeInteractionsStore.addComponentNode({

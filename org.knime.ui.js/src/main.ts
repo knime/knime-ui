@@ -4,6 +4,7 @@ import { createPinia } from "pinia";
 import { embeddingSDK } from "@knime/hub-features";
 import { useKdsLegacyMode } from "@knime/kds-components";
 
+import { setupAnalyticsService } from "./analytics";
 import { initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import {
@@ -29,6 +30,9 @@ try {
   const toastServiceProvider = getToastsProvider();
   const toastPlugin = toastServiceProvider.getToastServicePlugin();
 
+  // Create Vue app
+  const app = createApp(KnimeUI);
+
   await runInEnvironment({
     DESKTOP: async () => {
       await initJSONRPCClient("DESKTOP", null);
@@ -40,11 +44,12 @@ try {
         jobId: embeddingContext.jobId,
         restAPIBaseURL: embeddingContext.restApiBaseUrl,
       });
+
+      if (embeddingContext.enableAnalytics) {
+        setupAnalyticsService();
+      }
     },
   });
-
-  // Create Vue app
-  const app = createApp(KnimeUI);
 
   // initialize pinia stores
   const pinia = createPinia();
