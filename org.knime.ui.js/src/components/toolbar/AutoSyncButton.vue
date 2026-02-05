@@ -116,6 +116,7 @@ const syncButtonTitle = computed(() => {
 .sync-button,
 .button-like {
   width: 28px;
+  margin-top: 3px;
 }
 
 .is-synced {
