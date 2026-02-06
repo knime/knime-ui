@@ -4,6 +4,7 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
+import { embeddingSDK } from "@knime/hub-features";
 import {
   KdsButton,
   type KdsButtonProps,
@@ -304,16 +305,37 @@ onMounted(() => {
 const { isSVGRenderer } = useCanvasRendererUtils();
 
 const { isLocalSaveSupported, isAutoSyncSupported } = useUIControlsStore();
+
+const isVersionModeActive = computed(
+  () =>
+    activeProjectVersionsModeStatus.value === "active" &&
+    isActiveWorkflowFixedVersion.value,
+);
+
+const handleNavigateToHubHome = () => {
+  embeddingSDK.guest.dispatchGenericEventToHost({
+    kind: "hostNavigationRequest",
+    payload: { intent: "go-to", destination: "cloud-home", target: "_blank" },
+  });
+};
 </script>
 
 <template>
   <div class="toolbar">
+    <div
+      v-if="uiControls.shouldShowCloudHomeButton && !isVersionModeActive"
+      class="home-navigation"
+    >
+      <KdsButton
+        leading-icon="home"
+        variant="transparent"
+        @click="handleNavigateToHubHome"
+      />
+    </div>
+
     <transition-group tag="div" name="button-list">
       <KdsButton
-        v-if="
-          activeProjectVersionsModeStatus === 'active' &&
-          isActiveWorkflowFixedVersion
-        "
+        v-if="isVersionModeActive"
         label="Close version history"
         leading-icon="chevron-left"
         variant="outlined"
@@ -420,6 +442,12 @@ const { isLocalSaveSupported, isAutoSyncSupported } = useUIControlsStore();
     font-size: 14px;
     user-select: none;
     gap: var(--space-4);
+  }
+
+  & .home-navigation {
+    min-width: 40px;
+    margin: 0 var(--space-4);
+    border-right: var(--kds-border-base-muted);
   }
 
   & .breadcrumb {

@@ -66,8 +66,8 @@ watch(block, () => {
   height: 100vh;
   background: transparent;
 
-  &.darken-background {
+  /* &.darken-background {
     background: var(--knime-black-semi);
-  }
+  } */
 }
 </style>

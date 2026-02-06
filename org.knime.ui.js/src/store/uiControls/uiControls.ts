@@ -101,6 +101,10 @@ export interface UIControlsState {
   // NOTE: K-AI is not supported yet the playground. This property should be removed
   // since we want K-AI to be supported everywhere, so this can be thought of as temporary
   isKAISupported: boolean;
+  /**
+   * Whether the cloud home button should be displayed
+   */
+  shouldShowCloudHomeButton: boolean;
 }
 
 export const useUIControlsStore = defineStore("uiControls", {
@@ -134,6 +138,7 @@ export const useUIControlsStore = defineStore("uiControls", {
     canLockAndUnlockSubnodes: false,
 
     canOpenLayoutEditor: false,
+    shouldShowCloudHomeButton: false,
   }),
   actions: {
     updateControls(value: UIControlsState) {
@@ -175,6 +180,8 @@ export const useUIControlsStore = defineStore("uiControls", {
         isAutoSyncSupported: isBrowser() && isDefault,
         canOpenLegacyPortViews: isDesktop(),
         canLockAndUnlockSubnodes: isDesktop(),
+        // TODO: NXT-4473 enable this also for job viewer
+        shouldShowCloudHomeButton: isBrowser() && isDefault,
       };
 
       this.updateControls(uiControls);
