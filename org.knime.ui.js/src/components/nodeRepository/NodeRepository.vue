@@ -127,7 +127,7 @@ const handleNavReachedTop = (event: NavReachedEvent) => {
     />
 
     <template v-if="nodeRepositoryLoaded">
-      <div v-show="searchContext === 'nodes'" style="height: 100%">
+      <div v-show="searchContext === 'nodes'" class="nodes-wrapper">
         <SidebarNodeSearchResults
           v-if="searchIsActive"
           ref="nodeSearchResults"
@@ -198,6 +198,10 @@ const handleNavReachedTop = (event: NavReachedEvent) => {
   display: flex;
   flex-direction: column;
   user-select: none;
+}
+
+.nodes-wrapper {
+  overflow-y: auto;
 }
 
 .extension-panel-enter-active {
