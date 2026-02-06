@@ -26,6 +26,7 @@ vi.mock("@knime/hub-features", async (importOriginal) => {
             restApiBaseUrl: "real-value",
           }),
         ),
+        setContext: vi.fn(),
       },
     },
   };

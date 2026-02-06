@@ -1,6 +1,7 @@
 import { computed } from "vue";
 import { API } from "@api";
 
+import { embeddingSDK } from "@knime/hub-features";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { sleep } from "@knime/utils";
 
@@ -9,6 +10,7 @@ import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useNotifyUIExtensionAlert";
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
+import { isBrowser } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useSelectionStore } from "@/store/selection";
@@ -497,7 +499,39 @@ const actions = {
   },
 };
 
+const removeComponentIdentifier = (nodeId: string) =>
+  nodeId.replace(/:0:/g, ":").replace(/^0:/, "");
+
+// only returns a string with the path for the resource download url
+const jobDownloadResource = ({ jobId, resourceId, nodeId }) => {
+  const stubbedNodeId = removeComponentIdentifier(nodeId);
+  return encodeURI(
+    `jobs/${jobId}/output-resources/${resourceId}-${stubbedNodeId}`,
+  );
+};
+
 const getters = {
+  // resolves the download link for, e.g., the File Download Widget
+  downloadResourceLink:
+    () =>
+    ({ resourceId, nodeId }) => {
+      if (!isBrowser()) {
+        return null;
+      }
+
+      const context = embeddingSDK.guest.getContext();
+      if (!context) {
+        return null;
+      }
+
+      const path = jobDownloadResource({
+        jobId: context.jobId,
+        resourceId,
+        nodeId,
+      });
+      return `${context.restApiBaseUrl}/${path}`;
+    },
+
   // tableView will use this getter to get the resource location
   uiExtResourceLocation:
     (state: PageBuilderStoreState) =>
