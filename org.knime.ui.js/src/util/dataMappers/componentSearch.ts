@@ -47,6 +47,7 @@ const toNodeTemplateWithExtendedPorts = (
     name: input.name,
     type: input.type,
     component: true,
+    isOwnedByAnotherIdentity: input.isOwnedByAnotherIdentity ?? false,
     icon: input.icon,
     inPorts,
     outPorts,

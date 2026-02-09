@@ -1357,6 +1357,12 @@ export interface ComponentSearchItem {
      */
     icon?: string;
     /**
+     * True if the item is owned by an AccountIdentity (e.g. user or team) other than the currently authenticated user.
+     * @type {boolean}
+     * @memberof ComponentSearchItem
+     */
+    isOwnedByAnotherIdentity?: boolean;
+    /**
      * The type (a.k.a. \&quot;kind\&quot;) of the component
      * @type {string}
      * @memberof ComponentSearchItem

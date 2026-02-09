@@ -3,12 +3,18 @@ import { computed } from "vue";
 
 import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/util/dataMappers";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
+import { shouldShowCommunityIcon } from "./nodeTemplateCommunityIcon";
 
 type Props = {
-  nodeTemplate: NodeTemplateWithExtendedPorts;
+  nodeTemplate:
+    | NodeTemplateWithExtendedPorts
+    | ComponentNodeTemplateWithExtendedPorts;
   isHovered: boolean;
   showFloatingHelpIcon?: boolean;
   isSelected?: boolean;
@@ -23,15 +29,15 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(["helpIconClick"]);
 
-const isCommunityExtension = computed(
-  () => !props.nodeTemplate.extension?.vendor?.isKNIME,
+const showCommunityIcon = computed(() =>
+  shouldShowCommunityIcon(props.nodeTemplate),
 );
 </script>
 
 <template>
   <div
     class="node-template-list-mode"
-    :class="{ 'with-community-icon': isCommunityExtension }"
+    :class="{ 'with-community-icon': showCommunityIcon }"
     :title="
       nodeTemplate.extension && nodeTemplate.extension.vendor
         ? `${nodeTemplate.extension.name} \nby “${nodeTemplate.extension.vendor.name}”`
@@ -50,7 +56,7 @@ const isCommunityExtension = computed(
     </div>
 
     <ExtensionCommunityIcon
-      v-if="isCommunityExtension"
+      v-if="showCommunityIcon"
       class="extension-community-icon"
     />
 

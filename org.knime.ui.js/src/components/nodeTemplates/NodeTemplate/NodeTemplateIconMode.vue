@@ -3,12 +3,18 @@ import { computed } from "vue";
 
 import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/util/dataMappers";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
+import { shouldShowCommunityIcon } from "./nodeTemplateCommunityIcon";
 
 type Props = {
-  nodeTemplate: NodeTemplateWithExtendedPorts;
+  nodeTemplate:
+    | NodeTemplateWithExtendedPorts
+    | ComponentNodeTemplateWithExtendedPorts;
   isHovered: boolean;
   isDescriptionActive?: boolean;
   showFloatingHelpIcon?: boolean;
@@ -27,6 +33,10 @@ const extensionText = computed(() => {
   }
   return `\n———\n${props.nodeTemplate.extension.name}\nby ${props.nodeTemplate.extension.vendor.name}`;
 });
+
+const showCommunityIcon = computed(() =>
+  shouldShowCommunityIcon(props.nodeTemplate),
+);
 </script>
 
 <template>
@@ -55,7 +65,7 @@ const extensionText = computed(() => {
 
     <div class="extension-info">
       <ExtensionCommunityIcon
-        v-if="nodeTemplate.extension && !nodeTemplate.extension.vendor?.isKNIME"
+        v-if="showCommunityIcon"
         class="extension-community-icon"
       />
     </div>
