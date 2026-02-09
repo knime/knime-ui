@@ -4,7 +4,10 @@ import { computed, ref } from "vue";
 import { NodePreview } from "@knime/components";
 
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/util/dataMappers";
 
 import NodeTemplateIconMode from "./NodeTemplateIconMode.vue";
 import NodeTemplateListMode from "./NodeTemplateListMode.vue";
@@ -17,7 +20,9 @@ export type Props = {
    * Additional to the properties of the NodeTemplate from the gateway API, this object
    * contains the port information (color and kind) which was mapped from the store
    */
-  nodeTemplate: NodeTemplateWithExtendedPorts;
+  nodeTemplate:
+    | NodeTemplateWithExtendedPorts
+    | ComponentNodeTemplateWithExtendedPorts;
   displayMode?: NodeRepositoryDisplayModesType;
   isSelected?: boolean;
   isDescriptionActive?: boolean;

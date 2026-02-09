@@ -12,6 +12,11 @@ export type NodeTemplateWithExtendedPorts = NodeTemplate & {
 };
 
 export type ComponentNodeTemplateWithExtendedPorts = NodeTemplate & {
+  /**
+   * True if the component is owned by an account other than the current user.
+   * Mirrors the gateway API isOwnedByAnotherIdentity flag.
+   */
+  isOwnedByAnotherIdentity: boolean;
   description: string;
   inPorts: Array<ExtendedPortType & { name: string; description: string }>;
   outPorts: Array<ExtendedPortType & { name: string; description: string }>;
