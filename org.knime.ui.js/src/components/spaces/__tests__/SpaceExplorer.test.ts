@@ -148,7 +148,7 @@ describe("SpaceExplorer.vue", () => {
       newNodeId: "mockNewNodeId",
     });
     vi.mocked(
-      mockedStores.nodeInteractionsStore.addComponentNode,
+      mockedStores.nodeInteractionsStore.importComponentNode,
     ).mockResolvedValue({
       newNodeId: "mockNewNodeId",
     });
@@ -776,7 +776,7 @@ describe("SpaceExplorer.vue", () => {
         mockedStores.nodeInteractionsStore.addNativeNode,
       ).not.toHaveBeenCalled();
       expect(
-        mockedStores.nodeInteractionsStore.addComponentNode,
+        mockedStores.nodeInteractionsStore.importComponentNode,
       ).not.toHaveBeenCalled();
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
@@ -820,7 +820,7 @@ describe("SpaceExplorer.vue", () => {
         mockedStores.nodeInteractionsStore.addNativeNode,
       ).not.toHaveBeenCalled();
       expect(
-        mockedStores.nodeInteractionsStore.addComponentNode,
+        mockedStores.nodeInteractionsStore.importComponentNode,
       ).not.toHaveBeenCalled();
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
@@ -910,7 +910,7 @@ describe("SpaceExplorer.vue", () => {
       });
 
       expect(
-        mockedStores.nodeInteractionsStore.addComponentNode,
+        mockedStores.nodeInteractionsStore.importComponentNode,
       ).toHaveBeenNthCalledWith(1, {
         position: { x: 5, y: 5 },
         spaceItemReference: {
