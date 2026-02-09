@@ -100,7 +100,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       // Fetch ui-settings and ai-settings from backend
       await useSettingsStore().fetchSettings();
       await useAISettingsStore().fetchAISettings();
-      await useAISettingsStore().pruneStaleActionPermissions();
+      await useAISettingsStore().pruneStaleEntries();
 
       await runInEnvironment({
         DESKTOP: () => {

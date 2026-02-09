@@ -5,12 +5,16 @@ import { defineStore, storeToRefs } from "pinia";
 import { useHubAuth } from "@/components/kai/useHubAuth";
 import { runInEnvironment } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
+import { hashString } from "@/util/hashString";
 import { toStableProjectId } from "@/util/projectUtil";
 
 /**
  * Store that manages AP-client-side AI settings.
  *
  * AI settings currently implemented:
+ * - Disclaimer dismissals: per-user per-Hub record of whether the K-AI disclaimer
+ *   has been persistently dismissed. Tracks the disclaimer text hash so that a
+ *   changed disclaimer is shown again.
  * - Action permissions: per-project (user & Hub-scoped) per-action decision about
  *   whether to "always allow" or "never allow" a certain action by K-AI.
  */
@@ -18,7 +22,7 @@ import { toStableProjectId } from "@/util/projectUtil";
 const AI_SETTINGS_KEY = "knime-ai-settings";
 
 /**
- * Project entries older than this will be pruned.
+ * Entries older than this will be pruned.
  * See lifecycle.ts::initializeApplication
  */
 const PRUNE_THRESHOLD_MONTHS = 6;
@@ -30,11 +34,18 @@ type ProjectActionPermissions = {
   permissions: Record<string, ActionPermission>;
 };
 
+type DisclaimerDismissal = {
+  disclaimerTextHash: string;
+  lastUpdated: string;
+};
+
 type AISettingsState = {
+  disclaimerDismissals: Record<string, DisclaimerDismissal>;
   actionPermissionsByProject: Record<string, ProjectActionPermissions>;
 };
 
 const defaults: AISettingsState = {
+  disclaimerDismissals: {},
   actionPermissionsByProject: {},
 };
 
@@ -104,31 +115,57 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     );
   };
 
-  /**
-   * Prune project entries that haven't been updated in the last N months.
-   */
-  const pruneStaleActionPermissions = async () => {
-    const now = new Date();
-    const thresholdDate = new Date(now);
-    thresholdDate.setMonth(thresholdDate.getMonth() - PRUNE_THRESHOLD_MONTHS);
+  const getHashForCurrentHubUser = (): string | null => {
+    const { hubID, username } = useHubAuth();
+    if (!hubID.value || !username.value) {
+      consola.error(
+        "Failed to get Hub-scoped user ID for AI settings: user not logged in.",
+      );
+      return null;
+    }
+    return hashString(`${hubID.value}:${username.value}`);
+  };
 
+  // === DISCLAIMER ===
+  // The disclaimer dismissal is scoped per Hub+user so that a desktop AP user
+  // connected to multiple Hubs sees the disclaimer at least once per Hub.
+  // The disclaimer text hash is stored so that a changed disclaimer is re-shown.
+
+  const isDisclaimerDismissed = (disclaimerText: string): boolean => {
+    const key = getHashForCurrentHubUser();
+    if (!key) {
+      return false;
+    }
+    const dismissal = settings.disclaimerDismissals[key];
+    return dismissal?.disclaimerTextHash === hashString(disclaimerText);
+  };
+
+  const dismissDisclaimer = async (disclaimerText: string) => {
+    const key = getHashForCurrentHubUser();
+    if (!key) {
+      return;
+    }
+    settings.disclaimerDismissals[key] = {
+      disclaimerTextHash: hashString(disclaimerText),
+      lastUpdated: new Date().toISOString(),
+    };
+    await updateSettings();
+  };
+
+  const pruneStaleDisclaimerDismissals = (thresholdDate: Date) => {
     let didPrune = false;
 
-    for (const [userScopedProjectId, entry] of Object.entries(
-      settings.actionPermissionsByProject,
-    )) {
+    for (const [key, entry] of Object.entries(settings.disclaimerDismissals)) {
       if (new Date(entry.lastUpdated) < thresholdDate) {
         consola.debug(
-          `Pruning stale AI settings for project ${userScopedProjectId} (last updated: ${entry.lastUpdated})`,
+          `Pruning stale disclaimer dismissal ${key} (last updated: ${entry.lastUpdated})`,
         );
-        delete settings.actionPermissionsByProject[userScopedProjectId];
+        delete settings.disclaimerDismissals[key];
         didPrune = true;
       }
     }
 
-    if (didPrune) {
-      await updateSettings();
-    }
+    return didPrune;
   };
 
   // === ACTION PERMISSIONS ===
@@ -263,13 +300,58 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     await revokePermissionsForAllActions(userScopedProjectId);
   };
 
+  const pruneStaleActionPermissions = (thresholdDate: Date) => {
+    let didPrune = false;
+
+    for (const [userScopedProjectId, entry] of Object.entries(
+      settings.actionPermissionsByProject,
+    )) {
+      if (new Date(entry.lastUpdated) < thresholdDate) {
+        consola.debug(
+          `Pruning stale AI settings for project ${userScopedProjectId} (last updated: ${entry.lastUpdated})`,
+        );
+        delete settings.actionPermissionsByProject[userScopedProjectId];
+        didPrune = true;
+      }
+    }
+
+    return didPrune;
+  };
+
+  /**
+   * Prune all stale entries (action permissions, disclaimer dismissals, etc.)
+   * that haven't been updated in the last N months.
+   */
+  const pruneStaleEntries = async () => {
+    const now = new Date();
+    const thresholdDate = new Date(now);
+    thresholdDate.setMonth(thresholdDate.getMonth() - PRUNE_THRESHOLD_MONTHS);
+
+    const prunedPermissions = pruneStaleActionPermissions(thresholdDate);
+    const prunedDisclaimers = pruneStaleDisclaimerDismissals(thresholdDate);
+
+    const didPrune = prunedPermissions || prunedDisclaimers;
+
+    if (didPrune) {
+      await updateSettings();
+    }
+  };
+
   return {
     _internal: {
       settings,
       updateSettings,
       getStableProjectIdForActiveProject,
+      getHashForCurrentHubUser,
+      pruneStaleActionPermissions,
+      pruneStaleDisclaimerDismissals,
     },
 
+    // K-AI Disclaimer
+    isDisclaimerDismissed,
+    dismissDisclaimer,
+
+    // Permissions for K-AI to execute specific actions (e.g. sample data)
     // Generic API (operates on any project by stable ID)
     getPermissionForAction,
     setPermissionForAction,
@@ -285,6 +367,6 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     revokePermissionsForAllActionsForActiveProject,
 
     fetchAISettings,
-    pruneStaleActionPermissions,
+    pruneStaleEntries,
   };
 });
