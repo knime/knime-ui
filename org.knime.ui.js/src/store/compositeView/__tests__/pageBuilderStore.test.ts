@@ -11,7 +11,17 @@ import { deepMocked } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 
-vi.mock("@knime/hub-features");
+vi.mock("@/environment");
+vi.mock("@knime/hub-features", async () => {
+  return {
+    ...(await vi.importActual("@knime/hub-features")),
+    embeddingSDK: {
+      guest: {
+        getContext: vi.fn(),
+      },
+    },
+  };
+});
 
 vi.mock("@knime/utils", async (importOriginal) => {
   const original = (await importOriginal()) as typeof import("@knime/utils");
