@@ -24,7 +24,7 @@
     </modules>
 
     <properties>
-        <revision>5.10.0</revision>
+        <revision>5.11.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <changelog.baseref>analytics-platform/4.2.0</changelog.baseref>
         <feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
