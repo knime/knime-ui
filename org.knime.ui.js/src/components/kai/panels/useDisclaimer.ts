@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { useKaiServer } from "../useKaiServer";
 
-const _shouldShowDisclaimer = ref(true);
+const hasBeenDismissed = ref(false);
 
 export const useDisclaimer = () => {
   const { uiStrings } = useKaiServer();
@@ -12,7 +12,7 @@ export const useDisclaimer = () => {
   const aiSettingsStore = useAISettingsStore();
 
   const closeDisclaimer = async (persistently: boolean = true) => {
-    _shouldShowDisclaimer.value = false;
+    hasBeenDismissed.value = true;
 
     if (persistently && disclaimerText.value) {
       await aiSettingsStore.dismissDisclaimer(disclaimerText.value);
@@ -21,7 +21,7 @@ export const useDisclaimer = () => {
 
   const shouldShowDisclaimer = computed(
     () =>
-      _shouldShowDisclaimer.value &&
+      !hasBeenDismissed.value &&
       Boolean(disclaimerText.value) &&
       !aiSettingsStore.isDisclaimerDismissed(disclaimerText.value),
   );
