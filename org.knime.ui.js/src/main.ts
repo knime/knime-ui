@@ -6,7 +6,6 @@ import { useKdsLegacyMode } from "@knime/kds-components";
 
 import { initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
-import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
 import {
   initGlobalEnvProperty,
   isBrowser,
@@ -17,8 +16,8 @@ import { initPlugins } from "./plugins";
 import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
 import { router } from "./router/router";
-
 import "./assets/index.css";
+import { webResourceLocation } from "./webResourceLocation";
 
 // Setup logger for production
 setupLogger();
@@ -37,7 +36,10 @@ try {
     BROWSER: async () => {
       const embeddingContext = await waitForEmbeddingContext();
       await initJSONRPCClient("BROWSER", embeddingContext);
-      setRestApiBaseUrl(embeddingContext.restApiBaseUrl);
+      webResourceLocation.setContext({
+        jobId: embeddingContext.jobId,
+        restAPIBaseURL: embeddingContext.restApiBaseUrl,
+      });
     },
   });
 

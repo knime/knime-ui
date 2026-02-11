@@ -10,7 +10,7 @@ import {
 
 import type { KnimeNode } from "@/api/custom-types";
 import type { UIExtensionLoadingState } from "../common/types";
-import { useResourceLocation } from "../common/useResourceLocation";
+// import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
 import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 import { getMessage } from "../common/utils/uiExtensionAlert";
@@ -89,7 +89,13 @@ const {
 const closeDataValueViewWithoutDelay = () =>
   closeDataValueView({ withoutDelay: true });
 
-const { extensionConfig, isLoadingConfig, error } = useUIExtensionLifecycle({
+const {
+  extensionConfig,
+  isLoadingConfig,
+  error,
+  resourceLocation,
+  getResourceLocation,
+} = useUIExtensionLifecycle({
   renderKey: toRef(props, "uniquePortKey"),
   configLoader: loadExtensionConfig,
   onExtensionLoadingStateChange: (state) => emit("loadingStateChange", state),
@@ -98,21 +104,10 @@ const { extensionConfig, isLoadingConfig, error } = useUIExtensionLifecycle({
   },
 });
 
-const { resourceLocation, resourceLocationResolver } = useResourceLocation({
-  extensionConfig,
-});
-
 const noop = () => {}; // NOSONAR
 
 const apiLayer: UIExtensionAPILayer = {
-  getResourceLocation: (path: string) => {
-    return Promise.resolve(
-      resourceLocationResolver(
-        path,
-        extensionConfig.value?.resourceInfo?.baseUrl,
-      ),
-    );
-  },
+  getResourceLocation,
   showDataValueView,
   closeDataValueView,
   callNodeDataService: async (params) => {

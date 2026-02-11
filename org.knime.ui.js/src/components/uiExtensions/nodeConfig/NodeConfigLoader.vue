@@ -17,7 +17,6 @@ import type {
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import type { UIExtensionLoadingState } from "../common/types";
 import { useNotifyUIExtensionAlert } from "../common/useNotifyUIExtensionAlert";
-import { useResourceLocation } from "../common/useResourceLocation";
 import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
@@ -95,7 +94,12 @@ const resetState = () => {
   nodeConfigurationStore.resetDirtyState();
 };
 
-const { extensionConfig, isLoadingConfig } = useUIExtensionLifecycle({
+const {
+  extensionConfig,
+  isLoadingConfig,
+  resourceLocation,
+  getResourceLocation,
+} = useUIExtensionLifecycle({
   renderKey: uniqueNodeConfigId,
   configLoader: loadExtensionConfig,
   onBeforeLoadUIExtension: resetState,
@@ -106,21 +110,10 @@ onUnmounted(() => {
   resetState();
 });
 
-const { resourceLocation, resourceLocationResolver } = useResourceLocation({
-  extensionConfig,
-});
-
 const noop = () => {}; // NOSONAR
 
 const apiLayer: UIExtensionAPILayer = {
-  getResourceLocation: (path: string) => {
-    return Promise.resolve(
-      resourceLocationResolver(
-        path,
-        extensionConfig.value?.resourceInfo?.baseUrl,
-      ),
-    );
-  },
+  getResourceLocation,
 
   callNodeDataService: async (params: any) => {
     const { serviceType, dataServiceRequest } = params;

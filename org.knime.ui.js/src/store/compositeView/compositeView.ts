@@ -1,9 +1,9 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 
-import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { isBrowser, isDesktop } from "@/environment";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { webResourceLocation } from "@/webResourceLocation";
 
 import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
 import { showPageBuilderUnsavedChangesDialog } from "./showPageBuilderUnsavedChangesDialog";
@@ -60,7 +60,7 @@ export const useCompositeViewStore = defineStore("component", () => {
     isCompositeViewDefault.value = isDefault;
   };
 
-  const getPageBuilder = async (projectId: string): Promise<PageBuilderApi> => {
+  const getPageBuilder = async (): Promise<PageBuilderApi> => {
     const pageBuilderBaseUrl =
       // eslint-disable-next-line no-undefined
       isDesktop() ? PAGEBUILDER_BASE_URL_FOR_DESKTOP : undefined;
@@ -71,8 +71,7 @@ export const useCompositeViewStore = defineStore("component", () => {
 
       PageBuilderModule.value = await import(
         /* @vite-ignore */
-        resourceLocationResolver(
-          projectId,
+        webResourceLocation.uiExtensionResource(
           PATH_TO_PAGEBUILDER_SHADOW_APP_MODULE,
           pageBuilderBaseUrl,
         )
@@ -95,7 +94,7 @@ export const useCompositeViewStore = defineStore("component", () => {
               onPagebuilderStateChange(isDirty, isDefault),
           },
         },
-        resourceLocationResolver(projectId, "", pageBuilderBaseUrl),
+        webResourceLocation.uiExtensionResource("", pageBuilderBaseUrl),
       ) ?? fallbackPageBuilderApi);
 
     activePageBuilder.value = {

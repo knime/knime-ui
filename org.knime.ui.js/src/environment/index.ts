@@ -1,3 +1,5 @@
+/* eslint-disable func-style */
+/* eslint-disable no-undefined */
 import type { App } from "vue";
 
 import DynamicEnvRenderer from "./DynamicEnvRenderer.vue";
@@ -5,7 +7,6 @@ import DynamicEnvRenderer from "./DynamicEnvRenderer.vue";
 export type Environment = "DESKTOP" | "BROWSER";
 
 export const environment: Environment =
-  // eslint-disable-next-line no-undefined
   window.EquoCommService === undefined ? "BROWSER" : "DESKTOP";
 
 export const isDesktop = () => environment === "DESKTOP";
@@ -15,18 +16,51 @@ export const initGlobalEnvProperty = (app: App) => {
   app.config.globalProperties.$environment = environment;
 };
 
-type Handler = () => void | Promise<any>;
+type Handler<R> = () => R;
 
-type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
-  U[keyof U];
+// exactly one handler provided
+type OneMatcher<R> =
+  | { DESKTOP: Handler<R>; BROWSER?: never }
+  | { BROWSER: Handler<R>; DESKTOP?: never };
 
-type Matcher = AtLeastOne<Record<Environment, Handler>>;
+// both provided, and MUST return the same R
+type BothMatcher<R> = { DESKTOP: Handler<R>; BROWSER: Handler<R> };
 
-export const runInEnvironment = (matcher: Matcher) => {
-  // fallback, just in case value is not provided
-  const noop = () => Promise.resolve();
+/**
+ * This helper function is mostly useful to preserve a declarative flow in a context that
+ * needs to run conditional logic based on the current environment.
+ *
+ * @example
+ * ```
+ * // ----- WITHOUT HELPER ------
+ *
+ * let someState
+ *
+ * if (isBrowser()) {
+ *   someState = ...
+ * } else {
+ *   someState = ...
+ * }
+ *
+ * // ----- WITH HELPER ------
+ *
+ * const someState = runInEnvironment({
+ *    BROWSER: () => ...,
+ *    DESKTOP: () => ...,
+ * })
+ * ```
+ */
+
+// 1) both matchers → return R (no undefined)
+export function runInEnvironment<R>(matcher: BothMatcher<R>): R;
+
+// 2) exactly one matcher → return R | undefined (no promise requirement)
+export function runInEnvironment<R>(matcher: OneMatcher<R>): R | undefined;
+
+export function runInEnvironment(matcher: any) {
+  const noop = () => Promise.resolve(undefined);
 
   return (matcher[environment] ?? noop)();
-};
+}
 
 export { DynamicEnvRenderer };
