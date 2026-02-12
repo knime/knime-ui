@@ -5787,7 +5787,7 @@ packages:
     hasBin: true
 
   v-calendar@https://github.com/knime/v-calendar/archive/048477f.tar.gz:
-    resolution: {tarball: https://github.com/knime/v-calendar/archive/048477f.tar.gz}
+    resolution: {integrity: sha512-5SzgeI9Y4g7W6CyXu9lLZsDlNHm2QRyiK6csmckzu+V1xRJOZRNCiUPrG+qeis7MYKgZA0gBtzf/OndABQnl2Q==, tarball: https://github.com/knime/v-calendar/archive/048477f.tar.gz}
     version: 3.1.2
     peerDependencies:
       '@popperjs/core': ^2.0.0
@@ -7215,7 +7215,7 @@ snapshots:
   '@knime/kds-components@0.11.0(@vueuse/core@13.8.0(vue@3.5.30(typescript@5.8.3)))(vue@3.5.30(typescript@5.8.3))':
     dependencies:
       '@knime/kds-styles': 0.11.0
-      '@knime/utils': 1.10.0(consola@3.4.2)
+      '@knime/utils': 1.10.1(consola@3.4.2)
       '@vueuse/core': 13.8.0(vue@3.5.30(typescript@5.8.3))
       consola: 3.4.2
       vue: 3.5.30(typescript@5.8.3)
@@ -7338,14 +7338,14 @@ snapshots:
       consola: 3.4.2
       date-fns: 2.30.0
       date-fns-tz: 2.0.0(date-fns@2.30.0)
-      dompurify: 3.3.1
+      dompurify: 3.3.3
 
   '@knime/utils@1.9.0(consola@3.4.2)':
     dependencies:
       consola: 3.4.2
       date-fns: 2.30.0
       date-fns-tz: 2.0.0(date-fns@2.30.0)
-      dompurify: 3.3.1
+      dompurify: 3.3.3
 
   '@knime/virtual-tree@1.7.3(@fontsource/roboto-mono@5.2.8)(@fontsource/roboto@5.2.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.30(typescript@5.8.3))':
     dependencies:
