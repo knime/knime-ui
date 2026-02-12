@@ -73,23 +73,14 @@ export const setProjectActiveOrThrow = async (
 
 /**
  * Generates a "stable" ID for the provided project by hashing the project's
- * origin information (if available) with the user's context (username and provider ID).
- *
- * Example use-case:
- * Per-workflow permissions for K-AI. The same project needs a different ID for
- * the same username across different Hubs (user can have the same username "john.doe"
- * on Hub A and Hub B, but the per-workflow K-AI permissions shouldn't be shared across Hubs).
+ * origin information (if available).
  */
-export const toStableProjectId = (
-  project: Project,
-  username: string,
-  providerId: string,
-) => {
+export const toStableProjectId = (project: Project) => {
   if (!project.origin) {
     return null;
   }
 
-  const stableProjectId = `${project.origin.providerId}:${project.origin.spaceId}:${project.origin.itemId}`;
-
-  return hashString(`${stableProjectId}:${providerId}:${username}`);
+  return hashString(
+    `${project.origin.providerId}:${project.origin.spaceId}:${project.origin.itemId}`,
+  );
 };
