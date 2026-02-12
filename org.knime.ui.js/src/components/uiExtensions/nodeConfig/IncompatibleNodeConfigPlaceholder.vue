@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 
-import { Button } from "@knime/components";
-import CogIcon from "@knime/styles/img/icons/cog.svg";
+import { KdsEmptyState } from "@knime/kds-components";
 
 import { Node } from "@/api/gateway-api/generated-api";
-import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import { useAnalyticsPlatformDownloadUrl } from "@/composables/useAnalyticsPlatformDownloadUrl";
 import { isDesktop } from "@/environment";
+import { APP_ROUTES } from "@/router/appRoutes";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 
 const { shouldDisplayDownloadAPButton } = storeToRefs(useUIControlsStore());
 const { activeContext } = storeToRefs(useNodeConfigurationStore());
+
+const router = useRouter();
 
 const selectedNode = computed(() => activeContext.value?.node ?? null);
 
@@ -41,6 +45,10 @@ const shouldDisplayDownload = computed(
     !isMetanode.value,
 );
 
+const { href: downloadHref } = useAnalyticsPlatformDownloadUrl(
+  "node-configuration-panel",
+);
+
 const openNodeConfiguration = () => {
   if (!selectedNode.value) {
     return;
@@ -49,76 +57,78 @@ const openNodeConfiguration = () => {
   const nodeId = selectedNode.value.id;
   useDesktopInteractionsStore().openNodeConfiguration(nodeId);
 };
+
+const openMetanode = () => {
+  if (!selectedNode.value || !isMetanode.value) {
+    return;
+  }
+
+  const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
+
+  router.push({
+    name: APP_ROUTES.WorkflowPage,
+    params: { projectId, workflowId: selectedNode.value.id },
+  });
+};
 </script>
 
 <template>
   <div class="placeholder full-height">
-    <template v-if="isMetanode">
-      <div class="placeholder-text">
-        Configuration is not available for metanodes.
-      </div>
-    </template>
+    <KdsEmptyState
+      v-if="isMetanode"
+      headline="No settings"
+      description="Metanodes require no configuration."
+      button-label="Open Metanode"
+      button-variant="outlined"
+      button-size="small"
+      @button-click="openMetanode"
+    />
 
-    <template v-if="hasNoDialog">
-      <div class="placeholder-text">This node has no dialog.</div>
-    </template>
+    <KdsEmptyState
+      v-if="hasNoDialog"
+      headline="No settings"
+      description="This node requires no configuration."
+    />
 
     <template v-if="hasLegacyDialog">
-      <!-- Show placeholder text and "Download AP" button -->
-      <template v-if="shouldDisplayDownload">
-        <span class="placeholder-text">
-          To configure nodes with a classic dialog, download the KNIME Analytics
-          Platform.
-        </span>
+      <KdsEmptyState
+        v-if="shouldDisplayDownload"
+        headline="Classic dialog required"
+        description="To configure nodes with a classic dialog, download the KNIME Analytics Platform."
+        button-label="Get KNIME Analytics Platform"
+        button-variant="filled"
+        button-size="small"
+        button-trailing-icon="external-link"
+        :button-to="downloadHref"
+        button-target="_blank"
+      />
 
-        <DownloadAPButton compact src="node-configuration-panel" />
-      </template>
-
-      <!-- Show placeholder text and "Open dialog" button -->
-      <template v-else>
-        <span class="placeholder-text">
-          This node dialog is not supported here.
-        </span>
-
-        <Button
-          v-if="isDesktop()"
-          with-border
-          compact
-          class="button"
-          data-test-id="open-legacy-config-btn"
-          @click="openNodeConfiguration"
-        >
-          <CogIcon />
-          <span>Open dialog</span>
-        </Button>
-      </template>
+      <KdsEmptyState
+        v-if="isDesktop()"
+        headline="This node uses the classic configuration dialog"
+        description="This node hasn’t been migrated to the new interface yet. You can configure it using the dialog for now."
+        button-label="Open dialog"
+        button-variant="outlined"
+        button-size="small"
+        data-test-id="open-legacy-config-btn"
+        @button-click="openNodeConfiguration"
+      />
+      <KdsEmptyState
+        v-else
+        headline="This node uses the classic configuration dialog"
+        description="This node hasn’t been migrated to the new interface yet. You can configure it using the dialog for now."
+      />
     </template>
 
-    <!-- Show a placeholder text if nothing is selected -->
-    <span v-if="!selectedNode" class="placeholder-text">
-      Select a node to show its dialog.
-    </span>
+    <KdsEmptyState v-if="!selectedNode" headline="Select a node to configure" />
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .full-height {
   height: 100%;
-}
-
-.placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-
-  & .placeholder-text {
-    padding: 15px;
-    text-align: center;
-  }
-
-  & .button {
-    margin: 0 15px;
-  }
 }
 </style>

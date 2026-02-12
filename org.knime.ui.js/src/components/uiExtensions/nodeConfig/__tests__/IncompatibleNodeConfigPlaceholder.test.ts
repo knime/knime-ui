@@ -1,9 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { VueWrapper, mount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
+import { createRouter, createWebHistory } from "vue-router";
+
+import { KdsEmptyState } from "@knime/kds-components";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
-import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import {
   createComponentNode,
   createMetanode,
@@ -48,24 +50,35 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
     });
     mockedStores.workflowStore.setActiveWorkflow(workflow);
 
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        {
+          path: "/workflow/:workflowId",
+          name: "WorkflowPage",
+          component: { template: "<div />" },
+        },
+        { path: "/:catchAll(.*)", component: { template: "<div />" } },
+      ],
+    });
+
+    const pushSpy = vi.spyOn(router, "push");
+
     const wrapper = mount(IncompatibleNodeConfigPlaceholder, {
       global: {
-        plugins: [mockedStores.testingPinia],
+        plugins: [mockedStores.testingPinia, router],
       },
     });
 
-    return { wrapper, mockedStores };
-  };
-
-  const assertPlaceholderText = (wrapper: VueWrapper<any>, text: string) => {
-    expect(wrapper.findAll(".placeholder-text").length).toBe(1);
-    expect(wrapper.find(".placeholder-text").text()).toBe(text);
+    return { wrapper, mockedStores, router, pushSpy };
   };
 
   it("renders placeholder when nothing is selected", () => {
     const { wrapper } = doMount();
 
-    assertPlaceholderText(wrapper, "Select a node to show its dialog.");
+    const emptyState = wrapper.findComponent(KdsEmptyState);
+    expect(emptyState.exists()).toBe(true);
+    expect(emptyState.props("headline")).toBe("Select a node to configure");
   });
 
   it("renders placeholder for metanodes", async () => {
@@ -74,10 +87,29 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
     await mockedStores.selectionStore.selectNodes([metanode.id]);
     await nextTick();
 
-    assertPlaceholderText(
-      wrapper,
-      "Configuration is not available for metanodes.",
+    const emptyState = wrapper.findComponent(KdsEmptyState);
+    expect(emptyState.exists()).toBe(true);
+    expect(emptyState.props("headline")).toBe("No settings");
+    expect(emptyState.props("description")).toBe(
+      "Metanodes require no configuration.",
     );
+    expect(emptyState.props("buttonLabel")).toBe("Open Metanode");
+  });
+
+  it("navigates to metanode when button is clicked", async () => {
+    const { wrapper, mockedStores, pushSpy } = doMount();
+
+    await mockedStores.selectionStore.selectNodes([metanode.id]);
+    await nextTick();
+
+    const emptyState = wrapper.findComponent(KdsEmptyState);
+    await emptyState.vm.$emit("button-click");
+    await nextTick();
+
+    expect(pushSpy).toHaveBeenCalledWith({
+      name: "WorkflowPage",
+      params: { projectId: expect.any(String), workflowId: metanode.id },
+    });
   });
 
   describe("legacy nodes", () => {
@@ -88,11 +120,16 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
       await mockedStores.selectionStore.selectNodes([nonEmbeddableNode.id]);
       await nextTick();
 
-      assertPlaceholderText(
-        wrapper,
+      const emptyState = wrapper.findComponent(KdsEmptyState);
+      expect(emptyState.exists()).toBe(true);
+      expect(emptyState.props("headline")).toBe("Classic dialog required");
+      expect(emptyState.props("description")).toBe(
         "To configure nodes with a classic dialog, download the KNIME Analytics Platform.",
       );
-      expect(wrapper.findComponent(DownloadAPButton).exists()).toBe(true);
+      expect(emptyState.props("buttonLabel")).toBe(
+        "Get KNIME Analytics Platform",
+      );
+      expect(emptyState.props("buttonTrailingIcon")).toBe("external-link");
     });
 
     it("renders correct placeholder when download button should not be displayed", async () => {
@@ -100,10 +137,34 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
       await mockedStores.selectionStore.selectNodes([nonEmbeddableNode.id]);
       await nextTick();
 
-      assertPlaceholderText(wrapper, "This node dialog is not supported here.");
+      const emptyState = wrapper.findComponent(KdsEmptyState);
+      expect(emptyState.exists()).toBe(true);
+      expect(emptyState.props("headline")).toBe(
+        "This node uses the classic configuration dialog",
+      );
+      expect(emptyState.props("description")).toBe(
+        "This node hasn’t been migrated to the new interface yet. You can configure it using the dialog for now.",
+      );
       expect(
         wrapper.find('[data-test-id="open-legacy-config-btn"]').exists(),
       ).toBe(true);
+    });
+
+    it("opens node configuration when button is clicked", async () => {
+      const { wrapper, mockedStores } = doMount();
+      await mockedStores.selectionStore.selectNodes([nonEmbeddableNode.id]);
+      await nextTick();
+
+      const openNodeConfigSpy = vi.spyOn(
+        mockedStores.desktopInteractionsStore,
+        "openNodeConfiguration",
+      );
+
+      const emptyState = wrapper.findComponent(KdsEmptyState);
+      await emptyState.vm.$emit("button-click");
+      await nextTick();
+
+      expect(openNodeConfigSpy).toHaveBeenCalledWith(nonEmbeddableNode.id);
     });
   });
 });
