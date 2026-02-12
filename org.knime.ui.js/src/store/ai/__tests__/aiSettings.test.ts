@@ -429,6 +429,23 @@ describe("aiSettings store", () => {
         stores.aiSettingsStore._internal.settings?.[key]?.disclaimer,
       ).toBeUndefined();
     });
+
+    it("resets disclaimer dismissal for current user", async () => {
+      const stores = mockStores();
+      const { hubA, userA, disclaimerText } = getMockData();
+      setupHubUser(stores, hubA, userA);
+
+      await stores.aiSettingsStore.dismissDisclaimer(disclaimerText);
+      expect(stores.aiSettingsStore.isDisclaimerDismissed(disclaimerText)).toBe(
+        true,
+      );
+
+      await stores.aiSettingsStore.resetDisclaimerDismissal();
+
+      expect(stores.aiSettingsStore.isDisclaimerDismissed(disclaimerText)).toBe(
+        false,
+      );
+    });
   });
 
   describe("active project convenience wrappers", () => {

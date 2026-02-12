@@ -99,9 +99,6 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   const getHashForCurrentHubUser = () => {
     const { hubID, username } = useHubAuth();
     if (!hubID.value || !username.value) {
-      consola.error(
-        "Failed to get Hub-scoped user ID for AI settings: user not logged in.",
-      );
       return null;
     }
     return hashString(`${hubID.value}:${username.value}`);
@@ -181,6 +178,20 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     }
 
     return didPrune;
+  };
+
+  const resetDisclaimerDismissal = async () => {
+    const userIdHash = getHashForCurrentHubUser();
+    if (!userIdHash) {
+      return;
+    }
+
+    if (!settings[userIdHash]?.disclaimer) {
+      return;
+    }
+
+    delete settings[userIdHash].disclaimer;
+    await updateSettings();
   };
 
   // === ACTION PERMISSIONS ===
@@ -379,9 +390,27 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
           didPrune = true;
         }
       }
+
+      // Clean up empty permissionsPerProject container
+      if (Object.keys(userSettings.permissionsPerProject).length === 0) {
+        delete userSettings.permissionsPerProject;
+      }
     }
 
     return didPrune;
+  };
+
+  const cleanupEmptyUserEntries = () => {
+    for (const [userIdHash, userSettings] of Object.entries(settings)) {
+      const hasDisclaimer = Boolean(userSettings.disclaimer);
+      const hasPermissions =
+        userSettings.permissionsPerProject &&
+        Object.keys(userSettings.permissionsPerProject).length > 0;
+
+      if (!hasDisclaimer && !hasPermissions) {
+        delete settings[userIdHash];
+      }
+    }
   };
 
   /**
@@ -399,6 +428,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     const didPrune = prunedPermissions || prunedDisclaimers;
 
     if (didPrune) {
+      cleanupEmptyUserEntries();
       await updateSettings();
     }
   };
@@ -416,6 +446,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     // K-AI Disclaimer
     isDisclaimerDismissed,
     dismissDisclaimer,
+    resetDisclaimerDismissal,
 
     // Permissions for K-AI to execute specific actions (e.g. sample data)
     // Generic API (operates on any project by stable ID)
