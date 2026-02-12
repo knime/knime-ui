@@ -3,6 +3,59 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mockStores } from "@/test/utils/mockStores";
 
 describe("aiSettings store", () => {
+  const getMockData = () => ({
+    userA: "user-a",
+    userB: "user-b",
+    projectA: "project-a",
+    projectB: "project-b",
+    actionA: "action-a",
+    actionB: "action-b",
+    hubA: "hub-a",
+    hubB: "hub-b",
+    disclaimerText: "Disclaimer text",
+  });
+
+  const setupHubUser = (
+    stores: ReturnType<typeof mockStores>,
+    hubID: string,
+    username: string,
+  ) => {
+    stores.aiAssistantStore.hubID = hubID;
+    stores.spaceProvidersStore.spaceProviders = {
+      ...stores.spaceProvidersStore.spaceProviders,
+      [hubID]: { id: hubID, username } as any,
+    };
+  };
+
+  const setupActiveProject = (
+    stores: ReturnType<typeof mockStores>,
+    { projectId, hubID, username } = {
+      projectId: "test-project-id",
+      hubID: "test-hub-id",
+      username: "test-user",
+    },
+  ) => {
+    stores.applicationStore.activeProjectId = projectId;
+    stores.applicationStore.openProjects = [
+      {
+        projectId,
+        name: "Test Project",
+        origin: {
+          providerId: "origin-provider",
+          spaceId: "origin-space",
+          itemId: "origin-item",
+        },
+      },
+    ];
+    setupHubUser(stores, hubID, username);
+  };
+
+  const getStaleDate = () => {
+    const sevenMonthsAgo = new Date();
+    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+    return sevenMonthsAgo;
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
@@ -10,287 +63,271 @@ describe("aiSettings store", () => {
 
   it("sets action permission for a project", async () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, projectA, actionA } = getMockData();
 
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "data-sampling",
+      userA,
+      projectA,
+      actionA,
       "allow",
     );
 
     expect(
-      aiSettingsStore._internal.settings.actionPermissionsByProject[
-        "project-1:user-a"
-      ],
-    ).toBeDefined();
-    expect(
-      aiSettingsStore._internal.settings.actionPermissionsByProject[
-        "project-1:user-a"
-      ].permissions["data-sampling"],
+      aiSettingsStore?._internal?.settings?.[userA]?.permissionsPerProject?.[
+        projectA
+      ].permissions[actionA],
     ).toBe("allow");
   });
 
   it("gets action permission", async () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, userB, projectA, projectB, actionA, actionB } =
+      getMockData();
 
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "data-sampling",
+      userA,
+      projectA,
+      actionA,
       "allow",
     );
 
     expect(
-      aiSettingsStore.getPermissionForAction(
-        "project-1:user-a",
-        "data-sampling",
-      ),
+      aiSettingsStore.getPermissionForAction(userA, projectA, actionA),
     ).toBe("allow");
     expect(
-      aiSettingsStore.getPermissionForAction(
-        "project-1:user-a",
-        "other-action",
-      ),
+      aiSettingsStore.getPermissionForAction(userA, projectA, actionB),
     ).toBeNull();
     expect(
-      aiSettingsStore.getPermissionForAction(
-        "project-2:user-b",
-        "data-sampling",
-      ),
+      aiSettingsStore.getPermissionForAction(userB, projectB, actionA),
     ).toBeNull();
   });
 
   it("revokes action permission", async () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, projectA, actionA, actionB } = getMockData();
 
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "data-sampling",
+      userA,
+      projectA,
+      actionA,
       "allow",
     );
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "code-execution",
+      userA,
+      projectA,
+      actionB,
       "deny",
     );
 
-    await aiSettingsStore.revokePermissionForAction(
-      "project-1:user-a",
-      "data-sampling",
-    );
+    await aiSettingsStore.revokePermissionForAction(userA, projectA, actionA);
 
     expect(
-      aiSettingsStore.getPermissionForAction(
-        "project-1:user-a",
-        "data-sampling",
-      ),
+      aiSettingsStore.getPermissionForAction(userA, projectA, actionA),
     ).toBeNull();
     expect(
-      aiSettingsStore.getPermissionForAction(
-        "project-1:user-a",
-        "code-execution",
-      ),
+      aiSettingsStore.getPermissionForAction(userA, projectA, actionB),
     ).toBe("deny");
   });
 
   it("revokes all project permissions", async () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, projectA, actionA, actionB } = getMockData();
 
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "data-sampling",
+      userA,
+      projectA,
+      actionA,
       "allow",
     );
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "code-execution",
+      userA,
+      projectA,
+      actionB,
       "deny",
     );
 
-    await aiSettingsStore.revokePermissionsForAllActions("project-1:user-a");
+    await aiSettingsStore.revokePermissionsForAllActions(userA, projectA);
 
     expect(
-      aiSettingsStore._internal.settings.actionPermissionsByProject[
-        "project-1:user-a"
+      aiSettingsStore._internal.settings?.[userA]?.permissionsPerProject?.[
+        projectA
       ],
     ).toBeUndefined();
   });
 
   it("keeps separate entries for different projects", async () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, projectA, projectB, actionA } = getMockData();
 
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "data-sampling",
+      userA,
+      projectA,
+      actionA,
       "allow",
     );
     await aiSettingsStore.setPermissionForAction(
-      "project-2:user-b",
-      "data-sampling",
+      userA,
+      projectB,
+      actionA,
       "deny",
     );
 
     expect(
-      aiSettingsStore.getPermissionForAction(
-        "project-1:user-a",
-        "data-sampling",
-      ),
+      aiSettingsStore.getPermissionForAction(userA, projectA, actionA),
     ).toBe("allow");
     expect(
-      aiSettingsStore.getPermissionForAction(
-        "project-2:user-b",
-        "data-sampling",
-      ),
+      aiSettingsStore.getPermissionForAction(userA, projectB, actionA),
     ).toBe("deny");
   });
 
   it("gets all permissions for a project", async () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, projectA, actionA, actionB } = getMockData();
 
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "data-sampling",
+      userA,
+      projectA,
+      actionA,
       "allow",
     );
     await aiSettingsStore.setPermissionForAction(
-      "project-1:user-a",
-      "code-execution",
+      userA,
+      projectA,
+      actionB,
       "deny",
     );
 
-    const allPermissions =
-      aiSettingsStore.getPermissionsForAllActions("project-1:user-a");
+    const allPermissions = aiSettingsStore.getPermissionsForAllActions(
+      userA,
+      projectA,
+    );
 
     expect(allPermissions).not.toBeNull();
-    expect(allPermissions?.permissions["data-sampling"]).toBe("allow");
-    expect(allPermissions?.permissions["code-execution"]).toBe("deny");
+    expect(allPermissions?.permissions[actionA]).toBe("allow");
+    expect(allPermissions?.permissions[actionB]).toBe("deny");
   });
 
   it("returns null for non-existent project permissions", () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, projectA } = getMockData();
 
     expect(
-      aiSettingsStore.getPermissionsForAllActions("non-existent"),
+      aiSettingsStore.getPermissionsForAllActions(userA, projectA),
     ).toBeNull();
   });
 
   it("cleans up project entry when last permission is revoked", async () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, projectA, actionA } = getMockData();
 
     await aiSettingsStore.setPermissionForAction(
-      "cleanup-test-project",
-      "only-action",
+      userA,
+      projectA,
+      actionA,
       "allow",
     );
 
-    await aiSettingsStore.revokePermissionForAction(
-      "cleanup-test-project",
-      "only-action",
-    );
+    await aiSettingsStore.revokePermissionForAction(userA, projectA, actionA);
 
     expect(
-      aiSettingsStore._internal.settings.actionPermissionsByProject[
-        "cleanup-test-project"
+      aiSettingsStore._internal.settings?.[userA]?.permissionsPerProject?.[
+        projectA
       ],
     ).toBeUndefined();
   });
 
   it("prunes stale action permissions", async () => {
     const { aiSettingsStore } = mockStores();
+    const { userA, projectA, projectB, actionA } = getMockData();
+    const staleDate = getStaleDate();
 
     // Set up a permission with an old timestamp
-    const sevenMonthsAgo = new Date();
-    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-
-    aiSettingsStore._internal.settings.actionPermissionsByProject[
-      "old-project"
-    ] = {
-      lastUpdated: sevenMonthsAgo.toISOString(),
-      permissions: { "some-action": "allow" },
+    aiSettingsStore._internal.settings[userA] = {
+      permissionsPerProject: {
+        [projectA]: {
+          lastUpdated: staleDate.toISOString(),
+          permissions: { [actionA]: "allow" },
+        },
+      },
     };
 
     // Set up a recent permission
     await aiSettingsStore.setPermissionForAction(
-      "recent-project",
-      "some-action",
+      userA,
+      projectB,
+      actionA,
       "allow",
     );
 
     await aiSettingsStore.pruneStaleEntries();
 
     expect(
-      aiSettingsStore._internal.settings.actionPermissionsByProject[
-        "old-project"
+      aiSettingsStore._internal.settings?.[userA]?.permissionsPerProject?.[
+        projectA
       ],
     ).toBeUndefined();
     expect(
-      aiSettingsStore._internal.settings.actionPermissionsByProject[
-        "recent-project"
+      aiSettingsStore._internal.settings?.[userA]?.permissionsPerProject?.[
+        projectB
       ],
     ).toBeDefined();
   });
 
   it("prunes both stale action permissions and disclaimer dismissals in one call", async () => {
     const stores = mockStores();
-
-    const sevenMonthsAgo = new Date();
-    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+    const { userA, projectA, projectB, actionA, hubA, hubB } = getMockData();
+    const staleDate = getStaleDate();
 
     // Stale action permission
-    stores.aiSettingsStore._internal.settings.actionPermissionsByProject[
-      "old-project"
-    ] = {
-      lastUpdated: sevenMonthsAgo.toISOString(),
-      permissions: { "some-action": "allow" },
+    stores.aiSettingsStore._internal.settings[userA] = {
+      permissionsPerProject: {
+        [projectA]: {
+          lastUpdated: staleDate.toISOString(),
+          permissions: { [actionA]: "allow" },
+        },
+      },
     };
 
     // Recent action permission
     await stores.aiSettingsStore.setPermissionForAction(
-      "recent-project",
-      "some-action",
+      userA,
+      projectB,
+      actionA,
       "allow",
     );
 
     // Stale disclaimer dismissal (need hub+user for a key)
-    stores.aiAssistantStore.hubID = "hub-a";
-    stores.spaceProvidersStore.spaceProviders = {
-      ...stores.spaceProvidersStore.spaceProviders,
-      "hub-a": { id: "hub-a", username: "user-a" } as any,
-    };
+    setupHubUser(stores, hubA, userA);
     const staleDisclaimerKey =
       stores.aiSettingsStore._internal.getHashForCurrentHubUser()!;
-    stores.aiSettingsStore._internal.settings.disclaimerDismissals[
-      staleDisclaimerKey
-    ] = {
-      disclaimerTextHash: "old-hash",
-      lastUpdated: sevenMonthsAgo.toISOString(),
+    stores.aiSettingsStore._internal.settings[staleDisclaimerKey] = {
+      ...stores.aiSettingsStore._internal.settings[staleDisclaimerKey],
+      disclaimer: {
+        disclaimerTextHash: "old-hash",
+        lastUpdated: staleDate.toISOString(),
+      },
     };
 
     // Recent disclaimer dismissal (different hub+user so we keep it)
-    stores.aiAssistantStore.hubID = "hub-b";
-    stores.spaceProvidersStore.spaceProviders = {
-      ...stores.spaceProvidersStore.spaceProviders,
-      "hub-b": { id: "hub-b", username: "user-b" } as any,
-    };
+    setupHubUser(stores, hubB, "user-b");
     await stores.aiSettingsStore.dismissDisclaimer("Recent disclaimer");
 
     await stores.aiSettingsStore.pruneStaleEntries();
 
     // Stale action permission pruned, recent kept
     expect(
-      stores.aiSettingsStore._internal.settings.actionPermissionsByProject[
-        "old-project"
-      ],
+      stores.aiSettingsStore._internal.settings?.[userA]
+        ?.permissionsPerProject?.[projectA],
     ).toBeUndefined();
     expect(
-      stores.aiSettingsStore._internal.settings.actionPermissionsByProject[
-        "recent-project"
-      ],
+      stores.aiSettingsStore._internal.settings?.[userA]
+        ?.permissionsPerProject?.[projectB],
     ).toBeDefined();
 
     // Stale disclaimer pruned, recent kept
     expect(
-      stores.aiSettingsStore._internal.settings.disclaimerDismissals[
-        staleDisclaimerKey
-      ],
+      stores.aiSettingsStore._internal.settings?.[staleDisclaimerKey]
+        ?.disclaimer,
     ).toBeUndefined();
     expect(
       stores.aiSettingsStore.isDisclaimerDismissed("Recent disclaimer"),
@@ -298,41 +335,32 @@ describe("aiSettings store", () => {
   });
 
   describe("disclaimer dismissals", () => {
-    const setupHubUser = (
-      stores: ReturnType<typeof mockStores>,
-      hubID = "test-hub-id",
-      username = "test-user",
-    ) => {
-      stores.aiAssistantStore.hubID = hubID;
-      stores.spaceProvidersStore.spaceProviders = {
-        ...stores.spaceProvidersStore.spaceProviders,
-        [hubID]: { id: hubID, username } as any,
-      };
-    };
-
     it("is not dismissed by default", () => {
       const stores = mockStores();
-      setupHubUser(stores);
+      const { hubA, userA, disclaimerText } = getMockData();
+      setupHubUser(stores, hubA, userA);
 
-      expect(
-        stores.aiSettingsStore.isDisclaimerDismissed("Some disclaimer"),
-      ).toBe(false);
+      expect(stores.aiSettingsStore.isDisclaimerDismissed(disclaimerText)).toBe(
+        false,
+      );
     });
 
     it("dismisses for the current hub+user", async () => {
       const stores = mockStores();
-      setupHubUser(stores);
+      const { hubA, userA, disclaimerText } = getMockData();
+      setupHubUser(stores, hubA, userA);
 
-      await stores.aiSettingsStore.dismissDisclaimer("Some disclaimer");
+      await stores.aiSettingsStore.dismissDisclaimer(disclaimerText);
 
-      expect(
-        stores.aiSettingsStore.isDisclaimerDismissed("Some disclaimer"),
-      ).toBe(true);
+      expect(stores.aiSettingsStore.isDisclaimerDismissed(disclaimerText)).toBe(
+        true,
+      );
     });
 
     it("re-shows when disclaimer text changes", async () => {
       const stores = mockStores();
-      setupHubUser(stores);
+      const { hubA, userA } = getMockData();
+      setupHubUser(stores, hubA, userA);
 
       await stores.aiSettingsStore.dismissDisclaimer("Old disclaimer");
 
@@ -343,174 +371,153 @@ describe("aiSettings store", () => {
 
     it("keeps dismissals separate per hub+user", async () => {
       const stores = mockStores();
+      const { hubA, hubB, userA, userB, disclaimerText } = getMockData();
 
       // Dismiss as user-a on hub-a
-      setupHubUser(stores, "hub-a", "user-a");
-      await stores.aiSettingsStore.dismissDisclaimer("Disclaimer text");
+      setupHubUser(stores, hubA, userA);
+      await stores.aiSettingsStore.dismissDisclaimer(disclaimerText);
 
       // Switch to user-b on hub-b — should not be dismissed
-      setupHubUser(stores, "hub-b", "user-b");
-      expect(
-        stores.aiSettingsStore.isDisclaimerDismissed("Disclaimer text"),
-      ).toBe(false);
+      setupHubUser(stores, hubB, userB);
+      expect(stores.aiSettingsStore.isDisclaimerDismissed(disclaimerText)).toBe(
+        false,
+      );
     });
 
     it("keeps dismissals separate for same username on different hubs", async () => {
       const stores = mockStores();
+      const { hubA, hubB, userA, disclaimerText } = getMockData();
 
       // Same username, different hubs
-      setupHubUser(stores, "hub-a", "john.doe");
-      await stores.aiSettingsStore.dismissDisclaimer("Disclaimer text");
+      setupHubUser(stores, hubA, userA);
+      await stores.aiSettingsStore.dismissDisclaimer(disclaimerText);
 
-      setupHubUser(stores, "hub-b", "john.doe");
-      expect(
-        stores.aiSettingsStore.isDisclaimerDismissed("Disclaimer text"),
-      ).toBe(false);
+      setupHubUser(stores, hubB, userA);
+      expect(stores.aiSettingsStore.isDisclaimerDismissed(disclaimerText)).toBe(
+        false,
+      );
     });
 
     it("returns false when hub/user context is unavailable", () => {
       const stores = mockStores();
+      const { disclaimerText } = getMockData();
       // No hub/user set up
 
-      expect(
-        stores.aiSettingsStore.isDisclaimerDismissed("Disclaimer text"),
-      ).toBe(false);
+      expect(stores.aiSettingsStore.isDisclaimerDismissed(disclaimerText)).toBe(
+        false,
+      );
     });
 
     it("prunes stale disclaimer dismissals", async () => {
       const stores = mockStores();
-      setupHubUser(stores);
-
-      const sevenMonthsAgo = new Date();
-      sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+      const { hubA, userA } = getMockData();
+      const staleDate = getStaleDate();
+      setupHubUser(stores, hubA, userA);
 
       const key = stores.aiSettingsStore._internal.getHashForCurrentHubUser()!;
-      stores.aiSettingsStore._internal.settings.disclaimerDismissals[key] = {
-        disclaimerTextHash: "old-hash",
-        lastUpdated: sevenMonthsAgo.toISOString(),
+      stores.aiSettingsStore._internal.settings[key] = {
+        ...stores.aiSettingsStore._internal.settings[key],
+        disclaimer: {
+          disclaimerTextHash: "old-hash",
+          lastUpdated: staleDate.toISOString(),
+        },
       };
 
       await stores.aiSettingsStore.pruneStaleEntries();
 
       expect(
-        stores.aiSettingsStore._internal.settings.disclaimerDismissals[key],
+        stores.aiSettingsStore._internal.settings?.[key]?.disclaimer,
       ).toBeUndefined();
     });
   });
 
   describe("active project convenience wrappers", () => {
-    const setupActiveProject = ({
-      applicationStore,
-      aiAssistantStore,
-      spaceProvidersStore,
-    }: ReturnType<typeof mockStores>) => {
-      const projectId = "test-project-id";
-      const hubID = "test-hub-id";
-      const username = "test-user";
-
-      applicationStore.activeProjectId = projectId;
-      applicationStore.openProjects = [
-        {
-          projectId,
-          name: "Test Project",
-          origin: {
-            providerId: "origin-provider",
-            spaceId: "origin-space",
-            itemId: "origin-item",
-          },
-        },
-      ];
-      aiAssistantStore.hubID = hubID;
-      spaceProvidersStore.spaceProviders = {
-        [hubID]: { id: hubID, username } as any,
-      };
-    };
-
     it("sets and gets permission for active project", async () => {
       const stores = mockStores();
+      const { actionA } = getMockData();
       setupActiveProject(stores);
-      const { aiSettingsStore } = stores;
 
-      await aiSettingsStore.setPermissionForActionForActiveProject(
-        "test-action",
+      await stores.aiSettingsStore.setPermissionForActionForActiveProject(
+        actionA,
         "allow",
       );
 
       expect(
-        aiSettingsStore.getPermissionForActionForActiveProject("test-action"),
+        stores.aiSettingsStore.getPermissionForActionForActiveProject(actionA),
       ).toBe("allow");
     });
 
     it("gets all permissions for active project", async () => {
       const stores = mockStores();
+      const { actionA, actionB } = getMockData();
       setupActiveProject(stores);
-      const { aiSettingsStore } = stores;
 
-      await aiSettingsStore.setPermissionForActionForActiveProject(
-        "action-1",
+      await stores.aiSettingsStore.setPermissionForActionForActiveProject(
+        actionA,
         "allow",
       );
-      await aiSettingsStore.setPermissionForActionForActiveProject(
-        "action-2",
+      await stores.aiSettingsStore.setPermissionForActionForActiveProject(
+        actionB,
         "deny",
       );
 
       const allPermissions =
-        aiSettingsStore.getPermissionsForAllActionsForActiveProject();
+        stores.aiSettingsStore.getPermissionsForAllActionsForActiveProject();
 
       expect(allPermissions).not.toBeNull();
-      expect(allPermissions?.permissions["action-1"]).toBe("allow");
-      expect(allPermissions?.permissions["action-2"]).toBe("deny");
+      expect(allPermissions?.permissions[actionA]).toBe("allow");
+      expect(allPermissions?.permissions[actionB]).toBe("deny");
     });
 
     it("revokes permission for active project", async () => {
       const stores = mockStores();
+      const { actionA } = getMockData();
       setupActiveProject(stores);
-      const { aiSettingsStore } = stores;
 
-      await aiSettingsStore.setPermissionForActionForActiveProject(
-        "test-action",
+      await stores.aiSettingsStore.setPermissionForActionForActiveProject(
+        actionA,
         "allow",
       );
-      await aiSettingsStore.revokePermissionForActionForActiveProject(
-        "test-action",
+      await stores.aiSettingsStore.revokePermissionForActionForActiveProject(
+        actionA,
       );
 
       expect(
-        aiSettingsStore.getPermissionForActionForActiveProject("test-action"),
+        stores.aiSettingsStore.getPermissionForActionForActiveProject(actionA),
       ).toBeNull();
     });
 
     it("revokes all permissions for active project", async () => {
       const stores = mockStores();
+      const { actionA, actionB } = getMockData();
       setupActiveProject(stores);
-      const { aiSettingsStore } = stores;
 
-      await aiSettingsStore.setPermissionForActionForActiveProject(
-        "action-1",
+      await stores.aiSettingsStore.setPermissionForActionForActiveProject(
+        actionA,
         "allow",
       );
-      await aiSettingsStore.setPermissionForActionForActiveProject(
-        "action-2",
+      await stores.aiSettingsStore.setPermissionForActionForActiveProject(
+        actionB,
         "deny",
       );
 
-      await aiSettingsStore.revokePermissionsForAllActionsForActiveProject();
+      await stores.aiSettingsStore.revokePermissionsForAllActionsForActiveProject();
 
       expect(
-        aiSettingsStore.getPermissionsForAllActionsForActiveProject(),
+        stores.aiSettingsStore.getPermissionsForAllActionsForActiveProject(),
       ).toBeNull();
     });
 
     it("returns null when no active project", () => {
-      const { aiSettingsStore } = mockStores();
+      const stores = mockStores();
+      const { actionA } = getMockData();
       // No active project set up
 
       expect(
-        aiSettingsStore.getPermissionForActionForActiveProject("test-action"),
+        stores.aiSettingsStore.getPermissionForActionForActiveProject(actionA),
       ).toBeNull();
       expect(
-        aiSettingsStore.getPermissionsForAllActionsForActiveProject(),
+        stores.aiSettingsStore.getPermissionsForAllActionsForActiveProject(),
       ).toBeNull();
     });
   });
