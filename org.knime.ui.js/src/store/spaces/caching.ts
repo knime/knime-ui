@@ -10,14 +10,9 @@ import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
 } from "./common";
+import { localRootProjectPath } from "./constants";
 import { useSpaceProvidersStore } from "./providers";
 import { findSpaceById } from "./util";
-
-export const localRootProjectPath = {
-  spaceId: "local",
-  spaceProviderId: "local",
-  itemId: "root",
-};
 
 const specialProjectIds = [
   globalSpaceBrowserProjectId,
