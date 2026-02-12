@@ -196,7 +196,7 @@ export interface AddNodeCommand extends WorkflowCommand {
      */
     sourcePortIdx?: number;
     /**
-     * Optional parameter that describe the relation of the new node with the given node, either predecessors or successors of the given node
+     * Optional parameter that describe the relation of the new node with the given node, either a Successor or a predecessor of the given node
      * @type {string}
      * @memberof AddNodeCommand
      */
@@ -815,13 +815,13 @@ export interface AutoConnectOptions {
      */
     targetNodeId: string;
     /**
-     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a target node id is provided.
+     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
      * @type {number}
      * @memberof AutoConnectOptions
      */
     targetNodePortIdx?: number;
     /**
-     * Relation of the new component with the given node, either predecessors or successors of the given node.
+     * Relation of the new node with the given node, either a successor or a predecessor of the given node.
      * @type {string}
      * @memberof AutoConnectOptions
      */
@@ -7633,6 +7633,8 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} [params.query] Search term used to filter components by name, tags, or description.
          * @param {number} [params.limit] Controls the maximum number of search results returned.
          * @param {number} [params.offset] Controls the starting position for pagination of search results.
+         * @param {'input' | 'output'} [params.side] Whether to check for compatible input ports or output ports
+         * @param {string} [params.portTypeId] The ID of the port type to be added.
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
@@ -7640,12 +7642,14 @@ const space = function(rpcClient: RPCClient) {
          * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         async searchComponents(
-        	params: { query?: string,  limit?: number,  offset?: number  }
+        	params: { query?: string,  limit?: number,  offset?: number,  side?: 'input' | 'output',  portTypeId?: string  }
         ): Promise<Array<ComponentSearchItem>> {
             const defaultParams = { 
                 query: null,
                 limit: null,
                 offset: null,
+                side: null,
+                portTypeId: null,
             }
             
             return rpcClient.call('SpaceService.searchComponents', { ...defaultParams, ...params });

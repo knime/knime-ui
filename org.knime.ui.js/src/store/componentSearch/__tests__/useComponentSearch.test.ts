@@ -21,7 +21,7 @@ vi.mock("@/lib/data-mappers", async () => {
 vi.mock("@vueuse/core", async () => {
   return {
     ...(await vi.importActual("@vueuse/core")),
-    useDebounceFn: vi.fn((fn) => () => fn()),
+    useDebounceFn: vi.fn((fn) => (...args) => fn(...args)),
   };
 });
 
@@ -67,6 +67,28 @@ describe("useComponentSearch", () => {
 
     await searchComponents();
     expect(results.value.length).toBe(3);
+  });
+
+  it("passes side and port type to the api", async () => {
+    mockedAPI.space.searchComponents.mockResolvedValueOnce([
+      createComponentSearchItem({ id: "1" }),
+      createComponentSearchItem({ id: "2" }),
+      createComponentSearchItem({ id: "3" }),
+    ]);
+
+    const { getComposableResult } = doMount();
+
+    const { searchComponents } = getComposableResult();
+
+    await searchComponents({ side: "input", portTypeId: "foo" });
+
+    expect(mockedAPI.space.searchComponents).toHaveBeenLastCalledWith({
+      query: "",
+      offset: 0,
+      limit: 150,
+      side: "input",
+      portTypeId: "foo",
+    });
   });
 
   it("appends to loaded data", async () => {

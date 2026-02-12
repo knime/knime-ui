@@ -20,9 +20,13 @@ export const useComponentSearch = () => {
   let abortController: AbortController;
 
   const searchComponents = async (
-    params: { append?: boolean } = {},
+    params: {
+      append?: boolean;
+      side?: "input" | "output";
+      portTypeId?: string | null;
+    } = {},
   ): Promise<void> => {
-    const { append = false } = params;
+    const { append = false, side, portTypeId } = params;
 
     isLoading.value = true;
 
@@ -47,6 +51,8 @@ export const useComponentSearch = () => {
           query: query.value,
           offset: currentOffset.value * PAGE_SIZE,
           limit: PAGE_SIZE,
+          ...(side ? { side } : {}),
+          ...(portTypeId ? { portTypeId } : {}),
         });
 
         return apiResponse.map(componentSearch.toNodeTemplateWithExtendedPorts);
@@ -69,13 +75,16 @@ export const useComponentSearch = () => {
 
   const debouncedSearch = useDebounceFn(searchComponents, SEARCH_DEBOUNCE_MS);
 
-  const updateQuery = async (value: string) => {
+  const updateQuery = async (
+    value: string,
+    params: { side?: "input" | "output"; portTypeId?: string | null } = {},
+  ) => {
     query.value = value;
     currentOffset.value = 0;
     results.value = [];
     hasLoaded.value = false;
     isLoading.value = true;
-    await debouncedSearch();
+    await debouncedSearch(params);
   };
 
   const clearSearch = () => {
