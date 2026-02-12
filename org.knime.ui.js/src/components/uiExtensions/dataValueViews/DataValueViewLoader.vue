@@ -2,7 +2,7 @@
 /**
  * Dynamically loads a component that will render a data value view
  */
-import { computed, ref, toRef, watch } from "vue";
+import { computed, ref } from "vue";
 import { API } from "@api";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
@@ -17,8 +17,7 @@ import {
 } from "@knime/ui-extension-renderer/vue";
 
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-import type { ExtensionConfig } from "../common/types";
-import { useResourceLocation } from "../common/useResourceLocation";
+import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 
 export interface Props {
   projectId: string;
@@ -31,49 +30,58 @@ export interface Props {
 }
 
 const props = defineProps<Props>();
+const retryCount = ref(0);
 
-const error = ref<any>(null);
-const extensionConfig = ref<ExtensionConfig | null>(null);
-const isLoadingConfig = ref(false);
+const loadExtensionConfig = async () => {
+  const {
+    projectId,
+    workflowId,
+    versionId,
+    nodeId,
+    selectedColIndex,
+    selectedPortIndex,
+    selectedRowIndex,
+  } = props;
 
-const { resourceLocation, resourceLocationResolver } = useResourceLocation({
+  const extensionConfig = await API.port.getDataValueView({
+    projectId,
+    workflowId,
+    versionId: versionId ?? CURRENT_STATE_VERSION,
+    nodeId,
+    portIdx: selectedPortIndex,
+    rowIdx: selectedRowIndex,
+    colIdx: selectedColIndex,
+  });
+
+  // TODO: UIEXT-2229: Add data value view deactivation
+
+  consola.info("DataValueView :: extensionConfig", extensionConfig);
+
+  return { extensionConfig };
+};
+
+const {
   extensionConfig,
+  isLoadingConfig,
+  resourceLocation,
+  error,
+  getResourceLocation,
+} = useUIExtensionLifecycle({
+  renderKey: computed(
+    () =>
+      `${props.selectedColIndex}--${props.selectedRowIndex}--${retryCount.value}`,
+  ),
+  configLoader: loadExtensionConfig,
 });
 
 const isBlockingError = computed(
   () => error.value?.code === USER_ERROR_CODE_BLOCKING,
 );
 
-const loadExtensionConfig = async () => {
-  error.value = null;
-  isLoadingConfig.value = true;
-  try {
-    extensionConfig.value = await API.port.getDataValueView({
-      projectId: props.projectId,
-      workflowId: props.workflowId,
-      versionId: props.versionId ?? CURRENT_STATE_VERSION,
-      nodeId: props.nodeId,
-      portIdx: props.selectedPortIndex,
-      rowIdx: props.selectedRowIndex,
-      colIdx: props.selectedColIndex,
-    });
-  } catch (_error) {
-    error.value = _error;
-  }
-  isLoadingConfig.value = false;
-};
-
 const noop = () => {}; // NOSONAR
 
 const apiLayer: UIExtensionAPILayer = {
-  getResourceLocation: (path: string) => {
-    return Promise.resolve(
-      resourceLocationResolver(
-        path,
-        extensionConfig.value?.resourceInfo?.baseUrl,
-      ),
-    );
-  },
+  getResourceLocation,
 
   // TODO: UIEXT-2229: Add data value view rpc data service calls
   // eslint-disable-next-line prefer-promise-reject-errors
@@ -92,15 +100,6 @@ const apiLayer: UIExtensionAPILayer = {
   closeDataValueView: noop,
   showDataValueView: noop,
 };
-
-watch(
-  [toRef(props, "selectedColIndex"), toRef(props, "selectedRowIndex")],
-  async () => {
-    await loadExtensionConfig();
-  },
-  { immediate: true },
-);
-// TODO: UIEXT-2229: Add data value view deactivation
 </script>
 
 <template>
@@ -108,10 +107,10 @@ watch(
   <UIExtensionBlockingErrorView
     v-else-if="isBlockingError"
     :alert="error"
-    @retry="loadExtensionConfig()"
+    @retry="() => retryCount++"
   />
   <UIExtension
-    v-else-if="!error"
+    v-else-if="!error && extensionConfig"
     :extension-config="extensionConfig!"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"

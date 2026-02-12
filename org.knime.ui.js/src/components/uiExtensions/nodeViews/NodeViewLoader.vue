@@ -16,7 +16,6 @@ import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import ExecuteButton from "../ExecuteButton.vue";
 import type { UIExtensionLoadingState } from "../common/types";
-import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
 import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
@@ -78,7 +77,13 @@ const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));
 const { latestPublishedData, dirtyState, activeNodeViewNeedsExecution } =
   storeToRefs(nodeConfigurationStore);
 
-const { extensionConfig, isLoadingConfig, error } = useUIExtensionLifecycle({
+const {
+  extensionConfig,
+  isLoadingConfig,
+  error,
+  resourceLocation,
+  getResourceLocation,
+} = useUIExtensionLifecycle({
   renderKey: uniqueNodeViewId,
   configLoader: loadExtensionConfig,
   onExtensionLoadingStateChange: (state) => emit("loadingStateChange", state),
@@ -91,23 +96,12 @@ const { extensionConfig, isLoadingConfig, error } = useUIExtensionLifecycle({
   },
 });
 
-const { resourceLocation, resourceLocationResolver } = useResourceLocation({
-  extensionConfig,
-});
-
 const noop = () => {};
 
 let updateViewData: (data: any) => void;
 
 const apiLayer: UIExtensionAPILayer = {
-  getResourceLocation: (path: string) => {
-    return Promise.resolve(
-      resourceLocationResolver(
-        path,
-        extensionConfig.value?.resourceInfo?.baseUrl,
-      ),
-    );
-  },
+  getResourceLocation,
 
   callNodeDataService: async (params) => {
     const { serviceType, dataServiceRequest } = params;
