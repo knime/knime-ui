@@ -146,7 +146,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   const dismissDisclaimer = async (disclaimerText: string) => {
     const userIdHash = getHashForCurrentHubUser();
     if (!userIdHash) {
-      return false;
+      return;
     }
 
     if (!settings[userIdHash]) {
