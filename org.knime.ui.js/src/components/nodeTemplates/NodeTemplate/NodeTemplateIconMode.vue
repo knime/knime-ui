@@ -42,15 +42,13 @@ const showCommunityIcon = computed(() =>
 );
 
 const tileTitle = computed(() => {
-  if (isComponentNodeTemplate(props.nodeTemplate)) {
-    if (props.nodeTemplate.isOwnedByAnotherIdentity) {
-      return "This component comes from outside your personal or team spaces.";
-    } else {
-      return props.nodeTemplate.name;
-    }
+  if (!isComponentNodeTemplate(props.nodeTemplate)) {
+    return `${props.nodeTemplate.name}${extensionText.value}`;
   }
 
-  return `${props.nodeTemplate.name}${extensionText.value}`;
+  return props.nodeTemplate.isOwnedByAnotherIdentity
+    ? "This component comes from outside your personal or team spaces."
+    : "This component comes from your personal or team spaces.";
 });
 </script>
 
