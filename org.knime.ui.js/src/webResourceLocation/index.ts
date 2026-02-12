@@ -7,6 +7,10 @@ type Context = {
 
 let __context: Context;
 
+/**
+ * Set the context required to resolve locations on the browser environment.
+ * This is *NOT* required/used in the desktop AP
+ */
 const setContext = (value: Context) => {
   if (__context) {
     consola.error("Context cannot be re-initialized");
@@ -15,6 +19,12 @@ const setContext = (value: Context) => {
 
   __context = value;
 };
+
+const logNoContextFound = (scope: string, payload: any) =>
+  consola.error(
+    `[${scope}]: Tried to resolve location but context is not initialized`,
+    payload,
+  );
 
 const uiExtensionResource = (path: string, baseUrl?: string): string => {
   consola.trace("Resolving UI Extension resource: ", { path, baseUrl });
@@ -29,10 +39,7 @@ const uiExtensionResource = (path: string, baseUrl?: string): string => {
 
     BROWSER: () => {
       if (!__context) {
-        consola.error(
-          "[uiExtensionResourceLocation]: Tried to resolve location but context is not initialized",
-          { path },
-        );
+        logNoContextFound("uiExtensionResource", { path });
         return "";
       }
 
@@ -41,12 +48,12 @@ const uiExtensionResource = (path: string, baseUrl?: string): string => {
   });
 };
 
-const resourceDownload = (resourceName: string) => {
+const nodeOutputResource = (resourceName: string) => {
   return runInEnvironment({
     DESKTOP: () => {
       // TODO: NXT-4494 Not supported for desktop AP
       consola.warn(
-        "[resourceDownloadLocation]: Not supported for Desktop AP yet (see NXT-4494)",
+        "[nodeOutputResource]: Not supported for Desktop AP yet (see NXT-4494)",
         { resourceName },
       );
 
@@ -55,10 +62,7 @@ const resourceDownload = (resourceName: string) => {
 
     BROWSER: () => {
       if (!__context) {
-        consola.error(
-          "[uiExtensionResourceLocation]: Tried to resolve location but context is not initialized",
-          { resourceName },
-        );
+        logNoContextFound("nodeOutputResource", { resourceName });
         return "";
       }
 
@@ -79,10 +83,7 @@ const hintAsset = (url: string) => {
 
     BROWSER: () => {
       if (!__context) {
-        consola.error(
-          "[uiExtensionResourceLocation]: Tried to resolve location but context is not initialized",
-          { url },
-        );
+        logNoContextFound("uiExtensionResourceLocation", { url });
         return "";
       }
 
@@ -97,6 +98,6 @@ const hintAsset = (url: string) => {
 export const webResourceLocation = {
   setContext,
   uiExtensionResource,
-  resourceDownload,
+  nodeOutputResource,
   hintAsset,
 };

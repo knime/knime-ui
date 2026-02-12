@@ -507,7 +507,7 @@ const getters = {
     ({ resourceId, nodeId }) => {
       const stubbedNodeId = removeComponentIdentifier(nodeId);
       const resourceName = `${resourceId}-${stubbedNodeId}`;
-      return webResourceLocation.resourceDownload(resourceName);
+      return webResourceLocation.nodeOutputResource(resourceName);
     },
 
   // tableView will use this getter to get the resource location

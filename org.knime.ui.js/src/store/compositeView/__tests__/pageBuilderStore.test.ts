@@ -10,12 +10,12 @@ import { deepMocked } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 
-const { resourceDownloadMock } = vi.hoisted(() => ({
-  resourceDownloadMock: vi.fn(),
+const { nodeOutputResourceMock } = vi.hoisted(() => ({
+  nodeOutputResourceMock: vi.fn(),
 }));
 vi.mock("@/webResourceLocation", () => ({
   webResourceLocation: {
-    resourceDownload: resourceDownloadMock,
+    nodeOutputResource: nodeOutputResourceMock,
   },
 }));
 
@@ -285,7 +285,7 @@ describe("downloadResourceLink getter", () => {
       nodeId: "0:5",
     });
 
-    expect(resourceDownloadMock).toHaveBeenCalledWith("resource-123-5");
+    expect(nodeOutputResourceMock).toHaveBeenCalledWith("resource-123-5");
   });
 
   it("should handle complex nodeId with component identifiers", () => {
@@ -297,6 +297,6 @@ describe("downloadResourceLink getter", () => {
     });
 
     // The nodeId should have component identifiers removed (0: replaced)
-    expect(resourceDownloadMock).toHaveBeenCalledWith("my-resource-3:7");
+    expect(nodeOutputResourceMock).toHaveBeenCalledWith("my-resource-3:7");
   });
 });

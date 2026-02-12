@@ -39,10 +39,10 @@ describe("webResourceLocation", () => {
     });
   });
 
-  describe("resourceDownload", () => {
+  describe("nodeOutputResource", () => {
     it("[BROWSER] returns the correct value", () => {
       setupEnvironmentMock("BROWSER");
-      expect(webResourceLocation.resourceDownload("something")).toBe(
+      expect(webResourceLocation.nodeOutputResource("something")).toBe(
         "http://example.com/jobs/job123/output-resources/something",
       );
     });
@@ -50,7 +50,9 @@ describe("webResourceLocation", () => {
     it("should URL encode special characters in resource path", () => {
       mockEnvironment("BROWSER", { isBrowser, isDesktop });
 
-      expect(webResourceLocation.resourceDownload("resource with spaces")).toBe(
+      expect(
+        webResourceLocation.nodeOutputResource("resource with spaces"),
+      ).toBe(
         "http://example.com/jobs/job123/output-resources/resource%20with%20spaces",
       );
     });
