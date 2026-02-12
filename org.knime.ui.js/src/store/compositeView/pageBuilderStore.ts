@@ -8,7 +8,6 @@ import { gatewayRpcClient } from "@/api/gateway-api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useNotifyUIExtensionAlert";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
-import { isBrowser } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useSelectionStore } from "@/store/selection";
@@ -506,11 +505,6 @@ const getters = {
   downloadResourceLink:
     () =>
     ({ resourceId, nodeId }) => {
-      if (!isBrowser()) {
-        // desktop support to be added with NXT-4492
-        return null;
-      }
-
       const stubbedNodeId = removeComponentIdentifier(nodeId);
       const resourceName = `${resourceId}-${stubbedNodeId}`;
       return webResourceLocation.resourceDownload(resourceName);

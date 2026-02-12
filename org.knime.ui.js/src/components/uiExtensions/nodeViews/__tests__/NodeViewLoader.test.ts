@@ -16,8 +16,8 @@ import { SelectionEvent } from "@/api/gateway-api/generated-api";
 import { createNativeNode } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
+import { webResourceLocation } from "@/webResourceLocation";
 import ExecuteButton from "../../ExecuteButton.vue";
-import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
 import NodeViewLoader from "../NodeViewLoader.vue";
 
@@ -253,32 +253,15 @@ describe("NodeViewLoader.vue", () => {
 
       const apiLayer = getApiLayer(wrapper);
 
+      const uiExtensionResourceSpy = vi.spyOn(
+        webResourceLocation,
+        "uiExtensionResource",
+      );
+
       const location = await apiLayer.getResourceLocation("path1");
+      expect(uiExtensionResourceSpy).toHaveBeenCalled();
 
       expect(location).toBe("baseUrl/path1");
-    });
-
-    it("implements getResourceLocation in apiLayer (when rest api base url is defined)", async () => {
-      mockedAPI.node.getNodeView.mockResolvedValueOnce({
-        resourceInfo: {
-          type: "SHADOW_APP",
-          baseUrl: "",
-          path: "path",
-        },
-      });
-
-      setRestApiBaseUrl("API_URL_BASE");
-      const { wrapper, mockedStores } = doMount();
-      await flushPromises();
-      mockedStores.applicationStore.setActiveProjectId("project1");
-
-      const apiLayer = getApiLayer(wrapper);
-
-      const location = await apiLayer.getResourceLocation("path1");
-
-      expect(location).toBe(
-        "API_URL_BASE/jobs/project1/workflow/wizard/web-resources/path1",
-      );
     });
 
     it("implements callNodeDataService", async () => {

@@ -44,9 +44,9 @@ const uiExtensionResource = (path: string, baseUrl?: string): string => {
 const resourceDownload = (resourceName: string) => {
   return runInEnvironment({
     DESKTOP: () => {
-      // TODO: NXT-?? Not supported for desktop AP
+      // TODO: NXT-4494 Not supported for desktop AP
       consola.warn(
-        "[resourceDownloadLocation]: Not supported for Desktop AP yet",
+        "[resourceDownloadLocation]: Not supported for Desktop AP yet (see NXT-4494)",
         { resourceName },
       );
 
@@ -62,7 +62,9 @@ const resourceDownload = (resourceName: string) => {
         return "";
       }
 
-      return `${__context.restAPIBaseURL}/jobs/${__context.jobId}/output-resources/${resourceName}`;
+      return encodeURI(
+        `${__context.restAPIBaseURL}/jobs/${__context.jobId}/output-resources/${resourceName}`,
+      );
     },
   });
 };
@@ -85,7 +87,8 @@ const hintAsset = (url: string) => {
       }
 
       const ASSET_PATH = "org/knime/ui/js";
-      const path = `${ASSET_PATH}${url}`;
+      const withLeadingSlash = url.startsWith("/") ? url : `/${url}`;
+      const path = `${ASSET_PATH}${withLeadingSlash}`;
       return `${__context.restAPIBaseURL}/jobs/${__context.jobId}/workflow/wizard/web-resources/${path}`;
     },
   });
