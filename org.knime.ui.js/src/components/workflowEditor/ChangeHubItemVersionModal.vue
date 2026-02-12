@@ -68,20 +68,18 @@ type DropdownOption = {
 const MAX_DESCRIPTION_LENGTH = 120;
 
 const formatCreatedOn = (createdOnValue: string | Date) => {
-  const rawValue =
-    createdOnValue instanceof Date
-      ? createdOnValue.toISOString()
-      : createdOnValue;
-  const dateLabel = formatDateString(rawValue);
-  const date = new Date(rawValue);
+  const date =
+    createdOnValue instanceof Date ? createdOnValue : new Date(createdOnValue);
   if (Number.isNaN(date.getTime())) {
-    return `Created on ${dateLabel}`;
+    const rawValue =
+      createdOnValue instanceof Date ? null : createdOnValue.trim();
+    return rawValue ? `Created on ${rawValue}` : "Created on unknown date";
   }
-  const timeLabel = date.toLocaleTimeString("en-US", {
+  const dateLabel = formatDateString(date.toISOString());
+  const timeLabel = new Intl.DateTimeFormat([], {
     hour: "numeric",
     minute: "2-digit",
-    hour12: true,
-  });
+  }).format(date);
   return `Created on ${dateLabel}, ${timeLabel}`;
 };
 
