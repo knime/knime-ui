@@ -9,7 +9,10 @@ import type {
 } from "@/util/dataMappers";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
-import { shouldShowCommunityIcon } from "./nodeTemplateCommunityIcon";
+import {
+  isComponentNodeTemplate,
+  shouldShowCommunityIcon,
+} from "./nodeTemplateCommunityIcon";
 
 type Props = {
   nodeTemplate:
@@ -37,12 +40,22 @@ const extensionText = computed(() => {
 const showCommunityIcon = computed(() =>
   shouldShowCommunityIcon(props.nodeTemplate),
 );
+
+const tileTitle = computed(() => {
+  if (!isComponentNodeTemplate(props.nodeTemplate)) {
+    return `${props.nodeTemplate.name}${extensionText.value}`;
+  }
+
+  return props.nodeTemplate.isOwnedByAnotherIdentity
+    ? "This component comes from outside your personal or team spaces."
+    : "This component comes from your personal or team spaces.";
+});
 </script>
 
 <template>
   <div
     class="node-template-icon-mode"
-    :title="`${nodeTemplate.name}${extensionText}`"
+    :title="tileTitle"
     data-test-id="node-template"
   >
     <div class="name-icon-wrapper">
