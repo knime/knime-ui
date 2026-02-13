@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createProject, createSpaceProvider } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 
 describe("aiSettings store", () => {
@@ -23,7 +24,7 @@ describe("aiSettings store", () => {
     stores.aiAssistantStore.hubID = hubID;
     stores.spaceProvidersStore.spaceProviders = {
       ...stores.spaceProvidersStore.spaceProviders,
-      [hubID]: { id: hubID, username } as any,
+      [hubID]: createSpaceProvider({ id: hubID, username }),
     };
   };
 
@@ -37,7 +38,7 @@ describe("aiSettings store", () => {
   ) => {
     stores.applicationStore.activeProjectId = projectId;
     stores.applicationStore.openProjects = [
-      {
+      createProject({
         projectId,
         name: "Test Project",
         origin: {
@@ -45,7 +46,7 @@ describe("aiSettings store", () => {
           spaceId: "origin-space",
           itemId: "origin-item",
         },
-      },
+      }),
     ];
     setupHubUser(stores, hubID, username);
   };
