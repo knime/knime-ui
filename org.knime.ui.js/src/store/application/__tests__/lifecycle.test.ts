@@ -15,6 +15,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { setupHints } from "@knime/components";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
+import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { isBrowser, isDesktop, runInEnvironment } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router, routes } from "@/router/router";
@@ -322,6 +323,54 @@ describe("application::lifecycle", () => {
 
       expect(workflowStore.activeWorkflow).toStrictEqual(loadedWF);
       expect(mockedAPI.event.subscribeEvent).not.toHaveBeenCalled();
+    });
+
+    it("handles afterSetActivateWorkflow when a workflow is loaded", async () => {
+      const { lifecycleStore, componentInteractionsStore } = loadStore();
+      const loadedWF = createWorkflow({
+        info: { containerId: "root" },
+        nodes: Object.create({}),
+      });
+
+      mockedAPI.workflow.getWorkflow.mockResolvedValue({
+        workflow: loadedWF,
+        snapshotId: "snap",
+      });
+      await lifecycleStore.loadWorkflow({
+        projectId: "wf1",
+        workflowId: "root:0:12",
+      });
+
+      expect(
+        componentInteractionsStore.checkForLinkedComponentUpdates,
+      ).toHaveBeenCalledWith({ auto: true });
+    });
+
+    it("closes version panel when entering a linked component", async () => {
+      const { lifecycleStore, workflowVersionsStore } = loadStore();
+
+      // @ts-expect-error - mock getter
+      workflowVersionsStore.activeProjectVersionsModeStatus = "active";
+
+      const loadedWF = createWorkflow({
+        info: {
+          containerId: "root",
+          linked: true,
+          containerType: WorkflowInfo.ContainerTypeEnum.Component,
+        },
+        nodes: Object.create({}),
+      });
+
+      mockedAPI.workflow.getWorkflow.mockResolvedValue({
+        workflow: loadedWF,
+        snapshotId: "snap",
+      });
+      await lifecycleStore.loadWorkflow({
+        projectId: "wf1",
+        workflowId: "root:0:12",
+      });
+
+      expect(workflowVersionsStore.deactivateVersionsMode).toHaveBeenCalled();
     });
 
     it("unloads workflow when another one is loaded", async () => {
