@@ -48,6 +48,7 @@ watch(
   (isOpen) => {
     if (!isOpen) {
       nodeRepositoryStore.setShowDescriptionForNode(null);
+      activeDescription.value = null;
     }
   },
   { immediate: true },
@@ -183,6 +184,7 @@ const handleNavReachedTop = (event: NavReachedEvent) => {
           :description="activeDescription.description"
           :in-ports="activeDescription.inPorts"
           :out-ports="activeDescription.outPorts"
+          @close="panelStore.closeExtensionPanel"
         />
       </Transition>
     </Portal>
