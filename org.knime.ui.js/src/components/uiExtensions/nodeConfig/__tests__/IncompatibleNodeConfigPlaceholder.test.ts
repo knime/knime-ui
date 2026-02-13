@@ -35,6 +35,14 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
     dialogType: Node.DialogTypeEnum.Swing,
   });
   const metanode = createMetanode({ id: "root:5" });
+  const nodeWithNoDialog = (() => {
+    const node = createNativeNode({
+      id: "root:6",
+      state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+    });
+    delete node.dialogType;
+    return node;
+  })();
 
   const doMount = () => {
     const mockedStores = mockStores();
@@ -46,6 +54,7 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
         [embeddableComponent.id]: embeddableComponent,
         [nonEmbeddableComponent.id]: nonEmbeddableComponent,
         [metanode.id]: metanode,
+        [nodeWithNoDialog.id]: nodeWithNoDialog,
       },
     });
     mockedStores.workflowStore.setActiveWorkflow(workflow);
@@ -112,6 +121,21 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
     });
   });
 
+  it("renders placeholder for nodes with no dialog", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await mockedStores.selectionStore.selectNodes([nodeWithNoDialog.id]);
+    await nextTick();
+
+    const emptyState = wrapper.findComponent(KdsEmptyState);
+    expect(emptyState.exists()).toBe(true);
+    expect(emptyState.props("headline")).toBe("No settings");
+    expect(emptyState.props("description")).toBe(
+      "This node requires no configuration.",
+    );
+    expect(emptyState.props("buttonLabel")).toBeUndefined();
+  });
+
   describe("legacy nodes", () => {
     it("handles download button", async () => {
       const { wrapper, mockedStores } = doMount();
@@ -143,7 +167,7 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
         "This node uses the classic configuration dialog",
       );
       expect(emptyState.props("description")).toBe(
-        "This node hasn’t been migrated to the new interface yet. You can configure it using the dialog for now.",
+        "This node hasn't been migrated to the new interface yet. You can configure it using the dialog for now.",
       );
       expect(
         wrapper.find('[data-test-id="open-legacy-config-btn"]').exists(),
@@ -166,5 +190,27 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
 
       expect(openNodeConfigSpy).toHaveBeenCalledWith(nonEmbeddableNode.id);
     });
+  });
+
+  it("renders only one empty state at a time", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    // Test no selection
+    expect(wrapper.findAllComponents(KdsEmptyState)).toHaveLength(1);
+
+    // Test metanode
+    await mockedStores.selectionStore.selectNodes([metanode.id]);
+    await nextTick();
+    expect(wrapper.findAllComponents(KdsEmptyState)).toHaveLength(1);
+
+    // Test no dialog
+    await mockedStores.selectionStore.selectNodes([nodeWithNoDialog.id]);
+    await nextTick();
+    expect(wrapper.findAllComponents(KdsEmptyState)).toHaveLength(1);
+
+    // Test legacy dialog
+    await mockedStores.selectionStore.selectNodes([nonEmbeddableNode.id]);
+    await nextTick();
+    expect(wrapper.findAllComponents(KdsEmptyState)).toHaveLength(1);
   });
 });
