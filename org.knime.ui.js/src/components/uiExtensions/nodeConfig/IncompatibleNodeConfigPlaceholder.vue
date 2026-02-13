@@ -86,12 +86,12 @@ const openMetanode = () => {
     />
 
     <KdsEmptyState
-      v-if="hasNoDialog"
+      v-else-if="hasNoDialog"
       headline="No settings"
       description="This node requires no configuration."
     />
 
-    <template v-if="hasLegacyDialog">
+    <template v-else-if="hasLegacyDialog">
       <KdsEmptyState
         v-if="shouldDisplayDownload"
         headline="Classic dialog required"
@@ -105,9 +105,9 @@ const openMetanode = () => {
       />
 
       <KdsEmptyState
-        v-if="isDesktop()"
+        v-else-if="isDesktop()"
         headline="This node uses the classic configuration dialog"
-        description="This node hasn’t been migrated to the new interface yet. You can configure it using the dialog for now."
+        description="This node hasn't been migrated to the new interface yet. You can configure it using the dialog for now."
         button-label="Open dialog"
         button-variant="outlined"
         button-size="small"
@@ -117,11 +117,14 @@ const openMetanode = () => {
       <KdsEmptyState
         v-else
         headline="This node uses the classic configuration dialog"
-        description="This node hasn’t been migrated to the new interface yet. You can configure it using the dialog for now."
+        description="This node hasn't been migrated to the new interface yet. You can configure it using the dialog for now."
       />
     </template>
 
-    <KdsEmptyState v-if="!selectedNode" headline="Select a node to configure" />
+    <KdsEmptyState
+      v-else-if="!selectedNode"
+      headline="Select a node to configure"
+    />
   </div>
 </template>
 

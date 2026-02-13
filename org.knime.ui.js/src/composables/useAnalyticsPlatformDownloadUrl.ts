@@ -10,8 +10,9 @@ export const useAnalyticsPlatformDownloadUrl = (src: string) => {
   const { analyticsPlatformDownloadURL } = storeToRefs(useApplicationStore());
 
   const href = computed(() => {
-    const parameter = `?src=${src}`;
-    return `${analyticsPlatformDownloadURL.value}${parameter}`;
+    const url = new URL(analyticsPlatformDownloadURL.value);
+    url.searchParams.set("src", src);
+    return url.toString();
   });
 
   return { href };
