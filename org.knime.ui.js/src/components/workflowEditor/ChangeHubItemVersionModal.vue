@@ -7,7 +7,7 @@ import {
   KdsModal,
   KdsRadioButtonGroup,
 } from "@knime/kds-components";
-import { formatDateString } from "@knime/utils";
+import { formatDateTimeString } from "@knime/utils";
 
 import {
   ItemVersion,
@@ -75,12 +75,9 @@ const formatCreatedOn = (createdOnValue: string | Date) => {
       createdOnValue instanceof Date ? null : createdOnValue.trim();
     return rawValue ? `Created on ${rawValue}` : "Created on unknown date";
   }
-  const dateLabel = formatDateString(date.toISOString());
-  const timeLabel = new Intl.DateTimeFormat([], {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-  return `Created on ${dateLabel}, ${timeLabel}`;
+  const dateInput =
+    createdOnValue instanceof Date ? date.getTime() : createdOnValue;
+  return `Created on ${formatDateTimeString(dateInput)}`;
 };
 
 const dropdownOptions = computed<DropdownOption[]>(() =>
