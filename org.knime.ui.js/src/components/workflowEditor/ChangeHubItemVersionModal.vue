@@ -7,7 +7,7 @@ import {
   KdsModal,
   KdsRadioButtonGroup,
 } from "@knime/kds-components";
-import { formatDateString } from "@knime/utils";
+import { formatDateTimeString } from "@knime/utils";
 
 import {
   ItemVersion,
@@ -67,6 +67,19 @@ type DropdownOption = {
 
 const MAX_DESCRIPTION_LENGTH = 120;
 
+const formatCreatedOn = (createdOnValue: string | Date) => {
+  const date =
+    createdOnValue instanceof Date ? createdOnValue : new Date(createdOnValue);
+  if (Number.isNaN(date.getTime())) {
+    const rawValue =
+      createdOnValue instanceof Date ? null : createdOnValue.trim();
+    return rawValue ? `Created on ${rawValue}` : "Created on unknown date";
+  }
+  const dateInput =
+    createdOnValue instanceof Date ? date.getTime() : createdOnValue;
+  return `Created on ${formatDateTimeString(dateInput)}`;
+};
+
 const dropdownOptions = computed<DropdownOption[]>(() =>
   itemVersions.value
     .filter(
@@ -77,13 +90,7 @@ const dropdownOptions = computed<DropdownOption[]>(() =>
       const title = version.title ?? "Untitled";
       const author = version.author ? `Author: ${version.author}` : null;
       const createdOnValue = version.createdOn;
-      const createdOn = createdOnValue
-        ? `Created: ${formatDateString(
-            createdOnValue instanceof Date
-              ? createdOnValue.toISOString()
-              : createdOnValue,
-          )}`
-        : null;
+      const createdOn = createdOnValue ? formatCreatedOn(createdOnValue) : null;
       const rawDescription = version.description?.trim() ?? "";
       let description: string | null = null;
       if (rawDescription.length > 0) {
