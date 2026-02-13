@@ -11,6 +11,7 @@ import {
   AppState,
   type Workflow,
   type WorkflowSnapshot,
+  WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
 import { isDesktop, runInEnvironment } from "@/environment";
@@ -22,6 +23,7 @@ import { useSelectionStore } from "@/store/selection";
 import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
@@ -588,6 +590,17 @@ export const useLifecycleStore = defineStore("lifecycle", {
     },
 
     afterSetActivateWorkflow() {
+      const activeWorkflow = useWorkflowStore().activeWorkflow;
+      if (
+        activeWorkflow?.info.linked &&
+        activeWorkflow.info.containerType ===
+          WorkflowInfo.ContainerTypeEnum.Component
+      ) {
+        const versionsStore = useWorkflowVersionsStore();
+        if (versionsStore.activeProjectVersionsModeStatus !== "inactive") {
+          void versionsStore.deactivateVersionsMode();
+        }
+      }
       useComponentInteractionsStore().checkForLinkedComponentUpdates({
         auto: true,
       });
