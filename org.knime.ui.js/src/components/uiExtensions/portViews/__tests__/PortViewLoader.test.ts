@@ -15,7 +15,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { setRestApiBaseUrl } from "../../common/useResourceLocation";
+import { webResourceLocation } from "@/webResourceLocation";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
 import DataValueViewWrapper from "../../dataValueViews/DataValueViewWrapper.vue";
 import PortViewLoader from "../PortViewLoader.vue";
@@ -278,34 +278,15 @@ describe("PortViewLoader.vue", () => {
       const { wrapper } = doMount();
       await flushPromises();
 
-      const apiLayer = getApiLayer(wrapper);
-
-      const location = await apiLayer.getResourceLocation("path1");
-
-      expect(location).toBe("baseUrl/path1");
-    });
-
-    it("implements getResourceLocation in apiLayer (when rest api base url is defined)", async () => {
-      mockedAPI.port.getPortView.mockResolvedValueOnce({
-        resourceInfo: {
-          type: "SHADOW_APP",
-          baseUrl: "",
-          path: "path",
-        },
-      });
-
-      setRestApiBaseUrl("API_URL_BASE");
-      const { wrapper, mockedStores } = doMount();
-      await flushPromises();
-      mockedStores.applicationStore.setActiveProjectId("project1");
-
-      const apiLayer = getApiLayer(wrapper);
-
-      const location = await apiLayer.getResourceLocation("path1");
-
-      expect(location).toBe(
-        "API_URL_BASE/jobs/project1/workflow/wizard/web-resources/path1",
+      const uiExtensionResourceSpy = vi.spyOn(
+        webResourceLocation,
+        "uiExtensionResource",
       );
+      const apiLayer = getApiLayer(wrapper);
+
+      const location = await apiLayer.getResourceLocation("path1");
+      expect(uiExtensionResourceSpy).toHaveBeenCalled();
+      expect(location).toBe("baseUrl/path1");
     });
 
     it("implements callNodeDataService in apiLayer", async () => {

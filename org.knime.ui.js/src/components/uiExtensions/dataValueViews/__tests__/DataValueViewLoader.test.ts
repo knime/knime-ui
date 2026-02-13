@@ -63,6 +63,8 @@ describe("DataValueViewLoader.vue", () => {
     mockGetDataValueView();
     const { wrapper } = doMount();
 
+    await nextTick();
+
     expect(mockedAPI.port.getDataValueView).toBeCalledWith({
       projectId: props.projectId,
       workflowId: props.workflowId,
@@ -72,6 +74,7 @@ describe("DataValueViewLoader.vue", () => {
       rowIdx: props.selectedRowIndex,
       colIdx: props.selectedColIndex,
     });
+
     expect(wrapper.findComponent(UIExtension).exists()).toBeFalsy();
     expect(wrapper.findComponent(SkeletonItem).exists()).toBeTruthy();
 
@@ -81,10 +84,12 @@ describe("DataValueViewLoader.vue", () => {
     expect(wrapper.findComponent(SkeletonItem).exists()).toBeFalsy();
   });
 
-  it("calls API with versionId if versionId is included in props", () => {
+  it("calls API with versionId if versionId is included in props", async () => {
     mockGetDataValueView();
     const versionId = "version-id";
     doMount({ versionId });
+
+    await nextTick();
 
     expect(mockedAPI.port.getDataValueView).toBeCalledWith({
       projectId: props.projectId,

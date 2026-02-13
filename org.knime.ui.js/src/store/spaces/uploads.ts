@@ -15,8 +15,9 @@ import { isBrowser } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "../application/application";
 
-import { localRootProjectPath, useSpaceCachingStore } from "./caching";
+import { useSpaceCachingStore } from "./caching";
 import { getCustomFetchOptionsForBrowser } from "./common";
+import { localRootProjectPath } from "./constants";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
 export const useSpaceUploadsStore = defineStore("space.uploads", () => {

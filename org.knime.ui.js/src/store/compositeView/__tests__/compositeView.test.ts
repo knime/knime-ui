@@ -23,8 +23,10 @@ import { type PageBuilderApi, useCompositeViewStore } from "../compositeView";
 
 const mockUrl = vi.hoisted(() => "mocked-url");
 
-vi.mock("@/components/uiExtensions/common/useResourceLocation", () => ({
-  resourceLocationResolver: vi.fn(() => mockUrl),
+vi.mock("@/webResourceLocation", () => ({
+  webResourceLocation: {
+    uiExtensionResource: vi.fn(() => mockUrl),
+  },
 }));
 
 vi.mock("../pageBuilderStore", () => ({
@@ -60,7 +62,6 @@ vi.mock("../showPageBuilderUnsavedChangesDialog", () => ({
 
 vi.mock("@/environment");
 
-const someProjectId = "some-project-id";
 const someNodeId = "node-123";
 
 describe("composite view store", () => {
@@ -74,7 +75,7 @@ describe("composite view store", () => {
     });
 
     it("should initialize PageBuilder with correct environment and settings", async () => {
-      await useCompositeViewStore().getPageBuilder(someProjectId);
+      await useCompositeViewStore().getPageBuilder();
       expect(mockCreatePageBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           state: {
@@ -92,7 +93,7 @@ describe("composite view store", () => {
 
     it("mounts and unmounts the PageBuilder app correctly", async () => {
       const { getPageBuilder, isCompositeViewDirty } = useCompositeViewStore();
-      const pageBuilder = await getPageBuilder(someProjectId);
+      const pageBuilder = await getPageBuilder();
       await pageBuilder.mountShadowApp(
         "mock-shadow-root" as unknown as ShadowRoot,
       );
@@ -106,7 +107,7 @@ describe("composite view store", () => {
     it("should handle dirty state through UI interactions", async () => {
       const { getPageBuilder, clickAwayCompositeView } =
         useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       mockPageBuilder.isDirty.mockResolvedValueOnce(true);
       showPageBuilderUnsavedChangesDialogMock.mockResolvedValueOnce(false);
       const result = await clickAwayCompositeView();
@@ -138,14 +139,14 @@ describe("composite view store", () => {
 
     it("should not execute when PageBuilder is not mounted", async () => {
       const { applyAndExecute, getPageBuilder } = useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       await applyAndExecute();
       expect(mockPageBuilder.applyAndExecute).not.toHaveBeenCalled();
     });
 
     it("should not execute when not dirty", async () => {
       const { applyAndExecute, getPageBuilder } = useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       mockPageBuilder.isDirty.mockResolvedValue(false);
       await applyAndExecute();
       expect(mockPageBuilder.applyAndExecute).not.toHaveBeenCalled();
@@ -155,7 +156,7 @@ describe("composite view store", () => {
       mockEnvironment("DESKTOP", { isBrowser, isDesktop });
       const { clickAwayCompositeView, getPageBuilder } =
         useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       mockPageBuilder.isDirty.mockResolvedValue(true);
       mockPageBuilder.hasPage.mockReturnValue(true);
       const result = await clickAwayCompositeView();
@@ -168,7 +169,7 @@ describe("composite view store", () => {
       mockEnvironment("BROWSER", { isBrowser, isDesktop });
       const { clickAwayCompositeView, getPageBuilder } =
         useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       mockPageBuilder.isDirty.mockResolvedValue(true);
       mockPageBuilder.hasPage.mockReturnValue(true);
       const result = await clickAwayCompositeView();
@@ -180,7 +181,7 @@ describe("composite view store", () => {
 
     it("should not execute when no page exists", async () => {
       const { applyAndExecute, getPageBuilder } = useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       mockPageBuilder.isDirty.mockResolvedValue(true);
       mockPageBuilder.hasPage.mockReturnValue(false);
       await applyAndExecute();
@@ -189,7 +190,7 @@ describe("composite view store", () => {
 
     it("should execute when conditions are met", async () => {
       const { applyAndExecute, getPageBuilder } = useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       mockPageBuilder.isDirty.mockResolvedValue(true);
       mockPageBuilder.hasPage.mockReturnValue(true);
       await applyAndExecute();
@@ -205,7 +206,7 @@ describe("composite view store", () => {
     it("should apply as default and execute when conditions are met", async () => {
       const { applyToDefaultAndExecute, getPageBuilder } =
         useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       mockPageBuilder.hasPage.mockReturnValue(true);
       await applyToDefaultAndExecute(someNodeId);
       expect(useExecutionStore().executeNodes).toHaveBeenCalledWith([
@@ -215,7 +216,7 @@ describe("composite view store", () => {
 
     it("should reset node when PageBuilder is active", async () => {
       const { resetToDefaults, getPageBuilder } = useCompositeViewStore();
-      await getPageBuilder(someProjectId);
+      await getPageBuilder();
       await resetToDefaults(someNodeId);
       expect(useExecutionStore().changeNodeState).toHaveBeenCalledWith({
         action: "reset",

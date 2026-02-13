@@ -31,8 +31,7 @@ const currentIdentifier = computed<Identifiers>(() => ({
 
 const shadowHost = ref<HTMLElement | null>(null);
 
-const getPageBuilder = () =>
-  useCompositeViewStore().getPageBuilder(props.projectId);
+const { getPageBuilder } = useCompositeViewStore();
 
 const pageBuilder = ref<PageBuilderApi>(await getPageBuilder());
 

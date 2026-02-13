@@ -13,7 +13,6 @@ import {
   type WorkflowSnapshot,
 } from "@/api/gateway-api/generated-api";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
-import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { isDesktop, runInEnvironment } from "@/environment";
 import { getHintConfiguration } from "@/hints/hints.config";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -27,6 +26,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
 import { setProjectActiveOrThrow } from "@/util/projectUtil";
+import { webResourceLocation } from "@/webResourceLocation";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";
 
@@ -315,8 +315,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
           });
         },
 
-        // setup hints for browser and use the url for videos based on the resource
-        // location resolver
+        // setup hints for browser and use the url for videos based web resources location
         BROWSER: () => {
           if (
             useApplicationStore().appMode === AppState.AppModeEnum.JobViewer
@@ -325,24 +324,9 @@ export const useLifecycleStore = defineStore("lifecycle", {
             return;
           }
 
-          // to resolve urls in browser, the application state has to be
-          // initialized so that we can use the activeProjectId
-          const hintVideoResolver = (url: string) => {
-            const activeProject = useApplicationStore().openProjects.find(
-              (project) => project.activeWorkflowId,
-            );
-
-            if (!activeProject) {
-              return "";
-            }
-
-            return resourceLocationResolver(
-              activeProject.projectId,
-              `org/knime/ui/js${url}`,
-            );
-          };
-
-          setupHints({ hints: getHintConfiguration(hintVideoResolver) });
+          setupHints({
+            hints: getHintConfiguration(webResourceLocation.hintAsset),
+          });
         },
       });
     },

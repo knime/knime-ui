@@ -1,5 +1,5 @@
 import { LinkVariant } from "@/api/gateway-api/generated-api";
-import { localRootProjectPath } from "@/store/spaces/caching";
+import { localRootProjectPath } from "@/store/spaces/constants";
 
 const DEFAULT_LINK_VARIANT_LOCAL =
   LinkVariant.VariantEnum.MOUNTPOINTABSOLUTEPATH;

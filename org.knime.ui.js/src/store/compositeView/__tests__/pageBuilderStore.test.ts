@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
-import { embeddingSDK } from "@knime/hub-features";
 import { sleep } from "@knime/utils";
 
 import { isBrowser, isDesktop } from "@/environment";
@@ -10,6 +9,15 @@ import { pageBuilderApiVuexStoreConfig } from "@/store/compositeView/pageBuilder
 import { deepMocked } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
+
+const { nodeOutputResourceMock } = vi.hoisted(() => ({
+  nodeOutputResourceMock: vi.fn(),
+}));
+vi.mock("@/webResourceLocation", () => ({
+  webResourceLocation: {
+    nodeOutputResource: nodeOutputResourceMock,
+  },
+}));
 
 vi.mock("@/environment");
 vi.mock("@knime/hub-features", async () => {
@@ -269,84 +277,26 @@ describe("downloadResourceLink getter", () => {
     vi.clearAllMocks();
   });
 
-  it("should return null when not in browser environment", () => {
-    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
-    const result = getters.downloadResourceLink()({
-      resourceId: "resource-123",
-      nodeId: "node-456",
-    });
-
-    expect(result).toBeNull();
-  });
-
-  it("should return null when context is not available", () => {
-    mockEnvironment("BROWSER", { isBrowser, isDesktop });
-    vi.mocked(embeddingSDK.guest).getContext.mockReturnValue(undefined);
-
-    const result = getters.downloadResourceLink()({
-      resourceId: "resource-123",
-      nodeId: "node-456",
-    });
-
-    expect(result).toBeNull();
-  });
-
   it("should generate correct download link with valid context", () => {
     mockEnvironment("BROWSER", { isBrowser, isDesktop });
-    vi.mocked(embeddingSDK.guest).getContext.mockReturnValue({
-      jobId: "job-789",
-      restApiBaseUrl: "https://api.example.com",
-      wsConnectionUri: "",
-      userIdleTimeout: 3000,
-    });
 
-    const result = getters.downloadResourceLink()({
+    getters.downloadResourceLink()({
       resourceId: "resource-123",
       nodeId: "0:5",
     });
 
-    expect(result).toBe(
-      "https://api.example.com/jobs/job-789/output-resources/resource-123-5",
-    );
+    expect(nodeOutputResourceMock).toHaveBeenCalledWith("resource-123-5");
   });
 
   it("should handle complex nodeId with component identifiers", () => {
     mockEnvironment("BROWSER", { isBrowser, isDesktop });
-    vi.mocked(embeddingSDK.guest).getContext.mockReturnValue({
-      jobId: "job-abc",
-      restApiBaseUrl: "https://api.knime.com",
-      wsConnectionUri: "",
-      userIdleTimeout: 3000,
-    });
 
-    const result = getters.downloadResourceLink()({
+    getters.downloadResourceLink()({
       resourceId: "my-resource",
       nodeId: "0:3:0:7",
     });
 
     // The nodeId should have component identifiers removed (0: replaced)
-    expect(result).toBe(
-      "https://api.knime.com/jobs/job-abc/output-resources/my-resource-3:7",
-    );
-  });
-
-  it("should URL encode special characters in resource path", () => {
-    mockEnvironment("BROWSER", { isBrowser, isDesktop });
-    vi.mocked(embeddingSDK.guest).getContext.mockReturnValue({
-      jobId: "job 123",
-      restApiBaseUrl: "https://api.example.com",
-      wsConnectionUri: "",
-      userIdleTimeout: 3000,
-    });
-
-    const result = getters.downloadResourceLink()({
-      resourceId: "resource with spaces",
-      nodeId: "node-1",
-    });
-
-    // encodeURI should handle the spaces in the path
-    expect(result).toBe(
-      "https://api.example.com/jobs/job%20123/output-resources/resource%20with%20spaces-node-1",
-    );
+    expect(nodeOutputResourceMock).toHaveBeenCalledWith("my-resource-3:7");
   });
 });

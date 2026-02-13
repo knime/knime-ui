@@ -4,7 +4,7 @@ import { promise } from "@knime/utils";
 
 import type { LinkVariant } from "@/api/gateway-api/generated-api";
 import type { SpaceTreeSelection } from "@/components/spaces/SpaceTree.vue";
-import { localRootProjectPath } from "@/store/spaces/caching";
+import { localRootProjectPath } from "@/store/spaces/constants";
 
 export type DestinationPickerConfig = {
   title?: string;

@@ -1,5 +1,6 @@
-import { type Ref, onUnmounted, ref, watch } from "vue";
+import { type Ref, computed, onUnmounted, ref, watch } from "vue";
 
+import { webResourceLocation } from "@/webResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 
 type UseUIExtensionLifecycleOptions = {
@@ -21,7 +22,7 @@ type UseUIExtensionLifecycleOptions = {
    * Callback triggered during the 3 possible load stages when getting a UI Extension
    * configuration: 'loading' | 'ready' | 'error'
    */
-  onExtensionLoadingStateChange: (state: UIExtensionLoadingState) => void;
+  onExtensionLoadingStateChange?: (state: UIExtensionLoadingState) => void;
   /**
    * Callback fired immediately before a new UI Extension is loaded, either due to
    * a "first-time" load or when the render key changes
@@ -45,6 +46,23 @@ export const useUIExtensionLifecycle = (
 
   let deactivateDataServicesFn: (() => Promise<any>) | undefined;
 
+  const resourceLocation = computed(() => {
+    if (!extensionConfig.value) {
+      return "";
+    }
+
+    const { baseUrl, path } = extensionConfig.value.resourceInfo;
+    return webResourceLocation.uiExtensionResource(path ?? "", baseUrl);
+  });
+
+  const getResourceLocation = (path: string) =>
+    Promise.resolve(
+      webResourceLocation.uiExtensionResource(
+        path,
+        extensionConfig.value?.resourceInfo?.baseUrl,
+      ),
+    );
+
   watch(
     renderKey,
     async (next, prev) => {
@@ -62,7 +80,7 @@ export const useUIExtensionLifecycle = (
       error.value = null;
       isLoadingConfig.value = true;
 
-      onExtensionLoadingStateChange({
+      onExtensionLoadingStateChange?.({
         value: "loading",
         message: "Loading data",
       });
@@ -79,7 +97,7 @@ export const useUIExtensionLifecycle = (
 
         isLoadingConfig.value = false;
 
-        onExtensionLoadingStateChange({ value: "ready" });
+        onExtensionLoadingStateChange?.({ value: "ready" });
       } catch (_error) {
         error.value = _error;
         isLoadingConfig.value = false;
@@ -89,7 +107,7 @@ export const useUIExtensionLifecycle = (
           renderKey,
         });
 
-        onExtensionLoadingStateChange({
+        onExtensionLoadingStateChange?.({
           value: "error",
           message: (_error as Error).message,
           error: _error,
@@ -110,5 +128,11 @@ export const useUIExtensionLifecycle = (
     }
   });
 
-  return { extensionConfig, isLoadingConfig, error };
+  return {
+    extensionConfig,
+    isLoadingConfig,
+    error,
+    resourceLocation,
+    getResourceLocation,
+  };
 };

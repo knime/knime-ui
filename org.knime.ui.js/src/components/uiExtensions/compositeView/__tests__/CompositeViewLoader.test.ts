@@ -18,7 +18,6 @@ const isDirtyMock = vi.fn();
 const isDefaultMock = vi.fn();
 const hasPageMock = vi.fn();
 const updateAndReexecuteMock = vi.fn();
-const onDirtyChangeCallback = vi.fn();
 
 describe("CompositeViewLoader.vue", () => {
   afterEach(() => {
@@ -37,22 +36,21 @@ describe("CompositeViewLoader.vue", () => {
     } = options;
     const mockedStores = mockStores();
 
-    mockedStores.compositeViewStore.getPageBuilder.mockImplementation(
-      (_, callback) => {
-        onDirtyChangeCallback.mockImplementation(callback);
-        return Promise.resolve({
-          mountShadowApp: pageBuilderMountMock,
-          loadPage: mockLoadPage,
-          isDirty: isDirtyMock,
-          isDefault: isDefaultMock,
-          hasPage: hasPageMock,
-          updateAndReexecute: updateAndReexecuteMock,
-          unmountShadowApp: mockUnmountShadowApp,
-        });
-      },
-    );
+    vi.mocked(
+      mockedStores.compositeViewStore.getPageBuilder,
+    ).mockImplementation(() => {
+      return Promise.resolve({
+        mountShadowApp: pageBuilderMountMock,
+        loadPage: mockLoadPage,
+        isDirty: isDirtyMock,
+        isDefault: isDefaultMock,
+        hasPage: hasPageMock,
+        updateAndReexecute: updateAndReexecuteMock,
+        unmountShadowApp: mockUnmountShadowApp,
+      } as any);
+    });
 
-    mockedStores.compositeViewStore.isReexecuting.mockImplementation(
+    vi.mocked(mockedStores.compositeViewStore.isReexecuting).mockImplementation(
       () => isReexecuting,
     );
 
