@@ -17,7 +17,7 @@ describe("projectUtil", () => {
     it("returns null when project has no origin", () => {
       const project = createProject(null);
 
-      const result = toStableProjectId(project, "username", "provider-id");
+      const result = toStableProjectId(project);
 
       expect(result).toBeNull();
     });
@@ -29,7 +29,7 @@ describe("projectUtil", () => {
         itemId: "item-1",
       });
 
-      const result = toStableProjectId(project, "username", "provider-id");
+      const result = toStableProjectId(project);
 
       expect(result).not.toBeNull();
       expect(result).toHaveLength(8);
@@ -43,44 +43,10 @@ describe("projectUtil", () => {
         itemId: "item-1",
       });
 
-      const result1 = toStableProjectId(project, "username", "provider-id");
-      const result2 = toStableProjectId(project, "username", "provider-id");
+      const result1 = toStableProjectId(project);
+      const result2 = toStableProjectId(project);
 
       expect(result1).toBe(result2);
-    });
-
-    it("produces different id for different usernames", () => {
-      const project = createProject({
-        providerId: "hub-1",
-        spaceId: "space-1",
-        itemId: "item-1",
-      });
-
-      const resultUserA = toStableProjectId(project, "user-a", "provider-id");
-      const resultUserB = toStableProjectId(project, "user-b", "provider-id");
-
-      expect(resultUserA).not.toBe(resultUserB);
-    });
-
-    it("produces different id for different provider IDs", () => {
-      const project = createProject({
-        providerId: "hub-1",
-        spaceId: "space-1",
-        itemId: "item-1",
-      });
-
-      const resultProviderA = toStableProjectId(
-        project,
-        "username",
-        "provider-a",
-      );
-      const resultProviderB = toStableProjectId(
-        project,
-        "username",
-        "provider-b",
-      );
-
-      expect(resultProviderA).not.toBe(resultProviderB);
     });
 
     it("produces different id for different project origins", () => {
@@ -95,8 +61,8 @@ describe("projectUtil", () => {
         itemId: "item-2",
       });
 
-      const result1 = toStableProjectId(project1, "username", "provider-id");
-      const result2 = toStableProjectId(project2, "username", "provider-id");
+      const result1 = toStableProjectId(project1);
+      const result2 = toStableProjectId(project2);
 
       expect(result1).not.toBe(result2);
     });
@@ -111,8 +77,8 @@ describe("projectUtil", () => {
       const projectA = { ...createProject(sameOrigin), name: "Project A" };
       const projectB = { ...createProject(sameOrigin), name: "Project B" };
 
-      const resultA = toStableProjectId(projectA, "username", "provider-id");
-      const resultB = toStableProjectId(projectB, "username", "provider-id");
+      const resultA = toStableProjectId(projectA);
+      const resultB = toStableProjectId(projectB);
 
       expect(resultA).toBe(resultB);
     });

@@ -5,12 +5,16 @@ import { defineStore, storeToRefs } from "pinia";
 import { useHubAuth } from "@/components/kai/useHubAuth";
 import { runInEnvironment } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
+import { hashString } from "@/util/hashString";
 import { toStableProjectId } from "@/util/projectUtil";
 
 /**
- * Store that manages AP-client-side AI settings.
+ * Store that manages AP-client-side AI settings. Settings scoped by Hub used for K-AI + username.
  *
  * AI settings currently implemented:
+ * - Disclaimer dismissals: per-user per-Hub record of whether the K-AI disclaimer
+ *   has been persistently dismissed. Tracks the disclaimer text hash so that a
+ *   changed disclaimer is shown again.
  * - Action permissions: per-project (user & Hub-scoped) per-action decision about
  *   whether to "always allow" or "never allow" a certain action by K-AI.
  */
@@ -18,25 +22,35 @@ import { toStableProjectId } from "@/util/projectUtil";
 const AI_SETTINGS_KEY = "knime-ai-settings";
 
 /**
- * Project entries older than this will be pruned.
+ * Entries older than this will be pruned.
  * See lifecycle.ts::initializeApplication
  */
 const PRUNE_THRESHOLD_MONTHS = 6;
 
-type ActionPermission = "allow" | "deny";
+type DisclaimerDismissal = {
+  disclaimerTextHash: string;
+  lastUpdated: string;
+};
 
-type ProjectActionPermissions = {
+// TODO HUB-12373: define ActionType as well once we know what they will be (e.g. "nodeConfigure")
+type ActionPermission = "allow" | "deny";
+type ActionPermissionsForProject = {
   lastUpdated: string;
   permissions: Record<string, ActionPermission>;
 };
 
-type AISettingsState = {
-  actionPermissionsByProject: Record<string, ProjectActionPermissions>;
+type AIUserSettings = {
+  disclaimer?: DisclaimerDismissal;
+  permissionsPerProject?: {
+    [projectID: string]: ActionPermissionsForProject;
+  };
 };
 
-const defaults: AISettingsState = {
-  actionPermissionsByProject: {},
+type AISettingsState = {
+  [userIdHash: string]: AIUserSettings;
 };
+
+const defaults: AISettingsState = {};
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {
   const item = window?.localStorage?.getItem(key);
@@ -84,6 +98,14 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   };
 
   // Helpers
+  const getHashForCurrentHubUser = () => {
+    const { hubID, username } = useHubAuth();
+    if (!hubID.value || !username.value) {
+      return null;
+    }
+    return hashString(`${hubID.value}:${username.value}`);
+  };
+
   const getStableProjectIdForActiveProject = () => {
     const { activeProject } = storeToRefs(useApplicationStore());
 
@@ -94,94 +116,176 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
       return null;
     }
 
-    // username and Hub ID are specific to the Hub configured to be used as K-AI's backend
-    const { hubID, username } = useHubAuth();
-
-    return toStableProjectId(
-      activeProject.value,
-      username.value ?? "local",
-      hubID.value || "local",
-    );
+    return toStableProjectId(activeProject.value);
   };
 
-  /**
-   * Prune project entries that haven't been updated in the last N months.
-   */
-  const pruneStaleActionPermissions = async () => {
-    const now = new Date();
-    const thresholdDate = new Date(now);
-    thresholdDate.setMonth(thresholdDate.getMonth() - PRUNE_THRESHOLD_MONTHS);
+  type SettingKeysUserScoped = { userIdHash: string };
+  type SettingKeysProjectScoped = {
+    userIdHash: string;
+    stableProjectId: string;
+  };
+  type SettingKeys = {
+    (scope: "user"): SettingKeysUserScoped | null;
+    (scope?: "project"): SettingKeysProjectScoped | null;
+  };
+  const getSettingKeys: SettingKeys = (
+    scope: "user" | "project" = "project",
+  ): any => {
+    const userIdHash = getHashForCurrentHubUser();
+    if (!userIdHash) {
+      return null;
+    }
 
+    if (scope === "user") {
+      return { userIdHash };
+    }
+
+    const stableProjectId = getStableProjectIdForActiveProject();
+    if (!stableProjectId) {
+      return null;
+    }
+
+    return { userIdHash, stableProjectId };
+  };
+
+  // === DISCLAIMER DISMISSAL ===
+  // The disclaimer dismissal is scoped per Hub+user so that a desktop AP user
+  // connected to multiple Hubs sees the disclaimer at least once per Hub.
+  // The disclaimer text hash is stored so that a changed disclaimer is re-shown.
+
+  const isDisclaimerDismissed = (disclaimerText: string): boolean => {
+    const keys = getSettingKeys("user");
+    if (!keys) {
+      return false;
+    }
+
+    const dismissal = settings[keys.userIdHash]?.disclaimer;
+    return dismissal?.disclaimerTextHash === hashString(disclaimerText);
+  };
+
+  const dismissDisclaimer = async (disclaimerText: string) => {
+    const keys = getSettingKeys("user");
+    if (!keys) {
+      return;
+    }
+
+    if (!settings[keys.userIdHash]) {
+      settings[keys.userIdHash] = {};
+    }
+
+    settings[keys.userIdHash].disclaimer = {
+      disclaimerTextHash: hashString(disclaimerText),
+      lastUpdated: new Date().toISOString(),
+    };
+    await updateSettings();
+  };
+
+  const pruneStaleDisclaimerDismissals = (thresholdDate: Date) => {
     let didPrune = false;
 
-    for (const [userScopedProjectId, entry] of Object.entries(
-      settings.actionPermissionsByProject,
-    )) {
-      if (new Date(entry.lastUpdated) < thresholdDate) {
+    for (const [userIdHash, userSettings] of Object.entries(settings)) {
+      if (!userSettings.disclaimer) {
+        continue;
+      }
+
+      if (new Date(userSettings.disclaimer.lastUpdated) < thresholdDate) {
         consola.debug(
-          `Pruning stale AI settings for project ${userScopedProjectId} (last updated: ${entry.lastUpdated})`,
+          `Pruning stale disclaimer dismissal ${userIdHash} (last updated: ${userSettings.disclaimer.lastUpdated})`,
         );
-        delete settings.actionPermissionsByProject[userScopedProjectId];
+        delete settings[userIdHash].disclaimer;
         didPrune = true;
       }
     }
 
-    if (didPrune) {
-      await updateSettings();
+    return didPrune;
+  };
+
+  const resetDisclaimerDismissal = async () => {
+    const keys = getSettingKeys("user");
+    if (!keys) {
+      return;
     }
+
+    if (!settings[keys.userIdHash]?.disclaimer) {
+      return;
+    }
+
+    delete settings[keys.userIdHash].disclaimer;
+    await updateSettings();
   };
 
   // === ACTION PERMISSIONS ===
   // When allowing or denying K-AI to perform a certain action (e.g. sample data), the user
   // can "Remember for this workflow", which persists the decision for that particular action for the active project.
 
-  // Generic methods that refer to the entry in the settings identified by "userScopedProjectId", an ID
-  // identifying a particular project, for a particular user of a particular Hub (see projectUtil.ts::toStableProjectId)
+  // Generic methods that refer to the entry in the settings identified by user-hub and stable project ID pair
   const getPermissionForAction = (
-    userScopedProjectId: string,
+    userIdHash: string,
+    stableProjectId: string,
     actionId: string,
   ): ActionPermission | null => {
     return (
-      settings.actionPermissionsByProject[userScopedProjectId]?.permissions[
-        actionId
-      ] ?? null
+      settings[userIdHash]?.permissionsPerProject?.[stableProjectId]
+        ?.permissions[actionId] ?? null
     );
   };
 
   const setPermissionForAction = async (
-    userScopedProjectId: string,
+    userIdHash: string,
+    stableProjectId: string,
     actionId: string,
     permission: ActionPermission,
   ) => {
     const now = new Date().toISOString();
 
-    if (!settings.actionPermissionsByProject[userScopedProjectId]) {
-      settings.actionPermissionsByProject[userScopedProjectId] = {
+    if (!settings[userIdHash]) {
+      settings[userIdHash] = {
+        permissionsPerProject: {},
+      };
+    }
+    const userSettings = settings[userIdHash];
+
+    // `permissionsPerProject` can be missing in case the user persistently
+    // dismissed a disclaimer before (i.e. entry exists for user) but never saved an action permission
+    if (!userSettings.permissionsPerProject) {
+      userSettings.permissionsPerProject = {};
+    }
+    const projects = userSettings.permissionsPerProject;
+
+    if (!projects[stableProjectId]) {
+      projects[stableProjectId] = {
         lastUpdated: now,
         permissions: {},
       };
     }
+    const projectPermissions = projects[stableProjectId];
 
-    settings.actionPermissionsByProject[userScopedProjectId].permissions[
-      actionId
-    ] = permission;
-    settings.actionPermissionsByProject[userScopedProjectId].lastUpdated = now;
+    projectPermissions.lastUpdated = now;
+    projectPermissions.permissions[actionId] = permission;
 
     await updateSettings();
   };
 
   const getPermissionsForAllActions = (
-    userScopedProjectId: string,
-  ): ProjectActionPermissions | null => {
-    return settings.actionPermissionsByProject[userScopedProjectId] ?? null;
+    userIdHash: string,
+    stableProjectId: string,
+  ): ActionPermissionsForProject | null => {
+    return (
+      settings[userIdHash]?.permissionsPerProject?.[stableProjectId] ?? null
+    );
   };
 
   const revokePermissionForAction = async (
-    userScopedProjectId: string,
+    userIdHash: string,
+    stableProjectId: string,
     actionId: string,
   ) => {
-    const projectPermissions =
-      settings.actionPermissionsByProject[userScopedProjectId];
+    const projectPermissions = getPermissionsForAllActions(
+      userIdHash,
+      stableProjectId,
+    );
+
+    // no permissions stored for project
     if (!projectPermissions) {
       return;
     }
@@ -189,18 +293,18 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     delete projectPermissions.permissions[actionId];
     projectPermissions.lastUpdated = new Date().toISOString();
 
-    // Clean up project entry if no permissions remain
-    if (Object.keys(projectPermissions.permissions).length === 0) {
-      delete settings.actionPermissionsByProject[userScopedProjectId];
-    }
-
     await updateSettings();
   };
 
   const revokePermissionsForAllActions = async (
-    userScopedProjectId: string,
+    userIdHash: string,
+    stableProjectId: string,
   ) => {
-    delete settings.actionPermissionsByProject[userScopedProjectId];
+    if (!getPermissionsForAllActions(userIdHash, stableProjectId)) {
+      return;
+    }
+
+    delete settings[userIdHash].permissionsPerProject![stableProjectId];
     await updateSettings();
   };
 
@@ -208,59 +312,143 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   const getPermissionForActionForActiveProject = (
     actionId: string,
   ): ActionPermission | null => {
-    const userScopedProjectId = getStableProjectIdForActiveProject();
-
-    if (!userScopedProjectId) {
+    const ctx = getSettingKeys();
+    if (!ctx) {
       return null;
     }
 
-    return getPermissionForAction(userScopedProjectId, actionId);
+    return getPermissionForAction(
+      ctx.userIdHash,
+      ctx.stableProjectId,
+      actionId,
+    );
   };
 
   const setPermissionForActionForActiveProject = async (
     actionId: string,
     permission: ActionPermission,
   ) => {
-    const userScopedProjectId = getStableProjectIdForActiveProject();
-
-    if (!userScopedProjectId) {
+    const ctx = getSettingKeys();
+    if (!ctx) {
       return;
     }
 
-    await setPermissionForAction(userScopedProjectId, actionId, permission);
+    await setPermissionForAction(
+      ctx.userIdHash,
+      ctx.stableProjectId,
+      actionId,
+      permission,
+    );
   };
 
   const getPermissionsForAllActionsForActiveProject =
-    (): ProjectActionPermissions | null => {
-      const userScopedProjectId = getStableProjectIdForActiveProject();
-
-      if (!userScopedProjectId) {
+    (): ActionPermissionsForProject | null => {
+      const ctx = getSettingKeys();
+      if (!ctx) {
         return null;
       }
 
-      return getPermissionsForAllActions(userScopedProjectId);
+      return getPermissionsForAllActions(ctx.userIdHash, ctx.stableProjectId);
     };
 
   const revokePermissionForActionForActiveProject = async (
     actionId: string,
   ) => {
-    const userScopedProjectId = getStableProjectIdForActiveProject();
-
-    if (!userScopedProjectId) {
+    const ctx = getSettingKeys();
+    if (!ctx) {
       return;
     }
 
-    await revokePermissionForAction(userScopedProjectId, actionId);
+    await revokePermissionForAction(
+      ctx.userIdHash,
+      ctx.stableProjectId,
+      actionId,
+    );
   };
 
   const revokePermissionsForAllActionsForActiveProject = async () => {
-    const userScopedProjectId = getStableProjectIdForActiveProject();
-
-    if (!userScopedProjectId) {
+    const ctx = getSettingKeys();
+    if (!ctx) {
       return;
     }
 
-    await revokePermissionsForAllActions(userScopedProjectId);
+    await revokePermissionsForAllActions(ctx.userIdHash, ctx.stableProjectId);
+  };
+
+  const pruneStaleActionPermissions = (thresholdDate: Date) => {
+    let didPrune = false;
+
+    for (const [userIdHash, userSettings] of Object.entries(settings)) {
+      if (!userSettings.permissionsPerProject) {
+        continue;
+      }
+      const projects = userSettings.permissionsPerProject;
+
+      for (const [stableProjectId, projectData] of Object.entries(projects)) {
+        // check if stale
+        if (new Date(projectData.lastUpdated) < thresholdDate) {
+          consola.debug(
+            `Pruning stale action permissions for user ${userIdHash}, project ${stableProjectId} (last updated: ${projectData.lastUpdated})`,
+          );
+          delete projects[stableProjectId];
+          didPrune = true;
+        }
+
+        // check if empty
+        if (Object.keys(projectData.permissions).length === 0) {
+          consola.debug(
+            `Pruning empty action permissions container for user ${userIdHash}, project ${stableProjectId}`,
+          );
+          delete projects[stableProjectId];
+          didPrune = true;
+        }
+      }
+
+      // Clean up empty permissionsPerProject container
+      if (Object.keys(projects).length === 0) {
+        delete userSettings.permissionsPerProject;
+      }
+    }
+
+    return didPrune;
+  };
+
+  const cleanupEmptyUserEntries = () => {
+    let didClean = false;
+
+    for (const [userIdHash, userSettings] of Object.entries(settings)) {
+      const hasDisclaimer = Boolean(userSettings.disclaimer);
+      const hasPermissions =
+        userSettings.permissionsPerProject &&
+        Object.keys(userSettings.permissionsPerProject).length > 0;
+
+      if (!hasDisclaimer && !hasPermissions) {
+        delete settings[userIdHash];
+        didClean = true;
+      }
+    }
+
+    return didClean;
+  };
+
+  /**
+   * Prune all stale entries (action permissions, disclaimer dismissals, etc.)
+   * that haven't been updated in the last N months.
+   */
+  const pruneStaleEntries = async () => {
+    const now = new Date();
+    const thresholdDate = new Date(now);
+    thresholdDate.setMonth(thresholdDate.getMonth() - PRUNE_THRESHOLD_MONTHS);
+
+    const prunedPermissions = pruneStaleActionPermissions(thresholdDate);
+    const prunedDisclaimers = pruneStaleDisclaimerDismissals(thresholdDate);
+
+    const didPrune = prunedPermissions || prunedDisclaimers;
+    const didCleanUsers = cleanupEmptyUserEntries();
+
+    if (didPrune || didCleanUsers) {
+      await updateSettings();
+    }
   };
 
   return {
@@ -268,8 +456,17 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
       settings,
       updateSettings,
       getStableProjectIdForActiveProject,
+      getHashForCurrentHubUser,
+      pruneStaleActionPermissions,
+      pruneStaleDisclaimerDismissals,
     },
 
+    // K-AI Disclaimer
+    isDisclaimerDismissed,
+    dismissDisclaimer,
+    resetDisclaimerDismissal,
+
+    // Permissions for K-AI to execute specific actions (e.g. sample data)
     // Generic API (operates on any project by stable ID)
     getPermissionForAction,
     setPermissionForAction,
@@ -285,6 +482,6 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     revokePermissionsForAllActionsForActiveProject,
 
     fetchAISettings,
-    pruneStaleActionPermissions,
+    pruneStaleEntries,
   };
 });

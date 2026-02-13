@@ -1,41 +1,29 @@
 import { computed, ref } from "vue";
 
-import { encodeString } from "@/util/encodeString";
-import { useHubAuth } from "../useHubAuth";
+import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { useKaiServer } from "../useKaiServer";
 
-const _shouldShowDisclaimer = ref(true);
+const hasBeenDismissed = ref(false);
 
 export const useDisclaimer = () => {
   const { uiStrings } = useKaiServer();
   const disclaimerText = computed(() => uiStrings.disclaimer ?? "");
 
-  const { hubID, username } = useHubAuth();
+  const aiSettingsStore = useAISettingsStore();
 
-  const localStorageKey = computed(() => {
-    if (!hubID.value || !username.value || !disclaimerText.value) {
-      return null;
-    }
-    const identifier = `${hubID.value}${username.value}${disclaimerText.value}`;
-    return `kai-persistently-hide-disclaimer-${encodeString(identifier)}`;
-  });
+  const closeDisclaimer = async (persistently: boolean = true) => {
+    hasBeenDismissed.value = true;
 
-  const persistentlyHideDisclaimer = computed(() =>
-    localStorageKey.value
-      ? Boolean(localStorage.getItem(localStorageKey.value))
-      : false,
-  );
-
-  const closeDisclaimer = (persistently: boolean = true) => {
-    _shouldShowDisclaimer.value = false;
-
-    if (localStorageKey.value && persistently) {
-      localStorage.setItem(localStorageKey.value, "true");
+    if (persistently && disclaimerText.value) {
+      await aiSettingsStore.dismissDisclaimer(disclaimerText.value);
     }
   };
 
   const shouldShowDisclaimer = computed(
-    () => _shouldShowDisclaimer.value && !persistentlyHideDisclaimer.value,
+    () =>
+      !hasBeenDismissed.value &&
+      Boolean(disclaimerText.value) &&
+      !aiSettingsStore.isDisclaimerDismissed(disclaimerText.value),
   );
 
   return { disclaimerText, closeDisclaimer, shouldShowDisclaimer };
