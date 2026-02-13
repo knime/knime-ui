@@ -10,7 +10,6 @@ import {
 
 import type { KnimeNode } from "@/api/custom-types";
 import type { UIExtensionLoadingState } from "../common/types";
-// import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
 import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 import { getMessage } from "../common/utils/uiExtensionAlert";
