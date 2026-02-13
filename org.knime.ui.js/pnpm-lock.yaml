@@ -35,11 +35,11 @@ importers:
         specifier: ^1.18.1
         version: 1.18.1(@fontsource/roboto-mono@5.2.8)(@fontsource/roboto@5.2.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-components':
-        specifier: ^0.6.1
-        version: 0.6.1(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
+        specifier: ^0.6.7
+        version: 0.6.7(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
       '@knime/kds-styles':
-        specifier: ^0.6.1
-        version: 0.6.1
+        specifier: ^0.6.7
+        version: 0.6.7
       '@knime/knime-ui-table':
         specifier: 0.6.0
         version: 0.6.0(@fontsource/roboto-mono@5.2.8)(@fontsource/roboto@5.2.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.18(typescript@5.8.3))
@@ -1130,6 +1130,9 @@ packages:
   '@fontsource/roboto@5.2.8':
     resolution: {integrity: sha512-oh9g4Cg3loVMz9MWeKWfDI+ooxxG1aRVetkiKIb2ESS2rrryGecQ/y4pAj4z5A5ebyw450dYRi/c4k/I3UBhHA==}
 
+  '@fontsource/roboto@5.2.9':
+    resolution: {integrity: sha512-ZTkyHiPk74B/aj8BZWbsxD5Yu+Lq+nR64eV4wirlrac2qXR7jYk2h6JlLYuOuoruTkGQWNw2fMuKNavw7/rg0w==}
+
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
     engines: {node: '>=18.18.0'}
@@ -1226,15 +1229,15 @@ packages:
       consola: 3.x
       vue: ~3.5.0
 
-  '@knime/kds-components@0.6.1':
-    resolution: {integrity: sha512-VSosjwUL0YEOttUaLoQYRbmI/gr3h2qnQCq709/7t0GlpBkhIlUt1cJupaEE4S1zngxrZlj41brrZGz0cJfDWg==}
+  '@knime/kds-components@0.6.7':
+    resolution: {integrity: sha512-2hv56qHUX0XBRA0J8RoiNmWGXlm7zimRBO4O1P8glddFYImV3xwAzc20rI1097VyEPil+kzorFlWVQ55qJMM9A==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
     peerDependencies:
       '@vueuse/core': ~13.8.0
       vue: ~3.5.0
 
-  '@knime/kds-styles@0.6.1':
-    resolution: {integrity: sha512-LBjKMDjTPBw/DRBbAF/0bBbXKieqR9TIDzclUHU4eB3e6+oHqtIE+aVDNKRe2swyCdMieQrChKvQsmcreqE3Mg==}
+  '@knime/kds-styles@0.6.7':
+    resolution: {integrity: sha512-/skCKbqtQjIMtDLiykxVsJDhKXfM/5Fl50AYy44Yf5s4hSH+SfK/LzFsDaDoAK+kOZHYMdRaDtwSlxOoxPzlSg==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
 
   '@knime/knime-ui-table@0.6.0':
@@ -3337,11 +3340,12 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-modules@2.0.0:
     resolution: {integrity: sha512-NGbfmJBp9x8IxyJSd1P+otYK8vonoJactOogrVfFRIAEY1ukil8RSKDz2Yo7wh1oihl51l/r6W4epkeKJHqL8A==}
@@ -5514,6 +5518,7 @@ packages:
   tar@6.2.1:
     resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   test-exclude@7.0.1:
     resolution: {integrity: sha512-pFYqmTw68LXVjeWJMST4+borgQP2AyMNbg1BpZh9LbyhUeNkeaPF9gzfPGUAnSMV3qPYdWUwDIjjCLiSDOl7vg==}
@@ -6909,6 +6914,8 @@ snapshots:
 
   '@fontsource/roboto@5.2.8': {}
 
+  '@fontsource/roboto@5.2.9': {}
+
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.6':
@@ -7139,17 +7146,17 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/kds-components@0.6.1(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
+  '@knime/kds-components@0.6.7(@vueuse/core@13.8.0(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))':
     dependencies:
-      '@knime/kds-styles': 0.6.1
+      '@knime/kds-styles': 0.6.7
       '@knime/utils': 1.9.2(consola@3.4.2)
       '@vueuse/core': 13.8.0(vue@3.5.18(typescript@5.8.3))
       consola: 3.4.2
       vue: 3.5.18(typescript@5.8.3)
 
-  '@knime/kds-styles@0.6.1':
+  '@knime/kds-styles@0.6.7':
     dependencies:
-      '@fontsource/roboto': 5.2.8
+      '@fontsource/roboto': 5.2.9
       '@fontsource/roboto-condensed': 5.2.8
       '@fontsource/roboto-mono': 5.2.8
       modern-normalize: 3.0.1
