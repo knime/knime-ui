@@ -32,7 +32,7 @@ type DisclaimerDismissal = {
   lastUpdated: string;
 };
 
-// TODO: define ActionType as well once we know what they will be (e.g. "nodeConfigure")
+// TODO HUB-12373: define ActionType as well once we know what they will be (e.g. "nodeConfigure")
 type ActionPermission = "allow" | "deny";
 type ActionPermissionsForProject = {
   lastUpdated: string;
@@ -46,7 +46,9 @@ type AIUserSettings = {
   };
 };
 
-type AISettingsState = Record<string, AIUserSettings>;
+type AISettingsState = {
+  [userIdHash: string]: AIUserSettings;
+};
 
 const defaults: AISettingsState = {};
 
@@ -117,43 +119,61 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     return toStableProjectId(activeProject.value);
   };
 
-  const getActiveContext = () => {
+  type SettingKeysUserScoped = { userIdHash: string };
+  type SettingKeysProjectScoped = {
+    userIdHash: string;
+    stableProjectId: string;
+  };
+  type SettingKeys = {
+    (scope: "user"): SettingKeysUserScoped | null;
+    (scope?: "project"): SettingKeysProjectScoped | null;
+  };
+  const getSettingKeys: SettingKeys = (
+    scope: "user" | "project" = "project",
+  ): any => {
     const userIdHash = getHashForCurrentHubUser();
-    const stableProjectId = getStableProjectIdForActiveProject();
+    if (!userIdHash) {
+      return null;
+    }
 
-    if (!userIdHash || !stableProjectId) {
+    if (scope === "user") {
+      return { userIdHash };
+    }
+
+    const stableProjectId = getStableProjectIdForActiveProject();
+    if (!stableProjectId) {
       return null;
     }
 
     return { userIdHash, stableProjectId };
   };
 
-  // === DISCLAIMER ===
+  // === DISCLAIMER DISMISSAL ===
   // The disclaimer dismissal is scoped per Hub+user so that a desktop AP user
   // connected to multiple Hubs sees the disclaimer at least once per Hub.
   // The disclaimer text hash is stored so that a changed disclaimer is re-shown.
 
   const isDisclaimerDismissed = (disclaimerText: string): boolean => {
-    const userIdHash = getHashForCurrentHubUser();
-    if (!userIdHash) {
+    const keys = getSettingKeys("user");
+    if (!keys) {
       return false;
     }
 
-    const dismissal = settings[userIdHash]?.disclaimer;
+    const dismissal = settings[keys.userIdHash]?.disclaimer;
     return dismissal?.disclaimerTextHash === hashString(disclaimerText);
   };
 
   const dismissDisclaimer = async (disclaimerText: string) => {
-    const userIdHash = getHashForCurrentHubUser();
-    if (!userIdHash) {
+    const keys = getSettingKeys("user");
+    if (!keys) {
       return;
     }
 
-    if (!settings[userIdHash]) {
-      settings[userIdHash] = {};
+    if (!settings[keys.userIdHash]) {
+      settings[keys.userIdHash] = {};
     }
 
-    settings[userIdHash].disclaimer = {
+    settings[keys.userIdHash].disclaimer = {
       disclaimerTextHash: hashString(disclaimerText),
       lastUpdated: new Date().toISOString(),
     };
@@ -181,16 +201,16 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   };
 
   const resetDisclaimerDismissal = async () => {
-    const userIdHash = getHashForCurrentHubUser();
-    if (!userIdHash) {
+    const keys = getSettingKeys("user");
+    if (!keys) {
       return;
     }
 
-    if (!settings[userIdHash]?.disclaimer) {
+    if (!settings[keys.userIdHash]?.disclaimer) {
       return;
     }
 
-    delete settings[userIdHash].disclaimer;
+    delete settings[keys.userIdHash].disclaimer;
     await updateSettings();
   };
 
@@ -219,10 +239,14 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     const now = new Date().toISOString();
 
     if (!settings[userIdHash]) {
-      settings[userIdHash] = {};
+      settings[userIdHash] = {
+        permissionsPerProject: {},
+      };
     }
     const userSettings = settings[userIdHash];
 
+    // `permissionsPerProject` can be missing in case the user persistently
+    // dismissed a disclaimer before (i.e. entry exists for user) but never saved an action permission
     if (!userSettings.permissionsPerProject) {
       userSettings.permissionsPerProject = {};
     }
@@ -256,27 +280,22 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     stableProjectId: string,
     actionId: string,
   ) => {
-    if (!settings[userIdHash]) {
-      return;
-    }
-    const userSettings = settings[userIdHash];
+    const projectPermissions = getPermissionsForAllActions(
+      userIdHash,
+      stableProjectId,
+    );
 
-    if (!userSettings.permissionsPerProject) {
+    // no permissions stored for project
+    if (!projectPermissions) {
       return;
     }
-    const projects = userSettings.permissionsPerProject;
-
-    if (!projects[stableProjectId]) {
-      return;
-    }
-    const projectPermissions = projects[stableProjectId];
 
     delete projectPermissions.permissions[actionId];
     projectPermissions.lastUpdated = new Date().toISOString();
 
     // Clean up project entry if no permissions remain
     if (Object.keys(projectPermissions.permissions).length === 0) {
-      delete projects[stableProjectId];
+      delete settings[userIdHash].permissionsPerProject![stableProjectId];
     }
 
     await updateSettings();
@@ -286,21 +305,11 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     userIdHash: string,
     stableProjectId: string,
   ) => {
-    if (!settings[userIdHash]) {
-      return;
-    }
-    const userSettings = settings[userIdHash];
-
-    if (!userSettings.permissionsPerProject) {
-      return;
-    }
-    const projects = userSettings.permissionsPerProject;
-
-    if (!projects[stableProjectId]) {
+    if (!getPermissionsForAllActions(userIdHash, stableProjectId)) {
       return;
     }
 
-    delete projects[stableProjectId];
+    delete settings[userIdHash].permissionsPerProject![stableProjectId];
     await updateSettings();
   };
 
@@ -308,7 +317,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   const getPermissionForActionForActiveProject = (
     actionId: string,
   ): ActionPermission | null => {
-    const ctx = getActiveContext();
+    const ctx = getSettingKeys();
     if (!ctx) {
       return null;
     }
@@ -324,7 +333,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     actionId: string,
     permission: ActionPermission,
   ) => {
-    const ctx = getActiveContext();
+    const ctx = getSettingKeys();
     if (!ctx) {
       return;
     }
@@ -339,7 +348,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
 
   const getPermissionsForAllActionsForActiveProject =
     (): ActionPermissionsForProject | null => {
-      const ctx = getActiveContext();
+      const ctx = getSettingKeys();
       if (!ctx) {
         return null;
       }
@@ -350,7 +359,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   const revokePermissionForActionForActiveProject = async (
     actionId: string,
   ) => {
-    const ctx = getActiveContext();
+    const ctx = getSettingKeys();
     if (!ctx) {
       return;
     }
@@ -363,7 +372,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   };
 
   const revokePermissionsForAllActionsForActiveProject = async () => {
-    const ctx = getActiveContext();
+    const ctx = getSettingKeys();
     if (!ctx) {
       return;
     }
@@ -378,21 +387,20 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
       if (!userSettings.permissionsPerProject) {
         continue;
       }
+      const projects = userSettings.permissionsPerProject;
 
-      for (const [stableProjectId, permissions] of Object.entries(
-        userSettings.permissionsPerProject,
-      )) {
+      for (const [stableProjectId, permissions] of Object.entries(projects)) {
         if (new Date(permissions.lastUpdated) < thresholdDate) {
           consola.debug(
             `Pruning stale action permissions for user ${userIdHash}, project ${stableProjectId} (last updated: ${permissions.lastUpdated})`,
           );
-          delete userSettings.permissionsPerProject[stableProjectId];
+          delete projects[stableProjectId];
           didPrune = true;
         }
       }
 
       // Clean up empty permissionsPerProject container
-      if (Object.keys(userSettings.permissionsPerProject).length === 0) {
+      if (Object.keys(projects).length === 0) {
         delete userSettings.permissionsPerProject;
       }
     }
