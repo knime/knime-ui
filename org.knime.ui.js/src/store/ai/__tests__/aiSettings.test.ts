@@ -216,26 +216,6 @@ describe("aiSettings store", () => {
     ).toBeNull();
   });
 
-  it("cleans up project entry when last permission is revoked", async () => {
-    const { aiSettingsStore } = mockStores();
-    const { userA, projectA, actionA } = getMockData();
-
-    await aiSettingsStore.setPermissionForAction(
-      userA,
-      projectA,
-      actionA,
-      "allow",
-    );
-
-    await aiSettingsStore.revokePermissionForAction(userA, projectA, actionA);
-
-    expect(
-      aiSettingsStore._internal.settings?.[userA]?.permissionsPerProject?.[
-        projectA
-      ],
-    ).toBeUndefined();
-  });
-
   it("prunes stale action permissions", async () => {
     const { aiSettingsStore } = mockStores();
     const { userA, projectA, projectB, actionA } = getMockData();
@@ -332,6 +312,59 @@ describe("aiSettings store", () => {
     expect(
       stores.aiSettingsStore.isDisclaimerDismissed("Recent disclaimer"),
     ).toBe(true);
+  });
+
+  it("cleans up empty project entries during pruning", async () => {
+    const { aiSettingsStore } = mockStores();
+    const { userA, projectA } = getMockData();
+
+    aiSettingsStore._internal.settings[userA] = {
+      permissionsPerProject: {
+        [projectA]: {
+          lastUpdated: new Date().toISOString(),
+          permissions: {},
+        },
+      },
+    };
+
+    expect(
+      aiSettingsStore._internal.settings?.[userA]?.permissionsPerProject?.[
+        projectA
+      ],
+    ).toBeDefined();
+
+    await aiSettingsStore.pruneStaleEntries();
+
+    expect(
+      aiSettingsStore._internal.settings?.[userA]?.permissionsPerProject?.[
+        projectA
+      ],
+    ).toBeUndefined();
+
+    expect(
+      aiSettingsStore._internal.settings?.[userA]?.permissionsPerProject,
+    ).toBeUndefined();
+  });
+
+  it("cleans up the user entry if all settings are pruned", async () => {
+    const { aiSettingsStore } = mockStores();
+    const { userA, projectA, actionA } = getMockData();
+
+    await aiSettingsStore.setPermissionForAction(
+      userA,
+      projectA,
+      actionA,
+      "allow",
+    );
+
+    expect(aiSettingsStore._internal.settings[userA]).toBeDefined();
+
+    aiSettingsStore._internal.settings[userA].permissionsPerProject![
+      projectA
+    ].permissions = {};
+    await aiSettingsStore.pruneStaleEntries();
+
+    expect(aiSettingsStore._internal.settings[userA]).toBeUndefined();
   });
 
   describe("disclaimer dismissals", () => {

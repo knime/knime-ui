@@ -293,11 +293,6 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     delete projectPermissions.permissions[actionId];
     projectPermissions.lastUpdated = new Date().toISOString();
 
-    // Clean up project entry if no permissions remain
-    if (Object.keys(projectPermissions.permissions).length === 0) {
-      delete settings[userIdHash].permissionsPerProject![stableProjectId];
-    }
-
     await updateSettings();
   };
 
@@ -389,10 +384,20 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
       }
       const projects = userSettings.permissionsPerProject;
 
-      for (const [stableProjectId, permissions] of Object.entries(projects)) {
-        if (new Date(permissions.lastUpdated) < thresholdDate) {
+      for (const [stableProjectId, projectData] of Object.entries(projects)) {
+        // check if stale
+        if (new Date(projectData.lastUpdated) < thresholdDate) {
           consola.debug(
-            `Pruning stale action permissions for user ${userIdHash}, project ${stableProjectId} (last updated: ${permissions.lastUpdated})`,
+            `Pruning stale action permissions for user ${userIdHash}, project ${stableProjectId} (last updated: ${projectData.lastUpdated})`,
+          );
+          delete projects[stableProjectId];
+          didPrune = true;
+        }
+
+        // check if empty
+        if (Object.keys(projectData.permissions).length === 0) {
+          consola.debug(
+            `Pruning empty action permissions container for user ${userIdHash}, project ${stableProjectId}`,
           );
           delete projects[stableProjectId];
           didPrune = true;
@@ -409,6 +414,8 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
   };
 
   const cleanupEmptyUserEntries = () => {
+    let didClean = false;
+
     for (const [userIdHash, userSettings] of Object.entries(settings)) {
       const hasDisclaimer = Boolean(userSettings.disclaimer);
       const hasPermissions =
@@ -417,8 +424,11 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
 
       if (!hasDisclaimer && !hasPermissions) {
         delete settings[userIdHash];
+        didClean = true;
       }
     }
+
+    return didClean;
   };
 
   /**
@@ -434,9 +444,9 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     const prunedDisclaimers = pruneStaleDisclaimerDismissals(thresholdDate);
 
     const didPrune = prunedPermissions || prunedDisclaimers;
+    const didCleanUsers = cleanupEmptyUserEntries();
 
-    if (didPrune) {
-      cleanupEmptyUserEntries();
+    if (didPrune || didCleanUsers) {
       await updateSettings();
     }
   };
