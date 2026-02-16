@@ -203,7 +203,7 @@ const handleNavReachedTop = (event: NavReachedEvent) => {
 }
 
 .nodes-wrapper {
-  overflow-y: auto;
+  display: contents;
 }
 
 .extension-panel-enter-active {
