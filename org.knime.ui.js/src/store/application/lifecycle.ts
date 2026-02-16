@@ -10,6 +10,7 @@ import { sleep } from "@knime/utils";
 import {
   AppState,
   type Workflow,
+  WorkflowInfo,
   type WorkflowSnapshot,
 } from "@/api/gateway-api/generated-api";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
@@ -23,6 +24,7 @@ import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
 import { setProjectActiveOrThrow } from "@/util/projectUtil";
@@ -588,6 +590,19 @@ export const useLifecycleStore = defineStore("lifecycle", {
     },
 
     afterSetActivateWorkflow() {
+      const activeWorkflow = useWorkflowStore().activeWorkflow;
+      if (
+        activeWorkflow?.info.linked &&
+        activeWorkflow.info.containerType ===
+          WorkflowInfo.ContainerTypeEnum.Component
+      ) {
+        const versionsStore = useWorkflowVersionsStore();
+
+        if (versionsStore.activeProjectVersionsModeStatus !== "inactive") {
+          versionsStore.deactivateVersionsMode();
+        }
+      }
+
       useComponentInteractionsStore().checkForLinkedComponentUpdates({
         auto: true,
       });
