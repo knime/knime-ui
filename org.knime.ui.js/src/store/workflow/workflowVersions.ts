@@ -540,9 +540,16 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
+    const currentRoute = $router.currentRoute.value;
+    const routeWorkflowId = currentRoute.params.workflowId;
+    const workflowId =
+      typeof routeWorkflowId === "string"
+        ? routeWorkflowId
+        : routeWorkflowId?.[0];
+
     await $router.push({
       name: APP_ROUTES.WorkflowPage,
-      params: { projectId: activeProjectId },
+      params: { projectId: activeProjectId, workflowId },
       query: { version: null },
     });
     setVersionsModeStatus(activeProjectId, "inactive");

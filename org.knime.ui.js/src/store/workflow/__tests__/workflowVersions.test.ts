@@ -128,9 +128,15 @@ vi.mock(
 );
 
 const routerPush = vi.hoisted(() => vi.fn());
+const routerCurrentRoute = vi.hoisted(() => ({
+  value: { params: { workflowId: "root:0:1" } },
+}));
 vi.mock("vue-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("vue-router")>()),
-  useRouter: vi.fn(() => ({ push: routerPush })),
+  useRouter: vi.fn(() => ({
+    push: routerPush,
+    currentRoute: routerCurrentRoute,
+  })),
   useRoute: vi.fn(() => ({})),
 }));
 
@@ -883,6 +889,11 @@ describe("workflow store: versions", () => {
       );
 
       await workflowVersionsStore.deactivateVersionsMode();
+      expect(useRouter().push).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId, workflowId: "root:0:1" },
+        query: { version: null },
+      });
       expect(workflowVersionsStore.activeProjectVersionsModeStatus).toBe(
         "inactive",
       );
