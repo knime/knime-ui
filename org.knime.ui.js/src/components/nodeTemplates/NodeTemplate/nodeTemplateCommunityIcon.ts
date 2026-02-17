@@ -1,3 +1,5 @@
+import { SpaceProviderNS } from "@/api/custom-types";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
@@ -11,7 +13,27 @@ export const shouldShowCommunityIcon = (
   data: NodeTemplateWithExtendedPorts | ComponentNodeTemplateWithExtendedPorts,
 ): boolean => {
   if (isComponentNodeTemplate(data)) {
-    return data.isOwnedByAnotherIdentity;
+    const ownerName = data.owner?.name ?? null;
+    if (!ownerName) {
+      return false;
+    }
+
+    const providersStore = useSpaceProvidersStore();
+    const hubProvider = Object.values(providersStore.spaceProviders).find(
+      (provider) => provider.type === SpaceProviderNS.TypeEnum.HUB,
+    );
+    if (!hubProvider) {
+      return false;
+    }
+
+    if (data.owner?.isTeam) {
+      const teamNames = (hubProvider.spaceGroups ?? [])
+        .filter((group) => group.type === SpaceProviderNS.UserTypeEnum.TEAM)
+        .map((group) => group.name);
+      return !teamNames.includes(ownerName);
+    }
+
+    return hubProvider.username ? ownerName !== hubProvider.username : true;
   }
 
   return Boolean(data.extension?.vendor && !data.extension.vendor.isKNIME);

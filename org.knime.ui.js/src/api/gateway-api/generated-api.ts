@@ -196,7 +196,7 @@ export interface AddNodeCommand extends WorkflowCommand {
      */
     sourcePortIdx?: number;
     /**
-     * Optional parameter that describe the relation of the new node with the given node, either predecessors or successors of the given node
+     * Optional parameter that describe the relation of the new node with the given node, either a Successor or a predecessor of the given node
      * @type {string}
      * @memberof AddNodeCommand
      */
@@ -815,13 +815,13 @@ export interface AutoConnectOptions {
      */
     targetNodeId: string;
     /**
-     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a target node id is provided.
+     * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
      * @type {number}
      * @memberof AutoConnectOptions
      */
     targetNodePortIdx?: number;
     /**
-     * Relation of the new component with the given node, either predecessors or successors of the given node.
+     * Relation of the new node with the given node, either a successor or a predecessor of the given node.
      * @type {string}
      * @memberof AutoConnectOptions
      */
@@ -1357,17 +1357,23 @@ export interface ComponentSearchItem {
      */
     icon?: string;
     /**
-     * True if the item is owned by an AccountIdentity (e.g. user or team) other than the currently authenticated user.
-     * @type {boolean}
-     * @memberof ComponentSearchItem
-     */
-    isOwnedByAnotherIdentity?: boolean;
-    /**
      * The type (a.k.a. \&quot;kind\&quot;) of the component
      * @type {string}
      * @memberof ComponentSearchItem
      */
     type?: ComponentSearchItem.TypeEnum;
+    /**
+     * Space name containing the component.
+     * @type {string}
+     * @memberof ComponentSearchItem
+     */
+    containingSpace?: string;
+    /**
+     *
+     * @type {Owner}
+     * @memberof ComponentSearchItem
+     */
+    owner?: Owner;
     /**
      * The component&#39;s input ports.
      * @type {Array<ComponentSearchItemPort>}
@@ -3962,6 +3968,35 @@ export interface NodeViewDescription {
      * @memberof NodeViewDescription
      */
     description?: string;
+
+}
+
+
+/**
+ * Owner information for an item in a space.
+ * @export
+ * @interface Owner
+ */
+export interface Owner {
+
+    /**
+     * Owner account identity ID.
+     * @type {string}
+     * @memberof Owner
+     */
+    id?: string;
+    /**
+     * Human readable owner name.
+     * @type {string}
+     * @memberof Owner
+     */
+    name?: string;
+    /**
+     * True if the owner is a team.
+     * @type {boolean}
+     * @memberof Owner
+     */
+    isTeam?: boolean;
 
 }
 
