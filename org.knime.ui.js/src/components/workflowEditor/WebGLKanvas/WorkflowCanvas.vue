@@ -53,42 +53,35 @@ const skeletonAnnotationData = computed(
     null,
 );
 
-const openQuickActionMenu = (event: PointerEvent) => {
-  if (!isWritable.value) {
-    return;
-  }
-
-  if (isMarkedEvent(event)) {
-    return;
-  }
-
-  const [x, y] = canvasStore.screenToCanvasCoordinates([
-    event.clientX,
-    event.clientY,
-  ]);
-
-  useCanvasAnchoredComponentsStore().openQuickActionMenu({
-    props: { position: { x, y } },
-  });
-
-  useAnalyticsService().track("quickactionmenu_opened", {
-    via: "canvas_doubleclick_",
-  });
-};
-
 const { isPointerDownDoubleClick } = usePointerDownDoubleClick({
   eventHandledChecker: (event) => isMarkedEvent(event),
 });
 
 const onPointerDown = (event: PointerEvent) => {
-  if (isPointerDownDoubleClick(event) && interactionsEnabled.value === "all") {
-    if (!isWritable.value) {
-      return;
-    }
+  if (isMarkedEvent(event)) {
+    return;
+  }
 
+  if (!isWritable.value) {
+    return;
+  }
+
+  if (isPointerDownDoubleClick(event) && interactionsEnabled.value === "all") {
     // Prevent the kanvas from stealing focus from quick action menu
     event.preventDefault();
-    openQuickActionMenu(event);
+
+    const [x, y] = canvasStore.screenToCanvasCoordinates([
+      event.clientX,
+      event.clientY,
+    ]);
+
+    useCanvasAnchoredComponentsStore().openQuickActionMenu({
+      props: { position: { x, y } },
+    });
+
+    useAnalyticsService().track("quickactionmenu_opened", {
+      via: "canvas_doubleclick_",
+    });
   }
 };
 
