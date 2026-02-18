@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { centerStrategy, clipboard, offsetStrategy } from "../clipboard";
+import { centerStrategy, clipboard, offsetStrategy } from "..";
 
 describe("pasteToWorkflow", () => {
   const randomSpy = vi.spyOn(Math, "random").mockImplementation(() => 0);
