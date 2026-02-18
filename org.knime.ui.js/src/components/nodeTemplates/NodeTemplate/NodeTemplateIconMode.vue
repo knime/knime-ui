@@ -10,6 +10,7 @@ import type {
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 import { useComponentOwnershipInfo } from "./useComponentOwnershipInfo";
+import { useNodeTemplateExtensionInfo } from "./useNodeTemplateExtensionInfo";
 
 type Props = {
   nodeTemplate:
@@ -28,23 +29,14 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits(["helpIconClick"]);
-const extensionText = computed(() => {
-  if (!props.nodeTemplate.extension || !props.nodeTemplate.extension.vendor) {
-    return "";
-  }
-  return `\n———\n${props.nodeTemplate.extension.name}\nby ${props.nodeTemplate.extension.vendor.name}`;
-});
 
-const nodeTemplateRef = toRef(props, "nodeTemplate");
-const ownershipInfo = useComponentOwnershipInfo(nodeTemplateRef);
-const showCommunityIcon = computed(() => ownershipInfo.showCommunityIcon.value);
+const nodeTemplate = toRef(props, "nodeTemplate");
+
+const { extensionInfo } = useNodeTemplateExtensionInfo({ nodeTemplate });
+const { ownershipInfo } = useComponentOwnershipInfo({ nodeTemplate });
 
 const tileTitle = computed(() => {
-  if (!ownershipInfo.isComponent.value) {
-    return `${props.nodeTemplate.name}${extensionText.value}`;
-  }
-
-  return ownershipInfo.componentTooltipText.value;
+  return ownershipInfo.value?.tooltip ?? extensionInfo.value?.tooltip ?? "";
 });
 </script>
 
@@ -74,7 +66,7 @@ const tileTitle = computed(() => {
 
     <div class="extension-info">
       <ExtensionCommunityIcon
-        v-if="showCommunityIcon"
+        v-if="ownershipInfo?.isFromCommunity ?? extensionInfo?.isFromCommunity"
         class="extension-community-icon"
       />
     </div>

@@ -1,18 +1,24 @@
+/* eslint-disable no-undefined */
 import { type Ref, computed } from "vue";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import {
+  type ComponentNodeTemplateWithExtendedPorts,
+  type NodeTemplateWithExtendedPorts,
+  nodeTemplate,
+} from "@/lib/data-mappers";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import type {
-  ComponentNodeTemplateWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
 
 type NodeTemplateInput =
   | NodeTemplateWithExtendedPorts
   | ComponentNodeTemplateWithExtendedPorts;
 
+type UseComponentOwnershipInfoOptions = {
+  nodeTemplate: Ref<NodeTemplateInput>;
+};
+
 export const useComponentOwnershipInfo = (
-  nodeTemplate: Ref<NodeTemplateInput>,
+  options: UseComponentOwnershipInfoOptions,
 ) => {
   const providersStore = useSpaceProvidersStore();
   const hubProvider = computed(
@@ -21,6 +27,7 @@ export const useComponentOwnershipInfo = (
         (provider) => provider.type === SpaceProviderNS.TypeEnum.HUB,
       ) ?? null,
   );
+
   const hubTeamNames = computed(() =>
     (hubProvider.value?.spaceGroups ?? [])
       .filter((group) => group.type === SpaceProviderNS.UserTypeEnum.TEAM)
@@ -28,37 +35,36 @@ export const useComponentOwnershipInfo = (
   );
   const hubUsername = computed(() => hubProvider.value?.username ?? null);
 
-  const isComponent = computed(() =>
-    Boolean(
-      (nodeTemplate.value as ComponentNodeTemplateWithExtendedPorts).component,
-    ),
-  );
-  const componentOwner = computed(() =>
-    isComponent.value
-      ? (nodeTemplate.value as ComponentNodeTemplateWithExtendedPorts).owner
-      : null,
-  );
-  const containingSpace = computed(() =>
-    isComponent.value
-      ? (nodeTemplate.value as ComponentNodeTemplateWithExtendedPorts)
-          .containingSpace
+  const componentTemplate = computed(() =>
+    nodeTemplate.isComponentNodeTemplate(options.nodeTemplate.value)
+      ? options.nodeTemplate.value
       : null,
   );
 
+  const componentOwner = computed(() => componentTemplate.value?.owner);
+
+  const containingSpace = computed(
+    () => componentTemplate.value?.containingSpace,
+  );
+
   const ownerLabel = computed(() => {
-    if (!isComponent.value) {
+    if (!componentTemplate.value) {
       return null;
     }
 
     const owner = componentOwner.value;
-    if (!owner?.name) {
-      if (owner?.isTeam === true) {
-        return "a team";
+    const UNKNOWN = "an unknown owner";
+
+    if (!owner) {
+      return UNKNOWN;
+    }
+
+    if (!owner.name) {
+      if (owner?.isTeam === undefined) {
+        return UNKNOWN;
       }
-      if (owner?.isTeam === false) {
-        return "a user";
-      }
-      return "an unknown owner";
+
+      return owner.isTeam ? "a team" : "a user";
     }
 
     if (owner.isTeam) {
@@ -72,55 +78,59 @@ export const useComponentOwnershipInfo = (
       : `user "${owner.name}"`;
   });
 
-  const componentTooltipText = computed(() => {
-    if (!isComponent.value) {
+  const tooltipText = computed(() => {
+    if (!componentTemplate.value) {
       return null;
     }
 
     const spaceName = containingSpace.value ?? null;
-    const owner = ownerLabel.value;
-    if (spaceName && owner) {
-      return `From space "${spaceName}" owned by ${owner}.`;
+
+    if (spaceName && ownerLabel.value) {
+      return `From space "${spaceName}" owned by ${ownerLabel.value}.`;
     }
+
     if (spaceName) {
       return `From space "${spaceName}".`;
     }
-    if (owner) {
-      return `Owned by ${owner}.`;
+
+    if (ownerLabel.value) {
+      return `Owned by ${ownerLabel.value}.`;
     }
+
     return "Component ownership information is unavailable.";
   });
 
-  const showCommunityIcon = computed(() => {
-    if (!isComponent.value) {
-      return Boolean(
-        nodeTemplate.value.extension?.vendor &&
-          !nodeTemplate.value.extension.vendor.isKNIME,
-      );
-    }
-
-    const owner = componentOwner.value;
-    const ownerName = owner?.name ?? null;
-    if (!ownerName) {
+  const isFromCommunity = computed(() => {
+    if (!hubProvider.value || !componentTemplate.value) {
       return false;
     }
 
-    const hubProviderValue = hubProvider.value;
-    if (!hubProviderValue) {
+    if (!componentOwner.value) {
       return false;
     }
 
-    if (owner?.isTeam) {
-      return !hubTeamNames.value.includes(ownerName);
+    const { name, isTeam } = componentOwner.value;
+
+    if (isTeam) {
+      return !hubTeamNames.value.includes(name ?? "");
     }
 
-    return hubUsername.value ? ownerName !== hubUsername.value : true;
+    return hubUsername.value ? name !== hubUsername.value : true;
+  });
+
+  const ownershipInfo = computed(() => {
+    if (!componentTemplate.value || !ownerLabel.value || !tooltipText.value) {
+      return null;
+    }
+
+    return {
+      isFromCommunity: isFromCommunity.value,
+      ownerLabel: ownerLabel.value,
+      tooltip: tooltipText.value,
+    };
   });
 
   return {
-    componentTooltipText,
-    isComponent,
-    ownerLabel,
-    showCommunityIcon,
+    ownershipInfo,
   };
 };

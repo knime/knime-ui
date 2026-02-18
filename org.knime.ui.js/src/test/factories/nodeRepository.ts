@@ -6,7 +6,10 @@ import {
   type NodeTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
-import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/lib/data-mappers";
 import { nodeTemplate } from "@/lib/data-mappers";
 
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
@@ -61,5 +64,19 @@ export const createNodeTemplateWithExtendedPorts = (
 
   return nodeTemplate.toNodeTemplateWithExtendedPorts(availablePortTypes)(
     template,
+  );
+};
+
+export const createComponentNodeTemplateWithExtendedPorts = (
+  data: Partial<ComponentNodeTemplateWithExtendedPorts> = {},
+): ComponentNodeTemplateWithExtendedPorts => {
+  const template = createNodeTemplateWithExtendedPorts({ component: true });
+
+  return merge(
+    {
+      ...template,
+      description: "",
+    } satisfies ComponentNodeTemplateWithExtendedPorts,
+    data,
   );
 };

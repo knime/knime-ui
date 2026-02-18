@@ -5,6 +5,7 @@ import { FunctionButton } from "@knime/components";
 import CircleHelp from "@knime/styles/img/icons/circle-help.svg";
 
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeTemplate, { type Props } from "../NodeTemplate.vue";
 import NodeTemplateIconMode from "../NodeTemplateIconMode.vue";
 import NodeTemplateListMode from "../NodeTemplateListMode.vue";
@@ -24,10 +25,12 @@ describe("NodeTemplate.vue", () => {
   type MountOpts = { props?: Partial<Props>; mocks?: Record<string, unknown> };
 
   const doMount = ({ props = {}, mocks = {} }: MountOpts = {}) => {
+    const mockedStores = mockStores();
     const wrapper = mount(NodeTemplate, {
       props: { ...defaultProps, ...props },
       global: {
         mocks: { ...mocks },
+        plugins: [mockedStores.testingPinia],
       },
     });
 

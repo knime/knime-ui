@@ -10,6 +10,7 @@ import type {
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 import { useComponentOwnershipInfo } from "./useComponentOwnershipInfo";
+import { useNodeTemplateExtensionInfo } from "./useNodeTemplateExtensionInfo";
 
 type Props = {
   nodeTemplate:
@@ -29,17 +30,18 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(["helpIconClick"]);
 
-const nodeTemplateRef = toRef(props, "nodeTemplate");
-const ownershipInfo = useComponentOwnershipInfo(nodeTemplateRef);
-const showCommunityIcon = computed(() => ownershipInfo.showCommunityIcon.value);
-const tileTitle = computed(() => {
-  if (ownershipInfo.isComponent.value) {
-    return ownershipInfo.componentTooltipText.value || null;
-  }
+const nodeTemplate = toRef(props, "nodeTemplate");
 
-  return props.nodeTemplate.extension && props.nodeTemplate.extension.vendor
-    ? `${props.nodeTemplate.extension.name} \nby “${props.nodeTemplate.extension.vendor.name}”`
-    : null;
+const { extensionInfo } = useNodeTemplateExtensionInfo({ nodeTemplate });
+const { ownershipInfo } = useComponentOwnershipInfo({ nodeTemplate });
+const showCommunityIcon = computed(
+  () =>
+    ownershipInfo.value?.isFromCommunity ??
+    extensionInfo.value?.isFromCommunity,
+);
+
+const tileTitle = computed(() => {
+  return ownershipInfo.value?.tooltip ?? extensionInfo.value?.tooltip ?? "";
 });
 </script>
 

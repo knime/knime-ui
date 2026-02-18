@@ -5,7 +5,7 @@ import { API } from "@api";
 import { promise } from "@knime/utils";
 
 import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
-import { componentSearch } from "@/lib/data-mappers";
+import { nodeTemplate } from "@/lib/data-mappers";
 
 const PAGE_SIZE = 150;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -49,7 +49,9 @@ export const useComponentSearch = () => {
           limit: PAGE_SIZE,
         });
 
-        return apiResponse.map(componentSearch.toNodeTemplateWithExtendedPorts);
+        return apiResponse.map(
+          nodeTemplate.toComponentTemplateWithExtendedPorts,
+        );
       });
 
       results.value = append ? results.value.concat(response) : response;

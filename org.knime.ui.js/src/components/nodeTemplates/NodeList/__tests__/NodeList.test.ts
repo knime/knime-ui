@@ -24,6 +24,7 @@ describe("NodeList", () => {
     mount(NodeList, {
       props: { ...defaultProps, ...props },
       attachTo: document.body,
+      global: { stubs: { NodeTemplate: true } },
       ...opts,
     });
 

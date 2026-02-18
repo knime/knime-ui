@@ -5,9 +5,9 @@ import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-import type {
-  ComponentNodeTemplateWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
+import {
+  type NodeTemplateWithExtendedPorts,
+  nodeTemplate,
 } from "@/lib/data-mappers";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -61,11 +61,6 @@ const getEventData = (event: DragEvent) => {
 let dragStartTime: number | null;
 
 const DRAG_TO_EDGE_BUFFER_MS = 300;
-
-const isComponentNodeTemplate = (
-  template: NodeTemplateWithExtendedPorts,
-): template is ComponentNodeTemplateWithExtendedPorts =>
-  Boolean(template.component);
 
 export const useDragNodeIntoCanvas = () => {
   const { isWritable } = storeToRefs(useWorkflowStore());
@@ -155,7 +150,9 @@ export const useDragNodeIntoCanvas = () => {
 
       nodeReplacementOrInsertion.onDragMove(
         { x: canvasX, y: canvasY },
-        isComponentNodeTemplate(nodeTemplatesStore.draggedTemplateData)
+        nodeTemplate.isComponentNodeTemplate(
+          nodeTemplatesStore.draggedTemplateData,
+        )
           ? {
               type: "from-component-template",
               componentTemplate: nodeTemplatesStore.draggedTemplateData,
@@ -202,7 +199,9 @@ export const useDragNodeIntoCanvas = () => {
     ) {
       await nodeReplacementOrInsertion.onDrop(
         dropPosition,
-        isComponentNodeTemplate(nodeTemplatesStore.draggedTemplateData)
+        nodeTemplate.isComponentNodeTemplate(
+          nodeTemplatesStore.draggedTemplateData,
+        )
           ? {
               type: "from-component-template",
               componentTemplate: nodeTemplatesStore.draggedTemplateData,
