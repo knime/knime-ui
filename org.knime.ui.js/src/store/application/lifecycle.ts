@@ -129,7 +129,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       await runInEnvironment({
         DESKTOP: () => {
           consola.trace("lifecycle::setting zoom level");
-          API.desktop.setZoomLevel(
+          return API.desktop.setZoomLevel(
             ratioToZoomLevel(useSettingsStore().settings.uiScale),
           );
         },

@@ -5,6 +5,7 @@ import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import { isBrowser } from "@/environment";
 import {
   type NodeTemplateWithExtendedPorts,
   nodeTemplate,
@@ -16,6 +17,8 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
+
+import { useAddNodeViaFileUpload } from "./useAddNodeViaFileUpload";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
@@ -71,6 +74,9 @@ export const useDragNodeIntoCanvas = () => {
   const webglCanvasStore = useWebGLCanvasStore();
   const { isWebGLRenderer, isSVGRenderer } = useCanvasRendererUtils();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
+
+  const { importFilesViaDrop: addNodesFromNativeFilesDrop } =
+    useAddNodeViaFileUpload();
 
   const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 
@@ -168,17 +174,10 @@ export const useDragNodeIntoCanvas = () => {
   const onDrop = async (event: DragEvent) => {
     dragStartTime = null;
     stopPanningToEdge();
-    const eventData = getEventData(event);
 
-    if (!isWritable.value || !eventData) {
+    if (!isWritable.value) {
       return;
     }
-
-    // Default action when dropping links is to open them in your browser.
-    // We must prevent here because if a nodeFactory is supplied then the drag
-    // is coming from within the application, otherwise it comes from outside and
-    // it'll be handled automatically by the backend, so we must not prevent the default
-    event.preventDefault();
 
     const [canvasX, canvasY] = canvasStore.value.screenToCanvasCoordinates([
       event.clientX,
@@ -189,6 +188,30 @@ export const useDragNodeIntoCanvas = () => {
       x: canvasX - $shapes.nodeSize / 2,
       y: canvasY - $shapes.nodeSize / 2,
     };
+
+    // handle native OS file drops for browser envs
+    if (isBrowser()) {
+      const dt = event.dataTransfer;
+      const droppedFiles = Array.from(dt?.files ?? []);
+
+      if (droppedFiles.length > 0) {
+        addNodesFromNativeFilesDrop(droppedFiles, dropPosition);
+        event.preventDefault();
+        return;
+      }
+    }
+
+    // handle drop of nodes from sidebar
+    const eventData = getEventData(event);
+    if (!eventData) {
+      return;
+    }
+
+    // Default action when dropping links is to open them in your browser.
+    // We must prevent here because if a nodeFactory is supplied then the drag
+    // is coming from within the application, otherwise it comes from outside and
+    // it'll be handled automatically by the backend, so we must not prevent the default
+    event.preventDefault();
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
