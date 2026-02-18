@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 
 import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 
@@ -9,7 +9,7 @@ import type {
 } from "@/lib/data-mappers";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
-import { shouldShowCommunityIcon } from "./nodeTemplateCommunityIcon";
+import { useComponentOwnershipInfo } from "./useComponentOwnershipInfo";
 
 type Props = {
   nodeTemplate:
@@ -29,20 +29,25 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(["helpIconClick"]);
 
-const showCommunityIcon = computed(() =>
-  shouldShowCommunityIcon(props.nodeTemplate),
-);
+const nodeTemplateRef = toRef(props, "nodeTemplate");
+const ownershipInfo = useComponentOwnershipInfo(nodeTemplateRef);
+const showCommunityIcon = computed(() => ownershipInfo.showCommunityIcon.value);
+const tileTitle = computed(() => {
+  if (ownershipInfo.isComponent.value) {
+    return ownershipInfo.componentTooltipText.value || null;
+  }
+
+  return props.nodeTemplate.extension && props.nodeTemplate.extension.vendor
+    ? `${props.nodeTemplate.extension.name} \nby “${props.nodeTemplate.extension.vendor.name}”`
+    : null;
+});
 </script>
 
 <template>
   <div
     class="node-template-list-mode"
     :class="{ 'with-community-icon': showCommunityIcon }"
-    :title="
-      nodeTemplate.extension && nodeTemplate.extension.vendor
-        ? `${nodeTemplate.extension.name} \nby “${nodeTemplate.extension.vendor.name}”`
-        : undefined
-    "
+    :title="tileTitle"
     data-test-id="node-template"
   >
     <div class="node-preview">
