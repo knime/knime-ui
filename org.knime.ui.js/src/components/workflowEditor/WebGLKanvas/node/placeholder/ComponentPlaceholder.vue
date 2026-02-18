@@ -20,14 +20,14 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const { getSelectedComponentPlaceholder } = storeToRefs(useSelectionStore());
-const { tryClearSelection, selectComponentPlaceholder } = useSelectionStore();
+const selectionStore = useSelectionStore();
 const {
   selectedNodeIds,
   selectedAnnotationIds,
   selectedConnectionIds,
   selectedBendpointIds,
-} = storeToRefs(useSelectionStore());
+  getSelectedComponentPlaceholder,
+} = storeToRefs(selectionStore);
 const { closeContextMenu } = useCanvasAnchoredComponentsStore();
 const canvasStore = useWebGLCanvasStore();
 const { canvasLayers } = storeToRefs(canvasStore);
@@ -58,30 +58,49 @@ const isSuccessWithWarning = computed(
 const isSuccess = computed(
   () => placeholderState.value === ComponentPlaceholder.StateEnum.SUCCESS,
 );
-const isComponentSelected = computed(() => {
+const isPlaceholderSelected = computed(() => {
   return props.placeholder.id === getSelectedComponentPlaceholder.value?.id;
 });
 
 const $toast = getToastsProvider();
 
-watch(placeholderState, async () => {
+const isSameSelection = () => {
   const currentSelection = getSelection();
-  const isSelectionUnchanged =
-    previousSelection.value.size === currentSelection.size &&
-    [...previousSelection.value].every((id) => currentSelection.has(id));
 
-  closeContextMenu();
+  if (currentSelection.size !== previousSelection.value.size) {
+    return false;
+  }
 
-  if (isSelectionUnchanged && (isSuccess.value || isSuccessWithWarning.value)) {
-    if (props.placeholder.componentId && isComponentSelected.value) {
-      const { wasAborted } = await tryClearSelection();
-
-      if (!wasAborted) {
-        selectComponentPlaceholder(props.placeholder.componentId);
-      }
+  for (const item of currentSelection) {
+    if (!previousSelection.value.has(item)) {
+      return false;
     }
   }
 
+  return true;
+};
+
+const handleSelection = async () => {
+  if (!isSameSelection() || isError.value) {
+    return;
+  }
+
+  if (props.placeholder.componentId && isPlaceholderSelected.value) {
+    const { wasAborted } = await selectionStore.tryClearSelection();
+
+    if (wasAborted) {
+      return;
+    }
+
+    selectionStore.deselectComponentPlaceholder();
+    selectionStore.selectNodes([props.placeholder.componentId]);
+
+    // in case the ctx menu was open on the placeholder itself
+    closeContextMenu();
+  }
+};
+
+watch(placeholderState, async () => {
   if (isSuccess.value || isSuccessWithWarning.value) {
     useConnectionInteractionsStore().removeComponentPlaceholderConnection(
       props.placeholder.id,
@@ -98,6 +117,8 @@ watch(placeholderState, async () => {
 
     $toast.show(toastData);
   }
+
+  await handleSelection();
 });
 
 // Adjust so there is no jumping when component is loaded
@@ -111,7 +132,7 @@ const adjustedPosition = computed(() => {
 
 <template>
   <NodeSelectionPlane
-    v-if="isComponentSelected"
+    v-if="isPlaceholderSelected"
     :position="adjustedPosition"
     :node-id="placeholder.id"
     :name="placeholder.name ?? ''"
@@ -124,7 +145,7 @@ const adjustedPosition = computed(() => {
     "
     :id="placeholder.id"
     :label="`ComponentPlaceholder__${placeholder.id}`"
-    :layer="isComponentSelected ? canvasLayers.selectedNodes : null"
+    :layer="isPlaceholderSelected ? canvasLayers.selectedNodes : null"
     :progress="placeholder.progress"
     :position="adjustedPosition"
     :state="placeholder.state"
