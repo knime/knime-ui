@@ -1,4 +1,4 @@
-import { type Ref, onBeforeMount, ref, watch } from "vue";
+import { type Ref, computed, onBeforeMount, ref, watch } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
@@ -22,7 +22,8 @@ export const useQuickBuild = ({
     hideQuickActionMenuConnector,
   } = useCanvasAnchoredComponentsStore();
 
-  const { makeAiRequest, fetchUsage } = useAIAssistantStore();
+  const aiAssistantStore = useAIAssistantStore();
+  const { makeAiRequest, fetchUsage } = aiAssistantStore;
 
   const { isAuthError, disconnectHub } = useHubAuth();
 
@@ -32,8 +33,20 @@ export const useQuickBuild = ({
   const errorMessage = ref("");
   const result = ref<AiAssistantBuildEventPayload | null>(null);
 
-  const { isProcessing, lastUserMessage, abortSendMessage, statusUpdate } =
-    useChat("build");
+  const {
+    isProcessing,
+    lastUserMessage,
+    lastAiMessage,
+    abortSendMessage,
+    statusUpdate,
+    pendingInquiry,
+    pendingInquiryTraces,
+  } = useChat("build");
+
+  // Inquiry traces from the last assistant message (for the final result view)
+  const lastMessageInquiryTraces = computed(
+    () => lastAiMessage.value?.inquiryTraces,
+  );
 
   let enableDetachedModeCalled = false;
   const enableDetachedModeFn = () => {
@@ -104,5 +117,8 @@ export const useQuickBuild = ({
     lastUserMessage,
     abortSendMessage,
     statusUpdate,
+    pendingInquiry,
+    pendingInquiryTraces,
+    lastMessageInquiryTraces,
   };
 };

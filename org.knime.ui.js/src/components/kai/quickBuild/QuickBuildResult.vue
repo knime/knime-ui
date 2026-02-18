@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import type { InquiryTrace } from "@/store/ai/types";
 import Message from "../chat/message/Message.vue";
 
 type Props = {
   message: string;
   interactionId: string;
+  inquiryTraces?: InquiryTrace[];
 };
 
 defineProps<Props>();
@@ -18,6 +20,7 @@ defineEmits(["close"]);
       :content="message"
       :role="KaiMessage.RoleEnum.Assistant"
       :interaction-id="interactionId"
+      :inquiry-traces="inquiryTraces"
       kind="quick-build-explanation"
     />
   </div>

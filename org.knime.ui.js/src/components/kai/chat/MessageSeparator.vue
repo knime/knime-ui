@@ -31,7 +31,7 @@ const label = computed(() => {
 </template>
 
 <style lang="postcss" scoped>
-& .message-separator {
+.message-separator {
   margin: 30px 0;
 
   &:first-child {

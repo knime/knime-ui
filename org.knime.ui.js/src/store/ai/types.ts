@@ -1,4 +1,5 @@
 import {
+  type KaiInquiry,
   KaiMessage,
   KaiQuickActionRequest,
   type KaiUsage,
@@ -35,6 +36,18 @@ export type HubItem = {
   url: string;
 };
 
+/**
+ * A trace of how the user (or auto-response logic) responded to a K-AI inquiry.
+ * Stored on conversation-level during processing (`pendingInquiryTraces`), and at
+ * message-level once processing is complete (`inquiryTraces`).
+ */
+export type InquiryTrace = {
+  inquiry: KaiInquiry;
+  selectedOptionId: string;
+  /** Optional label suffix rendered in parentheses next to the selected option, e.g. "Saved" or "Auto" */
+  suffix?: string;
+};
+
 export type Message = KaiMessage & {
   nodes?: NodeWithExtensionInfo[];
   references?: References;
@@ -44,6 +57,7 @@ export type Message = KaiMessage & {
   isError?: boolean;
   timestamp?: number;
   kind?: "quick-build-explanation" | "other";
+  inquiryTraces?: InquiryTrace[];
 };
 
 export type ProjectAndWorkflowIds = {
@@ -63,6 +77,8 @@ export type ConversationState = {
   isProcessing: boolean;
   incomingTokens: string;
   projectAndWorkflowIds: ProjectAndWorkflowIds | null;
+  pendingInquiry: KaiInquiry | null;
+  pendingInquiryTraces: InquiryTrace[];
 };
 
 export type KaiUsageState = KaiUsage | null;
@@ -112,27 +128,40 @@ export type AiAssistantBuildEventPayload = {
   usage?: KaiUsage;
 };
 
+/**
+ * Types of events that can be received from the BE during processing of a chat message.
+ */
 export type AiAssistantEvent =
+  // final event that indicates conclusion of processing
   | {
       type: "result";
       payload: AiAssistantQAEventPayload | AiAssistantBuildEventPayload;
       conversation_id: string;
     }
+  // a single token being streamed in (when K-AI is generating a response in Q&A mode)
   | {
       type: "token";
       payload: string;
       conversation_id: string;
     }
+  // status is used to indicate the state of processing, e.g. "Thinking..." or "Searching for nodes"
   | {
       type: "status_update";
       payload: StatusUpdate;
       conversation_id: string;
     }
+  // final event that indicates an erroneous conclusion of processing
   | {
       type: "error";
       payload: {
         message: string;
       };
+      conversation_id: string;
+    }
+  // an event indicating a mid-processing inquiry from K-AI to user
+  | {
+      type: "inquiry";
+      payload: KaiInquiry;
       conversation_id: string;
     };
 

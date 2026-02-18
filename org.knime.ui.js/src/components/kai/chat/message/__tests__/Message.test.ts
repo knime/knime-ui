@@ -6,9 +6,11 @@ import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import UserIcon from "@knime/styles/img/icons/user.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import type { InquiryTrace } from "@/store/ai/types";
 import {
   NODE_FACTORIES,
   createAvailablePortTypes,
+  createKaiInquiry,
   createNodeTemplate,
   createNodeWithExtensionInfo,
 } from "@/test/factories";
@@ -16,11 +18,13 @@ import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import MarkdownRenderer from "../../MarkdownRenderer.vue";
 import FeedbackControls from "../FeedbackControls.vue";
+import InquiryResponseTrace from "../InquiryResponseTrace.vue";
 import KaiStatus from "../KaiStatus.vue";
 import Message from "../Message.vue";
 import MessagePlaceholder from "../MessagePlaceholder.vue";
 import SuggestedNodes from "../SuggestedNodes.vue";
 import AdditionalResources from "../additionalResources/AdditionalResources.vue";
+import KaiInquiryCard from "../inquiry/KaiInquiryCard.vue";
 
 const mockedAPI = deepMocked(API);
 
@@ -272,6 +276,55 @@ describe("Message.vue", () => {
 
       expect(wrapper.findComponent(MarkdownRenderer).text()).toBe(multiLine);
       expect(wrapper.find(".show-full-content-button").exists()).toBe(false);
+    });
+  });
+
+  describe("inquiry rendering", () => {
+    const pendingInquiry = createKaiInquiry();
+    const traces: InquiryTrace[] = [
+      { inquiry: pendingInquiry, selectedOptionId: "allow", suffix: "Saved" },
+    ];
+
+    it("renders InquiryResponseTrace rows for each trace", () => {
+      const { wrapper } = doMount({ props: { inquiryTraces: traces } });
+
+      const renderedTraces = wrapper.findAllComponents(InquiryResponseTrace);
+      expect(renderedTraces).toHaveLength(1);
+      expect(renderedTraces[0].props("trace")).toEqual(traces[0]);
+    });
+
+    it("does not render the inquiry-traces section when there are no traces", () => {
+      const { wrapper } = doMount();
+
+      expect(wrapper.find(".inquiry-traces").exists()).toBe(false);
+    });
+
+    it("renders KaiInquiryCard and hides markdown when pendingInquiry and chainType are set", () => {
+      const { wrapper } = doMount({
+        props: { pendingInquiry: { inquiry: pendingInquiry, chainType: "qa" } },
+      });
+
+      expect(wrapper.findComponent(KaiInquiryCard).exists()).toBe(true);
+      expect(wrapper.findComponent(MarkdownRenderer).exists()).toBe(false);
+    });
+
+    it("uses variant='waiting' on KaiStatus when pendingInquiry is set", () => {
+      const { wrapper } = doMount({
+        props: {
+          pendingInquiry: { inquiry: pendingInquiry, chainType: "qa" },
+          statusUpdate: { message: "Waiting for user input..." },
+        },
+      });
+
+      expect(wrapper.findComponent(KaiStatus).props("variant")).toBe("waiting");
+    });
+
+    it("uses variant='loading' on KaiStatus when no pendingInquiry is set", () => {
+      const { wrapper } = doMount({
+        props: { statusUpdate: { message: "Thinking..." } },
+      });
+
+      expect(wrapper.findComponent(KaiStatus).props("variant")).toBe("loading");
     });
   });
 });

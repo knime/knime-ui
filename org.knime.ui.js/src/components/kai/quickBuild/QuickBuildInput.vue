@@ -49,7 +49,7 @@ defineEmits<{
 .quick-build-input {
   & .prompt {
     margin-top: 20px;
-    padding-bottom: 5px;
+    padding-bottom: var(--space-4);
   }
 
   & .error {
@@ -62,7 +62,7 @@ defineEmits<{
       @mixin svg-icon-size 15;
 
       margin-top: -2px;
-      margin-right: 4px;
+      margin-right: var(--space-4);
       stroke: var(--knime-white);
       fill: var(--knime-coral);
     }
