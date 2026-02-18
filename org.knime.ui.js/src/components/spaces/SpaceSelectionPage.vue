@@ -8,12 +8,12 @@ import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import type { SpaceProviderNS } from "@/api/custom-types";
 import SearchButton from "@/components/common/SearchButton.vue";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
+import { matchesQuery } from "@/lib/search";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { formatSpaceProviderName } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
-import { matchesQuery } from "@/util/matchesQuery";
 
 import SpaceCard from "./SpaceCard.vue";
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";

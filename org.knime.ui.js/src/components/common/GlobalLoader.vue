@@ -12,8 +12,8 @@ import {
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { useConstants } from "@/composables/useConstants";
+import { createStaggeredTimer } from "@/lib/timers";
 import { type GlobalLoaderConfig } from "@/store/application/globalLoader";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
 const props = withDefaults(defineProps<GlobalLoaderConfig>(), {
   loading: false,
@@ -71,7 +71,7 @@ const useNormalLoadingMode = () => {
 const useStaggerLoadingMode = () => {
   const noop = () => {};
 
-  setLoading.value = createStaggeredLoader({
+  setLoading.value = createStaggeredTimer({
     firstStageCallback: () => {
       showLoader.value = true;
       focus();

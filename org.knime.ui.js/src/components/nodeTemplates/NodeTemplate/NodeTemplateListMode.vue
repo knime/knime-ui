@@ -6,7 +6,7 @@ import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
+} from "@/lib/data-mappers";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 import { shouldShowCommunityIcon } from "./nodeTemplateCommunityIcon";

@@ -4,10 +4,10 @@ import { debounce } from "lodash-es";
 
 import type { NodeRelation } from "@/api/custom-types";
 import { createAbortablePromise } from "@/api/utils";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import { nodeTemplate } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import { nodeTemplate } from "@/util/dataMappers";
 
 /**
  * This composable is meant to be shared and used by other stores

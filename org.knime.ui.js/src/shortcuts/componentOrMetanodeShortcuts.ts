@@ -8,6 +8,7 @@ import {
   type ComponentNode,
   type MetaNode,
 } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
@@ -16,8 +17,6 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
-import { isComponentProjectOrWorkflow } from "@/util/projectUtil";
 
 import type { UnionToShortcutRegistry } from "./types";
 
@@ -48,10 +47,10 @@ declare module "./index" {
 }
 
 const isComponent = (node?: KnimeNode): node is ComponentNode =>
-  Boolean(node && isNodeComponent(node));
+  Boolean(node && workflowDomain.node.isComponent(node));
 
 const isMetanode = (node?: KnimeNode): node is MetaNode =>
-  Boolean(node && isNodeMetaNode(node));
+  Boolean(node && workflowDomain.node.isMetaNode(node));
 
 const isLinked = (node?: KnimeNode) =>
   Boolean((isComponent(node) || isMetanode(node)) && node.link);
@@ -417,7 +416,9 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
 
       return (
         isWritable &&
-        Boolean(isComponentProjectOrWorkflow(workflow)) &&
+        Boolean(
+          workflowDomain.project.isComponentProjectOrWorkflow(workflow),
+        ) &&
         useUIControlsStore().canOpenLayoutEditor
       );
     },

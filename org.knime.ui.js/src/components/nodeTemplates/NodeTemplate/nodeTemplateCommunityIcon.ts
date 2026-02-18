@@ -1,7 +1,7 @@
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
+} from "@/lib/data-mappers";
 
 export const isComponentNodeTemplate = (
   data: NodeTemplateWithExtendedPorts | ComponentNodeTemplateWithExtendedPorts,

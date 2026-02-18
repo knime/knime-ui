@@ -5,11 +5,11 @@ import {
   TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
+import { recreateLinebreaks } from "@/lib/rich-text";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
-import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
 type UseAnnotationDataEditingOptions = {
   annotation: Ref<WorkflowAnnotation>;

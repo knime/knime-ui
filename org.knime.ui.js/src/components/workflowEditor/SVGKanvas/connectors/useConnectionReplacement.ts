@@ -4,6 +4,8 @@ import { storeToRefs } from "pinia";
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
+import type { ExtendedPortType } from "@/lib/data-mappers";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
@@ -11,8 +13,6 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { checkPortCompatibility } from "@/util/compatibleConnections";
-import type { ExtendedPortType } from "@/util/dataMappers";
 
 type UseConnectionReplacementOptions = {
   /**
@@ -67,7 +67,7 @@ export const useConnectionReplacement = (
     const hasCompatibleSrcPort =
       sourceNodeObject.value &&
       replacementInPorts.some((toPort) =>
-        checkPortCompatibility({
+        workflowDomain.port.checkCompatibility({
           fromPort: sourceNodeObject.value!.outPorts[options.sourcePort.value!],
           toPort,
           availablePortTypes: availablePortTypes.value,
@@ -77,7 +77,7 @@ export const useConnectionReplacement = (
     const hasCompatibleDestPort =
       destNodeObject.value &&
       replacementOutPorts.some((fromPort) =>
-        checkPortCompatibility({
+        workflowDomain.port.checkCompatibility({
           fromPort,
           toPort: destNodeObject.value!.inPorts[options.destPort.value!],
           availablePortTypes: availablePortTypes.value,

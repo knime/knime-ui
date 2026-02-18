@@ -1,4 +1,4 @@
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 
 import type {
   ComponentNode,
@@ -13,7 +13,6 @@ import type {
   PortType,
   ProjectMetadata,
   SpaceItemReference,
-  XY,
   Space as _Space,
   Workflow as _Workflow,
 } from "./gateway-api/generated-api";
@@ -154,12 +153,6 @@ export interface Schedule {
   user: string;
   workflowPath: string;
 }
-export type WorkflowObject = XY & {
-  id: string;
-  type: "node" | "annotation" | "componentPlaceholder";
-  width?: number;
-  height?: number;
-};
 
 export type RecentWorkflow = {
   name: string;

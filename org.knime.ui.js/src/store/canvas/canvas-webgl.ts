@@ -18,12 +18,11 @@ import type { RenderLayer } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
+import { geometry } from "@/lib/geometry";
+import { clamp } from "@/lib/math";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { getEdgeNearPoint, isPointOutsideBounds } from "@/util/geometry/utils";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
-import { clamp } from "@/util/math";
 import type { CanvasPosition } from "../application/canvasStateTracking";
 import { useCanvasTooltipStore } from "../canvasTooltip/canvasTooltip";
 
@@ -492,13 +491,13 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isPointOutsideVisibleArea = (point: XY) => {
     const [x, y] = screenToCanvasCoordinates.value([point.x, point.y]);
     const visibleArea = calculateVisibleArea();
-    return isPointOutsideBounds({ x, y }, visibleArea);
+    return geometry.isPointOutsideBounds({ x, y }, visibleArea);
   };
 
   const getVisibleAreaEdgeNearPoint = (point: XY) => {
     const [x, y] = screenToCanvasCoordinates.value([point.x, point.y]);
     const visibleArea = calculateVisibleArea();
-    return getEdgeNearPoint({ x, y }, visibleArea, 35);
+    return geometry.getEdgeNearPoint({ x, y }, visibleArea, 35);
   };
 
   const getVisibleFrame = computed(() => {
@@ -572,7 +571,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       return;
     }
 
-    const isOutsideView = geometry.utils.isPointOutsideBounds(
+    const isOutsideView = geometry.isPointOutsideBounds(
       { x, y },
       calculateVisibleArea(),
     );

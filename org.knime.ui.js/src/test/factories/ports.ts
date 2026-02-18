@@ -8,7 +8,7 @@ import {
   PortType,
   type PortViews,
 } from "@/api/gateway-api/generated-api";
-import { type ExtendedPortType, ports } from "@/util/dataMappers";
+import { type ExtendedPortType, ports } from "@/lib/data-mappers";
 
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
 import { randomValue } from "./util";

@@ -204,11 +204,11 @@ export const useHandlePointerInteraction = (options: Options) => {
         return;
       }
 
-      if (selectionStore.activeNodePorts) {
+      if (selectionStore.selectedNodePort) {
         // hide any active selected port
-        selectionStore.updateActiveNodePorts({
+        selectionStore.updateSelectedNodePort({
           nodeId: null,
-          selectedPort: null,
+          selectedPortId: null,
         });
       }
 

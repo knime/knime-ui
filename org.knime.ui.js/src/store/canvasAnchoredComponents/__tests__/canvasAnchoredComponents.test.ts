@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import { workflowNavigationService } from "@/lib/workflow-canvas";
 import type { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize, portSize } from "@/style/shapes";
 import {
@@ -11,10 +12,10 @@ import {
 } from "@/test/factories";
 import { mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
 
-vi.mock("@/util/workflowNavigationService", () => {
+vi.mock("@/lib/workflow-canvas", async () => {
   return {
+    ...(await vi.importActual("@/lib/workflow-canvas")),
     workflowNavigationService: {
       nearestObject: vi.fn(),
     },

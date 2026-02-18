@@ -1,13 +1,13 @@
 import { storeToRefs } from "pinia";
 
+import {
+  type WorkflowNavigationDirection,
+  workflowNavigationService,
+} from "@/lib/workflow-canvas";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import {
-  type Direction,
-  workflowNavigationService,
-} from "@/util/workflowNavigationService";
 import { canvasRendererUtils } from "../util/canvasRenderer";
 
 export const useInitialSelection = () => {
@@ -28,7 +28,7 @@ export const useInitialSelection = () => {
       return;
     }
 
-    const directionMap: Record<string, Direction> = {
+    const directionMap: Record<string, WorkflowNavigationDirection> = {
       ArrowLeft: "left",
       ArrowRight: "right",
       ArrowUp: "top",

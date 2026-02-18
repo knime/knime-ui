@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 import { createTestingPinia } from "@pinia/testing";
 
+import { nodeTemplate } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import {
   NODE_FACTORIES,
@@ -10,7 +11,6 @@ import {
   createNodeTemplateWithExtendedPorts,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-import { nodeTemplate } from "@/util/dataMappers";
 import { useNodeTemplatesStore } from "../nodeTemplates";
 
 const mockedAPI = deepMocked(API);

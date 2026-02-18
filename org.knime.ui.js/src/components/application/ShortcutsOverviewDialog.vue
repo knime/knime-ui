@@ -9,6 +9,7 @@ import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
 import { type Hotkey, hotkeys } from "@knime/utils";
 
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
+import { matchesQuery } from "@/lib/search";
 import shortcuts from "@/shortcuts";
 import otherHotkeys from "@/shortcuts/otherHotkeys";
 import type {
@@ -17,7 +18,6 @@ import type {
   ShortcutGroups,
 } from "@/shortcuts/types";
 import { useApplicationStore } from "@/store/application/application";
-import { matchesQuery } from "@/util/matchesQuery";
 
 type ShortcutGroupsWithOthers = ShortcutGroups | "others";
 

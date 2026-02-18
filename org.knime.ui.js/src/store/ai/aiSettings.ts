@@ -4,9 +4,9 @@ import { defineStore, storeToRefs } from "pinia";
 
 import { useHubAuth } from "@/components/kai/useHubAuth";
 import { runInEnvironment } from "@/environment";
+import { hashString } from "@/lib/encoding";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
-import { hashString } from "@/util/hashString";
-import { toStableProjectId } from "@/util/projectUtil";
 
 /**
  * Store that manages AP-client-side AI settings. Settings scoped by Hub used for K-AI + username.
@@ -116,7 +116,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
       return null;
     }
 
-    return toStableProjectId(activeProject.value);
+    return workflowDomain.project.toStableProjectId(activeProject.value);
   };
 
   type SettingKeysUserScoped = { userIdHash: string };

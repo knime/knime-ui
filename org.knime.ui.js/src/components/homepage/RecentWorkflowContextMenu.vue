@@ -6,8 +6,8 @@ import { type Anchor, type MenuItem, MenuItems } from "@knime/components";
 
 import type { RecentWorkflow } from "@/api/custom-types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
+import { optional } from "@/lib/fp";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { valueOrEmpty } from "@/util/valueOrEmpty";
 import type { MenuItemWithHandler } from "../common/types";
 
 interface Props {
@@ -51,7 +51,7 @@ const recentWorkflowContextMenuItems = computed(() => {
   };
 
   const menuItems: Array<MenuItem> = [
-    ...valueOrEmpty(
+    ...optional(
       canRevealItem(recentWorkflow.origin?.providerId),
       revealInSpaceOption,
     ),

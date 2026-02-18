@@ -13,8 +13,9 @@ import {
   type XY,
 } from "@/api/gateway-api/generated-api";
 import { isDesktop } from "@/environment";
-import { geometry } from "@/util/geometry";
-import { isNativeNode } from "@/util/nodeUtil";
+import { geometry } from "@/lib/geometry";
+import { workflowDomain } from "@/lib/workflow-domain";
+import { gridSize } from "@/style/shapes";
 import { useSVGCanvasStore } from "../canvas/canvas-svg";
 import { usePanelStore } from "../panel";
 import { useSelectionStore } from "../selection";
@@ -70,7 +71,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
     // and also only refer to the data of the current workflow level
     const nodeTemplates = workflowStore.activeWorkflow!.nodeTemplates;
 
-    if (isNativeNode(node)) {
+    if (workflowDomain.node.isNative(node)) {
       const { templateId } = node;
 
       return nodeTemplates[templateId][property];
@@ -245,8 +246,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
 
     // Adjusted For Grid Snapping
     const gridAdjustedPosition = {
-      x: geometry.utils.snapToGrid(position.x),
-      y: geometry.utils.snapToGrid(position.y),
+      x: geometry.snapToGrid(position.x, gridSize.x),
+      y: geometry.snapToGrid(position.y, gridSize.y),
     };
 
     const { newNodeId } = await API.workflowCommand.AddNode({
@@ -301,8 +302,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
 
     // Adjusted For Grid Snapping
     const gridAdjustedPosition = {
-      x: geometry.utils.snapToGrid(position.x),
-      y: geometry.utils.snapToGrid(position.y),
+      x: geometry.snapToGrid(position.x, gridSize.x),
+      y: geometry.snapToGrid(position.y, gridSize.y),
     };
 
     if (isDesktop()) {
@@ -413,8 +414,8 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", () => {
 
       // Adjusted For Grid Snapping
       const gridAdjustedPosition = {
-        x: geometry.utils.snapToGrid(params.position.x),
-        y: geometry.utils.snapToGrid(params.position.y),
+        x: geometry.snapToGrid(params.position.x, gridSize.x),
+        y: geometry.snapToGrid(params.position.y, gridSize.y),
       };
 
       return gridAdjustedPosition;

@@ -1,15 +1,9 @@
-import {
-  type MockedFunction,
-  afterEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
+import { clipboard } from "@/lib/workflow-canvas";
 import { getToastsProvider } from "@/plugins/toasts";
 import {
   createConnection,
@@ -18,12 +12,17 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { pastePartsAt } from "@/util/pasteToWorkflow";
 
-vi.mock("@/util/pasteToWorkflow");
+vi.mock("@/lib/workflow-canvas", async () => ({
+  ...(await vi.importActual("@/lib/workflow-canvas")),
+  clipboard: {
+    determinePastePosition: vi.fn(),
+    defaultPastePosition: vi.fn(() => ({ x: 100, y: 100 })),
+  },
+}));
 
 const mockedAPI = deepMocked(API);
-const mockedPastePartsAt = pastePartsAt as MockedFunction<typeof pastePartsAt>;
+const determinePastePositionMock = vi.mocked(clipboard.determinePastePosition);
 
 describe("workflow::clipboardInteractions", () => {
   afterEach(() => {
@@ -44,19 +43,22 @@ describe("workflow::clipboardInteractions", () => {
       };
     })(initialContent);
 
+    const writeTextMock = vi.fn((text) => {
+      clipboardMock.setContent(JSON.parse(text));
+    });
+    const readTextMock = vi.fn(() => {
+      const content = clipboardMock.getContent();
+      return content ? JSON.stringify(content) : "";
+    });
+
     Object.assign(navigator, {
       clipboard: {
-        writeText: vi.fn((text) => {
-          clipboardMock.setContent(JSON.parse(text));
-        }),
-        readText: () => {
-          const content = clipboardMock.getContent();
-          return content ? JSON.stringify(content) : "";
-        },
+        writeText: writeTextMock,
+        readText: readTextMock,
       },
     });
 
-    return clipboardMock;
+    return { clipboardMock, writeTextMock, readTextMock };
   };
 
   it.each([["Copy"], ["Cut"]] as const)(
@@ -71,7 +73,7 @@ describe("workflow::clipboardInteractions", () => {
         content: stringifiedPayload,
       });
 
-      const clipboardMock = createClipboardMock();
+      const { clipboardMock } = createClipboardMock();
       const { workflowStore, selectionStore, clipboardInteractionsStore } =
         mockStores();
 
@@ -115,7 +117,7 @@ describe("workflow::clipboardInteractions", () => {
         }),
       );
 
-      await selectionStore.selectAllObjects();
+      selectionStore.selectAllObjects();
       selectionStore.selectBendpoints([
         "connection1__0",
         "connection1__1",
@@ -166,7 +168,7 @@ describe("workflow::clipboardInteractions", () => {
       content: stringifiedPayload,
     });
 
-    const clipboardMock = createClipboardMock();
+    const { clipboardMock } = createClipboardMock();
     navigator.clipboard.writeText
       // @ts-expect-error
       .mockImplementationOnce((text) => {
@@ -221,7 +223,7 @@ describe("workflow::clipboardInteractions", () => {
       }),
     );
 
-    await selectionStore.selectAllObjects();
+    selectionStore.selectAllObjects();
     selectionStore.selectBendpoints([
       "connection1__0",
       "connection1__1",
@@ -292,7 +294,7 @@ describe("workflow::clipboardInteractions", () => {
       workflowStore.setActiveWorkflow(workflow);
 
       // mock current clipboard content
-      const clipboardMock = createClipboardMock(
+      const { clipboardMock, readTextMock } = createClipboardMock(
         cacheClipboardContentId
           ? { cacheClipboardContentId }
           : {
@@ -306,7 +308,7 @@ describe("workflow::clipboardInteractions", () => {
 
       // mock strategy result
       const doAfterPasteMock = vi.fn();
-      mockedPastePartsAt.mockReturnValue({
+      determinePastePositionMock.mockReturnValue({
         position: { x: 5, y: 5 },
       });
 
@@ -324,6 +326,7 @@ describe("workflow::clipboardInteractions", () => {
         startPaste,
         clipboardMock,
         workflow,
+        readTextMock,
         doAfterPasteMock,
         clipboardInteractionsStore,
         selectionStore,
@@ -331,12 +334,12 @@ describe("workflow::clipboardInteractions", () => {
       };
     };
 
-    it("calls pastePartsAt", async () => {
+    it("calls function to get past content position", async () => {
       const { startPaste, clipboardMock } = setupStoreForPaste();
 
       await startPaste();
 
-      expect(mockedPastePartsAt).toHaveBeenCalledWith({
+      expect(determinePastePositionMock).toHaveBeenCalledWith({
         visibleFrame: {
           height: 1000,
           width: 1000,
@@ -378,7 +381,7 @@ describe("workflow::clipboardInteractions", () => {
       const { startPaste } = setupStoreForPaste();
       await startPaste({ position: { x: 100, y: 100 } });
 
-      expect(mockedPastePartsAt).not.toHaveBeenCalled();
+      expect(determinePastePositionMock).not.toHaveBeenCalled();
 
       expect(mockedAPI.workflowCommand.Paste).toHaveBeenCalledWith({
         projectId: "my project",
@@ -421,6 +424,25 @@ describe("workflow::clipboardInteractions", () => {
 
       expect(selectionStore.selectedNodeIds.includes("foo")).toBeFalsy();
       expect(selectionStore.selectedNodeIds.includes("bar")).toBeTruthy();
+    });
+
+    it("parses clipboard content as URI instead of JSON", async () => {
+      const { startPaste, clipboardMock, readTextMock } = setupStoreForPaste();
+
+      readTextMock.mockImplementation(() => "uri://foo-bar");
+
+      clipboardMock.setContent("asdasd");
+      await startPaste();
+
+      expect(mockedAPI.desktop.importURIAtWorkflowCanvas).toHaveBeenCalledWith({
+        projectId: "my project",
+        uri: "uri://foo-bar",
+        workflowId: "root",
+        x: 100,
+        y: 100,
+      });
+
+      expect(mockedAPI.workflowCommand.Paste).not.toHaveBeenCalled();
     });
   });
 });

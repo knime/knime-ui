@@ -5,9 +5,9 @@ import throttle from "raf-throttle";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
 
+import { isInputElement } from "@/lib/dom";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSelectionStore } from "@/store/selection";
-import { isInputElement } from "@/util/isInputElement";
 
 import { useArrowKeyMoving } from "./useArrowKeyMoving";
 import { useArrowKeyPanning } from "./useArrowKeyPanning";
@@ -40,8 +40,11 @@ export const useArrowKeyNavigation = (
   const { handlePanning } = useArrowKeyPanning();
 
   const selectionStore = useSelectionStore();
-  const { selectedObjects, getFocusedObject, activeNodePorts } =
-    storeToRefs(selectionStore);
+  const {
+    selectedObjects,
+    getFocusedObject,
+    selectedNodePort: activeNodePorts,
+  } = storeToRefs(selectionStore);
 
   const hasSelectedObjects = () => {
     return selectedObjects.value.length > 0;
@@ -60,7 +63,7 @@ export const useArrowKeyNavigation = (
     return (
       !isInputElement(event.target as HTMLElement) &&
       !event.altKey &&
-      !activeNodePorts.value.selectedPort
+      !activeNodePorts.value.selectedPortId
     );
   };
 

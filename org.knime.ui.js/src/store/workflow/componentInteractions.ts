@@ -24,11 +24,11 @@ import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceEx
 import { usePromptCollisionStrategies } from "@/composables/confirmDialogs/usePromptCollisionHandling";
 import { useChangeHubItemVersionModal } from "@/composables/useChangeHubItemVersionModal";
 import { useChangeLinkVariantModal } from "@/composables/useChangeLinkVariantModal";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application.ts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";
 import { getToastPresets } from "@/toastPresets";
-import { isNodeComponent } from "@/util/nodeUtil";
 
 import { useConnectionInteractionsStore } from "./connectionInteractions";
 import { useWorkflowStore } from "./workflow";
@@ -247,7 +247,7 @@ export const useComponentInteractionsStore = defineStore(
       async changeHubItemVersion({ nodeId }: { nodeId: string }) {
         const workflowStore = useWorkflowStore();
         const node = workflowStore.activeWorkflow?.nodes?.[nodeId];
-        if (!node || !isNodeComponent(node)) {
+        if (!node || !workflowDomain.node.isComponent(node)) {
           return;
         }
 

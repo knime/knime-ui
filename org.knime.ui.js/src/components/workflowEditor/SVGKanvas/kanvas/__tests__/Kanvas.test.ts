@@ -5,6 +5,7 @@ import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
+import { workflowNavigationService } from "@/lib/workflow-canvas";
 import { $bus } from "@/plugins/event-bus";
 import {
   createNativeNode,
@@ -14,7 +15,6 @@ import {
 } from "@/test/factories";
 import { mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
 import Kanvas from "../Kanvas.vue";
 import { RESIZE_DEBOUNCE } from "../constants";
 
@@ -24,8 +24,9 @@ vi.mock("@/plugins/event-bus", () => ({
   },
 }));
 
-vi.mock("@/util/workflowNavigationService", () => {
+vi.mock("@/lib/workflow-canvas", async () => {
   return {
+    ...(await vi.importActual("@/lib/workflow-canvas")),
     workflowNavigationService: {
       nearestObject: vi.fn(),
     },

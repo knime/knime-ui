@@ -17,6 +17,7 @@ import { animate } from "motion";
 import type { Workflow } from "@/api/custom-types";
 import { PortType } from "@/api/gateway-api/generated-api";
 import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
+import { ports } from "@/lib/workflow-canvas";
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
@@ -30,7 +31,6 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import * as portShift from "@/util/portShift";
 import type { AbsolutePointTuple, ConnectorProps } from "../../../types";
 import * as connectorPath from "../../../util/connectorPath";
 import Connector from "../Connector.vue";
@@ -43,10 +43,7 @@ vi.mock("motion", () => ({
 const mockedAPI = deepMocked(API);
 
 describe("Connector.vue", () => {
-  const getPortPositionInNodeMock = vi.spyOn(
-    portShift,
-    "getPortPositionInNode",
-  );
+  const getPortPositionInNodeMock = vi.spyOn(ports, "getPortPositionInNode");
   const connectorPathSpy = vi.spyOn(connectorPath, "getBezierPathString");
 
   beforeAll(() => {

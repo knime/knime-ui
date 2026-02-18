@@ -8,7 +8,7 @@ import {
   TypedText,
 } from "@/api/gateway-api/generated-api";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-import { recreateLinebreaks } from "@/util/recreateLineBreaks";
+import { recreateLinebreaks } from "@/lib/rich-text";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 

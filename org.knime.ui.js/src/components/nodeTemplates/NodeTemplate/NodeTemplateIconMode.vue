@@ -6,7 +6,7 @@ import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
+} from "@/lib/data-mappers";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 import {
@@ -29,6 +29,7 @@ const props = withDefaults(defineProps<Props>(), {
   isDescriptionActive: false,
   showFloatingHelpIcon: false,
 });
+
 const emit = defineEmits(["helpIconClick"]);
 const extensionText = computed(() => {
   if (!props.nodeTemplate.extension || !props.nodeTemplate.extension.vendor) {

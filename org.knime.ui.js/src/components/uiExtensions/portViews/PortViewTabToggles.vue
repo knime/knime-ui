@@ -5,20 +5,16 @@ import { Button, ValueSwitch } from "@knime/components";
 import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
 
 import type { KnimeNode } from "@/api/custom-types";
-import type {
-  PortViewDescriptor,
-  PortViewDescriptorMapping,
-} from "@/api/gateway-api/generated-api";
+import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
+import { ports } from "@/lib/data-mappers";
+import { useApplicationStore } from "@/store/application/application";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 
 type Props = {
   uniquePortKey: string;
-  viewDescriptors: Array<PortViewDescriptor>;
-  viewDescriptorMapping: PortViewDescriptorMapping;
   selectedNode: KnimeNode;
-  selectedPortIndex: number;
+  selectedPort: NodePort | MetaNodePort;
 };
 
 const props = defineProps<Props>();
@@ -27,6 +23,7 @@ const emit = defineEmits(["openViewInNewWindow"]);
 
 const workflowStore = useWorkflowStore();
 const uiControls = useUIControlsStore();
+const applicationStore = useApplicationStore();
 const canOpenDetatchedWindow = computed(
   () =>
     uiControls.canDetachPortViews &&
@@ -36,13 +33,18 @@ const canOpenDetatchedWindow = computed(
 const activeView = ref<number | null>(null);
 
 const tabToggles = computed(() => {
-  return getPortViewByViewDescriptors(
-    {
-      descriptors: props.viewDescriptors,
-      descriptorMapping: props.viewDescriptorMapping,
-    },
+  const { views: portViews } = ports.toExtendedPortObject(
+    applicationStore.availablePortTypes,
+  )({ typeId: props.selectedPort.typeId });
+
+  if (!portViews) {
+    return [];
+  }
+
+  return ports.toRenderablePortViewState(
+    portViews,
     props.selectedNode,
-    props.selectedPortIndex,
+    props.selectedPort.index,
   );
 });
 

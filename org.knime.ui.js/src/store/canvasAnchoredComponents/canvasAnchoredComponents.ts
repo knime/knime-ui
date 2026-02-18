@@ -2,13 +2,15 @@ import { nextTick } from "vue";
 import { defineStore } from "pinia";
 import { FederatedPointerEvent } from "pixi.js";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuProps } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import {
+  type WorkflowObject,
+  workflowNavigationService,
+} from "@/lib/workflow-canvas";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import * as $shapes from "@/style/shapes";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { useCanvasModesStore } from "../application/canvasModes";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";

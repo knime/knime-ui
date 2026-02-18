@@ -3,7 +3,7 @@ import { computed, ref, toRef, watch } from "vue";
 import { animate } from "motion";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { geometry } from "@/util/geometry";
+import { geometry } from "@/lib/geometry";
 import type { ConnectorPathSegmentProps } from "../../types";
 import { getBezierPathString } from "../../util/connectorPath";
 
@@ -40,7 +40,7 @@ const path = computed(() => {
 });
 
 const centerPoint = computed(() =>
-  geometry.utils.getCenterPoint(props.segment.start, props.segment.end),
+  geometry.getCenterPoint(props.segment.start, props.segment.end),
 );
 
 const visiblePath = ref<SVGPathElement | null>(null);

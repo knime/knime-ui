@@ -7,11 +7,11 @@ import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
 import { useTooltip } from "@/components/workflowEditor/SVGKanvas/tooltip/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
+import { ports } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { ports } from "@/util/dataMappers";
 import NodePortActiveConnector from "../NodePortActiveConnector.vue";
 
 import NodePortActions from "./NodePortActions.vue";

@@ -13,7 +13,7 @@ import {
 
 import { applicationState, loadStore } from "./loadStore";
 
-vi.mock("@/util/workflowNavigationService", () => {
+vi.mock("@/lib/workflowNavigationService", () => {
   return {
     workflowNavigationService: {
       nearestObject: vi.fn(),

@@ -4,24 +4,22 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { workflowDomain } from "@/lib/workflow-domain";
+import type { ConnectionPortDirection } from "@/lib/workflow-domain";
 import { $bus } from "@/plugins/event-bus";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as shapes from "@/style/shapes";
 import {
-  type Direction,
-  detectConnectionCircle,
-} from "@/util/compatibleConnections";
-import {
   type PortSnapCallback,
   usePortSnapping,
-} from "../../../common/usePortSnapping";
+} from "../../common/usePortSnapping";
 
 import type { DragConnector } from "./types";
 
 type Params = {
-  direction: Direction;
+  direction: ConnectionPortDirection;
   nodeId: string;
   port: NodePort;
   isFlowVariable: boolean;
@@ -32,7 +30,7 @@ type Params = {
 type ConnectorMoveEvent = {
   x: number;
   y: number;
-  targetPortDirection: Direction;
+  targetPortDirection: ConnectionPortDirection;
   onSnapCallback: PortSnapCallback;
 };
 
@@ -145,11 +143,12 @@ export const usePortDragging = (params: Params) => {
     );
 
     // find compatible nodes
-    const validConnectionTargets = detectConnectionCircle({
-      downstreamConnection: params.direction === "out",
-      startNode: params.nodeId,
-      workflow: activeWorkflow.value!,
-    });
+    const validConnectionTargets =
+      workflowDomain.connection.detectConnectionCircle({
+        downstreamConnection: params.direction === "out",
+        startNode: params.nodeId,
+        workflow: activeWorkflow.value!,
+      });
 
     // signal start of connecting phase
     $bus.emit("connector-start", {

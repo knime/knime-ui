@@ -8,12 +8,12 @@ import { AddNodeCommand } from "@/api/gateway-api/generated-api";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 import { NodeTemplate } from "@/components/nodeTemplates";
 import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import { useQuickActionComponentSearchStore } from "@/store/componentSearch";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { nodeSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import ComponentSearchResults from "../ComponentSearchResults.vue";
 
 type Props = {

@@ -4,17 +4,17 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { Connection, NodePort, XY } from "@/api/gateway-api/generated-api";
+import type {
+  ComponentNodeTemplateWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/lib/data-mappers";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
-import { checkPortCompatibility } from "@/util/compatibleConnections";
-import type {
-  ComponentNodeTemplateWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
-} from "@/util/dataMappers";
 
 import { pixiGlobals } from "./pixiGlobals";
 import { useNodeCollisionCheck } from "./useNodeCollisionCheck";
@@ -42,7 +42,7 @@ const canInsertOnConnection = (
   )!;
 
   const hasCompatibleSrcPort = portsOnReplacementNode.inPorts.some((toPort) =>
-    checkPortCompatibility({
+    workflowDomain.port.checkCompatibility({
       fromPort: connectionSourceNode.outPorts[connection.sourcePort],
       toPort,
       availablePortTypes,
@@ -51,7 +51,7 @@ const canInsertOnConnection = (
 
   const hasCompatibleDestPort = portsOnReplacementNode.outPorts.some(
     (fromPort) =>
-      checkPortCompatibility({
+      workflowDomain.port.checkCompatibility({
         fromPort,
         toPort: connectionDestNode.inPorts[connection.destPort],
         availablePortTypes,

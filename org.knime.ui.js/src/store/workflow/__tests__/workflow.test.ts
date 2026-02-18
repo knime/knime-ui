@@ -196,9 +196,9 @@ describe("workflow::index", () => {
         }),
       );
 
-      selectionStore.activeNodePorts = {
+      selectionStore.selectedNodePort = {
         nodeId: matchingNodeId,
-        selectedPort: "output-2",
+        selectedPortId: "output-2",
         isModificationInProgress: false,
       };
 
@@ -208,18 +208,18 @@ describe("workflow::index", () => {
 
       expect(nodeInteractionsStore.removeNodePort).toHaveBeenCalled();
 
-      expect(selectionStore.updateActiveNodePorts).toHaveBeenNthCalledWith(1, {
+      expect(selectionStore.updateSelectedNodePort).toHaveBeenNthCalledWith(1, {
         isModificationInProgress: true,
       });
 
-      expect(selectionStore.updateActiveNodePorts).toHaveBeenNthCalledWith(2, {
-        selectedPort: "output-1",
+      expect(selectionStore.updateSelectedNodePort).toHaveBeenNthCalledWith(2, {
+        selectedPortId: "output-1",
       });
-      expect(selectionStore.updateActiveNodePorts).toHaveBeenNthCalledWith(3, {
+      expect(selectionStore.updateSelectedNodePort).toHaveBeenNthCalledWith(3, {
         isModificationInProgress: false,
       });
 
-      expect(selectionStore.activeNodePorts.selectedPort).toBe("output-1");
+      expect(selectionStore.selectedNodePort.selectedPortId).toBe("output-1");
     });
   });
 

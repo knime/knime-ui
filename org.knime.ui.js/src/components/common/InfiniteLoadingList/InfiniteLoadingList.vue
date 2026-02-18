@@ -2,7 +2,7 @@
 import { nextTick, ref, toRefs, useTemplateRef, watch } from "vue";
 
 import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import { createStaggeredTimer } from "@/lib/timers";
 
 type Props = {
   isLoading: boolean;
@@ -23,7 +23,7 @@ const isLoadingNextPage = ref(false);
  * */
 const isLoadingDeferred = ref(false);
 
-const setIsLoadingNextPage = createStaggeredLoader({
+const setIsLoadingNextPage = createStaggeredTimer({
   firstStageCallback: () => {
     isLoadingNextPage.value = true;
   },
@@ -32,7 +32,7 @@ const setIsLoadingNextPage = createStaggeredLoader({
   },
 });
 
-const setIsLoadingDeferred = createStaggeredLoader({
+const setIsLoadingDeferred = createStaggeredTimer({
   firstStageCallback: () => {
     isLoadingDeferred.value = true;
   },

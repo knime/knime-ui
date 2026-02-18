@@ -4,8 +4,8 @@ import { ref, watch } from "vue";
 import { sanitization } from "@knime/utils";
 
 import type { ComponentNodeDescription } from "@/api/custom-types";
+import type { ComponentNodeDescriptionWithExtendedPorts } from "@/lib/data-mappers";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
-import type { ComponentNodeDescriptionWithExtendedPorts } from "@/util/dataMappers";
 
 import NodeDescriptionContent from "./NodeDescriptionContent.vue";
 import NodeDescriptionLayout from "./NodeDescriptionLayout.vue";

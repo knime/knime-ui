@@ -4,11 +4,10 @@ import { storeToRefs } from "pinia";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { isDesktop } from "@/environment";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNodeMetaNode } from "@/util/nodeUtil";
-import * as projectUtil from "@/util/projectUtil";
 
 import ComponentMetadata, {
   type SaveEventPayload as SaveComponentEventPayload,
@@ -33,7 +32,8 @@ const isMetanode = computed(
 );
 
 const singleMetanodeSelectedId = computed(() =>
-  singleSelectedNode.value && isNodeMetaNode(singleSelectedNode.value)
+  singleSelectedNode.value &&
+  workflowDomain.node.isMetaNode(singleSelectedNode.value)
     ? singleSelectedNode.value.id
     : null,
 );
@@ -82,7 +82,7 @@ const updateComponentMetadata = ({
 <template>
   <div v-if="workflow && workflow.metadata" class="metadata">
     <ProjectMetadata
-      v-if="projectUtil.isProjectMetadata(workflow.metadata)"
+      v-if="workflowDomain.project.isProjectMetadata(workflow.metadata)"
       :project-metadata="workflow.metadata"
       :project-id="workflow.projectId"
       :workflow-id="workflow.info.containerId"
@@ -95,7 +95,7 @@ const updateComponentMetadata = ({
     />
 
     <ComponentMetadata
-      v-if="projectUtil.isComponentMetadata(workflow.metadata)"
+      v-if="workflowDomain.project.isComponentMetadata(workflow.metadata)"
       :component-metadata="workflow.metadata"
       :project-id="workflow.projectId"
       :component-id="workflow.info.containerId"

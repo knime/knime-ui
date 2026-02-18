@@ -2,17 +2,17 @@ import { type Ref, onMounted } from "vue";
 import { useEventListener, useTimeoutFn } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { isInputElement } from "@/lib/dom";
+import {
+  type WorkflowNavigationDirection,
+  type WorkflowObject,
+  workflowNavigationService,
+} from "@/lib/workflow-canvas";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isInputElement } from "@/util/isInputElement";
-import {
-  type Direction,
-  workflowNavigationService,
-} from "@/util/workflowNavigationService";
 import { canvasRendererUtils } from "../util/canvasRenderer";
 
 const getFurthestObjectByDirection = (
@@ -56,7 +56,7 @@ const getFurthestObjectByDirection = (
   return result;
 };
 
-const getDirection = (event: KeyboardEvent): Direction => {
+const getDirection = (event: KeyboardEvent): WorkflowNavigationDirection => {
   return (
     {
       ArrowUp: "top",

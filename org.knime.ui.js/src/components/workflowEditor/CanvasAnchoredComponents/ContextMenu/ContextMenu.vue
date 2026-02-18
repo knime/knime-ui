@@ -14,6 +14,9 @@ import {
   type XY,
 } from "@/api/gateway-api/generated-api";
 import portIcon from "@/components/common/PortIconRenderer";
+import { type ExtendedPortType, ports } from "@/lib/data-mappers";
+import { menuGroupsBuilder } from "@/lib/menu-groups-builder";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
@@ -23,15 +26,6 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { type ExtendedPortType, ports } from "@/util/dataMappers";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import { menuGroupsBuilder } from "@/util/menuGroupsBuilder";
-import {
-  getNodeState,
-  isNativeNode,
-  isNodeComponent,
-  isNodeMetaNode,
-} from "@/util/nodeUtil";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
@@ -64,7 +58,7 @@ const buildPortViewIcon = (
   port: ExtendedPortType,
   portIndex: number,
 ) => {
-  if (isNodeMetaNode(node)) {
+  if (workflowDomain.node.isMetaNode(node)) {
     return markRaw(portIcon(port, $shapes.portSize));
   }
 
@@ -122,7 +116,7 @@ const portViews = (): MenuItem[] => {
 
   return allOutPorts.flatMap((port, portIndex) => {
     // TODO: NXT-2024 show port views at configure time
-    if (getNodeState(node, portIndex) !== "EXECUTED") {
+    if (workflowDomain.node.getExecutionState(node, portIndex) !== "EXECUTED") {
       return [];
     }
 
@@ -148,13 +142,13 @@ const portViews = (): MenuItem[] => {
       ] as MenuItem[];
     }
 
-    const portViewItems = getPortViewByViewDescriptors(
+    const renderablePortViews = ports.toRenderablePortViewState(
       port.views,
       node,
       portIndex,
     );
 
-    const mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
+    const mappedPortViewItems = renderablePortViews.map<MenuItem>((item) => ({
       text: item.text,
       disabled: item.disabled,
       metadata: {
@@ -220,7 +214,7 @@ const setMenuItems = () => {
 
   const isLoopEnd = Boolean(
     singleSelectedNode.value &&
-      isNativeNode(singleSelectedNode.value) &&
+      workflowDomain.node.isNative(singleSelectedNode.value) &&
       Boolean(singleSelectedNode.value.loopInfo?.allowedActions),
   );
 
@@ -236,11 +230,13 @@ const setMenuItems = () => {
   );
 
   const isMetanode = Boolean(
-    singleSelectedNode.value && isNodeMetaNode(singleSelectedNode.value),
+    singleSelectedNode.value &&
+      workflowDomain.node.isMetaNode(singleSelectedNode.value),
   );
 
   const isComponent = Boolean(
-    singleSelectedNode.value && isNodeComponent(singleSelectedNode.value),
+    singleSelectedNode.value &&
+      workflowDomain.node.isComponent(singleSelectedNode.value),
   );
 
   const portViewItems = portViews();

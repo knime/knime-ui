@@ -36,8 +36,9 @@ vi.mock("@knime/kds-components", async (importOriginal) => {
   };
 });
 
-vi.mock("@/util/getKanvasDomElement", () => {
+vi.mock("@/lib/workflow-canvas", async () => {
   return {
+    ...(await vi.importActual("@/lib/workflow-canvas")),
     getKanvasDomElement: vi.fn().mockReturnValue({
       contains: vi.fn().mockReturnValue(true),
       getBoundingClientRect: vi.fn().mockReturnValue({}),

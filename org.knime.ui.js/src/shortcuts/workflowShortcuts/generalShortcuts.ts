@@ -10,6 +10,7 @@ import type { KnimeNode } from "@/api/custom-types";
 import { type Connection, SyncState } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -21,7 +22,6 @@ import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteraction
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
-import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import type { UnionToShortcutRegistry } from "../types";
 
 type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<
@@ -117,7 +117,7 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     icon: DeleteIcon,
     execute: async () => {
       const workflowStore = useWorkflowStore();
-      if (useSelectionStore().activeNodePorts.selectedPort) {
+      if (useSelectionStore().selectedNodePort.selectedPortId) {
         await workflowStore.deleteSelectedPort();
       } else {
         await workflowStore.deleteSelectedObjects();
@@ -132,8 +132,8 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       }
 
       // enable depending on the selected NodePort
-      if (selectionStore.activeNodePorts.selectedPort) {
-        return !selectionStore.activeNodePorts.isModificationInProgress;
+      if (selectionStore.selectedNodePort.selectedPortId) {
+        return !selectionStore.selectedNodePort.isModificationInProgress;
       }
 
       // disable while dragging

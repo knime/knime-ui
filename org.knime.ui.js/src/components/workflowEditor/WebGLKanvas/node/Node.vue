@@ -11,6 +11,8 @@ import {
   Node,
   type XY,
 } from "@/api/gateway-api/generated-api";
+import { geometry } from "@/lib/geometry";
+import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -21,8 +23,6 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useNodeHoverProvider } from "../common/useNodeHoverState";
 import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";
@@ -55,8 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
   link: null,
 });
 
-const isMetanode = computed(() => isNodeMetaNode(props.node));
-const isComponent = computed(() => isNodeComponent(props.node));
+const isMetanode = computed(() => workflowDomain.node.isMetaNode(props.node));
+const isComponent = computed(() => workflowDomain.node.isComponent(props.node));
 
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
@@ -86,7 +86,7 @@ const isEditable = computed(() => {
     return false;
   }
 
-  return isNodeComponent(props.node) ? !props.node.link : true;
+  return workflowDomain.node.isComponent(props.node) ? !props.node.link : true;
 });
 
 const { onNodeLeftDoubleClick } = useNodeDoubleClick({ node: props.node });
@@ -174,10 +174,7 @@ const { hoverSize, renderHoverArea } = useNodeHoverSize({
 
 const renderable = computed(
   () =>
-    !geometry.utils.isPointOutsideBounds(
-      translatedPosition.value,
-      visibleArea.value,
-    ),
+    !geometry.isPointOutsideBounds(translatedPosition.value, visibleArea.value),
 );
 
 const nodeNamePosition = computed(() => {
@@ -257,7 +254,9 @@ const onNodeHoverAreaPointerLeave = () => {
 };
 
 const allAllowedActions = computed(() => {
-  const loopInfo = isNativeNode(props.node) ? props.node.loopInfo : undefined;
+  const loopInfo = workflowDomain.node.isNative(props.node)
+    ? props.node.loopInfo
+    : undefined;
   const baseConfig = {
     ...props.node.allowedActions,
     ...loopInfo?.allowedActions,
@@ -375,7 +374,9 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
       :in-ports="node.inPorts"
       :out-ports="node.outPorts"
       :is-editable="isEditable"
-      :port-groups="isNativeNode(node) ? node.portGroups : undefined"
+      :port-groups="
+        workflowDomain.node.isNative(node) ? node.portGroups : undefined
+      "
       @update-port-positions="portPositions = $event"
     />
 

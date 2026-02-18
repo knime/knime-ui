@@ -2,8 +2,8 @@
 import { ref, watch } from "vue";
 
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
+import { type NativeNodeDescriptionWithExtendedPorts } from "@/lib/data-mappers";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
-import { type NativeNodeDescriptionWithExtendedPorts } from "@/util/dataMappers";
 
 import NodeDescriptionContent from "./NodeDescriptionContent.vue";
 import NodeDescriptionExtensionInfo from "./NodeDescriptionExtensionInfo.vue";

@@ -15,7 +15,6 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getBendpointId } from "@/util/connectorUtil";
 import { useConnectorPathSegments } from "../../common/useConnectorPathSegments";
 import type { AbsolutePointXY, ConnectorProps } from "../../types";
 import { isMultiselectEvent } from "../../util/isMultiselectEvent";
@@ -227,7 +226,7 @@ const onRightClick = async (event: FederatedPointerEvent) => {
       <ConnectorBendpoint
         v-if="index !== 0"
         :is-selected="
-          isBendpointSelected(getBendpointId(id, index - 1)) &&
+          isBendpointSelected(selectionStore.getBendpointId(id, index - 1)) &&
           !shouldHideSelection
         "
         :is-dragging="isDragging"

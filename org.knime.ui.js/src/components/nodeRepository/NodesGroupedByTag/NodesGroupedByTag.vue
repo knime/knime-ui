@@ -11,9 +11,9 @@ import {
   NodeList,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
+import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 
 const TAG_LIMIT = 8;
 
