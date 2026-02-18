@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 
 import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 
-import { SpaceProviderNS } from "@/api/custom-types";
-import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
 } from "@/lib/data-mappers";
 
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
-import {
-  isComponentNodeTemplate,
-  shouldShowCommunityIcon,
-} from "./nodeTemplateCommunityIcon";
+import { useComponentOwnershipInfo } from "./useComponentOwnershipInfo";
 
 type Props = {
   nodeTemplate:
@@ -40,68 +35,16 @@ const extensionText = computed(() => {
   return `\n———\n${props.nodeTemplate.extension.name}\nby ${props.nodeTemplate.extension.vendor.name}`;
 });
 
-const providersStore = useSpaceProvidersStore();
-const hubProvider = computed(
-  () =>
-    Object.values(providersStore.spaceProviders).find(
-      (provider) => provider.type === SpaceProviderNS.TypeEnum.HUB,
-    ) ?? null,
-);
-const hubTeamNames = computed(() =>
-  (hubProvider.value?.spaceGroups ?? [])
-    .filter((group) => group.type === SpaceProviderNS.UserTypeEnum.TEAM)
-    .map((group) => group.name),
-);
-const hubUsername = computed(() => hubProvider.value?.username ?? null);
-
-const componentOwnerLabel = computed(() => {
-  if (!isComponentNodeTemplate(props.nodeTemplate)) {
-    return null;
-  }
-
-  const owner = props.nodeTemplate.owner;
-  if (!owner?.name) {
-    if (owner?.isTeam === true) {
-      return "a team";
-    }
-    if (owner?.isTeam === false) {
-      return "a user";
-    }
-    return "an unknown owner";
-  }
-
-  if (owner.isTeam) {
-    return hubTeamNames.value.includes(owner.name)
-      ? `your team "${owner.name}"`
-      : `team "${owner.name}"`;
-  }
-
-  return hubUsername.value && owner.name === hubUsername.value
-    ? "you"
-    : `user "${owner.name}"`;
-});
-
-const showCommunityIcon = computed(() =>
-  shouldShowCommunityIcon(props.nodeTemplate),
-);
+const nodeTemplateRef = toRef(props, "nodeTemplate");
+const ownershipInfo = useComponentOwnershipInfo(nodeTemplateRef);
+const showCommunityIcon = computed(() => ownershipInfo.showCommunityIcon.value);
 
 const tileTitle = computed(() => {
-  if (!isComponentNodeTemplate(props.nodeTemplate)) {
+  if (!ownershipInfo.isComponent.value) {
     return `${props.nodeTemplate.name}${extensionText.value}`;
   }
 
-  const spaceName = props.nodeTemplate.containingSpace;
-  const ownerLabel = componentOwnerLabel.value;
-  if (spaceName && ownerLabel) {
-    return `From space "${spaceName}" owned by ${ownerLabel}.`;
-  }
-  if (spaceName) {
-    return `From space "${spaceName}".`;
-  }
-  if (ownerLabel) {
-    return `Owned by ${ownerLabel}.`;
-  }
-  return "Component ownership information is unavailable.";
+  return ownershipInfo.componentTooltipText.value;
 });
 </script>
 
