@@ -5,10 +5,12 @@ import { SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
 import { KdsValueSwitch } from "@knime/kds-components";
 import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
+import ShieldCloseIcon from "@knime/styles/img/icons/shield-close.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useAISettingsStore } from "@/store/ai/aiSettings";
 import type { ChainType } from "@/store/ai/types";
 
 import KaiExtensionPanel from "./KaiExtensionPanel.vue";
@@ -18,12 +20,21 @@ import { useKaiPanels } from "./panels/useKaiPanels";
 const chainType = ref<ChainType>("qa");
 
 const { clearConversation } = useAIAssistantStore();
+const { revokePermissionsForAllActionsForActiveProject } = useAISettingsStore();
 
 const deleteChatMenuItem = {
   text: "Clear chat",
   icon: TrashIcon,
   metadata: {
     handler: () => clearConversation({ chainType: chainType.value }),
+  },
+};
+
+const resetPermissionsMenuItem = {
+  text: "Reset permissions for this workflow",
+  icon: ShieldCloseIcon,
+  metadata: {
+    handler: () => revokePermissionsForAllActionsForActiveProject(),
   },
 };
 
@@ -52,7 +63,7 @@ const showChatControls = computed(() => !panelComponent.value);
         <SubMenu
           orientation="left"
           class="submenu"
-          :items="[deleteChatMenuItem]"
+          :items="[deleteChatMenuItem, resetPermissionsMenuItem]"
           @item-click="onItemClick"
         >
           <MenuIcon />

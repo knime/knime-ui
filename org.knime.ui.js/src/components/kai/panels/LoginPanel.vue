@@ -19,7 +19,7 @@ const { authenticateWithHub, hubID } = useHubAuth();
 </template>
 
 <style lang="postcss" scoped>
-& .login-panel {
+.login-panel {
   flex: 1;
   display: flex;
   flex-direction: column;

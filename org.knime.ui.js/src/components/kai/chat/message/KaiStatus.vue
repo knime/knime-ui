@@ -1,16 +1,22 @@
 <script setup lang="ts">
 import LoadingIcon from "@knime/styles/img/icons/reload.svg";
+import UserIcon from "@knime/styles/img/icons/user.svg";
 
 interface Props {
   status?: string;
+  variant?: "loading" | "waiting";
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  status: "",
+  variant: "loading",
+});
 </script>
 
 <template>
   <div v-if="props.status" class="status">
-    <LoadingIcon class="loading-icon" />
+    <UserIcon v-if="variant === 'waiting'" class="status-icon" />
+    <LoadingIcon v-else class="status-icon spinning" />
     {{ props.status }}
   </div>
 </template>
@@ -28,17 +34,23 @@ const props = defineProps<Props>();
   }
 }
 
-& .status {
+.status {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-4);
   padding-top: var(--space-12);
 
-  & svg.loading-icon {
-    animation: rotate-animation 2s linear infinite;
+  &:first-child {
+    padding-top: 0;
+  }
 
+  & svg.status-icon {
     @mixin svg-icon-size 14;
+
+    &.spinning {
+      animation: rotate-animation 2s linear infinite;
+    }
   }
 }
 </style>

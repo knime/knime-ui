@@ -23,6 +23,8 @@ const {
   isProcessing,
   incomingTokens,
   statusUpdate,
+  pendingInquiry,
+  pendingInquiryTraces,
   lastUserMessage,
   sendMessage,
   abortSendMessage,
@@ -40,6 +42,7 @@ const scrollOnNewMessages = () => {
 };
 
 watch(() => incomingTokens.value, scrollOnNewMessages);
+watch(() => pendingInquiry.value, scrollOnNewMessages);
 watch(
   messagesWithSeparators,
   (newValue, oldValue) => {
@@ -55,6 +58,7 @@ watch(
   <div class="chat">
     <SidebarPanelScrollContainer ref="scrollableContainer">
       <div class="messages">
+        <!-- Normal messages -->
         <template v-for="(item, index) in messagesWithSeparators" :key="index">
           <MessageSeparatorComponent
             v-if="item instanceof MessageSeparator"
@@ -66,13 +70,23 @@ watch(
             @node-templates-loaded="scrollOnNewMessages"
           />
         </template>
-        <Message
-          v-if="isProcessing"
-          key="processing"
-          :role="KaiMessage.RoleEnum.Assistant"
-          :content="incomingTokens"
-          :status-update="statusUpdate"
-        />
+
+        <!-- Processing message -->
+        <template v-if="isProcessing">
+          <Message
+            key="processing"
+            :role="KaiMessage.RoleEnum.Assistant"
+            :content="incomingTokens"
+            :status-update="statusUpdate"
+            :pending-inquiry="
+              pendingInquiry && {
+                inquiry: pendingInquiry,
+                chainType: props.chainType,
+              }
+            "
+            :inquiry-traces="pendingInquiryTraces"
+          />
+        </template>
       </div>
     </SidebarPanelScrollContainer>
 

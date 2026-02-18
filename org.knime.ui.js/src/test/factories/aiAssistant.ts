@@ -1,5 +1,6 @@
 import { merge } from "lodash-es";
 
+import { KaiInquiry, KaiInquiryOption } from "@/api/gateway-api/generated-api";
 import type { NodeWithExtensionInfo } from "@/store/ai/types";
 import type { DeepPartial } from "../utils";
 
@@ -20,3 +21,20 @@ export const createNodeWithExtensionInfo = (
 
   return merge(base, data);
 };
+
+export const createKaiInquiry = (
+  data: Partial<KaiInquiry> = {},
+): KaiInquiry => ({
+  inquiryId: "inq-1",
+  inquiryType: KaiInquiry.InquiryTypeEnum.Permission,
+  title: "Allow data sampling?",
+  description: "K-AI wants to sample data.",
+  options: [
+    { id: "deny", label: "Deny", style: KaiInquiryOption.StyleEnum.Secondary },
+    { id: "allow", label: "Allow", style: KaiInquiryOption.StyleEnum.Primary },
+  ],
+  metadata: { actionId: "sample-data" },
+  timeoutSeconds: 0,
+  defaultOptionId: "",
+  ...data,
+});
