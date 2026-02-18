@@ -4,8 +4,8 @@ import { API } from "@api";
 
 import { promise } from "@knime/utils";
 
-import type { ComponentNodeTemplateWithExtendedPorts } from "@/util/dataMappers";
-import { componentSearch } from "@/util/dataMappers";
+import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import { componentSearch } from "@/lib/data-mappers";
 
 const PAGE_SIZE = 150;
 const SEARCH_DEBOUNCE_MS = 300;

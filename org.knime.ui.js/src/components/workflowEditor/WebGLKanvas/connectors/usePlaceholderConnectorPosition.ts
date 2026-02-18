@@ -10,10 +10,10 @@ import {
   Node,
   type XY,
 } from "@/api/gateway-api/generated-api";
+import { ports } from "@/lib/workflow-canvas";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import portShift, { getPortPositionInNode } from "@/util/portShift";
 
 type UsePlaceholderConnectorPositionOptions = {
   sourceNode: Ref<string>;
@@ -116,7 +116,7 @@ export const usePlaceholderConnectorPosition = (
     }
 
     if (reference.value.type === "placeholder") {
-      const [dx, dy] = portShift(
+      const [dx, dy] = ports.portShift(
         1,
         2,
         false,
@@ -128,7 +128,7 @@ export const usePlaceholderConnectorPosition = (
         y: reference.value.payload.position.y + dy,
       };
     } else {
-      return getPortPositionInNode(
+      return ports.getPortPositionInNode(
         referencePortIndex.value,
         type,
         reference.value.payload,

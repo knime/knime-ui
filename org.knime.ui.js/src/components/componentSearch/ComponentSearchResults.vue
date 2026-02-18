@@ -6,7 +6,7 @@ import {
   InfiniteNodeList,
   type NavReachedEvent,
 } from "@/components/nodeTemplates";
-import type { ComponentNodeTemplateWithExtendedPorts } from "@/util/dataMappers";
+import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 
 type Props = {
   active: boolean;

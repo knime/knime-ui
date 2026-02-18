@@ -4,9 +4,9 @@ import { type Ref, computed, toRefs } from "vue";
 import type { LineCap } from "pixi.js";
 
 import type { ComponentPlaceholderConnection } from "@/api/custom-types";
+import { DashLine } from "@/lib/pixi-dash-line";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { type BezierPoints, getBezier } from "../../util/connectorPath";
 

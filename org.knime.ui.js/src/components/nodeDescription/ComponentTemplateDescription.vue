@@ -3,7 +3,7 @@ import { computed } from "vue";
 
 import { sanitization } from "@knime/utils";
 
-import { type ExtendedPortType } from "@/util/dataMappers";
+import { type ExtendedPortType } from "@/lib/data-mappers";
 
 import DescriptionText from "./DescriptionText.vue";
 import NodeDescriptionLayout from "./NodeDescriptionLayout.vue";

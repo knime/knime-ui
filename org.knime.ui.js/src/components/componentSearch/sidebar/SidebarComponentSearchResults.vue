@@ -3,9 +3,9 @@ import { useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import { type NavReachedEvent } from "@/components/nodeTemplates";
+import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useSidebarComponentSearchStore } from "@/store/componentSearch";
 import { usePanelStore } from "@/store/panel";
-import type { ComponentNodeTemplateWithExtendedPorts } from "@/util/dataMappers";
 import ComponentSearchResults from "../ComponentSearchResults.vue";
 
 type Props = {

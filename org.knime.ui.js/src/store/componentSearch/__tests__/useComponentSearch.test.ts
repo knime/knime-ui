@@ -2,17 +2,17 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
+import { componentSearch } from "@/lib/data-mappers";
 import { createComponentSearchItem } from "@/test/factories/componentSearch";
 import { deepMocked } from "@/test/utils";
 import { mountComposable } from "@/test/utils/mountComposable";
-import { componentSearch } from "@/util/dataMappers";
 import { useComponentSearch } from "../useComponentSearch";
 
 const mockedAPI = deepMocked(API);
 
-vi.mock("@/util/dataMappers", async () => {
+vi.mock("@/lib/data-mappers", async () => {
   return {
-    ...(await vi.importActual("@/util/dataMappers")),
+    ...(await vi.importActual("@/lib/data-mappers")),
     componentSearch: {
       toNodeTemplateWithExtendedPorts: vi.fn((x) => x),
     },

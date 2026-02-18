@@ -2,10 +2,10 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
+import { workflowDomain } from "@/lib/workflow-domain";
 import { TABS, usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import WorkflowMetadata from "../workflowMetadata/WorkflowMetadata.vue";
 
 import ComponentInstanceDescription from "./ComponentInstanceDescription.vue";
@@ -28,13 +28,16 @@ const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const showNodeDescription = computed(
   () =>
     singleSelectedNode.value &&
-    !isNodeMetaNode(singleSelectedNode.value) &&
+    !workflowDomain.node.isMetaNode(singleSelectedNode.value) &&
     isLeftPanelExpanded.value &&
     isNodeDescriptionTabActive.value,
 );
 
 const nodeInstanceData = computed(() => {
-  if (!singleSelectedNode.value || !isNativeNode(singleSelectedNode.value)) {
+  if (
+    !singleSelectedNode.value ||
+    !workflowDomain.node.isNative(singleSelectedNode.value)
+  ) {
     return null;
   }
 
@@ -48,7 +51,10 @@ const nodeInstanceData = computed(() => {
 });
 
 const componentInstanceData = computed(() => {
-  if (!singleSelectedNode.value || !isNodeComponent(singleSelectedNode.value)) {
+  if (
+    !singleSelectedNode.value ||
+    !workflowDomain.node.isComponent(singleSelectedNode.value)
+  ) {
     return null;
   }
 

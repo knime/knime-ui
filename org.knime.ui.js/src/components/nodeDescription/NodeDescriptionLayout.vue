@@ -11,7 +11,7 @@ import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue
 import type {
   ExtendedPortType,
   PortGroupDescription,
-} from "@/util/dataMappers";
+} from "@/lib/data-mappers";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 
