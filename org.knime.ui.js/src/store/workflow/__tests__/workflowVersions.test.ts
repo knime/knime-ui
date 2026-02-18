@@ -883,15 +883,19 @@ describe("workflow store: versions", () => {
     });
 
     it("deactivateVersionsMode", async () => {
-      const { workflowVersionsStore } = await setupStore();
+      const { workflowVersionsStore, workflowStore } = await setupStore();
       expect(workflowVersionsStore.activeProjectVersionsModeStatus).toBe(
         "active",
       );
 
+      workflowStore.activeWorkflow = createWorkflow({
+        info: { containerId: "root:0:2" },
+      });
+
       await workflowVersionsStore.deactivateVersionsMode();
       expect(useRouter().push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
-        params: { projectId, workflowId: "root:0:1" },
+        params: { projectId, workflowId: "root:0:2" },
         query: { version: null },
       });
       expect(workflowVersionsStore.activeProjectVersionsModeStatus).toBe(

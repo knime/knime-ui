@@ -70,6 +70,37 @@ const createInitialProjectVersionsModeInfo = (): ProjectVersionsModeInfo => ({
   hasLoadedAll: false,
 });
 
+const USE_MOCKED_VERSIONS_DATA = true;
+const MOCKED_VERSIONS_DATA_DELAY_MS = 2000;
+
+const createMockedVersionsData = (): ProjectVersionsModeInfo => {
+  const createdOn = new Date().toISOString();
+  return {
+    loadedVersions: [
+      {
+        author: "Mock Author",
+        avatar: { kind: "account", name: "Mock Author" },
+        createdOn,
+        labels: [],
+        title: "Version 1",
+        version: 1,
+      },
+      {
+        author: "Mock Author",
+        avatar: { kind: "account", name: "Mock Author" },
+        createdOn,
+        labels: [],
+        title: "Version 2",
+        version: 2,
+      },
+    ],
+    unversionedSavepoint: null,
+    permissions: ["COPY"],
+    hasLoadedAll: true,
+    versionLimit: { currentUsage: 2, limit: 5 },
+  };
+};
+
 export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   const $router = useRouter();
   const { askConfirmation } = useKdsDynamicModal();
@@ -409,6 +440,14 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
 
     loading.value = true;
+    if (USE_MOCKED_VERSIONS_DATA) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, MOCKED_VERSIONS_DATA_DELAY_MS);
+      });
+      versionsModeInfo.value.set(activeProjectId, createMockedVersionsData());
+      loading.value = false;
+      return;
+    }
     const versionsApi = getVersionsApi();
 
     const doLoadData = async () => {
@@ -540,12 +579,15 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
       return;
     }
 
+    const workflowIdFromStore =
+      useWorkflowStore().activeWorkflow?.info?.containerId;
     const currentRoute = $router.currentRoute.value;
     const routeWorkflowId = currentRoute.params.workflowId;
-    const workflowId =
+    const workflowIdFromRoute =
       typeof routeWorkflowId === "string"
         ? routeWorkflowId
         : routeWorkflowId?.[0];
+    const workflowId = workflowIdFromStore ?? workflowIdFromRoute;
 
     await $router.push({
       name: APP_ROUTES.WorkflowPage,
