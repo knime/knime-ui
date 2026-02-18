@@ -69,7 +69,7 @@ describe("useComponentSearch", () => {
     expect(results.value.length).toBe(3);
   });
 
-  it("passes side and port type to the api", async () => {
+  it("passes port side and port type to the api", async () => {
     mockedAPI.space.searchComponents.mockResolvedValueOnce([
       createComponentSearchItem({ id: "1" }),
       createComponentSearchItem({ id: "2" }),
@@ -80,14 +80,14 @@ describe("useComponentSearch", () => {
 
     const { searchComponents } = getComposableResult();
 
-    await searchComponents({ side: "input", portTypeId: "foo" });
+    await searchComponents({ portSide: "input", portId: "foo" });
 
     expect(mockedAPI.space.searchComponents).toHaveBeenLastCalledWith({
       query: "",
       offset: 0,
       limit: 150,
-      side: "input",
-      portTypeId: "foo",
+      portSide: "input",
+      portId: "foo",
     });
   });
 

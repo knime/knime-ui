@@ -22,11 +22,11 @@ export const useComponentSearch = () => {
   const searchComponents = async (
     params: {
       append?: boolean;
-      side?: "input" | "output";
-      portTypeId?: string | null;
+      portSide?: "input" | "output";
+      portId?: string | null;
     } = {},
   ): Promise<void> => {
-    const { append = false, side, portTypeId } = params;
+    const { append = false, portSide, portId } = params;
 
     isLoading.value = true;
 
@@ -51,8 +51,8 @@ export const useComponentSearch = () => {
           query: query.value,
           offset: currentOffset.value * PAGE_SIZE,
           limit: PAGE_SIZE,
-          ...(side ? { side } : {}),
-          ...(portTypeId ? { portTypeId } : {}),
+          ...(portSide ? { portSide } : {}),
+          ...(portId ? { portId } : {}),
         });
 
         return apiResponse.map(componentSearch.toNodeTemplateWithExtendedPorts);
@@ -77,7 +77,7 @@ export const useComponentSearch = () => {
 
   const updateQuery = async (
     value: string,
-    params: { side?: "input" | "output"; portTypeId?: string | null } = {},
+    params: { portSide?: "input" | "output"; portId?: string | null } = {},
   ) => {
     query.value = value;
     currentOffset.value = 0;

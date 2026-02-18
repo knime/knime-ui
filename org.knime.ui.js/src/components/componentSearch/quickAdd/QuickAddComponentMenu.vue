@@ -46,7 +46,7 @@ const nodeId = computed(() => props.quickActionContext.nodeId);
 const port = computed(() => props.quickActionContext.port);
 const nodeRelation = computed(() => props.quickActionContext.nodeRelation);
 // eslint-disable-next-line no-undefined
-const portTypeId = computed(() => port.value?.typeId ?? undefined);
+const portId = computed(() => port.value?.typeId ?? undefined);
 const searchSide = computed(() => {
   if (!port.value) {
     return undefined;
@@ -70,8 +70,8 @@ const searchSide = computed(() => {
 const updateSearchQuery = async (value: string) => {
   try {
     await componentSearchStore.updateQuery(value, {
-      side: searchSide.value,
-      portTypeId: portTypeId.value,
+      portSide: searchSide.value,
+      portId: portId.value,
     });
   } catch (error) {
     toastPresets.search.nodeSearch({ error });
@@ -81,8 +81,8 @@ const updateSearchQuery = async (value: string) => {
 const fetchSearchResults = (params: { append: boolean }) =>
   componentSearchStore.searchComponents({
     ...params,
-    side: searchSide.value,
-    portTypeId: portTypeId.value,
+    portSide: searchSide.value,
+    portId: portId.value,
   });
 
 const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
