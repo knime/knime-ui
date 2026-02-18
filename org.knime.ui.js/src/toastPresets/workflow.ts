@@ -1,7 +1,7 @@
 import type { ToastServiceProvider } from "@knime/components";
 
 import { defaultAPIErrorHandler } from "./defaultAPIErrorHandler";
-import { type ToastPresetErrorHandler } from "./types";
+import { type ToastPresetErrorHandler, type ToastPresetHandler } from "./types";
 
 type WorkflowCommandsToastPresets = {
   nodeNameEditFail: ToastPresetErrorHandler;
@@ -21,6 +21,7 @@ type LayoutEditorToastPresets = {
 export type WorkflowToastPresets = {
   commands: WorkflowCommandsToastPresets;
   addNodeToCanvas: ToastPresetErrorHandler;
+  unsupportedNodeFromFile: ToastPresetHandler<{ names: string[] }>;
   replacementOperation: replacementOperation;
   layoutEditor: LayoutEditorToastPresets;
 
@@ -55,6 +56,16 @@ export const getPresets = (
       defaultAPIErrorHandler($toast, error, {
         type: "error",
         headline: "Couldn't add node to canvas",
+      }),
+
+    unsupportedNodeFromFile: ({ names }) =>
+      $toast.show({
+        type: "warning",
+        headline: "File type is not supported",
+        message:
+          names.length === 1
+            ? `File '${names[0]}' is not supported by any reader.`
+            : `Files '${names.join("', '")}' are not supported by any reader.`,
       }),
 
     replacementOperation: {

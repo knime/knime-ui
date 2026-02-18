@@ -4,7 +4,11 @@ import { defineStore } from "pinia";
 import { promise as promiseUtils } from "@knime/utils";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import type { SpaceProvider } from "@/api/gateway-api/generated-api";
+import type {
+  AncestorInfo,
+  SpaceProvider,
+} from "@/api/gateway-api/generated-api";
+import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import {
   extractHostname,
   knimeExternalUrls,
@@ -46,6 +50,21 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
     setIsConnectingToProvider(isConnectingToProvider: string | null) {
       this.isConnectingToProvider = isConnectingToProvider;
+    },
+
+    getAncestorInfo(spaceItemRef: SpaceItemReference): Promise<AncestorInfo> {
+      const provider = this.spaceProviders[spaceItemRef.providerId];
+
+      if (!provider) {
+        return Promise.resolve({ ancestorItemIds: [] });
+      }
+
+      // Throws error if the ancestor item IDs could not be retrieved
+      return API.space.getAncestorInfo({
+        spaceProviderId: spaceItemRef.providerId,
+        spaceId: spaceItemRef.spaceId,
+        itemId: spaceItemRef.itemId,
+      });
     },
 
     updateSpaceProvider({
