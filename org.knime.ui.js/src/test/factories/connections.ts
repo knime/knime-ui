@@ -1,10 +1,21 @@
 import type { KnimeNode } from "@/api/custom-types";
 import type { Connection } from "@/api/gateway-api/generated-api";
-import { getSequentialId } from "@/lib/unique-id";
 
 import { createNativeNode } from "./nodes";
 import { createPort } from "./ports";
 import { arrayToDictionary } from "./util";
+
+// eslint-disable-next-line func-style
+function* generator(): Iterator<number> {
+  let id = -1;
+  while (true) {
+    id++;
+    yield id;
+  }
+}
+
+const idGen = generator();
+const getSequentialId = () => idGen.next().value.toString();
 
 export const createConnection = (
   data: Partial<Connection> = {},
