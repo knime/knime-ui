@@ -82,6 +82,9 @@ export const annotationColorPresets = {
   WoodDark: "#77563C",
 };
 
+/** TODO: remove when we have KDS-690 */
+export const kdsCoreColorNeutral25 = "hsl(0 0% 99%)";
+
 export const defaultAnnotationBorderColor = annotationColorPresets.SilverSand;
 
 export * from "@knime/styles/colors/knimeColors";
