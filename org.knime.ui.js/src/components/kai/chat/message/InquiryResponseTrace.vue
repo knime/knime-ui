@@ -42,7 +42,7 @@ const optionLabel = computed(() => {
   display: grid;
   grid-template-columns: 16px 1fr minmax(0, 20%);
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--kds-spacing-container-0-5x);
   color: var(--knime-dove-gray);
   font-size: 13px;
 

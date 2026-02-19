@@ -183,7 +183,7 @@ const displayContent = computed(() => {
   & .body {
     border-radius: 0 5px 5px;
     background-color: var(--knime-white);
-    padding: var(--space-12);
+    padding: var(--kds-spacing-container-0-75x);
 
     &.user {
       border-radius: 5px 0 5px 5px;
@@ -196,9 +196,9 @@ const displayContent = computed(() => {
     & .inquiry-traces {
       display: flex;
       flex-direction: column;
-      gap: var(--space-4);
-      padding-bottom: var(--space-8);
-      margin-bottom: var(--space-8);
+      gap: var(--kds-spacing-container-0-25x);
+      padding-bottom: var(--kds-spacing-container-0-5x);
+      margin-bottom: var(--kds-spacing-container-0-5x);
       border-bottom: 1px solid var(--knime-porcelain);
     }
   }
