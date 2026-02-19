@@ -104,7 +104,7 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
   background: var(--kds-color-background-input-initial);
   border: var(--kds-border-base-subtle);
   border-radius: var(--kds-border-radius-container-0-50x);
-  box-shadow: var(--shadow-elevation-1);
+  box-shadow: var(--kds-elevation-level-1);
   z-index: v-bind("$zIndices.layerCanvasDecorations");
   padding: var(--kds-spacing-container-0-25x);
 }
