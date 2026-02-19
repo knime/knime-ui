@@ -13,13 +13,15 @@ import { API } from "@api";
 import { createRouter, createWebHistory } from "vue-router";
 
 import { setupHints } from "@knime/components";
+import { rfcErrors } from "@knime/hub-features";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
 import { isBrowser, isDesktop, runInEnvironment } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router, routes } from "@/router/router";
+import { getToastsProvider } from "@/plugins/toasts";
 import { createWorkflow } from "@/test/factories";
-import { deepMocked } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { ProjectActivationError, ProjectDataLoadError } from "../lifecycle";
 import { lifecycleBus } from "../lifecycle-events";
@@ -30,6 +32,19 @@ vi.mock("@/components/workflowEditor/SVGKanvas/util/generateWorkflowPreview");
 const mockedAPI = deepMocked(API);
 
 vi.mock("@/environment");
+vi.mock("@knime/hub-features", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-expect-error
+    ...actual,
+    rfcErrors: {
+      // @ts-expect-error
+      ...actual.rfcErrors,
+      toToast: vi.fn(),
+    },
+  };
+});
 vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
 
@@ -121,6 +136,60 @@ describe("application::lifecycle", () => {
         isInitialization: true,
       });
       expect(setupHints).toHaveBeenCalled();
+    });
+
+    it("shows load errors on initialization", async () => {
+      const router = getRouter();
+      const toast = mockedObject(getToastsProvider());
+
+      // @ts-expect-error
+      // eslint-disable-next-line new-cap
+      runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+
+      const loadErrors = {
+        missingExtensions: [
+          {
+            name: "Foo Extension",
+            vendor: "KNIME",
+            nodeNames: ["Node A", "Node B"],
+          },
+        ],
+        copyToClipboardContent: "copy text",
+      };
+
+      const stateWithErrors = {
+        ...applicationState,
+        openProjects: [
+          {
+            ...applicationState.openProjects[0],
+            loadErrors,
+          },
+        ],
+      };
+
+      const { lifecycleStore } = loadStore();
+      mockedAPI.application.getState.mockReturnValue(stateWithErrors);
+
+      await lifecycleStore.initializeApplication({ $router: router });
+
+      const expectedRfcError = new rfcErrors.RFCError({
+        title: "1 missing extension",
+        details: [
+          "Extension 'Foo Extension' not installed (vendor: KNIME). Missing nodes: Node A, Node B",
+        ],
+      });
+
+      expect(rfcErrors.toToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          headline: "Errors while loading the workflow",
+          rfcError: expectedRfcError,
+          canCopyToClipboard: true,
+          serializeErrorForClipboard: expect.any(Function),
+        }),
+      );
+
+      expect(toast.show).toHaveBeenCalled();
     });
 
     it("destroy application", async () => {

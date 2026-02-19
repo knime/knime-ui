@@ -4,6 +4,7 @@ import { defineStore } from "pinia";
 import { type Router } from "vue-router";
 
 import { setupHints } from "@knime/components";
+import { rfcErrors } from "@knime/hub-features";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 import { sleep } from "@knime/utils";
 
@@ -34,6 +35,7 @@ import { useCanvasModesStore } from "./canvasModes";
 import { useCanvasStateTrackingStore } from "./canvasStateTracking";
 import { lifecycleBus } from "./lifecycle-events";
 import { useApplicationSettingsStore } from "./settings";
+import { getToastsProvider } from "@/plugins/toasts";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
@@ -268,6 +270,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       consola.info("lifecycle::Application state", { applicationState });
       useApplicationStore().replaceApplicationState(applicationState);
       await this.setActiveProject({ $router, isInitialization: true });
+      await this.showLoadErrors();
 
       if (useApplicationSettingsStore().isKaiEnabled) {
         kaiFetchUiStrings();
@@ -426,6 +429,48 @@ export const useLifecycleStore = defineStore("lifecycle", {
         },
         force: isInitialization,
       });
+    },
+
+    async showLoadErrors() {
+      if (isDesktop()) {
+        return;
+      }
+      const { openProjects } = useApplicationStore();
+      if (openProjects.length !== 1) {
+        return;
+      }
+
+      const loadErrors = openProjects[0].loadErrors;
+      if (loadErrors) {
+        const details: string[] = [];
+        if (loadErrors.missingExtensions) {
+          details.push(
+            ...loadErrors.missingExtensions.map(
+              (extension) =>
+                `Extension '${extension.name}' not installed (vendor: ${
+                  extension.vendor
+                }). Missing nodes: ${extension.nodeNames.join(", ")}`,
+            ),
+          );
+        }
+        let errorMessage = "";
+        if (loadErrors.missingExtensions) {
+          const count = loadErrors.missingExtensions.length;
+          const label = count === 1 ? "extension" : "extensions";
+          errorMessage += `${count} missing ${label}`;
+        }
+        const rfcError = new rfcErrors.RFCError({
+          title: errorMessage,
+          details,
+        });
+        const toast = rfcErrors.toToast({
+          headline: "Errors while loading the workflow",
+          rfcError,
+          canCopyToClipboard: true,
+          serializeErrorForClipboard: (_) => loadErrors.copyToClipboardContent,
+        });
+        getToastsProvider().show(toast);
+      }
     },
 
     /**
