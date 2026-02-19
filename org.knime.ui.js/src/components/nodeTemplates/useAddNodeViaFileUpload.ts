@@ -1,4 +1,4 @@
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 
@@ -6,14 +6,11 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { freeSpaceInCanvas } from "@/lib/workflow-canvas";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
-import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
 import { getToastPresets } from "@/toastPresets";
-
-const cachedAncestorIds: string[] = [];
 
 export const useAddNodeViaFileUpload = () => {
   const { toastPresets } = getToastPresets();
@@ -30,21 +27,12 @@ export const useAddNodeViaFileUpload = () => {
 
   const { activeProjectOrigin } = storeToRefs(applicationStore);
 
-  // this is browser only and we need the parent folder
-  // this should be fixed in the backend
-  onMounted(() => {
-    if (cachedAncestorIds.length === 0) {
-      useSpaceProvidersStore()
-        .getAncestorInfo(activeProjectOrigin.value!)
-        .then(({ ancestorItemIds }) => {
-          cachedAncestorIds.push(...ancestorItemIds);
-        });
-    }
-  });
-
-  // fallback to space root
+  // use current workflow folder but fallback to space root if missing
   const parentId = computed(
-    () => cachedAncestorIds[0] ?? activeProjectOrigin.value?.spaceId ?? "",
+    () =>
+      activeProjectOrigin.value?.ancestorItemIds?.[0] ??
+      activeProjectOrigin.value?.spaceId ??
+      "",
   );
 
   const getNodeTemplateId = (name: string) => {
