@@ -396,7 +396,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
             this.respondToInquiry({
               chainType,
               selectedOptionId: savedDecision,
-              suffix: "Auto",
+              suffix: "Remembered",
             });
             break;
           }

@@ -183,13 +183,25 @@ describe("InquiryCard", () => {
       expect(buttons[1].props("label")).toBe("Confirm");
     });
 
-    it("shows countdown on the default option button", () => {
+    it("does not show countdown when more than 15 seconds remain", () => {
       const { wrapper } = doMount({
-        props: { autoSelectAfter: 10, defaultOptionId: "cancel" },
+        props: { autoSelectAfter: 60, defaultOptionId: "cancel" },
       });
 
       const cancelButton = wrapper.findAllComponents(KdsButton)[0];
-      expect(cancelButton.props("label")).toBe("Cancel (10)");
+      expect(cancelButton.props("label")).toBe("Cancel");
+    });
+
+    it("shows countdown on the default option button when 15 or fewer seconds remain", async () => {
+      const { wrapper } = doMount({
+        props: { autoSelectAfter: 60, defaultOptionId: "cancel" },
+      });
+
+      vi.advanceTimersByTime(45000);
+      await nextTick();
+
+      const cancelButton = wrapper.findAllComponents(KdsButton)[0];
+      expect(cancelButton.props("label")).toBe("Cancel (15)");
     });
 
     it("falls back to first secondary option when defaultOptionId is not set", () => {

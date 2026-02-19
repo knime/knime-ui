@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
@@ -28,11 +29,8 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   highlighted: false,
-  // eslint-disable-next-line no-undefined
   checkbox: undefined,
-  // eslint-disable-next-line no-undefined
   autoSelectAfter: undefined,
-  // eslint-disable-next-line no-undefined
   defaultOptionId: undefined,
 });
 
@@ -51,6 +49,10 @@ const fallbackDefaultOption = computed(() => {
     null
   );
 });
+
+// Only show the countdown in the button label during the final seconds,
+// so the user isn't aware of time pressure until it becomes relevant.
+const COUNTDOWN_VISIBLE_THRESHOLD = 15;
 
 const remainingSeconds = ref(props.autoSelectAfter ?? 0);
 let intervalId: number | null = null;
@@ -78,7 +80,6 @@ const handleDefaultRespond = () => {
 };
 
 const startTimer = () => {
-  // eslint-disable-next-line no-undefined
   if (props.autoSelectAfter === undefined) {
     return;
   }
@@ -96,9 +97,9 @@ const buttonLabel = (option: KaiInquiryOption) => {
 
   if (
     isDefault &&
-    // eslint-disable-next-line no-undefined
     props.autoSelectAfter !== undefined &&
-    remainingSeconds.value > 0
+    remainingSeconds.value > 0 &&
+    remainingSeconds.value <= COUNTDOWN_VISIBLE_THRESHOLD
   ) {
     return `${option.label} (${remainingSeconds.value})`;
   }

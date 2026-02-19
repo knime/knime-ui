@@ -173,7 +173,7 @@ describe("aiAssistant store", () => {
       expect(aiAssistantStore.qa.pendingInquiry).toBeNull();
       expect(aiAssistantStore.qa.pendingInquiryTraces[0]).toMatchObject({
         selectedOptionId: "allow",
-        suffix: "Auto",
+        suffix: "Remembered",
       });
     });
 
