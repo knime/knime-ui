@@ -123,9 +123,11 @@ const onPointerDown = (event: FederatedPointerEvent) => {
         },
       });
 
-      useAnalyticsService().track("quickactionmenu_opened", {
-        via:
-          props.direction === "out" ? "port_dragdrop_fwd" : "port_dragdrop_bwd",
+      const analyticsEventId = `qam_opened::${
+        props.direction === "out" ? "port_dragdrop_fwd" : "port_dragdrop_bwd"
+      }` as const;
+
+      useAnalyticsService().track(analyticsEventId, {
         nodeId: props.nodeId,
         nodeType: props.nodeKind,
         nodePortIndex: props.port.index,

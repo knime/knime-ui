@@ -187,8 +187,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
           const node = nodeInteractionStore.getNodeById(newNodeId ?? "");
 
           if (node) {
-            useAnalyticsService().track("node_created", {
-              via: "explorer_dragdrop_",
+            useAnalyticsService().track("node_created::explorer_dragdrop_", {
               nodeId: node.id,
               nodeFactoryId: nodeTemplateId,
               nodeType: Node.KindEnum.Node,

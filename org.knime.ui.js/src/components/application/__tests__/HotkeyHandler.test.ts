@@ -53,7 +53,10 @@ describe("HotKeys", () => {
     document.dispatchEvent(e);
 
     expect($shortcuts.isEnabled).toHaveBeenCalledWith("shortcut");
-    expect($shortcuts.dispatch).toHaveBeenCalledWith("shortcut", { event: e });
+    expect($shortcuts.dispatch).toHaveBeenCalledWith("shortcut", {
+      event: e,
+      src: "global",
+    });
     expectEventHandled();
     // enabled shortcuts always prevent even if the config says other
     expectPreventDefaultHandled();

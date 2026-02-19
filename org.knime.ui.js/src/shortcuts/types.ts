@@ -20,10 +20,12 @@ export type ShortcutGroups =
 export type HotkeyText = { text: string };
 export type Hotkeys = Array<Hotkey | HotkeyText>;
 
+type LooseAutoComplete<T extends string> = T | Omit<string, T>;
+
 export type ShortcutExecuteContext = {
   $router: Router;
   $toast: ToastService;
-  payload: { event?: Event; metadata?: any };
+  payload: { src?: LooseAutoComplete<"global">; event?: Event; metadata?: any };
 };
 
 export type Shortcut = {

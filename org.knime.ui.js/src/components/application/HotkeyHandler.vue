@@ -62,7 +62,7 @@ export default {
       for (const shortcut of shortcuts) {
         const isEnabled = this.$shortcuts.isEnabled(shortcut);
         if (isEnabled) {
-          this.$shortcuts.dispatch(shortcut, { event: e });
+          this.$shortcuts.dispatch(shortcut, { event: e, src: "global" });
         }
         // prevent default if shortcut did not allow it (like copy text via CTRL+C)
         if (isEnabled || this.$shortcuts.preventDefault(shortcut)) {
