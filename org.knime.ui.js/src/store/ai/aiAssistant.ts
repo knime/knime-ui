@@ -169,6 +169,11 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
       this[chainType].conversationId = conversationId;
     },
 
+    /**
+     * Submits the user's response to a pending inquiry. Records the response as
+     * a trace, clears the pending inquiry, and notifies the API so K-AI can
+     * continue generating its response.
+     */
     async respondToInquiry({
       chainType,
       selectedOptionId,
@@ -203,16 +208,27 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         this[chainType].projectAndWorkflowIds?.projectId ??
         useWorkflowStore().getProjectAndWorkflowIds.projectId;
       try {
-        await API.kai.respondToInquiry({
-          kaiChainId: chainType,
-          kaiInquiryResponse: {
-            projectId,
-            inquiryId: pendingInquiry.inquiryId,
-            selectedOptionId,
-          },
+        await promiseUtils.retryPromise({
+          fn: () =>
+            API.kai.respondToInquiry({
+              kaiChainId: chainType,
+              kaiInquiryResponse: {
+                projectId,
+                inquiryId: pendingInquiry.inquiryId,
+                selectedOptionId,
+              },
+            }),
+          retryCount: 1,
         });
       } catch (error) {
         consola.error("respondToInquiry", error);
+        this.setIsProcessing({ chainType, isProcessing: false });
+        this.pushMessage({
+          chainType,
+          role: KaiMessage.RoleEnum.Assistant,
+          content: "Something went wrong. Try again later.",
+          isError: true,
+        });
       }
     },
 
@@ -380,6 +396,10 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         }
 
         case "inquiry": {
+          // For permission inquiries, check whether the user has a saved
+          // decision for this action. If so, auto-respond immediately (inquiry card
+          // isn't shown, but its trace is). Otherwise, display the inquiry
+          // card and wait for the user to respond.
           const actionId = payload.metadata?.actionId as string | undefined;
           const isPermission =
             payload.inquiryType === KaiInquiry.InquiryTypeEnum.Permission;

@@ -99,6 +99,29 @@ describe("aiAssistant store", () => {
       });
     });
 
+    it("pushes an error message and stops processing when the API call fails after retry", async () => {
+      const { aiAssistantStore } = setupStore();
+      const inquiry = createKaiInquiry();
+
+      aiAssistantStore.qa.pendingInquiry = inquiry;
+      aiAssistantStore.qa.isProcessing = true;
+      mockedAPI.kai.respondToInquiry.mockRejectedValue(
+        new Error("Network error"),
+      );
+
+      await aiAssistantStore.respondToInquiry({
+        chainType: "qa",
+        selectedOptionId: "allow",
+      });
+
+      expect(mockedAPI.kai.respondToInquiry).toHaveBeenCalledTimes(2);
+      expect(aiAssistantStore.qa.isProcessing).toBe(false);
+      const lastMessage =
+        aiAssistantStore.qa.messages[aiAssistantStore.qa.messages.length - 1];
+      expect(lastMessage.role).toBe(KaiMessage.RoleEnum.Assistant);
+      expect(lastMessage.isError).toBe(true);
+    });
+
     it("uses the chain's stored projectId rather than the currently active workflow", async () => {
       const { aiAssistantStore } = setupStore({
         projectId: "switched-project",

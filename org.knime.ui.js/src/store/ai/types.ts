@@ -44,7 +44,7 @@ export type HubItem = {
 export type InquiryTrace = {
   inquiry: KaiInquiry;
   selectedOptionId: string;
-  /** Optional label suffix rendered in parentheses next to the selected option, e.g. "Saved" or "Auto" */
+  /** Optional label suffix rendered in parentheses next to the selected option, e.g. "Saved" or "Remembered" */
   suffix?: string;
 };
 
@@ -77,7 +77,18 @@ export type ConversationState = {
   isProcessing: boolean;
   incomingTokens: string;
   projectAndWorkflowIds: ProjectAndWorkflowIds | null;
+  /**
+   * The inquiry K-AI is currently waiting on the user to respond to. Set when
+   * K-AI needs to clarify something mid-response. cleared once the user (or
+   * auto-response logic) submits an answer via `respondToInquiry`.
+   */
   pendingInquiry: KaiInquiry | null;
+  /**
+   * Traces of each inquiry the user has responded to during the current
+   * response generation. K-AI can send more than one inquiry per response, so
+   * traces accumulate here until K-AI finishes, at which point they are
+   * attached to its final message and cleared.
+   */
   pendingInquiryTraces: InquiryTrace[];
 };
 
