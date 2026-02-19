@@ -13,7 +13,6 @@ import { sleep } from "@knime/utils";
 
 import { useAnalyticsService } from "@/analytics";
 import { useDragNodeIntoCanvas } from "@/components/nodeTemplates";
-import { isBrowser } from "@/environment";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
@@ -30,7 +29,6 @@ import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
 import SkeletonAnnotation from "./annotations/SkeletonAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
-import FloatingWorkflowActions from "./floatingToolbar/FloatingWorkflowActions.vue";
 import FloatingCanvasTools from "./floatingToolbar/canvasTools/FloatingCanvasTools.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
@@ -235,9 +233,7 @@ const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
 
     <NodeLabelEditor />
 
-    <FloatingWorkflowActions v-if="!isLoadingWorkflow && isBrowser()" />
-
-    <FloatingCanvasTools v-if="!isWorkflowEmpty" />
+    <FloatingCanvasTools />
 
     <Tooltip />
 
@@ -262,6 +258,7 @@ const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
   height: 100%;
   width: 100%;
   isolation: isolate;
+  background-color: var(--kds-color-page-default);
 
   & :deep(canvas) {
     position: relative;

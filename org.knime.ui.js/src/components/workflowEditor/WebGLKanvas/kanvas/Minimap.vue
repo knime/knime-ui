@@ -189,7 +189,7 @@ const blur = new BlurFilter({ strength: 4 });
           graphics
             .clear()
             .roundRect(0, 0, minimapBounds.width, minimapBounds.height, 8)
-            .fill($colors.White);
+            .fill($colors.kdsCoreColorNeutral25);
         }
       "
     />

@@ -3,16 +3,26 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { FunctionButton } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
 import HandIcon from "@knime/styles/img/icons/hand.svg";
 import MapIcon from "@knime/styles/img/icons/map.svg";
 import LenseMinusIcon from "@knime/styles/img/icons/minus-small.svg";
 import LensePlusIcon from "@knime/styles/img/icons/plus-small.svg";
 
+import { useAddNodeViaFileUpload } from "@/components/nodeTemplates/useAddNodeViaFileUpload";
+import { isBrowser } from "@/environment";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useSettingsStore } from "@/store/settings";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import ZoomMenu from "./ZoomMenu.vue";
+
+const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
+const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+
+const { importFilesViaDialog } = useAddNodeViaFileUpload();
 
 const $shortcuts = useShortcuts();
 const minimapShortcut = $shortcuts.get("toggleMinimap");
@@ -29,7 +39,20 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
 </script>
 
 <template>
-  <div class="canvas-tools" @pointerdown.stop>
+  <div
+    v-if="!isLoadingWorkflow && isBrowser()"
+    class="workflow-actions toolbar"
+    @pointerdown.stop
+  >
+    <KdsButton
+      title="Upload a local data file. A node that reads this file will be added automatically."
+      data-test-id="wf-action-add-node-by-file"
+      leading-icon="file-text"
+      variant="transparent"
+      @pointerdown="importFilesViaDialog"
+    />
+  </div>
+  <div v-if="!isWorkflowEmpty" class="canvas-tools toolbar" @pointerdown.stop>
     <FunctionButton
       :title="`Toggle pan mode – ${
         $shortcuts.get('switchToPanMode').hotkeyText
@@ -72,25 +95,30 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
 </template>
 
 <style lang="postcss" scoped>
-@import url("@/assets/mixins.css");
-
-.canvas-tools {
+.toolbar {
   position: absolute;
   max-height: calc(v-bind("$shapes.floatingCanvasToolsSize") * 1px);
   bottom: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
-  right: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
   display: flex;
   align-items: center;
-  background: var(--knime-white);
-  border: 1px solid var(--knime-gray-ultra-light);
-  border-radius: 8px;
+  background: var(--kds-color-background-input-initial);
+  border: var(--kds-border-base-subtle);
+  border-radius: var(--kds-border-radius-container-0-50x);
   box-shadow: var(--shadow-elevation-1);
   z-index: v-bind("$zIndices.layerCanvasDecorations");
-  padding: var(--space-4);
+  padding: var(--kds-spacing-container-0-25x);
+}
+
+.workflow-actions {
+  left: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
+}
+
+.canvas-tools {
+  right: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
 }
 
 .minimap-toggle {
-  margin-left: 2px;
-  margin-right: var(--space-6);
+  margin-left: var(--kds-spacing-container-0-12x);
+  margin-right: var(--kds-spacing-container-0-37x);
 }
 </style>
