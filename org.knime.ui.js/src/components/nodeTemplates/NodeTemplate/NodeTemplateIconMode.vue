@@ -35,6 +35,12 @@ const nodeTemplate = toRef(props, "nodeTemplate");
 const { extensionInfo } = useNodeTemplateExtensionInfo({ nodeTemplate });
 const { ownershipInfo } = useComponentOwnershipInfo({ nodeTemplate });
 
+const showCommunityIcon = computed(
+  () =>
+    ownershipInfo.value?.isFromCommunity ||
+    extensionInfo.value?.isFromCommunity,
+);
+
 const tileTitle = computed(() => {
   return ownershipInfo.value?.tooltip ?? extensionInfo.value?.tooltip ?? "";
 });
@@ -66,7 +72,7 @@ const tileTitle = computed(() => {
 
     <div class="extension-info">
       <ExtensionCommunityIcon
-        v-if="ownershipInfo?.isFromCommunity ?? extensionInfo?.isFromCommunity"
+        v-if="showCommunityIcon"
         class="extension-community-icon"
       />
     </div>
