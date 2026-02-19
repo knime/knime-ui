@@ -108,8 +108,7 @@ const autoAddNodeFromTemplate = async (
     const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
 
     if (node) {
-      useAnalyticsService().track("node_created", {
-        via: "noderepo_doubleclick_",
+      useAnalyticsService().track("node_created::noderepo_doubleclick_", {
         nodeId: node.id,
         nodeType: node.kind,
         nodeFactoryId: nodeTemplate.nodeFactory.className,

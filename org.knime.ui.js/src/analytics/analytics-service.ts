@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { embeddingSDK } from "@knime/hub-features";
 
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
@@ -14,19 +15,18 @@ const noopService: AnalyticsService = { track: noop };
 
 let __analyticsService: AnalyticsService = noopService;
 
-const track: TrackFn = (eventCategory, eventData) => {
+const track: TrackFn = (eventId, ...eventData) => {
   if (canvasRendererUtils.isSVGRenderer()) {
     return;
   }
 
-  const { via, ...otherData } = eventData;
+  const data = eventData.length === 0 ? undefined : eventData.at(0);
 
   embeddingSDK.guest.dispatchGenericEventToHost({
     kind: "analytics",
     payload: {
-      category: eventCategory,
-      name: via,
-      data: otherData,
+      id: eventId,
+      data,
     },
   });
 };

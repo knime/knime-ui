@@ -226,8 +226,7 @@ export const useDragNodeIntoCanvas = () => {
 
         if (node && res.newNodeId) {
           const { className } = nodeInteractionsStore.getNodeFactory(node.id);
-          useAnalyticsService().track("node_created", {
-            via: "noderepo_dragdrop_",
+          useAnalyticsService().track("node_created::noderepo_dragdrop_", {
             nodeId: node.id,
             nodeType: node.kind,
             nodeFactoryId: className,

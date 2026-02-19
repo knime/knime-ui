@@ -79,9 +79,7 @@ const onPointerDown = (event: PointerEvent) => {
       props: { position: { x, y } },
     });
 
-    useAnalyticsService().track("quickactionmenu_opened", {
-      via: "canvas_doubleclick_",
-    });
+    useAnalyticsService().track("qam_opened::canvas_doubleclick_");
   }
 };
 

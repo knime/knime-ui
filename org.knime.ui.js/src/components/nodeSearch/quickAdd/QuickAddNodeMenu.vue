@@ -148,8 +148,7 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
 
   if (node) {
-    useAnalyticsService().track("node_created", {
-      via: "quickactionmenu_click_",
+    useAnalyticsService().track("node_created::quickactionmenu_click_", {
       nodeId: node.id,
       nodeType: node.kind,
       nodeFactoryId: nodeFactory.className,

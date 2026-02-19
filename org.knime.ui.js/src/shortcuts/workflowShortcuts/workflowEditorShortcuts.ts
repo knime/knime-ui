@@ -93,108 +93,94 @@ const calculateNodeInsertionPosition = (
   });
 };
 
-const openQuickActionMenu =
-  ({ menuMode }: { menuMode: QuickActionMenuMode }) =>
-  ({ payload }: ShortcutExecuteContext) => {
-    const positionFromContextMenu = payload?.metadata?.position as XY;
-    const store = useCanvasAnchoredComponentsStore();
-    const { isOpen, props: currentMenuProps } = store.quickActionMenu;
+const openQuickActionMenu = (
+  { payload }: ShortcutExecuteContext,
+  menuMode: QuickActionMenuMode,
+) => {
+  const positionFromContextMenu = payload?.metadata?.position as XY;
+  const store = useCanvasAnchoredComponentsStore();
+  const { isOpen, props: currentMenuProps } = store.quickActionMenu;
 
-    // get current quick action menu info (if exists)
-    const {
-      nodeId: lastNodeId,
-      port,
-      position: lastPosition,
-      nodeRelation,
-      positionOrigin: lastPositionOrigin,
-    } = currentMenuProps ?? {};
-    const lastPortIndex = port?.index ?? -1;
+  // get current quick action menu info (if exists)
+  const {
+    nodeId: lastNodeId,
+    port,
+    position: lastPosition,
+    nodeRelation,
+    positionOrigin: lastPositionOrigin,
+  } = currentMenuProps ?? {};
+  const lastPortIndex = port?.index ?? -1;
 
-    const predecessorNode = isOpen
-      ? useNodeInteractionsStore().getNodeById(lastNodeId!)
-      : useSelectionStore().singleSelectedNode;
+  const predecessorNode = isOpen
+    ? useNodeInteractionsStore().getNodeById(lastNodeId!)
+    : useSelectionStore().singleSelectedNode;
 
-    // 1. no single predecessor node, open quick action menu as detached
-    if (predecessorNode === null) {
-      const position =
-        positionFromContextMenu ??
-        freeSpaceInCanvas.aroundCenterWithFallback({
-          visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
-          nodes: useWorkflowStore().activeWorkflow!.nodes,
-        });
-
-      store.openQuickActionMenu({
-        props: {
-          position,
-          initialMode: menuMode,
-        },
-      });
-
-      useAnalyticsService().track("quickactionmenu_opened", {
-        via: "keyboard_shortcut_",
-      });
-
-      return;
-    }
-
-    // determine where and how to render quick action menu
-    let nextSide = nodeRelation || "SUCCESSORS";
-    if (lastPortIndex === 0) {
-      nextSide = nodeRelation === "SUCCESSORS" ? "PREDECESSORS" : "SUCCESSORS";
-    }
-    const portCount =
-      nextSide === "SUCCESSORS"
-        ? predecessorNode.outPorts.length
-        : predecessorNode.inPorts.length;
-    const startIndex = portCount === 1 ? 0 : 1;
-    const nextIndex =
-      nextSide === nodeRelation ? (lastPortIndex + 1) % portCount : startIndex;
-    const portIndex =
-      lastNodeId === predecessorNode.id ? nextIndex : startIndex;
-
-    const nextPort =
-      nextSide === "SUCCESSORS"
-        ? predecessorNode.outPorts[portIndex]
-        : predecessorNode.inPorts[portIndex];
-
-    const portSideWillChange = nextSide !== nodeRelation;
-    const portSideChangesForCalculatedPosition =
-      portSideWillChange && lastPositionOrigin !== "mouse";
-    const useLastPosition = isOpen && !portSideChangesForCalculatedPosition;
+  // 1. no single predecessor node, open quick action menu as detached
+  if (predecessorNode === null) {
     const position =
-      useLastPosition && lastPosition
-        ? lastPosition
-        : calculateNodeInsertionPosition(
-            predecessorNode,
-            portIndex,
-            portCount,
-            nextSide,
-          );
+      positionFromContextMenu ??
+      freeSpaceInCanvas.aroundCenterWithFallback({
+        visibleFrame: useCurrentCanvasStore().value.getVisibleFrame,
+        nodes: useWorkflowStore().activeWorkflow!.nodes,
+      });
 
-    // 2. predecessor node(s) exist, render quick action menu attached on the correct side
     store.openQuickActionMenu({
       props: {
-        nodeId: predecessorNode.id,
-        port: nextPort,
         position,
-        nodeRelation: nextSide,
-        positionOrigin: useLastPosition ? lastPositionOrigin : "calculated",
         initialMode: menuMode,
       },
     });
 
-    const { availablePortTypes } = useApplicationStore();
-    const extendedPortObject = portDataMappers.toExtendedPortObject(
-      availablePortTypes,
-    )(nextPort.typeId);
-    useAnalyticsService().track("quickactionmenu_opened", {
-      via: "keyboard_shortcut_",
+    return { opened: true, target: null };
+  }
+
+  // determine where and how to render quick action menu
+  let nextSide = nodeRelation || "SUCCESSORS";
+  if (lastPortIndex === 0) {
+    nextSide = nodeRelation === "SUCCESSORS" ? "PREDECESSORS" : "SUCCESSORS";
+  }
+  const portCount =
+    nextSide === "SUCCESSORS"
+      ? predecessorNode.outPorts.length
+      : predecessorNode.inPorts.length;
+  const startIndex = portCount === 1 ? 0 : 1;
+  const nextIndex =
+    nextSide === nodeRelation ? (lastPortIndex + 1) % portCount : startIndex;
+  const portIndex = lastNodeId === predecessorNode.id ? nextIndex : startIndex;
+
+  const nextPort =
+    nextSide === "SUCCESSORS"
+      ? predecessorNode.outPorts[portIndex]
+      : predecessorNode.inPorts[portIndex];
+
+  const portSideWillChange = nextSide !== nodeRelation;
+  const portSideChangesForCalculatedPosition =
+    portSideWillChange && lastPositionOrigin !== "mouse";
+  const useLastPosition = isOpen && !portSideChangesForCalculatedPosition;
+  const position =
+    useLastPosition && lastPosition
+      ? lastPosition
+      : calculateNodeInsertionPosition(
+          predecessorNode,
+          portIndex,
+          portCount,
+          nextSide,
+        );
+
+  // 2. predecessor node(s) exist, render quick action menu attached on the correct side
+  store.openQuickActionMenu({
+    props: {
       nodeId: predecessorNode.id,
-      nodeType: predecessorNode.kind,
-      nodePortIndex: nextPort.index,
-      connectionType: extendedPortObject.kind,
-    });
-  };
+      port: nextPort,
+      position,
+      nodeRelation: nextSide,
+      positionOrigin: useLastPosition ? lastPositionOrigin : "calculated",
+      initialMode: menuMode,
+    },
+  });
+
+  return { opened: true, target: { node: predecessorNode, port: nextPort } };
+};
 
 const workflowEditorShortcuts: WorkflowEditorShortcuts = {
   openQuickNodeInsertionMenu: {
@@ -203,7 +189,39 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     hotkey: ["CtrlOrCmd", "."],
     additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
-    execute: openQuickActionMenu({ menuMode: "quick-add" }),
+    execute: (ctx) => {
+      const { opened, target } = openQuickActionMenu(ctx, "quick-add");
+
+      if (!opened) {
+        return;
+      }
+
+      const trackSource =
+        ctx.payload.src === "global"
+          ? "qam_opened::keyboard_shortcut_"
+          : "qam_opened::canvas_ctxmenu_quickaddnode";
+
+      let args: {
+        nodeId?: string;
+        nodeType?: string;
+        nodePortIndex?: number;
+        connectionType?: string;
+      } = {};
+
+      if (target) {
+        const { availablePortTypes } = useApplicationStore();
+        const extendedPortObject = portDataMappers.toExtendedPortObject(
+          availablePortTypes,
+        )(target.port.typeId);
+
+        args.nodeId = target.node.id;
+        args.nodeType = target.node.kind;
+        args.connectionType = extendedPortObject.kind;
+        args.nodePortIndex = target.port.index;
+      }
+
+      useAnalyticsService().track(trackSource, args);
+    },
     condition: () => useWorkflowStore().isWritable,
   },
   openQuickBuildMenu: {
@@ -214,7 +232,9 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       { key: ["Ctrl", "Shift", " " /* Space */], visible: false },
     ],
     group: "workflowEditor",
-    execute: openQuickActionMenu({ menuMode: "quick-build" }),
+    execute: (ctx) => {
+      openQuickActionMenu(ctx, "quick-build");
+    },
     condition: () => useWorkflowStore().isWritable,
   },
   autoConnectNodesDefault: {
