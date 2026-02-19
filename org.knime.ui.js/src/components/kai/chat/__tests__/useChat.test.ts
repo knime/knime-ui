@@ -1,14 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { defineComponent } from "vue";
-import { mount } from "@vue/test-utils";
 
-import {
-  KaiInquiry,
-  type KaiInquiry as KaiInquiryType,
-  KaiMessage,
-} from "@/api/gateway-api/generated-api";
-import type { ChainType, InquiryTrace, Message } from "@/store/ai/types";
+import { KaiMessage } from "@/api/gateway-api/generated-api";
+import type {
+  ChainType,
+  ConversationState,
+  InquiryTrace,
+  Message,
+} from "@/store/ai/types";
+import { createKaiInquiry } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
+import { mountComposable } from "@/test/utils/mountComposable";
 import { MessageSeparator, useChat } from "../useChat";
 
 vi.mock("@/components/kai/useKaiServer.ts", () => ({
@@ -27,7 +28,7 @@ describe("useChat", () => {
     vi.useRealTimers();
   });
 
-  const emptyConversationState = {
+  const emptyConversationState: ConversationState = {
     conversationId: null,
     messages: [],
     statusUpdate: null,
@@ -39,41 +40,32 @@ describe("useChat", () => {
   };
 
   const doMount = ({
-    chainType = "qa",
+    chainType = "qa" as ChainType,
     messages = [],
   }: { chainType?: ChainType; messages?: Message[] } = {}) => {
     const mockedStores = mockStores();
     mockedStores.aiAssistantStore.build = { ...emptyConversationState };
-    mockedStores.aiAssistantStore.qa = {
-      ...emptyConversationState,
-      messages,
-    };
-
-    const TestComponent = defineComponent({
-      setup() {
-        return useChat(chainType);
-      },
-      template: "<div></div>",
-    });
-
-    const wrapper = mount(TestComponent, {
-      global: { plugins: [mockedStores.testingPinia] },
-    });
+    mockedStores.aiAssistantStore.qa = { ...emptyConversationState, messages };
 
     return {
-      vm: wrapper.vm,
-      messagesWithSeparators: wrapper.vm.messagesWithSeparators,
+      ...mountComposable({
+        composable: useChat,
+        composableProps: chainType,
+        mockedStores,
+      }),
       mockedStores,
     };
   };
 
   describe("messagesWithSeparators", () => {
     it("includes a welcome message as the first message", () => {
-      const { messagesWithSeparators } = doMount();
-      expect((messagesWithSeparators[0] as Message).content).toBe(
+      const { getComposableResult } = doMount();
+      const { messagesWithSeparators } = getComposableResult();
+
+      expect((messagesWithSeparators.value[0] as Message).content).toBe(
         "welcome message",
       );
-      expect((messagesWithSeparators[0] as Message).role).toBe(
+      expect((messagesWithSeparators.value[0] as Message).role).toBe(
         KaiMessage.RoleEnum.Assistant,
       );
     });
@@ -97,10 +89,11 @@ describe("useChat", () => {
         },
       ];
 
-      const { messagesWithSeparators } = doMount({ messages });
+      const { getComposableResult } = doMount({ messages });
+      const { messagesWithSeparators } = getComposableResult();
 
-      expect(messagesWithSeparators[2]).toBeInstanceOf(MessageSeparator);
-      expect(messagesWithSeparators[4]).toBeInstanceOf(MessageSeparator);
+      expect(messagesWithSeparators.value[2]).toBeInstanceOf(MessageSeparator);
+      expect(messagesWithSeparators.value[4]).toBeInstanceOf(MessageSeparator);
     });
 
     it("adds a day separator before the first message if it's on a different day", () => {
@@ -112,9 +105,10 @@ describe("useChat", () => {
         },
       ];
 
-      const { messagesWithSeparators } = doMount({ messages });
+      const { getComposableResult } = doMount({ messages });
+      const { messagesWithSeparators } = getComposableResult();
 
-      expect(messagesWithSeparators[0]).toBeInstanceOf(MessageSeparator);
+      expect(messagesWithSeparators.value[0]).toBeInstanceOf(MessageSeparator);
     });
 
     it("does not add a day separator if all messages are on the same day", () => {
@@ -131,95 +125,85 @@ describe("useChat", () => {
         },
       ];
 
-      const { messagesWithSeparators } = doMount({ messages });
+      const { getComposableResult } = doMount({ messages });
+      const { messagesWithSeparators } = getComposableResult();
 
       expect(
-        messagesWithSeparators.some((item) => item instanceof MessageSeparator),
+        messagesWithSeparators.value.some(
+          (item) => item instanceof MessageSeparator,
+        ),
       ).toBe(false);
     });
   });
 
   describe("isProcessing", () => {
     it("is false by default", () => {
-      const { vm } = doMount();
-      expect(vm.isProcessing).toBe(false);
+      const { getComposableResult } = doMount();
+      expect(getComposableResult().isProcessing.value).toBe(false);
     });
 
     it("reflects the store's isProcessing state", () => {
-      const { vm, mockedStores } = doMount();
+      const { getComposableResult, mockedStores } = doMount();
       mockedStores.aiAssistantStore.qa.isProcessing = true;
-      expect(vm.isProcessing).toBe(true);
+      expect(getComposableResult().isProcessing.value).toBe(true);
     });
   });
 
   describe("statusUpdate", () => {
     it("is null by default", () => {
-      const { vm } = doMount();
-      expect(vm.statusUpdate).toBeNull();
+      const { getComposableResult } = doMount();
+      expect(getComposableResult().statusUpdate.value).toBeNull();
     });
 
     it("reflects the store's statusUpdate state", () => {
-      const { vm, mockedStores } = doMount();
+      const { getComposableResult, mockedStores } = doMount();
       mockedStores.aiAssistantStore.qa.statusUpdate = {
         message: "Thinking...",
         type: "INFO",
       };
-      expect(vm.statusUpdate).toEqual({ message: "Thinking...", type: "INFO" });
+      expect(getComposableResult().statusUpdate.value).toEqual({
+        message: "Thinking...",
+        type: "INFO",
+      });
     });
   });
 
   describe("pendingInquiry", () => {
     it("is null by default", () => {
-      const { vm } = doMount();
-      expect(vm.pendingInquiry).toBeNull();
+      const { getComposableResult } = doMount();
+      expect(getComposableResult().pendingInquiry.value).toBeNull();
     });
 
     it("reflects the store's pendingInquiry state", () => {
-      const inquiry: KaiInquiryType = {
-        inquiryId: "inq-1",
-        inquiryType: KaiInquiry.InquiryTypeEnum.Permission,
-        title: "Allow data sampling?",
-        description: "K-AI wants to sample data.",
-        options: [{ id: "allow", label: "Allow", style: "primary" }],
-      };
-
-      const { vm, mockedStores } = doMount();
+      const inquiry = createKaiInquiry();
+      const { getComposableResult, mockedStores } = doMount();
       mockedStores.aiAssistantStore.qa.pendingInquiry = inquiry;
-
-      expect(vm.pendingInquiry).toEqual(inquiry);
+      expect(getComposableResult().pendingInquiry.value).toEqual(inquiry);
     });
   });
 
   describe("pendingInquiryTraces", () => {
     it("is an empty array by default", () => {
-      const { vm } = doMount();
-      expect(vm.pendingInquiryTraces).toEqual([]);
+      const { getComposableResult } = doMount();
+      expect(getComposableResult().pendingInquiryTraces.value).toEqual([]);
     });
 
     it("reflects the store's pendingInquiryTraces state", () => {
       const trace: InquiryTrace = {
-        inquiry: {
-          inquiryId: "inq-1",
-          inquiryType: KaiInquiry.InquiryTypeEnum.Permission,
-          title: "Allow data sampling?",
-          description: "K-AI wants to sample data.",
-          options: [{ id: "allow", label: "Allow", style: "primary" }],
-        },
+        inquiry: createKaiInquiry(),
         selectedOptionId: "allow",
         suffix: "Saved",
       };
-
-      const { vm, mockedStores } = doMount();
+      const { getComposableResult, mockedStores } = doMount();
       mockedStores.aiAssistantStore.qa.pendingInquiryTraces = [trace];
-
-      expect(vm.pendingInquiryTraces).toEqual([trace]);
+      expect(getComposableResult().pendingInquiryTraces.value).toEqual([trace]);
     });
   });
 
   describe("lastAiMessage", () => {
     it("is null when there are no messages", () => {
-      const { vm } = doMount();
-      expect(vm.lastAiMessage).toBeNull();
+      const { getComposableResult } = doMount();
+      expect(getComposableResult().lastAiMessage.value).toBeNull();
     });
 
     it("returns the last assistant message", () => {
@@ -230,8 +214,10 @@ describe("useChat", () => {
         { content: "second reply", role: KaiMessage.RoleEnum.Assistant },
       ];
 
-      const { vm } = doMount({ messages });
-      expect(vm.lastAiMessage?.content).toBe("second reply");
+      const { getComposableResult } = doMount({ messages });
+      expect(getComposableResult().lastAiMessage.value?.content).toBe(
+        "second reply",
+      );
     });
 
     it("ignores user messages when finding the last assistant message", () => {
@@ -240,19 +226,15 @@ describe("useChat", () => {
         { content: "user follow-up", role: KaiMessage.RoleEnum.User },
       ];
 
-      const { vm } = doMount({ messages });
-      expect(vm.lastAiMessage?.content).toBe("assistant reply");
+      const { getComposableResult } = doMount({ messages });
+      expect(getComposableResult().lastAiMessage.value?.content).toBe(
+        "assistant reply",
+      );
     });
 
     it("exposes inquiryTraces on the last assistant message", () => {
       const trace: InquiryTrace = {
-        inquiry: {
-          inquiryId: "inq-1",
-          inquiryType: KaiInquiry.InquiryTypeEnum.Permission,
-          title: "Allow data sampling?",
-          description: "K-AI wants to sample data.",
-          options: [{ id: "allow", label: "Allow", style: "primary" }],
-        },
+        inquiry: createKaiInquiry(),
         selectedOptionId: "allow",
       };
       const messages: Message[] = [
@@ -263,15 +245,17 @@ describe("useChat", () => {
         },
       ];
 
-      const { vm } = doMount({ messages });
-      expect(vm.lastAiMessage?.inquiryTraces).toEqual([trace]);
+      const { getComposableResult } = doMount({ messages });
+      expect(getComposableResult().lastAiMessage.value?.inquiryTraces).toEqual([
+        trace,
+      ]);
     });
   });
 
   describe("lastUserMessage", () => {
     it("returns an empty string when there are no messages", () => {
-      const { vm } = doMount();
-      expect(vm.lastUserMessage).toBe("");
+      const { getComposableResult } = doMount();
+      expect(getComposableResult().lastUserMessage.value).toBe("");
     });
 
     it("returns the content of the last user message", () => {
@@ -281,8 +265,10 @@ describe("useChat", () => {
         { content: "second message", role: KaiMessage.RoleEnum.User },
       ];
 
-      const { vm } = doMount({ messages });
-      expect(vm.lastUserMessage).toBe("second message");
+      const { getComposableResult } = doMount({ messages });
+      expect(getComposableResult().lastUserMessage.value).toBe(
+        "second message",
+      );
     });
 
     it("ignores assistant messages when finding the last user message", () => {
@@ -291,8 +277,8 @@ describe("useChat", () => {
         { content: "assistant reply", role: KaiMessage.RoleEnum.Assistant },
       ];
 
-      const { vm } = doMount({ messages });
-      expect(vm.lastUserMessage).toBe("user question");
+      const { getComposableResult } = doMount({ messages });
+      expect(getComposableResult().lastUserMessage.value).toBe("user question");
     });
   });
 });

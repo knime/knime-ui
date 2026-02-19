@@ -7,22 +7,6 @@ import { SubMenu } from "@knime/components";
 import { mockStores } from "@/test/utils/mockStores";
 import KaiSidebar from "../KaiSidebar.vue";
 
-// Stub heavy child components to keep the test lightweight
-vi.mock("@/components/common/side-panel/SidebarPanelLayout.vue", () => ({
-  default: {
-    name: "SidebarPanelLayout",
-    template: '<div><slot name="header" /><slot /></div>',
-  },
-}));
-
-vi.mock("../chat/Chat.vue", () => ({
-  default: { name: "Chat", template: "<div />" },
-}));
-
-vi.mock("../KaiExtensionPanel.vue", () => ({
-  default: { name: "KaiExtensionPanel", template: "<div />" },
-}));
-
 const mockPanelComponent = ref<object | null>(null);
 vi.mock("@/components/kai/panels/useKaiPanels", () => ({
   useKaiPanels: vi.fn().mockImplementation(() => ({
@@ -34,7 +18,16 @@ describe("KaiSidebar.vue", () => {
   const doMount = () => {
     const stores = mockStores({ stubActions: true });
     const wrapper = mount(KaiSidebar, {
-      global: { plugins: [stores.testingPinia] },
+      global: {
+        plugins: [stores.testingPinia],
+        stubs: {
+          SidebarPanelLayout: {
+            template: '<div><slot name="header" /><slot /></div>',
+          },
+          Chat: true,
+          KaiExtensionPanel: true,
+        },
+      },
     });
     return { wrapper, stores };
   };
