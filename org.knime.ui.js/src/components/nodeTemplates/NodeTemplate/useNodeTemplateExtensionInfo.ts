@@ -12,6 +12,11 @@ export const useNodeTemplateExtensionInfo = (
   const { nodeTemplate } = options;
 
   const tooltip = computed(() => {
+    // format is:
+    //
+    // ----
+    // My Extension
+    // by "TheVendor"
     return nodeTemplate.value.extension && nodeTemplate.value.extension.vendor
       ? `\n———\n${nodeTemplate.value.extension.name} \nby “${nodeTemplate.value.extension.vendor.name}”`
       : null;

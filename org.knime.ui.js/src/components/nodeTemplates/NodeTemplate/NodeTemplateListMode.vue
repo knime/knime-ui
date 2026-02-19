@@ -36,7 +36,7 @@ const { extensionInfo } = useNodeTemplateExtensionInfo({ nodeTemplate });
 const { ownershipInfo } = useComponentOwnershipInfo({ nodeTemplate });
 const showCommunityIcon = computed(
   () =>
-    ownershipInfo.value?.isFromCommunity ??
+    ownershipInfo.value?.isFromCommunity ||
     extensionInfo.value?.isFromCommunity,
 );
 
