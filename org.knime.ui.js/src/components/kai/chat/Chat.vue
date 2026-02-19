@@ -72,21 +72,20 @@ watch(
         </template>
 
         <!-- Processing message -->
-        <template v-if="isProcessing">
-          <Message
-            key="processing"
-            :role="KaiMessage.RoleEnum.Assistant"
-            :content="incomingTokens"
-            :status-update="statusUpdate"
-            :pending-inquiry="
-              pendingInquiry && {
-                inquiry: pendingInquiry,
-                chainType: props.chainType,
-              }
-            "
-            :inquiry-traces="pendingInquiryTraces"
-          />
-        </template>
+        <Message
+          v-if="isProcessing"
+          key="processing"
+          :role="KaiMessage.RoleEnum.Assistant"
+          :content="incomingTokens"
+          :status-update="statusUpdate"
+          :pending-inquiry="
+            pendingInquiry && {
+              inquiry: pendingInquiry,
+              chainType: props.chainType,
+            }
+          "
+          :inquiry-traces="pendingInquiryTraces"
+        />
       </div>
     </SidebarPanelScrollContainer>
 

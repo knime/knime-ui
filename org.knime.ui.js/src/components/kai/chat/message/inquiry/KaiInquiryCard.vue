@@ -4,7 +4,10 @@ import {
   type KaiInquiry as KaiInquiryType,
 } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
-import { useAISettingsStore } from "@/store/ai/aiSettings";
+import {
+  type ActionPermission,
+  useAISettingsStore,
+} from "@/store/ai/aiSettings";
 import type { ChainType } from "@/store/ai/types";
 
 import InquiryCard from "./InquiryCard.vue";
@@ -30,11 +33,11 @@ const handleRespond = ({
   optionId: string;
   isCheckboxChecked: boolean;
 }) => {
-  // Persist the permission decision if the user checked "Remember for this workflow"
+  // Persist the permission decision if the user checked "Remember choice"
   if (isPermission && isCheckboxChecked && actionId) {
     aiSettingsStore.setPermissionForActionForActiveProject(
       actionId,
-      optionId as "allow" | "deny",
+      optionId as ActionPermission,
     );
   }
 

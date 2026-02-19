@@ -4,7 +4,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { KdsButton, KdsCheckbox } from "@knime/kds-components";
 
-import type { KaiInquiryOption } from "@/api/gateway-api/generated-api";
+import { KaiInquiryOption } from "@/api/gateway-api/generated-api";
 
 type Props = {
   title: string;
@@ -44,7 +44,9 @@ const isResolved = ref(false);
 const fallbackDefaultOption = computed(() => {
   return (
     props.options.find((opt) => opt.id === props.defaultOptionId) ??
-    props.options.find((opt) => opt.style !== "primary") ??
+    props.options.find(
+      (opt) => opt.style !== KaiInquiryOption.StyleEnum.Primary,
+    ) ??
     props.options.at(-1) ??
     null
   );
@@ -107,7 +109,9 @@ const buttonLabel = (option: KaiInquiryOption) => {
 };
 
 const buttonVariant = (option: KaiInquiryOption): "filled" | "transparent" => {
-  return option.style === "primary" ? "filled" : "transparent";
+  return option.style === KaiInquiryOption.StyleEnum.Primary
+    ? "filled"
+    : "transparent";
 };
 
 onMounted(() => {
