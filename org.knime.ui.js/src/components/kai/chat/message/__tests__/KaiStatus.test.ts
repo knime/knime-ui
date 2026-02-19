@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import LoadingIcon from "@knime/styles/img/icons/reload.svg";
+import { KdsLoadingSpinner } from "@knime/kds-components";
 import UserIcon from "@knime/styles/img/icons/user.svg";
 
 import KaiStatus from "../KaiStatus.vue";
@@ -23,11 +23,10 @@ describe("KaiStatus.vue", () => {
   });
 
   describe("variant='loading' (default)", () => {
-    it("renders a spinning LoadingIcon when variant is not specified", () => {
+    it("renders a KdsLoadingSpinner when variant is not specified", () => {
       const wrapper = mount(KaiStatus, { props: { status: "Thinking…" } });
 
-      expect(wrapper.findComponent(LoadingIcon).exists()).toBe(true);
-      expect(wrapper.find(".spinning").exists()).toBe(true);
+      expect(wrapper.findComponent(KdsLoadingSpinner).exists()).toBe(true);
     });
 
     it("does not render a UserIcon in loading variant", () => {
@@ -46,12 +45,12 @@ describe("KaiStatus.vue", () => {
       expect(wrapper.findComponent(UserIcon).exists()).toBe(true);
     });
 
-    it("does not render a spinning LoadingIcon in waiting variant", () => {
+    it("does not render a KdsLoadingSpinner in waiting variant", () => {
       const wrapper = mount(KaiStatus, {
         props: { status: "Waiting for input", variant: "waiting" },
       });
 
-      expect(wrapper.find(".spinning").exists()).toBe(false);
+      expect(wrapper.findComponent(KdsLoadingSpinner).exists()).toBe(false);
     });
   });
 });
