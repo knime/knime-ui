@@ -2,7 +2,7 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
-import { isBrowser, runInEnvironment } from "@/environment";
+import { isBrowser } from "@/environment";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -16,15 +16,11 @@ const useHubAuth = () => {
   const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
   const { connectProvider, disconnectProvider } = useSpaceAuthStore();
 
-  runInEnvironment({
-    DESKTOP: () => {
-      // Fetch hubID from the backend only once.
-      if (!isHubIdFetched) {
-        getHubID();
-        isHubIdFetched = true;
-      }
-    },
-  });
+  // Fetch hubID from the backend only once.
+  if (!isHubIdFetched) {
+    getHubID();
+    isHubIdFetched = true;
+  }
 
   const isHubConfigured = computed(() => Boolean(hubID.value) || isBrowser());
 
