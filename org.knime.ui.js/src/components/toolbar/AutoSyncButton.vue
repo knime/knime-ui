@@ -19,7 +19,7 @@ const saveProject = async () => {
   try {
     await API.workflow.saveProject({ projectId });
   } catch (error) {
-    toastPresets.app.syncProjectFailed({ error });
+    toastPresets.app.saveProjectFailed({ error });
   }
 };
 
@@ -56,10 +56,8 @@ watch(
       return;
     }
 
-    if (error?.code === "SyncThresholdException") {
-      toastPresets.app.syncProjectSizeLimit();
-    } else {
-      toastPresets.app.syncProjectFailed({
+    if (error?.code !== "SyncThresholdException") {
+      toastPresets.app.saveProjectFailed({
         error,
       });
     }
@@ -69,11 +67,11 @@ watch(
 
 const indicatorTitle = computed(() => {
   if (isSynced.value) {
-    return "Workflow is synced.";
+    return "Workflow is saved";
   }
 
   if (isUploadOrWriting.value) {
-    return "Sync in progress…";
+    return "Saving in progress…";
   }
 
   return "";
@@ -81,16 +79,10 @@ const indicatorTitle = computed(() => {
 
 const syncButtonTitle = computed(() => {
   if (isError.value) {
-    return "Last sync failed, workflow might have unsynced changes.";
+    return "Last save failed, workflow might have unsaved changes.";
   }
 
-  const base = "Unsynced changes. Click to sync.";
-
-  if (syncState.value?.isAutoSyncEnabled) {
-    return `${base} Synced automatically after some time.`;
-  } else {
-    return `${base} Synced on close.`;
-  }
+  return "Save changes";
 });
 </script>
 
