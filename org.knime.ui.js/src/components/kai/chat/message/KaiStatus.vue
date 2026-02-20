@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import LoadingIcon from "@knime/styles/img/icons/reload.svg";
+import { KdsLoadingSpinner } from "@knime/kds-components";
+import UserIcon from "@knime/styles/img/icons/user.svg";
 
 interface Props {
   status?: string;
+  variant?: "loading" | "waiting";
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  status: "",
+  variant: "loading",
+});
 </script>
 
 <template>
   <div v-if="props.status" class="status">
-    <LoadingIcon class="loading-icon" />
+    <UserIcon v-if="variant === 'waiting'" class="status-icon" />
+    <KdsLoadingSpinner v-else />
     {{ props.status }}
   </div>
 </template>
@@ -18,26 +24,18 @@ const props = defineProps<Props>();
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-@keyframes rotate-animation {
-  0% {
-    transform: rotate(360deg);
-  }
-
-  100% {
-    transform: rotate(0deg);
-  }
-}
-
-& .status {
+.status {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 5px;
-  padding-top: var(--space-12);
+  gap: var(--kds-spacing-container-0-25x);
+  padding-top: var(--kds-spacing-container-0-75x);
 
-  & svg.loading-icon {
-    animation: rotate-animation 2s linear infinite;
+  &:first-child {
+    padding-top: 0;
+  }
 
+  & svg.status-icon {
     @mixin svg-icon-size 14;
   }
 }

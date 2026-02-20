@@ -33,7 +33,7 @@ type DisclaimerDismissal = {
 };
 
 // TODO HUB-12373: define ActionType as well once we know what they will be (e.g. "nodeConfigure")
-type ActionPermission = "allow" | "deny";
+export type ActionPermission = "allow" | "deny";
 type ActionPermissionsForProject = {
   lastUpdated: string;
   permissions: Record<string, ActionPermission>;

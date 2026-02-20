@@ -4,21 +4,24 @@ import { computed, ref, toRef } from "vue";
 import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import UserIcon from "@knime/styles/img/icons/user.svg";
 
-import { KaiMessage } from "@/api/gateway-api/generated-api";
-import type { Message, StatusUpdate } from "@/store/ai/types";
+import { type KaiInquiry, KaiMessage } from "@/api/gateway-api/generated-api";
+import type { ChainType, Message, StatusUpdate } from "@/store/ai/types";
 import MarkdownRenderer from "../MarkdownRenderer.vue";
 
 import FeedbackControls from "./FeedbackControls.vue";
+import InquiryResponseTrace from "./InquiryResponseTrace.vue";
 import KaiStatus from "./KaiStatus.vue";
 import MessagePlaceholder from "./MessagePlaceholder.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
 import AdditionalResources from "./additionalResources/AdditionalResources.vue";
+import KaiInquiryCard from "./inquiry/KaiInquiryCard.vue";
 import { useNodeTemplates } from "./useNodeTemplates";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
 
 interface Props extends Message {
   statusUpdate?: StatusUpdate | null;
+  pendingInquiry?: { inquiry: KaiInquiry; chainType: ChainType } | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,7 +30,9 @@ const props = withDefaults(defineProps<Props>(), {
   references: () => ({}),
   workflows: () => [],
   components: () => [],
+  inquiryTraces: () => [],
   statusUpdate: null,
+  pendingInquiry: null,
   isError: false,
   kind: "other",
 });
@@ -42,6 +47,8 @@ const isUser = computed(() => props.role === KaiMessage.RoleEnum.User);
 const shouldShowFeedbackButtons = computed(
   () => !isUser.value && !props.isError && props.interactionId,
 );
+
+const hasInquiryTraces = computed(() => props.inquiryTraces.length > 0);
 
 // Message content is only truncated for K-AI's explanations in Quick Build Mode
 const shouldTruncateContent = computed(() => {
@@ -75,7 +82,22 @@ const displayContent = computed(() => {
 
     <!-- Message content -->
     <div class="body" :class="{ user: isUser, error: isError }">
-      <MarkdownRenderer v-if="content" :markdown="displayContent" />
+      <!-- Inquiry response traces -->
+      <div v-if="hasInquiryTraces" class="inquiry-traces">
+        <InquiryResponseTrace
+          v-for="trace in inquiryTraces"
+          :key="trace.inquiry.inquiryId"
+          :trace="trace"
+        />
+      </div>
+
+      <!-- Content area: inquiry card, markdown content, or loading skeleton -->
+      <KaiInquiryCard
+        v-if="pendingInquiry"
+        :inquiry="pendingInquiry.inquiry"
+        :chain-type="pendingInquiry.chainType"
+      />
+      <MarkdownRenderer v-else-if="content" :markdown="displayContent" />
       <MessagePlaceholder v-else />
       <SuggestedNodes :node-templates="nodeTemplates" />
       <AdditionalResources
@@ -84,7 +106,10 @@ const displayContent = computed(() => {
         :workflows="workflows"
         :references="references"
       />
-      <KaiStatus :status="statusUpdate?.message" />
+      <KaiStatus
+        :status="statusUpdate?.message"
+        :variant="pendingInquiry ? 'waiting' : 'loading'"
+      />
     </div>
 
     <!-- Feedback buttons -->
@@ -158,7 +183,7 @@ const displayContent = computed(() => {
   & .body {
     border-radius: 0 5px 5px;
     background-color: var(--knime-white);
-    padding: var(--space-12);
+    padding: var(--kds-spacing-container-0-75x);
 
     &.user {
       border-radius: 5px 0 5px 5px;
@@ -166,6 +191,15 @@ const displayContent = computed(() => {
 
     &.error {
       background-color: var(--knime-coral-light);
+    }
+
+    & .inquiry-traces {
+      display: flex;
+      flex-direction: column;
+      gap: var(--kds-spacing-container-0-25x);
+      padding-bottom: var(--kds-spacing-container-0-5x);
+      margin-bottom: var(--kds-spacing-container-0-5x);
+      border-bottom: 1px solid var(--knime-porcelain);
     }
   }
 
@@ -190,7 +224,7 @@ const displayContent = computed(() => {
       font-weight: 500;
       font-size: 11px;
       padding-top: 10px;
-      color: var(--knime-dove-grey);
+      color: var(--knime-dove-gray);
       margin-top: -5px;
       margin-left: 2px;
     }

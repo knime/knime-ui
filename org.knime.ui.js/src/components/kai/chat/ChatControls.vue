@@ -151,7 +151,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   flex-direction: column;
   align-items: flex-end;
   min-height: 120px;
-  background-color: white;
+  background-color: var(--knime-white);
   border: 1px solid var(--knime-stone-gray);
   overflow: hidden;
   cursor: text;

@@ -2,12 +2,15 @@
 import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 
+import { KdsButton } from "@knime/kds-components";
+
+import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import type { QuickActionMenuContext } from "../workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 
+import Message from "./chat/message/Message.vue";
 import { useKaiPanels } from "./panels/useKaiPanels";
 import QuickBuildInput from "./quickBuild/QuickBuildInput.vue";
-import QuickBuildProcessing from "./quickBuild/QuickBuildProcessing.vue";
 import QuickBuildResult from "./quickBuild/QuickBuildResult.vue";
 import { useQuickBuild } from "./quickBuild/useQuickBuild";
 
@@ -36,6 +39,9 @@ const {
   lastUserMessage,
   abortSendMessage,
   statusUpdate,
+  pendingInquiry,
+  pendingInquiryTraces,
+  lastMessageInquiryTraces,
 } = useQuickBuild({ nodeId, startPosition: canvasPosition });
 
 const { usage } = storeToRefs(useAIAssistantStore());
@@ -96,15 +102,32 @@ watch(menuState, (menuState) => {
   <div class="quick-build-menu">
     <Component :is="panelComponent" v-if="panelComponent" class="panel" />
     <template v-else>
-      <QuickBuildProcessing
-        v-if="menuState === 'PROCESSING'"
-        :status="statusUpdate?.message ?? null"
-        @abort="abortSendMessage"
-      />
+      <template v-if="menuState === 'PROCESSING'">
+        <Message
+          key="processing"
+          class="processing-message"
+          :role="KaiMessage.RoleEnum.Assistant"
+          :content="''"
+          :status-update="statusUpdate"
+          :pending-inquiry="
+            pendingInquiry && { inquiry: pendingInquiry, chainType: 'build' }
+          "
+          :inquiry-traces="pendingInquiryTraces"
+        />
+        <KdsButton
+          class="cancel-button"
+          label="Cancel"
+          leading-icon="x-close"
+          variant="outlined"
+          size="xsmall"
+          @click="abortSendMessage"
+        />
+      </template>
       <QuickBuildResult
         v-if="menuState === 'RESULT'"
         :message="result!.message"
         :interaction-id="result!.interactionId"
+        :inquiry-traces="lastMessageInquiryTraces"
         @close="quickActionContext.closeMenu"
       />
       <QuickBuildInput
@@ -132,6 +155,14 @@ watch(menuState, (menuState) => {
 
   & .panel:not(.unlicensed-panel) {
     min-height: 200px;
+  }
+
+  & .processing-message {
+    margin-top: 20px;
+  }
+
+  & .cancel-button {
+    align-self: flex-end;
   }
 }
 </style>

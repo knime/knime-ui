@@ -71,11 +71,11 @@ const clickSubmitFeedback = async (feedback: {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-& .feedback-controls {
+.feedback-controls {
   display: inline-flex;
   flex-direction: row;
-  margin-top: 5px;
-  gap: var(--space-8);
+  margin-top: var(--kds-spacing-container-0-25x);
+  gap: var(--kds-spacing-container-0-5x);
 
   & .button {
     width: 20px;
@@ -111,7 +111,7 @@ const clickSubmitFeedback = async (feedback: {
 
   & .thank-you {
     font-size: 12px;
-    padding-top: 2px;
+    padding-top: var(--kds-spacing-container-0-12x);
   }
 }
 

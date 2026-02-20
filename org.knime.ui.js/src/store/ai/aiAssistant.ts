@@ -5,11 +5,16 @@ import { defineStore } from "pinia";
 import { promise as promiseUtils } from "@knime/utils";
 
 import type { NodeRelation } from "@/api/custom-types";
-import { KaiMessage, type XY } from "@/api/gateway-api/generated-api";
+import {
+  KaiInquiry,
+  KaiMessage,
+  type XY,
+} from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
+import { useAISettingsStore } from "./aiSettings";
 import type {
   AiAssistantBuildEventPayload,
   AiAssistantEvent,
@@ -18,6 +23,7 @@ import type {
   ChainType,
   ConversationState,
   Feedback,
+  InquiryTrace,
   KaiUsageState,
   Message,
   ProjectAndWorkflowIds,
@@ -37,6 +43,8 @@ const createEmptyConversationState = (): ConversationState => {
     isProcessing: false,
     incomingTokens: "",
     projectAndWorkflowIds: null,
+    pendingInquiry: null,
+    pendingInquiryTraces: [],
   };
 };
 
@@ -65,6 +73,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
       components?: Message["components"];
       interactionId?: string;
       isError?: boolean;
+      inquiryTraces?: InquiryTrace[];
     }) {
       const {
         chainType,
@@ -76,6 +85,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         components,
         interactionId = "",
         isError = false,
+        inquiryTraces,
       } = payload;
 
       const timestamp = Date.now();
@@ -90,6 +100,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         interactionId,
         isError,
         timestamp,
+        inquiryTraces,
       });
     },
 
@@ -140,6 +151,8 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
       this[chainType].incomingTokens = "";
       this[chainType].statusUpdate = null;
       this[chainType].projectAndWorkflowIds = null;
+      this[chainType].pendingInquiry = null;
+      this[chainType].pendingInquiryTraces = [];
     },
 
     clearConversation({ chainType }: { chainType: ChainType }) {
@@ -154,6 +167,69 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
       conversationId: string | null;
     }) {
       this[chainType].conversationId = conversationId;
+    },
+
+    /**
+     * Submits the user's response to a pending inquiry. Records the response as
+     * a trace, clears the pending inquiry, and notifies the API so K-AI can
+     * continue generating its response.
+     */
+    async respondToInquiry({
+      chainType,
+      selectedOptionId,
+      suffix,
+    }: {
+      chainType: ChainType;
+      selectedOptionId: string;
+      suffix?: string;
+    }) {
+      const pendingInquiry = this[chainType].pendingInquiry;
+      if (!pendingInquiry) {
+        return;
+      }
+
+      // Store the response trace before clearing the inquiry
+      this[chainType].pendingInquiryTraces.push({
+        inquiry: pendingInquiry,
+        selectedOptionId,
+        suffix,
+      });
+
+      // Clear the pending inquiry
+      this[chainType].pendingInquiry = null;
+
+      // Update status to indicate K-AI is continuing
+      this.setStatusUpdate({
+        chainType,
+        statusUpdate: { message: "Continuing...", type: "INFO" },
+      });
+
+      const projectId =
+        this[chainType].projectAndWorkflowIds?.projectId ??
+        useWorkflowStore().getProjectAndWorkflowIds.projectId;
+      try {
+        await promiseUtils.retryPromise({
+          fn: () =>
+            API.kai.respondToInquiry({
+              kaiChainId: chainType,
+              kaiInquiryResponse: {
+                projectId,
+                inquiryId: pendingInquiry.inquiryId,
+                selectedOptionId,
+              },
+            }),
+          retryCount: 1,
+        });
+      } catch (error) {
+        consola.error("respondToInquiry", error);
+        this.setIsProcessing({ chainType, isProcessing: false });
+        this.pushMessage({
+          chainType,
+          role: KaiMessage.RoleEnum.Assistant,
+          content: "Something went wrong. Try again later.",
+          isError: true,
+        });
+      }
     },
 
     async getHubID() {
@@ -265,7 +341,10 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
           this.addToken({ chainType, token: payload });
           break;
 
-        case "result":
+        case "result": {
+          // Save inquiry traces before clearing so they can be attached to the final message
+          const inquiryTraces = [...this[chainType].pendingInquiryTraces];
+
           this.clearChain({ chainType });
           this.setConversationId({ chainType, conversationId });
 
@@ -279,6 +358,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
               workflows: payload.workflows,
               components: payload.components,
               interactionId: payload.interactionId,
+              inquiryTraces,
             });
           }
 
@@ -289,8 +369,9 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
           responseCallback[chainType]?.resolve(payload);
           delete responseCallback[chainType];
           break;
+        }
 
-        case "error":
+        case "error": {
           this.clearChain({ chainType });
           this.setConversationId({ chainType, conversationId });
 
@@ -304,13 +385,53 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
           responseCallback[chainType]?.reject(payload);
           delete responseCallback[chainType];
           break;
+        }
 
-        case "status_update":
+        case "status_update": {
           this.setStatusUpdate({
             chainType,
             statusUpdate: payload,
           });
           break;
+        }
+
+        case "inquiry": {
+          // For permission inquiries, check whether the user has a saved
+          // decision for this action. If so, auto-respond immediately (inquiry card
+          // isn't shown, but its trace is). Otherwise, display the inquiry
+          // card and wait for the user to respond.
+          const actionId = payload.metadata?.actionId as string | undefined;
+          const isPermission =
+            payload.inquiryType === KaiInquiry.InquiryTypeEnum.Permission;
+
+          const savedDecision =
+            isPermission && actionId
+              ? useAISettingsStore().getPermissionForActionForActiveProject(
+                  actionId,
+                )
+              : null;
+
+          if (savedDecision) {
+            this[chainType].pendingInquiry = payload;
+            this.respondToInquiry({
+              chainType,
+              selectedOptionId: savedDecision,
+              suffix: "Remembered",
+            });
+            break;
+          }
+
+          // No saved decision — show the inquiry to the user
+          this[chainType].pendingInquiry = payload;
+          this.setStatusUpdate({
+            chainType,
+            statusUpdate: {
+              message: "Waiting for user input...",
+              type: "INFO",
+            },
+          });
+          break;
+        }
       }
     },
 

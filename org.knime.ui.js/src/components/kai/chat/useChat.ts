@@ -51,10 +51,8 @@ const useChat = (chainType: ChainType) => {
     // Initialize array for messages and separators.
     const result: (Message | MessageSeparator)[] = [];
 
-    // Loop through messages, including an extra iteration for end-of-list processing.
-    for (let i = 0; i < allMessages.length + 1; i++) {
-      // Get current message or null for final loop iteration.
-      const currMsg = allMessages[i] ?? null;
+    for (let i = 0; i < allMessages.length; i++) {
+      const currMsg = allMessages[i];
       const currMsgTimestamp = currMsg?.timestamp ?? now;
       // Use previous message's timestamp or fallback to current date for first loop iteration.
       const prevMsgTimestamp = allMessages[i - 1]?.timestamp ?? now;
@@ -83,6 +81,14 @@ const useChat = (chainType: ChainType) => {
     () => aiAssistant[chainType].value.statusUpdate,
   );
 
+  const pendingInquiry = computed(
+    () => aiAssistant[chainType].value.pendingInquiry,
+  );
+
+  const pendingInquiryTraces = computed(
+    () => aiAssistant[chainType].value.pendingInquiryTraces,
+  );
+
   const lastUserMessage = computed(() => {
     const messages = aiAssistant[chainType].value.messages;
 
@@ -91,6 +97,16 @@ const useChat = (chainType: ChainType) => {
     );
 
     return lastUserMessage?.content ?? "";
+  });
+
+  const lastAiMessage = computed(() => {
+    const messages = aiAssistant[chainType].value.messages;
+
+    return (
+      messages.findLast(
+        (message: Message) => message.role === KaiMessage.RoleEnum.Assistant,
+      ) ?? null
+    );
   });
 
   const sendMessage = async ({
@@ -136,7 +152,10 @@ const useChat = (chainType: ChainType) => {
     isProcessing,
     incomingTokens,
     statusUpdate,
+    pendingInquiry,
+    pendingInquiryTraces,
     lastUserMessage,
+    lastAiMessage,
     sendMessage,
     abortSendMessage,
   };
