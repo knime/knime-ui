@@ -15,9 +15,16 @@ const noopService: AnalyticsService = { track: noop };
 
 let __analyticsService: AnalyticsService = noopService;
 
+type Context = { jobId: string };
+let __context: Context;
+
 const track: TrackFn = (eventId, ...eventData) => {
   if (canvasRendererUtils.isSVGRenderer()) {
     return;
+  }
+
+  if (!__context) {
+    consola.error("Analytics Service:: Invalid state, context was not set");
   }
 
   const data = eventData.length === 0 ? undefined : eventData.at(0);
@@ -26,13 +33,14 @@ const track: TrackFn = (eventId, ...eventData) => {
     kind: "analytics",
     payload: {
       id: eventId,
-      data,
+      data: { ...data, jobId: __context.jobId },
     },
   });
 };
 
-export const setupAnalyticsService = () => {
+export const setupAnalyticsService = (context: Context) => {
   __analyticsService = { track };
+  __context = context;
 };
 
 export const useAnalyticsService = () => ({ track: __analyticsService.track });

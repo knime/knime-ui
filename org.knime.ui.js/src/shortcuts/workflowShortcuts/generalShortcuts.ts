@@ -66,7 +66,6 @@ const handleSyncSave = async () => {
     await API.workflow.saveProject({ projectId: activeProjectId });
 
     useAnalyticsService().track("workflow_saved::keyboard_shortcut_savewf", {
-      currentSyncState: activeWorkflow.syncState?.state ?? "<UNKNOWN>",
       isAutoSyncEnabled: Boolean(activeWorkflow.syncState?.isAutoSyncEnabled),
     });
   } catch (error) {

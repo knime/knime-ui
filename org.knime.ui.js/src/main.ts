@@ -46,7 +46,7 @@ try {
       });
 
       if (embeddingContext.enableAnalytics) {
-        setupAnalyticsService();
+        setupAnalyticsService({ jobId: embeddingContext.jobId });
       }
     },
   });
