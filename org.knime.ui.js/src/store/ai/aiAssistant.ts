@@ -10,8 +10,10 @@ import {
   KaiMessage,
   type XY,
 } from "@/api/gateway-api/generated-api";
+import { runInEnvironment } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import { useAISettingsStore } from "./aiSettings";
@@ -233,7 +235,16 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
     },
 
     async getHubID() {
-      this.setHubID(await API.desktop.getHubID());
+      const id = await runInEnvironment({
+        DESKTOP: () => API.desktop.getHubID(),
+        BROWSER: () => {
+          const providers = useSpaceProvidersStore().spaceProviders;
+          // in browser, the active Hub being used for editing is the only available provider,
+          // hence we take the first provider from the list
+          return Promise.resolve(Object.values(providers)[0]?.id ?? null);
+        },
+      });
+      this.setHubID(id ?? null);
     },
 
     async makeAiRequest({
