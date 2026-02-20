@@ -83,8 +83,13 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
   /** Getters: */
   const activeProjectVersionsModeStatus = computed(() => {
     const { activeProjectId } = useApplicationStore();
+    const { activeWorkflow } = useWorkflowStore();
 
     if (!activeProjectId) {
+      return "inactive";
+    }
+
+    if (activeWorkflow?.info.linked) {
       return "inactive";
     }
 
