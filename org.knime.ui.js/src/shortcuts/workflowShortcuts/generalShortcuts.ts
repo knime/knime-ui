@@ -6,6 +6,7 @@ import SaveAsIcon from "@knime/styles/img/icons/save-as.svg";
 import SaveIcon from "@knime/styles/img/icons/save.svg";
 import UndoIcon from "@knime/styles/img/icons/undo.svg";
 
+import { useAnalyticsService } from "@/analytics";
 import type { KnimeNode } from "@/api/custom-types";
 import { type Connection, SyncState } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
@@ -36,6 +37,43 @@ type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<
   | "export"
 >;
 
+const handleLocalSave = async () => {
+  const applicationStore = useApplicationStore();
+
+  try {
+    const { isUnknownProject, activeProjectId } = applicationStore;
+
+    if (isUnknownProject(activeProjectId)) {
+      await useDesktopInteractionsStore().saveProjectAs();
+    } else {
+      await useDesktopInteractionsStore().saveProject();
+    }
+  } catch (error) {
+    consola.error("Failed to perform a local save", error);
+  }
+};
+
+const handleSyncSave = async () => {
+  const { activeProjectId } = useApplicationStore();
+  const { activeWorkflow } = useWorkflowStore();
+
+  // TS-check for narrowing
+  if (!activeWorkflow || !activeProjectId) {
+    return;
+  }
+
+  try {
+    await API.workflow.saveProject({ projectId: activeProjectId });
+
+    useAnalyticsService().track("workflow_saved::keyboard_shortcut_savewf", {
+      currentSyncState: activeWorkflow.syncState?.state ?? "<UNKNOWN>",
+      isAutoSyncEnabled: Boolean(activeWorkflow.syncState?.isAutoSyncEnabled),
+    });
+  } catch (error) {
+    consola.error("Failed to perform a sync save", error);
+  }
+};
+
 const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
   save: {
     title: "Save workflow",
@@ -43,23 +81,17 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     hotkey: ["CtrlOrCmd", "S"],
     group: "general",
     icon: SaveIcon,
-    execute: () => {
+    execute: async () => {
       const { isLocalSaveSupported, isAutoSyncSupported } =
         useUIControlsStore();
 
       if (isLocalSaveSupported) {
-        const { isUnknownProject, activeProjectId } = useApplicationStore();
-        if (isUnknownProject(activeProjectId)) {
-          useDesktopInteractionsStore().saveProjectAs();
-        } else {
-          useDesktopInteractionsStore().saveProject();
-        }
+        await handleLocalSave();
         return;
       }
 
       if (isAutoSyncSupported) {
-        const { activeProjectId } = useApplicationStore();
-        API.workflow.saveProject({ projectId: activeProjectId! });
+        await handleSyncSave();
       }
     },
     condition: () => {

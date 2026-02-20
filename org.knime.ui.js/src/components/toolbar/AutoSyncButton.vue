@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 
 import { KdsButton, KdsIcon, KdsLoadingSpinner } from "@knime/kds-components";
 
+import { useAnalyticsService } from "@/analytics";
 import { SyncState } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
@@ -12,16 +13,6 @@ import { getToastPresets } from "@/toastPresets";
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 
 const { toastPresets } = getToastPresets();
-
-const saveProject = async () => {
-  const projectId = activeWorkflow.value!.projectId;
-
-  try {
-    await API.workflow.saveProject({ projectId });
-  } catch (error) {
-    toastPresets.app.saveProjectFailed({ error });
-  }
-};
 
 const syncState = computed(() => activeWorkflow.value?.syncState);
 
@@ -84,6 +75,21 @@ const syncButtonTitle = computed(() => {
 
   return "Save changes";
 });
+
+const saveProject = async () => {
+  const projectId = activeWorkflow.value!.projectId;
+
+  try {
+    await API.workflow.saveProject({ projectId });
+
+    useAnalyticsService().track("workflow_saved::wftoolbar_button_save", {
+      currentSyncState: syncState.value?.state ?? "<UNKNOWN>",
+      isAutoSyncEnabled: Boolean(syncState.value?.isAutoSyncEnabled),
+    });
+  } catch (error) {
+    toastPresets.app.saveProjectFailed({ error });
+  }
+};
 </script>
 
 <template>

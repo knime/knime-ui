@@ -45,6 +45,17 @@ type AnalyticEvents = {
   };
   "qam_opened::canvas_doubleclick_": never;
   "qam_opened::canvas_ctxmenu_quickaddnode": never;
+  /**
+   * Workflow saving
+   */
+  "workflow_saved::wftoolbar_button_save": {
+    currentSyncState: string;
+    isAutoSyncEnabled: boolean;
+  };
+  "workflow_saved::keyboard_shortcut_savewf": {
+    currentSyncState: string;
+    isAutoSyncEnabled: boolean;
+  };
 };
 
 export type AnalyticEventNames = keyof AnalyticEvents;
