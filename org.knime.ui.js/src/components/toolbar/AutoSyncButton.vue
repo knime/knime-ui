@@ -83,7 +83,6 @@ const saveProject = async () => {
     await API.workflow.saveProject({ projectId });
 
     useAnalyticsService().track("workflow_saved::wftoolbar_button_save", {
-      currentSyncState: syncState.value?.state ?? "<UNKNOWN>",
       isAutoSyncEnabled: Boolean(syncState.value?.isAutoSyncEnabled),
     });
   } catch (error) {

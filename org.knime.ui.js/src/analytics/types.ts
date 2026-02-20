@@ -49,11 +49,9 @@ type AnalyticEvents = {
    * Workflow saving
    */
   "workflow_saved::wftoolbar_button_save": {
-    currentSyncState: string;
     isAutoSyncEnabled: boolean;
   };
   "workflow_saved::keyboard_shortcut_savewf": {
-    currentSyncState: string;
     isAutoSyncEnabled: boolean;
   };
 };
