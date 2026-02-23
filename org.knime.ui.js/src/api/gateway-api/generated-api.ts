@@ -5206,7 +5206,7 @@ export interface SpaceProvider {
      */
     connectionMode: SpaceProvider.ConnectionModeEnum;
     /**
-     *
+     * Identifies the connected/authenticated user. For Hub space providers, this is the user _ID_ of shape \&quot;account:user:&lt;SOME_USER_ID&gt;\&quot;. For Server providers, this is the authenticator&#39;s username.
      * @type {string}
      * @memberof SpaceProvider
      */
