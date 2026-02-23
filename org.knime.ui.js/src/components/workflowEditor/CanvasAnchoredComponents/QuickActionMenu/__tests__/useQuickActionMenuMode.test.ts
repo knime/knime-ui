@@ -10,8 +10,11 @@ import { useQuickActionMenuMode } from "../useQuickActionMenuMode";
 vi.mock("@/environment");
 
 describe("useQuickActionMenuMode", () => {
-  const doMount = () => {
+  const doMount = (featureFlags: Record<string, boolean> | null = null) => {
     const mockedStores = mockStores();
+    if (featureFlags) {
+      mockedStores.applicationStore.setFeatureFlags(featureFlags);
+    }
     const result = mountComposable({
       composable: useQuickActionMenuMode,
       composableProps: {
@@ -24,17 +27,23 @@ describe("useQuickActionMenuMode", () => {
   };
 
   it("remembers active mode", () => {
-    const result1 = doMount();
+    const result1 = doMount({
+      "org.knime.ui.feature.component_search_quick_add": true,
+    });
 
     result1.getComposableResult().activeMode.value = "components";
 
-    const result2 = doMount();
+    const result2 = doMount({
+      "org.knime.ui.feature.component_search_quick_add": true,
+    });
     expect(result2.getComposableResult().activeMode.value).toBe("components");
   });
 
   it("returns all available modes (BROWSER)", async () => {
     mockEnvironment("BROWSER", { isBrowser, isDesktop });
-    const { getComposableResult, mockedStores } = doMount();
+    const { getComposableResult, mockedStores } = doMount({
+      "org.knime.ui.feature.component_search_quick_add": true,
+    });
     expect(getComposableResult().availableModes.value).toEqual([
       { id: "nodes", text: "Nodes" },
       { id: "components", text: "Components" },

@@ -9,6 +9,7 @@ import type {
   NodeTemplateWithExtendedPorts,
 } from "@/lib/data-mappers";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { useFeatures } from "@/plugins/feature-flags";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -128,6 +129,7 @@ export const useNodeReplacementOrInsertion = () => {
   const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
   const connections = computed(() => activeWorkflow.value!.connections);
   const { hasAbortedDrag } = storeToRefs(useMovingStore());
+  const { isComponentReplacementInsertionEnabled } = useFeatures();
 
   const canvasStore = useWebGLCanvasStore();
 
@@ -167,6 +169,14 @@ export const useNodeReplacementOrInsertion = () => {
         params.type === "from-node-instance" ? params.replacementNodeId : "",
       )
     ) {
+      return;
+    }
+
+    if (
+      params.type === "from-component-template" &&
+      !isComponentReplacementInsertionEnabled()
+    ) {
+      replacementOperation.value = null;
       return;
     }
 
@@ -318,7 +328,9 @@ export const useNodeReplacementOrInsertion = () => {
       if (
         !isWritable.value ||
         hasAbortedDrag.value ||
-        !replacementOperation.value
+        !replacementOperation.value ||
+        (params.type === "from-component-template" &&
+          !isComponentReplacementInsertionEnabled())
       ) {
         isDragging.value = false;
         replacementOperation.value = null;
