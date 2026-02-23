@@ -20,7 +20,7 @@ describe("useComponentOwnershipInfo", () => {
         {
           id: "hub",
           type: SpaceProviderNS.TypeEnum.HUB,
-          username: "alice",
+          username: "account:user:1",
           spaceGroups: [
             createSpaceGroup({
               name: "Data Team",
@@ -76,7 +76,7 @@ describe("useComponentOwnershipInfo", () => {
     it("formats for communiy user", () => {
       const { ownershipInfo } = setup({
         containingSpace: "SomeSpace",
-        owner: { id: "account:user:1", name: "john", isTeam: false },
+        owner: { id: "account:user:2", name: "john", isTeam: false },
       });
 
       expect(ownershipInfo.value?.tooltip).toBe(
@@ -88,7 +88,7 @@ describe("useComponentOwnershipInfo", () => {
     it("formats for communiy team", () => {
       const { ownershipInfo } = setup({
         containingSpace: "SomeSpace",
-        owner: { id: "account:user:1", name: "TheFoos", isTeam: true },
+        owner: { id: "account:user:3", name: "TheFoos", isTeam: true },
       });
 
       expect(ownershipInfo.value?.tooltip).toBe(

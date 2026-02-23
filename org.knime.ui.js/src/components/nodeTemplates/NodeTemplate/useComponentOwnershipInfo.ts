@@ -33,7 +33,7 @@ export const useComponentOwnershipInfo = (
       .filter((group) => group.type === SpaceProviderNS.UserTypeEnum.TEAM)
       .map((group) => group.name),
   );
-  const hubUsername = computed(() => hubProvider.value?.username ?? null);
+  const hubUserId = computed(() => hubProvider.value?.username ?? null);
 
   const componentTemplate = computed(() =>
     nodeTemplate.isComponentNodeTemplate(options.nodeTemplate.value)
@@ -73,9 +73,9 @@ export const useComponentOwnershipInfo = (
         : `team "${owner.name}"`;
     }
 
-    return hubUsername.value && owner.name === hubUsername.value
-      ? "you"
-      : `user "${owner.name}"`;
+    const matchesHubUser = hubUserId.value && owner.id === hubUserId.value;
+
+    return matchesHubUser ? "you" : `user "${owner.name}"`;
   });
 
   const tooltipText = computed(() => {
@@ -115,7 +115,9 @@ export const useComponentOwnershipInfo = (
       return !hubTeamNames.value.includes(name ?? "");
     }
 
-    return hubUsername.value ? name !== hubUsername.value : true;
+    return hubUserId.value
+      ? componentOwner.value?.id !== hubUserId.value
+      : true;
   });
 
   const ownershipInfo = computed(() => {
