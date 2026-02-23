@@ -6,31 +6,34 @@ import {
 import type { PluginInitFunction } from "./types";
 
 export type Features = {
-  // Define your feature flags here, e.g.:
-  // newFeature: () => boolean;
+  isQuickAddComponentSearchEnabled: () => boolean;
+  isComponentReplacementInsertionEnabled: () => boolean;
 };
 
 const featureFlagsPrefix = "org.knime.ui.feature";
 
 const featureFlagDefaults = {
-  // Define default values for your feature flags here, e.g.:
-  // [`${featureFlagsPrefix}.new_feature`]: false,
+  [`${featureFlagsPrefix}.component_search_quick_add`]: false,
+  [`${featureFlagsPrefix}.component_drag_replace_insert`]: false,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getFlagValue = (
   featureFlags: ApplicationState["featureFlags"] = featureFlagDefaults,
   name: string,
 ) => {
-  return featureFlags[`${featureFlagsPrefix}.${name}`];
+  return (
+    featureFlags[`${featureFlagsPrefix}.${name}`] ??
+    featureFlagDefaults[`${featureFlagsPrefix}.${name}`]
+  );
 };
 
 export const features: (
   featureFlags: ApplicationState["featureFlags"],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 ) => Features = (featureFlags) => ({
-  // Define your feature flag getters here, e.g.:
-  // newFeature: () => getFlagValue(featureFlags, "new_feature"),
+  isQuickAddComponentSearchEnabled: () =>
+    Boolean(getFlagValue(featureFlags, "component_search_quick_add")),
+  isComponentReplacementInsertionEnabled: () =>
+    Boolean(getFlagValue(featureFlags, "component_drag_replace_insert")),
 });
 
 export const useFeatures: () => Features = () => {
