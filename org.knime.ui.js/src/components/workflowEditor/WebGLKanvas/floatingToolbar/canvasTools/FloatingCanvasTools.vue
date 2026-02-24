@@ -14,6 +14,7 @@ import { isBrowser } from "@/environment";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -36,11 +37,15 @@ const isMinimapVisible = computed(
 const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
   useCanvasModesStore(),
 );
+
+// only show this button in dev mode for now as it needs to have a different design
+const applicationSettingsStore = useApplicationSettingsStore();
+const { devMode } = storeToRefs(applicationSettingsStore);
 </script>
 
 <template>
   <div
-    v-if="!isLoadingWorkflow && isBrowser()"
+    v-if="!isLoadingWorkflow && isBrowser() && devMode"
     class="workflow-actions toolbar"
     @pointerdown.stop
   >
