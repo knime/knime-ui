@@ -9,6 +9,7 @@ import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
+import { useHostContextStore } from "@/store/application/hostContext";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
@@ -117,6 +118,8 @@ export const mockStores = ({ stubActions = false } = {}) => {
 
   const compositeViewStore = useCompositeViewStore(testingPinia);
 
+  const hostContextStore = useHostContextStore(testingPinia);
+
   uiControlsStore.init();
 
   const kanvas = document.createElement("div");
@@ -178,5 +181,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
     canvasTooltipStore,
     quickActionComponentSearchStore,
     sidebarComponentSearchStore,
+    hostContextStore,
   };
 };

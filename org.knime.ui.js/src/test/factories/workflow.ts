@@ -176,6 +176,7 @@ export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
     },
     workflowAnnotations: [],
     projectId: "project1",
+    isProjectExecuting: false,
   };
 
   if (!hasNodes && !hasConnections) {
