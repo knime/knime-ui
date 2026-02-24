@@ -106,7 +106,7 @@ const { devMode } = storeToRefs(applicationSettingsStore);
   bottom: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
   display: flex;
   align-items: center;
-  background: var(--kds-color-background-input-initial);
+  background: var(--knime-white);
   border: var(--kds-border-base-subtle);
   border-radius: var(--kds-border-radius-container-0-50x);
   box-shadow: var(--kds-elevation-level-1);

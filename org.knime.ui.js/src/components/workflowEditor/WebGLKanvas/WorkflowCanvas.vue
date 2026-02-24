@@ -258,7 +258,6 @@ const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
   height: 100%;
   width: 100%;
   isolation: isolate;
-  background-color: var(--kds-color-page-default);
 
   & :deep(canvas) {
     position: relative;
