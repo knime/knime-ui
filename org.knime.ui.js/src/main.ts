@@ -22,6 +22,7 @@ import { router } from "./router/router";
 import { setupAnalyticsService } from "./services/analytics";
 import "./assets/index.css";
 import { registerAPIEventHandlers } from "./services/apiEventHandler";
+import { sessionHandler } from "./services/sessionHandler";
 import { webResourceLocation } from "./services/webResourceLocation";
 
 // Setup logger for production
@@ -37,6 +38,13 @@ try {
   // Create Vue app
   const app = createApp(KnimeUI);
 
+  // initialize pinia stores
+  const pinia = createPinia();
+  app.use(pinia);
+
+  // use before other plugins so that $toast is available on the app instance
+  app.use(toastPlugin);
+
   await runInEnvironment({
     DESKTOP: () => {
       initDesktopRPCClient();
@@ -44,7 +52,7 @@ try {
     },
     BROWSER: async () => {
       const embeddingContext = await waitForEmbeddingContext();
-      initBrowserRPCClient(embeddingContext);
+      const { ws } = initBrowserRPCClient(embeddingContext);
 
       webResourceLocation.setContext({
         jobId: embeddingContext.jobId,
@@ -54,15 +62,10 @@ try {
       if (embeddingContext.enableAnalytics) {
         setupAnalyticsService({ jobId: embeddingContext.jobId });
       }
+
+      sessionHandler.init(ws);
     },
   });
-
-  // initialize pinia stores
-  const pinia = createPinia();
-  app.use(pinia);
-
-  // use before other plugins so that $toast is available on the app instance
-  app.use(toastPlugin);
 
   // Enable easier store debugging while on dev
   if (import.meta.env.DEV) {

@@ -1,10 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
-import { flushPromises } from "@vue/test-utils";
 
-import { $bus } from "@/plugins/event-bus";
-import { getToastPresets } from "@/services/toastPresets";
 import { serverEventHandler } from "../../events/server-events";
 import { initBrowserRPCClient } from "../index";
 
@@ -101,20 +97,7 @@ describe("rpc client initialization", () => {
       }).toThrow("Missing browser session context");
     });
 
-    it("should attach listeners for connection loss", async () => {
-      const spy = vi.spyOn(window, "addEventListener");
-      const busEmitSpy = vi.spyOn($bus, "emit");
-
-      const { toastPresets } = getToastPresets();
-      const connectionLossToastSpy = vi.spyOn(
-        toastPresets.connectivity,
-        "connectionLoss",
-      );
-      const connectionRestoredToastSpy = vi.spyOn(
-        toastPresets.connectivity,
-        "connectionRestored",
-      );
-
+    it("should attach listeners on WS", () => {
       initBrowserRPCClient({
         url: "wss://localhost:1000",
         restApiBaseUrl: "",
@@ -124,33 +107,17 @@ describe("rpc client initialization", () => {
       });
 
       expect(addEventListener).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
+      expect(addEventListener).toHaveBeenCalledWith(
         "message",
         expect.any(Function),
       );
-
       expect(addEventListener).toHaveBeenCalledWith(
         "close",
         expect.any(Function),
       );
-
-      expect(spy).toHaveBeenCalledWith("online", expect.any(Function));
-      expect(spy).toHaveBeenCalledWith("offline", expect.any(Function));
-
-      window.dispatchEvent(new Event("offline"));
-
-      expect(connectionLossToastSpy).toHaveBeenCalled();
-
-      await flushPromises();
-      await nextTick();
-      await new Promise((r) => setTimeout(r, 0));
-
-      expect(busEmitSpy).toHaveBeenCalledWith("block-ui");
-
-      window.dispatchEvent(new Event("online"));
-
-      expect(connectionRestoredToastSpy).toHaveBeenCalled();
-
-      expect(busEmitSpy).toHaveBeenCalledWith("unblock-ui");
     });
   });
 });

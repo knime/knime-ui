@@ -3,13 +3,8 @@ import { Client, RequestManager } from "@open-rpc/client-js";
 import type { EmbeddingContext } from "@knime/hub-features";
 
 import { serverEventHandler } from "@/api/events/server-events";
-import { $bus } from "@/plugins/event-bus";
-import { getToastPresets } from "@/services/toastPresets";
-import { useLifecycleStore } from "@/store/application/lifecycle";
 
 import { WebSocketTransport } from "./WebSocketTransport";
-
-const { toastPresets } = getToastPresets();
 
 const setupServerEventListener = (ws: WebSocket) => {
   // setup server event handler
@@ -30,35 +25,10 @@ const setupServerEventListener = (ws: WebSocket) => {
   });
 };
 
-// TODO: move this out
-const handleConnectionChanges = (ws: WebSocket) => {
-  ws.addEventListener("close", (wsCloseEvent) => {
-    consola.error("Websocket closed: ", wsCloseEvent);
-
-    useLifecycleStore().setIsLoadingApp(false);
-    useLifecycleStore().setIsLoadingWorkflow(false);
-
-    // prevent user interactions
-    $bus.emit("block-ui");
-
-    const { toastPresets } = getToastPresets();
-    toastPresets.connectivity.websocketClosed({ wsCloseEvent });
-  });
-
-  window.addEventListener("offline", () => {
-    // prevent user interactions
-    $bus.emit("block-ui");
-
-    toastPresets.connectivity.connectionLoss();
-  });
-
-  window.addEventListener("online", () => {
-    $bus.emit("unblock-ui");
-
-    toastPresets.connectivity.connectionRestored();
-  });
-};
-
+/**
+ * Keep WS alive by sending hearbeats over the connection periodically. Otherwise
+ * infrastucture closes the WS connection when idle
+ */
 const setupActivityHeartbeat = (ws: WebSocket) => {
   // move sending heartbeats to the worker thread because timers will be
   // throttled when the page is in the background
@@ -70,7 +40,10 @@ const setupActivityHeartbeat = (ws: WebSocket) => {
   const startHeartbeat = () => {
     activityWorker.addEventListener("message", ({ data }) => {
       if (data?.type === "PING_COMPLETE") {
-        consola.log("Sending Heartbeat to Websocket at: :>> ", new Date());
+        consola.debug(
+          "Sending Heartbeat to Websocket at: :>> ",
+          new Date().toISOString(),
+        );
         ws.send("");
       }
     });
@@ -86,7 +59,7 @@ const setupActivityHeartbeat = (ws: WebSocket) => {
   });
 
   ws.addEventListener("close", (event) => {
-    consola.log("Websocket closed :>>", event);
+    consola.info("Websocket closed :>>", event);
     activityWorker.postMessage({ type: "PING_STOP" });
   });
 };
@@ -111,8 +84,6 @@ export const initBrowserRPCClient = (context: EmbeddingContext) => {
 
     // setup server event handler and other events on the WS transport
     setupServerEventListener(connection);
-
-    handleConnectionChanges(connection);
 
     // initialize the client and request manager to start the WS connection
     const requestManager = new RequestManager([transport]);

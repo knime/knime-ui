@@ -37,8 +37,7 @@ const getWSInstance = () => {
 
 const initDesktopRPCClient = () => {
   if (jsonRPCClient) {
-    consola.warn("RPCClient is already initialized");
-    return;
+    throw new Error("RPCClient is already initialized");
   }
 
   jsonRPCClient = _initDesktopRPCClient();
@@ -46,13 +45,14 @@ const initDesktopRPCClient = () => {
 
 const initBrowserRPCClient = (context: EmbeddingContext) => {
   if (jsonRPCClient) {
-    consola.warn("RPCClient is already initialized");
-    return;
+    throw new Error("RPCClient is already initialized");
   }
 
   const { client, ws } = _initBrowserRPCClient(context);
   jsonRPCClient = client;
   wsInstance = ws;
+
+  return { ws };
 };
 
 export {
