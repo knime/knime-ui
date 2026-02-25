@@ -18,7 +18,7 @@ import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
 import { router } from "./router/router";
 import "./assets/index.css";
-import { webResourceLocation } from "./webResourceLocation";
+import { webResourceLocation } from "./services/webResourceLocation";
 
 // Setup logger for production
 setupLogger();

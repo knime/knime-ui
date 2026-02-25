@@ -2,8 +2,8 @@ import { ref } from "vue";
 import { defineStore } from "pinia";
 
 import { isBrowser, isDesktop } from "@/environment";
+import { webResourceLocation } from "@/services/webResourceLocation";
 import { useExecutionStore } from "@/store/workflow/execution";
-import { webResourceLocation } from "@/webResourceLocation";
 
 import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
 import { showPageBuilderUnsavedChangesDialog } from "./showPageBuilderUnsavedChangesDialog";

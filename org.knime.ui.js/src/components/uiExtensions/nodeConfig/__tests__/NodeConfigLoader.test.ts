@@ -17,10 +17,10 @@ import {
 
 import { Node } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
+import { webResourceLocation } from "@/services/webResourceLocation";
 import { createNativeNode } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { webResourceLocation } from "@/webResourceLocation";
 import NodeConfigLoader from "../NodeConfigLoader.vue";
 
 const mockedAPI = deepMocked(API);

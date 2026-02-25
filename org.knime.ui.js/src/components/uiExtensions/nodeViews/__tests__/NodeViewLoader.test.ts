@@ -13,10 +13,10 @@ import type {
 import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
+import { webResourceLocation } from "@/services/webResourceLocation";
 import { createNativeNode } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { webResourceLocation } from "@/webResourceLocation";
 import ExecuteButton from "../../ExecuteButton.vue";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
 import NodeViewLoader from "../NodeViewLoader.vue";

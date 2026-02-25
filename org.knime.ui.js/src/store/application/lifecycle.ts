@@ -18,6 +18,7 @@ import { getHintConfiguration } from "@/hints/hints.config";
 import { encodeString } from "@/lib/encoding";
 import { workflowBounds } from "@/lib/workflow-canvas";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { webResourceLocation } from "@/services/webResourceLocation";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
@@ -25,7 +26,6 @@ import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { webResourceLocation } from "@/webResourceLocation";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";
 
