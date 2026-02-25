@@ -1,8 +1,9 @@
 import { API } from "@api";
 import type { Router } from "vue-router";
 
-import type { ToastService } from "@knime/components";
+import type { ToastServiceProvider } from "@knime/components";
 
+import { notifyPatch } from "@/api/events/event-syncer";
 import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { isDesktop } from "@/environment";
@@ -22,11 +23,9 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import { nodeSize } from "@/style/shapes";
 
-import { notifyPatch } from "./event-syncer";
-
-export const initializeEventHandlers = (
+export const registerAPIEventHandlers = (
   $router: Router,
-  $toast: ToastService,
+  $toast: ToastServiceProvider,
 ) => {
   API.event.registerEventHandlers({
     /**

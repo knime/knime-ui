@@ -11,7 +11,7 @@ import { ref } from "vue";
 import { API } from "@api";
 import type { Router } from "vue-router";
 
-import type { ToastService } from "@knime/components";
+import type { ToastServiceProvider } from "@knime/components";
 
 import type { DesktopEventHandlers } from "@/api/desktop-api";
 import { notifyPatch } from "@/api/events/event-syncer";
@@ -30,10 +30,10 @@ import {
 import { deepMocked } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
-import { initializeEventHandlers } from "../event-handlers";
+import { registerAPIEventHandlers } from "..";
 
 vi.mock("@/environment");
-vi.mock("../event-syncer");
+vi.mock("@/api/events/event-syncer");
 
 const registeredHandlers: Partial<EventHandlers & DesktopEventHandlers> = {};
 
@@ -69,11 +69,11 @@ describe("Event Plugin", () => {
 
     const toastMock = {
       show: vi.fn(),
-    } as unknown as ToastService;
+    } as unknown as ToastServiceProvider;
 
     const mockedStores = mockStores({ stubActions: true });
 
-    initializeEventHandlers(routerMock, toastMock);
+    registerAPIEventHandlers(routerMock, toastMock);
 
     return { mockedStores, routerMock, toastMock, currentRouteMock };
   };

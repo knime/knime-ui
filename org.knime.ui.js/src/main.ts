@@ -21,6 +21,7 @@ import { getToastsProvider } from "./plugins/toasts";
 import { router } from "./router/router";
 import { setupAnalyticsService } from "./services/analytics";
 import "./assets/index.css";
+import { registerAPIEventHandlers } from "./services/apiEventHandler";
 import { webResourceLocation } from "./services/webResourceLocation";
 
 // Setup logger for production
@@ -72,6 +73,8 @@ try {
   }
 
   app.use(router);
+
+  registerAPIEventHandlers(router, toastServiceProvider);
 
   // Init plugins, provide store and router
   initPlugins({ app, router });
