@@ -22,6 +22,7 @@ describe("server-events", () => {
       ErrorEvent: vi.fn().mockImplementation(() => {
         throw new Error("boo!");
       }),
+      // @ts-expect-error
       NotFunction: null,
     };
     Object.entries(eventHandlers).forEach(([eventName, eventHandler]) => {
@@ -56,6 +57,7 @@ describe("server-events", () => {
 
   describe("error handling", () => {
     beforeAll(() => {
+      // @ts-expect-error
       consola.error = vi.fn();
     });
 

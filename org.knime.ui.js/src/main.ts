@@ -4,7 +4,10 @@ import { createPinia } from "pinia";
 import { embeddingSDK } from "@knime/hub-features";
 import { useKdsLegacyMode } from "@knime/kds-components";
 
-import { initJSONRPCClient } from "./api/json-rpc-client";
+import {
+  initBrowserRPCClient,
+  initDesktopRPCClient,
+} from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import {
   initGlobalEnvProperty,
@@ -34,12 +37,14 @@ try {
   const app = createApp(KnimeUI);
 
   await runInEnvironment({
-    DESKTOP: async () => {
-      await initJSONRPCClient("DESKTOP", null);
+    DESKTOP: () => {
+      initDesktopRPCClient();
+      return Promise.resolve();
     },
     BROWSER: async () => {
       const embeddingContext = await waitForEmbeddingContext();
-      await initJSONRPCClient("BROWSER", embeddingContext);
+      initBrowserRPCClient(embeddingContext);
+
       webResourceLocation.setContext({
         jobId: embeddingContext.jobId,
         restAPIBaseURL: embeddingContext.restApiBaseUrl,

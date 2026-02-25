@@ -1,4 +1,4 @@
-import { registerEventHandler } from "../json-rpc-client";
+import { registerEventHandler } from "../events/server-events";
 
 import * as desktopAPIMethods from "./desktop-api";
 

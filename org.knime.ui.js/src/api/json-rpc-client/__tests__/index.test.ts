@@ -5,8 +5,8 @@ import { flushPromises } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
 import { getToastPresets } from "@/services/toastPresets";
-import { initJSONRPCClient } from "../index";
-import { serverEventHandler } from "../server-events";
+import { serverEventHandler } from "../../events/server-events";
+import { initBrowserRPCClient } from "../index";
 
 vi.mock("@/plugins/event-bus", () => ({
   $bus: {
@@ -14,7 +14,7 @@ vi.mock("@/plugins/event-bus", () => ({
   },
 }));
 
-vi.mock("../server-events", () => ({
+vi.mock("../../events/server-events", () => ({
   getRegisteredEventHandler: () => {},
   registerEventHandler: () => {},
   serverEventHandler: vi.fn(),
@@ -47,27 +47,19 @@ describe("rpc client initialization", () => {
 
   describe("desktop", () => {
     it("should check for the EquoComm service", async () => {
-      const { initJSONRPCClient } = await import("../index");
+      const { initDesktopRPCClient } = await import("../index");
 
       // @ts-expect-error We need 'undefined' to be allowed here
       window.EquoCommService = undefined;
 
-      await expect(() => {
-        return initJSONRPCClient("DESKTOP", {
-          url: "",
-          restApiBaseUrl: "",
-          userIdleTimeout: 1000,
-        });
-      }).rejects.toThrow("Could not access EquoComm service. Aborting");
+      expect(() => {
+        return initDesktopRPCClient();
+      }).toThrow("Could not access EquoComm service. Aborting");
     });
 
     it("should attach server event handlers", async () => {
-      const { initJSONRPCClient, getRPCClientInstance } = await import(
-        "../index"
-      );
       const callbacks: Array<(...args: any[]) => any> = [];
       const JAVA_EVENT_ACTION_ID = "org.knime.ui.java.event";
-
       const EquoCommService = {
         on: vi.fn((_id, cb) => {
           callbacks.push(cb);
@@ -81,11 +73,11 @@ describe("rpc client initialization", () => {
       // @ts-expect-error
       window.EquoCommService = EquoCommService;
 
-      await initJSONRPCClient("DESKTOP", {
-        url: "",
-        restApiBaseUrl: "",
-        userIdleTimeout: 1000,
-      });
+      const { initDesktopRPCClient, getRPCClientInstance } = await import(
+        "../index"
+      );
+
+      initDesktopRPCClient();
 
       expect(EquoCommService.on).toHaveBeenCalledWith(
         JAVA_EVENT_ACTION_ID,
@@ -102,10 +94,11 @@ describe("rpc client initialization", () => {
 
   describe("browser", () => {
     it("should check for browser session context", async () => {
-      const { initJSONRPCClient } = await import("../index");
-      await expect(() => {
-        return initJSONRPCClient("BROWSER", null);
-      }).rejects.toThrow("Missing browser session context");
+      const { initBrowserRPCClient } = await import("../index");
+
+      expect(() => {
+        return initBrowserRPCClient(null as any);
+      }).toThrow("Missing browser session context");
     });
 
     it("should attach listeners for connection loss", async () => {
@@ -122,10 +115,12 @@ describe("rpc client initialization", () => {
         "connectionRestored",
       );
 
-      await initJSONRPCClient("BROWSER", {
+      initBrowserRPCClient({
         url: "wss://localhost:1000",
         restApiBaseUrl: "",
         userIdleTimeout: 1000,
+        jobId: "",
+        wsConnectionUri: "",
       });
 
       expect(addEventListener).toHaveBeenCalledWith(

@@ -1,4 +1,5 @@
-import { getRPCClientInstance, registerEventHandler } from "../json-rpc-client";
+import { registerEventHandler } from "../events/server-events";
+import { getRPCClientInstance } from "../json-rpc-client";
 
 export interface RPCClient {
   call(
