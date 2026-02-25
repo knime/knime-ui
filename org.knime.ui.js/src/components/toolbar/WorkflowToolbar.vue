@@ -10,6 +10,7 @@ import {
   useKdsDynamicModal,
 } from "@knime/kds-components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
+import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
@@ -312,8 +313,9 @@ const isVersionModeActive = computed(
     isActiveWorkflowFixedVersion.value,
 );
 
-const handleNavigateToHubHome = () => {
-  useHostContextStore().navigateHome();
+const handleNavigateToHubHome = (event: MouseEvent) => {
+  const openInNewTab = event[getMetaOrCtrlKey()];
+  useHostContextStore().navigateHome(openInNewTab);
 };
 </script>
 

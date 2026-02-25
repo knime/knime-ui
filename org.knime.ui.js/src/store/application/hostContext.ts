@@ -24,7 +24,7 @@ export const useHostContextStore = defineStore("hostContext", () => {
   /**
    * Sends a navigation request to take the user to the cloud version of the home screen
    */
-  const navigateHome = () => {
+  const navigateHome = (openInNewTab: boolean) => {
     if (isDesktop()) {
       return;
     }
@@ -34,7 +34,7 @@ export const useHostContextStore = defineStore("hostContext", () => {
       payload: {
         intent: "go-to",
         destination: "cloud-home",
-        openIn: "_parent",
+        openIn: openInNewTab ? "_blank" : "_parent",
       },
     });
   };
