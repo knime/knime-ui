@@ -181,10 +181,11 @@ describe("space::uploads", () => {
     triggerFileSelection();
 
     await flushPromises();
-    expect(useFileUploadFeatureMock.start).toHaveBeenCalledWith("space1", [
-      file1,
-      file2,
-    ]);
+    expect(useFileUploadFeatureMock.start).toHaveBeenCalledWith(
+      "space1",
+      [file1, file2],
+      { isFileWithProcessing: undefined },
+    );
   });
 
   it("should start upload (for non-root path)", async () => {
@@ -203,10 +204,11 @@ describe("space::uploads", () => {
     triggerFileSelection();
 
     await flushPromises();
-    expect(useFileUploadFeatureMock.start).toHaveBeenCalledWith("itemX", [
-      file1,
-      file2,
-    ]);
+    expect(useFileUploadFeatureMock.start).toHaveBeenCalledWith(
+      "itemX",
+      [file1, file2],
+      { isFileWithProcessing: undefined },
+    );
   });
 
   it("should allow closing the uploads panel", () => {
