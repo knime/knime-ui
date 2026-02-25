@@ -9,8 +9,8 @@ import {
 } from "pixi.js";
 
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
-import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
+import { performanceTracker } from "@/services/performanceTracker";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";

@@ -29,7 +29,7 @@ import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import { DynamicEnvRenderer, isDesktop } from "@/environment";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
-import { performanceTracker } from "@/performanceTracker";
+import { performanceTracker } from "@/services/performanceTracker";
 import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
