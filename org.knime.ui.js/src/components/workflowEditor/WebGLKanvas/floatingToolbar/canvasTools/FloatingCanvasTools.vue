@@ -11,7 +11,7 @@ import LensePlusIcon from "@knime/styles/img/icons/plus-small.svg";
 
 import { useAddNodeViaFileUpload } from "@/components/nodeTemplates/useAddNodeViaFileUpload";
 import { isBrowser } from "@/environment";
-import { useShortcuts } from "@/plugins/shortcuts";
+import { useShortcuts } from "@/services/shortcuts";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";

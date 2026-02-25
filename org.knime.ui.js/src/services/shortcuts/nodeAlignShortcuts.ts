@@ -1,13 +1,14 @@
 import { AlignNodesCommand } from "@/api/gateway-api/generated-api";
-import type { UnionToShortcutRegistry } from "@/shortcuts";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+
+import type { UnionToShortcutRegistry } from "./types";
 
 type NodeAlignShortcuts = UnionToShortcutRegistry<
   "alignHorizontally" | "alignVertically"
 >;
 
-declare module "./index" {
+declare module "./registry" {
   interface ShortcutsRegistry extends NodeAlignShortcuts {}
 }
 

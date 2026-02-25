@@ -2,12 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import shortcuts, { type UnionToShortcutRegistry, conditionGroup } from "..";
 import canvasShortcutsMock from "../canvasShortcuts";
 import { selectionShortcuts as selectionShortcutsMocks } from "../miscShortcuts";
+import { conditionGroup, shortcutRegistry as shortcuts } from "../registry";
+import type { UnionToShortcutRegistry } from "../types";
 import workflowShortcutsMock from "../workflowShortcuts";
 
-vi.mock("@/shortcuts/workflowShortcuts", () => ({
+vi.mock("../workflowShortcuts", () => ({
   __esModule: true,
   default: {
     save: {},
@@ -15,7 +16,7 @@ vi.mock("@/shortcuts/workflowShortcuts", () => ({
   },
 }));
 
-vi.mock("@/shortcuts/canvasShortcuts", () => ({
+vi.mock("../canvasShortcuts", () => ({
   __esModule: true,
   default: {
     fitToScreen: {},
@@ -24,7 +25,7 @@ vi.mock("@/shortcuts/canvasShortcuts", () => ({
 }));
 
 type MockShortcuts = UnionToShortcutRegistry<"noCondition" | "withCondition">;
-declare module "../index" {
+declare module "../registry" {
   interface ShortcutsRegistry extends MockShortcuts {}
 }
 
@@ -75,6 +76,7 @@ describe("Shortcuts", () => {
         },
         {},
       );
+
       const resultWithoutWorkflow = Object.keys(workflowShortcuts).filter((c) =>
         workflowShortcuts[c].condition(),
       );

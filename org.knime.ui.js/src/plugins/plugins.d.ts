@@ -4,7 +4,7 @@ import type { ToastService } from "@knime/components";
 
 import { characterLimits } from "@/plugins/constants";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
-import type { ShortcutsService } from "@/shortcuts/types";
+import type { ShortcutsService } from "@/services/shortcuts";
 import * as colors from "@/style/colors";
 import * as shapes from "@/style/shapes";
 import * as zIndices from "@/style/z-indices";

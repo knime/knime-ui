@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { AlignNodesCommand } from "@/api/gateway-api/generated-api";
-import nodeAlignShortcuts from "@/shortcuts/nodeAlignShortcuts";
 import {
   createComponentNode,
   createNativeNode,
   createWorkflow,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
+import nodeAlignShortcuts from "../nodeAlignShortcuts";
 
 describe("nodeAlignShortcuts", () => {
   const createStore = () => {

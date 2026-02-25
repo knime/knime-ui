@@ -18,8 +18,8 @@ import type {
 } from "@/lib/data-mappers";
 import { ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
-import { useShortcuts } from "@/plugins/shortcuts";
 import { useAnalyticsService } from "@/services/analytics";
+import { useShortcuts } from "@/services/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useQuickAddNodesStore } from "@/store/quickAddNodes";

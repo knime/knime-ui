@@ -13,8 +13,8 @@ import SwitchIcon from "@knime/styles/img/icons/switch.svg";
 
 import AppHeaderButton from "@/components/application/AppHeader/AppHeaderButton.vue";
 import type { MenuItemWithHandler } from "@/components/common/types";
-import { useShortcuts } from "@/plugins/shortcuts";
-import type { ShortcutName } from "@/shortcuts";
+import { useShortcuts } from "@/services/shortcuts";
+import type { ShortcutName } from "@/services/shortcuts";
 import { useSettingsStore } from "@/store/settings";
 
 const $shortcuts = useShortcuts();

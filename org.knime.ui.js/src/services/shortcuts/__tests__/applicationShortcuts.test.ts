@@ -6,9 +6,10 @@ import {
   globalSpaceBrowserProjectId,
 } from "@/store/spaces/common";
 import { createProject, createWorkflow } from "@/test/factories";
-import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import applicationShortcuts from "../applicationShortcuts";
+
+import { mockShortcutContext } from "./mock-context";
 
 const mockPathTriplet = { spaceId: "1", spaceProviderId: "2", itemId: "3" };
 

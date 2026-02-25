@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createWorkflow } from "@/test/factories";
-import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import executionShortcuts from "../executionShortcuts";
+
+import { mockShortcutContext } from "./mock-context";
 
 describe("executionShortcuts", () => {
   const createStore = () => {

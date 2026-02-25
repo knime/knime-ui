@@ -39,7 +39,7 @@ export const conditionGroup = (
   return shortcuts as ShortcutsRegistry;
 };
 
-const shortcuts: ShortcutsRegistry = {
+export const shortcutRegistry: ShortcutsRegistry = {
   ...applicationShortcuts,
   ...conditionGroup(
     // Enabled if workflow is present
@@ -73,6 +73,3 @@ const shortcuts: ShortcutsRegistry = {
   ...sidePanelShortcuts,
   ...uiScaleShortcuts,
 };
-
-export default shortcuts;
-export * from "./types";

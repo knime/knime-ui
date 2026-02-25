@@ -25,7 +25,7 @@ type ApplicationShortcuts = UnionToShortcutRegistry<
   | "openDevTools"
 >;
 
-declare module "./index" {
+declare module "./registry" {
   interface ShortcutsRegistry extends ApplicationShortcuts {}
 }
 

@@ -2,9 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 
 import { createWorkflow } from "@/test/factories";
-import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import { selectionShortcuts, sidePanelShortcuts } from "../miscShortcuts";
+
+import { mockShortcutContext } from "./mock-context";
 
 describe("miscShortcuts", () => {
   describe("sidePanelShortcuts", () => {

@@ -24,7 +24,7 @@ type AnnotationShortcuts = UnionToShortcutRegistry<
   | "sendAnnotationToBack"
 >;
 
-declare module "./index" {
+declare module "./registry" {
   interface ShortcutsRegistry extends AnnotationShortcuts {}
 }
 

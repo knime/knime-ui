@@ -11,10 +11,11 @@ import {
   createPort,
   createWorkflow,
 } from "@/test/factories";
-import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import workflowShortcuts from "../workflowShortcuts";
+
+import { mockShortcutContext } from "./mock-context";
 
 vi.mock("@/environment");
 

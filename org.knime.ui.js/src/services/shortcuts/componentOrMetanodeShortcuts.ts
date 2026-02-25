@@ -42,7 +42,7 @@ type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "deleteComponentPlaceholder"
 >;
 
-declare module "./index" {
+declare module "./registry" {
   interface ShortcutsRegistry extends ComponentOrMetanodeShortcuts {}
 }
 

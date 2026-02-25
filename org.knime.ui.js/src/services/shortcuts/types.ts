@@ -1,10 +1,9 @@
 import type { Component } from "vue";
 import type { Router } from "vue-router";
 
-import type { ToastService } from "@knime/components";
 import type { Hotkey } from "@knime/utils";
 
-import type { ShortcutsRegistry } from ".";
+import type { ShortcutsRegistry } from "./registry";
 
 export type ShortcutGroups =
   | "general"
@@ -24,7 +23,6 @@ type LooseAutoComplete<T extends string> = T | Omit<string, T>;
 
 export type ShortcutExecuteContext = {
   $router: Router;
-  $toast: ToastService;
   payload: { src?: LooseAutoComplete<"global">; event?: Event; metadata?: any };
 };
 

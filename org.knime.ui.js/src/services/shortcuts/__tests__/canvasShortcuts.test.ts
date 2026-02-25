@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import canvasShortcuts from "../canvasShortcuts";
+
+import { mockShortcutContext } from "./mock-context";
 
 describe("canvasShortcuts", () => {
   it("fitToScreen", () => {

@@ -1,16 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { clear as clearUserAgent, mockUserAgent } from "jest-useragent-mock";
 
-describe("Shortcuts Plugin", () => {
-  const loadPlugin = async (userAgent: string = "") => {
-    const mockApp = { config: { globalProperties: {} } };
-
+describe("Shortcuts service", () => {
+  const setup = async (userAgent: string = "") => {
     const mockRouter = {
       push: vi.fn(),
     };
 
-    vi.mock("@/shortcuts", () => ({
-      default: {
+    vi.mock("../registry", () => ({
+      shortcutRegistry: {
         crazyHotkey: {
           hotkey: ["CtrlOrCmd", "Alt", "Shift", "Delete"],
           execute: vi.fn(),
@@ -34,13 +32,10 @@ describe("Shortcuts Plugin", () => {
     }));
 
     mockUserAgent(userAgent);
-    const { default: shortcutPlugin } = await import("@/plugins/shortcuts");
+    const { createShortcutsService } = await import("../service");
 
     // @ts-expect-error
-    shortcutPlugin({ app: mockApp, $router: mockRouter });
-
-    // @ts-expect-error
-    const $shortcuts = mockApp.config.globalProperties.$shortcuts;
+    const $shortcuts = createShortcutsService({ $router: mockRouter }) as any;
 
     return { $shortcuts, mockRouter };
   };
@@ -52,7 +47,7 @@ describe("Shortcuts Plugin", () => {
 
   describe("getText", () => {
     it("should get the name", async () => {
-      const { $shortcuts } = await loadPlugin();
+      const { $shortcuts } = await setup();
 
       expect($shortcuts.getText("selectAll")).toBe("selectAll mock text");
       expect($shortcuts.getText("copy")).toBe(
@@ -65,13 +60,13 @@ describe("Shortcuts Plugin", () => {
 
   describe("on apple", () => {
     it("hotkeyText on mac", async () => {
-      const { $shortcuts } = await loadPlugin("mac");
+      const { $shortcuts } = await setup("mac");
       expect($shortcuts.get("crazyHotkey").hotkeyText).toBe("⌘ ⌥ ⇧ ⌫");
     });
 
     describe("hotkeys", () => {
       it("doesn't find Ctrl-A with [Ctrl-Key]", async () => {
-        const { $shortcuts } = await loadPlugin("mac");
+        const { $shortcuts } = await setup("mac");
         expect(
           $shortcuts.findByHotkey({
             ctrlKey: true,
@@ -81,7 +76,7 @@ describe("Shortcuts Plugin", () => {
       });
 
       it("find Ctrl-A with [Meta-Key]", async () => {
-        const { $shortcuts } = await loadPlugin("mac");
+        const { $shortcuts } = await setup("mac");
         expect(
           $shortcuts.findByHotkey({
             metaKey: true,
@@ -91,7 +86,7 @@ describe("Shortcuts Plugin", () => {
       });
 
       it("delete equals Backspace", async () => {
-        const { $shortcuts } = await loadPlugin("mac");
+        const { $shortcuts } = await setup("mac");
         expect(
           $shortcuts.findByHotkey({
             metaKey: true,
@@ -106,19 +101,19 @@ describe("Shortcuts Plugin", () => {
 
   describe("on other platforms (windows, linux)", () => {
     it("hotkeyText formatted", async () => {
-      const { $shortcuts } = await loadPlugin("not apple");
+      const { $shortcuts } = await setup("not apple");
       expect($shortcuts.get("crazyHotkey").hotkeyText).toBe(
         "Ctrl Alt Shift Delete",
       );
     });
 
     it("adds name to shortcut", async () => {
-      const { $shortcuts } = await loadPlugin("not apple");
+      const { $shortcuts } = await setup("not apple");
       expect($shortcuts.get("crazyHotkey").name).toBe("crazyHotkey");
     });
 
     it.each([true, false])("isEnabled: %s", async (value) => {
-      const { $shortcuts } = await loadPlugin("not apple");
+      const { $shortcuts } = await setup("not apple");
       const shortcut = $shortcuts.get("crazyHotkey");
       shortcut.condition.mockReturnValue(value);
 
@@ -127,12 +122,12 @@ describe("Shortcuts Plugin", () => {
     });
 
     it("shortcut without condition is enabled", async () => {
-      const { $shortcuts } = await loadPlugin("not apple");
+      const { $shortcuts } = await setup("not apple");
       expect($shortcuts.isEnabled("selectAll")).toBe(true);
     });
 
     it("dispatch name to shortcut", async () => {
-      const { $shortcuts, mockRouter } = await loadPlugin("not apple");
+      const { $shortcuts, mockRouter } = await setup("not apple");
       const shortcut = $shortcuts.get("crazyHotkey");
 
       $shortcuts.dispatch("crazyHotkey", { event: { mockExtraPayload: true } });
@@ -144,17 +139,17 @@ describe("Shortcuts Plugin", () => {
     });
 
     it("preventDefault by default", async () => {
-      const { $shortcuts } = await loadPlugin("not apple");
+      const { $shortcuts } = await setup("not apple");
       expect($shortcuts.preventDefault("crazyHotkey")).toBe(true);
     });
 
     it("no preventDefault if allowEventDefault is true", async () => {
-      const { $shortcuts } = await loadPlugin("not apple");
+      const { $shortcuts } = await setup("not apple");
       expect($shortcuts.preventDefault("copy")).toBe(false);
     });
 
     it("dispatch, isEnabled and preventDefault throw for unknown shortcut", async () => {
-      const { $shortcuts } = await loadPlugin("not apple");
+      const { $shortcuts } = await setup("not apple");
       expect(() => $shortcuts.isEnabled("unknown")).toThrow();
       expect(() => $shortcuts.dispatch("unknown")).toThrow();
       expect(() => $shortcuts.preventDefault("unknown")).toThrow();
@@ -162,7 +157,7 @@ describe("Shortcuts Plugin", () => {
 
     describe("hotkeys", () => {
       it("find with all modifiers", async () => {
-        const { $shortcuts } = await loadPlugin();
+        const { $shortcuts } = await setup();
         expect(
           $shortcuts.findByHotkey({
             ctrlKey: true,
@@ -174,7 +169,7 @@ describe("Shortcuts Plugin", () => {
       });
 
       it("find Ctrl-A with [Ctrl-Key]", async () => {
-        const { $shortcuts } = await loadPlugin();
+        const { $shortcuts } = await setup();
         expect(
           $shortcuts.findByHotkey({
             ctrlKey: true,
@@ -184,7 +179,7 @@ describe("Shortcuts Plugin", () => {
       });
 
       it("doesn't find Ctrl-A with [Meta-Key]", async () => {
-        const { $shortcuts } = await loadPlugin();
+        const { $shortcuts } = await setup();
         expect(
           $shortcuts.findByHotkey({
             metaKey: true,
@@ -196,7 +191,7 @@ describe("Shortcuts Plugin", () => {
       it.each(["Digit1", "Digit2", "Digit6"])(
         "find digitRangeHotkey '1-6' with key %s",
         async (code) => {
-          const { $shortcuts } = await loadPlugin();
+          const { $shortcuts } = await setup();
           expect(
             $shortcuts.findByHotkey({
               ctrlKey: true,
@@ -212,7 +207,7 @@ describe("Shortcuts Plugin", () => {
       it.each(["Digit0", "Digit7", "Digit9"])(
         "doesn't find digitRangeHotkey '1-6' with key %s",
         async (code) => {
-          const { $shortcuts } = await loadPlugin();
+          const { $shortcuts } = await setup();
           expect(
             $shortcuts.findByHotkey({
               ctrlKey: true,

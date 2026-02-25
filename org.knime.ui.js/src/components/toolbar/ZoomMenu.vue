@@ -4,8 +4,8 @@ import { computed, useTemplateRef } from "vue";
 import { type MenuItem, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
-import { useShortcuts } from "@/plugins/shortcuts";
-import type { FormattedShortcut } from "@/shortcuts";
+import { useShortcuts } from "@/services/shortcuts";
+import type { FormattedShortcut } from "@/services/shortcuts";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 
 /**

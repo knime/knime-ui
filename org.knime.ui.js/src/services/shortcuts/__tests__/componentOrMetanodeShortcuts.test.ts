@@ -9,9 +9,10 @@ import {
   createMetanode,
   createWorkflow,
 } from "@/test/factories";
-import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import componentOrMetanodeShortcuts from "../componentOrMetanodeShortcuts";
+
+import { mockShortcutContext } from "./mock-context";
 
 describe("componentOrMetanodeShortcuts", () => {
   const createStore = () => {

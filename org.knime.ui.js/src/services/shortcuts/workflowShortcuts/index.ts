@@ -12,7 +12,7 @@ const workflowShortcuts = {
 
 type WorkflowShortcuts = typeof workflowShortcuts;
 
-declare module "../index" {
+declare module "../registry" {
   interface ShortcutsRegistry extends WorkflowShortcuts {}
 }
 

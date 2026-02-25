@@ -18,9 +18,9 @@ import SelectionModeIcon from "@/assets/selection-mode.svg";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isBrowser } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
-import { useShortcuts } from "@/plugins/shortcuts";
+import { useShortcuts } from "@/services/shortcuts";
+import type { ShortcutName } from "@/services/shortcuts";
 import { getToastPresets } from "@/services/toastPresets";
-import type { ShortcutName } from "@/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import {
   type CanvasMode,

@@ -7,9 +7,10 @@ import {
   createWorkflow,
   createWorkflowAnnotation,
 } from "@/test/factories";
-import { mockShortcutContext } from "@/test/factories/shortcuts";
 import { mockStores } from "@/test/utils/mockStores";
 import annotationShortcuts from "../annotationShortcuts";
+
+import { mockShortcutContext } from "./mock-context";
 
 describe("annotationShortcuts", () => {
   const createStore = () => {

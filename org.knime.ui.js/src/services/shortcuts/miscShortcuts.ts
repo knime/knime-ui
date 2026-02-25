@@ -15,7 +15,7 @@ type UiScaleShortcuts = UnionToShortcutRegistry<
   "increaseUiScale" | "decreaseUiScale" | "resetUiScale"
 >;
 
-declare module "./index" {
+declare module "./registry" {
   interface ShortcutsRegistry
     extends SelectionShortcuts,
       SidePanelShortcuts,

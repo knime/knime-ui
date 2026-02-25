@@ -1,4 +1,4 @@
-import type { ShortcutExecuteContext } from "@/shortcuts";
+import type { ShortcutExecuteContext } from "@/services/shortcuts";
 
 export const mockShortcutContext = ({
   $router = {},

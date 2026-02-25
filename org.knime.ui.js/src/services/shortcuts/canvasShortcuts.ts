@@ -18,7 +18,7 @@ type CanvasShortcuts = UnionToShortcutRegistry<
   | "toggleMinimap"
 >;
 
-declare module "./index" {
+declare module "./registry" {
   interface ShortcutsRegistry extends CanvasShortcuts {}
 }
 

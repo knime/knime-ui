@@ -47,7 +47,7 @@ type ExecutionShortcuts = UnionToShortcutRegistry<
   | "stepLoopExecution"
 >;
 
-declare module "./index" {
+declare module "./registry" {
   interface ShortcutsRegistry extends ExecutionShortcuts {}
 }
 
