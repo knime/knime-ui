@@ -5,8 +5,8 @@ import { storeToRefs } from "pinia";
 
 import { KdsButton, KdsIcon, KdsLoadingSpinner } from "@knime/kds-components";
 
-import { useAnalyticsService } from "@/analytics";
 import { SyncState } from "@/api/gateway-api/generated-api";
+import { useAnalyticsService } from "@/services/analytics";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getToastPresets } from "@/toastPresets";
 

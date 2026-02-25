@@ -11,9 +11,9 @@ import { storeToRefs } from "pinia";
 
 import { sleep } from "@knime/utils";
 
-import { useAnalyticsService } from "@/analytics";
 import { useDragNodeIntoCanvas } from "@/components/nodeTemplates";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
+import { useAnalyticsService } from "@/services/analytics";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";

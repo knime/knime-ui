@@ -1,6 +1,5 @@
 import { storeToRefs } from "pinia";
 
-import { useAnalyticsService } from "@/analytics";
 import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
@@ -10,6 +9,7 @@ import {
   type NodeTemplateWithExtendedPorts,
   nodeTemplate,
 } from "@/lib/data-mappers";
+import { useAnalyticsService } from "@/services/analytics";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";

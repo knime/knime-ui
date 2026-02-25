@@ -4,10 +4,10 @@ import { computed, ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { Container, FederatedPointerEvent, Rectangle } from "pixi.js";
 
-import { useAnalyticsService } from "@/analytics";
 import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { ports } from "@/lib/data-mappers";
+import { useAnalyticsService } from "@/services/analytics";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";

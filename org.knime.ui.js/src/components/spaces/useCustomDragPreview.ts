@@ -5,10 +5,10 @@ import { useRoute } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
 
-import { useAnalyticsService } from "@/analytics";
 import { Node, SpaceItem } from "@/api/gateway-api/generated-api";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useAnalyticsService } from "@/services/analytics";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";

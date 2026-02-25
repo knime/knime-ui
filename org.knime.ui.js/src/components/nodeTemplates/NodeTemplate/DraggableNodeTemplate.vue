@@ -2,11 +2,11 @@
 import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useAnalyticsService } from "@/analytics";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
 } from "@/lib/data-mappers";
+import { useAnalyticsService } from "@/services/analytics";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";

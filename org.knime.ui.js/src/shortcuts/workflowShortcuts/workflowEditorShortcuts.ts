@@ -1,13 +1,13 @@
 /* eslint-disable complexity */
 import { API } from "@api";
 
-import { useAnalyticsService } from "@/analytics";
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { ports as portDataMappers } from "@/lib/data-mappers";
 import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { useAnalyticsService } from "@/services/analytics";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";

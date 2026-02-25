@@ -6,12 +6,12 @@ import SaveAsIcon from "@knime/styles/img/icons/save-as.svg";
 import SaveIcon from "@knime/styles/img/icons/save.svg";
 import UndoIcon from "@knime/styles/img/icons/undo.svg";
 
-import { useAnalyticsService } from "@/analytics";
 import type { KnimeNode } from "@/api/custom-types";
 import { type Connection, SyncState } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
+import { useAnalyticsService } from "@/services/analytics";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useApplicationSettingsStore } from "@/store/application/settings";
