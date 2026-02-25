@@ -10,6 +10,7 @@ import ComputerDesktopIcon from "@knime/styles/img/icons/local-space.svg";
 import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -19,7 +20,6 @@ import {
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
-import { getToastPresets } from "@/toastPresets";
 
 import type { ClickableItemsMetadata } from "./types";
 import { useSpaceSelectionMenuItems } from "./useSpaceSelecctionMenuItems";

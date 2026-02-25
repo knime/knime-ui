@@ -4,7 +4,7 @@ import { nextTick } from "vue";
 import { flushPromises } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
-import { getToastPresets } from "@/toastPresets";
+import { getToastPresets } from "@/services/toastPresets";
 import { initJSONRPCClient } from "../index";
 import { serverEventHandler } from "../server-events";
 

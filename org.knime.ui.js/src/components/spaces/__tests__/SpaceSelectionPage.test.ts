@@ -7,13 +7,13 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import { NetworkException } from "@/api/gateway-api/generated-exceptions";
 import SearchButton from "@/components/common/SearchButton.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/services/toastPresets";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { getToastPresets } from "@/toastPresets";
 import SpaceCard from "../SpaceCard.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 import SpacePageHeader from "../SpacePageHeader.vue";

@@ -5,10 +5,10 @@ import { storeToRefs } from "pinia";
 import { InputField, Label, useNameValidator } from "@knime/components";
 import { KdsButton, KdsModal } from "@knime/kds-components";
 
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
-import { getToastPresets } from "@/toastPresets";
 
 const NAME_TEMPLATE = "KNIME_project";
 

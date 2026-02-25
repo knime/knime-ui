@@ -20,7 +20,7 @@ import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import {
   createQuickActionError,
   parseQuickActionError,
-} from "@/toastPresets/aiQuickActions";
+} from "@/services/toastPresets/aiQuickActions";
 import { useApplicationStore } from "../application/application";
 import { useSelectionStore } from "../selection";
 import { useAnnotationInteractionsStore } from "../workflow/annotationInteractions";

@@ -12,6 +12,7 @@ import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useAnalyticsService } from "@/services/analytics";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -22,7 +23,6 @@ import { useClipboardInteractionsStore } from "@/store/workflow/clipboardInterac
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getToastPresets } from "@/toastPresets";
 import type { UnionToShortcutRegistry } from "../types";
 
 type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<

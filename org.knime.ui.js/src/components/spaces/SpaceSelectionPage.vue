@@ -10,10 +10,10 @@ import SearchButton from "@/components/common/SearchButton.vue";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { matchesQuery } from "@/lib/search";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { formatSpaceProviderName } from "@/store/spaces/util";
-import { getToastPresets } from "@/toastPresets";
 
 import SpaceCard from "./SpaceCard.vue";
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";

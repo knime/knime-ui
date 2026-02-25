@@ -7,8 +7,8 @@ import { KdsButton, KdsIcon, KdsLoadingSpinner } from "@knime/kds-components";
 
 import { SyncState } from "@/api/gateway-api/generated-api";
 import { useAnalyticsService } from "@/services/analytics";
+import { getToastPresets } from "@/services/toastPresets";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getToastPresets } from "@/toastPresets";
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 

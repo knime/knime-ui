@@ -17,13 +17,13 @@ import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 import type { RecentWorkflow, SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { HINTS } from "@/hints/hints.config";
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { cachedLocalSpaceProjectId } from "@/store/spaces/common";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
 import { formatSpaceProviderName, isLocalProvider } from "@/store/spaces/util";
-import { getToastPresets } from "@/toastPresets";
 
 import PageTitle from "./PageTitle.vue";
 import RecentWorkflowContextMenu from "./RecentWorkflowContextMenu.vue";

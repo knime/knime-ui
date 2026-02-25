@@ -6,11 +6,11 @@ import {
   type NodeFactoryKey,
 } from "@/api/gateway-api/generated-api";
 import { freeSpaceInCanvas } from "@/lib/workflow-canvas";
+import { getToastPresets } from "@/services/toastPresets";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getToastPresets } from "@/toastPresets";
 
 export const useAddNodeTemplateWithAutoPositioning = () => {
   const { activeWorkflow } = storeToRefs(useWorkflowStore());

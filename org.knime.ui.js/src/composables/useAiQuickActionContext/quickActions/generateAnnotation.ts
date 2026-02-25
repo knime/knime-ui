@@ -5,12 +5,12 @@ import {
   type Workflow,
 } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/lib/geometry";
+import { createQuickActionError } from "@/services/toastPresets/aiQuickActions";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { createQuickActionError } from "@/toastPresets/aiQuickActions";
 
 /**
  * For this AI quick action, the context is composed of:

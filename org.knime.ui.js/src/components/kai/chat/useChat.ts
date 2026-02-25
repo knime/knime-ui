@@ -4,9 +4,9 @@ import { storeToRefs } from "pinia";
 import { useKdsDynamicModal } from "@knime/kds-components";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import { getToastPresets } from "@/services/toastPresets";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import type { ChainType, Message } from "@/store/ai/types";
-import { getToastPresets } from "@/toastPresets";
 import { useHubAuth } from "../useHubAuth";
 import { useKaiServer } from "../useKaiServer";
 

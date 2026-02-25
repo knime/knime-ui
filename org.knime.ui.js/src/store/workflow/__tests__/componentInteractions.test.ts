@@ -15,10 +15,10 @@ import {
 } from "@/api/gateway-api/generated-api";
 import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/services/toastPresets";
 import { createComponentNode, createWorkflow } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { getToastPresets } from "@/toastPresets";
 
 const mockedAPI = deepMocked(API);
 

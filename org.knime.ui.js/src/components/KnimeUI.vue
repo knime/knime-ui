@@ -30,6 +30,7 @@ import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import { DynamicEnvRenderer, isDesktop } from "@/environment";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { performanceTracker } from "@/performanceTracker";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useHostContextStore } from "@/store/application/hostContext";
@@ -39,7 +40,6 @@ import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { getToastPresets } from "@/toastPresets";
 
 import AppHeaderSkeleton from "./application/AppHeader/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";

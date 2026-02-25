@@ -34,8 +34,8 @@ import {
 } from "@/composables/confirmDialogs/useUnsavedChangesDialog.ts";
 import { isBrowser } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/services/toastPresets/index.ts";
 import { useLifecycleStore } from "@/store/application/lifecycle.ts";
-import { getToastPresets } from "@/toastPresets/index.ts";
 import { useApplicationStore } from "../application/application";
 import { useDirtyProjectsTrackingStore } from "../application/dirtyProjectsTracking";
 import { usePanelStore } from "../panel.ts";

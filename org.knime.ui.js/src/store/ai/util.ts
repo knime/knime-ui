@@ -1,7 +1,7 @@
 import { KaiQuickActionError } from "@/api/gateway-api/generated-api";
 import { useHubAuth } from "@/components/kai/useHubAuth";
-import { getToastPresets } from "@/toastPresets";
-import { parseQuickActionError } from "@/toastPresets/aiQuickActions";
+import { getToastPresets } from "@/services/toastPresets";
+import { parseQuickActionError } from "@/services/toastPresets/aiQuickActions";
 
 /**
  * Handles quick action errors by showing appropriate toast messages.

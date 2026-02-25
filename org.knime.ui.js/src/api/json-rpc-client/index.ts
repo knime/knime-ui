@@ -4,8 +4,8 @@ import type { EmbeddingContext } from "@knime/hub-features";
 
 import type { Environment } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
+import { getToastPresets } from "@/services/toastPresets";
 import { useLifecycleStore } from "@/store/application/lifecycle";
-import { getToastPresets } from "@/toastPresets";
 
 import { DesktopAPTransport } from "./DesktopAPTransport";
 import { WebSocketTransport } from "./WebSocketTransport";

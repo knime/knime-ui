@@ -4,11 +4,11 @@ import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { globalSpaceBrowserProjectId } from "@/store/spaces/common";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { isHubProvider } from "@/store/spaces/util";
-import { getToastPresets } from "@/toastPresets";
 
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";

@@ -10,13 +10,13 @@ import {
   nodeTemplate,
 } from "@/lib/data-mappers";
 import { useAnalyticsService } from "@/services/analytics";
+import { getToastPresets } from "@/services/toastPresets";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { getToastPresets } from "@/toastPresets";
 
 import { useAddNodeViaFileUpload } from "./useAddNodeViaFileUpload";
 

@@ -19,6 +19,7 @@ import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isBrowser } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
+import { getToastPresets } from "@/services/toastPresets";
 import type { ShortcutName } from "@/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import {
@@ -33,7 +34,6 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { getToastPresets } from "@/toastPresets";
 import HelpMenu from "../application/HelpMenu.vue";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 

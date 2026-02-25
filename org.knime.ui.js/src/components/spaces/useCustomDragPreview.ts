@@ -9,6 +9,7 @@ import { Node, SpaceItem } from "@/api/gateway-api/generated-api";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useAnalyticsService } from "@/services/analytics";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
@@ -16,7 +17,6 @@ import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { getToastPresets } from "@/toastPresets";
 
 const isComponent = (item: FileExplorerItem) => {
   return item.meta?.type === SpaceItem.TypeEnum.Component;

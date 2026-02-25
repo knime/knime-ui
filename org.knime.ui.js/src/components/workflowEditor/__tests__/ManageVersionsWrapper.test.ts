@@ -9,6 +9,7 @@ import {
 } from "@knime/hub-features/versions";
 
 import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/services/toastPresets";
 import {
   type VersionsModeStatus,
   useWorkflowVersionsStore,
@@ -19,7 +20,6 @@ import {
   createSpaceProvider,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { getToastPresets } from "@/toastPresets";
 import ManageVersionsWrapper from "../ManageVersionsWrapper.vue";
 import VersionPanelPromoteHub from "../VersionPanelPromoteHub.vue";
 

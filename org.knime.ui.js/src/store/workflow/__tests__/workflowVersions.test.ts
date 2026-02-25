@@ -19,6 +19,7 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import { UnsavedChangesAction } from "@/composables/confirmDialogs/useUnsavedChangesDialog";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/services/toastPresets";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import {
   createSpace,
@@ -28,7 +29,6 @@ import {
 } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { getToastPresets } from "@/toastPresets";
 import type { VersionsModeStatus } from "../workflowVersions";
 
 const mockSavepoints: Array<ItemSavepoint & WithAvatar & WithLabels> =
