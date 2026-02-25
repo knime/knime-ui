@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 import { API } from "@api";
@@ -21,6 +21,11 @@ import DataValueViewLoader, { type Props } from "../DataValueViewLoader.vue";
 const mockedAPI = deepMocked(API);
 
 describe("DataValueViewLoader.vue", () => {
+  beforeAll(() => {
+    import.meta.env.PROD = true;
+    import.meta.env.DEV = false;
+  });
+
   const props: Props = {
     projectId: "project-id",
     workflowId: "workflow-id",

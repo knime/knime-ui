@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
@@ -36,6 +36,11 @@ const mockGetNodeView = (additionalMocks?: object) => {
 };
 
 describe("NodeViewLoader.vue", () => {
+  beforeAll(() => {
+    import.meta.env.PROD = true;
+    import.meta.env.DEV = false;
+  });
+
   const nodeId = "node1";
   const dummyNode = createNativeNode({
     id: nodeId,
