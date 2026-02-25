@@ -73,9 +73,7 @@ export const useComponentOwnershipInfo = (
         : `team "${owner.name}"`;
     }
 
-    const matchesHubUser = hubUserId.value
-      ? owner.id === hubUserId.value
-      : false;
+    const matchesHubUser = hubUserId.value && owner.id === hubUserId.value;
 
     return matchesHubUser ? "you" : `user "${owner.name}"`;
   });
