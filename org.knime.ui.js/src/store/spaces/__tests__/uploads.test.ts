@@ -11,7 +11,7 @@ import { mockStores } from "@/test/utils/mockStores";
 
 type UploadItems = UnwrapRef<ReturnType<typeof useFileUpload>["uploadItems"]>;
 
-type CallbackNames = "onUploadQueueSizeExceeded";
+type CallbackNames = "onUploadQueueSizeExceeded" | "onFileUploadComplete";
 const useFileUploadFeatureMockCallbacks = {
   callbacks: new Map<CallbackNames, (...args: any[]) => void>(),
   register(name: CallbackNames, fn: (...args: any[]) => void) {
@@ -24,7 +24,7 @@ const useFileUploadFeatureMockCallbacks = {
 
 const useFileUploadFeatureMock = {
   uploadItems: ref<UploadItems>([]),
-  start: vi.fn(),
+  start: vi.fn().mockResolvedValue(["uploadId1", "uploadId2"]),
   cancel: vi.fn(),
   resetState: vi.fn(),
   removeItem: vi.fn(),
@@ -41,14 +41,19 @@ vi.mock("@knime/hub-features", async (importOriginal) => {
     ...actual,
 
     useFileUpload: (options) => {
-      const { onUploadQueueSizeExceeded } = options;
+      const { onUploadQueueSizeExceeded, onFileUploadComplete } = options;
       if (onUploadQueueSizeExceeded) {
         useFileUploadFeatureMockCallbacks.register(
           "onUploadQueueSizeExceeded",
           onUploadQueueSizeExceeded,
         );
       }
-
+      if (onFileUploadComplete) {
+        useFileUploadFeatureMockCallbacks.register(
+          "onFileUploadComplete",
+          onFileUploadComplete,
+        );
+      }
       return useFileUploadFeatureMock;
     },
   };
@@ -208,6 +213,68 @@ describe("space::uploads", () => {
       "itemX",
       [file1, file2],
       { isFileWithProcessing: undefined },
+    );
+  });
+
+  it("choose files honors filter", async () => {
+    const { spaceUploadsStore } = setupStore();
+
+    let chosenFiles: File[] = [];
+    spaceUploadsStore
+      .chooseFiles({
+        filter: (files: File[]) =>
+          files.filter((f) => f.name.startsWith("hello")),
+      })
+      .then((files) => (chosenFiles = files ?? []));
+    triggerFileSelection();
+
+    await flushPromises();
+
+    expect(chosenFiles.length).toBe(1);
+    expect(chosenFiles[0]).toStrictEqual(file2);
+  });
+
+  it("should refresh workflow group after upload via callback", async () => {
+    const { spaceUploadsStore, spaceCachingStore, spaceOperationsStore } =
+      setupStore();
+
+    spaceCachingStore.setProjectPath({
+      projectId,
+      value: {
+        spaceProviderId: "provider1",
+        spaceId: "space1",
+        itemId: "itemX",
+      },
+    });
+
+    spaceUploadsStore.startUpload();
+    triggerFileSelection();
+
+    await flushPromises();
+    expect(useFileUploadFeatureMock.start).toHaveBeenCalledWith(
+      "itemX",
+      [file1, file2],
+      { isFileWithProcessing: undefined },
+    );
+
+    useFileUploadFeatureMockCallbacks.trigger("onFileUploadComplete", [
+      { uploadId: "uploadId1" },
+    ]);
+
+    expect(spaceOperationsStore.fetchWorkflowGroupContent).toHaveBeenCalledWith(
+      {
+        projectId: "project1",
+      },
+    );
+
+    useFileUploadFeatureMockCallbacks.trigger("onFileUploadComplete", [
+      { uploadId: "uploadId2" },
+    ]);
+
+    expect(spaceOperationsStore.fetchWorkflowGroupContent).toHaveBeenCalledWith(
+      {
+        projectId: "project1",
+      },
     );
   });
 
