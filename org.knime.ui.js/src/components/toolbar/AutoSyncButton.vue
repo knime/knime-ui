@@ -6,7 +6,7 @@ import { storeToRefs } from "pinia";
 import { KdsButton, KdsIcon, KdsLoadingSpinner } from "@knime/kds-components";
 
 import { SyncState } from "@/api/gateway-api/generated-api";
-import { useAnalyticsService } from "@/services/analytics";
+import { useAnalytics } from "@/services/analytics";
 import { getToastPresets } from "@/services/toastPresets";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -82,7 +82,7 @@ const saveProject = async () => {
   try {
     await API.workflow.saveProject({ projectId });
 
-    useAnalyticsService().track("workflow_saved::wftoolbar_button_save", {
+    useAnalytics().track("workflow_saved::wftoolbar_button_save", {
       isAutoSyncEnabled: Boolean(syncState.value?.isAutoSyncEnabled),
     });
   } catch (error) {

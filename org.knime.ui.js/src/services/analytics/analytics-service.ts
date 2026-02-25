@@ -43,4 +43,4 @@ export const setupAnalyticsService = (context: Context) => {
   __context = context;
 };
 
-export const useAnalyticsService = () => ({ track: __analyticsService.track });
+export const useAnalytics = () => ({ track: __analyticsService.track });

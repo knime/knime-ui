@@ -7,7 +7,7 @@ import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnch
 import { ports as portDataMappers } from "@/lib/data-mappers";
 import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
-import { useAnalyticsService } from "@/services/analytics";
+import { useAnalytics } from "@/services/analytics";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -220,7 +220,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         args.nodePortIndex = target.port.index;
       }
 
-      useAnalyticsService().track(trackSource, args);
+      useAnalytics().track(trackSource, args);
     },
     condition: () => useWorkflowStore().isWritable,
   },

@@ -18,7 +18,7 @@ import type {
 } from "@/lib/data-mappers";
 import { ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
-import { useAnalyticsService } from "@/services/analytics";
+import { useAnalytics } from "@/services/analytics";
 import { useShortcuts } from "@/services/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
@@ -148,7 +148,7 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
 
   if (node) {
-    useAnalyticsService().track("node_created::quickactionmenu_click_", {
+    useAnalytics().track("node_created::quickactionmenu_click_", {
       nodeId: node.id,
       nodeType: node.kind,
       nodeFactoryId: nodeFactory.className,

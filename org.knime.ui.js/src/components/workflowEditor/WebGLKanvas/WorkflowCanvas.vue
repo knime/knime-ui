@@ -13,7 +13,7 @@ import { sleep } from "@knime/utils";
 
 import { useDragNodeIntoCanvas } from "@/components/nodeTemplates";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
-import { useAnalyticsService } from "@/services/analytics";
+import { useAnalytics } from "@/services/analytics";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
@@ -79,7 +79,7 @@ const onPointerDown = (event: PointerEvent) => {
       props: { position: { x, y } },
     });
 
-    useAnalyticsService().track("qam_opened::canvas_doubleclick_");
+    useAnalytics().track("qam_opened::canvas_doubleclick_");
   }
 };
 

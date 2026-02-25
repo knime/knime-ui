@@ -8,7 +8,7 @@ import type { FileExplorerItem } from "@knime/components";
 import { Node, SpaceItem } from "@/api/gateway-api/generated-api";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { useAnalyticsService } from "@/services/analytics";
+import { useAnalytics } from "@/services/analytics";
 import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -187,7 +187,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
           const node = nodeInteractionStore.getNodeById(newNodeId ?? "");
 
           if (node) {
-            useAnalyticsService().track("node_created::explorer_dragdrop_", {
+            useAnalytics().track("node_created::explorer_dragdrop_", {
               nodeId: node.id,
               nodeFactoryId: nodeTemplateId,
               nodeType: Node.KindEnum.Node,

@@ -9,7 +9,7 @@ import {
   type NodeTemplateWithExtendedPorts,
   nodeTemplate,
 } from "@/lib/data-mappers";
-import { useAnalyticsService } from "@/services/analytics";
+import { useAnalytics } from "@/services/analytics";
 import { getToastPresets } from "@/services/toastPresets";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -249,7 +249,7 @@ export const useDragNodeIntoCanvas = () => {
 
         if (node && res.newNodeId) {
           const { className } = nodeInteractionsStore.getNodeFactory(node.id);
-          useAnalyticsService().track("node_created::noderepo_dragdrop_", {
+          useAnalytics().track("node_created::noderepo_dragdrop_", {
             nodeId: node.id,
             nodeType: node.kind,
             nodeFactoryId: className,

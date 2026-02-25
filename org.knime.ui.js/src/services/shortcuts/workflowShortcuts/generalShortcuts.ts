@@ -11,7 +11,7 @@ import { type Connection, SyncState } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
-import { useAnalyticsService } from "@/services/analytics";
+import { useAnalytics } from "@/services/analytics";
 import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
@@ -65,7 +65,7 @@ const handleSyncSave = async () => {
   try {
     await API.workflow.saveProject({ projectId: activeProjectId });
 
-    useAnalyticsService().track("workflow_saved::keyboard_shortcut_savewf", {
+    useAnalytics().track("workflow_saved::keyboard_shortcut_savewf", {
       isAutoSyncEnabled: Boolean(activeWorkflow.syncState?.isAutoSyncEnabled),
     });
   } catch (error) {
