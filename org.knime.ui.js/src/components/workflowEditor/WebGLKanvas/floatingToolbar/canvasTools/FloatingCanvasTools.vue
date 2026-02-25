@@ -41,11 +41,12 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
 // only show this button in dev mode for now as it needs to have a different design
 const applicationSettingsStore = useApplicationSettingsStore();
 const { devMode } = storeToRefs(applicationSettingsStore);
+const enableWorkflowActions = import.meta.env.MODE !== "e2e" && devMode;
 </script>
 
 <template>
   <div
-    v-if="!isLoadingWorkflow && isBrowser() && devMode"
+    v-if="!isLoadingWorkflow && isBrowser() && enableWorkflowActions"
     class="workflow-actions toolbar"
     @pointerdown.stop
   >
