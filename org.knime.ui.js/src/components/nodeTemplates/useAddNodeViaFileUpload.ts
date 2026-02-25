@@ -33,9 +33,12 @@ export const useAddNodeViaFileUpload = () => {
   // this is browser only and we need the parent folder
   // this should be fixed in the backend
   onMounted(() => {
+    if (!activeProjectOrigin.value) {
+      return;
+    }
     if (cachedAncestorIds.length === 0) {
       useSpaceProvidersStore()
-        .getAncestorInfo(activeProjectOrigin.value!)
+        .getAncestorInfo(activeProjectOrigin.value)
         .then(({ ancestorItemIds }) => {
           cachedAncestorIds.push(...ancestorItemIds);
         });
