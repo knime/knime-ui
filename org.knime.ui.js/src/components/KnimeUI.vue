@@ -27,11 +27,12 @@ import ErrorOverlay from "@/components/application/ErrorOverlay/ErrorOverlay.vue
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
-import { DynamicEnvRenderer, isBrowser, isDesktop } from "@/environment";
+import { DynamicEnvRenderer, isDesktop } from "@/environment";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { performanceTracker } from "@/performanceTracker";
 import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
+import { useHostContextStore } from "@/store/application/hostContext";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
@@ -46,7 +47,6 @@ import DevTools from "./application/DevTools.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import DestinationPickerModal from "./spaces/DestinationPicker/DestinationPickerModal.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
-import { useIdleUserTracking } from "./useIdleUserTracking";
 import ChangeHubItemVersionModal from "./workflowEditor/ChangeHubItemVersionModal.vue";
 import ChangeLinkVariantModal from "./workflowEditor/ChangeLinkVariantModal.vue";
 
@@ -230,11 +230,8 @@ const preventBrowserZooming = (event: WheelEvent) => {
 onMounted(() => {
   document.addEventListener("wheel", preventBrowserZooming, { passive: false });
   checkClipboardSupport();
+  useHostContextStore().setupIdleTracking();
 });
-
-if (isBrowser()) {
-  useIdleUserTracking();
-}
 
 onBeforeUnmount(async () => {
   document.removeEventListener("wheel", preventBrowserZooming);

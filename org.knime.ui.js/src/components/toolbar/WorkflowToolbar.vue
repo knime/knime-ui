@@ -4,7 +4,6 @@ import { API } from "@api";
 import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
-import { embeddingSDK } from "@knime/hub-features";
 import {
   KdsButton,
   type KdsButtonProps,
@@ -26,6 +25,7 @@ import {
   useCanvasModesStore,
 } from "@/store/application/canvasModes";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
+import { useHostContextStore } from "@/store/application/hostContext";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -313,10 +313,7 @@ const isVersionModeActive = computed(
 );
 
 const handleNavigateToHubHome = () => {
-  embeddingSDK.guest.dispatchGenericEventToHost({
-    kind: "hostNavigationRequest",
-    payload: { intent: "go-to", destination: "cloud-home", openIn: "_parent" },
-  });
+  useHostContextStore().navigateHome();
 };
 </script>
 

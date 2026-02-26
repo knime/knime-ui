@@ -6025,6 +6025,12 @@ export interface Workflow {
      */
     syncState?: SyncState;
     /**
+     * Indicates whether the project workflow in its entirety is currently executing.
+     * @type {boolean}
+     * @memberof Workflow
+     */
+    isProjectExecuting: boolean;
+    /**
      * List of placeholders or absent if there are none.
      * @type {Array<ComponentPlaceholder>}
      * @memberof Workflow
