@@ -20,7 +20,7 @@ vi.mock("@knime/kds-components", async (importOriginal) => {
   };
 });
 
-vi.mock("@/toastPresets", () => ({
+vi.mock("@/services/toastPresets", () => ({
   getToastPresets: () => ({
     toastPresets: {
       spaces: {

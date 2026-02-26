@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { freeSpaceInCanvas } from "@/lib/workflow-canvas";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -11,7 +12,6 @@ import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
-import { getToastPresets } from "@/toastPresets";
 
 const cachedAncestorIds: string[] = [];
 

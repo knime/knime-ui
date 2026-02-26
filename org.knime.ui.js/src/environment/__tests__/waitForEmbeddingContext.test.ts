@@ -70,6 +70,8 @@ describe("waitForEmbeddingContext", () => {
 
   it("works for DEV", async () => {
     import.meta.env.DEV = true;
+    // @ts-expect-error
+    import.meta.env.VITE_BROWSER_DEV_MODE_EMBEDDED = "false";
 
     const { wsConnectionUri, restApiBaseUrl } = await waitForEmbeddingContext();
     expect(embeddingSDK.guest.waitForContext).not.toHaveBeenCalled();

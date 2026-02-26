@@ -9,8 +9,8 @@ import { type Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import HelpMenu from "@/components/application/HelpMenu.vue";
 import { isBrowser, isDesktop } from "@/environment";
-import { createShortcutsService } from "@/plugins/shortcuts";
 import { router } from "@/router/router";
+import { createShortcutsService } from "@/services/shortcuts";
 import {
   createProject,
   createSpace,

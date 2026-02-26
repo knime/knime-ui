@@ -67,7 +67,7 @@ const $shortcuts = {
   dispatch: vi.fn(),
 };
 
-vi.mock("@/plugins/shortcuts", () => ({
+vi.mock("@/services/shortcuts", () => ({
   useShortcuts: () => $shortcuts,
 }));
 
