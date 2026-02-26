@@ -92,6 +92,9 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install
 
+      - name: Clear e2e test cache
+        run: pnpm run test:e2e:clear
+
       - name: Run e2e tests
         run: pnpm run test:e2e
 

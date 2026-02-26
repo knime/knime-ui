@@ -8,6 +8,7 @@ import {
   getKanvasBoundingBox,
   getNode,
   getNodePosition,
+  safeguardCanvasDoubleClick,
   startApplication,
   testSimpleScreenshot,
 } from "../utils";
@@ -122,6 +123,8 @@ test.describe("selection", () => {
     await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await page.keyboard.up("Shift");
 
+    await safeguardCanvasDoubleClick(page);
+
     await page.mouse.click(n1x - 200, n1y);
     await assertSnapshot(page);
   });
@@ -147,6 +150,7 @@ test.describe("dragging", () => {
 
     // first select
     await page.mouse.click(n1x, n1y);
+    await safeguardCanvasDoubleClick(page);
 
     // then move
     await page.mouse.down();
@@ -161,6 +165,7 @@ test.describe("dragging", () => {
 
     // first select
     await page.mouse.click(n1x, n1y);
+    await safeguardCanvasDoubleClick(page);
 
     // then move
     await page.mouse.down();
@@ -185,6 +190,7 @@ test.describe("dragging", () => {
     // select 2 nodes
     await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     await page.keyboard.down("Shift");
+    await safeguardCanvasDoubleClick(page);
     await page.mouse.click(...(await getNodePosition(page, IDS.node2)));
     await page.keyboard.up("Shift");
     await assertSnapshot(page);
@@ -206,6 +212,7 @@ test.describe("dragging", () => {
     await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     await page.keyboard.down("Shift");
     const [n2x, n2y] = await getNodePosition(page, IDS.node2);
+    await safeguardCanvasDoubleClick(page);
     await page.mouse.click(n2x, n2y);
     await page.keyboard.up("Shift");
 
@@ -224,9 +231,12 @@ test.describe("dragging", () => {
     // select 2 nodes
     await page.mouse.click(...(await getNodePosition(page, IDS.node1)));
     await page.keyboard.down("Shift");
+    await safeguardCanvasDoubleClick(page);
     const [n2x, n2y] = await getNodePosition(page, IDS.node2);
     await page.mouse.click(n2x, n2y);
     await page.keyboard.up("Shift");
+
+    await safeguardCanvasDoubleClick(page);
 
     // start a drag with a modifier
     await page.mouse.move(n2x, n2y);
@@ -248,12 +258,14 @@ test.describe("dragging", () => {
 
     // first select node
     await page.mouse.click(n1x, n1y);
+    await safeguardCanvasDoubleClick(page);
 
     // then move node
     await page.mouse.down();
     // keep this in sync with e2e/behavior/workflowCommandMocks/node-translate.ts
     await page.mouse.move(n1x + 100, n1y - 100);
     await page.mouse.up();
+    await safeguardCanvasDoubleClick(page);
 
     // deselect node by click on empty kanvas
     const kanvas = await getKanvasBoundingBox(page);
@@ -357,6 +369,7 @@ test("node names render correctly", async ({ page }) => {
 
     // select a node
     await page.mouse.click(nodeX, nodeY);
+    await safeguardCanvasDoubleClick(page);
 
     await page.keyboard.press(key);
     await assertSnapshot(page);

@@ -3,6 +3,7 @@ import { Page } from "playwright-core";
 
 import { KANVAS_ID } from "../../src/lib/workflow-canvas/getKanvasDomElement";
 
+import { CANVAS_DOUBLE_CLICK_TIME_BETWEEN_MS } from "./../../src/components/workflowEditor/WebGLKanvas/common/constants";
 import { mockWebsocket } from "./mockWebsocket";
 import { StartApplicationHelperOptions } from "./types";
 
@@ -178,5 +179,9 @@ export const getMinimapCoordinates = (page: Page) => {
 
 export const executeUndo = async (page: Page) => {
   await page.keyboard.press("ControlOrMeta+Z");
+  // eslint-disable-next-line no-magic-numbers
   await page.waitForTimeout(500);
 };
+
+export const safeguardCanvasDoubleClick = (page: Page) =>
+  page.waitForTimeout(CANVAS_DOUBLE_CLICK_TIME_BETWEEN_MS);

@@ -5,3 +5,4 @@ export const FLOATING_HTML_FADE_DELAY_MS = 100;
 // like it's the case for the FloatingHTML (and the respective use cases of node label and name editors).
 // This viewbox is required in order to center the icons correctly in a small SVG to be used in normal HTML components
 export const FLOATING_HTML_ACTIONBAR_VIEWBOX = "-24.5 -12 49 24";
+export const CANVAS_DOUBLE_CLICK_TIME_BETWEEN_MS = 450;

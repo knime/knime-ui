@@ -6,6 +6,7 @@ import {
   executeUndo,
   getAnnotation,
   getCenter,
+  safeguardCanvasDoubleClick,
   startApplication,
 } from "../utils";
 
@@ -150,6 +151,7 @@ test("can be dragged", async ({ page }) => {
   const annotation = await getAnnotation(page, "root_0");
 
   await page.mouse.click(...getCenter(annotation));
+  await safeguardCanvasDoubleClick(page);
   await page.mouse.move(...getCenter(annotation));
   await page.mouse.down({ button: "left", clickCount: 1 });
   await page.mouse.move(annotation.center.x - 300, annotation.center.y - 100);
@@ -183,7 +185,9 @@ test("ignores interaction and does rectangle selection when not selected", async
   // select it -> unselect it: make sure it works even when the annotation
   // had been selected before
   await page.mouse.click(...getCenter(annotation));
+  await safeguardCanvasDoubleClick(page);
   await page.mouse.click(annotation.x - 20, annotation.y - 20);
+  await safeguardCanvasDoubleClick(page);
 
   await page.mouse.move(...getCenter(annotation));
   await page.mouse.down({ button: "left", clickCount: 1 });
@@ -200,6 +204,7 @@ test("can be ordered", async ({ page }) => {
 
   const annotation = await getAnnotation(page, "root_0");
   await page.mouse.click(...getCenter(annotation));
+  await safeguardCanvasDoubleClick(page);
   await page.mouse.move(...getCenter(annotation));
   await page.mouse.down({ button: "left", clickCount: 1 });
   await page.mouse.move(annotation.center.x + 300, annotation.center.y + 100);
