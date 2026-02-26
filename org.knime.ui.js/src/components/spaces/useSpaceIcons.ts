@@ -71,8 +71,9 @@ export const useSpaceIcons = () => {
     return icons[spaceGroup.type];
   };
 
-  const getSpaceIcon = (space: SpaceProviderNS.Space) =>
-    space.private ? PrivateSpaceIcon : CubeIcon;
+  const getSpaceIcon = (space?: SpaceProviderNS.Space) => {
+    return space?.private ? PrivateSpaceIcon : CubeIcon;
+  };
 
   const getSpaceItemIcon = (type: SpaceItem.TypeEnum) => {
     const typeIcons = {
