@@ -1,11 +1,9 @@
 import { watch } from "vue";
-import { API } from "@api";
 import { storeToRefs } from "pinia";
 import { type Router, useRouter } from "vue-router";
 
 import EyeIcon from "@knime/styles/img/icons/eye.svg";
 
-import type { SpaceProviderNS } from "@/api/custom-types";
 import type {
   AncestorInfo,
   SpaceItemReference,
@@ -27,42 +25,14 @@ import { getToastPresets } from "@/toastPresets";
 
 const ROOT_ITEM_ID = "root";
 
-const getAncestorInfo = (
-  spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
-  origin: SpaceItemReference,
-): Promise<AncestorInfo> => {
-  const provider = spaceProviders[origin.providerId];
-
-  if (!provider) {
-    return Promise.resolve({ ancestorItemIds: [] });
-  }
-
-  // If the backend can determine ancestor item IDs cheaply, they are
-  // already provided beforehand. Otherwise, we have to fetch ad-hoc.
-  if (isLocalProvider(provider) && origin.ancestorItemIds) {
-    return origin.ancestorItemIds
-      ? Promise.resolve({
-          ancestorItemIds: origin.ancestorItemIds,
-        })
-      : Promise.resolve({ ancestorItemIds: [] });
-  }
-
-  // Throws error if the ancestor item IDs could not be retrieved
-  return API.space.getAncestorInfo({
-    spaceProviderId: origin.providerId,
-    spaceId: origin.spaceId,
-    itemId: origin.itemId,
-  });
-};
-
 export const useRevealInSpaceExplorer = (router?: Router) => {
   const $router = router || useRouter(); // router might not be available in all contexts
   const { isLoadingContent } = storeToRefs(useSpaceOperationsStore());
   const { setCurrentSelectedItemIds } = useSpaceOperationsStore();
   const { activeProjectId } = storeToRefs(useApplicationStore());
-  const { spaceProviders, loadingProviderSpacesData } = storeToRefs(
-    useSpaceProvidersStore(),
-  );
+  const spaceProvidersStore = useSpaceProvidersStore();
+  const { spaceProviders, loadingProviderSpacesData } =
+    storeToRefs(spaceProvidersStore);
   const { activeTab } = storeToRefs(usePanelStore());
   const panelStore = usePanelStore();
   const { projectPath } = storeToRefs(useSpaceCachingStore());
@@ -96,6 +66,24 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     toastPresets.spaces.reveal.revealProjectFailed({ error });
   };
 
+  const getAncestorInfoWithLocalFallback = (
+    origin: SpaceItemReference,
+  ): Promise<AncestorInfo> => {
+    const provider = spaceProviders.value[origin.providerId];
+
+    // If the backend can determine ancestor item IDs cheaply, they are
+    // already provided beforehand. Otherwise, we have to fetch ad-hoc.
+    if (isLocalProvider(provider) && origin.ancestorItemIds) {
+      return origin.ancestorItemIds
+        ? Promise.resolve({
+            ancestorItemIds: origin.ancestorItemIds,
+          })
+        : Promise.resolve({ ancestorItemIds: [] });
+    }
+
+    return spaceProvidersStore.getAncestorInfo(origin);
+  };
+
   const navigateToSpaceBrowsingPage = async (
     origin: SpaceItemReference,
     selectedItemIds: string[],
@@ -112,10 +100,8 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
       return null;
     }
 
-    const { itemName, ancestorItemIds } = await getAncestorInfo(
-      spaceProviders.value,
-      origin,
-    );
+    const { itemName, ancestorItemIds } =
+      await getAncestorInfoWithLocalFallback(origin);
 
     await $router.push({
       name: APP_ROUTES.Home.SpaceBrowsingPage,
@@ -144,10 +130,8 @@ export const useRevealInSpaceExplorer = (router?: Router) => {
     }
 
     const { providerId, spaceId } = origin;
-    const { itemName, ancestorItemIds } = await getAncestorInfo(
-      spaceProviders.value,
-      origin,
-    );
+    const { itemName, ancestorItemIds } =
+      await getAncestorInfoWithLocalFallback(origin);
 
     const currentPath = projectPath.value[activeProjectId.value];
     const nextItemId = ancestorItemIds?.at(0) ?? ROOT_ITEM_ID;

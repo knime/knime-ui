@@ -1,5 +1,5 @@
 import { computed, ref } from "vue";
-import { useFileDialog } from "@vueuse/core";
+import { type UseFileDialogOptions, useFileDialog } from "@vueuse/core";
 import { API } from "@api";
 import { defineStore, storeToRefs } from "pinia";
 
@@ -20,8 +20,18 @@ import { getCustomFetchOptionsForBrowser } from "./common";
 import { localRootProjectPath } from "./constants";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
+type CompletedUploadData = {
+  uploadId: string;
+  parentId: string;
+  name: string;
+};
+
 export const useSpaceUploadsStore = defineStore("space.uploads", () => {
   const hasActiveUpload = ref(false);
+  const onCompleteCallbacks = new Map<
+    string,
+    (complete: CompletedUploadData) => void
+  >();
   const $toast = getToastsProvider();
 
   const spaceOperationsStore = useSpaceOperationsStore();
@@ -40,25 +50,18 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
     removeItem,
     hasPendingUploads,
     unprocessedUploads,
+    setProcessingCompleted,
+    setProcessingFailed,
   } = useFileUpload({
     customFetchClientOptions: isBrowser()
       ? getCustomFetchOptionsForBrowser()
       : {},
 
-    onFileUploadComplete: ({ parentId }) => {
-      const { activeProjectId } = applicationStore;
-      // upload was complete, but the parent container is no longer visible; no need to refresh
-      if (
-        !activeProjectId ||
-        (activeProjectPath.value?.spaceId !== parentId &&
-          activeProjectPath.value?.itemId !== parentId)
-      ) {
-        return;
+    onFileUploadComplete: ({ parentId, uploadId, name }) => {
+      if (onCompleteCallbacks.has(uploadId)) {
+        onCompleteCallbacks.get(uploadId)?.({ parentId, uploadId, name });
+        onCompleteCallbacks.delete(uploadId);
       }
-
-      spaceOperationsStore.fetchWorkflowGroupContent({
-        projectId: activeProjectId,
-      });
     },
 
     onUploadQueueSizeExceeded: (maxQueueSize) => {
@@ -70,72 +73,35 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
     },
   });
 
-  const getFilesToUpload = () => {
-    const { promise, resolve } = promiseUtils.createUnwrappedPromise<
-      File[] | null
-    >();
-
-    const { open, reset, onChange } = useFileDialog();
-
-    onChange((files) => {
-      const { activeProjectId } = applicationStore;
-
-      if (!activeProjectId || !files) {
-        resolve(null);
-        reset();
-        return;
-      }
-
-      const selectedFiles = [...files];
-      const hasSelectedKnwfFiles = selectedFiles.some((file) =>
-        knimeFileFormats.KNWF.matches(file),
-      );
-
-      if (hasSelectedKnwfFiles) {
-        $toast.show({
-          type: "warning",
-          headline: "Importing .knwf file",
-          message: "Importing workflows is not yet supported. (Coming soon!)",
-        });
-      }
-
-      const withoutKnwfFiles = selectedFiles.filter(
-        (file) => !knimeFileFormats.KNWF.matches(file),
-      );
-
-      resolve(withoutKnwfFiles);
-      reset();
-    });
-
-    open();
-
-    return promise;
-  };
-
-  const getUploadParentId = (): string | null => {
-    if (!spaceCachingStore.activeProjectPath) {
-      // currently not supported outside the workflow page, which always has an
-      // active project id
-      return null;
-    }
-
-    const { spaceId, itemId } = spaceCachingStore.activeProjectPath;
-
-    return itemId === "root" ? spaceId : itemId;
-  };
-
-  const startUpload = async () => {
+  /**
+   * Uploads given Files array
+   * @returns unique uploadIds for every file can later be used to identify the file
+   */
+  const uploadFiles = async ({
+    files,
+    parentId,
+    isFileWithProcessing,
+    completeCallback,
+  }: {
+    files: File[];
+    parentId: string;
+    isFileWithProcessing?: (file: File) => boolean;
+    completeCallback?: (data: CompletedUploadData) => void;
+  }) => {
     hasActiveUpload.value = true;
 
-    const parentId = getUploadParentId();
-    const files = await getFilesToUpload();
-
     if (!parentId || !files) {
-      return;
+      return [];
     }
 
     try {
-      await start(parentId, files);
+      const uploadIds = await start(parentId, files, { isFileWithProcessing });
+      if (completeCallback) {
+        uploadIds.forEach((id) =>
+          onCompleteCallbacks.set(id, completeCallback),
+        );
+      }
+      return uploadIds;
     } catch (error) {
       if (error instanceof rfcErrors.RFCError) {
         const toast = rfcErrors.toToast({
@@ -150,6 +116,106 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
         });
       }
     }
+    return [];
+  };
+
+  /**
+   * Promise based file chooser with optional filter
+   */
+  const chooseFiles = ({
+    options,
+    filter = (files) => files,
+  }: {
+    options?: Partial<UseFileDialogOptions>;
+    filter?: (files: File[]) => File[];
+  } = {}) => {
+    const { promise, resolve } = promiseUtils.createUnwrappedPromise<
+      File[] | null
+    >();
+
+    const { open, reset, onChange } = useFileDialog(options);
+
+    onChange((files) => {
+      const { activeProjectId } = applicationStore;
+
+      if (!activeProjectId || !files) {
+        resolve(null);
+        reset();
+        return;
+      }
+
+      resolve(filter(Array.from(files)));
+      reset();
+    });
+
+    open();
+
+    return promise;
+  };
+
+  const getUploadParentId = (): string | undefined => {
+    if (!spaceCachingStore.activeProjectPath) {
+      // currently not supported outside the workflow page, which always has an
+      // active project id
+      // eslint-disable-next-line no-undefined
+      return undefined;
+    }
+
+    const { spaceId, itemId } = spaceCachingStore.activeProjectPath;
+
+    return itemId === "root" ? spaceId : itemId;
+  };
+
+  /**
+   * Choose supported files and start upload to the current open space explorer (only works if you have it open).
+   * @returns unique uploadIds for every file can later be used to identify the file
+   */
+  const startUpload = async () => {
+    hasActiveUpload.value = true;
+
+    const parentId = getUploadParentId();
+
+    const files = await chooseFiles({
+      filter: (selectedFiles) => {
+        const filteredFiles = selectedFiles.filter(
+          (file) => !knimeFileFormats.KNWF.matches(file),
+        );
+        if (selectedFiles.length !== filteredFiles.length) {
+          $toast.show({
+            type: "warning",
+            headline: "Importing .knwf file",
+            message: "Importing workflows is not yet supported. (Coming soon!)",
+          });
+        }
+        return filteredFiles;
+      },
+    });
+
+    if (!parentId || !files) {
+      return [];
+    }
+
+    const updateWorkflowGroupContent = () => {
+      const { activeProjectId: projectId } = applicationStore;
+      // upload was complete, but the parent container is no longer visible; no need to refresh
+      if (
+        !projectId ||
+        (activeProjectPath.value?.spaceId !== parentId &&
+          activeProjectPath.value?.itemId !== parentId)
+      ) {
+        return;
+      }
+
+      spaceOperationsStore.fetchWorkflowGroupContent({
+        projectId,
+      });
+    };
+
+    return uploadFiles({
+      files,
+      parentId,
+      completeCallback: updateWorkflowGroupContent,
+    });
   };
 
   const closeUploadsPanel = () => {
@@ -222,10 +288,14 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
     hasPendingUploads,
     uploadItems,
     startUpload,
+    uploadFiles,
     cancelUpload: cancel,
     closeUploadsPanel,
     removeItem,
+    chooseFiles,
     unprocessedUploads,
     moveToHubFromLocalProvider,
+    setProcessingCompleted,
+    setProcessingFailed,
   };
 });

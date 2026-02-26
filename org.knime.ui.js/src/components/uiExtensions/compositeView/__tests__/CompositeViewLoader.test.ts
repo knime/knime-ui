@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
@@ -20,6 +20,11 @@ const hasPageMock = vi.fn();
 const updateAndReexecuteMock = vi.fn();
 
 describe("CompositeViewLoader.vue", () => {
+  beforeAll(() => {
+    import.meta.env.PROD = true;
+    import.meta.env.DEV = false;
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });

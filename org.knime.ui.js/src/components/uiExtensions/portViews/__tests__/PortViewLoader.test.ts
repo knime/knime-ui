@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
@@ -23,6 +23,11 @@ import PortViewLoader from "../PortViewLoader.vue";
 const mockedAPI = deepMocked(API);
 
 describe("PortViewLoader.vue", () => {
+  beforeAll(() => {
+    import.meta.env.PROD = true;
+    import.meta.env.DEV = false;
+  });
+
   const nodeId = "node1";
   const dummyNode: KnimeNode = {
     id: nodeId,

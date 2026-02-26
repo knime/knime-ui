@@ -233,7 +233,7 @@ const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
 
     <NodeLabelEditor />
 
-    <FloatingCanvasTools v-if="!isWorkflowEmpty" />
+    <FloatingCanvasTools />
 
     <Tooltip />
 

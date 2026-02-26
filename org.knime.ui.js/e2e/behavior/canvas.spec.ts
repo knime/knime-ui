@@ -8,6 +8,7 @@ import {
   getKanvasBoundingBox,
   getMinimapCoordinates,
   getNodePosition,
+  safeguardCanvasDoubleClick,
   startApplication,
 } from "../utils";
 
@@ -137,6 +138,7 @@ test.describe("panning", () => {
     // Drag an annotation near top-left corner of screen and hold until edge of canvas is reached
     const annotation = await getAnnotation(page, "root_0");
     await page.mouse.click(...getCenter(annotation));
+    await safeguardCanvasDoubleClick(page);
     await page.mouse.move(...getCenter(annotation));
     await page.mouse.down();
     const panDistance = 100;
