@@ -1,8 +1,8 @@
+import { CANVAS_DOUBLE_CLICK_TIME_BETWEEN_MS } from "./constants";
+
 type PreventableDoubleClickOptions = {
   eventHandledChecker?: (event: PointerEvent) => boolean;
 };
-
-const TIME_BETWEEN_CLICKS_MS = 450;
 
 /**
  * Implements Double click based on pointerdown event that is preventable.
@@ -36,7 +36,10 @@ export const usePointerDownDoubleClick = (
     }
 
     // detect two clicks that need to happen in the time frame of TIME_BETWEEN_CLICKS_MS
-    if (performance.now() - lastClick.time > TIME_BETWEEN_CLICKS_MS) {
+    if (
+      performance.now() - lastClick.time >
+      CANVAS_DOUBLE_CLICK_TIME_BETWEEN_MS
+    ) {
       lastClick.time = performance.now();
       lastClick.clientX = pointerDownEvent.clientX;
       lastClick.clientY = pointerDownEvent.clientY;
