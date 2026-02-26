@@ -8,12 +8,12 @@ import { gatewayRpcClient } from "@/api/gateway-api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useNotifyUIExtensionAlert";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
+import { webResourceLocation } from "@/services/webResourceLocation";
 import { useApplicationStore } from "@/store/application/application";
 import { useCompositeViewStore } from "@/store/compositeView/compositeView";
 import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { webResourceLocation } from "@/webResourceLocation";
 import { useUIControlsStore } from "../uiControls/uiControls";
 
 type ServiceRequestParams = {

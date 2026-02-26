@@ -4,10 +4,10 @@ import { computed, ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import { Container, FederatedPointerEvent, Rectangle } from "pixi.js";
 
-import { useAnalyticsService } from "@/analytics";
 import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { ports } from "@/lib/data-mappers";
+import { useAnalytics } from "@/services/analytics";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -127,7 +127,7 @@ const onPointerDown = (event: FederatedPointerEvent) => {
         props.direction === "out" ? "port_dragdrop_fwd" : "port_dragdrop_bwd"
       }` as const;
 
-      useAnalyticsService().track(analyticsEventId, {
+      useAnalytics().track(analyticsEventId, {
         nodeId: props.nodeId,
         nodeType: props.nodeKind,
         nodePortIndex: props.port.index,

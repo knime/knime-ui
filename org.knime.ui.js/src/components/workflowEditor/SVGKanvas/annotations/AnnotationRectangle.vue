@@ -3,7 +3,7 @@ import { computed, reactive, ref } from "vue";
 import throttle from "raf-throttle";
 
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
-import { useShortcuts } from "@/plugins/shortcuts";
+import { useShortcuts } from "@/services/shortcuts";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 

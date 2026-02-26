@@ -18,8 +18,9 @@ import SelectionModeIcon from "@/assets/selection-mode.svg";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isBrowser } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
-import { useShortcuts } from "@/plugins/shortcuts";
-import type { ShortcutName } from "@/shortcuts";
+import { useShortcuts } from "@/services/shortcuts";
+import type { ShortcutName } from "@/services/shortcuts";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import {
   type CanvasMode,
@@ -33,7 +34,6 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { getToastPresets } from "@/toastPresets";
 import HelpMenu from "../application/HelpMenu.vue";
 import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 

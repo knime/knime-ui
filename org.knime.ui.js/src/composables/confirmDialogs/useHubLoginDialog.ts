@@ -1,8 +1,8 @@
 import { useKdsDynamicModal } from "@knime/kds-components";
 
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { getToastPresets } from "@/toastPresets";
 
 export enum HubLoginAction {
   LOGIN = "login",

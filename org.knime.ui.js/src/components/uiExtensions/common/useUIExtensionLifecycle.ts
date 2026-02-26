@@ -1,6 +1,6 @@
 import { type Ref, computed, onUnmounted, ref, watch } from "vue";
 
-import { webResourceLocation } from "@/webResourceLocation";
+import { webResourceLocation } from "@/services/webResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 
 type UseUIExtensionLifecycleOptions = {

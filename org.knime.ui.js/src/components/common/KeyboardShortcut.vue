@@ -3,7 +3,7 @@ import { computed } from "vue";
 
 import { hotkeys } from "@knime/utils";
 
-import type { HotkeyText, Hotkeys } from "@/shortcuts/types";
+import type { HotkeyText, Hotkeys } from "@/services/shortcuts/types";
 
 interface Props {
   hotkey: Hotkeys;

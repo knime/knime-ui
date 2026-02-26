@@ -9,6 +9,7 @@ import type {
   SpaceItemReference,
 } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { TABS, usePanelStore } from "@/store/panel";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
@@ -21,7 +22,6 @@ import {
   isServerProvider,
 } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { getToastPresets } from "@/toastPresets";
 
 const ROOT_ITEM_ID = "root";
 

@@ -12,10 +12,10 @@ import type { ExampleProject } from "@/api/custom-types";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useSettingsStore } from "@/store/settings";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { getToastPresets } from "@/toastPresets";
 
 import PageTitle from "./PageTitle.vue";
 

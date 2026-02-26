@@ -8,7 +8,6 @@ import PortalTarget from "@/components/common/PortalTarget.vue";
 
 import constants from "./constants";
 import eventBus from "./event-bus";
-import events from "./events";
 import featureFlags from "./feature-flags";
 import shortcuts from "./shortcuts";
 import type { PluginInitFunction } from "./types";
@@ -32,7 +31,6 @@ export const initPlugins = ({
 
   app.use(wrapPlugin(shortcuts));
   app.use(wrapPlugin(constants));
-  app.use(wrapPlugin(events));
   app.use(wrapPlugin(eventBus));
   app.use(wrapPlugin(featureFlags));
 

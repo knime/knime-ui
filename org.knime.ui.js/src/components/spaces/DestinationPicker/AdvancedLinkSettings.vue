@@ -9,8 +9,8 @@ import { promise } from "@knime/utils";
 
 import { LinkVariant } from "@/api/gateway-api/generated-api";
 import type { LinkVariantInfo } from "@/api/gateway-api/generated-api";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
-import { getToastPresets } from "@/toastPresets";
 
 import LinkVariantDropdown from "./LinkVariantDropdown.vue";
 

@@ -23,7 +23,7 @@ import { type PageBuilderApi, useCompositeViewStore } from "../compositeView";
 
 const mockUrl = vi.hoisted(() => "mocked-url");
 
-vi.mock("@/webResourceLocation", () => ({
+vi.mock("@/services/webResourceLocation", () => ({
   webResourceLocation: {
     uiExtensionResource: vi.fn(() => mockUrl),
   },

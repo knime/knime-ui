@@ -10,20 +10,19 @@ import { type Hotkey, hotkeys } from "@knime/utils";
 
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
 import { matchesQuery } from "@/lib/search";
-import shortcuts from "@/shortcuts";
-import otherHotkeys from "@/shortcuts/otherHotkeys";
+import { otherHotkeys, shortcutRegistry } from "@/services/shortcuts";
 import type {
   FormattedShortcut,
   Shortcut,
   ShortcutGroups,
-} from "@/shortcuts/types";
+} from "@/services/shortcuts/types";
 import { useApplicationStore } from "@/store/application/application";
 
 type ShortcutGroupsWithOthers = ShortcutGroups | "others";
 
 type ShortcutItemData = FormattedShortcut & { displayText: string };
 
-const boundShortcuts = Object.values(shortcuts).filter(
+const boundShortcuts = Object.values(shortcutRegistry).filter(
   (s: Shortcut) => s.hotkey && !s.hidden,
 ) as Array<Shortcut>;
 

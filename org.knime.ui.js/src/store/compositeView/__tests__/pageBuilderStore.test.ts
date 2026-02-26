@@ -13,7 +13,7 @@ import { mockStores } from "@/test/utils/mockStores";
 const { nodeOutputResourceMock } = vi.hoisted(() => ({
   nodeOutputResourceMock: vi.fn(),
 }));
-vi.mock("@/webResourceLocation", () => ({
+vi.mock("@/services/webResourceLocation", () => ({
   webResourceLocation: {
     nodeOutputResource: nodeOutputResourceMock,
   },

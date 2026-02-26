@@ -9,12 +9,12 @@ import type {
   NodeTemplateWithExtendedPorts,
 } from "@/lib/data-mappers";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { getToastPresets } from "@/toastPresets";
 
 import { pixiGlobals } from "./pixiGlobals";
 import { useNodeCollisionCheck } from "./useNodeCollisionCheck";

@@ -9,9 +9,9 @@ import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import SearchButton from "@/components/common/SearchButton.vue";
 import { useContextualSpaceExplorerActions } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
-import { useShortcuts } from "@/plugins/shortcuts";
+import { useShortcuts } from "@/services/shortcuts";
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { getToastPresets } from "@/toastPresets";
 import type { MenuItemWithHandler } from "../common/types";
 
 import SpaceExplorerActionButton from "./SpaceExplorerActionButton.vue";

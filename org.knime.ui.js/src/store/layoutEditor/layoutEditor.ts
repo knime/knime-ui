@@ -7,8 +7,8 @@ import {
   ComponentEditorConfig,
   type LegacyViewNodeConfig,
 } from "@/api/gateway-api/generated-api";
+import { getToastPresets } from "@/services/toastPresets";
 import { layoutEditorGridSize } from "@/style/shapes";
-import { getToastPresets } from "@/toastPresets";
 import { useNodeTemplatesStore } from "../nodeTemplates/nodeTemplates";
 
 import type {

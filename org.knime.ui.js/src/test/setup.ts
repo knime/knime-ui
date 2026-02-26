@@ -144,8 +144,8 @@ vi.mock("@/plugins/toasts", () => {
   };
 });
 
-vi.mock("@/analytics", () => ({
-  useAnalyticsService: () => ({ track: vi.fn() }),
+vi.mock("@/services/analytics", () => ({
+  useAnalytics: () => ({ track: vi.fn() }),
 }));
 
 class MockWorker {}

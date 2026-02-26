@@ -4,7 +4,7 @@ import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import type { Workflow } from "@/api/custom-types";
 import RightPanel from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
-import { createShortcutsService } from "@/plugins/shortcuts";
+import { createShortcutsService } from "@/services/shortcuts";
 import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import ContextMenu from "../CanvasAnchoredComponents/ContextMenu/ContextMenu.vue";

@@ -1,6 +1,5 @@
 import { storeToRefs } from "pinia";
 
-import { useAnalyticsService } from "@/analytics";
 import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
@@ -10,13 +9,14 @@ import {
   type NodeTemplateWithExtendedPorts,
   nodeTemplate,
 } from "@/lib/data-mappers";
+import { useAnalytics } from "@/services/analytics";
+import { getToastPresets } from "@/services/toastPresets";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-import { getToastPresets } from "@/toastPresets";
 
 import { useAddNodeViaFileUpload } from "./useAddNodeViaFileUpload";
 
@@ -249,7 +249,7 @@ export const useDragNodeIntoCanvas = () => {
 
         if (node && res.newNodeId) {
           const { className } = nodeInteractionsStore.getNodeFactory(node.id);
-          useAnalyticsService().track("node_created::noderepo_dragdrop_", {
+          useAnalytics().track("node_created::noderepo_dragdrop_", {
             nodeId: node.id,
             nodeType: node.kind,
             nodeFactoryId: className,

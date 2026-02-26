@@ -11,11 +11,11 @@ import {
 import { onWorkflowSaved } from "@/composables/useWorkflowSaveListener";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { getToastPresets } from "@/toastPresets";
 
 import VersionPanelPromoteHub from "./VersionPanelPromoteHub.vue";
 

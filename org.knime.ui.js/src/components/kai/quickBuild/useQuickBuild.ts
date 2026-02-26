@@ -1,10 +1,10 @@
 import { type Ref, computed, onBeforeMount, ref, watch } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { getToastPresets } from "@/services/toastPresets";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import type { AiAssistantBuildEventPayload } from "@/store/ai/types";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
-import { getToastPresets } from "@/toastPresets";
 import { useChat } from "../chat/useChat";
 import { useHubAuth } from "../useHubAuth";
 

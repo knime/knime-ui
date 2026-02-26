@@ -1,9 +1,9 @@
 import { type Ref } from "vue";
 import { storeToRefs } from "pinia";
 
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { checkOpenWorkflowsBeforeMove } from "@/store/spaces/util";
-import { getToastPresets } from "@/toastPresets";
 
 type UseMovingItemsOptions = {
   projectId: Ref<string | null>;

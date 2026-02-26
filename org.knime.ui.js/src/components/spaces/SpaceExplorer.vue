@@ -11,10 +11,10 @@ import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 import { matchesQuery } from "@/lib/search";
 import { createStaggeredTimer } from "@/lib/timers";
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { getToastPresets } from "@/toastPresets";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";

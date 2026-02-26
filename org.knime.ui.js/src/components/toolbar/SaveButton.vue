@@ -6,7 +6,7 @@ import { type MenuItem, SubMenu } from "@knime/components";
 import { KdsButton } from "@knime/kds-components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
-import { useShortcuts } from "@/plugins/shortcuts";
+import { useShortcuts } from "@/services/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 
 import { toolbarButtonTitle } from "./toolbarButtonTitle";

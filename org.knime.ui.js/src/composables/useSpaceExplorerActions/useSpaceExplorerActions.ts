@@ -37,13 +37,13 @@ import type { MenuItemWithHandler } from "@/components/common/types";
 import { useMovingItems } from "@/components/spaces/useMovingItems";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
-import { getToastPresets } from "@/toastPresets";
 
 /**
  * Returns **all** the possible actions that can be made on the Space Explorer

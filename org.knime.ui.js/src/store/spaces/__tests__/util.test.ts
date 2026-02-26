@@ -30,7 +30,7 @@ const { getToastPresetsMock } = vi.hoisted(() => ({
   getToastPresetsMock: vi.fn(() => ({ toastPresets: vi.fn() })),
 }));
 
-vi.mock("@/toastPresets", () => ({
+vi.mock("@/services/toastPresets", () => ({
   getToastPresets: getToastPresetsMock,
 }));
 

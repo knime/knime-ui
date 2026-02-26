@@ -1,12 +1,8 @@
 /* eslint-disable class-methods-use-this */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
-import { flushPromises } from "@vue/test-utils";
 
-import { $bus } from "@/plugins/event-bus";
-import { getToastPresets } from "@/toastPresets";
-import { initJSONRPCClient } from "../index";
-import { serverEventHandler } from "../server-events";
+import { serverEventHandler } from "../../events/server-events";
+import { initBrowserRPCClient } from "../index";
 
 vi.mock("@/plugins/event-bus", () => ({
   $bus: {
@@ -14,7 +10,7 @@ vi.mock("@/plugins/event-bus", () => ({
   },
 }));
 
-vi.mock("../server-events", () => ({
+vi.mock("../../events/server-events", () => ({
   getRegisteredEventHandler: () => {},
   registerEventHandler: () => {},
   serverEventHandler: vi.fn(),
@@ -47,27 +43,19 @@ describe("rpc client initialization", () => {
 
   describe("desktop", () => {
     it("should check for the EquoComm service", async () => {
-      const { initJSONRPCClient } = await import("../index");
+      const { initDesktopRPCClient } = await import("../index");
 
       // @ts-expect-error We need 'undefined' to be allowed here
       window.EquoCommService = undefined;
 
-      await expect(() => {
-        return initJSONRPCClient("DESKTOP", {
-          url: "",
-          restApiBaseUrl: "",
-          userIdleTimeout: 1000,
-        });
-      }).rejects.toThrow("Could not access EquoComm service. Aborting");
+      expect(() => {
+        return initDesktopRPCClient();
+      }).toThrow("Could not access EquoComm service. Aborting");
     });
 
     it("should attach server event handlers", async () => {
-      const { initJSONRPCClient, getRPCClientInstance } = await import(
-        "../index"
-      );
       const callbacks: Array<(...args: any[]) => any> = [];
       const JAVA_EVENT_ACTION_ID = "org.knime.ui.java.event";
-
       const EquoCommService = {
         on: vi.fn((_id, cb) => {
           callbacks.push(cb);
@@ -81,11 +69,11 @@ describe("rpc client initialization", () => {
       // @ts-expect-error
       window.EquoCommService = EquoCommService;
 
-      await initJSONRPCClient("DESKTOP", {
-        url: "",
-        restApiBaseUrl: "",
-        userIdleTimeout: 1000,
-      });
+      const { initDesktopRPCClient, getRPCClientInstance } = await import(
+        "../index"
+      );
+
+      initDesktopRPCClient();
 
       expect(EquoCommService.on).toHaveBeenCalledWith(
         JAVA_EVENT_ACTION_ID,
@@ -102,60 +90,34 @@ describe("rpc client initialization", () => {
 
   describe("browser", () => {
     it("should check for browser session context", async () => {
-      const { initJSONRPCClient } = await import("../index");
-      await expect(() => {
-        return initJSONRPCClient("BROWSER", null);
-      }).rejects.toThrow("Missing browser session context");
+      const { initBrowserRPCClient } = await import("../index");
+
+      expect(() => {
+        return initBrowserRPCClient(null as any);
+      }).toThrow("Missing browser session context");
     });
 
-    it("should attach listeners for connection loss", async () => {
-      const spy = vi.spyOn(window, "addEventListener");
-      const busEmitSpy = vi.spyOn($bus, "emit");
-
-      const { toastPresets } = getToastPresets();
-      const connectionLossToastSpy = vi.spyOn(
-        toastPresets.connectivity,
-        "connectionLoss",
-      );
-      const connectionRestoredToastSpy = vi.spyOn(
-        toastPresets.connectivity,
-        "connectionRestored",
-      );
-
-      await initJSONRPCClient("BROWSER", {
+    it("should attach listeners on WS", () => {
+      initBrowserRPCClient({
         url: "wss://localhost:1000",
         restApiBaseUrl: "",
         userIdleTimeout: 1000,
+        jobId: "",
+        wsConnectionUri: "",
       });
 
+      expect(addEventListener).toHaveBeenCalledWith(
+        "open",
+        expect.any(Function),
+      );
       expect(addEventListener).toHaveBeenCalledWith(
         "message",
         expect.any(Function),
       );
-
       expect(addEventListener).toHaveBeenCalledWith(
         "close",
         expect.any(Function),
       );
-
-      expect(spy).toHaveBeenCalledWith("online", expect.any(Function));
-      expect(spy).toHaveBeenCalledWith("offline", expect.any(Function));
-
-      window.dispatchEvent(new Event("offline"));
-
-      expect(connectionLossToastSpy).toHaveBeenCalled();
-
-      await flushPromises();
-      await nextTick();
-      await new Promise((r) => setTimeout(r, 0));
-
-      expect(busEmitSpy).toHaveBeenCalledWith("block-ui");
-
-      window.dispatchEvent(new Event("online"));
-
-      expect(connectionRestoredToastSpy).toHaveBeenCalled();
-
-      expect(busEmitSpy).toHaveBeenCalledWith("unblock-ui");
     });
   });
 });

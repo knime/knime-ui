@@ -2,11 +2,11 @@
 import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useAnalyticsService } from "@/analytics";
 import type {
   ComponentNodeTemplateWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
 } from "@/lib/data-mappers";
+import { useAnalytics } from "@/services/analytics";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -108,7 +108,7 @@ const autoAddNodeFromTemplate = async (
     const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
 
     if (node) {
-      useAnalyticsService().track("node_created::noderepo_doubleclick_", {
+      useAnalytics().track("node_created::noderepo_doubleclick_", {
         nodeId: node.id,
         nodeType: node.kind,
         nodeFactoryId: nodeTemplate.nodeFactory.className,

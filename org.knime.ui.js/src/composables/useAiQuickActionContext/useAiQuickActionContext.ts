@@ -2,8 +2,8 @@ import {
   type KaiQuickActionContext,
   KaiQuickActionError,
 } from "@/api/gateway-api/generated-api";
+import { createQuickActionError } from "@/services/toastPresets/aiQuickActions";
 import type { QuickActionId } from "@/store/ai/types";
-import { createQuickActionError } from "@/toastPresets/aiQuickActions";
 
 import * as generateAnnotation from "./quickActions/generateAnnotation";
 

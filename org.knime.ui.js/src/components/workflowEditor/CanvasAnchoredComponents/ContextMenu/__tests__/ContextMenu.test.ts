@@ -14,8 +14,8 @@ import {
   TemplateLink,
 } from "@/api/gateway-api/generated-api";
 import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
-import { createShortcutsService } from "@/plugins/shortcuts";
-import type { ShortcutName, ShortcutsService } from "@/shortcuts";
+import { createShortcutsService } from "@/services/shortcuts";
+import type { ShortcutName, ShortcutsService } from "@/services/shortcuts";
 import {
   createAvailablePortTypes,
   createComponentNode,
@@ -32,7 +32,7 @@ import ContextMenu from "../ContextMenu.vue";
 
 let $shortcuts: ShortcutsService;
 
-vi.mock("@/plugins/shortcuts", async (importOriginal) => {
+vi.mock("@/services/shortcuts", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {

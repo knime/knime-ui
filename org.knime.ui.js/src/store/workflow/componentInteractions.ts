@@ -26,9 +26,9 @@ import { useChangeHubItemVersionModal } from "@/composables/useChangeHubItemVers
 import { useChangeLinkVariantModal } from "@/composables/useChangeLinkVariantModal";
 import { workflowDomain } from "@/lib/workflow-domain";
 import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application.ts";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations.ts";
-import { getToastPresets } from "@/toastPresets";
 
 import { useConnectionInteractionsStore } from "./connectionInteractions";
 import { useWorkflowStore } from "./workflow";

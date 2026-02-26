@@ -3,10 +3,10 @@ import { useRoute, useRouter } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { isHubProvider } from "@/store/spaces/util";
-import { getToastPresets } from "@/toastPresets";
 
 export const useSpaceProviderAuth = () => {
   const { loadingProviderSpacesData, isConnectingToProvider, spaceProviders } =

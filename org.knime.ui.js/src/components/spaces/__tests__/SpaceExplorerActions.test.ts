@@ -7,10 +7,10 @@ import { SubMenu } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { MenuItemWithHandler } from "@/components/common/types";
+import { getToastPresets } from "@/services/toastPresets";
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { getToastPresets } from "@/toastPresets";
 import SpaceExplorerActionButton from "../SpaceExplorerActionButton.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";

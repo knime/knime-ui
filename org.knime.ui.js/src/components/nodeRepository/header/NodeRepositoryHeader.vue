@@ -9,6 +9,7 @@ import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 
 import { isBrowser } from "@/environment";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSidebarComponentSearchStore } from "@/store/componentSearch";
@@ -18,7 +19,6 @@ import {
   type NodeRepositoryDisplayModesType,
   useSettingsStore,
 } from "@/store/settings";
-import { getToastPresets } from "@/toastPresets";
 
 import CloseableTagList from "./CloseableTagList.vue";
 

@@ -6,9 +6,9 @@ import { useKdsDynamicModal } from "@knime/kds-components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { getToastPresets } from "@/toastPresets";
 
 import DeleteItemTemplate from "./DeleteItemTemplate.vue";
 

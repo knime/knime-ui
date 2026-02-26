@@ -9,7 +9,7 @@ import {
   extractHostname,
   knimeExternalUrls,
 } from "@/plugins/knimeExternalUrls";
-import { getToastPresets } from "@/toastPresets";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "../application/application";
 
 const { KNIME_HUB_HOME_HOSTNAME, KNIME_HUB_DEV_HOSTNAME } = knimeExternalUrls;

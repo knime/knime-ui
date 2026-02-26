@@ -3,10 +3,10 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 import { isBrowser } from "@/environment";
+import { getToastPresets } from "@/services/toastPresets";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { getToastPresets } from "@/toastPresets";
 
 let isHubIdFetched = false;
 

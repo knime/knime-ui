@@ -13,9 +13,9 @@ import {
   NodeState,
   SelectionEvent,
 } from "@/api/gateway-api/generated-api";
+import { webResourceLocation } from "@/services/webResourceLocation";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
-import { webResourceLocation } from "@/webResourceLocation";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
 import DataValueViewWrapper from "../../dataValueViews/DataValueViewWrapper.vue";
 import PortViewLoader from "../PortViewLoader.vue";

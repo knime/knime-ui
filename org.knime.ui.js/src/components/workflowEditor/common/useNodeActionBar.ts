@@ -3,8 +3,8 @@ import type { GraphicsContext } from "pixi.js";
 
 import type { Node } from "@/api/gateway-api/generated-api";
 import type { ActionButtonConfig } from "@/components/workflowEditor/types";
-import { useShortcuts } from "@/plugins/shortcuts";
-import type { ShortcutName } from "@/shortcuts/types";
+import { useShortcuts } from "@/services/shortcuts";
+import type { ShortcutName } from "@/services/shortcuts/types";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
 export type IconKeys =

@@ -14,13 +14,13 @@ import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useSpaceIcons } from "@/components/spaces/useSpaceIcons";
 import { isDesktop } from "@/environment";
+import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
-import { getToastPresets } from "@/toastPresets";
 
 import ComponentBreadcrumb from "./ComponentBreadcrumb.vue";
 
