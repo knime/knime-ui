@@ -77,10 +77,10 @@ describe("useDeleteItems::index", () => {
     },
   );
 
-  it("should open recycle bin when clicking toast button", async () => {
+  it("should open trash when clicking toast button", async () => {
     const mockedStores = mockStores();
     const groupName = "my-group";
-    const recycleBinUrl = "http://recycle.url";
+    const trashUrl = "http://trash.url";
 
     mockedStores.spaceOperationsStore.getDeletionInfo = () => ({
       canSoftDelete: true,
@@ -94,7 +94,7 @@ describe("useDeleteItems::index", () => {
       });
 
     // noinspection JSConstantReassignment
-    mockedStores.spaceProvidersStore.getRecycleBinUrl = () => recycleBinUrl;
+    mockedStores.spaceProvidersStore.getTrashUrl = () => trashUrl;
 
     const { onDeleteItems } = useDeleteItems({
       projectId: ref("projectId"),
@@ -108,15 +108,13 @@ describe("useDeleteItems::index", () => {
     expect(toast.show).toHaveBeenCalled();
 
     const toastOptions = vi.mocked(toast.show).mock.calls[0][0];
-    const button = toastOptions.buttons!.find(
-      (b) => b.text === "Show recycle bin",
-    );
+    const button = toastOptions.buttons!.find((b) => b.text === "Show trash");
     expect(button).toBeDefined();
     if (button?.callback) {
       button.callback();
     } else {
       expect.fail("The button should have a callback.");
     }
-    expect(mockWindowOpen).toHaveBeenCalledWith(recycleBinUrl);
+    expect(mockWindowOpen).toHaveBeenCalledWith(trashUrl);
   });
 });
