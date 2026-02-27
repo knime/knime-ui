@@ -1,0 +1,304 @@
+<!-- eslint-disable no-undefined -->
+<script setup lang="ts">
+import { computed, markRaw } from "vue";
+import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
+
+import { type MenuItem, SubMenu } from "@knime/components";
+import { KdsButton } from "@knime/kds-components";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+import ChevronRightIcon from "@knime/styles/img/icons/arrow-next.svg";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
+import HistoryIcon from "@knime/styles/img/icons/history.svg";
+import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
+import LinkedMetanodeIcon from "@knime/styles/img/icons/linked-metanode.svg";
+import MetaNodeIcon from "@knime/styles/img/icons/metanode.svg";
+import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
+
+import { SpaceProviderNS } from "@/api/custom-types";
+import type { Workflow } from "@/api/custom-types";
+import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
+import { isDesktop } from "@/environment";
+import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/services/toastPresets";
+import { useApplicationStore } from "@/store/application/application";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
+
+type Props = {
+  workflow: Workflow;
+};
+
+const props = defineProps<Props>();
+
+const router = useRouter();
+const { revealSingleItem, canRevealItem, revealActionMetadata } =
+  useRevealInSpaceExplorer();
+const { toastPresets } = getToastPresets();
+const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
+  useApplicationStore(),
+);
+const { activeProjectProvider } = storeToRefs(useSpaceProvidersStore());
+const uiControls = useUIControlsStore();
+const { getSpaceItemVersion } = useWorkflowVersionsStore();
+
+const isInSublevel = computed(() => (props.workflow.parents?.length ?? 0) > 0);
+const currentName = computed(() => props.workflow.info.name);
+
+const handleRestoreVersion = () => {
+  const activeVersion = props.workflow.info.version;
+  if (!activeVersion) {
+    return;
+  }
+  try {
+    useWorkflowVersionsStore().restoreVersion(Number(activeVersion));
+  } catch (error) {
+    toastPresets.versions.restoreFailed({ error });
+  }
+};
+
+const activeVersionTitle = computed(() =>
+  getSpaceItemVersion(
+    props.workflow.projectId,
+    props.workflow.info.version,
+  )?.title,
+);
+
+// ─── Icon helper ─────────────────────────────────────────────────────────────
+
+const getIcon = (type: string, linked: boolean) => {
+  if (linked && type === "component") {
+    return markRaw(LinkedComponentIcon);
+  }
+  if (linked && type === "metanode") {
+    return markRaw(LinkedMetanodeIcon);
+  }
+  if (type === "component") {
+    return markRaw(NodeWorkflowIcon);
+  }
+  if (type === "metanode") {
+    return markRaw(MetaNodeIcon);
+  }
+  return undefined;
+};
+
+// ─── Sub-level: parent nav items for "…" menu ─────────────────────────────────
+
+const parentItems = computed<MenuItem[]>(() => {
+  const parents = props.workflow.parents ?? [];
+  return parents.map(
+    ({ containerType, name, containerId = "root", linked = false }) => ({
+      text: name,
+      icon: getIcon(containerType, linked),
+      metadata: { id: containerId },
+    }),
+  );
+});
+
+const onParentItemClick = (_: MouseEvent, item: MenuItem) => {
+  const meta = item.metadata as { id: string };
+  router.push({
+    name: APP_ROUTES.WorkflowPage,
+    params: {
+      projectId: props.workflow.projectId,
+      workflowId: meta.id,
+    },
+    force: true,
+    replace: true,
+  });
+};
+
+// ─── Root level: workflow actions dropdown ────────────────────────────────────
+
+const rootDropdownItems = computed<MenuItem[]>(() => {
+  const items: MenuItem[] = [];
+
+  if (
+    activeProjectProvider.value?.type !== SpaceProviderNS.TypeEnum.SERVER &&
+    uiControls.canViewVersions
+  ) {
+    items.push({
+      text: "Version history",
+      icon: HistoryIcon,
+      disabled: Boolean(!activeProjectProvider.value),
+      title: activeProjectProvider.value ? undefined : "Loading...",
+      metadata: {
+        handler: async () => {
+          try {
+            await useWorkflowVersionsStore().activateVersionsMode();
+          } catch (error) {
+            toastPresets.versions.activateModeFailed({ error });
+          }
+        },
+      },
+    });
+  }
+
+  if (
+    activeProjectOrigin.value &&
+    canRevealItem(activeProjectOrigin.value.providerId)
+  ) {
+    items.push({
+      text: revealActionMetadata.label,
+      icon: revealActionMetadata.icon,
+      metadata: {
+        handler: async () => {
+          const projectName = openProjects.value.find(
+            (project) => project.projectId === activeProjectId.value,
+          )!.name;
+          await revealSingleItem(activeProjectOrigin.value!, projectName);
+        },
+      },
+    });
+  }
+
+  if (isDesktop()) {
+    items.push({
+      text: "Close project",
+      icon: CloseIcon,
+      metadata: {
+        handler: () => {
+          useDesktopInteractionsStore().closeProject(activeProjectId.value!);
+        },
+      },
+    });
+  }
+
+  return items;
+});
+
+const onRootMenuItemClick = (_: MouseEvent, item: MenuItem) => {
+  (item.metadata as { handler?: () => void })?.handler?.();
+};
+</script>
+
+<template>
+  <div class="workflow-name-breadcrumb">
+    <!-- Sub-level: "… > currentName" -->
+    <template v-if="isInSublevel">
+      <SubMenu
+        compact
+        :teleport-to-body="false"
+        :items="parentItems"
+        button-title="Navigate to parent"
+        orientation="right"
+        @item-click="onParentItemClick"
+      >
+        <template #default>
+          <span class="ellipsis">…</span>
+        </template>
+      </SubMenu>
+      <ChevronRightIcon class="chevron" aria-hidden="true" focusable="false" />
+      <span class="current-name" :title="currentName">{{ currentName }}</span>
+    </template>
+
+    <!-- Root level: name + optional workflow-actions dropdown -->
+    <template v-else>
+      <span class="current-name" :title="currentName">{{ currentName }}</span>
+
+      <template v-if="workflow.info.version">
+        <span class="version-info" :title="activeVersionTitle">
+          "{{ activeVersionTitle }}"
+        </span>
+        <KdsButton
+          label="Restore this version"
+          variant="outlined"
+          size="small"
+          @click="handleRestoreVersion"
+        />
+      </template>
+
+      <SubMenu
+        v-if="rootDropdownItems.length"
+        compact
+        :teleport-to-body="false"
+        :items="rootDropdownItems"
+        button-title="Workflow actions"
+        orientation="right"
+        @item-click="onRootMenuItemClick"
+      >
+        <template #default>
+          <DropdownIcon class="dropdown-icon" />
+        </template>
+      </SubMenu>
+    </template>
+  </div>
+</template>
+
+<style lang="postcss" scoped>
+.workflow-name-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--kds-spacing-container-0-5x);
+  font: var(--kds-font-base-body-small);
+  color: var(--kds-color-text-and-icon-subtle);
+  white-space: nowrap;
+  min-width: 0;
+
+  & .current-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+    color: var(--kds-color-text-and-icon-neutral);
+    font: var(--kds-font-base-interactive-small);
+  }
+
+  & .ellipsis {
+    font: var(--kds-font-base-interactive-small);
+    color: var(--kds-color-text-and-icon-subtle);
+    padding: 0 2px;
+  }
+
+  & .chevron {
+    flex-shrink: 0;
+    stroke: var(--kds-color-text-and-icon-subtle);
+    width: 12px;
+    height: 12px;
+    stroke-width: 3px;
+  }
+
+  & .dropdown-icon {
+    width: 12px;
+    height: 12px;
+    stroke-width: 3.5px;
+    stroke: var(--kds-color-text-and-icon-neutral);
+  }
+
+  & .version-info {
+    font: var(--kds-font-base-body-small);
+    color: var(--kds-color-text-and-icon-subtle);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  & :deep(.submenu-toggle) {
+    border-radius: var(
+      --kds-legacy-button-border-radius,
+      var(--kds-border-radius-container-0-37x)
+    );
+
+    & svg {
+      stroke-width: 3.5px;
+      width: 12px;
+      height: 12px;
+    }
+
+    &.expanded {
+      background-color: var(--kds-color-background-neutral-active);
+    }
+
+    &:not(.expanded) svg {
+      stroke: var(--kds-color-text-and-icon-neutral);
+    }
+
+    &:focus-visible {
+      outline: var(--kds-border-action-focused);
+      outline-offset: 1px;
+      background: transparent;
+    }
+  }
+}
+</style>

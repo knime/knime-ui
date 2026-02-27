@@ -51,26 +51,15 @@ const DEFAULT_WIDTH = 360;
 const DEFAULT_HEIGHT = 600;
 const MIN_WIDTH = 280;
 const MIN_HEIGHT = 200;
-/** Left margin: 12px gap + 48px buttons + 8px gap */
-const LEFT_OFFSET = 68;
-const TOP_OFFSET = 40;
+/** Left margin: 12px gap */
+const LEFT_OFFSET = 12;
+/** Top margin: 12px gap + ~40px overlay-top-left height + 8px gap */
+const TOP_OFFSET = 60;
 
 const { state: rectState, setRect } = useDraggableResizableRectState();
 
-const DEFAULT_TOOLBAR_HEIGHT = 50; // fallback if CSS var not available
-
 const getDefaultPosition = (): Pick<BoundingBox, "left" | "top"> => {
-  const toolbarHeight =
-    parseInt(
-      getComputedStyle(document.documentElement).getPropertyValue(
-        "--app-toolbar-height",
-      ),
-      10,
-    ) || DEFAULT_TOOLBAR_HEIGHT;
-  return {
-    left: LEFT_OFFSET,
-    top: toolbarHeight + TOP_OFFSET,
-  };
+  return { left: LEFT_OFFSET, top: TOP_OFFSET };
 };
 
 onMounted(() => {
