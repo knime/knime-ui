@@ -1,26 +1,22 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, watch } from "vue";
-import { debounce } from "es-toolkit/function";
 import { storeToRefs } from "pinia";
 
-import { SplitPanel } from "@knime/components";
 import { navigatorUtils } from "@knime/utils";
 
-import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
+import NodeConfigFloatingPanel from "@/components/uiExtensions/nodeConfig/NodeConfigFloatingPanel.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
-import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 
 import ContextMenu from "./CanvasAnchoredComponents/ContextMenu/ContextMenu.vue";
 import PortTypeMenu from "./CanvasAnchoredComponents/PortTypeMenu/PortTypeMenu.vue";
 import QuickActionMenu from "./CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
-import ManageVersionsWrapper from "./ManageVersionsWrapper.vue";
 import FloatingMenuPortalTarget from "./WebGLKanvas/FloatingMenu/FloatingMenuPortalTarget.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 import { useCanvasRendererUtils } from "./util/canvasRenderer";
@@ -53,19 +49,6 @@ const { currentRenderer } = useCanvasRendererUtils();
 const WorkflowCanvas = computed(() =>
   currentRenderer.value === "SVG" ? SVGKanvas : WebGLKanvas,
 );
-
-const settingsStore = useSettingsStore();
-// eslint-disable-next-line no-magic-numbers
-const debouncedUpdateSetting = debounce(settingsStore.updateSetting, 5000);
-
-const nodeDialogSize = computed({
-  get() {
-    return settingsStore.settings.nodeDialogSize;
-  },
-  set(value: number) {
-    debouncedUpdateSetting({ key: "nodeDialogSize", value });
-  },
-});
 
 watch(selectedNodeIds, () => {
   if (quickActionMenu.value.isOpen) {
@@ -122,31 +105,19 @@ const panelStore = usePanelStore();
 
     <WorkflowInfoBar />
 
-    <SplitPanel
-      v-if="useEmbeddedDialogs || versionsStore.isSidepanelOpen"
-      v-model:secondary-size="nodeDialogSize"
-      v-model:expanded="panelStore.isRightPanelExpanded"
-      class="split-panel"
-      splitter-id="node-config-split-panel"
-      direction="right"
-      use-pixel
-      :secondary-min-size="360"
-      :secondary-max-size="960"
-      style="--splitter-background-color: var(--knime-gray-ultra-light)"
-      keep-element-on-close
-    >
-      <!--
+    <!--
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
       instead of diffing old and new workflow.
     -->
-      <WorkflowCanvas :key="`${activeProjectId}-${activeWorkflowId}`" />
-      <template #secondary>
-        <NodeConfig v-if="useEmbeddedDialogs" />
-        <ManageVersionsWrapper v-else />
-      </template>
-    </SplitPanel>
+    <WorkflowCanvas :key="`${activeProjectId}-${activeWorkflowId}`" />
 
-    <WorkflowCanvas v-else :key="`${activeProjectId}-${activeWorkflowId}`" />
+    <!-- Floating node configuration / versions panel -->
+    <NodeConfigFloatingPanel
+      v-if="
+        (useEmbeddedDialogs || versionsStore.isSidepanelOpen) &&
+        panelStore.isRightPanelExpanded
+      "
+    />
   </div>
 </template>
 
@@ -165,7 +136,5 @@ const panelStore = usePanelStore();
   cursor: crosshair;
 }
 
-.split-panel {
-  --z-index-common-splitter: v-bind("$zIndices.layerStaticPanelDecorations");
-}
+
 </style>
