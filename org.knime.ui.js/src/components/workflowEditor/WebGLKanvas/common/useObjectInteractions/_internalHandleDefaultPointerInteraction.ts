@@ -77,9 +77,11 @@ export const useHandlePointerInteraction = (options: Options) => {
     objectMetadata,
   });
 
-  const openRightPanelForNodes = () => {
-    // In "actionbar" mode the panel is only opened via the action bar configure button
-    if (useApplicationSettingsStore().nodeConfigOpenMode === "actionbar") {
+  const openRightPanelForNodes = (isDoubleClick = false) => {
+    const mode = useApplicationSettingsStore().nodeConfigOpenMode;
+    // In "actionbar" mode: only opened via the action bar configure button
+    // In "modal" mode: only opened via double-click or action bar button
+    if (mode === "actionbar" || (mode === "modal" && !isDoubleClick)) {
       return;
     }
     if (!panelStore.isRightPanelExpanded) {
@@ -110,7 +112,7 @@ export const useHandlePointerInteraction = (options: Options) => {
         objectMetadata,
       });
 
-      openRightPanelForNodes();
+      openRightPanelForNodes(true);
       options.onDoubleClick(pointerDownEvent);
       return;
     }
