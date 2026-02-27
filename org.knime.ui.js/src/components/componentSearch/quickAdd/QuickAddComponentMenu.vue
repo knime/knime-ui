@@ -31,14 +31,6 @@ const componentSearchStore = useQuickActionComponentSearchStore();
 const { isLoading, hasLoaded, results, query } =
   storeToRefs(componentSearchStore);
 
-const updateSearchQuery = async (value: string) => {
-  try {
-    await componentSearchStore.updateQuery(value);
-  } catch (error) {
-    toastPresets.search.nodeSearch({ error });
-  }
-};
-
 const componentSearchResults = useTemplateRef("componentSearchResults");
 const searchDownKey = () => {
   componentSearchResults.value?.focusFirst();
@@ -53,6 +45,45 @@ const canvasPosition = computed(() => props.quickActionContext.canvasPosition);
 const nodeId = computed(() => props.quickActionContext.nodeId);
 const port = computed(() => props.quickActionContext.port);
 const nodeRelation = computed(() => props.quickActionContext.nodeRelation);
+// eslint-disable-next-line no-undefined
+const portId = computed(() => port.value?.typeId ?? undefined);
+const searchSide = computed(() => {
+  if (!port.value) {
+    return undefined;
+  }
+
+  if (!nodeRelation.value) {
+    return undefined;
+  }
+
+  if (nodeRelation.value === AddNodeCommand.NodeRelationEnum.PREDECESSORS) {
+    return "output";
+  }
+
+  if (nodeRelation.value === AddNodeCommand.NodeRelationEnum.SUCCESSORS) {
+    return "input";
+  }
+
+  return undefined;
+});
+
+const updateSearchQuery = async (value: string) => {
+  try {
+    await componentSearchStore.updateQuery(value, {
+      portSide: searchSide.value,
+      portId: portId.value,
+    });
+  } catch (error) {
+    toastPresets.search.nodeSearch({ error });
+  }
+};
+
+const fetchSearchResults = (params: { append: boolean }) =>
+  componentSearchStore.searchComponents({
+    ...params,
+    portSide: searchSide.value,
+    portId: portId.value,
+  });
 
 const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   if (!nodeTemplate.component) {
@@ -128,7 +159,7 @@ onBeforeUnmount(() => {
       :is-loading="isLoading"
       :has-loaded="hasLoaded"
       :results="results"
-      :fetch-data="componentSearchStore.searchComponents"
+      :fetch-data="fetchSearchResults"
       @nav-reached-top="($refs.search as any).focus()"
       @add-to-workflow="addNode"
     >
