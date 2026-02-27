@@ -6,6 +6,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/lib/geometry";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { usePanelStore } from "@/store/panel";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -183,7 +184,10 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           hasReleased = true;
 
           if (!didDrag && options.isNode) {
-            usePanelStore().isRightPanelExpanded = true;
+            // In "actionbar" mode the panel is only opened via the action bar configure button
+            if (useApplicationSettingsStore().nodeConfigOpenMode !== "actionbar") {
+              usePanelStore().isRightPanelExpanded = true;
+            }
           }
 
           const shouldMove = await onMoveEndCallback(pointerUpEvent);

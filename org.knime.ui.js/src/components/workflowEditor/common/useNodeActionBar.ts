@@ -5,6 +5,8 @@ import type { Node } from "@/api/gateway-api/generated-api";
 import type { ActionButtonConfig } from "@/components/workflowEditor/types";
 import { useShortcuts } from "@/services/shortcuts";
 import type { ShortcutName } from "@/services/shortcuts/types";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { usePanelStore } from "@/store/panel";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
 export type IconKeys =
@@ -62,7 +64,19 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
             hoverTitle("Configure", $shortcuts.get("configureNode").hotkeyText),
           disabled: !options.canConfigure.value,
           icon: options.icons.OpenDialogIcon,
-          onClick: () => dispatchShortcut("configureNode"),
+          onClick: () => {
+            const settings = useApplicationSettingsStore();
+            // In "actionbar" mode with embedded dialogs, open the floating panel
+            // rather than dispatching the legacy desktop-dialog shortcut.
+            if (
+              settings.nodeConfigOpenMode === "actionbar" &&
+              settings.useEmbeddedDialogs
+            ) {
+              usePanelStore().isRightPanelExpanded = true;
+            } else {
+              dispatchShortcut("configureNode");
+            }
+          },
         },
         pauseLoopExecution: {
           title: () =>

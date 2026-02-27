@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useEventListener } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
 import { ToastStack } from "@knime/components";
 
 import ManageVersionsWrapper from "@/components/workflowEditor/ManageVersionsWrapper.vue";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -45,6 +46,13 @@ const exitLargeMode = () => {
 useEventListener(panel, "click", (event) => {
   if (event.target === panel.value) {
     exitLargeMode();
+  }
+});
+
+// In "modal" mode every dialog opens as a modal (large mode) by default.
+onMounted(() => {
+  if (useApplicationSettingsStore().nodeConfigOpenMode === "modal") {
+    nodeConfigurationStore.setIsLargeMode(true);
   }
 });
 </script>

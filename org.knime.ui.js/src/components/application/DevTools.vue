@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, useTemplateRef, watch } from "vue";
 import { useWindowSize } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 import { FunctionButton } from "@knime/components";
 import {
@@ -17,6 +18,7 @@ import { isDesktop } from "@/environment";
 import { openInspector, reloadApp } from "@/lib/debug";
 import { clamp } from "@/lib/math";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import FPSMeter from "../toolbar/FPSMeter.vue";
 import {
   type CanvasRendererType,
@@ -27,6 +29,8 @@ const isFrontendDevMode = import.meta.env.DEV;
 const { currentRenderer, isSVGRenderer } = useCanvasRendererUtils();
 const canvasRenderers: CanvasRendererType[] = ["SVG", "WebGL"];
 const webglCanvasStore = useWebGLCanvasStore();
+
+const { nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
 
 const { currentMode } = useKdsDarkMode();
 const { legacyMode } = useKdsLegacyMode();
@@ -169,6 +173,17 @@ const dragStart = (pointerDown: PointerEvent) => {
           },
         ]"
         data-test-id="canvas-theme-toggler"
+      />
+
+      <KdsValueSwitch
+        v-model="nodeConfigOpenMode"
+        size="small"
+        :possible-values="[
+          { id: 'current', text: '🖱️ Current' },
+          { id: 'actionbar', text: '🔘 Bar' },
+          { id: 'modal', text: '📋 Modal' },
+        ]"
+        data-test-id="node-config-open-mode-toggler"
       />
 
       <FunctionButton
