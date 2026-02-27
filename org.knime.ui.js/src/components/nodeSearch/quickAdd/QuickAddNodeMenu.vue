@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
@@ -108,7 +109,48 @@ const { hasNodeRecommendationsEnabled, fetchNodeRecommendations } =
     nodeRelation,
   );
 
-const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
+const trackInsertion = (
+  source: "click" | "keyboard",
+  newNodeId: string,
+  newNodeFactoryId: string,
+) => {
+  const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
+
+  if (!node) {
+    return;
+  }
+
+  const trackId =
+    source === "click"
+      ? "node_created::qam_click_"
+      : "node_created::qam_keyboard_enter";
+
+  if (nodeId.value) {
+    const sourceNode = useNodeInteractionsStore().getNodeById(nodeId.value);
+    const sourceNodeFactory = useNodeInteractionsStore().getNodeFactory(
+      nodeId.value!,
+    );
+
+    useAnalytics().track(trackId, {
+      type: node.kind,
+      nodeFactoryId: newNodeFactoryId,
+      connectedTo: {
+        type: sourceNode!.kind,
+        nodeFactoryId: sourceNodeFactory.className,
+      },
+    });
+  } else {
+    useAnalytics().track(trackId, {
+      type: node.kind,
+      nodeFactoryId: newNodeFactoryId,
+    });
+  }
+};
+
+const addNode = async (
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+  source: "click" | "keyboard",
+) => {
   if (!isWritable.value || nodeTemplate === null) {
     return;
   }
@@ -130,35 +172,35 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
 
   // add node
   const { x, y } = canvasPosition.value;
+
+  const autoConnectOptions =
+    nodeId.value && nodeRelation.value
+      ? {
+          sourceNodeId: nodeId.value,
+          sourcePortIdx: port.value?.index,
+          nodeRelation: nodeRelation.value as AddNodeCommand.NodeRelationEnum,
+        }
+      : undefined;
+
   const { newNodeId } = await nodeInteractionsStore.addNativeNode({
     position: {
       x: x - offsetX,
       y: y - offsetY,
     },
     nodeFactory,
-    autoConnectOptions: {
-      sourceNodeId: nodeId.value!,
-      sourcePortIdx: port.value?.index,
-      nodeRelation: nodeRelation.value! as AddNodeCommand.NodeRelationEnum,
-    },
+    autoConnectOptions,
   });
 
   props.quickActionContext.closeMenu();
 
-  const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
-
-  if (node) {
-    useAnalytics().track("node_created::quickactionmenu_click_", {
-      nodeId: node.id,
-      nodeType: node.kind,
-      nodeFactoryId: nodeFactory.className,
-    });
+  if (newNodeId) {
+    trackInsertion(source, newNodeId, nodeFactory.className);
   }
 };
 
 const searchEnterKey = () => {
   if (getFirstResult.value) {
-    addNode(getFirstResult.value);
+    addNode(getFirstResult.value, "keyboard");
   }
 };
 
@@ -250,7 +292,7 @@ watch(port, async (newPort, oldPort) => {
         v-model:selected-node="selectedNode"
         :display-mode="displayMode"
         @nav-reached-top="($refs.search as any).focus()"
-        @add-node="addNode($event)"
+        @add-node="addNode"
       />
       <QuickAddNodeRecommendations
         v-else
@@ -258,7 +300,7 @@ watch(port, async (newPort, oldPort) => {
         v-model:selected-node="selectedNode"
         :display-mode="displayMode"
         @nav-reached-top="($refs.search as any).focus()"
-        @add-node="addNode($event)"
+        @add-node="addNode"
       />
     </template>
   </template>

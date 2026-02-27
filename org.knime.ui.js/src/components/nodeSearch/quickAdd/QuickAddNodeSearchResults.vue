@@ -19,7 +19,7 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<{
   "update:selectedNode": [value: NodeTemplateWithExtendedPorts | null];
-  addNode: [node: NodeTemplateWithExtendedPorts];
+  addNode: [node: NodeTemplateWithExtendedPorts, source: "click" | "keyboard"];
 }>();
 
 const quickAddNodesStore = useQuickAddNodesStore();
@@ -49,12 +49,12 @@ defineExpose({ focusFirst });
     :is-loading-search-results="isLoadingSearchResults"
     :is-quick-add-node-menu="true"
     @update:selected-node="$emit('update:selectedNode', $event)"
-    @item-enter-key="$emit('addNode', $event)"
+    @item-enter-key="$emit('addNode', $event, 'keyboard')"
   >
     <template #nodesTemplate="itemProps">
       <NodeTemplate
         v-bind="itemProps"
-        @click="$emit('addNode', itemProps.nodeTemplate)"
+        @click="$emit('addNode', itemProps.nodeTemplate, 'click')"
       />
     </template>
   </SearchResults>

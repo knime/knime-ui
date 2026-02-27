@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
+import { Node } from "@/api/gateway-api/generated-api";
 import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import {
   DraggableNodeTemplate,
@@ -9,8 +10,10 @@ import {
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import { useAnalytics } from "@/services/analytics";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */
@@ -73,6 +76,40 @@ const displayModeSupported = computed(() => {
   }
   return props.displayMode;
 });
+
+const addNodeOnEnterKey = async (
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+) => {
+  if (!nodeTemplate.nodeFactory) {
+    return;
+  }
+
+  const { newNodeId, connectedTo } = await addNodeWithAutoPositioning(
+    nodeTemplate.nodeFactory,
+  );
+
+  if (!newNodeId) {
+    return;
+  }
+
+  if (connectedTo) {
+    useAnalytics().track("node_created::noderepo_keyboard_enter", {
+      type: Node.KindEnum.Node,
+      nodeFactoryId: nodeTemplate.nodeFactory.className,
+      connectedTo: {
+        type: connectedTo.node.kind,
+        nodeFactoryId: useNodeInteractionsStore().getNodeFactory(
+          connectedTo.node.id,
+        ).className,
+      },
+    });
+  } else {
+    useAnalytics().track("node_created::noderepo_keyboard_enter", {
+      type: Node.KindEnum.Node,
+      nodeFactoryId: nodeTemplate.nodeFactory.className,
+    });
+  }
+};
 </script>
 
 <template>
@@ -88,7 +125,7 @@ const displayModeSupported = computed(() => {
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
     :is-loading-search-results="isLoadingSearchResults"
-    @item-enter-key="addNodeWithAutoPositioning($event.nodeFactory!)"
+    @item-enter-key="addNodeOnEnterKey"
     @show-node-details="onShowNodeDetails"
     @nav-reached-top="$emit('navReachedTop', $event)"
   >

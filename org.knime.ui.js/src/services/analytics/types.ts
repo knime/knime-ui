@@ -1,60 +1,18 @@
-type AnalyticEvents = {
-  /**
-   * node creation
-   */
-  "node_created::noderepo_dragdrop_": {
-    nodeId: string;
-    nodeType: string;
-    nodeFactoryId: string;
+import type { NodeCreationEvents } from "./events/node-created";
+import type { QAMOpenedEvents } from "./events/qam-opened";
+
+type AnalyticEvents = NodeCreationEvents &
+  QAMOpenedEvents & {
+    /**
+     * Workflow saving
+     */
+    "workflow_saved::wftoolbar_button_save": {
+      isAutosyncEnabled: boolean;
+    };
+    "workflow_saved::keyboard_shortcut_savewf": {
+      isAutosyncEnabled: boolean;
+    };
   };
-  "node_created::noderepo_doubleclick_": {
-    nodeId: string;
-    nodeType: string;
-    nodeFactoryId: string;
-  };
-  "node_created::explorer_dragdrop_": {
-    nodeId: string;
-    nodeType: string;
-    nodeFactoryId: string;
-  };
-  "node_created::quickactionmenu_click_": {
-    nodeId: string;
-    nodeType: string;
-    nodeFactoryId: string;
-  };
-  /**
-   * quick action menu
-   */
-  "qam_opened::port_dragdrop_fwd": {
-    nodeId: string;
-    nodeType: string;
-    nodePortIndex: number;
-    connectionType: string;
-  };
-  "qam_opened::port_dragdrop_bwd": {
-    nodeId: string;
-    nodeType: string;
-    nodePortIndex: number;
-    connectionType: string;
-  };
-  "qam_opened::keyboard_shortcut_": {
-    nodeId?: string;
-    nodeType?: string;
-    nodePortIndex?: number;
-    connectionType?: string;
-  };
-  "qam_opened::canvas_doubleclick_": never;
-  "qam_opened::canvas_ctxmenu_quickaddnode": never;
-  /**
-   * Workflow saving
-   */
-  "workflow_saved::wftoolbar_button_save": {
-    isAutoSyncEnabled: boolean;
-  };
-  "workflow_saved::keyboard_shortcut_savewf": {
-    isAutoSyncEnabled: boolean;
-  };
-};
 
 export type AnalyticEventNames = keyof AnalyticEvents;
 
