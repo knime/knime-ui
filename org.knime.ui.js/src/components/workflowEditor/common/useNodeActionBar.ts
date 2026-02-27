@@ -7,6 +7,7 @@ import { useShortcuts } from "@/services/shortcuts";
 import type { ShortcutName } from "@/services/shortcuts/types";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { usePanelStore } from "@/store/panel";
+import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
 export type IconKeys =
@@ -66,10 +67,17 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
           icon: options.icons.OpenDialogIcon,
           onClick: () => {
             const settings = useApplicationSettingsStore();
-            // In "actionbar" mode with embedded dialogs, open the floating panel
-            // rather than dispatching the legacy desktop-dialog shortcut.
+            // Select only this node (clearing previous selection) when its configure button is clicked.
+            useSelectionStore().tryClearSelection({
+              keepNodesInSelection: [options.nodeId],
+            });
+            // In "actionbar" or "modal" mode with embedded dialogs, open the
+            // floating panel rather than dispatching the legacy desktop-dialog
+            // shortcut. In "modal" mode NodeConfig.vue will switch it to
+            // large/modal on mount automatically.
             if (
-              settings.nodeConfigOpenMode === "actionbar" &&
+              (settings.nodeConfigOpenMode === "actionbar" ||
+                settings.nodeConfigOpenMode === "modal") &&
               settings.useEmbeddedDialogs
             ) {
               usePanelStore().isRightPanelExpanded = true;
@@ -150,10 +158,6 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
     }
 
     const conditionMap: Record<keyof Actions, boolean> = {
-      configureNode: Boolean(
-        options.canConfigure.value && uiControls.canConfigureNodes,
-      ),
-
       // plain execution
       execute: !options.canPause.value && !options.canResume.value,
 
@@ -170,6 +174,11 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
       // other
       openView:
         options.canOpenView.value !== null && uiControls.canDetachNodeViews,
+
+      // configure is last so the button sits at the far-right end of the bar
+      configureNode: Boolean(
+        options.canConfigure.value && uiControls.canConfigureNodes,
+      ),
     };
 
     return Object.entries(conditionMap)
