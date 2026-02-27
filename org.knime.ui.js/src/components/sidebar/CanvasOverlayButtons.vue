@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { type Component, computed } from "vue";
+import { computed } from "vue";
 
 import { useHint } from "@knime/components";
-import AiIcon from "@knime/styles/img/icons/ai-general.svg";
-import CubeIcon from "@knime/styles/img/icons/cube.svg";
-import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
+import { KdsToggleButton } from "@knime/kds-components";
+import type { KdsIconName } from "@knime/kds-components";
 
-import MetainfoIcon from "@/assets/metainfo.svg";
-import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { HINTS } from "@/hints/hints.config";
 import { TABS, type TabValues, usePanelStore } from "@/store/panel";
@@ -16,8 +13,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 type ButtonDef = {
   name: TabValues;
   title: string;
-  icon: Component;
-  classes?: string[];
+  icon: KdsIconName;
 };
 
 const panelStore = usePanelStore();
@@ -34,29 +30,29 @@ const buttons = computed<ButtonDef[]>(() => [
   {
     name: TABS.CONTEXT_AWARE_DESCRIPTION,
     title: "Info",
-    icon: MetainfoIcon,
+    icon: "circle-info",
   },
   ...(uiControls.canAccessNodeRepository
-    ? [{ name: TABS.NODE_REPOSITORY as TabValues, title: "Nodes", icon: PlusIcon }]
+    ? [{ name: TABS.NODE_REPOSITORY as TabValues, title: "Nodes", icon: "node-stack" as KdsIconName }]
     : []),
   ...(uiControls.canAccessSpaceExplorer
-    ? [{ name: TABS.SPACE_EXPLORER as TabValues, title: "Explorer", icon: CubeIcon }]
+    ? [{ name: TABS.SPACE_EXPLORER as TabValues, title: "Explorer", icon: "space" as KdsIconName }]
     : []),
   ...(isKaiEnabled.value && uiControls.canAccessKAIPanel
-    ? [{ name: TABS.KAI as TabValues, title: "K-AI", icon: AiIcon, classes: ["k-ai-btn"] }]
+    ? [{ name: TABS.KAI as TabValues, title: "K-AI", icon: "ai-general" as KdsIconName }]
     : []),
   {
     name: TABS.WORKFLOW_MONITOR,
     title: "Monitor",
-    icon: WorkflowMonitorIcon,
+    icon: "workflow",
   },
 ]);
 
 const isActive = (name: TabValues) =>
   panelStore.isTabActive(name) && panelStore.isLeftPanelExpanded;
 
-const handleClick = (name: TabValues) => {
-  if (panelStore.isTabActive(name) && panelStore.isLeftPanelExpanded) {
+const handleToggle = (name: TabValues, newValue: boolean) => {
+  if (!newValue) {
     panelStore.isLeftPanelExpanded = false;
   } else {
     panelStore.setCurrentProjectActiveTab(name);
@@ -67,93 +63,39 @@ const handleClick = (name: TabValues) => {
 </script>
 
 <template>
-  <div class="canvas-overlay-buttons">
-    <button
+  <div class="canvas-overlay-toolbar" role="toolbar" aria-label="Panel controls">
+    <KdsToggleButton
       v-for="btn in buttons"
       :key="btn.name"
+      :model-value="isActive(btn.name)"
+      :leading-icon="btn.icon"
+      :aria-label="btn.title"
       :title="btn.title"
-      :class="['overlay-btn', ...(btn.classes ?? []), { active: isActive(btn.name) }]"
-      :aria-pressed="isActive(btn.name)"
-      @click="handleClick(btn.name)"
-    >
-      <Component :is="btn.icon" class="btn-icon" aria-hidden="true" focusable="false" />
-    </button>
+      variant="transparent"
+      size="medium"
+      class="toolbar-btn"
+      :class="{ 'k-ai-btn': btn.name === TABS.KAI }"
+      @update:model-value="(v) => handleToggle(btn.name, v)"
+    />
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.canvas-overlay-buttons {
+.canvas-overlay-toolbar {
   position: fixed;
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
-  left: var(--space-12, 12px);
-  top: calc(var(--app-toolbar-height) + 54px);
+  left: var(--kds-spacing-container-0-75x);
+  top: calc(var(--app-toolbar-height) + var(--kds-spacing-container-3x) + var(--kds-spacing-container-0-37x));
   display: flex;
   flex-direction: column;
-  gap: var(--space-4, 4px);
+
+  /* Group buttons inside a single bordered pill */
+  background-color: var(--kds-color-surface-default);
+  border-radius: var(--kds-border-radius-container-0-50x);
+  box-shadow: var(--shadow-elevation-1);
+  overflow: hidden;
+  padding: var(--kds-spacing-container-0-25x);
+  gap: var(--kds-spacing-container-0-25x);
 }
 
-.overlay-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 48px;
-  height: 52px;
-  padding: 4px 2px;
-  border: 1px solid var(--knime-silver-sand);
-  border-radius: 6px;
-  background-color: var(--kds-color-surface-default, white);
-  cursor: pointer;
-  transition: background-color 120ms ease-out, box-shadow 120ms ease-out;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
-
-  & .btn-icon {
-    width: 18px;
-    height: 18px;
-    stroke: var(--knime-masala);
-    flex-shrink: 0;
-  }
-
-  & .btn-label {
-    font-size: 9px;
-    font-weight: 500;
-    color: var(--knime-masala);
-    line-height: 1;
-  }
-
-  &:hover {
-    background-color: var(--knime-gray-ultra-light);
-    box-shadow: 0 2px 6px rgb(0 0 0 / 18%);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--knime-cornflower);
-    outline-offset: 2px;
-  }
-
-  &.active {
-    background-color: var(--knime-cornflower-semi);
-    border-color: var(--knime-cornflower);
-
-    & .btn-icon {
-      stroke: var(--knime-cornflower-dark);
-    }
-
-    & .btn-label {
-      color: var(--knime-cornflower-dark);
-    }
-  }
-
-  &.k-ai-btn {
-    &.active {
-      background-color: var(--knime-yellow-semi, hsl(51deg 100% 50% / 15%));
-      border-color: var(--knime-yellow, hsl(51deg 100% 50%));
-
-      & .btn-icon {
-        stroke: var(--knime-masala);
-      }
-    }
-  }
-}
 </style>
