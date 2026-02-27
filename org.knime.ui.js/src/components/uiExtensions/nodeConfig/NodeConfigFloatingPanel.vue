@@ -88,6 +88,13 @@ watch(
   },
 );
 
+// Close the panel when the selection is cleared (e.g. clicking empty canvas)
+watch(singleSelectedNode, (node) => {
+  if (!node) {
+    panelStore.isRightPanelExpanded = false;
+  }
+});
+
 const panelStyles = computed(() => ({
   left: `${rectState.value.left}px`,
   top: `${rectState.value.top}px`,
