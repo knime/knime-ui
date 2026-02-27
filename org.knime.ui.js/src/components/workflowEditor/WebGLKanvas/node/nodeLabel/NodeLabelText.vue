@@ -79,13 +79,16 @@ const textStyle = computed<Partial<TextStyle>>(() => {
   return nodeLabelText.styles;
 });
 
-const textX = computed(() => nodeSize / 2 - labelMeasures.value.width / 2 - 1);
+const textX = computed(
+  () => nodeSize / 2 - labelMeasures.value.maxLineWidth / 2,
+);
 
 const textY = computed(() => {
   const baseYOffset = props.isMetanode ? nodeSize + 12 : nodeSize * 2;
 
   return (
     baseYOffset +
+    3 +
     getNodeLabelTopOffset(props.nodeId) +
     (navigatorUtils.isMac() ? 1 : -0.5)
   );
@@ -95,12 +98,12 @@ const borderPadding = 2;
 const renderBorder = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics.rect(
-    textX.value - borderPadding,
-    textY.value,
-    labelMeasures.value.width + borderPadding * 2,
-    labelMeasures.value.height + 3,
+    -borderPadding,
+    -borderPadding,
+    labelMeasures.value.maxLineWidth + borderPadding * 2,
+    labelMeasures.value.height,
   );
-  graphics.stroke({ color: $colors.SilverSand, width: 1.3 });
+  graphics.stroke({ color: $colors.SilverSand, width: 1 });
 };
 
 const onPointerEnter = (event: FederatedPointerEvent) => {
@@ -110,14 +113,13 @@ const onPointerEnter = (event: FederatedPointerEvent) => {
 </script>
 
 <template>
-  <Container :label="`NodeLabel__${nodeId}`">
+  <Container :label="`NodeLabel__${nodeId}`" :x="textX" :y="textY">
     <Text
+      :renderable="shortenedText.length > 0"
       label="NodeLabelText"
       :resolution="zoomAwareResolution"
       :style="textStyle"
       :round-pixels="true"
-      :x="textX"
-      :y="textY"
       event-mode="static"
       @rightclick="emit('rightclick', $event)"
       @pointerenter="onPointerEnter"
