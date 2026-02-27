@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { useHint } from "@knime/components";
 import { KdsToggleButton } from "@knime/kds-components";
 import type { KdsIconName } from "@knime/kds-components";
 
+import WorkflowNameBreadcrumb from "@/components/toolbar/WorkflowNameBreadcrumb.vue";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { HINTS } from "@/hints/hints.config";
 import { TABS, type TabValues, usePanelStore } from "@/store/panel";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 type ButtonDef = {
   name: TabValues;
@@ -20,6 +23,7 @@ const panelStore = usePanelStore();
 const uiControls = useUIControlsStore();
 const { isKaiEnabled } = useIsKaiEnabled();
 const { createHint } = useHint();
+const { activeWorkflow } = storeToRefs(useWorkflowStore());
 
 createHint({
   hintId: HINTS.K_AI,
@@ -52,50 +56,71 @@ const isActive = (name: TabValues) =>
   panelStore.isTabActive(name) && panelStore.isLeftPanelExpanded;
 
 const handleToggle = (name: TabValues, newValue: boolean) => {
-  if (!newValue) {
-    panelStore.isLeftPanelExpanded = false;
-  } else {
+  if (newValue) {
     panelStore.setCurrentProjectActiveTab(name);
     panelStore.isLeftPanelExpanded = true;
     panelStore.closeExtensionPanel();
+  } else {
+    panelStore.isLeftPanelExpanded = false;
   }
 };
 </script>
 
 <template>
-  <div class="canvas-overlay-toolbar" role="toolbar" aria-label="Panel controls">
-    <KdsToggleButton
-      v-for="btn in buttons"
-      :key="btn.name"
-      :model-value="isActive(btn.name)"
-      :leading-icon="btn.icon"
-      :aria-label="btn.title"
-      :title="btn.title"
-      variant="transparent"
-      size="medium"
-      class="toolbar-btn"
-      :class="{ 'k-ai-btn': btn.name === TABS.KAI }"
-      @update:model-value="(v) => handleToggle(btn.name, v)"
-    />
+  <div class="canvas-overlay-top-left">
+    <!-- Workflow name / breadcrumb -->
+    <div v-if="activeWorkflow" class="breadcrumb-pill">
+      <WorkflowNameBreadcrumb :workflow="activeWorkflow" />
+    </div>
+
+    <!-- Sidebar panel toggle buttons -->
+    <div class="panel-buttons" role="toolbar" aria-label="Panel controls">
+      <KdsToggleButton
+        v-for="btn in buttons"
+        :key="btn.name"
+        :model-value="isActive(btn.name)"
+        :leading-icon="btn.icon"
+        :aria-label="btn.title"
+        :title="btn.title"
+        variant="transparent"
+        size="medium"
+        class="toolbar-btn"
+        :class="{ 'k-ai-btn': btn.name === TABS.KAI }"
+        @update:model-value="(v) => handleToggle(btn.name, v)"
+      />
+    </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.canvas-overlay-toolbar {
+.canvas-overlay-top-left {
   position: fixed;
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   left: var(--kds-spacing-container-0-75x);
-  top: calc(var(--app-toolbar-height) + var(--kds-spacing-container-3x) + var(--kds-spacing-container-0-37x));
+  top: var(--kds-spacing-container-0-75x);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--kds-spacing-container-0-5x);
+}
 
-  /* Group buttons inside a single bordered pill */
+.breadcrumb-pill {
   background-color: var(--kds-color-surface-default);
   border-radius: var(--kds-border-radius-container-0-50x);
   box-shadow: var(--shadow-elevation-1);
-  overflow: hidden;
-  padding: var(--kds-spacing-container-0-25x);
-  gap: var(--kds-spacing-container-0-25x);
+  padding: var(--kds-spacing-container-0-25x) var(--kds-spacing-container-0-75x);
+  height: 40px;
+  display: flex;
+  align-items: center;
 }
 
+.panel-buttons {
+  background-color: var(--kds-color-surface-default);
+  border-radius: var(--kds-border-radius-container-0-50x);
+  box-shadow: var(--shadow-elevation-1);
+  padding: var(--kds-spacing-container-0-25x);
+  display: flex;
+  flex-direction: row;
+  gap: var(--kds-spacing-container-0-25x);
+}
 </style>
