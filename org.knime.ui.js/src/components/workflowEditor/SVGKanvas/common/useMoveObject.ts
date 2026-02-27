@@ -184,8 +184,9 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           hasReleased = true;
 
           if (!didDrag && options.isNode) {
-            // In "actionbar" mode the panel is only opened via the action bar configure button
-            if (useApplicationSettingsStore().nodeConfigOpenMode !== "actionbar") {
+            // In "actionbar" or "modal" mode the panel is only opened via the action bar configure button or double-click
+            const mode = useApplicationSettingsStore().nodeConfigOpenMode;
+            if (mode !== "actionbar" && mode !== "modal") {
               usePanelStore().isRightPanelExpanded = true;
             }
           }
