@@ -33,10 +33,18 @@ type ApplicationSettingsState = {
    * If true, dev mode specifics buttons will be shown.
    */
   devMode: boolean;
-  /*
+/*
    * If false, the dev tools floating bar is hidden (only relevant when devMode is true).
    */
   showDevToolsBar: boolean;
+  /*
+   * Controls how a node configuration dialog is opened:
+   * - "current"   : click on a node opens the floating config panel (default)
+   * - "actionbar" : only the configure button in the node action bar opens
+   *                 the panel; single click merely selects the node
+   * - "modal"     : the config dialog is always opened as a modal (large mode)
+   */
+  nodeConfigOpenMode: "current" | "actionbar" | "modal";
   /*
    * Whether to enable the locking of metanodes and components
    */
@@ -61,6 +69,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     scrollToZoomEnabled: false,
     devMode: false,
     showDevToolsBar: true,
+    nodeConfigOpenMode: "current",
     isSubnodeLockingEnabled: false,
     useEmbeddedDialogs: true,
     isKaiEnabled: true,
@@ -93,6 +102,10 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
 
     toggleDevToolsBar() {
       this.showDevToolsBar = !this.showDevToolsBar;
+    },
+
+    setNodeConfigOpenMode(mode: "current" | "actionbar" | "modal") {
+      this.nodeConfigOpenMode = mode;
     },
 
     setIsSubnodeLockingEnabled(isSubnodeLockingEnabled: boolean) {
