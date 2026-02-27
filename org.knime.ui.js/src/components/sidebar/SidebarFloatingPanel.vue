@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, provide, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
-
-import { FunctionButton } from "@knime/components";
-import CloseIcon from "@knime/styles/img/icons/close.svg";
 
 import { TABS, usePanelStore } from "@/store/panel";
 import ResizableComponentWrapper from "../uiExtensions/dataValueViews/ResizableComponentWrapper.vue";
@@ -57,7 +54,6 @@ const MIN_HEIGHT = 200;
 /** Left margin: 12px gap + 48px buttons + 8px gap */
 const LEFT_OFFSET = 68;
 const TOP_OFFSET = 40;
-const VIEWPORT_MARGIN = 12;
 
 const { state: rectState, setRect } = useDraggableResizableRectState();
 
@@ -89,30 +85,15 @@ const panelStyles = computed(() => ({
   height: `${rectState.value.height}px`,
 }));
 
-// ─── Active tab title ─────────────────────────────────────────────────────────
-
-const tabTitles: Partial<Record<string, string>> = {
-  [TABS.CONTEXT_AWARE_DESCRIPTION]: "Info",
-  [TABS.NODE_REPOSITORY]: "Nodes",
-  [TABS.SPACE_EXPLORER]: "Explorer",
-  [TABS.KAI]: "K-AI",
-  [TABS.WORKFLOW_MONITOR]: "Monitor",
-};
-
-const activeTabTitle = computed(() => {
-  for (const [tab, title] of Object.entries(tabTitles)) {
-    if (panelStore.isTabActive(tab as any)) {
-      return title;
-    }
-  }
-  return "Panel";
-});
-
 // ─── Dragging ─────────────────────────────────────────────────────────────────
 
 const isDragging = ref(false);
 
 const onHeaderMouseDown = (event: MouseEvent) => {
+  // Only drag when originating from the inner panel-header area
+  if (!(event.target as HTMLElement).closest(".panel-header")) {
+    return;
+  }
   if ((event.target as HTMLElement).closest("button")) {
     return;
   }
@@ -143,6 +124,9 @@ const close = () => {
   panelStore.closeExtensionPanel();
 };
 
+// Provide close so SidebarPanelLayout can render the button inside the header
+provide("fpClose", close);
+
 // Reposition when re-opened to default if it gets too far off screen
 watch(isLeftPanelExpanded, (expanded) => {
   if (!expanded) {
@@ -170,16 +154,8 @@ watch(isLeftPanelExpanded, (expanded) => {
     :style="panelStyles"
     @custom-resize="setRect"
   >
-    <!-- Drag handle header -->
-    <div class="fp-header" @mousedown="onHeaderMouseDown">
-      <span class="fp-title">{{ activeTabTitle }}</span>
-      <FunctionButton compact class="close-btn" @click="close">
-        <CloseIcon />
-      </FunctionButton>
-    </div>
-
-    <!-- Tab content -->
-    <div class="fp-body" :style="isDragging ? { pointerEvents: 'none' } : {}">
+    <!-- Tab content — inner .panel-header acts as drag handle -->
+    <div class="fp-body" :style="isDragging ? { pointerEvents: 'none' } : {}" @mousedown.capture="onHeaderMouseDown">
       <ContextAwareDescription
         v-if="panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
       />
@@ -205,28 +181,9 @@ watch(isLeftPanelExpanded, (expanded) => {
   display: flex;
   flex-direction: column;
   overflow: visible; /* allow extension panel to overflow */
-  border-radius: 8px;
-  background-color: var(--sidebar-background-color);
+  border-radius: var(--kds-border-radius-container-0-50x);
+  background-color: var(--kds-color-surface-default);
   box-shadow: var(--shadow-elevation-2);
-}
-
-.fp-header {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-16);
-  background-color: var(--knime-gray-ultra-light);
-  border-bottom: 1px solid var(--knime-silver-sand);
-  border-radius: 8px 8px 0 0;
-  cursor: move;
-  user-select: none;
-}
-
-.fp-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--knime-masala);
 }
 
 .fp-body {
@@ -235,7 +192,13 @@ watch(isLeftPanelExpanded, (expanded) => {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  border-radius: 0 0 8px 8px;
+  border-radius: var(--kds-border-radius-container-0-50x);
+
+  /* Inner panel-header becomes the drag handle */
+  :deep(.panel-header) {
+    cursor: move;
+    user-select: none;
+  }
 }
 
 /* Override the fixed-position SidebarExtensionPanel to appear adjacent */

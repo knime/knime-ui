@@ -1,7 +1,19 @@
+<script setup lang="ts">
+import { inject } from "vue";
+
+import { FunctionButton } from "@knime/components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
+
+const fpClose = inject<(() => void) | null>("fpClose", null);
+</script>
+
 <template>
   <div class="panel-layout">
     <div class="panel-header">
       <slot name="header" />
+      <FunctionButton v-if="fpClose" compact class="panel-close-btn" @click="fpClose">
+        <CloseIcon />
+      </FunctionButton>
     </div>
     <hr />
     <slot />
