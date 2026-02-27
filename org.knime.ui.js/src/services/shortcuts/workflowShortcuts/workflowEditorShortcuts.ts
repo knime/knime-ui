@@ -4,11 +4,8 @@ import { API } from "@api";
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
-import { ports as portDataMappers } from "@/lib/data-mappers";
 import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
-import { useAnalytics } from "@/services/analytics";
-import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -190,37 +187,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
     execute: (ctx) => {
-      const { opened, target } = openQuickActionMenu(ctx, "quick-add");
-
-      if (!opened) {
-        return;
-      }
-
-      const trackSource =
-        ctx.payload.src === "global"
-          ? "qam_opened::keyboard_shortcut_"
-          : "qam_opened::canvas_ctxmenu_quickaddnode";
-
-      let args: {
-        nodeId?: string;
-        nodeType?: string;
-        nodePortIndex?: number;
-        connectionType?: string;
-      } = {};
-
-      if (target) {
-        const { availablePortTypes } = useApplicationStore();
-        const extendedPortObject = portDataMappers.toExtendedPortObject(
-          availablePortTypes,
-        )(target.port.typeId);
-
-        args.nodeId = target.node.id;
-        args.nodeType = target.node.kind;
-        args.connectionType = extendedPortObject.kind;
-        args.nodePortIndex = target.port.index;
-      }
-
-      useAnalytics().track(trackSource, args);
+      openQuickActionMenu(ctx, "quick-add");
     },
     condition: () => useWorkflowStore().isWritable,
   },

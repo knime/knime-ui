@@ -20,7 +20,7 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<{
   "update:selectedNode": [value: NodeTemplateWithExtendedPorts | null];
-  addNode: [node: NodeTemplateWithExtendedPorts];
+  addNode: [node: NodeTemplateWithExtendedPorts, source: "click" | "keyboard"];
   navReachedTop: [];
 }>();
 
@@ -43,13 +43,13 @@ defineExpose({ focusFirst });
       :display-mode="displayMode"
       :highlight-first="true"
       @nav-reached-top="$emit('navReachedTop')"
-      @enter-key="$emit('addNode', $event)"
+      @enter-key="$emit('addNode', $event, 'keyboard')"
       @update:selected-node="$emit('update:selectedNode', $event)"
     >
       <template #item="itemProps">
         <NodeTemplate
           v-bind="itemProps"
-          @click="$emit('addNode', itemProps.nodeTemplate)"
+          @click="$emit('addNode', itemProps.nodeTemplate, 'click')"
         />
       </template>
     </NodeList>

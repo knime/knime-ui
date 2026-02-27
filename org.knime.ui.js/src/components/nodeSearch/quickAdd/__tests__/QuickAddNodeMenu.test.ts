@@ -284,11 +284,7 @@ describe("QuickAddNodeMenu.vue", () => {
             className:
               "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
           },
-          autoConnectOptions: {
-            sourceNodeId: null,
-            sourcePortIdx: undefined,
-            nodeRelation: null,
-          },
+          autoConnectOptions: undefined,
         }),
       );
       await flushPromises();

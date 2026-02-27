@@ -172,11 +172,18 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         };
 
         if (isItemAComponent) {
-          return nodeInteractionStore.importComponentNode({
+          const result = await nodeInteractionStore.importComponentNode({
             position,
             spaceItemReference,
             componentName: sourceItem.name,
           });
+
+          useAnalytics().track("node_created::explorer_dragdrop_", {
+            type: Node.KindEnum.Component,
+            componentId: sourceItem.id,
+          });
+
+          return result;
         } else {
           const { newNodeId } = await nodeInteractionStore.addNativeNode({
             position,
@@ -188,9 +195,8 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
 
           if (node) {
             useAnalytics().track("node_created::explorer_dragdrop_", {
-              nodeId: node.id,
               nodeFactoryId: nodeTemplateId,
-              nodeType: Node.KindEnum.Node,
+              type: Node.KindEnum.Node,
             });
           }
 

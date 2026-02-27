@@ -1,6 +1,7 @@
 /* eslint-disable no-undefined */
 import { storeToRefs } from "pinia";
 
+import type { KnimeNode } from "@/api/custom-types";
 import {
   AddNodeCommand,
   type NodeFactoryKey,
@@ -39,30 +40,45 @@ export const useAddNodeTemplateWithAutoPositioning = () => {
     });
   };
 
-  const addNodeWithAutoPositioning = (nodeFactory: NodeFactoryKey) => {
-    const { singleSelectedNode } = storeToRefs(useSelectionStore());
+  const addNodeWithAutoPositioning = async (
+    nodeFactory: NodeFactoryKey,
+  ): Promise<{
+    newNodeId: string | null;
+    connectedTo?: { node: KnimeNode };
+  }> => {
+    const singleSelectedNode = useSelectionStore().singleSelectedNode;
 
-    const position = singleSelectedNode.value
+    const position = singleSelectedNode
       ? {
           // eslint-disable-next-line no-magic-numbers
-          x: singleSelectedNode.value.position.x + 120,
-          y: singleSelectedNode.value.position.y,
+          x: singleSelectedNode.position.x + 120,
+          y: singleSelectedNode.position.y,
         }
       : defaultPosition();
 
-    const autoConnectOptions = singleSelectedNode.value
+    const autoConnectOptions = singleSelectedNode
       ? {
-          sourceNodeId: singleSelectedNode.value.id,
+          sourceNodeId: singleSelectedNode.id,
           nodeRelation: AddNodeCommand.NodeRelationEnum.SUCCESSORS,
         }
       : undefined;
 
     try {
-      return nodeInteractionsStore.addNativeNode({
+      const { newNodeId } = await nodeInteractionsStore.addNativeNode({
         position,
         nodeFactory,
         autoConnectOptions,
       });
+
+      if (newNodeId) {
+        const connectedTo = singleSelectedNode
+          ? { node: singleSelectedNode }
+          : undefined;
+
+        return { newNodeId, connectedTo };
+      }
+
+      return { newNodeId: null };
     } catch (error) {
       handleError(error);
       return { newNodeId: null };
