@@ -6,6 +6,7 @@ import { storeToRefs } from "pinia";
 import { type MenuItem, SubMenu, useHint } from "@knime/components";
 import {
   KdsButton,
+  KdsToggleButton,
   useKdsDynamicModal,
 } from "@knime/kds-components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
@@ -29,6 +30,7 @@ import {
 } from "@/store/application/canvasModes";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -40,9 +42,25 @@ const { activeProjectId, activeProjectOrigin, isUnknownProject } = storeToRefs(
 const { activeWorkflow, isWorkflowEmpty, isActiveWorkflowFixedVersion } =
   storeToRefs(useWorkflowStore());
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
+const uiControls = useUIControlsStore();
 const { activeProjectVersionsModeStatus } = storeToRefs(
   useWorkflowVersionsStore(),
 );
+
+const onVersionsToggle = async (newValue: boolean) => {
+  const versionsStore = useWorkflowVersionsStore();
+  try {
+    if (newValue) {
+      await versionsStore.activateVersionsMode();
+    } else {
+      await versionsStore.deactivateVersionsMode();
+    }
+  } catch (error) {
+    if (newValue) {
+      getToastPresets().toastPresets.versions.activateModeFailed({ error });
+    }
+  }
+};
 const { isDirtyActiveProject } = storeToRefs(useDirtyProjectsTrackingStore());
 const { uploadWorkflowAndOpenAsProject } = useUploadWorkflowToSpace();
 
@@ -173,7 +191,19 @@ onMounted(() => {
   <div class="canvas-overlay-top-right">
     <HelpMenu v-if="isBrowser()" class="help-menu" />
 
-    <template v-if="activeWorkflow && !isVersionModeActive">
+    <template v-if="activeWorkflow">
+      <KdsToggleButton
+        v-if="uiControls.canViewVersions"
+        :model-value="activeProjectVersionsModeStatus === 'active'"
+        leading-icon="time"
+        title="Version history"
+        aria-label="Version history"
+        variant="transparent"
+        size="medium"
+        @update:model-value="onVersionsToggle"
+      />
+
+      <template v-if="!isVersionModeActive">
       <KdsButton
         v-if="getCommunityHubInfo.isOnlyCommunityHubMounted && isLocalWorkflow"
         ref="uploadButton"
@@ -224,6 +254,7 @@ onMounted(() => {
         :disabled="isWorkflowEmpty"
         aria-label="Zoom Menu"
       />
+      </template>
     </template>
   </div>
 </template>
@@ -232,7 +263,7 @@ onMounted(() => {
 .canvas-overlay-top-right {
   position: fixed;
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
-  top: var(--kds-spacing-container-0-75x);
+  top: calc(var(--kds-spacing-container-0-75x) + 40px);
   right: var(--kds-spacing-container-0-75x);
 
   display: flex;

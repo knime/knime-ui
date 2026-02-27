@@ -8,23 +8,16 @@ import { type MenuItem, SubMenu } from "@knime/components";
 import { KdsButton } from "@knime/kds-components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import ChevronRightIcon from "@knime/styles/img/icons/arrow-next.svg";
-import CloseIcon from "@knime/styles/img/icons/close.svg";
-import HistoryIcon from "@knime/styles/img/icons/history.svg";
 import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
 import LinkedMetanodeIcon from "@knime/styles/img/icons/linked-metanode.svg";
 import MetaNodeIcon from "@knime/styles/img/icons/metanode.svg";
 import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
 
-import { SpaceProviderNS } from "@/api/custom-types";
 import type { Workflow } from "@/api/custom-types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
-import { isDesktop } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
-import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 
 type Props = {
@@ -40,8 +33,6 @@ const { toastPresets } = getToastPresets();
 const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
   useApplicationStore(),
 );
-const { activeProjectProvider } = storeToRefs(useSpaceProvidersStore());
-const uiControls = useUIControlsStore();
 const { getSpaceItemVersion } = useWorkflowVersionsStore();
 
 const isInSublevel = computed(() => (props.workflow.parents?.length ?? 0) > 0);
@@ -116,27 +107,6 @@ const rootDropdownItems = computed<MenuItem[]>(() => {
   const items: MenuItem[] = [];
 
   if (
-    activeProjectProvider.value?.type !== SpaceProviderNS.TypeEnum.SERVER &&
-    uiControls.canViewVersions
-  ) {
-    items.push({
-      text: "Version history",
-      icon: HistoryIcon,
-      disabled: Boolean(!activeProjectProvider.value),
-      title: activeProjectProvider.value ? undefined : "Loading...",
-      metadata: {
-        handler: async () => {
-          try {
-            await useWorkflowVersionsStore().activateVersionsMode();
-          } catch (error) {
-            toastPresets.versions.activateModeFailed({ error });
-          }
-        },
-      },
-    });
-  }
-
-  if (
     activeProjectOrigin.value &&
     canRevealItem(activeProjectOrigin.value.providerId)
   ) {
@@ -149,18 +119,6 @@ const rootDropdownItems = computed<MenuItem[]>(() => {
             (project) => project.projectId === activeProjectId.value,
           )!.name;
           await revealSingleItem(activeProjectOrigin.value!, projectName);
-        },
-      },
-    });
-  }
-
-  if (isDesktop()) {
-    items.push({
-      text: "Close project",
-      icon: CloseIcon,
-      metadata: {
-        handler: () => {
-          useDesktopInteractionsStore().closeProject(activeProjectId.value!);
         },
       },
     });
