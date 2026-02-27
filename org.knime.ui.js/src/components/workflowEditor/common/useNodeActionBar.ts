@@ -61,8 +61,18 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
     () => {
       return {
         configureNode: {
-          title: () =>
-            hoverTitle("Configure", $shortcuts.get("configureNode").hotkeyText),
+          title: () => {
+            const settings = useApplicationSettingsStore();
+            // Show the Shift+X hotkey when in actionbar/modal mode (embedded),
+            // fall back to F6 for legacy desktop dialogs.
+            const hotkeyShortcut =
+              (settings.nodeConfigOpenMode === "actionbar" ||
+                settings.nodeConfigOpenMode === "modal") &&
+              settings.useEmbeddedDialogs
+                ? $shortcuts.get("openNodeConfigPanel").hotkeyText
+                : $shortcuts.get("configureNode").hotkeyText;
+            return hoverTitle("Configure", hotkeyShortcut);
+          },
           disabled: !options.canConfigure.value,
           icon: options.icons.OpenDialogIcon,
           onClick: () => {

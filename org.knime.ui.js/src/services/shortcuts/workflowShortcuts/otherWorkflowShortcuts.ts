@@ -8,6 +8,7 @@ import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRend
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
@@ -19,6 +20,7 @@ import type { UnionToShortcutRegistry } from "../types";
 type OtherWorkflowShortcuts = UnionToShortcutRegistry<
   | "configureNode"
   | "configureFlowVariables"
+  | "openNodeConfigPanel"
   | "editAnnotation"
   | "switchToPanMode"
   | "switchToSelectionMode"
@@ -59,6 +61,34 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
       }
 
       return canConfigureNodes;
+    },
+  },
+  openNodeConfigPanel: {
+    text: "Open node configuration",
+    hotkey: ["Shift", "X"],
+    icon: OpenDialogIcon,
+    group: "execution",
+    execute: ({ payload = null }) => {
+      const selectedNodeId =
+        payload?.metadata?.nodeId ||
+        useSelectionStore().singleSelectedNode!.id;
+      useSelectionStore().tryClearSelection({
+        keepNodesInSelection: [selectedNodeId],
+      });
+      usePanelStore().isRightPanelExpanded = true;
+    },
+    condition: () => {
+      const { singleSelectedNode } = useSelectionStore();
+      const { useEmbeddedDialogs } = useApplicationSettingsStore();
+
+      if (!singleSelectedNode || !useEmbeddedDialogs) {
+        return false;
+      }
+
+      return (
+        useUIControlsStore().canConfigureNodes &&
+        Boolean(singleSelectedNode.dialogType)
+      );
     },
   },
   configureFlowVariables: {
