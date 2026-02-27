@@ -15,6 +15,7 @@ import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { findSpaceById } from "@/store/spaces/util";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
@@ -128,6 +129,18 @@ const fetchWorkflowGroupContents = async () => {
   await fetchWorkflowGroupContent({ projectId: props.projectId });
 };
 
+const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
+const activeSpaceProvider = computed(
+  () =>
+    spaceProviders.value[projectPath.value[props.projectId].spaceProviderId],
+);
+const activeSpace = computed(() =>
+  findSpaceById(
+    spaceProviders.value,
+    projectPath.value[props.projectId].spaceId,
+  ),
+);
+
 // spaceId and itemId (folder) are based on the projectId but might change even with the same projectId (change dir)
 watch(
   computed(() => projectPath.value[props.projectId]),
@@ -217,6 +230,8 @@ watch(isLoadingContent, () => {
   <div :class="mode" class="space-explorer">
     <SpaceExplorerBreadcrumbs
       :active-workflow-group="activeWorkflowGroup"
+      :space="activeSpace"
+      :space-provider="activeSpaceProvider"
       class="breadcrumb-container"
       @click="onChangeDirectory"
     />

@@ -2,12 +2,18 @@
 import { computed } from "vue";
 
 import { Breadcrumb, type BreadcrumbItem } from "@knime/components";
-import HouseIcon from "@knime/styles/img/icons/house.svg";
+import CubeIcon from "@knime/styles/img/icons/cube.svg";
 
+import type { SpaceProviderNS } from "@/api/custom-types";
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
+import { isHubProvider } from "@/store/spaces/util";
+
+import { useSpaceIcons } from "./useSpaceIcons";
 
 interface Props {
   activeWorkflowGroup: WorkflowGroupContent | null;
+  space?: SpaceProviderNS.Space;
+  spaceProvider?: SpaceProviderNS.SpaceProvider;
 }
 
 const props = defineProps<Props>();
@@ -15,28 +21,33 @@ const emit = defineEmits<{
   click: [id: string];
 }>();
 
+const { getSpaceIcon, getSpaceProviderIcon } = useSpaceIcons();
+
+const rootIcon = computed(() => {
+  if (!props.spaceProvider) {
+    return CubeIcon;
+  }
+  if (isHubProvider(props.spaceProvider)) {
+    return getSpaceIcon(props.space);
+  }
+  return getSpaceProviderIcon(props.spaceProvider);
+});
+
 const breadcrumbItems = computed<Array<BreadcrumbItem>>(() => {
-  const homeBreadcrumbItem = {
-    icon: HouseIcon,
+  const rootBreadcrumbItem = {
+    icon: rootIcon.value,
     id: "root",
-    title: "Home",
+    title: props.space?.name,
   };
 
   if (!props.activeWorkflowGroup) {
-    return [
-      {
-        ...homeBreadcrumbItem,
-        text: "Home",
-        clickable: false,
-      },
-    ];
+    return [rootBreadcrumbItem];
   }
 
   const { path } = props.activeWorkflowGroup;
+
   const rootBreadcrumb: BreadcrumbItem = {
-    ...homeBreadcrumbItem,
-    // eslint-disable-next-line no-undefined
-    text: path.length === 0 ? "Home" : undefined,
+    ...rootBreadcrumbItem,
     clickable: path.length > 0,
   };
   const lastPathIndex = path.length - 1;
