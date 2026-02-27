@@ -18,6 +18,7 @@ import { isDesktop, runInEnvironment } from "@/environment";
 import { getHintConfiguration } from "@/hints/hints.config";
 import { encodeString } from "@/lib/encoding";
 import { workflowBounds } from "@/lib/workflow-canvas";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { webResourceLocation } from "@/services/webResourceLocation";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
@@ -35,7 +36,6 @@ import { useCanvasModesStore } from "./canvasModes";
 import { useCanvasStateTrackingStore } from "./canvasStateTracking";
 import { lifecycleBus } from "./lifecycle-events";
 import { useApplicationSettingsStore } from "./settings";
-import { getToastsProvider } from "@/plugins/toasts";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
@@ -436,41 +436,32 @@ export const useLifecycleStore = defineStore("lifecycle", {
         return;
       }
       const { openProjects } = useApplicationStore();
-      if (openProjects.length !== 1) {
+      const loadErrors = openProjects[0]?.loadErrors;
+      const missingExtensions = loadErrors?.missingExtensions ?? [];
+      if (missingExtensions.length === 0) {
         return;
       }
 
-      const loadErrors = openProjects[0].loadErrors;
-      if (loadErrors) {
-        const details: string[] = [];
-        if (loadErrors.missingExtensions) {
-          details.push(
-            ...loadErrors.missingExtensions.map(
-              (extension) =>
-                `Extension '${extension.name}' not installed (vendor: ${
-                  extension.vendor
-                }). Missing nodes: ${extension.nodeNames.join(", ")}`,
-            ),
-          );
-        }
-        let errorMessage = "";
-        if (loadErrors.missingExtensions) {
-          const count = loadErrors.missingExtensions.length;
-          const label = count === 1 ? "extension" : "extensions";
-          errorMessage += `${count} missing ${label}`;
-        }
-        const rfcError = new rfcErrors.RFCError({
-          title: errorMessage,
-          details,
-        });
-        const toast = rfcErrors.toToast({
-          headline: "Errors while loading the workflow",
-          rfcError,
-          canCopyToClipboard: true,
-          serializeErrorForClipboard: (_) => loadErrors.copyToClipboardContent,
-        });
-        getToastsProvider().show(toast);
-      }
+      const details = missingExtensions.map(
+        (extension) =>
+          `Extension '${extension.name}' not installed (vendor: ${
+            extension.vendor
+          }). Missing nodes: ${extension.nodeNames.join(", ")}`,
+      );
+      const count = missingExtensions.length;
+      const label = count === 1 ? "extension" : "extensions";
+      const rfcError = new rfcErrors.RFCError({
+        title: `${count} missing ${label}`,
+        details,
+      });
+      const toast = rfcErrors.toToast({
+        headline: "Errors while loading the workflow",
+        rfcError,
+        canCopyToClipboard: true,
+        serializeErrorForClipboard: () =>
+          loadErrors?.copyToClipboardContent ?? "",
+      });
+      await getToastsProvider().show(toast);
     },
 
     /**

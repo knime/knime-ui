@@ -17,9 +17,9 @@ import { rfcErrors } from "@knime/hub-features";
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
 import { isBrowser, isDesktop, runInEnvironment } from "@/environment";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router, routes } from "@/router/router";
-import { getToastsProvider } from "@/plugins/toasts";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
@@ -41,7 +41,7 @@ vi.mock("@knime/hub-features", async (importOriginal) => {
     rfcErrors: {
       // @ts-expect-error
       ...actual.rfcErrors,
-      toToast: vi.fn(),
+      toToast: vi.fn().mockReturnValue({}),
     },
   };
 });
@@ -190,6 +190,72 @@ describe("application::lifecycle", () => {
       );
 
       expect(toast.show).toHaveBeenCalled();
+    });
+
+    it("does not show load errors in DESKTOP environment", async () => {
+      const router = getRouter();
+      const toast = mockedObject(getToastsProvider());
+
+      // @ts-expect-error
+      // eslint-disable-next-line new-cap
+      runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
+      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+
+      const loadErrors = {
+        missingExtensions: [
+          {
+            name: "Foo Extension",
+            vendor: "KNIME",
+            nodeNames: ["Node A"],
+          },
+        ],
+        copyToClipboardContent: "copy text",
+      };
+
+      const stateWithErrors = {
+        ...applicationState,
+        openProjects: [
+          {
+            ...applicationState.openProjects[0],
+            loadErrors,
+          },
+        ],
+      };
+
+      const { lifecycleStore } = loadStore();
+      mockedAPI.application.getState.mockReturnValue(stateWithErrors);
+
+      await lifecycleStore.initializeApplication({ $router: router });
+
+      expect(rfcErrors.toToast).not.toHaveBeenCalled();
+      expect(toast.show).not.toHaveBeenCalled();
+    });
+
+    it("does not show load errors when loadErrors is undefined", async () => {
+      const router = getRouter();
+      const toast = mockedObject(getToastsProvider());
+
+      // @ts-expect-error
+      // eslint-disable-next-line new-cap
+      runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+
+      const stateWithoutErrors = {
+        ...applicationState,
+        openProjects: [
+          {
+            ...applicationState.openProjects[0],
+          },
+        ],
+      };
+
+      const { lifecycleStore } = loadStore();
+      mockedAPI.application.getState.mockReturnValue(stateWithoutErrors);
+
+      await lifecycleStore.initializeApplication({ $router: router });
+
+      expect(rfcErrors.toToast).not.toHaveBeenCalled();
+      expect(toast.show).not.toHaveBeenCalled();
     });
 
     it("destroy application", async () => {
