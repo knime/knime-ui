@@ -4,6 +4,7 @@ import rafThrottle from "raf-throttle";
 
 import { isMultiselectEvent } from "@/components/workflowEditor/util/isMultiselectEvent";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import type { SelectionMode } from "@/store/selection/types";
@@ -77,6 +78,10 @@ export const useHandlePointerInteraction = (options: Options) => {
   });
 
   const openRightPanelForNodes = () => {
+    // In "actionbar" mode the panel is only opened via the action bar configure button
+    if (useApplicationSettingsStore().nodeConfigOpenMode === "actionbar") {
+      return;
+    }
     if (!panelStore.isRightPanelExpanded) {
       panelStore.isRightPanelExpanded = objectMetadata.type === "node";
     }

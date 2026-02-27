@@ -229,6 +229,7 @@ export default {
     ...mapState(useApplicationSettingsStore, [
       "useEmbeddedDialogs",
       "hasAnnotationModeEnabled",
+      "nodeConfigOpenMode",
     ]),
     ...mapState(useMovingStore, ["isDragging"]),
     ...mapState(useSelectionStore, [
@@ -267,7 +268,9 @@ export default {
         ...this.loopInfo.allowedActions,
       };
 
-      const canConfigure = !this.useEmbeddedDialogs && this.dialogType !== null;
+      const canConfigure =
+        (this.nodeConfigOpenMode === "actionbar" || !this.useEmbeddedDialogs) &&
+        this.dialogType !== null;
 
       return { ...baseConfig, canConfigure };
     },

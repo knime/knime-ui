@@ -24,7 +24,7 @@ const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 
 // ─── Size / position ─────────────────────────────────────────────────────────
 
-const DEFAULT_WIDTH = 480;
+const DEFAULT_WIDTH = 440;
 const DEFAULT_HEIGHT = 600;
 const MIN_WIDTH = 432;
 const MIN_HEIGHT = 300;
