@@ -5,7 +5,8 @@ import { debounce } from "lodash-es";
 import { SplitPanel } from "@knime/components";
 
 import LayoutEditorDialog from "@/components/layoutEditor/LayoutEditorDialog.vue";
-import Sidebar from "@/components/sidebar/Sidebar.vue";
+import CanvasOverlayButtons from "@/components/sidebar/CanvasOverlayButtons.vue";
+import SidebarFloatingPanel from "@/components/sidebar/SidebarFloatingPanel.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
 import TooltipContainer from "@/components/workflowEditor/SVGKanvas/tooltip/TooltipContainer.vue";
@@ -44,7 +45,6 @@ const savedSecondarySize = computed({
   >
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer v-if="isSVGRenderer" id="tooltip-container" />
-    <Sidebar id="sidebar" />
 
     <main class="workflow-area">
       <SplitPanel
@@ -64,6 +64,10 @@ const savedSecondarySize = computed({
     </main>
 
     <LayoutEditorDialog />
+
+    <!-- Canvas overlay: toolbar buttons + floating sidebar panel -->
+    <CanvasOverlayButtons />
+    <SidebarFloatingPanel />
   </div>
 </template>
 
@@ -71,17 +75,13 @@ const savedSecondarySize = computed({
 #workflow-page {
   display: grid;
   grid-template:
-    "toolbar toolbar" min-content
-    "sidebar workflow" auto
-    / min-content auto;
+    "toolbar" min-content
+    "workflow" auto
+    / auto;
   height: 100%;
   background: var(--knime-white);
   color: var(--knime-masala);
   overflow: hidden;
-}
-
-#sidebar {
-  grid-area: sidebar;
 }
 
 #toolbar {
