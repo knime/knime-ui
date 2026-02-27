@@ -1,6 +1,10 @@
 import { storeToRefs } from "pinia";
 
-import type { NodeFactoryKey, XY } from "@/api/gateway-api/generated-api";
+import {
+  Node,
+  type NodeFactoryKey,
+  type XY,
+} from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
@@ -238,36 +242,42 @@ export const useDragNodeIntoCanvas = () => {
       return;
     }
 
-    const addNodeAction = async () => {
+    const addNodeOrComponentAction = async () => {
       if (eventData.type === "node") {
-        const res = await nodeInteractionsStore.addNativeNode({
+        const result = await nodeInteractionsStore.addNativeNode({
           position: dropPosition,
           nodeFactory: eventData.payload.nodeFactory,
         });
 
-        const node = nodeInteractionsStore.getNodeById(res.newNodeId ?? "");
+        const node = nodeInteractionsStore.getNodeById(result.newNodeId ?? "");
 
-        if (node && res.newNodeId) {
+        if (node && result.newNodeId) {
           const { className } = nodeInteractionsStore.getNodeFactory(node.id);
           useAnalytics().track("node_created::noderepo_dragdrop_", {
-            nodeId: node.id,
-            nodeType: node.kind,
+            type: Node.KindEnum.Node,
             nodeFactoryId: className,
           });
         }
 
-        return res;
+        return result;
       }
 
-      return nodeInteractionsStore.addComponentNode({
+      const result = await nodeInteractionsStore.addComponentNode({
         position: dropPosition,
         componentIdInHub: eventData.payload.id,
         componentName: eventData.payload.name,
       });
+
+      useAnalytics().track("node_created::noderepo_dragdrop_", {
+        type: Node.KindEnum.Component,
+        componentId: eventData.payload.id,
+      });
+
+      return result;
     };
 
     try {
-      await addNodeAction();
+      await addNodeOrComponentAction();
     } catch (error) {
       getToastPresets().toastPresets.workflow.addNodeToCanvas({ error });
     }

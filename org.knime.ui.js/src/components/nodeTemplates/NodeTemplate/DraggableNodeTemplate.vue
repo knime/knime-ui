@@ -2,9 +2,11 @@
 import { ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import type {
-  ComponentNodeTemplateWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
+import { Node } from "@/api/gateway-api/generated-api";
+import {
+  type ComponentNodeTemplateWithExtendedPorts,
+  type NodeTemplateWithExtendedPorts,
+  nodeTemplate as nodeTemplateMappers,
 } from "@/lib/data-mappers";
 import { useAnalytics } from "@/services/analytics";
 import { usePanelStore } from "@/store/panel";
@@ -97,35 +99,61 @@ const onDragEnd = (event: DragEvent) => {
   }
 };
 
-const autoAddNodeFromTemplate = async (
-  nodeTemplate: NodeTemplateWithExtendedPorts,
-) => {
-  if (nodeTemplate.nodeFactory) {
-    const { newNodeId } = await addNodeWithAutoPositioning(
-      nodeTemplate.nodeFactory,
+const addNativeNode = async (template: NodeTemplateWithExtendedPorts) => {
+  if (!template.nodeFactory) {
+    return;
+  }
+
+  const { newNodeId, connectedTo } = await addNodeWithAutoPositioning(
+    template.nodeFactory,
+  );
+
+  if (!newNodeId) {
+    return;
+  }
+
+  if (connectedTo) {
+    const connectedToTemplate = useNodeInteractionsStore().getNodeFactory(
+      connectedTo.node.id,
     );
 
-    const node = useNodeInteractionsStore().getNodeById(newNodeId ?? "");
-
-    if (node) {
-      useAnalytics().track("node_created::noderepo_doubleclick_", {
-        nodeId: node.id,
-        nodeType: node.kind,
-        nodeFactoryId: nodeTemplate.nodeFactory.className,
-      });
-    }
-
-    return;
+    useAnalytics().track("node_created::noderepo_doubleclick_", {
+      type: Node.KindEnum.Node,
+      nodeFactoryId: template.nodeFactory.className,
+      connectedTo: {
+        type: connectedTo.node.kind,
+        nodeFactoryId: connectedToTemplate?.className,
+      },
+    });
+  } else {
+    useAnalytics().track("node_created::noderepo_doubleclick_", {
+      type: Node.KindEnum.Node,
+      nodeFactoryId: template.nodeFactory.className,
+    });
   }
+};
 
-  if (nodeTemplate.component) {
-    addComponentWithAutoPositioning(nodeTemplate.id, nodeTemplate.name);
-    return;
+const addComponent = async (
+  template: ComponentNodeTemplateWithExtendedPorts,
+) => {
+  await addComponentWithAutoPositioning(template.id, template.name);
+
+  useAnalytics().track("node_created::noderepo_doubleclick_", {
+    type: Node.KindEnum.Component,
+    componentId: template.id,
+  });
+};
+
+const autoAddNodeFromTemplate = async (
+  nodeTemplate:
+    | NodeTemplateWithExtendedPorts
+    | ComponentNodeTemplateWithExtendedPorts,
+) => {
+  if (nodeTemplateMappers.isComponentNodeTemplate(nodeTemplate)) {
+    await addComponent(nodeTemplate);
+  } else {
+    await addNativeNode(nodeTemplate);
   }
-
-  consola.error(
-    "Invalid state. NodeTemplate is neither native node nor component",
-  );
 };
 </script>
 

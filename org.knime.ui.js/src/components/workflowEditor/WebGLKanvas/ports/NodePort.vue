@@ -128,8 +128,7 @@ const onPointerDown = (event: FederatedPointerEvent) => {
       }` as const;
 
       useAnalytics().track(analyticsEventId, {
-        nodeId: props.nodeId,
-        nodeType: props.nodeKind,
+        type: props.nodeKind,
         nodePortIndex: props.port.index,
         connectionType: portTemplate.value.kind,
       });

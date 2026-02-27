@@ -1,4 +1,5 @@
 import type { Component } from "vue";
+import type { LiteralUnion } from "type-fest";
 import type { Router } from "vue-router";
 
 import type { Hotkey } from "@knime/utils";
@@ -19,11 +20,13 @@ export type ShortcutGroups =
 export type HotkeyText = { text: string };
 export type Hotkeys = Array<Hotkey | HotkeyText>;
 
-type LooseAutoComplete<T extends string> = T | Omit<string, T>;
-
 export type ShortcutExecuteContext = {
   $router: Router;
-  payload: { src?: LooseAutoComplete<"global">; event?: Event; metadata?: any };
+  payload: {
+    src?: LiteralUnion<"global", string>;
+    event?: Event;
+    metadata?: any;
+  };
 };
 
 export type Shortcut = {

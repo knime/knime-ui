@@ -83,7 +83,7 @@ const saveProject = async () => {
     await API.workflow.saveProject({ projectId });
 
     useAnalytics().track("workflow_saved::wftoolbar_button_save", {
-      isAutoSyncEnabled: Boolean(syncState.value?.isAutoSyncEnabled),
+      isAutosyncEnabled: Boolean(syncState.value?.isAutoSyncEnabled),
     });
   } catch (error) {
     toastPresets.app.saveProjectFailed({ error });
