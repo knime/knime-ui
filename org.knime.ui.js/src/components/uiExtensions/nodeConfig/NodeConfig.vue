@@ -9,6 +9,7 @@ import ManageVersionsWrapper from "@/components/workflowEditor/ManageVersionsWra
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useSelectionStore } from "@/store/selection";
+import { usePanelStore } from "@/store/panel";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { EMBEDDED_CONTENT_PANEL_ID__RIGHT } from "../common/utils";
 
@@ -40,6 +41,10 @@ watch(isLargeMode, () => {
 const exitLargeMode = () => {
   if (isLargeMode.value) {
     nodeConfigurationStore.setIsLargeMode(false);
+    // In modal mode, fully close the panel so onMounted re-fires on next open
+    if (useApplicationSettingsStore().nodeConfigOpenMode === "modal") {
+      usePanelStore().isRightPanelExpanded = false;
+    }
   }
 };
 
@@ -53,6 +58,11 @@ useEventListener(panel, "click", (event) => {
 onMounted(() => {
   if (useApplicationSettingsStore().nodeConfigOpenMode === "modal") {
     nodeConfigurationStore.setIsLargeMode(true);
+    // Always call showModal() explicitly because the watch won't fire if
+    // isLargeMode was already true when this component mounted (e.g. set by
+    // the double-click handler before the panel is rendered).
+    panel.value!.close();
+    panel.value!.showModal();
   }
 });
 </script>

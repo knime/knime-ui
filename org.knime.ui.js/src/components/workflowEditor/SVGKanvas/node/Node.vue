@@ -12,6 +12,7 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
@@ -270,7 +271,9 @@ export default {
       };
 
       const canConfigure =
-        (this.nodeConfigOpenMode === "actionbar" || !this.useEmbeddedDialogs) &&
+        (this.nodeConfigOpenMode === "actionbar" ||
+          this.nodeConfigOpenMode === "modal" ||
+          !this.useEmbeddedDialogs) &&
         this.dialogType !== null;
 
       return { ...baseConfig, canConfigure };
@@ -401,6 +404,11 @@ export default {
       }
 
       if (this.dialogType === "web" && this.useEmbeddedDialogs) {
+        // In "modal" mode single-click doesn't open the panel, so the double-click
+        // handler is responsible for opening it.
+        if (this.nodeConfigOpenMode === "modal") {
+          usePanelStore().isRightPanelExpanded = true;
+        }
         return;
       }
 
