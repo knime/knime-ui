@@ -34,6 +34,10 @@ type ApplicationSettingsState = {
    */
   devMode: boolean;
   /*
+   * If false, the dev tools floating bar is hidden (only relevant when devMode is true).
+   */
+  showDevToolsBar: boolean;
+  /*
    * Whether to enable the locking of metanodes and components
    */
   isSubnodeLockingEnabled: boolean;
@@ -56,6 +60,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     activeNodeCollection: "",
     scrollToZoomEnabled: false,
     devMode: false,
+    showDevToolsBar: true,
     isSubnodeLockingEnabled: false,
     useEmbeddedDialogs: true,
     isKaiEnabled: true,
@@ -84,6 +89,10 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
 
     setDevMode(devMode: boolean) {
       this.devMode = devMode;
+    },
+
+    toggleDevToolsBar() {
+      this.showDevToolsBar = !this.showDevToolsBar;
     },
 
     setIsSubnodeLockingEnabled(isSubnodeLockingEnabled: boolean) {
