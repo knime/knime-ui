@@ -48,6 +48,12 @@ const tabToggles = computed(() => {
   );
 });
 
+const isTabItemDisabled = (
+  item: ReturnType<typeof ports.toRenderablePortViewState>[number],
+) => {
+  return !item.detachable || item.disabled;
+};
+
 const setFirstTab = () => {
   activeView.value = tabToggles.value.at(0)
     ? Number(tabToggles.value.at(0)!.id)
@@ -80,8 +86,9 @@ const openInNewWindow = (item: { id: string } | null = null) => {
     >
       <template v-if="canOpenDetatchedWindow" #default="{ item }">
         <Button
+          data-test-id="toggle-with-detach"
           class="open-window"
-          :disabled="!item.canDetach || item.disabled"
+          :disabled="isTabItemDisabled(item)"
           :title="`Open ${item.text} view in new window`"
           @click="openInNewWindow(item)"
         >
