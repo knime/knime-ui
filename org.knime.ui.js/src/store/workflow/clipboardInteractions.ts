@@ -291,8 +291,8 @@ export const useClipboardInteractionsStore = defineStore(
         consola.info("Pasted workflow parts");
 
         // 1. Decide where to paste
-        const { position } = customPosition
-          ? { position: customPosition }
+        const { position, fillScreenAfterPaste } = customPosition
+          ? { position: customPosition, fillScreenAfterPaste: false }
           : clipboard.determinePastePosition({
               visibleFrame: canvasStore.value.getVisibleFrame,
               clipboardContent,
@@ -317,6 +317,11 @@ export const useClipboardInteractionsStore = defineStore(
           content: clipboardContent.data,
           position,
         });
+
+        // 4. Execute hook and select pasted content
+        if (fillScreenAfterPaste) {
+          canvasStore.value.fillScreen();
+        }
 
         selectionStore.deselectAllObjects(nodeIds);
         selectionStore.selectAnnotations(annotationIds!);
