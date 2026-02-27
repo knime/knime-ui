@@ -263,7 +263,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       return activeProjectProvider ?? null;
     },
 
-    getRecycleBinUrl: (state) => {
+    getTrashUrl: (state) => {
       return (providerId: string, groupName: string): string | null => {
         const provider = state.spaceProviders?.[providerId];
         if (!provider?.hostname) {
@@ -275,19 +275,19 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
             url.hostname = url.hostname.substring(4);
           } else {
             consola.error(
-              "Could not construct recycle bin URL: Unexpected provider hostname.",
+              "Could not construct trash URL: Unexpected provider hostname.",
             );
             return null;
           }
 
           const pathParts = url.pathname.split("/").filter((p) => p);
           pathParts.push(groupName);
-          pathParts.push("recycle-bin");
+          pathParts.push("trash");
           url.pathname = `/${pathParts.join("/")}`;
 
           return url.toString();
         } catch (e) {
-          consola.error("Could not construct recycle bin URL", e);
+          consola.error("Could not construct trash URL", e);
           return null;
         }
       };
