@@ -67,7 +67,7 @@
     "monaco-editor": "0.52.2",
     "motion": "^12.4.7",
     "pinia": "^2.3.0",
-    "pixi.js": "^8.14.3",
+    "pixi.js": "^8.16.0",
     "raf-throttle": "2.0.6",
     "vscode-json-languageservice": "^5.6.1",
     "vue": "3.5.18",
