@@ -33,6 +33,7 @@ const fpClose = inject<(() => void) | null>("fpClose", null);
   font-family: Roboto, sans-serif;
   font-size: 13px;
   line-height: 150%;
+  color: var(--kds-color-text-and-icon-neutral);
 
   & .panel-header {
     display: flex;

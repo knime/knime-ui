@@ -81,7 +81,7 @@ const applicationStore = useApplicationStore();
 const globalLoaderStore = useGlobalLoaderStore();
 const lifecycleStore = useLifecycleStore();
 const applicationSettingsStore = useApplicationSettingsStore();
-const { devMode } = storeToRefs(applicationSettingsStore);
+const { devMode, showDevToolsBar } = storeToRefs(applicationSettingsStore);
 const uiControls = useUIControlsStore();
 const spaceUploadsStore = useSpaceUploadsStore();
 const {
@@ -350,7 +350,7 @@ const onCloseError = () => {
 
     <BlockUi />
 
-    <DevTools v-if="devMode" />
+    <DevTools v-if="devMode && showDevToolsBar" />
   </div>
 </template>
 

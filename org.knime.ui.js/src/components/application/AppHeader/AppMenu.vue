@@ -15,9 +15,11 @@ import AppHeaderButton from "@/components/application/AppHeader/AppHeaderButton.
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { useShortcuts } from "@/services/shortcuts";
 import type { ShortcutName } from "@/services/shortcuts";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSettingsStore } from "@/store/settings";
 
 const $shortcuts = useShortcuts();
+const applicationSettingsStore = useApplicationSettingsStore();
 
 const shortcutToMenuItem = (name: ShortcutName): MenuItem => ({
   text: $shortcuts.getText(name),
@@ -92,6 +94,19 @@ const menuItem = computed<MenuItem>(() => {
           shortcutToMenuItem("resetUiScale"),
         ],
       },
+      ...(applicationSettingsStore.devMode
+        ? [
+            {
+              text: applicationSettingsStore.showDevToolsBar
+                ? "Hide dev tools bar"
+                : "Show dev tools bar",
+              separator: true,
+              metadata: {
+                handler: () => applicationSettingsStore.toggleDevToolsBar(),
+              },
+            },
+          ]
+        : []),
     ],
   };
 });

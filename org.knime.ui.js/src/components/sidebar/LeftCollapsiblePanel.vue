@@ -85,7 +85,7 @@ button {
   & svg {
     @mixin svg-icon-size 10;
 
-    stroke: var(--knime-masala);
+    stroke: var(--kds-color-text-and-icon-neutral);
   }
 }
 </style>
