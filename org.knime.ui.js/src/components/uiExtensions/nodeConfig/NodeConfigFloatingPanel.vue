@@ -2,9 +2,6 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import { FunctionButton } from "@knime/components";
-import CloseIcon from "@knime/styles/img/icons/close.svg";
-
 import ManageVersionsWrapper from "@/components/workflowEditor/ManageVersionsWrapper.vue";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -27,9 +24,9 @@ const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 
 // ─── Size / position ─────────────────────────────────────────────────────────
 
-const DEFAULT_WIDTH = 400;
+const DEFAULT_WIDTH = 480;
 const DEFAULT_HEIGHT = 600;
-const MIN_WIDTH = 360;
+const MIN_WIDTH = 432;
 const MIN_HEIGHT = 300;
 /** Gap between right edge of node bounding box and the floating panel */
 const NODE_OFFSET_X = 24;
@@ -103,6 +100,10 @@ const panelStyles = computed(() => ({
 const isDragging = ref(false);
 
 const onHeaderMouseDown = (event: MouseEvent) => {
+  // Only drag when the mousedown originates from the inner panel header
+  if (!(event.target as HTMLElement).closest(".header")) {
+    return;
+  }
   // Ignore clicks on interactive children (buttons etc.)
   if ((event.target as HTMLElement).closest("button")) {
     return;
@@ -130,11 +131,6 @@ const onHeaderMouseDown = (event: MouseEvent) => {
   event.preventDefault();
 };
 
-// ─── Close ────────────────────────────────────────────────────────────────────
-
-const close = () => {
-  panelStore.isRightPanelExpanded = false;
-};
 </script>
 
 <template>
@@ -145,18 +141,11 @@ const close = () => {
     :style="panelStyles"
     @custom-resize="setRect"
   >
-    <!-- Drag handle header -->
-    <div class="floating-panel-header" @mousedown="onHeaderMouseDown">
-      <span class="floating-panel-title">Node Configuration</span>
-      <FunctionButton compact class="close-button" @click="close">
-        <CloseIcon />
-      </FunctionButton>
-    </div>
-
-    <!-- Panel body -->
+    <!-- Panel body — inner RightPanelHeader (.header) acts as drag handle -->
     <div
       class="floating-panel-content"
       :style="isDragging ? { pointerEvents: 'none' } : {}"
+      @mousedown.capture="onHeaderMouseDown"
     >
       <NodeConfig v-if="useEmbeddedDialogs" />
       <ManageVersionsWrapper v-else />
@@ -176,25 +165,13 @@ const close = () => {
   box-shadow: var(--shadow-elevation-2);
 }
 
-.floating-panel-header {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-16);
-  background-color: var(--knime-gray-ultra-light);
-  border-bottom: 1px solid var(--knime-silver-sand);
-  cursor: move;
-  user-select: none;
-}
-
-.floating-panel-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--knime-masala);
-}
-
 .floating-panel-content {
+  /* inner RightPanelHeader becomes the drag handle */
+  :deep(.header) {
+    cursor: move;
+    user-select: none;
+  }
+
   display: flex;
   flex: 1;
   flex-direction: column;
