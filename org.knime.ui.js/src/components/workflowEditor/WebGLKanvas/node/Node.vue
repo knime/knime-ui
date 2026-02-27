@@ -263,7 +263,9 @@ const allAllowedActions = computed(() => {
   };
 
   const canConfigure =
-    (nodeConfigOpenMode.value === "actionbar" || !useEmbeddedDialogs.value) &&
+    (nodeConfigOpenMode.value === "actionbar" ||
+      nodeConfigOpenMode.value === "modal" ||
+      !useEmbeddedDialogs.value) &&
     props.node.dialogType !== undefined;
 
   return { ...baseConfig, canConfigure };
