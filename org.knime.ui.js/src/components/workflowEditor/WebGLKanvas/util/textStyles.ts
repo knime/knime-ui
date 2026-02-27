@@ -53,6 +53,7 @@ export const nodeLabelText: TextStylePreset<{
     wordWrap: true,
     wordWrapWidth: 170,
     breakWords: true,
+    trim: true,
     whiteSpace: "pre",
     align: "center",
   },
