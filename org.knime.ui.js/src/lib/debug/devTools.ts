@@ -12,10 +12,7 @@ export const openInspector = async () => {
         target.type === "page" &&
         target.title === "KNIME Analytics Platform"
       ) {
-        window.open(
-          `${remoteDebuggingUrl}${target.devtoolsFrontendUrl}`,
-          "_blank",
-        );
+        window.open(`${target.devtoolsFrontendUrl}`, "_blank");
       }
     },
   );
