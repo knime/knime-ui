@@ -7,6 +7,7 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import ResizableComponentWrapper from "../dataValueViews/ResizableComponentWrapper.vue";
 import {
   type BoundingBox,
@@ -21,6 +22,7 @@ const panelStore = usePanelStore();
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const currentCanvasStore = useCurrentCanvasStore();
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
+const versionsStore = useWorkflowVersionsStore();
 
 // ─── Size / position ─────────────────────────────────────────────────────────
 
@@ -34,10 +36,30 @@ const NODE_OFFSET_X = 24;
  *  panel directly to its right */
 const NODE_RIGHT_MARGIN = 80;
 const VIEWPORT_MARGIN = 20;
+/** Gap between the top-right overlay pill and the anchored Versions panel */
+const VERSIONS_BUTTON_GAP = 4;
 
 const { state: rectState, setRect } = useDraggableResizableRectState();
 
+const getVersionsAnchoredPosition = (): Pick<BoundingBox, "left" | "top"> => {
+  const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-right");
+  if (overlay) {
+    const rect = overlay.getBoundingClientRect();
+    return {
+      left: Math.max(VIEWPORT_MARGIN, rect.right - DEFAULT_WIDTH),
+      top: rect.bottom + VERSIONS_BUTTON_GAP,
+    };
+  }
+  return {
+    left: window.innerWidth - DEFAULT_WIDTH - VIEWPORT_MARGIN,
+    top: 100,
+  };
+};
+
 const getInitialPosition = (): Pick<BoundingBox, "left" | "top"> => {
+  if (versionsStore.isSidepanelOpen && !singleSelectedNode.value) {
+    return getVersionsAnchoredPosition();
+  }
   const node = singleSelectedNode.value;
   if (node) {
     try {
@@ -88,12 +110,24 @@ watch(
   },
 );
 
-// Close the panel when the selection is cleared (e.g. clicking empty canvas)
+// Close the panel when the selection is cleared (e.g. clicking empty canvas),
+// but not when the versions panel is open
 watch(singleSelectedNode, (node) => {
-  if (!node) {
+  if (!node && !versionsStore.isSidepanelOpen) {
     panelStore.isRightPanelExpanded = false;
   }
 });
+
+// Reposition below the Versions button when versions mode activates
+watch(
+  () => versionsStore.isSidepanelOpen,
+  (open) => {
+    if (open && !singleSelectedNode.value) {
+      const { left, top } = getVersionsAnchoredPosition();
+      setRect({ left, top });
+    }
+  },
+);
 
 const panelStyles = computed(() => ({
   left: `${rectState.value.left}px`,

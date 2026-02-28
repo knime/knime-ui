@@ -166,7 +166,7 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
 .canvas-overlay-center {
   position: fixed;
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
-  top: var(--kds-spacing-container-0-75x);
+  top: calc(var(--kds-spacing-container-0-75x) + 40px);
   left: 50%;
   transform: translateX(-50%);
 
