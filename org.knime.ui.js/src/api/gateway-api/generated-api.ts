@@ -2879,6 +2879,58 @@ export interface LinkVariantInfo {
 
 
 /**
+ *
+ * @export
+ * @interface LoadErrorMissingExtension
+ */
+export interface LoadErrorMissingExtension {
+
+    /**
+     * The extension the missing node(s) belongs to.
+     * @type {string}
+     * @memberof LoadErrorMissingExtension
+     */
+    name: string;
+    /**
+     * A list of missing node names.
+     * @type {Array<string>}
+     * @memberof LoadErrorMissingExtension
+     */
+    nodeNames: Array<string>;
+    /**
+     * The vendor of the extension the missing node(s) belongs to.
+     * @type {string}
+     * @memberof LoadErrorMissingExtension
+     */
+    vendor: string;
+
+}
+
+
+/**
+ *
+ * @export
+ * @interface LoadErrors
+ */
+export interface LoadErrors {
+
+    /**
+     * A list of missing nodes.
+     * @type {Array<LoadErrorMissingExtension>}
+     * @memberof LoadErrors
+     */
+    missingExtensions?: Array<LoadErrorMissingExtension>;
+    /**
+     * A textual representation of the load errors that can be copied to the clipboard by the user for error reporting.
+     * @type {string}
+     * @memberof LoadErrors
+     */
+    copyToClipboardContent: string;
+
+}
+
+
+/**
  * Loop info. Only present on loop end nodes.
  * @export
  * @interface LoopInfo
@@ -4405,6 +4457,12 @@ export interface Project {
      * @memberof Project
      */
     activeWorkflowId?: string;
+    /**
+     *
+     * @type {LoadErrors}
+     * @memberof Project
+     */
+    loadErrors?: LoadErrors;
 
 }
 
