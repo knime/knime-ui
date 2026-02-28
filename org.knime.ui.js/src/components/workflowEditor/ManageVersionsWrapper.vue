@@ -13,6 +13,7 @@ import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
+import { usePanelStore } from "@/store/panel";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -60,6 +61,7 @@ onWorkflowSaved(async () => {
 
 const onClose = () => {
   versionsStore.deactivateVersionsMode();
+  usePanelStore().isRightPanelExpanded = false;
 };
 
 const onSelect = (version: NamedItemVersion["version"]) => {
