@@ -5,7 +5,6 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 import { type MenuItem, SubMenu } from "@knime/components";
-import { KdsButton } from "@knime/kds-components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import ChevronRightIcon from "@knime/styles/img/icons/arrow-next.svg";
 import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
@@ -16,9 +15,7 @@ import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
 import type { Workflow } from "@/api/custom-types";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
-import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 
 type Props = {
   workflow: Workflow;
@@ -29,35 +26,12 @@ const props = defineProps<Props>();
 const router = useRouter();
 const { revealSingleItem, canRevealItem, revealActionMetadata } =
   useRevealInSpaceExplorer();
-const { toastPresets } = getToastPresets();
 const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
   useApplicationStore(),
 );
-const { getSpaceItemVersion } = useWorkflowVersionsStore();
 
 const isInSublevel = computed(() => (props.workflow.parents?.length ?? 0) > 0);
 const currentName = computed(() => props.workflow.info.name);
-
-const handleRestoreVersion = () => {
-  const activeVersion = props.workflow.info.version;
-  if (!activeVersion) {
-    return;
-  }
-  try {
-    useWorkflowVersionsStore().restoreVersion(Number(activeVersion));
-  } catch (error) {
-    toastPresets.versions.restoreFailed({ error });
-  }
-};
-
-const activeVersionTitle = computed(() =>
-  getSpaceItemVersion(
-    props.workflow.projectId,
-    props.workflow.info.version,
-  )?.title,
-);
-
-// ─── Icon helper ─────────────────────────────────────────────────────────────
 
 const getIcon = (type: string, linked: boolean) => {
   if (linked && type === "component") {
@@ -75,7 +49,7 @@ const getIcon = (type: string, linked: boolean) => {
   return undefined;
 };
 
-// ─── Sub-level: parent nav items for "…" menu ─────────────────────────────────
+// ─── Icon helper ─────────────────────────────────────────────────────────────
 
 const parentItems = computed<MenuItem[]>(() => {
   const parents = props.workflow.parents ?? [];
@@ -100,6 +74,8 @@ const onParentItemClick = (_: MouseEvent, item: MenuItem) => {
     replace: true,
   });
 };
+
+// ─── Sub-level: parent nav items for "…" menu ─────────────────────────────────
 
 // ─── Root level: workflow actions dropdown ────────────────────────────────────
 
@@ -156,20 +132,8 @@ const onRootMenuItemClick = (_: MouseEvent, item: MenuItem) => {
     <template v-else>
       <span class="current-name" :title="currentName">{{ currentName }}</span>
 
-      <template v-if="workflow.info.version">
-        <span class="version-info" :title="activeVersionTitle">
-          "{{ activeVersionTitle }}"
-        </span>
-        <KdsButton
-          label="Restore this version"
-          variant="outlined"
-          size="small"
-          @click="handleRestoreVersion"
-        />
-      </template>
-
       <SubMenu
-        v-if="rootDropdownItems.length"
+        v-if="rootDropdownItems.length && !workflow.info.version"
         compact
         :teleport-to-body="false"
         :items="rootDropdownItems"

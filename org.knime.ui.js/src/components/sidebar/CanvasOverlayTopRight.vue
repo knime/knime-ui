@@ -29,6 +29,7 @@ import {
   useCanvasModesStore,
 } from "@/store/application/canvasModes";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
+import { usePanelStore } from "@/store/panel";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
@@ -43,22 +44,49 @@ const { activeWorkflow, isWorkflowEmpty, isActiveWorkflowFixedVersion } =
   storeToRefs(useWorkflowStore());
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const uiControls = useUIControlsStore();
+const { isRightPanelExpanded } = storeToRefs(usePanelStore());
 const { activeProjectVersionsModeStatus } = storeToRefs(
   useWorkflowVersionsStore(),
 );
 
-const onVersionsToggle = async (newValue: boolean) => {
-  const versionsStore = useWorkflowVersionsStore();
+const isVersionsPanelOpen = computed(
+  () =>
+    activeProjectVersionsModeStatus.value === "active" &&
+    isRightPanelExpanded.value,
+);
+
+const activeVersionTitle = computed(() =>
+  useWorkflowVersionsStore().getSpaceItemVersion(
+    activeWorkflow.value?.projectId ?? "",
+    activeWorkflow.value?.info.version,
+  )?.title,
+);
+
+const handleRestoreVersion = () => {
+  const version = activeWorkflow.value?.info.version;
+  if (!version) {
+    return;
+  }
   try {
-    if (newValue) {
-      await versionsStore.activateVersionsMode();
-    } else {
-      await versionsStore.deactivateVersionsMode();
-    }
+    useWorkflowVersionsStore().restoreVersion(Number(version));
   } catch (error) {
-    if (newValue) {
-      getToastPresets().toastPresets.versions.activateModeFailed({ error });
+    getToastPresets().toastPresets.versions.restoreFailed({ error });
+  }
+};
+
+const onVersionsToggle = async (newValue: boolean) => {
+  if (newValue) {
+    if (activeProjectVersionsModeStatus.value === "active") {
+      isRightPanelExpanded.value = true;
+    } else {
+      try {
+        await useWorkflowVersionsStore().activateVersionsMode();
+      } catch (error) {
+        getToastPresets().toastPresets.versions.activateModeFailed({ error });
+      }
     }
+  } else {
+    isRightPanelExpanded.value = false;
   }
 };
 const { isDirtyActiveProject } = storeToRefs(useDirtyProjectsTrackingStore());
@@ -194,7 +222,8 @@ onMounted(() => {
     <template v-if="activeWorkflow">
       <KdsToggleButton
         v-if="uiControls.canViewVersions"
-        :model-value="activeProjectVersionsModeStatus === 'active'"
+        :model-value="isVersionsPanelOpen"
+        label="Versions"
         leading-icon="time"
         title="Version history"
         aria-label="Version history"
@@ -202,6 +231,18 @@ onMounted(() => {
         size="medium"
         @update:model-value="onVersionsToggle"
       />
+
+      <template v-if="isActiveWorkflowFixedVersion">
+        <span class="version-info" :title="activeVersionTitle">
+          "{{ activeVersionTitle }}"
+        </span>
+        <KdsButton
+          label="Restore this version"
+          variant="outlined"
+          size="small"
+          @click="handleRestoreVersion"
+        />
+      </template>
 
       <template v-if="!isVersionModeActive">
       <KdsButton
