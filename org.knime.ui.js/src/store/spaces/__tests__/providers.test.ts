@@ -451,8 +451,8 @@ describe("spaces::providers", () => {
         [provider.id]: provider,
       };
 
-      const url = spaceProvidersStore.getRecycleBinUrl(provider.id, "my-group");
-      expect(url).toBe("https://knime.com/hub/my-group/recycle-bin");
+      const url = spaceProvidersStore.getTrashUrl(provider.id, "my-group");
+      expect(url).toBe("https://knime.com/hub/my-group/trash");
     });
 
     it("should return null if hostname does not start with api.", () => {
@@ -465,7 +465,7 @@ describe("spaces::providers", () => {
         [provider.id]: provider,
       };
 
-      const url = spaceProvidersStore.getRecycleBinUrl(provider.id, "my-group");
+      const url = spaceProvidersStore.getTrashUrl(provider.id, "my-group");
       expect(url).toBeNull();
     });
 
@@ -479,13 +479,13 @@ describe("spaces::providers", () => {
         [provider.id]: provider,
       };
 
-      const url = spaceProvidersStore.getRecycleBinUrl(provider.id, "my-group");
+      const url = spaceProvidersStore.getTrashUrl(provider.id, "my-group");
       expect(url).toBeNull();
     });
 
     it("should return null for invalid provider id", () => {
       const { spaceProvidersStore } = loadStore();
-      const url = spaceProvidersStore.getRecycleBinUrl(
+      const url = spaceProvidersStore.getTrashUrl(
         "invalid-provider",
         "my-group",
       );
@@ -501,7 +501,7 @@ describe("spaces::providers", () => {
       spaceProvidersStore.spaceProviders = {
         [provider.id]: provider,
       };
-      const url = spaceProvidersStore.getRecycleBinUrl(provider.id, "my-group");
+      const url = spaceProvidersStore.getTrashUrl(provider.id, "my-group");
       expect(url).toBeNull();
     });
   });

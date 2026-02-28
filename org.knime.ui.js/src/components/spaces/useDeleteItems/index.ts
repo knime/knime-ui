@@ -24,7 +24,7 @@ type UseDeleteItemsOptions = {
 
 export const useDeleteItems = (options: UseDeleteItemsOptions) => {
   const { deleteItems, getDeletionInfo } = useSpaceOperationsStore();
-  const { getProviderInfoFromProjectPath, getRecycleBinUrl } =
+  const { getProviderInfoFromProjectPath, getTrashUrl } =
     useSpaceProvidersStore();
   const $router = useRouter();
 
@@ -81,9 +81,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
       if (canSoftDelete) {
         const $toast = getToastsProvider();
         const itemCount = itemIds.length;
-        const headline = `Item${
-          itemCount > 1 ? "(s)" : ""
-        } moved to the recycle bin`;
+        const headline = `Item${itemCount > 1 ? "(s)" : ""} moved to trash`;
         $toast.show({
           type: "success",
           headline,
@@ -91,9 +89,9 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
           buttons: [
             {
               icon: TrashIcon,
-              text: "Show recycle bin",
+              text: "Show trash",
               callback: () => {
-                const url = getRecycleBinUrl(spaceProvider!.id, groupName!);
+                const url = getTrashUrl(spaceProvider!.id, groupName!);
                 if (url) {
                   window.open(url);
                 }
