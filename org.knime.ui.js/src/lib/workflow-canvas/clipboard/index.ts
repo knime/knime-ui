@@ -72,14 +72,13 @@ const determinePastePosition = (params: {
   visibleFrame: GeometryBounds;
   clipboardContent: { objectBounds: GeometryBounds };
   isWorkflowEmpty: boolean;
-}): { position: XY; fillScreenAfterPaste?: boolean } => {
+}): { position: XY } => {
   const { clipboardContent, isWorkflowEmpty, visibleFrame } = params;
 
   if (isWorkflowEmpty) {
     consola.info("workflow is empty: paste to center");
     return {
       position: centerStrategy({ visibleFrame, clipboardContent }),
-      fillScreenAfterPaste: true,
     };
   }
 
