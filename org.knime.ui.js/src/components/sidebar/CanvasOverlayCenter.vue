@@ -48,7 +48,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "undo",
         visible: true,
-        label: $shortcuts.getText("undo"),
         leadingIcon: "undo",
         title: toolbarButtonTitle($shortcuts.get("undo")),
         disabled: !$shortcuts.isEnabled("undo"),
@@ -57,7 +56,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "redo",
         visible: true,
-        label: $shortcuts.getText("redo"),
         leadingIcon: "redo",
         title: toolbarButtonTitle($shortcuts.get("redo")),
         disabled: !$shortcuts.isEnabled("redo"),
@@ -66,7 +64,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "executeAll",
         visible: !hasNodesSelected,
-        label: $shortcuts.getText("executeAll"),
         leadingIcon: "execute-all",
         title: toolbarButtonTitle($shortcuts.get("executeAll")),
         disabled: !$shortcuts.isEnabled("executeAll"),
@@ -75,7 +72,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "cancelAll",
         visible: !hasNodesSelected,
-        label: $shortcuts.getText("cancelAll"),
         leadingIcon: "x-close",
         title: toolbarButtonTitle($shortcuts.get("cancelAll")),
         disabled: !$shortcuts.isEnabled("cancelAll"),
@@ -84,7 +80,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "resetAll",
         visible: !hasNodesSelected,
-        label: $shortcuts.getText("resetAll"),
         leadingIcon: "reset-all",
         title: toolbarButtonTitle($shortcuts.get("resetAll")),
         disabled: !$shortcuts.isEnabled("resetAll"),
@@ -93,7 +88,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "executeSelected",
         visible: hasNodesSelected,
-        label: $shortcuts.getText("executeSelected"),
         leadingIcon: "selected-execution",
         title: toolbarButtonTitle($shortcuts.get("executeSelected")),
         disabled: !$shortcuts.isEnabled("executeSelected"),
@@ -102,7 +96,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "cancelSelected",
         visible: hasNodesSelected,
-        label: $shortcuts.getText("cancelSelected"),
         leadingIcon: "selected-cancel",
         title: toolbarButtonTitle($shortcuts.get("cancelSelected")),
         disabled: !$shortcuts.isEnabled("cancelSelected"),
@@ -111,7 +104,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "resetSelected",
         visible: hasNodesSelected,
-        label: $shortcuts.getText("resetSelected"),
         leadingIcon: "selected-reset",
         title: toolbarButtonTitle($shortcuts.get("resetSelected")),
         disabled: !$shortcuts.isEnabled("resetSelected"),
@@ -120,7 +112,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       {
         id: "openLayoutEditor",
         visible: $shortcuts.isEnabled("openLayoutEditor"),
-        label: $shortcuts.getText("openLayoutEditor"),
         leadingIcon: "layout-editor",
         title: toolbarButtonTitle($shortcuts.get("openLayoutEditor")),
         disabled: !$shortcuts.isEnabled("openLayoutEditor"),
@@ -140,6 +131,7 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
       label="Close version history"
       leading-icon="chevron-left"
       variant="outlined"
+      size="medium"
       @click="$shortcuts.dispatch('closeVersionHistory')"
     />
 
@@ -156,6 +148,7 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
         v-for="button in toolbarButtons"
         :key="button.id"
         v-bind="button"
+        size="medium"
         @click="$shortcuts.dispatch(button.id)"
       />
     </transition-group>

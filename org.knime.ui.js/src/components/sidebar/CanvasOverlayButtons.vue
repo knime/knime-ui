@@ -112,6 +112,7 @@ const handleToggle = (name: TabValues, newValue: boolean) => {
   height: 40px;
   display: flex;
   align-items: center;
+  font-size: var(--kds-core-font-size-0-87x);
 }
 
 .panel-buttons {
@@ -122,5 +123,7 @@ const handleToggle = (name: TabValues, newValue: boolean) => {
   display: flex;
   flex-direction: row;
   gap: var(--kds-spacing-container-0-25x);
+  font-size: 14px;
+  user-select: none;
 }
 </style>
