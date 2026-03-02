@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { provide } from "vue";
+
 import { NodeFeatureList } from "@knime/components";
 
 import type {
@@ -45,6 +47,10 @@ withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   close: [];
 }>();
+
+// Override fpClose from parent floating panel so SidebarPanelLayout
+// does not render its own close button — the showCloseButton prop CloseButton is used instead.
+provide("fpClose", null);
 </script>
 
 <template>
