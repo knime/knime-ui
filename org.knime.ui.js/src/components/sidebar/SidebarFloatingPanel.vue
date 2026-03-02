@@ -51,15 +51,20 @@ const DEFAULT_WIDTH = 360;
 const DEFAULT_HEIGHT = 600;
 const MIN_WIDTH = 280;
 const MIN_HEIGHT = 200;
-/** Left margin: 12px gap */
+/** Horizontal offset from the left edge of the overlay pill */
 const LEFT_OFFSET = 12;
-/** Top margin: 12px gap + ~40px overlay-top-left height + 8px gap */
-const TOP_OFFSET = 60;
+/** Gap between the bottom of the overlay pill and the panel */
+const OVERLAY_GAP = 4;
 
 const { state: rectState, setRect } = useDraggableResizableRectState();
 
 const getDefaultPosition = (): Pick<BoundingBox, "left" | "top"> => {
-  return { left: LEFT_OFFSET, top: TOP_OFFSET };
+  const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-left");
+  if (overlay) {
+    const rect = overlay.getBoundingClientRect();
+    return { left: rect.left, top: rect.bottom + OVERLAY_GAP };
+  }
+  return { left: LEFT_OFFSET, top: 60 };
 };
 
 onMounted(() => {
