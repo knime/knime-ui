@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 
 import ManageVersionsWrapper from "@/components/workflowEditor/ManageVersionsWrapper.vue";
 import { useApplicationSettingsStore } from "@/store/application/settings";
-import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -20,7 +19,6 @@ import NodeConfig from "./NodeConfig.vue";
 
 const panelStore = usePanelStore();
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
-const currentCanvasStore = useCurrentCanvasStore();
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const versionsStore = useWorkflowVersionsStore();
 
@@ -30,14 +28,11 @@ const DEFAULT_WIDTH = 440;
 const DEFAULT_HEIGHT = 600;
 const MIN_WIDTH = 432;
 const MIN_HEIGHT = 300;
-/** Gap between right edge of node bounding box and the floating panel */
-const NODE_OFFSET_X = 24;
-/** Approximate half-width of a node in canvas coordinates used to place the
- *  panel directly to its right */
-const NODE_RIGHT_MARGIN = 80;
 const VIEWPORT_MARGIN = 20;
 /** Gap between the top-right overlay pill and the anchored Versions panel */
 const VERSIONS_BUTTON_GAP = 4;
+/** Gap between the top-left overlay buttons and the floating node-config panel */
+const LEFT_OVERLAY_PANEL_GAP = 4;
 
 const { state: rectState, setRect } = useDraggableResizableRectState();
 
@@ -56,44 +51,26 @@ const getVersionsAnchoredPosition = (): Pick<BoundingBox, "left" | "top"> => {
   };
 };
 
+const getLeftOverlayAnchoredPosition = (): Pick<BoundingBox, "left" | "top"> => {
+  const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-left");
+  if (overlay) {
+    const rect = overlay.getBoundingClientRect();
+    return {
+      left: rect.left,
+      top: rect.bottom + LEFT_OVERLAY_PANEL_GAP,
+    };
+  }
+  return {
+    left: VIEWPORT_MARGIN,
+    top: 100,
+  };
+};
+
 const getInitialPosition = (): Pick<BoundingBox, "left" | "top"> => {
   if (versionsStore.isSidepanelOpen && !singleSelectedNode.value) {
     return getVersionsAnchoredPosition();
   }
-  const node = singleSelectedNode.value;
-  if (node) {
-    try {
-      const canvasPos = {
-        x: node.position.x + NODE_RIGHT_MARGIN,
-        y: node.position.y,
-      };
-      const screenPos =
-        currentCanvasStore.value.screenFromCanvasCoordinates(canvasPos);
-      return {
-        left: Math.min(
-          screenPos.x + NODE_OFFSET_X,
-          window.innerWidth - DEFAULT_WIDTH - VIEWPORT_MARGIN,
-        ),
-        top: Math.max(
-          VIEWPORT_MARGIN,
-          Math.min(
-            screenPos.y,
-            window.innerHeight - DEFAULT_HEIGHT - VIEWPORT_MARGIN,
-          ),
-        ),
-      };
-    } catch {
-      // canvas not yet ready — fall through to default
-    }
-  }
-  // Fallback: right side of viewport, vertically centred
-  return {
-    left: window.innerWidth - DEFAULT_WIDTH - VIEWPORT_MARGIN,
-    top: Math.max(
-      VIEWPORT_MARGIN,
-      (window.innerHeight - DEFAULT_HEIGHT) / 2,
-    ),
-  };
+  return getLeftOverlayAnchoredPosition();
 };
 
 onMounted(() => {
@@ -101,12 +78,14 @@ onMounted(() => {
   setRect({ left, top, width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT });
 });
 
-// Reposition when the selected node changes
+// Reposition below the left overlay whenever the selected node changes
 watch(
   () => singleSelectedNode.value?.id,
   () => {
-    const { left, top } = getInitialPosition();
-    setRect({ left, top });
+    if (!versionsStore.isSidepanelOpen) {
+      const { left, top } = getLeftOverlayAnchoredPosition();
+      setRect({ left, top });
+    }
   },
 );
 
