@@ -7,9 +7,9 @@ describe("panel store", () => {
   it("toggles left panel", () => {
     const { panelStore } = mockStores();
 
-    expect(panelStore.isLeftPanelExpanded).toBe(true);
-    panelStore.toggleLeftPanel();
     expect(panelStore.isLeftPanelExpanded).toBe(false);
+    panelStore.toggleLeftPanel();
+    expect(panelStore.isLeftPanelExpanded).toBe(true);
   });
 
   it("sets activeTab", () => {
