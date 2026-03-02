@@ -27,9 +27,9 @@ export interface PanelState {
 export const usePanelStore = defineStore("panel", {
   state: (): PanelState => ({
     activeTab: {},
-    isLeftPanelExpanded: true,
+    isLeftPanelExpanded: false,
     isExtensionPanelOpen: false,
-    isRightPanelExpanded: true,
+    isRightPanelExpanded: false,
   }),
   actions: {
     setActiveTab({
