@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref, useTemplateRef, watch } from "vue";
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useWindowSize } from "@vueuse/core";
 import { clamp } from "es-toolkit/math";
-import { storeToRefs } from "pinia";
 
 import { FunctionButton } from "@knime/components";
 import {
@@ -30,7 +29,12 @@ const { currentRenderer, isSVGRenderer } = useCanvasRendererUtils();
 const canvasRenderers: CanvasRendererType[] = ["SVG", "WebGL"];
 const webglCanvasStore = useWebGLCanvasStore();
 
-const { nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
+const appSettingsStore = useApplicationSettingsStore();
+const nodeConfigOpenMode = computed({
+  get: () => appSettingsStore.nodeConfigOpenMode,
+  set: (mode: "current" | "actionbar" | "modal") =>
+    appSettingsStore.setNodeConfigOpenMode(mode),
+});
 
 const { currentMode } = useKdsDarkMode();
 const { legacyMode } = useKdsLegacyMode();

@@ -126,6 +126,9 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       // Fetch ui-settings and ai-settings from backend
       await useSettingsStore().fetchSettings();
+      useApplicationSettingsStore().setNodeConfigOpenMode(
+        useSettingsStore().settings.nodeConfigOpenMode,
+      );
       await useAISettingsStore().fetchAISettings();
       await useAISettingsStore().pruneStaleEntries();
 

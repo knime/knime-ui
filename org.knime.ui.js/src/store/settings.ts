@@ -25,6 +25,7 @@ export interface SettingsState {
     uiScale: number;
     askBeforeAutoApplyNodeConfigChanges: boolean;
     shouldShowExampleWorkflows: boolean;
+    nodeConfigOpenMode: "current" | "actionbar" | "modal";
   };
 }
 
@@ -36,6 +37,7 @@ const defaults: SettingsState["settings"] = {
   uiScale: 1.0,
   askBeforeAutoApplyNodeConfigChanges: true,
   shouldShowExampleWorkflows: true,
+  nodeConfigOpenMode: "current",
 };
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {

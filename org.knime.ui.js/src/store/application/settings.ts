@@ -4,6 +4,7 @@ import {
   type CanvasRendererType,
   useCanvasRendererUtils,
 } from "@/components/workflowEditor/util/canvasRenderer";
+import { useSettingsStore } from "@/store/settings";
 
 type ApplicationSettingsState = {
   /**
@@ -106,6 +107,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
 
     setNodeConfigOpenMode(mode: "current" | "actionbar" | "modal") {
       this.nodeConfigOpenMode = mode;
+      useSettingsStore().updateSetting({ key: "nodeConfigOpenMode", value: mode });
     },
 
     setIsSubnodeLockingEnabled(isSubnodeLockingEnabled: boolean) {
