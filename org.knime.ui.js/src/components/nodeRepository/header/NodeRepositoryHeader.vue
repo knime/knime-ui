@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, inject, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import { type MenuItem, SearchInput, SubMenu } from "@knime/components";
+import { FunctionButton, type MenuItem, SearchInput, SubMenu } from "@knime/components";
 import { KdsValueSwitch } from "@knime/kds-components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
 import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
@@ -133,6 +134,8 @@ const searchPlaceholderText = computed(() => {
     : "Search all nodes";
 });
 
+const fpClose = inject<(() => void) | null>("fpClose", null);
+
 const closeDescriptionPanel = () => {
   nodeRepositoryStore.setShowDescriptionForNode(null);
   usePanelStore().closeExtensionPanel();
@@ -178,6 +181,15 @@ const closeDescriptionPanel = () => {
               class="display-mode-icon"
             />
           </SubMenu>
+
+          <FunctionButton
+            v-if="fpClose"
+            compact
+            class="panel-close-btn"
+            @click="fpClose"
+          >
+            <CloseIcon />
+          </FunctionButton>
         </div>
       </div>
 
