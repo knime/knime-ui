@@ -81,7 +81,6 @@ const subMenuItems = computed((): MenuItem[] => {
       :disabled="mainAction.disabled"
       :title="mainAction.title"
       :aria-label="mainAction.label"
-      :label="mainAction.label"
       :leading-icon="mainAction.icon"
       variant="transparent"
       @click="mainAction.onClick"
