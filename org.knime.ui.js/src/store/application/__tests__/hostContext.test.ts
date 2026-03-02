@@ -50,7 +50,7 @@ describe("hostContext store", () => {
       mockEnvironment("DESKTOP", { isBrowser, isDesktop });
       const { hostContextStore } = loadStore();
 
-      hostContextStore.navigateHome();
+      hostContextStore.navigateHome(false);
       expect(
         embeddingSDK.guest.dispatchGenericEventToHost,
       ).not.toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe("hostContext store", () => {
       mockEnvironment("BROWSER", { isBrowser, isDesktop });
       const { hostContextStore } = loadStore();
 
-      hostContextStore.navigateHome();
+      hostContextStore.navigateHome(false);
       expect(
         embeddingSDK.guest.dispatchGenericEventToHost,
       ).toHaveBeenCalledWith({
@@ -153,6 +153,45 @@ describe("hostContext store", () => {
         lastActive: expect.any(String),
         state: "background-task",
         version: "v1",
+      });
+    });
+
+    it("notifies state when background sessions cannot be kept", async () => {
+      const { hostContextStore, workflowStore, uiControlsStore } = loadStore();
+      uiControlsStore.canKeepEditSessionInBackground = false;
+      hostContextStore.setupIdleTracking();
+
+      // -- idle
+      idle.value = true;
+      workflowStore.activeWorkflow!.isProjectExecuting = false;
+
+      await nextTick();
+      expect(embeddingSDK.guest.notifyActivityChange).toHaveBeenCalledWith({
+        lastActive: expect.any(String),
+        idle: true,
+        version: "v0",
+      });
+
+      // -- active
+      idle.value = false;
+      workflowStore.activeWorkflow!.isProjectExecuting = false;
+
+      await nextTick();
+      expect(embeddingSDK.guest.notifyActivityChange).toHaveBeenCalledWith({
+        lastActive: expect.any(String),
+        idle: false,
+        version: "v0",
+      });
+
+      // -- background-task
+      idle.value = false;
+      workflowStore.activeWorkflow!.isProjectExecuting = true;
+
+      await nextTick();
+      expect(embeddingSDK.guest.notifyActivityChange).toHaveBeenLastCalledWith({
+        lastActive: expect.any(String),
+        idle: false,
+        version: "v0",
       });
     });
   });

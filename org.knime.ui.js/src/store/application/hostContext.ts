@@ -5,6 +5,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { embeddingSDK } from "@knime/hub-features";
 
 import { isDesktop } from "@/environment";
+import { useUIControlsStore } from "../uiControls/uiControls";
 import { useWorkflowStore } from "../workflow/workflow";
 
 /**
@@ -20,6 +21,8 @@ export const useHostContextStore = defineStore("hostContext", () => {
   const isProjectExecuting = computed(() =>
     Boolean(activeWorkflow.value?.isProjectExecuting),
   );
+
+  const uiControls = useUIControlsStore();
 
   /**
    * Sends a navigation request to take the user to the cloud version of the home screen
@@ -98,6 +101,16 @@ export const useHostContextStore = defineStore("hostContext", () => {
     });
 
     watch([idle, isProjectExecuting], ([isIdle, isExecuting]) => {
+      if (!uiControls.canKeepEditSessionInBackground) {
+        embeddingSDK.guest.notifyActivityChange({
+          idle: isIdle,
+          version: "v0",
+          lastActive: new Date().toISOString(),
+        });
+
+        return;
+      }
+
       const nextState = getNextActivityState(isIdle, isExecuting);
 
       // skip unnecessary events
