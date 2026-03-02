@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useHint } from "@knime/components";
@@ -10,6 +10,7 @@ import WorkflowNameBreadcrumb from "@/components/toolbar/WorkflowNameBreadcrumb.
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { HINTS } from "@/hints/hints.config";
 import { TABS, type TabValues, usePanelStore } from "@/store/panel";
+import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -24,6 +25,18 @@ const uiControls = useUIControlsStore();
 const { isKaiEnabled } = useIsKaiEnabled();
 const { createHint } = useHint();
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
+const { singleSelectedNode } = storeToRefs(useSelectionStore());
+
+const MONITOR_UNLOCKED_KEY = "knime.monitorUnlocked";
+const isMonitorUnlocked = ref(
+  localStorage.getItem(MONITOR_UNLOCKED_KEY) === "true",
+);
+watch(singleSelectedNode, (node) => {
+  if (node && !isMonitorUnlocked.value) {
+    isMonitorUnlocked.value = true;
+    localStorage.setItem(MONITOR_UNLOCKED_KEY, "true");
+  }
+});
 
 createHint({
   hintId: HINTS.K_AI,
@@ -45,11 +58,9 @@ const buttons = computed<ButtonDef[]>(() => [
   ...(isKaiEnabled.value && uiControls.canAccessKAIPanel
     ? [{ name: TABS.KAI as TabValues, title: "K-AI", icon: "ai-general" as KdsIconName }]
     : []),
-  {
-    name: TABS.WORKFLOW_MONITOR,
-    title: "Monitor",
-    icon: "workflow",
-  },
+  ...(isMonitorUnlocked.value
+    ? [{ name: TABS.WORKFLOW_MONITOR as TabValues, title: "Monitor", icon: "workflow" as KdsIconName }]
+    : []),
 ]);
 
 const isActive = (name: TabValues) =>
