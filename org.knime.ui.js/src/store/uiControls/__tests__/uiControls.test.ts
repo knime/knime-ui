@@ -43,6 +43,7 @@ describe("uiControls", () => {
         canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: true,
         shouldShowCloudHomeButton: false,
+        canKeepEditSessionInBackground: false,
       });
     });
 
@@ -72,6 +73,7 @@ describe("uiControls", () => {
         canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: false,
         shouldShowCloudHomeButton: true,
+        canKeepEditSessionInBackground: true,
       });
     });
   });
@@ -107,6 +109,7 @@ describe("uiControls", () => {
         canReExecuteCompositeViews: true,
         shouldDisplayRemoteWorkflowInfoBar: false,
         shouldShowCloudHomeButton: false,
+        canKeepEditSessionInBackground: false,
       });
     });
   });
@@ -140,6 +143,7 @@ describe("uiControls", () => {
         canReExecuteCompositeViews: false,
         shouldDisplayRemoteWorkflowInfoBar: false,
         shouldShowCloudHomeButton: false,
+        canKeepEditSessionInBackground: false,
       });
     });
   });

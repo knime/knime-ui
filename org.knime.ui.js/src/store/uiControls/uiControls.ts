@@ -105,6 +105,11 @@ export interface UIControlsState {
    * Whether the cloud home button should be displayed
    */
   shouldShowCloudHomeButton: boolean;
+  /**
+   * Whether the app can account for background execution to keep an edit session
+   * active. This is only relevant in the browser-based AP
+   */
+  canKeepEditSessionInBackground: boolean;
 }
 
 export const useUIControlsStore = defineStore("uiControls", {
@@ -139,6 +144,7 @@ export const useUIControlsStore = defineStore("uiControls", {
 
     canOpenLayoutEditor: false,
     shouldShowCloudHomeButton: false,
+    canKeepEditSessionInBackground: false,
   }),
   actions: {
     updateControls(value: UIControlsState) {
@@ -182,6 +188,7 @@ export const useUIControlsStore = defineStore("uiControls", {
         canLockAndUnlockSubnodes: isDesktop(),
         // TODO: NXT-4473 enable this also for job viewer
         shouldShowCloudHomeButton: isBrowser() && isDefault,
+        canKeepEditSessionInBackground: isBrowser() && isDefault,
       };
 
       this.updateControls(uiControls);
