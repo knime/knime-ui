@@ -1,6 +1,10 @@
+import { embeddingSDK } from "@knime/hub-features";
+
 import { $bus } from "@/plugins/event-bus";
-import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useHostContextStore } from "@/store/application/hostContext";
 import { getToastPresets } from "../toastPresets";
+
+let didOpenWSConnection = false;
 
 const handleNetworkLoss = () => {
   const { toastPresets } = getToastPresets();
@@ -19,17 +23,22 @@ const handleNetworkLoss = () => {
 };
 
 const handleConnectionChanges = (ws: WebSocket) => {
+  ws.addEventListener("open", () => {
+    didOpenWSConnection = true;
+  });
+
   ws.addEventListener("close", (wsCloseEvent) => {
     consola.error("Websocket closed: ", wsCloseEvent);
 
-    useLifecycleStore().setIsLoadingApp(false);
-    useLifecycleStore().setIsLoadingWorkflow(false);
-
-    // prevent user interactions
-    $bus.emit("block-ui");
-
-    const { toastPresets } = getToastPresets();
-    toastPresets.connectivity.websocketClosed({ wsCloseEvent });
+    // if the WS closes after it had connected at least once, we retry to resume the session
+    // otherwise render a failure message
+    if (didOpenWSConnection) {
+      useHostContextStore().scheduleSessionResume();
+    } else {
+      embeddingSDK.guest.sendEmbeddingFailureMessage(
+        new Error("Websocket connection could not be established"),
+      );
+    }
   });
 };
 

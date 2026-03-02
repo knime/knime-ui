@@ -10,7 +10,7 @@ export type ConnectivityPresets = {
   // browser
   connectionLoss: ToastPresetHandler;
   connectionRestored: ToastPresetHandler;
-  websocketClosed: ToastPresetHandler<{ wsCloseEvent: CloseEvent }>;
+  websocketClosed: ToastPresetHandler;
 };
 
 export const getPresets = (
@@ -26,19 +26,11 @@ export const getPresets = (
       });
       toastIds.add(toastId);
     },
-    websocketClosed: ({ wsCloseEvent }) => {
-      const isSessionExpired =
-        wsCloseEvent.reason?.toLowerCase() === "proxy close";
-
-      const headline = isSessionExpired ? "Session expired" : "Connection lost";
-
-      const message = isSessionExpired
-        ? "Refresh the page to reactivate the session."
-        : "Connection lost. Try again later.";
-
+    websocketClosed: () => {
       const toastId = $toast.show({
-        headline,
-        message,
+        headline: "Connection lost",
+        message:
+          "Websocket connection lost. We will try to reconnect you in a moment",
         type: "error",
         autoRemove: false,
       });

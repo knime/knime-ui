@@ -85,8 +85,11 @@ try {
 
   app.mount("#app");
 } catch (error) {
-  consola.fatal("Failed to initialize Application", error);
+  consola.fatal("Failed to initialize application", error);
+
   if (isBrowser()) {
-    embeddingSDK.guest.sendEmbeddingFailureMessage(error);
+    embeddingSDK.guest.sendEmbeddingFailureMessage(
+      new Error("Failed to initialize application"),
+    );
   }
 }

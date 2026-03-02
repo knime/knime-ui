@@ -5,6 +5,8 @@ import { defineStore, storeToRefs } from "pinia";
 import { embeddingSDK } from "@knime/hub-features";
 
 import { isDesktop } from "@/environment";
+import { $bus } from "@/plugins/event-bus";
+import { getToastPresets } from "@/services/toastPresets";
 import { useUIControlsStore } from "../uiControls/uiControls";
 import { useWorkflowStore } from "../workflow/workflow";
 
@@ -130,5 +132,19 @@ export const useHostContextStore = defineStore("hostContext", () => {
     isTrackingIdleness.value = true;
   };
 
-  return { navigateHome, setupIdleTracking };
+  const scheduleSessionResume = () => {
+    $bus.emit("block-ui");
+    getToastPresets().toastPresets.connectivity.websocketClosed();
+
+    // defer reload slightly to give some time to the user
+    const VISUAL_DELAY_MS = 2000;
+    setTimeout(() => {
+      embeddingSDK.guest.dispatchGenericEventToHost({
+        kind: "hostNavigationRequest",
+        payload: { intent: "reload" },
+      });
+    }, VISUAL_DELAY_MS);
+  };
+
+  return { navigateHome, setupIdleTracking, scheduleSessionResume };
 });
