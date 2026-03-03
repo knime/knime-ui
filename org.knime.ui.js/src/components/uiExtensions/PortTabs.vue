@@ -88,10 +88,14 @@ export default {
     },
   },
   mounted() {
-    this.applyShortcutAllowlist();
+    this.$nextTick(() => {
+      this.applyShortcutAllowlist();
+    });
   },
   updated() {
-    this.applyShortcutAllowlist();
+    this.$nextTick(() => {
+      this.applyShortcutAllowlist();
+    });
   },
   methods: {
     applyShortcutAllowlist() {
