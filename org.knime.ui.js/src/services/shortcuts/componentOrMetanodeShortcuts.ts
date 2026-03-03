@@ -10,6 +10,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { workflowDomain } from "@/lib/workflow-domain";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useAnalytics } from "@/services/analytics";
 import { useApplicationStore } from "@/store/application/application";
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import { useSelectionStore } from "@/store/selection";
@@ -395,7 +396,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
-    execute: () => {
+    execute: ({ payload }) => {
       // We are opening the component editor from within the component here,
       // so the workflowId is the nodeId of the component we want to show the editors for
       const { projectId, workflowId: nodeId } =
@@ -409,6 +410,16 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         workflowId: parents?.containerId || nodeId,
         nodeId,
       });
+
+      const analyticsEventMapper = {
+        global: "layouteditor_opened::keyboard_shortcut_openlayouteditor",
+        workflowToolbar:
+          "layouteditor_opened::wftoolbar_button_openlayouteditor",
+      };
+
+      if (payload.src) {
+        useAnalytics().track(analyticsEventMapper[payload.src]);
+      }
     },
     condition: () => {
       const workflow = useWorkflowStore().activeWorkflow!;
@@ -430,7 +441,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "Shift", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
-    execute: () => {
+    execute: ({ payload }) => {
       const nodeId = useSelectionStore().singleSelectedNode?.id ?? "";
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
@@ -440,6 +451,15 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         workflowId,
         nodeId,
       });
+
+      const analyticsEventMapper = {
+        contextmenu: "layouteditor_opened::component_ctxmenu_openlayouteditor",
+        global: "layouteditor_opened::keyboard_shortcut_openlayouteditor",
+      };
+
+      if (payload.src) {
+        useAnalytics().track(analyticsEventMapper[payload.src]);
+      }
     },
     condition: () => {
       const selectedNode = useSelectionStore().singleSelectedNode;

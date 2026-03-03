@@ -358,7 +358,7 @@ const handleNavigateToHubHome = (event: MouseEvent) => {
           v-for="button in toolbarButtons"
           :key="button.id"
           v-bind="button"
-          @click="$shortcuts.dispatch(button.id)"
+          @click="$shortcuts.dispatch(button.id, { src: 'workflowToolbar' })"
         />
       </div>
     </transition-group>
