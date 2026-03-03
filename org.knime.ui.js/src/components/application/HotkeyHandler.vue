@@ -55,7 +55,10 @@ export default {
         }
 
         const allowlist = new Set(
-          target.dataset.allowShortcuts?.split(",") ?? [],
+          (target.dataset.allowShortcuts ?? "")
+            .split(",")
+            .map((entry) => entry.trim())
+            .filter((entry) => entry.length > 0),
         );
 
         consola.debug(
@@ -65,6 +68,10 @@ export default {
 
         return shortcuts.filter((shortcut) => allowlist.has(shortcut));
       })();
+
+      if (allowedShortcuts.length === 0) {
+        return;
+      }
 
       for (const shortcut of allowedShortcuts) {
         const isEnabled = this.$shortcuts.isEnabled(shortcut);

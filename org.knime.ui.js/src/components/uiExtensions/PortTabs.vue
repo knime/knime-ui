@@ -88,14 +88,23 @@ export default {
     },
   },
   mounted() {
-    if (!this.$refs.TabBar.$el) {
-      return;
-    }
-
-    this.$refs.TabBar.$el.querySelectorAll("input").forEach((inputElement) => {
-      inputElement.dataset.allowShortcuts =
-        "activateOutputPort,detachOutputPort";
-    });
+    this.applyShortcutAllowlist();
+  },
+  updated() {
+    this.applyShortcutAllowlist();
+  },
+  methods: {
+    applyShortcutAllowlist() {
+      if (!this.$refs.TabBar?.$el) {
+        return;
+      }
+      this.$refs.TabBar.$el
+        .querySelectorAll("input")
+        .forEach((inputElement) => {
+          inputElement.dataset.allowShortcuts =
+            "activateOutputPort,detachOutputPort";
+        });
+    },
   },
 };
 </script>
