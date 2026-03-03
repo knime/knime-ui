@@ -5,6 +5,8 @@ import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { mockStores } from "@/test/utils/mockStores";
 import HotkeyHandler from "../HotkeyHandler.vue";
 
+vi.mock("@/components/uiExtensions");
+
 const expectEventHandled = () => {
   expect(KeyboardEvent.prototype.stopPropagation).toHaveBeenCalled();
 };
@@ -20,13 +22,16 @@ describe("HotKeys", () => {
     vi.clearAllMocks();
   });
 
-  const doShallowMount = () => {
+  const doShallowMount = ({
+    hotkeys,
+    isEnabled,
+  }: { hotkeys?: string[]; isEnabled?: boolean } = {}) => {
     KeyboardEvent.prototype.preventDefault = vi.fn();
     KeyboardEvent.prototype.stopPropagation = vi.fn();
 
     const $shortcuts = {
-      findByHotkey: vi.fn().mockReturnValue([]),
-      isEnabled: vi.fn(),
+      findByHotkey: vi.fn().mockReturnValue(hotkeys ?? []),
+      isEnabled: vi.fn().mockReturnValue(isEnabled ?? false),
       preventDefault: vi.fn(),
       dispatch: vi.fn(),
     };
@@ -120,35 +125,59 @@ describe("HotKeys", () => {
 
   describe("prevent shortcuts depending on focus", () => {
     it("input element focused (with exceptions)", () => {
-      const { wrapper } = doShallowMount();
+      const { $shortcuts } = doShallowMount({
+        hotkeys: ["foo", "bar"],
+        isEnabled: true,
+      });
+      const inputEl = document.createElement("input");
+      inputEl.dataset.allowShortcuts = "bar";
+      document.body.appendChild(inputEl);
+
+      const event = new KeyboardEvent("keydown", { key: "b", ctrlKey: true });
+      Object.defineProperty(event, "target", {
+        value: inputEl,
+      });
+
+      document.dispatchEvent(event);
+
+      expect($shortcuts.dispatch).toHaveBeenCalledWith("bar", {
+        event: expect.anything(),
+        src: "global",
+      });
+    });
+
+    it("input element focused (without exceptions)", () => {
+      const { $shortcuts } = doShallowMount({
+        hotkeys: ["foo", "bar"],
+        isEnabled: true,
+      });
       const inputEl = document.createElement("input");
       document.body.appendChild(inputEl);
 
-      const e = { target: null };
-      expect(wrapper.vm.preventShortcuts(e)).toBeFalsy();
-      e.target = inputEl;
-      expect(wrapper.vm.preventShortcuts(e)).toBeTruthy();
-      // exception for port tabbar
-      inputEl.setAttribute("name", "output-port");
-      expect(wrapper.vm.preventShortcuts(e)).toBeFalsy();
+      const event = new KeyboardEvent("keydown", { key: "b", ctrlKey: true });
+      Object.defineProperty(event, "target", {
+        value: inputEl,
+      });
+
+      document.dispatchEvent(event);
+
+      expect($shortcuts.dispatch).not.toHaveBeenCalled();
     });
 
     it("ui extension focused", () => {
-      vi.mock("@/components/uiExtensions");
-      const { wrapper } = doShallowMount();
+      const { $shortcuts } = doShallowMount({
+        hotkeys: ["foo"],
+        isEnabled: true,
+      });
+      const event = new KeyboardEvent("keydown", { key: "b", ctrlKey: true });
 
-      vi.mocked(isUIExtensionFocused).mockReturnValueOnce(false);
-      expect(
-        wrapper.vm.preventShortcuts(
-          new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
-        ),
-      ).toBeFalsy();
-      vi.mocked(isUIExtensionFocused).mockReturnValueOnce(true);
-      expect(
-        wrapper.vm.preventShortcuts(
-          new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
-        ),
-      ).toBeTruthy();
+      vi.mocked(isUIExtensionFocused).mockReturnValue(true);
+      document.dispatchEvent(event);
+      expect($shortcuts.dispatch).not.toHaveBeenCalled();
+
+      vi.mocked(isUIExtensionFocused).mockReturnValue(false);
+      document.dispatchEvent(event);
+      expect($shortcuts.dispatch).toHaveBeenCalled();
     });
   });
 });

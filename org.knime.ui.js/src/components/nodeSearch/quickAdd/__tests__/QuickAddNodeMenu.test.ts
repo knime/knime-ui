@@ -291,17 +291,6 @@ describe("QuickAddNodeMenu.vue", () => {
       expect(defaultProps.quickActionContext.closeMenu).toHaveBeenCalled();
     });
 
-    it("triggers shortcut hotkey in search field to switch between ports", async () => {
-      const { wrapper, $shortcuts } = doMount();
-      await nextTick();
-      const input = wrapper.find(".search-bar input");
-      await input.trigger("keydown"); // key doesn't matter as its mocked
-
-      expect($shortcuts.dispatch).toHaveBeenCalledWith(
-        "openQuickNodeInsertionMenu",
-      );
-    });
-
     it("adds node on pressing enter key", async () => {
       const { wrapper, mockedStores } = doMount();
       await nextTick();

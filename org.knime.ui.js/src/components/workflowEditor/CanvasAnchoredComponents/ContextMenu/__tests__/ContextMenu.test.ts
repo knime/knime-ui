@@ -243,6 +243,7 @@ describe("ContextMenu.vue", () => {
 
     expect(shortcutsSpy).toHaveBeenCalledWith("executeAll", {
       event: mockEvent,
+      src: "contextmenu",
       metadata: { position: { x: 10, y: 10 } },
     });
   });
