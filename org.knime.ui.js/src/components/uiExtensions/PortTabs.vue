@@ -87,11 +87,22 @@ export default {
       );
     },
   },
+  mounted() {
+    if (!this.$refs.TabBar.$el) {
+      return;
+    }
+
+    this.$refs.TabBar.$el.querySelectorAll("input").forEach((inputElement) => {
+      inputElement.dataset.allowShortcuts =
+        "activateOutputPort,detachOutputPort";
+    });
+  },
 };
 </script>
 
 <template>
   <TabBar
+    ref="TabBar"
     name="output-port"
     :model-value="modelValue"
     :disabled="disabled"

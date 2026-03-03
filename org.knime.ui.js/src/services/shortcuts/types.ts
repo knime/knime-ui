@@ -23,7 +23,7 @@ export type Hotkeys = Array<Hotkey | HotkeyText>;
 export type ShortcutExecuteContext = {
   $router: Router;
   payload: {
-    src?: LiteralUnion<"global", string>;
+    src?: LiteralUnion<"global" | "contextmenu", string>;
     event?: Event;
     metadata?: any;
   };
@@ -110,7 +110,7 @@ export type ShortcutsService = {
     payload?: ShortcutExecuteContext["payload"],
   ) => void;
   preventDefault: (shortcutName: ShortcutName) => boolean;
-  findByHotkey: (event: KeyboardEvent) => string[];
+  findByHotkey: (event: KeyboardEvent) => ShortcutName[];
   get: (shortcutName: ShortcutName) => FormattedShortcut;
   getText: (shortcutName: ShortcutName) => string;
 };

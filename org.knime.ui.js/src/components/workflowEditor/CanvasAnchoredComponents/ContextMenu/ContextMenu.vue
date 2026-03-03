@@ -484,6 +484,7 @@ const onItemClick = (event: MouseEvent, item: MenuItem) => {
 
   $shortcuts.dispatch(shortcutName, {
     event,
+    src: "contextmenu",
     metadata: { position: props.position },
   });
 };

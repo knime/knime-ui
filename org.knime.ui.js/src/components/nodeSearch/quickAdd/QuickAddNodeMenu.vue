@@ -20,7 +20,6 @@ import type {
 import { ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
 import { useAnalytics } from "@/services/analytics";
-import { useShortcuts } from "@/services/shortcuts";
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useQuickAddNodesStore } from "@/store/quickAddNodes";
@@ -74,8 +73,6 @@ const calculatePortOffset = (params: {
 };
 
 const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
-
-const $shortcuts = useShortcuts();
 
 const {
   availablePortTypes,
@@ -214,20 +211,6 @@ const searchDownKey = () => {
   searchResults.value?.focusFirst();
 };
 
-const searchHandleShortcuts = (event: KeyboardEvent) => {
-  // shortcuts are disabled on inputs; avoid this behavior for this specific
-  // case to allow cycling through ports via the shortcut
-  const [shortcut = null] = $shortcuts.findByHotkey(event);
-  if (
-    shortcut === "openQuickNodeInsertionMenu" &&
-    $shortcuts.isEnabled(shortcut)
-  ) {
-    $shortcuts.dispatch(shortcut);
-    event.preventDefault();
-    event.stopPropagation();
-  }
-};
-
 onMounted(() => {
   props.quickActionContext.updateMenuStyle({
     height: "445px",
@@ -273,11 +256,11 @@ watch(port, async (newPort, oldPort) => {
       class="search-bar"
       focus-on-mount
       tabindex="0"
+      data-allow-shortcuts="openQuickNodeInsertionMenu"
       @update:model-value="quickAddNodesStore.updateQuery($event)"
       @focusin="selectedNode = null"
       @keydown.enter.prevent.stop="searchEnterKey"
       @keydown.down.prevent.stop="searchDownKey"
-      @keydown="searchHandleShortcuts"
     />
   </div>
   <hr />

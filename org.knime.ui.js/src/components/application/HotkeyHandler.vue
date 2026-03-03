@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { isInputElement } from "@/lib/dom";
 
@@ -16,22 +16,7 @@ export default {
     document.removeEventListener("keydown", this.onKeydown);
   },
   methods: {
-    preventShortcuts(e) {
-      if (isUIExtensionFocused()) {
-        return true;
-      }
-
-      if (isInputElement(e.target)) {
-        // allow shortcuts when output-port tabs (<input type="radio">) are selected
-        const isOutputPortTabbar =
-          e.target?.attributes.getNamedItem("name")?.value === "output-port";
-        return !isOutputPortTabbar;
-      }
-
-      return false;
-    },
-
-    onKeydown(e) {
+    onKeydown(e: KeyboardEvent) {
       // Pressed key is just a modifier
       if (
         e.key === "Control" ||
@@ -43,7 +28,7 @@ export default {
         return;
       }
 
-      if (this.preventShortcuts(e)) {
+      if (isUIExtensionFocused()) {
         return;
       }
 
@@ -59,7 +44,29 @@ export default {
         return;
       }
 
-      for (const shortcut of shortcuts) {
+      // 1. Not an input - just return list of shortcuts
+      // 2. Input without data attr - return empty list
+      // 3. Input with data attr - return list of shortcuts that match the data attr
+      const allowedShortcuts = (() => {
+        const target = e.target as HTMLElement;
+
+        if (!e.target || !isInputElement(target)) {
+          return shortcuts;
+        }
+
+        const allowlist = new Set(
+          target.dataset.allowShortcuts?.split(",") ?? [],
+        );
+
+        consola.debug(
+          "List of allowed shortcuts from input element: ",
+          allowlist,
+        );
+
+        return shortcuts.filter((shortcut) => allowlist.has(shortcut));
+      })();
+
+      for (const shortcut of allowedShortcuts) {
         const isEnabled = this.$shortcuts.isEnabled(shortcut);
         if (isEnabled) {
           this.$shortcuts.dispatch(shortcut, { event: e, src: "global" });
