@@ -10,10 +10,8 @@ import {
 import AutoSaveButton from "@/components/toolbar/AutoSyncButton.vue";
 import SaveButton from "@/components/toolbar/SaveButton.vue";
 import { toolbarButtonTitle } from "@/components/toolbar/toolbarButtonTitle";
-import { useAddNodeViaFileUpload } from "@/components/nodeTemplates/useAddNodeViaFileUpload";
 import { useShortcuts } from "@/services/shortcuts";
 import type { ShortcutName } from "@/services/shortcuts";
-import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -28,11 +26,6 @@ const { activeProjectVersionsModeStatus } = storeToRefs(
 );
 const { isActiveWorkflowFixedVersion } = storeToRefs(useWorkflowStore());
 const { isLocalSaveSupported, isAutoSyncSupported } = useUIControlsStore();
-const { activeProjectOrigin } = storeToRefs(useApplicationStore());
-const { importFilesViaDialog } = useAddNodeViaFileUpload();
-const canAddFiles = computed(
-  () => uiControls.canEditWorkflow && !!activeProjectOrigin.value,
-);
 
 const isVersionModeActive = computed(
   () =>
@@ -150,16 +143,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
     >
       <SaveButton v-if="isLocalSaveSupported" :key="'save'" />
       <AutoSaveButton v-if="isAutoSyncSupported" :key="'autosave'" />
-
-      <KdsButton
-        v-if="canAddFiles"
-        :key="'add-files'"
-        leading-icon="file-plus"
-        variant="transparent"
-        size="medium"
-        title="Add files"
-        @click="importFilesViaDialog"
-      />
 
       <KdsButton
         v-for="button in toolbarButtons"
