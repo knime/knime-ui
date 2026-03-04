@@ -56,7 +56,16 @@ const getEventData = (event: DragEvent) => {
     return null;
   }
 
-  return JSON.parse(data) as KnimeNodeDragEventData;
+  try {
+    return JSON.parse(data) as KnimeNodeDragEventData;
+  } catch (error) {
+    consola.error(
+      "useDragNodeIntoCanvas:: Failed to parse drag event payload",
+      { error },
+    );
+
+    return null;
+  }
 };
 
 // One key characteristic of this composable, which can be confusing at first glance,

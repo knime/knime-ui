@@ -159,6 +159,12 @@ export const useExecutionStore = defineStore("execution", {
       }
 
       if (validationResult?.error) {
+        consola.warn("execution:: Cannot detach port view", {
+          nodeId: node.id,
+          selectedPortIndex,
+          validationCode: validationResult.error.code,
+        });
+
         showDetachErrorToast(
           validationResult.error.message ||
             "Check the output port view for details.",
