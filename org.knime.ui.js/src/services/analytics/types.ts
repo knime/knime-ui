@@ -1,8 +1,10 @@
+import type { LayoutEditorOpenedEvents } from "./events/layout-editor-opened";
 import type { NodeCreationEvents } from "./events/node-created";
 import type { QAMOpenedEvents } from "./events/qam-opened";
 
 type AnalyticEvents = NodeCreationEvents &
-  QAMOpenedEvents & {
+  QAMOpenedEvents &
+  LayoutEditorOpenedEvents & {
     /**
      * Workflow saving
      */

@@ -23,7 +23,7 @@ export type Hotkeys = Array<Hotkey | HotkeyText>;
 export type ShortcutExecuteContext = {
   $router: Router;
   payload: {
-    src?: LiteralUnion<"global" | "contextmenu", string>;
+    src?: LiteralUnion<"global" | "contextmenu | workflowToolbar", string>;
     event?: Event;
     metadata?: any;
   };
