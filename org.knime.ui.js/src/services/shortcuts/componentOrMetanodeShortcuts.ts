@@ -417,7 +417,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
           "layouteditor_opened::wftoolbar_button_openlayouteditor",
       };
 
-      if (payload.src) {
+      if (payload.src && analyticsEventMapper[payload.src]) {
         useAnalytics().track(analyticsEventMapper[payload.src]);
       }
     },
@@ -457,7 +457,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         global: "layouteditor_opened::keyboard_shortcut_openlayouteditor",
       };
 
-      if (payload.src) {
+      if (payload.src && analyticsEventMapper[payload.src]) {
         useAnalytics().track(analyticsEventMapper[payload.src]);
       }
     },
