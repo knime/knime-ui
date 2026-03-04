@@ -176,7 +176,17 @@ export const useClipboardInteractionsStore = defineStore(
             }),
           );
 
-          const payload = JSON.parse(response.content);
+          let payload: { payloadIdentifier: unknown };
+          try {
+            payload = JSON.parse(response.content);
+          } catch (error) {
+            consola.error(
+              "clipboardInteractions:: Failed to parse copy response content",
+              { error },
+            );
+
+            throw error;
+          }
 
           const clipboardContent = {
             payloadIdentifier: payload.payloadIdentifier,

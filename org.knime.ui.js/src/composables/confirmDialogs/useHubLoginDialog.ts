@@ -42,6 +42,11 @@ export const useHubLoginDialog = async ({
       await spaceAuthStore.connectProvider({ spaceProviderId: hubId });
       return HubLoginAction.LOGIN;
     } catch (error: unknown) {
+      consola.error("useHubLoginDialog:: Hub login failed", {
+        hubId,
+        provider: providerNameOrId,
+        error,
+      });
       close();
 
       getToastPresets().toastPresets.spaces.auth.connectFailed({

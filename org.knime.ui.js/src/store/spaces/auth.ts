@@ -47,15 +47,16 @@ export const useSpaceAuthStore = defineStore("space.auth", {
           id: spaceProviderId,
         });
 
-        consola.info("action::connectProvider -> updating space provider", {
-          spaceProviderId: spaceProvider.id,
-        });
-
         const updatedProvider = { ...spaceProvider, spaceGroups };
 
         providersStore.updateSpaceProvider({
           id: spaceProviderId,
           value: updatedProvider,
+        });
+
+        consola.info("action::connectProvider -> connected", {
+          spaceProviderId,
+          connected: true,
         });
 
         return { isConnected: true, providerData: updatedProvider };

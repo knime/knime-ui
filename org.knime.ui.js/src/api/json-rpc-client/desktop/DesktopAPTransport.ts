@@ -41,6 +41,12 @@ export class DesktopAPTransport extends Transport {
 
       const responseErr = new JSONRPCError(message, ERR_UNKNOWN, error);
 
+      consola.error("DesktopAPTransport:: sendData failed", {
+        rpcActionId: this.rpcActionId,
+        message,
+        error,
+      });
+
       return Promise.reject(responseErr);
     }
     return promise;

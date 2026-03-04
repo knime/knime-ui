@@ -24,10 +24,13 @@ const tryParse = (json: string): MaybeValidServerEvent => {
     const parsed = JSON.parse(json) as ServerEvent;
     return { isValid: true, response: parsed };
   } catch (error) {
+    consola.error("server-events:: Failed to parse server event", { error });
+
     const errorResponse = {
       message: "Server event could not be parsed",
       error,
     };
+
     return { isValid: false, response: errorResponse };
   }
 };
