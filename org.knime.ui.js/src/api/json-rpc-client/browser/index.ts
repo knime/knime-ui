@@ -19,7 +19,7 @@ const setupServerEventListener = (ws: WebSocket) => {
       if (parsed.eventType) {
         serverEventHandler(data);
       }
-    } catch (_error) {
+    } catch (error) {
       consola.error("json-rpc-client: Failed to parse websocket message", {
         error,
       });
