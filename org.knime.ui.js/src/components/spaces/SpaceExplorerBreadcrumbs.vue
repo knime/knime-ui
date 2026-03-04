@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { Breadcrumb, type BreadcrumbItem } from "@knime/components";
-import CubeIcon from "@knime/styles/img/icons/cube.svg";
+import {
+  Breadcrumb,
+  type BreadcrumbItem,
+  LoadingIcon,
+} from "@knime/components";
 
 import type { SpaceProviderNS } from "@/api/custom-types";
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
@@ -25,7 +28,7 @@ const { getSpaceIcon, getSpaceProviderIcon } = useSpaceIcons();
 
 const rootIcon = computed(() => {
   if (!props.spaceProvider) {
-    return CubeIcon;
+    return LoadingIcon;
   }
   if (isHubProvider(props.spaceProvider)) {
     return getSpaceIcon(props.space);
