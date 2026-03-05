@@ -1,3 +1,5 @@
+import type { ValueOf } from "type-fest";
+
 import CreateComponent from "@knime/styles/img/icons/component.svg";
 import LayoutIcon from "@knime/styles/img/icons/layout-editor.svg";
 import CreateMetanode from "@knime/styles/img/icons/metanode-add.svg";
@@ -411,14 +413,17 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         nodeId,
       });
 
-      const analyticsEventMapper = {
+      const analyticsEventMapper = Object.freeze({
         global: "layouteditor_opened::keyboard_shortcut_openlayouteditor",
         workflowToolbar:
           "layouteditor_opened::wftoolbar_button_openlayouteditor",
-      };
+      });
 
-      if (payload.src && analyticsEventMapper[payload.src]) {
-        useAnalytics().track(analyticsEventMapper[payload.src]);
+      if (payload.src && payload.src in analyticsEventMapper) {
+        const trackId = analyticsEventMapper[payload.src] as ValueOf<
+          typeof analyticsEventMapper
+        >;
+        useAnalytics().track(trackId);
       }
     },
     condition: () => {
@@ -452,13 +457,16 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         nodeId,
       });
 
-      const analyticsEventMapper = {
-        contextmenu: "layouteditor_opened::component_ctxmenu_openlayouteditor",
+      const analyticsEventMapper = Object.freeze({
+        contextmenu: "layouteditor_opened::canvas_ctxmenu_openlayouteditor",
         global: "layouteditor_opened::keyboard_shortcut_openlayouteditor",
-      };
+      });
 
-      if (payload.src && analyticsEventMapper[payload.src]) {
-        useAnalytics().track(analyticsEventMapper[payload.src]);
+      if (payload.src && payload.src in analyticsEventMapper) {
+        const trackId = analyticsEventMapper[payload.src] as ValueOf<
+          typeof analyticsEventMapper
+        >;
+        useAnalytics().track(trackId);
       }
     },
     condition: () => {

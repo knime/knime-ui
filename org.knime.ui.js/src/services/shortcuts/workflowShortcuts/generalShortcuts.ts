@@ -1,4 +1,5 @@
 import { API } from "@api";
+import type { ValueOf } from "type-fest";
 
 import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
 import RedoIcon from "@knime/styles/img/icons/redo.svg";
@@ -127,7 +128,22 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     hotkey: ["CtrlOrCmd", "Z"],
     group: "general",
     icon: UndoIcon,
-    execute: () => useWorkflowStore().undo(),
+    execute: (ctx) => {
+      useWorkflowStore().undo();
+
+      const analyticsEventMapper = Object.freeze({
+        global: "action_undone::keyboard_shortcut_",
+        workflowToolbar: "action_undone::wftoolbar_button_",
+      } as const);
+
+      if (ctx.payload.src && ctx.payload.src in analyticsEventMapper) {
+        const trackId = analyticsEventMapper[ctx.payload.src] as ValueOf<
+          typeof analyticsEventMapper
+        >;
+
+        useAnalytics().track(trackId);
+      }
+    },
     condition: () =>
       Boolean(useWorkflowStore().activeWorkflow?.allowedActions?.canUndo),
   },
@@ -136,7 +152,21 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     hotkey: ["CtrlOrCmd", "Shift", "Z"],
     group: "general",
     icon: RedoIcon,
-    execute: () => useWorkflowStore().redo(),
+    execute: (ctx) => {
+      useWorkflowStore().redo();
+
+      const analyticsEventMapper = Object.freeze({
+        global: "action_redone::keyboard_shortcut_",
+        workflowToolbar: "action_redone::wftoolbar_button_",
+      });
+
+      if (ctx.payload.src && ctx.payload.src in analyticsEventMapper) {
+        const trackId = analyticsEventMapper[ctx.payload.src] as ValueOf<
+          typeof analyticsEventMapper
+        >;
+        useAnalytics().track(trackId);
+      }
+    },
     condition: () =>
       Boolean(useWorkflowStore().activeWorkflow?.allowedActions?.canRedo),
   },

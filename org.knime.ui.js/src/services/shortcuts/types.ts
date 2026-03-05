@@ -1,5 +1,4 @@
 import type { Component } from "vue";
-import type { LiteralUnion } from "type-fest";
 import type { Router } from "vue-router";
 
 import type { Hotkey } from "@knime/utils";
@@ -23,7 +22,7 @@ export type Hotkeys = Array<Hotkey | HotkeyText>;
 export type ShortcutExecuteContext = {
   $router: Router;
   payload: {
-    src?: LiteralUnion<"global" | "contextmenu | workflowToolbar", string>;
+    src?: "global" | "contextmenu" | "workflowToolbar";
     event?: Event;
     metadata?: any;
   };
