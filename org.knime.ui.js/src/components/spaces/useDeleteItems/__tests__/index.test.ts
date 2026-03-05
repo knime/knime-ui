@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type FunctionalComponent, ref } from "vue";
+import { flushPromises } from "@vue/test-utils";
 
 import type { FileExplorerItem } from "@knime/components";
 
@@ -82,19 +83,20 @@ describe("useDeleteItems::index", () => {
     const groupName = "my-group";
     const trashUrl = "http://trash.url";
 
-    mockedStores.spaceOperationsStore.getDeletionInfo = () => ({
+    (mockedStores.spaceOperationsStore.getDeletionInfo as any) = () => ({
       canSoftDelete: true,
       groupName,
     });
 
-    mockedStores.spaceProvidersStore.getProviderInfoFromProjectPath = () =>
-      createSpaceProvider({
-        id: "mockProviderId",
-        type: SpaceProviderNS.TypeEnum.HUB,
-      });
+    (mockedStores.spaceProvidersStore.getProviderInfoFromProjectPath as any) =
+      () =>
+        createSpaceProvider({
+          id: "mockProviderId",
+          type: SpaceProviderNS.TypeEnum.HUB,
+        });
 
-    // noinspection JSConstantReassignment
-    mockedStores.spaceProvidersStore.getTrashUrl = () => trashUrl;
+    (mockedStores.spaceProvidersStore.determineTrashUrl as any) = () =>
+      Promise.resolve(trashUrl);
 
     const { onDeleteItems } = useDeleteItems({
       projectId: ref("projectId"),
@@ -110,11 +112,14 @@ describe("useDeleteItems::index", () => {
     const toastOptions = vi.mocked(toast.show).mock.calls[0][0];
     const button = toastOptions.buttons!.find((b) => b.text === "Show trash");
     expect(button).toBeDefined();
+
     if (button?.callback) {
       button.callback();
     } else {
       expect.fail("The button should have a callback.");
     }
+
+    await flushPromises();
     expect(mockWindowOpen).toHaveBeenCalledWith(trashUrl);
   });
 });
