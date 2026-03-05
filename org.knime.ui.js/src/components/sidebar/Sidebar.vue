@@ -18,6 +18,7 @@ import MetainfoIcon from "@/assets/metainfo.svg";
 import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { HINTS } from "@/hints/hints.config";
+import { useAnalytics } from "@/services/analytics";
 import { TABS, type TabValues } from "@/store/panel";
 import { usePanelStore } from "@/store/panel";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -112,7 +113,13 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       icon: MetainfoIcon,
       isActive: panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
       isExpanded: panelStore.isLeftPanelExpanded,
-      onClick: () => activateSection(TABS.CONTEXT_AWARE_DESCRIPTION),
+      onClick: () => {
+        activateSection(TABS.CONTEXT_AWARE_DESCRIPTION);
+
+        if (!panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)) {
+          useAnalytics().track("sidepanel_opened::sidepanel_click_info");
+        }
+      },
     },
 
     ...registerSidebarSection(uiControls.canAccessNodeRepository, {
@@ -121,7 +128,13 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       icon: PlusIcon,
       isActive: panelStore.isTabActive(TABS.NODE_REPOSITORY),
       isExpanded: panelStore.isLeftPanelExpanded,
-      onClick: () => activateSection(TABS.NODE_REPOSITORY),
+      onClick: () => {
+        activateSection(TABS.NODE_REPOSITORY);
+
+        if (!panelStore.isTabActive(TABS.NODE_REPOSITORY)) {
+          useAnalytics().track("sidepanel_opened::sidepanel_click_noderepo");
+        }
+      },
     }),
 
     ...registerSidebarSection(uiControls.canAccessSpaceExplorer, {
@@ -130,7 +143,13 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       icon: CubeIcon,
       isActive: panelStore.isTabActive(TABS.SPACE_EXPLORER),
       isExpanded: panelStore.isLeftPanelExpanded,
-      onClick: () => activateSection(TABS.SPACE_EXPLORER),
+      onClick: () => {
+        activateSection(TABS.SPACE_EXPLORER);
+
+        if (!panelStore.isTabActive(TABS.SPACE_EXPLORER)) {
+          useAnalytics().track("sidepanel_opened::sidepanel_click_explorer");
+        }
+      },
     }),
 
     ...registerSidebarSection(
@@ -142,7 +161,13 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         classes: ["k-ai-tab"],
         isActive: panelStore.isTabActive(TABS.KAI),
         isExpanded: panelStore.isLeftPanelExpanded,
-        onClick: () => activateSection(TABS.KAI),
+        onClick: () => {
+          activateSection(TABS.KAI);
+
+          if (!panelStore.isTabActive(TABS.KAI)) {
+            useAnalytics().track("sidepanel_opened::sidepanel_click_kai");
+          }
+        },
       },
     ),
 
@@ -152,7 +177,13 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       icon: WorkflowMonitorIcon,
       isActive: panelStore.isTabActive(TABS.WORKFLOW_MONITOR),
       isExpanded: panelStore.isLeftPanelExpanded,
-      onClick: () => activateSection(TABS.WORKFLOW_MONITOR),
+      onClick: () => {
+        activateSection(TABS.WORKFLOW_MONITOR);
+
+        if (!panelStore.isTabActive(TABS.WORKFLOW_MONITOR)) {
+          useAnalytics().track("sidepanel_opened::sidepanel_click_monitor");
+        }
+      },
     },
   ];
 });
