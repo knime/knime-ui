@@ -263,8 +263,11 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       return activeProjectProvider ?? null;
     },
 
-    getTrashUrl: (state) => {
-      return (providerId: string, groupName: string): string | null => {
+    determineTrashUrl: (state) => {
+      return async (
+        providerId: string,
+        groupName: string,
+      ): Promise<string | null> => {
         const provider = state.spaceProviders?.[providerId];
         if (!provider?.hostname) {
           return null;
@@ -285,7 +288,22 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
           pathParts.push("trash");
           url.pathname = `/${pathParts.join("/")}`;
 
-          return url.toString();
+          const trashUrl = url.toString();
+          try {
+            const response = await fetch(trashUrl, { method: "HEAD" });
+            if (response.ok) {
+              return trashUrl;
+            } else {
+              // fallback to old URL for backwards compatibility with older hubs
+              pathParts.pop();
+              pathParts.push("recycle-bin");
+              url.pathname = `/${pathParts.join("/")}`;
+              return url.toString();
+            }
+          } catch (error) {
+            consola.error("Could not check trash URL availability", error);
+            return null;
+          }
         } catch (e) {
           consola.error("Could not construct trash URL", e);
           return null;
