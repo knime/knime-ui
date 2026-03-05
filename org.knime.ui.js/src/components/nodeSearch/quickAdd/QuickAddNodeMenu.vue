@@ -244,6 +244,17 @@ watch(port, async (newPort, oldPort) => {
     await fetchNodeRecommendations();
   }
 });
+
+const onSearchInputChange = (searchTerm: string) => {
+  quickAddNodesStore.searchByQueryDebounced(searchTerm, {
+    onDone: () => {
+      useAnalytics().track("node_searched::qam_type_", {
+        keyword: searchTerm,
+        repoType: "node",
+      });
+    },
+  });
+};
 </script>
 
 <template>
@@ -257,7 +268,7 @@ watch(port, async (newPort, oldPort) => {
       focus-on-mount
       tabindex="0"
       data-allow-shortcuts="openQuickNodeInsertionMenu"
-      @update:model-value="quickAddNodesStore.updateQuery($event)"
+      @update:model-value="onSearchInputChange"
       @focusin="selectedNode = null"
       @keydown.enter.prevent.stop="searchEnterKey"
       @keydown.down.prevent.stop="searchDownKey"

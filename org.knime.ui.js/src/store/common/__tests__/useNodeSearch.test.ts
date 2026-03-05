@@ -280,7 +280,7 @@ describe("Node search partial store", () => {
 
       it("updates query", async () => {
         const { nodeSearch } = createComposable();
-        await nodeSearch.updateQuery("some value");
+        await nodeSearch.searchByQueryDebounced("some value");
 
         expect(nodeSearch.query.value).toBe("some value");
         expect(mockedAPI.noderepository.searchNodes).toHaveBeenCalledWith(

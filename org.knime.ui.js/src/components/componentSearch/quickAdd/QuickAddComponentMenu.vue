@@ -9,6 +9,7 @@ import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoad
 import { NodeTemplate } from "@/components/nodeTemplates";
 import type { QuickActionMenuContext } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import { useAnalytics } from "@/services/analytics";
 import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useQuickActionComponentSearchStore } from "@/store/componentSearch";
@@ -31,9 +32,16 @@ const componentSearchStore = useQuickActionComponentSearchStore();
 const { isLoading, hasLoaded, results, query } =
   storeToRefs(componentSearchStore);
 
-const updateSearchQuery = async (value: string) => {
+const onSearchInputChange = async (searchTerm: string) => {
   try {
-    await componentSearchStore.updateQuery(value);
+    await componentSearchStore.searchByQueryDebounced(searchTerm, {
+      onDone: () => {
+        useAnalytics().track("node_searched::qam_type_", {
+          keyword: searchTerm,
+          repoType: "component",
+        });
+      },
+    });
   } catch (error) {
     toastPresets.search.nodeSearch({ error });
   }
@@ -115,7 +123,7 @@ onBeforeUnmount(() => {
       class="search-bar"
       focus-on-mount
       tabindex="0"
-      @update:model-value="updateSearchQuery"
+      @update:model-value="onSearchInputChange"
       @keydown.enter.prevent.stop="searchEnterKey"
       @keydown.down.prevent.stop="searchDownKey"
     />

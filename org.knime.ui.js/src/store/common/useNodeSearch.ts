@@ -212,10 +212,14 @@ export const useNodeSearch = () => {
     }
   };
 
-  const searchNodesDebounced = debounce(async () => {
-    await searchNodes();
-    setLoadingSearchResults(false);
-  }, searchNodesDebounceWait);
+  const searchNodesDebounced = debounce(
+    async (opts: { onDone?: () => void } = {}) => {
+      await searchNodes();
+      setLoadingSearchResults(false);
+      opts.onDone?.();
+    },
+    searchNodesDebounceWait,
+  );
 
   const searchNodesNextPage = async () => {
     if (nodes.value?.length !== totalNumNodesFound.value) {
@@ -229,10 +233,24 @@ export const useNodeSearch = () => {
     await searchNodesDebounced();
   };
 
-  const updateQuery = async (value: string) => {
+  /**
+   * Performs a search using the given query term. This method is debounced.
+   *
+   * Because of the debouncing behavior, awaiting the returned promise does not
+   * reliably indicate when the underlying request has actually been executed.
+   * The promise may resolve before the debounced call is triggered.
+   *
+   * If you need to run logic *only* after the debounced request has been executed and
+   * completed, provide the optional `onDone` callback. This callback is invoked
+   * once the debounced request has finished.
+   */
+  const searchByQueryDebounced = async (
+    value: string,
+    opts: { onDone?: () => void } = {},
+  ) => {
     setLoadingSearchResults(true);
     setQuery(value);
-    await searchNodesDebounced();
+    await searchNodesDebounced(opts);
   };
 
   return {
@@ -272,6 +290,6 @@ export const useNodeSearch = () => {
     searchNodes,
     searchNodesNextPage,
     updateSelectedTags,
-    updateQuery,
+    searchByQueryDebounced,
   };
 };
