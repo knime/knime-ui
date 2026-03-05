@@ -14,6 +14,7 @@ import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useSpaceIcons } from "@/components/spaces/useSpaceIcons";
 import { isDesktop } from "@/environment";
+import { useAnalytics } from "@/services/analytics";
 import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -73,6 +74,9 @@ const dropdownItems = computed(() => {
       metadata: {
         handler: async () => {
           try {
+            useAnalytics().track(
+              "sidepanel_opened::wftoolbar_dropdownmenu_versionhistory",
+            );
             await useWorkflowVersionsStore().activateVersionsMode();
           } catch (error) {
             toastPresets.versions.activateModeFailed({ error });
