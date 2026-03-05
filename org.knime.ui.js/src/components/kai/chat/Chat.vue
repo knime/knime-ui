@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
+import { useAnalytics } from "@/services/analytics";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import type { ChainType } from "@/store/ai/types";
 
@@ -29,6 +30,23 @@ const {
   sendMessage,
   abortSendMessage,
 } = useChat(props.chainType);
+
+const onChatSendMessage = (...args: Parameters<typeof sendMessage>) => {
+  sendMessage(...args);
+
+  switch (props.chainType) {
+    case "qa":
+      useAnalytics().track("kai_prompted::kaiqa_button_prompt");
+      break;
+
+    case "build":
+      useAnalytics().track("kai_prompted::kaibuild_button_prompt");
+      break;
+
+    default:
+      break;
+  }
+};
 
 const { usage } = storeToRefs(useAIAssistantStore());
 
@@ -93,7 +111,7 @@ watch(
       :is-processing="isProcessing"
       :last-user-message="lastUserMessage"
       :usage="usage"
-      @send-message="sendMessage"
+      @send-message="onChatSendMessage"
       @abort="abortSendMessage"
     />
   </div>

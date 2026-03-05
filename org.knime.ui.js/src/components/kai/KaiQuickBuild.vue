@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
@@ -5,7 +6,9 @@ import { storeToRefs } from "pinia";
 import { KdsButton } from "@knime/kds-components";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import { useAnalytics } from "@/services/analytics";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type { QuickActionMenuContext } from "../workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 
 import Message from "./chat/message/Message.vue";
@@ -43,6 +46,24 @@ const {
   pendingInquiryTraces,
   lastMessageInquiryTraces,
 } = useQuickBuild({ nodeId, startPosition: canvasPosition });
+
+const onInputMessage = (...args: Parameters<typeof sendMessage>) => {
+  sendMessage(...args);
+
+  if (nodeId.value) {
+    const node = useNodeInteractionsStore().getNodeById(nodeId.value);
+    const nodeFactoryId = useNodeInteractionsStore().getNodeFactory(
+      nodeId.value,
+    ).className;
+
+    useAnalytics().track("kai_prompted::qam_button_prompt", {
+      nodeType: node!.kind,
+      nodeFactoryId,
+    });
+  } else {
+    useAnalytics().track("kai_prompted::qam_button_prompt", undefined);
+  }
+};
 
 const { usage } = storeToRefs(useAIAssistantStore());
 
@@ -137,7 +158,7 @@ watch(menuState, (menuState) => {
         :last-user-message="lastUserMessage"
         :error-message="errorMessage"
         :usage="usage"
-        @send-message="sendMessage"
+        @send-message="onInputMessage"
       />
     </template>
   </div>

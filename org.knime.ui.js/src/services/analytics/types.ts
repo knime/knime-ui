@@ -1,3 +1,4 @@
+import type { KaiPromptedEvents } from "./events/kai-prompted";
 import type { LayoutEditorOpenedEvents } from "./events/layout-editor-opened";
 import type { NodeCreationEvents } from "./events/node-created";
 import type { QAMOpenedEvents } from "./events/qam-opened";
@@ -12,7 +13,8 @@ type AnalyticEvents = NodeCreationEvents &
   SearchEvents &
   WorkflowSaved &
   UndoRedoEvents &
-  SidePanelOpenedEvents;
+  SidePanelOpenedEvents &
+  KaiPromptedEvents;
 
 export type AnalyticEventNames = keyof AnalyticEvents;
 
