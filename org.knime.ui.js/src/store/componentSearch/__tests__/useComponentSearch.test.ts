@@ -122,14 +122,14 @@ describe("useComponentSearch", () => {
       query,
       isLoading,
       hasLoaded,
-      updateQuery,
+      searchByQueryDebounced,
       searchComponents,
     } = getComposableResult();
 
     // make request first
     await searchComponents();
 
-    updateQuery("foo");
+    searchByQueryDebounced("foo");
     expect(query.value).toBe("foo");
     expect(isLoading.value).toBe(true);
     expect(hasLoaded.value).toBe(false);

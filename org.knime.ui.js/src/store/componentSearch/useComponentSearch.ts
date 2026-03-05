@@ -19,8 +19,8 @@ export const useComponentSearch = () => {
   const results = ref<ComponentNodeTemplateWithExtendedPorts[]>([]);
   let abortController: AbortController;
 
-  const searchComponents = async (
-    params: { append?: boolean } = {},
+  const fetchResults = async (
+    params: { append?: boolean; onDone?: () => void } = {},
   ): Promise<void> => {
     const { append = false } = params;
 
@@ -58,6 +58,8 @@ export const useComponentSearch = () => {
 
       hasLoaded.value = true;
       currentOffset.value++;
+
+      params.onDone?.();
     } catch (error) {
       if (error instanceof promise.AbortError) {
         return;
@@ -69,15 +71,30 @@ export const useComponentSearch = () => {
     }
   };
 
-  const debouncedSearch = useDebounceFn(searchComponents, SEARCH_DEBOUNCE_MS);
+  const debouncedFetchResults = useDebounceFn(fetchResults, SEARCH_DEBOUNCE_MS);
 
-  const updateQuery = async (value: string) => {
+  /**
+   * Performs a search using the given query term. This method is debounced.
+   *
+   * Because of the debouncing behavior, awaiting the returned promise does not
+   * reliably indicate when the underlying request has actually been executed.
+   * The promise may resolve before the debounced call is triggered.
+   *
+   * If you need to run logic *only* after the debounced request has been executed and
+   * completed, provide the optional `onDone` callback. This callback is invoked
+   * once the debounced request has finished.
+   */
+  const searchByQueryDebounced = async (
+    value: string,
+    opts: { onDone?: () => void } = {},
+  ) => {
     query.value = value;
     currentOffset.value = 0;
     results.value = [];
     hasLoaded.value = false;
     isLoading.value = true;
-    await debouncedSearch();
+
+    await debouncedFetchResults({ onDone: opts.onDone });
   };
 
   const clearSearch = () => {
@@ -93,8 +110,8 @@ export const useComponentSearch = () => {
     isLoading: readonly(isLoading),
     hasLoaded: readonly(hasLoaded),
     results,
-    searchComponents,
-    updateQuery,
+    searchComponents: (opts: { append?: boolean } = {}) => fetchResults(opts),
+    searchByQueryDebounced,
     clearSearch,
   };
 };

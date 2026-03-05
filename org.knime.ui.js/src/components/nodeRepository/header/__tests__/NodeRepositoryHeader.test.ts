@@ -188,11 +188,11 @@ describe("NodeRepositoryHeader", () => {
         .findComponent(SearchInput)
         .vm.$emit("update:modelValue", "myquery");
 
-      expect(mockedStores.nodeRepositoryStore.updateQuery).toHaveBeenCalledWith(
-        "myquery",
-      );
       expect(
-        mockedStores.sidebarComponentSearchStore.updateQuery,
+        mockedStores.nodeRepositoryStore.searchByQueryDebounced,
+      ).toHaveBeenCalledWith("myquery", expect.anything());
+      expect(
+        mockedStores.sidebarComponentSearchStore.searchByQueryDebounced,
       ).not.toHaveBeenCalled();
 
       vi.clearAllMocks();
@@ -203,11 +203,11 @@ describe("NodeRepositoryHeader", () => {
         .vm.$emit("update:modelValue", "myquery");
 
       expect(
-        mockedStores.nodeRepositoryStore.updateQuery,
+        mockedStores.nodeRepositoryStore.searchByQueryDebounced,
       ).not.toHaveBeenCalled();
       expect(
-        mockedStores.sidebarComponentSearchStore.updateQuery,
-      ).toHaveBeenCalledWith("myquery");
+        mockedStores.sidebarComponentSearchStore.searchByQueryDebounced,
+      ).toHaveBeenCalledWith("myquery", expect.anything());
     });
 
     it("uses collection name when a collection is active", () => {

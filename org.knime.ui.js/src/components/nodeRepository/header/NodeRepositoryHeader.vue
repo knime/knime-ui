@@ -9,6 +9,7 @@ import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 
 import { isBrowser } from "@/environment";
+import { useAnalytics } from "@/services/analytics";
 import { getToastPresets } from "@/services/toastPresets";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -63,9 +64,17 @@ const currentSearchQuery = computed(() => {
 const updateSearchQuery = async (value: string) => {
   try {
     const updateQueryFn = isComponentSearch.value
-      ? componentSearchStore.updateQuery
-      : nodeRepositoryStore.updateQuery;
-    await updateQueryFn(value);
+      ? componentSearchStore.searchByQueryDebounced
+      : nodeRepositoryStore.searchByQueryDebounced;
+
+    await updateQueryFn(value, {
+      onDone: () => {
+        useAnalytics().track("node_searched::noderepo_type_", {
+          keyword: value,
+          repoType: isComponentSearch.value ? "component" : "node",
+        });
+      },
+    });
   } catch (error) {
     const handler = isComponentSearch.value
       ? toastPresets.search.componentSearch
