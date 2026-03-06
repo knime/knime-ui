@@ -21,8 +21,8 @@ const drawPill = (
 };
 
 const drawDefault = (graphics: GraphicsInst) => {
-  // Horizontal pill: 170 × 36 px, fully rounded (radius = height / 2 = 18)
-  drawPill(graphics, 170, 36, 18);
+  // Horizontal pill: 170 × 48 px, fully rounded (radius = height / 2 = 24)
+  drawPill(graphics, 170, 48, 24);
 };
 
 const drawLoopEnd = (graphics: GraphicsInst) => {

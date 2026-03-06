@@ -40,6 +40,7 @@ import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 import { useNodeNameShortening } from "./useTextShortening";
+import { nodeInlineLabelText } from "../util/textStyles";
 
 interface Props {
   node: KnimeNode;
@@ -189,11 +190,11 @@ const nodeNamePosition = computed(() => {
       y: -$shapes.portSize,
     };
   }
-  // Pill layout: name is inside the pill, centered in the text area
+  // Pill layout: name is inside the pill, top row
   // between the icon cap (nodePillHeight wide) and the action buttons
   return {
     x: Math.round($shapes.nodePillHeight + ($shapes.nodePillWidth - $shapes.nodePillHeight - 3 * $shapes.nodeActionBarButtonSpread) / 2),
-    y: Math.round(($shapes.nodePillHeight + nodeNameDimensions.value.height) / 2),
+    y: Math.round($shapes.nodePillHeight * 0.46),
   };
 });
 
@@ -296,8 +297,15 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
       : $shapes.nodeNameHorizontalMargin * 2,
 });
 
-const actionBarPosition = computed(() => {
-  if (isMetanode.value) {
+const nodeInlineLabelPosition = computed(() => {
+  if (isMetanode.value || !props.node.annotation?.text.value) return null;
+  return {
+    x: nodeNamePosition.value.x,
+    y: Math.round($shapes.nodePillHeight * 0.875),
+  };
+});
+
+const actionBarPosition = computed(() => {  if (isMetanode.value) {
     return {
       x: $shapes.nodeSize / 2,
       y: nodeSelectionMeasures.value.y + $shapes.webGlNodeActionBarYOffset,
@@ -388,6 +396,19 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         v-bind="node.state"
         :text-resolution="zoomAwareResolution"
       />
+
+      <Text
+        v-if="nodeInlineLabelPosition"
+        label="NodeInlineLabel"
+        event-mode="none"
+        :x="nodeInlineLabelPosition.x - 40"
+        :y="nodeInlineLabelPosition.y - 10"
+        :style="nodeInlineLabelText.styles"
+        :resolution="zoomAwareResolution"
+        :round-pixels="true"
+      >
+        {{ node.annotation?.text.value }}
+      </Text>
     </Container>
 
     <NodePorts
@@ -403,6 +424,7 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
     />
 
     <NodeLabel
+      v-if="isMetanode"
       :node-id="node.id"
       :label="node.annotation?.text.value"
       :is-metanode="isMetanode"
