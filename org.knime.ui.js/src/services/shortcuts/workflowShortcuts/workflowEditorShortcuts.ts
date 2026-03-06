@@ -24,29 +24,26 @@ type WorkflowEditorShortcuts = UnionToShortcutRegistry<
   | "autoDisconnectNodesFlowVar"
 >;
 
-const createAutoConnectionHandler =
-  (
-    command:
-      | typeof API.workflowCommand.AutoConnect
-      | typeof API.workflowCommand.AutoDisconnect,
-    flowVariablePortsOnly: boolean = false,
-  ) =>
-  () => {
-    const { projectId, workflowId } =
-      useWorkflowStore().getProjectAndWorkflowIds;
+const handleAutoConnection = (
+  command:
+    | typeof API.workflowCommand.AutoConnect
+    | typeof API.workflowCommand.AutoDisconnect,
+  flowVariablePortsOnly: boolean = false,
+) => {
+  const { projectId, workflowId } = useWorkflowStore().getProjectAndWorkflowIds;
 
-    const { selectedNodeIds, getSelectedMetanodePortBars: selectedPortBars } =
-      useSelectionStore();
+  const { selectedNodeIds, getSelectedMetanodePortBars: selectedPortBars } =
+    useSelectionStore();
 
-    command({
-      projectId,
-      workflowId,
-      selectedNodes: selectedNodeIds,
-      workflowInPortsBarSelected: selectedPortBars.includes("in"),
-      workflowOutPortsBarSelected: selectedPortBars.includes("out"),
-      flowVariablePortsOnly,
-    });
-  };
+  command({
+    projectId,
+    workflowId,
+    selectedNodes: selectedNodeIds,
+    workflowInPortsBarSelected: selectedPortBars.includes("in"),
+    workflowOutPortsBarSelected: selectedPortBars.includes("out"),
+    flowVariablePortsOnly,
+  });
+};
 
 const canAutoConnectOrDisconnect = () => {
   const { isWritable } = useWorkflowStore();
@@ -205,6 +202,8 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       }
 
       if (target) {
+        // there's no contextmenu entry for this action, so when we have a target this
+        // can only mean that it's a shortcut fired off when a node is selected
         useAnalytics().track("qam_opened::keyboard_shortcut_", {
           type: target.node.kind,
           connectionType: target.portTypeId,
@@ -239,7 +238,17 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Connect nodes",
     hotkey: ["CtrlOrCmd", "L"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(API.workflowCommand.AutoConnect),
+    execute: (ctx) => {
+      handleAutoConnection(API.workflowCommand.AutoConnect);
+
+      if (ctx.payload.src === "global") {
+        useAnalytics().track(
+          "connection_created::keyboard_shortcut_connectnodes",
+        );
+      } else {
+        useAnalytics().track("connection_created::canvas_ctxmenu_connectnodes");
+      }
+    },
     condition: canAutoConnectOrDisconnect,
   },
   autoConnectNodesFlowVar: {
@@ -247,7 +256,19 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Connect nodes by flow variable port",
     hotkey: ["CtrlOrCmd", "K"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(API.workflowCommand.AutoConnect, true),
+    execute: (ctx) => {
+      handleAutoConnection(API.workflowCommand.AutoConnect, true);
+
+      if (ctx.payload.src === "global") {
+        useAnalytics().track(
+          "connection_created::keyboard_shortcut_connectflowvar",
+        );
+      } else {
+        useAnalytics().track(
+          "connection_created::canvas_ctxmenu_connectflowvar",
+        );
+      }
+    },
     condition: canAutoConnectOrDisconnect,
   },
   autoDisconnectNodesDefault: {
@@ -255,7 +276,9 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Disconnect nodes",
     hotkey: ["CtrlOrCmd", "Shift", "L"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(API.workflowCommand.AutoDisconnect),
+    execute: () => {
+      handleAutoConnection(API.workflowCommand.AutoDisconnect);
+    },
     condition: canAutoConnectOrDisconnect,
   },
   autoDisconnectNodesFlowVar: {
@@ -263,10 +286,9 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Disconnect nodes' flow variable ports",
     hotkey: ["CtrlOrCmd", "Shift", "K"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(
-      API.workflowCommand.AutoDisconnect,
-      true,
-    ),
+    execute: () => {
+      handleAutoConnection(API.workflowCommand.AutoDisconnect, true);
+    },
     condition: canAutoConnectOrDisconnect,
   },
 };
