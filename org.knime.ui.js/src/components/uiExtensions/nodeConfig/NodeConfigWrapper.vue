@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button, FunctionButton } from "@knime/components";
+import CircleInfoIcon from "@knime/styles/img/icons/circle-info.svg";
 import MinimizeDialogIcon from "@knime/styles/img/icons/minimize-large-dialog.svg";
 import OpenDialogIcon from "@knime/styles/img/icons/open-large-dialog.svg";
 
@@ -33,6 +34,7 @@ const {
   dirtyState,
   activeContext,
   isConfigurationDisabled,
+  showNodeDescriptionPanel,
 } = storeToRefs(nodeConfigurationStore);
 const { settings } = storeToRefs(useSettingsStore());
 const panelStore = usePanelStore();
@@ -110,13 +112,25 @@ const discardSettings = () => {
       </Button>
     </div>
 
-    <div :class="['content', { 'large-mode': isLargeMode }]">
+      <div :class="['content', { 'large-mode': isLargeMode }]">
       <RightPanelHeader
         v-if="!isLargeMode"
         :title="nodeName"
         @close="panelStore.isRightPanelExpanded = false"
       >
         <template #actions>
+          <FunctionButton
+            v-if="activeContext"
+            :title="showNodeDescriptionPanel ? 'Hide node description' : 'Show node description'"
+            data-test-id="toggle-description-btn"
+            class="description-toggle-btn"
+            :class="{ active: showNodeDescriptionPanel }"
+            compact
+            @click="nodeConfigurationStore.showNodeDescriptionPanel = !nodeConfigurationStore.showNodeDescriptionPanel"
+          >
+            <CircleInfoIcon />
+          </FunctionButton>
+
           <FunctionButton
             v-if="canBeEnlarged"
             title="Expand into a more advanced configuration view"
@@ -218,6 +232,12 @@ const discardSettings = () => {
 
     &.large-mode {
       height: calc(100% - var(--title-bar-height));
+    }
+  }
+
+  & .description-toggle-btn {
+    &.active {
+      background-color: var(--kds-color-background-neutral-active);
     }
   }
 }

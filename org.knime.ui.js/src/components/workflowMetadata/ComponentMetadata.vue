@@ -186,6 +186,8 @@ const { saveContent } = useSaveMetadata({
   singleMetanodeSelectedId: toRef(props, "singleMetanodeSelectedId"),
 });
 
+defineExpose({ startEditing: () => preserveWhitespaceBeforeEdit() });
+
 const preserveWhitespaceBeforeEdit = () => {
   if (
     componentMetadata.value.description?.contentType ===

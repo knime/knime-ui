@@ -6,13 +6,13 @@ import { workflowDomain } from "@/lib/workflow-domain";
 import { TABS, usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import WorkflowMetadata from "../workflowMetadata/WorkflowMetadata.vue";
-
 import ComponentInstanceDescription from "./ComponentInstanceDescription.vue";
 import NativeNodeDescription from "./NativeNodeDescription.vue";
 
 /**
- * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)
+ * Shows the node description for the currently selected node.
+ * Workflow / component metadata is now displayed as a canvas element
+ * (WorkflowDescriptionCanvasElement) rather than in this sidebar panel.
  */
 
 const panelStore = usePanelStore();
@@ -82,6 +82,4 @@ const componentInstanceData = computed(() => {
       :name="componentInstanceData.name"
     />
   </template>
-
-  <WorkflowMetadata v-else key="workflow-metadata" />
 </template>
