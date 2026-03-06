@@ -2,10 +2,13 @@
 import { API } from "@api";
 
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
+import { ports as portDataMappers } from "@/lib/data-mappers";
 import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { useAnalytics } from "@/services/analytics";
+import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -93,7 +96,10 @@ const calculateNodeInsertionPosition = (
 const openQuickActionMenu = (
   { payload }: ShortcutExecuteContext,
   menuMode: QuickActionMenuMode,
-) => {
+): {
+  opened: boolean;
+  target: { node: KnimeNode; port: NodePort; portTypeId: string } | null;
+} => {
   const positionFromContextMenu = payload?.metadata?.position as XY;
   const store = useCanvasAnchoredComponentsStore();
   const { isOpen, props: currentMenuProps } = store.quickActionMenu;
@@ -176,7 +182,18 @@ const openQuickActionMenu = (
     },
   });
 
-  return { opened: true, target: { node: predecessorNode, port: nextPort } };
+  const extendedPortType = portDataMappers.toExtendedPortObject(
+    useApplicationStore().availablePortTypes,
+  )(nextPort.typeId);
+
+  return {
+    opened: true,
+    target: {
+      node: predecessorNode,
+      port: nextPort,
+      portTypeId: extendedPortType.typeId,
+    },
+  };
 };
 
 const workflowEditorShortcuts: WorkflowEditorShortcuts = {
@@ -187,7 +204,26 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
     execute: (ctx) => {
-      openQuickActionMenu(ctx, "quick-add");
+      const { opened, target } = openQuickActionMenu(ctx, "quick-add");
+
+      if (!opened) {
+        return;
+      }
+
+      if (target) {
+        useAnalytics().track("qam_opened::keyboard_shortcut_", {
+          type: target.node.kind,
+          connectionType: target.portTypeId,
+          nodePortIndex: target.port.index,
+        });
+      } else {
+        const trackId =
+          ctx.payload.src === "contextmenu"
+            ? "qam_opened::canvas_ctxmenu_quickaddnode"
+            : "qam_opened::keyboard_shortcut_";
+
+        useAnalytics().track(trackId, {});
+      }
     },
     condition: () => useWorkflowStore().isWritable,
   },
