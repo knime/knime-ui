@@ -126,6 +126,8 @@ const preserveWhitespaceBeforeEdit = () => {
 
   startEdit();
 };
+
+defineExpose({ startEditing: preserveWhitespaceBeforeEdit });
 </script>
 
 <template>

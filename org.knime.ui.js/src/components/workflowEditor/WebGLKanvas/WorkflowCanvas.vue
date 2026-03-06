@@ -31,6 +31,7 @@ import SkeletonAnnotation from "./annotations/SkeletonAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import FloatingCanvasTools from "./floatingToolbar/canvasTools/FloatingCanvasTools.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
+import WorkflowDescriptionCanvasElement from "./nodeDescription/WorkflowDescriptionCanvasElement.vue";
 import NodeLabelEditor from "./node/nodeLabel/NodeLabelEditor.vue";
 import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 import Tooltip from "./tooltip/Tooltip.vue";
@@ -234,6 +235,8 @@ const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
     <NodeLabelEditor />
 
     <FloatingCanvasTools />
+
+    <WorkflowDescriptionCanvasElement />
 
     <Tooltip />
 

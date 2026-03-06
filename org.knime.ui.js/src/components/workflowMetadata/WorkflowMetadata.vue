@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
@@ -15,6 +15,16 @@ import ComponentMetadata, {
 import ProjectMetadata, {
   type SaveEventPayload as SaveProjectEventPayload,
 } from "./ProjectMetadata.vue";
+
+const projectMetadataRef = useTemplateRef<InstanceType<typeof ProjectMetadata>>("projectMetadata");
+const componentMetadataRef = useTemplateRef<InstanceType<typeof ComponentMetadata>>("componentMetadata");
+
+defineExpose({
+  startEditing() {
+    projectMetadataRef.value?.startEditing();
+    componentMetadataRef.value?.startEditing();
+  },
+});
 
 const { availablePortTypes, availableComponentTypes } = storeToRefs(
   useApplicationStore(),
@@ -83,6 +93,7 @@ const updateComponentMetadata = ({
   <div v-if="workflow && workflow.metadata" class="metadata">
     <ProjectMetadata
       v-if="workflowDomain.project.isProjectMetadata(workflow.metadata)"
+      ref="projectMetadata"
       :project-metadata="workflow.metadata"
       :project-id="workflow.projectId"
       :workflow-id="workflow.info.containerId"
@@ -96,6 +107,7 @@ const updateComponentMetadata = ({
 
     <ComponentMetadata
       v-if="workflowDomain.project.isComponentMetadata(workflow.metadata)"
+      ref="componentMetadata"
       :component-metadata="workflow.metadata"
       :project-id="workflow.projectId"
       :component-id="workflow.info.containerId"

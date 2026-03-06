@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 import ManageVersionsWrapper from "@/components/workflowEditor/ManageVersionsWrapper.vue";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
@@ -15,6 +16,7 @@ import {
 } from "../dataValueViews/useDataValueView";
 
 import NodeConfig from "./NodeConfig.vue";
+import NodeConfigDescriptionPanel from "./NodeConfigDescriptionPanel.vue";
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
@@ -23,10 +25,14 @@ const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const currentCanvasStore = useCurrentCanvasStore();
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const versionsStore = useWorkflowVersionsStore();
+const nodeConfigStore = useNodeConfigurationStore();
+const { showNodeDescriptionPanel } = storeToRefs(nodeConfigStore);
 
 // ─── Size / position ─────────────────────────────────────────────────────────
 
 const DEFAULT_WIDTH = 440;
+const DESCRIPTION_PANEL_WIDTH = 360;
+const DESCRIPTION_PANEL_GAP = 8;
 const DEFAULT_HEIGHT = 600;
 const MIN_WIDTH = 432;
 const MIN_HEIGHT = 300;
@@ -42,6 +48,7 @@ const VERSIONS_BUTTON_GAP = 4;
 const LEFT_OVERLAY_PANEL_GAP = 4;
 
 const { state: rectState, setRect } = useDraggableResizableRectState();
+const { state: descRectState, setRect: setDescRect } = useDraggableResizableRectState();
 
 const getVersionsAnchoredPosition = (): Pick<BoundingBox, "left" | "top"> => {
   const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-right");
@@ -139,6 +146,35 @@ watch(
   },
 );
 
+// ─── Companion description panel ─────────────────────────────────────────────
+
+/** Position the description panel to the right of the config panel. */
+const placeDescriptionPanel = () => {
+  const descLeft = Math.min(
+    rectState.value.left + rectState.value.width + DESCRIPTION_PANEL_GAP,
+    window.innerWidth - DESCRIPTION_PANEL_WIDTH - VIEWPORT_MARGIN,
+  );
+  setDescRect({
+    left: descLeft,
+    top: rectState.value.top,
+    width: DESCRIPTION_PANEL_WIDTH,
+    height: rectState.value.height,
+  });
+};
+
+watch(showNodeDescriptionPanel, (open) => {
+  if (open) {
+    placeDescriptionPanel();
+  }
+});
+
+const descPanelStyles = computed(() => ({
+  left: `${descRectState.value.left}px`,
+  top: `${descRectState.value.top}px`,
+  width: `${descRectState.value.width}px`,
+  height: `${descRectState.value.height}px`,
+}));
+
 const panelStyles = computed(() => ({
   left: `${rectState.value.left}px`,
   top: `${rectState.value.top}px`,
@@ -146,7 +182,7 @@ const panelStyles = computed(() => ({
   height: `${rectState.value.height}px`,
 }));
 
-// ─── Dragging ─────────────────────────────────────────────────────────────────
+// ─── Dragging (config panel) ───────────────────────────────────────────────────
 
 const isDragging = ref(false);
 
@@ -182,6 +218,40 @@ const onHeaderMouseDown = (event: MouseEvent) => {
   event.preventDefault();
 };
 
+// ─── Dragging (description panel) ─────────────────────────────────────────────
+
+const isDescDragging = ref(false);
+
+const onDescHeaderMouseDown = (event: MouseEvent) => {
+  if (!(event.target as HTMLElement).closest(".header")) {
+    return;
+  }
+  if ((event.target as HTMLElement).closest("button")) {
+    return;
+  }
+
+  isDescDragging.value = true;
+  const startLeft = event.clientX - descRectState.value.left;
+  const startTop = event.clientY - descRectState.value.top;
+
+  const onMove = (e: MouseEvent) => {
+    setDescRect({
+      left: e.clientX - startLeft,
+      top: e.clientY - startTop,
+    });
+  };
+
+  const onUp = () => {
+    isDescDragging.value = false;
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+  };
+
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+  event.preventDefault();
+};
+
 </script>
 
 <template>
@@ -202,10 +272,29 @@ const onHeaderMouseDown = (event: MouseEvent) => {
       <ManageVersionsWrapper v-else />
     </div>
   </ResizableComponentWrapper>
+
+  <!-- Companion node description panel -->
+  <ResizableComponentWrapper
+    v-if="showNodeDescriptionPanel && useEmbeddedDialogs"
+    class="node-desc-floating-panel"
+    :min-size="{ width: 280, height: MIN_HEIGHT }"
+    :rect-state="descRectState"
+    :style="descPanelStyles"
+    @custom-resize="setDescRect"
+  >
+    <div
+      class="floating-panel-content"
+      :style="isDescDragging ? { pointerEvents: 'none' } : {}"
+      @mousedown.capture="onDescHeaderMouseDown"
+    >
+      <NodeConfigDescriptionPanel />
+    </div>
+  </ResizableComponentWrapper>
 </template>
 
 <style lang="postcss" scoped>
-.node-config-floating-panel {
+.node-config-floating-panel,
+.node-desc-floating-panel {
   position: fixed;
   z-index: v-bind("$zIndices.layerFloatingWindows");
   display: flex;
