@@ -5,6 +5,8 @@ import { RenderLayer } from "pixi.js";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
+import { QuickActionId } from "@/store/ai/types";
 import {
   type CanvasLayerNames,
   useWebGLCanvasStore,
@@ -15,6 +17,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { ContainerInst } from "@/vue3-pixi";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
+import AISkeletonAnnotation from "./ai/AISkeletonAnnotation.vue";
 import StaticWorkflowAnnotation from "./annotations/StaticWorkflowAnnotation.vue";
 import Connector from "./connectors/Connector.vue";
 import ConnectorLabel from "./connectors/ConnectorLabel.vue";
@@ -64,6 +67,13 @@ const selectedPortsLayerContainer = useTemplateRef<ContainerInst>(
 );
 const annotationControlsLayerContainer = useTemplateRef<ContainerInst>(
   "annotationControlsLayerContainer",
+);
+
+const aiQuickActionsStore = useAiQuickActionsStore();
+const effectiveSkeletonBounds = computed(
+  () =>
+    aiQuickActionsStore.processingActions[QuickActionId.GenerateAnnotation]
+      ?.bounds ?? null,
 );
 
 const componentPlaceholders = computed(
@@ -124,6 +134,11 @@ const annotations = computed(
         :z-index="annotation.order"
       />
     </Container>
+
+    <AISkeletonAnnotation
+      v-if="effectiveSkeletonBounds"
+      :bounds="effectiveSkeletonBounds"
+    />
 
     <MetanodePortBars
       v-if="
