@@ -77,6 +77,7 @@ export interface NodeConfigurationState {
   pushEventDispatcher: UIExtensionPushEventDispatcher;
   isLargeMode: boolean;
   activeNodeViewNeedsExecution: boolean;
+  showNodeDescriptionPanel: boolean;
 }
 
 type ActiveContext =
@@ -95,6 +96,7 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     pushEventDispatcher: () => {},
     isLargeMode: false,
     activeNodeViewNeedsExecution: false,
+    showNodeDescriptionPanel: false,
   }),
   actions: {
     setIsLargeMode(value: boolean) {

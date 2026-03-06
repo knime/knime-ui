@@ -31,11 +31,6 @@ createHint({
 });
 
 const buttons = computed<ButtonDef[]>(() => [
-  {
-    name: TABS.CONTEXT_AWARE_DESCRIPTION,
-    title: "Info",
-    icon: "circle-info",
-  },
   ...(uiControls.canAccessNodeRepository
     ? [{ name: TABS.NODE_REPOSITORY as TabValues, title: "Nodes", icon: "node-stack" as KdsIconName }]
     : []),
