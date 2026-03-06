@@ -28,7 +28,7 @@ export const nodeNameText: TextStylePreset<{
     fontWeight: "bold",
     lineHeight: nodeRootFontSize * nodeRootLineHeight,
     wordWrap: true,
-    wordWrapWidth: 80,
+    wordWrapWidth: 100,
     breakWords: true,
     // fixes slight cut off of some chars
     padding: 2,
@@ -77,7 +77,7 @@ export const nodeInlineLabelText: TextStylePreset = {
     fontWeight: "normal",
     fill: $colors.DoveGray,
     wordWrap: true,
-    wordWrapWidth: 80,
+    wordWrapWidth: 120,
     breakWords: true,
     padding: 2,
     align: "center",
