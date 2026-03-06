@@ -357,15 +357,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
       @render="renderHoverArea"
     />
 
-    <NodeName
-      :node-id="node.id"
-      :name="shortenedNodeName"
-      :full-name="name"
-      :is-editable="isMetanode || isComponent"
-      :position="nodeNamePosition"
-      :metrics="nodeNameDimensions"
-    />
-
     <Container label="NodeTorsoContainer">
       <NodeTorso
         label="NodeTorso"
@@ -403,6 +394,15 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         {{ node.annotation?.text.value }}
       </Text>
     </Container>
+
+    <NodeName
+      :node-id="node.id"
+      :name="shortenedNodeName"
+      :full-name="name"
+      :is-editable="isMetanode || isComponent"
+      :position="nodeNamePosition"
+      :metrics="nodeNameDimensions"
+    />
 
     <NodeActionBar
       v-if="(isHovering || !isMetanode) && !isDragging && !isEditingName"
