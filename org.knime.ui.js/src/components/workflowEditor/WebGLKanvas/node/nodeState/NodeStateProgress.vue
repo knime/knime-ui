@@ -21,7 +21,7 @@ const clippedProgress = computed(() =>
 );
 
 const progressBarWidth = computed(() => {
-  const result = $shapes.nodeSize * clippedProgress.value;
+  let result = $shapes.nodePillWidth * clippedProgress.value;
   if (result && result < 1) {
     // fractional pixels just don't look good
     return 1;
@@ -78,7 +78,7 @@ useAnimatePixiContainer<number>({
       label="NodeStateProgressText"
       event-mode="none"
       :fill="$colors.text.default"
-      :x="$shapes.nodeSize / 2"
+      :x="$shapes.nodePillWidth / 2"
       :y="1"
       :anchor="{ x: 0.5, y: 0 }"
       :style="nodeStateText.styles"
@@ -134,7 +134,7 @@ useAnimatePixiContainer<number>({
         label="NodeStateProgressMaskText"
         event-mode="none"
         :fill="$colors.text.default"
-        :x="$shapes.nodeSize / 2"
+        :x="$shapes.nodePillWidth / 2"
         :y="1"
         :anchor="{ x: 0.5, y: 0 }"
         :style="{ ...nodeStateText.styles, fill: $colors.White }"

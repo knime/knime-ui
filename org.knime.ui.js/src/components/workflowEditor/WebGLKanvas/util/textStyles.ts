@@ -71,6 +71,20 @@ export const nodeIdText: TextStylePreset = {
   },
 };
 
+export const nodeInlineLabelText: TextStylePreset = {
+  styles: {
+    ...defaultTextStyles,
+    fontSize: 9,
+    fontWeight: "normal",
+    fill: $colors.DoveGray,
+    wordWrap: true,
+    wordWrapWidth: 80,
+    breakWords: true,
+    padding: 2,
+    align: "center",
+  },
+};
+
 export const nodeStateText: TextStylePreset = {
   styles: {
     ...defaultTextStyles,
