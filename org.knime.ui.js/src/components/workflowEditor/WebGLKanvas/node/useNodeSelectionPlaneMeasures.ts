@@ -16,33 +16,46 @@ export const useNodeSelectionPlaneMeasures = (
       nodeStatusHeight,
       nodeStatusMarginTop,
       nodeSize,
+      nodePillWidth,
+      nodePillHeight,
       nodeSelectionPadding: [_top, right, bottom, left],
     } = $shapes;
 
-    // override top for webgl as it is different with the name measurements
+    const isMetanode = toValue(options.isMetanode);
+
+    // For pill nodes the name is inside the pill → no top extra-height above the shape
     const top = $shapes.webGlNodeSelectionPaddingTop;
 
-    const extraHeight = toValue(options.extraHeight);
+    // Pill nodes: name is inside pill, so extraHeight only applies for metanodes
+    const extraHeight = isMetanode ? toValue(options.extraHeight) : 0;
     const baseWidth = toValue(options.width);
 
-    const hasStatusBar = !toValue(options.isMetanode);
-    // the selection plane's height has to account for
-    // (1) node's size plus the selection padding for top and bottom
-    // (2) the height and margin of the node status bar if it's present
-    // (3) the provided `extraHeight` prop on the component
+    const hasStatusBar = !isMetanode;
+
+    const torsoHeight = isMetanode ? nodeSize : nodePillHeight;
+    const torsoWidth = isMetanode ? nodeSize : nodePillWidth;
+
     const height =
       top +
-      nodeSize +
+      torsoHeight +
       bottom +
       (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
       extraHeight;
 
-    const minWidth = left + right + nodeSize;
+    const minWidth = isMetanode ? left + right + nodeSize : torsoWidth;
     const width = baseWidth > minWidth ? baseWidth : minWidth;
 
+    // For metanodes: x centers the selection plane around the 32px torso
+    // For pill nodes: the pill starts at x=0, so selection plane starts at x=0 (or slight negative padding)
+    const x = isMetanode ? -((width - torsoWidth) / 2) : -left;
+
+    // For metanodes: y starts above the metanode text (legacy behaviour)
+    // For pill nodes: y starts just above the pill with a small padding
+    const y = isMetanode ? -(top + extraHeight) : -$shapes.webGlNodeHoverAreaPadding;
+
     return {
-      y: -(top + extraHeight),
-      x: -((width - nodeSize) / 2),
+      y,
+      x,
       height,
       width,
     };

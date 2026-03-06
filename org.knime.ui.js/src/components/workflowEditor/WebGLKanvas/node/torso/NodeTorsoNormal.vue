@@ -115,8 +115,8 @@ onUnmounted(() => {
       :texture="texture as any"
       :anchor="0.5"
       :scale="nodeIconScaleFactor"
-      :x="$shapes.nodeSize / 2"
-      :y="$shapes.nodeSize / 2"
+      :x="$shapes.nodePillHeight / 2"
+      :y="$shapes.nodePillHeight / 2"
     />
   </Container>
 </template>

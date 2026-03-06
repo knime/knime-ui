@@ -1,6 +1,10 @@
 /* eslint-disable no-magic-numbers */
 export const nodeSize = 32;
 export const portSize = 9;
+
+// Pill-shaped node design constants
+export const nodePillWidth = 170;
+export const nodePillHeight = 36;
 export const portActionButtonSize = 20;
 export const portActionsGapSize = 5;
 
