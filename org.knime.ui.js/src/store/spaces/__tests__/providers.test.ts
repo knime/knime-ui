@@ -440,7 +440,7 @@ describe("spaces::providers", () => {
     });
   });
 
-  describe("getRecycleBinUrl", () => {
+  describe("determineTrashUrl", () => {
     const fetchMock = vi.fn();
 
     beforeEach(() => {
@@ -475,7 +475,7 @@ describe("spaces::providers", () => {
     });
 
     it("should fall back to recycle-bin url when HEAD request returns non-ok", async () => {
-      fetchMock.mockResolvedValue({ ok: false, status: 404 } as Response);
+      fetchMock.mockResolvedValue({ ok: false, status: 302 } as Response);
       const { spaceProvidersStore } = loadStore();
       const provider = createSpaceProvider({
         id: "provider1",
@@ -490,6 +490,24 @@ describe("spaces::providers", () => {
         "my-group",
       );
       expect(url).toBe("https://knime.com/hub/my-group/recycle-bin");
+    });
+
+    it("should return null when HEAD request returns status >= 400", async () => {
+      fetchMock.mockResolvedValue({ ok: false, status: 404 } as Response);
+      const { spaceProvidersStore } = loadStore();
+      const provider = createSpaceProvider({
+        id: "provider1",
+        hostname: "https://api.knime.com/hub",
+      });
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const url = await spaceProvidersStore.determineTrashUrl(
+        provider.id,
+        "my-group",
+      );
+      expect(url).toBeNull();
     });
 
     it("should return null when HEAD request throws", async () => {
