@@ -162,11 +162,15 @@ const { metrics: nodeNameDimensions, shortenedText: shortenedNodeName } =
 const { useEmbeddedDialogs, nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
   isHovering,
+  isMetanode,
   portPositions,
   dialogType: Node.DialogTypeEnum.Web,
   isUsingEmbeddedDialogs: useEmbeddedDialogs,
-  nodeTopOffset: computed(
-    () => nodeNameDimensions.value.height + $shapes.webGlNodeActionBarYOffset,
+  // For pill nodes the name + action bar live inside the pill → nothing above it
+  nodeTopOffset: computed(() =>
+    isMetanode.value
+      ? nodeNameDimensions.value.height + $shapes.webGlNodeActionBarYOffset
+      : 0,
   ),
   allowedActions: props.node.allowedActions,
   isDebugModeEnabled,
@@ -178,10 +182,18 @@ const renderable = computed(
 );
 
 const nodeNamePosition = computed(() => {
+  if (isMetanode.value) {
+    return {
+      x: $shapes.nodeSize / 2,
+      // leave space between name and torso for the flowvariable ports
+      y: -$shapes.portSize,
+    };
+  }
+  // Pill layout: name is inside the pill, centered in the text area
+  // between the icon cap (nodePillHeight wide) and the action buttons
   return {
-    x: $shapes.nodeSize / 2,
-    // leave space between name and torso for the flowvariable ports
-    y: -$shapes.portSize,
+    x: Math.round($shapes.nodePillHeight + ($shapes.nodePillWidth - $shapes.nodePillHeight - 3 * $shapes.nodeActionBarButtonSpread) / 2),
+    y: Math.round(($shapes.nodePillHeight + nodeNameDimensions.value.height) / 2),
   };
 });
 
@@ -285,9 +297,16 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
 });
 
 const actionBarPosition = computed(() => {
+  if (isMetanode.value) {
+    return {
+      x: $shapes.nodeSize / 2,
+      y: nodeSelectionMeasures.value.y + $shapes.webGlNodeActionBarYOffset,
+    };
+  }
+  // Pill layout: action buttons sit inside the pill on the right side
   return {
-    x: $shapes.nodeSize / 2,
-    y: nodeSelectionMeasures.value.y + $shapes.webGlNodeActionBarYOffset,
+    x: $shapes.nodePillWidth - 42,
+    y: $shapes.nodePillHeight / 2,
   };
 });
 
@@ -329,7 +348,7 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
     />
 
     <NodeActionBar
-      v-if="isHovering && !isDragging && !isEditingName"
+      v-if="(isHovering || !isMetanode) && !isDragging && !isEditingName"
       v-bind="allAllowedActions"
       :position="actionBarPosition"
       :node-id="node.id"

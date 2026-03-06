@@ -28,7 +28,7 @@ export const nodeNameText: TextStylePreset<{
     fontWeight: "bold",
     lineHeight: nodeRootFontSize * nodeRootLineHeight,
     wordWrap: true,
-    wordWrapWidth: 90,
+    wordWrapWidth: 80,
     breakWords: true,
     // fixes slight cut off of some chars
     padding: 2,
