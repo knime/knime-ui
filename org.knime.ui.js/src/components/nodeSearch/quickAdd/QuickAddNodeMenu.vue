@@ -122,18 +122,22 @@ const trackInsertion = (
       ? "node_created::qam_click_"
       : "node_created::qam_keyboard_enter";
 
-  if (nodeId.value) {
-    const sourceNode = useNodeInteractionsStore().getNodeById(nodeId.value);
+  if (props.quickActionContext.nodeId && props.quickActionContext.port) {
+    const sourceNode = useNodeInteractionsStore().getNodeById(
+      props.quickActionContext.nodeId,
+    );
     const sourceNodeFactory = useNodeInteractionsStore().getNodeFactory(
-      nodeId.value!,
+      props.quickActionContext.nodeId,
     );
 
     useAnalytics().track(trackId, {
       type: node.kind,
       nodeFactoryId: newNodeFactoryId,
       connectedTo: {
-        type: sourceNode!.kind,
+        nodeType: sourceNode!.kind,
         nodeFactoryId: sourceNodeFactory.className,
+        nodePortIndex: props.quickActionContext.port.index,
+        nodePortId: props.quickActionContext.port.typeId,
       },
     });
   } else {

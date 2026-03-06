@@ -12,6 +12,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
 import * as $shapes from "@/style/shapes";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
@@ -23,7 +24,7 @@ import NodePortActions from "./NodePortActions.vue";
 import Port from "./Port.vue";
 import { usePortTransparency } from "./usePortTransparency";
 
-interface Props {
+type Props = {
   nodeId: string;
   nodeKind: Node.KindEnum;
   port: NodePort;
@@ -31,7 +32,7 @@ interface Props {
   position: XY;
   direction: "in" | "out";
   disableQuickNodeAdd?: boolean;
-}
+};
 
 const props = withDefaults(defineProps<Props>(), {
   disableQuickNodeAdd: false,
@@ -73,6 +74,7 @@ const isFlowVariable = computed(
 );
 
 const { openQuickActionMenu } = useCanvasAnchoredComponentsStore();
+const nodeInteractionsStore = useNodeInteractionsStore();
 
 const floatingConnectorStore = useFloatingConnectorStore();
 const { floatingConnector, isDragging: isDraggingFloatingConnector } =
@@ -128,12 +130,49 @@ const onPointerDown = (event: FederatedPointerEvent) => {
       }` as const;
 
       useAnalytics().track(analyticsEventId, {
-        type: props.nodeKind,
-        nodePortIndex: props.port.index,
-        connectionType: portTemplate.value.kind,
+        connectedTo: {
+          nodeType: props.nodeKind,
+          nodePortIndex: props.port.index,
+          nodePortId: props.port.typeId,
+          nodeFactoryId: nodeInteractionsStore.getNodeFactory(props.nodeId)
+            .className,
+        },
       });
 
       return { removeConnector: false };
+    },
+
+    onConnectionFinished: ({ from, to }) => {
+      try {
+        const analyticsEventId = `connection_created::${
+          props.direction === "out" ? "port_dragdrop_fwd" : "port_dragdrop_bwd"
+        }` as const;
+
+        const fromNode = nodeInteractionsStore.getNodeById(from.nodeId)!;
+        const fromNodeTemplate = nodeInteractionsStore.getNodeFactory(
+          from.nodeId,
+        );
+
+        const toNode = nodeInteractionsStore.getNodeById(from.nodeId)!;
+        const toNodeTemplate = nodeInteractionsStore.getNodeFactory(to.nodeId);
+
+        useAnalytics().track(analyticsEventId, {
+          fromNode: {
+            type: fromNode.kind,
+            factoryId: fromNodeTemplate.className,
+            portIndex: from.portIndex,
+            portId: from.typeId,
+          },
+          toNode: {
+            type: toNode.kind,
+            factoryId: toNodeTemplate.className,
+            portIndex: to.portIndex,
+            portId: from.typeId,
+          },
+        });
+      } catch (error) {
+        consola.error("Failed to send analytics", error);
+      }
     },
   });
 };

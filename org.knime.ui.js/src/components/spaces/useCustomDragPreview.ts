@@ -180,7 +180,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
 
           useAnalytics().track("node_created::explorer_dragdrop_", {
             type: Node.KindEnum.Component,
-            componentId: sourceItem.id,
+            nodeHubId: sourceItem.id,
           });
 
           return result;

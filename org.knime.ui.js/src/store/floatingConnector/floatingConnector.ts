@@ -41,6 +41,18 @@ type Params = {
   onCanvasDrop?: (floatingConnector: FloatingConnector) => {
     removeConnector: boolean;
   };
+  onConnectionFinished?: (params: {
+    from: {
+      nodeId: string;
+      portIndex: number;
+      typeId: string;
+    };
+    to: {
+      nodeId: string;
+      portIndex: number;
+      typeId: string;
+    };
+  }) => void;
 };
 
 const createConnectorFromEvent = (
@@ -313,6 +325,7 @@ export const useFloatingConnectorStore = defineStore(
                 currentFloatingConnector as FullFloatingConnector,
               snapTarget: currentSnapTarget,
               activeSnapPosition: currentSnapPosition,
+              onConnectionFinished: params.onConnectionFinished,
             });
           } catch (error) {
             consola.error("Did not complete connection: ", error);

@@ -2,10 +2,11 @@
 import { API } from "@api";
 
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { useAnalytics } from "@/services/analytics";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -23,29 +24,26 @@ type WorkflowEditorShortcuts = UnionToShortcutRegistry<
   | "autoDisconnectNodesFlowVar"
 >;
 
-const createAutoConnectionHandler =
-  (
-    command:
-      | typeof API.workflowCommand.AutoConnect
-      | typeof API.workflowCommand.AutoDisconnect,
-    flowVariablePortsOnly: boolean = false,
-  ) =>
-  () => {
-    const { projectId, workflowId } =
-      useWorkflowStore().getProjectAndWorkflowIds;
+const handleAutoConnection = (
+  command:
+    | typeof API.workflowCommand.AutoConnect
+    | typeof API.workflowCommand.AutoDisconnect,
+  flowVariablePortsOnly: boolean = false,
+) => {
+  const { projectId, workflowId } = useWorkflowStore().getProjectAndWorkflowIds;
 
-    const { selectedNodeIds, getSelectedMetanodePortBars: selectedPortBars } =
-      useSelectionStore();
+  const { selectedNodeIds, getSelectedMetanodePortBars: selectedPortBars } =
+    useSelectionStore();
 
-    command({
-      projectId,
-      workflowId,
-      selectedNodes: selectedNodeIds,
-      workflowInPortsBarSelected: selectedPortBars.includes("in"),
-      workflowOutPortsBarSelected: selectedPortBars.includes("out"),
-      flowVariablePortsOnly,
-    });
-  };
+  command({
+    projectId,
+    workflowId,
+    selectedNodes: selectedNodeIds,
+    workflowInPortsBarSelected: selectedPortBars.includes("in"),
+    workflowOutPortsBarSelected: selectedPortBars.includes("out"),
+    flowVariablePortsOnly,
+  });
+};
 
 const canAutoConnectOrDisconnect = () => {
   const { isWritable } = useWorkflowStore();
@@ -93,7 +91,10 @@ const calculateNodeInsertionPosition = (
 const openQuickActionMenu = (
   { payload }: ShortcutExecuteContext,
   menuMode: QuickActionMenuMode,
-) => {
+): {
+  opened: boolean;
+  target: { node: KnimeNode; port: NodePort; portTypeId: string } | null;
+} => {
   const positionFromContextMenu = payload?.metadata?.position as XY;
   const store = useCanvasAnchoredComponentsStore();
   const { isOpen, props: currentMenuProps } = store.quickActionMenu;
@@ -176,7 +177,14 @@ const openQuickActionMenu = (
     },
   });
 
-  return { opened: true, target: { node: predecessorNode, port: nextPort } };
+  return {
+    opened: true,
+    target: {
+      node: predecessorNode,
+      port: nextPort,
+      portTypeId: nextPort.typeId,
+    },
+  };
 };
 
 const workflowEditorShortcuts: WorkflowEditorShortcuts = {
@@ -187,7 +195,39 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
     execute: (ctx) => {
-      openQuickActionMenu(ctx, "quick-add");
+      const { opened, target } = openQuickActionMenu(ctx, "quick-add");
+
+      if (!opened) {
+        return;
+      }
+
+      try {
+        if (target) {
+          const nodeFactoryId = useNodeInteractionsStore().getNodeFactory(
+            target.node.id,
+          ).className;
+
+          // there's no contextmenu entry for this action, so when we have a target this
+          // can only mean that it's a shortcut fired off when a node is selected
+          useAnalytics().track("qam_opened::keyboard_shortcut_", {
+            connectedTo: {
+              nodeType: target.node.kind,
+              nodePortId: target.portTypeId,
+              nodePortIndex: target.port.index,
+              nodeFactoryId,
+            },
+          });
+        } else {
+          const trackId =
+            ctx.payload.src === "contextmenu"
+              ? "qam_opened::canvas_ctxmenu_quickaddnode"
+              : "qam_opened::keyboard_shortcut_";
+
+          useAnalytics().track(trackId, {});
+        }
+      } catch (error) {
+        consola.error("Failed to send analytics", error);
+      }
     },
     condition: () => useWorkflowStore().isWritable,
   },
@@ -209,7 +249,17 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Connect nodes",
     hotkey: ["CtrlOrCmd", "L"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(API.workflowCommand.AutoConnect),
+    execute: (ctx) => {
+      handleAutoConnection(API.workflowCommand.AutoConnect);
+
+      if (ctx.payload.src === "global") {
+        useAnalytics().track(
+          "connection_created::keyboard_shortcut_connectnodes",
+        );
+      } else {
+        useAnalytics().track("connection_created::canvas_ctxmenu_connectnodes");
+      }
+    },
     condition: canAutoConnectOrDisconnect,
   },
   autoConnectNodesFlowVar: {
@@ -217,7 +267,19 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Connect nodes by flow variable port",
     hotkey: ["CtrlOrCmd", "K"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(API.workflowCommand.AutoConnect, true),
+    execute: (ctx) => {
+      handleAutoConnection(API.workflowCommand.AutoConnect, true);
+
+      if (ctx.payload.src === "global") {
+        useAnalytics().track(
+          "connection_created::keyboard_shortcut_connectflowvar",
+        );
+      } else {
+        useAnalytics().track(
+          "connection_created::canvas_ctxmenu_connectflowvar",
+        );
+      }
+    },
     condition: canAutoConnectOrDisconnect,
   },
   autoDisconnectNodesDefault: {
@@ -225,7 +287,9 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Disconnect nodes",
     hotkey: ["CtrlOrCmd", "Shift", "L"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(API.workflowCommand.AutoDisconnect),
+    execute: () => {
+      handleAutoConnection(API.workflowCommand.AutoDisconnect);
+    },
     condition: canAutoConnectOrDisconnect,
   },
   autoDisconnectNodesFlowVar: {
@@ -233,10 +297,9 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Disconnect nodes' flow variable ports",
     hotkey: ["CtrlOrCmd", "Shift", "K"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(
-      API.workflowCommand.AutoDisconnect,
-      true,
-    ),
+    execute: () => {
+      handleAutoConnection(API.workflowCommand.AutoDisconnect, true);
+    },
     condition: canAutoConnectOrDisconnect,
   },
 };

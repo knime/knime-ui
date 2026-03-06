@@ -1,10 +1,10 @@
 type NativeNodePayload = {
   nodeFactoryId: string;
-  componentId?: never;
+  nodeHubId?: never;
 };
 
 type ComponentNodePayload = {
-  componentId: string;
+  nodeHubId: string;
   nodeFactoryId?: never;
 };
 
@@ -18,16 +18,16 @@ export type NodeCreationEvents = {
   "node_created::noderepo_doubleclick_": {
     type: string;
     connectedTo?: {
-      type: string;
-      nodeFactoryId?: string;
+      nodeType: string;
+      nodeFactoryId: string;
     };
   } & NodeOrComponentData;
 
   "node_created::noderepo_keyboard_enter": {
     type: string;
     connectedTo?: {
-      type: string;
-      nodeFactoryId?: string;
+      nodeType: string;
+      nodeFactoryId: string;
     };
   } & NodeOrComponentData;
 
@@ -38,20 +38,25 @@ export type NodeCreationEvents = {
   "node_created::qam_click_": {
     type: string;
     connectedTo?: {
-      type: string;
-      nodeFactoryId?: string;
+      nodeType: string;
+      nodeFactoryId: string;
+      nodePortIndex: number;
+      nodePortId: string;
     };
   } & NodeOrComponentData;
 
   "node_created::qam_keyboard_enter": {
     type: string;
     connectedTo?: {
-      type: string;
-      nodeFactoryId?: string;
+      nodeType: string;
+      nodeFactoryId: string;
+      nodePortIndex: number;
+      nodePortId: string;
     };
   } & NodeOrComponentData;
 
-  "node_created::kaiqa_dragdrop_": {
-    type: string;
-  } & NodeOrComponentData;
+  // TODO: NXT-4570
+  // "node_created::kaiqa_dragdrop_": {
+  //   type: string;
+  // } & NodeOrComponentData;
 };

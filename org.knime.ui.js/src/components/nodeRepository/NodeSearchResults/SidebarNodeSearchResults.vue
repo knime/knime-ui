@@ -97,7 +97,7 @@ const addNodeOnEnterKey = async (
       type: Node.KindEnum.Node,
       nodeFactoryId: nodeTemplate.nodeFactory.className,
       connectedTo: {
-        type: connectedTo.node.kind,
+        nodeType: connectedTo.node.kind,
         nodeFactoryId: useNodeInteractionsStore().getNodeFactory(
           connectedTo.node.id,
         ).className,

@@ -121,7 +121,7 @@ const addNativeNode = async (template: NodeTemplateWithExtendedPorts) => {
       type: Node.KindEnum.Node,
       nodeFactoryId: template.nodeFactory.className,
       connectedTo: {
-        type: connectedTo.node.kind,
+        nodeType: connectedTo.node.kind,
         nodeFactoryId: connectedToTemplate?.className,
       },
     });
@@ -140,7 +140,7 @@ const addComponent = async (
 
   useAnalytics().track("node_created::noderepo_doubleclick_", {
     type: Node.KindEnum.Component,
-    componentId: template.id,
+    nodeHubId: template.id,
   });
 };
 

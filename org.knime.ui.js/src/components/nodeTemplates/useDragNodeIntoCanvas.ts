@@ -279,7 +279,7 @@ export const useDragNodeIntoCanvas = () => {
 
       useAnalytics().track("node_created::noderepo_dragdrop_", {
         type: Node.KindEnum.Component,
-        componentId: eventData.payload.id,
+        nodeHubId: eventData.payload.id,
       });
 
       return result;
