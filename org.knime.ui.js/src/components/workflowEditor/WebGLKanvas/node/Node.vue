@@ -190,11 +190,13 @@ const nodeNamePosition = computed(() => {
       y: -$shapes.portSize,
     };
   }
-  // Pill layout: name is inside the pill, top row
-  // between the icon cap (nodePillHeight wide) and the action buttons
+  // Pill layout: name sits immediately right of the colour circle.
+  // Circle centre = nodePillHeight/2 (24), radius = 10 → right edge at 34.
+  // Add an 8 px gap → left edge at 42.  NodeName centers text on its x
+  // position, so shift by half the measured text width to left-align it.
   return {
-    x: Math.round($shapes.nodePillHeight + ($shapes.nodePillWidth - $shapes.nodePillHeight - 3 * $shapes.nodeActionBarButtonSpread) / 2),
-    y: Math.round($shapes.nodePillHeight * 0.46),
+    x: Math.round($shapes.nodePillHeight / 2 + 18 + nodeNameDimensions.value.width / 2),
+    y: Math.round($shapes.nodePillHeight / 2 + nodeNameDimensions.value.height / 2),
   };
 });
 
