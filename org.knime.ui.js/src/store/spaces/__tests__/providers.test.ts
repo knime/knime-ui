@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
@@ -440,8 +440,20 @@ describe("spaces::providers", () => {
     });
   });
 
-  describe("getRecycleBinUrl", () => {
-    it("should return the recycle bin url", () => {
+  describe("determineTrashUrl", () => {
+    const fetchMock = vi.fn();
+
+    beforeEach(() => {
+      fetchMock.mockResolvedValue({ ok: true, status: 200 } as Response);
+      vi.stubGlobal("fetch", fetchMock);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      fetchMock.mockReset();
+    });
+
+    it("should return the trash url when HEAD request succeeds", async () => {
       const { spaceProvidersStore } = loadStore();
       const provider = createSpaceProvider({
         id: "provider1",
@@ -451,11 +463,72 @@ describe("spaces::providers", () => {
         [provider.id]: provider,
       };
 
-      const url = spaceProvidersStore.getTrashUrl(provider.id, "my-group");
+      const url = await spaceProvidersStore.determineTrashUrl(
+        provider.id,
+        "my-group",
+      );
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://knime.com/hub/my-group/trash",
+        { method: "HEAD" },
+      );
       expect(url).toBe("https://knime.com/hub/my-group/trash");
     });
 
-    it("should return null if hostname does not start with api.", () => {
+    it("should fall back to recycle-bin url when HEAD request returns non-ok", async () => {
+      fetchMock.mockResolvedValue({ ok: false, status: 302 } as Response);
+      const { spaceProvidersStore } = loadStore();
+      const provider = createSpaceProvider({
+        id: "provider1",
+        hostname: "https://api.knime.com/hub",
+      });
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const url = await spaceProvidersStore.determineTrashUrl(
+        provider.id,
+        "my-group",
+      );
+      expect(url).toBe("https://knime.com/hub/my-group/recycle-bin");
+    });
+
+    it("should return null when HEAD request returns status >= 400", async () => {
+      fetchMock.mockResolvedValue({ ok: false, status: 404 } as Response);
+      const { spaceProvidersStore } = loadStore();
+      const provider = createSpaceProvider({
+        id: "provider1",
+        hostname: "https://api.knime.com/hub",
+      });
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const url = await spaceProvidersStore.determineTrashUrl(
+        provider.id,
+        "my-group",
+      );
+      expect(url).toBeNull();
+    });
+
+    it("should return null when HEAD request throws", async () => {
+      fetchMock.mockRejectedValue(new Error("Network error"));
+      const { spaceProvidersStore } = loadStore();
+      const provider = createSpaceProvider({
+        id: "provider1",
+        hostname: "https://api.knime.com/hub",
+      });
+      spaceProvidersStore.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const url = await spaceProvidersStore.determineTrashUrl(
+        provider.id,
+        "my-group",
+      );
+      expect(url).toBeNull();
+    });
+
+    it("should return null if hostname does not start with api.", async () => {
       const { spaceProvidersStore } = loadStore();
       const provider = createSpaceProvider({
         id: "provider1",
@@ -465,11 +538,14 @@ describe("spaces::providers", () => {
         [provider.id]: provider,
       };
 
-      const url = spaceProvidersStore.getTrashUrl(provider.id, "my-group");
+      const url = await spaceProvidersStore.determineTrashUrl(
+        provider.id,
+        "my-group",
+      );
       expect(url).toBeNull();
     });
 
-    it("should return null if provider has no hostname", () => {
+    it("should return null if provider has no hostname", async () => {
       const { spaceProvidersStore } = loadStore();
       const provider = createSpaceProvider({
         id: "provider1",
@@ -479,20 +555,23 @@ describe("spaces::providers", () => {
         [provider.id]: provider,
       };
 
-      const url = spaceProvidersStore.getTrashUrl(provider.id, "my-group");
+      const url = await spaceProvidersStore.determineTrashUrl(
+        provider.id,
+        "my-group",
+      );
       expect(url).toBeNull();
     });
 
-    it("should return null for invalid provider id", () => {
+    it("should return null for invalid provider id", async () => {
       const { spaceProvidersStore } = loadStore();
-      const url = spaceProvidersStore.getTrashUrl(
+      const url = await spaceProvidersStore.determineTrashUrl(
         "invalid-provider",
         "my-group",
       );
       expect(url).toBeNull();
     });
 
-    it("should return null for invalid hostname url", () => {
+    it("should return null for invalid hostname url", async () => {
       const { spaceProvidersStore } = loadStore();
       const provider = createSpaceProvider({
         id: "provider1",
@@ -501,7 +580,10 @@ describe("spaces::providers", () => {
       spaceProvidersStore.spaceProviders = {
         [provider.id]: provider,
       };
-      const url = spaceProvidersStore.getTrashUrl(provider.id, "my-group");
+      const url = await spaceProvidersStore.determineTrashUrl(
+        provider.id,
+        "my-group",
+      );
       expect(url).toBeNull();
     });
   });

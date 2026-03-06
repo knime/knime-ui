@@ -263,8 +263,11 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       return activeProjectProvider ?? null;
     },
 
-    getTrashUrl: (state) => {
-      return (providerId: string, groupName: string): string | null => {
+    determineTrashUrl: (state) => {
+      return async (
+        providerId: string,
+        groupName: string,
+      ): Promise<string | null> => {
         const provider = state.spaceProviders?.[providerId];
         if (!provider?.hostname) {
           return null;
@@ -282,10 +285,28 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
 
           const pathParts = url.pathname.split("/").filter((p) => p);
           pathParts.push(groupName);
-          pathParts.push("trash");
-          url.pathname = `/${pathParts.join("/")}`;
 
-          return url.toString();
+          const partsToUrlString = (parts: string[]) => `/${parts.join("/")}`;
+
+          try {
+            const trashUrl = `${url.origin}${partsToUrlString(
+              pathParts.concat("trash"),
+            )}`;
+            const response = await fetch(trashUrl, { method: "HEAD" });
+            if (response.ok) {
+              return trashUrl;
+            } else if (response.status >= 400) {
+              return null;
+            } else {
+              // fallback to old URL for backwards compatibility with older hubs
+              return `${url.origin}${partsToUrlString(
+                pathParts.concat("recycle-bin"),
+              )}`;
+            }
+          } catch (error) {
+            consola.error("Could not check trash URL availability", error);
+            return null;
+          }
         } catch (e) {
           consola.error("Could not construct trash URL", e);
           return null;

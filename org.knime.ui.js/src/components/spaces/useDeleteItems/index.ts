@@ -24,7 +24,7 @@ type UseDeleteItemsOptions = {
 
 export const useDeleteItems = (options: UseDeleteItemsOptions) => {
   const { deleteItems, getDeletionInfo } = useSpaceOperationsStore();
-  const { getProviderInfoFromProjectPath, getTrashUrl } =
+  const { getProviderInfoFromProjectPath, determineTrashUrl } =
     useSpaceProvidersStore();
   const $router = useRouter();
 
@@ -90,8 +90,11 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
             {
               icon: TrashIcon,
               text: "Show trash",
-              callback: () => {
-                const url = getTrashUrl(spaceProvider!.id, groupName!);
+              callback: async () => {
+                const url = await determineTrashUrl(
+                  spaceProvider!.id,
+                  groupName!,
+                );
                 if (url) {
                   window.open(url);
                 }
