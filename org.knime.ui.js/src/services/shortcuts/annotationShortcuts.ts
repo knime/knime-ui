@@ -1,5 +1,6 @@
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+import { useAnalytics } from "@/services/analytics";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { QuickActionId } from "@/store/ai/types";
 import { handleQuickActionError } from "@/store/ai/util";
@@ -56,6 +57,8 @@ const annotationShortcuts: AnnotationShortcuts = {
           height: metadata.height || defaultAddWorkflowAnnotationHeight,
         },
       });
+
+      useAnalytics().track("annotation_created::canvas_ctxmenu_newannotation");
     },
     condition: () => useWorkflowStore().isWritable,
   },
@@ -63,6 +66,7 @@ const annotationShortcuts: AnnotationShortcuts = {
     text: "Explain with K-AI",
     execute: async () => {
       try {
+        useAnalytics().track("annotation_created::canvas_ctxmenu_kaiexplain");
         await useAiQuickActionsStore().generateAnnotation();
       } catch (error) {
         handleQuickActionError(error);
