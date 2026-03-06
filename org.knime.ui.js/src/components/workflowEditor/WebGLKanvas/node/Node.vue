@@ -355,15 +355,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
       @render="renderHoverArea"
     />
 
-    <NodeActionBar
-      v-if="(isHovering || !isMetanode) && !isDragging && !isEditingName"
-      v-bind="allAllowedActions"
-      :position="actionBarPosition"
-      :node-id="node.id"
-      :node-kind="node.kind"
-      :is-node-selected="isNodeSelected(node.id)"
-    />
-
     <NodeName
       :node-id="node.id"
       :name="shortenedNodeName"
@@ -410,6 +401,15 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         {{ node.annotation?.text.value }}
       </Text>
     </Container>
+
+    <NodeActionBar
+      v-if="(isHovering || !isMetanode) && !isDragging && !isEditingName"
+      v-bind="allAllowedActions"
+      :position="actionBarPosition"
+      :node-id="node.id"
+      :node-kind="node.kind"
+      :is-node-selected="isNodeSelected(node.id)"
+    />
 
     <NodePorts
       :node-id="node.id"

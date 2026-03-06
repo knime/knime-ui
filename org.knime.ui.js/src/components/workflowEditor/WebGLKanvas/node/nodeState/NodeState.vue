@@ -134,29 +134,10 @@ const hitArea = new Polygon([
     label="NodeState"
     :hit-area="hitArea"
     event-mode="static"
-    :y="$shapes.nodePillHeight + $shapes.nodeStatusMarginTop"
+    :y="$shapes.nodePillHeight - $shapes.nodeStatusHeight"
     @pointerenter="showTooltip"
     @pointerleave="hideTooltip"
   >
-    <Graphics
-      label="NodeStateBody"
-      event-mode="none"
-      @render="
-        (graphics: GraphicsInst) => {
-          graphics.clear();
-          graphics.roundRect(
-            0,
-            0,
-            $shapes.nodePillWidth,
-            $shapes.nodeStatusHeight,
-            1,
-          );
-          graphics.fill($colors.trafficLight.background);
-          graphics.stroke({ width: 0.3, color: $colors.darkeningMask });
-        }
-      "
-    />
-
     <template v-if="dotColor !== undefined">
       <Graphics
         event-mode="none"

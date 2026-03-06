@@ -1,8 +1,5 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
-import { onUnmounted, ref, watch } from "vue";
-import * as PIXI from "pixi.js";
-
 import {
   type NativeNodeInvariants,
   Node,
@@ -16,6 +13,7 @@ import { torsoDrawUtils } from "./drawUtils";
 type Props = {
   nodeId: string;
   kind: Node.KindEnum;
+  // icon is kept in props for API compatibility but no longer rendered
   icon: string | null;
   type: NativeNodeInvariants.TypeEnum | null;
 };
@@ -52,49 +50,6 @@ const renderTorso = (graphics: GraphicsInst, backgroundColor: string) => {
   }
 };
 
-const texture = ref<PIXI.Texture>();
-
-const NODE_ICON_SIZE = 16;
-const nodeIconScaleFactor = ref(0);
-
-watch(
-  () => props.icon,
-  () => {
-    texture.value?.destroy();
-
-    if (props.icon) {
-      const imageLocal = new window.Image();
-      imageLocal.src = props.icon;
-
-      imageLocal.onload = () => {
-        nodeIconScaleFactor.value =
-          NODE_ICON_SIZE /
-          Math.max(imageLocal.naturalWidth, imageLocal.naturalHeight);
-
-        // draw image on a temp canvas to make pixi happy
-        const canvas = document.createElement("canvas");
-        canvas.width = imageLocal.naturalWidth;
-        canvas.height = imageLocal.naturalHeight;
-        const context = canvas.getContext("2d")!;
-
-        context.drawImage(
-          imageLocal,
-          0,
-          0,
-          imageLocal.naturalWidth,
-          imageLocal.naturalHeight,
-        );
-
-        texture.value = PIXI.Texture.from(canvas);
-      };
-    }
-  },
-  { immediate: true },
-);
-
-onUnmounted(() => {
-  texture.value?.destroy();
-});
 </script>
 
 <template>
@@ -105,15 +60,5 @@ onUnmounted(() => {
       @render="renderTorso($event, nodeBackgroundColor({ kind, type }))"
     />
 
-    <Sprite
-      v-if="texture"
-      label="NodeTorsoNormalIcon"
-      event-mode="none"
-      :texture="texture as any"
-      :anchor="0.5"
-      :scale="nodeIconScaleFactor"
-      :x="$shapes.nodePillHeight / 2"
-      :y="$shapes.nodePillHeight / 2"
-    />
   </Container>
 </template>
