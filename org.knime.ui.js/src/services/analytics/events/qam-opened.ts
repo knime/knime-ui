@@ -1,8 +1,10 @@
 type Payload = {
-  type: string;
-  nodePortIndex: number;
-  connectionType: string;
-  nodeFactoryId: string;
+  connectedTo: {
+    nodeType: string;
+    nodeFactoryId: string;
+    nodePortIndex: number;
+    nodePortId: string;
+  };
 };
 
 export type QAMOpenedEvents = {

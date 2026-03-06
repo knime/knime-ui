@@ -130,11 +130,13 @@ const onPointerDown = (event: FederatedPointerEvent) => {
       }` as const;
 
       useAnalytics().track(analyticsEventId, {
-        type: props.nodeKind,
-        nodePortIndex: props.port.index,
-        connectionType: props.port.typeId,
-        nodeFactoryId: nodeInteractionsStore.getNodeFactory(props.nodeId)
-          .className,
+        connectedTo: {
+          nodeType: props.nodeKind,
+          nodePortIndex: props.port.index,
+          nodePortId: props.port.typeId,
+          nodeFactoryId: nodeInteractionsStore.getNodeFactory(props.nodeId)
+            .className,
+        },
       });
 
       return { removeConnector: false };
@@ -156,16 +158,16 @@ const onPointerDown = (event: FederatedPointerEvent) => {
 
         useAnalytics().track(analyticsEventId, {
           fromNode: {
-            nodeType: fromNode.kind,
-            nodeFactoryId: fromNodeTemplate.className,
+            type: fromNode.kind,
+            factoryId: fromNodeTemplate.className,
             portIndex: from.portIndex,
-            portType: from.typeId,
+            portId: from.typeId,
           },
           toNode: {
-            nodeType: toNode.kind,
-            nodeFactoryId: toNodeTemplate.className,
+            type: toNode.kind,
+            factoryId: toNodeTemplate.className,
             portIndex: to.portIndex,
-            portType: from.typeId,
+            portId: from.typeId,
           },
         });
       } catch (error) {

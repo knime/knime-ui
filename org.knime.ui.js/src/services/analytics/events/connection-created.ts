@@ -1,16 +1,16 @@
 type Payload = {
   fromNode: {
-    nodeType: string;
+    type: string;
     portIndex: number;
-    portType: string;
-    nodeFactoryId?: string;
+    portId: string;
+    factoryId?: string;
   };
 
   toNode: {
-    nodeType: string;
+    type: string;
     portIndex: number;
-    portType: string;
-    nodeFactoryId?: string;
+    portId: string;
+    factoryId?: string;
   };
 };
 

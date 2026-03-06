@@ -1,10 +1,10 @@
 /* eslint-disable no-undefined */
-import { snakeCase } from "lodash-es";
 
 import { embeddingSDK } from "@knime/hub-features";
 
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 
+import { toSnakeCaseDeep } from "./toSnakeCaseDeep";
 import type { AnalyticsService, TrackFn } from "./types";
 
 const noop = (...args: any[]) => {
@@ -19,12 +19,6 @@ let __analyticsService: AnalyticsService = noopService;
 
 type Context = { jobId: string };
 let __context: Context;
-
-const objectKeysToSnakeCase = (object: Record<string, unknown>) =>
-  Object.entries(object).reduce((acc, [k, v]) => {
-    acc[snakeCase(k)] = v;
-    return acc;
-  }, {});
 
 const track: TrackFn = (eventId, ...eventData) => {
   if (canvasRendererUtils.isSVGRenderer()) {
@@ -42,7 +36,7 @@ const track: TrackFn = (eventId, ...eventData) => {
       return undefined;
     }
 
-    return objectKeysToSnakeCase(eventData.at(0) ?? {});
+    return toSnakeCaseDeep(eventData.at(0) ?? {});
   })();
 
   embeddingSDK.guest.dispatchGenericEventToHost({

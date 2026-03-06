@@ -201,21 +201,32 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         return;
       }
 
-      if (target) {
-        // there's no contextmenu entry for this action, so when we have a target this
-        // can only mean that it's a shortcut fired off when a node is selected
-        useAnalytics().track("qam_opened::keyboard_shortcut_", {
-          type: target.node.kind,
-          connectionType: target.portTypeId,
-          nodePortIndex: target.port.index,
-        });
-      } else {
-        const trackId =
-          ctx.payload.src === "contextmenu"
-            ? "qam_opened::canvas_ctxmenu_quickaddnode"
-            : "qam_opened::keyboard_shortcut_";
+      try {
+        if (target) {
+          const nodeFactoryId = useNodeInteractionsStore().getNodeFactory(
+            target.node.id,
+          ).className;
 
-        useAnalytics().track(trackId, {});
+          // there's no contextmenu entry for this action, so when we have a target this
+          // can only mean that it's a shortcut fired off when a node is selected
+          useAnalytics().track("qam_opened::keyboard_shortcut_", {
+            connectedTo: {
+              nodeType: target.node.kind,
+              nodePortId: target.portTypeId,
+              nodePortIndex: target.port.index,
+              nodeFactoryId,
+            },
+          });
+        } else {
+          const trackId =
+            ctx.payload.src === "contextmenu"
+              ? "qam_opened::canvas_ctxmenu_quickaddnode"
+              : "qam_opened::keyboard_shortcut_";
+
+          useAnalytics().track(trackId, {});
+        }
+      } catch (error) {
+        consola.error("Failed to send analytics", error);
       }
     },
     condition: () => useWorkflowStore().isWritable,
