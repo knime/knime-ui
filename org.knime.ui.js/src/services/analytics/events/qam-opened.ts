@@ -2,6 +2,7 @@ type Payload = {
   type: string;
   nodePortIndex: number;
   connectionType: string;
+  nodeFactoryId: string;
 };
 
 export type QAMOpenedEvents = {

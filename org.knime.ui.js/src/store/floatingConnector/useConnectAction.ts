@@ -21,6 +21,18 @@ type FinishConnectionParams = {
   floatingConnector: FullFloatingConnector | undefined;
   snapTarget: SnapTarget | undefined;
   activeSnapPosition: XY | undefined;
+  onConnectionFinished?: (params: {
+    from: {
+      nodeId: string;
+      portIndex: number;
+      typeId: string;
+    };
+    to: {
+      nodeId: string;
+      portIndex: number;
+      typeId: string;
+    };
+  }) => void;
 };
 
 const createConnectionPayload = (params: {
@@ -90,6 +102,8 @@ export const useConnectAction = () => {
         direction: portSide === "input" ? "in" : "out",
       }),
     );
+
+    return { newPortIdx };
   };
 
   /**
@@ -128,6 +142,19 @@ export const useConnectAction = () => {
           direction: targetPortDirection,
         }),
       );
+
+      params.onConnectionFinished?.({
+        from: {
+          nodeId: floatingConnector.context.parentNodeId,
+          portIndex: floatingConnector.context.portInstance.index,
+          typeId: floatingConnector.context.portInstance.typeId,
+        },
+        to: {
+          nodeId: snapTarget.parentNodeId,
+          portIndex: snapTarget.index,
+          typeId: snapTarget.typeId,
+        },
+      });
 
       return Promise.resolve();
     }
@@ -168,13 +195,26 @@ export const useConnectAction = () => {
     ) {
       const [typeId] = validPortGroups[firstPortGroup].supportedPortTypeIds;
 
-      await addPortAndConnectIt({
+      const { newPortIdx } = await addPortAndConnectIt({
         sourceNodeId: floatingConnector.context.parentNodeId,
         sourcePortIndex: floatingConnector.context.portInstance.index,
         targetNodeId: snapTarget.parentNodeId,
         targetPortTypeId: typeId,
         portSide: targetPortDirection === "in" ? "input" : "output",
         portGroup: firstPortGroup === "default" ? undefined : firstPortGroup,
+      });
+
+      params.onConnectionFinished?.({
+        from: {
+          nodeId: floatingConnector.context.parentNodeId,
+          portIndex: floatingConnector.context.portInstance.index,
+          typeId: floatingConnector.context.portInstance.typeId,
+        },
+        to: {
+          nodeId: snapTarget.parentNodeId,
+          portIndex: newPortIdx,
+          typeId,
+        },
       });
 
       return Promise.resolve();
@@ -202,7 +242,7 @@ export const useConnectAction = () => {
           const targetPortGroup = portGroup === "default" ? null : portGroup;
 
           try {
-            await addPortAndConnectIt({
+            const { newPortIdx } = await addPortAndConnectIt({
               sourceNodeId: floatingConnector.context.parentNodeId,
               sourcePortIndex: floatingConnector.context.portInstance.index,
               targetNodeId: snapTarget.parentNodeId,
@@ -210,9 +250,23 @@ export const useConnectAction = () => {
               portSide: targetPortDirection === "in" ? "input" : "output",
               portGroup: targetPortGroup ?? undefined,
             });
+
             consola.debug(
               "floatingConnector::useConnectAction - added port and connected via placeholder port",
             );
+
+            params.onConnectionFinished?.({
+              from: {
+                nodeId: floatingConnector.context.parentNodeId,
+                portIndex: floatingConnector.context.portInstance.index,
+                typeId: floatingConnector.context.portInstance.typeId,
+              },
+              to: {
+                nodeId: snapTarget.parentNodeId,
+                portIndex: newPortIdx,
+                typeId,
+              },
+            });
             resolve();
           } catch (error) {
             reject(error);

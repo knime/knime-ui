@@ -1,4 +1,5 @@
 import type { AnnotationCreated } from "./events/annotation-created";
+import type { ConnectionCreated } from "./events/connection-created";
 import type { KaiPromptedEvents } from "./events/kai-prompted";
 import type { LayoutEditorOpenedEvents } from "./events/layout-editor-opened";
 import type { NodeCreationEvents } from "./events/node-created";
@@ -16,7 +17,8 @@ type AnalyticEvents = NodeCreationEvents &
   UndoRedoEvents &
   SidePanelOpenedEvents &
   KaiPromptedEvents &
-  AnnotationCreated;
+  AnnotationCreated &
+  ConnectionCreated;
 
 export type AnalyticEventNames = keyof AnalyticEvents;
 

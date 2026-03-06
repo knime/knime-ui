@@ -4,11 +4,9 @@ import { API } from "@api";
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
-import { ports as portDataMappers } from "@/lib/data-mappers";
 import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
 import { useAnalytics } from "@/services/analytics";
-import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
@@ -182,16 +180,12 @@ const openQuickActionMenu = (
     },
   });
 
-  const extendedPortType = portDataMappers.toExtendedPortObject(
-    useApplicationStore().availablePortTypes,
-  )(nextPort.typeId);
-
   return {
     opened: true,
     target: {
       node: predecessorNode,
       port: nextPort,
-      portTypeId: extendedPortType.typeId,
+      portTypeId: nextPort.typeId,
     },
   };
 };
