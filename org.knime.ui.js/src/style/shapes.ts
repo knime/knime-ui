@@ -3,8 +3,8 @@ export const nodeSize = 32;
 export const portSize = 9;
 
 // Pill-shaped node design constants
-export const nodePillWidth = 170;
-export const nodePillHeight = 48;
+export const nodePillWidth = 220;
+export const nodePillHeight = 64;
 export const portActionButtonSize = 20;
 export const portActionsGapSize = 5;
 

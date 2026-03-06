@@ -190,13 +190,15 @@ const nodeNamePosition = computed(() => {
       y: -$shapes.portSize,
     };
   }
-  // Pill layout: name sits immediately right of the colour circle.
-  // Circle centre = nodePillHeight/2 (24), radius = 10 → right edge at 34.
-  // Add an 8 px gap → left edge at 42.  NodeName centers text on its x
-  // position, so shift by half the measured text width to left-align it.
+  // Pill layout: name sits immediately right of the colour circle, top row.
+  // Circle centre = nodePillHeight/2, radius = 10 → right edge at H/2+10.
+  // Add 8 px gap → left edge at H/2+18. NodeName centers text on its x,
+  // so shift right by half the measured text width to left-align it.
+  const textLeft = $shapes.nodePillHeight / 2 + 18;
   return {
-    x: Math.round($shapes.nodePillHeight / 2 + 18 + nodeNameDimensions.value.width / 2),
-    y: Math.round($shapes.nodePillHeight / 2 + nodeNameDimensions.value.height / 2),
+    x: Math.round(textLeft + nodeNameDimensions.value.width / 2),
+    // bottom of name text sits at ~38% of pill height (top row)
+    y: Math.round($shapes.nodePillHeight * 0.38),
   };
 });
 
@@ -301,9 +303,11 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
 
 const nodeInlineLabelPosition = computed(() => {
   if (isMetanode.value || !props.node.annotation?.text.value) return null;
+  // Left-align with name: H/2 + 18 px beyond the colour circle right edge.
+  // y: top of label text sits in the lower row (~64% of pill height).
   return {
-    x: nodeNamePosition.value.x,
-    y: Math.round($shapes.nodePillHeight * 0.875),
+    x: Math.round($shapes.nodePillHeight / 2 + 18),
+    y: Math.round($shapes.nodePillHeight * 0.64),
   };
 });
 
@@ -385,8 +389,8 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         v-if="nodeInlineLabelPosition"
         label="NodeInlineLabel"
         event-mode="none"
-        :x="nodeInlineLabelPosition.x - 40"
-        :y="nodeInlineLabelPosition.y - 10"
+        :x="nodeInlineLabelPosition.x"
+        :y="nodeInlineLabelPosition.y"
         :style="nodeInlineLabelText.styles"
         :resolution="zoomAwareResolution"
         :round-pixels="true"
