@@ -441,6 +441,8 @@ export const useLifecycleStore = defineStore("lifecycle", {
         return;
       }
       const missingExtensions = loadErrors?.missingExtensions ?? [];
+      const numLoadErrors = loadErrors?.numLoadErrors ?? 0;
+      const errorLabel = numLoadErrors > 1 ? "errors" : "error";
       let rfcError;
       if (missingExtensions.length > 0) {
         const details = missingExtensions.map(
@@ -452,12 +454,12 @@ export const useLifecycleStore = defineStore("lifecycle", {
         const count = missingExtensions.length;
         const label = count === 1 ? "extension" : "extensions";
         rfcError = new rfcErrors.RFCError({
-          title: `${count} missing ${label}`,
+          title: `${count} missing ${label}, ${numLoadErrors} load ${errorLabel} in total`,
           details,
         });
       } else {
         rfcError = new rfcErrors.RFCError({
-          title: "",
+          title: `${numLoadErrors} load ${errorLabel}`,
         });
       }
       const toast = rfcErrors.toToast({
