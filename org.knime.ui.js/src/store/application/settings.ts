@@ -47,6 +47,12 @@ type ApplicationSettingsState = {
    */
   nodeConfigOpenMode: "current" | "actionbar" | "modal";
   /*
+   * Controls how the node output/port view is displayed relative to the config panel:
+   * - "side-by-side" : node output occupies the left 2/3 of the config panel
+   * - "bottom"       : node output shown in a separate resizable panel below the config panel
+   */
+  nodeOutputLayout: "bottom" | "side-by-side";
+  /*
    * Whether to enable the locking of metanodes and components
    */
   isSubnodeLockingEnabled: boolean;
@@ -71,6 +77,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     devMode: false,
     showDevToolsBar: true,
     nodeConfigOpenMode: "current",
+    nodeOutputLayout: "side-by-side",
     isSubnodeLockingEnabled: false,
     useEmbeddedDialogs: true,
     isKaiEnabled: true,
@@ -108,6 +115,10 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     setNodeConfigOpenMode(mode: "current" | "actionbar" | "modal") {
       this.nodeConfigOpenMode = mode;
       useSettingsStore().updateSetting({ key: "nodeConfigOpenMode", value: mode });
+    },
+
+    setNodeOutputLayout(layout: "bottom" | "side-by-side") {
+      this.nodeOutputLayout = layout;
     },
 
     setIsSubnodeLockingEnabled(isSubnodeLockingEnabled: boolean) {

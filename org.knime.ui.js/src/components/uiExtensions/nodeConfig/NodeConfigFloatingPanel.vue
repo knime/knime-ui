@@ -24,19 +24,23 @@ import NodeConfigDescriptionPanel from "./NodeConfigDescriptionPanel.vue";
 const panelStore = usePanelStore();
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const currentCanvasStore = useCurrentCanvasStore();
-const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
+const { useEmbeddedDialogs, nodeOutputLayout } = storeToRefs(useApplicationSettingsStore());
 const versionsStore = useWorkflowVersionsStore();
 const nodeConfigStore = useNodeConfigurationStore();
 const { showNodeDescriptionPanel } = storeToRefs(nodeConfigStore);
 
 // ─── Size / position ─────────────────────────────────────────────────────────
 
-const DEFAULT_WIDTH = 700;
+const SIDE_BY_SIDE_WIDTH = 1200;
+const SINGLE_PANEL_WIDTH = 440;
 const DESCRIPTION_PANEL_WIDTH = 360;
 const DESCRIPTION_PANEL_GAP = 8;
 const DEFAULT_HEIGHT = 600;
-const MIN_WIDTH = 660;
+const SIDE_BY_SIDE_MIN_WIDTH = 660;
+const SINGLE_PANEL_MIN_WIDTH = 432;
 const MIN_HEIGHT = 300;
+const OUTPUT_PANEL_DEFAULT_HEIGHT = 340;
+const OUTPUT_PANEL_GAP = 8;
 /** Gap between right edge of node bounding box and the floating panel */
 const NODE_OFFSET_X = 24;
 /** Approximate half-width of a node in canvas coordinates used to place the
@@ -48,20 +52,28 @@ const VERSIONS_BUTTON_GAP = 4;
 /** Gap between the top-left overlay buttons and the floating panel */
 const LEFT_OVERLAY_PANEL_GAP = 4;
 
+const panelDefaultWidth = computed(() =>
+  nodeOutputLayout.value === "side-by-side" ? SIDE_BY_SIDE_WIDTH : SINGLE_PANEL_WIDTH,
+);
+const panelMinWidth = computed(() =>
+  nodeOutputLayout.value === "side-by-side" ? SIDE_BY_SIDE_MIN_WIDTH : SINGLE_PANEL_MIN_WIDTH,
+);
+
 const { state: rectState, setRect } = useDraggableResizableRectState();
 const { state: descRectState, setRect: setDescRect } = useDraggableResizableRectState();
+const { state: outputRectState, setRect: setOutputRect } = useDraggableResizableRectState();
 
 const getVersionsAnchoredPosition = (): Pick<BoundingBox, "left" | "top"> => {
   const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-right");
   if (overlay) {
     const rect = overlay.getBoundingClientRect();
     return {
-      left: Math.max(VIEWPORT_MARGIN, rect.right - DEFAULT_WIDTH),
+      left: Math.max(VIEWPORT_MARGIN, rect.right - panelDefaultWidth.value),
       top: rect.bottom + VERSIONS_BUTTON_GAP,
     };
   }
   return {
-    left: window.innerWidth - DEFAULT_WIDTH - VIEWPORT_MARGIN,
+    left: window.innerWidth - panelDefaultWidth.value - VIEWPORT_MARGIN,
     top: 100,
   };
 };
@@ -97,7 +109,7 @@ const getInitialPosition = (): Pick<BoundingBox, "left" | "top"> => {
       return {
         left: Math.min(
           screenPos.x + NODE_OFFSET_X,
-          window.innerWidth - DEFAULT_WIDTH - VIEWPORT_MARGIN,
+          window.innerWidth - panelDefaultWidth.value - VIEWPORT_MARGIN,
         ),
         top: Math.max(
           VIEWPORT_MARGIN,
@@ -116,7 +128,7 @@ const getInitialPosition = (): Pick<BoundingBox, "left" | "top"> => {
 
 onMounted(() => {
   const { left, top } = getInitialPosition();
-  setRect({ left, top, width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT });
+  setRect({ left, top, width: panelDefaultWidth.value, height: DEFAULT_HEIGHT });
 });
 
 // Reposition when the selected node changes
@@ -146,6 +158,31 @@ watch(
     }
   },
 );
+
+// ─── Output panel (bottom mode) ──────────────────────────────────────────────
+
+const placeOutputPanel = () => {
+  setOutputRect({
+    left: rectState.value.left,
+    top: rectState.value.top + rectState.value.height + OUTPUT_PANEL_GAP,
+    width: rectState.value.width,
+    height: OUTPUT_PANEL_DEFAULT_HEIGHT,
+  });
+};
+
+watch(nodeOutputLayout, (layout) => {
+  setRect({ width: panelDefaultWidth.value });
+  if (layout === "bottom") {
+    placeOutputPanel();
+  }
+});
+
+const outputPanelStyles = computed(() => ({
+  left: `${outputRectState.value.left}px`,
+  top: `${outputRectState.value.top}px`,
+  width: `${outputRectState.value.width}px`,
+  height: `${outputRectState.value.height}px`,
+}));
 
 // ─── Companion description panel ─────────────────────────────────────────────
 
@@ -258,7 +295,7 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 <template>
   <ResizableComponentWrapper
     class="node-config-floating-panel"
-    :min-size="{ width: MIN_WIDTH, height: MIN_HEIGHT }"
+    :min-size="{ width: panelMinWidth, height: MIN_HEIGHT }"
     :rect-state="rectState"
     :style="panelStyles"
     @custom-resize="setRect"
@@ -269,14 +306,30 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
       :style="isDragging ? { pointerEvents: 'none' } : {}"
       @mousedown.capture="onHeaderMouseDown"
     >
-      <div class="port-view-section">
-        <NodeOutput />
-      </div>
-      <div class="panel-divider" />
+      <template v-if="nodeOutputLayout === 'side-by-side'">
+        <div class="port-view-section">
+          <NodeOutput />
+        </div>
+        <div class="panel-divider" />
+      </template>
       <div class="config-section">
         <NodeConfig v-if="useEmbeddedDialogs" />
         <ManageVersionsWrapper v-else />
       </div>
+    </div>
+  </ResizableComponentWrapper>
+
+  <!-- Bottom output panel (shown when nodeOutputLayout === 'bottom') -->
+  <ResizableComponentWrapper
+    v-if="nodeOutputLayout === 'bottom' && useEmbeddedDialogs"
+    class="node-output-floating-panel"
+    :min-size="{ width: SINGLE_PANEL_MIN_WIDTH, height: 200 }"
+    :rect-state="outputRectState"
+    :style="outputPanelStyles"
+    @custom-resize="setOutputRect"
+  >
+    <div class="floating-panel-content floating-panel-content--column">
+      <NodeOutput />
     </div>
   </ResizableComponentWrapper>
 
@@ -301,7 +354,8 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 
 <style lang="postcss" scoped>
 .node-config-floating-panel,
-.node-desc-floating-panel {
+.node-desc-floating-panel,
+.node-output-floating-panel {
   position: fixed;
   z-index: v-bind("$zIndices.layerFloatingWindows");
   display: flex;
@@ -324,6 +378,10 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
   flex-direction: row;
   min-height: 0;
   overflow: hidden;
+
+  &--column {
+    flex-direction: column;
+  }
 }
 
 .port-view-section {
