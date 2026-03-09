@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
@@ -130,10 +130,6 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
   });
 
   it("renders all items", () => {
@@ -292,7 +288,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
       expect(texts).not.toContain("Create new workflow");
     });
 
-    it("shows 'Copy link' for Hub workflow and component items", async () => {
+    it("shows 'Show details' for Hub workflow and component items", async () => {
       for (const type of [
         SpaceItem.TypeEnum.Workflow,
         SpaceItem.TypeEnum.Component,
@@ -339,11 +335,11 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
         const menuItems = wrapper.findComponent(MenuItems).props("items");
         const texts = menuItems.map((item) => item.text);
-        expect(texts).toContain("Copy link");
+        expect(texts).toContain("Show details");
       }
     });
 
-    it("hides 'Copy link' for folders and data files", async () => {
+    it("hides 'Show details' for folders and data files", async () => {
       for (const type of [
         SpaceItem.TypeEnum.WorkflowGroup,
         SpaceItem.TypeEnum.Data,
@@ -390,17 +386,12 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
         const menuItems = wrapper.findComponent(MenuItems).props("items");
         const texts = menuItems.map((item) => item.text);
-        expect(texts).not.toContain("Copy link");
+        expect(texts).not.toContain("Show details");
       }
     });
 
-    it("copies /a/ link when clicking 'Copy link'", async () => {
-      const writeText = vi.fn().mockResolvedValue(undefined);
-      vi.stubGlobal("navigator", {
-        clipboard: {
-          writeText,
-        },
-      });
+    it("opens /a/ link when clicking 'Show details'", async () => {
+      const open = vi.spyOn(window, "open").mockImplementation(() => null);
 
       const { wrapper, mockedStores } = doMount({
         props: {
@@ -444,14 +435,14 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
       const menuItems = wrapper.findComponent(MenuItems);
       const items = menuItems.props("items");
-      const copyLink = items.find(
-        (item) => (item as MenuItemWithHandler).metadata?.id === "copyLink",
+      const openLink = items.find(
+        (item) => (item as MenuItemWithHandler).metadata?.id === "openHubLink",
       ) as MenuItemWithHandler;
 
-      menuItems.vm.$emit("item-click", null, copyLink);
+      menuItems.vm.$emit("item-click", null, openLink);
       await flushPromises();
 
-      expect(writeText).toHaveBeenCalledWith("https://knime.com/hub/a/wf-id");
+      expect(open).toHaveBeenCalledWith("https://knime.com/hub/a/wf-id", "_blank");
     });
   });
 });

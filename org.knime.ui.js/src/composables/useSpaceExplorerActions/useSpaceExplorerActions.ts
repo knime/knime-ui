@@ -18,7 +18,6 @@ import DuplicateIcon from "@knime/styles/img/icons/duplicate.svg";
 import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import KeyIcon from "@knime/styles/img/icons/key.svg";
-import LinkIcon from "@knime/styles/img/icons/link.svg";
 import LinkExternal from "@knime/styles/img/icons/link-external.svg";
 import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
@@ -373,18 +372,18 @@ export const useSpaceExplorerActions = (
       }) satisfies MenuItemWithHandler,
   );
 
-  const copyLinkAction = computed(
+  const openHubLinkAction = computed(
     () =>
       ({
-        text: "Copy link",
-        icon: LinkIcon,
+        text: "Show details",
+        icon: LinkExternal,
         disabled: isSelectionEmpty.value || isSelectionMultiple.value,
         title: isSelectionEmpty.value
-          ? "Select one item to copy the link."
+          ? "Select one item to open the link."
           : undefined,
         metadata: {
-          id: "copyLink",
-          handler: async () => {
+          id: "openHubLink",
+          handler: () => {
             const itemId = selectedItemIds.value[0];
             const link = buildHubAppHomeShortLink({
               projectId: projectId.value,
@@ -395,15 +394,7 @@ export const useSpaceExplorerActions = (
               return;
             }
 
-            try {
-              await navigator.clipboard.writeText(link);
-              getToastsProvider().show({
-                type: "success",
-                message: "Link copied to clipboard",
-              });
-            } catch (error) {
-              consola.error("Failed to copy link to clipboard", { error });
-            }
+            window.open(link, "_blank");
           },
         },
       }) satisfies MenuItemWithHandler,
@@ -587,7 +578,7 @@ export const useSpaceExplorerActions = (
     downloadToLocalSpace,
     moveToSpace,
     copyToSpace,
-    copyLinkAction,
+    openHubLinkAction,
     uploadToHubFromLocalSpace,
     openInBrowserAction,
     openAPIDefinitionAction,

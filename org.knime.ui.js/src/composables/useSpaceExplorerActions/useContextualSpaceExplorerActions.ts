@@ -61,7 +61,7 @@ export const useContextualSpaceExplorerActions = (
     downloadFromHubInBrowser,
     moveToSpace,
     copyToSpace,
-    copyLinkAction,
+    openHubLinkAction,
     uploadToHubFromLocalSpace,
     openInBrowserAction,
     openAPIDefinitionAction,
@@ -172,7 +172,7 @@ export const useContextualSpaceExplorerActions = (
             isBrowser() &&
             isHub.value &&
             isWorkflowOrComponentSelected,
-          copyLinkAction.value,
+          openHubLinkAction.value,
         ),
         ...optional(
           ((isHub.value && !doesSelectionContainFile) || isServer.value) &&
