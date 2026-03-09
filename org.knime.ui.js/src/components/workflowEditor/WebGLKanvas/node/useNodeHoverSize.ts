@@ -7,7 +7,6 @@ import type { PortPositions } from "../../common/usePortPositions";
 
 type UseNodeHoverSizeOptions = {
   isHovering: Ref<boolean>;
-  isMetanode?: Ref<boolean>;
   portPositions: Ref<PortPositions>;
   nodeTopOffset: Ref<number>;
   dialogType: Node.DialogTypeEnum;
@@ -19,7 +18,6 @@ type UseNodeHoverSizeOptions = {
 export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
   const {
     isHovering,
-    isMetanode,
     portPositions,
     nodeTopOffset,
     dialogType,
@@ -41,15 +39,12 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
   });
 
   const hoverSize = computed(() => {
-    const nodeWidth = isMetanode?.value
-      ? $shapes.nodeSize
-      : $shapes.nodePillWidth;
     const hoverBounds = {
       top: -($shapes.nodeHoverMargin[0] + $shapes.webGlNodeHoverAreaPadding),
       left: -($shapes.nodeHoverMargin[1] + $shapes.webGlNodeHoverAreaPadding),
       bottom: $shapes.nodeSize + $shapes.nodeHoverMargin[2],
       right:
-        nodeWidth +
+        $shapes.nodeSize +
         $shapes.nodeHoverMargin[3] +
         $shapes.webGlNodeHoverAreaPadding,
     };

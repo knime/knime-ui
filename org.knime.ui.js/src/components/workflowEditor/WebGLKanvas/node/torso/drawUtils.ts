@@ -1,28 +1,17 @@
 /* eslint-disable no-magic-numbers */
 import type { GraphicsInst } from "@/vue3-pixi";
 
-// Cubic bezier approximation factor for a quarter-circle arc
-const K = 0.5523;
-
-const drawPill = (
-  graphics: GraphicsInst,
-  W: number,
-  H: number,
-  R: number,
-) => {
-  graphics
-    .moveTo(R, 0)
-    .lineTo(W - R, 0)
-    .bezierCurveTo(W - R + K * R, 0, W, R - K * R, W, R)
-    .bezierCurveTo(W, R + K * R, W - R + K * R, H, W - R, H)
-    .lineTo(R, H)
-    .bezierCurveTo(R - K * R, H, 0, R + K * R, 0, R)
-    .bezierCurveTo(0, R - K * R, R - K * R, 0, R, 0);
-};
-
 const drawDefault = (graphics: GraphicsInst) => {
-  // Horizontal pill: 220 × 64 px, fully rounded (radius = height / 2 = 32)
-  drawPill(graphics, 220, 64, 32);
+  graphics
+    .moveTo(0, 29.2)
+    .lineTo(0, 2.8)
+    .bezierCurveTo(0, 1.3, 1.3, 0, 2.8, 0)
+    .lineTo(29.1, 0)
+    .bezierCurveTo(30.7, 0, 32, 1.3, 32, 2.8)
+    .lineTo(32, 29.1)
+    .bezierCurveTo(32, 30.7, 30.7, 32, 29.1, 32)
+    .lineTo(2.8, 32)
+    .bezierCurveTo(1.3, 32, 0, 30.7, 0, 29.2);
 };
 
 const drawLoopEnd = (graphics: GraphicsInst) => {

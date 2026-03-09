@@ -40,7 +40,6 @@ import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 import { useNodeNameShortening } from "./useTextShortening";
-import { nodeInlineLabelText } from "../util/textStyles";
 
 interface Props {
   node: KnimeNode;
@@ -160,18 +159,14 @@ const isHovering = computed(
 const { metrics: nodeNameDimensions, shortenedText: shortenedNodeName } =
   useNodeNameShortening(toRef(props, "name"));
 
-const { useEmbeddedDialogs, nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
+const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
   isHovering,
-  isMetanode,
   portPositions,
   dialogType: Node.DialogTypeEnum.Web,
   isUsingEmbeddedDialogs: useEmbeddedDialogs,
-  // For pill nodes the name + action bar live inside the pill → nothing above it
-  nodeTopOffset: computed(() =>
-    isMetanode.value
-      ? nodeNameDimensions.value.height + $shapes.webGlNodeActionBarYOffset
-      : 0,
+  nodeTopOffset: computed(
+    () => nodeNameDimensions.value.height + $shapes.webGlNodeActionBarYOffset,
   ),
   allowedActions: props.node.allowedActions,
   isDebugModeEnabled,
@@ -183,22 +178,10 @@ const renderable = computed(
 );
 
 const nodeNamePosition = computed(() => {
-  if (isMetanode.value) {
-    return {
-      x: $shapes.nodeSize / 2,
-      // leave space between name and torso for the flowvariable ports
-      y: -$shapes.portSize,
-    };
-  }
-  // Pill layout: name sits immediately right of the colour circle, top row.
-  // Circle centre = nodePillHeight/2, radius = 10 → right edge at H/2+10.
-  // Add 8 px gap → left edge at H/2+18. NodeName centers text on its x,
-  // so shift right by half the measured text width to left-align it.
-  const textLeft = $shapes.nodePillHeight / 2 + 18;
   return {
-    x: Math.round(textLeft + nodeNameDimensions.value.width / 2),
-    // bottom of name text sits at ~38% of pill height (top row)
-    y: Math.round($shapes.nodePillHeight * 0.38),
+    x: $shapes.nodeSize / 2,
+    // leave space between name and torso for the flowvariable ports
+    y: -$shapes.portSize,
   };
 });
 
@@ -280,10 +263,7 @@ const allAllowedActions = computed(() => {
   };
 
   const canConfigure =
-    (nodeConfigOpenMode.value === "actionbar" ||
-      nodeConfigOpenMode.value === "modal" ||
-      !useEmbeddedDialogs.value) &&
-    props.node.dialogType !== undefined;
+    !useEmbeddedDialogs.value && props.node.dialogType !== undefined;
 
   return { ...baseConfig, canConfigure };
 });
@@ -301,26 +281,10 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
       : $shapes.nodeNameHorizontalMargin * 2,
 });
 
-const nodeInlineLabelPosition = computed(() => {
-  if (isMetanode.value || !props.node.annotation?.text.value) return null;
-  // Left-align with name: H/2 + 18 px beyond the colour circle right edge.
-  // y: top of label text sits in the lower row (~64% of pill height).
+const actionBarPosition = computed(() => {
   return {
-    x: Math.round($shapes.nodePillHeight / 2 + 18),
-    y: Math.round($shapes.nodePillHeight * 0.64),
-  };
-});
-
-const actionBarPosition = computed(() => {  if (isMetanode.value) {
-    return {
-      x: $shapes.nodeSize / 2,
-      y: nodeSelectionMeasures.value.y + $shapes.webGlNodeActionBarYOffset,
-    };
-  }
-  // Pill layout: action buttons sit inside the pill on the right side
-  return {
-    x: $shapes.nodePillWidth - 42,
-    y: $shapes.nodePillHeight / 2,
+    x: $shapes.nodeSize / 2,
+    y: nodeSelectionMeasures.value.y + $shapes.webGlNodeActionBarYOffset,
   };
 });
 
@@ -361,6 +325,24 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
       @render="renderHoverArea"
     />
 
+    <NodeActionBar
+      v-if="isHovering && !isDragging && !isEditingName"
+      v-bind="allAllowedActions"
+      :position="actionBarPosition"
+      :node-id="node.id"
+      :node-kind="node.kind"
+      :is-node-selected="isNodeSelected(node.id)"
+    />
+
+    <NodeName
+      :node-id="node.id"
+      :name="shortenedNodeName"
+      :full-name="name"
+      :is-editable="isMetanode || isComponent"
+      :position="nodeNamePosition"
+      :metrics="nodeNameDimensions"
+    />
+
     <Container label="NodeTorsoContainer">
       <NodeTorso
         label="NodeTorso"
@@ -384,38 +366,7 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         v-bind="node.state"
         :text-resolution="zoomAwareResolution"
       />
-
-      <Text
-        v-if="nodeInlineLabelPosition"
-        label="NodeInlineLabel"
-        event-mode="none"
-        :x="nodeInlineLabelPosition.x"
-        :y="nodeInlineLabelPosition.y"
-        :style="nodeInlineLabelText.styles"
-        :resolution="zoomAwareResolution"
-        :round-pixels="true"
-      >
-        {{ node.annotation?.text.value }}
-      </Text>
     </Container>
-
-    <NodeName
-      :node-id="node.id"
-      :name="shortenedNodeName"
-      :full-name="name"
-      :is-editable="isMetanode || isComponent"
-      :position="nodeNamePosition"
-      :metrics="nodeNameDimensions"
-    />
-
-    <NodeActionBar
-      v-if="(isHovering || !isMetanode) && !isDragging && !isEditingName"
-      v-bind="allAllowedActions"
-      :position="actionBarPosition"
-      :node-id="node.id"
-      :node-kind="node.kind"
-      :is-node-selected="isNodeSelected(node.id)"
-    />
 
     <NodePorts
       :node-id="node.id"
@@ -430,7 +381,6 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
     />
 
     <NodeLabel
-      v-if="isMetanode"
       :node-id="node.id"
       :label="node.annotation?.text.value"
       :is-metanode="isMetanode"

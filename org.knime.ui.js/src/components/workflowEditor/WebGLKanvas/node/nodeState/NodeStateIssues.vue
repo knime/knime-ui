@@ -13,7 +13,7 @@ defineProps<Props>();
   <Container
     v-if="error || warning"
     label="NodeStateIssues"
-    :x="$shapes.nodePillWidth / 2"
+    :x="$shapes.nodeSize / 2"
     :y="$shapes.nodeStatusHeight"
   >
     <Graphics
