@@ -9,6 +9,7 @@ import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfigu
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
+import NodeOutput from "../NodeOutput.vue";
 import ResizableComponentWrapper from "../dataValueViews/ResizableComponentWrapper.vue";
 import {
   type BoundingBox,
@@ -30,11 +31,11 @@ const { showNodeDescriptionPanel } = storeToRefs(nodeConfigStore);
 
 // ─── Size / position ─────────────────────────────────────────────────────────
 
-const DEFAULT_WIDTH = 440;
+const DEFAULT_WIDTH = 700;
 const DESCRIPTION_PANEL_WIDTH = 360;
 const DESCRIPTION_PANEL_GAP = 8;
 const DEFAULT_HEIGHT = 600;
-const MIN_WIDTH = 432;
+const MIN_WIDTH = 660;
 const MIN_HEIGHT = 300;
 /** Gap between right edge of node bounding box and the floating panel */
 const NODE_OFFSET_X = 24;
@@ -268,8 +269,14 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
       :style="isDragging ? { pointerEvents: 'none' } : {}"
       @mousedown.capture="onHeaderMouseDown"
     >
-      <NodeConfig v-if="useEmbeddedDialogs" />
-      <ManageVersionsWrapper v-else />
+      <div class="port-view-section">
+        <NodeOutput />
+      </div>
+      <div class="panel-divider" />
+      <div class="config-section">
+        <NodeConfig v-if="useEmbeddedDialogs" />
+        <ManageVersionsWrapper v-else />
+      </div>
     </div>
   </ResizableComponentWrapper>
 
@@ -314,8 +321,30 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 
   display: flex;
   flex: 1;
-  flex-direction: column;
+  flex-direction: row;
   min-height: 0;
+  overflow: hidden;
+}
+
+.port-view-section {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-divider {
+  width: 1px;
+  flex-shrink: 0;
+  background-color: var(--kds-color-border-default, var(--knime-silver-sand));
+}
+
+.config-section {
+  flex: 2;
+  min-width: 432px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 </style>
