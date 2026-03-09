@@ -155,6 +155,7 @@ describe("application::lifecycle", () => {
             nodeNames: ["Node A", "Node B"],
           },
         ],
+        numLoadErrors: 2,
         copyToClipboardContent: "copy text",
       };
 
@@ -174,7 +175,7 @@ describe("application::lifecycle", () => {
       await lifecycleStore.initializeApplication({ $router: router });
 
       const expectedRfcError = new rfcErrors.RFCError({
-        title: "1 missing extension",
+        title: "1 missing extension, 2 load errors in total",
         details: [
           "Extension 'Foo Extension' not installed (vendor: KNIME). Missing nodes: Node A, Node B",
         ],
@@ -209,6 +210,7 @@ describe("application::lifecycle", () => {
             nodeNames: ["Node A"],
           },
         ],
+        numLoadErrors: 1,
         copyToClipboardContent: "copy text",
       };
 
