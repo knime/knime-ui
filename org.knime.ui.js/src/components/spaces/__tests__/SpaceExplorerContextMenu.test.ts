@@ -1,10 +1,11 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { MenuItems } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { isBrowser, isDesktop } from "@/environment";
 import {
@@ -109,7 +110,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
             name: "item-name",
             isOpen: false,
             meta: {
-              type: "workflows",
+              type: SpaceItem.TypeEnum.Workflow,
             },
           },
           index: 0,
@@ -129,6 +130,10 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("renders all items", () => {
@@ -285,6 +290,168 @@ describe("SpaceExplorerContextMenu.vue", () => {
       const menuItems = wrapper.findComponent(MenuItems).props("items");
       const texts = menuItems.map((item) => item.text);
       expect(texts).not.toContain("Create new workflow");
+    });
+
+    it("shows 'Copy link' for Hub workflow and component items", async () => {
+      for (const type of [
+        SpaceItem.TypeEnum.Workflow,
+        SpaceItem.TypeEnum.Component,
+      ]) {
+        const { wrapper, mockedStores } = doMount({
+          props: {
+            projectId: "someHubProjectId",
+            selectedItemIds: ["wf-id"],
+            isMultipleSelectionActive: false,
+            anchor: {
+              item: {
+                name: "item-1",
+                isOpen: false,
+                meta: {
+                  type,
+                },
+              } as any,
+              index: 0,
+              element: document.createElement("div"),
+              openedBy: "mouse",
+            },
+          },
+          spaceProviders: {
+            hub1: createSpaceProvider({
+              ...startSpaceProviders.hub1,
+              connected: true,
+              id: "hub1",
+              hostname: "https://api.knime.com/hub",
+              type: SpaceProviderNS.TypeEnum.HUB,
+            }),
+          },
+        });
+
+        mockedStores.spaceCachingStore.setProjectPath({
+          projectId: "someHubProjectId",
+          value: {
+            spaceId: "space1",
+            spaceProviderId: "hub1",
+            itemId: "root",
+          },
+        });
+
+        await flushPromises();
+
+        const menuItems = wrapper.findComponent(MenuItems).props("items");
+        const texts = menuItems.map((item) => item.text);
+        expect(texts).toContain("Copy link");
+      }
+    });
+
+    it("hides 'Copy link' for folders and data files", async () => {
+      for (const type of [
+        SpaceItem.TypeEnum.WorkflowGroup,
+        SpaceItem.TypeEnum.Data,
+      ]) {
+        const { wrapper, mockedStores } = doMount({
+          props: {
+            projectId: "someHubProjectId",
+            selectedItemIds: ["wf-id"],
+            isMultipleSelectionActive: false,
+            anchor: {
+              item: {
+                name: "item-1",
+                isOpen: false,
+                meta: {
+                  type,
+                },
+              } as any,
+              index: 0,
+              element: document.createElement("div"),
+              openedBy: "mouse",
+            },
+          },
+          spaceProviders: {
+            hub1: createSpaceProvider({
+              ...startSpaceProviders.hub1,
+              connected: true,
+              id: "hub1",
+              hostname: "https://api.knime.com/hub",
+              type: SpaceProviderNS.TypeEnum.HUB,
+            }),
+          },
+        });
+
+        mockedStores.spaceCachingStore.setProjectPath({
+          projectId: "someHubProjectId",
+          value: {
+            spaceId: "space1",
+            spaceProviderId: "hub1",
+            itemId: "root",
+          },
+        });
+
+        await flushPromises();
+
+        const menuItems = wrapper.findComponent(MenuItems).props("items");
+        const texts = menuItems.map((item) => item.text);
+        expect(texts).not.toContain("Copy link");
+      }
+    });
+
+    it("copies /a/ link when clicking 'Copy link'", async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      vi.stubGlobal("navigator", {
+        clipboard: {
+          writeText,
+        },
+      });
+
+      const { wrapper, mockedStores } = doMount({
+        props: {
+          projectId: "someHubProjectId",
+          selectedItemIds: ["*wf-id"],
+          isMultipleSelectionActive: false,
+          anchor: {
+            item: {
+              name: "workflow-1",
+              isOpen: false,
+              meta: {
+                type: SpaceItem.TypeEnum.Workflow,
+              },
+            } as any,
+            index: 0,
+            element: document.createElement("div"),
+            openedBy: "mouse",
+          },
+        },
+        spaceProviders: {
+          hub1: createSpaceProvider({
+            ...startSpaceProviders.hub1,
+            connected: true,
+            id: "hub1",
+            hostname: "https://api.knime.com/hub",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          }),
+        },
+      });
+
+      mockedStores.spaceCachingStore.setProjectPath({
+        projectId: "someHubProjectId",
+        value: {
+          spaceId: "space1",
+          spaceProviderId: "hub1",
+          itemId: "root",
+        },
+      });
+
+      await flushPromises();
+
+      const menuItems = wrapper.findComponent(MenuItems);
+      const items = menuItems.props("items");
+      const copyLink = items.find(
+        (item) => (item as MenuItemWithHandler).metadata?.id === "copyLink",
+      ) as MenuItemWithHandler;
+
+      menuItems.vm.$emit("item-click", null, copyLink);
+      await flushPromises();
+
+      expect(writeText).toHaveBeenCalledWith("https://knime.com/hub/a/wf-id");
     });
   });
 });
