@@ -2921,6 +2921,12 @@ export interface LoadErrors {
      */
     missingExtensions?: Array<LoadErrorMissingExtension>;
     /**
+     * The total number of load errors that occurred during loading the workflow project.
+     * @type {number}
+     * @memberof LoadErrors
+     */
+    numLoadErrors: number;
+    /**
      * A textual representation of the load errors that can be copied to the clipboard by the user for error reporting.
      * @type {string}
      * @memberof LoadErrors
