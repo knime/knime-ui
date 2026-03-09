@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
-import { nodePillHeight, nodePillWidth, nodeSize, portSize } from "@/style/shapes";
+import { nodeSize, portSize } from "@/style/shapes";
 
 /**
  * Calculates the position of the center of a port on a node depending on its index and the total number
@@ -21,10 +21,7 @@ export const portShift = (
   isMetanode?: boolean,
   isOutPort?: boolean,
 ): [number, number] => {
-  // Pill-shaped nodes use different width; metanodes keep the legacy square size
-  const nodeWidth = isMetanode ? nodeSize : nodePillWidth;
-  const nodeHeight = isMetanode ? nodeSize : nodePillHeight;
-  const x = isOutPort ? nodeWidth + portSize / 2 : -portSize / 2;
+  const x = isOutPort ? nodeSize + portSize / 2 : -portSize / 2;
 
   if (isMetanode) {
     // Metanodes don't have Mickey Mouse ears, so all ports are attached to the side, not to the top
@@ -42,7 +39,7 @@ export const portShift = (
   // consider ports on the side
   // if only 1 side port (+1 flow variable -> therefore portCount is 2)
   // then position port vertically centered
-  const middleY = nodeHeight / 2;
+  const middleY = nodeSize / 2;
   if (portCount === 2) {
     return [x, middleY];
   }
