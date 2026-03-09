@@ -15,7 +15,6 @@ import {
   useDraggableResizableRectState,
 } from "../dataValueViews/useDataValueView";
 
-import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
 import NodeConfig from "./NodeConfig.vue";
 import NodeConfigDescriptionPanel from "./NodeConfigDescriptionPanel.vue";
 
@@ -31,11 +30,11 @@ const { showNodeDescriptionPanel } = storeToRefs(nodeConfigStore);
 
 // ─── Size / position ─────────────────────────────────────────────────────────
 
-const DEFAULT_WIDTH = 840;
+const DEFAULT_WIDTH = 440;
 const DESCRIPTION_PANEL_WIDTH = 360;
 const DESCRIPTION_PANEL_GAP = 8;
 const DEFAULT_HEIGHT = 600;
-const MIN_WIDTH = 680;
+const MIN_WIDTH = 432;
 const MIN_HEIGHT = 300;
 /** Gap between right edge of node bounding box and the floating panel */
 const NODE_OFFSET_X = 24;
@@ -269,13 +268,8 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
       :style="isDragging ? { pointerEvents: 'none' } : {}"
       @mousedown.capture="onHeaderMouseDown"
     >
-      <div class="monitor-pane">
-        <NodeOutput />
-      </div>
-      <div class="config-pane">
-        <NodeConfig v-if="useEmbeddedDialogs" />
-        <ManageVersionsWrapper v-else />
-      </div>
+      <NodeConfig v-if="useEmbeddedDialogs" />
+      <ManageVersionsWrapper v-else />
     </div>
   </ResizableComponentWrapper>
 
@@ -320,25 +314,8 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 
   display: flex;
   flex: 1;
-  flex-direction: row;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.config-pane {
-  flex: 0 0 440px;
-  display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-}
-
-.monitor-pane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-  border-right: 1px solid var(--kds-color-border-subtle, #e0e0e0);
 }
 </style>

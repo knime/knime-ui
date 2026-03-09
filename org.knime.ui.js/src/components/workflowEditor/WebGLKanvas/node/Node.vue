@@ -159,7 +159,7 @@ const isHovering = computed(
 const { metrics: nodeNameDimensions, shortenedText: shortenedNodeName } =
   useNodeNameShortening(toRef(props, "name"));
 
-const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
+const { useEmbeddedDialogs, nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
   isHovering,
   portPositions,
@@ -263,7 +263,10 @@ const allAllowedActions = computed(() => {
   };
 
   const canConfigure =
-    !useEmbeddedDialogs.value && props.node.dialogType !== undefined;
+    (nodeConfigOpenMode.value === "actionbar" ||
+      nodeConfigOpenMode.value === "modal" ||
+      !useEmbeddedDialogs.value) &&
+    props.node.dialogType !== undefined;
 
   return { ...baseConfig, canConfigure };
 });
