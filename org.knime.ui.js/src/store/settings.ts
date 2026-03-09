@@ -26,6 +26,7 @@ export interface SettingsState {
     askBeforeAutoApplyNodeConfigChanges: boolean;
     shouldShowExampleWorkflows: boolean;
     nodeConfigOpenMode: "current" | "actionbar" | "modal";
+    nodeOutputLayout: "bottom" | "side-by-side";
   };
 }
 
@@ -38,6 +39,7 @@ const defaults: SettingsState["settings"] = {
   askBeforeAutoApplyNodeConfigChanges: true,
   shouldShowExampleWorkflows: true,
   nodeConfigOpenMode: "current",
+  nodeOutputLayout: "side-by-side",
 };
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {
