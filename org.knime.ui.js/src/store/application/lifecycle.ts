@@ -128,6 +128,9 @@ export const useLifecycleStore = defineStore("lifecycle", {
       useApplicationSettingsStore().setNodeConfigOpenMode(
         useSettingsStore().settings.nodeConfigOpenMode,
       );
+      useApplicationSettingsStore().setNodeOutputLayout(
+        useSettingsStore().settings.nodeOutputLayout,
+      );
       await useAISettingsStore().fetchAISettings();
       await useAISettingsStore().pruneStaleEntries();
 

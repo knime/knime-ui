@@ -119,6 +119,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
 
     setNodeOutputLayout(layout: "bottom" | "side-by-side") {
       this.nodeOutputLayout = layout;
+      useSettingsStore().updateSetting({ key: "nodeOutputLayout", value: layout });
     },
 
     setIsSubnodeLockingEnabled(isSubnodeLockingEnabled: boolean) {
