@@ -36,6 +36,12 @@ const nodeConfigOpenMode = computed({
     appSettingsStore.setNodeConfigOpenMode(mode),
 });
 
+const nodeOutputLayout = computed({
+  get: () => appSettingsStore.nodeOutputLayout,
+  set: (layout: "bottom" | "side-by-side") =>
+    appSettingsStore.setNodeOutputLayout(layout),
+});
+
 const { currentMode } = useKdsDarkMode();
 const { legacyMode } = useKdsLegacyMode();
 const extendedMode = ref<"legacy" | KdsDarkModeType>(currentMode.value);
@@ -179,16 +185,26 @@ const dragStart = (pointerDown: PointerEvent) => {
         data-test-id="canvas-theme-toggler"
       />
 
-      <KdsValueSwitch
+      <select
         v-model="nodeConfigOpenMode"
-        size="small"
-        :possible-values="[
-          { id: 'current', text: '🖱️ Current' },
-          { id: 'actionbar', text: '🔘 Bar' },
-          { id: 'modal', text: '📋 Modal' },
-        ]"
+        class="dev-select"
+        title="Node config open mode"
         data-test-id="node-config-open-mode-toggler"
-      />
+      >
+        <option value="current">🖱️ Current</option>
+        <option value="actionbar">🔘 Bar</option>
+        <option value="modal">📋 Modal</option>
+      </select>
+
+      <select
+        v-model="nodeOutputLayout"
+        class="dev-select"
+        title="Node output layout"
+        data-test-id="node-output-layout-toggler"
+      >
+        <option value="side-by-side">⬜ Side-by-side</option>
+        <option value="bottom">⬇️ Bottom</option>
+      </select>
 
       <FunctionButton
         :disabled="isSVGRenderer"
@@ -242,6 +258,16 @@ const dragStart = (pointerDown: PointerEvent) => {
   & .content {
     gap: var(--space-6);
     padding: var(--space-8);
+  }
+
+  & .dev-select {
+    height: 24px;
+    padding: 0 4px;
+    font-size: 12px;
+    border: 1px solid var(--knime-silver-sand);
+    border-radius: 4px;
+    background: var(--knime-white);
+    cursor: pointer;
   }
 }
 </style>
