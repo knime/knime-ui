@@ -327,7 +327,7 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 }
 
 .port-view-section {
-  flex: 1;
+  flex: 2;
   min-width: 220px;
   display: flex;
   flex-direction: column;
@@ -341,7 +341,7 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 }
 
 .config-section {
-  flex: 2;
+  flex: 1;
   min-width: 432px;
   display: flex;
   flex-direction: column;
