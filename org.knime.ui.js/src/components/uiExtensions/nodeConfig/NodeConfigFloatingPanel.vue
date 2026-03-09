@@ -39,8 +39,6 @@ const DEFAULT_HEIGHT = 600;
 const SIDE_BY_SIDE_MIN_WIDTH = 660;
 const SINGLE_PANEL_MIN_WIDTH = 432;
 const MIN_HEIGHT = 300;
-const OUTPUT_PANEL_DEFAULT_HEIGHT = 340;
-const OUTPUT_PANEL_GAP = 8;
 /** Gap between right edge of node bounding box and the floating panel */
 const NODE_OFFSET_X = 24;
 /** Approximate half-width of a node in canvas coordinates used to place the
@@ -61,7 +59,6 @@ const panelMinWidth = computed(() =>
 
 const { state: rectState, setRect } = useDraggableResizableRectState();
 const { state: descRectState, setRect: setDescRect } = useDraggableResizableRectState();
-const { state: outputRectState, setRect: setOutputRect } = useDraggableResizableRectState();
 
 const getVersionsAnchoredPosition = (): Pick<BoundingBox, "left" | "top"> => {
   const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-right");
@@ -159,30 +156,10 @@ watch(
   },
 );
 
-// ─── Output panel (bottom mode) ──────────────────────────────────────────────
-
-const placeOutputPanel = () => {
-  setOutputRect({
-    left: rectState.value.left,
-    top: rectState.value.top + rectState.value.height + OUTPUT_PANEL_GAP,
-    width: rectState.value.width,
-    height: OUTPUT_PANEL_DEFAULT_HEIGHT,
-  });
-};
-
-watch(nodeOutputLayout, (layout) => {
+// Resize config panel when switching between side-by-side and bottom layouts
+watch(nodeOutputLayout, () => {
   setRect({ width: panelDefaultWidth.value });
-  if (layout === "bottom") {
-    placeOutputPanel();
-  }
 });
-
-const outputPanelStyles = computed(() => ({
-  left: `${outputRectState.value.left}px`,
-  top: `${outputRectState.value.top}px`,
-  width: `${outputRectState.value.width}px`,
-  height: `${outputRectState.value.height}px`,
-}));
 
 // ─── Companion description panel ─────────────────────────────────────────────
 
@@ -319,20 +296,6 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
     </div>
   </ResizableComponentWrapper>
 
-  <!-- Bottom output panel (shown when nodeOutputLayout === 'bottom') -->
-  <ResizableComponentWrapper
-    v-if="nodeOutputLayout === 'bottom' && useEmbeddedDialogs"
-    class="node-output-floating-panel"
-    :min-size="{ width: SINGLE_PANEL_MIN_WIDTH, height: 200 }"
-    :rect-state="outputRectState"
-    :style="outputPanelStyles"
-    @custom-resize="setOutputRect"
-  >
-    <div class="floating-panel-content floating-panel-content--column">
-      <NodeOutput />
-    </div>
-  </ResizableComponentWrapper>
-
   <!-- Companion node description panel -->
   <ResizableComponentWrapper
     v-if="showNodeDescriptionPanel && useEmbeddedDialogs"
@@ -354,8 +317,7 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 
 <style lang="postcss" scoped>
 .node-config-floating-panel,
-.node-desc-floating-panel,
-.node-output-floating-panel {
+.node-desc-floating-panel {
   position: fixed;
   z-index: v-bind("$zIndices.layerFloatingWindows");
   display: flex;
@@ -378,10 +340,6 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
   flex-direction: row;
   min-height: 0;
   overflow: hidden;
-
-  &--column {
-    flex-direction: column;
-  }
 }
 
 .port-view-section {
