@@ -29,7 +29,7 @@ export const nodeNameText: TextStylePreset<{
     fontWeight: "bold",
     lineHeight: nodeRootFontSize * nodeRootLineHeight,
     wordWrap: true,
-    wordWrapWidth: 100,
+    wordWrapWidth: 90,
     breakWords: true,
     // fixes slight cut off of some chars
     padding: 2,
@@ -68,20 +68,6 @@ export const nodeIdText: TextStylePreset = {
     fontWeight: "normal",
     align: "center",
     textBaseline: "bottom",
-  },
-};
-
-export const nodeInlineLabelText: TextStylePreset = {
-  styles: {
-    ...defaultTextStyles,
-    fontSize: 9,
-    fontWeight: "normal",
-    fill: $colors.DoveGray,
-    wordWrap: true,
-    wordWrapWidth: 120,
-    breakWords: true,
-    padding: 2,
-    align: "center",
   },
 };
 
