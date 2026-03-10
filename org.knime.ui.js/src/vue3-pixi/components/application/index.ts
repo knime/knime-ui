@@ -44,9 +44,10 @@ export const Application = defineComponent({
     backgroundAlpha: { type: Number, default: 1 },
     clearBeforeRender: { type: Boolean, default: undefined },
     hello: { type: Boolean, default: undefined },
-    textureGCActive: { type: Boolean, default: undefined },
-    textureGCAMaxIdle: { type: Number, default: undefined },
-    textureGCCheckCountMax: { type: Number, default: undefined },
+    /* requires pixi.js 8.15+ */
+    gcActive: { type: Boolean, default: undefined },
+    gcMaxUnusedTime: { type: Number, default: undefined },
+    gcFrequency: { type: Number, default: undefined },
     bezierSmoothness: { type: Number, default: undefined },
     premultipliedAlpha: { type: Boolean, default: undefined },
     preserveDrawingBuffer: { type: Boolean, default: undefined },
@@ -69,7 +70,7 @@ export const Application = defineComponent({
     resolution: { type: Number, default: 1 },
 
     preference: {
-      type: String as PropType<"webgl" | "webgpu">,
+      type: String as PropType<"webgl" | "webgpu" | "canvas">,
       default: undefined,
     },
     /** Optional WebGPUOptions to pass only to WebGPU renderer. */
