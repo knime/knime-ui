@@ -15,6 +15,8 @@ import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfigu
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { usePanelStore } from "@/store/panel";
+import { useSelectionStore } from "@/store/selection";
 
 type UseNodeDoubleClickOptions = {
   node: KnimeNode;
@@ -22,7 +24,7 @@ type UseNodeDoubleClickOptions = {
 
 export const useNodeDoubleClick = (options: UseNodeDoubleClickOptions) => {
   const $router = useRouter();
-  const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
+  const { useEmbeddedDialogs, nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
   const nodeConfigurationStore = useNodeConfigurationStore();
   const { activeExtensionConfig } = storeToRefs(nodeConfigurationStore);
   const canBeEnlarged = computed(
@@ -70,6 +72,19 @@ export const useNodeDoubleClick = (options: UseNodeDoubleClickOptions) => {
 
     // rare case that the node doesn't have any type of dialog
     if (!node.dialogType) {
+      return;
+    }
+
+    if (
+      (nodeConfigOpenMode.value === "actionbar" ||
+        nodeConfigOpenMode.value === "modal") &&
+      useEmbeddedDialogs.value &&
+      node.dialogType === Node.DialogTypeEnum.Web
+    ) {
+      useSelectionStore().tryClearSelection({
+        keepNodesInSelection: [node.id],
+      });
+      usePanelStore().isRightPanelExpanded = true;
       return;
     }
 
