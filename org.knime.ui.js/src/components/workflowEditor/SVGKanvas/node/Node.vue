@@ -17,6 +17,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
+import { usePanelStore } from "@/store/panel";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import ConnectorSnappingProvider from "../connectors/ConnectorSnappingProvider.vue";
@@ -229,6 +230,7 @@ export default {
     ...mapState(useApplicationStore, { projectId: "activeProjectId" }),
     ...mapState(useApplicationSettingsStore, [
       "useEmbeddedDialogs",
+      "nodeConfigOpenMode",
       "hasAnnotationModeEnabled",
     ]),
     ...mapState(useMovingStore, ["isDragging"]),
@@ -390,6 +392,17 @@ export default {
 
       // rare case that the node doesn't have any type of dialog
       if (!this.dialogType) {
+        return;
+      }
+
+      if (
+        (this.nodeConfigOpenMode === "actionbar" ||
+          this.nodeConfigOpenMode === "modal") &&
+        this.useEmbeddedDialogs &&
+        this.dialogType === "web"
+      ) {
+        this.tryClearSelection({ keepNodesInSelection: [this.id] });
+        usePanelStore().isRightPanelExpanded = true;
         return;
       }
 
