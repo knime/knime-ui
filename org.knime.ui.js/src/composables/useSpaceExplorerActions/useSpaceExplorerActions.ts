@@ -248,7 +248,7 @@ export const useSpaceExplorerActions = (
     };
 
     if (options.canSoftDelete) {
-      customProps.text = "Move to recycle bin";
+      customProps.text = "Move to trash";
     }
 
     return options.createDeleteOption(options.anchorItem, customProps);
