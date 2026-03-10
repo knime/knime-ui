@@ -6,11 +6,13 @@ import {
   Container,
   Application as PixiApplication,
   RenderLayer,
+  RendererType,
 } from "pixi.js";
 
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { $bus } from "@/plugins/event-bus";
 import { performanceTracker } from "@/services/performanceTracker";
+import { getToastPresets } from "@/services/toastPresets";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -85,6 +87,11 @@ const onAppInitialized = (pixiApp: PixiApplication) => {
 
   pixiGlobals.setApplicationInstance(pixiApp);
   pixiGlobals.setMainContainer(mainContainer.value!);
+
+  // show toast for canvas renderer
+  if (pixiApp.renderer.type === RendererType.CANVAS) {
+    getToastPresets().toastPresets.app.noWebGlFallbackCanvas();
+  }
 
   // used by e2e tests in this repo and by QA
   globalThis.__E2E_TEST__ = initE2ETestUtils();
@@ -162,6 +169,7 @@ watch(
     :background-color="0x000000"
     :background-alpha="0"
     :width="containerSize.width"
+    preference="webgl"
     :height="containerSize.height"
     :resolution="pixelRatio"
     :auto-density="true"
