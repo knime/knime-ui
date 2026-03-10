@@ -80,7 +80,7 @@ const textStyle = computed<Partial<TextStyle>>(() => {
 });
 
 const textX = computed(
-  () => nodeSize / 2 - labelMeasures.value.maxLineWidth / 2,
+  () => nodeSize / 2 - labelMeasures.value.maxLineWidth / 2 - 1,
 );
 
 const textY = computed(() => {
@@ -88,7 +88,7 @@ const textY = computed(() => {
 
   return (
     baseYOffset +
-    3 +
+    4 +
     getNodeLabelTopOffset(props.nodeId) +
     (navigatorUtils.isMac() ? 1 : -0.5)
   );
@@ -103,7 +103,7 @@ const renderBorder = (graphics: GraphicsInst) => {
     labelMeasures.value.maxLineWidth + borderPadding * 2,
     labelMeasures.value.height,
   );
-  graphics.stroke({ color: $colors.SilverSand, width: 1 });
+  graphics.stroke({ color: $colors.SilverSand, width: 0.8 });
 };
 
 const onPointerEnter = (event: FederatedPointerEvent) => {
