@@ -278,7 +278,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
           groupName,
         });
         if (!trashUrl) {
-          consola.error("Could not construct trash URL");
+          consola.warn("Could not construct trash URL");
           return null;
         }
 
@@ -287,6 +287,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
           if (response.ok) {
             return trashUrl;
           }
+          // eslint-disable-next-line no-magic-numbers
           if (response.status >= 400) {
             return null;
           }
