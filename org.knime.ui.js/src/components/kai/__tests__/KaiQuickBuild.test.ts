@@ -318,6 +318,30 @@ describe("KaiQuickBuild.vue", () => {
 
       expect(quickActionContext.closeMenu).toHaveBeenCalledOnce();
     });
+
+    it("calls sendMessage when QuickBuildResult emits send-message", async () => {
+      mockResult.value = createBuildPayload({ type: "SUCCESS" });
+      const { wrapper } = doMount();
+
+      await wrapper
+        .findComponent(QuickBuildResult)
+        .vm.$emit("sendMessage", { message: "add a filter node" });
+
+      expect(mockSendMessage).toHaveBeenCalledWith({
+        message: "add a filter node",
+      });
+    });
+
+    it("passes lastUserMessage to QuickBuildResult", () => {
+      mockResult.value = createBuildPayload({ type: "SUCCESS" });
+      mockLastUserMessage.value = "dadoobie schwitz";
+
+      const { wrapper } = doMount();
+
+      expect(
+        wrapper.findComponent(QuickBuildResult).props("lastUserMessage"),
+      ).toBe("dadoobie schwitz");
+    });
   });
 
   describe("menuState: NONE (cancelled request)", () => {

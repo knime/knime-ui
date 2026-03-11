@@ -5,6 +5,7 @@ import { KaiMessage } from "@/api/gateway-api/generated-api";
 import type { InquiryTrace } from "@/store/ai/types";
 import { createKaiInquiry } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
+import ChatControls from "../../chat/ChatControls.vue";
 import Message from "../../chat/message/Message.vue";
 import QuickBuildResult from "../QuickBuildResult.vue";
 
@@ -74,6 +75,34 @@ describe("QuickBuildResult.vue", () => {
 
     expect(wrapper.findComponent(Message).props("inquiryTraces")).toEqual(
       traces,
+    );
+  });
+
+  it("renders ChatControls for follow-up input", () => {
+    const { wrapper } = doMount();
+
+    const chatControls = wrapper.findComponent(ChatControls);
+    expect(chatControls.exists()).toBe(true);
+    expect(chatControls.props("placeholder")).toBe("Send a follow-up...");
+  });
+
+  it("emits sendMessage when ChatControls emits send-message", async () => {
+    const { wrapper } = doMount();
+
+    await wrapper
+      .findComponent(ChatControls)
+      .vm.$emit("sendMessage", { message: "do more" });
+
+    expect(wrapper.emitted("sendMessage")).toEqual([[{ message: "do more" }]]);
+  });
+
+  it("passes lastUserMessage to ChatControls", () => {
+    const { wrapper } = doMount({
+      props: { lastUserMessage: "I come from the past" },
+    });
+
+    expect(wrapper.findComponent(ChatControls).props("lastUserMessage")).toBe(
+      "I come from the past",
     );
   });
 });

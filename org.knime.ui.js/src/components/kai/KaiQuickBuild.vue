@@ -144,13 +144,17 @@ watch(menuState, (menuState) => {
           @click="abortSendMessage"
         />
       </template>
+
       <QuickBuildResult
         v-if="menuState === 'RESULT'"
         :message="result!.message"
         :interaction-id="result!.interactionId"
         :inquiry-traces="lastMessageInquiryTraces"
+        :last-user-message="lastUserMessage"
         @close="quickActionContext.closeMenu"
+        @send-message="onInputMessage"
       />
+
       <QuickBuildInput
         v-if="menuState === 'INPUT'"
         :prompt="result?.message"
