@@ -171,7 +171,7 @@ export const useSpacesStore = defineStore("spaces", {
       }
 
       const provider = useSpaceProvidersStore().spaceProviders[spaceProviderId];
-      if (!provider || !provider.hostname || !isHubProvider(provider)) {
+      if (!provider?.hostname || !isHubProvider(provider)) {
         return null;
       }
 

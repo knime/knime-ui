@@ -1,3 +1,4 @@
+// Convert an API hostname (e.g. api.hub.knime.com) to the UI hostname
 const parseHubBaseUrl = (providerHostname: string) => {
   try {
     const url = new URL(providerHostname);
@@ -24,7 +25,8 @@ const buildHubUrl = ({
     return null;
   }
 
-  const parts = baseUrl.pathname.split("/").filter((part) => part);
+  // Normalize optional base path segments and avoid duplicate slashes
+  const parts = baseUrl.pathname.split("/").filter(Boolean);
   return `${baseUrl.origin}/${parts.concat(pathParts).join("/")}`;
 };
 
