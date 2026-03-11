@@ -374,6 +374,26 @@ export const useSpaceExplorerActions = (
       }) satisfies MenuItemWithHandler,
   );
 
+  const navigateToHubWorkflowPage = ({
+    itemId,
+  }: {
+    itemId: string;
+  }) => {
+    const link = buildHubAppHomeShortLink({
+      projectId: projectId.value,
+      itemId,
+    });
+
+    if (!link) {
+      return;
+    }
+
+    navigateToExternalUrl({
+      url: link,
+      openInNewTab: true,
+    });
+  };
+
   const openHubLinkAction = computed(
     () =>
       ({
@@ -382,19 +402,8 @@ export const useSpaceExplorerActions = (
         metadata: {
           id: "openHubLink",
           handler: () => {
-            const itemId = selectedItemIds.value[0];
-            const link = buildHubAppHomeShortLink({
-              projectId: projectId.value,
-              itemId,
-            });
-
-            if (!link) {
-              return;
-            }
-
-            navigateToExternalUrl({
-              url: link,
-              openInNewTab: true,
+            navigateToHubWorkflowPage({
+              itemId: selectedItemIds.value[0],
             });
           },
         },
