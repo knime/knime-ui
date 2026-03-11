@@ -1,7 +1,7 @@
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import { useHubAuth } from "../useHubAuth";
-import { useKaiServer } from "../useKaiServer";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 
 import DisclaimerPanel from "./DisclaimerPanel.vue";
 import ErrorPanel from "./ErrorPanel.vue";
@@ -11,19 +11,23 @@ import UnlicensedPanel from "./UnlicensedPanel.vue";
 import { useDisclaimer } from "./useDisclaimer";
 
 export const useKaiPanels = () => {
-  const { isHubConfigured, isAuthenticated, isUserLicensed } = useHubAuth();
-  const { isServerAvailable } = useKaiServer();
+  const {
+    isAiProviderConfigured,
+    isAiProviderConnected,
+    isUserLicensed,
+    isAiBackendAvailable,
+  } = storeToRefs(useAiProviderStore());
   const { shouldShowDisclaimer } = useDisclaimer();
 
   // Dynamically select which panel to show
   const panelComponent = computed(() => {
-    if (!isHubConfigured.value) {
+    if (!isAiProviderConfigured.value) {
       return NoHubConfiguredPanel;
     }
-    if (!isServerAvailable.value) {
+    if (!isAiBackendAvailable.value) {
       return ErrorPanel;
     }
-    if (!isAuthenticated.value) {
+    if (!isAiProviderConnected.value) {
       return LoginPanel;
     }
     if (!isUserLicensed.value) {

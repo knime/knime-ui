@@ -4,13 +4,13 @@ import type { Router } from "vue-router";
 import type { ToastServiceProvider } from "@knime/components";
 
 import { notifyPatch } from "@/api/events/event-syncer";
-import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { isDesktop } from "@/environment";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 import type { AiAssistantEvent } from "@/store/ai/types";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
@@ -302,8 +302,9 @@ export const registerAPIEventHandlers = (
     AiAssistantServerChangedEvent() {
       consola.info("events::AiAssistantServerChangedEvent");
 
-      useAIAssistantStore().getHubID();
-      fetchUiStrings();
+      const aiProviderStore = useAiProviderStore();
+      aiProviderStore.getAiProviderId();
+      aiProviderStore.fetchUiStrings();
     },
 
     DesktopAPIFunctionResultEvent(payload) {

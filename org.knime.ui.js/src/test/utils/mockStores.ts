@@ -2,6 +2,7 @@ import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
 
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { useApplicationStore } from "@/store/application/application";
@@ -99,6 +100,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const workflowMonitorStore = useWorkflowMonitorStore(testingPinia);
   const workflowVersionsStore = useWorkflowVersionsStore(testingPinia);
   const aiAssistantStore = useAIAssistantStore(testingPinia);
+  const aiProviderStore = useAiProviderStore(testingPinia);
   const aiQuickActionsStore = useAiQuickActionsStore(testingPinia);
   const aiSettingsStore = useAISettingsStore(testingPinia);
   const canvasStore = useSVGCanvasStore(testingPinia);
@@ -166,6 +168,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     workflowMonitorStore,
     workflowVersionsStore,
     aiAssistantStore,
+    aiProviderStore,
     aiQuickActionsStore,
     aiSettingsStore,
     canvasStore,

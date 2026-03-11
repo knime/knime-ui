@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { computed, nextTick, ref } from "vue";
+import { nextTick, ref } from "vue";
 import { API } from "@api";
 
-import { useHubAuth } from "@/components/kai/useHubAuth";
 import {
   HubLoginAction,
   useHubLoginDialog,
@@ -15,7 +14,6 @@ import { QuickActionId } from "../types";
 
 const mockedAPI = deepMocked(API);
 
-vi.mock("@/components/kai/useHubAuth");
 vi.mock("@/composables/useIsKaiEnabled");
 vi.mock("@/composables/confirmDialogs/useHubLoginDialog");
 vi.mock("@/composables/useAiQuickActionContext/useAiQuickActionContext");
@@ -40,17 +38,6 @@ describe("aiQuickActions store", () => {
     isKaiEnabled?: boolean;
     isUserLicensed?: boolean;
   } = {}) => {
-    const isAuthenticatedRef = ref(isAuthenticated);
-    const isAuthenticatedComputed = computed(() => isAuthenticatedRef.value);
-    const hubIdRef = ref(hubId);
-    const isUserLicensedRef = ref(isUserLicensed);
-    // @ts-expect-error Partial mock
-    vi.mocked(useHubAuth).mockReturnValue({
-      isAuthenticated: isAuthenticatedComputed,
-      hubID: hubIdRef,
-      isUserLicensed: isUserLicensedRef,
-    });
-
     const isKaiEnabledRef = ref(isKaiEnabled);
     vi.mocked(useIsKaiEnabled).mockReturnValue({
       isKaiEnabled: isKaiEnabledRef,
@@ -65,7 +52,13 @@ describe("aiQuickActions store", () => {
       annotationInteractionsStore,
       applicationStore,
       aiQuickActionsStore,
+      aiProviderStore,
     } = mockStores();
+
+    // Set up aiProviderStore state (replaces the old useHubAuth mock)
+    aiProviderStore.isAiProviderConnected = isAuthenticated;
+    aiProviderStore.aiProviderId = hubId;
+    aiProviderStore.isUserLicensed = isUserLicensed;
 
     applicationStore.activeProjectId = projectId;
 
@@ -74,10 +67,8 @@ describe("aiQuickActions store", () => {
       annotationInteractionsStore,
       applicationStore,
       aiQuickActionsStore,
-      isAuthenticatedRef,
-      hubIdRef,
+      aiProviderStore,
       isKaiEnabledRef,
-      isUserLicensedRef,
     };
   };
 
@@ -91,60 +82,60 @@ describe("aiQuickActions store", () => {
 
   describe("fetchAvailableQuickActions", () => {
     it("should fetch available quick actions if user authenticates", async () => {
-      const { isAuthenticatedRef } = setupStore();
+      const { aiProviderStore } = setupStore();
 
       // trigger auth watcher
-      isAuthenticatedRef.value = true;
+      aiProviderStore.isAiProviderConnected = true;
       await nextTick();
 
       expect(mockedAPI.kai.listQuickActions).toHaveBeenCalled();
     });
 
     it("should reset action list when user logs out", async () => {
-      const { isAuthenticatedRef, aiQuickActionsStore } = setupStore({
+      const { aiProviderStore, aiQuickActionsStore } = setupStore({
         availableQuickActions: [QuickActionId.GenerateAnnotation],
       });
 
       // trigger auth watcher to fetch list of actions
-      isAuthenticatedRef.value = true;
+      aiProviderStore.isAiProviderConnected = true;
       await nextTick();
 
       expect(aiQuickActionsStore.availableQuickActions).not.toBeNull();
 
       // trigger auth watcher with a logged-out event
-      isAuthenticatedRef.value = false;
+      aiProviderStore.isAiProviderConnected = false;
       await nextTick();
 
       expect(aiQuickActionsStore.availableQuickActions).toBeNull();
     });
 
     it("should reset action list when Hub ID changes", async () => {
-      const { isAuthenticatedRef, hubIdRef, aiQuickActionsStore } = setupStore({
+      const { aiProviderStore, aiQuickActionsStore } = setupStore({
         availableQuickActions: [QuickActionId.GenerateAnnotation],
       });
 
       // trigger auth watcher to fetch list of actions
-      isAuthenticatedRef.value = true;
+      aiProviderStore.isAiProviderConnected = true;
       await nextTick();
 
       expect(aiQuickActionsStore.availableQuickActions).not.toBeNull();
 
-      // trigger auth watcher with a logged-out event
-      hubIdRef.value = "blip";
+      // trigger hubID watcher
+      aiProviderStore.aiProviderId = "blip";
       await nextTick();
 
       expect(aiQuickActionsStore.availableQuickActions).toBeNull();
     });
 
     it("should handle fetch error gracefully", async () => {
-      const { isAuthenticatedRef, aiQuickActionsStore } = setupStore();
+      const { aiProviderStore, aiQuickActionsStore } = setupStore();
 
       mockedAPI.kai.listQuickActions.mockRejectedValue(
         new Error("Network error"),
       );
 
       // trigger auth watcher
-      isAuthenticatedRef.value = true;
+      aiProviderStore.isAiProviderConnected = true;
       await nextTick();
 
       // Should set availableQuickActions to empty array on error (not null)
@@ -152,10 +143,10 @@ describe("aiQuickActions store", () => {
     });
 
     it("should not fetch when no active project", async () => {
-      const { isAuthenticatedRef } = setupStore({ projectId: "" });
+      const { aiProviderStore } = setupStore({ projectId: "" });
 
       // trigger auth watcher
-      isAuthenticatedRef.value = true;
+      aiProviderStore.isAiProviderConnected = true;
       await nextTick();
 
       expect(mockedAPI.kai.listQuickActions).not.toHaveBeenCalled();
@@ -319,14 +310,14 @@ describe("aiQuickActions store", () => {
     });
 
     it("should return true when action is available and not processing", async () => {
-      const { aiQuickActionsStore, isAuthenticatedRef } = setupStore({
+      const { aiQuickActionsStore, aiProviderStore } = setupStore({
         isKaiEnabled: true,
         isAuthenticated: false,
         availableQuickActions: [QuickActionId.GenerateAnnotation],
       });
 
       // Trigger fetch by authenticating
-      isAuthenticatedRef.value = true;
+      aiProviderStore.isAiProviderConnected = true;
       await nextTick();
 
       const result = aiQuickActionsStore.isQuickActionAvailable(
@@ -337,14 +328,14 @@ describe("aiQuickActions store", () => {
     });
 
     it("should return false when action is not in available actions list", async () => {
-      const { aiQuickActionsStore, isAuthenticatedRef } = setupStore({
+      const { aiQuickActionsStore, aiProviderStore } = setupStore({
         isKaiEnabled: true,
         isAuthenticated: false,
         availableQuickActions: [],
       });
 
       // Trigger fetch by authenticating
-      isAuthenticatedRef.value = true;
+      aiProviderStore.isAiProviderConnected = true;
       await nextTick();
 
       const result = aiQuickActionsStore.isQuickActionAvailable(

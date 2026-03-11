@@ -12,12 +12,6 @@ import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
 import { MessageSeparator, useChat } from "../useChat";
 
-vi.mock("@/components/kai/useKaiServer.ts", () => ({
-  useKaiServer: vi.fn().mockImplementation(() => ({
-    uiStrings: { welcomeMessages: { qa: "welcome message" } },
-  })),
-}));
-
 describe("useChat", () => {
   beforeAll(() => {
     vi.useFakeTimers();
@@ -46,6 +40,10 @@ describe("useChat", () => {
     const mockedStores = mockStores();
     mockedStores.aiAssistantStore.build = { ...emptyConversationState };
     mockedStores.aiAssistantStore.qa = { ...emptyConversationState, messages };
+
+    Object.assign(mockedStores.aiProviderStore.uiStrings, {
+      welcomeMessages: { qa: "welcome message" },
+    });
 
     return {
       ...mountComposable({

@@ -3,16 +3,13 @@ import { defineComponent, nextTick, ref } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useHubAuth } from "@/components/kai/useHubAuth";
+import * as kaiUtils from "@/components/kai/utils";
 import type { AiAssistantBuildEventPayload } from "@/store/ai/types";
 import { mockStores } from "@/test/utils/mockStores";
 import { useQuickBuild } from "../useQuickBuild";
 
-vi.mock("@/components/kai/useHubAuth", () => ({
-  useHubAuth: vi.fn().mockReturnValue({
-    isAuthError: vi.fn().mockReturnValue(false),
-    disconnectHub: vi.fn(),
-  }),
+vi.mock("@/components/kai/utils", () => ({
+  isAuthError: vi.fn().mockReturnValue(false),
 }));
 
 // useChat is tested separately; mock it here for isolation
@@ -31,8 +28,6 @@ vi.mock("@/components/kai/chat/useChat", () => ({
     pendingInquiryTraces: ref([]),
   })),
 }));
-
-type HubAuth = ReturnType<typeof useHubAuth>;
 
 const createBuildPayload = (
   overrides: Partial<AiAssistantBuildEventPayload> = {},
@@ -77,10 +72,7 @@ describe("useQuickBuild", () => {
     mockStatusUpdate.value = null;
     mockLastAiMessage.value = null;
 
-    vi.mocked(useHubAuth).mockReturnValue({
-      isAuthError: vi.fn().mockReturnValue(false),
-      disconnectHub: vi.fn(),
-    } as unknown as HubAuth);
+    vi.mocked(kaiUtils.isAuthError).mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -228,13 +220,8 @@ describe("useQuickBuild", () => {
       expect(vm.errorMessage).toBe("Something went wrong");
     });
 
-    it("shows a toast and calls disconnectHub on an auth error", async () => {
-      const disconnectHub = vi.fn();
-      const isAuthError = vi.fn().mockReturnValue(true);
-      vi.mocked(useHubAuth).mockReturnValue({
-        isAuthError,
-        disconnectHub,
-      } as unknown as HubAuth);
+    it("shows a toast and calls disconnectAiProvider on an auth error", async () => {
+      vi.mocked(kaiUtils.isAuthError).mockReturnValue(true);
 
       const { vm, mockedStores } = doMount();
 
@@ -245,7 +232,9 @@ describe("useQuickBuild", () => {
       await vm.sendMessage({ message: "build" });
       await flushPromises();
 
-      expect(disconnectHub).toHaveBeenCalledOnce();
+      expect(
+        mockedStores.aiProviderStore.disconnectAiProvider,
+      ).toHaveBeenCalledOnce();
       // errorMessage should NOT be set — the toast handles user feedback
       expect(vm.errorMessage).toBe("");
     });

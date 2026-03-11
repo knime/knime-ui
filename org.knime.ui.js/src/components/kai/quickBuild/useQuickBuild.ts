@@ -3,10 +3,11 @@ import { type Ref, computed, onBeforeMount, ref, watch } from "vue";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { getToastPresets } from "@/services/toastPresets";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 import type { AiAssistantBuildEventPayload } from "@/store/ai/types";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useChat } from "../chat/useChat";
-import { useHubAuth } from "../useHubAuth";
+import { isAuthError } from "../utils";
 
 export const useQuickBuild = ({
   nodeId,
@@ -25,7 +26,7 @@ export const useQuickBuild = ({
   const aiAssistantStore = useAIAssistantStore();
   const { makeAiRequest, fetchUsage } = aiAssistantStore;
 
-  const { isAuthError, disconnectHub } = useHubAuth();
+  const { disconnectAiProvider } = useAiProviderStore();
 
   const { toastPresets } = getToastPresets();
 
@@ -82,7 +83,7 @@ export const useQuickBuild = ({
         toastPresets.connectivity.hubSessionExpired();
 
         // mark the provider as disconnected to trigger the Login Panel
-        disconnectHub();
+        disconnectAiProvider();
       } else {
         errorMessage.value = error.message;
       }

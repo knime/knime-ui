@@ -21,7 +21,7 @@ describe("aiSettings store", () => {
     hubID: string,
     username: string,
   ) => {
-    stores.aiAssistantStore.hubID = hubID;
+    stores.aiProviderStore.aiProviderId = hubID;
     stores.spaceProvidersStore.spaceProviders = {
       ...stores.spaceProvidersStore.spaceProviders,
       [hubID]: createSpaceProvider({ id: hubID, username }),
