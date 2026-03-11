@@ -169,6 +169,7 @@ export const useContextualSpaceExplorerActions = (
       .append([
         ...optional(
           !isMultipleSelectionActive &&
+            selectedItemIds.value.length === 1 &&
             isBrowser() &&
             isHub.value &&
             isWorkflowOrComponentSelected,

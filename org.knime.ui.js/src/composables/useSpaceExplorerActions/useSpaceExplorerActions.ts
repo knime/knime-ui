@@ -38,6 +38,7 @@ import { useMovingItems } from "@/components/spaces/useMovingItems";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { getToastsProvider } from "@/plugins/toasts";
 import { getToastPresets } from "@/services/toastPresets";
+import { useHostContextStore } from "@/store/application/hostContext";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
@@ -66,6 +67,7 @@ export const useSpaceExplorerActions = (
   const { toastPresets } = getToastPresets();
   const $router = useRouter();
   const { onDuplicateItems } = useMovingItems({ projectId });
+  const { navigateToExternalUrl } = useHostContextStore();
 
   const { selectionContainsFile, isLoadingContent } = storeToRefs(
     useSpaceOperationsStore(),
@@ -377,10 +379,6 @@ export const useSpaceExplorerActions = (
       ({
         text: "Show details",
         icon: LinkExternal,
-        disabled: isSelectionEmpty.value || isSelectionMultiple.value,
-        title: isSelectionEmpty.value
-          ? "Select one item to open the link."
-          : undefined,
         metadata: {
           id: "openHubLink",
           handler: () => {
@@ -394,7 +392,10 @@ export const useSpaceExplorerActions = (
               return;
             }
 
-            window.open(link, "_blank");
+            navigateToExternalUrl({
+              url: link,
+              openInNewTab: true,
+            });
           },
         },
       }) satisfies MenuItemWithHandler,

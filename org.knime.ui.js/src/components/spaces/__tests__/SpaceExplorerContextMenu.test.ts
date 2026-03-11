@@ -391,8 +391,6 @@ describe("SpaceExplorerContextMenu.vue", () => {
     });
 
     it("opens /a/ link when clicking 'Show details'", async () => {
-      const open = vi.spyOn(window, "open").mockImplementation(() => null);
-
       const { wrapper, mockedStores } = doMount({
         props: {
           projectId: "someHubProjectId",
@@ -442,7 +440,58 @@ describe("SpaceExplorerContextMenu.vue", () => {
       menuItems.vm.$emit("item-click", null, openLink);
       await flushPromises();
 
-      expect(open).toHaveBeenCalledWith("https://knime.com/hub/a/wf-id", "_blank");
+      expect(mockedStores.hostContextStore.navigateToExternalUrl).toHaveBeenCalledWith(
+        {
+          url: "https://knime.com/hub/a/wf-id",
+          openInNewTab: true,
+        },
+      );
+    });
+
+    it("hides 'Show details' when selection is empty", async () => {
+      const { wrapper, mockedStores } = doMount({
+        props: {
+          projectId: "someHubProjectId",
+          selectedItemIds: [],
+          isMultipleSelectionActive: false,
+          anchor: {
+            item: {
+              name: "workflow-1",
+              isOpen: false,
+              meta: {
+                type: SpaceItem.TypeEnum.Workflow,
+              },
+            } as any,
+            index: 0,
+            element: document.createElement("div"),
+            openedBy: "mouse",
+          },
+        },
+        spaceProviders: {
+          hub1: createSpaceProvider({
+            ...startSpaceProviders.hub1,
+            connected: true,
+            id: "hub1",
+            hostname: "https://api.knime.com/hub",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          }),
+        },
+      });
+
+      mockedStores.spaceCachingStore.setProjectPath({
+        projectId: "someHubProjectId",
+        value: {
+          spaceId: "space1",
+          spaceProviderId: "hub1",
+          itemId: "root",
+        },
+      });
+
+      await flushPromises();
+
+      const menuItems = wrapper.findComponent(MenuItems).props("items");
+      const texts = menuItems.map((item) => item.text);
+      expect(texts).not.toContain("Show details");
     });
   });
 });
