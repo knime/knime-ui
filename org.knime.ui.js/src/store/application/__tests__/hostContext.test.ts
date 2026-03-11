@@ -98,16 +98,16 @@ describe("hostContext store", () => {
         openInNewTab: true,
       });
 
-      expect(embeddingSDK.guest.dispatchGenericEventToHost).toHaveBeenCalledWith(
-        {
-          kind: "hostNavigationRequest",
-          payload: {
-            intent: "navigate",
-            href: "https://knime.com/hub/a/wf-id",
-            openIn: "_blank",
-          },
+      expect(
+        embeddingSDK.guest.dispatchGenericEventToHost,
+      ).toHaveBeenCalledWith({
+        kind: "hostNavigationRequest",
+        payload: {
+          intent: "navigate",
+          href: "https://knime.com/hub/a/wf-id",
+          openIn: "_blank",
         },
-      );
+      });
     });
   });
 

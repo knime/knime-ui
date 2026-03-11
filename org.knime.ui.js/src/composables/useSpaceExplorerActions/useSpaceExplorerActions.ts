@@ -374,11 +374,7 @@ export const useSpaceExplorerActions = (
       }) satisfies MenuItemWithHandler,
   );
 
-  const navigateToHubWorkflowPage = ({
-    itemId,
-  }: {
-    itemId: string;
-  }) => {
+  const navigateToHubWorkflowPage = ({ itemId }: { itemId: string }) => {
     const link = buildHubAppHomeShortLink({
       projectId: projectId.value,
       itemId,

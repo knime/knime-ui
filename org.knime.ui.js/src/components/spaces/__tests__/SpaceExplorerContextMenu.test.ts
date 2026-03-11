@@ -440,12 +440,12 @@ describe("SpaceExplorerContextMenu.vue", () => {
       menuItems.vm.$emit("item-click", null, openLink);
       await flushPromises();
 
-      expect(mockedStores.hostContextStore.navigateToExternalUrl).toHaveBeenCalledWith(
-        {
-          url: "https://knime.com/hub/a/wf-id",
-          openInNewTab: true,
-        },
-      );
+      expect(
+        mockedStores.hostContextStore.navigateToExternalUrl,
+      ).toHaveBeenCalledWith({
+        url: "https://knime.com/hub/a/wf-id",
+        openInNewTab: true,
+      });
     });
 
     it("hides 'Show details' when selection is empty", async () => {

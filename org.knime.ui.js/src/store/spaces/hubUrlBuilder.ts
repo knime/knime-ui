@@ -26,7 +26,9 @@ const buildHubUrl = ({
   }
 
   const separator = baseUrl.pathname.endsWith("/") ? "" : "/";
-  return `${baseUrl.origin}${baseUrl.pathname}${separator}${pathParts.join("/")}`;
+  return `${baseUrl.origin}${baseUrl.pathname}${separator}${pathParts.join(
+    "/",
+  )}`;
 };
 
 export const buildHubAppHomeShortLink = ({
