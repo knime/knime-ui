@@ -5467,12 +5467,6 @@ export interface SyncStateError {
     canCopy: boolean;
     /**
      *
-     * @type {number}
-     * @memberof SyncStateError
-     */
-    status?: number;
-    /**
-     *
      * @type {string}
      * @memberof SyncStateError
      */
