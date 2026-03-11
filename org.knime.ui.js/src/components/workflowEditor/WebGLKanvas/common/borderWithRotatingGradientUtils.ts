@@ -173,7 +173,7 @@ const computeRoundedPerimeter = (
  * Maps a perimeter fraction t (0–1) to an (x, y) canvas coordinate on a
  * sharp rectangle's edge. t = 0 is top-centre, increasing clockwise.
  *
- * A point can be on any of the four legs: top, right, buttom, left.
+ * A point can be on any of the four legs: top, right, bottom, left.
  */
 const getSharpPerimeterPoint = (
   t: number,
