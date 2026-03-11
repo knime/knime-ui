@@ -2,11 +2,11 @@
 const parseHubBaseUrl = (providerHostname: string) => {
   try {
     const url = new URL(providerHostname);
-    if (!url.hostname.startsWith("api.")) {
+    const apiSubdomain = "api.";
+    if (!url.hostname.startsWith(apiSubdomain)) {
       return null;
     }
-
-    url.hostname = url.hostname.substring(4);
+    url.hostname = url.hostname.substring(apiSubdomain.length);
     return url;
   } catch {
     return null;
@@ -25,9 +25,8 @@ const buildHubUrl = ({
     return null;
   }
 
-  // Normalize optional base path segments and avoid duplicate slashes
-  const parts = baseUrl.pathname.split("/").filter(Boolean);
-  return `${baseUrl.origin}/${parts.concat(pathParts).join("/")}`;
+  const separator = baseUrl.pathname.endsWith("/") ? "" : "/";
+  return `${baseUrl.origin}${baseUrl.pathname}${separator}${pathParts.join("/")}`;
 };
 
 export const buildHubAppHomeShortLink = ({

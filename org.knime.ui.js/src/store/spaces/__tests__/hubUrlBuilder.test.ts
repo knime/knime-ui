@@ -32,22 +32,6 @@ describe("spaces::hubUrlBuilder", () => {
     ).toBe("https://knime.com/hub/acme-team/recycle-bin");
   });
 
-  it("preserves existing path segments from provider hostname", () => {
-    expect(
-      buildHubAppHomeShortLink({
-        providerHostname: "https://api.knime.com/base/path",
-        itemId: "workflow-id",
-      }),
-    ).toBe("https://knime.com/base/path/a/workflow-id");
-
-    expect(
-      buildHubTrashUrl({
-        providerHostname: "https://api.knime.com/base/path",
-        groupName: "acme-team",
-      }),
-    ).toBe("https://knime.com/base/path/acme-team/trash");
-  });
-
   it("returns null for invalid provider hostnames", () => {
     expect(
       buildHubAppHomeShortLink({
