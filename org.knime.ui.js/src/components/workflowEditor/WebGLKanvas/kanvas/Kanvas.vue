@@ -161,6 +161,9 @@ watch(
   },
   { immediate: true },
 );
+
+// TODO: NXT-4597 use `["webgl", "canvas"]` as soon as its supported
+const preference = "webgl";
 </script>
 
 <template>
@@ -169,7 +172,7 @@ watch(
     :background-color="0x000000"
     :background-alpha="0"
     :width="containerSize.width"
-    preference="webgl"
+    :preference
     :height="containerSize.height"
     :resolution="pixelRatio"
     :auto-density="true"
