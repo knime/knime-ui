@@ -5,8 +5,6 @@ import { RenderLayer } from "pixi.js";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { workflowDomain } from "@/lib/workflow-domain";
-import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
-import { QuickActionId } from "@/store/ai/types";
 import {
   type CanvasLayerNames,
   useWebGLCanvasStore,
@@ -69,13 +67,6 @@ const annotationControlsLayerContainer = useTemplateRef<ContainerInst>(
   "annotationControlsLayerContainer",
 );
 
-const aiQuickActionsStore = useAiQuickActionsStore();
-const effectiveSkeletonBounds = computed(
-  () =>
-    aiQuickActionsStore.processingActions[QuickActionId.GenerateAnnotation]
-      ?.bounds ?? null,
-);
-
 const componentPlaceholders = computed(
   () => activeWorkflow.value?.componentPlaceholders ?? [],
 );
@@ -135,10 +126,7 @@ const annotations = computed(
       />
     </Container>
 
-    <AISkeletonAnnotation
-      v-if="effectiveSkeletonBounds"
-      :bounds="effectiveSkeletonBounds"
-    />
+    <AISkeletonAnnotation />
 
     <MetanodePortBars
       v-if="

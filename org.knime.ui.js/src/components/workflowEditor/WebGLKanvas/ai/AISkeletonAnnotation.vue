@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { Bounds } from "@/api/gateway-api/generated-api";
+import { computed } from "vue";
+
+import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
+import { QuickActionId } from "@/store/ai/types";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
@@ -7,35 +10,38 @@ import BorderWithRotatingGradient from "../common/BorderWithRotatingGradient.vue
 import {
   type GlowConfig,
   type GradientStop,
-  parseHexColor,
-} from "../common/borderWithRotatingGradientUtils";
+} from "../common/useRotatingGradientBorder";
 
-type Props = {
-  bounds: Bounds;
-};
-
-const props = defineProps<Props>();
+const aiQuickActionsStore = useAiQuickActionsStore();
+const bounds = computed(
+  () =>
+    aiQuickActionsStore.processingActions[QuickActionId.GenerateAnnotation]
+      ?.bounds ?? null,
+);
 
 // Border with rotating gradient and teal glow
-const borderStrokeWidth = $shapes.annotationBorderWidth;
-
-const { Cyan, Yellow, Teal } = $colors.aiGradient;
+const aiGradientColors = {
+  Cyan: "hsl(185.81, 49.21%, 87.65%)", // #D0ECEF
+  Yellow: "hsl(51.23, 100%, 49.61%)", // #FDD800
+  Teal: "hsl(193.08, 60.18%, 43.33%)", // #2C94B1
+};
+const { Cyan, Yellow, Teal } = aiGradientColors;
 const gradient: GradientStop[] = [
-  { position: 0.04, color: parseHexColor(Cyan) },
-  { position: 0.25, color: parseHexColor(Yellow) },
-  { position: 0.47, color: parseHexColor(Teal) },
-  // mirror
-  { position: 0.53, color: parseHexColor(Teal) },
-  { position: 0.75, color: parseHexColor(Yellow) },
-  { position: 0.96, color: parseHexColor(Cyan) },
+  { position: 0, color: Cyan },
+  { position: 0.25, color: Yellow },
+  { position: 0.47, color: Teal },
+  { position: 0.75, color: Yellow },
+  { position: 1, color: Cyan },
 ];
 
+const borderStrokeWidth = $shapes.annotationBorderWidth;
 const glowConfig: GlowConfig = {
   gradientStopIndex: 2, // teal
   softness: 60,
   spread: 0.6,
 };
 const secondsPerRotation = 1.2;
+const borderRadius = 0;
 
 // Text skeletons. SkeletonItem from @knime/components doesn't have a WebGL equivalent,
 // so we simply draw these as rounded rectangles here directly.
@@ -53,7 +59,11 @@ const skeletonHeadingRelativeWidth = 0.6;
 const skeletonBodyRelativeWidth = 0.9;
 
 const renderSkeletonBars = (graphics: GraphicsInst) => {
-  const totalWidth = props.bounds.width - 2 * skeletonPadding;
+  if (!bounds.value) {
+    return;
+  }
+
+  const totalWidth = bounds.value.width - 2 * skeletonPadding;
 
   graphics.clear();
 
@@ -80,7 +90,12 @@ const renderSkeletonBars = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container label="AISkeletonAnnotation" :x="bounds.x" :y="bounds.y">
+  <Container
+    v-if="bounds"
+    label="AISkeletonAnnotation"
+    :x="bounds.x"
+    :y="bounds.y"
+  >
     <BorderWithRotatingGradient
       :width="bounds.width"
       :height="bounds.height"
@@ -88,6 +103,7 @@ const renderSkeletonBars = (graphics: GraphicsInst) => {
       :gradient="gradient"
       :glow-config="glowConfig"
       :seconds-per-rotation="secondsPerRotation"
+      :border-radius="borderRadius"
     />
 
     <Graphics

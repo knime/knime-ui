@@ -5,10 +5,7 @@ import { BlurFilter } from "pixi.js";
 
 import type { GraphicsInst } from "@/vue3-pixi";
 
-import type {
-  GlowConfig,
-  GradientStop,
-} from "./borderWithRotatingGradientUtils";
+import type { GlowConfig, GradientStop } from "./useRotatingGradientBorder";
 import { useRotatingGradientBorder } from "./useRotatingGradientBorder";
 
 type Props = {
@@ -16,15 +13,13 @@ type Props = {
   height: number;
   strokeWidth: number;
   gradient: GradientStop[];
+  secondsPerRotation: number;
+  borderRadius: number;
   glowConfig?: GlowConfig;
-  secondsPerRotation?: number;
-  borderRadius?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   glowConfig: undefined,
-  secondsPerRotation: 1.5,
-  borderRadius: 0,
 });
 
 const borderRef = useTemplateRef<GraphicsInst>("borderRef");
@@ -67,7 +62,7 @@ useRotatingGradientBorder({
         ref="glowCutoutRef"
         label="GlowCutout"
         event-mode="none"
-        :blend-mode="'erase'"
+        blend-mode="erase"
       />
     </Container>
   </Container>
