@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-import type { InquiryTrace } from "@/store/ai/types";
+import type { InquiryTrace, KaiUsageState } from "@/store/ai/types";
 import ChatControls from "../chat/ChatControls.vue";
 import Message from "../chat/message/Message.vue";
 
@@ -9,6 +9,7 @@ type Props = {
   interactionId: string;
   inquiryTraces?: InquiryTrace[];
   lastUserMessage?: string;
+  usage: KaiUsageState;
 };
 
 defineProps<Props>();
@@ -30,6 +31,7 @@ defineEmits<{
     />
     <ChatControls
       :last-user-message="lastUserMessage"
+      :usage="usage"
       placeholder="Send a follow-up..."
       @send-message="$emit('sendMessage', $event)"
     />

@@ -151,6 +151,7 @@ watch(menuState, (menuState) => {
         :interaction-id="result!.interactionId"
         :inquiry-traces="lastMessageInquiryTraces"
         :last-user-message="lastUserMessage"
+        :usage="usage"
         @close="quickActionContext.closeMenu"
         @send-message="onInputMessage"
       />
