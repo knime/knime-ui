@@ -44,6 +44,27 @@ export const useHostContextStore = defineStore("hostContext", () => {
     });
   };
 
+  const navigateToExternalUrl = ({
+    url,
+    openInNewTab,
+  }: {
+    url: string;
+    openInNewTab: boolean;
+  }) => {
+    if (isDesktop()) {
+      return;
+    }
+
+    embeddingSDK.guest.dispatchGenericEventToHost({
+      kind: "hostNavigationRequest",
+      payload: {
+        intent: "navigate",
+        href: url,
+        openIn: openInNewTab ? "_blank" : "_parent",
+      },
+    });
+  };
+
   type ActivityState = "active" | "idle" | "background-task";
   const currentIdleState = ref<ActivityState>("active");
 
@@ -146,5 +167,10 @@ export const useHostContextStore = defineStore("hostContext", () => {
     }, VISUAL_DELAY_MS);
   };
 
-  return { navigateHome, setupIdleTracking, scheduleSessionResume };
+  return {
+    navigateHome,
+    navigateToExternalUrl,
+    setupIdleTracking,
+    scheduleSessionResume,
+  };
 });

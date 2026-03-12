@@ -74,6 +74,43 @@ describe("hostContext store", () => {
     });
   });
 
+  describe("navigateToExternalUrl", () => {
+    it("does nothing on desktop", () => {
+      mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+      const { hostContextStore } = loadStore();
+
+      hostContextStore.navigateToExternalUrl({
+        url: "https://knime.com/hub/a/wf-id",
+        openInNewTab: true,
+      });
+
+      expect(
+        embeddingSDK.guest.dispatchGenericEventToHost,
+      ).not.toHaveBeenCalled();
+    });
+
+    it("dispatches navigation event in browser", () => {
+      mockEnvironment("BROWSER", { isBrowser, isDesktop });
+      const { hostContextStore } = loadStore();
+
+      hostContextStore.navigateToExternalUrl({
+        url: "https://knime.com/hub/a/wf-id",
+        openInNewTab: true,
+      });
+
+      expect(
+        embeddingSDK.guest.dispatchGenericEventToHost,
+      ).toHaveBeenCalledWith({
+        kind: "hostNavigationRequest",
+        payload: {
+          intent: "navigate",
+          href: "https://knime.com/hub/a/wf-id",
+          openIn: "_blank",
+        },
+      });
+    });
+  });
+
   describe("setupIdleTracking", () => {
     afterEach(() => {
       idle.value = false;

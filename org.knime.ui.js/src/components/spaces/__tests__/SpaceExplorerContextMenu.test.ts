@@ -5,6 +5,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { MenuItems } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { isBrowser, isDesktop } from "@/environment";
 import {
@@ -109,7 +110,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
             name: "item-name",
             isOpen: false,
             meta: {
-              type: "workflows",
+              type: SpaceItem.TypeEnum.Workflow,
             },
           },
           index: 0,
@@ -285,6 +286,212 @@ describe("SpaceExplorerContextMenu.vue", () => {
       const menuItems = wrapper.findComponent(MenuItems).props("items");
       const texts = menuItems.map((item) => item.text);
       expect(texts).not.toContain("Create new workflow");
+    });
+
+    it("shows 'Show details' for Hub workflow and component items", async () => {
+      for (const type of [
+        SpaceItem.TypeEnum.Workflow,
+        SpaceItem.TypeEnum.Component,
+      ]) {
+        const { wrapper, mockedStores } = doMount({
+          props: {
+            projectId: "someHubProjectId",
+            selectedItemIds: ["wf-id"],
+            isMultipleSelectionActive: false,
+            anchor: {
+              item: {
+                name: "item-1",
+                isOpen: false,
+                meta: {
+                  type,
+                },
+              } as any,
+              index: 0,
+              element: document.createElement("div"),
+              openedBy: "mouse",
+            },
+          },
+          spaceProviders: {
+            hub1: createSpaceProvider({
+              ...startSpaceProviders.hub1,
+              connected: true,
+              id: "hub1",
+              hostname: "https://api.knime.com/hub",
+              type: SpaceProviderNS.TypeEnum.HUB,
+            }),
+          },
+        });
+
+        mockedStores.spaceCachingStore.setProjectPath({
+          projectId: "someHubProjectId",
+          value: {
+            spaceId: "space1",
+            spaceProviderId: "hub1",
+            itemId: "root",
+          },
+        });
+
+        await flushPromises();
+
+        const menuItems = wrapper.findComponent(MenuItems).props("items");
+        const texts = menuItems.map((item) => item.text);
+        expect(texts).toContain("Show details");
+      }
+    });
+
+    it("hides 'Show details' for folders and data files", async () => {
+      for (const type of [
+        SpaceItem.TypeEnum.WorkflowGroup,
+        SpaceItem.TypeEnum.Data,
+      ]) {
+        const { wrapper, mockedStores } = doMount({
+          props: {
+            projectId: "someHubProjectId",
+            selectedItemIds: ["wf-id"],
+            isMultipleSelectionActive: false,
+            anchor: {
+              item: {
+                name: "item-1",
+                isOpen: false,
+                meta: {
+                  type,
+                },
+              } as any,
+              index: 0,
+              element: document.createElement("div"),
+              openedBy: "mouse",
+            },
+          },
+          spaceProviders: {
+            hub1: createSpaceProvider({
+              ...startSpaceProviders.hub1,
+              connected: true,
+              id: "hub1",
+              hostname: "https://api.knime.com/hub",
+              type: SpaceProviderNS.TypeEnum.HUB,
+            }),
+          },
+        });
+
+        mockedStores.spaceCachingStore.setProjectPath({
+          projectId: "someHubProjectId",
+          value: {
+            spaceId: "space1",
+            spaceProviderId: "hub1",
+            itemId: "root",
+          },
+        });
+
+        await flushPromises();
+
+        const menuItems = wrapper.findComponent(MenuItems).props("items");
+        const texts = menuItems.map((item) => item.text);
+        expect(texts).not.toContain("Show details");
+      }
+    });
+
+    it("opens /a/ link when clicking 'Show details'", async () => {
+      const { wrapper, mockedStores } = doMount({
+        props: {
+          projectId: "someHubProjectId",
+          selectedItemIds: ["*wf-id"],
+          isMultipleSelectionActive: false,
+          anchor: {
+            item: {
+              name: "workflow-1",
+              isOpen: false,
+              meta: {
+                type: SpaceItem.TypeEnum.Workflow,
+              },
+            } as any,
+            index: 0,
+            element: document.createElement("div"),
+            openedBy: "mouse",
+          },
+        },
+        spaceProviders: {
+          hub1: createSpaceProvider({
+            ...startSpaceProviders.hub1,
+            connected: true,
+            id: "hub1",
+            hostname: "https://api.knime.com/hub",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          }),
+        },
+      });
+
+      mockedStores.spaceCachingStore.setProjectPath({
+        projectId: "someHubProjectId",
+        value: {
+          spaceId: "space1",
+          spaceProviderId: "hub1",
+          itemId: "root",
+        },
+      });
+
+      await flushPromises();
+
+      const menuItems = wrapper.findComponent(MenuItems);
+      const items = menuItems.props("items");
+      const openLink = items.find(
+        (item) => (item as MenuItemWithHandler).metadata?.id === "openHubLink",
+      ) as MenuItemWithHandler;
+
+      menuItems.vm.$emit("item-click", null, openLink);
+      await flushPromises();
+
+      expect(
+        mockedStores.hostContextStore.navigateToExternalUrl,
+      ).toHaveBeenCalledWith({
+        url: "https://knime.com/hub/a/wf-id",
+        openInNewTab: true,
+      });
+    });
+
+    it("hides 'Show details' when selection is empty", async () => {
+      const { wrapper, mockedStores } = doMount({
+        props: {
+          projectId: "someHubProjectId",
+          selectedItemIds: [],
+          isMultipleSelectionActive: false,
+          anchor: {
+            item: {
+              name: "workflow-1",
+              isOpen: false,
+              meta: {
+                type: SpaceItem.TypeEnum.Workflow,
+              },
+            } as any,
+            index: 0,
+            element: document.createElement("div"),
+            openedBy: "mouse",
+          },
+        },
+        spaceProviders: {
+          hub1: createSpaceProvider({
+            ...startSpaceProviders.hub1,
+            connected: true,
+            id: "hub1",
+            hostname: "https://api.knime.com/hub",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          }),
+        },
+      });
+
+      mockedStores.spaceCachingStore.setProjectPath({
+        projectId: "someHubProjectId",
+        value: {
+          spaceId: "space1",
+          spaceProviderId: "hub1",
+          itemId: "root",
+        },
+      });
+
+      await flushPromises();
+
+      const menuItems = wrapper.findComponent(MenuItems).props("items");
+      const texts = menuItems.map((item) => item.text);
+      expect(texts).not.toContain("Show details");
     });
   });
 });

@@ -38,6 +38,7 @@ import { useMovingItems } from "@/components/spaces/useMovingItems";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { getToastsProvider } from "@/plugins/toasts";
 import { getToastPresets } from "@/services/toastPresets";
+import { useHostContextStore } from "@/store/application/hostContext";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { useSpaceDownloadsStore } from "@/store/spaces/downloads";
@@ -66,6 +67,7 @@ export const useSpaceExplorerActions = (
   const { toastPresets } = getToastPresets();
   const $router = useRouter();
   const { onDuplicateItems } = useMovingItems({ projectId });
+  const { navigateToExternalUrl } = useHostContextStore();
 
   const { selectionContainsFile, isLoadingContent } = storeToRefs(
     useSpaceOperationsStore(),
@@ -83,6 +85,7 @@ export const useSpaceExplorerActions = (
     moveOrCopyToSpace,
     openInBrowser,
     openAPIDefinition,
+    buildHubAppHomeShortLink,
   } = useSpacesStore();
   const { moveToHubFromLocalProvider } = useSpaceUploadsStore();
   const { getWorkflowGroupContent } = useSpaceCachingStore();
@@ -371,6 +374,38 @@ export const useSpaceExplorerActions = (
       }) satisfies MenuItemWithHandler,
   );
 
+  const navigateToHubWorkflowPage = ({ itemId }: { itemId: string }) => {
+    const link = buildHubAppHomeShortLink({
+      projectId: projectId.value,
+      itemId,
+    });
+
+    if (!link) {
+      return;
+    }
+
+    navigateToExternalUrl({
+      url: link,
+      openInNewTab: true,
+    });
+  };
+
+  const openHubLinkAction = computed(
+    () =>
+      ({
+        text: "Show details",
+        icon: LinkExternal,
+        metadata: {
+          id: "openHubLink",
+          handler: () => {
+            navigateToHubWorkflowPage({
+              itemId: selectedItemIds.value[0],
+            });
+          },
+        },
+      }) satisfies MenuItemWithHandler,
+  );
+
   const uploadToHubInBrowser = computed(
     () =>
       ({
@@ -549,6 +584,7 @@ export const useSpaceExplorerActions = (
     downloadToLocalSpace,
     moveToSpace,
     copyToSpace,
+    openHubLinkAction,
     uploadToHubFromLocalSpace,
     openInBrowserAction,
     openAPIDefinitionAction,

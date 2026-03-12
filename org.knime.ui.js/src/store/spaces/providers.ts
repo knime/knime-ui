@@ -17,6 +17,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { isLocalProvider } from "@/store/spaces/util";
 
 import { useSpaceCachingStore } from "./caching";
+import { buildHubRecycleBinUrl, buildHubTrashUrl } from "./hubUrlBuilder";
 
 const { KNIME_HUB_HOME_HOSTNAME } = knimeExternalUrls;
 
@@ -272,43 +273,32 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
         if (!provider?.hostname) {
           return null;
         }
+        const trashUrl = buildHubTrashUrl({
+          providerHostname: provider.hostname,
+          groupName,
+        });
+        if (!trashUrl) {
+          consola.warn("Could not construct trash URL");
+          return null;
+        }
+
         try {
-          const url = new URL(provider.hostname);
-          if (url.hostname.startsWith("api.")) {
-            url.hostname = url.hostname.substring(4);
-          } else {
-            consola.error(
-              "Could not construct trash URL: Unexpected provider hostname.",
-            );
+          const response = await fetch(trashUrl, { method: "HEAD" });
+          if (response.ok) {
+            return trashUrl;
+          }
+          // eslint-disable-next-line no-magic-numbers
+          if (response.status >= 400) {
             return null;
           }
 
-          const pathParts = url.pathname.split("/").filter((p) => p);
-          pathParts.push(groupName);
-
-          const partsToUrlString = (parts: string[]) => `/${parts.join("/")}`;
-
-          try {
-            const trashUrl = `${url.origin}${partsToUrlString(
-              pathParts.concat("trash"),
-            )}`;
-            const response = await fetch(trashUrl, { method: "HEAD" });
-            if (response.ok) {
-              return trashUrl;
-            } else if (response.status >= 400) {
-              return null;
-            } else {
-              // fallback to old URL for backwards compatibility with older hubs
-              return `${url.origin}${partsToUrlString(
-                pathParts.concat("recycle-bin"),
-              )}`;
-            }
-          } catch (error) {
-            consola.error("Could not check trash URL availability", error);
-            return null;
-          }
-        } catch (e) {
-          consola.error("Could not construct trash URL", e);
+          // fallback to old URL for backwards compatibility with older hubs
+          return buildHubRecycleBinUrl({
+            providerHostname: provider.hostname,
+            groupName,
+          });
+        } catch (error) {
+          consola.error("Could not check trash URL availability", error);
           return null;
         }
       };

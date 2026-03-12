@@ -6,6 +6,7 @@ import {
   type FileExplorerItem,
 } from "@knime/components";
 
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 import type { MenuItemWithHandler } from "@/components/common/types";
 import { isBrowser, isDesktop } from "@/environment";
 import { optional } from "@/lib/fp";
@@ -60,6 +61,7 @@ export const useContextualSpaceExplorerActions = (
     downloadFromHubInBrowser,
     moveToSpace,
     copyToSpace,
+    openHubLinkAction,
     uploadToHubFromLocalSpace,
     openInBrowserAction,
     openAPIDefinitionAction,
@@ -96,6 +98,12 @@ export const useContextualSpaceExplorerActions = (
     projectId.value,
     selectedItemIds.value,
   );
+  const selectedItemType = options.anchorItem?.meta?.type as
+    | SpaceItem.TypeEnum
+    | undefined;
+  const isWorkflowOrComponentSelected =
+    selectedItemType === SpaceItem.TypeEnum.Workflow ||
+    selectedItemType === SpaceItem.TypeEnum.Component;
 
   const spaceExplorerActionsItems = computed<MenuItemWithHandler[]>(() => {
     return menuGroupsBuilder<MenuItemWithHandler>({
@@ -159,6 +167,14 @@ export const useContextualSpaceExplorerActions = (
         ),
       ])
       .append([
+        ...optional(
+          !isMultipleSelectionActive &&
+            selectedItemIds.value.length === 1 &&
+            isBrowser() &&
+            isHub.value &&
+            isWorkflowOrComponentSelected,
+          openHubLinkAction.value,
+        ),
         ...optional(
           ((isHub.value && !doesSelectionContainFile) || isServer.value) &&
             isDesktop(),

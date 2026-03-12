@@ -8,7 +8,10 @@ import {
 import { checkOpenWorkflowsBeforeMove } from "@/store/spaces/util";
 
 import { useSpaceCachingStore } from "./caching";
+import { buildHubAppHomeShortLink as buildHubAppHomeShortLinkUrl } from "./hubUrlBuilder";
+import { useSpaceProvidersStore } from "./providers";
 import { useSpaceOperationsStore } from "./spaceOperations";
+import { isHubProvider } from "./util";
 
 const { promptDestination } = useDestinationPicker();
 
@@ -152,6 +155,30 @@ export const useSpacesStore = defineStore("spaces", {
       const { spaceId, spaceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
       API.desktop.openAPIDefinition({ spaceProviderId, spaceId, itemId });
+    },
+
+    buildHubAppHomeShortLink({
+      projectId,
+      itemId,
+    }: {
+      projectId: string;
+      itemId: string;
+    }) {
+      const { spaceProviderId } =
+        useSpaceCachingStore().projectPath[projectId] ?? {};
+      if (!spaceProviderId) {
+        return null;
+      }
+
+      const provider = useSpaceProvidersStore().spaceProviders[spaceProviderId];
+      if (!provider?.hostname || !isHubProvider(provider)) {
+        return null;
+      }
+
+      return buildHubAppHomeShortLinkUrl({
+        providerHostname: provider.hostname,
+        itemId,
+      });
     },
   },
 });
