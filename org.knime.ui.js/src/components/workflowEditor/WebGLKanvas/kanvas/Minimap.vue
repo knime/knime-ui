@@ -158,7 +158,7 @@ const onMinimapPointerdown = (pointerdown: FederatedPointerEvent) => {
   onCameraPointerdown(pointerdown);
 };
 
-const blur = new BlurFilter({ strength: 4 });
+const blur = new BlurFilter({ strength: 4, legacy: true });
 </script>
 
 <template>
