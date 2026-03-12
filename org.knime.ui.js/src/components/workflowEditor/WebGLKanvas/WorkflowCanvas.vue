@@ -44,8 +44,7 @@ const { activeWorkflow, isWorkflowEmpty, isWritable } = storeToRefs(
 const aiQuickActionsStore = useAiQuickActionsStore();
 const canvasStore = useWebGLCanvasStore();
 
-const { containerSize, shouldHideMiniMap, interactionsEnabled } =
-  storeToRefs(canvasStore);
+const { containerSize, interactionsEnabled } = storeToRefs(canvasStore);
 
 const skeletonAnnotationData = computed(
   () =>
@@ -114,7 +113,6 @@ onMounted(() => {
 
 const rootEl = useTemplateRef("rootEl");
 const initResizeObserver = () => {
-  let minimapVisibilityTimeout: number;
   if (!rootEl.value) {
     return;
   }
@@ -129,17 +127,6 @@ const initResizeObserver = () => {
     if (!containerEl) {
       return;
     }
-
-    shouldHideMiniMap.value = true;
-
-    if (minimapVisibilityTimeout) {
-      clearTimeout(minimapVisibilityTimeout);
-    }
-
-    minimapVisibilityTimeout = window.setTimeout(() => {
-      shouldHideMiniMap.value = false;
-      // eslint-disable-next-line no-magic-numbers
-    }, 300);
 
     updateContainerSize();
   });

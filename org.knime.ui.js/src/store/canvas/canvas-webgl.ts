@@ -73,7 +73,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const pixelRatio = ref(1);
   const isPanning = ref(false);
   const isHoldingDownSpace = ref(false);
-  const shouldHideMiniMap = ref(false);
 
   const pixelRatioWithLimits = computed(() => {
     // use lower bound to avoid blurry rendering (happen when having a ratio of 1)
@@ -816,7 +815,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     contentBounds,
 
     // webgl only
-    shouldHideMiniMap,
     canvasAnchor,
     canvasLayers,
     isDebugModeEnabled,

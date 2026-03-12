@@ -2,22 +2,21 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
-import { BlurFilter, type FederatedPointerEvent, type Graphics } from "pixi.js";
+import { type FederatedPointerEvent, type Graphics } from "pixi.js";
+import { Rectangle } from "pixi.js";
 
 import { clamp } from "@/lib/math";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import * as $shapes from "@/style/shapes";
-import { pixiGlobals } from "../common/pixiGlobals";
-import { markPointerEventAsHandled } from "../util/interaction";
 
 import MiniPreview from "./MiniPreview.vue";
 
-const paddingBottom = 6;
-const rightOffset = $shapes.floatingCanvasToolsBottomOffset;
-const bottomOffset =
-  $shapes.floatingCanvasToolsBottomOffset +
-  $shapes.floatingCanvasToolsSize +
-  paddingBottom;
+type Props = {
+  canvas: HTMLCanvasElement;
+  width: number;
+  height: number;
+};
+
+const { canvas, width, height } = defineProps<Props>();
 
 const canvasStore = useWebGLCanvasStore();
 
@@ -26,19 +25,12 @@ const { containerSize, canvasOffset, zoomFactor, maxWorldContentBounds } =
 
 const worldBounds = computed(() => maxWorldContentBounds.value);
 
-const minimapWidth = 200;
-const minimapHeight = minimapWidth / $shapes.canvasMinimapAspectRatio;
-
 const minimapBounds = computed(() => {
-  const { width: containerWidth, height: containerHeight } =
-    containerSize.value;
-
   return {
-    x: containerWidth - minimapWidth - rightOffset,
-    y: containerHeight - minimapHeight - bottomOffset,
-
-    width: minimapWidth,
-    height: minimapHeight,
+    x: 0,
+    y: 0,
+    width,
+    height,
   };
 });
 
@@ -88,8 +80,6 @@ const minimapDeltaToCanvasDelta = (value: number, isXAxis = true) => {
 };
 
 const onCameraPointerdown = (pointerdown: FederatedPointerEvent) => {
-  markPointerEventAsHandled(pointerdown, { initiator: "minimap-pan" });
-
   const isOutOfBounds = (move: PointerEvent) => {
     return (
       move.offsetX < minimapBounds.value.x ||
@@ -99,7 +89,6 @@ const onCameraPointerdown = (pointerdown: FederatedPointerEvent) => {
     );
   };
 
-  const canvas = pixiGlobals.getCanvas();
   canvas.setPointerCapture(pointerdown.pointerId);
 
   let lastPan = {
@@ -157,8 +146,6 @@ const onMinimapPointerdown = (pointerdown: FederatedPointerEvent) => {
   // continue interaction into a camera pan
   onCameraPointerdown(pointerdown);
 };
-
-const blur = new BlurFilter({ strength: 4 });
 </script>
 
 <template>
@@ -167,33 +154,11 @@ const blur = new BlurFilter({ strength: 4 });
     label="Minimap"
     event-mode="static"
     :position="minimapBounds"
+    :hit-area="new Rectangle(0, 0, width, height)"
     @pointerdown.stop="onMinimapPointerdown"
+    @pointerenter.stop
+    @pointerleave.stop
   >
-    <Graphics
-      label="MinimapBackgroundBoxShadow"
-      :filters="[blur]"
-      @render="
-        (graphics) => {
-          graphics
-            .clear()
-            .roundRect(0, 1, minimapBounds.width, minimapBounds.height, 8)
-            .fill($colors.GrayDarkSemi);
-        }
-      "
-    />
-
-    <Graphics
-      label="MinimapBackground"
-      @render="
-        (graphics) => {
-          graphics
-            .clear()
-            .roundRect(0, 0, minimapBounds.width, minimapBounds.height, 8)
-            .fill($colors.White);
-        }
-      "
-    />
-
     <MiniPreview :minimap-transform="minimapTransform" />
 
     <Graphics

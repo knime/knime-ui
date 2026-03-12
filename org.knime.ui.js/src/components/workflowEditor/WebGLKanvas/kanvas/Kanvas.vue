@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import { onUnmounted, ref, useTemplateRef, watch } from "vue";
 import { useDevicePixelRatio } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import {
@@ -14,7 +14,6 @@ import { performanceTracker } from "@/services/performanceTracker";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useSettingsStore } from "@/store/settings";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import { clearIconCache } from "../common/iconCache";
@@ -22,7 +21,6 @@ import { pixiGlobals } from "../common/pixiGlobals";
 import { initE2ETestUtils } from "../util/e2eTest";
 import { isMarkedEvent } from "../util/interaction";
 
-import Minimap from "./Minimap.vue";
 import { useKanvasNodePortHint } from "./useKanvasNodePortHint";
 import { useMouseWheel } from "./useMouseWheel";
 import { useCanvasPanning } from "./usePanning";
@@ -33,7 +31,6 @@ const emit = defineEmits<{
 
 const canvasStore = useWebGLCanvasStore();
 const {
-  shouldHideMiniMap,
   containerSize,
   isDebugModeEnabled: isCanvasDebugEnabled,
   canvasLayers,
@@ -41,10 +38,6 @@ const {
   interactionsEnabled,
   isHoldingDownSpace,
 } = storeToRefs(canvasStore);
-
-const isMinimapVisible = computed(
-  () => useSettingsStore().settings.isMinimapVisible,
-);
 
 const MAIN_CONTAINER_LABEL = "MainContainer";
 const { devMode } = storeToRefs(useApplicationSettingsStore());
@@ -189,8 +182,6 @@ watch(
       <Debug v-if="devMode" :visible="isCanvasDebugEnabled" />
       <slot />
     </Container>
-
-    <Minimap v-if="isMinimapVisible && !shouldHideMiniMap" />
   </Application>
 </template>
 

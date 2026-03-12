@@ -17,6 +17,9 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { canvasMinimapAspectRatio } from "@/style/shapes";
+import { Application, type ApplicationInst } from "@/vue3-pixi";
+import Minimap from "../../kanvas/Minimap.vue";
 
 import ZoomMenu from "./ZoomMenu.vue";
 
@@ -42,9 +45,32 @@ const { hasPanModeEnabled: isPanModeActive } = storeToRefs(
 const applicationSettingsStore = useApplicationSettingsStore();
 const { devMode } = storeToRefs(applicationSettingsStore);
 const enableWorkflowActions = import.meta.env.MODE !== "e2e" && devMode;
+const minimapWidth = 200;
+const minimapHeight = minimapWidth / canvasMinimapAspectRatio;
 </script>
 
 <template>
+  <div v-show="isMinimapVisible" class="minimap-wrapper">
+    <Application
+      ref="minimapPixi"
+      :background-color="0x000000"
+      :background-alpha="0"
+      :width="minimapWidth"
+      :height="minimapHeight"
+      @contextmenu.prevent
+      @pointerdown.stop
+      @pointerenter.stop.capture
+      @pointerleave.stop.capture
+      @click.stop
+    >
+      <Minimap
+        v-if="isMinimapVisible"
+        :canvas="($refs.minimapPixi as ApplicationInst).app.canvas"
+        :width="minimapWidth"
+        :height="minimapHeight"
+      />
+    </Application>
+  </div>
   <div
     v-if="!isLoadingWorkflow && isBrowser() && enableWorkflowActions"
     class="workflow-actions toolbar"
@@ -113,6 +139,27 @@ const enableWorkflowActions = import.meta.env.MODE !== "e2e" && devMode;
   box-shadow: var(--kds-elevation-level-1);
   z-index: v-bind("$zIndices.layerCanvasDecorations");
   padding: var(--kds-spacing-container-0-25x);
+}
+
+.minimap-wrapper {
+  position: absolute;
+  bottom: calc(
+    v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px +
+      calc(v-bind("$shapes.floatingCanvasToolsSize") * 1px) +
+      var(--kds-spacing-container-0-37x)
+  );
+  width: calc(v-bind(minimapWidth) * 1px);
+  height: calc(v-bind(minimapHeight) * 1px);
+  right: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
+  display: flex;
+  place-items: center center;
+  background: var(--knime-white);
+  border: var(--kds-border-base-subtle);
+  border-radius: var(--kds-border-radius-container-0-50x);
+  box-shadow: var(--kds-elevation-level-1);
+  z-index: v-bind("$zIndices.layerCanvasDecorations");
+  padding: 0;
+  overflow: hidden;
 }
 
 .workflow-actions {
