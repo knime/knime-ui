@@ -39,7 +39,7 @@ const onClick = (event: FederatedPointerEvent) => {
 
 const isHovered = ref(false);
 
-const shadowFilter = new BlurFilter({ strength: 12 });
+const shadowFilter = new BlurFilter({ strength: 12, legacy: true });
 
 const renderPlainCircle = (graphics: GraphicsInst) => {
   return graphics.circle(0, 0, buttonRadius);

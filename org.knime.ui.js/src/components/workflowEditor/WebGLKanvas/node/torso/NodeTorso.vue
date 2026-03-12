@@ -43,6 +43,7 @@ const shadowFilter = new BlurFilter({
   strength: 25,
   quality: 12,
   kernelSize: 13,
+  legacy: true,
 });
 
 const renderTorso = (graphics: GraphicsInst) => {
