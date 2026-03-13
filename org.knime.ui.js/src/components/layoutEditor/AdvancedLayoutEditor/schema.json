@@ -7,19 +7,25 @@
   "required": ["rows", "parentLayoutLegacyMode"],
   "properties": {
     "rows": {
+      "description": "The top-level rows of the layout. Must contain at least one row.",
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "#/definitions/LayoutEditorRowItem" }
     },
-    "parentLayoutLegacyMode": { "type": "boolean" }
+    "parentLayoutLegacyMode": {
+      "description": "When true, uses legacy layout mode inherited from the parent. Set to false for components created with AP 4.2 or later.",
+      "type": "boolean"
+    }
   },
   "definitions": {
     "LayoutEditorItemType": {
+      "description": "The type of a layout item: 'row' for a row container, 'view' for a node view or widget, 'nestedLayout' for an embedded sub-component layout, 'html' for raw HTML content.",
       "type": "string",
       "enum": ["row", "view", "nestedLayout", "html"]
     },
 
     "LayoutEditorViewResizeMethod": {
+      "description": "Controls how the view iframe is resized. Aspect-ratio methods maintain proportions; view* methods use the iframe-resizer library to fit content; 'manual' uses fixed minHeight/maxHeight.",
       "type": "string",
       "enum": [
         "aspectRatio16by9",
@@ -49,22 +55,47 @@
       "additionalProperties": false,
       "required": ["nodeID", "type"],
       "properties": {
-        "nodeID": { "$ref": "#/definitions/NodeId" },
+        "nodeID": {
+          "description": "ID of the node inside the component whose view or widget to render.",
+          "$ref": "#/definitions/NodeId"
+        },
         "type": { "$ref": "#/definitions/LayoutEditorItemType" },
-        "useLegacyMode": { "type": "boolean" },
+        "useLegacyMode": {
+          "description": "When true, renders with legacy iframe styling instead of shadow DOM.",
+          "type": "boolean"
+        },
         "resizeMethod": {
+          "description": "Controls how the view iframe is resized. See LayoutEditorViewResizeMethod for options.",
           "$ref": "#/definitions/LayoutEditorViewResizeMethod"
         },
         "resizeInterval": { "type": ["number", "null"] },
         "resizeTolerance": { "type": ["number", "null"] },
-        "autoResize": { "type": "boolean" },
-        "scrolling": { "type": "boolean" },
+        "autoResize": {
+          "description": "When true, the iframe automatically resizes to fit its content.",
+          "type": "boolean"
+        },
+        "scrolling": {
+          "description": "When true, the iframe shows scrollbars if content overflows.",
+          "type": "boolean"
+        },
         "sizeHeight": { "type": "boolean" },
         "sizeWidth": { "type": "boolean" },
-        "maxHeight": { "type": ["number", "null"] },
-        "maxWidth": { "type": ["number", "null"] },
-        "minHeight": { "type": ["number", "null"] },
-        "minWidth": { "type": ["number", "null"] },
+        "maxHeight": {
+          "description": "Maximum height in pixels. null means unconstrained.",
+          "type": ["number", "null"]
+        },
+        "maxWidth": {
+          "description": "Maximum width in pixels. null means unconstrained.",
+          "type": ["number", "null"]
+        },
+        "minHeight": {
+          "description": "Minimum height in pixels. null means unconstrained.",
+          "type": ["number", "null"]
+        },
+        "minWidth": {
+          "description": "Minimum width in pixels. null means unconstrained.",
+          "type": ["number", "null"]
+        },
         "additionalClasses": {
           "type": "array",
           "items": { "type": "string" }
@@ -83,15 +114,18 @@
       "properties": {
         "type": { "const": "row" },
         "columns": {
+          "description": "Columns in this row. Widths should sum to 12.",
           "minItems": 1,
           "type": "array",
           "items": { "$ref": "#/definitions/LayoutEditorColumn" }
         },
         "additionalClasses": {
+          "description": "CSS class names to apply to the row element.",
           "type": "array",
           "items": { "type": "string" }
         },
         "additionalStyles": {
+          "description": "Inline CSS style strings to apply to the row element.",
           "type": "array",
           "items": { "type": "string" }
         }
@@ -113,7 +147,10 @@
       "type": "object",
       "properties": {
         "type": { "const": "nestedLayout" },
-        "nodeID": { "$ref": "#/definitions/NodeId" }
+        "nodeID": {
+          "description": "ID of the nested component whose own layout to embed.",
+          "$ref": "#/definitions/NodeId"
+        }
       },
       "required": ["type", "nodeID"]
     },
@@ -124,7 +161,10 @@
       "required": ["type", "value"],
       "properties": {
         "type": { "const": "html" },
-        "value": { "type": "string" }
+        "value": {
+          "description": "Raw HTML string. Sanitized automatically since AP 5.8.",
+          "type": "string"
+        }
       }
     },
 
@@ -146,16 +186,33 @@
           "type": "array",
           "items": { "$ref": "#/definitions/LayoutEditorItem" }
         },
-        "widthXS": { "type": "number" },
-        "widthSM": { "type": "number" },
-        "widthMD": { "type": "number" },
-        "widthLG": { "type": "number" },
-        "widthXL": { "type": "number" },
+        "widthXS": {
+          "description": "Column width on extra-small screens (required). 1–12 units; 12 = full width.",
+          "type": "number"
+        },
+        "widthSM": {
+          "description": "Column width on small screens (≥576px). 1–12 units; inherits widthXS if omitted.",
+          "type": "number"
+        },
+        "widthMD": {
+          "description": "Column width on medium screens (≥768px). 1–12 units; inherits smaller breakpoint if omitted.",
+          "type": "number"
+        },
+        "widthLG": {
+          "description": "Column width on large screens (≥992px). 1–12 units; inherits smaller breakpoint if omitted.",
+          "type": "number"
+        },
+        "widthXL": {
+          "description": "Column width on extra-large screens (≥1200px). 1–12 units; inherits smaller breakpoint if omitted.",
+          "type": "number"
+        },
         "additionalClasses": {
+          "description": "CSS class names to apply to the column element.",
           "type": "array",
           "items": { "type": "string" }
         },
         "additionalStyles": {
+          "description": "Inline CSS style strings to apply to the column element.",
           "type": "array",
           "items": { "type": "string" }
         }
