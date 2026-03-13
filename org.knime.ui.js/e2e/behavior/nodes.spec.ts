@@ -571,7 +571,6 @@ test.describe("node label editing", () => {
     const [metanodeX, metanodeY] = getCenter(await getNodeLabel(page));
     await selectNode(page);
     await page.mouse.move(metanodeX, metanodeY + 3);
-    await page.waitForTimeout(200);
     await page.mouse.dblclick(metanodeX, metanodeY + 3);
     await assertSnapshot(page);
 
