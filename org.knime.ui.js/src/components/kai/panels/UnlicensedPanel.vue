@@ -13,7 +13,7 @@ const aiProviderStore = useAiProviderStore();
       variant="info"
       title="AI features unavailable"
     >
-      {{ aiProviderStore.unlicensedUserMessage }}
+      {{ aiProviderStore.licensingStatus.unlicensedMessage }}
     </InlineMessage>
   </div>
 </template>

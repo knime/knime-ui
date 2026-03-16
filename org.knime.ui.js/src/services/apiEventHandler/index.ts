@@ -303,8 +303,8 @@ export const registerAPIEventHandlers = (
       consola.info("events::AiAssistantServerChangedEvent");
 
       const aiProviderStore = useAiProviderStore();
-      aiProviderStore.getAiProviderId();
-      aiProviderStore.fetchUiStrings();
+      aiProviderStore.fetchAiProviderId({ force: true });
+      aiProviderStore.fetchUiStrings({ force: true });
     },
 
     DesktopAPIFunctionResultEvent(payload) {

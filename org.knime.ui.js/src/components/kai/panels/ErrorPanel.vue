@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
+
 import { Button, LoadingIcon } from "@knime/components";
 
 import { useAiProviderStore } from "@/store/ai/aiProvider";
 
 const aiProviderStore = useAiProviderStore();
+const { providerStatus } = storeToRefs(aiProviderStore);
 </script>
 
 <template>
@@ -19,11 +22,11 @@ const aiProviderStore = useAiProviderStore();
     <Button
       primary
       compact
-      :disabled="aiProviderStore.isCheckingBackendAvailability"
-      @click="aiProviderStore.fetchUiStrings"
+      :disabled="providerStatus === 'checkingBackend'"
+      @click="aiProviderStore.fetchUiStrings({ force: true })"
     >
       Try again
-      <LoadingIcon v-if="aiProviderStore.isCheckingBackendAvailability" />
+      <LoadingIcon v-if="providerStatus === 'checkingBackend'" />
     </Button>
   </div>
 </template>

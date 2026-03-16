@@ -273,7 +273,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       await this.showLoadErrors();
 
       if (useApplicationSettingsStore().isKaiEnabled) {
-        useAiProviderStore().getAiProviderId();
+        useAiProviderStore().fetchAiProviderId();
         useAiProviderStore().fetchUiStrings();
       }
 

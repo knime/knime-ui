@@ -11,26 +11,21 @@ import UnlicensedPanel from "./UnlicensedPanel.vue";
 import { useDisclaimer } from "./useDisclaimer";
 
 export const useKaiPanels = () => {
-  const {
-    isAiProviderConfigured,
-    isAiProviderConnected,
-    isUserLicensed,
-    isAiBackendAvailable,
-  } = storeToRefs(useAiProviderStore());
+  const { providerStatus, licensingStatus } = storeToRefs(useAiProviderStore());
   const { shouldShowDisclaimer } = useDisclaimer();
 
-  // Dynamically select which panel to show
   const panelComponent = computed(() => {
-    if (!isAiProviderConfigured.value) {
-      return NoHubConfiguredPanel;
+    switch (providerStatus.value) {
+      case "unconfigured":
+        return NoHubConfiguredPanel;
+      case "checkingBackend":
+      case "backendUnavailable":
+        return ErrorPanel;
+      case "backendAvailable":
+        return LoginPanel;
     }
-    if (!isAiBackendAvailable.value) {
-      return ErrorPanel;
-    }
-    if (!isAiProviderConnected.value) {
-      return LoginPanel;
-    }
-    if (!isUserLicensed.value) {
+
+    if (!licensingStatus.value.licensed) {
       return UnlicensedPanel;
     }
     if (shouldShowDisclaimer.value) {

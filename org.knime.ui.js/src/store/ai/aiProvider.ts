@@ -3,27 +3,38 @@ import { API } from "@api";
 import { defineStore, storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
-import { sleep } from "@knime/utils";
-
 import type { KaiUiStrings } from "@/api/gateway-api/generated-api";
-import { isBrowser, runInEnvironment } from "@/environment";
+import { runInEnvironment } from "@/environment";
 import { getToastPresets } from "@/services/toastPresets";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 
 import { useAIAssistantStore } from "./aiAssistant";
 
-const SLEEP_AFTER_ERROR = 2000;
+export type AiProviderStatus =
+  | "unconfigured"
+  | "configured"
+  | "checkingBackend"
+  | "backendUnavailable"
+  | "backendAvailable"
+  | "connected";
+
+export type LicensingStatus =
+  | { licensed: true; unlicensedMessage?: never }
+  | { licensed: false; unlicensedMessage: string };
 
 /**
  * K-AI and other AI features require a specific Hub to be configured to be used as their backend.
  * This is configured via AP Preferences (KNIME -> KNIME Modern UI -> AI Assistant) and can be
  * overwritten using a Customization Profile or an .ini flag.
  *
- * That Hub is the "AI Provider", the identity, reachability, connection state, and licensing of which
+ * That Hub is the "AI Provider", the identity, reachability, and connection state of which
  * this store manages. The "AI service" deployed in the "AI Provider" is referred to as the "backend".
  * The availability of this backend is checked by fetching the UI strings, since the corresponding
  * endpoint is the only unauthenticated endpoint, which allows pinging it before the user is logged in.
+ *
+ * Additionally, the AI Provider's license might restrict certain user groups (e.g. consumers) from
+ * accessing AI features. That is also managed in this store.
  */
 export const useAiProviderStore = defineStore("aiProvider", () => {
   const aiProviderId = ref<string | null>(null);
@@ -32,41 +43,52 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
   const isCheckingBackendAvailability = ref(false);
   const uiStrings = reactive<Partial<KaiUiStrings>>({});
 
-  const isUserLicensed = ref(true);
-  const unlicensedUserMessage = ref<string | null>(null);
+  const licensingStatus = ref<LicensingStatus>({ licensed: true });
 
   const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
 
   let aiProviderIdPromise: Promise<void> | null = null;
+  let uiStringsPromise: Promise<void> | null = null;
 
-  const fetchUiStrings = async () => {
-    if (isCheckingBackendAvailability.value) {
-      return;
-    }
-
-    isCheckingBackendAvailability.value = true;
-    try {
-      const _uiStrings = await API.kai.getUiStrings({});
-      Object.assign(uiStrings, _uiStrings);
-      isAiBackendAvailable.value = true;
-    } catch (_error) {
-      // we want to show the loading indicator for at least 2 seconds
-      await sleep(SLEEP_AFTER_ERROR);
-      isAiBackendAvailable.value = false;
-    } finally {
-      isCheckingBackendAvailability.value = false;
-    }
+  const markUserAsLicensed = () => {
+    licensingStatus.value = { licensed: true };
   };
 
-  const setUserLicensed = (
-    licensed: boolean,
-    message: string | null = null,
-  ) => {
-    isUserLicensed.value = licensed;
-    unlicensedUserMessage.value = message;
+  const markUserAsUnlicensed = (message: string) => {
+    licensingStatus.value = { licensed: false, unlicensedMessage: message };
   };
 
-  const getAiProviderId = () => {
+  const fetchUiStrings = ({ force = false } = {}) => {
+    if (force) {
+      uiStringsPromise = null;
+    }
+
+    if (uiStringsPromise) {
+      return uiStringsPromise;
+    }
+
+    uiStringsPromise = (async () => {
+      isCheckingBackendAvailability.value = true;
+      try {
+        const _uiStrings = await API.kai.getUiStrings({});
+        Object.assign(uiStrings, _uiStrings);
+        isAiBackendAvailable.value = true;
+      } catch (error) {
+        consola.error("Failed to fetch UI strings from AI provider", error);
+        isAiBackendAvailable.value = false;
+      } finally {
+        isCheckingBackendAvailability.value = false;
+      }
+    })();
+
+    return uiStringsPromise;
+  };
+
+  const fetchAiProviderId = ({ force = false } = {}) => {
+    if (force) {
+      aiProviderIdPromise = null;
+    }
+
     if (aiProviderIdPromise) {
       return aiProviderIdPromise;
     }
@@ -81,8 +103,8 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
           },
         });
         aiProviderId.value = id ?? null;
-      } finally {
-        aiProviderIdPromise = null;
+      } catch (error) {
+        consola.error("Failed to fetch AI provider ID", error);
       }
     })();
 
@@ -90,7 +112,10 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
   };
 
   const connectAiProvider = async () => {
+    await fetchAiProviderId();
+
     if (!aiProviderId.value) {
+      consola.warn("Could not connect, no AI Provider ID available.");
       return;
     }
 
@@ -111,7 +136,10 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
   };
 
   const disconnectAiProvider = async () => {
+    await fetchAiProviderId();
+
     if (!aiProviderId.value) {
+      consola.warn("Could not disconnect, no AI Provider ID available.");
       return;
     }
 
@@ -123,14 +151,56 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
     });
   };
 
-  const isAiProviderConnected = computed(() => {
-    return (
-      spaceProviders.value?.[aiProviderId.value ?? ""]?.connected || isBrowser()
-    );
+  const isAiProviderConfigured = computed(() => {
+    return Boolean(aiProviderId.value);
   });
 
-  const isAiProviderConfigured = computed(() => {
-    return Boolean(aiProviderId.value) || isBrowser();
+  const isAiProviderConnected = computed(() => {
+    if (!aiProviderId.value) {
+      return false;
+    }
+
+    const aiProvider = spaceProviders.value[aiProviderId.value];
+    if (!aiProvider) {
+      return false;
+    }
+
+    return aiProvider.connected;
+  });
+
+  /**
+   * @example
+   *               ┌───────────────┐
+   *               │ unconfigured  │ no Hub configured for K-AI
+   *               └───────┬───────┘
+   *               ┌───────┴───────┐
+   *               │  configured   │
+   *               └───────┬───────┘
+   *             ┌─────────┴─────────┐
+   *             │  checkingBackend  │ pinging AI service of the configured Hub
+   *             └─────────┬─────────┘
+   *          ┌────────────┴───────────┐
+   *┌─────────┴──────────┐   ┌─────────┴─────────┐
+   *│ backendUnavailable │   │ backendAvailable  │ user needs to log in to Hub
+   *└────────────────────┘   └─────────┬─────────┘
+   *                           ┌───────┴───────┐
+   *                           │     ready     │ AI service available, user logged in
+   *                           └───────────────┘
+   */
+  const providerStatus = computed((): AiProviderStatus => {
+    if (!isAiProviderConfigured.value) {
+      return "unconfigured";
+    }
+    if (isCheckingBackendAvailability.value) {
+      return "checkingBackend";
+    }
+    if (!isAiBackendAvailable.value) {
+      return "backendUnavailable";
+    }
+    if (!isAiProviderConnected.value) {
+      return "backendAvailable";
+    }
+    return "connected";
   });
 
   const usernameForAiProvider = computed(() => {
@@ -139,9 +209,9 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
 
   return {
     // licensing
-    isUserLicensed,
-    unlicensedUserMessage,
-    setUserLicensed,
+    licensingStatus,
+    markUserAsLicensed,
+    markUserAsUnlicensed,
 
     // AI service
     uiStrings,
@@ -151,11 +221,10 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
 
     // AI provider Hub
     aiProviderId,
-    getAiProviderId,
+    fetchAiProviderId,
     connectAiProvider,
     disconnectAiProvider,
-    isAiProviderConnected,
-    isAiProviderConfigured,
     usernameForAiProvider,
+    providerStatus,
   };
 });

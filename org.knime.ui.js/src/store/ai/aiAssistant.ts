@@ -450,16 +450,16 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
           this.usage = null;
         }
 
-        useAiProviderStore().setUserLicensed(true);
+        useAiProviderStore().markUserAsLicensed();
       } catch (error: any) {
         // TODO: Replace with a proper error communication channel (AP-25330)
         const unauthorizedPrefix = "403:";
         consola.error("getUsage", error);
         if (error?.message.startsWith(unauthorizedPrefix)) {
-          useAiProviderStore().setUserLicensed(
-            false,
-            error.message.slice(unauthorizedPrefix.length),
+          const messageFromBackend = error.message.slice(
+            unauthorizedPrefix.length,
           );
+          useAiProviderStore().markUserAsUnlicensed(messageFromBackend);
         }
 
         this.usage = null;

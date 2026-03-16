@@ -42,7 +42,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
   const availableQuickActions: Ref<string[] | null> = ref(null);
   const processingActions: Ref<Partial<QuickActionMetadata>> = ref({});
 
-  const { isAiProviderConnected, aiProviderId, isUserLicensed } = storeToRefs(
+  const { providerStatus, aiProviderId, licensingStatus } = storeToRefs(
     useAiProviderStore(),
   );
 
@@ -93,9 +93,9 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
    * Watch for authentication status and fetch available actions when user logs in.
    */
   watch(
-    isAiProviderConnected,
-    (authenticated) => {
-      if (authenticated) {
+    providerStatus,
+    (status) => {
+      if (status === "connected") {
         fetchAvailableQuickActions();
       }
 
@@ -117,7 +117,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
    * Shows login dialog if not authenticated.
    */
   const ensureAuthenticated = async (): Promise<boolean> => {
-    if (isAiProviderConnected.value) {
+    if (providerStatus.value === "connected") {
       await fetchAvailableQuickActions();
       return true;
     }
@@ -245,7 +245,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
     }
 
     // user is e.g. a consumer (not part of a team)
-    if (!isUserLicensed.value) {
+    if (!licensingStatus.value.licensed) {
       return false;
     }
 
