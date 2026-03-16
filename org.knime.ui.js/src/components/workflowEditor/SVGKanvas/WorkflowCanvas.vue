@@ -21,7 +21,7 @@ import AnnotationRectangle from "./annotations/AnnotationRectangle.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
 import KanvasFilters from "./kanvas/KanvasFilters.vue";
 
-const { onDrop, onDragOver } = useDragNodeIntoCanvas();
+const { onDrop, onDragOver } = useDragNodeIntoCanvas.dropTarget();
 const kanvas = ref<InstanceType<typeof Kanvas>>();
 
 watch(

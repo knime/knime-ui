@@ -2,7 +2,7 @@ import { type Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
+import { KNIME_MIME } from "@/components/nodeTemplates";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
 import type { ExtendedPortType } from "@/lib/data-mappers";
 import { workflowDomain } from "@/lib/workflow-domain";

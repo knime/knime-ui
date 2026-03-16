@@ -6,5 +6,5 @@ import NodeTemplate from "./NodeTemplate/NodeTemplate.vue";
 
 export type NavReachedEvent = _NavReachedEvent;
 export * from "./useAddNodeTemplateWithAutoPositioning";
-export * from "./useDragNodeIntoCanvas";
+export * from "./dragIntoCanvas";
 export { InfiniteNodeList, NodeList, NodeTemplate, DraggableNodeTemplate };

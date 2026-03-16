@@ -1,80 +1,21 @@
 import { storeToRefs } from "pinia";
 
-import {
-  Node,
-  type NodeFactoryKey,
-  type XY,
-} from "@/api/gateway-api/generated-api";
+import { type XY } from "@/api/gateway-api/generated-api";
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-import {
-  type NodeTemplateWithExtendedPorts,
-  nodeTemplate,
-} from "@/lib/data-mappers";
-import { useAnalytics } from "@/services/analytics";
+import { nodeTemplate } from "@/lib/data-mappers";
 import { getToastPresets } from "@/services/toastPresets";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
+import { DRAG_TO_EDGE_BUFFER_MS } from "./constants";
+import { dragTime } from "./state";
+import { getEventData, isValidNodeTemplateDragEvent } from "./utils";
 
-type KnimeNodeDragEventData =
-  | { type: "component"; payload: { id: string; name: string } }
-  | { type: "node"; payload: { nodeFactory: NodeFactoryKey } };
-
-const isValidNodeTemplateDragEvent = (event: DragEvent) =>
-  event.dataTransfer?.types.includes(KNIME_MIME);
-
-const setEventData = (
-  event: DragEvent,
-  nodeTemplate: NodeTemplateWithExtendedPorts,
-) => {
-  const isComponent = nodeTemplate.component;
-  const dataTransferPayload: KnimeNodeDragEventData = isComponent
-    ? {
-        type: "component",
-        payload: { id: nodeTemplate.id, name: nodeTemplate.name },
-      }
-    : { type: "node", payload: { nodeFactory: nodeTemplate.nodeFactory! } };
-
-  event.dataTransfer!.setData("text/plain", nodeTemplate.id);
-  event.dataTransfer!.setData(KNIME_MIME, JSON.stringify(dataTransferPayload));
-};
-
-const getEventData = (event: DragEvent) => {
-  const data = event.dataTransfer?.getData(KNIME_MIME);
-
-  if (!data) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(data) as KnimeNodeDragEventData;
-  } catch (error) {
-    consola.error(
-      "useDragNodeIntoCanvas:: Failed to parse drag event payload",
-      { error },
-    );
-
-    return null;
-  }
-};
-
-// One key characteristic of this composable, which can be confusing at first glance,
-// is that the dragStart and onDrag handlers are not bound/called at the same location in the code.
-// This is because the drag start handler, which mainly manipulates that event, will likely
-// be bound at a separate location than the onDrag. This means that the variables declared
-// inside this composable are not stable across usages, unless declared outside of it
-
-let dragStartTime: number | null;
-
-const DRAG_TO_EDGE_BUFFER_MS = 300;
-
-export const useDragNodeIntoCanvas = () => {
+export const useDropTarget = () => {
   const { isWritable } = storeToRefs(useWorkflowStore());
 
   const nodeTemplatesStore = useNodeTemplatesStore();
@@ -85,48 +26,10 @@ export const useDragNodeIntoCanvas = () => {
 
   const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 
-  const onDragStart = (
-    event: DragEvent,
-    nodeTemplate: NodeTemplateWithExtendedPorts,
-    createDragGhost: () => {
-      element: HTMLElement;
-      size: { width: number; height: number };
-    },
-  ) => {
-    nodeTemplatesStore.setDraggingNodeTemplate(nodeTemplate);
-
-    // collision check only works for the webgl canvas
-    if (isWebGLRenderer.value) {
-      nodeReplacementOrInsertion.onDragStart();
-    }
-
-    // Fix for cursor style for Firefox
-    if (!isWritable && navigator.userAgent.indexOf("Firefox") !== -1) {
-      (event.currentTarget! as HTMLElement).style.cursor = "not-allowed";
-    }
-
-    const { element: dragGhost, size } = createDragGhost();
-
-    // use drag-ghost as drag image. position it, s.th. cursor is in the middle
-    event.dataTransfer!.setDragImage(
-      dragGhost,
-      size.width / 2,
-      size.height / 2,
-    );
-
-    setEventData(event, nodeTemplate);
-  };
-
-  const onDrag = (event: DragEvent) => {
-    if (!isWritable.value) {
-      (event.currentTarget! as HTMLElement).style.cursor = "not-allowed";
-    }
-  };
-
   const onDragOver = (event: DragEvent) => {
     // only define start time when the first dragover is fired
-    if (!dragStartTime) {
-      dragStartTime = window.performance.now();
+    if (!dragTime.isSet()) {
+      dragTime.update(window.performance.now());
     }
 
     if (!isWritable.value) {
@@ -135,7 +38,7 @@ export const useDragNodeIntoCanvas = () => {
       event.dataTransfer!.dropEffect = "copy";
     }
 
-    const elapsedTime = window.performance.now() - dragStartTime;
+    const elapsedTime = window.performance.now() - dragTime.get();
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
@@ -177,7 +80,7 @@ export const useDragNodeIntoCanvas = () => {
   };
 
   const onDrop = async (event: DragEvent, dropPosition: XY) => {
-    dragStartTime = null;
+    dragTime.reset();
     stopPanningToEdge();
 
     if (!isWritable.value) {
@@ -231,11 +134,11 @@ export const useDragNodeIntoCanvas = () => {
         const node = nodeInteractionsStore.getNodeById(result.newNodeId ?? "");
 
         if (node && result.newNodeId) {
-          const { className } = nodeInteractionsStore.getNodeFactory(node.id);
-          useAnalytics().track("node_created::noderepo_dragdrop_", {
-            type: Node.KindEnum.Node,
-            nodeFactoryId: className,
-          });
+          //   const { className } = nodeInteractionsStore.getNodeFactory(node.id);
+          //   useAnalytics().track("node_created::noderepo_dragdrop_", {
+          //     type: Node.KindEnum.Node,
+          //     nodeFactoryId: className,
+          //   });
         }
 
         return result;
@@ -247,10 +150,10 @@ export const useDragNodeIntoCanvas = () => {
         componentName: eventData.payload.name,
       });
 
-      useAnalytics().track("node_created::noderepo_dragdrop_", {
-        type: Node.KindEnum.Component,
-        nodeHubId: eventData.payload.id,
-      });
+      //   useAnalytics().track("node_created::noderepo_dragdrop_", {
+      //     nodeType: Node.KindEnum.Component,
+      //     nodeHubId: eventData.payload.id,
+      //   });
 
       return result;
     };
@@ -262,30 +165,8 @@ export const useDragNodeIntoCanvas = () => {
     }
   };
 
-  const onDragEnd = (event: DragEvent) => {
-    dragStartTime = null;
-    stopPanningToEdge();
-    (event.target as HTMLElement).style.cursor = "pointer";
-    nodeTemplatesStore.setDraggingNodeTemplate(null);
-
-    // put the focus on the canvas
-    useCurrentCanvasStore().value.focus();
-
-    // ending with dropEffect none indicates that dragging has been aborted
-    const wasAborted = event.dataTransfer!.dropEffect === "none";
-
-    if (wasAborted) {
-      nodeInteractionsStore.replacementOperation = null;
-    }
-
-    return { wasAborted };
-  };
-
   return {
-    onDragStart,
-    onDrag,
     onDragOver,
-    onDragEnd,
     onDrop,
   };
 };

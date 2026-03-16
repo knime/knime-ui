@@ -12,8 +12,8 @@ import { useAnalytics } from "@/services/analytics";
 import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useDragNodeIntoCanvas } from "../dragIntoCanvas";
 import { useAddNodeTemplateWithAutoPositioning } from "../useAddNodeTemplateWithAutoPositioning";
-import { useDragNodeIntoCanvas } from "../useDragNodeIntoCanvas";
 
 import NodeTemplate from "./NodeTemplate.vue";
 
@@ -51,7 +51,7 @@ const panelStore = usePanelStore();
 const { isExtensionPanelOpen } = storeToRefs(panelStore);
 
 const shouldShowDescriptionOnAbort = ref(false);
-const dragNodeIntoCanvas = useDragNodeIntoCanvas();
+const dragNodeIntoCanvas = useDragNodeIntoCanvas.dragSource();
 
 const nodeTemplateRef = useTemplateRef("nodeTemplate");
 
