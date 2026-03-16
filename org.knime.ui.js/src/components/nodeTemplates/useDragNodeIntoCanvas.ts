@@ -8,7 +8,6 @@ import {
 import { useNodeReplacementOrInsertion } from "@/components/workflowEditor/WebGLKanvas/common/useNodeReplacementOrInsertion";
 import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/kanvas/useDragNearEdgePanning";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-import { isBrowser } from "@/environment";
 import {
   type NodeTemplateWithExtendedPorts,
   nodeTemplate,
@@ -20,9 +19,6 @@ import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import * as $shapes from "@/style/shapes";
-
-import { useAddNodeViaFileUpload } from "./useAddNodeViaFileUpload";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
@@ -81,15 +77,11 @@ const DRAG_TO_EDGE_BUFFER_MS = 300;
 export const useDragNodeIntoCanvas = () => {
   const { isWritable } = storeToRefs(useWorkflowStore());
 
-  const canvasStore = useCurrentCanvasStore();
   const nodeTemplatesStore = useNodeTemplatesStore();
   const nodeInteractionsStore = useNodeInteractionsStore();
   const webglCanvasStore = useWebGLCanvasStore();
   const { isWebGLRenderer, isSVGRenderer } = useCanvasRendererUtils();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
-
-  const { importFilesViaDrop: addNodesFromNativeFilesDrop } =
-    useAddNodeViaFileUpload();
 
   const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 
@@ -184,34 +176,12 @@ export const useDragNodeIntoCanvas = () => {
     }
   };
 
-  const onDrop = async (event: DragEvent) => {
+  const onDrop = async (event: DragEvent, dropPosition: XY) => {
     dragStartTime = null;
     stopPanningToEdge();
 
     if (!isWritable.value) {
       return;
-    }
-
-    const [canvasX, canvasY] = canvasStore.value.screenToCanvasCoordinates([
-      event.clientX,
-      event.clientY,
-    ]);
-
-    const dropPosition: XY = {
-      x: canvasX - $shapes.nodeSize / 2,
-      y: canvasY - $shapes.nodeSize / 2,
-    };
-
-    // handle native OS file drops for browser envs
-    if (isBrowser()) {
-      const dt = event.dataTransfer;
-      const droppedFiles = Array.from(dt?.files ?? []);
-
-      if (droppedFiles.length > 0) {
-        addNodesFromNativeFilesDrop(droppedFiles, dropPosition);
-        event.preventDefault();
-        return;
-      }
     }
 
     // handle drop of nodes from sidebar
