@@ -7,6 +7,7 @@ import {
   getAnnotation,
   getNodePosition,
   pointToArray,
+  safeguardCanvasDoubleClick,
   startApplication,
 } from "../utils";
 
@@ -53,6 +54,7 @@ test.describe("selection rectangle", () => {
     await start(page);
 
     const { metanode } = await selectMetanodeAndComponent(page);
+    await safeguardCanvasDoubleClick(page);
 
     await page.mouse.click(metanode.x - 50, metanode.y - 50);
     await assertSnapshot(page);
