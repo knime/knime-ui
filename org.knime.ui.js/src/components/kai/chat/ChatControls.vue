@@ -19,6 +19,7 @@ type Props = {
   usage?: KaiUsageState;
   text?: string;
   placeholder?: string;
+  size?: "medium" | "large";
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,6 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
   usage: null,
   text: "",
   placeholder: "",
+  size: "medium",
 });
 
 const { PRICING_URL } = knimeExternalUrls;
@@ -93,7 +95,13 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
 
 <template>
   <div>
-    <div v-if="isWithinLimit" class="textarea-wrapper" @click="handleClick">
+    <!-- Input field if user is within AI usage limits -->
+    <div
+      v-if="isWithinLimit"
+      class="textarea-wrapper"
+      :class="props.size"
+      @click="handleClick"
+    >
       <textarea
         ref="textarea"
         v-model="input"
@@ -123,6 +131,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
         />
       </FunctionButton>
     </div>
+    <!-- or paywall if limits reached -->
     <InlineMessage
       v-if="!isWithinLimit"
       variant="info"
@@ -131,6 +140,8 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       <a :href="`${PRICING_URL}&alt=kaiChat`">Upgrade</a> to continue building
       with AI or wait {{ getDaysLeftInMonth() }} days to use it again.
     </InlineMessage>
+
+    <!-- Current usage -->
     <div class="chat-usage">
       <div
         v-if="usage !== null && usage.limit !== null && isWithinLimit"
@@ -150,11 +161,20 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  min-height: 120px;
   background-color: var(--knime-white);
   border: 1px solid var(--knime-stone-gray);
+  border-radius: 3px;
   overflow: hidden;
   cursor: text;
+
+  &.medium {
+    min-height: 50px;
+    max-height: 200px;
+  }
+
+  &.large {
+    min-height: 120px;
+  }
 
   & .textarea {
     font-size: 13px;

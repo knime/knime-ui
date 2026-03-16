@@ -132,10 +132,5 @@ watch(
     flex-direction: column;
     gap: 20px;
   }
-
-  & :deep(.textarea-wrapper) {
-    max-height: 200px;
-    min-height: 50px;
-  }
 }
 </style>

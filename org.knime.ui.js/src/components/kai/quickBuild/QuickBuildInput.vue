@@ -33,6 +33,7 @@ defineEmits<{
       :last-user-message="lastUserMessage"
       :text="errorMessage ? lastUserMessage : ''"
       :usage="usage"
+      size="large"
       placeholder="What would you like to build?"
       @send-message="$emit('sendMessage', $event)"
     />

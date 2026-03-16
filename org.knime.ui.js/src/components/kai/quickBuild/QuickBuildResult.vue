@@ -1,16 +1,22 @@
 <script setup lang="ts">
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-import type { InquiryTrace } from "@/store/ai/types";
+import type { InquiryTrace, KaiUsageState } from "@/store/ai/types";
+import ChatControls from "../chat/ChatControls.vue";
 import Message from "../chat/message/Message.vue";
 
 type Props = {
   message: string;
   interactionId: string;
   inquiryTraces?: InquiryTrace[];
+  lastUserMessage?: string;
+  usage: KaiUsageState;
 };
 
 defineProps<Props>();
-defineEmits(["close"]);
+defineEmits<{
+  close: [];
+  sendMessage: [value: { message: string }];
+}>();
 </script>
 
 <template>
@@ -23,6 +29,12 @@ defineEmits(["close"]);
       :inquiry-traces="inquiryTraces"
       kind="quick-build-explanation"
     />
+    <ChatControls
+      :last-user-message="lastUserMessage"
+      :usage="usage"
+      placeholder="Send a follow-up..."
+      @send-message="$emit('sendMessage', $event)"
+    />
   </div>
 </template>
 
@@ -32,7 +44,6 @@ defineEmits(["close"]);
 .quick-build-result {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--space-8);
 
   & .message {
