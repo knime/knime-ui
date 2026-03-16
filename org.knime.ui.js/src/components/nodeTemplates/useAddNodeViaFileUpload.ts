@@ -1,4 +1,4 @@
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { API } from "@api";
 import { storeToRefs } from "pinia";
 
@@ -14,6 +14,9 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
 
 const cachedAncestorIds: string[] = [];
+const ancestorFetchState = ref<"unfetched" | "fetched" | "fetching" | "failed">(
+  "unfetched",
+);
 
 export const useAddNodeViaFileUpload = () => {
   const { toastPresets } = getToastPresets();
@@ -36,11 +39,21 @@ export const useAddNodeViaFileUpload = () => {
     if (!activeProjectOrigin.value) {
       return;
     }
-    if (cachedAncestorIds.length === 0) {
+
+    if (ancestorFetchState.value === "unfetched") {
+      ancestorFetchState.value = "fetching";
       useSpaceProvidersStore()
         .getAncestorInfo(activeProjectOrigin.value)
         .then(({ ancestorItemIds }) => {
           cachedAncestorIds.push(...ancestorItemIds);
+          ancestorFetchState.value = "fetched";
+        })
+        .catch((error) => {
+          consola.error(
+            "Failed fetching ancestor information for upload",
+            error,
+          );
+          ancestorFetchState.value = "failed";
         });
     }
   });
