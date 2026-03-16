@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from "vue";
 import { useElementHover } from "@vueuse/core";
-import { storeToRefs } from "pinia";
 
 import { NodePreview } from "@knime/components";
 
+import type { KnimeNode } from "@/api/custom-types";
 import {
   type ComponentNodeTemplateWithExtendedPorts,
   type NodeTemplateWithExtendedPorts,
@@ -45,13 +45,31 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   toggleDetails: [];
+  dblClickInsertNode: [
+    {
+      newNodeId: string;
+      template: NodeTemplateWithExtendedPorts;
+      connectedTo?: { node: KnimeNode };
+    },
+  ];
+  dblClickInsertComponent: [
+    { template: ComponentNodeTemplateWithExtendedPorts },
+  ];
+  dragDropInsertNode: [
+    {
+      newNodeId: string;
+      template: NodeTemplateWithExtendedPorts;
+    },
+  ];
+  dragDropInsertComponent: [
+    { template: ComponentNodeTemplateWithExtendedPorts },
+  ];
 }>();
 
 const { addNodeWithAutoPositioning, addComponentWithAutoPositioning } =
   useAddNodeTemplateWithAutoPositioning();
 
 const panelStore = usePanelStore();
-const { isExtensionPanelOpen } = storeToRefs(panelStore);
 
 const shouldShowDescriptionOnAbort = ref(false);
 const dragNodeIntoCanvas = useDragNodeIntoCanvas.dragSource();
@@ -79,12 +97,26 @@ const createDragGhost = () => {
 };
 
 const onDragStart = (event: DragEvent) => {
-  // close description panel
-  shouldShowDescriptionOnAbort.value =
-    props.isSelected && isExtensionPanelOpen.value;
   panelStore.closeExtensionPanel();
 
-  dragNodeIntoCanvas.onDragStart(event, props.nodeTemplate, createDragGhost);
+  dragNodeIntoCanvas.onDragStart(event, props.nodeTemplate, {
+    createDragGhost,
+    onNodeAdded: (payload) => {
+      if (payload.type === "node") {
+        emit("dragDropInsertNode", {
+          newNodeId: payload.newNodeId,
+          template: props.nodeTemplate,
+        });
+      }
+
+      if (payload.type === "component") {
+        emit("dragDropInsertComponent", {
+          template:
+            props.nodeTemplate as ComponentNodeTemplateWithExtendedPorts,
+        });
+      }
+    },
+  });
 };
 
 const onDragEnd = (event: DragEvent) => {
@@ -107,8 +139,19 @@ const autoAddNodeFromTemplate = async (
 ) => {
   if (nodeTemplateMappers.isComponentNodeTemplate(nodeTemplate)) {
     await addComponentWithAutoPositioning(nodeTemplate.id, nodeTemplate.name);
+    emit("dblClickInsertComponent", { template: nodeTemplate });
   } else {
-    await addNodeWithAutoPositioning(nodeTemplate.nodeFactory!);
+    const { newNodeId, connectedTo } = await addNodeWithAutoPositioning(
+      nodeTemplate.nodeFactory!,
+    );
+
+    if (newNodeId) {
+      emit("dblClickInsertNode", {
+        newNodeId,
+        template: nodeTemplate,
+        connectedTo,
+      });
+    }
   }
 };
 

@@ -15,7 +15,7 @@ import { dragTime, useSharedState } from "./state";
 import { isValidNodeTemplateDragEvent } from "./utils";
 
 export const useDropTarget = () => {
-  const { draggedTemplateData } = useSharedState();
+  const { draggedTemplateData, callbacks } = useSharedState();
   const { isWritable } = storeToRefs(useWorkflowStore());
 
   const nodeInteractionsStore = useNodeInteractionsStore();
@@ -115,6 +115,7 @@ export const useDropTarget = () => {
           componentName: draggedTemplate.name,
         });
 
+        callbacks.trigger("onNodeAdded", { type: "component" });
         //   useAnalytics().track("node_created::noderepo_dragdrop_", {
         //     nodeType: Node.KindEnum.Component,
         //     nodeHubId: eventData.payload.id,
@@ -131,6 +132,10 @@ export const useDropTarget = () => {
       const node = nodeInteractionsStore.getNodeById(result.newNodeId ?? "");
 
       if (node && result.newNodeId) {
+        callbacks.trigger("onNodeAdded", {
+          type: "node",
+          newNodeId: result.newNodeId,
+        });
         //   const { className } = nodeInteractionsStore.getNodeFactory(node.id);
         //   useAnalytics().track("node_created::noderepo_dragdrop_", {
         //     type: Node.KindEnum.Node,

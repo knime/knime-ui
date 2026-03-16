@@ -3,7 +3,6 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
-import { Node } from "@/api/gateway-api/generated-api";
 import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import {
   type NavReachedEvent,
@@ -11,10 +10,9 @@ import {
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
-import { useAnalytics } from "@/services/analytics";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { trackNodeCreation } from "../trackNodeCreation";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */
@@ -93,23 +91,11 @@ const addNodeOnEnterKey = async (
     return;
   }
 
-  if (connectedTo) {
-    useAnalytics().track("node_created::noderepo_keyboard_enter", {
-      type: Node.KindEnum.Node,
-      nodeFactoryId: nodeTemplate.nodeFactory.className,
-      connectedTo: {
-        nodeType: connectedTo.node.kind,
-        nodeFactoryId: useNodeInteractionsStore().getNodeFactory(
-          connectedTo.node.id,
-        ).className,
-      },
-    });
-  } else {
-    useAnalytics().track("node_created::noderepo_keyboard_enter", {
-      type: Node.KindEnum.Node,
-      nodeFactoryId: nodeTemplate.nodeFactory.className,
-    });
-  }
+  trackNodeCreation("enter", {
+    newNodeId,
+    connectedTo,
+    template: nodeTemplate,
+  });
 };
 </script>
 
@@ -134,6 +120,8 @@ const addNodeOnEnterKey = async (
       <NodeTemplate
         v-bind="slotProps"
         @toggle-details="$emit('showNodeDescription', slotProps)"
+        @dbl-click-insert-node="trackNodeCreation('dblclick', $event)"
+        @drag-drop-insert-node="trackNodeCreation('dragdrop', $event)"
       />
     </template>
   </SearchResults>

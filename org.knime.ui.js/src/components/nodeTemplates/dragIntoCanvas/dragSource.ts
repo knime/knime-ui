@@ -8,11 +8,19 @@ import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
+import type { Callbacks } from ".";
 import { useSharedState } from "./state";
 import { setEventData } from "./utils";
 
+type Options = {
+  createDragGhost: () => {
+    element: HTMLElement;
+    size: { width: number; height: number };
+  };
+} & Partial<Callbacks>;
+
 export const useDragSource = () => {
-  const { dragTime, draggedTemplateData } = useSharedState();
+  const { dragTime, draggedTemplateData, callbacks } = useSharedState();
   const { isWritable } = storeToRefs(useWorkflowStore());
 
   const nodeInteractionsStore = useNodeInteractionsStore();
@@ -24,12 +32,13 @@ export const useDragSource = () => {
   const onDragStart = (
     event: DragEvent,
     nodeTemplate: NodeTemplateWithExtendedPorts,
-    createDragGhost: () => {
-      element: HTMLElement;
-      size: { width: number; height: number };
-    },
+    options: Options,
   ) => {
     draggedTemplateData.value = nodeTemplate;
+
+    if (options?.onNodeAdded) {
+      callbacks.schedule("onNodeAdded", options.onNodeAdded);
+    }
 
     // collision check only works for the webgl canvas
     if (isWebGLRenderer.value) {
@@ -41,7 +50,7 @@ export const useDragSource = () => {
       (event.currentTarget! as HTMLElement).style.cursor = "not-allowed";
     }
 
-    const { element: dragGhost, size } = createDragGhost();
+    const { element: dragGhost, size } = options.createDragGhost();
 
     // use drag-ghost as drag image. position it, s.th. cursor is in the middle
     event.dataTransfer!.setDragImage(

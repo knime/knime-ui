@@ -19,6 +19,7 @@ import {
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
+import { trackNodeCreation } from "../trackNodeCreation";
 
 import type { NodeCategoryWithExtendedPorts } from "./types";
 
@@ -170,13 +171,27 @@ const onShowNodeDescription = (treeNode: BaseTreeNode) => {
 };
 
 const { addNodeWithAutoPositioning } = useAddNodeTemplateWithAutoPositioning();
-const addTreeNodeToWorkflow = (treeNode: BaseTreeNode) => {
-  const nodeFactory = (treeNode.origin as ExtendedTreeNodeOptions)?.nodeTemplate
-    ?.nodeFactory;
+const addTreeNodeToWorkflow = async (treeNode: BaseTreeNode) => {
+  const nodeTemplate = (treeNode.origin as ExtendedTreeNodeOptions)
+    ?.nodeTemplate;
 
-  if (nodeFactory) {
-    addNodeWithAutoPositioning(nodeFactory);
+  if (!nodeTemplate?.nodeFactory) {
+    return;
   }
+
+  const { newNodeId, connectedTo } = await addNodeWithAutoPositioning(
+    nodeTemplate.nodeFactory,
+  );
+
+  if (!newNodeId) {
+    return;
+  }
+
+  trackNodeCreation("enter", {
+    newNodeId,
+    connectedTo,
+    template: nodeTemplate,
+  });
 };
 
 const onTreeKeydown = ({ event, node: treeNode }: KeydownEvent) => {
@@ -218,6 +233,8 @@ defineExpose({ focusFirst });
         "
         display-mode="tree"
         @toggle-details="onShowNodeDescription(treeNode)"
+        @dbl-click-insert-node="trackNodeCreation('dblclick', $event)"
+        @drag-drop-insert-node="trackNodeCreation('dragdrop', $event)"
       />
     </template>
   </Tree>

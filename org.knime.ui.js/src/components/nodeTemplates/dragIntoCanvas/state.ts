@@ -11,6 +11,8 @@ import type {
   NodeTemplateWithExtendedPorts,
 } from "@/lib/data-mappers";
 
+import type { CallbackKeys, Callbacks } from ".";
+
 const DRAG_TO_EDGE_BUFFER_MS = 300;
 let dragStartTime: number | null = null;
 
@@ -40,9 +42,29 @@ const draggedTemplateData = ref<
   NodeTemplateWithExtendedPorts | ComponentNodeTemplateWithExtendedPorts | null
 >(null);
 
+const callbacks: Partial<Callbacks> = {};
+
+const scheduleCallback = (
+  key: CallbackKeys,
+  fn: Required<Callbacks>[CallbackKeys],
+) => {
+  callbacks[key] = fn;
+};
+
+const triggerCallback = (
+  key: CallbackKeys,
+  ...args: Parameters<Callbacks[CallbackKeys]>
+) => {
+  callbacks[key]?.(...args);
+};
+
 export const useSharedState = () => {
   return {
     dragTime,
     draggedTemplateData,
+    callbacks: {
+      schedule: scheduleCallback,
+      trigger: triggerCallback,
+    },
   };
 };
