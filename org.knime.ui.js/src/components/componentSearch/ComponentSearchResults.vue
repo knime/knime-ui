@@ -2,9 +2,9 @@
 import { toRef, useTemplateRef, watch } from "vue";
 
 import {
-  DraggableNodeTemplate,
   InfiniteNodeList,
   type NavReachedEvent,
+  NodeTemplate,
 } from "@/components/nodeTemplates";
 import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 
@@ -54,9 +54,9 @@ defineExpose({ focusFirst });
   >
     <template #nodesTemplate="slotProps">
       <slot name="nodesTemplate" v-bind="slotProps">
-        <DraggableNodeTemplate
+        <NodeTemplate
           v-bind="slotProps"
-          @show-node-description="
+          @toggle-details="
             $emit(
               'showComponentDetails',
               slotProps.nodeTemplate as ComponentNodeTemplateWithExtendedPorts,

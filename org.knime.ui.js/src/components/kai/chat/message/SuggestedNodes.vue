@@ -4,8 +4,8 @@ import { computed, ref } from "vue";
 import NodeIcon from "@knime/styles/img/icons/node.svg";
 
 import {
-  DraggableNodeTemplate,
   NodeList,
+  NodeTemplate,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
@@ -41,9 +41,9 @@ const handleEnterKey = (node: NodeTemplateWithExtendedPorts) => {
       @enter-key="handleEnterKey"
     >
       <template #item="slotProps">
-        <DraggableNodeTemplate
+        <NodeTemplate
           v-bind="slotProps"
-          @show-node-description="toggleNodeDescription(slotProps)"
+          @toggle-details="toggleNodeDescription(slotProps)"
         />
       </template>
     </NodeList>

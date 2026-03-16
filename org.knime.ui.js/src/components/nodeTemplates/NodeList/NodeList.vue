@@ -6,7 +6,6 @@ import { Button, useKeyPressedUntilMouseClick } from "@knime/components";
 import CircleArrowIcon from "@knime/styles/img/icons/circle-arrow-right.svg";
 
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 
 import type { ListItem, NavReachedEvent, NavigationKey } from "./types";
 import { navigationKeys } from "./types";
@@ -252,9 +251,7 @@ defineExpose({ focusFirst, focusLast });
         @keydown.enter.stop.prevent="$emit('enterKey', node)"
         @keydown.i.stop.prevent="$emit('showNodeDetails', node)"
       >
-        <slot name="item" v-bind="nodeTemplateProps(node, index)">
-          <NodeTemplate v-bind="nodeTemplateProps(node, index)" />
-        </slot>
+        <slot name="item" v-bind="nodeTemplateProps(node, index)" />
       </li>
       <li>
         <Button

@@ -142,6 +142,8 @@ onBeforeUnmount(() => {
     >
       <template #nodesTemplate="itemProps">
         <NodeTemplate
+          :allow-showing-details="false"
+          :draggable="false"
           v-bind="itemProps"
           @click="addNode(itemProps.nodeTemplate)"
         />

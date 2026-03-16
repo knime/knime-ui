@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
@@ -5,8 +6,8 @@ import { storeToRefs } from "pinia";
 import { Node } from "@/api/gateway-api/generated-api";
 import SearchResults from "@/components/nodeSearch/SearchResults.vue";
 import {
-  DraggableNodeTemplate,
   type NavReachedEvent,
+  NodeTemplate,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
@@ -130,9 +131,9 @@ const addNodeOnEnterKey = async (
     @nav-reached-top="$emit('navReachedTop', $event)"
   >
     <template #nodesTemplate="slotProps">
-      <DraggableNodeTemplate
+      <NodeTemplate
         v-bind="slotProps"
-        @show-node-description="$emit('showNodeDescription', slotProps)"
+        @toggle-details="$emit('showNodeDescription', slotProps)"
       />
     </template>
   </SearchResults>

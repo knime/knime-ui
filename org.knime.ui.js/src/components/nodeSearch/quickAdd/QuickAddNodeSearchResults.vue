@@ -53,6 +53,8 @@ defineExpose({ focusFirst });
   >
     <template #nodesTemplate="itemProps">
       <NodeTemplate
+        :allow-showing-details="false"
+        :draggable="false"
         v-bind="itemProps"
         @click="$emit('addNode', itemProps.nodeTemplate, 'click')"
       />

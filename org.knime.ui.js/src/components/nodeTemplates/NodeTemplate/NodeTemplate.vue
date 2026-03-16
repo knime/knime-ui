@@ -1,33 +1,37 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
+import { useElementHover } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 import { NodePreview } from "@knime/components";
 
-import type {
-  ComponentNodeTemplateWithExtendedPorts,
-  NodeTemplateWithExtendedPorts,
+import {
+  type ComponentNodeTemplateWithExtendedPorts,
+  type NodeTemplateWithExtendedPorts,
+  nodeTemplate as nodeTemplateMappers,
 } from "@/lib/data-mappers";
+import { usePanelStore } from "@/store/panel";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import { useDragNodeIntoCanvas } from "../dragIntoCanvas";
+import { useAddNodeTemplateWithAutoPositioning } from "../useAddNodeTemplateWithAutoPositioning";
 
 import NodeTemplateIconMode from "./NodeTemplateIconMode.vue";
 import NodeTemplateListMode from "./NodeTemplateListMode.vue";
 
 /**
- * Basic NodeTemplate without any drag or insert features. This component should stay reusable.
+ * This component wraps around NodeTemplate to add dragging functionality.
  */
-export type Props = {
-  /**
-   * Additional to the properties of the NodeTemplate from the gateway API, this object
-   * contains the port information (color and kind) which was mapped from the store
-   */
+
+type Props = {
   nodeTemplate:
     | NodeTemplateWithExtendedPorts
     | ComponentNodeTemplateWithExtendedPorts;
-  displayMode?: NodeRepositoryDisplayModesType;
   isSelected?: boolean;
-  isDescriptionActive?: boolean;
   isHighlighted?: boolean;
-  showFloatingHelpIcon?: boolean;
+  isDescriptionActive?: boolean;
+  displayMode?: NodeRepositoryDisplayModesType;
+  allowShowingDetails?: boolean;
+  draggable?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -35,35 +39,91 @@ const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isHighlighted: false,
   isDescriptionActive: false,
-  showFloatingHelpIcon: false,
+  allowShowingDetails: true,
+  draggable: true,
 });
 
-const emit = defineEmits(["helpIconClick"]);
+const emit = defineEmits<{
+  toggleDetails: [];
+}>();
 
-const nodeHovered = ref(false);
-const onPointerEnter = () => {
-  nodeHovered.value = true;
+const { addNodeWithAutoPositioning, addComponentWithAutoPositioning } =
+  useAddNodeTemplateWithAutoPositioning();
+
+const panelStore = usePanelStore();
+const { isExtensionPanelOpen } = storeToRefs(panelStore);
+
+const shouldShowDescriptionOnAbort = ref(false);
+const dragNodeIntoCanvas = useDragNodeIntoCanvas.dragSource();
+
+const nodePreview = useTemplateRef("nodePreview");
+
+const ghostElementId = "draggable-node-ghost";
+const createDragGhost = () => {
+  // clone node preview
+  const dragGhost = nodePreview.value.$el.cloneNode(true) as HTMLElement;
+
+  dragGhost.id = ghostElementId;
+  // position it outside the view of the user
+  dragGhost.style.position = "absolute";
+  dragGhost.style.left = "-100px";
+  dragGhost.style.top = "0px";
+  dragGhost.style.width = "70px";
+  dragGhost.style.height = "70px";
+  document.body.appendChild(dragGhost);
+
+  // this ensures no other element (like the name) will be part of the drag-ghost bitmap
+  const rect = dragGhost.getBoundingClientRect();
+
+  return { element: dragGhost, size: rect };
 };
 
-const onPointerLeave = () => {
-  nodeHovered.value = false;
+const onDragStart = (event: DragEvent) => {
+  // close description panel
+  shouldShowDescriptionOnAbort.value =
+    props.isSelected && isExtensionPanelOpen.value;
+  panelStore.closeExtensionPanel();
+
+  dragNodeIntoCanvas.onDragStart(event, props.nodeTemplate, createDragGhost);
+};
+
+const onDragEnd = (event: DragEvent) => {
+  const { wasAborted } = dragNodeIntoCanvas.onDragEnd(event);
+
+  const dragGhost = document.querySelector(`#${ghostElementId}`);
+  if (dragGhost) {
+    document.body.removeChild(dragGhost);
+  }
+
+  if (wasAborted && shouldShowDescriptionOnAbort.value) {
+    emit("toggleDetails");
+  }
+};
+
+const autoAddNodeFromTemplate = async (
+  nodeTemplate:
+    | NodeTemplateWithExtendedPorts
+    | ComponentNodeTemplateWithExtendedPorts,
+) => {
+  if (nodeTemplateMappers.isComponentNodeTemplate(nodeTemplate)) {
+    await addComponentWithAutoPositioning(nodeTemplate.id, nodeTemplate.name);
+  } else {
+    await addNodeWithAutoPositioning(nodeTemplate.nodeFactory!);
+  }
 };
 
 const templateComponent = computed(() =>
   props.displayMode === "icon" ? NodeTemplateIconMode : NodeTemplateListMode,
 );
 
-const nodePreview = ref<InstanceType<typeof NodePreview> | null>(null);
-
-const getNodePreview = () => {
-  return nodePreview.value;
-};
-defineExpose({ getNodePreview });
+const nodeTemplateRef = useTemplateRef("nodeTemplateRef");
+const isHovered = useElementHover(nodeTemplateRef as any);
 </script>
 
 <template>
   <Component
     :is="templateComponent"
+    ref="nodeTemplateRef"
     :class="[
       'node',
       {
@@ -73,16 +133,19 @@ defineExpose({ getNodePreview });
         highlighted: isHighlighted,
       },
     ]"
+    :draggable="draggable"
     :node-template="nodeTemplate"
-    :is-hovered="nodeHovered"
+    :is-hovered="isHovered"
     :display-mode="displayMode"
     :is-highlighted="isHighlighted"
     :is-description-active="isDescriptionActive"
-    :show-floating-help-icon="showFloatingHelpIcon"
+    :show-floating-help-icon="allowShowingDetails"
     :is-selected="isSelected"
-    @pointerenter="onPointerEnter"
-    @pointerleave="onPointerLeave"
-    @help-icon-click="emit('helpIconClick')"
+    @help-icon-click="emit('toggleDetails')"
+    @dragstart="onDragStart"
+    @dragend="onDragEnd"
+    @drag="dragNodeIntoCanvas.onDrag"
+    @dblclick="autoAddNodeFromTemplate(nodeTemplate)"
   >
     <template #node-preview>
       <NodePreview

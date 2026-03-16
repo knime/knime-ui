@@ -6,9 +6,9 @@ import { Tag } from "@knime/components";
 
 import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
 import {
-  DraggableNodeTemplate,
   type NavReachedEvent,
   NodeList,
+  NodeTemplate,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
@@ -128,9 +128,9 @@ defineExpose({ focusFirst });
             @nav-reached-end="onNavReachedEnd(index, $event)"
           >
             <template #item="itemProps">
-              <DraggableNodeTemplate
+              <NodeTemplate
                 v-bind="itemProps"
-                @show-node-description="$emit('showNodeDescription', itemProps)"
+                @toggle-details="$emit('showNodeDescription', itemProps)"
               />
             </template>
             <template #more-button>Show all</template>

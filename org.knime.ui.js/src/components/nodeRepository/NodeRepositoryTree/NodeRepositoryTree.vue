@@ -12,8 +12,8 @@ import {
 
 import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
 import {
-  DraggableNodeTemplate,
   type NavReachedEvent,
+  NodeTemplate,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
@@ -208,7 +208,7 @@ defineExpose({ focusFirst });
     @keydown="onTreeKeydown"
   >
     <template #leaf="{ treeNode }: { treeNode: ExtendedBaseTreeNode }">
-      <DraggableNodeTemplate
+      <NodeTemplate
         class="node-template-component"
         :node-template="treeNode.origin.nodeTemplate!"
         :is-highlighted="false"
@@ -217,7 +217,7 @@ defineExpose({ focusFirst });
           showDescriptionForNode?.id === treeNode.origin.nodeTemplate!.id
         "
         display-mode="tree"
-        @show-node-description="onShowNodeDescription(treeNode)"
+        @toggle-details="onShowNodeDescription(treeNode)"
       />
     </template>
   </Tree>
