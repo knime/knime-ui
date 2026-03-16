@@ -107,7 +107,7 @@ const { hasNodeRecommendationsEnabled, fetchNodeRecommendations } =
   );
 
 const trackInsertion = (
-  source: "click" | "keyboard",
+  source: "click" | "enter",
   newNodeId: string,
   newNodeFactoryId: string,
 ) => {
@@ -131,7 +131,7 @@ const trackInsertion = (
     );
 
     useAnalytics().track(trackId, {
-      type: node.kind,
+      type: node.kind.toLowerCase(),
       nodeFactoryId: newNodeFactoryId,
       connectedTo: {
         nodeType: sourceNode!.kind,
@@ -150,7 +150,7 @@ const trackInsertion = (
 
 const addNode = async (
   nodeTemplate: NodeTemplateWithExtendedPorts,
-  source: "click" | "keyboard",
+  source: "click" | "enter",
 ) => {
   if (!isWritable.value || nodeTemplate === null) {
     return;
@@ -201,7 +201,7 @@ const addNode = async (
 
 const searchEnterKey = () => {
   if (getFirstResult.value) {
-    addNode(getFirstResult.value, "keyboard");
+    addNode(getFirstResult.value, "enter");
   }
 };
 

@@ -20,7 +20,7 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<{
   "update:selectedNode": [value: NodeTemplateWithExtendedPorts | null];
-  addNode: [node: NodeTemplateWithExtendedPorts, source: "click" | "keyboard"];
+  addNode: [node: NodeTemplateWithExtendedPorts, source: "click" | "enter"];
   navReachedTop: [];
 }>();
 
@@ -43,7 +43,7 @@ defineExpose({ focusFirst });
       :display-mode="displayMode"
       :highlight-first="true"
       @nav-reached-top="$emit('navReachedTop')"
-      @enter-key="$emit('addNode', $event, 'keyboard')"
+      @enter-key="$emit('addNode', $event, 'enter')"
       @update:selected-node="$emit('update:selectedNode', $event)"
     >
       <template #item="itemProps">
