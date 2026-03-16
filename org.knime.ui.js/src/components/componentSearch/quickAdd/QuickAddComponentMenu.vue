@@ -108,7 +108,7 @@ const addNode = async (
   )[action];
 
   useAnalytics().track(trackId, {
-    type: "component",
+    nodeType: "component",
     nodeHubId: nodeTemplate.id,
   });
 

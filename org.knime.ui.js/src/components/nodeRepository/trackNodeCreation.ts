@@ -1,6 +1,5 @@
 /* eslint-disable no-undefined */
 import type { KnimeNode } from "@/api/custom-types";
-import { Node } from "@/api/gateway-api/generated-api";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useAnalytics } from "@/services/analytics";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
@@ -26,7 +25,7 @@ export const trackNodeCreation = (
 
       const connectedTo = data.connectedTo
         ? {
-            nodeType: data.connectedTo.node.kind,
+            nodeType: data.connectedTo.node.kind.toLowerCase(),
             nodeFactoryId: useNodeInteractionsStore().getNodeFactory(
               data.connectedTo.node.id,
             ).className,
@@ -34,7 +33,7 @@ export const trackNodeCreation = (
         : undefined;
 
       useAnalytics().track(trackId, {
-        type: Node.KindEnum.Node,
+        nodeType: "node",
         nodeFactoryId: data.template.nodeFactory!.className,
         connectedTo,
       });
@@ -43,7 +42,7 @@ export const trackNodeCreation = (
 
     case "dragdrop": {
       useAnalytics().track("node_created::noderepo_dragdrop_", {
-        type: Node.KindEnum.Node,
+        nodeType: "node",
         nodeFactoryId: data.template.nodeFactory!.className,
       });
     }

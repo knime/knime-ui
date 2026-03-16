@@ -2,7 +2,6 @@
 import { useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import { Node } from "@/api/gateway-api/generated-api";
 import { type NavReachedEvent, NodeTemplate } from "@/components/nodeTemplates";
 import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useAnalytics } from "@/services/analytics";
@@ -55,7 +54,7 @@ const trackComponentInsertion = (
   )[action];
 
   useAnalytics().track(trackId, {
-    type: Node.KindEnum.Component,
+    nodeType: "component",
     nodeHubId: data.template.id,
   });
 };

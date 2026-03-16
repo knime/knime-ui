@@ -57,7 +57,7 @@ const onInputMessage = (...args: Parameters<typeof sendMessage>) => {
     ).className;
 
     useAnalytics().track("kai_prompted::qam_button_prompt", {
-      nodeType: node!.kind,
+      nodeType: node!.kind.toLowerCase(),
       nodeFactoryId,
     });
   } else {

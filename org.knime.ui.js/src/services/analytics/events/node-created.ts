@@ -12,11 +12,11 @@ type NodeOrComponentData = NativeNodePayload | ComponentNodePayload;
 
 export type NodeCreationEvents = {
   "node_created::noderepo_dragdrop_": {
-    type: string;
+    nodeType: string;
   } & NodeOrComponentData;
 
   "node_created::noderepo_doubleclick_": {
-    type: string;
+    nodeType: string;
     connectedTo?: {
       nodeType: string;
       nodeFactoryId: string;
@@ -24,7 +24,7 @@ export type NodeCreationEvents = {
   } & NodeOrComponentData;
 
   "node_created::noderepo_keyboard_enter": {
-    type: string;
+    nodeType: string;
     connectedTo?: {
       nodeType: string;
       nodeFactoryId: string;
@@ -32,11 +32,11 @@ export type NodeCreationEvents = {
   } & NodeOrComponentData;
 
   "node_created::explorer_dragdrop_": {
-    type: string;
+    nodeType: string;
   } & NodeOrComponentData;
 
   "node_created::qam_click_": {
-    type: string;
+    nodeType: string;
     connectedTo?: {
       nodeType: string;
       nodeFactoryId: string;
@@ -46,7 +46,7 @@ export type NodeCreationEvents = {
   } & NodeOrComponentData;
 
   "node_created::qam_keyboard_enter": {
-    type: string;
+    nodeType: string;
     connectedTo?: {
       nodeType: string;
       nodeFactoryId: string;

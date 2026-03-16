@@ -131,7 +131,7 @@ const onPointerDown = (event: FederatedPointerEvent) => {
 
       useAnalytics().track(analyticsEventId, {
         connectedTo: {
-          nodeType: props.nodeKind,
+          nodeType: props.nodeKind.toLowerCase(),
           nodePortIndex: props.port.index,
           nodePortId: props.port.typeId,
           nodeFactoryId: nodeInteractionsStore.getNodeFactory(props.nodeId)
@@ -158,13 +158,13 @@ const onPointerDown = (event: FederatedPointerEvent) => {
 
         useAnalytics().track(analyticsEventId, {
           fromNode: {
-            type: fromNode.kind,
+            type: fromNode.kind.toLowerCase(),
             factoryId: fromNodeTemplate.className,
             portIndex: from.portIndex,
             portId: from.typeId,
           },
           toNode: {
-            type: toNode.kind,
+            type: toNode.kind.toLowerCase(),
             factoryId: toNodeTemplate.className,
             portIndex: to.portIndex,
             portId: from.typeId,

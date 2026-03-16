@@ -116,10 +116,6 @@ export const useDropTarget = () => {
         });
 
         callbacks.trigger("onNodeAdded", { type: "component" });
-        //   useAnalytics().track("node_created::noderepo_dragdrop_", {
-        //     nodeType: Node.KindEnum.Component,
-        //     nodeHubId: eventData.payload.id,
-        //   });
 
         return result;
       }
@@ -136,11 +132,6 @@ export const useDropTarget = () => {
           type: "node",
           newNodeId: result.newNodeId,
         });
-        //   const { className } = nodeInteractionsStore.getNodeFactory(node.id);
-        //   useAnalytics().track("node_created::noderepo_dragdrop_", {
-        //     type: Node.KindEnum.Node,
-        //     nodeFactoryId: className,
-        //   });
       }
 
       return result;

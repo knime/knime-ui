@@ -131,10 +131,10 @@ const trackInsertion = (
     );
 
     useAnalytics().track(trackId, {
-      type: node.kind.toLowerCase(),
+      nodeType: node.kind.toLowerCase(),
       nodeFactoryId: newNodeFactoryId,
       connectedTo: {
-        nodeType: sourceNode!.kind,
+        nodeType: sourceNode!.kind.toLowerCase(),
         nodeFactoryId: sourceNodeFactory.className,
         nodePortIndex: props.quickActionContext.port.index,
         nodePortId: props.quickActionContext.port.typeId,
@@ -142,7 +142,7 @@ const trackInsertion = (
     });
   } else {
     useAnalytics().track(trackId, {
-      type: node.kind,
+      nodeType: node.kind.toLowerCase(),
       nodeFactoryId: newNodeFactoryId,
     });
   }
