@@ -1,3 +1,4 @@
+import { toRaw } from "vue";
 import { storeToRefs } from "pinia";
 
 import { type XY } from "@/api/gateway-api/generated-api";
@@ -7,29 +8,26 @@ import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasR
 import { nodeTemplate } from "@/lib/data-mappers";
 import { getToastPresets } from "@/services/toastPresets";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-import { DRAG_TO_EDGE_BUFFER_MS } from "./constants";
-import { dragTime } from "./state";
-import { getEventData, isValidNodeTemplateDragEvent } from "./utils";
+import { dragTime, useSharedState } from "./state";
+import { isValidNodeTemplateDragEvent } from "./utils";
 
 export const useDropTarget = () => {
+  const { draggedTemplateData } = useSharedState();
   const { isWritable } = storeToRefs(useWorkflowStore());
 
-  const nodeTemplatesStore = useNodeTemplatesStore();
   const nodeInteractionsStore = useNodeInteractionsStore();
   const webglCanvasStore = useWebGLCanvasStore();
   const { isWebGLRenderer, isSVGRenderer } = useCanvasRendererUtils();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
-  const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
+  const { startPanningToEdge } = useDragNearEdgePanning();
 
   const onDragOver = (event: DragEvent) => {
-    // only define start time when the first dragover is fired
     if (!dragTime.isSet()) {
-      dragTime.update(window.performance.now());
+      dragTime.init(window.performance.now());
     }
 
     if (!isWritable.value) {
@@ -38,25 +36,18 @@ export const useDropTarget = () => {
       event.dataTransfer!.dropEffect = "copy";
     }
 
-    const elapsedTime = window.performance.now() - dragTime.get();
-
-    // node replacement is done differently on SVG canvas. This will be unified once the SVG
-    // canvas is removed
+    // behavior that follows is only compatible with the WebGL canvas
     if (isSVGRenderer.value) {
       return;
     }
 
-    // skip first few MS of the drag interaction, to avoid panning to the edge when crossing over the
-    // left edge, which would normally happen as you drag a node out of the repository and into
-    // the canvas
-    if (elapsedTime > DRAG_TO_EDGE_BUFFER_MS) {
+    if (dragTime.exceedsPanningThreshold()) {
       startPanningToEdge(event);
     }
 
-    if (
-      // on dragover there's no access to a drag event's dataTransfer
-      nodeTemplatesStore.draggedTemplateData
-    ) {
+    // on dragover there's no access to a drag event's dataTransfer
+    // so we use shared state
+    if (draggedTemplateData.value) {
       const [canvasX, canvasY] = webglCanvasStore.screenToCanvasCoordinates([
         event.clientX,
         event.clientY,
@@ -64,16 +55,14 @@ export const useDropTarget = () => {
 
       nodeReplacementOrInsertion.onDragMove(
         { x: canvasX, y: canvasY },
-        nodeTemplate.isComponentNodeTemplate(
-          nodeTemplatesStore.draggedTemplateData,
-        )
+        nodeTemplate.isComponentNodeTemplate(draggedTemplateData.value)
           ? {
               type: "from-component-template",
-              componentTemplate: nodeTemplatesStore.draggedTemplateData,
+              componentTemplate: draggedTemplateData.value,
             }
           : {
               type: "from-node-template",
-              nodeTemplate: nodeTemplatesStore.draggedTemplateData,
+              nodeTemplate: draggedTemplateData.value,
             },
       );
     }
@@ -81,15 +70,15 @@ export const useDropTarget = () => {
 
   const onDrop = async (event: DragEvent, dropPosition: XY) => {
     dragTime.reset();
-    stopPanningToEdge();
 
     if (!isWritable.value) {
       return;
     }
 
-    // handle drop of nodes from sidebar
-    const eventData = getEventData(event);
-    if (!eventData) {
+    // get copy of data in case refs gets reset while an async operation is happening
+    const draggedTemplate = toRaw(draggedTemplateData.value);
+
+    if (!draggedTemplate) {
       return;
     }
 
@@ -101,23 +90,17 @@ export const useDropTarget = () => {
 
     // node replacement is done differently on SVG canvas. This will be unified once the SVG
     // canvas is removed
-    if (
-      isWebGLRenderer.value &&
-      nodeInteractionsStore.replacementOperation &&
-      nodeTemplatesStore.draggedTemplateData
-    ) {
+    if (isWebGLRenderer.value && nodeInteractionsStore.replacementOperation) {
       await nodeReplacementOrInsertion.onDrop(
         dropPosition,
-        nodeTemplate.isComponentNodeTemplate(
-          nodeTemplatesStore.draggedTemplateData,
-        )
+        nodeTemplate.isComponentNodeTemplate(draggedTemplate)
           ? {
               type: "from-component-template",
-              componentTemplate: nodeTemplatesStore.draggedTemplateData,
+              componentTemplate: draggedTemplate,
             }
           : {
               type: "from-node-template",
-              nodeTemplate: nodeTemplatesStore.draggedTemplateData,
+              nodeTemplate: draggedTemplate,
             },
       );
 
@@ -125,35 +108,35 @@ export const useDropTarget = () => {
     }
 
     const addNodeOrComponentAction = async () => {
-      if (eventData.type === "node") {
-        const result = await nodeInteractionsStore.addNativeNode({
+      if (nodeTemplate.isComponentNodeTemplate(draggedTemplate)) {
+        const result = await nodeInteractionsStore.addComponentNode({
           position: dropPosition,
-          nodeFactory: eventData.payload.nodeFactory,
+          componentIdInHub: draggedTemplate.id,
+          componentName: draggedTemplate.name,
         });
 
-        const node = nodeInteractionsStore.getNodeById(result.newNodeId ?? "");
-
-        if (node && result.newNodeId) {
-          //   const { className } = nodeInteractionsStore.getNodeFactory(node.id);
-          //   useAnalytics().track("node_created::noderepo_dragdrop_", {
-          //     type: Node.KindEnum.Node,
-          //     nodeFactoryId: className,
-          //   });
-        }
+        //   useAnalytics().track("node_created::noderepo_dragdrop_", {
+        //     nodeType: Node.KindEnum.Component,
+        //     nodeHubId: eventData.payload.id,
+        //   });
 
         return result;
       }
 
-      const result = await nodeInteractionsStore.addComponentNode({
+      const result = await nodeInteractionsStore.addNativeNode({
         position: dropPosition,
-        componentIdInHub: eventData.payload.id,
-        componentName: eventData.payload.name,
+        nodeFactory: draggedTemplate.nodeFactory!,
       });
 
-      //   useAnalytics().track("node_created::noderepo_dragdrop_", {
-      //     nodeType: Node.KindEnum.Component,
-      //     nodeHubId: eventData.payload.id,
-      //   });
+      const node = nodeInteractionsStore.getNodeById(result.newNodeId ?? "");
+
+      if (node && result.newNodeId) {
+        //   const { className } = nodeInteractionsStore.getNodeFactory(node.id);
+        //   useAnalytics().track("node_created::noderepo_dragdrop_", {
+        //     type: Node.KindEnum.Node,
+        //     nodeFactoryId: className,
+        //   });
+      }
 
       return result;
     };

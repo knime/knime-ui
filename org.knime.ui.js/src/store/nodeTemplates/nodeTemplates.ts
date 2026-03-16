@@ -43,17 +43,11 @@ export interface NodeTemplatesState {
    * as well as holding port information
    */
   cache: NodeTemplateDictionary;
-
-  isDraggingNodeTemplate: boolean;
-  draggedTemplateData: NodeTemplateWithExtendedPorts | null;
 }
 
 export const useNodeTemplatesStore = defineStore("nodeTemplates", {
   state: (): NodeTemplatesState => ({
     cache: {},
-
-    isDraggingNodeTemplate: false,
-    draggedTemplateData: null,
   }),
   actions: {
     updateCache(newValues: Partial<NodeTemplateDictionary>) {
@@ -62,16 +56,6 @@ export const useNodeTemplatesStore = defineStore("nodeTemplates", {
         ...this.cache,
         ...newValues,
       };
-    },
-
-    setIsDraggingNodeTemplate(isDraggingNodeTemplate: boolean) {
-      this.isDraggingNodeTemplate = isDraggingNodeTemplate;
-    },
-
-    setDraggedTemplateData(
-      draggedTemplateData: NodeTemplateWithExtendedPorts | null,
-    ) {
-      this.draggedTemplateData = draggedTemplateData;
     },
 
     async getSingleNodeTemplate({
@@ -148,13 +132,6 @@ export const useNodeTemplatesStore = defineStore("nodeTemplates", {
       );
 
       this.updateCache(nodeTemplateDictionary);
-    },
-
-    setDraggingNodeTemplate(
-      nodeTemplate: NodeTemplateWithExtendedPorts | null,
-    ) {
-      this.setIsDraggingNodeTemplate(Boolean(nodeTemplate));
-      this.setDraggedTemplateData(nodeTemplate);
     },
   },
 });

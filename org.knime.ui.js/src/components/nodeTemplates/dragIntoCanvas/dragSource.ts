@@ -5,17 +5,16 @@ import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { type NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
-import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-import { dragTime } from "./state";
+import { useSharedState } from "./state";
 import { setEventData } from "./utils";
 
 export const useDragSource = () => {
+  const { dragTime, draggedTemplateData } = useSharedState();
   const { isWritable } = storeToRefs(useWorkflowStore());
 
-  const nodeTemplatesStore = useNodeTemplatesStore();
   const nodeInteractionsStore = useNodeInteractionsStore();
   const { isWebGLRenderer } = useCanvasRendererUtils();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
@@ -30,7 +29,7 @@ export const useDragSource = () => {
       size: { width: number; height: number };
     },
   ) => {
-    nodeTemplatesStore.setDraggingNodeTemplate(nodeTemplate);
+    draggedTemplateData.value = nodeTemplate;
 
     // collision check only works for the webgl canvas
     if (isWebGLRenderer.value) {
@@ -61,10 +60,10 @@ export const useDragSource = () => {
   };
 
   const onDragEnd = (event: DragEvent) => {
-    dragTime.reset();
     stopPanningToEdge();
     (event.target as HTMLElement).style.cursor = "pointer";
-    nodeTemplatesStore.setDraggingNodeTemplate(null);
+    dragTime.reset();
+    draggedTemplateData.value = null;
 
     // put the focus on the canvas
     useCurrentCanvasStore().value.focus();
