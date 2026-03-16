@@ -4,7 +4,6 @@ import { toRef, useTemplateRef, watch } from "vue";
 import {
   InfiniteNodeList,
   type NavReachedEvent,
-  NodeTemplate,
 } from "@/components/nodeTemplates";
 import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 
@@ -20,7 +19,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   navReachedTop: [event: NavReachedEvent];
-  addToWorkflow: [event: ComponentNodeTemplateWithExtendedPorts];
+  onEnterKey: [event: ComponentNodeTemplateWithExtendedPorts];
   showComponentDetails: [node: ComponentNodeTemplateWithExtendedPorts];
 }>();
 
@@ -50,20 +49,10 @@ defineExpose({ focusFirst });
     :is-loading="isLoading"
     :show-details-for="showDescriptionForComponent"
     @nav-reached-top="emit('navReachedTop', $event)"
-    @item-enter-key="$emit('addToWorkflow', $event)"
+    @item-enter-key="$emit('onEnterKey', $event)"
   >
     <template #nodesTemplate="slotProps">
-      <slot name="nodesTemplate" v-bind="slotProps">
-        <NodeTemplate
-          v-bind="slotProps"
-          @toggle-details="
-            $emit(
-              'showComponentDetails',
-              slotProps.nodeTemplate as ComponentNodeTemplateWithExtendedPorts,
-            )
-          "
-        />
-      </slot>
+      <slot name="nodesTemplate" v-bind="slotProps" />
     </template>
 
     <template #listBottom="{ isEmpty }">

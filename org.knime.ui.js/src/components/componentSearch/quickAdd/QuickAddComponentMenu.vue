@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
       :results="results"
       :fetch-data="componentSearchStore.searchComponents"
       @nav-reached-top="($refs.search as any).focus()"
-      @add-to-workflow="addNode"
+      @on-enter-key="addNode"
     >
       <template #nodesTemplate="itemProps">
         <NodeTemplate
