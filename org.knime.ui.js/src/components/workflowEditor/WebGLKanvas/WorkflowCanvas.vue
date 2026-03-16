@@ -11,7 +11,10 @@ import { storeToRefs } from "pinia";
 
 import { sleep } from "@knime/utils";
 
+import type { XY } from "@/api/gateway-api/generated-api";
 import { useDragNodeIntoCanvas } from "@/components/nodeTemplates";
+import { useAddNodeViaFileUpload } from "@/components/nodeTemplates/useAddNodeViaFileUpload";
+import { isBrowser } from "@/environment";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { useAnalytics } from "@/services/analytics";
 import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
@@ -22,6 +25,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import * as $shapes from "@/style/shapes";
 import WorkflowEmpty from "../SVGKanvas/WorkflowEmpty.vue";
 import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 
@@ -36,7 +40,6 @@ import NodeNameEditor from "./node/nodeName/NodeNameEditor.vue";
 import Tooltip from "./tooltip/Tooltip.vue";
 import { isMarkedEvent } from "./util/interaction";
 
-const { onDrop, onDragOver } = useDragNodeIntoCanvas();
 const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { activeWorkflow, isWorkflowEmpty, isWritable } = storeToRefs(
   useWorkflowStore(),
@@ -202,6 +205,43 @@ const onKeyDown = (event: KeyboardEvent) => {
 const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
   useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
 };
+
+const dragNodeIntoCanvas = useDragNodeIntoCanvas();
+const addNodeViaUpload = useAddNodeViaFileUpload();
+
+const onCanvasDragover = (event: DragEvent) => {
+  dragNodeIntoCanvas.onDragOver(event);
+};
+
+const onCanvasDrop = (event: DragEvent) => {
+  if (!isWritable.value) {
+    return;
+  }
+
+  const [canvasX, canvasY] = canvasStore.screenToCanvasCoordinates([
+    event.clientX,
+    event.clientY,
+  ]);
+
+  const dropPosition: XY = {
+    x: canvasX - $shapes.nodeSize / 2,
+    y: canvasY - $shapes.nodeSize / 2,
+  };
+
+  // handle native OS file drops for browser envs
+  if (isBrowser()) {
+    const dt = event.dataTransfer;
+    const droppedFiles = Array.from(dt?.files ?? []);
+
+    if (droppedFiles.length > 0) {
+      addNodeViaUpload.importFilesViaDrop(droppedFiles, dropPosition);
+      event.preventDefault();
+      return;
+    }
+  }
+
+  dragNodeIntoCanvas.onDrop(event, dropPosition);
+};
 </script>
 
 <template>
@@ -210,8 +250,8 @@ const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
     ref="rootEl"
     :tabindex="TAB_INDEX"
     class="kanvas-container"
-    @drop.stop="onDrop"
-    @dragover.prevent.stop="onDragOver"
+    @drop.stop="onCanvasDrop"
+    @dragover.prevent.stop="onCanvasDragover"
     @pointerdown="onPointerDown"
     @keydown="onKeyDown"
   >
