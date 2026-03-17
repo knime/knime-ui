@@ -1,6 +1,6 @@
 import { type Ref, computed, ref, watch } from "vue";
 import { API } from "@api";
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 
 import { promise } from "@knime/utils";
 
@@ -10,7 +10,6 @@ import {
   type KaiQuickActionGenerateAnnotationResponse,
   type KaiQuickActionResponse,
 } from "@/api/gateway-api/generated-api";
-import { useHubAuth } from "@/components/kai/useHubAuth";
 import {
   HubLoginAction,
   useHubLoginDialog,
@@ -21,6 +20,7 @@ import {
   createQuickActionError,
   parseQuickActionError,
 } from "@/services/toastPresets/aiQuickActions";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 import { useApplicationStore } from "../application/application";
 import { useSelectionStore } from "../selection";
 import { useAnnotationInteractionsStore } from "../workflow/annotationInteractions";
@@ -42,7 +42,9 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
   const availableQuickActions: Ref<string[] | null> = ref(null);
   const processingActions: Ref<Partial<QuickActionMetadata>> = ref({});
 
-  const { isAuthenticated, hubID, isUserLicensed } = useHubAuth();
+  const { aiProviderStatus, aiProviderId, licensingStatus } = storeToRefs(
+    useAiProviderStore(),
+  );
 
   let fetchPromise: Promise<void> | null = null;
 
@@ -91,9 +93,9 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
    * Watch for authentication status and fetch available actions when user logs in.
    */
   watch(
-    isAuthenticated,
-    (authenticated) => {
-      if (authenticated) {
+    aiProviderStatus,
+    (status) => {
+      if (status === "ready") {
         fetchAvailableQuickActions();
       }
 
@@ -106,7 +108,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
   /**
    * Reset fetched available quick actions if user changes which Hub is used as K-AI's backend.
    */
-  watch(hubID, () => {
+  watch(aiProviderId, () => {
     availableQuickActions.value = null;
   });
 
@@ -115,7 +117,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
    * Shows login dialog if not authenticated.
    */
   const ensureAuthenticated = async (): Promise<boolean> => {
-    if (isAuthenticated.value) {
+    if (aiProviderStatus.value === "ready") {
       await fetchAvailableQuickActions();
       return true;
     }
@@ -123,7 +125,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
     const result = await useHubLoginDialog({
       title: HUB_LOGIN_DIALOG_TITLE,
       message: HUB_LOGIN_DIALOG_MESSAGE,
-      hubId: hubID.value ?? "KNIME Hub",
+      hubId: aiProviderId.value ?? "KNIME Hub",
     });
 
     if (result === HubLoginAction.LOGIN) {
@@ -145,7 +147,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
       throw createQuickActionError(
         KaiQuickActionError.CodeEnum.SERVICEUNAVAILABLE,
         `This AI quick action is not supported by ${
-          hubID.value ?? "KNIME Hub"
+          aiProviderId.value ?? "KNIME Hub"
         }.`,
       );
     }
@@ -243,7 +245,7 @@ export const useAiQuickActionsStore = defineStore("aiQuickActions", () => {
     }
 
     // user is e.g. a consumer (not part of a team)
-    if (!isUserLicensed.value) {
+    if (!licensingStatus.value.licensed) {
       return false;
     }
 

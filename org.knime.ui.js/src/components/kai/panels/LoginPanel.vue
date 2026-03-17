@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Button } from "@knime/components";
 
-import { useHubAuth } from "../useHubAuth";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 
-const { authenticateWithHub, hubID } = useHubAuth();
+const aiProviderStore = useAiProviderStore();
 </script>
 
 <template>
@@ -12,8 +12,8 @@ const { authenticateWithHub, hubID } = useHubAuth();
       Log in to your KNIME Hub account<br />
       to chat with our AI assistant.
     </div>
-    <Button primary compact @click="authenticateWithHub"
-      >Login to {{ hubID }}</Button
+    <Button primary compact @click="aiProviderStore.connectAiProvider"
+      >Login to {{ aiProviderStore.aiProviderId }}</Button
     >
   </div>
 </template>

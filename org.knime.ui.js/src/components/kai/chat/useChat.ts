@@ -6,9 +6,9 @@ import { useKdsDynamicModal } from "@knime/kds-components";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { getToastPresets } from "@/services/toastPresets";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 import type { ChainType, Message } from "@/store/ai/types";
-import { useHubAuth } from "../useHubAuth";
-import { useKaiServer } from "../useKaiServer";
+import { isAuthError } from "../utils";
 
 import { isSameDay } from "./utils";
 
@@ -23,8 +23,7 @@ class MessageSeparator {
 const useChat = (chainType: ChainType) => {
   const aiAssistant = storeToRefs(useAIAssistantStore());
   const { makeAiRequest, abortAiRequest, fetchUsage } = useAIAssistantStore();
-  const { uiStrings } = useKaiServer();
-  const { disconnectHub, isAuthError } = useHubAuth();
+  const { uiStrings, disconnectAiProvider } = useAiProviderStore();
 
   const { askConfirmation } = useKdsDynamicModal();
 
@@ -127,7 +126,7 @@ const useChat = (chainType: ChainType) => {
         toastPresets.connectivity.hubSessionExpired();
 
         // mark the provider as disconnected to trigger the Login Panel
-        disconnectHub();
+        disconnectAiProvider();
       }
     }
   };

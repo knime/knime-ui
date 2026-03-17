@@ -13,7 +13,6 @@ import {
   type Workflow,
   type WorkflowSnapshot,
 } from "@/api/gateway-api/generated-api";
-import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
 import { isDesktop, runInEnvironment } from "@/environment";
 import { getHintConfiguration } from "@/hints/hints.config";
 import { encodeString } from "@/lib/encoding";
@@ -21,6 +20,7 @@ import { workflowBounds } from "@/lib/workflow-canvas";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { webResourceLocation } from "@/services/webResourceLocation";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
@@ -273,7 +273,8 @@ export const useLifecycleStore = defineStore("lifecycle", {
       await this.showLoadErrors();
 
       if (useApplicationSettingsStore().isKaiEnabled) {
-        kaiFetchUiStrings();
+        useAiProviderStore().fetchAiProviderId();
+        useAiProviderStore().fetchUiStrings();
       }
 
       this.initializeHints();

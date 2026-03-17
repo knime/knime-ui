@@ -2,10 +2,10 @@ import { reactive } from "vue";
 import { API } from "@api";
 import { defineStore, storeToRefs } from "pinia";
 
-import { useHubAuth } from "@/components/kai/useHubAuth";
 import { runInEnvironment } from "@/environment";
 import { hashString } from "@/lib/encoding";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 import { useApplicationStore } from "@/store/application/application";
 
 /**
@@ -99,11 +99,13 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
 
   // Helpers
   const getHashForCurrentHubUser = () => {
-    const { hubID, username } = useHubAuth();
-    if (!hubID.value || !username.value) {
+    const { aiProviderId, usernameForAiProvider } = storeToRefs(
+      useAiProviderStore(),
+    );
+    if (!aiProviderId.value || !usernameForAiProvider.value) {
       return null;
     }
-    return hashString(`${hubID.value}:${username.value}`);
+    return hashString(`${aiProviderId.value}:${usernameForAiProvider.value}`);
   };
 
   const getStableProjectIdForActiveProject = () => {

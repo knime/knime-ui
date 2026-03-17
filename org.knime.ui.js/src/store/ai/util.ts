@@ -1,7 +1,7 @@
 import { KaiQuickActionError } from "@/api/gateway-api/generated-api";
-import { useHubAuth } from "@/components/kai/useHubAuth";
 import { getToastPresets } from "@/services/toastPresets";
 import { parseQuickActionError } from "@/services/toastPresets/aiQuickActions";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 
 /**
  * Handles quick action errors by showing appropriate toast messages.
@@ -9,7 +9,7 @@ import { parseQuickActionError } from "@/services/toastPresets/aiQuickActions";
 export const handleQuickActionError = (error: unknown) => {
   const toasts = getToastPresets().toastPresets.aiQuickActions;
   const parsedError = parseQuickActionError(error);
-  const { authenticateWithHub, hubID } = useHubAuth();
+  const { connectAiProvider, aiProviderId } = useAiProviderStore();
 
   switch (parsedError.code) {
     case KaiQuickActionError.CodeEnum.QUOTAEXCEEDED:
@@ -35,8 +35,8 @@ export const handleQuickActionError = (error: unknown) => {
     case KaiQuickActionError.CodeEnum.AUTHENTICATIONFAILED:
       toasts.authenticationFailed({
         message: parsedError.message,
-        hubId: hubID.value ?? "KNIME Hub",
-        onLogin: authenticateWithHub,
+        hubId: aiProviderId ?? "KNIME Hub",
+        onLogin: connectAiProvider,
       });
       break;
 

@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
-
 import { InlineMessage } from "@knime/components";
 
-import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 
-const { unlicensedUserMessage } = storeToRefs(useAIAssistantStore());
+const aiProviderStore = useAiProviderStore();
 </script>
 
 <template>
@@ -15,7 +13,7 @@ const { unlicensedUserMessage } = storeToRefs(useAIAssistantStore());
       variant="info"
       title="AI features unavailable"
     >
-      {{ unlicensedUserMessage }}
+      {{ aiProviderStore.licensingStatus.unlicensedMessage }}
     </InlineMessage>
   </div>
 </template>

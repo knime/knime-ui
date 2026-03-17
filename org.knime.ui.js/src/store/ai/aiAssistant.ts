@@ -10,12 +10,11 @@ import {
   KaiMessage,
   type XY,
 } from "@/api/gateway-api/generated-api";
-import { runInEnvironment } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
-import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
+import { useAiProviderStore } from "./aiProvider";
 import { useAISettingsStore } from "./aiSettings";
 import type {
   AiAssistantBuildEventPayload,
@@ -52,19 +51,12 @@ const createEmptyConversationState = (): ConversationState => {
 
 export const useAIAssistantStore = defineStore("aiAssistant", {
   state: (): AiAssistantState => ({
-    hubID: null,
     qa: createEmptyConversationState(),
     build: createEmptyConversationState(),
     processedInteractionIds: new Set(),
     usage: null,
-    isUserLicensed: true,
-    unlicensedUserMessage: null,
   }),
   actions: {
-    setHubID(hubID: string | null) {
-      this.hubID = hubID;
-    },
-
     pushMessage(payload: {
       chainType: ChainType;
       role: Message["role"];
@@ -232,19 +224,6 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
           isError: true,
         });
       }
-    },
-
-    async getHubID() {
-      const id = await runInEnvironment({
-        DESKTOP: () => API.desktop.getHubID(),
-        BROWSER: () => {
-          const providers = useSpaceProvidersStore().spaceProviders;
-          // in browser, the active Hub being used for editing is the only available provider,
-          // hence we take the first provider from the list
-          return Promise.resolve(Object.values(providers)[0]?.id ?? null);
-        },
-      });
-      this.setHubID(id ?? null);
     },
 
     async makeAiRequest({
@@ -471,17 +450,16 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
           this.usage = null;
         }
 
-        this.isUserLicensed = true;
-        this.unlicensedUserMessage = null;
+        useAiProviderStore().markUserAsLicensed();
       } catch (error: any) {
         // TODO: Replace with a proper error communication channel (AP-25330)
         const unauthorizedPrefix = "403:";
         consola.error("getUsage", error);
         if (error?.message.startsWith(unauthorizedPrefix)) {
-          this.isUserLicensed = false;
-          this.unlicensedUserMessage = error.message.slice(
+          const messageFromBackend = error.message.slice(
             unauthorizedPrefix.length,
           );
+          useAiProviderStore().markUserAsUnlicensed(messageFromBackend);
         }
 
         this.usage = null;

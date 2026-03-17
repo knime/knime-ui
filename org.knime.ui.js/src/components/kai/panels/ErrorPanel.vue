@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
+
 import { Button, LoadingIcon } from "@knime/components";
 
-import { useKaiServer } from "../useKaiServer";
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 
-const { fetchUiStrings, isLoading } = useKaiServer();
+const aiProviderStore = useAiProviderStore();
+const { aiProviderStatus } = storeToRefs(aiProviderStore);
 </script>
 
 <template>
@@ -16,9 +19,14 @@ const { fetchUiStrings, isLoading } = useKaiServer();
       For Business Hub users, AI features need to be activated by your admin.
     </div>
 
-    <Button primary compact :disabled="isLoading" @click="fetchUiStrings">
+    <Button
+      primary
+      compact
+      :disabled="aiProviderStatus === 'checkingBackend'"
+      @click="aiProviderStore.fetchUiStrings({ force: true })"
+    >
       Try again
-      <LoadingIcon v-if="isLoading" />
+      <LoadingIcon v-if="aiProviderStatus === 'checkingBackend'" />
     </Button>
   </div>
 </template>

@@ -1,12 +1,12 @@
 import { computed, ref } from "vue";
 
+import { useAiProviderStore } from "@/store/ai/aiProvider";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
-import { useKaiServer } from "../useKaiServer";
 
 const hasBeenDismissed = ref(false);
 
 export const useDisclaimer = () => {
-  const { uiStrings } = useKaiServer();
+  const { uiStrings } = useAiProviderStore();
   const disclaimerText = computed(() => uiStrings.disclaimer ?? "");
 
   const aiSettingsStore = useAISettingsStore();
