@@ -11,11 +11,14 @@ import UnlicensedPanel from "./UnlicensedPanel.vue";
 import { useDisclaimer } from "./useDisclaimer";
 
 export const useKaiPanels = () => {
-  const { providerStatus, licensingStatus } = storeToRefs(useAiProviderStore());
+  const { aiProviderStatus, licensingStatus } = storeToRefs(
+    useAiProviderStore(),
+  );
+
   const { shouldShowDisclaimer } = useDisclaimer();
 
   const panelComponent = computed(() => {
-    switch (providerStatus.value) {
+    switch (aiProviderStatus.value) {
       case "unconfigured":
         return NoHubConfiguredPanel;
       case "checkingBackend":

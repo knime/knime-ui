@@ -24,7 +24,7 @@ describe("aiQuickActions store", () => {
     vi.clearAllMocks();
   });
 
-  const setupStore = ({
+  const setupStore = async ({
     isAuthenticated = false,
     hubId = "Test Hub",
     availableQuickActions = [],
@@ -48,6 +48,8 @@ describe("aiQuickActions store", () => {
       availableActions: availableQuickActions,
     });
 
+    mockedAPI.kai.getUiStrings.mockResolvedValue({});
+
     const {
       selectionStore,
       annotationInteractionsStore,
@@ -58,7 +60,6 @@ describe("aiQuickActions store", () => {
     } = mockStores();
 
     aiProviderStore.aiProviderId = hubId;
-    aiProviderStore.isAiBackendAvailable = true;
     spaceProvidersStore.spaceProviders = {
       [hubId]: createSpaceProvider({ id: hubId, connected: isAuthenticated }),
     };
@@ -67,6 +68,10 @@ describe("aiQuickActions store", () => {
       : { licensed: false, unlicensedMessage: "Not licensed" };
 
     applicationStore.activeProjectId = projectId;
+
+    // Drive internal backend availability state through the actual fetch
+    await aiProviderStore.fetchUiStrings();
+    await nextTick();
 
     const connectProvider = async () => {
       spaceProvidersStore.spaceProviders = {
@@ -95,8 +100,8 @@ describe("aiQuickActions store", () => {
   };
 
   describe("store initialisation", () => {
-    it("should initialise correctly", () => {
-      const { aiQuickActionsStore } = setupStore();
+    it("should initialise correctly", async () => {
+      const { aiQuickActionsStore } = await setupStore();
 
       expect(aiQuickActionsStore.processingActions).toEqual({});
     });
@@ -104,7 +109,7 @@ describe("aiQuickActions store", () => {
 
   describe("fetchAvailableQuickActions", () => {
     it("should fetch available quick actions when user authenticates", async () => {
-      const { connectProvider } = setupStore();
+      const { connectProvider } = await setupStore();
 
       await connectProvider();
 
@@ -113,7 +118,7 @@ describe("aiQuickActions store", () => {
 
     it("should reset action list when user logs out", async () => {
       const { aiQuickActionsStore, connectProvider, disconnectProvider } =
-        setupStore({
+        await setupStore({
           availableQuickActions: [QuickActionId.GenerateAnnotation],
         });
 
@@ -128,7 +133,7 @@ describe("aiQuickActions store", () => {
 
     it("should reset action list when Hub ID changes", async () => {
       const { aiProviderStore, aiQuickActionsStore, connectProvider } =
-        setupStore({
+        await setupStore({
           availableQuickActions: [QuickActionId.GenerateAnnotation],
         });
 
@@ -143,7 +148,7 @@ describe("aiQuickActions store", () => {
     });
 
     it("should handle fetch error gracefully", async () => {
-      const { aiQuickActionsStore, connectProvider } = setupStore();
+      const { aiQuickActionsStore, connectProvider } = await setupStore();
 
       mockedAPI.kai.listQuickActions.mockRejectedValue(
         new Error("Network error"),
@@ -156,7 +161,7 @@ describe("aiQuickActions store", () => {
     });
 
     it("should not fetch when no active project", async () => {
-      const { connectProvider } = setupStore({ projectId: "" });
+      const { connectProvider } = await setupStore({ projectId: "" });
 
       await connectProvider();
 
@@ -166,7 +171,7 @@ describe("aiQuickActions store", () => {
 
   describe("authentication handling", () => {
     it("should handle authenticated state correctly", async () => {
-      const { aiQuickActionsStore } = setupStore({
+      const { aiQuickActionsStore } = await setupStore({
         isAuthenticated: true,
         availableQuickActions: [QuickActionId.GenerateAnnotation],
       });
@@ -181,7 +186,7 @@ describe("aiQuickActions store", () => {
     it("should handle unauthenticated state", async () => {
       vi.mocked(useHubLoginDialog).mockResolvedValue(HubLoginAction.CANCEL);
 
-      const { aiQuickActionsStore } = setupStore({
+      const { aiQuickActionsStore } = await setupStore({
         isAuthenticated: false,
       });
 
@@ -194,7 +199,7 @@ describe("aiQuickActions store", () => {
     it("should show login dialog when user is not authenticated", async () => {
       vi.mocked(useHubLoginDialog).mockResolvedValue(HubLoginAction.LOGIN);
 
-      const { aiQuickActionsStore } = setupStore({
+      const { aiQuickActionsStore } = await setupStore({
         isAuthenticated: false,
         hubId: "Test Hub",
         availableQuickActions: [QuickActionId.GenerateAnnotation],
@@ -213,13 +218,13 @@ describe("aiQuickActions store", () => {
   });
 
   describe("generateAnnotation", () => {
-    const setupSelection = ({
+    const setupSelection = async ({
       isAuthenticated = true,
       availableQuickActions = [QuickActionId.GenerateAnnotation],
       selectedNodeIds = ["node1", "node2"],
       bounds = { x: 0, y: 0, width: 100, height: 100 },
     } = {}) => {
-      const stores = setupStore({
+      const stores = await setupStore({
         isAuthenticated,
         availableQuickActions,
       });
@@ -245,7 +250,7 @@ describe("aiQuickActions store", () => {
 
     it("should generate annotation successfully", async () => {
       const { aiQuickActionsStore, annotationInteractionsStore, bounds } =
-        setupSelection();
+        await setupSelection();
 
       const mockAnnotationText = "Generated annotation text";
 
@@ -267,7 +272,7 @@ describe("aiQuickActions store", () => {
 
     it("should handle authentication failure during generation", async () => {
       const { aiQuickActionsStore, annotationInteractionsStore } =
-        setupSelection({ isAuthenticated: false });
+        await setupSelection({ isAuthenticated: false });
 
       vi.mocked(useHubLoginDialog).mockResolvedValue(HubLoginAction.CANCEL);
 
@@ -280,7 +285,7 @@ describe("aiQuickActions store", () => {
     });
 
     it("should handle API execution errors", async () => {
-      const { aiQuickActionsStore } = setupSelection();
+      const { aiQuickActionsStore } = await setupSelection();
 
       const mockError = new Error(
         JSON.stringify({
@@ -298,8 +303,8 @@ describe("aiQuickActions store", () => {
   });
 
   describe("isQuickActionAvailable", () => {
-    it("should return false when K-AI is not enabled", () => {
-      const { aiQuickActionsStore } = setupStore({ isKaiEnabled: false });
+    it("should return false when K-AI is not enabled", async () => {
+      const { aiQuickActionsStore } = await setupStore({ isKaiEnabled: false });
 
       const result = aiQuickActionsStore.isQuickActionAvailable(
         QuickActionId.GenerateAnnotation,
@@ -308,8 +313,8 @@ describe("aiQuickActions store", () => {
       expect(result).toBe(false);
     });
 
-    it("should return true when actions not fetched yet (optimistic)", () => {
-      const { aiQuickActionsStore } = setupStore({ isKaiEnabled: true });
+    it("should return true when actions not fetched yet (optimistic)", async () => {
+      const { aiQuickActionsStore } = await setupStore({ isKaiEnabled: true });
 
       expect(aiQuickActionsStore.availableQuickActions).toBeNull();
 
@@ -321,7 +326,7 @@ describe("aiQuickActions store", () => {
     });
 
     it("should return true when action is available and not processing", async () => {
-      const { aiQuickActionsStore, connectProvider } = setupStore({
+      const { aiQuickActionsStore, connectProvider } = await setupStore({
         isKaiEnabled: true,
         isAuthenticated: false,
         availableQuickActions: [QuickActionId.GenerateAnnotation],
@@ -337,7 +342,7 @@ describe("aiQuickActions store", () => {
     });
 
     it("should return false when action is not in available actions list", async () => {
-      const { aiQuickActionsStore, connectProvider } = setupStore({
+      const { aiQuickActionsStore, connectProvider } = await setupStore({
         isKaiEnabled: true,
         isAuthenticated: false,
         availableQuickActions: [],
@@ -352,8 +357,10 @@ describe("aiQuickActions store", () => {
       expect(result).toBe(false);
     });
 
-    it("should return false when user is not licensed (e.g. a consumer)", () => {
-      const { aiQuickActionsStore } = setupStore({ isUserLicensed: false });
+    it("should return false when user is not licensed (e.g. a consumer)", async () => {
+      const { aiQuickActionsStore } = await setupStore({
+        isUserLicensed: false,
+      });
 
       const result = aiQuickActionsStore.isQuickActionAvailable(
         QuickActionId.GenerateAnnotation,

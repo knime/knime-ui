@@ -17,7 +17,7 @@ export type AiProviderStatus =
   | "checkingBackend"
   | "backendUnavailable"
   | "backendAvailable"
-  | "connected";
+  | "ready";
 
 export type LicensingStatus =
   | { licensed: true; unlicensedMessage?: never }
@@ -187,7 +187,7 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
    *                           │     ready     │ AI service available, user logged in
    *                           └───────────────┘
    */
-  const providerStatus = computed((): AiProviderStatus => {
+  const aiProviderStatus = computed((): AiProviderStatus => {
     if (!isAiProviderConfigured.value) {
       return "unconfigured";
     }
@@ -200,7 +200,7 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
     if (!isAiProviderConnected.value) {
       return "backendAvailable";
     }
-    return "connected";
+    return "ready";
   });
 
   const usernameForAiProvider = computed(() => {
@@ -216,8 +216,6 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
     // AI service
     uiStrings,
     fetchUiStrings,
-    isAiBackendAvailable,
-    isCheckingBackendAvailability,
 
     // AI provider Hub
     aiProviderId,
@@ -225,6 +223,6 @@ export const useAiProviderStore = defineStore("aiProvider", () => {
     connectAiProvider,
     disconnectAiProvider,
     usernameForAiProvider,
-    providerStatus,
+    aiProviderStatus,
   };
 });

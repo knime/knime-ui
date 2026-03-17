@@ -6,7 +6,7 @@ import { Button, LoadingIcon } from "@knime/components";
 import { useAiProviderStore } from "@/store/ai/aiProvider";
 
 const aiProviderStore = useAiProviderStore();
-const { providerStatus } = storeToRefs(aiProviderStore);
+const { aiProviderStatus } = storeToRefs(aiProviderStore);
 </script>
 
 <template>
@@ -22,11 +22,11 @@ const { providerStatus } = storeToRefs(aiProviderStore);
     <Button
       primary
       compact
-      :disabled="providerStatus === 'checkingBackend'"
+      :disabled="aiProviderStatus === 'checkingBackend'"
       @click="aiProviderStore.fetchUiStrings({ force: true })"
     >
       Try again
-      <LoadingIcon v-if="providerStatus === 'checkingBackend'" />
+      <LoadingIcon v-if="aiProviderStatus === 'checkingBackend'" />
     </Button>
   </div>
 </template>

@@ -40,11 +40,9 @@ describe("aiProvider store", () => {
   const setupStore = ({
     hubId = HUB_ID,
     connected = false,
-    backendAvailable = false,
   }: {
-    hubId?: string;
+    hubId?: string | null;
     connected?: boolean;
-    backendAvailable?: boolean;
   } = {}) => {
     const {
       aiProviderStore,
@@ -53,17 +51,16 @@ describe("aiProvider store", () => {
       aiAssistantStore,
     } = mockStores();
 
-    aiProviderStore.aiProviderId = hubId;
-    aiProviderStore.isAiBackendAvailable = backendAvailable;
-
-    spaceProvidersStore.spaceProviders = {
-      [hubId]: createSpaceProvider({
-        id: hubId,
-        connected,
-        name: "Test Hub",
-        username: "test-user",
-      }),
-    };
+    if (hubId) {
+      spaceProvidersStore.spaceProviders = {
+        [hubId]: createSpaceProvider({
+          id: hubId,
+          connected,
+          name: "Test Hub",
+          username: "test-user",
+        }),
+      };
+    }
 
     mockedAPI.desktop.getHubID.mockResolvedValue(hubId);
 
@@ -79,70 +76,76 @@ describe("aiProvider store", () => {
     };
   };
 
-  describe("providerStatus", () => {
-    it("is 'unconfigured' when no AI provider ID is set", () => {
-      const { aiProviderStore } = mockStores();
+  describe("aiProviderStatus", () => {
+    it("is 'unconfigured' when no AI provider ID is set", async () => {
+      const { aiProviderStore } = setupStore({ hubId: null });
 
-      expect(aiProviderStore.providerStatus).toBe("unconfigured");
+      await aiProviderStore.fetchAiProviderId();
+
+      expect(aiProviderStore.aiProviderStatus).toBe("unconfigured");
     });
 
-    it("is 'backendUnavailable' when configured but backend has not been checked yet", () => {
+    it("is 'backendUnavailable' when configured but backend has not been checked yet", async () => {
       const { aiProviderStore } = setupStore();
 
-      expect(aiProviderStore.providerStatus).toBe("backendUnavailable");
+      await aiProviderStore.fetchAiProviderId();
+
+      expect(aiProviderStore.aiProviderStatus).toBe("backendUnavailable");
     });
 
-    it("is 'checkingBackend' while fetching UI strings", () => {
+    it("is 'checkingBackend' while fetching UI strings", async () => {
       const { aiProviderStore } = setupStore();
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockReturnValue(new Promise(() => {}));
       aiProviderStore.fetchUiStrings();
 
-      expect(aiProviderStore.providerStatus).toBe("checkingBackend");
+      expect(aiProviderStore.aiProviderStatus).toBe("checkingBackend");
     });
 
     it("is 'backendUnavailable' after UI strings fetch fails", async () => {
       const { aiProviderStore } = setupStore();
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockRejectedValue(new Error("unavailable"));
       await aiProviderStore.fetchUiStrings();
 
-      expect(aiProviderStore.providerStatus).toBe("backendUnavailable");
+      expect(aiProviderStore.aiProviderStatus).toBe("backendUnavailable");
     });
 
     it("is 'backendAvailable' when backend is available but user is not logged in", async () => {
       const { aiProviderStore } = setupStore({ connected: false });
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockResolvedValue({});
       await aiProviderStore.fetchUiStrings();
 
-      expect(aiProviderStore.providerStatus).toBe("backendAvailable");
+      expect(aiProviderStore.aiProviderStatus).toBe("backendAvailable");
     });
 
-    it("is 'connected' when backend is available and user is logged in", async () => {
+    it("is 'ready' when backend is available and user is logged in", async () => {
       const { aiProviderStore } = setupStore({ connected: true });
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockResolvedValue({});
       await aiProviderStore.fetchUiStrings();
 
-      expect(aiProviderStore.providerStatus).toBe("connected");
+      expect(aiProviderStore.aiProviderStatus).toBe("ready");
     });
   });
 
   describe("fetchAiProviderId", () => {
     it("fetches the provider ID from the desktop API", async () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore({ hubId: "my-hub" });
 
-      mockedAPI.desktop.getHubID.mockResolvedValue("my-hub");
       await aiProviderStore.fetchAiProviderId();
 
       expect(aiProviderStore.aiProviderId).toBe("my-hub");
     });
 
     it("caches the result and does not re-fetch on subsequent calls", async () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore({ hubId: "my-hub" });
 
-      mockedAPI.desktop.getHubID.mockResolvedValue("my-hub");
       await aiProviderStore.fetchAiProviderId();
       await aiProviderStore.fetchAiProviderId();
 
@@ -150,9 +153,8 @@ describe("aiProvider store", () => {
     });
 
     it("re-fetches when called with force: true", async () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore({ hubId: "hub-1" });
 
-      mockedAPI.desktop.getHubID.mockResolvedValue("hub-1");
       await aiProviderStore.fetchAiProviderId();
 
       mockedAPI.desktop.getHubID.mockResolvedValue("hub-2");
@@ -163,9 +165,8 @@ describe("aiProvider store", () => {
     });
 
     it("returns the same promise for concurrent calls", async () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore({ hubId: "my-hub" });
 
-      mockedAPI.desktop.getHubID.mockResolvedValue("my-hub");
       aiProviderStore.fetchAiProviderId();
       aiProviderStore.fetchAiProviderId();
 
@@ -174,9 +175,8 @@ describe("aiProvider store", () => {
     });
 
     it("sets aiProviderId to null when the API returns null", async () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore({ hubId: null });
 
-      mockedAPI.desktop.getHubID.mockResolvedValue(null);
       await aiProviderStore.fetchAiProviderId();
 
       expect(aiProviderStore.aiProviderId).toBeNull();
@@ -184,29 +184,32 @@ describe("aiProvider store", () => {
   });
 
   describe("fetchUiStrings", () => {
-    it("fetches UI strings and marks backend as available on success", async () => {
+    it("fetches UI strings and updates provider status on success", async () => {
       const { aiProviderStore } = setupStore();
       const uiStrings = { kaiGreeting: "Hello!" };
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockResolvedValue(uiStrings);
       await aiProviderStore.fetchUiStrings();
 
-      expect(aiProviderStore.isAiBackendAvailable).toBe(true);
+      expect(aiProviderStore.aiProviderStatus).toBe("backendAvailable");
       expect(aiProviderStore.uiStrings).toMatchObject(uiStrings);
     });
 
     it("marks backend as unavailable on failure", async () => {
       const { aiProviderStore } = setupStore();
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockRejectedValue(new Error("fail"));
       await aiProviderStore.fetchUiStrings();
 
-      expect(aiProviderStore.isAiBackendAvailable).toBe(false);
+      expect(aiProviderStore.aiProviderStatus).toBe("backendUnavailable");
     });
 
     it("caches the result and does not re-fetch on subsequent calls", async () => {
       const { aiProviderStore } = setupStore();
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockResolvedValue({});
       await aiProviderStore.fetchUiStrings();
       await aiProviderStore.fetchUiStrings();
@@ -217,6 +220,7 @@ describe("aiProvider store", () => {
     it("re-fetches when called with force: true", async () => {
       const { aiProviderStore } = setupStore();
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockResolvedValue({});
       await aiProviderStore.fetchUiStrings();
       await aiProviderStore.fetchUiStrings({ force: true });
@@ -227,6 +231,7 @@ describe("aiProvider store", () => {
     it("returns the same promise for concurrent calls", async () => {
       const { aiProviderStore } = setupStore();
 
+      await aiProviderStore.fetchAiProviderId();
       mockedAPI.kai.getUiStrings.mockResolvedValue({});
       aiProviderStore.fetchUiStrings();
       aiProviderStore.fetchUiStrings();
@@ -256,9 +261,8 @@ describe("aiProvider store", () => {
     });
 
     it("does not connect when no provider ID is available", async () => {
-      const { aiProviderStore, spaceAuthStore } = mockStores();
+      const { aiProviderStore, spaceAuthStore } = setupStore({ hubId: null });
 
-      mockedAPI.desktop.getHubID.mockResolvedValue(null);
       await aiProviderStore.connectAiProvider();
 
       expect(spaceAuthStore.connectProvider).not.toHaveBeenCalled();
@@ -290,9 +294,8 @@ describe("aiProvider store", () => {
     });
 
     it("does not disconnect when no provider ID is available", async () => {
-      const { aiProviderStore, spaceAuthStore } = mockStores();
+      const { aiProviderStore, spaceAuthStore } = setupStore({ hubId: null });
 
-      mockedAPI.desktop.getHubID.mockResolvedValue(null);
       await aiProviderStore.disconnectAiProvider();
 
       expect(spaceAuthStore.disconnectProvider).not.toHaveBeenCalled();
@@ -301,13 +304,13 @@ describe("aiProvider store", () => {
 
   describe("licensingStatus", () => {
     it("defaults to licensed", () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore();
 
       expect(aiProviderStore.licensingStatus).toEqual({ licensed: true });
     });
 
     it("can be marked as unlicensed with a message", () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore();
 
       aiProviderStore.markUserAsUnlicensed("No license available");
 
@@ -318,7 +321,7 @@ describe("aiProvider store", () => {
     });
 
     it("can be marked back as licensed", () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore();
 
       aiProviderStore.markUserAsUnlicensed("No license");
       aiProviderStore.markUserAsLicensed();
@@ -328,14 +331,16 @@ describe("aiProvider store", () => {
   });
 
   describe("usernameForAiProvider", () => {
-    it("returns the username from the matching space provider", () => {
+    it("returns the username from the matching space provider", async () => {
       const { aiProviderStore } = setupStore({ connected: true });
+
+      await aiProviderStore.fetchAiProviderId();
 
       expect(aiProviderStore.usernameForAiProvider).toBe("test-user");
     });
 
     it("returns null when no provider matches", () => {
-      const { aiProviderStore } = mockStores();
+      const { aiProviderStore } = setupStore({ hubId: null });
 
       expect(aiProviderStore.usernameForAiProvider).toBeNull();
     });
