@@ -217,7 +217,7 @@ test.describe("dragging", () => {
     await page.keyboard.up("Shift");
 
     // start an immediate drag from an already selected node
-    await page.mouse.move(n2x, n2y);
+    await page.mouse.move(n2x + 3, n2y + 2);
     await page.mouse.down();
     await page.mouse.move(n2x + 100, n2y + 100);
     await assertSnapshot(page);
@@ -569,7 +569,9 @@ test.describe("node label editing", () => {
 
     // start edit
     const [metanodeX, metanodeY] = getCenter(await getNodeLabel(page));
-    await page.mouse.dblclick(metanodeX, metanodeY);
+    await selectNode(page);
+    await page.mouse.move(metanodeX, metanodeY + 3);
+    await page.mouse.dblclick(metanodeX, metanodeY + 3);
     await assertSnapshot(page);
 
     // save name
