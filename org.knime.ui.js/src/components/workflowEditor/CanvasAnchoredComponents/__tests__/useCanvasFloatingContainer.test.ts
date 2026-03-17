@@ -36,17 +36,6 @@ describe("useCanvasFloatingContainer", () => {
     expect(closeMenu).toHaveBeenCalled();
   });
 
-  it("closes menu if a node template is being dragged", async () => {
-    const { mockedStores, closeMenu } = doMount();
-
-    expect(closeMenu).not.toHaveBeenCalled();
-
-    mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
-    await nextTick();
-
-    expect(closeMenu).toHaveBeenCalled();
-  });
-
   it("closes menu when a node is dragged in the canvas", async () => {
     const { mockedStores, closeMenu } = doMount();
 

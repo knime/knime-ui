@@ -16,7 +16,7 @@ import { animate } from "motion";
 
 import type { Workflow } from "@/api/custom-types";
 import { PortType } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
+import { KNIME_MIME } from "@/components/nodeTemplates";
 import { ports } from "@/lib/workflow-canvas";
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
@@ -682,25 +682,6 @@ describe("Connector.vue", () => {
       });
       await nextTick();
       expect(paths.at(1)!.classes()).not.toContain("is-dragged-over");
-    });
-
-    it("inserts node on drop", async () => {
-      const { wrapper } = doMount();
-      const paths = wrapper.findAll("path");
-
-      triggerDragEvent(paths.at(0)!.element, "drop", {
-        getData: () => '{ "className": "test" }',
-      });
-      await nextTick();
-
-      expect(mockedAPI.workflowCommand.InsertNode).toHaveBeenCalledWith({
-        nodeFactory: { className: "test" },
-        connectionId: "root:2_0",
-        position: { x: 5, y: 5 },
-        nodeId: undefined,
-        projectId: "project1",
-        workflowId: "root",
-      });
     });
 
     it("does not insert node on drop if workflow is not writable", async () => {

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from "vue";
-import { useElementHover } from "@vueuse/core";
 
 import { NodePreview } from "@knime/components";
 
@@ -160,14 +159,12 @@ const templateComponent = computed(() =>
   props.displayMode === "icon" ? NodeTemplateIconMode : NodeTemplateListMode,
 );
 
-const nodeTemplateRef = useTemplateRef("nodeTemplateRef");
-const isHovered = useElementHover(nodeTemplateRef as any);
+const isHovered = ref(false);
 </script>
 
 <template>
   <Component
     :is="templateComponent"
-    ref="nodeTemplateRef"
     :class="[
       'node',
       {
@@ -185,6 +182,8 @@ const isHovered = useElementHover(nodeTemplateRef as any);
     :is-description-active="isDescriptionActive"
     :show-floating-help-icon="allowShowingDetails"
     :is-selected="isSelected"
+    @pointerenter="isHovered = true"
+    @pointerleave="isHovered = false"
     @help-icon-click="emit('toggleDetails')"
     @dragstart="onDragStart"
     @dragend="onDragEnd"

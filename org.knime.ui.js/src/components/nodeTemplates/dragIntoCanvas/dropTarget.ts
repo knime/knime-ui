@@ -11,7 +11,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-import { dragTime, useSharedState } from "./state";
+import { useSharedState } from "./state";
 import { isValidNodeTemplateDragEvent } from "./utils";
 
 /**
@@ -22,7 +22,7 @@ import { isValidNodeTemplateDragEvent } from "./utils";
  * has to be consumed from the `useSharedState` helper
  */
 export const useDropTarget = () => {
-  const { draggedTemplateData, callbacks } = useSharedState();
+  const { draggedTemplateData, callbacks, dragTime } = useSharedState();
   const { isWritable } = storeToRefs(useWorkflowStore());
 
   const nodeInteractionsStore = useNodeInteractionsStore();
