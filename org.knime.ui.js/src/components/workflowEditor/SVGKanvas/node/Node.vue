@@ -5,7 +5,10 @@ import { mapActions, mapState } from "pinia";
 
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
-import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
+import {
+  KNIME_MIME,
+  getKnimeMimeEventData,
+} from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -483,10 +486,19 @@ export default {
       if (!this.isWritable) {
         return;
       }
-      const nodeFactory = JSON.parse(
-        dragEvent.dataTransfer.getData(KNIME_MIME),
-      );
-      this.replaceNode({ targetNodeId: this.id, nodeFactory });
+
+      const data = getKnimeMimeEventData(dragEvent);
+      if (data?.type === "node") {
+        this.replaceNode({
+          targetNodeId: this.id,
+          nodeFactory: data.payload.nodeFactory,
+        });
+      } else {
+        consola.warn(
+          "Non native nodes (components) are not supported on SVG canvas",
+        );
+      }
+
       this.isDraggedOver = false;
       this.dragTarget = null;
     },

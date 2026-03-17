@@ -2,7 +2,10 @@ import { type Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
+import {
+  KNIME_MIME,
+  getKnimeMimeEventData,
+} from "@/components/nodeTemplates/useDragNodeIntoCanvas";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
 import type { ExtendedPortType } from "@/lib/data-mappers";
 import { workflowDomain } from "@/lib/workflow-domain";
@@ -155,11 +158,16 @@ export const useConnectionReplacement = (
       }
     }
 
-    const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KNIME_MIME));
+    const data = getKnimeMimeEventData(dragEvent);
+    if (data?.type !== "node") {
+      consola.warn("Components are not supported on SVG canvas");
+      return;
+    }
+
     insertNode({
       clientX: dragEvent.clientX,
       clientY: dragEvent.clientY,
-      nodeFactory,
+      nodeFactory: data?.payload?.nodeFactory,
       event: dragEvent,
     });
   };

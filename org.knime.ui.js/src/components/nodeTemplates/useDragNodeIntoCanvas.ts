@@ -22,14 +22,14 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
-type KnimeNodeDragEventData =
+export type KnimeNodeDragEventData =
   | { type: "component"; payload: { id: string; name: string } }
   | { type: "node"; payload: { nodeFactory: NodeFactoryKey } };
 
-const isValidNodeTemplateDragEvent = (event: DragEvent) =>
+const isValidKnimeMimeDragEvent = (event: DragEvent) =>
   event.dataTransfer?.types.includes(KNIME_MIME);
 
-const setEventData = (
+const setKnimeMimeEventData = (
   event: DragEvent,
   nodeTemplate: NodeTemplateWithExtendedPorts,
 ) => {
@@ -45,7 +45,7 @@ const setEventData = (
   event.dataTransfer!.setData(KNIME_MIME, JSON.stringify(dataTransferPayload));
 };
 
-const getEventData = (event: DragEvent) => {
+export const getKnimeMimeEventData = (event: DragEvent) => {
   const data = event.dataTransfer?.getData(KNIME_MIME);
 
   if (!data) {
@@ -114,7 +114,7 @@ export const useDragNodeIntoCanvas = () => {
       size.height / 2,
     );
 
-    setEventData(event, nodeTemplate);
+    setKnimeMimeEventData(event, nodeTemplate);
   };
 
   const onDrag = (event: DragEvent) => {
@@ -131,7 +131,7 @@ export const useDragNodeIntoCanvas = () => {
 
     if (!isWritable.value) {
       event.dataTransfer!.dropEffect = "none";
-    } else if (isValidNodeTemplateDragEvent(event)) {
+    } else if (isValidKnimeMimeDragEvent(event)) {
       event.dataTransfer!.dropEffect = "copy";
     }
 
@@ -185,7 +185,7 @@ export const useDragNodeIntoCanvas = () => {
     }
 
     // handle drop of nodes from sidebar
-    const eventData = getEventData(event);
+    const eventData = getKnimeMimeEventData(event);
     if (!eventData) {
       return;
     }
