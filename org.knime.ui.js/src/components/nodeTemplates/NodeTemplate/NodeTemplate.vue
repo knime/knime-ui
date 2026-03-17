@@ -19,7 +19,8 @@ import NodeTemplateIconMode from "./NodeTemplateIconMode.vue";
 import NodeTemplateListMode from "./NodeTemplateListMode.vue";
 
 /**
- * This component wraps around NodeTemplate to add dragging functionality.
+ * This component renders a native node or component template. It can provide drag&drop functionality
+ * which lets you add the template into the canvas as a real node
  */
 
 type Props = {

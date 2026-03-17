@@ -5,11 +5,13 @@ import { useDragNearEdgePanning } from "@/components/workflowEditor/WebGLKanvas/
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { type NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-import type { Callbacks } from ".";
 import { useSharedState } from "./state";
+import type { Callbacks } from "./types";
 import { setEventData } from "./utils";
 
 type Options = {
@@ -19,12 +21,21 @@ type Options = {
   };
 } & Partial<Callbacks>;
 
+/**
+ * This composable controls the logic for the initiator of the drag interaction, aka the dragSource.
+ * The composable should not be used directly, see export in index.ts file.
+ *
+ * Because the drag interaction can be started from any rendered node template, state or logic in the body
+ * of the composable has to be carefully assessed because it will run for every single caller of `useDragSource`.
+ * This is also the reason why the callbacks are supplied as options to the `dragStart` function, to make sure
+ * they're registered only for the caller of that function
+ */
 export const useDragSource = () => {
   const { dragTime, draggedTemplateData, callbacks } = useSharedState();
   const { isWritable } = storeToRefs(useWorkflowStore());
 
   const nodeInteractionsStore = useNodeInteractionsStore();
-  const { isWebGLRenderer } = useCanvasRendererUtils();
+  const { isWebGLRenderer, isSVGRenderer } = useCanvasRendererUtils();
   const nodeReplacementOrInsertion = useNodeReplacementOrInsertion();
 
   const { stopPanningToEdge } = useDragNearEdgePanning();
@@ -40,9 +51,15 @@ export const useDragSource = () => {
       callbacks.schedule("onNodeAdded", options.onNodeAdded);
     }
 
+    useCanvasAnchoredComponentsStore().closeAllAnchoredMenus();
+
     // collision check only works for the webgl canvas
     if (isWebGLRenderer.value) {
       nodeReplacementOrInsertion.onDragStart();
+    }
+
+    if (isSVGRenderer.value) {
+      useNodeTemplatesStore().setDraggingNodeTemplate(nodeTemplate);
     }
 
     // Fix for cursor style for Firefox
@@ -73,6 +90,10 @@ export const useDragSource = () => {
     (event.target as HTMLElement).style.cursor = "pointer";
     dragTime.reset();
     draggedTemplateData.value = null;
+
+    if (isSVGRenderer.value) {
+      useNodeTemplatesStore().setDraggingNodeTemplate(null);
+    }
 
     // put the focus on the canvas
     useCurrentCanvasStore().value.focus();

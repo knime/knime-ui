@@ -11,7 +11,7 @@ import type {
   NodeTemplateWithExtendedPorts,
 } from "@/lib/data-mappers";
 
-import type { CallbackKeys, Callbacks } from ".";
+import type { CallbackKeys, Callbacks } from "./types";
 
 const DRAG_TO_EDGE_BUFFER_MS = 300;
 let dragStartTime: number | null = null;

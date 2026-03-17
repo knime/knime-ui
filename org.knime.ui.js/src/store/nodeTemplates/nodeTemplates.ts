@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 
 import type { AvailablePortTypes } from "@/api/custom-types";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { nodeTemplate } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
@@ -43,11 +44,17 @@ export interface NodeTemplatesState {
    * as well as holding port information
    */
   cache: NodeTemplateDictionary;
+
+  isDraggingNodeTemplate: boolean;
+  draggedTemplateData: NodeTemplateWithExtendedPorts | null;
 }
 
 export const useNodeTemplatesStore = defineStore("nodeTemplates", {
   state: (): NodeTemplatesState => ({
     cache: {},
+
+    isDraggingNodeTemplate: false,
+    draggedTemplateData: null,
   }),
   actions: {
     updateCache(newValues: Partial<NodeTemplateDictionary>) {
@@ -56,6 +63,16 @@ export const useNodeTemplatesStore = defineStore("nodeTemplates", {
         ...this.cache,
         ...newValues,
       };
+    },
+
+    setIsDraggingNodeTemplate(isDraggingNodeTemplate: boolean) {
+      this.isDraggingNodeTemplate = isDraggingNodeTemplate;
+    },
+
+    setDraggedTemplateData(
+      draggedTemplateData: NodeTemplateWithExtendedPorts | null,
+    ) {
+      this.draggedTemplateData = draggedTemplateData;
     },
 
     async getSingleNodeTemplate({
@@ -132,6 +149,17 @@ export const useNodeTemplatesStore = defineStore("nodeTemplates", {
       );
 
       this.updateCache(nodeTemplateDictionary);
+    },
+
+    setDraggingNodeTemplate(
+      nodeTemplate: NodeTemplateWithExtendedPorts | null,
+    ) {
+      if (canvasRendererUtils.isWebGLRenderer()) {
+        consola.warn("This is not needed for the WebGL canvas");
+      }
+
+      this.setIsDraggingNodeTemplate(Boolean(nodeTemplate));
+      this.setDraggedTemplateData(nodeTemplate);
     },
   },
 });

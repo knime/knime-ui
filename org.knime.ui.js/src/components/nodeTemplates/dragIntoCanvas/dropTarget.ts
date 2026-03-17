@@ -14,6 +14,13 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { dragTime, useSharedState } from "./state";
 import { isValidNodeTemplateDragEvent } from "./utils";
 
+/**
+ * This composable controls the logic for the receiver of the drag interaction, aka the dropTarget.
+ * The composable should not be used directly, see export in index.ts file.
+ *
+ * Because the drag initates elsewhere, state that is intended to be shared across the interaction
+ * has to be consumed from the `useSharedState` helper
+ */
 export const useDropTarget = () => {
   const { draggedTemplateData, callbacks } = useSharedState();
   const { isWritable } = storeToRefs(useWorkflowStore());
