@@ -9,6 +9,7 @@ import {
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import { useAnalytics } from "@/services/analytics";
 import { useKaiExtensionPanel } from "../../useKaiExtensionPanel";
 
 type Props = {
@@ -24,9 +25,27 @@ const hasNodeTemplates = computed(() => props.nodeTemplates.length > 0);
 
 const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
 
-const handleEnterKey = (node: NodeTemplateWithExtendedPorts) => {
-  if (node.nodeFactory) {
-    addNodeWithAutoPositioning(node.nodeFactory);
+const trackNodeCreation = (
+  action: "dragdrop" | "enter",
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+) => {
+  const trackId = (
+    {
+      dragdrop: "node_created::kaiqa_dragdrop_",
+      enter: "node_created::kaiqa_keyboard_enter",
+    } as const
+  )[action];
+
+  useAnalytics().track(trackId, {
+    nodeType: "node",
+    nodeFactoryId: nodeTemplate.nodeFactory!.className,
+  });
+};
+
+const handleEnterKey = (nodeTemplate: NodeTemplateWithExtendedPorts) => {
+  if (nodeTemplate.nodeFactory) {
+    addNodeWithAutoPositioning(nodeTemplate.nodeFactory);
+    trackNodeCreation("enter", nodeTemplate);
   }
 };
 </script>
@@ -44,6 +63,9 @@ const handleEnterKey = (node: NodeTemplateWithExtendedPorts) => {
         <NodeTemplate
           v-bind="slotProps"
           @toggle-details="toggleNodeDescription(slotProps)"
+          @drag-drop-insert-node="
+            trackNodeCreation('dragdrop', $event.template)
+          "
         />
       </template>
     </NodeList>

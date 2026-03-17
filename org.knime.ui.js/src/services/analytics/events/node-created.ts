@@ -55,8 +55,11 @@ export type NodeCreationEvents = {
     };
   } & NodeOrComponentData;
 
-  // TODO: NXT-4570
-  // "node_created::kaiqa_dragdrop_": {
-  //   type: string;
-  // } & NodeOrComponentData;
+  "node_created::kaiqa_dragdrop_": {
+    nodeType: string;
+  } & NodeOrComponentData;
+
+  "node_created::kaiqa_keyboard_enter": {
+    nodeType: string;
+  } & NodeOrComponentData;
 };
