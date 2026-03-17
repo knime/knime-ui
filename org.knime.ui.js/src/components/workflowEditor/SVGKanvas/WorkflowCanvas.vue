@@ -8,11 +8,7 @@ import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTrac
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-
-const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
-const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
-const { fillScreen, screenToCanvasCoordinates } = useSVGCanvasStore();
-const { isWorkflowEmpty, isWritable } = storeToRefs(useWorkflowStore());
+import * as $shapes from "@/style/shapes";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import Workflow from "./Workflow.vue";
@@ -20,6 +16,11 @@ import WorkflowEmpty from "./WorkflowEmpty.vue";
 import AnnotationRectangle from "./annotations/AnnotationRectangle.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
 import KanvasFilters from "./kanvas/KanvasFilters.vue";
+
+const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
+const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
+const { fillScreen, screenToCanvasCoordinates } = useSVGCanvasStore();
+const { isWorkflowEmpty, isWritable } = storeToRefs(useWorkflowStore());
 
 const { onDrop, onDragOver } = useDragNodeIntoCanvas.dropTarget();
 const kanvas = ref<InstanceType<typeof Kanvas>>();
@@ -78,12 +79,26 @@ const openQuickActionMenu = (event: MouseEvent) => {
     props: { position: { x, y } },
   });
 };
+
+const onCanvasDrop = (event: DragEvent) => {
+  const [canvasX, canvasY] = useSVGCanvasStore().screenToCanvasCoordinates([
+    event.clientX,
+    event.clientY,
+  ]);
+
+  const dropPosition = {
+    x: canvasX - $shapes.nodeSize / 2,
+    y: canvasY - $shapes.nodeSize / 2,
+  };
+
+  onDrop(event, dropPosition);
+};
 </script>
 
 <template>
   <Kanvas
     ref="kanvas"
-    @drop.stop="onDrop"
+    @drop.stop="onCanvasDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
     @dblclick.exact="openQuickActionMenu"

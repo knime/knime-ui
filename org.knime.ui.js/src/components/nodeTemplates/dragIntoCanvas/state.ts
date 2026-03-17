@@ -16,7 +16,7 @@ import type { CallbackKeys, Callbacks } from "./types";
 const DRAG_TO_EDGE_BUFFER_MS = 300;
 let dragStartTime: number | null = null;
 
-export const dragTime = {
+const dragTime = {
   isSet: () => dragStartTime !== null,
   init: (value: number) => {
     dragStartTime = value;

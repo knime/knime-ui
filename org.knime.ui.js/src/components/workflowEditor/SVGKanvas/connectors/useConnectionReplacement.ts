@@ -155,7 +155,7 @@ export const useConnectionReplacement = (
       }
     }
 
-    const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KNIME_MIME));
+    const nodeFactory = draggedNodeTemplate.value?.nodeFactory;
     insertNode({
       clientX: dragEvent.clientX,
       clientY: dragEvent.clientY,
