@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { KdsButton } from "@knime/kds-components";
 import ArrowDownIcon from "@knime/styles/img/icons/arrow-down.svg";
 import CircleInfoIcon from "@knime/styles/img/icons/circle-info.svg";
 
+import { useAddNodeViaFileUpload } from "@/components/nodeTemplates/useAddNodeViaFileUpload";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
+import { isBrowser } from "@/environment";
+import { useShortcuts } from "@/services/shortcuts";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
@@ -35,6 +40,27 @@ const rectangleBounds = computed(() => {
     width: Math.max(bounds.value.width - 2 * padding, 0),
   };
 });
+
+const { importFilesViaDialog } = useAddNodeViaFileUpload();
+const $shortcuts = useShortcuts();
+const dispatchShortcut = (
+  shortcutName: "openQuickNodeInsertionMenu" | "openQuickBuildMenu",
+  event: MouseEvent,
+) => {
+  const [x, y] = useCurrentCanvasStore().value.screenToCanvasCoordinates([
+    event.clientX,
+    event.clientY,
+  ]);
+
+  if ($shortcuts.isEnabled(shortcutName)) {
+    $shortcuts.dispatch(shortcutName, {
+      event,
+      metadata: { position: { x, y } },
+    });
+  }
+};
+
+const { isKaiEnabled } = useIsKaiEnabled();
 </script>
 
 <template>
@@ -63,6 +89,45 @@ const rectangleBounds = computed(() => {
     <template v-else>
       <text y="0">This workflow is empty.</text>
     </template>
+
+    <foreignObject
+      v-if="uiControls.canEditWorkflow && isBrowser()"
+      y="50"
+      x="-250"
+      style="height: 100px; width: 500px"
+    >
+      <div
+        style="
+          display: flex;
+          padding-top: var(--kds-spacing-container-1x);
+          gap: var(--kds-spacing-container-0-75x);
+          justify-content: center;
+        "
+      >
+        <KdsButton
+          label="Data file"
+          size="large"
+          leading-icon="plus"
+          variant="outlined"
+          @click="importFilesViaDialog"
+        />
+        <KdsButton
+          label="Add node"
+          size="large"
+          leading-icon="node-stack"
+          variant="outlined"
+          @click="dispatchShortcut('openQuickNodeInsertionMenu', $event)"
+        />
+        <KdsButton
+          v-if="isKaiEnabled"
+          label="Ask K-AI"
+          leading-icon="ai-general"
+          size="large"
+          variant="outlined"
+          @click="dispatchShortcut('openQuickBuildMenu', $event)"
+        />
+      </div>
+    </foreignObject>
 
     <!-- Define all Portals also for the empty workflow because some features rely on them -->
     <WorkflowPortalLayers v-if="uiControls.canEditWorkflow" />
