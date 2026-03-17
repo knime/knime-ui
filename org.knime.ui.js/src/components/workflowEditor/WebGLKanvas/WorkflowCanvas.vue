@@ -206,11 +206,11 @@ const onWorkflowEmptyContextMenu = (event: MouseEvent) => {
   useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
 };
 
-const dragNodeIntoCanvas = useDragNodeIntoCanvas();
+const dropNodeIntoCanvas = useDragNodeIntoCanvas.dropTarget();
 const addNodeViaUpload = useAddNodeViaFileUpload();
 
 const onCanvasDragover = (event: DragEvent) => {
-  dragNodeIntoCanvas.onDragOver(event);
+  dropNodeIntoCanvas.onDragOver(event);
 };
 
 const onCanvasDrop = (event: DragEvent) => {
@@ -240,7 +240,7 @@ const onCanvasDrop = (event: DragEvent) => {
     }
   }
 
-  dragNodeIntoCanvas.onDrop(event, dropPosition);
+  dropNodeIntoCanvas.onDrop(event, dropPosition);
 };
 </script>
 

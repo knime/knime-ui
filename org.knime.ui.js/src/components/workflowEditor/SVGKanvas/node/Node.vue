@@ -5,12 +5,13 @@ import { mapActions, mapState } from "pinia";
 
 import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
-import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
+import { KNIME_MIME } from "@/components/nodeTemplates";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
@@ -479,14 +480,16 @@ export default {
       }
     },
 
-    onTorsoDragDrop(dragEvent) {
-      if (!this.isWritable) {
+    onTorsoDragDrop() {
+      const { draggedTemplateData } = useNodeTemplatesStore();
+      if (!this.isWritable || !draggedTemplateData) {
         return;
       }
-      const nodeFactory = JSON.parse(
-        dragEvent.dataTransfer.getData(KNIME_MIME),
-      );
-      this.replaceNode({ targetNodeId: this.id, nodeFactory });
+
+      this.replaceNode({
+        targetNodeId: this.id,
+        nodeFactory: draggedTemplateData.nodeFactory,
+      });
       this.isDraggedOver = false;
       this.dragTarget = null;
     },

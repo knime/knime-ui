@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 
 import type { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useCanvasRendererUtils } from "../util/canvasRenderer";
 
@@ -51,23 +50,12 @@ export const useCanvasFloatingContainer = (
   } = options;
 
   const { isDragging: isDraggingNodeInCanvas } = storeToRefs(useMovingStore());
-  const { isDraggingNodeTemplate } = storeToRefs(useNodeTemplatesStore());
 
   watch(isDraggingNodeInCanvas, () => {
     if (isDraggingNodeInCanvas.value) {
       closeMenu();
     }
   });
-
-  watch(
-    isDraggingNodeTemplate,
-    () => {
-      if (isDraggingNodeTemplate.value) {
-        closeMenu();
-      }
-    },
-    { immediate: true },
-  );
 
   onMounted(() => {
     if (disableInteractions && canvasStore) {

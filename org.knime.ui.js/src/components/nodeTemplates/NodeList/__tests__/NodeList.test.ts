@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
+import { h, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
@@ -26,6 +26,9 @@ describe("NodeList", () => {
       attachTo: document.body,
       global: { stubs: { NodeTemplate: true } },
       ...opts,
+      slots: {
+        item: (props) => h(NodeTemplate, props),
+      },
     });
 
   it("show-more button", async () => {

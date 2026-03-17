@@ -62,7 +62,10 @@ const nodeId = computed(() => props.quickActionContext.nodeId);
 const port = computed(() => props.quickActionContext.port);
 const nodeRelation = computed(() => props.quickActionContext.nodeRelation);
 
-const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
+const addNode = async (
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+  action: "click" | "enter",
+) => {
   if (!nodeTemplate.component) {
     return;
   }
@@ -97,6 +100,18 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
     ...autoConnectOptions,
   });
 
+  const trackId = (
+    {
+      click: "node_created::qam_click_",
+      enter: "node_created::qam_keyboard_enter",
+    } as const
+  )[action];
+
+  useAnalytics().track(trackId, {
+    nodeType: "component",
+    nodeHubId: nodeTemplate.id,
+  });
+
   props.quickActionContext.closeMenu();
 };
 
@@ -105,7 +120,7 @@ const searchEnterKey = () => {
     return;
   }
 
-  addNode(results.value[0]);
+  addNode(results.value[0], "enter");
 };
 
 onBeforeUnmount(() => {
@@ -138,12 +153,14 @@ onBeforeUnmount(() => {
       :results="results"
       :fetch-data="componentSearchStore.searchComponents"
       @nav-reached-top="($refs.search as any).focus()"
-      @add-to-workflow="addNode"
+      @on-enter-key="addNode($event, 'enter')"
     >
       <template #nodesTemplate="itemProps">
         <NodeTemplate
+          :allow-showing-details="false"
+          :draggable="false"
           v-bind="itemProps"
-          @click="addNode(itemProps.nodeTemplate)"
+          @click="addNode(itemProps.nodeTemplate, 'click')"
         />
       </template>
     </ComponentSearchResults>

@@ -5,7 +5,7 @@ import { useRoute } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
 
-import { Node, SpaceItem } from "@/api/gateway-api/generated-api";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useAnalytics } from "@/services/analytics";
@@ -179,7 +179,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
           });
 
           useAnalytics().track("node_created::explorer_dragdrop_", {
-            type: Node.KindEnum.Component,
+            nodeType: "component",
             nodeHubId: sourceItem.id,
           });
 
@@ -196,7 +196,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
           if (node) {
             useAnalytics().track("node_created::explorer_dragdrop_", {
               nodeFactoryId: nodeTemplateId,
-              type: Node.KindEnum.Node,
+              nodeType: "node",
             });
           }
 

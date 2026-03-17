@@ -8,7 +8,9 @@ import NodeRepositoryTree from "../NodeRepositoryTree.vue";
 import type { NodeCategoryWithExtendedPorts } from "../types";
 
 const { addNodeWithAutoPositioningMock } = vi.hoisted(() => ({
-  addNodeWithAutoPositioningMock: vi.fn(),
+  addNodeWithAutoPositioningMock: vi.fn(() =>
+    Promise.resolve({ newNodeId: "root:1" }),
+  ),
 }));
 
 vi.mock("@/components/nodeTemplates", async () => {

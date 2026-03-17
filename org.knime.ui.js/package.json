@@ -70,7 +70,7 @@
     "pixi.js": "^8.17.0",
     "raf-throttle": "2.0.6",
     "vscode-json-languageservice": "^5.6.1",
-    "vue": "3.5.18",
+    "vue": "3.5.30",
     "vue-router": "^4.5.1",
     "vuedraggable": "^4.1.0"
   },
@@ -125,6 +125,7 @@
       ]
     },
     "overrides": {
+      "v-calendar": "https://github.com/knime/v-calendar/archive/048477f.tar.gz",
       "@knime/knime-ui-table@0.5.22>@knime/components": "1.33.0",
       "lodash-es@>=4.0.0 <=4.17.22": ">=4.17.23",
       "lodash@>=4.0.0 <=4.17.22": ">=4.17.23",

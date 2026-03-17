@@ -2,8 +2,9 @@
 import { useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 
-import { type NavReachedEvent } from "@/components/nodeTemplates";
+import { type NavReachedEvent, NodeTemplate } from "@/components/nodeTemplates";
 import type { ComponentNodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
+import { useAnalytics } from "@/services/analytics";
 import { useSidebarComponentSearchStore } from "@/store/componentSearch";
 import { usePanelStore } from "@/store/panel";
 import ComponentSearchResults from "../ComponentSearchResults.vue";
@@ -39,6 +40,24 @@ const onShowComponentDetails = (
 
   panelStore.closeExtensionPanel();
 };
+
+const trackComponentInsertion = (
+  action: "dblclick" | "enter" | "dragdrop",
+  data: { template: ComponentNodeTemplateWithExtendedPorts },
+) => {
+  const trackId = (
+    {
+      dblclick: "node_created::noderepo_doubleclick_",
+      enter: "node_created::noderepo_keyboard_enter",
+      dragdrop: "node_created::noderepo_dragdrop_",
+    } as const
+  )[action];
+
+  useAnalytics().track(trackId, {
+    nodeType: "component",
+    nodeHubId: data.template.id,
+  });
+};
 </script>
 
 <template>
@@ -51,7 +70,25 @@ const onShowComponentDetails = (
     :fetch-data="componentSearchStore.searchComponents"
     @nav-reached-top="emit('navReachedTop', $event)"
     @show-component-details="onShowComponentDetails"
-  />
+    @on-enter-key="trackComponentInsertion('enter', { template: $event })"
+  >
+    <template #nodesTemplate="slotProps">
+      <NodeTemplate
+        v-bind="slotProps"
+        @toggle-details="
+          onShowComponentDetails(
+            slotProps.nodeTemplate as ComponentNodeTemplateWithExtendedPorts,
+          )
+        "
+        @dbl-click-insert-component="
+          trackComponentInsertion('dblclick', $event)
+        "
+        @drag-drop-insert-component="
+          trackComponentInsertion('dragdrop', $event)
+        "
+      />
+    </template>
+  </ComponentSearchResults>
 </template>
 
 <style lang="postcss" scoped>

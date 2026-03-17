@@ -5,7 +5,7 @@ import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 
 import { Node as NodeType } from "@/api/gateway-api/generated-api";
-import { KNIME_MIME } from "@/components/nodeTemplates/useDragNodeIntoCanvas";
+import { KNIME_MIME } from "@/components/nodeTemplates";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import * as $colors from "@/style/colors";
@@ -1208,8 +1208,13 @@ describe("Node", () => {
 
       it("replaces node on drop", async () => {
         props = { ...commonNode };
-        const { wrapper } = doMount({ props });
+        const { wrapper, mockedStores } = doMount({ props });
         const node = wrapper.findComponent(Node);
+
+        // @ts-expect-error
+        mockedStores.nodeTemplatesStore.draggedTemplateData = {
+          nodeFactory: { className: "test" },
+        };
 
         const dropEvent = triggerDragEvent(node.element, "drop", {
           getData: () => '{ "className": "test" }',

@@ -131,13 +131,6 @@ describe("FloatingMenu.vue", () => {
       expect(useFocusTrapMock.activate).not.toHaveBeenCalled();
     });
 
-    it("closes menu if a node template is being dragged", async () => {
-      const { wrapper } = doMount({ isDraggingNodeTemplate: true });
-      await nextTick();
-
-      expect(wrapper.emitted("menuClose")).toBeDefined();
-    });
-
     it("closes menu when a node is dragged in the canvas", async () => {
       const { wrapper, mockedStores } = doMount();
       mockedStores.movingStore.isDragging = true;

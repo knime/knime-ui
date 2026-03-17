@@ -6,14 +6,15 @@ import { Tag } from "@knime/components";
 
 import ScrollViewContainer from "@/components/common/ScrollViewContainer/ScrollViewContainer.vue";
 import {
-  DraggableNodeTemplate,
   type NavReachedEvent,
   NodeList,
+  NodeTemplate,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import { trackNodeCreation } from "../trackNodeCreation";
 
 const TAG_LIMIT = 8;
 
@@ -90,6 +91,28 @@ const onNavReachedTop = (index: number, event: NavReachedEvent) => {
 };
 
 defineExpose({ focusFirst });
+
+const addNodeOnEnterKey = async (
+  nodeTemplate: NodeTemplateWithExtendedPorts,
+) => {
+  if (!nodeTemplate.nodeFactory) {
+    return;
+  }
+
+  const { newNodeId, connectedTo } = await addNodeWithAutoPositioning(
+    nodeTemplate.nodeFactory,
+  );
+
+  if (!newNodeId) {
+    return;
+  }
+
+  trackNodeCreation("enter", {
+    newNodeId,
+    connectedTo,
+    template: nodeTemplate,
+  });
+};
 </script>
 
 <template>
@@ -122,15 +145,17 @@ defineExpose({ focusFirst });
             :show-details-for="showDescriptionForNode"
             :display-mode="displayMode"
             @show-more="onSelectTag(tag)"
-            @enter-key="addNodeWithAutoPositioning($event.nodeFactory!)"
+            @enter-key="addNodeOnEnterKey"
             @show-node-details="onShowNodeDetails"
             @nav-reached-top="onNavReachedTop(index, $event)"
             @nav-reached-end="onNavReachedEnd(index, $event)"
           >
             <template #item="itemProps">
-              <DraggableNodeTemplate
+              <NodeTemplate
                 v-bind="itemProps"
-                @show-node-description="$emit('showNodeDescription', itemProps)"
+                @toggle-details="$emit('showNodeDescription', itemProps)"
+                @dbl-click-insert-node="trackNodeCreation('dblclick', $event)"
+                @drag-drop-insert-node="trackNodeCreation('dragdrop', $event)"
               />
             </template>
             <template #more-button>Show all</template>

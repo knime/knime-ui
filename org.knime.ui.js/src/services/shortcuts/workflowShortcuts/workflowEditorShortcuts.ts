@@ -211,7 +211,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
           // can only mean that it's a shortcut fired off when a node is selected
           useAnalytics().track("qam_opened::keyboard_shortcut_", {
             connectedTo: {
-              nodeType: target.node.kind,
+              nodeType: target.node.kind.toLowerCase(),
               nodePortId: target.portTypeId,
               nodePortIndex: target.port.index,
               nodeFactoryId,

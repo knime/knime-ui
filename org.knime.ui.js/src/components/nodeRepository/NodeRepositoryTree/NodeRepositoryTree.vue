@@ -12,13 +12,14 @@ import {
 
 import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
 import {
-  DraggableNodeTemplate,
   type NavReachedEvent,
+  NodeTemplate,
   useAddNodeTemplateWithAutoPositioning,
 } from "@/components/nodeTemplates";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
+import { trackNodeCreation } from "../trackNodeCreation";
 
 import type { NodeCategoryWithExtendedPorts } from "./types";
 
@@ -170,13 +171,27 @@ const onShowNodeDescription = (treeNode: BaseTreeNode) => {
 };
 
 const { addNodeWithAutoPositioning } = useAddNodeTemplateWithAutoPositioning();
-const addTreeNodeToWorkflow = (treeNode: BaseTreeNode) => {
-  const nodeFactory = (treeNode.origin as ExtendedTreeNodeOptions)?.nodeTemplate
-    ?.nodeFactory;
+const addTreeNodeToWorkflow = async (treeNode: BaseTreeNode) => {
+  const nodeTemplate = (treeNode.origin as ExtendedTreeNodeOptions)
+    ?.nodeTemplate;
 
-  if (nodeFactory) {
-    addNodeWithAutoPositioning(nodeFactory);
+  if (!nodeTemplate?.nodeFactory) {
+    return;
   }
+
+  const { newNodeId, connectedTo } = await addNodeWithAutoPositioning(
+    nodeTemplate.nodeFactory,
+  );
+
+  if (!newNodeId) {
+    return;
+  }
+
+  trackNodeCreation("enter", {
+    newNodeId,
+    connectedTo,
+    template: nodeTemplate,
+  });
 };
 
 const onTreeKeydown = ({ event, node: treeNode }: KeydownEvent) => {
@@ -208,7 +223,7 @@ defineExpose({ focusFirst });
     @keydown="onTreeKeydown"
   >
     <template #leaf="{ treeNode }: { treeNode: ExtendedBaseTreeNode }">
-      <DraggableNodeTemplate
+      <NodeTemplate
         class="node-template-component"
         :node-template="treeNode.origin.nodeTemplate!"
         :is-highlighted="false"
@@ -217,7 +232,9 @@ defineExpose({ focusFirst });
           showDescriptionForNode?.id === treeNode.origin.nodeTemplate!.id
         "
         display-mode="tree"
-        @show-node-description="onShowNodeDescription(treeNode)"
+        @toggle-details="onShowNodeDescription(treeNode)"
+        @dbl-click-insert-node="trackNodeCreation('dblclick', $event)"
+        @drag-drop-insert-node="trackNodeCreation('dragdrop', $event)"
       />
     </template>
   </Tree>
