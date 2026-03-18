@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 /*
 Quick Action Menu has the following modes:
@@ -34,12 +35,11 @@ import {
   type QuickActionMenuAnchor,
   type QuickActionMenuContentHeight,
   type QuickActionMenuContext,
+  type QuickActionMenuMode,
 } from "./types";
 import { useQuickActionMenuMode } from "./useQuickActionMenuMode";
 
 const { FloatingMenu } = getFloatingMenuComponent();
-
-export type QuickActionMenuMode = "quick-add" | "quick-build" | null;
 
 export type QuickActionMenuProps = {
   nodeId?: string | null;
@@ -56,7 +56,7 @@ const props = withDefaults(defineProps<QuickActionMenuProps>(), {
   port: null,
   nodeRelation: null,
   positionOrigin: "mouse",
-  initialMode: null,
+  initialMode: undefined,
 });
 
 const emit = defineEmits(["menuClose"]);
@@ -71,6 +71,7 @@ const { port, nodeRelation } = toRefs(props);
 const { activeMode, availableModes } = useQuickActionMenuMode({
   port,
   nodeRelation,
+  initialMode: props.initialMode,
 });
 
 const canvasPosition = computed(() => {

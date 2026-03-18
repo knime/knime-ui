@@ -7,14 +7,18 @@ import { isBrowser } from "@/environment";
 import { optional } from "@/lib/fp";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 
-const activeMode = ref<"nodes" | "components" | "k-ai">("nodes");
+import type { QuickActionMenuMode } from "./types";
+
+const activeMode = ref<QuickActionMenuMode>("nodes");
 
 export const useQuickActionMenuMode = ({
   port,
   nodeRelation,
+  initialMode,
 }: {
   port: Ref<NodePort | null>;
   nodeRelation: Ref<NodeRelation | null>;
+  initialMode?: QuickActionMenuMode;
 }) => {
   const { isKaiEnabled } = useIsKaiEnabled();
   const isQuickBuildModeAvailable = computed(() =>
@@ -34,6 +38,13 @@ export const useQuickActionMenuMode = ({
       }),
     ];
   });
+
+  if (
+    initialMode &&
+    availableModes.value.some(({ id }) => id === initialMode)
+  ) {
+    activeMode.value = initialMode;
+  }
 
   watch(
     [isKaiEnabled, isQuickBuildModeAvailable],

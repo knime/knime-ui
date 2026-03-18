@@ -3,7 +3,7 @@ import { API } from "@api";
 
 import type { KnimeNode, NodeRelation } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
-import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
+import type { QuickActionMenuMode } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/types";
 import { freeSpaceInCanvas, ports } from "@/lib/workflow-canvas";
 import { workflowDomain } from "@/lib/workflow-domain";
 import { useAnalytics } from "@/services/analytics";
@@ -195,7 +195,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
     execute: (ctx) => {
-      const { opened, target } = openQuickActionMenu(ctx, "quick-add");
+      const { opened, target } = openQuickActionMenu(ctx, "nodes");
 
       if (!opened) {
         return;
@@ -240,7 +240,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     ],
     group: "workflowEditor",
     execute: (ctx) => {
-      openQuickActionMenu(ctx, "quick-build");
+      openQuickActionMenu(ctx, "k-ai");
     },
     condition: () => useWorkflowStore().isWritable,
   },
