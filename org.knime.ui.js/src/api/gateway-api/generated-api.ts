@@ -2270,7 +2270,7 @@ export namespace KaiInquiry {
      */
     export enum InquiryTypeEnum {
         Permission = 'permission',
-        Confirmation = 'confirmation'
+        Choice = 'choice'
     }
 }
 /**
@@ -2292,6 +2292,12 @@ export interface KaiInquiryOption {
      * @memberof KaiInquiryOption
      */
     label: string;
+    /**
+     * Optional subtext to be displayed under the label.
+     * @type {string}
+     * @memberof KaiInquiryOption
+     */
+    helperText?: string;
     /**
      * UI hint for styling.
      * @type {string}
@@ -2336,11 +2342,17 @@ export interface KaiInquiryResponse {
      */
     inquiryId: string;
     /**
-     * The id of the chosen option.
+     * The id of the chosen option. Should be omitted if customResponse is present.
      * @type {string}
      * @memberof KaiInquiryResponse
      */
-    selectedOptionId: string;
+    selectedOptionId?: string;
+    /**
+     * Contains the user&#39;s own answer if they chose to provide it. Should be omitted if selectedOptionId is present.
+     * @type {string}
+     * @memberof KaiInquiryResponse
+     */
+    customResponse?: string;
 
 }
 
