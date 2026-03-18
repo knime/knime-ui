@@ -1,44 +1,48 @@
 export type GradientStop = {
-  position: number; // 0–1, fraction of the way around the perimeter
-  color: string; // HSL colour string, e.g. "hsl(185, 49%, 88%)"
+  /** 0–1, fraction of the way around the perimeter */
+  position: number;
+  /** HSL colour string, e.g. "hsl(185, 49%, 88%)" */
+  color: string;
 };
 
 export type GlowConfig = {
+  /** Index identifying the colour stop used for the glow */
   gradientStopIndex: number;
-  opacity?: number; // 0-1, the higher the less transparent
-  softness?: number; // blur strength, e.g. 60, the higher the more spready the glow
-  spread?: number; // 0-1, lower is narrow spiky spread, higher is wide shallow spread
+  /** 0-1, the higher the less transparent */
+  opacity?: number;
+  /** Blur strength, e.g. 60, the higher the more blurry the glow */
+  softness?: number;
+  /** 0-1, shape of the glow.
+   * - spread close to 0: ____▓██▓____
+   * - spread close to 1: ░░▒▒▓▓▓▓▒▒░░
+   */
+  spread?: number;
 };
 
 /**
- * Precomputed shape metrics for a rectangle with sharp corners.
+ * A single circle in the glow dot cluster.
+ *
+ * At draw time each dot is placed on the border perimeter at
+ * `anchorT + perimeterOffset`, where `anchorT` is the gradient stop's
+ * position plus the current rotation fraction.
  */
-export type SharpPerimeter = {
-  kind: "sharp";
-  inset: number;
-  insetWidth: number;
-  insetHeight: number;
-  perimeter: number;
-  topCenterOffset: number;
+export type GlowDot = {
+  /** Offset from middle dot (the anchor point) in perimeter-fraction units. */
+  perimeterOffset: number;
+  /** Radius in pixels. */
+  radius: number;
+  /** 0-1, the higher the less transparent */
+  alpha: number;
 };
 
-/**
- * Precomputed shape metrics for rectangle with rounded corners.
- */
-export type RoundedPerimeter = {
-  kind: "rounded";
-  inset: number;
-  insetWidth: number;
-  insetHeight: number;
-  insetRadius: number;
-  straightWidth: number;
-  straightHeight: number;
-  arcLength: number;
-  perimeter: number;
-  topCenterOffset: number;
-};
-
-export type Perimeter = SharpPerimeter | RoundedPerimeter;
+// === Border geometry ===
+//
+// The border is subdivided into small segments so that
+// each segment can be stroked with a single colour from the gradient
+// lookup table.
+//
+// `midT` is the perimeter-fraction at the segment's
+// midpoint, used to look up its colour in the LUT at each frame.
 
 /**
  * A straight line segment between two points on the perimeter.
@@ -49,7 +53,7 @@ export type LineSegment = {
   startY: number;
   endX: number;
   endY: number;
-  midT: number; // parametric midpoint of this segment, used for gradient colour lookup
+  midT: number;
 };
 
 /**
@@ -64,14 +68,19 @@ export type ArcSegment = {
   // start and end angles of this arc slice in radians
   sliceStart: number;
   sliceEnd: number;
-  midT: number; // parametric midpoint of this segment, used for gradient colour lookup
+  midT: number;
 };
 
 /**
  * Fills the empty square produced by rectangle sides meeting at a sharp corner due to stroke inset.
+ *
+ * When the stroke is inset by halfStroke, the four outer corners of a
+ * sharp rectangle have small cutouts. Each patch is a filled square that
+ * covers one gap, coloured to match the gradient at that corner.
  */
 export type CornerPatch = {
-  cornerT: number; // used to look up the gradient colour
+  /** Perimeter-fraction at this corner, used for gradient colour lookup */
+  cornerT: number;
   // top-left coordinates of the patch rectangle
   patchX: number;
   patchY: number;
@@ -88,10 +97,7 @@ export type RoundedGeometry = {
   segments: (LineSegment | ArcSegment)[];
 };
 
+/**
+ * The complete segmented border shape.
+ */
 export type BorderGeometry = SharpGeometry | RoundedGeometry;
-
-export type GlowDot = {
-  perimeterOffset: number; // offset from middle dot (the anchor point)
-  radius: number;
-  alpha: number;
-};

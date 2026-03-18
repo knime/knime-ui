@@ -1,8 +1,15 @@
-/* eslint-disable max-params */
 import { wrapToUnit } from "@/lib/math";
 import type { GraphicsInst } from "@/vue3-pixi";
 
-import type { BorderGeometry, GlowDot } from "./types";
+import type { PrecomputedGlow } from "./_internalGlow";
+import { getPerimeterPoint } from "./_internalPerimeter";
+import type { BorderGeometry } from "./types";
+
+export type BorderResources = {
+  geometry: BorderGeometry;
+  colorLookupTable: Uint32Array;
+  strokeWidth: number;
+};
 
 /**
  * Draws the gradient border onto the given Graphics instance.
@@ -10,11 +17,9 @@ import type { BorderGeometry, GlowDot } from "./types";
  * Each segment looks up its colour from the LUT at (midT − rotationFraction).
  */
 export const drawBorder = (
-  graphics: GraphicsInst,
-  geometry: BorderGeometry,
+  target: GraphicsInst,
   rotationFraction: number,
-  colorLookupTable: Uint32Array,
-  strokeWidth: number,
+  { geometry, colorLookupTable, strokeWidth }: BorderResources,
 ): void => {
   const colorLookupMaxIndex = colorLookupTable.length - 1;
 
@@ -27,10 +32,10 @@ export const drawBorder = (
         )
       ];
     if (segment.kind === "line") {
-      graphics.moveTo(segment.startX, segment.startY);
-      graphics.lineTo(segment.endX, segment.endY);
+      target.moveTo(segment.startX, segment.startY);
+      target.lineTo(segment.endX, segment.endY);
     } else {
-      graphics.arc(
+      target.arc(
         segment.centerX,
         segment.centerY,
         segment.insetRadius,
@@ -39,10 +44,10 @@ export const drawBorder = (
         false,
       );
     }
-    graphics.stroke({ width: strokeWidth, color, cap: "butt" });
+    target.stroke({ width: strokeWidth, color, cap: "butt" });
   }
 
-  // Fill the four outer-corner notch patches
+  // Fill the four outer-corner notch patches (sharp corners only)
   if (geometry.kind === "sharp") {
     const halfStroke = strokeWidth / 2;
     for (const { cornerT, patchX, patchY } of geometry.cornerPatches) {
@@ -52,8 +57,8 @@ export const drawBorder = (
             wrapToUnit(cornerT - rotationFraction) * colorLookupMaxIndex,
           )
         ];
-      graphics.rect(patchX, patchY, halfStroke, halfStroke);
-      graphics.fill(color);
+      target.rect(patchX, patchY, halfStroke, halfStroke);
+      target.fill(color);
     }
   }
 };
@@ -62,20 +67,17 @@ export const drawBorder = (
  * Draws the glow dot cluster onto the given Graphics instance.
  */
 export const drawGlowDots = (
-  graphics: GraphicsInst,
-  dots: GlowDot[],
-  glowAnchorT: number,
+  target: GraphicsInst,
   rotationFraction: number,
-  glowColor: number,
-  resolvePoint: (t: number) => [number, number],
+  glow: PrecomputedGlow,
 ): void => {
-  const rotatedAnchorT = wrapToUnit(glowAnchorT + rotationFraction);
+  const rotatedAnchorT = wrapToUnit(glow.anchorT + rotationFraction);
 
-  for (const { perimeterOffset, radius, alpha } of dots) {
+  for (const { perimeterOffset, radius, alpha } of glow.dots) {
     const dotPosition = wrapToUnit(rotatedAnchorT + perimeterOffset);
-    const [pointX, pointY] = resolvePoint(dotPosition);
-    graphics.circle(pointX, pointY, radius);
-    graphics.fill({ color: glowColor, alpha });
+    const [pointX, pointY] = getPerimeterPoint(dotPosition, glow.perimeter);
+    target.circle(pointX, pointY, radius);
+    target.fill({ color: glow.color, alpha });
   }
 };
 
@@ -84,7 +86,7 @@ export const drawGlowDots = (
  * the border.
  */
 export const drawGlowCutout = (
-  graphics: GraphicsInst,
+  target: GraphicsInst,
   strokeWidth: number,
   width: number,
   height: number,
@@ -96,16 +98,9 @@ export const drawGlowCutout = (
   const cutoutHeight = height - 2 * strokeWidth;
   if (borderRadius > 0) {
     const innerRadius = Math.max(0, borderRadius - strokeWidth);
-    graphics.roundRect(
-      cutoutX,
-      cutoutY,
-      cutoutWidth,
-      cutoutHeight,
-      innerRadius,
-    );
+    target.roundRect(cutoutX, cutoutY, cutoutWidth, cutoutHeight, innerRadius);
   } else {
-    graphics.rect(cutoutX, cutoutY, cutoutWidth, cutoutHeight);
+    target.rect(cutoutX, cutoutY, cutoutWidth, cutoutHeight);
   }
-  const cutoutColor = 0xffffff;
-  graphics.fill(cutoutColor);
+  target.fill(0xffffff);
 };

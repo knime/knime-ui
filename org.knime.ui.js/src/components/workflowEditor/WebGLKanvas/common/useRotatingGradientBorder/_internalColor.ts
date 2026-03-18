@@ -4,24 +4,36 @@ import type { GradientStop } from "./types";
 
 /**
  * Pre-sample a gradient into a fixed-size colour lookup table.
+ *
+ * Each entry is a packed 0xRRGGBB integer suitable for passing directly
+ * to PixiJS drawing methods.
  */
 export const buildGradientLookupTable = (
   stops: GradientStop[],
   size: number,
 ): Uint32Array => {
-  // 1. Ensure stops are sorted by position and cast colours to Pixi
+  // 1. Parse each stop's RGB components once (0–255) and sort by position
   const orderedStops = stops
-    .map((s) => ({ position: s.position, color: new Color(s.color) }))
+    .map((s) => {
+      const [r, g, b] = new Color(s.color).toRgbArray(); // 0–1 floats
+      return { position: s.position, r: r * 255, g: g * 255, b: b * 255 };
+    })
     .toSorted((a, b) => a.position - b.position);
 
-  // 2. Ensure the first and last stops are the same, so that the gradient is smooth
+  // 2. Ensure the gradient wraps smoothly by closing back to the first colour
   const first = orderedStops[0];
   const last = orderedStops[orderedStops.length - 1];
-  if (last.position < 1 || last.color.toNumber() !== first.color.toNumber()) {
-    orderedStops.push({ position: 1, color: first.color });
+  const lastMatchesFirst =
+    last.position >= 1 &&
+    last.r === first.r &&
+    last.g === first.g &&
+    last.b === first.b;
+
+  if (!lastMatchesFirst) {
+    orderedStops.push({ position: 1, r: first.r, g: first.g, b: first.b });
   }
 
-  // 3. Fill the LUT by interpolating between adjacent stops as we move along
+  // 3. Fill the LUT by interpolating between adjacent stops
   const lut = new Uint32Array(size);
   let leftIndex = 0;
 
@@ -37,27 +49,21 @@ export const buildGradientLookupTable = (
       leftIndex++;
     }
 
-    const leftStop = orderedStops[leftIndex];
-    const rightStop = orderedStops[leftIndex + 1];
+    const left = orderedStops[leftIndex];
+    const right = orderedStops[leftIndex + 1];
 
     // How far apart are these two specific colors
-    const distanceBetweenStops = rightStop.position - leftStop.position;
+    const span = right.position - left.position;
 
     // What percentage of the way are we from the left color to the right color
-    const mixRatio =
-      distanceBetweenStops === 0
-        ? 0
-        : (overallProgress - leftStop.position) / distanceBetweenStops;
+    const mix = span === 0 ? 0 : (overallProgress - left.position) / span;
 
-    // Linearly interpolate the RGB components and pack into the LUT
-    const fromColor = leftStop.color.toRgbArray();
-    const toColor = rightStop.color.toRgbArray();
+    // Linearly interpolate each channel and pack into 0xRRGGBB
+    const r = Math.round(left.r + (right.r - left.r) * mix);
+    const g = Math.round(left.g + (right.g - left.g) * mix);
+    const b = Math.round(left.b + (right.b - left.b) * mix);
 
-    lut[i] = new Color([
-      fromColor[0] + (toColor[0] - fromColor[0]) * mixRatio,
-      fromColor[1] + (toColor[1] - fromColor[1]) * mixRatio,
-      fromColor[2] + (toColor[2] - fromColor[2]) * mixRatio,
-    ]).toNumber();
+    lut[i] = (r << 16) | (g << 8) | b;
   }
 
   return lut;

@@ -1,26 +1,138 @@
-/* eslint-disable no-magic-numbers */
 import { wrapToUnit } from "@/lib/math";
 
 import type {
   ArcSegment,
+  BorderGeometry,
   CornerPatch,
   LineSegment,
-  Perimeter,
-  RoundedGeometry,
-  RoundedPerimeter,
-  SharpGeometry,
-  SharpPerimeter,
 } from "./types";
 
-// Target length of each gradient segment in pixels. Smaller values produce
-// smoother colour transitions but more draw calls per frame.
+// ── Leg types ───────────────────────────────────────────────────
+// A "leg" is one continuous section of the rectangle's perimeter:
+// either a straight edge or a quarter-circle arc at a corner.
+// The full perimeter is described as an ordered array of legs,
+// walked clockwise starting from the top-left of the top edge.
+
+type StraightLeg = {
+  kind: "straight";
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  length: number;
+};
+
+type ArcLeg = {
+  kind: "arc";
+  centerX: number;
+  centerY: number;
+  radius: number;
+  thetaStart: number;
+  length: number;
+};
+
+type Leg = StraightLeg | ArcLeg;
+
+// ── Perimeter descriptor ────────────────────────────────────────
+// Bundles the leg list with the two scalars needed for t ↔ distance
+// conversion. Replaces the old SharpPerimeter / RoundedPerimeter union.
+
+export type Perimeter = {
+  legs: Leg[];
+  totalLength: number;
+  /** Distance from legs[0] start to the top-center point of the shape. */
+  topCenterOffset: number;
+};
+
+// ── Constants ───────────────────────────────────────────────────
+
+const HALF_PI = Math.PI / 2;
+
+/** Target length of each gradient segment in pixels. */
 const TARGET_SEGMENT_LENGTH = 6;
 
+// ── Leg constructors ────────────────────────────────────────────
+
+const straight = (
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+): StraightLeg => ({
+  kind: "straight",
+  startX,
+  startY,
+  endX,
+  endY,
+  length: Math.hypot(endX - startX, endY - startY),
+});
+
+const arc = (
+  centerX: number,
+  centerY: number,
+  radius: number,
+  thetaStart: number,
+): ArcLeg => ({
+  kind: "arc",
+  centerX,
+  centerY,
+  radius,
+  thetaStart,
+  length: HALF_PI * radius,
+});
+
+// ── Shape definition ────────────────────────────────────────────
+//
+// This is the single source of truth for the rectangle's geometry.
+// Both point-lookup and segment-building consume this same list,
+// so the shape is never described twice.
+//
+// Walk order: clockwise from the start of the top edge.
+//
+//   Sharp (4 legs):     top → right → bottom → left
+//   Rounded (8 legs):   top → TR arc → right → BR arc →
+//                        bottom → BL arc → left → TL arc
+
+const defineLegs = (
+  inset: number,
+  insetW: number,
+  insetH: number,
+  r: number, // inset-adjusted corner radius, 0 for sharp
+): Leg[] => {
+  const left = inset;
+  const top = inset;
+  const right = inset + insetW;
+  const bottom = inset + insetH;
+
+  if (r <= 0) {
+    return [
+      straight(left, top, right, top),
+      straight(right, top, right, bottom),
+      straight(right, bottom, left, bottom),
+      straight(left, bottom, left, top),
+    ];
+  }
+
+  return [
+    straight(left + r, top, right - r, top), // top
+    arc(right - r, top + r, r, -HALF_PI), // top-right
+    straight(right, top + r, right, bottom - r), // right
+    arc(right - r, bottom - r, r, 0), // bottom-right
+    straight(right - r, bottom, left + r, bottom), // bottom
+    arc(left + r, bottom - r, r, HALF_PI), // bottom-left
+    straight(left, bottom - r, left, top + r), // left
+    arc(left + r, top + r, r, Math.PI), // top-left
+  ];
+};
+
+// ── Perimeter construction ──────────────────────────────────────
+
 /**
- * Precomputes shape metrics for a rectangle with the given dimensions.
- * Returns a SharpPerimeter or RoundedPerimeter depending on whether
- * cornerRadius is > 0, allowing getPerimeterPoint to avoid recomputing
- * these values on every call.
+ * Precomputes the perimeter descriptor for a rectangle.
+ *
+ * @param inset  - Distance to inset from the outer edge (typically half the
+ *                 stroke width, or 0 for glow paths).
+ * @param cornerRadius - Outer corner radius; 0 produces sharp corners.
  */
 export const computePerimeter = (
   width: number,
@@ -28,416 +140,171 @@ export const computePerimeter = (
   inset: number,
   cornerRadius: number,
 ): Perimeter => {
-  const insetWidth = width - 2 * inset;
-  const insetHeight = height - 2 * inset;
+  const insetW = width - 2 * inset;
+  const insetH = height - 2 * inset;
+  const r =
+    cornerRadius > 0 ? Math.min(cornerRadius, insetW / 2, insetH / 2) : 0;
 
-  if (cornerRadius <= 0) {
-    const perimeter = 2 * insetWidth + 2 * insetHeight;
-    const topCenterOffset = insetWidth / 2;
+  const legs = defineLegs(inset, insetW, insetH, r);
+  const totalLength = legs.reduce((sum, leg) => sum + leg.length, 0);
 
-    return {
-      kind: "sharp",
-      inset,
-      insetWidth,
-      insetHeight,
-      perimeter,
-      topCenterOffset,
-    };
-  }
+  // legs[0] is always the top edge, so its midpoint is the top-center.
+  const topCenterOffset = legs[0].length / 2;
 
-  const insetRadius = Math.min(cornerRadius, insetWidth / 2, insetHeight / 2);
-  const straightWidth = insetWidth - 2 * insetRadius;
-  const straightHeight = insetHeight - 2 * insetRadius;
-  const arcLength = (Math.PI / 2) * insetRadius;
-  const perimeter = 2 * straightWidth + 2 * straightHeight + 4 * arcLength;
-  const topCenterOffset = arcLength + straightWidth / 2;
-
-  return {
-    kind: "rounded",
-    inset,
-    insetWidth,
-    insetHeight,
-    insetRadius,
-    straightWidth,
-    straightHeight,
-    arcLength,
-    perimeter,
-    topCenterOffset,
-  };
+  return { legs, totalLength, topCenterOffset };
 };
 
+// ── Point lookup ────────────────────────────────────────────────
+
 /**
- * Maps a perimeter fraction t (0–1) to an (x, y) canvas coordinate on a
- * sharp rectangle's edge.
+ * Computes (x, y) at a fraction `f` (0 = start, 1 = end) along a single leg.
  */
-const getSharpPerimeterPoint = (
-  t: number,
-  sharpPerimeter: SharpPerimeter,
-): [number, number] => {
-  t = wrapToUnit(t);
-
-  const { inset, insetWidth, insetHeight, perimeter, topCenterOffset } =
-    sharpPerimeter;
-
-  const distanceFromTopLeft =
-    (((t * perimeter + topCenterOffset) % perimeter) + perimeter) % perimeter;
-
-  if (distanceFromTopLeft <= insetWidth) {
-    return [inset + distanceFromTopLeft, inset];
-  }
-  if (distanceFromTopLeft <= insetWidth + insetHeight) {
-    return [inset + insetWidth, inset + (distanceFromTopLeft - insetWidth)];
-  }
-  if (distanceFromTopLeft <= 2 * insetWidth + insetHeight) {
+const getPointOnLeg = (leg: Leg, f: number): [number, number] => {
+  if (leg.kind === "straight") {
     return [
-      inset + insetWidth - (distanceFromTopLeft - insetWidth - insetHeight),
-      inset + insetHeight,
+      leg.startX + (leg.endX - leg.startX) * f,
+      leg.startY + (leg.endY - leg.startY) * f,
     ];
   }
-
+  const angle = leg.thetaStart + f * HALF_PI;
   return [
-    inset,
-    inset + insetHeight - (distanceFromTopLeft - 2 * insetWidth - insetHeight),
+    leg.centerX + leg.radius * Math.cos(angle),
+    leg.centerY + leg.radius * Math.sin(angle),
   ];
 };
 
 /**
- * Maps a perimeter fraction t (0–1) to an (x, y) canvas coordinate on a
- * rounded rectangle's edge.
- */
-const getRoundedPerimeterPoint = (
-  t: number,
-  roundedPerimeter: RoundedPerimeter,
-): [number, number] => {
-  t = wrapToUnit(t);
-
-  const {
-    inset,
-    insetWidth,
-    insetHeight,
-    insetRadius,
-    straightWidth,
-    straightHeight,
-    arcLength,
-    perimeter,
-    topCenterOffset,
-  } = roundedPerimeter;
-
-  const distanceFromTopLeft =
-    (((t * perimeter + topCenterOffset) % perimeter) + perimeter) % perimeter;
-
-  // Cumulative leg boundaries, walking clockwise from top-left
-  const afterTopEdge = straightWidth;
-  const afterTopRightArc = afterTopEdge + arcLength;
-  const afterRightEdge = afterTopRightArc + straightHeight;
-  const afterBottomRightArc = afterRightEdge + arcLength;
-  const afterBottomEdge = afterBottomRightArc + straightWidth;
-  const afterBottomLeftArc = afterBottomEdge + arcLength;
-  const afterLeftEdge = afterBottomLeftArc + straightHeight;
-
-  // Top edge
-  if (distanceFromTopLeft <= afterTopEdge) {
-    return [inset + insetRadius + distanceFromTopLeft, inset];
-  }
-
-  // Top-right corner arc
-  if (distanceFromTopLeft <= afterTopRightArc) {
-    const arcAngle = (distanceFromTopLeft - afterTopEdge) / insetRadius;
-    const arcCenterX = inset + insetWidth - insetRadius;
-    const arcCenterY = inset + insetRadius;
-    return [
-      arcCenterX + insetRadius * Math.cos(-Math.PI / 2 + arcAngle),
-      arcCenterY + insetRadius * Math.sin(-Math.PI / 2 + arcAngle),
-    ];
-  }
-
-  // Right edge
-  if (distanceFromTopLeft <= afterRightEdge) {
-    return [
-      inset + insetWidth,
-      inset + insetRadius + (distanceFromTopLeft - afterTopRightArc),
-    ];
-  }
-
-  // Bottom-right corner arc
-  if (distanceFromTopLeft <= afterBottomRightArc) {
-    const arcAngle = (distanceFromTopLeft - afterRightEdge) / insetRadius;
-    const arcCenterX = inset + insetWidth - insetRadius;
-    const arcCenterY = inset + insetHeight - insetRadius;
-    return [
-      arcCenterX + insetRadius * Math.cos(arcAngle),
-      arcCenterY + insetRadius * Math.sin(arcAngle),
-    ];
-  }
-
-  // Bottom edge
-  if (distanceFromTopLeft <= afterBottomEdge) {
-    return [
-      inset +
-        insetWidth -
-        insetRadius -
-        (distanceFromTopLeft - afterBottomRightArc),
-      inset + insetHeight,
-    ];
-  }
-
-  // Bottom-left corner arc
-  if (distanceFromTopLeft <= afterBottomLeftArc) {
-    const arcAngle = (distanceFromTopLeft - afterBottomEdge) / insetRadius;
-    const arcCenterX = inset + insetRadius;
-    const arcCenterY = inset + insetHeight - insetRadius;
-    return [
-      arcCenterX + insetRadius * Math.cos(Math.PI / 2 + arcAngle),
-      arcCenterY + insetRadius * Math.sin(Math.PI / 2 + arcAngle),
-    ];
-  }
-
-  // Left edge
-  if (distanceFromTopLeft <= afterLeftEdge) {
-    return [
-      inset,
-      inset +
-        insetHeight -
-        insetRadius -
-        (distanceFromTopLeft - afterBottomLeftArc),
-    ];
-  }
-
-  // Top-left corner arc
-  const arcAngle = (distanceFromTopLeft - afterLeftEdge) / insetRadius;
-  const arcCenterX = inset + insetRadius;
-  const arcCenterY = inset + insetRadius;
-  return [
-    arcCenterX + insetRadius * Math.cos(Math.PI + arcAngle),
-    arcCenterY + insetRadius * Math.sin(Math.PI + arcAngle),
-  ];
-};
-
-/**
- * Maps a perimeter fraction t (0–1) to an (x, y) canvas coordinate on the
- * shape's edge. t = 0 is top-centre, increasing clockwise.
+ * Maps a perimeter fraction t ∈ [0, 1) to an (x, y) canvas coordinate.
+ * t = 0 is top-centre, increasing clockwise.
  */
 export const getPerimeterPoint = (
   t: number,
   perimeter: Perimeter,
 ): [number, number] => {
-  if (perimeter.kind === "sharp") {
-    return getSharpPerimeterPoint(t, perimeter);
+  const { legs, totalLength, topCenterOffset } = perimeter;
+
+  // Convert t (origin: top-center) → distance (origin: legs[0] start)
+  let d =
+    (((wrapToUnit(t) * totalLength + topCenterOffset) % totalLength) +
+      totalLength) %
+    totalLength;
+
+  for (const leg of legs) {
+    if (d <= leg.length) {
+      return getPointOnLeg(leg, leg.length > 0 ? d / leg.length : 0);
+    }
+    d -= leg.length;
   }
-  return getRoundedPerimeterPoint(t, perimeter);
+
+  // Floating-point edge case
+  return getPointOnLeg(legs[0], 0);
 };
 
-/**
- * Builds precomputed border geometry for a rectangle with sharp corners.
- */
-export const buildSharpGeometry = (
+// ── Corner patches (sharp only) ─────────────────────────────────
+//
+// When the stroke is inset by halfStroke, the four outer corners of a
+// sharp rectangle have tiny empty squares. These patches fill them.
+
+const buildCornerPatches = (
+  legs: Leg[],
+  halfStroke: number,
   width: number,
   height: number,
-  strokeWidth: number,
-): SharpGeometry => {
-  const halfStroke = strokeWidth / 2;
-  const sharpPerimeter = computePerimeter(
-    width,
-    height,
-    halfStroke,
-    0,
-  ) as SharpPerimeter;
-  const { insetWidth, insetHeight, perimeter } = sharpPerimeter;
-  const halfWidth = insetWidth / 2;
+  perim: Perimeter,
+): CornerPatch[] => {
+  const { totalLength, topCenterOffset } = perim;
+  const distanceToT = (d: number): number =>
+    wrapToUnit((d - topCenterOffset) / totalLength);
 
-  const segmentCount = Math.max(
-    4,
-    Math.round(perimeter / TARGET_SEGMENT_LENGTH),
-  );
-
-  // Corner t-values used for both segment boundaries and corner patches
-  const corners = [
-    halfWidth / perimeter,
-    (halfWidth + insetHeight) / perimeter,
-    (halfWidth + insetHeight + insetWidth) / perimeter,
-    (halfWidth + insetHeight + insetWidth + insetHeight) / perimeter,
+  // Patch positions for each corner (TR, BR, BL, TL), matching
+  // the boundary between legs[0]→[1], [1]→[2], [2]→[3], [3]→[0].
+  const patchPositions: [number, number][] = [
+    [width - halfStroke, 0],
+    [width - halfStroke, height - halfStroke],
+    [0, height - halfStroke],
+    [0, 0],
   ];
 
-  // Build segment boundaries including corners so no segment spans a corner
-  // (which would cause a diagonal line to be rendered)
-  const tSet = new Set<number>();
-  for (let i = 0; i <= segmentCount; i++) {
-    tSet.add(i / segmentCount);
-  }
-  for (const corner of corners) {
-    tSet.add(corner);
-  }
-  const boundaries = [...tSet].sort((a, b) => a - b);
-
-  const segments: LineSegment[] = [];
-  for (let i = 0; i < boundaries.length - 1; i++) {
-    const segmentStartT = boundaries[i];
-    const segmentEndT = boundaries[i + 1];
-    const midT = (segmentStartT + segmentEndT) / 2;
-    const [startX, startY] = getSharpPerimeterPoint(
-      segmentStartT,
-      sharpPerimeter,
-    );
-    const [endX, endY] = getSharpPerimeterPoint(segmentEndT, sharpPerimeter);
-    segments.push({ kind: "line", startX, startY, endX, endY, midT });
-  }
-
-  // Inset leads to halfStroke-sized empty squares at each outer corner of the
-  // shape, which we can patch with these
-  const cornerPatches: CornerPatch[] = [
-    { cornerT: corners[0], patchX: width - halfStroke, patchY: 0 },
-    {
-      cornerT: corners[1],
-      patchX: width - halfStroke,
-      patchY: height - halfStroke,
-    },
-    { cornerT: corners[2], patchX: 0, patchY: height - halfStroke },
-    { cornerT: corners[3], patchX: 0, patchY: 0 },
-  ];
-
-  return { kind: "sharp", segments, cornerPatches };
+  let cursor = 0;
+  return patchPositions.map(([patchX, patchY], i) => {
+    cursor += legs[i].length;
+    return { cornerT: distanceToT(cursor), patchX, patchY };
+  });
 };
 
+// ── Geometry building ───────────────────────────────────────────
+//
+// Subdivides each leg into small rendering segments (lines or arcs),
+// each tagged with a `midT` used for gradient colour lookup at draw time.
+
 /**
- * Builds precomputed border geometry for a rectangle with rounded corners.
+ * Builds the precomputed border geometry used by `drawBorder` each frame.
  */
-export const buildRoundedGeometry = (
+export const buildGeometry = (
   width: number,
   height: number,
   strokeWidth: number,
   borderRadius: number,
-): RoundedGeometry => {
+): BorderGeometry => {
   const halfStroke = strokeWidth / 2;
-  const roundedPerimeter = computePerimeter(
-    width,
-    height,
-    halfStroke,
-    borderRadius,
-  ) as RoundedPerimeter;
-  const {
-    insetWidth,
-    insetHeight,
-    insetRadius,
-    straightWidth,
-    straightHeight,
-    arcLength,
-    perimeter,
-    topCenterOffset,
-  } = roundedPerimeter;
+  const perim = computePerimeter(width, height, halfStroke, borderRadius);
+  const { legs, totalLength, topCenterOffset } = perim;
 
-  const segmentsPerPixel = 1 / TARGET_SEGMENT_LENGTH;
-
-  // Converts cumulative arc-length distance (from top-left corner, clockwise)
-  // to a perimeter fraction t (from top-centre, clockwise).
-  const distanceToT = (distance: number): number =>
-    wrapToUnit((distance - topCenterOffset) / perimeter);
+  const distanceToT = (d: number): number =>
+    wrapToUnit((d - topCenterOffset) / totalLength);
 
   const segments: (LineSegment | ArcSegment)[] = [];
-
-  const addStraightLeg = (legStartDistance: number, legEndDistance: number) => {
-    const legLength = legEndDistance - legStartDistance;
-    if (legLength <= 0) {
-      return;
-    }
-    const subSegmentCount = Math.max(
-      1,
-      Math.round(legLength * segmentsPerPixel),
-    );
-    for (let i = 0; i < subSegmentCount; i++) {
-      const segmentStartDistance =
-        legStartDistance + (i / subSegmentCount) * legLength;
-      const segmentEndDistance =
-        legStartDistance + ((i + 1) / subSegmentCount) * legLength;
-      // Average in distance-space before converting to t to avoid the
-      // wraparound artifact near topCenterOffset (where startT is almost 1 and
-      // endT is almost 0 would average to 0.5).
-      const midT = distanceToT((segmentStartDistance + segmentEndDistance) / 2);
-      const startT = distanceToT(segmentStartDistance);
-      const endT = distanceToT(segmentEndDistance);
-      const [startX, startY] = getRoundedPerimeterPoint(
-        startT,
-        roundedPerimeter,
-      );
-      const [endX, endY] = getRoundedPerimeterPoint(endT, roundedPerimeter);
-      segments.push({ kind: "line", startX, startY, endX, endY, midT });
-    }
-  };
-
-  const addArcLeg = (
-    arcCenterX: number,
-    arcCenterY: number,
-    thetaStart: number,
-    legStartDistance: number,
-  ) => {
-    const subSegmentCount = Math.max(
-      1,
-      Math.round(arcLength * segmentsPerPixel),
-    );
-    for (let i = 0; i < subSegmentCount; i++) {
-      const segmentStartDistance =
-        legStartDistance + (i / subSegmentCount) * arcLength;
-      const segmentEndDistance =
-        legStartDistance + ((i + 1) / subSegmentCount) * arcLength;
-      const midT = distanceToT((segmentStartDistance + segmentEndDistance) / 2);
-      const sliceStart = thetaStart + (i / subSegmentCount) * (Math.PI / 2);
-      const sliceEnd = thetaStart + ((i + 1) / subSegmentCount) * (Math.PI / 2);
-      segments.push({
-        kind: "arc",
-        centerX: arcCenterX,
-        centerY: arcCenterY,
-        insetRadius,
-        sliceStart,
-        sliceEnd,
-        midT,
-      });
-    }
-  };
-
-  // Walk all 8 legs (4 straight edges + 4 corner arcs) with a running cursor
   let cursor = 0;
 
-  addStraightLeg(cursor, cursor + straightWidth);
-  cursor += straightWidth; // top straight
+  for (const leg of legs) {
+    if (leg.length <= 0) {
+      continue;
+    }
 
-  addArcLeg(
-    halfStroke + insetWidth - insetRadius,
-    halfStroke + insetRadius,
-    -Math.PI / 2,
-    cursor,
-  );
-  cursor += arcLength; // top-right arc
+    const segCount = Math.max(
+      1,
+      Math.round(leg.length / TARGET_SEGMENT_LENGTH),
+    );
 
-  addStraightLeg(cursor, cursor + straightHeight);
-  cursor += straightHeight; // right straight
+    for (let i = 0; i < segCount; i++) {
+      const startDist = cursor + (i / segCount) * leg.length;
+      const endDist = cursor + ((i + 1) / segCount) * leg.length;
+      const midT = distanceToT((startDist + endDist) / 2);
 
-  addArcLeg(
-    halfStroke + insetWidth - insetRadius,
-    halfStroke + insetHeight - insetRadius,
-    0,
-    cursor,
-  );
-  cursor += arcLength; // bottom-right arc
+      if (leg.kind === "straight") {
+        const sf = i / segCount;
+        const ef = (i + 1) / segCount;
+        segments.push({
+          kind: "line",
+          startX: leg.startX + (leg.endX - leg.startX) * sf,
+          startY: leg.startY + (leg.endY - leg.startY) * sf,
+          endX: leg.startX + (leg.endX - leg.startX) * ef,
+          endY: leg.startY + (leg.endY - leg.startY) * ef,
+          midT,
+        });
+      } else {
+        segments.push({
+          kind: "arc",
+          centerX: leg.centerX,
+          centerY: leg.centerY,
+          insetRadius: leg.radius,
+          sliceStart: leg.thetaStart + (i / segCount) * HALF_PI,
+          sliceEnd: leg.thetaStart + ((i + 1) / segCount) * HALF_PI,
+          midT,
+        });
+      }
+    }
 
-  addStraightLeg(cursor, cursor + straightWidth);
-  cursor += straightWidth; // bottom straight
+    cursor += leg.length;
+  }
 
-  addArcLeg(
-    halfStroke + insetRadius,
-    halfStroke + insetHeight - insetRadius,
-    Math.PI / 2,
-    cursor,
-  );
-  cursor += arcLength; // bottom-left arc
-
-  addStraightLeg(cursor, cursor + straightHeight);
-  cursor += straightHeight; // left straight
-
-  addArcLeg(
-    halfStroke + insetRadius,
-    halfStroke + insetRadius,
-    Math.PI,
-    cursor,
-  );
+  if (borderRadius <= 0) {
+    return {
+      kind: "sharp",
+      segments: segments as LineSegment[],
+      cornerPatches: buildCornerPatches(legs, halfStroke, width, height, perim),
+    };
+  }
 
   return { kind: "rounded", segments };
 };

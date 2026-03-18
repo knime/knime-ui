@@ -1,18 +1,17 @@
 import type { ShallowRef } from "vue";
-import { Color } from "pixi.js";
 
 import type { GraphicsInst } from "@/vue3-pixi";
 import { onTick } from "@/vue3-pixi/composables/onTick";
 
 import { buildGradientLookupTable } from "./_internalColor";
-import { drawBorder, drawGlowCutout, drawGlowDots } from "./_internalDraw";
-import { computeGlowDots } from "./_internalGlow";
 import {
-  buildRoundedGeometry,
-  buildSharpGeometry,
-  computePerimeter,
-  getPerimeterPoint,
-} from "./_internalPerimeter";
+  type BorderResources,
+  drawBorder,
+  drawGlowCutout,
+  drawGlowDots,
+} from "./_internalDraw";
+import { buildGlow } from "./_internalGlow";
+import { buildGeometry } from "./_internalPerimeter";
 import type { GlowConfig, GradientStop } from "./types";
 
 type Config = {
@@ -36,6 +35,10 @@ type GraphicsRefs = {
  * takes care of pre-computing all the necessary information (segments,
  * segment colours, glow blobs) and re-drawing the border with gradient and glow
  * dots every frame.
+ *
+ * The border is intended as an ephemeral loading/processing indicator whose size
+ * and shape do not change after mount. Thus, the inputs (except for the refs that
+ * are drawn into) are assumed to be non-reactive.
  */
 export const useRotatingGradientBorder = ({
   config,
@@ -56,34 +59,20 @@ export const useRotatingGradientBorder = ({
 
   const { borderRef, glowDotsRef, glowCutoutRef } = refs;
 
-  // 1. Pre-compute gradient colour values
-  const gradientColorLookup = buildGradientLookupTable(gradient, 512);
+  // Precompute static resources
+  const borderResources: BorderResources = {
+    geometry: buildGeometry(width, height, strokeWidth, borderRadius),
+    colorLookupTable: buildGradientLookupTable(gradient, 512),
+    strokeWidth,
+  };
+  const glow = buildGlow(glowConfig, gradient, width, height, borderRadius);
 
-  // 2. Pre-compute segments for the given border shape
-  const geometry =
-    borderRadius === 0
-      ? buildSharpGeometry(width, height, strokeWidth)
-      : buildRoundedGeometry(width, height, strokeWidth, borderRadius);
-
-  // 3. Construct array of dots that will travel around the shape and emit glow.
-  const glowDots = glowConfig ? computeGlowDots(glowConfig) : null;
-  const glowPerimeter = glowConfig
-    ? computePerimeter(width, height, 0, borderRadius)
-    : null;
-  const glowAnchorT = glowConfig
-    ? gradient[glowConfig.gradientStopIndex].position
-    : 0;
-  const glowColor = glowConfig
-    ? new Color(gradient[glowConfig.gradientStopIndex].color).toNumber()
-    : 0;
-
-  // Whether the static glow cutout has been drawn. The cutout lives on its own
-  // Graphics instance (glowCutoutRef) that is never cleared, so it only needs
-  // to be drawn once
+  // The glow cutout only needs to be drawn once
   let cutoutDrawn = false;
+
+  // Current rotation progress, 0–1
   let rotationFraction = 0;
 
-  // Re-draw border and glow on every frame using pre-computed values
   onTick((ticker) => {
     const deltaSeconds = ticker.deltaMS / 1000;
     rotationFraction =
@@ -91,25 +80,12 @@ export const useRotatingGradientBorder = ({
 
     if (borderRef.value) {
       borderRef.value.clear();
-      drawBorder(
-        borderRef.value,
-        geometry,
-        rotationFraction,
-        gradientColorLookup,
-        strokeWidth,
-      );
+      drawBorder(borderRef.value, rotationFraction, borderResources);
     }
 
-    if (glowDots && glowPerimeter && glowDotsRef.value && glowCutoutRef.value) {
+    if (glow && glowDotsRef.value && glowCutoutRef.value) {
       glowDotsRef.value.clear();
-      drawGlowDots(
-        glowDotsRef.value,
-        glowDots,
-        glowAnchorT,
-        rotationFraction,
-        glowColor,
-        (t) => getPerimeterPoint(t, glowPerimeter),
-      );
+      drawGlowDots(glowDotsRef.value, rotationFraction, glow);
 
       if (!cutoutDrawn) {
         drawGlowCutout(
