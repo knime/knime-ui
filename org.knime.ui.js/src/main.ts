@@ -59,7 +59,7 @@ try {
         restAPIBaseURL: embeddingContext.restApiBaseUrl,
       });
 
-      if (embeddingContext.enableAnalytics) {
+      if (embeddingContext.analytics?.enabled) {
         setupAnalyticsService({ jobId: embeddingContext.jobId });
       }
 

@@ -177,9 +177,9 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
             componentName: sourceItem.name,
           });
 
-          useAnalytics().track("node_created::explorer_dragdrop_", {
-            nodeType: "component",
-            nodeHubId: sourceItem.id,
+          useAnalytics().track({
+            id: "node_created::explorer_dragdrop_",
+            payload: { nodeType: "component", nodeHubId: sourceItem.id },
           });
 
           return result;
@@ -193,9 +193,9 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
           const node = nodeInteractionStore.getNodeById(newNodeId ?? "");
 
           if (node) {
-            useAnalytics().track("node_created::explorer_dragdrop_", {
-              nodeFactoryId: nodeTemplateId,
-              nodeType: "node",
+            useAnalytics().track({
+              id: "node_created::explorer_dragdrop_",
+              payload: { nodeFactoryId: nodeTemplateId, nodeType: "node" },
             });
           }
 

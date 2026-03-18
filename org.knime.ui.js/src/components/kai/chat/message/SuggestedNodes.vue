@@ -36,9 +36,12 @@ const trackNodeCreation = (
     } as const
   )[action];
 
-  useAnalytics().track(trackId, {
-    nodeType: "node",
-    nodeFactoryId: nodeTemplate.nodeFactory!.className,
+  useAnalytics().track({
+    id: trackId,
+    payload: {
+      nodeType: "node",
+      nodeFactoryId: nodeTemplate.nodeFactory!.className,
+    },
   });
 };
 

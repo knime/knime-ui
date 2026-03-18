@@ -59,7 +59,9 @@ const annotationShortcuts: AnnotationShortcuts = {
         },
       });
 
-      useAnalytics().track("annotation_created::canvas_ctxmenu_newannotation");
+      useAnalytics().track({
+        id: "annotation_created::canvas_ctxmenu_newannotation",
+      });
     },
     condition: () => useWorkflowStore().isWritable,
   },
@@ -67,7 +69,9 @@ const annotationShortcuts: AnnotationShortcuts = {
     text: "Explain with K-AI",
     execute: async () => {
       try {
-        useAnalytics().track("annotation_created::canvas_ctxmenu_kaiexplain");
+        useAnalytics().track({
+          id: "annotation_created::canvas_ctxmenu_kaiexplain",
+        });
         await useAiQuickActionsStore().generateAnnotation();
       } catch (error) {
         handleQuickActionError(error);

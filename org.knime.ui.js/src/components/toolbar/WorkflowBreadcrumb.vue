@@ -74,9 +74,9 @@ const dropdownItems = computed(() => {
       metadata: {
         handler: async () => {
           try {
-            useAnalytics().track(
-              "sidepanel_opened::wftoolbar_dropdownmenu_versionhistory",
-            );
+            useAnalytics().track({
+              id: "sidepanel_opened::wftoolbar_dropdownmenu_versionhistory",
+            });
             await useWorkflowVersionsStore().activateVersionsMode();
           } catch (error) {
             toastPresets.versions.activateModeFailed({ error });

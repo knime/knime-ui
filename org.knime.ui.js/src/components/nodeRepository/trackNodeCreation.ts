@@ -24,25 +24,31 @@ export const trackNodeCreation = (
 
       const connectedTo = data.connectedTo
         ? {
-            nodeType: data.connectedTo.node.kind.toLowerCase(),
+            nodeType: data.connectedTo.node.kind,
             nodeFactoryId: useNodeInteractionsStore().getNodeFactory(
               data.connectedTo.node.id,
             ).className,
           }
         : undefined;
 
-      useAnalytics().track(trackId, {
-        nodeType: "node",
-        nodeFactoryId: data.template.nodeFactory!.className,
-        connectedTo,
+      useAnalytics().track({
+        id: trackId,
+        payload: {
+          nodeType: "node",
+          nodeFactoryId: data.template.nodeFactory!.className,
+          connectedTo,
+        },
       });
       break;
     }
 
     case "dragdrop": {
-      useAnalytics().track("node_created::noderepo_dragdrop_", {
-        nodeType: "node",
-        nodeFactoryId: data.template.nodeFactory!.className,
+      useAnalytics().track({
+        id: "node_created::noderepo_dragdrop_",
+        payload: {
+          nodeType: "node",
+          nodeFactoryId: data.template.nodeFactory!.className,
+        },
       });
     }
   }
