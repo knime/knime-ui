@@ -129,13 +129,16 @@ const onPointerDown = (event: FederatedPointerEvent) => {
         props.direction === "out" ? "port_dragdrop_fwd" : "port_dragdrop_bwd"
       }` as const;
 
-      useAnalytics().track(analyticsEventId, {
-        connectedTo: {
-          nodeType: props.nodeKind.toLowerCase(),
-          nodePortIndex: props.port.index,
-          nodePortId: props.port.typeId,
-          nodeFactoryId: nodeInteractionsStore.getNodeFactory(props.nodeId)
-            .className,
+      useAnalytics().track({
+        id: analyticsEventId,
+        payload: {
+          connectedTo: {
+            nodeType: props.nodeKind,
+            nodePortIndex: props.port.index,
+            nodePortId: props.port.typeId,
+            nodeFactoryId: nodeInteractionsStore.getNodeFactory(props.nodeId)
+              .className,
+          },
         },
       });
 
@@ -156,18 +159,21 @@ const onPointerDown = (event: FederatedPointerEvent) => {
         const toNode = nodeInteractionsStore.getNodeById(from.nodeId)!;
         const toNodeTemplate = nodeInteractionsStore.getNodeFactory(to.nodeId);
 
-        useAnalytics().track(analyticsEventId, {
-          fromNode: {
-            type: fromNode.kind.toLowerCase(),
-            factoryId: fromNodeTemplate.className,
-            portIndex: from.portIndex,
-            portId: from.typeId,
-          },
-          toNode: {
-            type: toNode.kind.toLowerCase(),
-            factoryId: toNodeTemplate.className,
-            portIndex: to.portIndex,
-            portId: from.typeId,
+        useAnalytics().track({
+          id: analyticsEventId,
+          payload: {
+            fromNode: {
+              nodeType: fromNode.kind,
+              nodeFactoryId: fromNodeTemplate.className,
+              nodePortIndex: from.portIndex,
+              nodePortId: from.typeId,
+            },
+            toNode: {
+              nodeType: toNode.kind,
+              nodeFactoryId: toNodeTemplate.className,
+              nodePortIndex: to.portIndex,
+              nodePortId: from.typeId,
+            },
           },
         });
       } catch (error) {

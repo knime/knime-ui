@@ -53,9 +53,9 @@ const trackComponentInsertion = (
     } as const
   )[action];
 
-  useAnalytics().track(trackId, {
-    nodeType: "component",
-    nodeHubId: data.template.id,
+  useAnalytics().track({
+    id: trackId,
+    payload: { nodeType: "component", nodeHubId: data.template.id },
   });
 };
 </script>

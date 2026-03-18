@@ -36,9 +36,12 @@ const onSearchInputChange = async (searchTerm: string) => {
   try {
     await componentSearchStore.searchByQueryDebounced(searchTerm, {
       onDone: () => {
-        useAnalytics().track("node_searched::qam_type_", {
-          keyword: searchTerm,
-          repoType: "component",
+        useAnalytics().track({
+          id: "node_searched::qam_type_",
+          payload: {
+            keyword: searchTerm,
+            repoType: "component",
+          },
         });
       },
     });
@@ -107,9 +110,9 @@ const addNode = async (
     } as const
   )[action];
 
-  useAnalytics().track(trackId, {
-    nodeType: "component",
-    nodeHubId: nodeTemplate.id,
+  useAnalytics().track({
+    id: trackId,
+    payload: { nodeType: "component", nodeHubId: nodeTemplate.id },
   });
 
   props.quickActionContext.closeMenu();
