@@ -50,7 +50,8 @@ const onChatSendMessage = (...args: Parameters<typeof sendMessage>) => {
   }
 };
 
-const { usage } = storeToRefs(useAIAssistantStore());
+const aiAssistantStore = useAIAssistantStore();
+const { usage } = storeToRefs(aiAssistantStore);
 
 const scrollableContainer =
   ref<InstanceType<typeof SidebarPanelScrollContainer>>();

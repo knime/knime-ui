@@ -43,7 +43,8 @@ export type HubItem = {
  */
 export type InquiryTrace = {
   inquiry: KaiInquiry;
-  selectedOptionId: string;
+  selectedOptionIds: string[];
+  freeformInput: string | null;
   /** Optional label suffix rendered in parentheses next to the selected option, e.g. "Saved" or "Remembered" */
   suffix?: string;
 };

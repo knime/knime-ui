@@ -2248,7 +2248,7 @@ export interface KaiInquiry {
      * @type {string}
      * @memberof KaiInquiry
      */
-    defaultOptionId: string;
+    defaultOptionId?: string;
     /**
      * Optional object containing inquiry type-specific information that might be used by clients.
      * @type {{ [key: string]: any; }}
@@ -2270,7 +2270,8 @@ export namespace KaiInquiry {
      */
     export enum InquiryTypeEnum {
         Permission = 'permission',
-        Confirmation = 'confirmation'
+        SingleChoice = 'singleChoice',
+        MultipleChoice = 'multipleChoice'
     }
 }
 /**
@@ -2292,6 +2293,12 @@ export interface KaiInquiryOption {
      * @memberof KaiInquiryOption
      */
     label: string;
+    /**
+     * Optional subtext displayed under the option label.
+     * @type {string}
+     * @memberof KaiInquiryOption
+     */
+    helperText?: string;
     /**
      * UI hint for styling.
      * @type {string}
@@ -2336,11 +2343,34 @@ export interface KaiInquiryResponse {
      */
     inquiryId: string;
     /**
-     * The id of the chosen option.
-     * @type {string}
+     *
+     * @type {KaiInquirySelection}
      * @memberof KaiInquiryResponse
      */
-    selectedOptionId: string;
+    selection: KaiInquirySelection;
+
+}
+
+
+/**
+ * Carries concrete information about the selected option(s), including the optional freeform input.
+ * @export
+ * @interface KaiInquirySelection
+ */
+export interface KaiInquirySelection {
+
+    /**
+     * Identifies one or more options the user selected.
+     * @type {Array<string>}
+     * @memberof KaiInquirySelection
+     */
+    selectedOptionIds: Array<string>;
+    /**
+     * Contains optional user-provided freeform input.
+     * @type {string}
+     * @memberof KaiInquirySelection
+     */
+    freeformInput?: string;
 
 }
 

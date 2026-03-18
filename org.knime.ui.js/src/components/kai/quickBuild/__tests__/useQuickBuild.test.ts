@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, nextTick, ref } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import type { XY } from "@/api/gateway-api/generated-api";
+import { KaiInquiry, type XY } from "@/api/gateway-api/generated-api";
 import * as kaiUtils from "@/components/kai/utils";
 import type { AiAssistantBuildEventPayload } from "@/store/ai/types";
 import { mockStores } from "@/test/utils/mockStores";
@@ -318,10 +318,13 @@ describe("useQuickBuild", () => {
             inquiryId: "inq-1",
             title: "Allow?",
             description: "",
-            inquiryType: "PERMISSION",
+            inquiryType: KaiInquiry.InquiryTypeEnum.Permission,
             options: [{ id: "yes", label: "Yes", style: "primary" }],
+            timeoutSeconds: 0,
+            defaultOptionId: "",
           },
-          selectedOptionId: "yes",
+          selectedOptionIds: ["yes"],
+          freeformInput: null,
         },
       ];
 

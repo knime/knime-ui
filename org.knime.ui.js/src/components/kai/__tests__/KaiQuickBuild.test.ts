@@ -271,8 +271,11 @@ describe("KaiQuickBuild.vue", () => {
             title: "Allow?",
             description: "",
             options: [{ id: "yes", label: "Yes", style: "primary" }],
+            timeoutSeconds: 0,
+            defaultOptionId: "",
           },
-          selectedOptionId: "yes",
+          selectedOptionIds: ["yes"],
+          freeformInput: null,
         },
       ];
       mockResult.value = createBuildPayload({ type: "SUCCESS" });

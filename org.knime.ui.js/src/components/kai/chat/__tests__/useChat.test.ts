@@ -190,7 +190,8 @@ describe("useChat", () => {
     it("reflects the store's pendingInquiryTraces state", () => {
       const trace: InquiryTrace = {
         inquiry: createKaiInquiry(),
-        selectedOptionId: "allow",
+        selectedOptionIds: ["allow"],
+        freeformInput: null,
         suffix: "Saved",
       };
       const { getComposableResult, mockedStores } = doMount();
@@ -234,7 +235,8 @@ describe("useChat", () => {
     it("exposes inquiryTraces on the last assistant message", () => {
       const trace: InquiryTrace = {
         inquiry: createKaiInquiry(),
-        selectedOptionId: "allow",
+        selectedOptionIds: ["allow"],
+        freeformInput: null,
       };
       const messages: Message[] = [
         {
