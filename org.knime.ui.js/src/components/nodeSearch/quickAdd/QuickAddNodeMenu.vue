@@ -130,20 +130,26 @@ const trackInsertion = (
       props.quickActionContext.nodeId,
     );
 
-    useAnalytics().track(trackId, {
-      nodeType: node.kind.toLowerCase(),
-      nodeFactoryId: newNodeFactoryId,
-      connectedTo: {
-        nodeType: sourceNode!.kind.toLowerCase(),
-        nodeFactoryId: sourceNodeFactory.className,
-        nodePortIndex: props.quickActionContext.port.index,
-        nodePortId: props.quickActionContext.port.typeId,
+    useAnalytics().track({
+      id: trackId,
+      payload: {
+        nodeType: node.kind as "component" | "node",
+        nodeFactoryId: newNodeFactoryId,
+        connectedTo: {
+          nodeType: sourceNode!.kind,
+          nodeFactoryId: sourceNodeFactory.className,
+          nodePortIndex: props.quickActionContext.port.index,
+          nodePortId: props.quickActionContext.port.typeId,
+        },
       },
     });
   } else {
-    useAnalytics().track(trackId, {
-      nodeType: node.kind.toLowerCase(),
-      nodeFactoryId: newNodeFactoryId,
+    useAnalytics().track({
+      id: trackId,
+      payload: {
+        nodeType: node.kind as "component" | "node",
+        nodeFactoryId: newNodeFactoryId,
+      },
     });
   }
 };
@@ -252,9 +258,9 @@ watch(port, async (newPort, oldPort) => {
 const onSearchInputChange = (searchTerm: string) => {
   quickAddNodesStore.searchByQueryDebounced(searchTerm, {
     onDone: () => {
-      useAnalytics().track("node_searched::qam_type_", {
-        keyword: searchTerm,
-        repoType: "node",
+      useAnalytics().track({
+        id: "node_searched::qam_type_",
+        payload: { keyword: searchTerm, repoType: "node" },
       });
     },
   });

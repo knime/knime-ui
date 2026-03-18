@@ -421,10 +421,11 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       });
 
       if (payload.src && payload.src in analyticsEventMapper) {
-        const trackId = analyticsEventMapper[payload.src] as ValueOf<
-          typeof analyticsEventMapper
-        >;
-        useAnalytics().track(trackId);
+        useAnalytics().track({
+          id: analyticsEventMapper[payload.src] as ValueOf<
+            typeof analyticsEventMapper
+          >,
+        });
       }
     },
     condition: () => {
@@ -464,10 +465,11 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       });
 
       if (payload.src && payload.src in analyticsEventMapper) {
-        const trackId = analyticsEventMapper[payload.src] as ValueOf<
-          typeof analyticsEventMapper
-        >;
-        useAnalytics().track(trackId);
+        useAnalytics().track({
+          id: analyticsEventMapper[payload.src] as ValueOf<
+            typeof analyticsEventMapper
+          >,
+        });
       }
     },
     condition: () => {

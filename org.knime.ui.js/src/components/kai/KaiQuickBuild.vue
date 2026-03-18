@@ -56,12 +56,15 @@ const onInputMessage = (...args: Parameters<typeof sendMessage>) => {
       nodeId.value,
     ).className;
 
-    useAnalytics().track("kai_prompted::qam_button_prompt", {
-      nodeType: node!.kind.toLowerCase(),
-      nodeFactoryId,
+    useAnalytics().track({
+      id: "kai_prompted::qam_button_",
+      payload: { nodeType: node!.kind, nodeFactoryId },
     });
   } else {
-    useAnalytics().track("kai_prompted::qam_button_prompt", undefined);
+    useAnalytics().track({
+      id: "kai_prompted::qam_button_",
+      payload: {},
+    });
   }
 };
 

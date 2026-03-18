@@ -209,12 +209,15 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
 
           // there's no contextmenu entry for this action, so when we have a target this
           // can only mean that it's a shortcut fired off when a node is selected
-          useAnalytics().track("qam_opened::keyboard_shortcut_", {
-            connectedTo: {
-              nodeType: target.node.kind.toLowerCase(),
-              nodePortId: target.portTypeId,
-              nodePortIndex: target.port.index,
-              nodeFactoryId,
+          useAnalytics().track({
+            id: "qam_opened::keyboard_shortcut_",
+            payload: {
+              connectedTo: {
+                nodeType: target.node.kind,
+                nodePortId: target.portTypeId,
+                nodePortIndex: target.port.index,
+                nodeFactoryId,
+              },
             },
           });
         } else {
@@ -223,7 +226,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
               ? "qam_opened::canvas_ctxmenu_quickaddnode"
               : "qam_opened::keyboard_shortcut_";
 
-          useAnalytics().track(trackId, {});
+          useAnalytics().track({ id: trackId, payload: {} });
         }
       } catch (error) {
         consola.error("Failed to send analytics", error);
@@ -253,11 +256,13 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       handleAutoConnection(API.workflowCommand.AutoConnect);
 
       if (ctx.payload.src === "global") {
-        useAnalytics().track(
-          "connection_created::keyboard_shortcut_connectnodes",
-        );
+        useAnalytics().track({
+          id: "connection_created::keyboard_shortcut_connectnodes",
+        });
       } else {
-        useAnalytics().track("connection_created::canvas_ctxmenu_connectnodes");
+        useAnalytics().track({
+          id: "connection_created::canvas_ctxmenu_connectnodes",
+        });
       }
     },
     condition: canAutoConnectOrDisconnect,
@@ -271,13 +276,13 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       handleAutoConnection(API.workflowCommand.AutoConnect, true);
 
       if (ctx.payload.src === "global") {
-        useAnalytics().track(
-          "connection_created::keyboard_shortcut_connectflowvar",
-        );
+        useAnalytics().track({
+          id: "connection_created::keyboard_shortcut_connectflowvar",
+        });
       } else {
-        useAnalytics().track(
-          "connection_created::canvas_ctxmenu_connectflowvar",
-        );
+        useAnalytics().track({
+          id: "connection_created::canvas_ctxmenu_connectflowvar",
+        });
       }
     },
     condition: canAutoConnectOrDisconnect,

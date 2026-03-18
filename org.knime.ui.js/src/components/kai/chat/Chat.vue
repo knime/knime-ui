@@ -36,11 +36,11 @@ const onChatSendMessage = (...args: Parameters<typeof sendMessage>) => {
 
   switch (props.chainType) {
     case "qa":
-      useAnalytics().track("kai_prompted::kaiqa_button_prompt");
+      useAnalytics().track({ id: "kai_prompted::kaiqa_button_" });
       break;
 
     case "build":
-      useAnalytics().track("kai_prompted::kaibuild_button_prompt");
+      useAnalytics().track({ id: "kai_prompted::kaibuild_button_" });
       break;
 
     default:
