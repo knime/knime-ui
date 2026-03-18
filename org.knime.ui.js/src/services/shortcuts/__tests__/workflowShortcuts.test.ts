@@ -607,7 +607,7 @@ describe("workflowShortcuts", () => {
       ).toHaveBeenCalledWith({
         props: {
           position: expect.anything(),
-          initialMode: "quick-add",
+          initialMode: "nodes",
         },
       });
     });
@@ -639,7 +639,7 @@ describe("workflowShortcuts", () => {
           port: { index: 0, typeId: PORT_TYPE_IDS.BufferedDataTable },
           position: expect.anything(),
           positionOrigin: "calculated",
-          initialMode: "quick-add",
+          initialMode: "nodes",
         },
       });
     });
@@ -661,7 +661,7 @@ describe("workflowShortcuts", () => {
           port: { index: 1, typeId: PORT_TYPE_IDS.BufferedDataTable },
           position: expect.anything(),
           positionOrigin: "calculated",
-          initialMode: "quick-add",
+          initialMode: "nodes",
         },
       });
     });
@@ -707,7 +707,7 @@ describe("workflowShortcuts", () => {
           nodeRelation: "SUCCESSORS",
           port: { index: 2, typeId: PORT_TYPE_IDS.BufferedDataTable },
           position: { x: 5, y: 8 },
-          initialMode: "quick-add",
+          initialMode: "nodes",
         },
       });
     });

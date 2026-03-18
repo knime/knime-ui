@@ -22,3 +22,5 @@ export type QuickActionMenuContext = {
   updateMenuStyle: (config: Partial<QuickActionMenuStyleConfig>) => void;
   closeMenu: () => void;
 };
+
+export type QuickActionMenuMode = "nodes" | "components" | "k-ai";
