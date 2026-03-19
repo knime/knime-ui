@@ -301,7 +301,11 @@ export default {
     },
     actionBarPosition() {
       return {
-        x: this.position.x + this.$shapes.nodeSize / 2,
+        x:
+          this.position.x +
+          (this.kind === "metanode"
+            ? this.$shapes.nodeSize / 2
+            : this.$shapes.nodeCardWidth / 2),
         y:
           this.position.y -
           this.$shapes.nodeSelectionPadding[0] -
@@ -622,6 +626,7 @@ export default {
         >
           <NodeHoverSizeProvider
             :is-hovering="isHovering"
+            :kind="kind"
             :node-name-dimensions="nameDimensions"
             :is-connector-hovering="connectorHover"
             :allowed-actions="allowedActions"
@@ -660,11 +665,15 @@ export default {
                       grabbable: isWritable,
                       'is-dragging': isDragging,
                     }"
-                    :width="$shapes.nodeSize"
+                    :width="
+                      kind === 'metanode'
+                        ? $shapes.nodeSize
+                        : $shapes.nodeCardWidth
+                    "
                     :height="
                       kind === 'metanode'
                         ? $shapes.nodeSize
-                        : $shapes.nodeSize + 20
+                        : $shapes.nodeCardHeight
                     "
                     :x="0"
                     :y="0"
@@ -695,9 +704,7 @@ export default {
                     v-bind="state"
                     :class="['node-state', { hover: isHovering }]"
                     :loop-status="loopInfo.status"
-                    :transform="`translate(0, ${
-                      $shapes.nodeSize + $shapes.nodeStatusMarginTop
-                    })`"
+                    :transform="`translate(${$shapes.nodeCardWidth / 2}, 0)`"
                   />
                 </g>
               </g>
@@ -720,6 +727,7 @@ export default {
               <!-- Node name / title -->
               <NodeName
                 :node-id="id"
+                :kind="kind"
                 :node-position="position"
                 :value="name"
                 :editable="isEditable && isContainerNode"

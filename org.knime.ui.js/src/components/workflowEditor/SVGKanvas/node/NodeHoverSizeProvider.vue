@@ -14,6 +14,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    kind: {
+      type: String as PropType<Node.KindEnum>,
+      default: "node",
+    },
     nodeNameDimensions: {
       type: Object as PropType<{ width: number; height: number }>,
       required: true,
@@ -62,11 +66,17 @@ export default defineComponent({
      * @return {object} the size and position of the hover area of the node
      */
     hoverSize() {
-      const hoverBounds = {
+      const isCard = this.kind !== "metanode";
+      const nodeW = isCard ? this.$shapes.nodeCardWidth : this.$shapes.nodeSize;
+      const nodeH = isCard
+        ? this.$shapes.nodeCardHeight
+        : this.$shapes.nodeSize;
+
+      let hoverBounds = {
         top: -this.$shapes.nodeHoverMargin[0],
         left: -this.$shapes.nodeHoverMargin[1],
-        bottom: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[2],
-        right: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[3],
+        bottom: nodeH + this.$shapes.nodeHoverMargin[2],
+        right: nodeW + this.$shapes.nodeHoverMargin[3],
       };
 
       // adjust upper hover bounds to node name

@@ -1,23 +1,19 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
-import { NodeTorsoNormal } from "@knime/components";
-
 import type {
   NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
-import * as $colors from "@/style/colors";
 import NodeTorsoForbidden from "../../../common/NodeTorsoForbidden.vue";
 import NodeTorsoMissing from "../../../common/NodeTorsoMissing.vue";
-import NodeTorsoUnknown from "../../../common/NodeTorsoUnknown.vue";
 
+import NodeTorsoCard from "./NodeTorsoCard.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
 import NodeTorsoReplace from "./NodeTorsoReplace.vue";
 
 /**
  * Main part of the node icon.
- * Mostly a rounded square (or for some special nodes like loop nodes, a dedicated shape).
+ * Metanodes keep the original rounded-square design; all other nodes use the
+ * new card layout (NodeTorsoCard).
  * Must be embedded in an <svg> element.
  */
 type Props = {
@@ -28,21 +24,11 @@ type Props = {
   isDraggedOver?: boolean;
 };
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   type: null,
   icon: null,
   executionState: null,
   isDraggedOver: false,
-});
-
-const isKnownNode = computed(() => {
-  if (props.kind === "component") {
-    return !props.type || Reflect.has($colors.nodeBackgroundColors, props.type);
-  }
-  return (
-    props.kind === "metanode" ||
-    (props.type ?? "") in $colors.nodeBackgroundColors
-  );
 });
 </script>
 
@@ -54,13 +40,13 @@ const isKnownNode = computed(() => {
       v-else-if="kind === 'metanode'"
       :execution-state="executionState!"
     />
-    <NodeTorsoNormal
-      v-else-if="isKnownNode"
-      :is-component="kind === 'component'"
-      :icon="icon!"
-      :type="type!"
+    <!-- All non-metanode nodes use the new card design -->
+    <NodeTorsoCard
+      v-else
+      :type="type"
+      :kind="kind"
+      :is-dragged-over="isDraggedOver"
     />
-    <NodeTorsoUnknown v-else />
     <!-- Not using conditional rendering, DOM modifications will trigger DragLeave event -->
     <NodeTorsoReplace :is-dragged-over="isDraggedOver" />
   </g>
