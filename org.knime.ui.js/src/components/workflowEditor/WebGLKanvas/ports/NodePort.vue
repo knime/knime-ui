@@ -13,7 +13,6 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import { portSize } from "@/style/shapes";
 import * as $shapes from "@/style/shapes";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
@@ -201,18 +200,7 @@ const portTransparency = usePortTransparency({
 
 const isHovered = ref(false);
 
-const monitorStore = useWorkflowMonitorStore();
-
 const tooltip = computed<TooltipDefinition>(() => {
-  const { errors, warnings } = monitorStore.currentState;
-  const error = errors?.find((e) => e.nodeId === props.nodeId);
-  const warning = !error && warnings?.find((w) => w.nodeId === props.nodeId);
-  const issue = error
-    ? `Error: ${error.message}`
-    : warning
-      ? `Warning: ${warning.message}`
-      : undefined;
-
   return {
     position: {
       // + 1 is due to the animation that makes the port bigger
@@ -222,8 +210,6 @@ const tooltip = computed<TooltipDefinition>(() => {
     gap: 4,
     title: props.port.name,
     text: props.port.info ?? "",
-    issue,
-    type: error ? "error" : warning ? "warning" : "default",
     orientation: "top",
     hoverable: false,
   } satisfies TooltipDefinition;
