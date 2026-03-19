@@ -16,6 +16,8 @@ export const useNodeSelectionPlaneMeasures = (
       nodeStatusHeight,
       nodeStatusMarginTop,
       nodeSize,
+      nodeCardWidth,
+      nodeCardHeight,
       nodeSelectionPadding: [_top, right, bottom, left],
     } = $shapes;
 
@@ -25,16 +27,29 @@ export const useNodeSelectionPlaneMeasures = (
     const extraHeight = toValue(options.extraHeight);
     const baseWidth = toValue(options.width);
 
-    const hasStatusBar = !toValue(options.isMetanode);
-    // the selection plane's height has to account for
-    // (1) node's size plus the selection padding for top and bottom
-    // (2) the height and margin of the node status bar if it's present
-    // (3) the provided `extraHeight` prop on the component
+    const isMetanode = toValue(options.isMetanode);
+
+    if (!isMetanode) {
+      // Card nodes: wrap the card with small padding
+      const pad = 4;
+      const height = nodeCardHeight + extraHeight + pad * 2;
+      const minWidth = nodeCardWidth + pad * 2;
+      const width = baseWidth > minWidth ? baseWidth : minWidth;
+      return {
+        y: -(extraHeight + pad),
+        x: -pad,
+        height,
+        width,
+      };
+    }
+
+    // Metanodes: keep original layout
     const height =
       top +
       nodeSize +
       bottom +
-      (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
+      nodeStatusHeight +
+      nodeStatusMarginTop +
       extraHeight;
 
     const minWidth = left + right + nodeSize;

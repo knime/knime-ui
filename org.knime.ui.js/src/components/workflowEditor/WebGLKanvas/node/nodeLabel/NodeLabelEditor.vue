@@ -14,7 +14,7 @@ import { getToastPresets } from "@/services/toastPresets";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { nodeSize } from "@/style/shapes";
+import { nodeAnnotationMarginTop, nodeCardHeight, nodeCardWidth, nodeSize } from "@/style/shapes";
 import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";
@@ -88,10 +88,11 @@ const nodeStateOffset = 20;
 const transformOffsets = computed(() => {
   const lineHeightPX =
     nodeLabelText.baseFontSize * nodeLabelText.baseLineHeight;
-  const baseYOffset =
-    editedNode.value && workflowDomain.node.isMetaNode(editedNode.value)
-      ? nodeSize + lineHeightPX
-      : nodeSize + nodeStateOffset + lineHeightPX;
+  const isMetanode =
+    editedNode.value && workflowDomain.node.isMetaNode(editedNode.value);
+  const baseYOffset = isMetanode
+    ? nodeSize + lineHeightPX
+    : nodeCardHeight + nodeAnnotationMarginTop + 4;
 
   const y = editedNode.value
     ? (`${
@@ -99,8 +100,10 @@ const transformOffsets = computed(() => {
       }px` as const)
     : ("0px" as const);
 
+  const parentHalfW = isMetanode ? nodeSize / 2 : nodeCardWidth / 2;
+
   return {
-    x: `calc(-50% + ${nodeSize / 2 - borderWidth}px)` as const,
+    x: `calc(-50% + ${parentHalfW - borderWidth}px)` as const,
     y,
   };
 });

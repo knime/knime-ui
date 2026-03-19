@@ -170,6 +170,7 @@ const { hoverSize, renderHoverArea } = useNodeHoverSize({
   ),
   allowedActions: props.node.allowedActions,
   isDebugModeEnabled,
+  isMetanode,
 });
 
 const renderable = computed(
@@ -179,7 +180,9 @@ const renderable = computed(
 
 const nodeNamePosition = computed(() => {
   return {
-    x: $shapes.nodeSize / 2,
+    x: isMetanode.value
+      ? $shapes.nodeSize / 2
+      : $shapes.nodeCardWidth / 2,
     // leave space between name and torso for the flowvariable ports
     y: -$shapes.portSize,
   };
@@ -286,7 +289,9 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
 
 const actionBarPosition = computed(() => {
   return {
-    x: $shapes.nodeSize / 2,
+    x: isMetanode.value
+      ? $shapes.nodeSize / 2
+      : $shapes.nodeCardWidth / 2,
     y: nodeSelectionMeasures.value.y + $shapes.webGlNodeActionBarYOffset,
   };
 });

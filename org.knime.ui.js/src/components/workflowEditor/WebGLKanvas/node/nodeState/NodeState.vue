@@ -1,7 +1,7 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
-import { Graphics, Point, Polygon } from "pixi.js";
+import { Rectangle } from "pixi.js";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import { useTooltip } from "@/components/workflowEditor/WebGLKanvas/tooltip/useTooltip";
@@ -9,10 +9,6 @@ import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
-import { nodeStateText } from "../../util/textStyles";
-
-import NodeStateIssues from "./NodeStateIssues.vue";
-import NodeStateProgress from "./NodeStateProgress.vue";
 
 type Props = NodeState & {
   loopStatus?: string;
@@ -31,72 +27,34 @@ const props = withDefaults(defineProps<Props>(), {
   textResolution: undefined,
 });
 
-/**
- * sets the different lights of the traffic light
- * @returns {[boolean, boolean, boolean] | undefined}
- * @example [true, false, false] means [red: on, yellow: off, green: off]
- * @example 'undefined' means no traffic light should be shown
- */
-const trafficLight = computed<[boolean, boolean, boolean] | undefined>(() => {
-  const defaultValue: [boolean, boolean, boolean] = [false, false, false];
-  const stateMapper: Partial<
-    Record<NodeState.ExecutionStateEnum, [boolean, boolean, boolean]>
-  > = {
-    IDLE: [true, false, false],
-    CONFIGURED: [false, true, false],
-    EXECUTED: [false, false, true],
-    HALTED: [false, false, true], // TODO NXT-279: for now halted is the same state as executed
-  };
-
-  if (props.executionState && props.executionState in stateMapper) {
-    return stateMapper[props.executionState]!;
+const dotColor = computed(() => {
+  if (props.error) return $colors.trafficLight.red;
+  if (props.warning) return $colors.trafficLight.yellow;
+  switch (props.executionState) {
+    case NodeState.ExecutionStateEnum.Idle:
+      return $colors.trafficLight.red;
+    case NodeState.ExecutionStateEnum.Configured:
+      return $colors.trafficLight.yellow;
+    case NodeState.ExecutionStateEnum.Executed:
+    case NodeState.ExecutionStateEnum.Halted:
+      return $colors.trafficLight.green;
+    case NodeState.ExecutionStateEnum.Executing:
+    case NodeState.ExecutionStateEnum.Queued:
+      return $colors.nodeProgressBar;
+    default:
+      return $colors.trafficLight.inactive;
   }
-
-  return props.executionState === undefined ? defaultValue : undefined;
-});
-
-const fillColors = computed(() => {
-  if (!trafficLight.value) {
-    return undefined;
-  }
-
-  const colorNames = ["red", "yellow", "green"] as const;
-
-  return trafficLight.value.map((value, i) => {
-    const name = colorNames[i];
-    return value ? $colors.trafficLight[name] : $colors.trafficLight.inactive;
-  });
-});
-
-const strokeColors = computed(() => {
-  if (!trafficLight.value) {
-    return undefined;
-  }
-
-  const strokeColorNames = [
-    "redBorder",
-    "yellowBorder",
-    "greenBorder",
-  ] as const;
-
-  return trafficLight.value.map((value, i) => {
-    const name = strokeColorNames[i];
-    return value
-      ? $colors.trafficLight[name]
-      : $colors.trafficLight.inactiveBorder;
-  });
 });
 
 const tooltip = computed<TooltipDefinition | null>(() => {
-  const { nodeSize } = $shapes;
   let tooltip = {
     position: {
-      x: nodeSize / 2,
-      y: 0,
+      x: $shapes.nodeCardWidth / 2,
+      y: 15,
     },
     gap: 1,
     hoverable: true,
-    orientation: "bottom",
+    orientation: "bottom" as const,
     text: "",
     // eslint-disable-next-line no-undefined
     issue: props.issue ?? undefined,
@@ -120,30 +78,18 @@ const { showTooltip, hideTooltip } = useTooltip({
   element: tooltipRef,
 });
 
-const issuesIconWidth = 13;
-const issuesIconHeight = 10;
-const hitArea = new Polygon([
-  new Point(0, 0),
-  new Point($shapes.nodeSize, 0),
-  new Point($shapes.nodeSize, $shapes.nodeStatusHeight),
-  new Point(
-    $shapes.nodeSize / 2 + issuesIconWidth / 2,
-    $shapes.nodeStatusHeight,
-  ),
-  new Point(
-    $shapes.nodeSize / 2 + issuesIconWidth / 2,
-    $shapes.nodeStatusHeight + issuesIconHeight / 2,
-  ),
-  new Point(
-    $shapes.nodeSize / 2 - issuesIconWidth / 2,
-    $shapes.nodeStatusHeight + issuesIconHeight / 2,
-  ),
-  new Point(
-    $shapes.nodeSize / 2 - issuesIconWidth / 2,
-    $shapes.nodeStatusHeight,
-  ),
-  new Point(0, $shapes.nodeStatusHeight),
-]);
+// Small hit area around the dot (local coords centered at 0,0)
+const hitArea = new Rectangle(-10, -10, 20, 20);
+
+const renderDot = (graphics: GraphicsInst) => {
+  graphics.clear();
+  // White backing ring
+  graphics.circle(0, 0, 6);
+  graphics.fill("white");
+  // Status dot
+  graphics.circle(0, 0, 5);
+  graphics.fill(dotColor.value);
+};
 </script>
 
 <template>
@@ -152,82 +98,15 @@ const hitArea = new Polygon([
     label="NodeState"
     :hit-area="hitArea"
     event-mode="static"
-    :y="$shapes.nodeSize + $shapes.nodeStatusMarginTop"
+    :x="$shapes.nodeCardWidth / 2"
+    :y="0"
     @pointerenter="showTooltip"
     @pointerleave="hideTooltip"
   >
     <Graphics
-      label="NodeStateBody"
+      label="NodeStateDot"
       event-mode="none"
-      @render="
-        (graphics: GraphicsInst) => {
-          graphics.clear();
-          graphics.roundRect(
-            0,
-            0,
-            $shapes.nodeSize,
-            $shapes.nodeStatusHeight,
-            1,
-          );
-          graphics.fill($colors.trafficLight.background);
-          graphics.stroke({ width: 0.3, color: $colors.darkeningMask });
-        }
-      "
-    />
-
-    <template v-if="trafficLight">
-      <template v-for="(_, index) of trafficLight" :key="index">
-        <Graphics
-          event-mode="none"
-          label="TrafficLightBorder"
-          @render="
-            (graphics: GraphicsInst) => {
-              graphics.clear();
-              graphics.circle(6 + 10 * index, 6, 4);
-              graphics.fill(fillColors![index]);
-            }
-          "
-        />
-
-        <Graphics
-          event-mode="none"
-          label="TrafficLightCircle"
-          @render="
-            (graphics: GraphicsInst) => {
-              graphics.clear();
-              graphics.circle(6 + 10 * index, 6, 3.5);
-              graphics.stroke({ width: 1, color: strokeColors![index] });
-            }
-          "
-        />
-      </template>
-    </template>
-
-    <Text
-      v-else-if="executionState === 'QUEUED'"
-      label="NodeStateText"
-      event-mode="none"
-      :x="$shapes.nodeSize / 2"
-      :anchor="{ x: 0.5, y: 0 }"
-      :style="nodeStateText.styles"
-      :resolution="textResolution"
-    >
-      {{ loopStatus && loopStatus === "PAUSED" ? "paused" : "queued" }}
-    </Text>
-
-    <template v-else-if="executionState === 'EXECUTING'">
-      <NodeStateProgress
-        :progress="progress"
-        :execution-state="executionState"
-        :text-resolution="textResolution"
-      />
-    </template>
-
-    <NodeStateIssues
-      v-if="error || warning"
-      event-mode="none"
-      :error="error"
-      :warning="warning"
+      @render="renderDot"
     />
   </Container>
 </template>

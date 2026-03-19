@@ -8,14 +8,14 @@ import {
   Node,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
 
+import NodeTorsoCard from "./NodeTorsoCard.vue";
 import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
 import NodeTorsoMissing from "./NodeTorsoMissing.vue";
-import NodeTorsoNormal from "./NodeTorsoNormal.vue";
 import NodeTorsoReplace from "./NodeTorsoReplace.vue";
-import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
 import { torsoDrawUtils } from "./drawUtils";
 
 type Props = {
@@ -32,13 +32,6 @@ const props = defineProps<Props>();
 
 const isMetanode = computed(() => props.kind === Node.KindEnum.Metanode);
 
-const isKnownNode = computed(() => {
-  if (props.kind === Node.KindEnum.Component) {
-    return !props.type || Reflect.has($colors.nodeBackgroundColors, props.type);
-  }
-  return isMetanode.value || (props.type ?? "") in $colors.nodeBackgroundColors;
-});
-
 const shadowFilter = new BlurFilter({
   strength: 25,
   quality: 12,
@@ -46,7 +39,13 @@ const shadowFilter = new BlurFilter({
   legacy: true,
 });
 
-const renderTorso = (graphics: GraphicsInst) => {
+const renderCardShadow = (graphics: GraphicsInst) => {
+  graphics.clear();
+  graphics.roundRect(0, 0, $shapes.nodeCardWidth, $shapes.nodeCardHeight, 6);
+  graphics.stroke({ width: 2, color: $colors.GrayDarkSemi });
+};
+
+const renderMetanodeShadow = (graphics: GraphicsInst) => {
   graphics.clear();
   torsoDrawUtils.drawDefault(graphics);
   graphics.closePath();
@@ -61,7 +60,7 @@ const renderTorso = (graphics: GraphicsInst) => {
       event-mode="none"
       :renderable="isHovered"
       :filters="[shadowFilter]"
-      @render="renderTorso($event)"
+      @render="isMetanode ? renderMetanodeShadow($event) : renderCardShadow($event)"
     />
 
     <template v-if="isReplacementCandidate">
@@ -79,15 +78,12 @@ const renderTorso = (graphics: GraphicsInst) => {
         :execution-state="executionState"
       />
 
-      <NodeTorsoNormal
-        v-else-if="isKnownNode"
-        :node-id="nodeId"
+      <!-- All non-metanode nodes use the new card design -->
+      <NodeTorsoCard
+        v-else
         :type="type"
         :kind="kind"
-        :icon="icon"
       />
-
-      <NodeTorsoUnknown v-else />
     </template>
   </Container>
 </template>

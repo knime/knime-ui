@@ -10,7 +10,7 @@ import { navigatorUtils, sleep } from "@knime/utils";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $colors from "@/style/colors";
-import { nodeSize } from "@/style/shapes";
+import { nodeAnnotationMarginTop, nodeCardHeight, nodeCardWidth, nodeSize } from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { usePointerDownDoubleClick } from "../../common/usePointerDownDoubleClick";
 import { markPointerEventAsHandled } from "../../util/interaction";
@@ -79,16 +79,18 @@ const textStyle = computed<Partial<TextStyle>>(() => {
   return nodeLabelText.styles;
 });
 
-const textX = computed(
-  () => nodeSize / 2 - labelMeasures.value.maxLineWidth / 2 - 1,
-);
+const textX = computed(() => {
+  const parentW = props.isMetanode ? nodeSize : nodeCardWidth;
+  return parentW / 2 - labelMeasures.value.maxLineWidth / 2 - 1;
+});
 
 const textY = computed(() => {
-  const baseYOffset = props.isMetanode ? nodeSize + 12 : nodeSize * 2;
+  const baseYOffset = props.isMetanode
+    ? nodeSize + 12
+    : nodeCardHeight + nodeAnnotationMarginTop + 4;
 
   return (
     baseYOffset +
-    4 +
     getNodeLabelTopOffset(props.nodeId) +
     (navigatorUtils.isMac() ? 1 : -0.5)
   );
