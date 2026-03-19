@@ -11,7 +11,6 @@ import { ports } from "@/lib/data-mappers";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import * as $shapes from "@/style/shapes";
 import NodePortActiveConnector from "../NodePortActiveConnector.vue";
 
@@ -61,21 +60,10 @@ const isFlowVariable = computed(
   () => portTemplate.value.kind === "flowVariable",
 );
 
-const monitorStore = useWorkflowMonitorStore();
-
 const tooltip = computed<TooltipDefinition>(() => {
   // table ports have less space than other ports, because the triangular shape naturally creates a gap
   const gap = portTemplate.value.kind === "table" ? 6 : 8; // eslint-disable-line no-magic-numbers
   const { portSize } = $shapes;
-
-  const { errors, warnings } = monitorStore.currentState;
-  const error = errors?.find((e) => e.nodeId === props.nodeId);
-  const warning = !error && warnings?.find((w) => w.nodeId === props.nodeId);
-  const issue = error
-    ? `Error: ${error.message}`
-    : warning
-      ? `Warning: ${warning.message}`
-      : undefined;
 
   return {
     position: {
@@ -86,8 +74,6 @@ const tooltip = computed<TooltipDefinition>(() => {
     anchorPoint: anchorPoint ?? { x: 0, y: 0 },
     title: props.port.name,
     text: props.port.info ?? "",
-    issue,
-    type: error ? "error" : warning ? "warning" : "default",
     orientation: "top",
     hoverable: false,
   } satisfies TooltipDefinition;
