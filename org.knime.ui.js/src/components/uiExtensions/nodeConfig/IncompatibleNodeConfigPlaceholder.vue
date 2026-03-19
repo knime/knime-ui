@@ -78,8 +78,8 @@ const openMetanode = () => {
     <KdsEmptyState
       v-if="isMetanode"
       headline="No settings"
-      description="Metanodes require no configuration."
-      :button="{ label: 'Open Metanode', variant: 'outlined', size: 'small' }"
+      description="This metanode groups multiple nodes and has no configuration."
+      :button="{ label: 'Open metanode', variant: 'outlined', size: 'small' }"
       @button-click="openMetanode"
     />
 
@@ -92,8 +92,8 @@ const openMetanode = () => {
     <template v-else-if="hasLegacyDialog">
       <KdsEmptyState
         v-if="shouldDisplayDownload"
-        headline="Classic dialog required"
-        description="To configure nodes with a classic dialog, download the KNIME Analytics Platform."
+        headline="This node uses the classic configuration dialog"
+        description="This node has not been migrated to the new interface. To configure nodes with a classic dialog, download the KNIME Analytics Platform."
         :button="{
           label: 'Get KNIME Analytics Platform',
           variant: 'filled',
@@ -107,7 +107,7 @@ const openMetanode = () => {
       <KdsEmptyState
         v-else-if="isDesktop()"
         headline="This node uses the classic configuration dialog"
-        description="This node hasn't been migrated to the new interface yet. You can configure it using the dialog for now."
+        description="This node has not been migrated to the new interface. You can configure it using the classic dialog."
         :button="{ label: 'Open dialog', variant: 'outlined', size: 'small' }"
         data-test-id="open-legacy-config-btn"
         @button-click="openNodeConfiguration"
@@ -115,7 +115,7 @@ const openMetanode = () => {
       <KdsEmptyState
         v-else
         headline="This node uses the classic configuration dialog"
-        description="This node hasn't been migrated to the new interface yet. You can configure it using the dialog for now."
+        description="This node has not been migrated to the new interface. You can configure it using the classic dialog."
       />
     </template>
 

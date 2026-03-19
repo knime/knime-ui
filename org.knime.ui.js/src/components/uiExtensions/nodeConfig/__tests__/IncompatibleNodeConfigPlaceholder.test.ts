@@ -124,10 +124,10 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
     expect(emptyState.exists()).toBe(true);
     expect(emptyState.props("headline")).toBe("No settings");
     expect(emptyState.props("description")).toBe(
-      "Metanodes require no configuration.",
+      "This metanode groups multiple nodes and has no configuration.",
     );
     expect(emptyState.props("button")).toMatchObject({
-      label: "Open Metanode",
+      label: "Open metanode",
       variant: "outlined",
       size: "small",
     });
@@ -174,9 +174,11 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
 
       const emptyState = wrapper.findComponent({ name: "KdsEmptyState" });
       expect(emptyState.exists()).toBe(true);
-      expect(emptyState.props("headline")).toBe("Classic dialog required");
+      expect(emptyState.props("headline")).toBe(
+        "This node uses the classic configuration dialog",
+      );
       expect(emptyState.props("description")).toBe(
-        "To configure nodes with a classic dialog, download the KNIME Analytics Platform.",
+        "This node has not been migrated to the new interface. To configure nodes with a classic dialog, download the KNIME Analytics Platform.",
       );
       expect(emptyState.props("button")).toMatchObject({
         label: "Get KNIME Analytics Platform",
@@ -197,7 +199,7 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
         "This node uses the classic configuration dialog",
       );
       expect(emptyState.props("description")).toBe(
-        "This node hasn't been migrated to the new interface yet. You can configure it using the dialog for now.",
+        "This node has not been migrated to the new interface. You can configure it using the classic dialog.",
       );
       expect(emptyState.props("button")).toMatchObject({
         label: "Open dialog",
