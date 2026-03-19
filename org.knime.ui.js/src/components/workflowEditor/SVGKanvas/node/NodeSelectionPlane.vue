@@ -57,20 +57,34 @@ export default defineComponent({
         nodeStatusHeight,
         nodeStatusMarginTop,
         nodeSize,
+        nodeCardWidth,
+        nodeCardHeight,
         nodeSelectionPadding: [top, right, bottom, left],
       } = this.$shapes;
 
-      const hasStatusBar = this.kind !== "metanode";
+      const isMetanode = this.kind === "metanode";
 
-      // the selection plane's height has to account for
-      // (1) node's size plus the selection padding for top and bottom
-      // (2) the height and margin of the node status bar if it's present
-      // (3) the provided `extraHeight` prop on the component
+      if (!isMetanode) {
+        // Card nodes: selection rect wraps the card with a small inset padding
+        const pad = 4;
+        const height = nodeCardHeight + this.extraHeight + pad * 2;
+        const defaultWidth = nodeCardWidth + pad * 2;
+        const width = this.width > defaultWidth ? this.width : defaultWidth;
+        return {
+          y: -(this.extraHeight + pad),
+          x: -pad,
+          height,
+          width,
+        };
+      }
+
+      // Metanodes: keep original layout
       const height =
         top +
         nodeSize +
         bottom +
-        (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
+        nodeStatusHeight +
+        nodeStatusMarginTop +
         this.extraHeight;
 
       const defaultWidth = left + right + nodeSize;

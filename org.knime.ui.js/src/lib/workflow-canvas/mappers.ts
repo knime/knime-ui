@@ -3,7 +3,7 @@ import type {
   ComponentPlaceholder,
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-import { nodeSize } from "@/style/shapes";
+import { nodeCardHeight, nodeCardWidth } from "@/style/shapes";
 
 import type { WorkflowObject } from "./types";
 
@@ -12,8 +12,8 @@ export const nodeToWorkflowObject = (node: KnimeNode): WorkflowObject => ({
   id: node.id,
   x: node.position.x,
   y: node.position.y,
-  width: nodeSize,
-  height: nodeSize,
+  width: nodeCardWidth,
+  height: nodeCardHeight,
 });
 
 export const annotationToWorkflowObject = (
@@ -31,6 +31,6 @@ export const componentPlaceholderToWorkflowObject = (
   id: componentPlaceholder.id,
   x: componentPlaceholder.position.x,
   y: componentPlaceholder.position.y,
-  width: nodeSize,
-  height: nodeSize,
+  width: nodeCardWidth,
+  height: nodeCardHeight,
 });

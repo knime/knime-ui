@@ -23,6 +23,8 @@ export const mergePortBarBounds = (
 
 const {
   nodeSize,
+  nodeCardWidth,
+  nodeCardHeight,
   nodeNameMargin,
   nodeStatusMarginTop,
   nodeStatusHeight,
@@ -57,9 +59,9 @@ const getLimitBounds = ({
 
   Object.values(nodes).forEach(({ position: { x, y } }) => {
     const nodeTop = y - (padding ? nodePadding.top : 0);
-    const nodeBottom = y + nodeSize + (padding ? nodePadding.bottom : 0);
+    const nodeBottom = y + nodeCardHeight + (padding ? nodePadding.bottom : 0);
     const nodeLeft = x - (padding ? nodePadding.left : 0);
-    const nodeRight = x + nodeSize + (padding ? nodePadding.right : 0);
+    const nodeRight = x + nodeCardWidth + (padding ? nodePadding.right : 0);
 
     left = Math.min(left, nodeLeft);
     top = Math.min(top, nodeTop);

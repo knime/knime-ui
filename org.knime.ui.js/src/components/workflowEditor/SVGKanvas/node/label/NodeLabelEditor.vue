@@ -71,17 +71,21 @@ export default {
       ];
     },
     actionBarPosition() {
+      const isMetanode = this.kind === "metanode";
       return [
-        this.nodePosition.x + this.$shapes.nodeSize / 2,
+        this.nodePosition.x +
+          (isMetanode
+            ? this.$shapes.nodeSize / 2
+            : this.$shapes.nodeCardWidth / 2),
         this.nodePosition.y + this.yOffset,
       ];
     },
     yOffset() {
-      return (
-        (this.kind === "metanode"
-          ? this.$shapes.metanodeLabelActionBarOffset
-          : this.$shapes.nodeLabelActionBarOffset) + this.portOffset
-      );
+      const isMetanode = this.kind === "metanode";
+      const baseOffset = isMetanode
+        ? this.$shapes.metanodeLabelActionBarOffset
+        : this.$shapes.nodeCardHeight + this.$shapes.nodeAnnotationMarginTop;
+      return baseOffset + this.portOffset;
     },
   },
   watch: {
@@ -129,7 +133,7 @@ export default {
       v-model="currentLabel"
       :transform="`translate(${nodePosition.x}, ${nodePosition.y})`"
       :kind="kind"
-      :parent-width="$shapes.nodeSize"
+      :parent-width="kind === 'metanode' ? $shapes.nodeSize : $shapes.nodeCardWidth"
       :port-offset="portOffset"
       @save="onSave"
       @cancel="onCancel"
