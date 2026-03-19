@@ -27,6 +27,8 @@ export interface SettingsState {
     shouldShowExampleWorkflows: boolean;
     nodeConfigOpenMode: "current" | "actionbar" | "modal";
     nodeOutputLayout: "bottom" | "side-by-side";
+    showDialogAdvancedOptions: boolean;
+    jumpMarksMode: "scrolling" | "tabs";
   };
 }
 
@@ -40,6 +42,8 @@ const defaults: SettingsState["settings"] = {
   shouldShowExampleWorkflows: true,
   nodeConfigOpenMode: "current",
   nodeOutputLayout: "side-by-side",
+  showDialogAdvancedOptions: false,
+  jumpMarksMode: "scrolling",
 };
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {

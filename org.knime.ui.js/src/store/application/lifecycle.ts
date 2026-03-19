@@ -131,6 +131,12 @@ export const useLifecycleStore = defineStore("lifecycle", {
       useApplicationSettingsStore().setNodeOutputLayout(
         useSettingsStore().settings.nodeOutputLayout,
       );
+      useApplicationSettingsStore().setShowDialogAdvancedOptions(
+        useSettingsStore().settings.showDialogAdvancedOptions,
+      );
+      useApplicationSettingsStore().setJumpMarksMode(
+        useSettingsStore().settings.jumpMarksMode,
+      );
       await useAISettingsStore().fetchAISettings();
       await useAISettingsStore().pruneStaleEntries();
 

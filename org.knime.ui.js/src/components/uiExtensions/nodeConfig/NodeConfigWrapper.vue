@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, inject, nextTick, ref, shallowRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button, FunctionButton } from "@knime/components";
 import CircleInfoIcon from "@knime/styles/img/icons/circle-info.svg";
 import MinimizeDialogIcon from "@knime/styles/img/icons/minimize-large-dialog.svg";
 import OpenDialogIcon from "@knime/styles/img/icons/open-large-dialog.svg";
+import SettingsIcon from "@knime/styles/img/icons/settings.svg";
 
 import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
 import RightPanelHeader from "@/components/common/side-panel/RightPanelHeader.vue";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { usePanelStore } from "@/store/panel";
@@ -19,7 +21,10 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { UIExtensionLoadingState } from "../common/types";
 
 import NodeConfigButtons from "./NodeConfigButtons.vue";
+import NodeConfigJumpMarks from "./NodeConfigJumpMarks.vue";
 import NodeConfigLoader from "./NodeConfigLoader.vue";
+import { DIALOG_JUMP_MARKS_KEY } from "./dialogJumpMarksContext";
+import { useDialogJumpMarks } from "./useDialogJumpMarks";
 
 const mountKey = ref(0);
 const loadingState = ref<UIExtensionLoadingState | null>(null);
@@ -63,6 +68,69 @@ const isUIExtensionLoading = computed(
 const isUIExtensionReady = computed(
   () => loadingState.value?.value === "ready",
 );
+
+// ─── Jump marks & advanced options ───────────────────────────────────────────
+const loaderContainerRef = ref<HTMLElement | null>(null);
+const {
+  sections: jumpMarkSections,
+  hasAdvancedOptions,
+  activeSection: jumpMarksActiveSection,
+  connect: connectJumpMarks,
+  activateSection,
+  showAllSections,
+  toggleAdvancedOptions: clickAdvancedOptions,
+} = useDialogJumpMarks();
+// NOTE: scrollTo is now internal to activateSection (scrolling mode)
+
+const applicationSettingsStore = useApplicationSettingsStore();
+const { showDialogAdvancedOptions, jumpMarksMode } = storeToRefs(applicationSettingsStore);
+
+// When in floating-panel mode the parent provides a context we fill so it can
+// render jump marks OUTSIDE the dialog panel. Absent that context (fixed side
+// panel) we render an inline column ourselves.
+const jumpMarksCtx = inject(DIALOG_JUMP_MARKS_KEY, null);
+const hasExternalJumpMarks = !!jumpMarksCtx;
+
+// Keep the external context's sections/state in sync
+if (jumpMarksCtx) {
+  watch(jumpMarkSections, (s) => { jumpMarksCtx.sections.value = s; });
+  watch(hasAdvancedOptions, (v) => { jumpMarksCtx.hasAdvancedOptions.value = v; });
+  watch(jumpMarksActiveSection, (i) => { jumpMarksCtx.activeSection.value = i; });
+  // Register our activateSection as the callable from the floating panel
+  jumpMarksCtx.activateFn.value = (index: number) =>
+    activateSection(index, jumpMarksMode.value);
+}
+
+// When mode switches from tabs → scrolling, restore all hidden sections
+watch(jumpMarksMode, (mode) => {
+  if (mode === "scrolling") showAllSections();
+});
+
+// Auto-expand advanced options once per dialog load when the setting is on
+let advancedAutoExpanded = false;
+watch(hasAdvancedOptions, (hasAdv) => {
+  if (hasAdv && showDialogAdvancedOptions.value && !advancedAutoExpanded) {
+    advancedAutoExpanded = true;
+    clickAdvancedOptions();
+  }
+});
+
+const handleToggleAdvancedOptions = () => {
+  clickAdvancedOptions();
+  applicationSettingsStore.setShowDialogAdvancedOptions(!showDialogAdvancedOptions.value);
+};
+
+/** Called by the inline jump marks (side-panel mode). */
+const handleActivateSection = (index: number) =>
+  activateSection(index, jumpMarksMode.value);
+
+watch(isUIExtensionReady, async (ready) => {
+  if (ready && loaderContainerRef.value) {
+    await nextTick();
+    advancedAutoExpanded = false;
+    connectJumpMarks(loaderContainerRef.value);
+  }
+});
 
 const tryExitLargeMode = () => {
   if (isLargeMode.value) {
@@ -120,6 +188,29 @@ const discardSettings = () => {
       >
         <template #actions>
           <FunctionButton
+            v-if="hasAdvancedOptions"
+            :title="showDialogAdvancedOptions ? 'Hide advanced settings' : 'Show advanced settings'"
+            data-test-id="advanced-options-btn"
+            class="advanced-options-btn"
+            :class="{ active: showDialogAdvancedOptions }"
+            compact
+            @click="handleToggleAdvancedOptions"
+          >
+            <SettingsIcon />
+          </FunctionButton>
+
+          <FunctionButton
+            v-if="activeContext"
+            title="Expand into a more advanced configuration view"
+            data-test-id="expand-dialog-btn"
+            class="expand-btn"
+            compact
+            @click="nodeConfigurationStore.setIsLargeMode(true)"
+          >
+            <OpenDialogIcon />
+          </FunctionButton>
+
+          <FunctionButton
             v-if="activeContext"
             :title="showNodeDescriptionPanel ? 'Hide node description' : 'Show node description'"
             data-test-id="toggle-description-btn"
@@ -130,17 +221,6 @@ const discardSettings = () => {
           >
             <CircleInfoIcon />
           </FunctionButton>
-
-          <FunctionButton
-            v-if="canBeEnlarged"
-            title="Expand into a more advanced configuration view"
-            data-test-id="expand-dialog-btn"
-            class="expand-btn"
-            compact
-            @click="nodeConfigurationStore.setIsLargeMode(true)"
-          >
-            <OpenDialogIcon />
-          </FunctionButton>
         </template>
       </RightPanelHeader>
 
@@ -150,27 +230,38 @@ const discardSettings = () => {
       />
 
       <template v-if="activeContext && activeContext.isEmbeddable">
-        <NodeConfigLoader
-          v-show="isUIExtensionReady"
-          :key="mountKey"
-          :aria-disabled="isConfigurationDisabled"
-          :project-id="projectId!"
-          :workflow-id="workflowId"
-          :version-id="versionId"
-          :selected-node="activeContext.node"
-          @loading-state-change="loadingState = $event"
-          @controls-visibility-change="areControlsVisible = $event"
-          @escape-pressed="$emit('escapePressed')"
-        />
-        <NodeConfigButtons
-          v-if="areControlsVisible && isUIExtensionReady"
-          :aria-disabled="isConfigurationDisabled"
-          :dirty-state="dirtyState"
-          :active-node="activeContext.node"
-          @apply="applySettings(activeContext.node.id, $event)"
-          @execute="executeActiveNode"
-          @discard="discardSettings"
-        />
+        <div class="body-row">
+          <!-- Inline jump marks — only shown in fixed side-panel (not floating) mode -->
+          <NodeConfigJumpMarks
+            v-if="!hasExternalJumpMarks"
+            :sections="jumpMarkSections"
+            :active-section="jumpMarksActiveSection"
+            @activate-section="handleActivateSection"
+          />
+          <div ref="loaderContainerRef" class="loader-area">
+            <NodeConfigLoader
+              v-show="isUIExtensionReady"
+              :key="mountKey"
+              :aria-disabled="isConfigurationDisabled"
+              :project-id="projectId!"
+              :workflow-id="workflowId"
+              :version-id="versionId"
+              :selected-node="activeContext.node"
+              @loading-state-change="loadingState = $event"
+              @controls-visibility-change="areControlsVisible = $event"
+              @escape-pressed="$emit('escapePressed')"
+            />
+            <NodeConfigButtons
+              v-if="areControlsVisible && isUIExtensionReady"
+              :aria-disabled="isConfigurationDisabled"
+              :dirty-state="dirtyState"
+              :active-node="activeContext.node"
+              @apply="applySettings(activeContext.node.id, $event)"
+              @execute="executeActiveNode"
+              @discard="discardSettings"
+            />
+          </div>
+        </div>
       </template>
 
       <slot v-else name="inactive" />
@@ -235,7 +326,24 @@ const discardSettings = () => {
     }
   }
 
-  & .description-toggle-btn {
+  & .body-row {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  & .loader-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  & .description-toggle-btn,
+  & .advanced-options-btn {
     &.active {
       background-color: var(--kds-color-background-neutral-active);
     }
