@@ -36,7 +36,7 @@ const closeModal = () => {
 <template>
   <KdsModal
     :active="isDeploymentModalOpen"
-    :title="selectedItemName"
+    :headline="selectedItemName"
     icon="deploy"
     width="full"
     @close="closeModal"

@@ -2,8 +2,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import { InlineMessage } from "@knime/components";
-import { KdsButton, KdsCheckbox, KdsModal } from "@knime/kds-components";
+import {
+  KdsButton,
+  KdsCheckbox,
+  KdsInlineMessage,
+  KdsModal,
+} from "@knime/kds-components";
 
 import { LinkVariant, SpaceProvider } from "@/api/gateway-api/generated-api";
 import { toLinkVariant } from "@/components/common/linkVariantOptions";
@@ -87,7 +91,7 @@ const showValidationHint = computed(
   <KdsModal
     :active="isActive"
     class="modal"
-    :title="config?.title"
+    :headline="config?.title"
     variant="plain"
     width="large"
     height="full"
@@ -110,9 +114,9 @@ const showValidationHint = computed(
           v-if="showValidationHint"
           class="spaced-container validation-message"
         >
-          <InlineMessage
+          <KdsInlineMessage
             variant="info"
-            title="Selection hint"
+            headline="Selection hint"
             :description="validationHint!"
           />
         </div>

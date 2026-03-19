@@ -37,7 +37,7 @@ const closeModal = () => emit("update:active", false);
   <div>
     <KdsModal
       :active="active"
-      title="Open Source Credits"
+      headline="Open Source Credits"
       width="xlarge"
       closedby="any"
       @close="closeModal"

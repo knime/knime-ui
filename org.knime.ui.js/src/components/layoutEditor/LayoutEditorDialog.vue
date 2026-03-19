@@ -98,7 +98,7 @@ const activeTabComponent = computed(
 <template>
   <KdsModal
     :active="layoutContext !== null"
-    title="Layout editor"
+    headline="Layout editor"
     variant="plain"
     class="modal"
     width="full"

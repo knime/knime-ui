@@ -109,7 +109,7 @@ watch(radioValues, (options) => {
   <KdsModal
     v-show="isActive"
     :active="isActive"
-    title="Change link type"
+    headline="Change link type"
     style-type="info"
     class="modal"
     @close="cancel"
