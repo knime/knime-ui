@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, provide, ref, shallowRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import ManageVersionsWrapper from "@/components/workflowEditor/ManageVersionsWrapper.vue";
@@ -18,6 +18,9 @@ import {
 
 import NodeConfig from "./NodeConfig.vue";
 import NodeConfigDescriptionPanel from "./NodeConfigDescriptionPanel.vue";
+import NodeConfigJumpMarks from "./NodeConfigJumpMarks.vue";
+import { DIALOG_JUMP_MARKS_KEY } from "./dialogJumpMarksContext";
+import type { JumpMark } from "./useDialogJumpMarks";
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
@@ -32,13 +35,17 @@ const { showNodeDescriptionPanel } = storeToRefs(nodeConfigStore);
 // ─── Size / position ─────────────────────────────────────────────────────────
 
 const SIDE_BY_SIDE_WIDTH = 1200;
-const SINGLE_PANEL_WIDTH = 440;
+const SINGLE_PANEL_WIDTH = 600;
 const DESCRIPTION_PANEL_WIDTH = 360;
 const DESCRIPTION_PANEL_GAP = 8;
-const DEFAULT_HEIGHT = 600;
+const DEFAULT_HEIGHT = 700;
 const SIDE_BY_SIDE_MIN_WIDTH = 660;
-const SINGLE_PANEL_MIN_WIDTH = 432;
+const SINGLE_PANEL_MIN_WIDTH = 560;
 const MIN_HEIGHT = 300;
+/** Pixels from a screen edge at which a drag triggers docking */
+const DOCK_THRESHOLD = 80;
+/** Approximate header height — used to place the panel under the cursor when releasing from dock */
+const HEADER_HEIGHT = 40;
 /** Gap between right edge of node bounding box and the floating panel */
 const NODE_OFFSET_X = 24;
 /** Approximate half-width of a node in canvas coordinates used to place the
@@ -59,6 +66,11 @@ const panelMinWidth = computed(() =>
 
 const { state: rectState, setRect } = useDraggableResizableRectState();
 const { state: descRectState, setRect: setDescRect } = useDraggableResizableRectState();
+
+/** "left" | "right" = docked to that screen edge; null = floating */
+const dockedSide = ref<"left" | "right" | null>(null);
+/** Non-null only while the user is dragging near an edge — drives the preview overlay */
+const dockPreviewSide = ref<"left" | "right" | null>(null);
 
 const getVersionsAnchoredPosition = (): Pick<BoundingBox, "left" | "top"> => {
   const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-right");
@@ -161,6 +173,80 @@ watch(nodeOutputLayout, () => {
   setRect({ width: panelDefaultWidth.value });
 });
 
+// ─── Jump marks context (provided to NodeConfigWrapper via inject) ────────────
+
+const jumpMarksContext = {
+  sections: ref<JumpMark[]>([]),
+  activeSection: ref<number | null>(null),
+  hasAdvancedOptions: ref(false),
+  activateFn: shallowRef<((index: number) => void) | null>(null),
+};
+provide(DIALOG_JUMP_MARKS_KEY, jumpMarksContext);
+
+const JUMP_MARKS_WIDTH = 128;
+/** How many px of the jump marks panel remain visible when collapsed (peeking) */
+const JUMP_MARKS_PEEK = 40;
+/** Gap used only in docked mode where the panel sits beside the edge */
+const JUMP_MARKS_GAP = 8;
+/** Delay (ms) before collapsing jump marks after mouse leaves — prevents flicker */
+const HOVER_LEAVE_DELAY = 80;
+
+// ─── Hover tracking — drives jump marks expand/collapse animation ─────────────
+
+const isConfigAreaHovered = ref(false);
+let hoverLeaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+const onConfigAreaMouseenter = () => {
+  if (hoverLeaveTimer) {
+    clearTimeout(hoverLeaveTimer);
+    hoverLeaveTimer = null;
+  }
+  isConfigAreaHovered.value = true;
+};
+
+const onConfigAreaMouseleave = () => {
+  hoverLeaveTimer = setTimeout(() => {
+    isConfigAreaHovered.value = false;
+  }, HOVER_LEAVE_DELAY);
+};
+
+onUnmounted(() => {
+  if (hoverLeaveTimer) {
+    clearTimeout(hoverLeaveTimer);
+  }
+});
+
+/** Jump marks are fully expanded when: docked (always visible) or area is hovered */
+const jumpMarksExpanded = computed(
+  () => dockedSide.value !== null || isConfigAreaHovered.value,
+);
+
+const floatingJumpMarksStyles = computed(() => {
+  const base = { position: "fixed" as const, width: `${JUMP_MARKS_WIDTH}px` };
+
+  if (dockedSide.value === "left") {
+    return { ...base, left: `${rectState.value.width + JUMP_MARKS_GAP}px`, top: "0px", maxHeight: "100dvh" };
+  }
+  if (dockedSide.value === "right") {
+    return {
+      ...base,
+      left: `calc(100vw - ${rectState.value.width + JUMP_MARKS_WIDTH + JUMP_MARKS_GAP}px)`,
+      top: "0px",
+      maxHeight: "100dvh",
+    };
+  }
+  // Floating: right edge flush against the dialog's left edge.
+  // Collapsed → slide right so only PEEK_WIDTH is visible (rest hidden under dialog).
+  const shift = jumpMarksExpanded.value ? 0 : JUMP_MARKS_WIDTH - JUMP_MARKS_PEEK;
+  return {
+    ...base,
+    left: `${rectState.value.left - JUMP_MARKS_WIDTH}px`,
+    top: `${rectState.value.top}px`,
+    maxHeight: `${rectState.value.height}px`,
+    transform: `translateX(${shift}px)`,
+  };
+});
+
 // ─── Companion description panel ─────────────────────────────────────────────
 
 /** Position the description panel to the right of the config panel. */
@@ -190,12 +276,30 @@ const descPanelStyles = computed(() => ({
   height: `${descRectState.value.height}px`,
 }));
 
-const panelStyles = computed(() => ({
-  left: `${rectState.value.left}px`,
-  top: `${rectState.value.top}px`,
-  width: `${rectState.value.width}px`,
-  height: `${rectState.value.height}px`,
-}));
+const panelStyles = computed(() => {
+  if (dockedSide.value === "left") {
+    return {
+      left: "0px",
+      top: "0px",
+      width: `${rectState.value.width}px`,
+      height: "100dvh",
+    };
+  }
+  if (dockedSide.value === "right") {
+    return {
+      left: `calc(100vw - ${rectState.value.width}px)`,
+      top: "0px",
+      width: `${rectState.value.width}px`,
+      height: "100dvh",
+    };
+  }
+  return {
+    left: `${rectState.value.left}px`,
+    top: `${rectState.value.top}px`,
+    width: `${rectState.value.width}px`,
+    height: `${rectState.value.height}px`,
+  };
+});
 
 // ─── Dragging (config panel) ───────────────────────────────────────────────────
 
@@ -211,19 +315,45 @@ const onHeaderMouseDown = (event: MouseEvent) => {
     return;
   }
 
+  // Undock first if currently docked — reposition panel so header is under cursor
+  if (dockedSide.value !== null) {
+    dockedSide.value = null;
+    setRect({
+      left: Math.max(
+        VIEWPORT_MARGIN,
+        Math.min(
+          event.clientX - rectState.value.width / 2,
+          window.innerWidth - rectState.value.width - VIEWPORT_MARGIN,
+        ),
+      ),
+      top: Math.max(VIEWPORT_MARGIN, event.clientY - HEADER_HEIGHT / 2),
+      height: DEFAULT_HEIGHT,
+    });
+  }
+
   isDragging.value = true;
   const startLeft = event.clientX - rectState.value.left;
   const startTop = event.clientY - rectState.value.top;
 
   const onMove = (e: MouseEvent) => {
-    setRect({
-      left: e.clientX - startLeft,
-      top: e.clientY - startTop,
-    });
+    setRect({ left: e.clientX - startLeft, top: e.clientY - startTop });
+    if (e.clientX < DOCK_THRESHOLD) {
+      dockPreviewSide.value = "left";
+    } else if (e.clientX > window.innerWidth - DOCK_THRESHOLD) {
+      dockPreviewSide.value = "right";
+    } else {
+      dockPreviewSide.value = null;
+    }
   };
 
-  const onUp = () => {
+  const onUp = (e: MouseEvent) => {
     isDragging.value = false;
+    if (e.clientX < DOCK_THRESHOLD) {
+      dockedSide.value = "left";
+    } else if (e.clientX > window.innerWidth - DOCK_THRESHOLD) {
+      dockedSide.value = "right";
+    }
+    dockPreviewSide.value = null;
     window.removeEventListener("mousemove", onMove);
     window.removeEventListener("mouseup", onUp);
   };
@@ -270,12 +400,36 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 </script>
 
 <template>
+  <!-- Dock-zone preview shown while dragging the header near a screen edge -->
+  <div
+    v-if="dockPreviewSide !== null"
+    :class="['dock-preview', `dock-preview--${dockPreviewSide}`]"
+    :style="{ width: `${rectState.width}px` }"
+  />
+
+  <!--
+    Jump marks rendered BEFORE the config panel so the dialog (same z-index,
+    later in DOM) naturally stacks on top and covers the collapsed peek portion.
+  -->
+  <NodeConfigJumpMarks
+    v-if="jumpMarksContext.sections.value.length > 0"
+    variant="floating"
+    :sections="jumpMarksContext.sections.value"
+    :active-section="jumpMarksContext.activeSection.value"
+    :style="floatingJumpMarksStyles"
+    @activate-section="jumpMarksContext.activateFn.value?.($event)"
+    @mouseenter="onConfigAreaMouseenter"
+    @mouseleave="onConfigAreaMouseleave"
+  />
+
   <ResizableComponentWrapper
-    class="node-config-floating-panel"
+    :class="['node-config-floating-panel', dockedSide && `docked-${dockedSide}`]"
     :min-size="{ width: panelMinWidth, height: MIN_HEIGHT }"
     :rect-state="rectState"
     :style="panelStyles"
     @custom-resize="setRect"
+    @mouseenter="onConfigAreaMouseenter"
+    @mouseleave="onConfigAreaMouseleave"
   >
     <!-- Panel body — inner RightPanelHeader (.header) acts as drag handle -->
     <div
@@ -328,6 +482,40 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
   box-shadow: var(--shadow-elevation-2);
 }
 
+/* ── Docked states ─────────────────────────────────────────────────────────── */
+.node-config-floating-panel.docked-left {
+  border-radius: 0 8px 8px 0;
+}
+
+.node-config-floating-panel.docked-right {
+  border-radius: 8px 0 0 8px;
+}
+
+/* ── Dock-zone preview overlay (shown while dragging near a screen edge) ───── */
+.dock-preview {
+  position: fixed;
+  top: 0;
+  height: 100dvh;
+  pointer-events: none;
+  z-index: v-bind("$zIndices.layerFloatingWindows");
+  background-color: var(--kds-color-surface-default);
+  opacity: 0.35;
+  border: 2px dashed var(--kds-color-border-default, var(--knime-silver-sand));
+  transition: opacity 100ms ease;
+
+  &.dock-preview--left {
+    left: 0;
+    border-radius: 0 8px 8px 0;
+    border-left: none;
+  }
+
+  &.dock-preview--right {
+    right: 0;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+  }
+}
+
 .floating-panel-content {
   /* inner RightPanelHeader becomes the drag handle */
   :deep(.header) {
@@ -358,7 +546,7 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 
 .config-section {
   flex: 1;
-  min-width: 432px;
+  min-width: 560px;
   display: flex;
   flex-direction: column;
   overflow: hidden;

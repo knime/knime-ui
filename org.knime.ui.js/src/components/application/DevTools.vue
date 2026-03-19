@@ -42,6 +42,11 @@ const nodeOutputLayout = computed({
     appSettingsStore.setNodeOutputLayout(layout),
 });
 
+const jumpMarksMode = computed({
+  get: () => appSettingsStore.jumpMarksMode,
+  set: (mode: "scrolling" | "tabs") => appSettingsStore.setJumpMarksMode(mode),
+});
+
 const { currentMode } = useKdsDarkMode();
 const { legacyMode } = useKdsLegacyMode();
 const extendedMode = ref<"legacy" | KdsDarkModeType>(currentMode.value);
@@ -204,6 +209,16 @@ const dragStart = (pointerDown: PointerEvent) => {
       >
         <option value="side-by-side">⬜ Side-by-side</option>
         <option value="bottom">⬇️ Bottom</option>
+      </select>
+
+      <select
+        v-model="jumpMarksMode"
+        class="dev-select"
+        title="Jump marks mode"
+        data-test-id="jump-marks-mode-toggler"
+      >
+        <option value="scrolling">🔖 Scroll</option>
+        <option value="tabs">🗂️ Tabs</option>
       </select>
 
       <FunctionButton

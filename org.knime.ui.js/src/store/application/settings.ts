@@ -53,6 +53,16 @@ type ApplicationSettingsState = {
    */
   nodeOutputLayout: "bottom" | "side-by-side";
   /*
+   * Whether the advanced options section in node configuration dialogs is expanded
+   */
+  showDialogAdvancedOptions: boolean;
+  /*
+   * Controls how jump mark navigation works in node configuration dialogs:
+   * - "scrolling" : clicking a jump mark smooth-scrolls to that section
+   * - "tabs"      : clicking a jump mark shows only that section (fake tab behaviour)
+   */
+  jumpMarksMode: "scrolling" | "tabs";
+  /*
    * Whether to enable the locking of metanodes and components
    */
   isSubnodeLockingEnabled: boolean;
@@ -78,6 +88,8 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     showDevToolsBar: true,
     nodeConfigOpenMode: "current",
     nodeOutputLayout: "side-by-side",
+    showDialogAdvancedOptions: false,
+    jumpMarksMode: "scrolling",
     isSubnodeLockingEnabled: false,
     useEmbeddedDialogs: true,
     isKaiEnabled: true,
@@ -120,6 +132,16 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     setNodeOutputLayout(layout: "bottom" | "side-by-side") {
       this.nodeOutputLayout = layout;
       useSettingsStore().updateSetting({ key: "nodeOutputLayout", value: layout });
+    },
+
+    setShowDialogAdvancedOptions(show: boolean) {
+      this.showDialogAdvancedOptions = show;
+      useSettingsStore().updateSetting({ key: "showDialogAdvancedOptions", value: show });
+    },
+
+    setJumpMarksMode(mode: "scrolling" | "tabs") {
+      this.jumpMarksMode = mode;
+      useSettingsStore().updateSetting({ key: "jumpMarksMode", value: mode });
     },
 
     setIsSubnodeLockingEnabled(isSubnodeLockingEnabled: boolean) {
