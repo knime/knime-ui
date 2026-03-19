@@ -105,10 +105,10 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
 }
 
 .sortable-chosen {
-  background-color: var(--knime-aquamarine-light);
-  list-style: none;
-  border-radius: 3px;
   padding: var(--space-4);
+  list-style: none;
+  background-color: var(--knime-aquamarine-light);
+  border-radius: 3px;
 
   &.quickform,
   &.configuration {
@@ -118,18 +118,18 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
 
 .available-nodes,
 .available-elements {
-  list-style: none;
-  padding: 0;
   min-height: 30px;
+  padding: 0;
+  list-style: none;
 }
 
 .row {
-  background-color: var(--knime-white);
-  user-select: none;
-  border: 2px solid var(--knime-silver-sand);
-  height: 30px;
   display: flex;
   align-items: center;
+  height: 30px;
+  user-select: none;
+  background-color: var(--knime-white);
+  border: 2px solid var(--knime-silver-sand);
 
   & .col {
     flex: 1;
@@ -146,15 +146,15 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
 }
 
 .item {
-  cursor: grab;
-  border-radius: 3px;
   padding: var(--space-4);
   margin-bottom: var(--space-4);
+  cursor: grab;
+  border-radius: 3px;
 }
 
 .draggable-node {
-  background-color: var(--knime-aquamarine);
   user-select: none;
+  background-color: var(--knime-aquamarine);
 
   &:hover {
     background-color: var(--knime-aquamarine-light);
@@ -183,8 +183,8 @@ const { elements, availableNodes } = storeToRefs(layoutEditorStore);
   }
 
   & .description {
-    font-size: 13px;
     margin-left: var(--space-24);
+    font-size: 13px;
 
     @mixin truncate;
   }

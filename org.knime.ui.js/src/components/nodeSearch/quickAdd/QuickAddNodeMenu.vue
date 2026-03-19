@@ -318,8 +318,8 @@ const onSearchInputChange = (searchTerm: string) => {
 }
 
 & .header {
-  padding: 10px;
   flex: none;
+  padding: 10px;
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 

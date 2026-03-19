@@ -126,13 +126,13 @@ const openInNewWindow = () => {
 }
 
 .detach-button-wrapper {
+  position: absolute;
+  inset: 10px 0 0;
+  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   display: flex;
   width: max-content;
   height: min-content;
-  position: absolute;
-  inset: 10px 0 0;
   margin: 0 auto;
-  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
 
   & .detach-view {
     height: 20px;

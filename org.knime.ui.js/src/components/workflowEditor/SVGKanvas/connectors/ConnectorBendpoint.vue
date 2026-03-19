@@ -55,10 +55,10 @@ const transformOrigin = computed(
 
 <style lang="postcss" scoped>
 .hover-area {
-  fill: none;
-  stroke-width: 8px;
-  stroke: transparent;
   cursor: grab;
+  fill: none;
+  stroke: transparent;
+  stroke-width: 8px;
 
   &.dragging {
     cursor: grabbing;
@@ -66,9 +66,9 @@ const transformOrigin = computed(
 
   &:not(.virtual):hover + rect {
     stroke: var(--fill-color);
-    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
-    transform-origin: v-bind(transformOrigin);
     transform: scale(1.2);
+    transform-origin: v-bind(transformOrigin);
+    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
   }
 }
 

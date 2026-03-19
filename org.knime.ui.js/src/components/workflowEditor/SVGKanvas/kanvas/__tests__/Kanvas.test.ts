@@ -64,7 +64,7 @@ describe("Kanvas", () => {
     HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
 
     // Mock ResizeObserver Class
-    // eslint-disable-next-line func-style
+     
     function ResizeObserverMock(callback) {
       this.callbackRef = callback;
       this.element = null;

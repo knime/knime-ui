@@ -75,7 +75,13 @@ export const popoverRenderers = {
   configuration: true,
   nodeMessages: {
     type: "MessageRenderer",
-    process: (data: any[]) =>
+    process: (
+      data: Array<{
+        messageType: unknown;
+        node: unknown;
+        message: unknown;
+      }>,
+    ) =>
       data?.map((item) => ({
         type: item.messageType,
         item: item.node,

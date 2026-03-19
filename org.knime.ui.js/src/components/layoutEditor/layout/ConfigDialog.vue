@@ -162,15 +162,15 @@ watch(
 
 <style lang="postcss" scoped>
 .config-dialog {
-  box-shadow: var(--shadow-elevation-2);
+  z-index: v-bind("layoutEditorZIndices.configDialog");
+  padding: var(--space-16);
+  font-size: inherit;
   color: inherit;
   text-align: left;
-  border: none;
   cursor: default;
-  font-size: inherit;
   background: var(--knime-white);
-  padding: var(--space-16);
-  z-index: v-bind("layoutEditorZIndices.configDialog");
+  border: none;
+  box-shadow: var(--shadow-elevation-2);
 }
 
 .resize-method-config {
@@ -181,17 +181,17 @@ watch(
 
 .grid {
   display: grid;
-  align-items: center;
   gap: var(--space-16);
+  align-items: center;
 }
 
 .size-table {
-  border-collapse: separate;
   border-spacing: var(--space-8);
+  border-collapse: separate;
 
   & th {
-    font-weight: 500;
     font-size: 12px;
+    font-weight: 500;
   }
 
   & td {

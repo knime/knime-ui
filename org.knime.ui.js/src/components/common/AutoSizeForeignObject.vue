@@ -113,14 +113,14 @@ onBeforeUnmount(() => {
 .autosize-container {
   & .wrapper {
     display: block;
-    padding: 0;
-    margin: auto;
-    border: 0;
 
     /* solves many problems with inline-blocks such as whitespace; https://caniuse.com/intrinsic-width */
     /* stylelint-disable-next-line value-no-vendor-prefix */
     width: -moz-fit-content;
     width: fit-content;
+    padding: 0;
+    margin: auto;
+    border: 0;
   }
 }
 </style>

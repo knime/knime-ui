@@ -240,8 +240,8 @@ onKeyDown(
 <style lang="postcss" scoped>
 div {
   font-family: "Roboto Condensed", sans-serif;
-  border-radius: 2px;
   cursor: pointer;
   user-select: none;
+  border-radius: 2px;
 }
 </style>

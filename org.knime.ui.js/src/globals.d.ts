@@ -6,17 +6,17 @@ import type { CustomUIEventDataset } from "./components/workflowEditor/WebGLKanv
 declare global {
   interface Window {
     EquoCommService: {
-      send: (eventName: string, payload: any) => Promise<any>;
+      send: (eventName: string, payload: unknown) => Promise<string>;
       on: (
         eventName: string,
-        handler: (notification: any) => any,
-        errorHandler: (error: any) => any,
-      ) => any;
+        handler: (notification: string) => unknown,
+        errorHandler: (error: unknown) => unknown,
+      ) => unknown;
     };
 
-    store: any;
-    router: any;
-    toast: any;
+    store: unknown;
+    router: unknown;
+    toast: unknown;
 
     MonacoEnvironment?: Environment | undefined;
   }

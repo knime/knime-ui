@@ -5,7 +5,7 @@ import { createNativeNode } from "./nodes";
 import { createPort } from "./ports";
 import { arrayToDictionary } from "./util";
 
-// eslint-disable-next-line func-style
+ 
 function* generator(): Iterator<number> {
   let id = -1;
   while (true) {

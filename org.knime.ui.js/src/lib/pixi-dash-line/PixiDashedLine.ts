@@ -1,7 +1,7 @@
-/* eslint-disable func-style */
+ 
 /* eslint-disable max-params */
 /* eslint-disable max-depth */
-/* eslint-disable no-undefined */
+ 
 /* eslint-disable no-magic-numbers */
 
 /**

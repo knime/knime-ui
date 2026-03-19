@@ -250,8 +250,10 @@ describe("NodePorts.vue", () => {
       let canRemove = groupPort.props("canRemove");
       await groupPort.vm.$emit("click");
       if (canRemove) {
+        // eslint-disable-next-line vitest/no-conditional-expect
         expect(groupPort.props("selected")).toBe(true);
       } else {
+        // eslint-disable-next-line vitest/no-conditional-expect
         expect(groupPort.props("selected")).toBe(false);
       }
     });

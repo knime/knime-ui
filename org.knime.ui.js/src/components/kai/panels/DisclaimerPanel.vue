@@ -35,20 +35,20 @@ const close = () => closeDisclaimer(shouldNotAskAgain.value);
   flex-direction: column;
 
   & .main {
-    background-color: var(--knime-white);
     position: relative;
     padding: var(--space-24) var(--space-16);
+    background-color: var(--knime-white);
 
     & .title {
-      font-weight: 700;
       padding-bottom: var(--space-8);
+      font-weight: 700;
     }
   }
 
   & .controls {
-    align-self: flex-end;
     display: flex;
     flex-direction: column;
+    align-self: flex-end;
   }
 
   & .checkbox {

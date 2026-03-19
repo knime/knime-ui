@@ -90,19 +90,19 @@ type MenuItemWithDisplayMode = MenuItem<{
 const displayModeSubMenuItems = computed<MenuItemWithDisplayMode[]>(() => [
   {
     text: "Grid",
-    icon: DisplayModeGridIcon as any,
+    icon: DisplayModeGridIcon,
     selected: displayMode.value === "icon",
     metadata: { displayMode: "icon" },
   },
   {
     text: "List",
-    icon: DisplayModeListIcon as any,
+    icon: DisplayModeListIcon,
     selected: displayMode.value === "list",
     metadata: { displayMode: "list" },
   },
   {
     text: "Tree",
-    icon: DisplayModeTreeIcon as any,
+    icon: DisplayModeTreeIcon,
     selected: displayMode.value === "tree",
     metadata: { displayMode: "tree" },
   },
@@ -209,8 +209,8 @@ const closeDescriptionPanel = () => {
 
 .header {
   position: sticky;
-  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   top: 0;
+  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   padding-bottom: var(--space-8);
 
   & .title-and-search {
@@ -218,10 +218,10 @@ const closeDescriptionPanel = () => {
 
     & .search-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin: var(--space-12) 0;
+      justify-content: space-between;
       min-height: 30px;
+      margin: var(--space-12) 0;
 
       & .actions {
         display: flex;
@@ -229,11 +229,11 @@ const closeDescriptionPanel = () => {
       }
 
       & .display-mode-button {
-        width: 30px;
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 30px;
+        cursor: pointer;
 
         & .display-mode-icon {
           @mixin svg-icon-size 18;
@@ -243,11 +243,11 @@ const closeDescriptionPanel = () => {
       }
 
       & .filter-button {
-        width: 30px;
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 30px;
+        cursor: pointer;
 
         & .filter-icon {
           @mixin svg-icon-size 18;
@@ -258,8 +258,8 @@ const closeDescriptionPanel = () => {
     }
 
     & > hr {
-      margin-bottom: 2px;
       margin-top: var(--space-4);
+      margin-bottom: 2px;
     }
   }
 
@@ -274,9 +274,9 @@ const closeDescriptionPanel = () => {
       cursor: pointer;
     }
 
+    margin: 8px 0 0;
     font-size: 18px;
     font-weight: 400;
-    margin: 8px 0 0;
   }
 }
 </style>

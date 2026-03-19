@@ -138,15 +138,15 @@ const filteredActions = (hideItems: string[]): MenuItemWithHandler[] =>
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   & .toolbar-actions-normal {
-    display: flex;
     position: relative;
+    display: flex;
     gap: var(--space-4);
   }
 
   & .toolbar-actions-mini {
+    position: relative;
     display: flex;
     gap: var(--space-4);
-    position: relative;
 
     & .search-button-mini {
       --search-button-background: var(--sidebar-background-color);

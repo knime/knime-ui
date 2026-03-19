@@ -1,5 +1,4 @@
-import { describe } from "node:test";
-
+import { describe } from "vitest";
 import { Page, test } from "@playwright/test";
 
 import {
@@ -75,6 +74,7 @@ test("inactive ports: render correctly", async ({ page }) => {
 
 describe("add/select/remove port", () => {
   const clickAwayOffset = 150;
+
   test("select and delete optional port concat node", async ({ page }) => {
     await startWithInteraction(
       page,
@@ -99,6 +99,7 @@ describe("add/select/remove port", () => {
     await page.mouse.click(...getCenter(actionButton));
     await assertSnapshot(page);
   });
+
   test("add optional port patch request", async ({ page }) => {
     await startWithInteraction(
       page,
@@ -113,6 +114,7 @@ describe("add/select/remove port", () => {
     await page.mouse.click(inX, inY);
     await assertSnapshot(page);
   });
+
   test("open port menu metanode", async ({ page }) => {
     await startApplication(page, {
       withMouseCursor: true,
@@ -135,6 +137,7 @@ describe("add/select/remove port", () => {
     );
     await assertSnapshot(page);
   });
+
   test("select port with traffic light", async ({ page }) => {
     await startApplication(page, {
       workflowFixturePath: "ports/remove-optional-ports-metanode.json",
@@ -144,6 +147,7 @@ describe("add/select/remove port", () => {
     );
     await assertSnapshot(page);
   });
+
   test("open port menu component", async ({ page }) => {
     await startApplication(page, {
       withMouseCursor: true,
@@ -166,6 +170,7 @@ describe("add/select/remove port", () => {
     );
     await assertSnapshot(page);
   });
+
   test("use keyboard navigation", async ({ page }) => {
     await startWithInteraction(
       page,

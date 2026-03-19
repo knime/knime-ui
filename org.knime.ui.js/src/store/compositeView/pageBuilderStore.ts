@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { computed } from "vue";
 import { API } from "@api";
 

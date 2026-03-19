@@ -48,6 +48,7 @@ type ExecutionShortcuts = UnionToShortcutRegistry<
 >;
 
 declare module "./registry" {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ShortcutsRegistry extends ExecutionShortcuts {}
 }
 

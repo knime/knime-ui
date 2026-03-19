@@ -17,17 +17,17 @@ export default {
 
 <style lang="postcss" scoped>
 .avatar {
-  background: var(--knime-petrol-dark);
-  height: 32px;
-  width: 32px;
-  border-radius: 50%;
-  border: 2px solid hsl(200deg 10% 94% / 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--knime-white);
+  width: 32px;
+  height: 32px;
   font-size: 13px;
   font-weight: 500;
   line-height: 18px;
+  color: var(--knime-white);
+  background: var(--knime-petrol-dark);
+  border: 2px solid hsl(200deg 10% 94% / 100%);
+  border-radius: 50%;
 }
 </style>

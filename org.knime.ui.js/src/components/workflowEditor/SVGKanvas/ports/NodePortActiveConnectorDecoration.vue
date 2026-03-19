@@ -53,9 +53,9 @@ const transformToCenter = computed(() => {
 <style lang="postcss" scoped>
 rect {
   fill: var(--knime-gray-ultra-light);
+  stroke: var(--knime-silver-sand);
   stroke-width: 1;
   stroke-dasharray: 2;
-  stroke: var(--knime-silver-sand);
 }
 
 svg {

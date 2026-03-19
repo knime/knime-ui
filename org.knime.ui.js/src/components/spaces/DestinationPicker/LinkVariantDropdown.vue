@@ -123,11 +123,11 @@ watch(
     }
 
     & .subtitle {
+      overflow: hidden;
+      text-overflow: ellipsis;
       font-size: 10px;
       font-weight: 300;
       line-height: 150%;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
   }
 }

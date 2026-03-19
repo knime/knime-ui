@@ -43,10 +43,15 @@ const fallbackPageBuilderApi: PageBuilderApi = {
   },
 };
 
+type CreatePageBuilderAppFn = (
+  vuexStore: { state: unknown; mutations: unknown; actions: unknown },
+  resourceUrl: string,
+) => Promise<PageBuilderApi>;
+
 export const useCompositeViewStore = defineStore("component", () => {
-  const PageBuilderModule = ref<{ createPageBuilderApp: Function } | null>(
-    null,
-  );
+  const PageBuilderModule = ref<{
+    createPageBuilderApp: CreatePageBuilderAppFn;
+  } | null>(null);
   const activePageBuilder = ref<PageBuilderApi | null>(null);
 
   const isCompositeViewDirty = ref(false);
@@ -61,12 +66,13 @@ export const useCompositeViewStore = defineStore("component", () => {
   };
 
   const getPageBuilder = async (): Promise<PageBuilderApi> => {
-    const pageBuilderBaseUrl =
-      // eslint-disable-next-line no-undefined
-      isDesktop() ? PAGEBUILDER_BASE_URL_FOR_DESKTOP : undefined;
+    const pageBuilderBaseUrl = isDesktop()
+      ? PAGEBUILDER_BASE_URL_FOR_DESKTOP
+      : undefined;
 
     if (PageBuilderModule.value === null) {
       // the pageBuilder module will access the NODE_ENV to determine if it is in development mode
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).process = { env: { NODE_ENV: import.meta.env.MODE } };
 
       PageBuilderModule.value = await import(

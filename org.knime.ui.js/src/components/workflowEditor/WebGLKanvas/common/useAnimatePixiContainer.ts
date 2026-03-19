@@ -44,6 +44,8 @@ type Options<T> = {
   immediate?: boolean;
 };
 
+// this type for T is what best fits motion's `animate` fn
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export const useAnimatePixiContainer = <T extends {}>(options: Options<T>) => {
   const {
     targetDisplayObject,
@@ -59,7 +61,7 @@ export const useAnimatePixiContainer = <T extends {}>(options: Options<T>) => {
   const teardown = () => {
     if (activeAnimation) {
       activeAnimation.stop();
-      // eslint-disable-next-line no-undefined
+
       activeAnimation = undefined;
     }
   };

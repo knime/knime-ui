@@ -19,8 +19,8 @@ const aiProviderStore = useAiProviderStore();
 
 <style lang="postcss" scoped>
 .panel-container {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-height: 0;
 }

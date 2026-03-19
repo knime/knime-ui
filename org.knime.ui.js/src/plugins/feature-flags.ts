@@ -5,6 +5,7 @@ import {
 
 import type { PluginInitFunction } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type Features = {
   // Define your feature flags here, e.g.:
   // newFeature: () => boolean;

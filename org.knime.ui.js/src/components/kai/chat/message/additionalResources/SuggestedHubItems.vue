@@ -45,9 +45,9 @@ const shouldRender = computed(() => props.items.length > 0);
 & .hub-items {
   & .title {
     display: flex;
+    margin-bottom: 10px;
     font-size: 16px;
     font-weight: 700;
-    margin-bottom: 10px;
 
     & :slotted(svg) {
       @mixin svg-icon-size 20;
@@ -58,9 +58,9 @@ const shouldRender = computed(() => props.items.length > 0);
   }
 
   & ul {
-    list-style-type: none;
-    margin: 0;
     padding: 0;
+    margin: 0;
+    list-style-type: none;
 
     & li {
       & .button {
@@ -68,11 +68,11 @@ const shouldRender = computed(() => props.items.length > 0);
         align-items: center;
         width: 100%;
         padding: var(--space-4) var(--space-8) var(--space-4) var(--space-4);
-        text-align: initial;
-        border-radius: 0;
         font-size: 11px;
         font-weight: 400;
         color: var(--knime-masala);
+        text-align: initial;
+        border-radius: 0;
 
         & .item-title {
           flex: 1;
@@ -81,9 +81,9 @@ const shouldRender = computed(() => props.items.length > 0);
         & svg {
           @mixin svg-icon-size 12;
 
-          stroke: var(--knime-masala);
-          margin-right: 0;
           margin-top: 2px;
+          margin-right: 0;
+          stroke: var(--knime-masala);
         }
 
         &:hover,

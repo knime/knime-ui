@@ -49,23 +49,23 @@ defineEmits<{
 
 .quick-build-input {
   & .prompt {
-    margin-top: 20px;
     padding-bottom: var(--kds-spacing-container-0-25x);
+    margin-top: 20px;
   }
 
   & .error {
-    margin-top: 10px;
-    color: var(--knime-coral);
-    font-size: 12px;
     display: flex;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--knime-coral);
 
     & .error-icon {
       @mixin svg-icon-size 15;
 
       margin-top: -2px;
       margin-right: var(--kds-spacing-container-0-25x);
-      stroke: var(--knime-white);
       fill: var(--knime-coral);
+      stroke: var(--knime-white);
     }
   }
 }

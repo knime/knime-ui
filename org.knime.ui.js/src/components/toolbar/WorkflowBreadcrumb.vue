@@ -226,10 +226,10 @@ const activeVersionTitle = computed(() => {
 
 .breadcrumb-wrapper {
   display: flex;
-  min-width: 150px;
+  gap: 5px;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  min-width: 150px;
 
   /* Overwrite for clickable hover elements of the nested action breadcrumb */
   &:deep(span.clickable:hover) {
@@ -243,16 +243,16 @@ const activeVersionTitle = computed(() => {
 
 .breadcrumb-root {
   display: flex;
+  gap: 5px;
   align-items: center;
   justify-content: center;
-  gap: 5px;
   font: var(--kds-font-base-interactive-small);
   color: var(--kds-color-text-and-icon-subtle);
 
   & span {
-    font: var(--kds-font-base-body-small);
     overflow: hidden;
     text-overflow: ellipsis;
+    font: var(--kds-font-base-body-small);
   }
 
   & .breadcrumb-icon {
@@ -262,8 +262,8 @@ const activeVersionTitle = computed(() => {
   }
 
   & .workflow-versions-information {
-    margin: 0 10px;
     max-width: 300px;
+    margin: 0 10px;
   }
 
   & :deep(.submenu-toggle) {
@@ -273,9 +273,9 @@ const activeVersionTitle = computed(() => {
     );
 
     & svg {
-      stroke-width: 3.5px;
       width: 12px;
       height: 12px;
+      stroke-width: 3.5px;
     }
 
     &.expanded {

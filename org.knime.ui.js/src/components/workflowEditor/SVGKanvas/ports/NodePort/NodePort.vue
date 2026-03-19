@@ -193,19 +193,19 @@ onClickOutside(tooltipRef, onClose, { capture: false });
   }
 
   &:hover :deep(.scale) {
-    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
     transform: scale(1.2);
+    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
   }
 }
 
 :deep(.action-button) {
-  transition: all 150ms ease-in;
   transform: scale(1);
+  transition: all 150ms ease-in;
 }
 
 :deep(.selected-port) {
-  transition: opacity 150ms ease-out;
   opacity: 1;
+  transition: opacity 150ms ease-out;
 }
 
 .fade-enter-from {

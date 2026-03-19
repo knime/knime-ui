@@ -64,9 +64,9 @@ const openNodeInBrowser = (
 & .extensions {
   & .header {
     display: flex;
+    margin-bottom: 10px;
     font-size: 16px;
     font-weight: 700;
-    margin-bottom: 10px;
 
     & svg {
       @mixin svg-icon-size 20;
@@ -83,9 +83,9 @@ const openNodeInBrowser = (
     }
 
     & ul {
-      list-style-type: none;
-      margin: 0;
       padding: 0;
+      margin: 0;
+      list-style-type: none;
 
       & li {
         & .button {
@@ -93,11 +93,11 @@ const openNodeInBrowser = (
           align-items: center;
           width: 100%;
           padding: var(--space-4) var(--space-8) var(--space-4) var(--space-4);
-          text-align: initial;
-          border-radius: 0;
           font-size: 11px;
           font-weight: 400;
           color: var(--knime-masala);
+          text-align: initial;
+          border-radius: 0;
 
           & .node-name {
             flex: 1;
@@ -106,9 +106,9 @@ const openNodeInBrowser = (
           & svg {
             @mixin svg-icon-size 12;
 
-            stroke: var(--knime-masala);
-            margin-right: 0;
             margin-top: 2px;
+            margin-right: 0;
+            stroke: var(--knime-masala);
           }
 
           &:hover,

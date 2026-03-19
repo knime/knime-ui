@@ -100,7 +100,7 @@ describe("Workflow", () => {
     const positions = Object.keys(nodes).map(
       (nodeId) => nodes[nodeId].position,
     );
-    // eslint-disable-next-line func-style
+     
     function* generator() {
       let index = 0;
       while (index < positions.length) {

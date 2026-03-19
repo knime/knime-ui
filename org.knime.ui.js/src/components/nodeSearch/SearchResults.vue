@@ -12,7 +12,7 @@ import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import SearchResultsInfo from "./SearchResultsInfo.vue";
 
 export type SearchActions = {
-  searchNodesNextPage: () => Promise<any>;
+  searchNodesNextPage: () => Promise<void>;
 };
 
 /**

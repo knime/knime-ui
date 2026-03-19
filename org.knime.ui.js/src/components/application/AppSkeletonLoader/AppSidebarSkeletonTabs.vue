@@ -29,10 +29,10 @@ defineProps<Props>();
 
 <style lang="postcss" scoped>
 .sidebar-tabs-skeleton {
-  background: var(--knime-masala);
-  min-width: var(--app-side-bar-buttons-width);
-  height: 100vh;
   display: flex;
   flex-direction: column;
+  min-width: var(--app-side-bar-buttons-width);
+  height: 100vh;
+  background: var(--knime-masala);
 }
 </style>

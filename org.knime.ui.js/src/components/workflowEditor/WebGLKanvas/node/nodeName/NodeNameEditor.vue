@@ -183,9 +183,9 @@ onContextMenuOutside(textEditorWrapper, onSave);
   position: absolute;
   top: -25px;
   left: 14px;
-  overflow: hidden;
   width: 54px;
   height: 25px;
+  overflow: hidden;
 }
 
 .name-text-editor {
@@ -193,8 +193,8 @@ onContextMenuOutside(textEditorWrapper, onSave);
   font-family: "Roboto Condensed", sans-serif;
   font-size: calc(v-bind("nodeNameText.basefontSize") * 1px);
   font-weight: v-bind("nodeNameText.styles.fontWeight");
-  text-align: v-bind("nodeNameText.styles.align");
   line-height: v-bind("nodeNameText.baseLineHeight");
+  text-align: v-bind("nodeNameText.styles.align");
   border: v-bind("`${borderWidth}px`") solid var(--knime-silver-sand);
 
   &:focus-within {
@@ -207,13 +207,13 @@ onContextMenuOutside(textEditorWrapper, onSave);
   top: -3px;
   left: -5%;
   width: 110%;
-  border-radius: v-bind("$shapes.selectedItemBorderRadius");
+  padding: var(--space-4);
   font-family: "Roboto Condensed", sans-serif;
   font-size: 10px;
-  backdrop-filter: blur(5px);
-  padding: var(--space-4);
   color: v-bind("$colors.error");
   text-align: center;
+  border-radius: v-bind("$shapes.selectedItemBorderRadius");
+  backdrop-filter: blur(5px);
 
   & .chars {
     font-family: "Roboto Mono", sans-serif;

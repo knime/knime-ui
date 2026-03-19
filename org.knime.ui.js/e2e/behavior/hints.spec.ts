@@ -1,4 +1,4 @@
-/* eslint-disable no-magic-numbers */
+ 
 import test, { Page, expect } from "@playwright/test";
 
 import { getBrowserStorageState, getNode, startApplication } from "../utils";

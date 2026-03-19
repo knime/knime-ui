@@ -86,7 +86,7 @@ export default {
           return null;
         }
 
-        let partitions = [];
+        const partitions = [];
         for (let i = 0; i < positions.length - 1; i++) {
           partitions.push((positions[i] + positions[i + 1]) / 2);
         }
@@ -94,7 +94,7 @@ export default {
         return partitions;
       };
 
-      let partitions = {};
+      const partitions = {};
       if (this.portPositions.in) {
         partitions.in = makePartitions(this.portPositions.in.map(([, y]) => y));
       }
@@ -164,7 +164,7 @@ export default {
     },
     onConnectorMove(e, ports) {
       consola.trace("connector-move");
-      let { y: mouseY, x: mouseX, targetPortDirection } = e.detail;
+      const { y: mouseY, x: mouseX, targetPortDirection } = e.detail;
 
       // find mouse position relative to container position on workflow
       const relativeX = mouseX - this.position.x;
@@ -308,7 +308,7 @@ export default {
     async onConnectorDrop(event) {
       // copy over the target port as the async backend calls might come after it has been set to null by
       // onConnectorEnd()
-      let targetPort = { ...this.targetPort };
+      const targetPort = { ...this.targetPort };
 
       const { wasAborted } = await this.tryClearSelection([this.id]);
       if (wasAborted) {
@@ -359,13 +359,14 @@ export default {
         const [typeId] =
           targetPort.validPortGroups[firstPortGroup].supportedPortTypeIds;
         const side = targetPort.side;
-        return this.addPortAndConnectIt({
+        this.addPortAndConnectIt({
           typeId,
           portGroup: firstPortGroup === "default" ? null : firstPortGroup,
           side,
           startNode,
           startPort,
         });
+        return;
       }
       // show menu to the user to select the portGroup and the type
       const [x, y] = targetPort.snapPosition;

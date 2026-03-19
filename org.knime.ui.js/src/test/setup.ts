@@ -19,7 +19,7 @@ setupLogger();
 
 // mock presence of 'EquoCommService' object
 window.EquoCommService = {
-  send: (_: any, __: any) => Promise.resolve(),
+  send: (_: any, __: any) => Promise.resolve(""),
   on: (_: any, __: any, ___: any) => {},
 };
 

@@ -142,8 +142,8 @@ const activeTabComponent = computed(
 }
 
 .active-tab {
-  flex-grow: 1;
   display: flex;
+  flex-grow: 1;
   flex-direction: column;
 
   /** we need a height for the overflow to work, the flex-grow makes this take up all available space */

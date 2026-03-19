@@ -49,27 +49,27 @@ const containerType = computed(() => activeWorkflow.value!.info.containerType);
 
 <style lang="postcss" scoped>
 .stack {
-  display: flex;
-  flex-direction: column;
   position: absolute;
   z-index: v-bind("$zIndices.layerCanvasInfo");
-  pointer-events: none;
-  user-select: none;
-  justify-content: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-top: 10px;
-  margin-left: 10px;
+  justify-content: center;
 
   /* we can't rely on top/left/bottom as we cannot set the parent to relative due to floating menu size calc */
   width: calc(v-bind(width) * 1px - 24px);
+  margin-top: 10px;
+  margin-left: 10px;
+  pointer-events: none;
+  user-select: none;
 }
 
 .workflow-info {
-  min-height: 40px;
-  width: 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 40px;
 
   &:has(.linked) {
     background: v-bind("$colors.notifications.info");

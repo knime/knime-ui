@@ -1,4 +1,4 @@
-/* eslint-disable no-undefined */
+ 
 import {
   type Container,
   type ContainerChild,

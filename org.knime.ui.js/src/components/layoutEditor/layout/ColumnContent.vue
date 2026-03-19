@@ -150,34 +150,34 @@ const closeDialogs = () => {
   }
 
   & .legacy-button {
-    left: 0;
     top: 2px;
-    border: none;
-    background-color: var(--knime-carrot);
-    height: 13px;
+    left: 0;
     width: 13px;
+    height: 13px;
     margin-left: 5px;
+    background-color: var(--knime-carrot);
+    border: none;
   }
 }
 
 .legacy-info {
+  z-index: v-bind("layoutEditorZIndices.legacyInfoBox");
+  width: 360px;
+  padding: var(--space-8);
+  cursor: default;
   background-color: var(--knime-white);
   box-shadow: var(--shadow-elevation-2);
-  cursor: default;
-  padding: var(--space-8);
-  width: 360px;
-  z-index: v-bind("layoutEditorZIndices.legacyInfoBox");
 }
 
 /* full window overlay to prevent other actions while config dialog is open */
 .dialog-overlay {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background-color: transparent;
   position: fixed;
   inset: 0;
   z-index: v-bind("layoutEditorZIndices.dialogOverlay");
+  padding: 0;
+  margin: 0;
+  outline: 0;
+  background-color: transparent;
+  border: 0;
 }
 </style>

@@ -92,12 +92,12 @@ const canApplyAndExecute = computed(() => {
 
 <style lang="postcss" scoped>
 & .buttons {
-  border-top: var(--kds-border-base-muted);
   display: flex;
-  padding: var(--kds-spacing-container-0-5x);
   gap: var(--kds-spacing-container-0-5x);
   justify-content: space-between;
+  padding: var(--kds-spacing-container-0-5x);
   margin-top: auto;
+  border-top: var(--kds-border-base-muted);
 
   & .apply-execute,
   & .execute {

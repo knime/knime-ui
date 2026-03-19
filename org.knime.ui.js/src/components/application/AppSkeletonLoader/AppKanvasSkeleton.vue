@@ -110,8 +110,8 @@ const copyToClipboard = async () => {
       position: relative;
 
       & .success {
-        opacity: 0;
         position: absolute;
+        opacity: 0;
       }
 
       & > span {
@@ -119,9 +119,9 @@ const copyToClipboard = async () => {
       }
 
       &.copied {
+        color: var(--knime-white);
         background-color: var(--knime-meadow);
         border-color: var(--knime-meadow);
-        color: var(--knime-white);
 
         & svg {
           stroke: var(--knime-white);

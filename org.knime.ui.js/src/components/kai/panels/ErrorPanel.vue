@@ -33,11 +33,11 @@ const { aiProviderStatus } = storeToRefs(aiProviderStore);
 
 <style lang="postcss" scoped>
 & .error-panel {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   text-align: center;
 
   & .slogan {
@@ -47,8 +47,8 @@ const { aiProviderStatus } = storeToRefs(aiProviderStore);
 
   & .note {
     margin: 0 35px 20px;
-    font-weight: 400;
     font-style: italic;
+    font-weight: 400;
   }
 }
 </style>

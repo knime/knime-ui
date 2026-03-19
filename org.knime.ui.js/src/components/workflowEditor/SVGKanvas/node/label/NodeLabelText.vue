@@ -61,7 +61,7 @@ export default defineComponent({
     },
     styledText() {
       const styleRanges = this.annotation ? this.annotation.styleRanges : [];
-      let { textRanges, isValid } = applyStyleRanges(
+      const { textRanges, isValid } = applyStyleRanges(
         styleRanges ?? [],
         this.value,
       );
@@ -155,14 +155,14 @@ export default defineComponent({
 
   & .text {
     font-family: "Roboto Condensed", sans-serif;
-    font-style: normal;
     font-size: calc(v-bind("$shapes.nodeNameFontSize") * 1px);
+    font-style: normal;
     white-space: pre;
   }
 
   & .text.placeholder {
-    color: var(--knime-dove-gray);
     font-style: italic;
+    color: var(--knime-dove-gray);
   }
 }
 </style>

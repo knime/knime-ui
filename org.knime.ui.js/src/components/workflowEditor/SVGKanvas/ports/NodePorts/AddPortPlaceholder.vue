@@ -10,8 +10,8 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import type { TargetPort } from "../../../CanvasAnchoredComponents/PortTypeMenu/types";
 
 export const addPortPlaceholderPath = (() => {
-  let cx = 0;
-  let cy = 0;
+  const cx = 0;
+  const cy = 0;
   const r = 6;
 
   return `M ${cx} ${cy}
@@ -127,6 +127,7 @@ export default defineComponent({
       get() {
         return this.portTypeMenu.previewPort;
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       set(value: any) {
         this.setPortTypeMenuPreviewPort(value);
       },
@@ -159,7 +160,7 @@ export default defineComponent({
     ]),
     openMenu() {
       // find the position in coordinates relative to the origin
-      let position = {
+      const position = {
         x: (this.anchorPoint as XY).x + this.position[0],
         y: (this.anchorPoint as XY).y + this.position[1],
       };
@@ -193,7 +194,7 @@ export default defineComponent({
         const { supportedPortTypeIds } = portGroups[0];
 
         if (supportedPortTypeIds?.length === 1) {
-          let [typeId] = supportedPortTypeIds;
+          const [typeId] = supportedPortTypeIds;
           this.$emit("addPort", {
             typeId,
             portGroup: Object.keys(this.validPortGroups!)[0],
@@ -278,14 +279,14 @@ export default defineComponent({
   cursor: pointer;
 
   &:hover {
-    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
     transform: scale(1.15);
+    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
   }
 
   &.active,
   &:active {
-    transition: transform 80ms;
     transform: scale(0.8);
+    transition: transform 80ms;
   }
 
   & path,

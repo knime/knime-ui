@@ -27,7 +27,7 @@ defineProps<Props>();
   gap: 10px;
   width: 371px;
   padding: 20px;
-  border-right: 1px solid var(--knime-silver-sand);
   background: var(--sidebar-background-color);
+  border-right: 1px solid var(--knime-silver-sand);
 }
 </style>

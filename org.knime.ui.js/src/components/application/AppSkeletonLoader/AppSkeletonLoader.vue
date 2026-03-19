@@ -144,13 +144,13 @@ watch(isLoading, (value) => {
 }
 
 .app-skeleton {
+  z-index: v-bind("$zIndices.layerAppSkeletonLoader");
+  display: grid;
   grid-area: workflow;
   width: 100vw;
   height: 100vh;
   cursor: progress;
-  z-index: v-bind("$zIndices.layerAppSkeletonLoader");
   background: var(--knime-white);
-  display: grid;
 
   &.no-left-panel {
     grid-template:
@@ -174,15 +174,15 @@ watch(isLoading, (value) => {
 
     & .top-panel-skeleton {
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       height: calc(
         v-bind("`${topPanelHeight}%`") - v-bind("`${splitterWidthPx}px`")
       );
 
       & .kanvas-skeleton {
-        height: 100%;
         align-items: center;
+        height: 100%;
         background: var(--knime-white);
       }
     }
@@ -193,12 +193,12 @@ watch(isLoading, (value) => {
     }
 
     & .bottom-panel-skeleton {
-      height: calc(v-bind("`${bottomPanelHeight}%`"));
       display: flex;
       flex-direction: column;
       gap: 4px;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      height: calc(v-bind("`${bottomPanelHeight}%`"));
       background: var(--knime-white);
     }
   }

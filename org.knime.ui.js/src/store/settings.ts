@@ -43,7 +43,7 @@ const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {
   return item === null ? defaultValue : JSON.parse(item);
 };
 
-const saveItem = (key: string, value: any) => {
+const saveItem = (key: string, value: unknown) => {
   window?.localStorage?.setItem(key, JSON.stringify(value));
 };
 
@@ -69,7 +69,7 @@ export const useSettingsStore = defineStore("settings", {
       }
     },
 
-    async updateSetting(payload: { key: string; value: any }) {
+    async updateSetting(payload: { key: string; value: unknown }) {
       this.updateAllSettings({
         ...this.settings,
         [payload.key]: payload.value,

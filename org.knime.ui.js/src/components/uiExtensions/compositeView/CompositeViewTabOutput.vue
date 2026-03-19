@@ -129,13 +129,13 @@ const openInNewWindow = () => {
 @import url("@/assets/mixins.css");
 
 .workflow-info {
-  background: v-bind("$colors.notifications.info");
-  min-height: 40px;
-  width: 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 40px;
   padding: 0 var(--space-8);
+  background: v-bind("$colors.notifications.info");
 }
 
 .node-view-wrapper {

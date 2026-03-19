@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/_\/api/, ""),
         },
       } satisfies Record<string, ProxyOptions>)
-    : // eslint-disable-next-line no-undefined
+    :  
       undefined;
 
   const config: ViteUserConfig = {

@@ -12,7 +12,7 @@ export const waitForPatch = (snapshotId) => {
   if (!stalledPromises[snapshotId]) {
     // 1. Create a promise for that snapshotId
     let snapshotResolve;
-    let snapshotPromise = new Promise((resolve) => {
+    const snapshotPromise = new Promise((resolve) => {
       snapshotResolve = resolve;
     });
 
@@ -21,7 +21,7 @@ export const waitForPatch = (snapshotId) => {
   }
 
   // 3. Return promise to the caller
-  let [promise] = stalledPromises[snapshotId];
+  const [promise] = stalledPromises[snapshotId];
   return promise;
 };
 
@@ -35,7 +35,7 @@ export const notifyPatch = (snapshotId) => {
   }
 
   // B. Patch arrived last
-  let [, resolve] = stalledPromises[snapshotId];
+  const [, resolve] = stalledPromises[snapshotId];
 
   // clean up promise map
   delete stalledPromises[snapshotId];

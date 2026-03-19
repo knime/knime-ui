@@ -471,16 +471,16 @@ const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
 
 <style lang="postcss" scoped>
 .info-node {
-  color: var(--knime-gray-dark);
   font-style: italic;
+  color: var(--knime-gray-dark);
   pointer-events: none;
 }
 
 .retry-button.button.compact.with-border {
-  height: 20px;
-  line-height: 20px;
-  padding: 0;
   display: flex;
   place-content: center center;
+  height: 20px;
+  padding: 0;
+  line-height: 20px;
 }
 </style>

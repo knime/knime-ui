@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 
@@ -181,7 +182,6 @@ export const validatePortSelection: ValidationFn<{
   const selectedPort = selectedNode.outPorts[selectedPortIndex];
   if (
     !selectedPort ||
-    // eslint-disable-next-line no-undefined
     selectedPortIndex === undefined ||
     selectedPortIndex === null
   ) {
@@ -233,10 +233,7 @@ export const validatePortSupport: ValidationFn<{
     };
   }
 
-  if (
-    // eslint-disable-next-line no-undefined
-    selectedPort.portContentVersion === undefined
-  ) {
+  if (selectedPort.portContentVersion === undefined) {
     return {
       error: {
         type: "PORT",

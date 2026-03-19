@@ -24,6 +24,8 @@ export type ShortcutExecuteContext = {
   payload: {
     src?: "global" | "contextmenu" | "workflowToolbar";
     event?: Event;
+    // TODO: improve this
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata?: any;
   };
 };
@@ -34,7 +36,7 @@ export type Shortcut = {
    * that contains the store instance, the router instance, and optionally a MouseEvent
    * in case there's mouse action that triggers this shortcut
    */
-  execute: (context: ShortcutExecuteContext) => void | Promise<any>;
+  execute: (context: ShortcutExecuteContext) => void | Promise<unknown>;
 
   /**
    * Shortcut can only execute if the result of this function is `true`. If not provided defaults to

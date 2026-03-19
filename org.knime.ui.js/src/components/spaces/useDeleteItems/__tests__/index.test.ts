@@ -116,6 +116,7 @@ describe("useDeleteItems::index", () => {
     if (button?.callback) {
       button.callback();
     } else {
+      // eslint-disable-next-line vitest/no-conditional-expect
       expect.fail("The button should have a callback.");
     }
 

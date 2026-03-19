@@ -92,7 +92,7 @@ const groupedShortcuts = computed(() =>
   <KdsModal
     :active="isOpen"
     headline="Shortcuts"
-    icon="shortcuts"
+    leading-icon="shortcuts"
     width="xlarge"
     closedby="any"
     height="full"
@@ -166,44 +166,44 @@ const groupedShortcuts = computed(() =>
 .shortcut-overview {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 450px));
-  align-items: start;
   grid-auto-rows: min-content;
   grid-auto-flow: row dense;
   gap: 0 var(--modal-gap);
+  align-items: start;
+  height: 100%;
   padding: 0 var(--modal-padding-right) var(--modal-padding-bottom)
     var(--modal-padding-left);
-  font: var(--kds-font-base-small);
   overflow: hidden auto;
-  height: 100%;
+  font: var(--kds-font-base-small);
 
   & .group {
     align-self: start;
   }
 
   & h2 {
+    padding: 0 5px;
     margin: 15px 0;
     font-size: 16px;
     font-weight: 500;
     line-height: 36px;
-    padding: 0 5px;
     border-bottom: 1px solid var(--knime-silver-sand);
   }
 
   & .shortcut {
-    margin-bottom: 15px;
+    position: relative;
     display: grid;
-    gap: 10px;
     grid-template-columns: auto max-content;
+    gap: 10px;
     align-items: center;
     padding: 0 5px;
-    position: relative;
+    margin-bottom: 15px;
 
     & .arrow {
       @mixin svg-icon-size 12;
 
-      display: none;
       position: absolute;
       left: -11px;
+      display: none;
       stroke: var(--knime-black);
     }
 
@@ -230,8 +230,8 @@ const groupedShortcuts = computed(() =>
       white-space: pre-wrap;
 
       & .hotkey {
-        text-align: right;
         margin-left: auto;
+        text-align: right;
       }
 
       & .additional {

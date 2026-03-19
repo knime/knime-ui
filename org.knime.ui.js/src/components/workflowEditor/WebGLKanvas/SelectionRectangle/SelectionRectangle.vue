@@ -47,6 +47,13 @@ const { startPanningToEdge, stopPanningToEdge } = useDragNearEdgePanning();
 let selectionPointerId: number | undefined;
 let didDrag = false;
 
+const selectionRectangle = computed(() => ({
+  x: Math.min(startPos.value.x, endPos.value.x),
+  y: Math.min(startPos.value.y, endPos.value.y),
+  width: Math.abs(endPos.value.x - startPos.value.x),
+  height: Math.abs(endPos.value.y - startPos.value.y),
+}));
+
 const updateSelectionPreview = () => {
   const { inside } = spatialHash.queryRectBounds(selectionRectangle.value);
 
@@ -88,12 +95,18 @@ const clearState = () => {
   didDrag = false;
 };
 
-const selectionRectangle = computed(() => ({
-  x: Math.min(startPos.value.x, endPos.value.x),
-  y: Math.min(startPos.value.y, endPos.value.y),
-  width: Math.abs(endPos.value.x - startPos.value.x),
-  height: Math.abs(endPos.value.y - startPos.value.y),
-}));
+const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
+  offset,
+  isAtEdge,
+}) => {
+  if (!isAtEdge.x) {
+    endPos.value.x -= offset.x;
+  }
+  if (!isAtEdge.y) {
+    endPos.value.y -= offset.y;
+  }
+  updateSelectionPreview();
+};
 
 const onSelectionStart = async (event: PointerEvent) => {
   consola.debug("global rectangle selection:: start", { event });
@@ -227,19 +240,6 @@ const onSelectionStart = async (event: PointerEvent) => {
 
   canvas.addEventListener("pointermove", onSelectionMove);
   canvas.addEventListener("pointerup", onSelectionEnd);
-  updateSelectionPreview();
-};
-
-const onPanningToEdgeUpdate: PanningToEdgeUpdateHandler = ({
-  offset,
-  isAtEdge,
-}) => {
-  if (!isAtEdge.x) {
-    endPos.value.x -= offset.x;
-  }
-  if (!isAtEdge.y) {
-    endPos.value.y -= offset.y;
-  }
   updateSelectionPreview();
 };
 

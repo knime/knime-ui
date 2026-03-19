@@ -25,23 +25,22 @@ export default {
 
 .card {
   & .card-content {
-    min-height: 150px;
-    background: var(--knime-white);
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
     max-width: 100%;
+    min-height: 150px;
+    background: var(--knime-white);
 
     &.centered {
-      justify-content: center;
       align-items: center;
+      justify-content: center;
     }
 
     &.padded {
       padding: 20px 30px;
     }
-
-    justify-content: flex-start;
-    align-items: flex-start;
   }
 }
 </style>

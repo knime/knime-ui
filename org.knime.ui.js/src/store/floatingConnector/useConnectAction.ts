@@ -1,5 +1,5 @@
-/* eslint-disable func-style */
-/* eslint-disable no-undefined */
+ 
+ 
 import { computed, ref } from "vue";
 
 import { promise as promiseUtils } from "@knime/utils";
@@ -160,7 +160,7 @@ export const useConnectAction = () => {
     }
 
     if (isPlaceholderPort(snapTarget)) {
-      // eslint-disable-next-line no-use-before-define
+       
       return connectViaPlaceHolderPort(params, targetPortDirection);
     }
 

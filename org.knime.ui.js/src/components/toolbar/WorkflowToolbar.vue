@@ -429,18 +429,18 @@ const handleNavigateToHubHome = (event: MouseEvent) => {
 <style lang="postcss" scoped>
 .toolbar {
   display: flex;
-  align-items: center;
-  height: var(--app-toolbar-height);
-  max-width: 100vw;
   flex: 0 0 auto;
+  align-items: center;
+  max-width: 100vw;
+  height: var(--app-toolbar-height);
 
   & .button-list {
-    transition: opacity 150ms ease-out;
-    flex-shrink: 0;
     display: flex;
+    flex-shrink: 0;
+    gap: var(--kds-spacing-container-0-25x);
     font-size: 14px;
     user-select: none;
-    gap: var(--kds-spacing-container-0-25x);
+    transition: opacity 150ms ease-out;
   }
 
   & .home-navigation {
@@ -450,8 +450,8 @@ const handleNavigateToHubHome = (event: MouseEvent) => {
   }
 
   & .breadcrumb {
-    flex: 1 1;
     display: flex;
+    flex: 1 1;
     text-align: center;
     white-space: pre;
   }
@@ -462,10 +462,10 @@ const handleNavigateToHubHome = (event: MouseEvent) => {
     );
 
     display: flex;
-    justify-content: end;
-    align-items: center;
     flex: 0 0;
     gap: var(--kds-spacing-container-0-25x);
+    align-items: center;
+    justify-content: end;
 
     & button {
       white-space: nowrap;
@@ -478,9 +478,9 @@ const handleNavigateToHubHome = (event: MouseEvent) => {
       );
 
       & svg {
-        stroke-width: 3.5px;
         width: 12px;
         height: 12px;
+        stroke-width: 3.5px;
       }
 
       &.expanded {

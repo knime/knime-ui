@@ -221,9 +221,9 @@ const resizeBarsClasses = computed(() => [
     position: absolute;
 
     &.vertical {
+      left: var(--resize-handle-corner-margin);
       width: var(--resize-handle-length);
       height: var(--resize-handle-thickness);
-      left: var(--resize-handle-corner-margin);
       cursor: ns-resize;
 
       &.north {
@@ -252,9 +252,9 @@ const resizeBarsClasses = computed(() => [
     }
 
     &.horizontal {
+      top: var(--resize-handle-corner-margin);
       width: var(--resize-handle-thickness);
       height: var(--resize-handle-length);
-      top: var(--resize-handle-corner-margin);
       cursor: ew-resize;
 
       &.east {

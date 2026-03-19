@@ -17,20 +17,20 @@ const { isDragging } = storeToRefs(layoutEditorStore);
 @import url("@/assets/mixins.css");
 
 button {
-  margin: 2px;
-  padding: 2px;
-  border: 0;
-  outline: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 16px;
   height: 16px;
-  background-color: var(--knime-silver-sand);
-  position: absolute;
-  right: 0;
-  top: 0;
+  padding: 2px;
+  margin: 2px;
   cursor: pointer;
+  outline: 0;
+  background-color: var(--knime-silver-sand);
+  border: 0;
+  border-radius: 2px;
   opacity: 1;
   transition: opacity 0.2s;
-  border-radius: 2px;
 
   &:hover,
   &.active {
@@ -51,8 +51,8 @@ button {
   }
 
   & > * {
-    margin: auto;
     display: block;
+    margin: auto;
   }
 }
 </style>

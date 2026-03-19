@@ -135,7 +135,6 @@ const focusRectBounds = computed(() =>
 
 <style lang="postcss" scoped>
 .transform-box {
-  fill: transparent;
   z-index: v-bind("$zIndices.layerMinorElevation");
 
   /*
@@ -145,6 +144,7 @@ const focusRectBounds = computed(() =>
     */
   pointer-events: none;
   user-select: none;
+  fill: transparent;
 }
 
 .transform-control {

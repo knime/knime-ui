@@ -18,8 +18,8 @@ withDefaults(defineProps<Props>(), {
 .legacy-description {
   width: 100%;
   min-height: 150px;
-  line-height: 150%;
   font-size: 13px;
+  line-height: 150%;
   white-space: break-spaces;
 }
 </style>

@@ -20,7 +20,7 @@ const setContext = (value: Context) => {
   __context = value;
 };
 
-const logNoContextFound = (scope: string, payload: any) =>
+const logNoContextFound = (scope: string, payload: unknown) =>
   consola.error(
     `[${scope}]: Tried to resolve location but context is not initialized`,
     payload,

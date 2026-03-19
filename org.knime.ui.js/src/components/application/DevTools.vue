@@ -194,24 +194,24 @@ const dragStart = (pointerDown: PointerEvent) => {
 .dev-tools {
   position: fixed;
   bottom: 16px;
+  z-index: v-bind("$zIndices.layerPriorityElevation");
   display: flex;
   align-items: center;
   height: 40px;
-  box-shadow: var(--shadow-elevation-1);
   background: var(--knime-gray-ultra-light);
   border: 1px solid var(--knime-silver-sand);
   border-radius: 4px;
-  z-index: v-bind("$zIndices.layerPriorityElevation");
+  box-shadow: var(--shadow-elevation-1);
 
   & .handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 20px;
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    padding-top: var(--space-4);
     cursor: grab;
     user-select: none;
-    padding-top: var(--space-4);
   }
 
   & .content,
@@ -221,8 +221,8 @@ const dragStart = (pointerDown: PointerEvent) => {
   }
 
   & .content {
-    padding: var(--space-8);
     gap: var(--space-6);
+    padding: var(--space-8);
   }
 }
 </style>

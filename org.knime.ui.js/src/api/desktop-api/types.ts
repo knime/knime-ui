@@ -7,7 +7,7 @@ export type DesktopAPIFunctionResultPayload = {
 export interface DesktopEventHandlers {
   SaveAndCloseProjectsEvent(payload: {
     projectIds: Array<string>;
-  }): void | Promise<any>;
+  }): void | Promise<void>;
 
   ImportURIEvent(payload: { x: number; y: number }): void;
 

@@ -103,16 +103,16 @@ const enableWorkflowActions = import.meta.env.MODE !== "e2e" && devMode;
 <style lang="postcss" scoped>
 .toolbar {
   position: absolute;
-  max-height: calc(v-bind("$shapes.floatingCanvasToolsSize") * 1px);
   bottom: calc(v-bind("$shapes.floatingCanvasToolsBottomOffset") * 1px);
+  z-index: v-bind("$zIndices.layerCanvasDecorations");
   display: flex;
   align-items: center;
+  max-height: calc(v-bind("$shapes.floatingCanvasToolsSize") * 1px);
+  padding: var(--kds-spacing-container-0-25x);
   background: var(--knime-white);
   border: var(--kds-border-base-subtle);
   border-radius: var(--kds-border-radius-container-0-50x);
   box-shadow: var(--kds-elevation-level-1);
-  z-index: v-bind("$zIndices.layerCanvasDecorations");
-  padding: var(--kds-spacing-container-0-25x);
 }
 
 .workflow-actions {
@@ -124,7 +124,7 @@ const enableWorkflowActions = import.meta.env.MODE !== "e2e" && devMode;
 }
 
 .minimap-toggle {
-  margin-left: var(--kds-spacing-container-0-12x);
   margin-right: var(--kds-spacing-container-0-37x);
+  margin-left: var(--kds-spacing-container-0-12x);
 }
 </style>

@@ -62,7 +62,7 @@ const clippedProgress = computed(() =>
 );
 
 const progressBarWidth = computed(() => {
-  let result = $shapes.nodeSize * clippedProgress.value;
+  const result = $shapes.nodeSize * clippedProgress.value;
   if (result && result < 1) {
     // fractional pixels just don't look good
     return 1;
@@ -83,7 +83,7 @@ const progressDisplayPercentage = computed(() => {
 
 const tooltip = computed<TooltipDefinition | null>(() => {
   const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = $shapes;
-  let tooltip = {
+  const tooltip = {
     position: {
       x: nodeSize / 2,
       y: nodeSize + nodeStatusMarginTop + nodeStatusHeight,
@@ -92,7 +92,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
     gap: 10,
     hoverable: true,
     text: "",
-    // eslint-disable-next-line no-undefined
+     
     issue: props.issue ?? undefined,
     resolutions: props.resolutions,
   } satisfies TooltipDefinition;
@@ -264,8 +264,8 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
 .progress-circle {
   animation-name: executing;
   animation-duration: 0.8s;
-  animation-direction: alternate;
-  animation-iteration-count: infinite;
   animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
 </style>

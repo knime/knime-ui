@@ -169,24 +169,24 @@ const showValidationHint = computed(
 
 <style lang="postcss" scoped>
 .destination-picker-wrapper {
-  padding: var(--modal-padding-top) 0 var(--modal-padding-bottom) 0;
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--modal-gap);
+  height: 100%;
+  padding: var(--modal-padding-top) 0 var(--modal-padding-bottom) 0;
 }
 
 .spaced-container {
-  padding: 0 var(--modal-padding-right) 0 var(--modal-padding-left);
   display: flex;
   flex-direction: column;
   gap: var(--modal-gap);
+  padding: 0 var(--modal-padding-right) 0 var(--modal-padding-left);
 }
 
 .space-tree-container {
-  overflow: auto;
   height: 100%;
   padding: 0 var(--modal-padding-right) 0 var(--modal-padding-left);
+  overflow: auto;
 }
 
 .space-tree {

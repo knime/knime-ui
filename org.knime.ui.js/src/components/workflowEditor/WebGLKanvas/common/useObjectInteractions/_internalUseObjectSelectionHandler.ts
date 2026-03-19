@@ -1,4 +1,4 @@
-/* eslint-disable func-style */
+ 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useSelectionStore } from "@/store/selection";
 import type { SelectionMode } from "@/store/selection/types";

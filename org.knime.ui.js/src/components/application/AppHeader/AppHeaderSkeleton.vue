@@ -53,32 +53,32 @@ import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 
 <style lang="postcss" scoped>
 header {
+  position: relative;
   display: flex;
   height: var(--app-header-height);
-  background-color: var(--knime-masala);
-  border-bottom: 4px solid var(--knime-yellow);
-  position: relative;
 
   /* override padding set by webapps-common grid */
   padding: initial;
+  background-color: var(--knime-masala);
+  border-bottom: 4px solid var(--knime-yellow);
 
   & .toolbar {
-    width: 100%;
-    height: 100%;
     display: grid;
-    align-items: center;
-    align-content: center;
     grid-template-columns: auto 1fr auto;
     gap: 2px;
+    align-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 
     & .buttons {
       display: flex;
+      flex-shrink: 0;
+      gap: 10px;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-      margin-left: 15px;
-      gap: 10px;
       margin-right: 10px;
+      margin-left: 15px;
     }
   }
 
@@ -87,9 +87,9 @@ header {
     align-items: center;
     justify-content: left;
     width: auto;
-    background-color: var(--knime-masala);
     height: 100%;
     padding: 0 10px;
+    background-color: var(--knime-masala);
   }
 }
 </style>

@@ -164,27 +164,27 @@ onContextMenuOutside(textEditorWrapper, onSave);
 
 .action-bar {
   position: absolute;
+  top: -25px;
+  right: 0;
+  left: 0;
   width: 54px;
   height: 25px;
-  top: -25px;
-  left: 0;
-  right: 0;
   margin: 0 auto;
 }
 
 .label-text-editor {
   margin: auto;
   font-family: "Roboto Condensed", sans-serif;
-  text-align: v-bind("nodeLabelText.styles.align");
-  font-weight: v-bind("nodeLabelText.styles.fontWeight");
   font-size: calc(v-bind("nodeLabelText.styles.fontSize") * 1px);
+  font-weight: v-bind("nodeLabelText.styles.fontWeight");
   line-height: v-bind("nodeLabelText.baseLineHeight");
-  border: v-bind("`${borderWidth}px`") var(--knime-silver-sand);
+  text-align: v-bind("nodeLabelText.styles.align");
   outline: 1px solid var(--knime-silver-sand);
+  border: v-bind("`${borderWidth}px`") var(--knime-silver-sand);
 
   &:focus-within {
-    border: v-bind("`${borderWidth}px`") var(--knime-stone-dark);
     outline: 1px solid var(--knime-stone-dark);
+    border: v-bind("`${borderWidth}px`") var(--knime-stone-dark);
   }
 }
 </style>

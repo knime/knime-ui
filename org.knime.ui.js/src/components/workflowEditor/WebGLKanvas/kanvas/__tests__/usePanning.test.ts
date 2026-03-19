@@ -35,7 +35,7 @@ vi.mock("@/lib/dom", () => ({
 }));
 
 vi.mock("raf-throttle", () => ({
-  default: (fn: Function) => {
+  default: (fn: (...args: any[]) => any) => {
     const throttled = (...args: any[]) => fn(...args);
     throttled.cancel = vi.fn();
     return throttled;

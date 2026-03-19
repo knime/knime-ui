@@ -27,7 +27,7 @@ const getIcon = (type: string, linked: boolean) => {
   } else if (type === "metanode") {
     return MetaNodeIcon;
   } else {
-    // eslint-disable-next-line no-undefined
+     
     return undefined;
   }
 };

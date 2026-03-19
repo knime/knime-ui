@@ -44,7 +44,7 @@ const handleRespond = ({
   aiAssistantStore.respondToInquiry({
     chainType: props.chainType,
     selectedOptionId: optionId,
-    // eslint-disable-next-line no-undefined
+     
     suffix: isPermission && isCheckboxChecked ? "Saved" : undefined,
   });
 };

@@ -137,11 +137,11 @@ watch(radioValues, (options) => {
 <style lang="postcss" scoped>
 .modal {
   & :deep(.notice) {
+    height: 100%;
     overflow: hidden;
 
     /* workaround to have a transparent notice until it gets refactored to a single slot -> NXT-3131 */
     background-color: transparent !important;
-    height: 100%;
   }
 }
 </style>

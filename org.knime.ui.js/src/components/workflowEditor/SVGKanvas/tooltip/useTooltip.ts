@@ -24,7 +24,7 @@ export const useTooltip = (params: {
   const { isDragging } = storeToRefs(useMovingStore());
 
   let removeTooltipWatcher: (() => void) | null;
-  // eslint-disable-next-line one-var
+
   let tooltipTimeout: number;
 
   // takes care of removing the tooltip watcher even if the tooltip got closed from any other component (set null)
@@ -70,8 +70,9 @@ export const useTooltip = (params: {
     tooltipTimeout = window.setTimeout(showTooltip, entryDelayMS);
   };
 
-  const onTooltipMouseLeave = (event: any) => {
-    const relatedTarget = event.relatedTarget as HTMLElement | null;
+  const onTooltipMouseLeave = (event: Event) => {
+    const relatedTarget = (event as MouseEvent)
+      .relatedTarget as HTMLElement | null;
     consola.trace(
       "mouse left to:",
       relatedTarget?.tagName,

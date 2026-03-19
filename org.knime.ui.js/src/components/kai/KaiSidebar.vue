@@ -90,8 +90,8 @@ const showChatControls = computed(() => !panelComponent.value);
 }
 
 .panel-container {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   overflow-y: auto;
 }

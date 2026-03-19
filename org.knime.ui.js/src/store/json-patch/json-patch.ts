@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * Provides JSON Patch (http://jsonpatch.com/) functionality for stores.
  * Differences to RFC 6902:

@@ -51,9 +51,9 @@ const shouldRender = computed(
 & .references {
   & .title {
     display: flex;
+    margin-bottom: 10px;
     font-size: 16px;
     font-weight: 700;
-    margin-bottom: 10px;
 
     & svg {
       @mixin svg-icon-size 20;

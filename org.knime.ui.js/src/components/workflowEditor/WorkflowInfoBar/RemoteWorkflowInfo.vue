@@ -60,12 +60,12 @@ const shouldShow = computed(() => {
 
 <style lang="postcss" scoped>
 .banner {
-  width: 100%;
   display: flex;
-  padding: 5px 10px;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  width: 100%;
   min-height: 40px;
+  padding: 5px 10px;
   background: v-bind("$colors.notifications.warning");
   backdrop-filter: brightness(4);
 }

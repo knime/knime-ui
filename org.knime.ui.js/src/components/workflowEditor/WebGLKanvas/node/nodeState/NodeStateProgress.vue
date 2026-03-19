@@ -21,7 +21,7 @@ const clippedProgress = computed(() =>
 );
 
 const progressBarWidth = computed(() => {
-  let result = $shapes.nodeSize * clippedProgress.value;
+  const result = $shapes.nodeSize * clippedProgress.value;
   if (result && result < 1) {
     // fractional pixels just don't look good
     return 1;

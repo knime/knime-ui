@@ -45,22 +45,22 @@ const icon = computed(() =>
 
 .space-card-content {
   & h5 {
+    max-width: 100%;
     margin: 0;
     font-size: 19px;
     font-weight: 700;
     line-height: 24px;
-    max-width: 100%;
     text-align: left;
 
     @mixin multi-line-truncate 2;
   }
 
   & p {
-    font-size: 16px;
+    max-width: 100%;
     margin: 5px 0;
+    font-size: 16px;
     font-weight: 300;
     line-height: 24px;
-    max-width: 100%;
     text-align: left;
 
     @mixin multi-line-truncate 4;

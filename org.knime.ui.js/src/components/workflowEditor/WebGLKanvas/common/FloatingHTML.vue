@@ -17,7 +17,7 @@ import { FLOATING_HTML_FADE_DELAY_MS } from "./constants";
 const canvasStore = useWebGLCanvasStore();
 const { zoomFactor } = storeToRefs(canvasStore);
 
-type TransformValue = `${number}px` | `${number}%` | `calc(${any})`;
+type TransformValue = `${number}px` | `${number}%` | `calc(${string})`;
 
 type Props = {
   active: boolean;

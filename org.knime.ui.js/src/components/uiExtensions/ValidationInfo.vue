@@ -182,9 +182,9 @@ const openLegacyPortView = (executeNode: boolean) => {
 <style lang="postcss" scoped>
 .info-wrapper {
   display: flex;
-  justify-content: center;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   height: 100%;
 }
 </style>

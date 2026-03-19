@@ -179,7 +179,7 @@ export const getMinimapCoordinates = (page: Page) => {
 
 export const executeUndo = async (page: Page) => {
   await page.keyboard.press("ControlOrMeta+Z");
-  // eslint-disable-next-line no-magic-numbers
+   
   await page.waitForTimeout(500);
 };
 

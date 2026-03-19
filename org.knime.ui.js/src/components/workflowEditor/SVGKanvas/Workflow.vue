@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
+import type { KnimeNode } from "@/api/custom-types";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
@@ -26,8 +27,8 @@ const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
 
 // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
 const sortedNodes = computed(() => {
-  let selected: any[] = [];
-  let unselected: any[] = [];
+  const selected: KnimeNode[] = [];
+  const unselected: KnimeNode[] = [];
 
   for (const nodeId of Object.keys(workflow.value!.nodes)) {
     if (isNodeSelected(nodeId)) {

@@ -46,7 +46,7 @@ const emit = defineEmits<{
 }>();
 
 const loadExtensionConfig = async () => {
-  let deactivateDataServices: (() => Promise<any>) | undefined;
+  let deactivateDataServices: (() => Promise<void>) | undefined;
 
   // store the following in none-reactive variables to ensure deactivateNodeDataServices is called
   // with the same values as getNodeDialog
@@ -115,7 +115,7 @@ const noop = () => {}; // NOSONAR
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation,
 
-  callNodeDataService: async (params: any) => {
+  callNodeDataService: async (params) => {
     const { serviceType, dataServiceRequest } = params;
 
     const result = await API.node.callNodeDataService({
@@ -133,7 +133,7 @@ const apiLayer: UIExtensionAPILayer = {
     return { result };
   },
 
-  callKnimeUiApi: async (method: string, params: any) => {
+  callKnimeUiApi: async (method, params) => {
     const response = await gatewayRpcClient.call(method, {
       projectId: projectId.value,
       workflowId: workflowId.value,

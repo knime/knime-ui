@@ -74,7 +74,7 @@ const canAddPort = computed(() => {
   }
 
   if (props.portGroups) {
-    let portGroups = Object.values(props.portGroups);
+    const portGroups = Object.values(props.portGroups);
     return {
       input: portGroups.some((portGroup) => portGroup.canAddInPort),
       output: portGroups.some((portGroup) => portGroup.canAddOutPort),
@@ -335,33 +335,38 @@ watch(isDragging, (isDragging, wasDragging) => {
     transition: opacity 0.5s 0.25s;
 
     &.node-hover {
+      opacity: 1;
+
       /* fade-in port with delay when node is hovered */
       transition: opacity 0.5s 0.5s;
-      opacity: 1;
     }
 
     &:hover {
+      opacity: 1;
+
       /* immediately show port on direct hover */
       transition: none;
-      opacity: 1;
     }
 
     &.connector-hover {
+      opacity: 1;
+
       /* fade-in port without delay on connectorHover */
       transition: opacity 0.25s;
-      opacity: 1;
     }
 
     &.read-only {
+      opacity: 0;
+
       /* Hide if workflow is read-only */
       transition: none;
-      opacity: 0;
     }
 
     &.connected {
+      opacity: 1;
+
       /* fade in port when a connection has been created */
       transition: opacity 0.25s;
-      opacity: 1;
     }
   }
 }

@@ -81,13 +81,13 @@ const tileTitle = computed(() => {
 @import url("@/assets/mixins.css");
 
 .node-template-list-mode {
+  position: relative;
   display: flex;
-  background-color: transparent;
   align-items: center;
   justify-content: left;
-  max-height: 24px;
-  position: relative;
   width: 100%;
+  max-height: 24px;
+  background-color: transparent;
 
   --space-for-icons: 52px;
 
@@ -97,16 +97,16 @@ const tileTitle = computed(() => {
 
   & .node-template-content {
     display: flex;
-    max-width: calc(100% - var(--space-for-icons));
     align-items: center;
     align-self: center;
+    max-width: calc(100% - var(--space-for-icons));
 
     & .node-name {
       display: block;
-      font-size: 13px;
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-size: 13px;
+      white-space: nowrap;
     }
   }
 
@@ -124,10 +124,10 @@ const tileTitle = computed(() => {
   }
 
   & .help-icon {
-    padding: 0;
-    margin: 0;
     position: absolute;
     right: var(--space-4);
+    padding: 0;
+    margin: 0;
   }
 }
 </style>

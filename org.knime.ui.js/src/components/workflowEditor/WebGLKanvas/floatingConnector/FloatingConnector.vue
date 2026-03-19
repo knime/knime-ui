@@ -26,7 +26,7 @@ const { getNodeById } = useNodeInteractionsStore();
 
 const floatingConnectorPort = computed(() => {
   if (!floatingConnector.value || isDecoratorOnly(floatingConnector.value)) {
-    // eslint-disable-next-line no-undefined
+     
     return undefined;
   }
 

@@ -1,11 +1,11 @@
 type ServerEvent = {
   eventType: string;
-  payload: any;
+  payload: { events: unknown };
 };
 
 type ServerEventError = {
   message: string;
-  error?: any;
+  error?: unknown;
 };
 
 type MaybeValidServerEvent = {
@@ -17,7 +17,7 @@ const GENERIC_ERROR_MESSAGE = "Argument must be a JSON serialized event object";
 
 const COMPOSITE_EVENT_NAME = "CompositeEvent";
 
-const REGISTERED_HANDLERS = new Map<string, Function>();
+const REGISTERED_HANDLERS = new Map<string, (...args: unknown[]) => void>();
 
 const tryParse = (json: string): MaybeValidServerEvent => {
   try {
@@ -85,7 +85,11 @@ const validate = (json: string): MaybeValidServerEvent => {
 export const getRegisteredEventHandler = (eventName: string) =>
   REGISTERED_HANDLERS.get(eventName);
 
-export const registerEventHandler = (eventName: string, handler: Function) => {
+export const registerEventHandler = (
+  eventName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: (...args: any[]) => void,
+) => {
   REGISTERED_HANDLERS.set(eventName, handler);
 };
 

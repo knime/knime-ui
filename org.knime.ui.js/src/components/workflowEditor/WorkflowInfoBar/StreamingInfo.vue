@@ -11,18 +11,18 @@ import StreamingIcon from "@knime/styles/img/icons/nodes-connect.svg";
 
 <style lang="postcss" scoped>
 .streaming-indicator {
-  pointer-events: none;
   display: flex;
-  margin-right: 10px;
-  height: 40px;
-  justify-content: flex-end;
-  flex-basis: 80px;
   flex-shrink: 0;
+  flex-basis: 80px;
   align-items: center;
+  justify-content: flex-end;
+  height: 40px;
+  margin-right: 10px;
+  pointer-events: none;
 
   & .icon {
-    margin-right: 5px;
     width: 32px;
+    margin-right: 5px;
   }
 }
 </style>

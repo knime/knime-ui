@@ -5,7 +5,7 @@ import NestedSVG from "../NestedSVG";
 
 describe("NestedSVG", () => {
   it("renders svg and passes attributes", () => {
-    let wrapper = mount(NestedSVG, {
+    const wrapper = mount(NestedSVG, {
       slots: {
         default: "<div><svg /></div>",
       },

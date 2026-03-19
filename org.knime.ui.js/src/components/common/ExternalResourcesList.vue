@@ -160,10 +160,10 @@ const updateField = <K extends keyof Link, V = Link[K]>(
   & ul {
     --icon-size: 16px;
 
-    column-count: 1;
     margin-bottom: -6px;
-    line-height: 18px;
     font-size: 13px;
+    line-height: 18px;
+    column-count: 1;
 
     & :deep(svg) {
       top: 2px;
@@ -172,8 +172,8 @@ const updateField = <K extends keyof Link, V = Link[K]>(
 
   & .placeholder {
     padding-top: var(--space-8);
-    font-style: italic;
     font-size: 13px;
+    font-style: italic;
     color: var(--knime-dove-gray);
   }
 
@@ -196,10 +196,10 @@ const updateField = <K extends keyof Link, V = Link[K]>(
     }
 
     & .item-error {
+      margin-top: 7px;
       font-size: 12px;
       font-weight: 400;
       color: var(--theme-color-error);
-      margin-top: 7px;
       white-space: normal;
     }
   }

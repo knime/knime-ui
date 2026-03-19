@@ -294,9 +294,9 @@ const onCanvasDrop = (event: DragEvent) => {
 <style lang="postcss" scoped>
 .kanvas-container {
   position: relative;
-  overflow: hidden;
-  height: 100%;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
   isolation: isolate;
 
   & :deep(canvas) {
@@ -305,9 +305,9 @@ const onCanvasDrop = (event: DragEvent) => {
 
     /* override z-index added by Pixi's DOMContainer implementation */
     & ~ div:not([class]) {
+      z-index: v-bind("$zIndices.layerCanvasDomContainers") !important;
       isolation: isolate;
       transform: none !important;
-      z-index: v-bind("$zIndices.layerCanvasDomContainers") !important;
     }
   }
 

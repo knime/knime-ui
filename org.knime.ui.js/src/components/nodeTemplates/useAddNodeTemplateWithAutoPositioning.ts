@@ -1,4 +1,4 @@
-/* eslint-disable no-undefined */
+ 
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";

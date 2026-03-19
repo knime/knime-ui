@@ -7,7 +7,7 @@ import CompositeViewActions from "./CompositeViewActions.vue";
 import DataAppsIcon from "./DataAppsIcon.svg";
 
 type CompositeViewActions = {
-  icon: any;
+  icon: unknown;
   label: string;
   extraComponent: typeof CompositeViewActions;
   extraComponentProps: InstanceType<typeof CompositeViewActions>["$props"];

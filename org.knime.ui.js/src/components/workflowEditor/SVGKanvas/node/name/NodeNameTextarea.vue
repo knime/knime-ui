@@ -133,34 +133,34 @@ export default {
 
 <style lang="postcss" scoped>
 .ghost {
-  visibility: hidden;
   position: absolute;
   top: -10000px;
   left: -10000px;
-  text-align: inherit;
-  border: 0;
+  visibility: hidden;
   padding: 0;
   margin: 0;
-  font: inherit; /* inherit all font styles from parent element */
-  letter-spacing: inherit;
   overflow: hidden;
+  font: inherit; /* inherit all font styles from parent element */
   color: inherit;
+  text-align: inherit;
+  letter-spacing: inherit;
   outline: none;
+  border: 0;
 }
 
 .name-textarea {
   display: block;
-  text-align: inherit;
-  border: 0;
   padding: 0;
   margin: 0;
-  resize: none;
-  background-color: transparent;
-  font: inherit; /* inherit all font styles from parent element */
-  letter-spacing: inherit;
   overflow: hidden;
+  font: inherit; /* inherit all font styles from parent element */
   color: inherit;
+  text-align: inherit;
+  letter-spacing: inherit;
+  resize: none;
   outline: none;
+  background-color: transparent;
+  border: 0;
 
   &::placeholder {
     color: var(--knime-silver-sand);

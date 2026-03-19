@@ -104,8 +104,8 @@ const isHighlighted = (message: WorkflowMonitorMessageType) =>
 }
 
 .category {
-  text-align: center;
   padding: 20px;
+  text-align: center;
 }
 
 .error-icon {
@@ -129,9 +129,9 @@ const isHighlighted = (message: WorkflowMonitorMessageType) =>
 .empty-message {
   --color: var(--knime-gray-dark);
 
-  text-align: center;
   padding-top: 150px;
   color: var(--color);
+  text-align: center;
 
   & svg {
     stroke: var(--color);

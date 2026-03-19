@@ -49,7 +49,7 @@ describe("SidebarNodeSearchResults", () => {
     nodeRepositoryStore.query = "some query";
     await nextTick();
 
-    let results = wrapper.findComponent(SearchResults);
+    const results = wrapper.findComponent(SearchResults);
     expect(results.props("nodes")).toStrictEqual(nodeRepositoryStore.nodes);
     expect(results.props("query")).toStrictEqual(nodeRepositoryStore.query);
   });
@@ -57,7 +57,7 @@ describe("SidebarNodeSearchResults", () => {
   it("updates scroll position", async () => {
     const { wrapper, nodeRepositoryStore } = doMount();
 
-    let results = wrapper.findComponent(SearchResults);
+    const results = wrapper.findComponent(SearchResults);
     expect(results.props("scrollPosition")).toBe(
       nodeRepositoryStore.searchScrollPosition,
     );

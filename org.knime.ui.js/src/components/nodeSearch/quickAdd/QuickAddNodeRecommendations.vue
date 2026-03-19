@@ -67,20 +67,20 @@ defineExpose({ focusFirst });
 
 <style lang="postcss">
 .recommendations {
-  overflow-y: auto;
   padding: 0 10px 10px;
+  overflow-y: auto;
 
   & .no-recommendations-message {
-    flex: 1;
     display: flex;
+    flex: 1;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    font-style: italic;
-    color: var(--knime-dove-gray);
-    flex-direction: column;
     margin-top: 30px;
     margin-bottom: 15px;
+    font-style: italic;
+    color: var(--knime-dove-gray);
+    text-align: center;
   }
 }
 </style>

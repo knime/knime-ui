@@ -9,7 +9,7 @@ export const measureText = (
   return PIXI.CanvasTextMetrics.measureText(
     text,
     new PIXI.TextStyle(style),
-    undefined, // eslint-disable-line no-undefined
+    undefined,  
     wordWrap,
   );
 };

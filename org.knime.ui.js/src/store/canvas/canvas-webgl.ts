@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-/* eslint-disable no-undefined */
+
 /* eslint-disable no-magic-numbers */
 
 import {
@@ -178,7 +178,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasAnchor.value.offset = 0;
   };
 
-  const isOutsideKanvasView = (_params: any) => {
+  const isOutsideKanvasView = (_params: unknown) => {
     consola.warn("canvas-webgl: isOutsideKanvasView will be removed");
   };
 
@@ -366,7 +366,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
-  const contentBoundsChanged = (_params: any) => {
+  const contentBoundsChanged = (_params: unknown) => {
     consola.warn("canvas-webgl: contentBoundsChanged will be removed");
   };
 
@@ -556,7 +556,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
-  const scroll = (_params: any) => {
+  const scroll = (_params: unknown) => {
     consola.warn("canvas-webgl: scroll will be removed");
   };
 

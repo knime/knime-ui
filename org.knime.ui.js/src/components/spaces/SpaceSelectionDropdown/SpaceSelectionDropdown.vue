@@ -234,8 +234,8 @@ const spaceIcon = computed(() => {
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   & .dropdown-icon {
-    margin-left: 5px;
     margin-top: 3px;
+    margin-left: 5px;
 
     @mixin svg-icon-size 12;
 
@@ -279,9 +279,9 @@ const spaceIcon = computed(() => {
   }
 
   & .selected-text {
+    display: inline-block;
     max-width: 160px;
     overflow: hidden;
-    display: inline-block;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -292,8 +292,8 @@ const spaceIcon = computed(() => {
 
   & :deep(.menu-wrapper) {
     & .separator:has(.section-headline) {
-      border-bottom: none;
       border-top: 1px solid var(--knime-porcelain);
+      border-bottom: none;
 
       & .text {
         color: var(--knime-masala);

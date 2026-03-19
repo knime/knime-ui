@@ -159,13 +159,13 @@ onUnmounted(() => {
   --inquiry-card-background-color: var(--knime-white);
   --inquiry-card-accent-color: var(--knime-wood-light);
 
-  background-color: var(--inquiry-card-background-color);
-  border-radius: 5px;
-  padding-top: var(--space-6);
-  padding-bottom: var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
+  background-color: var(--inquiry-card-background-color);
+  border-radius: 5px;
 
   &.highlighted {
     border-left: 3px solid var(--inquiry-card-accent-color);

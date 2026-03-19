@@ -47,12 +47,12 @@ defineProps<Props>();
 
 <style lang="postcss" scoped>
 .toolbar-skeleton-wrapper {
-  background: var(--knime-porcelain);
-  border-bottom: 1px solid var(--knime-silver-sand);
-  min-height: var(--app-toolbar-height);
   display: flex;
   gap: var(--space-4);
-  padding: 10px;
   align-items: center;
+  min-height: var(--app-toolbar-height);
+  padding: 10px;
+  background: var(--knime-porcelain);
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 </style>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { registerEventHandler } from "../events/server-events";
 import { getRPCClientInstance } from "../json-rpc-client";
 

@@ -119,18 +119,18 @@ watch(
 
 <style lang="postcss" scoped>
 .chat {
-  flex: 1;
+  position: relative;
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-height: 0;
-  position: relative;
 
   & .messages {
-    padding-top: 20px;
-    padding-bottom: 10px;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    padding-top: 20px;
+    padding-bottom: 10px;
   }
 }
 </style>

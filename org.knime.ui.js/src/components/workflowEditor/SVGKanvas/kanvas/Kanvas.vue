@@ -224,11 +224,11 @@ const onKeyDown = (event: KeyboardEvent) => {
 
 .scroll-container > svg {
   position: relative;
-  color: var(--knime-masala);
-  background-color: white;
 
   /* needed for z-index to have effect */
   display: block;
+  color: var(--knime-masala);
+  background-color: white;
 }
 
 .indicate-node-drag > svg {
@@ -246,9 +246,9 @@ const onKeyDown = (event: KeyboardEvent) => {
 
 .scroll-container {
   position: relative;
-  overflow: scroll;
-  height: 100%;
   width: 100%;
+  height: 100%;
+  overflow: scroll;
 
   &:focus {
     outline: none;

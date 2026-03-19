@@ -115,13 +115,13 @@ const dismissExamples = () => {
   }
 
   & .more-on-hub {
-    padding-top: var(--spacing);
     display: flex;
-    align-items: center;
     gap: 4px;
-    text-decoration: none;
+    align-items: center;
+    padding-top: var(--spacing);
     font-size: 13px;
     color: var(--knime-dove-gray);
+    text-decoration: none;
 
     &:hover {
       text-decoration: underline;
@@ -139,19 +139,19 @@ const dismissExamples = () => {
   & .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, 250px);
+    gap: var(--spacing);
     max-height: 200px;
     padding: 2px 10px;
     margin-left: -10px;
     overflow: hidden;
-    gap: var(--spacing);
 
     & .example-workflow-card {
       display: flex;
       align-items: center;
       justify-content: center;
       min-width: 250px;
-      max-height: 180px;
       min-height: 180px;
+      max-height: 180px;
 
       & svg {
         @mixin svg-icon-size 70;
@@ -164,10 +164,10 @@ const dismissExamples = () => {
       }
 
       & .name {
-        text-align: center;
-        font-size: 13px;
         margin-top: 20px;
+        font-size: 13px;
         font-weight: 700;
+        text-align: center;
       }
     }
   }

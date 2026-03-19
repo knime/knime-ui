@@ -28,20 +28,20 @@ export default {
 
 .card {
   & .card-header {
-    background-color: var(--knime-masala);
-    color: var(--knime-white);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: 48px;
+    padding: 0 30px;
     font-family: Roboto, sans-serif;
     font-size: 18px;
     font-weight: 700;
     line-height: 24px;
+    color: var(--knime-white);
+    background-color: var(--knime-masala);
     border-radius: 0 0 2px 2px;
     transition: all 150ms ease-out;
-    height: 48px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 0 30px;
 
     & :slotted(svg) {
       stroke: var(--knime-white);
@@ -50,8 +50,8 @@ export default {
     }
 
     &.primary {
-      background-color: var(--knime-yellow);
       color: var(--knime-masala);
+      background-color: var(--knime-yellow);
 
       & :slotted(svg) {
         stroke: var(--knime-masala);
@@ -59,8 +59,8 @@ export default {
     }
 
     &.light {
-      background-color: hsl(210deg 17% 98% / 100%);
       color: var(--knime-masala);
+      background-color: hsl(210deg 17% 98% / 100%);
 
       & :slotted(svg) {
         stroke: var(--knime-masala);
@@ -74,13 +74,13 @@ export default {
     }
 
     & .card-header.primary {
-      background-color: var(--knime-masala);
       color: var(--knime-white);
+      background-color: var(--knime-masala);
     }
 
     & .card-header.light {
-      background-color: hsl(210deg 17% 98% / 100%);
       color: var(--knime-white);
+      background-color: hsl(210deg 17% 98% / 100%);
     }
   }
 }

@@ -6,7 +6,7 @@ const toEnumeratedObject = (obj: object) => {
       acc[cur] = obj[cur as keyof object];
       return acc;
     },
-    {} as Record<any, any>,
+    {} as Record<string, unknown>,
   );
 };
 

@@ -15,7 +15,7 @@ type Props = {
 
 withDefaults(defineProps<Props>(), {
   placeholder: "Search",
-  // eslint-disable-next-line no-undefined
+   
   dataTestId: undefined,
 });
 
@@ -86,9 +86,9 @@ onUnmounted(() => {
   background: var(--search-button-background, transparent);
 
   & .search-button-input {
+    width: 240px;
     height: 30px;
     margin-right: 5px;
-    width: 240px;
   }
 }
 </style>

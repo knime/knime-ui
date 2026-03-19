@@ -211,17 +211,17 @@ const reload = async () => {
 
 <style lang="postcss" scoped>
 .no-space-groups {
-  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100%;
 }
 
 .cards {
   display: grid;
-  gap: 24px;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
 }
 
 :deep(.search-button-input) {

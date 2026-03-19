@@ -239,9 +239,9 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
 
 <style lang="postcss" scoped>
 .login-indicator {
-  color: var(--knime-dove-gray);
-  font-weight: 400;
   font-size: 13px;
+  font-weight: 400;
+  color: var(--knime-dove-gray);
 }
 
 .loading-indicator {

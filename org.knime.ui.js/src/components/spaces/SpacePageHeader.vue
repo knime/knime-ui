@@ -23,7 +23,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   isEditing: false,
-  // eslint-disable-next-line no-undefined
+   
   error: undefined,
   blacklistedNames: () => [],
 });
@@ -140,11 +140,11 @@ onClickOutside(h2Ref, () => {
 .title-container {
   position: relative;
   display: flex;
+  gap: 8px;
   align-items: flex-start;
+  text-overflow: ellipsis;
   font-size: 24px;
   line-height: 28px;
-  gap: 8px;
-  text-overflow: ellipsis;
   white-space: nowrap;
 
   & :slotted(svg) {
@@ -154,24 +154,24 @@ onClickOutside(h2Ref, () => {
 
 .title-editable-wrapper {
   display: flex;
-  align-items: center;
   flex-grow: 1;
   gap: 8px;
+  align-items: center;
 
   & textarea {
     display: block;
     width: 100%;
-    border: 0;
     padding: 0;
     margin: 0;
-    resize: none;
-    background-color: transparent;
-    font: inherit;
-    letter-spacing: inherit;
     overflow: hidden;
-    white-space: inherit;
+    font: inherit;
     color: inherit;
+    letter-spacing: inherit;
+    white-space: inherit;
+    resize: none;
     outline: none;
+    background-color: transparent;
+    border: 0;
 
     &:hover {
       outline: 1px solid var(--knime-silver-sand);
@@ -187,10 +187,10 @@ onClickOutside(h2Ref, () => {
 .msg-error {
   position: absolute;
   top: 2em;
-  color: var(--theme-color-error);
   align-self: flex-start;
   font-size: 13px;
   font-weight: 400;
+  color: var(--theme-color-error);
 }
 
 .hidden {

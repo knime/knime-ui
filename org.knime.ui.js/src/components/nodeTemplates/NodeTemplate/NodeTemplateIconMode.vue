@@ -83,9 +83,9 @@ const tileTitle = computed(() => {
 @import url("@/assets/mixins.css");
 
 .node-template-icon-mode {
+  position: relative;
   display: flex;
   flex-direction: column;
-  position: relative;
   padding: 10px 10px 20px;
 
   & .name-icon-wrapper {
@@ -95,18 +95,18 @@ const tileTitle = computed(() => {
     align-items: center;
 
     & .name {
-      font-weight: 700;
-      line-height: 1.15;
-      max-height: 26px;
-      min-width: 90px;
-      max-width: 90px;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
-      text-align: center;
       position: absolute;
       bottom: 58px;
+      display: -webkit-box;
+      min-width: 90px;
+      max-width: 90px;
+      max-height: 26px;
+      overflow: hidden;
+      -webkit-line-clamp: 2;
+      font-weight: 700;
+      line-height: 1.15;
+      text-align: center;
+      -webkit-box-orient: vertical;
     }
 
     & .node-preview {
@@ -115,19 +115,19 @@ const tileTitle = computed(() => {
   }
 
   & .help-icon {
-    padding: 0;
     position: absolute;
     top: -5px;
     right: -5px;
+    padding: 0;
   }
 
   & .extension-info {
     display: flex;
-    overflow: hidden;
     align-items: center;
     justify-content: center;
-    margin: -17px 0;
     padding: 0 2px;
+    margin: -17px 0;
+    overflow: hidden;
     color: var(--knime-dove-gray);
 
     & .extension-community-icon {

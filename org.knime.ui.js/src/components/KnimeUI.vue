@@ -294,7 +294,7 @@ const onCloseError = () => {
       </div>
     </template>
 
-    <footer v-if="isBrowser() && true">
+    <footer v-if="isBrowser() && uiControls.shouldDisplayDownloadAPButton">
       <DownloadBanner />
     </footer>
 

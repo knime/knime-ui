@@ -227,17 +227,16 @@ export default defineComponent({
 
 <style lang="postcss" scoped>
 .invalid-chars-error {
-  margin: auto;
-
   /* full size but avoid blurring of the borders */
   width: calc(100% - 4px);
-  border-radius: v-bind("$shapes.selectedItemBorderRadius");
+  padding: 5px;
+  margin: auto;
   font-family: "Roboto Condensed", sans-serif;
   font-size: 10px;
-  backdrop-filter: blur(5px);
-  padding: 5px;
   color: v-bind("$colors.error");
   text-align: center;
+  border-radius: v-bind("$shapes.selectedItemBorderRadius");
+  backdrop-filter: blur(5px);
 
   & .chars {
     font-family: "Roboto Mono", sans-serif;

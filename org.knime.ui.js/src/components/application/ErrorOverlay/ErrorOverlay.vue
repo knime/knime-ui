@@ -150,20 +150,20 @@ const switchToJavaUI = () => {
 
 .content {
   position: fixed;
-  padding: 20px 60px;
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  width: 100%;
+  height: 100%;
+  padding: 20px 60px;
 
   & .switch-classic {
-    height: 40px;
-    width: 40px;
-    border: 1px solid var(--knime-dove-gray);
     position: fixed;
     top: 18px;
     right: 15px;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--knime-dove-gray);
 
     & svg {
       @mixin svg-icon-size 26;
@@ -173,28 +173,28 @@ const switchToJavaUI = () => {
   }
 
   & .header {
+    font-family: "Roboto Condensed", sans-serif;
     color: white;
     text-align: center;
-    font-family: "Roboto Condensed", sans-serif;
 
     & h2 {
+      margin: 0;
       font-size: 38px;
       font-weight: 400;
-      margin: 0;
     }
 
     & .message {
-      margin: 10px auto;
       max-width: 690px;
+      margin: 10px auto;
       font-size: 20px;
     }
 
     & svg {
-      margin-right: 6px;
       position: relative;
       top: 8px;
       width: 44px;
       height: 44px;
+      margin-right: 6px;
       stroke: var(--knime-white);
 
       /* 2px stroke-width */
@@ -206,13 +206,13 @@ const switchToJavaUI = () => {
     text-align: center;
 
     & > * {
-      margin-left: 5px;
       margin-right: 5px;
+      margin-left: 5px;
     }
 
     & > .button {
-      padding: 12px 16px;
       height: 43px;
+      padding: 12px 16px;
     }
 
     & svg {
@@ -225,8 +225,8 @@ const switchToJavaUI = () => {
       position: relative;
 
       & .success {
-        opacity: 0;
         position: absolute;
+        opacity: 0;
       }
 
       & > span {
@@ -234,9 +234,9 @@ const switchToJavaUI = () => {
       }
 
       &.copied {
+        color: var(--knime-white);
         background-color: var(--knime-meadow);
         border-color: var(--knime-meadow);
-        color: var(--knime-white);
 
         & svg {
           stroke: var(--knime-white);
@@ -254,14 +254,14 @@ const switchToJavaUI = () => {
   }
 
   & .stack {
-    font-family: "Roboto Mono", sans-serif;
+    width: 100%;
+    min-height: 50%;
     padding: 28px;
+    font-family: "Roboto Mono", sans-serif;
+    white-space: pre;
+    resize: none;
     background-color: white;
     border-radius: 4px;
-    width: 100%;
-    resize: none;
-    white-space: pre;
-    min-height: 50%;
   }
 }
 </style>

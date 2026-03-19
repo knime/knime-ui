@@ -15,8 +15,8 @@ interface UseMoveObjectOptions {
   objectElement?: ComputedRef<HTMLElement | null>;
   useGridSnapping?: boolean;
   isNode?: boolean;
-  onMoveStartCallback?: (event: PointerEvent) => any;
-  onMoveCallback?: (event: PointerEvent) => any;
+  onMoveStartCallback?: (event: PointerEvent) => void;
+  onMoveCallback?: (event: PointerEvent) => void;
   onMoveEndCallback?: (event: PointerEvent) => Promise<boolean>;
 }
 
@@ -208,7 +208,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           eventTarget.removeEventListener("pointerup", onUp);
           eventTarget.removeEventListener(
             "lostpointercapture",
-            // eslint-disable-next-line no-use-before-define
+
             onLostPointerCapture,
           );
         };
@@ -216,7 +216,6 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         handler();
       };
 
-      // eslint-disable-next-line func-style
       function onLostPointerCapture(event: PointerEvent) {
         if (!hasReleased) {
           onUp(event);

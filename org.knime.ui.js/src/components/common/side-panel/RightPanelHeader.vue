@@ -28,18 +28,18 @@ defineEmits<{ close: [] }>();
 
 .header {
   display: flex;
+  gap: var(--space-4);
   align-items: center;
+  height: var(--space-32);
   padding: var(--space-4) var(--space-16);
   border-bottom: 1px solid var(--knime-silver-sand);
-  height: var(--space-32);
-  gap: var(--space-4);
 
   & .title {
     margin: 0;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 1.44;
     margin-right: auto;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.44;
 
     @mixin truncate;
   }

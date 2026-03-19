@@ -126,10 +126,10 @@ const emit = defineEmits(["close"]);
 <style lang="postcss" scoped>
 .data-value-view-element {
   z-index: v-bind("$zIndices.layerFloatingWindows");
-  border-radius: 8px;
-  background-color: var(--knime-porcelain);
-  box-shadow: var(--shadow-elevation-2);
   cursor: move;
+  background-color: var(--knime-porcelain);
+  border-radius: 8px;
+  box-shadow: var(--shadow-elevation-2);
 
   & .close-button {
     position: absolute;
@@ -138,10 +138,10 @@ const emit = defineEmits(["close"]);
   }
 
   & .data-value-view-loader {
-    background-color: var(--knime-white);
-    cursor: default;
-    border-radius: 8px;
     overflow: hidden;
+    cursor: default;
+    background-color: var(--knime-white);
+    border-radius: 8px;
   }
 }
 </style>

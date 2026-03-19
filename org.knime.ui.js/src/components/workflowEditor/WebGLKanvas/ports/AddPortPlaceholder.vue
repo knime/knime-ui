@@ -105,7 +105,11 @@ const selectedPort = computed({
   get() {
     return portTypeMenu.value.previewPort;
   },
-  set(value: any) {
+  set(
+    value: Parameters<
+      typeof canvasAnchoredComponentsStore.setPortTypeMenuPreviewPort
+    >[0],
+  ) {
     canvasAnchoredComponentsStore.setPortTypeMenuPreviewPort(value);
   },
 });
@@ -214,7 +218,7 @@ const addPort = (x: number, y: number) => {
     const { supportedPortTypeIds } = portGroups[0];
 
     if (supportedPortTypeIds?.length === 1) {
-      let [typeId] = supportedPortTypeIds;
+      const [typeId] = supportedPortTypeIds;
       emit("addPort", {
         typeId,
         portGroup: Object.keys(validPortGroups.value!)[0],

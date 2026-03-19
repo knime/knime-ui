@@ -29,23 +29,23 @@ defineEmits<{
 .card {
   display: flex;
   flex-direction: column;
-  text-decoration: none;
   min-width: 300px;
+  height: 100%;
   min-height: 150px;
   padding: 0;
+  text-decoration: none;
   background-color: var(--knime-white);
   border: 0;
   box-shadow: var(--shadow-elevation-1);
   transition: all 150ms ease-out;
-  height: 100%;
 
   &:focus-visible {
     @mixin focus-outline;
   }
 
   &:hover {
-    box-shadow: var(--shadow-elevation-2);
     cursor: pointer;
+    box-shadow: var(--shadow-elevation-2);
   }
 }
 </style>

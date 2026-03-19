@@ -13,7 +13,7 @@ export type UIExtensionLoadingState =
   | {
       value: "error";
       message: string;
-      error?: any;
+      error?: unknown;
     };
 
 export type ExtensionConfig = BaseExtensionConfig & {

@@ -34,9 +34,9 @@ export default {
 
 .card {
   & .card-footer {
-    padding: 0 30px 20px;
     display: flex;
     align-items: center;
+    padding: 0 30px 20px;
     margin-top: auto;
 
     & .icon {
@@ -45,8 +45,8 @@ export default {
       margin-right: 12px;
 
       & :slotted(svg) {
-        stroke: var(--knime-masala);
         margin-right: 6px;
+        stroke: var(--knime-masala);
 
         @mixin svg-icon-size 20;
       }

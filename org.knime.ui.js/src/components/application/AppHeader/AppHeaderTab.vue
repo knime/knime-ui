@@ -135,22 +135,22 @@ const activateTab = () => {
 @import url("@/assets/mixins.css");
 
 .tab-item {
-  height: 39px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin: 0 1px;
-  padding-left: 10px;
+  min-width: 80px;
+  max-width: 240px;
+  height: 39px;
   padding-bottom: 1px;
+  padding-left: 10px;
+  margin: 0 1px;
+  color: var(--knime-white);
   text-align: center;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  border-radius: 1px 1px 0 0;
   background-color: var(--knime-black);
-  color: var(--knime-white);
-  min-width: 80px;
-  max-width: 240px;
+  border-radius: 1px 1px 0 0;
 
   & svg {
     min-width: 18px;
@@ -164,17 +164,17 @@ const activateTab = () => {
   }
 
   & .text {
-    color: var(--knime-white);
+    width: 100%;
+    min-width: 0;
+    padding: 10px 0 10px 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 13px;
     font-weight: 500;
-    padding: 10px 0 10px 5px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    min-width: 0;
     line-height: 21px;
-    width: 100%;
+    color: var(--knime-white);
     text-align: left;
+    white-space: nowrap;
   }
 
   & .close-icon {
@@ -192,16 +192,16 @@ const activateTab = () => {
   }
 
   &:focus-visible:not([aria-disabled="true"]) {
-    outline: none;
     text-decoration: underline;
+    outline: none;
     background-color: hsl(0deg 3% 12% / 30%);
   }
 }
 
 .tab-item.active {
-  background-color: var(--knime-yellow);
   color: var(--knime-black);
   cursor: inherit;
+  background-color: var(--knime-yellow);
 
   & .text {
     color: var(--knime-black);
@@ -220,8 +220,8 @@ const activateTab = () => {
   &:not([aria-disabled="true"]) .close-icon {
     & :deep(svg) {
       &:hover {
-        stroke: var(--knime-white);
         background: var(--knime-masala-semi);
+        stroke: var(--knime-white);
       }
     }
   }

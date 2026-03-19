@@ -287,20 +287,20 @@ const preserveWhitespaceBeforeEdit = () => {
     }
 
     & .component-title {
+      max-width: 160px;
+      overflow: hidden;
       text-overflow: ellipsis;
       overflow-wrap: initial;
       white-space: nowrap;
-      max-width: 160px;
-      overflow: hidden;
     }
 
     & .node-preview {
       display: block;
-      height: 80px;
+      flex-shrink: 0;
       width: 80px;
+      height: 80px;
       margin-right: 9px;
       background-color: white;
-      flex-shrink: 0;
     }
   }
 }

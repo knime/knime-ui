@@ -160,6 +160,7 @@ export default defineComponent({
     // Because the selection update/move function is throttled we also need to
     // throttle the stop function to guarantee order of event handling
     stopRectangleSelection: throttle(async function (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this: any,
       event: PointerEvent,
     ) {
@@ -199,6 +200,7 @@ export default defineComponent({
       this.selectedAnnotationIdsAtStart = [];
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     updateRectangleSelection: throttle(function (this: any, e) {
       /* eslint-disable no-invalid-this */
       if (this.pointerId !== e.pointerId) {
@@ -223,7 +225,7 @@ export default defineComponent({
     }),
 
     previewSelectionForItemsInRectangle(startPos: XY, endPos: XY) {
-      let { nodesInside, annotationsInside } = findObjectsForSelection({
+      const { nodesInside, annotationsInside } = findObjectsForSelection({
         startPos,
         endPos,
         workflow: this.activeWorkflow!,

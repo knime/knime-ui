@@ -72,16 +72,16 @@ const updateField = <K extends keyof PortEditorData, V = PortEditorData[K]>(
     max-width: 100%;
 
     & :deep(textarea) {
+      display: block;
       width: 100%;
       height: 120px;
-      display: block;
       resize: vertical;
     }
   }
 
   & .port-header {
-    margin: 20px 0 10px;
     display: flex;
+    margin: 20px 0 10px;
 
     & .port-title {
       margin-left: 5px;

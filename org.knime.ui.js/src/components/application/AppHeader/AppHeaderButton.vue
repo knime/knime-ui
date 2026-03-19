@@ -70,14 +70,14 @@ defineEmits<Emits>();
 
 .button.item-button,
 .submenu-button :deep(.submenu-toggle) {
-  border: 1px solid var(--knime-dove-gray);
   display: flex;
-  margin-left: 0;
   align-items: center;
   justify-content: center;
-  color: var(--knime-white);
   height: var(--header-button-height);
   padding: 10px;
+  margin-left: 0;
+  color: var(--knime-white);
+  border: 1px solid var(--knime-dove-gray);
 
   & svg {
     @mixin svg-icon-size 16;

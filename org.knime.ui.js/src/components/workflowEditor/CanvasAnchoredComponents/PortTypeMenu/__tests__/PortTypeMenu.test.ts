@@ -82,7 +82,7 @@ describe("PortTypeMenu.vue", () => {
       it("sets up header for output ports", () => {
         const { wrapper } = doMount();
 
-        let header = wrapper.find(".header");
+        const header = wrapper.find(".header");
         expect(header.classes()).toContain("output");
         expect(header.attributes("style")).toMatch("--margin: 10px");
         expect(header.text()).toBe("Add Output Port");
@@ -91,7 +91,7 @@ describe("PortTypeMenu.vue", () => {
       it("sets up header for input ports", () => {
         const { wrapper } = doMount({ props: { side: "input" } });
 
-        let header = wrapper.find(".header");
+        const header = wrapper.find(".header");
         expect(header.classes()).toContain("input");
         expect(header.attributes("style")).toMatch("--margin: 10px");
         expect(header.text()).toBe("Add Input Port");
@@ -103,7 +103,7 @@ describe("PortTypeMenu.vue", () => {
         mockedStores.canvasStore.zoomFactor = 2;
         await nextTick();
 
-        let header = wrapper.find(".header");
+        const header = wrapper.find(".header");
         expect(header.attributes("style")).toMatch(
           "--margin: 16.669910139330234px",
         );
@@ -115,7 +115,7 @@ describe("PortTypeMenu.vue", () => {
         mockedStores.canvasStore.zoomFactor = 0.5;
         await nextTick();
 
-        let header = wrapper.find(".header");
+        const header = wrapper.find(".header");
         expect(header.attributes("style")).toMatch(
           "--margin: 6.1691425974866565px",
         );
@@ -126,7 +126,7 @@ describe("PortTypeMenu.vue", () => {
       it("100% zoom and output", () => {
         const { wrapper, FloatingMenuStub } = doMount();
 
-        let floatingMenu = wrapper.findComponent(FloatingMenuStub);
+        const floatingMenu = wrapper.findComponent(FloatingMenuStub);
         expect(floatingMenu.props("anchor")).toBe("top-left");
         expect(floatingMenu.props("canvasPosition")).toStrictEqual({
           x: 10,
@@ -139,7 +139,7 @@ describe("PortTypeMenu.vue", () => {
           props: { side: "input" },
         });
 
-        let floatingMenu = wrapper.findComponent(FloatingMenuStub);
+        const floatingMenu = wrapper.findComponent(FloatingMenuStub);
         expect(floatingMenu.props("anchor")).toBe("top-right");
         expect(floatingMenu.props("canvasPosition")).toStrictEqual({
           x: 10,
@@ -153,7 +153,7 @@ describe("PortTypeMenu.vue", () => {
         mockedStores.canvasStore.zoomFactor = 0.5;
         await nextTick();
 
-        let floatingMenu = wrapper.findComponent(FloatingMenuStub);
+        const floatingMenu = wrapper.findComponent(FloatingMenuStub);
         expect(floatingMenu.props("canvasPosition")).toStrictEqual({
           x: 10,
           y: 10,
@@ -166,7 +166,7 @@ describe("PortTypeMenu.vue", () => {
         mockedStores.canvasStore.zoomFactor = 2;
         await nextTick();
 
-        let floatingMenu = wrapper.findComponent(FloatingMenuStub);
+        const floatingMenu = wrapper.findComponent(FloatingMenuStub);
         expect(floatingMenu.props("canvasPosition")).toStrictEqual({
           x: 10,
           y: 12.599301927099795,
@@ -178,7 +178,7 @@ describe("PortTypeMenu.vue", () => {
       it("focus search input on mount", () => {
         const { wrapper } = doMount();
 
-        let searchInput = wrapper
+        const searchInput = wrapper
           .findComponent(SearchInput)
           .find("input").element;
         expect(document.activeElement).toStrictEqual(searchInput);

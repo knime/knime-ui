@@ -13,6 +13,7 @@ import {
   SpaceProviderNS,
 } from "../custom-types";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   browserFunction: TFunction,
   params: Parameters<TFunction>,
@@ -114,7 +115,7 @@ export const waitForDesktopAPI = async () => {
         fn: () => {
           // check for any desktop api function since we just care that they're
           // defined and available for use
-          // eslint-disable-next-line no-undefined
+
           if (window.setProjectActiveAndEnsureItsLoaded === undefined) {
             throw new Error("Desktop API not available yet. Waiting");
           } else {

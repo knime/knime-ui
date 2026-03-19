@@ -140,43 +140,43 @@ const onPointerDown = (event: PointerEvent) => {
 
 <style lang="postcss" scoped>
 .text-editor {
-  background-color: var(--knime-white);
-  margin: 0;
-  padding: 0;
-  text-align: inherit;
   width: fit-content;
+  padding: 0;
+  margin: 0;
   color: var(--knime-masala);
+  text-align: inherit;
+  background-color: var(--knime-white);
 
   & > .ghost {
-    visibility: hidden;
     position: absolute;
     top: -10000px;
     left: -10000px;
-    text-align: inherit;
-    border: 0;
+    visibility: hidden;
     padding: 0;
     margin: 0;
-    line-height: inherit;
-    letter-spacing: inherit;
     overflow: hidden;
+    line-height: inherit;
     color: inherit;
+    text-align: inherit;
+    letter-spacing: inherit;
     outline: none;
+    border: 0;
   }
 
   & > textarea {
     display: block;
-    text-align: inherit;
-    border: 0;
     padding: 0;
     margin: 0;
-    resize: none;
-    background-color: transparent;
+    overflow: hidden;
     font-weight: inherit;
     line-height: inherit;
     color: inherit;
+    text-align: inherit;
     letter-spacing: inherit;
-    overflow: hidden;
+    resize: none;
     outline: none;
+    background-color: transparent;
+    border: 0;
 
     &::placeholder {
       color: var(--knime-silver-sand);

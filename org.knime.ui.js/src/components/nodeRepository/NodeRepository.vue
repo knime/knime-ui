@@ -195,10 +195,10 @@ const handleNavReachedTop = (event: NavReachedEvent) => {
 @import url("@/assets/mixins.css");
 
 .node-repo {
-  font-family: Roboto, sans-serif;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  font-family: Roboto, sans-serif;
   user-select: none;
 }
 

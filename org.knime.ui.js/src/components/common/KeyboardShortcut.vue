@@ -43,14 +43,14 @@ const keys = computed(() =>
 
 <style lang="postcss" scoped>
 kbd {
+  padding: 3px 5px;
+  font-family: Roboto, sans-serif;
+  font-size: inherit;
+  vertical-align: middle;
   background: var(--knime-white);
   border: 1px solid var(--knime-white);
-  box-shadow: 1px 1px 1px 1px var(--knime-gray-dark-semi);
   border-radius: 4px;
-  padding: 3px 5px;
-  vertical-align: middle;
-  font-size: inherit;
-  font-family: Roboto, sans-serif;
+  box-shadow: 1px 1px 1px 1px var(--knime-gray-dark-semi);
 }
 
 .text {

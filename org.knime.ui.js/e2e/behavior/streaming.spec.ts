@@ -28,7 +28,7 @@ test.describe.skip("streaming connectors and labels", () => {
     const kanvasBox = await getKanvasBoundingBox(page);
 
     // Wait for 2 seconds, animations should execute the same amount regardles of frame rate
-    await page.waitForTimeout(2000); // eslint-disable-line no-magic-numbers
+    await page.waitForTimeout(2000);  
 
     // Stop the Pixi ticker to halt all animations
     await page.evaluate(async () => {

@@ -737,8 +737,8 @@ export default {
 }
 
 .hover-area {
-  fill: none;
   pointer-events: fill;
+  fill: none;
 
   &.is-dragging {
     pointer-events: none;
@@ -763,9 +763,9 @@ export default {
 }
 
 .annotation {
+  width: 125px;
   font-size: 10px;
   line-height: 12px;
   pointer-events: none;
-  width: 125px;
 }
 </style>

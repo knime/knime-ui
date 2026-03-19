@@ -95,9 +95,9 @@ watch(modelValue, () => {
   display: flex;
 
   & .preview {
+    align-self: center;
     width: 16px;
     height: 16px;
-    align-self: center;
     margin-left: 10px;
   }
 }

@@ -183,7 +183,7 @@ const onRenameFile = ({
     projectId: props.projectId,
     itemId,
     newName,
-  }).catch((error: any) => {
+  }).catch((error) => {
     toastPresets.spaces.crud.renameItemFailed({
       error,
       newName,
@@ -316,9 +316,9 @@ watch(isLoadingContent, () => {
 }
 
 .breadcrumb-container {
-  max-width: 900px;
-  width: 100%;
-  overflow-x: auto;
   flex-shrink: 0;
+  width: 100%;
+  max-width: 900px;
+  overflow-x: auto;
 }
 </style>

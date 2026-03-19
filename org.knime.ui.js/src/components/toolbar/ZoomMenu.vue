@@ -47,7 +47,7 @@ const onZoomInputEnter = (event: KeyboardEvent) => {
   const target = event.target as HTMLInputElement;
 
   // '100' or '100%' works
-  let newZoomFactor = parseInt(target.value, 10) / 100;
+  const newZoomFactor = parseInt(target.value, 10) / 100;
 
   if (!isNaN(newZoomFactor)) {
     canvasStore.value.zoomCentered({ factor: newZoomFactor });
@@ -124,8 +124,8 @@ const onWheel = (e: WheelEvent) => {
   }
 
   & :deep(.submenu-toggle) {
-    padding: 0 13px 0 0;
     align-items: center;
+    padding: 0 13px 0 0;
 
     & svg {
       @mixin svg-icon-size 12;
@@ -149,16 +149,16 @@ const onWheel = (e: WheelEvent) => {
     }
 
     & .zoom-input {
-      background: transparent;
-      border: none;
-      text-align: right;
-      color: var(--kds-color-text-and-icon-neutral);
       width: var(--kds-dimension-component-width-4x);
       padding: var(--kds-spacing-container-0-5x)
         var(--kds-spacing-container-0-25x) var(--kds-spacing-container-0-5x)
         var(--kds-spacing-container-1x);
-      font-size: var(--kds-font-base-interactive-medium-strong);
       margin-right: 0;
+      font-size: var(--kds-font-base-interactive-medium-strong);
+      color: var(--kds-color-text-and-icon-neutral);
+      text-align: right;
+      background: transparent;
+      border: none;
 
       &:focus-visible {
         outline: none;

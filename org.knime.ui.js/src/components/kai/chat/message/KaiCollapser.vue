@@ -56,40 +56,40 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: 0;
   font-size: 18px;
   font-weight: bold;
+  color: inherit; /* Safari needs this */
+  appearance: none;
+  cursor: pointer;
+  outline: none;
   background-color: transparent;
   border: 0;
-  outline: none;
-  appearance: none;
-  color: inherit; /* Safari needs this */
-  width: 100%;
-  cursor: pointer;
 
   & .title {
     flex: 1;
-    text-align: left;
     line-height: normal;
+    text-align: left;
   }
 
   & .dropdown {
-    text-align: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
+    top: 13px;
     display: flex;
     align-items: center;
-    top: 13px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    border-radius: 50%;
 
     & .dropdown-icon {
       position: relative;
-      margin: auto;
+      top: 0;
       width: 18px;
       height: 18px;
-      stroke-width: calc(32px / 18);
+      margin: auto;
       stroke: var(--knime-masala);
-      top: 0;
+      stroke-width: calc(32px / 18);
       transition: transform 0.4s ease-in-out;
 
       &.flip {
@@ -100,15 +100,15 @@ export default {
 
   &:focus-visible .dropdown,
   &:hover .dropdown {
-    outline: none;
     color: var(--theme-button-function-foreground-color-hover);
+    outline: none;
     background-color: var(--theme-button-function-background-color-hover);
   }
 }
 
 :deep(ul),
 :deep(ol) {
-  margin: 0;
   padding-left: 40px;
+  margin: 0;
 }
 </style>

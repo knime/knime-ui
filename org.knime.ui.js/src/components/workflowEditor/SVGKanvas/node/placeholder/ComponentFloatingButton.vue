@@ -1,7 +1,7 @@
 <script setup lang="ts">
 type Props = {
   x?: number;
-  icon: any | null;
+  icon: unknown | null;
 };
 
 withDefaults(defineProps<Props>(), {
@@ -23,9 +23,9 @@ const iconSize = 10;
 
 .floating-button {
   & circle {
+    cursor: pointer;
     fill: white;
     stroke: var(--knime-silver-sand);
-    cursor: pointer;
 
     &:hover {
       fill: var(--knime-masala);
@@ -33,8 +33,8 @@ const iconSize = 10;
     }
 
     &:active {
-      fill: var(--knime-black);
       filter: none;
+      fill: var(--knime-black);
       stroke: var(--knime-black);
     }
   }
@@ -42,8 +42,8 @@ const iconSize = 10;
   & svg {
     @mixin svg-icon-size v-bind("iconSize");
 
-    stroke: var(--knime-masala);
     pointer-events: none;
+    stroke: var(--knime-masala);
   }
 
   &:hover svg {

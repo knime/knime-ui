@@ -78,14 +78,21 @@ export const useQuickBuild = ({
       if (result.value?.type !== "INPUT_NEEDED") {
         enableDetachedModeFn();
       }
-    } catch (error: any) {
-      if (isAuthError(error.message)) {
-        toastPresets.connectivity.hubSessionExpired();
+    } catch (error) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof error.message === "string"
+      ) {
+        if (isAuthError(error.message)) {
+          toastPresets.connectivity.hubSessionExpired();
 
-        // mark the provider as disconnected to trigger the Login Panel
-        disconnectAiProvider();
-      } else {
-        errorMessage.value = error.message;
+          // mark the provider as disconnected to trigger the Login Panel
+          disconnectAiProvider();
+        } else {
+          errorMessage.value = error.message;
+        }
       }
     }
   };

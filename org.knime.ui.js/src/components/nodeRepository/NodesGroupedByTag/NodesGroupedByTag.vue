@@ -179,8 +179,8 @@ const addNodeOnEnterKey = async (
   }
 
   & .tag {
-    margin-bottom: 0;
     height: var(--space-24);
+    margin-bottom: 0;
   }
 
   & .tag-header-line {

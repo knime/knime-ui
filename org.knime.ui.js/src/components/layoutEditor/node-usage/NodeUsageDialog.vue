@@ -64,16 +64,16 @@ const isMasterChecked = computed({
 
 <style lang="postcss" scoped>
 table {
-  background-color: var(--knime-white);
-  box-shadow: var(--shadow-elevation-2);
+  z-index: v-bind("layoutEditorZIndices.nodeUsageDialog");
   padding: var(--space-12) var(--space-16);
   font-size: 13px;
-  z-index: v-bind("layoutEditorZIndices.nodeUsageDialog");
+  background-color: var(--knime-white);
+  box-shadow: var(--shadow-elevation-2);
 }
 
 .header {
-  text-align: right;
   padding-bottom: var(--space-8);
+  text-align: right;
 }
 
 .master-checkbox-label {

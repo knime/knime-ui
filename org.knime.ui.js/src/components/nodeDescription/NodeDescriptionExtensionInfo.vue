@@ -42,10 +42,10 @@ defineProps<Props>();
   & > .header {
     display: flex;
     align-items: center;
-    font-size: 16px;
-    line-height: 150%;
-    font-weight: 700;
     margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 150%;
 
     & span {
       margin-left: 5px;

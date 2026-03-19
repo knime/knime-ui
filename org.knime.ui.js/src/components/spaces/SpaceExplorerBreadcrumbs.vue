@@ -83,18 +83,18 @@ const onBreadcrumbClick = ({ id }: BreadcrumbItem) => {
 .breadcrumb-wrapper {
   position: relative;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   width: 100%;
-  align-items: center;
 
   & .breadcrumb {
     padding-bottom: 0;
+    margin-right: 8px;
     overflow-x: auto;
     white-space: pre;
-    -ms-overflow-style: none; /* needed to hide scroll bar in edge */
-    scrollbar-width: none; /* for firefox */
     user-select: none;
-    margin-right: 8px;
+    scrollbar-width: none; /* for firefox */
+    -ms-overflow-style: none; /* needed to hide scroll bar in edge */
 
     &::-webkit-scrollbar {
       display: none;

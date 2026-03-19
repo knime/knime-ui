@@ -50,7 +50,7 @@ const $emit = defineEmits<{
 
 const searchQuery = ref("");
 const selectedPortGroup = ref<string | null>(null);
-// eslint-disable-next-line no-undefined
+
 const ariaActiveDescendant = ref<string | undefined>(undefined);
 
 const { zoomFactor } = storeToRefs(useSVGCanvasStore());
@@ -134,7 +134,7 @@ const menuItems = computed((): Array<MenuItemWithPort> => {
     const menuItem: MenuItemWithPort = {
       port: { typeId },
       text: name,
-      icon: portIcon({ typeId }) as any,
+      icon: portIcon({ typeId }),
     };
 
     if (name.length > portNameSizeThreshold) {
@@ -214,8 +214,7 @@ const setActiveDescendant = (
 ) => {
   ariaActiveDescendant.value =
     id === null
-      ? // eslint-disable-next-line no-undefined
-        undefined // needs to be `undefined` to get accepted corrected for tha aria attribute
+      ? undefined // needs to be `undefined` to get accepted corrected for tha aria attribute
       : id;
 
   $emit("itemActive", item);
@@ -278,28 +277,28 @@ const setActiveDescendant = (
 @import url("@/assets/mixins.css");
 
 .header {
-  font-size: 13px;
   margin-top: -7px;
-  backdrop-filter: blur(2px);
+  font-size: 13px;
   pointer-events: none;
+  backdrop-filter: blur(2px);
 
   &.input {
-    text-align: right;
     margin-right: var(--margin);
+    text-align: right;
   }
 
   &.output {
-    text-align: left;
     margin-left: var(--margin);
+    text-align: left;
   }
 }
 
 .return-button {
   display: flex;
   padding: 6px;
+  background-color: white;
   border: 1px solid var(--knime-masala);
   border-bottom: 0;
-  background-color: white;
   box-shadow: var(--shadow-elevation-1);
 
   &:hover {
@@ -320,10 +319,10 @@ const setActiveDescendant = (
 }
 
 .placeholder {
-  font-style: italic;
-  text-align: center;
   padding: 6px;
   font-size: 13px;
+  font-style: italic;
+  text-align: center;
 }
 
 .search-bar {
@@ -335,8 +334,8 @@ const setActiveDescendant = (
   & :deep(.lens-icon) {
     --icon-size: 14;
 
-    margin-left: 0;
     padding: 6px;
+    margin-left: 0;
 
     & svg {
       stroke: var(--knime-black);
@@ -353,26 +352,26 @@ const setActiveDescendant = (
 }
 
 .search-results {
-  margin: 0;
   max-height: 160px;
+  margin: 0;
   overflow: hidden auto;
 
   & :deep(.label) {
-    font-size: 13px;
     max-width: 160px;
+    font-size: 13px;
 
     & .text {
-      white-space: nowrap;
-      text-overflow: ellipsis;
       overflow: hidden;
+      text-overflow: ellipsis;
       font-weight: 400;
+      white-space: nowrap;
     }
   }
 
   & :deep(svg) {
+    width: 11px !important;
     /* stylelint-disable-line no-descending-specificity */
     height: 11px !important;
-    width: 11px !important;
     margin-top: 2px;
   }
 

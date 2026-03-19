@@ -2,19 +2,19 @@ type StaggeredTimerParams = {
   /**
    * callback fn that executes without delay at the start
    */
-  initialCallback?: () => any;
+  initialCallback?: () => void;
   /**
    * callback fn that executes after the 1st stage's delay
    */
-  firstStageCallback?: () => any;
+  firstStageCallback?: () => void;
   /**
    * callback fn that executes after the 1st callback and the 2nd stage's delay
    */
-  secondStageCallback?: () => any;
+  secondStageCallback?: () => void;
   /**
    * callback fn that executes when the loader's value is false. It clears the internal timer
    */
-  resetCallback?: () => any;
+  resetCallback?: () => void;
   options?: {
     stage1Delay?: number;
     stage2Delay?: number;

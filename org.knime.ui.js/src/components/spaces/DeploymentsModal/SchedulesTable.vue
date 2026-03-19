@@ -95,8 +95,8 @@ const getScheduleJobs = (id: string) =>
 
 <style lang="postcss" scoped>
 .empty-message {
+  margin-bottom: 10px;
   font-size: 13px;
   font-weight: 400;
-  margin-bottom: 10px;
 }
 </style>

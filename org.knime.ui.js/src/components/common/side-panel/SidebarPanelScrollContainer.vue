@@ -27,15 +27,15 @@ defineExpose({ scrollToBottom });
 .scrollable-container {
   --padding: var(--sidebar-panel-padding);
 
-  width: calc(100% + var(--padding));
   flex: 1;
+  width: calc(100% + var(--padding));
   overflow: hidden auto;
 
   & .content {
-    width: calc(100% - var(--padding));
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    width: calc(100% - var(--padding));
   }
 }
 </style>

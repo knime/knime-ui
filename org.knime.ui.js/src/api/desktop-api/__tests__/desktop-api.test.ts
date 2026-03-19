@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-expect */
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { $bus } from "@/plugins/event-bus";

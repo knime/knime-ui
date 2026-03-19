@@ -54,16 +54,16 @@ watch(block, () => {
 
 <style lang="postcss" scoped>
 .blocker {
+  position: fixed;
+  z-index: calc(v-bind("$zIndices.layerBlockingOverlay"));
   display: flex;
-  outline: none;
-  justify-content: center;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;
-  z-index: calc(v-bind("$zIndices.layerBlockingOverlay"));
-  position: fixed;
+  justify-content: center;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  outline: none;
   background: transparent;
 
   &.darken-background {

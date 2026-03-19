@@ -19,7 +19,7 @@ import {
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { useUIExtensionLifecycle } from "../common/useUIExtensionLifecycle";
 
-export interface Props {
+export type Props = {
   projectId: string;
   workflowId: string;
   versionId?: string;
@@ -27,7 +27,7 @@ export interface Props {
   selectedPortIndex: number;
   selectedRowIndex: number;
   selectedColIndex: number;
-}
+};
 
 const props = defineProps<Props>();
 const retryCount = ref(0);

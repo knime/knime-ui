@@ -56,7 +56,7 @@ export const useSpaceSelectionMenuItems = (
 
       return {
         text: space.name,
-        // eslint-disable-next-line no-undefined
+         
         icon: getIcon() ?? undefined,
         selected:
           provider.id === activeSpacePath.value?.spaceProviderId &&

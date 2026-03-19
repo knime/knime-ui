@@ -1,4 +1,4 @@
-/* eslint-disable no-magic-numbers */
+ 
 import test, { Page } from "@playwright/test";
 
 import {

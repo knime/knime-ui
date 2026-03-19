@@ -75,9 +75,9 @@ const savedSecondarySize = computed({
     "sidebar workflow" auto
     / min-content auto;
   height: 100%;
-  background: var(--knime-white);
-  color: var(--knime-masala);
   overflow: hidden;
+  color: var(--knime-masala);
+  background: var(--knime-white);
 }
 
 #sidebar {
@@ -85,20 +85,20 @@ const savedSecondarySize = computed({
 }
 
 #toolbar {
+  flex: 0 0 auto;
   grid-area: toolbar;
   height: var(--app-toolbar-height);
-  flex: 0 0 auto;
-  background-color: var(--kds-color-surface-default);
   padding: var(--kds-spacing-container-0-5x);
+  background-color: var(--kds-color-surface-default);
   border-bottom: var(--kds-border-base-muted);
 }
 
 main {
   display: flex;
-  overflow: auto;
   flex-direction: column;
   align-items: stretch;
   height: 100%;
+  overflow: auto;
 }
 
 .workflow-area {

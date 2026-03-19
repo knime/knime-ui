@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare function switchToJavaUI(): void;
 declare function switchWorkspace(): void;
 declare function openAboutDialog(): void;

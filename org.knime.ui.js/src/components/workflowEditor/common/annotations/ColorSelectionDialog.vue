@@ -59,20 +59,20 @@ const isActive = (color: string) => {
 .color-selection-container {
   display: grid;
   grid-template-columns: repeat(calc(v-bind("totalColors") / 3), 1fr);
+  gap: 4px;
   height: 100%;
   padding: 10px;
-  gap: 4px;
 }
 
 .color-button {
   --item-size: 32;
 
+  align-items: center;
+  justify-content: center;
   justify-self: center;
   width: calc(var(--item-size) * 1px);
   height: calc(var(--item-size) * 1px);
   padding: 0;
-  justify-content: center;
-  align-items: center;
 
   &.none {
     & svg {

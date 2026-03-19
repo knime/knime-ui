@@ -1,6 +1,6 @@
-/* eslint-disable no-undefined */
-/* eslint-disable no-use-before-define */
-/* eslint-disable func-style */
+ 
+ 
+ 
 // Split this file to avoid max-lines disable (NXT-3760)
 /* eslint-disable max-lines */
 import { computed, ref } from "vue";
