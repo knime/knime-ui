@@ -138,7 +138,7 @@ export const useAddNodeViaFileUpload = () => {
   };
 
   const importFilesViaDialog = async () => {
-    const files = await chooseFiles({ options: { multiple: true, accept } });
+    const files = await chooseFiles({ options: { multiple: true } });
     if (!files || files.length === 0) {
       return;
     }

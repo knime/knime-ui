@@ -6,6 +6,7 @@ import { storeToRefs } from "pinia";
 import { SplitPanel } from "@knime/components";
 
 import LayoutEditorDialog from "@/components/layoutEditor/LayoutEditorDialog.vue";
+import CanvasOverlayActions from "@/components/sidebar/CanvasOverlayActions.vue";
 import CanvasOverlayButtons from "@/components/sidebar/CanvasOverlayButtons.vue";
 import CanvasOverlayCenter from "@/components/sidebar/CanvasOverlayCenter.vue";
 import CanvasOverlayTopRight from "@/components/sidebar/CanvasOverlayTopRight.vue";
@@ -72,7 +73,10 @@ const savedSecondarySize = computed({
 
     <!-- Canvas overlays -->
     <CanvasOverlayButtons />
-    <CanvasOverlayCenter />
+    <div class="canvas-top-center-bar">
+      <CanvasOverlayCenter />
+      <CanvasOverlayActions />
+    </div>
     <CanvasOverlayTopRight />
     <SidebarFloatingPanel />
   </div>
@@ -101,6 +105,17 @@ main {
 .workflow-area {
   grid-area: workflow;
   overflow: hidden;
+}
+
+.canvas-top-center-bar {
+  position: fixed;
+  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
+  top: calc(var(--kds-spacing-container-0-75x) + 40px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--kds-spacing-container-0-5x);
 }
 
 .split-panel {

@@ -31,9 +31,6 @@ createHint({
 });
 
 const buttons = computed<ButtonDef[]>(() => [
-  ...(uiControls.canAccessNodeRepository
-    ? [{ name: TABS.NODE_REPOSITORY as TabValues, title: "Nodes", icon: "node-stack" as KdsIconName }]
-    : []),
   ...(uiControls.canAccessSpaceExplorer
     ? [{ name: TABS.SPACE_EXPLORER as TabValues, title: "Explorer", icon: "space" as KdsIconName }]
     : []),
@@ -42,8 +39,8 @@ const buttons = computed<ButtonDef[]>(() => [
     : []),
   {
     name: TABS.WORKFLOW_MONITOR,
-    title: "Monitor",
-    icon: "workflow",
+    title: "Monitor & Search (⌘P)",
+    icon: "error-panel" as KdsIconName,
   },
 ]);
 

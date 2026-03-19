@@ -9,7 +9,9 @@ import type { UnionToShortcutRegistry } from "./types";
 
 type SelectionShortcuts = UnionToShortcutRegistry<"selectAll" | "deselectAll">;
 
-type SidePanelShortcuts = UnionToShortcutRegistry<"toggleSidePanel">;
+type SidePanelShortcuts = UnionToShortcutRegistry<
+  "toggleSidePanel" | "openWorkflowSearch"
+>;
 
 type UiScaleShortcuts = UnionToShortcutRegistry<
   "increaseUiScale" | "decreaseUiScale" | "resetUiScale"
@@ -50,8 +52,14 @@ export const sidePanelShortcuts: SidePanelShortcuts = {
   toggleSidePanel: {
     text: "Hide or show left side panel",
     group: "panelNavigation",
-    hotkey: ["CtrlOrCmd", "P"],
+    hotkey: ["CtrlOrCmd", "B"],
     execute: () => usePanelStore().toggleLeftPanel(),
+  },
+  openWorkflowSearch: {
+    text: "Search workflow",
+    group: "panelNavigation",
+    hotkey: ["CtrlOrCmd", "P"],
+    execute: () => usePanelStore().openWorkflowSearch(),
   },
 };
 

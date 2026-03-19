@@ -35,10 +35,14 @@ const KaiSidebar = defineAsyncComponent({
   loadingComponent: SidebarContentLoading,
 });
 
-const WorkflowMonitor = defineAsyncComponent({
-  loader: () => import("@/components/workflowMonitor/WorkflowMonitor.vue"),
+const WorkflowMonitorSearchPanel = defineAsyncComponent({
+  loader: () =>
+    import(
+      "@/components/workflowMonitor/WorkflowMonitorSearchPanel.vue"
+    ),
   loadingComponent: SidebarContentLoading,
 });
+
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -160,7 +164,7 @@ watch(isLeftPanelExpanded, (expanded) => {
         v-if="panelStore.isTabActive(TABS.SPACE_EXPLORER)"
       />
       <KaiSidebar v-if="panelStore.isTabActive(TABS.KAI)" />
-      <WorkflowMonitor v-if="panelStore.isTabActive(TABS.WORKFLOW_MONITOR)" />
+      <WorkflowMonitorSearchPanel v-if="panelStore.isTabActive(TABS.WORKFLOW_MONITOR)" />
     </div>
 
     <!-- Extension panel (node description pop-out, K-AI wide mode, etc.) -->
@@ -177,7 +181,7 @@ watch(isLeftPanelExpanded, (expanded) => {
   overflow: visible; /* allow extension panel to overflow */
   border-radius: var(--kds-border-radius-container-0-50x);
   background-color: var(--kds-color-surface-default);
-  box-shadow: var(--shadow-elevation-2);
+  box-shadow: var(--kds-elevation-level-3);
 }
 
 .fp-body {
