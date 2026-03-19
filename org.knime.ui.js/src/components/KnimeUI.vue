@@ -27,7 +27,12 @@ import ErrorOverlay from "@/components/application/ErrorOverlay/ErrorOverlay.vue
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
-import { DynamicEnvRenderer, isDesktop } from "@/environment";
+import {
+  DynamicEnvRenderer,
+  isBrowser,
+  isDesktop,
+  runInEnvironment,
+} from "@/environment";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { performanceTracker } from "@/services/performanceTracker";
 import { getToastPresets } from "@/services/toastPresets";
@@ -118,20 +123,39 @@ const AppHeader = defineAsyncComponent({
   },
 });
 
-const setContentHeight = () => {
-  let mainContentHeight = "100vh";
-
-  if (isDesktop()) {
-    mainContentHeight = "calc(100vh - var(--app-header-height))";
-  } else if (uiControls.shouldDisplayDownloadAPButton) {
-    mainContentHeight = "calc(100vh - var(--app-download-banner-height))";
-  }
-
-  document.documentElement.style.setProperty(
-    "--app-main-content-height",
-    mainContentHeight,
+const shouldShowUpdateBanner = computed(() => {
+  return (
+    $route.meta.showUpdateBanner &&
+    applicationStore.availableUpdates &&
+    !applicationStore.dismissedUpdateBanner
   );
-};
+});
+
+const contentLayoutHeightVariants = computed(() => {
+  /**
+   * full         - no header; no footer
+   * inset-top    - with header; no footer
+   * inset-bottom - no header; with footer
+   * inset-both   - with header; with footer
+   */
+  return runInEnvironment({
+    DESKTOP: () => {
+      if (shouldShowUpdateBanner.value) {
+        return "inset-both";
+      }
+
+      return "inset-top";
+    },
+
+    BROWSER: () => {
+      if (uiControls.shouldDisplayDownloadAPButton) {
+        return "inset-bottom";
+      } else {
+        return "full";
+      }
+    },
+  });
+});
 
 const setup = async () => {
   try {
@@ -147,9 +171,6 @@ const setup = async () => {
       document.fonts.load("italic 400 1em Roboto Condensed"),
       document.fonts.load("italic 700 1em Roboto Condensed"),
     ]);
-
-    // calculate content height based on running environment
-    setContentHeight();
 
     // render the application
     loaded.value = true;
@@ -268,35 +289,24 @@ const onCloseError = () => {
     <AppSkeletonLoader />
 
     <template v-if="loaded">
-      <div
-        :class="[
-          $route.meta.showUpdateBanner &&
-          applicationStore.availableUpdates &&
-          !applicationStore.dismissedUpdateBanner
-            ? 'main-content-with-banner'
-            : 'main-content',
-        ]"
-      >
+      <div :class="['main-content', contentLayoutHeightVariants]">
         <RouterView />
       </div>
     </template>
 
-    <DownloadBanner
-      v-if="uiControls.shouldDisplayDownloadAPButton"
-      class="download-banner"
-    />
+    <footer v-if="isBrowser() && true">
+      <DownloadBanner />
+    </footer>
+
+    <footer v-if="isDesktop() && shouldShowUpdateBanner">
+      <UpdateBanner
+        v-if="shouldShowUpdateBanner"
+        :available-updates="applicationStore.availableUpdates ?? {}"
+        @dismiss="onDismissUpdateBanner"
+      />
+    </footer>
 
     <GlobalLoader v-bind="globalLoaderStore.globalLoader" />
-
-    <UpdateBanner
-      v-if="
-        $route.meta.showUpdateBanner &&
-        applicationStore.availableUpdates &&
-        !applicationStore.dismissedUpdateBanner
-      "
-      :available-updates="applicationStore.availableUpdates"
-      @dismiss="onDismissUpdateBanner"
-    />
 
     <Transition name="slide-to-bottom">
       <div
@@ -352,7 +362,7 @@ const onCloseError = () => {
   grid-template:
     "header" min-content
     "workflow" auto
-    "download-banner" min-content;
+    "footer" min-content;
 
   /** backport https://github.com/knime/webapps-common/pull/45 */
   & :deep(.hint-popover .arrow) {
@@ -367,19 +377,34 @@ const onCloseError = () => {
 }
 
 .main-content {
-  width: 100vw;
+  --base-height: 100vh;
+
   grid-area: workflow;
-  height: var(--app-main-content-height);
+  width: 100vw;
+  height: var(--base-height);
+
+  &.inset-top {
+    height: calc(var(--base-height) - var(--app-header-height));
+  }
+
+  &.inset-bottom {
+    height: calc(var(--base-height) - var(--app-footer-height));
+  }
+
+  &.inset-both {
+    height: calc(
+      var(--base-height) - var(--app-header-height) - var(--app-footer-height)
+    );
+  }
 }
 
-.main-content-with-banner {
-  height: calc(
-    var(--app-main-content-height) - var(--app-update-banner-height)
-  );
-}
+footer {
+  grid-area: footer;
+  min-width: unset;
+  height: var(--app-footer-height);
 
-.download-banner {
-  grid-area: download-banner;
+  /* remove styling applied from the WAC grid system -_- */
+  padding: 0;
 }
 
 .toast-stack {
@@ -387,10 +412,10 @@ const onCloseError = () => {
 }
 
 .floating-file-transfer-panel {
-  z-index: v-bind("$zIndices.layerFloatingWindows");
   position: fixed;
-  bottom: var(--space-16);
   right: var(--space-16);
+  bottom: var(--space-16);
+  z-index: v-bind("$zIndices.layerFloatingWindows");
 }
 
 .additional-margin {

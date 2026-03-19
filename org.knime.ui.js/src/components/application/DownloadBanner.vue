@@ -29,20 +29,20 @@ const { IMPRINT_URL, LEGAL_URL, PRIVACY_URL } = knimeExternalUrls;
 
 <style lang="postcss" scoped>
 .download-banner {
-  background: var(--knime-masala);
-  color: var(--knime-white);
   display: flex;
-  height: var(--app-download-banner-height);
-  padding: 0 var(--app-side-bar-buttons-width);
   align-items: center;
+  height: 100%;
+  padding: 0 var(--app-side-bar-buttons-width);
+  color: var(--knime-white);
+  background: var(--knime-masala);
 
   & .info-text {
     display: flex;
     flex-direction: column;
 
     & .links {
-      font-size: 11px;
       padding-top: 5px;
+      font-size: 11px;
 
       & a {
         color: var(--knime-silver-sand);
