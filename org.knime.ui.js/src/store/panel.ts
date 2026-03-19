@@ -22,6 +22,8 @@ export interface PanelState {
   isLeftPanelExpanded: boolean;
   isExtensionPanelOpen: boolean;
   isRightPanelExpanded: boolean;
+  /** Incremented each time the search shortcut is triggered to (re-)focus the search input */
+  searchFocusTrigger: number;
 }
 
 export const usePanelStore = defineStore("panel", {
@@ -30,6 +32,7 @@ export const usePanelStore = defineStore("panel", {
     isLeftPanelExpanded: false,
     isExtensionPanelOpen: false,
     isRightPanelExpanded: false,
+    searchFocusTrigger: 0,
   }),
   actions: {
     setActiveTab({
@@ -70,6 +73,15 @@ export const usePanelStore = defineStore("panel", {
 
     closeExtensionPanel() {
       this.isExtensionPanelOpen = false;
+    },
+
+    openWorkflowSearch() {
+      this.setCurrentProjectActiveTab(TABS.WORKFLOW_MONITOR);
+      this.searchFocusTrigger++;
+    },
+
+    closeWorkflowSearch() {
+      this.isLeftPanelExpanded = false;
     },
   },
   getters: {

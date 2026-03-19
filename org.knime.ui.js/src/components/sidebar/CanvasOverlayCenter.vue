@@ -157,12 +157,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
 
 <style lang="postcss" scoped>
 .canvas-overlay-center {
-  position: fixed;
-  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
-  top: calc(var(--kds-spacing-container-0-75x) + 40px);
-  left: 50%;
-  transform: translateX(-50%);
-
   display: flex;
   align-items: center;
 
