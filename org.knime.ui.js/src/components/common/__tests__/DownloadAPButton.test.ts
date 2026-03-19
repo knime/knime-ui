@@ -13,7 +13,8 @@ describe("Download AP Button", () => {
 
   const doMount = ({ propsOverrides = {} }: MountOptions = {}) => {
     const mockedStores = mockStores();
-    mockedStores.applicationStore.analyticsPlatformDownloadURL = "testUrl.com";
+    mockedStores.applicationStore.analyticsPlatformDownloadURL =
+      "https://testUrl.com";
 
     const props = {
       ...defaultProps,
@@ -32,11 +33,15 @@ describe("Download AP Button", () => {
 
   it("includes utm parameter", () => {
     const src = "test_location";
-    const { wrapper, mockedStores } = doMount({
+    const { wrapper } = doMount({
       propsOverrides: { src },
     });
-    expect(wrapper.attributes().href).toBe(
-      `${mockedStores.applicationStore.analyticsPlatformDownloadURL}?src=${src}`,
-    );
+
+    const href = wrapper.attributes().href;
+    expect(href).toBeDefined();
+
+    const url = new URL(href as string);
+    expect(url.origin).toBe("https://testurl.com");
+    expect(url.searchParams.get("src")).toBe(src);
   });
 });
