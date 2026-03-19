@@ -13,6 +13,7 @@ type UseNodeHoverSizeOptions = {
   isUsingEmbeddedDialogs: Ref<boolean>;
   allowedActions: Node["allowedActions"];
   isDebugModeEnabled?: Ref<boolean>;
+  isMetanode: Ref<boolean>;
 };
 
 export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
@@ -23,6 +24,7 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
     dialogType,
     isUsingEmbeddedDialogs,
     allowedActions,
+    isMetanode,
   } = options;
 
   const portBarBottom = computed(() => {
@@ -39,12 +41,19 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
   });
 
   const hoverSize = computed(() => {
+    const nodeW = isMetanode.value
+      ? $shapes.nodeSize
+      : $shapes.nodeCardWidth;
+    const nodeH = isMetanode.value
+      ? $shapes.nodeSize
+      : $shapes.nodeCardHeight;
+
     const hoverBounds = {
       top: -($shapes.nodeHoverMargin[0] + $shapes.webGlNodeHoverAreaPadding),
       left: -($shapes.nodeHoverMargin[1] + $shapes.webGlNodeHoverAreaPadding),
-      bottom: $shapes.nodeSize + $shapes.nodeHoverMargin[2],
+      bottom: nodeH + $shapes.nodeHoverMargin[2],
       right:
-        $shapes.nodeSize +
+        nodeW +
         $shapes.nodeHoverMargin[3] +
         $shapes.webGlNodeHoverAreaPadding,
     };
