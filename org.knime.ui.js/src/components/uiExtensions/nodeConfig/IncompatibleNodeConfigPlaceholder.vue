@@ -79,9 +79,7 @@ const openMetanode = () => {
       v-if="isMetanode"
       headline="No settings"
       description="Metanodes require no configuration."
-      button-label="Open Metanode"
-      button-variant="outlined"
-      button-size="small"
+      :button="{ label: 'Open Metanode', variant: 'outlined', size: 'small' }"
       @button-click="openMetanode"
     />
 
@@ -96,21 +94,21 @@ const openMetanode = () => {
         v-if="shouldDisplayDownload"
         headline="Classic dialog required"
         description="To configure nodes with a classic dialog, download the KNIME Analytics Platform."
-        button-label="Get KNIME Analytics Platform"
-        button-variant="filled"
-        button-size="small"
-        button-trailing-icon="external-link"
-        :button-to="downloadHref"
-        button-target="_blank"
+        :button="{
+          label: 'Get KNIME Analytics Platform',
+          variant: 'filled',
+          size: 'small',
+          trailingIcon: 'external-link',
+          to: downloadHref,
+          target: '_blank',
+        }"
       />
 
       <KdsEmptyState
         v-else-if="isDesktop()"
         headline="This node uses the classic configuration dialog"
         description="This node hasn't been migrated to the new interface yet. You can configure it using the dialog for now."
-        button-label="Open dialog"
-        button-variant="outlined"
-        button-size="small"
+        :button="{ label: 'Open dialog', variant: 'outlined', size: 'small' }"
         data-test-id="open-legacy-config-btn"
         @button-click="openNodeConfiguration"
       />
