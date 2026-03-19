@@ -10,7 +10,7 @@ import BorderWithRotatingGradient from "../common/BorderWithRotatingGradient.vue
 import {
   type GlowConfig,
   type GradientStop,
-} from "../common/useRotatingGradientBorder";
+} from "../common/renderGradientBorder";
 
 const aiQuickActionsStore = useAiQuickActionsStore();
 const bounds = computed(

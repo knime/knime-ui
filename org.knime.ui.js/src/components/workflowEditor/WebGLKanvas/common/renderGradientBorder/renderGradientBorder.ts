@@ -29,7 +29,7 @@ type GraphicsRefs = {
 };
 
 /**
- * Given the gradient and glow configuration, this composable
+ * Given the gradient and glow configuration, this function
  * takes care of pre-computing all the necessary information (segments,
  * segment colours, glow blobs) and re-drawing the border with gradient and glow
  * dots every frame.
@@ -38,7 +38,7 @@ type GraphicsRefs = {
  * and shape do not change after mount. Thus, the inputs (except for the refs that
  * are drawn into) are assumed to be non-reactive.
  */
-export const useRotatingGradientBorder = ({
+export const renderGradientBorder = ({
   config,
   refs,
 }: {

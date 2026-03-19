@@ -5,11 +5,8 @@ import { BlurFilter } from "pixi.js";
 
 import type { GraphicsInst } from "@/vue3-pixi";
 
-import type { GlowConfig, GradientStop } from "./useRotatingGradientBorder";
-import {
-  drawGlowCutout,
-  useRotatingGradientBorder,
-} from "./useRotatingGradientBorder";
+import type { GlowConfig, GradientStop } from "./renderGradientBorder";
+import { drawGlowCutout, renderGradientBorder } from "./renderGradientBorder";
 
 type Props = {
   width: number;
@@ -44,7 +41,7 @@ const renderGlowCutout = (g: GraphicsInst) =>
     props.borderRadius,
   );
 
-useRotatingGradientBorder({
+renderGradientBorder({
   config: {
     width: props.width,
     height: props.height,
