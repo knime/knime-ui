@@ -102,5 +102,6 @@ export const drawGlowCutout = (
   } else {
     target.rect(cutoutX, cutoutY, cutoutWidth, cutoutHeight);
   }
-  target.fill(0xffffff);
+  const fillColor = 0xffffff;
+  target.fill(fillColor);
 };

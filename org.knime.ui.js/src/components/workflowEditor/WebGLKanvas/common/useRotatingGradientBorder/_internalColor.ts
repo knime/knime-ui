@@ -1,3 +1,5 @@
+/* eslint-disable no-magic-numbers */
+/* eslint-disable no-bitwise */
 import { Color } from "pixi.js";
 
 import type { GradientStop } from "./types";

@@ -6,7 +6,10 @@ import { BlurFilter } from "pixi.js";
 import type { GraphicsInst } from "@/vue3-pixi";
 
 import type { GlowConfig, GradientStop } from "./useRotatingGradientBorder";
-import { useRotatingGradientBorder } from "./useRotatingGradientBorder";
+import {
+  drawGlowCutout,
+  useRotatingGradientBorder,
+} from "./useRotatingGradientBorder";
 
 type Props = {
   width: number;
@@ -24,7 +27,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const borderRef = useTemplateRef<GraphicsInst>("borderRef");
 const glowDotsRef = useTemplateRef<GraphicsInst>("glowDotsRef");
-const glowCutoutRef = useTemplateRef<GraphicsInst>("glowCutoutRef");
 
 const glowBlur = props.glowConfig
   ? new BlurFilter({
@@ -32,6 +34,15 @@ const glowBlur = props.glowConfig
       quality: 4,
     })
   : null;
+
+const renderGlowCutout = (g: GraphicsInst) =>
+  drawGlowCutout(
+    g,
+    props.strokeWidth,
+    props.width,
+    props.height,
+    props.borderRadius,
+  );
 
 useRotatingGradientBorder({
   config: {
@@ -43,7 +54,7 @@ useRotatingGradientBorder({
     secondsPerRotation: props.secondsPerRotation,
     borderRadius: props.borderRadius,
   },
-  refs: { borderRef, glowDotsRef, glowCutoutRef },
+  refs: { borderRef, glowDotsRef },
 });
 </script>
 
@@ -51,7 +62,7 @@ useRotatingGradientBorder({
   <Container label="BorderWithRotatingGradient" event-mode="none">
     <Graphics ref="borderRef" label="RotatingGradient" event-mode="none" />
 
-    <Container v-if="glowBlur" label="GlowRenderGroup" :is-render-group="true">
+    <Container v-if="glowBlur" label="Glow">
       <Graphics
         ref="glowDotsRef"
         label="GlowDots"
@@ -59,10 +70,10 @@ useRotatingGradientBorder({
         :filters="[glowBlur]"
       />
       <Graphics
-        ref="glowCutoutRef"
         label="GlowCutout"
         event-mode="none"
         blend-mode="erase"
+        @render="renderGlowCutout"
       />
     </Container>
   </Container>

@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { Color } from "pixi.js";
 
 import { type Perimeter, computePerimeter } from "./_internalPerimeter";
@@ -29,22 +30,22 @@ type GlowProfile = {
  * scaling this value up and down respectively, keeping them anchored
  * to the same perceptual baseline.
  */
-const BASE_FALLOFF = 0.38;
+const BASE_FALLOFF = 0.5;
 
 const TIGHT_PROFILE: GlowProfile = {
   dotCount: 5,
   dotSpacing: 0.005,
   centerRadius: 42,
   edgeRadius: 5,
-  falloffPower: BASE_FALLOFF * 4, // 1.52 — sharp peak
+  falloffPower: BASE_FALLOFF * 4,
 };
 
 const WIDE_PROFILE: GlowProfile = {
   dotCount: 29,
   dotSpacing: 0.041,
-  centerRadius: 14,
-  edgeRadius: 17,
-  falloffPower: BASE_FALLOFF / 4, // 0.095 — nearly flat
+  centerRadius: 28,
+  edgeRadius: 12,
+  falloffPower: BASE_FALLOFF / 4,
 };
 
 /**

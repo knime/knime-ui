@@ -37,8 +37,8 @@ const gradient: GradientStop[] = [
 const borderStrokeWidth = $shapes.annotationBorderWidth;
 const glowConfig: GlowConfig = {
   gradientStopIndex: 2, // teal
-  softness: 30,
-  spread: 0.6,
+  softness: 60,
+  spread: 0.7,
 };
 const secondsPerRotation = 1.2;
 const borderRadius = 0;

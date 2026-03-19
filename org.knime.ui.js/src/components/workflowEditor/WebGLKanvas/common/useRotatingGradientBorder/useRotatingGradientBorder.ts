@@ -7,7 +7,6 @@ import { buildGradientLookupTable } from "./_internalColor";
 import {
   type BorderResources,
   drawBorder,
-  drawGlowCutout,
   drawGlowDots,
 } from "./_internalDraw";
 import { buildGlow } from "./_internalGlow";
@@ -27,7 +26,6 @@ type Config = {
 type GraphicsRefs = {
   borderRef: Readonly<ShallowRef<GraphicsInst | null>>;
   glowDotsRef: Readonly<ShallowRef<GraphicsInst | null>>;
-  glowCutoutRef: Readonly<ShallowRef<GraphicsInst | null>>;
 };
 
 /**
@@ -57,7 +55,7 @@ export const useRotatingGradientBorder = ({
     borderRadius,
   } = config;
 
-  const { borderRef, glowDotsRef, glowCutoutRef } = refs;
+  const { borderRef, glowDotsRef } = refs;
 
   // Precompute static resources
   const borderResources: BorderResources = {
@@ -66,9 +64,6 @@ export const useRotatingGradientBorder = ({
     strokeWidth,
   };
   const glow = buildGlow(glowConfig, gradient, width, height, borderRadius);
-
-  // The glow cutout only needs to be drawn once
-  let cutoutDrawn = false;
 
   // Current rotation progress, 0–1
   let rotationFraction = 0;
@@ -83,20 +78,9 @@ export const useRotatingGradientBorder = ({
       drawBorder(borderRef.value, rotationFraction, borderResources);
     }
 
-    if (glow && glowDotsRef.value && glowCutoutRef.value) {
+    if (glow && glowDotsRef.value) {
       glowDotsRef.value.clear();
       drawGlowDots(glowDotsRef.value, rotationFraction, glow);
-
-      if (!cutoutDrawn) {
-        drawGlowCutout(
-          glowCutoutRef.value,
-          strokeWidth,
-          width,
-          height,
-          borderRadius,
-        );
-        cutoutDrawn = true;
-      }
     }
   });
 };
