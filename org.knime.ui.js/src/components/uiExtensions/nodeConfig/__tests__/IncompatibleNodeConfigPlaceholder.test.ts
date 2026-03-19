@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { computed, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
-import { createRouter, createWebHistory } from "vue-router";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
 import {
@@ -12,6 +11,23 @@ import {
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import IncompatibleNodeConfigPlaceholder from "../IncompatibleNodeConfigPlaceholder.vue";
+
+const { pushSpy } = vi.hoisted(() => ({
+  pushSpy: vi.fn(),
+}));
+
+vi.mock("vue-router", async () => {
+  const actual = await vi.importActual<typeof import("vue-router")>(
+    "vue-router",
+  );
+
+  return {
+    ...actual,
+    useRouter: vi.fn(() => ({
+      push: pushSpy,
+    })),
+  };
+});
 
 vi.mock("@/environment", async () => {
   const actual = await vi.importActual<typeof import("@/environment")>(
@@ -63,6 +79,7 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
 
   const doMount = () => {
     const mockedStores = mockStores();
+    pushSpy.mockReset();
 
     const workflow = createWorkflow({
       nodes: {
@@ -76,23 +93,9 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
     });
     mockedStores.workflowStore.setActiveWorkflow(workflow);
 
-    const router = createRouter({
-      history: createWebHistory(),
-      routes: [
-        {
-          path: "/workflow/:workflowId",
-          name: "WorkflowPage",
-          component: { template: "<div />" },
-        },
-        { path: "/:catchAll(.*)", component: { template: "<div />" } },
-      ],
-    });
-
-    const pushSpy = vi.spyOn(router, "push");
-
     const wrapper = mount(IncompatibleNodeConfigPlaceholder, {
       global: {
-        plugins: [mockedStores.testingPinia, router],
+        plugins: [mockedStores.testingPinia],
         stubs: {
           KdsEmptyState: {
             name: "KdsEmptyState",
@@ -103,7 +106,7 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
       },
     });
 
-    return { wrapper, mockedStores, router, pushSpy };
+    return { wrapper, mockedStores };
   };
 
   it("renders placeholder when nothing is selected", () => {
@@ -134,7 +137,7 @@ describe("IncompatibleNodeConfigPlaceholder.vue", () => {
   });
 
   it("navigates to metanode when button is clicked", async () => {
-    const { wrapper, mockedStores, pushSpy } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     await mockedStores.selectionStore.selectNodes([metanode.id]);
     await nextTick();

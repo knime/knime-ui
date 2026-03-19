@@ -74,7 +74,7 @@ const openMetanode = () => {
 </script>
 
 <template>
-  <div class="placeholder full-height">
+  <div class="full-height">
     <KdsEmptyState
       v-if="isMetanode"
       headline="No settings"
