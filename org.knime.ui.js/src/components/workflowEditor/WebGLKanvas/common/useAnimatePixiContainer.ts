@@ -44,7 +44,7 @@ type Options<T> = {
   immediate?: boolean;
 };
 
-export const useAnimatePixiContainer = <T>(options: Options<T>) => {
+export const useAnimatePixiContainer = <T extends {}>(options: Options<T>) => {
   const {
     targetDisplayObject,
     initialValue,
