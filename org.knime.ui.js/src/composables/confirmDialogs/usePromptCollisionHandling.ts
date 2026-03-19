@@ -11,7 +11,7 @@ export const usePromptCollisionStrategies = () => {
 
       const prompt = () =>
         askConfirmation({
-          title: "Name conflict",
+          headline: "Name conflict",
           message:
             "An item of this name already exists in this location. Overwrite the existing item(s) or keep all by renaming automatically?",
           buttons: [

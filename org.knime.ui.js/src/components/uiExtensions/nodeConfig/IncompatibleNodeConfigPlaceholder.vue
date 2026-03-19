@@ -39,15 +39,16 @@ const hasLegacyDialog = computed(() =>
   ),
 );
 
+const { href: downloadHref } = useAnalyticsPlatformDownloadUrl(
+  "node-configuration-panel",
+);
+
 const shouldDisplayDownload = computed(
   () =>
     hasLegacyDialog.value &&
     shouldDisplayDownloadAPButton.value &&
+    Boolean(downloadHref.value) &&
     !isMetanode.value,
-);
-
-const { href: downloadHref } = useAnalyticsPlatformDownloadUrl(
-  "node-configuration-panel",
 );
 
 const openNodeConfiguration = () => {

@@ -34,8 +34,8 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
     const { askConfirmation } = useKdsDynamicModal();
 
     return askConfirmation({
-      title: "Delete",
-      icon: "trash",
+      headline: "Delete",
+      leadingIcon: "trash",
 
       component: createModalTemplate({
         items,

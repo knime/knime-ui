@@ -10,7 +10,12 @@ export const useAnalyticsPlatformDownloadUrl = (src: string) => {
   const { analyticsPlatformDownloadURL } = storeToRefs(useApplicationStore());
 
   const href = computed(() => {
-    const url = new URL(analyticsPlatformDownloadURL.value);
+    const baseUrl = analyticsPlatformDownloadURL.value;
+    if (!baseUrl) {
+      return "";
+    }
+
+    const url = new URL(baseUrl);
     url.searchParams.set("src", src);
     return url.toString();
   });

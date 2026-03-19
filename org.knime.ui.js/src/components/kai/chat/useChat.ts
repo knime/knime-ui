@@ -133,7 +133,7 @@ const useChat = (chainType: ChainType) => {
 
   const abortSendMessage = async () => {
     const { confirmed } = await askConfirmation({
-      title: "Confirm action",
+      headline: "Confirm action",
       message:
         "Are you sure you want to abort the request to the KNIME AI Assistant?",
     });

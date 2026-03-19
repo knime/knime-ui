@@ -26,7 +26,7 @@ export const useHubLoginDialog = async ({
   const providerNameOrId = providersStore.spaceProviders[hubId]?.name ?? hubId;
 
   const { confirmed } = await askConfirmation({
-    title,
+    headline: title,
     message,
     buttons: [
       { type: "cancel", label: "Not now" },
