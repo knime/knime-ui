@@ -1,6 +1,6 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, toRef } from "vue";
+import { computed, ref, toRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -23,6 +23,7 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
+import type { GraphicsInst } from "@/vue3-pixi";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useNodeHoverProvider } from "../common/useNodeHoverState";
 import { useNodeReplacementOrInsertion } from "../common/useNodeReplacementOrInsertion";
@@ -38,6 +39,7 @@ import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeDoubleClick } from "./useNodeDoubleClick";
 import { useNodeHoverSize } from "./useNodeHoverSize";
+import { FLOW_VARIABLE_PORT_TYPE_ID, useNodePortPreviewStore } from "./useNodePortPreview";
 import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 import { useNodeNameShortening } from "./useTextShortening";
 
@@ -61,7 +63,7 @@ const isComponent = computed(() => workflowDomain.node.isComponent(props.node));
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
 const canvasStore = useWebGLCanvasStore();
-const { isDebugModeEnabled, visibleArea, zoomAwareResolution } =
+const { isDebugModeEnabled, visibleArea, zoomAwareResolution, canvasLayers } =
   storeToRefs(canvasStore);
 
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
@@ -156,8 +158,17 @@ const isHovering = computed(
     (portTypeMenu.value.isOpen && portTypeMenu.value.nodeId === props.node.id),
 );
 
-const { metrics: nodeNameDimensions, shortenedText: shortenedNodeName } =
+const { metrics: rawNodeNameDimensions, shortenedText: shortenedNodeName } =
   useNodeNameShortening(toRef(props, "name"));
+
+// For card nodes (non-metanode, non-component) the name is rendered inside
+// the card, so the external NodeName is hidden and contributes no height.
+const nodeNameDimensions = computed(() => {
+  if (!isMetanode.value && !isComponent.value) {
+    return { width: 0, height: 0 };
+  }
+  return rawNodeNameDimensions.value;
+});
 
 const { useEmbeddedDialogs, nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
@@ -296,6 +307,80 @@ const actionBarPosition = computed(() => {
   };
 });
 
+const isExecuting = computed(
+  () =>
+    props.node.state?.executionState === "EXECUTING" ||
+    props.node.state?.executionState === "QUEUED",
+);
+
+const portPreviewStore = useNodePortPreviewStore();
+
+// Preview for the first data output port — used by the card body (table grid).
+const tablePreview = computed(() => {
+  const outPorts = "outPorts" in props.node ? props.node.outPorts : [];
+  const firstDataPort = outPorts.find((p) => p.typeId !== FLOW_VARIABLE_PORT_TYPE_ID);
+  if (!firstDataPort) return null;
+  return portPreviewStore.getPreview(props.node.id, firstDataPort.index);
+});
+
+// One badge entry per data output port, each positioned at its port's y-coordinate.
+const portBadges = computed(() => {
+  if (isMetanode.value || isComponent.value) return [];
+  const outPorts = "outPorts" in props.node ? props.node.outPorts : [];
+  return outPorts
+    .map((port, arrayIndex) => {
+      if (port.typeId === FLOW_VARIABLE_PORT_TYPE_ID) return null;
+      const pos = portPositions.value.out[arrayIndex];
+      if (!pos) return null;
+      const preview = portPreviewStore.getPreview(props.node.id, port.index);
+      if (!preview || preview.imageUrl) return null;
+      if (!preview.totalRows && !preview.totalCols) return null;
+      return {
+        label: `R: ${preview.totalRows.toLocaleString()} | C: ${preview.totalCols.toLocaleString()}`,
+        y: pos[1],
+      };
+    })
+    .filter((b): b is NonNullable<typeof b> => b !== null);
+});
+
+const badgePaddingX = 1;
+const badgeHeight = 9;
+const badgeCharWidth = 3.8;
+// Left-aligned outside the card, right of the port nub
+const badgeX = $shapes.nodeCardWidth + $shapes.portSize + 2;
+const badgeLabelStyle = {
+  fontFamily: "Roboto Condensed",
+  fontSize: 7,
+  fontWeight: "bold",
+  fill: "#ffffff",
+};
+
+const renderBadge = (graphics: GraphicsInst, label: string) => {
+  graphics.clear();
+  const textW = label.length * badgeCharWidth + badgePaddingX * 2;
+  graphics.roundRect(0, -badgeHeight / 2, textW, badgeHeight, 3);
+  graphics.fill("#7a7a7a");
+};
+
+// Fetch port preview when node finishes executing.
+// immediate: true ensures already-executed nodes on load are also fetched.
+watch(
+  () => props.node.state?.executionState,
+  (state, prev) => {
+    if (state === "EXECUTING" || state === "QUEUED") {
+      portPreviewStore.clearPreview(props.node.id);
+    } else if (
+      state === "EXECUTED" &&
+      prev !== "EXECUTED" &&
+      !isMetanode.value
+    ) {
+      const outPorts = "outPorts" in props.node ? props.node.outPorts : [];
+      portPreviewStore.fetchPreview(props.node.id, outPorts);
+    }
+  },
+  { immediate: true },
+);
+
 const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
   markPointerEventAsHandled(event, { initiator: "node::onContextMenu" });
 
@@ -333,22 +418,14 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
       @render="renderHoverArea"
     />
 
-    <NodeActionBar
-      v-if="isHovering && !isDragging && !isEditingName"
-      v-bind="allAllowedActions"
-      :position="actionBarPosition"
-      :node-id="node.id"
-      :node-kind="node.kind"
-      :is-node-selected="isNodeSelected(node.id)"
-    />
-
     <NodeName
+      v-if="isMetanode || isComponent"
       :node-id="node.id"
       :name="shortenedNodeName"
       :full-name="name"
-      :is-editable="isMetanode || isComponent"
+      :is-editable="true"
       :position="nodeNamePosition"
-      :metrics="nodeNameDimensions"
+      :metrics="rawNodeNameDimensions"
     />
 
     <Container label="NodeTorsoContainer">
@@ -358,6 +435,10 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         :kind="node.kind"
         :type="type"
         :icon="icon"
+        :name="name"
+        :annotation="node.annotation?.text.value"
+        :is-executing="isExecuting"
+        :table-preview="tablePreview"
         :is-replacement-candidate="isReplacementCandidate"
         :is-hovered="isHovering && !isDraggingFloatingConnector"
         :execution-state="
@@ -388,12 +469,48 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
       @update-port-positions="portPositions = $event"
     />
 
+    <!-- Dimension badges — one per data output port, left-aligned outside the card -->
+    <Container
+      v-for="badge in portBadges"
+      :key="badge.y"
+      label="NodeDimensionBadge"
+      event-mode="none"
+      :layer="canvasLayers.nodeBadges"
+      :x="badgeX"
+      :y="badge.y"
+    >
+      <Graphics
+        label="NodeDimensionBadgeBackground"
+        event-mode="none"
+        @render="renderBadge($event, badge.label)"
+      />
+      <Text
+        label="NodeDimensionBadgeLabel"
+        event-mode="none"
+        :x="(badge.label.length * badgeCharWidth + badgePaddingX * 2) / 2"
+        :y="0"
+        :anchor="{ x: 0.5, y: 0.5 }"
+        :style="badgeLabelStyle"
+        :resolution="zoomAwareResolution"
+      >{{ badge.label }}</Text>
+    </Container>
+
     <NodeLabel
+      v-if="isMetanode"
       :node-id="node.id"
       :label="node.annotation?.text.value"
       :is-metanode="isMetanode"
       @rightclick="onRightClick"
       @pointerdown="handlePointerInteraction"
+    />
+
+    <NodeActionBar
+      v-if="isHovering && !isDragging && !isEditingName"
+      v-bind="allAllowedActions"
+      :position="actionBarPosition"
+      :node-id="node.id"
+      :node-kind="node.kind"
+      :is-node-selected="isNodeSelected(node.id)"
     />
   </Container>
 </template>

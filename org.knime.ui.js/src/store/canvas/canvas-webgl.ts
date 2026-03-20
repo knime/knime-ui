@@ -43,6 +43,7 @@ export type CanvasLayerNames =
   | "selectedPorts"
   | "annotations"
   | "annotationControls"
+  | "nodeBadges"
   | "debugLayer";
 
 const clampZoomFactor = (newFactor: number) =>
@@ -115,6 +116,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     selectedPorts: undefined,
     annotations: undefined,
     annotationControls: undefined,
+    nodeBadges: undefined,
     debugLayer: undefined,
   });
 

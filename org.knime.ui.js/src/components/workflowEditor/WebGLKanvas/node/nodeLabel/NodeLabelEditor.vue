@@ -14,7 +14,7 @@ import { getToastPresets } from "@/services/toastPresets";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { nodeAnnotationMarginTop, nodeCardHeight, nodeCardWidth, nodeSize } from "@/style/shapes";
+import { nodeCardWidth, nodeSize } from "@/style/shapes";
 import ActionBar from "../../../common/svgActionBar/ActionBar.vue";
 import type { ActionButtonConfig } from "../../../types";
 import FloatingHTML from "../../common/FloatingHTML.vue";
@@ -92,7 +92,7 @@ const transformOffsets = computed(() => {
     editedNode.value && workflowDomain.node.isMetaNode(editedNode.value);
   const baseYOffset = isMetanode
     ? nodeSize + lineHeightPX
-    : nodeCardHeight + nodeAnnotationMarginTop + 4;
+    : 42; // inside card at annotation position (headerHeight=36 + 6px padding)
 
   const y = editedNode.value
     ? (`${

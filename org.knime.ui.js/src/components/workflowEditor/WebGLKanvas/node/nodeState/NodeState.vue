@@ -3,6 +3,8 @@
 import { computed, useTemplateRef } from "vue";
 import { Rectangle } from "pixi.js";
 
+import { animFrame } from "../../util/animFrame";
+
 import { NodeState } from "@/api/gateway-api/generated-api";
 import { useTooltip } from "@/components/workflowEditor/WebGLKanvas/tooltip/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
@@ -31,15 +33,15 @@ const dotColor = computed(() => {
   if (props.error) return $colors.trafficLight.red;
   if (props.warning) return $colors.trafficLight.yellow;
   switch (props.executionState) {
-    case NodeState.ExecutionStateEnum.Idle:
+    case NodeState.ExecutionStateEnum.IDLE:
       return $colors.trafficLight.red;
-    case NodeState.ExecutionStateEnum.Configured:
+    case NodeState.ExecutionStateEnum.CONFIGURED:
       return $colors.trafficLight.yellow;
-    case NodeState.ExecutionStateEnum.Executed:
-    case NodeState.ExecutionStateEnum.Halted:
+    case NodeState.ExecutionStateEnum.EXECUTED:
+    case NodeState.ExecutionStateEnum.HALTED:
       return $colors.trafficLight.green;
-    case NodeState.ExecutionStateEnum.Executing:
-    case NodeState.ExecutionStateEnum.Queued:
+    case NodeState.ExecutionStateEnum.EXECUTING:
+    case NodeState.ExecutionStateEnum.QUEUED:
       return $colors.nodeProgressBar;
     default:
       return $colors.trafficLight.inactive;
@@ -50,7 +52,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
   let tooltip = {
     position: {
       x: $shapes.nodeCardWidth / 2,
-      y: 15,
+      y: 0,
     },
     gap: 1,
     hoverable: true,
@@ -81,14 +83,21 @@ const { showTooltip, hideTooltip } = useTooltip({
 // Small hit area around the dot (local coords centered at 0,0)
 const hitArea = new Rectangle(-10, -10, 20, 20);
 
+const isExecuting = computed(
+  () =>
+    props.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
+    props.executionState === NodeState.ExecutionStateEnum.QUEUED,
+);
+
 const renderDot = (graphics: GraphicsInst) => {
+  // Conditional dep on animFrame — only subscribes while executing
+  const _frame = isExecuting.value ? animFrame.value : 0;
   graphics.clear();
-  // White backing ring
-  graphics.circle(0, 0, 6);
-  graphics.fill("white");
-  // Status dot
+  const alpha = isExecuting.value
+    ? 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(performance.now() / 400))
+    : 1;
   graphics.circle(0, 0, 5);
-  graphics.fill(dotColor.value);
+  graphics.fill({ color: dotColor.value, alpha });
 };
 </script>
 

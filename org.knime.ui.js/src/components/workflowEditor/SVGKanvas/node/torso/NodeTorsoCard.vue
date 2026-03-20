@@ -12,11 +12,15 @@ import * as $shapes from "@/style/shapes";
 type Props = {
   type?: NativeNodeInvariants.TypeEnum | null;
   kind: Node.KindEnum;
+  name?: string | null;
+  annotation?: string | null;
   isDraggedOver?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   type: null,
+  name: null,
+  annotation: null,
   isDraggedOver: false,
 });
 
@@ -41,11 +45,11 @@ const categoryColor = computed(() => {
   return "#aaa";
 });
 
-const displayName = computed(() => {
-  if (props.type) return props.type.toUpperCase();
-  if (props.kind === "component") return "COMPONENT";
-  if (props.kind === "metanode") return "METANODE";
-  return "NODE";
+// First line of the annotation, truncated to fit the header width
+const annotationLine = computed(() => {
+  if (!props.annotation) return "";
+  const firstLine = props.annotation.split("\n")[0].trim();
+  return firstLine.length > 26 ? `${firstLine.slice(0, 25)}…` : firstLine;
 });
 
 // Rows that get the subtle zebra shading
@@ -65,39 +69,29 @@ const shadedRows = [0, 2]; // 0-indexed
 
   <!-- ── Header zone ─────────────────────────────────────── -->
 
-  <!-- Category dot — top-left inside the card -->
-  <circle cx="10" cy="10" r="5" :fill="categoryColor" />
+  <!-- Category color dot — top-left inside the card -->
+  <circle cx="10" cy="16" r="4" :fill="categoryColor" />
 
-  <!-- Node name — bold uppercase, centered in header -->
+  <!-- Node name — left-aligned after the color dot -->
   <text
-    :x="W / 2"
-    y="23"
-    text-anchor="middle"
+    x="18"
+    y="20"
     dominant-baseline="auto"
     class="card-name"
   >
-    {{ displayName }}
+    {{ name || kind.toUpperCase() }}
   </text>
 
-  <!-- Description placeholder lines -->
-  <line
-    x1="14"
-    y1="31"
-    :x2="W - 44"
-    y2="31"
-    stroke="#d0d0d0"
-    stroke-width="1.5"
-    stroke-linecap="round"
-  />
-  <line
-    x1="14"
-    y1="37"
-    :x2="W - 74"
-    y2="37"
-    stroke="#d0d0d0"
-    stroke-width="1.5"
-    stroke-linecap="round"
-  />
+  <!-- Annotation / comment text -->
+  <text
+    v-if="annotationLine"
+    x="10"
+    y="36"
+    dominant-baseline="auto"
+    class="card-annotation"
+  >
+    {{ annotationLine }}
+  </text>
 
   <!-- Divider -->
   <line
@@ -163,7 +157,13 @@ const shadedRows = [0, 2]; // 0-indexed
   font-family: "Roboto Condensed", sans-serif;
   font-size: 11px;
   font-weight: 700;
-  fill: #444;
-  letter-spacing: 0.06em;
+  fill: #333;
+}
+
+.card-annotation {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  fill: #888;
 }
 </style>

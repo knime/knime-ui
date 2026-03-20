@@ -684,6 +684,8 @@ export default {
                     :type="type"
                     :kind="kind"
                     :icon="icon"
+                    :name="name"
+                    :annotation="annotation ? annotation.text.value : null"
                     :is-dragged-over="isDraggedOver"
                     :execution-state="state && state.executionState"
                     :class="['node-torso', { hover: isHovering }]"
@@ -704,7 +706,7 @@ export default {
                     v-bind="state"
                     :class="['node-state', { hover: isHovering }]"
                     :loop-status="loopInfo.status"
-                    :transform="`translate(${$shapes.nodeCardWidth / 2}, 0)`"
+                    :transform="`translate(${$shapes.nodeCardWidth - 10}, 10)`"
                   />
                 </g>
               </g>

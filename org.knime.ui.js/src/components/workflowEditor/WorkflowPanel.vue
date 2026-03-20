@@ -18,6 +18,7 @@ import ContextMenu from "./CanvasAnchoredComponents/ContextMenu/ContextMenu.vue"
 import PortTypeMenu from "./CanvasAnchoredComponents/PortTypeMenu/PortTypeMenu.vue";
 import QuickActionMenu from "./CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import FloatingMenuPortalTarget from "./WebGLKanvas/FloatingMenu/FloatingMenuPortalTarget.vue";
+import NodeViewInlineOverlays from "./NodeViewInlineOverlays.vue";
 import SelectionKaiOverlay from "./SelectionKaiOverlay.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 import { useCanvasRendererUtils } from "./util/canvasRenderer";
@@ -114,6 +115,9 @@ const panelStore = usePanelStore();
 
     <!-- K-AI overlay near selected nodes -->
     <SelectionKaiOverlay />
+
+    <!-- Inline node view overlays — one per executed visualizer node -->
+    <NodeViewInlineOverlays />
 
     <!-- Floating node configuration / versions panel -->
     <NodeConfigFloatingPanel

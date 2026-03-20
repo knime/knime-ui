@@ -66,6 +66,9 @@ const selectedPortsLayerContainer = useTemplateRef<ContainerInst>(
 const annotationControlsLayerContainer = useTemplateRef<ContainerInst>(
   "annotationControlsLayerContainer",
 );
+const nodeBadgesLayerContainer = useTemplateRef<ContainerInst>(
+  "nodeBadgesLayerContainer",
+);
 
 const componentPlaceholders = computed(
   () => activeWorkflow.value?.componentPlaceholders ?? [],
@@ -99,6 +102,9 @@ onMounted(() => {
     "annotationControls",
     annotationControlsLayerContainer.value!,
   );
+
+  // badges render above connectors
+  createRenderLayer("nodeBadges", nodeBadgesLayerContainer.value!);
 });
 
 // we need to keep the order of the annotations stable
@@ -190,6 +196,7 @@ const annotations = computed(
 
     <Container label="NodesDragContainer" :is-render-group="true" />
 
+    <Container ref="nodeBadgesLayerContainer" />
     <Container ref="selectedNodesLayerContainer" />
     <Container ref="selectedPortsLayerContainer" />
     <Container ref="annotationControlsLayerContainer" />

@@ -20,6 +20,8 @@ type Props = {
   type?: NativeNodeInvariants.TypeEnum | null;
   kind: Node.KindEnum;
   icon?: string | null;
+  name?: string | null;
+  annotation?: string | null;
   executionState?: string | null;
   isDraggedOver?: boolean;
 };
@@ -27,6 +29,8 @@ type Props = {
 withDefaults(defineProps<Props>(), {
   type: null,
   icon: null,
+  name: null,
+  annotation: null,
   executionState: null,
   isDraggedOver: false,
 });
@@ -45,6 +49,8 @@ withDefaults(defineProps<Props>(), {
       v-else
       :type="type"
       :kind="kind"
+      :name="name"
+      :annotation="annotation"
       :is-dragged-over="isDraggedOver"
     />
     <!-- Not using conditional rendering, DOM modifications will trigger DragLeave event -->

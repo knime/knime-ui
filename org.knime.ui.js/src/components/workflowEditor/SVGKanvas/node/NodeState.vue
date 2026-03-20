@@ -60,8 +60,8 @@ const isAnimating = computed(
 const tooltip = computed<TooltipDefinition | null>(() => {
   const base = {
     position: {
-      x: $shapes.nodeCardWidth / 2,
-      y: 15,
+      x: 0,
+      y: 0,
     },
     anchorPoint: anchorPoint ?? { x: 0, y: 0 },
     gap: 10,
@@ -88,8 +88,6 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
 
 <template>
   <g ref="tooltipRef">
-    <!-- White backing ring to lift dot off card edge -->
-    <circle r="6" fill="white" />
     <!-- Status dot -->
     <circle r="5" :fill="dotColor" />
     <!-- Pulsing ring for executing/queued state -->

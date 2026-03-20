@@ -11,6 +11,8 @@ import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
 
+import type { TablePreview } from "../useNodePortPreview";
+
 import NodeTorsoCard from "./NodeTorsoCard.vue";
 import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
@@ -24,6 +26,10 @@ type Props = {
   icon: string | null;
   type: NativeNodeInvariants.TypeEnum | null;
   isReplacementCandidate: boolean;
+  name?: string | null;
+  annotation?: string | null;
+  isExecuting?: boolean;
+  tablePreview?: TablePreview;
   executionState?: MetaNodeState.ExecutionStateEnum;
   isHovered?: boolean;
 };
@@ -83,6 +89,10 @@ const renderMetanodeShadow = (graphics: GraphicsInst) => {
         v-else
         :type="type"
         :kind="kind"
+        :name="name"
+        :annotation="annotation"
+        :is-executing="isExecuting"
+        :table-preview="tablePreview"
       />
     </template>
   </Container>

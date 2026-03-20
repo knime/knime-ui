@@ -39,16 +39,22 @@ export const portShift = (
     return [x + ((isOutPort ? -1 : 1) * portSize) / 2, -portSize / 2];
   }
 
-  // consider ports on the side
-  // if only 1 side port (+1 flow variable -> therefore portCount is 2)
-  // then position port vertically centered
+  const portMargin = 1.5;
+
+  if (!isMetanode) {
+    // Card nodes: distribute ports from the top of the card
+    const topY = portSize;
+    const dy = topY + (portIndex - 1) * (portSize + portMargin);
+    return [x, dy];
+  }
+
+  // Metanodes: center-based distribution
   const middleY = nodeH / 2;
   if (portCount === 2) {
     return [x, middleY];
   }
 
   const middleIndex = 2;
-  const portMargin = 1.5;
 
   // if only 2 side ports (+1 flow variable -> therefore portCount is 3)
   // leave the middle port free for the second side port by increasing the index (index: 2 -> 3)

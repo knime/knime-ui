@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { toRefs } from "vue";
-import { storeToRefs } from "pinia";
 
 import type { Node } from "@/api/gateway-api/generated-api";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeActionBar } from "../../common/useNodeActionBar";
 import ActionBar from "../common/ActionBar.vue";
 import { getIcons } from "../common/iconCache";
-import { nodeIdText } from "../util/textStyles";
 
 /**
  *  Displays a bar of action buttons above nodes
@@ -66,22 +63,11 @@ const { visibleActions } = useNodeActionBar({
   icons: getIcons(),
 });
 
-const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
 </script>
 
 <template>
   <Container>
     <ActionBar :actions="visibleActions" />
 
-    <Text
-      label="NodeId"
-      :anchor-x="0.5"
-      :position-y="-$shapes.nodeIdMargin - 8"
-      :resolution="zoomAwareResolution"
-      :style="nodeIdText.styles"
-      :round-pixels="true"
-    >
-      {{ nodeId }}
-    </Text>
   </Container>
 </template>

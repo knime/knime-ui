@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 export const nodeSize = 32;
 export const nodeCardWidth = 160;
-export const nodeCardHeight = 96;
+export const nodeCardHeight = 150;
 export const portSize = 9;
 export const portActionButtonSize = 20;
 export const portActionsGapSize = 5;
