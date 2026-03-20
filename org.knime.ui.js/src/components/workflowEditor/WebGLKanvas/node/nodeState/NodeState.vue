@@ -86,15 +86,15 @@ const { showTooltip, hideTooltip } = useTooltip({
 });
 
 // Hit area centered at (0,0) — covers the traffic light pill
-const hitArea = new Rectangle(-20, -7, 40, 14);
+const hitArea = new Rectangle(-12, -5, 24, 10);
 
 // Traffic light pill dimensions
-const PILL_W = 34;
-const PILL_H = 10;
-const PILL_RADIUS = 5;
+const PILL_W = 20;
+const PILL_H = 6;
+const PILL_RADIUS = 3;
 // 3 dot positions relative to pill center
-const DOT_X = [-10, 0, 10] as const;
-const DOT_RADIUS = 3.5;
+const DOT_X = [-6, 0, 6] as const;
+const DOT_RADIUS = 2;
 const ACTIVE_FILL = ["#C81D31", "#FFDD5A", "#71BD5B"] as const;
 const ACTIVE_STROKE = ["#670317", "#9F4B24", "#276023"] as const;
 
@@ -109,7 +109,7 @@ const renderTrafficLight = (graphics: GraphicsInst) => {
   if (trafficLight.value === undefined) {
     // Executing/queued: animated pulsing blue dot
     const alpha = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(performance.now() / 400));
-    graphics.circle(0, 0, DOT_RADIUS + 1);
+    graphics.circle(0, 0, DOT_RADIUS);
     graphics.fill({ color: $colors.nodeProgressBar, alpha });
     return;
   }
