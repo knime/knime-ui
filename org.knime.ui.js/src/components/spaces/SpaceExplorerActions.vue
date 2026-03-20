@@ -85,7 +85,7 @@ const filteredActions = (hideItems: string[]): MenuItemWithHandler[] =>
           v-for="action in filteredActions(['createWorkflow', 'connectToHub'])"
           :key="action.metadata?.id"
           :item="action"
-          :data-test-id="`space-${kebabCase(action.metadata?.id)}-btn`"
+          :data-test-id="`space-${kebabCase(action.metadata?.id ?? '')}-btn`"
           :disabled="action.disabled || isLoadingContent"
         />
 

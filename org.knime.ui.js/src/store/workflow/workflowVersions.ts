@@ -430,9 +430,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         const lastSavepoint = itemSavepointsInfo.savepoints[0];
 
         newData.unversionedSavepoint = merge(
-          {},
           lastSavepoint,
-          await versionsApi.loadSavepointMetadata(lastSavepoint),
+          (await versionsApi.loadSavepointMetadata(lastSavepoint)) ?? {},
         );
       }
 
