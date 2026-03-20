@@ -11,7 +11,10 @@ import {
   startApplication,
   testSimpleScreenshot,
 } from "../utils";
-import { WorkflowCommandFnMock, WorkflowUndoCommandMock } from "../utils/types";
+import type {
+  WorkflowCommandFnMock,
+  WorkflowUndoCommandMock,
+} from "../utils/types";
 
 import {
   changeLabelCommand,

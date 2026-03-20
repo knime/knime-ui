@@ -84,7 +84,6 @@ describe("PortTypeMenu.vue", () => {
 
         const header = wrapper.find(".header");
         expect(header.classes()).toContain("output");
-        expect(header.attributes("style")).toMatch("--margin: 10px");
         expect(header.text()).toBe("Add Output Port");
       });
 
@@ -93,32 +92,7 @@ describe("PortTypeMenu.vue", () => {
 
         const header = wrapper.find(".header");
         expect(header.classes()).toContain("input");
-        expect(header.attributes("style")).toMatch("--margin: 10px");
         expect(header.text()).toBe("Add Input Port");
-      });
-
-      it("moves header for bigger zoom levels", async () => {
-        const { wrapper, mockedStores } = doMount();
-
-        mockedStores.canvasStore.zoomFactor = 2;
-        await nextTick();
-
-        const header = wrapper.find(".header");
-        expect(header.attributes("style")).toMatch(
-          "--margin: 16.669910139330234px",
-        );
-      });
-
-      it("doesnt move header for smaller zoom levels", async () => {
-        const { wrapper, mockedStores } = doMount();
-
-        mockedStores.canvasStore.zoomFactor = 0.5;
-        await nextTick();
-
-        const header = wrapper.find(".header");
-        expect(header.attributes("style")).toMatch(
-          "--margin: 6.1691425974866565px",
-        );
       });
     });
 

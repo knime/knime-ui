@@ -1,4 +1,3 @@
-import { describe } from "vitest";
 import { type Page, test } from "@playwright/test";
 
 import {
@@ -11,7 +10,7 @@ import {
   startApplication,
   testSimpleScreenshot,
 } from "../utils";
-import { WorkflowCommandFnMock } from "../utils/types";
+import type { WorkflowCommandFnMock } from "../utils/types";
 
 import {
   addCredentialPort,
@@ -72,7 +71,7 @@ test("inactive ports: render correctly", async ({ page }) => {
   });
 });
 
-describe("add/select/remove port", () => {
+test("add/select/remove port", () => {
   const clickAwayOffset = 150;
 
   test("select and delete optional port concat node", async ({ page }) => {
