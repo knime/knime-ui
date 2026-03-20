@@ -89,11 +89,11 @@ const { showTooltip, hideTooltip } = useTooltip({
 const hitArea = new Rectangle(-12, -5, 24, 10);
 
 // Traffic light pill dimensions
-const PILL_W = 20;
+const PILL_W = 18;
 const PILL_H = 6;
 const PILL_RADIUS = 3;
 // 3 dot positions relative to pill center
-const DOT_X = [-6, 0, 6] as const;
+const DOT_X = [-5, 0, 5] as const;
 const DOT_RADIUS = 2;
 const ACTIVE_FILL = ["#C81D31", "#FFDD5A", "#71BD5B"] as const;
 const ACTIVE_STROKE = ["#670317", "#9F4B24", "#276023"] as const;
