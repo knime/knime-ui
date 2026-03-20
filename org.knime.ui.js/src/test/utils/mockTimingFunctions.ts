@@ -1,4 +1,4 @@
-export const lodashMockFactory = () => {
+export const timingFunctionsMockFactory = () => {
   const throttle = function (func) {
     return function (...args) {
       // eslint-disable-next-line no-invalid-this

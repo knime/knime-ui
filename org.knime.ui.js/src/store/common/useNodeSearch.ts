@@ -1,6 +1,6 @@
 import { computed, ref } from "vue";
 import { API } from "@api";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 
 import type { NodeRelation } from "@/api/custom-types";
 import { createAbortablePromise } from "@/api/utils";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";

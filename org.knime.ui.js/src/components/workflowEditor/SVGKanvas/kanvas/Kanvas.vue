@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Ref } from "vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 import { storeToRefs } from "pinia";
 
 import { useKeyPressedUntilMouseClick } from "@knime/components";

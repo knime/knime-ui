@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { groupBy } from "lodash-es";
+import { groupBy } from "es-toolkit/array";
 import { storeToRefs } from "pinia";
 
 import { SearchInput } from "@knime/components";

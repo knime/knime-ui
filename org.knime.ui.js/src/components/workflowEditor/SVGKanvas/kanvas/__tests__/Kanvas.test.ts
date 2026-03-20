@@ -46,7 +46,7 @@ vi.mock("@knime/utils", async (importOriginal) => {
   };
 });
 
-vi.unmock("lodash-es");
+vi.unmock("es-toolkit/function");
 
 describe("Kanvas", () => {
   const doShallowMount = ({

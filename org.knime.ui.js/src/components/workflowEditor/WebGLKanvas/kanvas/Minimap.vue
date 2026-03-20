@@ -1,10 +1,10 @@
 <!-- eslint-disable func-style -->
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
+import { clamp } from "es-toolkit/math";
 import { storeToRefs } from "pinia";
 import { BlurFilter, type FederatedPointerEvent, type Graphics } from "pixi.js";
 
-import { clamp } from "@/lib/math";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import * as $shapes from "@/style/shapes";
 import { pixiGlobals } from "../common/pixiGlobals";

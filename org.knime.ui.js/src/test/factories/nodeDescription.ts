@@ -1,4 +1,4 @@
-import { merge } from "lodash-es";
+import { merge } from "es-toolkit/object";
 
 import type { ComponentNodeDescription } from "@/api/custom-types";
 import {
@@ -37,7 +37,7 @@ export const createNativeNodeDescription = (
     ],
   };
 
-  return merge(base, data);
+  return merge(base, data ?? {});
 };
 
 export const createComponentNodeDescription = (
@@ -81,5 +81,5 @@ export const createComponentNodeDescription = (
     ],
   };
 
-  return merge(base, data);
+  return merge(base, data ?? {});
 };

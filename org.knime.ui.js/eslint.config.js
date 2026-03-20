@@ -23,7 +23,6 @@ export default [
       },
     },
     rules: {
-      "depend/ban-dependencies": "off",
       "vue/block-lang": "off", // remove when all components are in TS
       "@typescript-eslint/no-use-before-define": [
         "error",

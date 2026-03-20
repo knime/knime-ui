@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref, useTemplateRef } from "vue";
 import { useFocus } from "@vueuse/core";
-import { isNumber } from "lodash-es";
+import { isNumber } from "es-toolkit/predicate";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
 

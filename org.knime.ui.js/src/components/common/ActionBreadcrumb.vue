@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { clamp, throttle } from "lodash-es";
+import { throttle } from "es-toolkit/function";
+import { clamp } from "es-toolkit/math";
 
 import { Breadcrumb, type BreadcrumbItem } from "@knime/components";
 

@@ -3,11 +3,11 @@
  * coordinate transformations for the Kanvas component.
  */
 import { nextTick } from "vue";
-import { isNumber } from "lodash-es";
+import { clamp } from "es-toolkit/math";
+import { isNumber } from "es-toolkit/predicate";
 import { defineStore } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { clamp } from "@/lib/math";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import type { WorkflowObject } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";

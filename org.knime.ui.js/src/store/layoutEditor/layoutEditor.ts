@@ -1,6 +1,6 @@
 import { computed, ref } from "vue";
 import { API } from "@api";
-import { isEqual } from "lodash-es";
+import { isEqual } from "es-toolkit/predicate";
 import { defineStore } from "pinia";
 
 import {

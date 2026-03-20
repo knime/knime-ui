@@ -6,7 +6,7 @@ import {
   onUnmounted,
   useTemplateRef,
 } from "vue";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 import { storeToRefs } from "pinia";
 
 import { sleep } from "@knime/utils";

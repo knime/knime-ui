@@ -6,7 +6,7 @@ import { KANVAS_RENDERER_STORAGE_KEY } from "@/components/workflowEditor/util/ca
 import { characterLimits } from "@/plugins/constants";
 import { setupLogger } from "@/plugins/logger";
 
-import { lodashMockFactory } from "./utils";
+import { timingFunctionsMockFactory } from "./utils";
 
 config.global.renderStubDefaultSlot = true;
 config.global.stubs = {
@@ -35,13 +35,13 @@ vi.mock("raf-throttle", () => ({
   },
 }));
 
-vi.mock("lodash-es", async (importActual) => {
+vi.mock("es-toolkit/function", async (importActual) => {
   const actual = await importActual();
 
   return {
     // @ts-expect-error
     ...actual,
-    ...lodashMockFactory(),
+    ...timingFunctionsMockFactory(),
   };
 });
 

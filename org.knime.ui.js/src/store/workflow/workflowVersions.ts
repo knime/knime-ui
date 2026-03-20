@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 import { computed, ref } from "vue";
 import { API } from "@api";
-import { merge } from "lodash-es";
+import { merge } from "es-toolkit/object";
 import { defineStore } from "pinia";
 import { useRouter } from "vue-router";
 

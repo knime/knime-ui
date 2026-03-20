@@ -3,7 +3,7 @@ import type { MockedObject } from "vitest";
 export * from "./create-deep-mock";
 export * from "./withPorts";
 export * from "./withoutKeys";
-export * from "./mockLodash";
+export * from "./mockTimingFunctions";
 export * from "./types";
 export * from "./mockBoundingRect";
 

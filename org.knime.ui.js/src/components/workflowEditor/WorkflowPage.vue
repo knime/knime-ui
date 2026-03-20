@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 
 import { SplitPanel } from "@knime/components";
 

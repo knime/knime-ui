@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { type ComputedRef, computed, markRaw, nextTick, ref } from "vue";
-import { uniqueId } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import { Button, Pill } from "@knime/components";
@@ -380,7 +379,7 @@ const loadTreeLevel = (
     return;
   }
 
-  const id = uniqueId(treeNode.origin.nodeKey.toString());
+  const id = crypto.randomUUID();
 
   addToTree([
     {

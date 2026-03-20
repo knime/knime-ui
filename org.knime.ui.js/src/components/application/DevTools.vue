@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, useTemplateRef, watch } from "vue";
 import { useWindowSize } from "@vueuse/core";
+import { clamp } from "es-toolkit/math";
 
 import { FunctionButton } from "@knime/components";
 import {
@@ -15,7 +16,6 @@ import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { isDesktop } from "@/environment";
 import { openInspector, reloadApp } from "@/lib/debug";
-import { clamp } from "@/lib/math";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import FPSMeter from "../toolbar/FPSMeter.vue";
 import {

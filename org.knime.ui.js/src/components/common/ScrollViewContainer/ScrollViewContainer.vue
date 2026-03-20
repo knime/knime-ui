@@ -1,5 +1,5 @@
 <script>
-import { throttle } from "lodash-es";
+import { throttle } from "es-toolkit/function";
 
 const SCROLL_HANDLER_THROTTLE = 100;
 

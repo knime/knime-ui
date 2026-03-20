@@ -1,7 +1,7 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
 import { API } from "@api";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 
 import { Button, FunctionButton } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";

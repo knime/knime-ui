@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { isEqual } from "lodash-es";
+import { isEqual } from "es-toolkit/predicate";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 

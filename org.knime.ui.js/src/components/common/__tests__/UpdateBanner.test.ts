@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 import { API } from "@api";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 
 import { Button } from "@knime/components";
 
 import { deepMocked } from "@/test/utils";
 import UpdateBanner from "../UpdateBanner.vue";
 
-// Mock lodash-es debounce function
-vi.mock("lodash-es", () => ({
+// Mock debounce function
+vi.mock("es-toolkit/function", () => ({
   debounce: vi.fn((fn) => fn),
 }));
 

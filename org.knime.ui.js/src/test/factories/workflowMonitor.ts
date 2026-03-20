@@ -1,4 +1,4 @@
-import { merge } from "lodash-es";
+import { merge } from "es-toolkit/object";
 
 import type { WorkflowMonitorMessage } from "@/api/gateway-api/generated-api";
 

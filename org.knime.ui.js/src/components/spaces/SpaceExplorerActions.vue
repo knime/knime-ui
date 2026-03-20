@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
-import { kebabCase } from "lodash-es";
+import { kebabCase } from "es-toolkit/string";
 import { storeToRefs } from "pinia";
 
 import { FunctionButton, SubMenu } from "@knime/components";

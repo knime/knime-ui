@@ -1,5 +1,5 @@
 import { API } from "@api";
-import { isEmpty, isUndefined } from "lodash-es";
+import { isUndefined } from "es-toolkit/predicate";
 import { defineStore } from "pinia";
 
 import { promise as promiseUtils } from "@knime/utils";
@@ -503,7 +503,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
         const { availablePortTypes } = useApplicationStore();
 
         // 1. Starting from scratch (e.g. double-click on canvas)
-        if (isEmpty(selectedNodes) && isUndefined(portTypeId)) {
+        if (selectedNodes.length === 0 && isUndefined(portTypeId)) {
           return true;
         }
 
