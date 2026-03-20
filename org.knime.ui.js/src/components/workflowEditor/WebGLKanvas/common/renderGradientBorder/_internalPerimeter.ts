@@ -1,5 +1,4 @@
-import { wrapToUnit } from "@/lib/math";
-
+import { wrapToUnit } from "./_internalUtil";
 import type {
   ArcSegment,
   BorderGeometry,

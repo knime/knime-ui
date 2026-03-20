@@ -1,9 +1,8 @@
 import type { Graphics } from "pixi.js";
 
-import { wrapToUnit } from "@/lib/math";
-
 import type { PrecomputedGlow } from "./_internalGlow";
 import { getPerimeterPoint } from "./_internalPerimeter";
+import { wrapToUnit } from "./_internalUtil";
 import type { BorderGeometry } from "./types";
 
 export type BorderResources = {

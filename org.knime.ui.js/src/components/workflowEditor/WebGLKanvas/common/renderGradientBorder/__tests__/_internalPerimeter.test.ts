@@ -5,6 +5,7 @@ import {
   computePerimeter,
   getPerimeterPoint,
 } from "../_internalPerimeter";
+import type { SharpGeometry } from "../types";
 
 describe("perimeter computation", () => {
   describe("computePerimeter", () => {
@@ -107,10 +108,8 @@ describe("perimeter computation", () => {
     });
 
     it("includes corner patches for sharp geometry", () => {
-      const geo = buildGeometry(100, 60, 2, 0);
-      if (geo.kind === "sharp") {
-        expect(geo.cornerPatches).toHaveLength(4);
-      }
+      const geo = buildGeometry(100, 60, 2, 0) as SharpGeometry;
+      expect(geo.cornerPatches).toHaveLength(4);
     });
 
     it("produces both line and arc segments for rounded geometry", () => {
