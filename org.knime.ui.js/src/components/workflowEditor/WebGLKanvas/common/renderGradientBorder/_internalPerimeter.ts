@@ -7,7 +7,6 @@ import type {
   LineSegment,
 } from "./types";
 
-// ── Leg types ───────────────────────────────────────────────────
 // A "leg" is one continuous section of the rectangle's perimeter:
 // either a straight edge or a quarter-circle arc at a corner.
 // The full perimeter is described as an ordered array of legs,
@@ -33,26 +32,15 @@ type ArcLeg = {
 
 type Leg = StraightLeg | ArcLeg;
 
-// ── Perimeter descriptor ────────────────────────────────────────
-// Bundles the leg list with the two scalars needed for t ↔ distance
-// conversion. Replaces the old SharpPerimeter / RoundedPerimeter union.
-
 export type Perimeter = {
   legs: Leg[];
   totalLength: number;
-  /** Distance from legs[0] start to the top-center point of the shape. */
-  topCenterOffset: number;
 };
 
-// ── Constants ───────────────────────────────────────────────────
-
 const HALF_PI = Math.PI / 2;
-
-/** Target length of each gradient segment in pixels. */
 const TARGET_SEGMENT_LENGTH = 6;
 
-// ── Leg constructors ────────────────────────────────────────────
-
+// LEGS
 const straight = (
   startX: number,
   startY: number,
@@ -81,18 +69,6 @@ const arc = (
   length: HALF_PI * radius,
 });
 
-// ── Shape definition ────────────────────────────────────────────
-//
-// This is the single source of truth for the rectangle's geometry.
-// Both point-lookup and segment-building consume this same list,
-// so the shape is never described twice.
-//
-// Walk order: clockwise from the start of the top edge.
-//
-//   Sharp (4 legs):     top → right → bottom → left
-//   Rounded (8 legs):   top → TR arc → right → BR arc →
-//                        bottom → BL arc → left → TL arc
-
 const defineLegs = (
   inset: number,
   insetW: number,
@@ -104,6 +80,7 @@ const defineLegs = (
   const right = inset + insetW;
   const bottom = inset + insetH;
 
+  // sharp corners, four legs
   if (r <= 0) {
     return [
       straight(left, top, right, top),
@@ -113,6 +90,7 @@ const defineLegs = (
     ];
   }
 
+  // rounded corners, eight legs
   return [
     straight(left + r, top, right - r, top), // top
     arc(right - r, top + r, r, -HALF_PI), // top-right
@@ -125,7 +103,7 @@ const defineLegs = (
   ];
 };
 
-// ── Perimeter construction ──────────────────────────────────────
+// PERIMETER
 
 /**
  * Precomputes the perimeter descriptor for a rectangle.
@@ -148,13 +126,8 @@ export const computePerimeter = (
   const legs = defineLegs(inset, insetW, insetH, r);
   const totalLength = legs.reduce((sum, leg) => sum + leg.length, 0);
 
-  // legs[0] is always the top edge, so its midpoint is the top-center.
-  const topCenterOffset = legs[0].length / 2;
-
-  return { legs, totalLength, topCenterOffset };
+  return { legs, totalLength };
 };
-
-// ── Point lookup ────────────────────────────────────────────────
 
 /**
  * Computes (x, y) at a fraction `f` (0 = start, 1 = end) along a single leg.
@@ -174,20 +147,17 @@ const getPointOnLeg = (leg: Leg, f: number): [number, number] => {
 };
 
 /**
- * Maps a perimeter fraction t ∈ [0, 1) to an (x, y) canvas coordinate.
- * t = 0 is top-centre, increasing clockwise.
+ * Maps a perimeter fraction t to an (x, y) canvas coordinate.
+ * t = 0 is the start of the top edge (top-left), increasing clockwise.
  */
 export const getPerimeterPoint = (
   t: number,
   perimeter: Perimeter,
 ): [number, number] => {
-  const { legs, totalLength, topCenterOffset } = perimeter;
+  const { legs, totalLength } = perimeter;
 
-  // Convert t (origin: top-center) → distance (origin: legs[0] start)
   let d =
-    (((wrapToUnit(t) * totalLength + topCenterOffset) % totalLength) +
-      totalLength) %
-    totalLength;
+    (((wrapToUnit(t) * totalLength) % totalLength) + totalLength) % totalLength;
 
   for (const leg of legs) {
     if (d <= leg.length) {
@@ -200,10 +170,8 @@ export const getPerimeterPoint = (
   return getPointOnLeg(legs[0], 0);
 };
 
-// ── Corner patches (sharp only) ─────────────────────────────────
-//
 // When the stroke is inset by halfStroke, the four outer corners of a
-// sharp rectangle have tiny empty squares. These patches fill them.
+// sharp rectangle have tiny empty squares, so we need to fill them with these patches
 
 const buildCornerPatches = (
   legs: Leg[],
@@ -212,9 +180,8 @@ const buildCornerPatches = (
   height: number,
   perim: Perimeter,
 ): CornerPatch[] => {
-  const { totalLength, topCenterOffset } = perim;
-  const distanceToT = (d: number): number =>
-    wrapToUnit((d - topCenterOffset) / totalLength);
+  const { totalLength } = perim;
+  const distanceToT = (d: number): number => wrapToUnit(d / totalLength);
 
   // Patch positions for each corner (TR, BR, BL, TL), matching
   // the boundary between legs[0]→[1], [1]→[2], [2]→[3], [3]→[0].
@@ -232,13 +199,11 @@ const buildCornerPatches = (
   });
 };
 
-// ── Geometry building ───────────────────────────────────────────
-//
-// Subdivides each leg into small rendering segments (lines or arcs),
-// each tagged with a `midT` used for gradient colour lookup at draw time.
-
 /**
  * Builds the precomputed border geometry used by `drawBorder` each frame.
+ *
+ * Subdivides each leg into small rendering segments (lines or arcs),
+ * each tagged with a `midT` used for gradient colour lookup at draw time.
  */
 export const buildGeometry = (
   width: number,
@@ -248,10 +213,9 @@ export const buildGeometry = (
 ): BorderGeometry => {
   const halfStroke = strokeWidth / 2;
   const perim = computePerimeter(width, height, halfStroke, borderRadius);
-  const { legs, totalLength, topCenterOffset } = perim;
+  const { legs, totalLength } = perim;
 
-  const distanceToT = (d: number): number =>
-    wrapToUnit((d - topCenterOffset) / totalLength);
+  const distanceToT = (d: number): number => wrapToUnit(d / totalLength);
 
   const segments: (LineSegment | ArcSegment)[] = [];
   let cursor = 0;

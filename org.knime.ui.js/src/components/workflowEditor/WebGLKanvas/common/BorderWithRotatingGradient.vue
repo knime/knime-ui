@@ -1,9 +1,7 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { useTemplateRef } from "vue";
-import { BlurFilter } from "pixi.js";
-
-import type { GraphicsInst } from "@/vue3-pixi";
+import { BlurFilter, type Graphics } from "pixi.js";
 
 import type { GlowConfig, GradientStop } from "./renderGradientBorder";
 import { drawGlowCutout, renderGradientBorder } from "./renderGradientBorder";
@@ -22,8 +20,8 @@ const props = withDefaults(defineProps<Props>(), {
   glowConfig: undefined,
 });
 
-const borderRef = useTemplateRef<GraphicsInst>("borderRef");
-const glowDotsRef = useTemplateRef<GraphicsInst>("glowDotsRef");
+const borderRef = useTemplateRef<Graphics>("borderRef");
+const glowDotsRef = useTemplateRef<Graphics>("glowDotsRef");
 
 const glowBlur = props.glowConfig
   ? new BlurFilter({
@@ -32,7 +30,7 @@ const glowBlur = props.glowConfig
     })
   : null;
 
-const renderGlowCutout = (g: GraphicsInst) =>
+const renderGlowCutout = (g: Graphics) =>
   drawGlowCutout(
     g,
     props.strokeWidth,

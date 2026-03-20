@@ -1,8 +1,6 @@
 /* eslint-disable no-magic-numbers */
 /* eslint-disable no-bitwise */
-import { Color } from "pixi.js";
-
-import type { GradientStop } from "./types";
+import type { ResolvedGradientStop } from "./types";
 
 /**
  * Pre-sample a gradient into a fixed-size colour lookup table.
@@ -11,15 +9,17 @@ import type { GradientStop } from "./types";
  * to PixiJS drawing methods.
  */
 export const buildGradientLookupTable = (
-  stops: GradientStop[],
+  stops: ResolvedGradientStop[],
   size: number,
 ): Uint32Array => {
-  // 1. Parse each stop's RGB components once (0–255) and sort by position
+  // 1. Unpack 0xRRGGBB to individual channels and sort stops by position
   const orderedStops = stops
-    .map((s) => {
-      const [r, g, b] = new Color(s.color).toRgbArray(); // 0–1 floats
-      return { position: s.position, r: r * 255, g: g * 255, b: b * 255 };
-    })
+    .map((s) => ({
+      position: s.position,
+      r: (s.color >> 16) & 0xff,
+      g: (s.color >> 8) & 0xff,
+      b: s.color & 0xff,
+    }))
     .toSorted((a, b) => a.position - b.position);
 
   // 2. Ensure the gradient wraps smoothly by closing back to the first colour

@@ -1,6 +1,6 @@
 import type { ShallowRef } from "vue";
+import { Color, type Graphics } from "pixi.js";
 
-import type { GraphicsInst } from "@/vue3-pixi";
 import { onTick } from "@/vue3-pixi/composables/onTick";
 
 import { buildGradientLookupTable } from "./_internalColor";
@@ -11,7 +11,7 @@ import {
 } from "./_internalDraw";
 import { buildGlow } from "./_internalGlow";
 import { buildGeometry } from "./_internalPerimeter";
-import type { GlowConfig, GradientStop } from "./types";
+import type { GlowConfig, GradientStop, ResolvedGradientStop } from "./types";
 
 type Config = {
   width: number;
@@ -24,8 +24,8 @@ type Config = {
 };
 
 type GraphicsRefs = {
-  borderRef: Readonly<ShallowRef<GraphicsInst | null>>;
-  glowDotsRef: Readonly<ShallowRef<GraphicsInst | null>>;
+  borderRef: Readonly<ShallowRef<Graphics | null>>;
+  glowDotsRef: Readonly<ShallowRef<Graphics | null>>;
 };
 
 /**
@@ -57,13 +57,28 @@ export const renderGradientBorder = ({
 
   const { borderRef, glowDotsRef } = refs;
 
+  // Resolve CSS colour strings to packed 0xRRGGBB integers.
+  // (we do colour interpolation in RGB space, and it's better to do the conversion
+  // here using Color rather than in the _internal modules so that they don't
+  // have a dependency on pixi.js)
+  const resolvedGradient: ResolvedGradientStop[] = gradient.map((s) => ({
+    position: s.position,
+    color: new Color(s.color).toNumber(),
+  }));
+
   // Precompute static resources
   const borderResources: BorderResources = {
     geometry: buildGeometry(width, height, strokeWidth, borderRadius),
-    colorLookupTable: buildGradientLookupTable(gradient, 512),
+    colorLookupTable: buildGradientLookupTable(resolvedGradient, 512),
     strokeWidth,
   };
-  const glow = buildGlow(glowConfig, gradient, width, height, borderRadius);
+  const glow = buildGlow(
+    glowConfig,
+    resolvedGradient,
+    width,
+    height,
+    borderRadius,
+  );
 
   // Current rotation progress, 0–1
   let rotationFraction = 0;

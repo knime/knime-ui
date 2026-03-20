@@ -5,6 +5,19 @@ export type GradientStop = {
   color: string;
 };
 
+/**
+ * A gradient stop with the colour pre-resolved to a packed integer.
+ *
+ * Internally we perform colour interpolation in RGB space (this type), but externally
+ * the convention is to have colours in HSL.
+ */
+export type ResolvedGradientStop = {
+  /** 0–1, fraction of the way around the perimeter */
+  position: number;
+  /** Packed 0xRRGGBB */
+  color: number;
+};
+
 export type GlowConfig = {
   /** Index identifying the colour stop used for the glow */
   gradientStopIndex: number;

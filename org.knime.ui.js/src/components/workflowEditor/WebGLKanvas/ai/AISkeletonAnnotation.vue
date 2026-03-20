@@ -20,12 +20,7 @@ const bounds = computed(
 );
 
 // Border with rotating gradient and teal glow
-const aiGradientColors = {
-  Cyan: "hsl(185.81, 49.21%, 87.65%)", // #D0ECEF
-  Yellow: "hsl(51.23, 100%, 49.61%)", // #FDD800
-  Teal: "hsl(193.08, 60.18%, 43.33%)", // #2C94B1
-};
-const { Cyan, Yellow, Teal } = aiGradientColors;
+const { Cyan, Yellow, Teal } = $colors.aiGradient;
 const gradient: GradientStop[] = [
   { position: 0, color: Cyan },
   { position: 0.25, color: Yellow },

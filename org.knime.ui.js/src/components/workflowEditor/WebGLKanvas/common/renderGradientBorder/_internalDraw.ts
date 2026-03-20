@@ -1,5 +1,6 @@
+import type { Graphics } from "pixi.js";
+
 import { wrapToUnit } from "@/lib/math";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import type { PrecomputedGlow } from "./_internalGlow";
 import { getPerimeterPoint } from "./_internalPerimeter";
@@ -17,7 +18,7 @@ export type BorderResources = {
  * Each segment looks up its colour from the LUT at (midT − rotationFraction).
  */
 export const drawBorder = (
-  target: GraphicsInst,
+  target: Graphics,
   rotationFraction: number,
   { geometry, colorLookupTable, strokeWidth }: BorderResources,
 ): void => {
@@ -67,7 +68,7 @@ export const drawBorder = (
  * Draws the glow dot cluster onto the given Graphics instance.
  */
 export const drawGlowDots = (
-  target: GraphicsInst,
+  target: Graphics,
   rotationFraction: number,
   glow: PrecomputedGlow,
 ): void => {
@@ -86,7 +87,7 @@ export const drawGlowDots = (
  * the border.
  */
 export const drawGlowCutout = (
-  target: GraphicsInst,
+  target: Graphics,
   strokeWidth: number,
   width: number,
   height: number,

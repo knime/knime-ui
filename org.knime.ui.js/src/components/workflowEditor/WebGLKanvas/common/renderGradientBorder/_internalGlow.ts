@@ -1,8 +1,6 @@
 /* eslint-disable no-magic-numbers */
-import { Color } from "pixi.js";
-
 import { type Perimeter, computePerimeter } from "./_internalPerimeter";
-import type { GlowConfig, GlowDot, GradientStop } from "./types";
+import type { GlowConfig, GlowDot, ResolvedGradientStop } from "./types";
 
 // Each profile defines the dot cluster at one extreme of the
 // `spread` slider.  Intermediate values of `spread` interpolate
@@ -121,7 +119,7 @@ export type PrecomputedGlow = {
  */
 export const buildGlow = (
   glowConfig: GlowConfig | undefined,
-  gradient: GradientStop[],
+  gradient: ResolvedGradientStop[],
   width: number,
   height: number,
   borderRadius: number,
@@ -135,6 +133,6 @@ export const buildGlow = (
     dots: computeGlowDots(glowConfig),
     perimeter: computePerimeter(width, height, 0, borderRadius),
     anchorT: stop.position,
-    color: new Color(stop.color).toNumber(),
+    color: stop.color,
   };
 };
