@@ -252,7 +252,7 @@ const onDeploymentButtonClick = () => {
 const showUploadDirtyWorkflowPrompt = () => {
   const { askConfirmation } = useKdsDynamicModal();
   return askConfirmation({
-    title: "Upload unsaved workflow",
+    headline: "Upload unsaved workflow",
     message:
       "To upload a workflow, you need to save it first. " +
       "Would you like to save the workflow and continue with the upload?",

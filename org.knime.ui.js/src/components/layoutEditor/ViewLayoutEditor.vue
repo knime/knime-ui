@@ -3,7 +3,8 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import Draggable from "vuedraggable";
 
-import { Button, InlineMessage } from "@knime/components";
+import { Button } from "@knime/components";
+import { KdsInlineMessage } from "@knime/kds-components";
 import InfoIcon from "@knime/styles/img/icons/circle-info.svg";
 
 import { ComponentEditorConfig } from "@/api/gateway-api/generated-api";
@@ -104,27 +105,27 @@ const reportingEnabled = computed({
     </div>
 
     <div class="layout">
-      <InlineMessage
+      <KdsInlineMessage
         v-if="availableNodes.length"
         class="alert"
         variant="warning"
-        title="Warning"
+        headline="Warning"
         description="Views not added into the layout and not disabled in Tab 'Node Usage' will be shown below layout. To circumvent unexpected behavior, add all views into the layout."
       />
 
-      <InlineMessage
+      <KdsInlineMessage
         v-if="isWrappingLayout"
         class="alert"
         variant="warning"
-        title="Warning"
+        headline="Warning"
         :description="`Your layout has rows with a total column width larger than ${layoutEditorGridSize}, therefore the columns will wrap. The visual editor doesn't support wrapping layouts yet. Please use advanced editor instead.`"
       />
 
-      <InlineMessage
+      <KdsInlineMessage
         v-if="isLegacyModeOutOfSync"
         class="alert"
         variant="warning"
-        title="Warning"
+        headline="Warning"
         description='The legacy mode setting of some views in the layout do not match parent layout legacy mode setting. This may have been caused by changes made in the advanced layout editor. If this was intentional, you can ignore this warning. Otherwise, toggle the "Use legacy mode" option to synchronize the settings.'
       />
 

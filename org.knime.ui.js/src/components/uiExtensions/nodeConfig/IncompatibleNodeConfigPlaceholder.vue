@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 
-import { Button } from "@knime/components";
-import CogIcon from "@knime/styles/img/icons/cog.svg";
+import { KdsEmptyState } from "@knime/kds-components";
 
 import { Node } from "@/api/gateway-api/generated-api";
-import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import { useAnalyticsPlatformDownloadUrl } from "@/composables/useAnalyticsPlatformDownloadUrl";
 import { isDesktop } from "@/environment";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { APP_ROUTES } from "@/router/appRoutes";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 const { shouldDisplayDownloadAPButton } = storeToRefs(useUIControlsStore());
 const { activeContext } = storeToRefs(useNodeConfigurationStore());
+
+const router = useRouter();
 
 const selectedNode = computed(() => activeContext.value?.node ?? null);
 
@@ -35,10 +39,15 @@ const hasLegacyDialog = computed(() =>
   ),
 );
 
+const { href: downloadHref } = useAnalyticsPlatformDownloadUrl(
+  "node-configuration-panel",
+);
+
 const shouldDisplayDownload = computed(
   () =>
     hasLegacyDialog.value &&
     shouldDisplayDownloadAPButton.value &&
+    Boolean(downloadHref.value) &&
     !isMetanode.value,
 );
 
@@ -50,76 +59,79 @@ const openNodeConfiguration = () => {
   const nodeId = selectedNode.value.id;
   useDesktopInteractionsStore().openNodeConfiguration(nodeId);
 };
+
+const openMetanode = () => {
+  if (!selectedNode.value || !isMetanode.value) {
+    return;
+  }
+
+  const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
+
+  router.push({
+    name: APP_ROUTES.WorkflowPage,
+    params: { projectId, workflowId: selectedNode.value.id },
+  });
+};
 </script>
 
 <template>
-  <div class="placeholder full-height">
-    <template v-if="isMetanode">
-      <div class="placeholder-text">
-        Configuration is not available for metanodes.
-      </div>
+  <div class="full-height">
+    <KdsEmptyState
+      v-if="isMetanode"
+      headline="No settings"
+      description="This metanode groups multiple nodes and has no configuration."
+      :button="{ label: 'Open metanode', variant: 'outlined', size: 'small' }"
+      @button-click="openMetanode"
+    />
+
+    <KdsEmptyState
+      v-else-if="hasNoDialog"
+      headline="No settings"
+      description="This node requires no configuration."
+    />
+
+    <template v-else-if="hasLegacyDialog">
+      <KdsEmptyState
+        v-if="shouldDisplayDownload"
+        headline="This node uses the classic configuration dialog"
+        description="This node has not been migrated to the new interface. To configure nodes with a classic dialog, download the KNIME Analytics Platform."
+        :button="{
+          label: 'Get KNIME Analytics Platform',
+          variant: 'filled',
+          size: 'small',
+          trailingIcon: 'external-link',
+          to: downloadHref,
+          target: '_blank',
+        }"
+      />
+
+      <KdsEmptyState
+        v-else-if="isDesktop()"
+        headline="This node uses the classic configuration dialog"
+        description="This node has not been migrated to the new interface. You can configure it using the classic dialog."
+        :button="{ label: 'Open dialog', variant: 'outlined', size: 'small' }"
+        data-test-id="open-legacy-config-btn"
+        @button-click="openNodeConfiguration"
+      />
+      <KdsEmptyState
+        v-else
+        headline="This node uses the classic configuration dialog"
+        description="This node has not been migrated to the new interface. You can configure it using the classic dialog."
+      />
     </template>
 
-    <template v-if="hasNoDialog">
-      <div class="placeholder-text">This node has no dialog.</div>
-    </template>
-
-    <template v-if="hasLegacyDialog">
-      <!-- Show placeholder text and "Download AP" button -->
-      <template v-if="shouldDisplayDownload">
-        <span class="placeholder-text">
-          To configure nodes with a classic dialog, download the KNIME Analytics
-          Platform.
-        </span>
-
-        <DownloadAPButton compact src="node-configuration-panel" />
-      </template>
-
-      <!-- Show placeholder text and "Open dialog" button -->
-      <template v-else>
-        <span class="placeholder-text">
-          This node dialog is not supported here.
-        </span>
-
-        <Button
-          v-if="isDesktop()"
-          with-border
-          compact
-          class="button"
-          data-test-id="open-legacy-config-btn"
-          @click="openNodeConfiguration"
-        >
-          <CogIcon />
-          <span>Open dialog</span>
-        </Button>
-      </template>
-    </template>
-
-    <!-- Show a placeholder text if nothing is selected -->
-    <span v-if="!selectedNode" class="placeholder-text">
-      Select a node to show its dialog.
-    </span>
+    <KdsEmptyState
+      v-else-if="!selectedNode"
+      headline="Select a node to configure"
+    />
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .full-height {
   height: 100%;
-}
-
-.placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-
-  & .placeholder-text {
-    padding: 15px;
-    text-align: center;
-  }
-
-  & .button {
-    margin: 0 15px;
-  }
 }
 </style>

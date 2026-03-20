@@ -63,7 +63,7 @@ describe("useHubLoginDialog", () => {
 
     expect(askConfirmationMock).toHaveBeenCalledTimes(1);
     const [arg] = askConfirmationMock.mock.calls[0];
-    expect(arg.title).toBe(config.title);
+    expect(arg.headline).toBe(config.title);
     expect(arg.message).toBe(config.message);
     expect(Array.isArray(arg.buttons)).toBe(true);
     expect(arg.buttons).toHaveLength(2);

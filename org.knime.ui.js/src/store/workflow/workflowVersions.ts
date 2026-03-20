@@ -236,8 +236,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
 
     const { confirmed } = await askConfirmation({
-      title: "Delete version",
-      icon: "trash",
+      headline: "Delete version",
+      leadingIcon: "trash",
       message: "Do you want to delete the workflow version?",
       buttons: [
         {
@@ -271,7 +271,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
 
   async function restoreVersion(version: NamedItemVersion["version"]) {
     const { confirmed } = await askConfirmation({
-      title: "Confirm version restore",
+      headline: "Confirm version restore",
       message:
         "Restoring a version will overwrite the current workflow. Unversioned changes will be lost.",
     });
@@ -318,7 +318,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
 
   async function discardUnversionedChanges() {
     const { confirmed } = await askConfirmation({
-      title: "Confirm discarding changes",
+      headline: "Confirm discarding changes",
       message:
         "Any changes to the workflow since the last created version will be deleted.",
     });

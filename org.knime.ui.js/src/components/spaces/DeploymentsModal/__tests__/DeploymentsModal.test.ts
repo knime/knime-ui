@@ -66,7 +66,7 @@ describe("DeploymentsModal.vue", () => {
     const workflowName = "Workflow Name";
     const { wrapper } = doMount({ name: workflowName });
 
-    expect(wrapper.findComponent(KdsModal).props("title")).toBe(
+    expect(wrapper.findComponent(KdsModal).props("headline")).toBe(
       `Schedules and jobs of “${"Workflow Name"}”`,
     );
   });

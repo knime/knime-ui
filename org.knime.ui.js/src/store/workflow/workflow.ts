@@ -265,7 +265,7 @@ export const useWorkflowStore = defineStore("workflow", {
       if (isResetRequired) {
         const { askConfirmation } = useKdsDynamicModal();
         const { confirmed } = await askConfirmation({
-          title: "Confirm action",
+          headline: "Confirm action",
           message: `Creating this ${containerType} will reset executed nodes.`,
         });
         if (!confirmed) {
@@ -314,7 +314,7 @@ export const useWorkflowStore = defineStore("workflow", {
       if (selectedNode.allowedActions?.canExpand === "resetRequired") {
         const { askConfirmation } = useKdsDynamicModal();
         const { confirmed } = await askConfirmation({
-          title: "Confirm action",
+          headline: "Confirm action",
           message: `Expanding this ${selectedNode.kind} will reset executed nodes.`,
         });
         if (!confirmed) {

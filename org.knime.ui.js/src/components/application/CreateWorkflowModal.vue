@@ -135,7 +135,7 @@ watch(
 <template>
   <KdsModal
     :active="isCreateWorkflowModalOpen"
-    title="Create a new workflow"
+    headline="Create a new workflow"
     width="large"
     @close="closeModal"
   >

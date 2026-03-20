@@ -91,7 +91,7 @@ const groupedShortcuts = computed(() =>
 <template>
   <KdsModal
     :active="isOpen"
-    title="Shortcuts"
+    headline="Shortcuts"
     icon="shortcuts"
     width="xlarge"
     closedby="any"

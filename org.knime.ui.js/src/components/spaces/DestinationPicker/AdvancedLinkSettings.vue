@@ -3,8 +3,8 @@
 import { ref, watchEffect } from "vue";
 import { API } from "@api";
 
-import { InlineMessage, Label } from "@knime/components";
-import { KdsCheckbox } from "@knime/kds-components";
+import { Label } from "@knime/components";
+import { KdsCheckbox, KdsInlineMessage } from "@knime/kds-components";
 import { promise } from "@knime/utils";
 
 import { LinkVariant } from "@/api/gateway-api/generated-api";
@@ -115,11 +115,11 @@ watchEffect(() => {
     label="Include input data"
     @update:model-value="$emit('update:include-data', $event === true)"
   />
-  <InlineMessage
+  <KdsInlineMessage
     v-show="includeData"
     variant="info"
-    title="Include input data"
-    description="Including input data in a component allows direct editing later. Upstream nodes must be executed (or will run on save) if data is included. Keep the included data as small as possible."
+    headline="Include input data"
+    :description="'Including input data in a component allows direct editing later. Upstream nodes must be executed (or will run on save) if data is included. Keep the included data as small as possible.'"
   />
   <Label #default="{ labelForId }" text="Link variant">
     <LinkVariantDropdown

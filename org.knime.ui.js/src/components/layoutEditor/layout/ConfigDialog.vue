@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "vue";
 
-import { InlineMessage, InputField } from "@knime/components";
-import { KdsValueSwitch } from "@knime/kds-components";
+import { InputField } from "@knime/components";
+import { KdsInlineMessage, KdsValueSwitch } from "@knime/kds-components";
 
 import { useLayoutEditorStore } from "@/store/layoutEditor/layoutEditor";
 import type {
@@ -92,13 +92,12 @@ watch(
         />
       </div>
 
-      <InlineMessage
+      <KdsInlineMessage
         v-if="resizeMode === 'auto'"
         variant="info"
-        title="Height calculation"
-      >
-        Will be derived automatically depending on content.
-      </InlineMessage>
+        headline="Height calculation"
+        description="Will be derived automatically depending on content."
+      />
 
       <table v-if="resizeMode === 'auto'" class="size-table">
         <thead>

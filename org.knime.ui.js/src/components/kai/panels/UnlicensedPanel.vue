@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { InlineMessage } from "@knime/components";
+import { KdsInlineMessage } from "@knime/kds-components";
 
 import { useAiProviderStore } from "@/store/ai/aiProvider";
 
@@ -8,13 +8,12 @@ const aiProviderStore = useAiProviderStore();
 
 <template>
   <div class="panel-container unlicensed-panel">
-    <InlineMessage
+    <KdsInlineMessage
       class="info-message"
       variant="info"
-      title="AI features unavailable"
-    >
-      {{ aiProviderStore.licensingStatus.unlicensedMessage }}
-    </InlineMessage>
+      headline="AI features unavailable"
+      :description="aiProviderStore.licensingStatus.unlicensedMessage"
+    />
   </div>
 </template>
 
