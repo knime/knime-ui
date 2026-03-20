@@ -117,7 +117,9 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         activateSection(TABS.CONTEXT_AWARE_DESCRIPTION);
 
         if (!panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)) {
-          useAnalytics().track("sidepanel_opened::sidepanel_click_info");
+          useAnalytics().track({
+            id: "sidepanel_opened::sidepanel_click_info",
+          });
         }
       },
     },
@@ -132,7 +134,9 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         activateSection(TABS.NODE_REPOSITORY);
 
         if (!panelStore.isTabActive(TABS.NODE_REPOSITORY)) {
-          useAnalytics().track("sidepanel_opened::sidepanel_click_noderepo");
+          useAnalytics().track({
+            id: "sidepanel_opened::sidepanel_click_noderepo",
+          });
         }
       },
     }),
@@ -147,7 +151,9 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         activateSection(TABS.SPACE_EXPLORER);
 
         if (!panelStore.isTabActive(TABS.SPACE_EXPLORER)) {
-          useAnalytics().track("sidepanel_opened::sidepanel_click_explorer");
+          useAnalytics().track({
+            id: "sidepanel_opened::sidepanel_click_explorer",
+          });
         }
       },
     }),
@@ -165,7 +171,9 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
           activateSection(TABS.KAI);
 
           if (!panelStore.isTabActive(TABS.KAI)) {
-            useAnalytics().track("sidepanel_opened::sidepanel_click_kai");
+            useAnalytics().track({
+              id: "sidepanel_opened::sidepanel_click_kai",
+            });
           }
         },
       },
@@ -181,7 +189,9 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         activateSection(TABS.WORKFLOW_MONITOR);
 
         if (!panelStore.isTabActive(TABS.WORKFLOW_MONITOR)) {
-          useAnalytics().track("sidepanel_opened::sidepanel_click_monitor");
+          useAnalytics().track({
+            id: "sidepanel_opened::sidepanel_click_monitor",
+          });
         }
       },
     },

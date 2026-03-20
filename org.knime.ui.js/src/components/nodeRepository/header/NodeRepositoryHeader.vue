@@ -69,9 +69,12 @@ const updateSearchQuery = async (value: string) => {
 
     await updateQueryFn(value, {
       onDone: () => {
-        useAnalytics().track("node_searched::noderepo_type_", {
-          keyword: value,
-          repoType: isComponentSearch.value ? "component" : "node",
+        useAnalytics().track({
+          id: "node_searched::noderepo_type_",
+          payload: {
+            keyword: value,
+            repoType: isComponentSearch.value ? "component" : "node",
+          },
         });
       },
     });

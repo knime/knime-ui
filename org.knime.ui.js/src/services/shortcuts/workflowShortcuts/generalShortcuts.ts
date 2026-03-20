@@ -66,8 +66,11 @@ const handleSyncSave = async () => {
   try {
     await API.workflow.saveProject({ projectId: activeProjectId });
 
-    useAnalytics().track("workflow_saved::keyboard_shortcut_savewf", {
-      isAutosyncEnabled: Boolean(activeWorkflow.syncState?.isAutoSyncEnabled),
+    useAnalytics().track({
+      id: "workflow_saved::keyboard_shortcut_savewf",
+      payload: {
+        isAutosyncEnabled: Boolean(activeWorkflow.syncState?.isAutoSyncEnabled),
+      },
     });
   } catch (error) {
     consola.error("Failed to perform a sync save", error);
@@ -137,11 +140,11 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       } as const);
 
       if (ctx.payload.src && ctx.payload.src in analyticsEventMapper) {
-        const trackId = analyticsEventMapper[ctx.payload.src] as ValueOf<
-          typeof analyticsEventMapper
-        >;
-
-        useAnalytics().track(trackId);
+        useAnalytics().track({
+          id: analyticsEventMapper[ctx.payload.src] as ValueOf<
+            typeof analyticsEventMapper
+          >,
+        });
       }
     },
     condition: () =>
@@ -161,10 +164,11 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       });
 
       if (ctx.payload.src && ctx.payload.src in analyticsEventMapper) {
-        const trackId = analyticsEventMapper[ctx.payload.src] as ValueOf<
-          typeof analyticsEventMapper
-        >;
-        useAnalytics().track(trackId);
+        useAnalytics().track({
+          id: analyticsEventMapper[ctx.payload.src] as ValueOf<
+            typeof analyticsEventMapper
+          >,
+        });
       }
     },
     condition: () =>
