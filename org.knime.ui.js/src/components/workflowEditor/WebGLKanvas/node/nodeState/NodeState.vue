@@ -118,13 +118,12 @@ const renderTrafficLight = (graphics: GraphicsInst) => {
   graphics.roundRect(-PILL_W / 2, -PILL_H / 2, PILL_W, PILL_H, PILL_RADIUS);
   graphics.fill($colors.trafficLight.background);
 
-  // 3 dots: red (left), yellow (center), green (right)
-  for (let i = 0; i < 3; i++) {
-    graphics.circle(DOT_X[i], 0, DOT_RADIUS);
-    if (trafficLight.value[i]) {
-      graphics.fill(ACTIVE_FILL[i]);
-      graphics.stroke({ width: 1, color: ACTIVE_STROKE[i] });
-    }
+  // Draw only the single active dot (idle=left, configured=center, executed=right)
+  const activeIdx = trafficLight.value.indexOf(true);
+  if (activeIdx !== -1) {
+    graphics.circle(DOT_X[activeIdx], 0, DOT_RADIUS);
+    graphics.fill(ACTIVE_FILL[activeIdx]);
+    graphics.stroke({ width: 1, color: ACTIVE_STROKE[activeIdx] });
   }
 };
 </script>
