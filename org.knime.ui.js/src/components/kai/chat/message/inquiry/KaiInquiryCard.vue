@@ -44,7 +44,7 @@ const handleRespond = ({
   aiAssistantStore.respondToInquiry({
     chainType: props.chainType,
     selectedOptionId: optionId,
-     
+
     suffix: isPermission && isCheckboxChecked ? "Saved" : undefined,
   });
 };

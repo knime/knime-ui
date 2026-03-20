@@ -26,7 +26,6 @@ const { getNodeById } = useNodeInteractionsStore();
 
 const floatingConnectorPort = computed(() => {
   if (!floatingConnector.value || isDecoratorOnly(floatingConnector.value)) {
-     
     return undefined;
   }
 

@@ -77,7 +77,6 @@ const { activePortTab } = storeToRefs(useNodeOutputStore());
 
 const selectedTab = computed({
   get() {
-     
     return activePortTab.value ?? undefined;
   },
   set(val: NodeOutputTabIdentifier) {

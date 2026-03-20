@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
- 
 
 import { type Page, expect, test } from "@playwright/test";
 

@@ -92,7 +92,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
     gap: 10,
     hoverable: true,
     text: "",
-     
+
     issue: props.issue ?? undefined,
     resolutions: props.resolutions,
   } satisfies TooltipDefinition;

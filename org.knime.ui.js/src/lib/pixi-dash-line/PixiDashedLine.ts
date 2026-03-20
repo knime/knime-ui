@@ -1,7 +1,6 @@
- 
 /* eslint-disable max-params */
 /* eslint-disable max-depth */
- 
+
 /* eslint-disable no-magic-numbers */
 
 /**

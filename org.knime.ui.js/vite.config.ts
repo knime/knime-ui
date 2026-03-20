@@ -31,8 +31,7 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/_\/api/, ""),
         },
       } satisfies Record<string, ProxyOptions>)
-    :  
-      undefined;
+    : undefined;
 
   const config: ViteUserConfig = {
     plugins: [

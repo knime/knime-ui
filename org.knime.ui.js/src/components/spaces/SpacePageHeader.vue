@@ -23,7 +23,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   isEditing: false,
-   
+
   error: undefined,
   blacklistedNames: () => [],
 });

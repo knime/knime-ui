@@ -27,8 +27,7 @@ export default defineComponent({
 
       return type in this.$colors.nodeBackgroundColors
         ? this.$colors.nodeBackgroundColors[type]
-        :  
-          undefined;
+        : undefined;
     },
   },
 });

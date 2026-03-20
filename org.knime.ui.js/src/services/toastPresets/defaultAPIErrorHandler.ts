@@ -1,4 +1,3 @@
- 
 import type { Toast, ToastServiceProvider } from "@knime/components";
 import { rfcErrors } from "@knime/hub-features";
 

@@ -110,7 +110,6 @@ const onProjectTabChange = (projectId: string, version: number | null) => {
       },
     })
     .finally(() => {
-       
       projectWithPendingNavigation.value = undefined;
     });
 };

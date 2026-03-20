@@ -27,7 +27,6 @@ const getIcon = (type: string, linked: boolean) => {
   } else if (type === "metanode") {
     return MetaNodeIcon;
   } else {
-     
     return undefined;
   }
 };

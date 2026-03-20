@@ -1,4 +1,3 @@
- 
 import { type Ref, computed } from "vue";
 
 import { SpaceProviderNS } from "@/api/custom-types";

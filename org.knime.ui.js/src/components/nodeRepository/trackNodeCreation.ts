@@ -1,4 +1,3 @@
- 
 import type { KnimeNode } from "@/api/custom-types";
 import type { NodeTemplateWithExtendedPorts } from "@/lib/data-mappers";
 import { useAnalytics } from "@/services/analytics";

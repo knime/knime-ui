@@ -1,5 +1,3 @@
- 
- 
 import { computed, ref } from "vue";
 
 import { promise as promiseUtils } from "@knime/utils";
@@ -160,7 +158,6 @@ export const useConnectAction = () => {
     }
 
     if (isPlaceholderPort(snapTarget)) {
-       
       return connectViaPlaceHolderPort(params, targetPortDirection);
     }
 

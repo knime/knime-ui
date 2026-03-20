@@ -31,7 +31,6 @@ const zoomedGap = computed(() => {
 });
 const setPosition = () => {
   if (!tooltip.value) {
-     
     position.value = undefined;
     return;
   }

@@ -15,7 +15,7 @@ type Props = {
 
 withDefaults(defineProps<Props>(), {
   placeholder: "Search",
-   
+
   dataTestId: undefined,
 });
 

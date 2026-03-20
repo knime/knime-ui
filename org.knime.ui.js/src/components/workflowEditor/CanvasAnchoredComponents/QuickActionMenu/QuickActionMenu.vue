@@ -112,9 +112,9 @@ const fakePortConnector = computed<DragConnector>(() => {
     absolutePoint: [props.position.x, props.position.y],
     allowedActions: { canDelete: false },
     interactive: false,
-     
+
     [fakeNode]: props.nodeId ?? undefined,
-     
+
     [fakePort]: portIndex.value ?? undefined,
   };
 });

@@ -1,6 +1,3 @@
- 
- 
- 
 // Split this file to avoid max-lines disable (NXT-3760)
 /* eslint-disable max-lines */
 import { computed, ref } from "vue";

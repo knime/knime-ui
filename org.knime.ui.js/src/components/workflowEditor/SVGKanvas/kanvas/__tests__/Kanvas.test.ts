@@ -64,7 +64,7 @@ describe("Kanvas", () => {
     HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
 
     // Mock ResizeObserver Class
-     
+
     function ResizeObserverMock(callback) {
       this.callbackRef = callback;
       this.element = null;

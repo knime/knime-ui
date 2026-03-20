@@ -98,7 +98,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
     hoverable: true,
     orientation: "bottom",
     text: "",
-     
+
     issue: props.issue ?? undefined,
     resolutions: props.resolutions,
   } satisfies TooltipDefinition;

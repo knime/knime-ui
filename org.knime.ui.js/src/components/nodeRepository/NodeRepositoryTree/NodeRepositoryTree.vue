@@ -26,7 +26,6 @@ import type { NodeCategoryWithExtendedPorts } from "./types";
 const hasAllObjectPropertiesDefined = <T extends object>(
   object: T,
 ): object is Required<T> => {
-   
   return Object.values(object).every((prop) => prop !== undefined);
 };
 

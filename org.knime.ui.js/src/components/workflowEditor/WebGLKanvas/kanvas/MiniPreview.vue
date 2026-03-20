@@ -23,7 +23,6 @@ const backgroundColor = (nodeId: string): string | undefined => {
   const node = activeWorkflow.value?.nodes[nodeId];
 
   if (!node) {
-     
     return undefined;
   }
 

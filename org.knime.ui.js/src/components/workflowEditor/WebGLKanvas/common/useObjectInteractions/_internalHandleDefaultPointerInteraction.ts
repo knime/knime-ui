@@ -273,7 +273,7 @@ export const useHandlePointerInteraction = (options: Options) => {
             await movingStore.moveObjectsWebGL({
               ...movingStore.movePreviewDelta,
             });
-             
+
             dragInitiatorId.value = undefined;
           }
         });

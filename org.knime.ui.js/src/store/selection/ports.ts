@@ -1,4 +1,3 @@
- 
 import { ref } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";

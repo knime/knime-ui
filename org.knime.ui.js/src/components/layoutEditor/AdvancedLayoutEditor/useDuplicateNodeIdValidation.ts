@@ -1,5 +1,3 @@
- 
- 
 import { getLocation, visit } from "jsonc-parser";
 import * as monaco from "monaco-editor";
 

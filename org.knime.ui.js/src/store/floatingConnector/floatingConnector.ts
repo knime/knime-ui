@@ -1,4 +1,3 @@
- 
 import { type Ref, computed, ref } from "vue";
 import { defineStore, storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";

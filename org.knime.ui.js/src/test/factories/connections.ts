@@ -5,7 +5,6 @@ import { createNativeNode } from "./nodes";
 import { createPort } from "./ports";
 import { arrayToDictionary } from "./util";
 
- 
 function* generator(): Iterator<number> {
   let id = -1;
   while (true) {
