@@ -7075,19 +7075,12 @@ snapshots:
   '@es-joy/jsdoccomment@0.84.0':
     dependencies:
       '@types/estree': 1.0.8
-<<<<<<< HEAD
-      '@typescript-eslint/types': 8.33.1
-      comment-parser: 1.4.1
-      esquery: 1.6.0
-      jsdoc-type-pratt-parser: 4.1.0
-=======
       '@typescript-eslint/types': 8.57.1
       comment-parser: 1.4.5
       esquery: 1.7.0
       jsdoc-type-pratt-parser: 7.1.1
 
   '@es-joy/resolve.exports@1.2.0': {}
->>>>>>> 5c7422200 (improve layout height logic)
 
   '@esbuild/aix-ppc64@0.27.4':
     optional: true
