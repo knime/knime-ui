@@ -1,5 +1,5 @@
 import test from "@playwright/test";
-import { Page } from "playwright-core";
+import type { Page } from "playwright-core";
 
 import {
   arrayToPoint,
