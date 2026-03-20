@@ -84,11 +84,11 @@ const isColumnDeletable = (column: LayoutEditorColumn) => {
 
 <style lang="postcss" scoped>
 .row {
+  position: relative; /* needed for delete handle positioning */
+  display: grid;
+  cursor: grab;
   border: 4px solid var(--knime-silver-sand);
   border-radius: 3px;
-  position: relative; /* needed for delete handle positioning */
-  cursor: grab;
-  display: grid;
 
   &:not(:last-of-type) {
     margin-bottom: 5px;

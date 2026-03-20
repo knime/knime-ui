@@ -4,6 +4,7 @@ import { computed } from "vue";
 import type {
   NativeNodeInvariants,
   Node,
+  NodeExecutionInfo,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 
@@ -36,7 +37,7 @@ type Props = {
   /**
    * Information about the node execution. Might not be present if no special node execution info is available
    */
-  executionInfo?: Record<string, any> | null;
+  executionInfo?: NodeExecutionInfo | null;
 
   /**
    * Loop specific configuration options

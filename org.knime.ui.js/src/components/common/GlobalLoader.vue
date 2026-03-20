@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<GlobalLoaderConfig>(), {
 const showLoader = ref<boolean>();
 const isTextShown = ref<boolean>();
 const isIconShown = ref<boolean>();
-const setLoading = ref<(value: boolean) => any>();
+const setLoading = ref<(value: boolean) => void>();
 
 const { $zIndices } = useConstants();
 
@@ -44,10 +44,6 @@ const overlayStyles = computed<CSSProperties>(() => {
   return {
     position: positionMap[props.displayMode],
     zIndex: zIndexMap[props.displayMode],
-
-    // add the initial dimensions as css properties for later usage in the styles
-    "--initial-width": "100%",
-    "--initial-height": "100%",
   };
 });
 
@@ -125,7 +121,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :style="overlayStyles">
+  <div class="global-loader" :style="overlayStyles">
     <div
       v-show="showLoader"
       ref="loader"
@@ -149,14 +145,19 @@ onMounted(() => {
   }
 }
 
+.global-loader {
+  --initial-width: 100%;
+  --initial-height: 100%;
+}
+
 .loader {
+  z-index: v-bind("$zIndices.layerGlobalErrorOverlay");
   display: flex;
-  outline: none;
-  justify-content: center;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
-  z-index: v-bind("$zIndices.layerGlobalErrorOverlay");
+  outline: none;
 
   & svg {
     @mixin svg-icon-size var(--global-loader-icon-size, 50);
@@ -166,9 +167,9 @@ onMounted(() => {
   }
 
   & .text {
-    color: var(--global-loader-text-color, var(--knime-masala));
     min-height: 16px;
     font-size: 16px;
+    color: var(--global-loader-text-color, var(--knime-masala));
   }
 
   &.fullscreen,
@@ -183,30 +184,30 @@ onMounted(() => {
   }
 
   &.transparent {
-    background: transparent;
     cursor: wait;
+    background: transparent;
   }
 
   &.localized {
-    background: var(--global-loader-bg, rgb(255 255 255 / 70%));
     position: absolute;
-    min-height: var(--initial-height);
     width: var(--initial-width);
     height: 200px;
+    min-height: var(--initial-height);
+    background: var(--global-loader-bg, rgb(255 255 255 / 70%));
   }
 
   &.floating {
-    background: var(--global-loader-bg, var(--knime-masala));
+    position: fixed;
+    bottom: var(--global-loader-floating-pos-bottom, 60px);
+    left: var(--global-loader-floating-pos-left, 60px);
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
     min-width: 150px;
     height: 60px;
-    position: fixed;
-    left: var(--global-loader-floating-pos-left, 60px);
-    bottom: var(--global-loader-floating-pos-bottom, 60px);
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 10px;
     padding: 20px;
+    background: var(--global-loader-bg, var(--knime-masala));
     border-radius: 2px;
     box-shadow: var(--shadow-elevation-2);
 

@@ -36,10 +36,10 @@ defineProps<Props>();
 @import url("@/assets/mixins.css");
 
 .button.action-button {
-  margin-left: var(--space-4);
-  border: 1px solid var(--knime-silver-sand);
   padding: var(--space-4) 14px;
+  margin-left: var(--space-4);
   color: var(--knime-masala);
+  border: 1px solid var(--knime-silver-sand);
 
   --theme-button-function-foreground-color-hover: var(--knime-white);
   --theme-button-function-background-color-hover: var(--knime-masala);
@@ -58,10 +58,10 @@ defineProps<Props>();
   &:active,
   &:focus,
   &.expanded {
-    cursor: pointer;
-    border-color: var(--theme-button-function-background-color-hover);
     color: var(--theme-button-function-foreground-color-hover);
+    cursor: pointer;
     background-color: var(--theme-button-function-background-color-hover);
+    border-color: var(--theme-button-function-background-color-hover);
 
     & svg {
       stroke: var(--knime-white);
@@ -75,10 +75,10 @@ defineProps<Props>();
     &:hover,
     &:active,
     &:focus {
-      border-color: var(--knime-silver-sand-semi);
       color: var(--knime-masala);
-      background-color: transparent;
       cursor: default;
+      background-color: transparent;
+      border-color: var(--knime-silver-sand-semi);
     }
 
     & svg.icon {

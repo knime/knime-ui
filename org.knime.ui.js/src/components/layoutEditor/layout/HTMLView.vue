@@ -20,16 +20,16 @@ defineProps<Props>();
 @import url("@knime/styles/css/mixins.css");
 
 .html-view {
-  min-height: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--knime-silver-sand-semi);
-  border-radius: 3px;
-  user-select: none;
+  min-height: 100px;
   padding: 10px;
   font-size: 13px;
+  user-select: none;
+  background-color: var(--knime-silver-sand-semi);
+  border-radius: 3px;
 
   & .name {
     font-weight: bold;

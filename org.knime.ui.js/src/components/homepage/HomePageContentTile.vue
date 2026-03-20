@@ -60,32 +60,32 @@ const dismissTile = () => {
 @import url("@/assets/mixins.css");
 
 .content-tile-wrapper {
-  background: var(--knime-gray-ultra-light);
-  border-radius: 4px;
-  box-shadow: var(--shadow-elevation-1);
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
   margin-top: var(--space-24);
-  position: relative;
+  background: var(--knime-gray-ultra-light);
+  border-radius: 4px;
+  box-shadow: var(--shadow-elevation-1);
 
   & .close {
     display: none;
   }
 
   &:hover .close {
-    display: block;
     position: absolute;
-    right: var(--space-8);
     top: var(--space-8);
+    right: var(--space-8);
+    display: block;
   }
 
   & .image {
     display: flex;
     gap: 30px;
-    border-radius: var(--space-4) var(--space-4) 0 0;
-    object-fit: cover;
     max-height: 160px;
+    object-fit: cover;
+    border-radius: var(--space-4) var(--space-4) 0 0;
   }
 
   & .content {
@@ -96,9 +96,9 @@ const dismissTile = () => {
 
     & h4,
     p {
+      margin: 0;
       font-size: 13px;
       line-height: 18px;
-      margin: 0;
     }
 
     & .button {

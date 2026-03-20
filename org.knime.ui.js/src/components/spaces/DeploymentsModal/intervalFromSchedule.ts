@@ -17,6 +17,7 @@
  *      schedule should execute.
  * @returns {String} interval - the human readable interval that was parsed from the schedule provided.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getIntervalFromSchedule = (schedule: any) => {
   if (!schedule?.startTime) {
     return "-";

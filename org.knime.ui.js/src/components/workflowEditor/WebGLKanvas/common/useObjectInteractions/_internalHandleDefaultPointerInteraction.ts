@@ -273,7 +273,7 @@ export const useHandlePointerInteraction = (options: Options) => {
             await movingStore.moveObjectsWebGL({
               ...movingStore.movePreviewDelta,
             });
-            // eslint-disable-next-line no-undefined
+
             dragInitiatorId.value = undefined;
           }
         });

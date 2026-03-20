@@ -43,7 +43,7 @@ const emit = defineEmits<{
 }>();
 
 const loadExtensionConfig = async () => {
-  let deactivateDataServicesFn: (() => Promise<any>) | undefined;
+  let deactivateDataServicesFn: (() => Promise<void>) | undefined;
 
   // store the following in none-reactive variables to ensure deactivateNodeDataServices is called
   // with the same values as getNodeView
@@ -57,14 +57,15 @@ const loadExtensionConfig = async () => {
   });
 
   if (nodeView?.deactivationRequired) {
-    deactivateDataServicesFn = () =>
-      API.node.deactivateNodeDataServices({
+    deactivateDataServicesFn = async () => {
+      await API.node.deactivateNodeDataServices({
         projectId,
         workflowId,
         versionId: versionId ?? CURRENT_STATE_VERSION,
         nodeId: selectedNode.id,
         extensionType: "view",
       });
+    };
   }
 
   return {
@@ -98,7 +99,7 @@ const {
 
 const noop = () => {};
 
-let updateViewData: (data: any) => void;
+let updateViewData: (data: unknown) => void;
 
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation,
@@ -117,7 +118,7 @@ const apiLayer: UIExtensionAPILayer = {
     return { result };
   },
 
-  callKnimeUiApi: async (method: string, params: any) => {
+  callKnimeUiApi: async (method, params) => {
     const response = await gatewayRpcClient.call(method, params);
     return { isSome: true, result: response };
   },

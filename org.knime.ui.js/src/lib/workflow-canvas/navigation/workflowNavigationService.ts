@@ -14,7 +14,7 @@ const webWorker = new Worker(new URL("./worker", import.meta.url), {
  * @param message
  * @returns
  */
-const sendMessage = <TResponse, TPayload = Record<string, any>>(
+const sendMessage = <TResponse, TPayload = Record<string, unknown>>(
   message: WorkerMessage<TPayload>,
 ) =>
   new Promise<TResponse>((resolve, reject) => {

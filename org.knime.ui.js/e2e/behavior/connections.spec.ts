@@ -1,5 +1,4 @@
-/* eslint-disable no-magic-numbers */
-import test, { Page } from "@playwright/test";
+import { type Page, test } from "@playwright/test";
 
 import {
   assertSnapshot,

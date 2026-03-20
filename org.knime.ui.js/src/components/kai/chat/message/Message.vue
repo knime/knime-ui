@@ -147,26 +147,26 @@ const displayContent = computed(() => {
 
   & .header {
     position: absolute;
-    left: 0;
     top: -21px;
-    height: 21px;
-    width: 100%;
+    left: 0;
     display: flex;
-    justify-content: flex-end;
     align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    height: 21px;
 
     & .icon {
       position: absolute;
       top: 0;
       left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
       background-color: var(--knime-white);
       border: 2px solid var(--knime-porcelain);
       border-radius: 100%;
-      height: 26px;
-      width: 26px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
 
       & svg {
         margin-top: -2px;
@@ -181,9 +181,9 @@ const displayContent = computed(() => {
   }
 
   & .body {
-    border-radius: 0 5px 5px;
-    background-color: var(--knime-white);
     padding: var(--kds-spacing-container-0-75x);
+    background-color: var(--knime-white);
+    border-radius: 0 5px 5px;
 
     &.user {
       border-radius: 5px 0 5px 5px;
@@ -205,8 +205,8 @@ const displayContent = computed(() => {
 
   & .footer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     min-height: 25px;
 
     & .footer-left {
@@ -220,13 +220,13 @@ const displayContent = computed(() => {
 
     & .show-full-content-button {
       all: unset;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 11px;
       padding-top: 10px;
-      color: var(--knime-dove-gray);
       margin-top: -5px;
       margin-left: 2px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--knime-dove-gray);
+      cursor: pointer;
     }
 
     & .show-full-content-button:active,

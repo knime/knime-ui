@@ -1,4 +1,4 @@
-import { computed } from "vue";
+import { type Component, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -9,7 +9,7 @@ import { useSpaceIcons } from "./useSpaceIcons";
 
 export type ClickableBreadcrumbItem = {
   text: string;
-  icon?: any;
+  icon?: Component;
   clickable?: boolean;
   onClick?: () => void;
 };

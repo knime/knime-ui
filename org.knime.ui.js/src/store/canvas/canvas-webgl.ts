@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-/* eslint-disable no-undefined */
+
 /* eslint-disable no-magic-numbers */
 
 import {
@@ -11,7 +11,8 @@ import {
   toRef,
 } from "vue";
 import { refDebounced } from "@vueuse/core";
-import { isNumber, round } from "lodash-es";
+import { clamp, round } from "es-toolkit/math";
+import { isNumber } from "es-toolkit/predicate";
 import { animate, mix } from "motion";
 import { defineStore } from "pinia";
 import type { RenderLayer } from "pixi.js";
@@ -19,7 +20,6 @@ import type { RenderLayer } from "pixi.js";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
 import { geometry } from "@/lib/geometry";
-import { clamp } from "@/lib/math";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
@@ -178,7 +178,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasAnchor.value.offset = 0;
   };
 
-  const isOutsideKanvasView = (_params: any) => {
+  const isOutsideKanvasView = (_params: unknown) => {
     consola.warn("canvas-webgl: isOutsideKanvasView will be removed");
   };
 
@@ -366,7 +366,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
-  const contentBoundsChanged = (_params: any) => {
+  const contentBoundsChanged = (_params: unknown) => {
     consola.warn("canvas-webgl: contentBoundsChanged will be removed");
   };
 
@@ -556,7 +556,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
-  const scroll = (_params: any) => {
+  const scroll = (_params: unknown) => {
     consola.warn("canvas-webgl: scroll will be removed");
   };
 

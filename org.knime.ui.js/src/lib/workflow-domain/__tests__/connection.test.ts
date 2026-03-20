@@ -67,7 +67,7 @@ describe("detectConnectionCircle", () => {
     ["D", ["E"]],
     ["E", ["D"]],
   ])("downstream Connection from %s", (startNode, result) => {
-    let compatibleNodes = connection.detectConnectionCircle({
+    const compatibleNodes = connection.detectConnectionCircle({
       startNode,
       downstreamConnection: true,
       workflow,
@@ -82,7 +82,7 @@ describe("detectConnectionCircle", () => {
     ["B", ["A"]],
     ["A", ["B"]],
   ])("upstream Connection from %s", (startNode, result) => {
-    let compatibleNodes = connection.detectConnectionCircle({
+    const compatibleNodes = connection.detectConnectionCircle({
       startNode,
       downstreamConnection: false,
       workflow,
@@ -128,7 +128,7 @@ describe("detectConnectionCircle", () => {
     it.each(["A", "B", "C", "D", "E"])(
       "metanode ports not part of Set for %s",
       (startNode) => {
-        let compatibleNodes = connection.detectConnectionCircle({
+        const compatibleNodes = connection.detectConnectionCircle({
           startNode,
           downstreamConnection: false,
           workflow,
@@ -140,7 +140,7 @@ describe("detectConnectionCircle", () => {
     it.each([true, false])(
       "all nodes can connect to metanode bar: downstreamConnection %s",
       (downstreamConnection) => {
-        let compatibleNodes = connection.detectConnectionCircle({
+        const compatibleNodes = connection.detectConnectionCircle({
           startNode: "metanode",
           downstreamConnection,
           workflow,

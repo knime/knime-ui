@@ -38,7 +38,7 @@ export default {
       }
 
       // Search for all shortcuts
-      let shortcuts = this.$shortcuts.findByHotkey(e);
+      const shortcuts = this.$shortcuts.findByHotkey(e);
 
       if (shortcuts.length === 0) {
         return;

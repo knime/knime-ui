@@ -26,13 +26,13 @@ import HubLoginBanner from "./HubLoginBanner.vue";
 section.main-content-wrapper {
   display: flex;
   flex-direction: row;
-  background-color: var(--knime-white);
-  color: var(--knime-masala);
-  height: 100%;
-  width: 100%;
   gap: 20px;
   justify-content: space-around;
+  width: 100%;
+  height: 100%;
   padding: 0;
+  color: var(--knime-masala);
+  background-color: var(--knime-white);
 
   --sidebar-width: 420px;
 
@@ -42,10 +42,10 @@ section.main-content-wrapper {
   }
 
   & .sidebar {
-    width: var(--sidebar-width);
-    max-height: calc(100vh - var(--app-header-height));
     display: flex;
     flex-direction: column;
+    width: var(--sidebar-width);
+    max-height: calc(100vh - var(--app-header-height));
 
     & .scroll-container {
       padding: 24px;

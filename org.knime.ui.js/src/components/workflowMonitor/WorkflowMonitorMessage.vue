@@ -116,10 +116,10 @@ const isLoadingNodePreview = computed(
 @import url("@/assets/mixins.css");
 
 .issue-message {
-  background: var(--knime-white);
-  border-radius: 5px;
   width: 100%;
+  background: var(--knime-white);
   border: 1px solid transparent;
+  border-radius: 5px;
 
   &.highlighted {
     border-color: var(--knime-cornflower);
@@ -141,8 +141,8 @@ const isLoadingNodePreview = computed(
     padding-right: 4px;
 
     & .nested-indicator {
-      padding-left: var(--padding);
       padding-top: var(--center-correction-padding);
+      padding-left: var(--padding);
       white-space: nowrap;
 
       & .arrow {
@@ -151,8 +151,8 @@ const isLoadingNodePreview = computed(
     }
 
     & .node-preview {
-      min-width: var(--node-size);
       width: var(--node-size);
+      min-width: var(--node-size);
       height: var(--node-size);
     }
 
@@ -162,9 +162,9 @@ const isLoadingNodePreview = computed(
 
     & .name {
       padding-top: var(--center-correction-padding);
+      overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      overflow: hidden;
     }
   }
 
@@ -175,8 +175,8 @@ const isLoadingNodePreview = computed(
   }
 
   & .go-to-issue {
-    margin-left: auto;
     padding-left: 4px;
+    margin-left: auto;
   }
 }
 </style>

@@ -1,6 +1,6 @@
 import { computed, ref } from "vue";
 import { API } from "@api";
-import { isEqual } from "lodash-es";
+import { isEqual } from "es-toolkit/predicate";
 import { defineStore } from "pinia";
 
 import {
@@ -118,7 +118,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
    * Columns
    */
   const addColumn = (row: LayoutEditorRowItem) => {
-    let newNumberOfColumns = row.columns.length + 1;
+    const newNumberOfColumns = row.columns.length + 1;
     const width = Math.floor(layoutEditorGridSize / newNumberOfColumns);
     row.columns.push({ content: [], widthXS: width });
 
@@ -150,8 +150,8 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   const deleteColumn = (columnToDelete: LayoutEditorColumn) => {
     const allColumnArrays = getAllColumnArrays(layout.value.rows);
 
-    for (let columnArray of allColumnArrays) {
-      let index = columnArray.indexOf(columnToDelete);
+    for (const columnArray of allColumnArrays) {
+      const index = columnArray.indexOf(columnToDelete);
 
       if (index < 0) {
         continue;
@@ -187,8 +187,8 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
   const deleteContentItem = (itemToDelete: LayoutEditorItem) => {
     const allContentArrays = getAllContentArrays(layout.value.rows);
 
-    for (let contentArray of allContentArrays) {
-      let index = contentArray.indexOf(itemToDelete);
+    for (const contentArray of allContentArrays) {
+      const index = contentArray.indexOf(itemToDelete);
       if (index >= 0) {
         // remove item
         contentArray.splice(index, 1);
@@ -319,7 +319,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
 
     // calc size of next sibling to prevent wrapping
     const currentWidth = resizeInfo.column.widthXS;
-    let delta = currentWidth - newWidth;
+    const delta = currentWidth - newWidth;
     let newSiblingWidth = (resizeInfo.nextSibling?.widthXS ?? 0) + delta;
     if (newSiblingWidth < 1) {
       newSiblingWidth = 1;
@@ -356,7 +356,7 @@ export const useLayoutEditorStore = defineStore("layoutEditor", () => {
     }
 
     // apply new config; delete unset props
-    for (let prop in data.config) {
+    for (const prop in data.config) {
       const value = data.config[prop];
       if (value) {
         data.item[prop] = value;

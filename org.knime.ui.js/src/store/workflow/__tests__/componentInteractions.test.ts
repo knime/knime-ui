@@ -232,8 +232,7 @@ describe("workflow::componentInteractions", () => {
         auto: false,
       });
 
-      expect(toast.show).toHaveBeenCalledOnce();
-      expect(toast.show).toHaveBeenCalledWith(
+      expect(toast.show).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
           message: "No updates available",
         }),
@@ -275,8 +274,7 @@ describe("workflow::componentInteractions", () => {
       });
       await flushPromises();
 
-      expect(toast.show).toHaveBeenCalledOnce();
-      expect(toast.show).toHaveBeenCalledWith(
+      expect(toast.show).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
           message: "You have 3 updates available",
           buttons: expect.arrayContaining([
@@ -333,8 +331,7 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(toast.show).toHaveBeenCalledOnce();
-      expect(toast.show).toHaveBeenCalledWith(
+      expect(toast.show).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
           message:
             "You have 3 updates available. Reset components and update now?",
@@ -357,8 +354,7 @@ describe("workflow::componentInteractions", () => {
 
       await componentInteractionsStore.checkForLinkedComponentUpdates();
 
-      expect(toast.show).toHaveBeenCalledOnce();
-      expect(toast.show).toHaveBeenCalledWith(
+      expect(toast.show).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
           type: "error",
           message: "Problem checking for linked component updates",

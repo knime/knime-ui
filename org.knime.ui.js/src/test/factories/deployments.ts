@@ -1,4 +1,4 @@
-import { merge } from "lodash-es";
+import { merge } from "es-toolkit/object";
 
 import type { Job, Schedule } from "@/api/custom-types";
 import type { DeepPartial } from "../utils";

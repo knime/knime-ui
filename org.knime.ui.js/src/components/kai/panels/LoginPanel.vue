@@ -20,11 +20,11 @@ const aiProviderStore = useAiProviderStore();
 
 <style lang="postcss" scoped>
 .login-panel {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   text-align: center;
 
   & .slogan {

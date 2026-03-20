@@ -110,7 +110,6 @@ const onProjectTabChange = (projectId: string, version: number | null) => {
       },
     })
     .finally(() => {
-      // eslint-disable-next-line no-undefined
       projectWithPendingNavigation.value = undefined;
     });
 };
@@ -312,22 +311,22 @@ const onMouseDown = (e: MouseEvent) => {
 header {
   --header-button-height: 24px;
 
+  position: relative;
   display: flex;
   height: var(--app-header-height);
-  background-color: var(--knime-masala);
-  border-bottom: 4px solid var(--knime-yellow);
-  position: relative;
 
   /* override padding set by webapps-common grid */
   padding: initial;
+  background-color: var(--knime-masala);
+  border-bottom: 4px solid var(--knime-yellow);
 
   /* smallish dark spacer */
   &::after {
-    content: "";
     position: absolute;
     bottom: -4px;
     width: 100%;
     height: 1px;
+    content: "";
     background: v-bind("$colors.darkeningMask");
   }
 
@@ -339,15 +338,15 @@ header {
     --theme-button-function-foreground-color-hover: var(--knime-masala);
     --theme-button-function-background-color-hover: var(--knime-yellow);
 
-    border: 1px solid var(--knime-dove-gray);
     display: flex;
     gap: 4px;
     align-items: center;
     align-self: center;
-    color: var(--knime-white);
     height: var(--header-button-height);
     padding: 10px;
     margin: 0 35px 0 10px;
+    color: var(--knime-white);
+    border: 1px solid var(--knime-dove-gray);
 
     & svg {
       @mixin svg-icon-size 16;
@@ -358,11 +357,11 @@ header {
   }
 
   & .toolbar {
+    display: grid;
+    align-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
-    display: grid;
-    align-items: center;
-    align-content: center;
 
     &.without-projects {
       grid-template-columns: 1fr auto;
@@ -373,8 +372,8 @@ header {
     }
 
     & .project-tabs {
-      padding: 0;
       min-width: 0;
+      padding: 0;
       white-space: nowrap;
       list-style: none;
 
@@ -388,8 +387,8 @@ header {
       }
 
       & :deep(.carousel) {
-        padding-left: 0;
         padding-right: 0;
+        padding-left: 0;
       }
 
       & .wrapper {
@@ -402,25 +401,25 @@ header {
     }
 
     & .create-workflow-container {
-      height: 100%;
       display: flex;
+      height: 100%;
 
       & .separator {
         width: 1px;
-        border-left: 2px solid var(--knime-silver-sand-semi);
         margin: 10px 8px;
+        border-left: 2px solid var(--knime-silver-sand-semi);
       }
 
       & .create-workflow-btn {
-        border: 0;
-        background-color: var(--knime-masala);
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        height: 100%;
         padding-bottom: 2px;
         margin-left: 5px;
-        height: 100%;
+        cursor: pointer;
+        background-color: var(--knime-masala);
+        border: 0;
 
         &:hover {
           outline: none;
@@ -444,12 +443,12 @@ header {
     /* right button bar: help, preferences and menu */
     & .buttons {
       display: flex;
+      flex-shrink: 0;
+      gap: var(--space-4);
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-      margin-left: var(--space-16);
       margin-right: var(--space-8);
-      gap: var(--space-4);
+      margin-left: var(--space-16);
 
       /* make sure opening dropdown menus are prioritized over app skeleton */
       --z-index-common-menu-items-expanded: v-bind(
@@ -457,14 +456,14 @@ header {
       );
 
       & .help-menu:deep(.function-button) {
-        border: 1px solid var(--knime-dove-gray);
-        border-radius: 50%;
-        width: var(--header-button-height);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--knime-white);
+        width: var(--header-button-height);
         height: var(--header-button-height);
+        color: var(--knime-white);
+        border: 1px solid var(--knime-dove-gray);
+        border-radius: 50%;
 
         & > svg {
           @mixin svg-icon-size 16;
@@ -479,9 +478,9 @@ header {
       margin-left: -10px;
 
       & .text {
-        color: var(--knime-white);
         font-size: 13px;
         font-weight: 500;
+        color: var(--knime-white);
       }
     }
   }
@@ -493,9 +492,9 @@ header {
 
 .drag-image {
   position: fixed;
+  z-index: v-bind("$zIndices.layerPriorityElevation");
   pointer-events: none;
   transition: transform 0.2s ease;
-  z-index: v-bind("$zIndices.layerPriorityElevation");
   will-change: transform;
 }
 </style>

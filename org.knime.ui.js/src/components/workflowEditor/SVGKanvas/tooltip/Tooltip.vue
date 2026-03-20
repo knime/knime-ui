@@ -92,8 +92,6 @@ export default defineComponent({
     data-test-id="tooltip"
     data-is-tooltip="true"
     :style="{
-      '--arrow-size': `${$shapes.tooltipArrowSize}px`,
-      '--gap-size': `${expandedGap}px`,
       top: `${y}px`,
       left: `${x}px`,
       maxWidth: `${$shapes.tooltipMaxWidth}px`,
@@ -127,6 +125,8 @@ export default defineComponent({
 <style lang="postcss" scoped>
 .tooltip {
   --border-width: 1px;
+  --arrow-size: v-bind(`${$shapes.tooltipArrowSize}px`);
+  --gap-size: v-bind(`${expandedGap}px`);
 
   position: relative;
   display: inline-block;
@@ -137,8 +137,8 @@ export default defineComponent({
   }
 
   &.top {
-    transform: translate(-50%, calc(-100% + var(--border-width)));
     padding-bottom: var(--gap-size);
+    transform: translate(-50%, calc(-100% + var(--border-width)));
   }
 
   &.bottom {
@@ -175,20 +175,20 @@ export default defineComponent({
 
     & .issue {
       font-family: "Roboto Mono", sans-serif;
-      line-height: 13px;
       font-size: 11px;
       font-weight: 400;
+      line-height: 13px;
       white-space: pre-wrap;
     }
 
     & .resolutions {
-      line-height: 18px;
       font-size: 13px;
       font-weight: 500;
+      line-height: 18px;
 
       & ul {
-        margin: 0;
         padding-left: 15px;
+        margin: 0;
         font-weight: 400;
       }
     }
@@ -199,21 +199,21 @@ export default defineComponent({
   }
 
   & .wrap-arrow {
-    box-shadow: 0 0 10px rgb(62 58 57 / 30%);
-    border: var(--border-width) solid;
     position: relative;
+    border: var(--border-width) solid;
+    box-shadow: 0 0 10px rgb(62 58 57 / 30%);
   }
 
   &.top .wrap-arrow::after,
   &.bottom .wrap-arrow::before {
+    position: absolute;
+    left: 50%;
     width: var(--arrow-size);
     height: var(--arrow-size);
     content: "";
-    position: absolute;
-    left: 50%;
     border: var(--border-width) solid;
-    border-left-color: transparent;
     border-bottom-color: transparent;
+    border-left-color: transparent;
   }
 
   &.top .wrap-arrow::after {
@@ -230,13 +230,13 @@ export default defineComponent({
     color: var(--knime-masala);
 
     & .wrap-arrow {
-      border-radius: 1px;
       border-color: v-bind("$colors.warning");
+      border-radius: 1px;
 
       &::after,
       &::before {
-        border-color: v-bind("$colors.warning");
         background-color: white;
+        border-color: v-bind("$colors.warning");
       }
     }
 
@@ -249,13 +249,13 @@ export default defineComponent({
     color: var(--knime-masala);
 
     & .wrap-arrow {
-      border-radius: 1px;
       border-color: v-bind("$colors.error");
+      border-radius: 1px;
 
       &::after,
       &::before {
-        border-color: v-bind("$colors.error");
         background-color: white;
+        border-color: v-bind("$colors.error");
       }
     }
 
@@ -272,14 +272,14 @@ export default defineComponent({
 
       &::before,
       &::after {
-        border-color: var(--knime-masala);
         background-color: var(--knime-masala);
+        border-color: var(--knime-masala);
       }
     }
 
     & .scroller {
-      background-color: var(--knime-masala);
       padding: 2px 6px 4px;
+      background-color: var(--knime-masala);
     }
   }
 }

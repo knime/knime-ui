@@ -174,10 +174,10 @@ watch(menuState, (menuState) => {
 
 & .quick-build-menu {
   display: flex;
-  padding: var(--space-8);
-  margin-top: var(--space-8);
   flex-direction: column;
   justify-content: flex-end;
+  padding: var(--space-8);
+  margin-top: var(--space-8);
 
   & .panel:not(.unlicensed-panel) {
     min-height: 200px;

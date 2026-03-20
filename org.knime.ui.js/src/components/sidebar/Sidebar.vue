@@ -307,15 +307,15 @@ nav {
     }
 
     & label {
-      height: 52px;
-      width: 100%;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      transition: background-color 150ms ease-out;
+      justify-content: center;
+      width: 100%;
+      height: 52px;
       background-color: var(--bg-tabs-color);
       border-bottom: 1px solid var(--bg-color);
+      transition: background-color 150ms ease-out;
 
       & svg {
         @mixin svg-icon-size 16;
@@ -343,8 +343,8 @@ nav {
       }
 
       &:hover {
-        background-color: var(--bg-tabs-color-hover);
         cursor: pointer;
+        background-color: var(--bg-tabs-color-hover);
 
         & .name {
           color: var(--fg-color);
@@ -357,17 +357,18 @@ nav {
     }
 
     & input[type="radio"] {
+      position: absolute;
+      top: 0; /* top/left prevent right margin mobile safari */
+      left: 0;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+
       /* https://accessibility.18f.gov/hidden-content/ */
       border: 0;
       clip: rect(0 0 0 0);
-      height: 1px;
-      margin: -1px;
-      overflow: hidden;
-      padding: 0;
-      position: absolute;
-      width: 1px;
-      top: 0; /* top/left prevent right margin mobile safari */
-      left: 0;
     }
   }
 }

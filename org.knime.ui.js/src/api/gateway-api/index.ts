@@ -3,6 +3,7 @@ import { waitForPatch } from "../events/event-syncer";
 
 import { createAPI } from "./generated-api";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const postProcessCommandResponse = async (commandCall: Promise<any>) => {
   const response = await commandCall;
   if (!response || !response.snapshotId) {

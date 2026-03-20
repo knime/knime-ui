@@ -48,7 +48,7 @@ const canAddPort = computed(() => {
   }
 
   if (props.portGroups) {
-    let portGroups = Object.values(props.portGroups);
+    const portGroups = Object.values(props.portGroups);
     return {
       input: portGroups.some((portGroup) => portGroup.canAddInPort),
       output: portGroups.some((portGroup) => portGroup.canAddOutPort),

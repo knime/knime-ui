@@ -80,21 +80,21 @@ const hasAvailableOptions = computed(() => {
 @import url("@knime/styles/css/mixins.css");
 
 .composite-view-actions {
-  width: 100%;
-  height: 100%;
   display: inline-flex;
   flex-direction: row;
   align-items: center;
+  width: 100%;
+  height: 100%;
   margin-right: -8px;
 }
 
 .unsaved-changes-indicator {
+  display: block;
   width: var(--space-6);
   height: var(--space-6);
-  display: block;
-  border-radius: 100%;
-  background-color: transparent;
   margin-left: 1px;
+  background-color: transparent;
+  border-radius: 100%;
 
   &.dirty {
     background-color: var(--knime-yellow);
@@ -113,9 +113,9 @@ const hasAvailableOptions = computed(() => {
 }
 
 .action-button {
-  cursor: pointer;
-  margin-left: var(--space-4);
   display: inline-flex;
+  margin-left: var(--space-4);
+  cursor: pointer;
 }
 
 @keyframes pulse {

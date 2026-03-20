@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/block-lang -->
 <script>
 export default {
   props: {

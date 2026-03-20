@@ -174,28 +174,28 @@ const discardSettings = () => {
 
   & .title-bar {
     display: flex;
+    gap: var(--space-8);
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-8);
+    max-width: 100%;
+    height: var(--title-bar-height);
+    padding: 0 var(--space-4) 0 var(--space-12);
     color: var(--knime-white);
     background-color: var(--knime-masala);
-    max-width: 100%;
-    padding: 0 var(--space-4) 0 var(--space-12);
-    height: var(--title-bar-height);
 
     & .node-name {
+      flex: 1;
       margin: 0;
       font-size: 18px;
       line-height: var(--title-bar-height);
-      flex: 1;
 
       @mixin truncate;
     }
 
     & .minimize-btn {
-      color: var(--knime-white);
-      margin-bottom: 1px;
       padding: var(--space-4) var(--space-8);
+      margin-bottom: 1px;
+      color: var(--knime-white);
       white-space: nowrap;
 
       &:hover,
@@ -204,8 +204,8 @@ const discardSettings = () => {
       }
 
       & .minimize-icon {
-        stroke: var(--knime-white);
         margin-right: var(--space-4);
+        stroke: var(--knime-white);
       }
     }
   }
@@ -225,8 +225,8 @@ const discardSettings = () => {
 /* TODO: UIEXT-2775 use a different approach */
 [aria-disabled="true"] {
   pointer-events: none;
+  user-select: none;
   opacity: 0.7;
   transition: opacity 150ms ease-out;
-  user-select: none;
 }
 </style>

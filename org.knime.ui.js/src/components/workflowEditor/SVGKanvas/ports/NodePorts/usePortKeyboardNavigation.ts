@@ -9,7 +9,6 @@ import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { isInputElement } from "@/lib/dom";
-import { clamp } from "@/lib/math";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useSelectionStore } from "@/store/selection";
 import type {
@@ -96,6 +95,8 @@ export const usePortKeyboardNavigation = (
       return;
     }
 
+    const clamp = (val: number, min: number, max: number) =>
+      Math.max(min, Math.min(val, max));
     const minIndex = isMetanode.value ? 0 : 1;
     const equivIndex = clamp(
       current.isAddPort ? current.sidePorts.length : current.index,

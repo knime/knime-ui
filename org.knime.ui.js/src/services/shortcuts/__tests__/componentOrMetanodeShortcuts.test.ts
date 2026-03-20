@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { capitalize } from "lodash-es";
+import { capitalize } from "es-toolkit/string";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";

@@ -8,7 +8,7 @@ type UseUIExtensionLifecycleOptions = {
    * Unique identifier that will be watched to trigger a reload/re-render of this
    * UI extension
    */
-  renderKey: Ref<any>;
+  renderKey: Ref<unknown>;
   /**
    * Function to load the UIExtension configuration. Can optionally return a
    * deactivation function that will be run as a cleanup during teardown
@@ -40,11 +40,12 @@ export const useUIExtensionLifecycle = (
     onBeforeLoadUIExtension,
   } = options;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error = ref<any>(null);
   const extensionConfig = ref<ExtensionConfig | null>(null);
   const isLoadingConfig = ref(false);
 
-  let deactivateDataServicesFn: (() => Promise<any>) | undefined;
+  let deactivateDataServicesFn: (() => Promise<void>) | undefined;
 
   const resourceLocation = computed(() => {
     if (!extensionConfig.value) {

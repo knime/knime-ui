@@ -8,7 +8,7 @@ export class WebSocketTransport extends BaseWebSocketTransport {
   public sendData(
     data: JSONRPCRequestData,
     timeout: number | null = DEFAULT_TIMEOUT,
-  ): Promise<any> {
+  ): Promise<void> {
     const promise = super.sendData(data, timeout);
 
     return promise;

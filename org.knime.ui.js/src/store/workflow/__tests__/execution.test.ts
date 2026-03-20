@@ -246,8 +246,7 @@ describe("workflow store: Execution", () => {
         ]);
 
         executionStore.openPortView({ node, port });
-        expect(mockedAPI.desktop.openPortView).toHaveBeenCalledOnce();
-        expect(mockedAPI.desktop.openPortView).toHaveBeenCalledWith({
+        expect(mockedAPI.desktop.openPortView).toHaveBeenCalledExactlyOnceWith({
           projectId: "mockActiveProjectId",
           nodeId: node.id,
           viewIndex: 42,

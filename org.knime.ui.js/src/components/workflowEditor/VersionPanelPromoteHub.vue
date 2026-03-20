@@ -37,10 +37,10 @@ defineEmits(["close", "upload"]);
   height: 100%;
 
   & .version-list-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative;
     padding: var(--space-16) var(--space-16) 0;
 
     & .version-list {
@@ -48,13 +48,13 @@ defineEmits(["close", "upload"]);
     }
 
     & .description {
-      font-weight: 400;
-      font-size: 13px;
-      line-height: 150%;
-      letter-spacing: 0%;
-      vertical-align: middle;
       margin-bottom: var(--space-24);
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 150%;
+      vertical-align: middle;
       color: var(--knime-masala);
+      letter-spacing: 0%;
     }
   }
 }

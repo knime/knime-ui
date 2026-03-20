@@ -4,8 +4,8 @@ import { applyStyleRanges } from "../styleRanges";
 
 describe("styleRanges util", () => {
   it("handles empty ranges", () => {
-    let result = applyStyleRanges([], "foo");
-    let expected = {
+    const result = applyStyleRanges([], "foo");
+    const expected = {
       isValid: true,
       textRanges: [{ text: "foo" }],
     };
@@ -13,8 +13,8 @@ describe("styleRanges util", () => {
   });
 
   it("handles empty ranges with empty text", () => {
-    let result = applyStyleRanges([], "");
-    let expected = {
+    const result = applyStyleRanges([], "");
+    const expected = {
       isValid: true,
       textRanges: [],
     };
@@ -22,13 +22,13 @@ describe("styleRanges util", () => {
   });
 
   describe("validation", () => {
-    let expected = {
+    const expected = {
       isValid: false,
       textRanges: [{ text: "foobar" }],
     };
 
     it("rejects overlapping ranges", () => {
-      let result = applyStyleRanges(
+      const result = applyStyleRanges(
         [
           { start: 0, length: 3 },
           { start: 1, length: 2 },
@@ -39,7 +39,7 @@ describe("styleRanges util", () => {
     });
 
     it("rejects negative range start", () => {
-      let result = applyStyleRanges(
+      const result = applyStyleRanges(
         [
           { start: -1, length: 1 },
           { start: 2, length: 2 },
@@ -50,7 +50,7 @@ describe("styleRanges util", () => {
     });
 
     it("rejects too large range end", () => {
-      let result = applyStyleRanges(
+      const result = applyStyleRanges(
         [
           { start: 0, length: 1 },
           { start: 2, length: 20 },
@@ -61,18 +61,18 @@ describe("styleRanges util", () => {
     });
 
     it("rejects missing range start", () => {
-      let result = applyStyleRanges([{ length: 1 }], "foobar");
+      const result = applyStyleRanges([{ length: 1 }], "foobar");
       expect(result).toEqual(expected);
     });
 
     it("rejects missing range length", () => {
-      let result = applyStyleRanges([{ start: 1 }], "foobar");
+      const result = applyStyleRanges([{ start: 1 }], "foobar");
       expect(result).toEqual(expected);
     });
 
     it("rejects empty text when range is present", () => {
-      let result = applyStyleRanges([{ start: 0, length: 1 }], "");
-      let expected = {
+      const result = applyStyleRanges([{ start: 0, length: 1 }], "");
+      const expected = {
         isValid: false,
         textRanges: [],
       };
@@ -81,11 +81,11 @@ describe("styleRanges util", () => {
   });
 
   it("applies styles when single range cover text", () => {
-    let result = applyStyleRanges(
+    const result = applyStyleRanges(
       [{ start: 0, length: 6, bold: true }],
       "foobar",
     );
-    let expected = {
+    const expected = {
       isValid: true,
       textRanges: [{ bold: true, text: "foobar" }],
     };
@@ -93,14 +93,14 @@ describe("styleRanges util", () => {
   });
 
   it("applies styles when multiple ranges cover text", () => {
-    let result = applyStyleRanges(
+    const result = applyStyleRanges(
       [
         { start: 3, length: 3, italic: true },
         { start: 0, length: 3, bold: true },
       ],
       "foobar",
     );
-    let expected = {
+    const expected = {
       isValid: true,
       textRanges: [
         { bold: true, text: "foo" },
@@ -111,11 +111,11 @@ describe("styleRanges util", () => {
   });
 
   it("applies styles when single range does not cover text", () => {
-    let result = applyStyleRanges(
+    const result = applyStyleRanges(
       [{ start: 1, length: 3, bold: true }],
       "foobar",
     );
-    let expected = {
+    const expected = {
       isValid: true,
       textRanges: [{ text: "f" }, { bold: true, text: "oob" }, { text: "ar" }],
     };
@@ -123,14 +123,14 @@ describe("styleRanges util", () => {
   });
 
   it("applies styles when multiple ranges do not cover text", () => {
-    let result = applyStyleRanges(
+    const result = applyStyleRanges(
       [
         { start: 4, length: 1, italic: true },
         { start: 1, length: 1, bold: true },
       ],
       "foobar",
     );
-    let expected = {
+    const expected = {
       isValid: true,
       textRanges: [
         { text: "f" },

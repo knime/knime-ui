@@ -2,7 +2,8 @@ import type { TextStyle } from "pixi.js";
 
 import * as $colors from "@/style/colors";
 
-type TextStylePreset<T extends Record<string, any> = any> = T & {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TextStylePreset<T extends Record<string, unknown> = any> = T & {
   styles: Partial<TextStyle> | TextStyle;
 };
 

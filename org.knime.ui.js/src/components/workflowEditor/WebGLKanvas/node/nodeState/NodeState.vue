@@ -89,7 +89,7 @@ const strokeColors = computed(() => {
 
 const tooltip = computed<TooltipDefinition | null>(() => {
   const { nodeSize } = $shapes;
-  let tooltip = {
+  const tooltip = {
     position: {
       x: nodeSize / 2,
       y: 0,
@@ -98,7 +98,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
     hoverable: true,
     orientation: "bottom",
     text: "",
-    // eslint-disable-next-line no-undefined
+
     issue: props.issue ?? undefined,
     resolutions: props.resolutions,
   } satisfies TooltipDefinition;

@@ -180,7 +180,7 @@ watch(
 <template>
   <KdsModal
     :active="isActive"
-    title="Select KNIME Hub item version"
+    headline="Select KNIME Hub item version"
     width="large"
     @close="cancel"
   >
@@ -273,11 +273,11 @@ watch(
       }
 
       & .subtitle {
+        overflow: hidden;
+        text-overflow: ellipsis;
         font-size: 11px;
         font-weight: 300;
         line-height: 150%;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
     }
 

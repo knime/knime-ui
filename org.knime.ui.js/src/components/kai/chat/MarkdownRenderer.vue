@@ -19,8 +19,8 @@ const htmlContent = computed(() =>
 
 <style lang="postcss" scoped>
 .content :deep() {
-  overflow-wrap: break-word;
   overflow-x: hidden;
+  overflow-wrap: break-word;
 
   & > *:first-child {
     margin-top: 0;
@@ -43,13 +43,13 @@ const htmlContent = computed(() =>
   }
 
   & pre {
-    border: 1px solid var(--knime-silver-sand);
     padding: var(--space-4);
+    border: 1px solid var(--knime-silver-sand);
   }
 
   & code {
-    white-space: pre-wrap;
     word-break: break-all;
+    white-space: pre-wrap;
   }
 
   & ol {
@@ -66,15 +66,15 @@ const htmlContent = computed(() =>
 
   & ul,
   & ol {
-    list-style: none;
     padding-left: 0;
+    list-style: none;
 
     & li {
       margin-bottom: 0.4em;
 
       &::before {
-        font-weight: bold;
         margin-right: 5px;
+        font-weight: bold;
       }
 
       & p:first-child {
@@ -84,9 +84,9 @@ const htmlContent = computed(() =>
 
     & ul,
     & ol {
-      counter-reset: list-counter;
       padding-left: var(--space-16);
       margin-top: 0.4em;
+      counter-reset: list-counter;
     }
   }
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
 import { API } from "@api";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 
 import { Button, FunctionButton } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
@@ -28,7 +28,7 @@ export default defineComponent({
   data() {
     return {
       isDialogOpen: false,
-      debouncedUpdateAction: null as any,
+      debouncedUpdateAction: null as (() => void) | null,
     };
   },
   computed: {
@@ -143,18 +143,20 @@ export default defineComponent({
 @import url("@/assets/mixins.css");
 
 section.footer-wrapper {
+  height: 100%;
   background-color: var(--knime-yellow);
 
   & .grid-container {
+    height: 100%;
+
     & .update-bar {
-      height: var(--app-update-banner-height);
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       font-family: Roboto, sans-serif;
       font-size: 20px;
-      color: var(--knime-masala);
       font-weight: 600;
+      color: var(--knime-masala);
     }
   }
 }
@@ -165,12 +167,12 @@ section.footer-wrapper {
 }
 
 .dismiss-button {
-  width: 30px;
-  height: 30px;
-  margin-left: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-left: 10px;
   color: var(--knime-masala);
 }
 

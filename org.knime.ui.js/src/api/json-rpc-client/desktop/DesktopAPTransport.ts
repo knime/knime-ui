@@ -12,14 +12,14 @@ export class DesktopAPTransport extends Transport {
     this.rpcActionId = rpcActionId;
   }
 
-  public connect(): Promise<any> {
+  public connect(): Promise<void> {
     return Promise.resolve();
   }
 
   public async sendData(
     data: JSONRPCRequestData,
     timeout: number | null = null,
-  ): Promise<any> {
+  ): Promise<void> {
     const promise = this.transportRequestManager.addRequest(data, timeout);
 
     try {

@@ -33,9 +33,9 @@ const rounded = computed(() => round(props.progress * 100));
 <style lang="postcss" scoped>
 .not-ready {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
   margin-top: 60px;
   font-family: "Roboto Condensed", sans-serif;
@@ -58,8 +58,8 @@ unfinished part of the bar */
 
 /* Firefox */
 & progress[value]::-moz-progress-bar {
-  border-radius: var(--radius);
   background: var(--color);
+  border-radius: var(--radius);
 }
 
 & progress[value] {
@@ -70,13 +70,13 @@ unfinished part of the bar */
 }
 
 & progress[value]::-webkit-progress-bar {
-  border-radius: var(--radius);
   background: var(--background);
+  border-radius: var(--radius);
 }
 
 & progress[value]::-webkit-progress-value {
-  border-radius: var(--radius);
   background: var(--color);
+  border-radius: var(--radius);
   transition: width 0.3s ease-in-out;
 }
 

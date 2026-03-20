@@ -1,18 +1,28 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { nextTick } from "vue";
-import { flushPromises, shallowMount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 import { useRoute } from "vue-router";
 
 import { promise as promiseUtils } from "@knime/utils";
 
-import { isBrowser, isDesktop } from "@/environment";
+import { isBrowser, isDesktop, runInEnvironment } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 import { createSpaceProvider } from "@/test/factories";
 import { mockEnvironment } from "@/test/utils/mockEnvironment";
 import { mockStores } from "@/test/utils/mockStores";
 import DevTools from "../application/DevTools.vue";
+import DownloadBanner from "../application/DownloadBanner.vue";
 import ErrorOverlay from "../application/ErrorOverlay/ErrorOverlay.vue";
+import UpdateBanner from "../common/UpdateBanner.vue";
 
 vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();
@@ -78,13 +88,30 @@ describe("KnimeUI.vue", () => {
 
     const KnimeUI = (await import("../KnimeUI.vue")).default;
 
-    const wrapper = shallowMount(KnimeUI, {
+    const wrapper = mount(KnimeUI, {
       global: {
         plugins: [mockedStores.testingPinia],
         mocks: { $bus },
         stubs: {
+          AppHeader: true,
+          ErrorOverlay: true,
           RouterView: true,
           HotkeyHandler: true,
+          DownloadBanner: true,
+          UpdateBanner: true,
+          GlobalLoader: true,
+          DownloadProgressPanel: true,
+          UploadProgressPanel: true,
+          KdsDynamicModalProvider: true,
+          CreateWorkflowModal: true,
+          ShortcutsOverviewDialog: true,
+          DestinationPickerModal: true,
+          ChangeHubItemVersionModal: true,
+          ChangeLinkVariantModal: true,
+          ToastStack: true,
+          HintProvider: true,
+          BlockUi: true,
+          DevTools: true,
         },
       },
     });
@@ -98,37 +125,37 @@ describe("KnimeUI.vue", () => {
     };
   };
 
-  beforeEach(() => {
+  afterEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("does not display the UpdateBanner when dismissedUpdateBanner is true", async () => {
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+
     // @ts-expect-error
-    useRoute.mockReturnValue({
-      meta: { showUpdateBanner: true },
-    });
+    useRoute.mockReturnValue({ meta: { showUpdateBanner: true } });
 
     const { wrapper, mockedStores } = await doShallowMount();
 
-    expect(wrapper.find("update-banner-stub").exists()).toBe(true);
+    expect(wrapper.findComponent(UpdateBanner).exists()).toBe(true);
 
     mockedStores.applicationStore.dismissedUpdateBanner = true;
     await nextTick();
 
-    expect(wrapper.find("update-banner-stub").exists()).toBe(false);
+    expect(wrapper.findComponent(UpdateBanner).exists()).toBe(false);
   });
 
   it("renders UpdateBanner if showUpdateBanner in meta in router is true", async () => {
+    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+
     // @ts-expect-error
-    useRoute.mockReturnValue({
-      meta: { showUpdateBanner: true },
-    });
+    useRoute.mockReturnValue({ meta: { showUpdateBanner: true } });
 
     const { wrapper } = await doShallowMount();
     await flushPromises();
 
-    expect(wrapper.find("update-banner-stub").exists()).toBe(true);
-    expect(wrapper.find(".main-content-with-banner").exists()).toBe(true);
+    expect(wrapper.findComponent(UpdateBanner).exists()).toBe(true);
   });
 
   it("catches errors", async () => {
@@ -205,52 +232,71 @@ describe("KnimeUI.vue", () => {
   });
 
   it("shows download banner when required", async () => {
+    mockEnvironment("BROWSER", { isBrowser, isDesktop });
     const { wrapper, mockedStores } = await doShallowMount();
 
-    expect(wrapper.findComponent(".download-banner").exists()).toBe(false);
+    expect(wrapper.findComponent(DownloadBanner).exists()).toBe(false);
 
     mockedStores.uiControlsStore.shouldDisplayDownloadAPButton = true;
     await nextTick();
 
-    expect(wrapper.findComponent(".download-banner").exists()).toBe(true);
+    expect(wrapper.findComponent(DownloadBanner).exists()).toBe(true);
   });
 
-  it("sets CSS variable --app-main-content-height in desktop correctly", async () => {
-    mockEnvironment("DESKTOP", { isBrowser, isDesktop });
-    await doShallowMount();
+  describe("height layout variants", () => {
+    describe("desktop", () => {
+      it("sets inset-top variant", async () => {
+        vi.mocked(runInEnvironment).mockImplementation(
+          // eslint-disable-next-line new-cap
+          (matcher) => matcher.DESKTOP?.(),
+        );
+        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+        const { wrapper } = await doShallowMount();
 
-    const style = getComputedStyle(document.documentElement);
-    const appHeight = style
-      .getPropertyValue("--app-main-content-height")
-      .trim();
+        expect(wrapper.classes()).toEqual(["inset-top"]);
+      });
 
-    expect(appHeight).toBe("calc(100vh - var(--app-header-height))");
-  });
+      it("sets inset-both variant", async () => {
+        vi.mocked(runInEnvironment).mockImplementation(
+          // eslint-disable-next-line new-cap
+          (matcher) => matcher.DESKTOP?.(),
+        );
+        mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+        // @ts-expect-error
+        useRoute.mockReturnValue({ meta: { showUpdateBanner: true } });
 
-  it("sets CSS variable --app-main-content-height in browser correctly", async () => {
-    mockEnvironment("BROWSER", { isBrowser, isDesktop });
-    await doShallowMount();
+        const { wrapper } = await doShallowMount();
 
-    const style = getComputedStyle(document.documentElement);
-    const appHeight = style
-      .getPropertyValue("--app-main-content-height")
-      .trim();
-
-    expect(appHeight).toBe("100vh");
-  });
-
-  it("sets CSS variable --app-main-content-height with download banner correctly", async () => {
-    mockEnvironment("BROWSER", { isBrowser, isDesktop });
-    await doShallowMount({
-      uiControlsOverrides: { shouldDisplayDownloadAPButton: true },
+        expect(wrapper.classes()).toEqual(["inset-both"]);
+      });
     });
 
-    const style = getComputedStyle(document.documentElement);
-    const appHeight = style
-      .getPropertyValue("--app-main-content-height")
-      .trim();
+    describe("browser", () => {
+      it("sets inset-top variant", async () => {
+        vi.mocked(runInEnvironment).mockImplementation(
+          // eslint-disable-next-line new-cap
+          (matcher) => matcher.BROWSER?.(),
+        );
+        mockEnvironment("BROWSER", { isBrowser, isDesktop });
+        const { wrapper } = await doShallowMount();
 
-    expect(appHeight).toBe("calc(100vh - var(--app-download-banner-height))");
+        expect(wrapper.classes()).toEqual(["full"]);
+      });
+
+      it("sets inset-both variant", async () => {
+        vi.mocked(runInEnvironment).mockImplementation(
+          // eslint-disable-next-line new-cap
+          (matcher) => matcher.BROWSER?.(),
+        );
+        mockEnvironment("BROWSER", { isBrowser, isDesktop });
+
+        const { wrapper, mockedStores } = await doShallowMount();
+        mockedStores.uiControlsStore.shouldDisplayDownloadAPButton = true;
+        await nextTick();
+
+        expect(wrapper.classes()).toEqual(["inset-bottom"]);
+      });
+    });
   });
 
   describe("clipboard support", () => {

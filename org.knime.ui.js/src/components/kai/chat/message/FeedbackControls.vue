@@ -74,21 +74,21 @@ const clickSubmitFeedback = async (feedback: {
 .feedback-controls {
   display: inline-flex;
   flex-direction: row;
-  margin-top: var(--kds-spacing-container-0-25x);
   gap: var(--kds-spacing-container-0-5x);
+  margin-top: var(--kds-spacing-container-0-25x);
 
   & .button {
+    position: relative;
     width: 20px;
     height: 20px;
     padding: 0;
-    position: relative;
 
     & svg.icon {
       @mixin svg-icon-size 12;
 
       position: absolute;
-      left: 4px;
       top: 3px;
+      left: 4px;
       stroke: var(--knime-dove-gray);
     }
   }
@@ -110,8 +110,8 @@ const clickSubmitFeedback = async (feedback: {
   }
 
   & .thank-you {
-    font-size: 12px;
     padding-top: var(--kds-spacing-container-0-12x);
+    font-size: 12px;
   }
 }
 

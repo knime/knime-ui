@@ -92,9 +92,9 @@ const emit = defineEmits<{
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   & .dropdown-icon {
-    margin-left: 5px;
-    margin-right: 5px;
     margin-top: 3px;
+    margin-right: 5px;
+    margin-left: 5px;
 
     @mixin svg-icon-size 12;
 

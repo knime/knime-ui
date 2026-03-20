@@ -248,7 +248,7 @@ describe("workflow::clipboardInteractions", () => {
     });
 
     expect(clipboardMock.getContent()).toStrictEqual({
-      cacheClipboardContentId: "clipboard_cache_3",
+      cacheClipboardContentId: expect.stringMatching(/clipboard_cache_/),
     });
 
     // toast

@@ -79,9 +79,9 @@ useEventListener(panel, "click", (event) => {
 
 /* style reset */
 dialog {
-  border: none;
   padding: 0;
   color: var(--knime-masala);
+  border: none;
 
   &:focus-visible {
     outline: none;
@@ -105,13 +105,13 @@ dialog {
   background-color: var(--kds-color-surface-default);
 
   &.small {
-    display: block;
     position: relative;
+    display: block;
   }
 
   &.large {
-    height: 95vh;
     width: 95vw;
+    height: 95vh;
   }
 }
 </style>

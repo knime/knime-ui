@@ -158,13 +158,13 @@ const reportingEnabled = computed({
 /* when dragging from available nodes/elements over layout,
   this list element will temporarily be added to the layout */
 .layout-preview li.sortable-ghost {
+  width: 100%;
+  height: 50px;
+  margin: 5px 0;
+  color: transparent;
   list-style: none;
   background-color: var(--knime-aquamarine);
   border-radius: 3px;
-  margin: 5px 0;
-  width: 100%;
-  height: 50px;
-  color: transparent;
 
   &.quickform,
   &.configuration {
@@ -172,9 +172,9 @@ const reportingEnabled = computed({
   }
 
   &.row {
-    border: 4px solid var(--knime-silver-sand);
-    background-color: transparent;
     min-height: 68px;
+    background-color: transparent;
+    border: 4px solid var(--knime-silver-sand);
   }
 
   & * {
@@ -187,18 +187,18 @@ const reportingEnabled = computed({
 @import url("@/assets/mixins.css");
 
 .container {
-  background-color: var(--knime-white);
   display: flex;
   height: 100%;
+  background-color: var(--knime-white);
 }
 
 .sidebar {
-  background-color: var(--knime-gray-light-semi);
-  height: 100%;
-  padding: var(--space-12) var(--space-12) 0 var(--space-16);
-  width: 300px;
   display: flex;
   flex-direction: column;
+  width: 300px;
+  height: 100%;
+  padding: var(--space-12) var(--space-12) 0 var(--space-16);
+  background-color: var(--knime-gray-light-semi);
 
   & .reporting-label {
     margin-top: auto;
@@ -208,18 +208,18 @@ const reportingEnabled = computed({
 
 .controls {
   display: flex;
-  justify-content: center;
   gap: var(--space-4);
+  justify-content: center;
 }
 
 .layout {
-  display: flex;
-  flex-direction: column;
   position: relative;
-  overflow-y: auto;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   height: 100%;
   padding: 0 var(--space-16);
-  flex: 1;
+  overflow-y: auto;
 }
 
 .layout-preview {
@@ -236,11 +236,11 @@ const reportingEnabled = computed({
 }
 
 .legacy-info {
-  border: none;
-  background-color: var(--knime-carrot);
-  height: 14px;
   width: 14px;
+  height: 14px;
   padding: 0;
+  background-color: var(--knime-carrot);
+  border: none;
 }
 
 .legacy-checkbox,

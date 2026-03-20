@@ -1,5 +1,3 @@
-/* eslint-disable one-var */
-/* eslint-disable func-style */
 import { getLocation, visit } from "jsonc-parser";
 import * as monaco from "monaco-editor";
 

@@ -32,16 +32,16 @@ defineProps<Props>();
   }
 
   & ul {
-    margin: 0;
-    padding: 8px 0;
-    list-style-type: none;
     max-height: 300px;
+    padding: 8px 0;
+    margin: 0;
     overflow-y: auto;
+    list-style-type: none;
 
     & li {
       display: flex;
-      align-items: center;
       gap: 4px;
+      align-items: center;
 
       & svg {
         @mixin svg-icon-size 14;

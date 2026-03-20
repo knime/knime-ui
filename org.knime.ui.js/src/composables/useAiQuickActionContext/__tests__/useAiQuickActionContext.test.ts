@@ -42,9 +42,11 @@ describe("useAiQuickActionContext", () => {
     } catch (error) {
       const message = (error as Error).message;
       const parsed = JSON.parse(message);
+      // eslint-disable-next-line vitest/no-conditional-expect
       expect(parsed.detail.code).toBe(
         KaiQuickActionError.CodeEnum.VALIDATIONERROR,
       );
+      // eslint-disable-next-line vitest/no-conditional-expect
       expect(parsed.detail.message).toContain("Unsupported quick action");
     }
   });

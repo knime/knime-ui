@@ -17,6 +17,7 @@ import workflowShortcuts from "./workflowShortcuts";
 
 // This interface will be enhanced and extended by the
 // other files which also declare shortcuts
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ShortcutsRegistry {}
 
 // chains a group condition before each individual shortcut condition

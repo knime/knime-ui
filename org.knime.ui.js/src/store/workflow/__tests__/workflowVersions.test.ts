@@ -116,7 +116,7 @@ vi.mock("@knime/kds-components", () => ({
   }),
 }));
 
-let useUnsavedChangesDialogMock = vi.hoisted(() =>
+const useUnsavedChangesDialogMock = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ action: UnsavedChangesAction.CANCEL })),
 );
 vi.mock(

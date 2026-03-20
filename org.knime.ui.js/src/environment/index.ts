@@ -1,5 +1,3 @@
-/* eslint-disable func-style */
-/* eslint-disable no-undefined */
 import type { App } from "vue";
 
 import DynamicEnvRenderer from "./DynamicEnvRenderer.vue";
@@ -63,7 +61,7 @@ export function runInEnvironment<R>(matcher: BothMatcher<R>): R;
 // 2) exactly one matcher → return R | undefined (no promise requirement)
 export function runInEnvironment<R>(matcher: OneMatcher<R>): R | undefined;
 
-export function runInEnvironment(matcher: any) {
+export function runInEnvironment<R>(matcher: OneMatcher<R> | BothMatcher<R>) {
   const noop = () => Promise.resolve(undefined);
 
   return (matcher[environment] ?? noop)();

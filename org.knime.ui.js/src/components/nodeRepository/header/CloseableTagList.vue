@@ -108,12 +108,12 @@ onClickOutside(closeableTagsRef, () => {
 .closeable-tags {
   display: flex;
   flex-wrap: wrap;
-  justify-content: left;
   align-items: flex-start;
+  justify-content: left;
 
   & .popout {
-    height: 30px;
     width: 100%;
+    height: 30px;
   }
 
   & .tag-list {
@@ -127,18 +127,18 @@ onClickOutside(closeableTagsRef, () => {
       height: var(--space-24);
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
       font-size: 13px;
       line-height: 15px;
+      white-space: nowrap;
     }
 
     &.show-all {
       /* if all items are shown we need to wrap */
       flex-wrap: wrap;
-      padding-bottom: 13px;
 
       /* The 230px is the fixed part of the apps header that has a fixed size. */
       max-height: calc(90vh - 230px);
+      padding-bottom: 13px;
       overflow: auto;
       background-color: var(--sidebar-background-color);
     }
@@ -146,21 +146,21 @@ onClickOutside(closeableTagsRef, () => {
 
   & .tags-popout-close {
     position: relative;
-    border: none;
-    width: 100%;
-    padding: 0;
     display: flex;
-    height: 12px;
     justify-content: center;
-    background-color: var(--knime-porcelain);
+    width: 100%;
+    height: 12px;
+    padding: 0;
     cursor: pointer;
+    background-color: var(--knime-porcelain);
+    border: none;
     border-bottom: 1px solid var(--knime-silver-sand);
     box-shadow: var(--knime-gray-dark-semi) 0 5px 6px;
 
     &::before {
       position: absolute;
-      content: "";
       inset: 0;
+      content: "";
       background-color: var(--knime-porcelain);
     }
 

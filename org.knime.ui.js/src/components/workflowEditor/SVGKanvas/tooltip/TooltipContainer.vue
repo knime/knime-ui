@@ -31,13 +31,12 @@ const zoomedGap = computed(() => {
 });
 const setPosition = () => {
   if (!tooltip.value) {
-    // eslint-disable-next-line no-undefined
     position.value = undefined;
     return;
   }
 
   // get coordinates relative to kanvas' bounds
-  let { anchorPoint = { x: 0, y: 0 }, position: currentPosition } =
+  const { anchorPoint = { x: 0, y: 0 }, position: currentPosition } =
     tooltip.value;
   position.value = canvasStore.value.screenFromCanvasCoordinates({
     x: anchorPoint.x + currentPosition.x,
@@ -54,14 +53,14 @@ const onCanvasScroll = () => {
 const openTooltip = () => {
   consola.trace("add kanvas scroll listener for tooltips");
 
-  let kanvas = getKanvasDomElement();
+  const kanvas = getKanvasDomElement();
   kanvas?.addEventListener("scroll", onCanvasScroll);
 };
 
 const closeTooltip = () => {
   consola.trace("remove kanvas scroll listener for tooltips");
 
-  let kanvas = getKanvasDomElement();
+  const kanvas = getKanvasDomElement();
   // if kanvas currently exists (workflow is open) remove scroll event listener
   kanvas?.removeEventListener("scroll", onCanvasScroll);
 };
@@ -111,9 +110,9 @@ onBeforeUnmount(() => {
 
 <style lang="postcss" scoped>
 .tooltip-container {
-  z-index: v-bind("$zIndices.layerCanvasTooltips");
   position: fixed;
   top: 0;
+  z-index: v-bind("$zIndices.layerCanvasTooltips");
   height: 0;
 
   & .tooltip-enter-active {

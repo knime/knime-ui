@@ -123,18 +123,18 @@ const saveProject = async () => {
   position: relative;
   display: flex;
   flex-shrink: 0;
+
+  /** size medium */
+  gap: var(--kds-spacing-container-0-25x);
   align-items: center;
   justify-content: center;
   min-width: 15px;
   max-width: 100%;
-  overflow: hidden;
-
-  /** size medium */
-  gap: var(--kds-spacing-container-0-25x);
   height: var(--kds-dimension-component-height-1-75x);
   padding: 0
     calc(var(--kds-spacing-container-0-37x) - var(--kds-core-border-width-xs)); /* needed as border in Figma is not increasing the width */
 
+  overflow: hidden;
   font: var(--kds-font-base-interactive-medium-strong);
   border-radius: var(
     --kds-legacy-button-border-radius,

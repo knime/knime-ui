@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, watch } from "vue";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit/function";
 import { storeToRefs } from "pinia";
 
 import { SplitPanel } from "@knime/components";
@@ -152,8 +152,8 @@ const panelStore = usePanelStore();
 
 <style lang="postcss" scoped>
 .workflow-panel {
-  height: 100%;
   width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 

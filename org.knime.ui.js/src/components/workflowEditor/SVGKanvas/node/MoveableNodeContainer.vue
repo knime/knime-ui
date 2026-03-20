@@ -152,8 +152,8 @@ const onPointerDown = async (event: PointerEvent) => {
 
 <style lang="postcss" scoped>
 .dragging {
-  cursor: grabbing;
   pointer-events: none;
+  cursor: grabbing;
 
   & :deep() {
     & * {

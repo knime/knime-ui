@@ -20,7 +20,7 @@ import { useNodeConfigurationStore } from "../nodeConfiguration";
 
 vi.mock("@/environment");
 
-let useUnsavedChangesDialogMock = vi.hoisted(() =>
+const useUnsavedChangesDialogMock = vi.hoisted(() =>
   vi.fn(() => Promise.resolve({ action: UnsavedChangesAction.CANCEL })),
 );
 vi.mock(

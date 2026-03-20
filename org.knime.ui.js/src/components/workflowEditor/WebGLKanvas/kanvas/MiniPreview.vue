@@ -23,7 +23,6 @@ const backgroundColor = (nodeId: string): string | undefined => {
   const node = activeWorkflow.value?.nodes[nodeId];
 
   if (!node) {
-    // eslint-disable-next-line no-undefined
     return undefined;
   }
 

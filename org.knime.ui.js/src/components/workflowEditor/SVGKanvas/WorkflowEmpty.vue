@@ -74,8 +74,8 @@ rect {
   fill: none;
 
   &.dashed {
-    stroke-width: 3;
     stroke: var(--knime-gray-dark-semi);
+    stroke-width: 3;
     stroke-linecap: square;
     stroke-dasharray: 9 19;
   }
@@ -86,12 +86,12 @@ svg {
 }
 
 text {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 24px;
+  font-weight: normal;
   dominant-baseline: middle;
+  user-select: none;
   text-anchor: middle;
   fill: var(--knime-masala);
-  font-family: "Roboto Condensed", sans-serif;
-  font-weight: normal;
-  font-size: 24px;
-  user-select: none;
 }
 </style>

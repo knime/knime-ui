@@ -90,20 +90,20 @@ useFloatingMenuClickaway({
 });
 
 const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {
-  let kanvas = getKanvasDomElement();
-  let { y, x, width, height } = kanvas!.getBoundingClientRect();
+  const kanvas = getKanvasDomElement();
+  const { y, x, width, height } = kanvas!.getBoundingClientRect();
 
   // find distance of point to all edges
-  let leftDistance = x - left;
-  let rightDistance = left - x - width;
-  let topDistance = y - top;
-  let bottomDistance = top - y - height;
+  const leftDistance = x - left;
+  const rightDistance = left - x - width;
+  const topDistance = y - top;
+  const bottomDistance = top - y - height;
 
   // find distance to closest horizontal edge, if outside canvas
-  let distanceX = Math.max(Math.max(leftDistance, rightDistance), 0);
+  const distanceX = Math.max(Math.max(leftDistance, rightDistance), 0);
 
   // find distance to closest vertical edge, if outside canvas
-  let distanceY = Math.max(Math.max(topDistance, bottomDistance), 0);
+  const distanceY = Math.max(Math.max(topDistance, bottomDistance), 0);
 
   // return greatest distance
   return Math.max(distanceX, distanceY);
@@ -120,12 +120,12 @@ const setAbsolutePosition = () => {
   );
 
   // if the target point is outside the canvas, first reduce opacity then close menu
-  let distance = distanceToCanvas({ left, top });
+  const distance = distanceToCanvas({ left, top });
 
   // linear fading depending on distance
   const distanceThreshold = 50;
 
-  let alpha = Math.max(0, distanceThreshold - distance) / distanceThreshold;
+  const alpha = Math.max(0, distanceThreshold - distance) / distanceThreshold;
   rootEl.value.style.opacity = alpha.toString();
 
   // close menu if outside threshold
@@ -184,13 +184,13 @@ useResizeObserver(rootEl, () => {
 onMounted(() => {
   setAbsolutePosition();
 
-  let kanvas = getKanvasDomElement();
+  const kanvas = getKanvasDomElement();
   kanvas?.addEventListener("scroll", onCanvasScroll);
 });
 
 onBeforeUnmount(() => {
   // if kanvas currently exists (workflow is open) remove scroll event listener
-  let kanvas = getKanvasDomElement();
+  const kanvas = getKanvasDomElement();
   kanvas?.removeEventListener("scroll", onCanvasScroll);
 });
 </script>
@@ -211,8 +211,8 @@ onBeforeUnmount(() => {
 <style lang="postcss" scoped>
 .floating-menu {
   position: absolute;
-  display: block;
   z-index: v-bind("$zIndices.layerExpandedMenus");
+  display: block;
 
   &:focus {
     outline: none;

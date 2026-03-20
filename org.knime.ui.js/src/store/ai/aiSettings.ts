@@ -126,13 +126,13 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     userIdHash: string;
     stableProjectId: string;
   };
-  type SettingKeys = {
-    (scope: "user"): SettingKeysUserScoped | null;
-    (scope?: "project"): SettingKeysProjectScoped | null;
-  };
-  const getSettingKeys: SettingKeys = (
+
+  // Overloads
+  function getSettingKeys(scope: "user"): SettingKeysUserScoped | null;
+  function getSettingKeys(scope?: "project"): SettingKeysProjectScoped | null;
+  function getSettingKeys(
     scope: "user" | "project" = "project",
-  ): any => {
+  ): SettingKeysUserScoped | SettingKeysProjectScoped | null {
     const userIdHash = getHashForCurrentHubUser();
     if (!userIdHash) {
       return null;
@@ -148,7 +148,7 @@ export const useAISettingsStore = defineStore("aiSettings", () => {
     }
 
     return { userIdHash, stableProjectId };
-  };
+  }
 
   // === DISCLAIMER DISMISSAL ===
   // The disclaimer dismissal is scoped per Hub+user so that a desktop AP user

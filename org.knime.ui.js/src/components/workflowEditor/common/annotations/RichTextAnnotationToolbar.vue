@@ -232,22 +232,22 @@ const changeBorderColor = (color: string) => {
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   display: flex;
-  justify-content: center;
-  background: var(--knime-white);
   gap: calc(v-bind(toolbarItemGap) * 1px);
-  padding: calc(v-bind(toolbarItemPadding) * 1px);
+  justify-content: center;
   width: calc(v-bind(toolbarWidth) * 1px);
   height: 48px;
-  box-shadow: var(--shadow-elevation-1);
+  padding: calc(v-bind(toolbarItemPadding) * 1px);
+  background: var(--knime-white);
   border-radius: 30px;
+  box-shadow: var(--shadow-elevation-1);
 
   & .toolbar-button,
   & .border-color-tool {
+    align-items: center;
+    justify-content: center;
     width: calc(v-bind(toolbarItemSize) * 1px);
     height: calc(v-bind(toolbarItemSize) * 1px);
     padding: 0;
-    justify-content: center;
-    align-items: center;
   }
 
   & .toolbar-button {
@@ -262,17 +262,17 @@ const changeBorderColor = (color: string) => {
 
     & .heading-current-text {
       max-width: 100%;
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     & :deep(.submenu-toggle) {
-      width: 100%;
-      padding: 0 10px;
-      height: calc(v-bind(toolbarItemSize) * 1px);
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: calc(v-bind(toolbarItemSize) * 1px);
+      padding: 0 10px;
     }
 
     & :deep(.submenu-toggle) svg {

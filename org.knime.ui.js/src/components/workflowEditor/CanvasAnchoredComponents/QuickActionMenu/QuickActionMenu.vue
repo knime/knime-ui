@@ -75,7 +75,7 @@ const { activeMode, availableModes } = useQuickActionMenuMode({
 });
 
 const canvasPosition = computed(() => {
-  let pos = { ...props.position };
+  const pos = { ...props.position };
   const halfPort = $shapes.portSize / 2;
 
   // x: align with the port arrow (position is the center of the port)
@@ -112,9 +112,9 @@ const fakePortConnector = computed<DragConnector>(() => {
     absolutePoint: [props.position.x, props.position.y],
     allowedActions: { canDelete: false },
     interactive: false,
-    // eslint-disable-next-line no-undefined
+
     [fakeNode]: props.nodeId ?? undefined,
-    // eslint-disable-next-line no-undefined
+
     [fakePort]: portIndex.value ?? undefined,
   };
 });
@@ -235,17 +235,17 @@ const resetMenuStyleConfig = () => {
 @import url("@/assets/mixins.css");
 
 .quick-action-content {
-  box-shadow: var(--shadow-elevation-1);
-  background: var(--knime-gray-ultra-light);
   display: flex;
   flex-direction: column;
-  border-radius: 8px;
   overflow: hidden;
+  background: var(--knime-gray-ultra-light);
+  border-radius: 8px;
+  box-shadow: var(--shadow-elevation-1);
 
   & .mode-switcher {
-    padding: 10px 10px 0;
     display: flex;
     align-items: center;
+    padding: 10px 10px 0;
 
     & .close-menu-btn {
       margin-left: auto;
@@ -253,12 +253,12 @@ const resetMenuStyleConfig = () => {
   }
 
   & .footer {
-    margin-top: auto;
-    flex: none;
-    height: 46px;
     display: flex;
-    justify-content: center;
+    flex: none;
     align-items: center;
+    justify-content: center;
+    height: 46px;
+    margin-top: auto;
     border-top: 1px solid var(--knime-silver-sand);
   }
 }

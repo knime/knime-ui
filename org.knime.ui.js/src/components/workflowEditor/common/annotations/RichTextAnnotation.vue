@@ -106,12 +106,12 @@ const isBrowserWebKit = computed(
   position: absolute;
   top: -60px;
   left: 50%;
-  translate: -50%;
   z-index: v-bind("$zIndices.layerExpandedMenus");
 
   /* undo the transform applied to the parent */
   transform: scale(v-bind(1 / zoomFactor));
   transform-origin: bottom center;
+  translate: -50%;
 }
 
 .annotation-editor {

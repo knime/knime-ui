@@ -202,17 +202,17 @@ const isItemInPrivateSpace = computed(() => {
 }
 
 .manage-versions-wrapper {
-  isolation: isolate;
   position: relative;
   height: 100%;
   overflow: hidden;
+  isolation: isolate;
 
   & .create-version-drawer {
+    position: absolute;
+    inset: 0;
     z-index: 2;
     display: flex;
     flex-direction: column;
-    position: absolute;
-    inset: 0;
   }
 }
 

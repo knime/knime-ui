@@ -41,10 +41,10 @@ const optionLabel = computed(() => {
 .inquiry-response-trace {
   display: grid;
   grid-template-columns: 16px 1fr minmax(0, 20%);
-  align-items: center;
   gap: var(--kds-spacing-container-0-5x);
-  color: var(--knime-dove-gray);
+  align-items: center;
   font-size: 13px;
+  color: var(--knime-dove-gray);
 
   & .icon {
     @mixin svg-icon-size 14;
@@ -53,8 +53,8 @@ const optionLabel = computed(() => {
   }
 
   & .title {
-    font-size: 11px;
     min-width: 0;
+    font-size: 11px;
   }
 
   & .option-label {

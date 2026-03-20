@@ -399,14 +399,14 @@ const openAnnotationLinks = (event: PIXI.FederatedPointerEvent) => {
 @import url("@knime/styles/css/rich-text-editor.css");
 
 .static-workflow-annotation {
-  font-family: "Roboto Condensed", sans-serif;
   padding: 10px;
-  font-variant-ligatures: none;
   overflow: hidden;
-  background: white;
-  white-space: break-spaces;
+  font-family: "Roboto Condensed", sans-serif;
+  font-variant-ligatures: none;
   word-break: normal;
   overflow-wrap: anywhere;
+  white-space: break-spaces;
+  background: white;
 
   @mixin rich-text-editor-styles;
 

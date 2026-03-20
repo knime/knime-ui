@@ -1,5 +1,4 @@
-/* eslint-disable no-magic-numbers */
-import { Page, test } from "@playwright/test";
+import { type Page, test } from "@playwright/test";
 
 import {
   assertSnapshot,
@@ -295,6 +294,7 @@ test.describe("context menu", () => {
     const kanvasBox = await getKanvasBoundingBox(page);
     return [kanvasBox!.x + 200, kanvasBox!.y + 200];
   };
+
   test.describe("non-empty workflows", () => {
     test("should open with mouse", async ({ page }) => {
       await startApplication(page, {

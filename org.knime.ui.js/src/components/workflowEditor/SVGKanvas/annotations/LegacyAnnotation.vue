@@ -55,13 +55,12 @@ export default defineComponent({
   },
 
   methods: {
-    getFontSize(part: any) {
+    getFontSize(part: { fontSize?: number }) {
       return part.fontSize
         ? `${
             part.fontSize * this.$shapes.annotationsFontSizePointToPixelFactor
           }px`
-        : // eslint-disable-next-line no-undefined
-          undefined;
+        : undefined;
     },
   },
 });

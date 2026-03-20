@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { groupBy } from "lodash-es";
+import { groupBy } from "es-toolkit/array";
 import { storeToRefs } from "pinia";
 
 import { SearchInput } from "@knime/components";
@@ -92,7 +92,7 @@ const groupedShortcuts = computed(() =>
   <KdsModal
     :active="isOpen"
     headline="Shortcuts"
-    icon="shortcuts"
+    leading-icon="shortcuts"
     width="xlarge"
     closedby="any"
     height="full"
@@ -158,52 +158,52 @@ const groupedShortcuts = computed(() =>
 @import url("@/assets/mixins.css");
 
 .search {
-  padding: var(--modal-padding-top) var(--modal-padding-right) var(--modal-gap)
-    var(--modal-padding-left);
+  padding: var(--modal-padding-top, 0) var(--modal-padding-right, 0)
+    var(--modal-gap, 0) var(--modal-padding-left, 0);
   margin-bottom: 10px;
 }
 
 .shortcut-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 450px));
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 445px));
   grid-auto-rows: min-content;
   grid-auto-flow: row dense;
-  gap: 0 var(--modal-gap);
-  padding: 0 var(--modal-padding-right) var(--modal-padding-bottom)
-    var(--modal-padding-left);
-  font: var(--kds-font-base-small);
-  overflow: hidden auto;
+  gap: 0 var(--modal-gap, 0);
+  align-items: start;
   height: 100%;
+  padding: 0 var(--modal-padding-right, 0) var(--modal-padding-bottom, 0)
+    var(--modal-padding-left, 0);
+  overflow: hidden auto;
+  font: var(--kds-font-base-body-small);
 
   & .group {
     align-self: start;
   }
 
   & h2 {
+    padding: 0 5px;
     margin: 15px 0;
     font-size: 16px;
     font-weight: 500;
     line-height: 36px;
-    padding: 0 5px;
     border-bottom: 1px solid var(--knime-silver-sand);
   }
 
   & .shortcut {
-    margin-bottom: 15px;
+    position: relative;
     display: grid;
-    gap: 10px;
     grid-template-columns: auto max-content;
+    gap: 10px;
     align-items: center;
     padding: 0 5px;
-    position: relative;
+    margin-bottom: 15px;
 
     & .arrow {
       @mixin svg-icon-size 12;
 
-      display: none;
       position: absolute;
       left: -11px;
+      display: none;
       stroke: var(--knime-black);
     }
 
@@ -230,8 +230,8 @@ const groupedShortcuts = computed(() =>
       white-space: pre-wrap;
 
       & .hotkey {
-        text-align: right;
         margin-left: auto;
+        text-align: right;
       }
 
       & .additional {

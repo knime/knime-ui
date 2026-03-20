@@ -1,9 +1,9 @@
 import { type ComputedRef, computed, onBeforeUnmount, watch } from "vue";
+import { clamp } from "es-toolkit/math";
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { isInputElement } from "@/lib/dom";
-import { clamp } from "@/lib/math";
 import { useSelectionStore } from "@/store/selection";
 import type {
   SelectedPortContext,

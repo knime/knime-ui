@@ -62,12 +62,12 @@ const borderOffset = computed(() => {
 
 <style scoped>
 .progress {
+  font-family: "Roboto Condensed", sans-serif;
   font-size: 10px;
+  font-weight: normal;
   dominant-baseline: middle;
+  user-select: none;
   text-anchor: middle;
   fill: var(--knime-masala);
-  font-family: "Roboto Condensed", sans-serif;
-  font-weight: normal;
-  user-select: none;
 }
 </style>

@@ -1,4 +1,3 @@
-/* eslint-disable no-undefined */
 import { type Ref, computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
@@ -65,8 +64,8 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     if (isComponent) {
       return {
         isComponent: true,
-        inPorts: [] as any[],
-        outPorts: [] as any[],
+        inPorts: [],
+        outPorts: [],
         type: item.meta?.type,
         icon: undefined,
       };

@@ -134,12 +134,12 @@ const onPointerLeave = () => {
 
 .tooltip-container {
   z-index: v-bind("$zIndices.layerCanvasTooltips");
-  background-color: var(--knime-masala);
-  color: var(--knime-white);
   max-width: 370px;
   padding: var(--space-4) var(--space-8);
-  font-size: 13px;
   font-family: "Roboto Condensed", sans-serif;
+  font-size: 13px;
+  color: var(--knime-white);
+  background-color: var(--knime-masala);
   box-shadow: 0 0 10px rgb(62 58 57 / 30%);
 
   &:not(.hoverable) {
@@ -162,20 +162,20 @@ const onPointerLeave = () => {
 
   & .issue {
     font-family: "Roboto Mono", sans-serif;
-    line-height: 13px;
     font-size: 11px;
     font-weight: 400;
+    line-height: 13px;
     white-space: pre-wrap;
   }
 
   & .resolutions {
-    line-height: 18px;
     font-size: 13px;
     font-weight: 500;
+    line-height: 18px;
 
     & ul {
-      margin: 0;
       padding-left: 15px;
+      margin: 0;
       font-weight: 400;
     }
   }
@@ -196,38 +196,38 @@ const onPointerLeave = () => {
       left: calc(var(--arrow-size) * -1);
       width: 0;
       height: 0;
-      border-left: var(--arrow-size) solid transparent;
       border-right: var(--arrow-size) solid transparent;
+      border-left: var(--arrow-size) solid transparent;
     }
 
     &.bottom {
       top: calc(var(--arrow-size) * -1);
-      border-left: var(--arrow-size) solid transparent;
       border-right: var(--arrow-size) solid transparent;
       border-bottom: var(--arrow-size) solid var(--knime-masala);
+      border-left: var(--arrow-size) solid transparent;
     }
 
     &.top {
       bottom: calc(var(--arrow-size) * -1);
-      border-left: var(--arrow-size) solid transparent;
-      border-right: var(--arrow-size) solid transparent;
       border-top: var(--arrow-size) solid var(--knime-masala);
+      border-right: var(--arrow-size) solid transparent;
+      border-left: var(--arrow-size) solid transparent;
     }
   }
 
   &.warning {
+    padding: var(--space-8);
     color: var(--knime-masala);
     background-color: var(--knime-white);
     border: 1px solid v-bind("$colors.warning");
-    padding: var(--space-8);
 
     & .tooltip-arrow {
       &.bottom {
         border-bottom: var(--arrow-size) solid v-bind("$colors.warning");
 
         & .tooltip-arrow-inner {
-          border-bottom: var(--arrow-size) solid var(--knime-white);
           top: 1px;
+          border-bottom: var(--arrow-size) solid var(--knime-white);
         }
       }
 
@@ -235,26 +235,26 @@ const onPointerLeave = () => {
         border-top: var(--arrow-size) solid v-bind("$colors.warning");
 
         & .tooltip-arrow-inner {
-          border-top: var(--arrow-size) solid var(--knime-white);
           bottom: 1px;
+          border-top: var(--arrow-size) solid var(--knime-white);
         }
       }
     }
   }
 
   &.error {
+    padding: var(--space-8);
     color: var(--knime-masala);
     background-color: var(--knime-white);
     border: 1px solid v-bind("$colors.error");
-    padding: var(--space-8);
 
     & .tooltip-arrow {
       &.bottom {
         border-bottom: var(--arrow-size) solid v-bind("$colors.error");
 
         & .tooltip-arrow-inner {
-          border-bottom: var(--arrow-size) solid var(--knime-white);
           top: 1px;
+          border-bottom: var(--arrow-size) solid var(--knime-white);
         }
       }
 
@@ -262,8 +262,8 @@ const onPointerLeave = () => {
         border-top: var(--arrow-size) solid v-bind("$colors.error");
 
         & .tooltip-arrow-inner {
-          border-top: var(--arrow-size) solid var(--knime-white);
           bottom: 1px;
+          border-top: var(--arrow-size) solid var(--knime-white);
         }
       }
     }

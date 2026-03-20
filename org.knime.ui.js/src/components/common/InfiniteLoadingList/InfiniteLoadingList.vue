@@ -6,7 +6,7 @@ import { createStaggeredTimer } from "@/lib/timers";
 
 type Props = {
   isLoading: boolean;
-  fetchMore: () => Promise<any>;
+  fetchMore: () => Promise<void>;
 };
 const props = defineProps<Props>();
 

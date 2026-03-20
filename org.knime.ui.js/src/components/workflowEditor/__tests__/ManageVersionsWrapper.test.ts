@@ -91,15 +91,15 @@ const someError = new BackendError(-32600, {
 });
 const toast = getToastsProvider();
 
-const eventHandlers: Set<Function> = new Set();
+const eventHandlers: Set<(...args: any[]) => void> = new Set();
 
 vi.mock("@vueuse/core", async (importOriginal) => {
   const actual = (await importOriginal()) as object;
   return {
     ...(actual as object),
     useEventBus: vi.fn(() => ({
-      on: (handler: Function) => eventHandlers.add(handler),
-      off: (handler: Function) => eventHandlers.delete(handler),
+      on: (handler: (...args: any[]) => void) => eventHandlers.add(handler),
+      off: (handler: (...args: any[]) => void) => eventHandlers.delete(handler),
       emit: (...args: any[]) => {
         for (const handler of eventHandlers) {
           handler(...args);

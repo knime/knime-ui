@@ -49,13 +49,10 @@ describe("Tooltip", () => {
     const props = { x: 123, y: 345, gap: 10 };
     const wrapper = doShallowMount(props);
 
-    let gap = props.gap + Math.SQRT1_2 * $shapes.tooltipArrowSize;
+    const gap = props.gap + Math.SQRT1_2 * $shapes.tooltipArrowSize;
     expect(wrapper.attributes("style")).toContain("left: 123px;");
     expect(wrapper.attributes("style")).toContain("top: 345px;");
-    expect(wrapper.attributes("style")).toContain(`--gap-size: ${gap}`);
-    expect(wrapper.attributes("style")).toContain(
-      `--arrow-size: ${$shapes.tooltipArrowSize}`,
-    );
+    expect(wrapper.vm.expandedGap).toBe(gap);
   });
 
   it("sets maximum size", () => {

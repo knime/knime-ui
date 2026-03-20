@@ -26,7 +26,6 @@ import type { NodeCategoryWithExtendedPorts } from "./types";
 const hasAllObjectPropertiesDefined = <T extends object>(
   object: T,
 ): object is Required<T> => {
-  // eslint-disable-next-line no-undefined
   return Object.values(object).every((prop) => prop !== undefined);
 };
 
@@ -242,11 +241,11 @@ defineExpose({ focusFirst });
 
 <style lang="postcss" scoped>
 .node-category-tree {
-  scrollbar-gutter: stable;
   height: 100%;
-  overflow: auto;
   padding: 0 var(--space-8) var(--sidebar-panel-padding)
     var(--sidebar-panel-padding);
+  overflow: auto;
+  scrollbar-gutter: stable;
 }
 
 /** move padding to inner component to have user interactions on the whole line (hover, drag and dblclick) */

@@ -124,7 +124,8 @@ const onKeyDown = (event: KeyboardEvent) => {
   const { key } = event;
 
   const isNavigationKey = (key: string): key is NavigationKey =>
-    navigationKeys.includes(key as any);
+    navigationKeys.includes(key as NavigationKey);
+
   if (!isNavigationKey(key)) {
     return;
   }
@@ -276,14 +277,14 @@ defineExpose({ focusFirst, focusLast });
   margin-bottom: 13px;
 
   & .nodes {
-    display: grid;
     position: relative;
+    display: grid;
     grid-template-columns: repeat(v-bind(nodesPerRow), 1fr);
     width: 100%;
-    margin: 5px 0 0;
 
     /* reset default ul styles */
     padding: 0;
+    margin: 5px 0 0;
     list-style-type: none;
 
     &:focus {
@@ -291,15 +292,15 @@ defineExpose({ focusFirst, focusLast });
     }
 
     & .show-more {
-      color: var(--knime-masala);
       font-weight: 400;
+      color: var(--knime-masala);
 
       &:focus-visible {
+        color: var(--knime-cornflower-dark);
         outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid
           var(--knime-cornflower);
-        border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
         background-color: var(--knime-cornflower-semi);
-        color: var(--knime-cornflower-dark);
+        border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
       }
     }
 
@@ -316,12 +317,12 @@ defineExpose({ focusFirst, focusLast });
         display: flex;
         flex-direction: row-reverse;
         align-items: center;
-        width: calc(100% - var(--space-4));
         justify-content: center;
-        border-radius: 2px;
+        width: calc(100% - var(--space-4));
         height: 24px;
         padding: var(--space-4);
         margin: 0;
+        border-radius: 2px;
 
         & .icon {
           margin: 0 var(--space-4) 0 0;
@@ -340,12 +341,12 @@ defineExpose({ focusFirst, focusLast });
 
       & .show-more {
         display: flex;
-        margin: 0 var(--space-4);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         width: calc(100% - var(--space-4));
         height: 100%;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        margin: 0 var(--space-4);
 
         & .icon {
           margin: 0;

@@ -55,8 +55,8 @@ watch(
 
 .node-element-icon-container {
   display: inline-flex;
-  height: var(--space-16);
   width: var(--space-16);
+  height: var(--space-16);
 }
 
 .node-element-icon {

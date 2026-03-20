@@ -38,10 +38,10 @@ const { additionalResources, closeKaiExtensionPanel } = useKaiExtensionPanel();
 <style lang="postcss" scoped>
 .additional-resources {
   & .body {
-    padding-top: var(--space-8);
     display: flex;
     flex-direction: column;
     gap: var(--space-32);
+    padding-top: var(--space-8);
   }
 }
 </style>

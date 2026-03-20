@@ -38,11 +38,11 @@ defineProps<Props>();
 }
 
 .load-wrapper {
-  flex-grow: 1;
   display: flex;
+  flex-grow: 1;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   height: 100%;
 
   /* Wait for a short amount of time before rendering loading placeholder
@@ -52,18 +52,18 @@ defineProps<Props>();
 
   & span {
     font-size: 16px;
-    text-align: center;
     font-style: italic;
     color: var(--knime-masala);
+    text-align: center;
 
     & .loading-icon {
       @mixin svg-icon-size 24;
 
-      animation: spin 2s linear infinite;
       margin: auto;
-      stroke: var(--knime-masala);
-      vertical-align: -6px;
       margin-right: 10px;
+      vertical-align: -6px;
+      stroke: var(--knime-masala);
+      animation: spin 2s linear infinite;
     }
   }
 }

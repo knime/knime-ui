@@ -83,18 +83,18 @@ const shouldShowBanner = computed(() => {
 @import url("@/assets/mixins.css");
 
 .hub-login-banner {
-  background: var(--knime-white);
-  border-top: 1px solid var(--knime-silver-sand);
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 420px;
-  position: relative;
+  background: var(--knime-white);
+  border-top: 1px solid var(--knime-silver-sand);
 
   & .close {
-    display: block;
     position: absolute;
-    right: var(--space-6);
     top: var(--space-6);
+    right: var(--space-6);
+    display: block;
   }
 
   & .content {

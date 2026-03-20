@@ -27,8 +27,7 @@ export default defineComponent({
 
       return type in this.$colors.nodeBackgroundColors
         ? this.$colors.nodeBackgroundColors[type]
-        : // eslint-disable-next-line no-undefined
-          undefined;
+        : undefined;
     },
   },
 });

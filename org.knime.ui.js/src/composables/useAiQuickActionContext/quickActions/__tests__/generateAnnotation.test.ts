@@ -360,7 +360,9 @@ describe("generateAnnotation.buildContext", () => {
       buildContext();
     } catch (error: any) {
       const parsed = JSON.parse(error.message);
+      // eslint-disable-next-line vitest/no-conditional-expect
       expect(parsed.detail.code).toBe("VALIDATION_ERROR");
+      // eslint-disable-next-line vitest/no-conditional-expect
       expect(parsed.detail.message).toContain(
         "The number of nodes in the selected area is too large",
       );

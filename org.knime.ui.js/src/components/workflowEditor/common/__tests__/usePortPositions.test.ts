@@ -77,8 +77,7 @@ describe("usePortPositions", () => {
   it("should call the position update callback", () => {
     const { getComposableResult, onPositionUpdate } = doMount();
 
-    expect(onPositionUpdate).toHaveBeenCalledOnce();
-    expect(onPositionUpdate).toHaveBeenCalledWith(
+    expect(onPositionUpdate).toHaveBeenCalledExactlyOnceWith(
       getComposableResult().portPositions.value,
     );
   });

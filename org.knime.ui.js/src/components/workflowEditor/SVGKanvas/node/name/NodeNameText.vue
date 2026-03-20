@@ -105,31 +105,32 @@ export default defineComponent({
 
   & .text {
     min-width: 60px;
+    margin: 0;
     font-family: "Roboto Condensed", sans-serif;
+    font-size: calc(v-bind("$shapes.nodeNameFontSize") * 1px);
     font-style: normal;
     font-weight: 700;
-    font-size: calc(v-bind("$shapes.nodeNameFontSize") * 1px);
-    margin: 0;
     text-align: inherit;
     -webkit-font-smoothing: antialiased;
   }
 
   &.text-ellipsis .text {
+    /* stylelint-disable-next-line value-no-vendor-prefix */
+    display: -webkit-box;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: v-bind("$shapes.nodeNameMaxLines");
+
     /* multiline overflow ellipsis -
        also supported in Firefox (yes with -webkit prefix) https://caniuse.com/css-line-clamp */
     word-wrap: break-word;
-    text-overflow: ellipsis;
-    /* stylelint-disable-next-line value-no-vendor-prefix */
-    display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: v-bind("$shapes.nodeNameMaxLines");
   }
 
   & .node-name {
-    text-align: center;
     padding: calc(v-bind("$shapes.nodeNamePadding") * 1px);
     overflow: hidden;
     line-height: calc(v-bind("$shapes.nodeNameLineHeight") * 1px);
+    text-align: center;
   }
 }
 </style>

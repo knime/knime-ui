@@ -25,7 +25,7 @@ export default defineComponent({
 
 <style lang="postcss" scoped>
 .last-updated {
-  color: var(--knime-dove-gray);
   font-style: italic;
+  color: var(--knime-dove-gray);
 }
 </style>

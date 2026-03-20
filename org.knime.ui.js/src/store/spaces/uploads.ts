@@ -157,7 +157,7 @@ export const useSpaceUploadsStore = defineStore("space.uploads", () => {
     if (!spaceCachingStore.activeProjectPath) {
       // currently not supported outside the workflow page, which always has an
       // active project id
-      // eslint-disable-next-line no-undefined
+
       return undefined;
     }
 

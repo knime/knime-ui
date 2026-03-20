@@ -28,18 +28,18 @@ const emit = defineEmits<{
 <style lang="postcss" scoped>
 .execute-node-action {
   position: absolute;
+  inset: 0;
+  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  padding: 20px;
+  justify-content: center;
   width: 460px;
   height: 110px;
-  inset: 0;
+  padding: 20px;
   margin: auto;
   background: rgb(255 255 255 / 30%);
   backdrop-filter: blur(10px);
-  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
 
   & span {
     text-align: center;

@@ -66,17 +66,17 @@ const onTagsChange = (tags: Array<string | number | symbol>) => {
   & ul {
     display: flex;
     flex-wrap: wrap;
-    list-style: none;
     padding: 0;
+    list-style: none;
 
     & li {
-      border: 1px solid var(--knime-masala);
       padding: 2px 6px;
+      margin-right: 5px;
+      margin-bottom: 10px;
       font-size: 14px;
       line-height: 21px;
-      margin-bottom: 10px;
-      margin-right: 5px;
       background-color: var(--knime-white);
+      border: 1px solid var(--knime-masala);
     }
   }
 }

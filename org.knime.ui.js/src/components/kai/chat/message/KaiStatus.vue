@@ -27,8 +27,8 @@ const props = withDefaults(defineProps<Props>(), {
 .status {
   display: flex;
   flex-direction: row;
-  align-items: center;
   gap: var(--kds-spacing-container-0-25x);
+  align-items: center;
   padding-top: var(--kds-spacing-container-0-75x);
 
   &:first-child {

@@ -5,12 +5,10 @@ import DummyNodes from "@/assets/workflow-coach-dummy-nodes.svg";
 
 type Props = {
   buttonText: string;
-  icon: any | null;
+  icon?: unknown;
 };
 
-withDefaults(defineProps<Props>(), {
-  icon: null,
-});
+defineProps<Props>();
 
 const emit = defineEmits<{
   click: [];
@@ -34,22 +32,22 @@ const emit = defineEmits<{
 <style lang="postcss" scoped>
 .wrapper {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  align-content: center;
-  width: 100%;
   flex: 1;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+  width: 100%;
   font-size: 13px;
 
   & .dummy-nodes {
+    align-self: center;
     margin: var(--space-24) 0;
     filter: blur(2px);
-    align-self: center;
   }
 
   & .content {
-    text-align: center;
     padding: var(--space-4);
+    text-align: center;
   }
 
   & .button {

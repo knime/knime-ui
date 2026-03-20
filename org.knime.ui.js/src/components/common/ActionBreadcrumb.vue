@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { clamp, throttle } from "lodash-es";
+import { throttle } from "es-toolkit/function";
+import { clamp } from "es-toolkit/math";
 
 import { Breadcrumb, type BreadcrumbItem } from "@knime/components";
 
@@ -75,15 +76,15 @@ const onWheel = throttle(function (e: WheelEvent) {
   }
 
   &:deep(span) {
-    color: var(--kds-color-text-and-icon-subtle);
-    font: var(--kds-font-base-interactive-small);
     padding: var(--kds-spacing-container-0-25x);
+    font: var(--kds-font-base-interactive-small);
     line-height: 16px;
+    color: var(--kds-color-text-and-icon-subtle);
 
     & svg.breadcrumb-icon {
-      stroke: var(--kds-color-text-and-icon-subtle);
       margin: 0 var(--kds-spacing-container-0-37x) 0
         var(--kds-spacing-container-0-37x);
+      stroke: var(--kds-color-text-and-icon-subtle);
 
       @mixin kds-svg-icon-size-medium;
     }

@@ -161,11 +161,11 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  overflow: hidden;
+  cursor: text;
   background-color: var(--knime-white);
   border: 1px solid var(--knime-stone-gray);
   border-radius: 3px;
-  overflow: hidden;
-  cursor: text;
 
   &.medium {
     min-height: 50px;
@@ -177,12 +177,12 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   }
 
   & .textarea {
+    flex-grow: 1;
+    width: 100%;
+    padding: 10px 8px 0;
     font-size: 13px;
     font-weight: 300;
     line-height: 150%;
-    padding: 10px 8px 0;
-    flex-grow: 1;
-    width: 100%;
     resize: none;
     border: none;
 

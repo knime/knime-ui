@@ -111,21 +111,21 @@ const emit = defineEmits<{
 
     /* options with collapsibles */
     & :deep(h5) {
-      font-size: 13px;
       padding-left: 20px;
+      font-size: 13px;
     }
 
     /* port names */
     & :deep(h6) {
-      font-size: 13px;
       margin-bottom: 0;
+      font-size: 13px;
     }
 
     /* view sub headlines */
     & :deep(.name) {
+      margin-bottom: 0;
       font-size: 13px;
       font-weight: 700;
-      margin-bottom: 0;
     }
 
     & :deep(.description) {
@@ -135,11 +135,11 @@ const emit = defineEmits<{
     /* Style refinement for Options */
 
     & :deep(.options .panel) {
-      padding-left: 10px;
       padding-right: 10px;
+      padding-left: 10px;
       margin-left: 14px;
-      line-height: 150%;
       font-size: 13px;
+      line-height: 150%;
 
       & .option-field-name {
         font-size: 13px;
@@ -206,8 +206,8 @@ const emit = defineEmits<{
         max-width: 100%;
 
         & ol {
-          margin-left: 20px;
           margin-top: 22px;
+          margin-left: 20px;
         }
 
         & .dyn-ports-description {
@@ -215,10 +215,10 @@ const emit = defineEmits<{
         }
 
         & .port-type {
-          text-overflow: ellipsis;
-          white-space: nowrap;
           overflow: hidden;
+          text-overflow: ellipsis;
           font-size: 13px;
+          white-space: nowrap;
         }
 
         & .port-name,

@@ -7,7 +7,6 @@ import { Button } from "@knime/components";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { Node, NodeState, PortType } from "@/api/gateway-api/generated-api";
-import type { NodeOutputTabIdentifier } from "@/store/selection";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
@@ -578,15 +577,16 @@ describe("NodeOutput.vue", () => {
       const { wrapper } = await doMount(mockedStores);
 
       mockedStores.workflowStore.activeWorkflow!.info.version = versionId;
-      mockedStores.nodeOutputStore.activePortTab =
-        activePortTab as NodeOutputTabIdentifier;
+      mockedStores.nodeOutputStore.activePortTab = activePortTab as any;
       await nextTick();
 
       if (activePortTab) {
+        // eslint-disable-next-line vitest/no-conditional-expect
         expect(
           wrapper.findComponent(NodeViewTabOutput).props("versionId"),
         ).toBe(versionId);
       } else {
+        // eslint-disable-next-line vitest/no-conditional-expect
         expect(
           wrapper.findComponent(PortViewTabOutput).props("versionId"),
         ).toBe(versionId);
@@ -629,8 +629,7 @@ describe("NodeOutput.vue", () => {
       const mockedStores = await createStores();
       const { wrapper } = await doMount(mockedStores);
 
-      mockedStores.nodeOutputStore.activePortTab =
-        activePortTab as NodeOutputTabIdentifier;
+      mockedStores.nodeOutputStore.activePortTab = activePortTab as any;
       await nextTick();
 
       expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBeFalsy();

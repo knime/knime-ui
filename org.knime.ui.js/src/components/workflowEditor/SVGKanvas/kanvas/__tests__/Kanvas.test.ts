@@ -46,7 +46,7 @@ vi.mock("@knime/utils", async (importOriginal) => {
   };
 });
 
-vi.unmock("lodash-es");
+vi.unmock("es-toolkit/function");
 
 describe("Kanvas", () => {
   const doShallowMount = ({
@@ -64,7 +64,7 @@ describe("Kanvas", () => {
     HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
 
     // Mock ResizeObserver Class
-    // eslint-disable-next-line func-style
+
     function ResizeObserverMock(callback) {
       this.callbackRef = callback;
       this.element = null;

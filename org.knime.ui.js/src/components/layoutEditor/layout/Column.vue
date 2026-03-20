@@ -58,7 +58,7 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
     const gridDelta = Math.round(
       moveDelta / resizeColumnInfo.value.gridStepWidth,
     );
-    let newWidth = resizeColumnInfo.value.originalWidthXS + gridDelta;
+    const newWidth = resizeColumnInfo.value.originalWidthXS + gridDelta;
     layoutEditorStore.resizeColumn(newWidth);
   }
 };
@@ -126,53 +126,52 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
   --resize-arrow-width: var(--space-4);
   --resize-arrow-height: var(--space-4);
 
-  background-color: var(--knime-white);
-  padding: calc(var(--resize-width) / 2);
-  min-height: 100px;
   position: relative;
+  min-height: 100px;
+  padding: calc(var(--resize-width) / 2);
+  background-color: var(--knime-white);
 
   & .resize-handle {
-    cursor: col-resize;
-    margin: 0;
-    padding: 0;
-    outline: 0;
-    width: var(--resize-width); /* quite thick to be easily clickable */
-    height: 100%;
-    background-color: var(--resize-color);
     position: absolute;
     right: calc(var(--resize-width) / 2 * -1);
-    z-index: v-bind("layoutEditorZIndices.columnResizeHandle");
     bottom: 0;
+    z-index: v-bind("layoutEditorZIndices.columnResizeHandle");
+    width: var(--resize-width); /* quite thick to be easily clickable */
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    cursor: col-resize;
+    outline: 0;
+    background-color: var(--resize-color);
+    border-color: var(--knime-white);
     border-style: solid;
     border-width: 10px var(--resize-border-width) 10px
       var(--resize-border-width); /* but adding a border to reduce the line thickness */
 
-    border-color: var(--knime-white);
-
     &::before,
     &::after {
-      content: "";
-      width: 0;
-      height: 0;
-      border-style: solid;
-      display: block;
       position: absolute;
       top: calc(50% - var(--resize-arrow-height));
+      display: block;
+      width: 0;
+      height: 0;
       pointer-events: none;
+      content: "";
+      border-style: solid;
     }
 
     &::before {
       left: calc((var(--resize-arrow-width) * -1) - 1px);
+      border-color: transparent var(--resize-color) transparent transparent;
       border-width: var(--resize-arrow-height) var(--resize-arrow-width)
         var(--resize-arrow-height) 0;
-      border-color: transparent var(--resize-color) transparent transparent;
     }
 
     &::after {
       right: calc((var(--resize-arrow-width) * -1) - 1px);
+      border-color: transparent transparent transparent var(--resize-color);
       border-width: var(--resize-arrow-height) 0 var(--resize-arrow-height)
         var(--resize-arrow-width);
-      border-color: transparent transparent transparent var(--resize-color);
     }
 
     &:hover,
@@ -198,18 +197,18 @@ const handleColumnResizeMouseMove = (event: MouseEvent) => {
 
   /* full window overlay while resizing to prevent loosing mouse events e.g. due to iframes in columns */
   & .resize-overlay {
-    cursor: col-resize;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    outline: 0;
-    background-color: transparent;
     position: fixed;
     top: 0;
     left: 0;
+    z-index: v-bind("layoutEditorZIndices.columnResizeOverlay");
     width: 100vw;
     height: 100vh;
-    z-index: v-bind("layoutEditorZIndices.columnResizeOverlay");
+    padding: 0;
+    margin: 0;
+    cursor: col-resize;
+    outline: 0;
+    background-color: transparent;
+    border: 0;
   }
 }
 </style>

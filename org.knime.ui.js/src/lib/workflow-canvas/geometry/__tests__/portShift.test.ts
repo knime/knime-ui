@@ -118,7 +118,7 @@ describe("portShift", () => {
 
   describe("helpers", () => {
     it("port positions", () => {
-      let result = positions({
+      const result = positions({
         portCount: 2,
         isOutports: true,
         isMetanode: true,

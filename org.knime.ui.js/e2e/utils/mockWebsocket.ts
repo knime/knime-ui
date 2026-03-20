@@ -5,7 +5,7 @@ import process from "node:process";
 
 import { type Page } from "playwright-core";
 
-import { MockWebsocketOptions } from "./types";
+import type { MockWebsocketOptions } from "./types";
 
 const parseJSONFile = (path: string) =>
   JSON.parse(fs.readFileSync(path, "utf-8"));

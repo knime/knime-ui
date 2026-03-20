@@ -105,8 +105,8 @@ const filterPortData = (fullPorts: PortEditorData[]) =>
   }
 
   & :deep(h6) {
-    font-size: 13px;
     margin-bottom: 0;
+    font-size: 13px;
   }
 
   & :deep(.description) {
@@ -170,8 +170,8 @@ const filterPortData = (fullPorts: PortEditorData[]) =>
 
     & .content {
       & ol {
-        margin-left: 20px;
         margin-top: 22px;
+        margin-left: 20px;
 
         & svg {
           @mixin svg-icon-size 9;

@@ -56,8 +56,8 @@ const normalize = (
 
   // validate overlapping ranges (not supported)
   for (let i = 0; i < normalized.length; i++) {
-    let range = normalized[i];
-    let nextRange = normalized[i + 1];
+    const range = normalized[i];
+    const nextRange = normalized[i + 1];
     if (
       typeof range.length !== "number" ||
       typeof range.start !== "number" ||
@@ -82,9 +82,9 @@ const normalize = (
 
   // fill gaps in between
   normalized = normalized.reduce((result, range) => {
-    let lastRange = result[result.length - 1];
+    const lastRange = result[result.length - 1];
     if (lastRange) {
-      let lastEnd = lastRange.start + lastRange.length;
+      const lastEnd = lastRange.start + lastRange.length;
       if (lastEnd < range.start) {
         result.push({
           start: lastEnd,
@@ -97,8 +97,8 @@ const normalize = (
   }, []);
 
   // fill gap at end
-  let lastRange = normalized[normalized.length - 1];
-  let lastEnd = lastRange.start + lastRange.length;
+  const lastRange = normalized[normalized.length - 1];
+  const lastEnd = lastRange.start + lastRange.length;
   if (lastEnd < text.length) {
     normalized.push({
       start: lastEnd,
@@ -140,8 +140,8 @@ export const applyStyleRanges = (
   textRanges: Array<TextRange>;
   isValid: boolean;
 } => {
-  let { normalized, isValid } = normalize(styleRanges, text);
-  let textRanges = normalized.map(({ start, length, ...rest }) => ({
+  const { normalized, isValid } = normalize(styleRanges, text);
+  const textRanges = normalized.map(({ start, length, ...rest }) => ({
     ...rest,
     text: text.substring(start, start + length),
   }));

@@ -264,8 +264,8 @@ const createWorkflowLocally = async () => {
 }
 
 .time-used {
-  text-align: right;
   width: 100%;
+  text-align: right;
 }
 
 .create-workflow-button {
@@ -292,9 +292,9 @@ const createWorkflowLocally = async () => {
     }
 
     & svg {
-      margin-right: 0;
-      padding-left: 1px;
       top: 0;
+      padding-left: 1px;
+      margin-right: 0;
     }
 
     &.compact {
@@ -322,8 +322,8 @@ const createWorkflowLocally = async () => {
   & .no-recent-workflows {
     padding: 20px;
     margin-top: 220px;
-    color: var(--knime-dove-gray);
     font-size: 12px;
+    color: var(--knime-dove-gray);
     text-align: center;
 
     & svg {

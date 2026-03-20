@@ -36,8 +36,8 @@ const emit = defineEmits(["helpIconClick"]);
 
   &.selected-icon {
     display: flex;
-    border-radius: 100%;
     background-color: var(--knime-masala);
+    border-radius: 100%;
 
     & .info-icon {
       stroke: var(--knime-white);

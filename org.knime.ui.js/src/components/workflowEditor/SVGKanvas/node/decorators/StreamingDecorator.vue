@@ -33,7 +33,7 @@ export default {
      * @return {boolean} if true the node supports streaming
      */
     streamable() {
-      let { streamable, jobManager } = this.executionInfo;
+      const { streamable, jobManager } = this.executionInfo;
       return streamable || jobManager?.type === "streaming";
     },
   },

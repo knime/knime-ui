@@ -36,7 +36,7 @@ const backgroundColor = computed(() => {
 });
 
 const streamable = computed(() => {
-  let { streamable, jobManager } = props.executionInfo;
+  const { streamable, jobManager } = props.executionInfo;
   return streamable || jobManager?.type === "streaming";
 });
 

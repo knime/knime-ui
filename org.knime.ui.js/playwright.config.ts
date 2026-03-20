@@ -1,4 +1,3 @@
-/* eslint-disable no-undefined */
 import path from "node:path";
 
 import dotenvx from "@dotenvx/dotenvx";

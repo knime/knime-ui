@@ -189,8 +189,8 @@ const onRenameSpace = (name: string) => {
 
       & .button {
         & svg {
-          margin-right: 0;
           top: 0;
+          margin-right: 0;
         }
 
         &.compact {

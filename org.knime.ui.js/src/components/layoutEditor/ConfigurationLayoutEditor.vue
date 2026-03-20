@@ -39,16 +39,16 @@ const { configurationLayout, configurationNodes } =
   overflow-y: auto;
 
   & .item {
-    cursor: move;
-    margin: 5px 0;
     min-height: 90px !important;
+    margin: 5px 0;
+    cursor: move;
   }
 }
 
 .hint {
-  height: 50vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 50vh;
 }
 </style>

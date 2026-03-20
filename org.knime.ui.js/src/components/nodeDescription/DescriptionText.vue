@@ -36,9 +36,9 @@ defineProps<Props>();
   /* Style refinement for Tables */
   & :deep(table) {
     width: 100%;
+    margin-left: var(--sidebar-panel-padding);
     font-size: 11px;
     border-spacing: 3px 0;
-    margin-left: var(--sidebar-panel-padding);
 
     & th,
     & td {

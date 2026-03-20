@@ -1,4 +1,3 @@
-/* eslint-disable no-undefined */
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";

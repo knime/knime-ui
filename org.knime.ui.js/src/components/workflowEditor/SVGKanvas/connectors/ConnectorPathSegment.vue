@@ -134,8 +134,8 @@ const isSegmentHovered = ref(false);
 
 path:not(.hover-area) {
   pointer-events: none;
-  stroke-width: v-bind("$shapes.connectorWidth");
   stroke: var(--knime-stone-gray);
+  stroke-width: v-bind("$shapes.connectorWidth");
   transition:
     stroke-width 0.1s ease-in,
     stroke 0.1s ease-in;
@@ -145,18 +145,18 @@ path:not(.hover-area) {
   }
 
   &.selected {
-    stroke-width: v-bind("$shapes.selectedConnectorWidth");
     stroke: var(--knime-cornflower);
+    stroke-width: v-bind("$shapes.selectedConnectorWidth");
   }
 
   &.highlighted {
-    stroke-width: v-bind("$shapes.highlightedConnectorWidth");
     stroke: var(--knime-masala);
+    stroke-width: v-bind("$shapes.highlightedConnectorWidth");
   }
 
   &.is-dragged-over {
-    stroke-width: v-bind("$shapes.selectedConnectorWidth");
     stroke: var(--knime-meadow-dark);
+    stroke-width: v-bind("$shapes.selectedConnectorWidth");
   }
 
   &.dashed {
@@ -175,9 +175,9 @@ path:not(.hover-area) {
 }
 
 .hover-area {
+  fill: none;
   stroke: transparent;
   stroke-width: 8px;
-  fill: none;
 
   &:hover + path,
   &.hovered + path {

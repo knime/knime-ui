@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
-import { kebabCase } from "lodash-es";
+import { kebabCase } from "es-toolkit/string";
 import { storeToRefs } from "pinia";
 
 import { FunctionButton, SubMenu } from "@knime/components";
@@ -85,7 +85,7 @@ const filteredActions = (hideItems: string[]): MenuItemWithHandler[] =>
           v-for="action in filteredActions(['createWorkflow', 'connectToHub'])"
           :key="action.metadata?.id"
           :item="action"
-          :data-test-id="`space-${kebabCase(action.metadata?.id)}-btn`"
+          :data-test-id="`space-${kebabCase(action.metadata?.id ?? '')}-btn`"
           :disabled="action.disabled || isLoadingContent"
         />
 
@@ -138,15 +138,15 @@ const filteredActions = (hideItems: string[]): MenuItemWithHandler[] =>
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   & .toolbar-actions-normal {
-    display: flex;
     position: relative;
+    display: flex;
     gap: var(--space-4);
   }
 
   & .toolbar-actions-mini {
+    position: relative;
     display: flex;
     gap: var(--space-4);
-    position: relative;
 
     & .search-button-mini {
       --search-button-background: var(--sidebar-background-color);

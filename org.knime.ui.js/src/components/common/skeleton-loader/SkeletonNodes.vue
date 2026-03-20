@@ -47,25 +47,25 @@ withDefaults(defineProps<Props>(), {
 <style lang="postcss" scoped>
 .skeleton-nodes-icon {
   gap: 30px 50px;
-  margin-left: 23px;
   padding: 20px 2px;
+  margin-left: 23px;
 }
 
 .skeleton-nodes-list {
   gap: 2px;
-  margin-left: 0;
   padding: 10px 2px;
+  margin-left: 0;
 }
 
 .skeleton-node-icon {
   display: flex;
   flex-direction: column;
-  align-items: center;
   row-gap: 5px;
+  align-items: center;
 }
 
 .skeleton-node-list {
-  width: 100%;
   display: flex;
+  width: 100%;
 }
 </style>

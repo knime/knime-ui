@@ -117,18 +117,18 @@ const openKnimeUIPreferencePage = () => {
 }
 
 .filtered-nodes-wrapper {
-  padding-top: var(--space-16);
   display: flex;
   align-items: center;
+  padding-top: var(--space-16);
   margin: 0 var(--space-12);
 
   & .filtered-nodes-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-weight: 500;
-    font-size: 13px;
     width: 100%;
+    font-size: 13px;
+    font-weight: 500;
 
     & .filtered-nodes-button {
       margin-top: var(--space-16);

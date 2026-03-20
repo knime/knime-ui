@@ -51,7 +51,7 @@ export default {
         return [];
       }
 
-      let { outPorts } = this.node;
+      const { outPorts } = this.node;
 
       const isMetanode = workflowDomain.node.isMetaNode(this.node);
       const ports = (
@@ -139,17 +139,17 @@ export default {
 
     &::before,
     &::after {
-      left: 0;
       right: 0;
       bottom: 6px;
+      left: 0;
     }
   }
 }
 
 :deep(svg),
 :deep(svg *) {
-  pointer-events: none !important;
   width: 14px;
+  pointer-events: none !important;
 }
 
 /* Flow variable icon */

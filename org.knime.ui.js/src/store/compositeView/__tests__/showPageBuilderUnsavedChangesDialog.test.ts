@@ -6,7 +6,7 @@ import { deepMocked } from "@/test/utils";
 import type { PageBuilderApi } from "../compositeView";
 import { showPageBuilderUnsavedChangesDialog } from "../showPageBuilderUnsavedChangesDialog";
 
-let useUnsavedChangesDialogMock = vi.hoisted(() =>
+const useUnsavedChangesDialogMock = vi.hoisted(() =>
   vi.fn(() =>
     Promise.resolve({
       action: UnsavedChangesAction.CANCEL,

@@ -14,13 +14,13 @@
 .panel-layout {
   --padding: var(--sidebar-panel-padding);
 
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px var(--padding) var(--padding);
   font-family: Roboto, sans-serif;
   font-size: 13px;
   line-height: 150%;
-  display: flex;
-  flex-direction: column;
-  padding: 8px var(--padding) var(--padding);
-  height: 100%;
 
   & .panel-header {
     display: flex;
@@ -30,10 +30,10 @@
 
     & :slotted(h2) {
       margin: 0;
-      font-weight: 400;
-      font-size: 18px;
-      line-height: 36px;
       margin-right: auto;
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 36px;
 
       @mixin truncate;
     }

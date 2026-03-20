@@ -62,7 +62,7 @@ export default defineComponent({
      * @return {object} the size and position of the hover area of the node
      */
     hoverSize() {
-      let hoverBounds = {
+      const hoverBounds = {
         top: -this.$shapes.nodeHoverMargin[0],
         left: -this.$shapes.nodeHoverMargin[1],
         bottom: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[2],

@@ -18,14 +18,14 @@ const { isExtensionPanelOpen } = storeToRefs(panelStore);
 
 <style lang="postcss" scoped>
 .extension-panel {
-  width: 360px;
-  background-color: var(--knime-gray-ultra-light);
   position: fixed;
   left: 400px;
   z-index: v-bind("$zIndices.layerDrawerPanel");
+  width: 360px;
+  height: calc(var(--app-main-content-height) - var(--app-toolbar-height));
+  background-color: var(--knime-gray-ultra-light);
   border: solid var(--knime-silver-sand);
   border-width: 0 1px;
-  height: calc(var(--app-main-content-height) - var(--app-toolbar-height));
 
   /* fix height of scroll container */
   & :deep(.scroll-container) {

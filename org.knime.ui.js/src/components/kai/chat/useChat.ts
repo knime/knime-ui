@@ -121,8 +121,14 @@ const useChat = (chainType: ChainType) => {
         message,
         targetNodes,
       });
-    } catch (error: any) {
-      if (isAuthError(error.message)) {
+    } catch (error) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof error.message === "string" &&
+        isAuthError(error.message)
+      ) {
         toastPresets.connectivity.hubSessionExpired();
 
         // mark the provider as disconnected to trigger the Login Panel
@@ -137,10 +143,9 @@ const useChat = (chainType: ChainType) => {
       message:
         "Are you sure you want to abort the request to the KNIME AI Assistant?",
     });
+
     if (confirmed) {
-      abortAiRequest({
-        chainType,
-      });
+      abortAiRequest({ chainType });
     }
   };
 

@@ -114,13 +114,13 @@ const openInNewWindow = (item: { id: string } | null = null) => {
 @import url("@/assets/mixins.css");
 
 .tab-toggles {
+  position: absolute;
+  inset: 6px 0 0;
+  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   display: flex;
   width: max-content;
   height: min-content;
-  position: absolute;
-  inset: 6px 0 0;
   margin: 0 auto;
-  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
 
   & .fallback-open-window {
     height: 20px;
@@ -140,10 +140,10 @@ const openInNewWindow = (item: { id: string } | null = null) => {
     width: 20px;
     height: 20px;
     padding: 0;
-    background: transparent;
     margin: 0;
-    border-radius: 0 100% 100% 0;
+    background: transparent;
     border-left: 1px solid var(--theme-value-switch-border-color);
+    border-radius: 0 100% 100% 0;
 
     &:hover {
       background-color: var(--theme-value-switch-background-color-hover);

@@ -25,7 +25,7 @@ const sumReducer = (accumulator: number, current: number) =>
 
 export const useTabDrag = (
   tabWrapper: Ref<HTMLElement | null>,
-  openProjects: any,
+  openProjects: Ref<Project[]>,
 ) => {
   const onDragStart = (e: DragEvent, index: number) => {
     if (tabWrapper.value === null) {

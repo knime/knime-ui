@@ -1,4 +1,3 @@
-/* eslint-disable one-var */
 import { Client } from "@open-rpc/client-js";
 
 import type { EmbeddingContext } from "@knime/hub-features";

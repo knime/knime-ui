@@ -42,7 +42,7 @@ const { layout, nodes, advancedEditorData } = storeToRefs(layoutEditorStore);
 let modelUri: monaco.Uri;
 let model: monaco.editor.ITextModel;
 let editorInstance: monaco.editor.IStandaloneCodeEditor;
-let disposables: monaco.IDisposable[] = [];
+const disposables: monaco.IDisposable[] = [];
 let jsonLanguageService: LanguageService;
 
 const schemaValidationIssues = ref<Diagnostic[]>([]);
@@ -276,13 +276,13 @@ const goToLine = (lineNumber: number, column: number) => {
 @import url("@/assets/mixins.css");
 
 .wrapper {
-  height: 100%;
-  overflow: hidden;
-  background: var(--knime-gray-light-semi);
-  padding: var(--space-8);
   display: grid;
   grid-template-rows: 4fr 1fr;
   gap: 1rem;
+  height: 100%;
+  padding: var(--space-8);
+  overflow: hidden;
+  background: var(--knime-gray-light-semi);
   --editor-border: var(--knime-silver-sand);
 
   &.invalid {
@@ -294,20 +294,20 @@ const goToLine = (lineNumber: number, column: number) => {
   }
 
   & .problems {
-    border: 1px solid var(--knime-silver-sand);
     padding: var(--space-6);
-    font-size: 14px;
     overflow-y: auto;
+    font-size: 14px;
+    border: 1px solid var(--knime-silver-sand);
 
     & .problem {
-      cursor: pointer;
       display: flex;
-      border: none;
-      appearance: none;
-      width: 100%;
-      align-items: center;
       gap: var(--space-4);
+      align-items: center;
+      width: 100%;
       padding: var(--space-4);
+      appearance: none;
+      cursor: pointer;
+      border: none;
 
       &:hover {
         background: var(--knime-silver-sand);

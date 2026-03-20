@@ -4,7 +4,7 @@ import { ref, watch } from "vue";
 import { OpenSourceCredits } from "@knime/components";
 import { KdsButton, KdsModal } from "@knime/kds-components";
 
-const usedPackages = ref<any[]>([]);
+const usedPackages = ref<unknown[]>([]);
 
 const props = defineProps<{
   active: boolean;

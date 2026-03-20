@@ -77,7 +77,6 @@ const { activePortTab } = storeToRefs(useNodeOutputStore());
 
 const selectedTab = computed({
   get() {
-    // eslint-disable-next-line no-undefined
     return activePortTab.value ?? undefined;
   },
   set(val: NodeOutputTabIdentifier) {
@@ -140,7 +139,7 @@ const selectPort = () => {
     return;
   }
 
-  let { outPorts } = singleSelectedNode.value;
+  const { outPorts } = singleSelectedNode.value;
 
   // if a node/component has a view it's the first tab
   if (hasViewTab.value) {
@@ -291,11 +290,11 @@ const onPortViewLoadingState = async (
 
 <style lang="postcss" scoped>
 .output-container {
-  height: 100%;
-  padding: 10px 10px 0;
   position: relative;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  padding: 10px 10px 0;
 
   & :deep(.tab-bar) {
     padding-top: 0;
@@ -310,16 +309,16 @@ const onPortViewLoadingState = async (
   /* TODO NXT-1569 Find a real solution */
   & :deep(.table-view-wrapper) {
     & .table-header th:first-child {
-      margin-left: 0;
       padding-left: 10px;
+      margin-left: 0;
       font-style: italic;
     }
 
     & tr.row.no-sub-menu.compact-mode td:first-child {
-      background-color: var(--knime-porcelain);
-      font-style: italic;
       padding-left: 10px;
       margin-left: 0;
+      font-style: italic;
+      background-color: var(--knime-porcelain);
     }
   }
 

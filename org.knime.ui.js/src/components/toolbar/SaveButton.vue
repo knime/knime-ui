@@ -130,18 +130,9 @@ const subMenuItems = computed((): MenuItem[] => {
 
   & .button {
     position: relative;
-    margin-bottom: 0;
     margin-right: 0;
+    margin-bottom: 0;
     border-right: none;
-
-    /* fix disabled states for split buttons */
-    &:disabled {
-      opacity: 1;
-
-      & svg {
-        color: var(--kds-color-text-and-icon-disabled);
-      }
-    }
 
     /* best way to ensure flexible 1/4 corners */
     border-radius: var(
@@ -153,6 +144,15 @@ const subMenuItems = computed((): MenuItem[] => {
         --kds-legacy-button-border-radius,
         var(--kds-border-radius-container-0-37x)
       );
+
+    /* fix disabled states for split buttons */
+    &:disabled {
+      opacity: 1;
+
+      & svg {
+        color: var(--kds-color-text-and-icon-disabled);
+      }
+    }
   }
 
   &:hover,
@@ -196,11 +196,11 @@ const subMenuItems = computed((): MenuItem[] => {
 
     /* style toggle button (the dropdown icon) */
     & :deep(.submenu-toggle) {
-      width: var(--kds-dimension-component-width-1-75x);
-      height: var(--kds-dimension-component-height-1-75x);
       display: flex;
       align-items: center;
       justify-content: center;
+      width: var(--kds-dimension-component-width-1-75x);
+      height: var(--kds-dimension-component-height-1-75x);
       border-radius: 0
         var(
           --kds-legacy-button-border-radius,
@@ -215,7 +215,7 @@ const subMenuItems = computed((): MenuItem[] => {
       &:focus-visible {
         outline: var(--kds-border-action-focused);
         outline-offset: 1px;
-        background-color: var(--kds-color-background-neutral);
+        background-color: var(--kds-color-background-neutral-initial);
       }
 
       &:hover {
@@ -227,8 +227,8 @@ const subMenuItems = computed((): MenuItem[] => {
       & svg {
         @mixin svg-icon-size 12;
 
-        stroke: var(--kds-color-text-and-icon-neutral);
         padding: 0;
+        stroke: var(--kds-color-text-and-icon-neutral);
       }
     }
 

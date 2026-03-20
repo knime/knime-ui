@@ -46,8 +46,8 @@ const { floatingStyles } = useFloating(reference, floating, {
 
 <style lang="postcss" scoped>
 .button.compact.with-border.node-usage-button {
-  padding: var(--space-4) var(--space-8);
   min-width: auto;
+  padding: var(--space-4) var(--space-8);
 
   & .node-usage-icon {
     margin-right: 0;
@@ -56,13 +56,13 @@ const { floatingStyles } = useFloating(reference, floating, {
 
 /* full window overlay to prevent other actions while config dialog is open */
 .dialog-overlay {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background-color: transparent;
   position: fixed;
   inset: 0;
   z-index: v-bind("layoutEditorZIndices.dialogOverlay");
+  padding: 0;
+  margin: 0;
+  outline: 0;
+  background-color: transparent;
+  border: 0;
 }
 </style>

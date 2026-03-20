@@ -4,7 +4,7 @@ import knimeVitestConfig from "@knime/eslint-config/vitest.js";
 import knimeVue3TSConfig from "@knime/eslint-config/vue3-typescript.js";
 
 export default [
-  ...knimeVue3TSConfig,
+  ...knimeVue3TSConfig(),
   ...knimeVitestConfig,
   {
     ignores: [
@@ -23,6 +23,11 @@ export default [
       },
     },
     rules: {
+      "vue/block-lang": ["warn"], // remove when all components are in TS
+      "@typescript-eslint/no-use-before-define": [
+        "error",
+        { functions: false },
+      ],
       "new-cap": ["warn", { capIsNewExceptionPattern: "^API\\.." }],
       "no-restricted-imports": [
         "error",

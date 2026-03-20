@@ -37,7 +37,7 @@ const closeModal = () => {
   <KdsModal
     :active="isDeploymentModalOpen"
     :headline="selectedItemName"
-    icon="deploy"
+    leading-icon="deploy"
     width="full"
     @close="closeModal"
   >
@@ -59,9 +59,9 @@ const closeModal = () => {
 .no-data {
   display: flex;
   justify-content: center;
+  padding-top: 10px;
   font-size: 16px;
   font-style: italic;
-  padding-top: 10px;
   color: var(--knime-masala);
 }
 </style>

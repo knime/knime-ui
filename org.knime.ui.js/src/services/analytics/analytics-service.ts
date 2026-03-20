@@ -1,5 +1,3 @@
-/* eslint-disable no-undefined */
-
 import { embeddingSDK } from "@knime/hub-features";
 
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
@@ -7,7 +5,7 @@ import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRend
 import { toSnakeCaseDeep } from "./toSnakeCaseDeep";
 import type { AnalyticsService, TrackFn } from "./types";
 
-const noop = (...args: any[]) => {
+const noop = (...args: unknown[]) => {
   if (import.meta.env.DEV) {
     consola.trace("Analytics::DEV", ...args);
   }

@@ -1,6 +1,5 @@
 import { shallowRef } from "vue";
 import { API } from "@api";
-import { uniqueId } from "lodash-es";
 import { defineStore } from "pinia";
 
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
@@ -161,7 +160,7 @@ export const useClipboardInteractionsStore = defineStore(
           this.setIsClipboardBusy(true);
 
           // add this placeholder for webkit (safari) browsers to be able to fetch the data from the store later
-          const cacheClipboardContentId = `clipboard_cache_${uniqueId()}`;
+          const cacheClipboardContentId = `clipboard_cache_${crypto.randomUUID()}`;
           await navigator.clipboard.writeText(
             JSON.stringify({ cacheClipboardContentId }),
           );

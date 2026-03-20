@@ -63,11 +63,11 @@ const handleClick = () => {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  text-align: initial;
+  margin-top: var(--space-24);
   font-size: 16px;
   font-weight: 700;
   color: var(--knime-masala);
-  margin-top: var(--space-24);
+  text-align: initial;
 
   & svg {
     @mixin svg-icon-size 20;

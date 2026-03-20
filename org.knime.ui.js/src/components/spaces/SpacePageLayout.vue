@@ -33,10 +33,10 @@ main {
   }
 
   & .toolbar-wrapper {
-    min-height: 50px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    min-height: 50px;
     padding: 0 var(--padding);
     background-color: var(--knime-gray-ultra-light);
     border-top: 1px solid var(--knime-silver-sand);
@@ -44,9 +44,9 @@ main {
   }
 
   & .content-wrapper {
+    height: 100%;
     padding: var(--padding);
     overflow: hidden auto;
-    height: 100%;
   }
 }
 </style>

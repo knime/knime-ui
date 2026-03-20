@@ -1,4 +1,4 @@
-import { merge } from "lodash-es";
+import { merge } from "es-toolkit/object";
 
 import { KaiInquiry, KaiInquiryOption } from "@/api/gateway-api/generated-api";
 import type { NodeWithExtensionInfo } from "@/store/ai/types";

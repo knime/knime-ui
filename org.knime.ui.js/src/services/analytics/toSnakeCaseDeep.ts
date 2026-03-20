@@ -1,4 +1,4 @@
-import { snakeCase } from "lodash-es";
+import { snakeCase } from "es-toolkit/string";
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return (

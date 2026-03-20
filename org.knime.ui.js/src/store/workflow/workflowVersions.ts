@@ -1,11 +1,8 @@
-/* eslint-disable no-undefined */
-/* eslint-disable no-use-before-define */
-/* eslint-disable func-style */
 // Split this file to avoid max-lines disable (NXT-3760)
 /* eslint-disable max-lines */
 import { computed, ref } from "vue";
 import { API } from "@api";
-import { merge } from "lodash-es";
+import { merge } from "es-toolkit/object";
 import { defineStore } from "pinia";
 import { useRouter } from "vue-router";
 
@@ -433,9 +430,8 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
         const lastSavepoint = itemSavepointsInfo.savepoints[0];
 
         newData.unversionedSavepoint = merge(
-          {},
           lastSavepoint,
-          await versionsApi.loadSavepointMetadata(lastSavepoint),
+          (await versionsApi.loadSavepointMetadata(lastSavepoint)) ?? {},
         );
       }
 

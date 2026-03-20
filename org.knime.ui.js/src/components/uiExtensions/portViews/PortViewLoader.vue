@@ -36,7 +36,7 @@ const emit = defineEmits<{
 }>();
 
 const loadExtensionConfig = async () => {
-  let deactivateDataServicesFn: (() => Promise<any>) | undefined;
+  let deactivateDataServicesFn: (() => Promise<void>) | undefined;
 
   // store the following in none-reactive variables to ensure deactivatePortDataServices is called
   // with the same values as getPortView
@@ -59,8 +59,8 @@ const loadExtensionConfig = async () => {
   });
 
   if (portView.deactivationRequired) {
-    deactivateDataServicesFn = () =>
-      API.port.deactivatePortDataServices({
+    deactivateDataServicesFn = async () => {
+      await API.port.deactivatePortDataServices({
         projectId,
         workflowId,
         versionId: versionId ?? CURRENT_STATE_VERSION,
@@ -68,6 +68,7 @@ const loadExtensionConfig = async () => {
         portIdx,
         viewIdx,
       });
+    };
   }
 
   return {

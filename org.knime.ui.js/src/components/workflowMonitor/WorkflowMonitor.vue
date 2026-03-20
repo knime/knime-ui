@@ -43,7 +43,7 @@ onBeforeUnmount(() => {
 
 <style lang="postcss" scoped>
 .category {
-  text-align: center;
   padding: 20px;
+  text-align: center;
 }
 </style>

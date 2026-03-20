@@ -157,19 +157,19 @@ const halfWayPosition = computed(() => {
 
 <style lang="postcss" scoped>
 .streaming-label {
-  color: white;
-  font-size: 12px;
-  box-shadow: var(--shadow-elevation-1);
-  border-radius: 2px;
-  background-color: var(--knime-masala);
   padding: 5px;
+  font-size: 12px;
+  color: white;
+  background-color: var(--knime-masala);
+  border-radius: 2px;
+  box-shadow: var(--shadow-elevation-1);
 }
 
 .text-wrapper {
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
   margin: 0;
 }
 

@@ -160,8 +160,8 @@ const selectBar = () => {
 
 <style lang="postcss" scoped>
 .hover-area {
-  fill: none;
   pointer-events: fill;
+  fill: none;
 }
 
 .port-bar-selected,

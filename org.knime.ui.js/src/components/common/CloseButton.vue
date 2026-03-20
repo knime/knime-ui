@@ -51,10 +51,10 @@ export default {
 @import url("@/assets/mixins.css");
 
 button {
-  border: none;
   display: flex;
   align-items: center;
   background-color: transparent;
+  border: none;
 
   & svg {
     border: 0;

@@ -1,4 +1,5 @@
-/* eslint-disable no-undefined */
+/* eslint-disable max-lines */
+
 import { API } from "@api";
 import { defineStore } from "pinia";
 import { type Router } from "vue-router";

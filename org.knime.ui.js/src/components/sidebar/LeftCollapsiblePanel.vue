@@ -62,8 +62,8 @@ defineEmits<Emits>();
 }
 
 .container {
-  background-color: var(--sidebar-background-color);
   overflow-x: hidden;
+  background-color: var(--sidebar-background-color);
 }
 
 .hidden-content {
@@ -71,11 +71,11 @@ defineEmits<Emits>();
 }
 
 button {
-  border: none;
   width: 10px;
   padding: 0;
-  background-color: var(--sidebar-background-color);
   cursor: pointer;
+  background-color: var(--sidebar-background-color);
+  border: none;
 
   &:hover,
   &:focus-visible {

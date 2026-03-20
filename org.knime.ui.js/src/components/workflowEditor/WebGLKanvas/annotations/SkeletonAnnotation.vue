@@ -41,6 +41,11 @@ const dimensions = computed(() => ({
 .skeleton-container {
   --border-width: calc(v-bind("$shapes.annotationBorderWidth") * 1px);
 
+  /* control skeleton spacing */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
   /* fill the FloatingHTML container */
   width: 100%;
   height: 100%;
@@ -48,10 +53,5 @@ const dimensions = computed(() => ({
   /* mimic normal annotation styles */
   padding: 10px;
   border: var(--border-width) solid v-bind("$colors.SilverSand");
-
-  /* control skeleton spacing */
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 </style>

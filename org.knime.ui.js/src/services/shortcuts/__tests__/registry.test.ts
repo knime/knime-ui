@@ -26,6 +26,7 @@ vi.mock("../canvasShortcuts", () => ({
 
 type MockShortcuts = UnionToShortcutRegistry<"noCondition" | "withCondition">;
 declare module "../registry" {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ShortcutsRegistry extends MockShortcuts {}
 }
 
@@ -43,14 +44,14 @@ describe("Shortcuts", () => {
 
     it("group condition true", () => {
       const mockShortcuts = createShortcuts();
-      let group = conditionGroup(() => true, mockShortcuts);
+      const group = conditionGroup(() => true, mockShortcuts);
       expect(group.noCondition.condition?.()).toBe(true);
       expect(group.withCondition.condition?.()).toBe(false);
     });
 
     it("group condition false", () => {
       const mockShortcuts = createShortcuts();
-      let group = conditionGroup(() => false, mockShortcuts);
+      const group = conditionGroup(() => false, mockShortcuts);
       expect(group.noCondition.condition?.()).toBe(false);
       expect(group.withCondition.condition?.()).toBe(false);
     });

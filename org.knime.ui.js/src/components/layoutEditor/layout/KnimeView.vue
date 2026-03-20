@@ -121,13 +121,13 @@ const autoSizeStyles = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--knime-cornflower-semi);
-  border-radius: 3px;
-  overflow: hidden;
-  text-align: center;
   padding: 10px;
   container-type: inline-size;
+  overflow: hidden;
+  text-align: center;
   user-select: none;
+  background-color: var(--knime-cornflower-semi);
+  border-radius: 3px;
 
   & .knime-view-container {
     display: inline-flex;

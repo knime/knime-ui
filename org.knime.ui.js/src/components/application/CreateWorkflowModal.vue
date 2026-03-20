@@ -178,10 +178,10 @@ watch(
 
 <style lang="postcss" scoped>
 .item-error {
+  margin-top: 7px;
   font-size: 12px;
   font-weight: 400;
   color: var(--theme-color-error);
-  margin-top: 7px;
   white-space: normal;
 }
 </style>
