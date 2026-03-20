@@ -15,6 +15,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { ContainerInst } from "@/vue3-pixi";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
+import AISkeletonAnnotation from "./ai/AISkeletonAnnotation.vue";
 import StaticWorkflowAnnotation from "./annotations/StaticWorkflowAnnotation.vue";
 import Connector from "./connectors/Connector.vue";
 import ConnectorLabel from "./connectors/ConnectorLabel.vue";
@@ -124,6 +125,8 @@ const annotations = computed(
         :z-index="annotation.order"
       />
     </Container>
+
+    <AISkeletonAnnotation />
 
     <MetanodePortBars
       v-if="

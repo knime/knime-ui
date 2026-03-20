@@ -84,4 +84,10 @@ export const annotationColorPresets = {
 
 export const defaultAnnotationBorderColor = annotationColorPresets.SilverSand;
 
+export const aiGradient = {
+  Cyan: "hsl(185.81, 49.21%, 87.65%)", // #D0ECEF
+  Yellow: "hsl(51.23, 100%, 49.61%)", // #FDD800
+  Teal: "hsl(193.08, 60.18%, 43.33%)", // #2C94B1
+};
+
 export * from "@knime/styles/colors/knimeColors";

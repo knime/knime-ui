@@ -17,8 +17,6 @@ import { useAddNodeViaFileUpload } from "@/components/nodeTemplates/useAddNodeVi
 import { isBrowser } from "@/environment";
 import { KANVAS_ID } from "@/lib/workflow-canvas";
 import { useAnalytics } from "@/services/analytics";
-import { useAiQuickActionsStore } from "@/store/ai/aiQuickActions";
-import { QuickActionId } from "@/store/ai/types";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -31,7 +29,6 @@ import { useArrowKeyNavigation } from "../useArrowKeyNavigation";
 
 import Workflow from "./Workflow.vue";
 import EditableWorkflowAnnotation from "./annotations/EditableWorkflowAnnotation.vue";
-import SkeletonAnnotation from "./annotations/SkeletonAnnotation.vue";
 import { usePointerDownDoubleClick } from "./common/usePointerDownDoubleClick";
 import FloatingCanvasTools from "./floatingToolbar/canvasTools/FloatingCanvasTools.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
@@ -44,17 +41,10 @@ const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { activeWorkflow, isWorkflowEmpty, isWritable } = storeToRefs(
   useWorkflowStore(),
 );
-const aiQuickActionsStore = useAiQuickActionsStore();
 const canvasStore = useWebGLCanvasStore();
 
 const { containerSize, shouldHideMiniMap, interactionsEnabled } =
   storeToRefs(canvasStore);
-
-const skeletonAnnotationData = computed(
-  () =>
-    aiQuickActionsStore.processingActions[QuickActionId.GenerateAnnotation] ??
-    null,
-);
 
 const { isPointerDownDoubleClick } = usePointerDownDoubleClick({
   eventHandledChecker: (event) => isMarkedEvent(event),
@@ -263,11 +253,6 @@ const onCanvasDrop = (event: DragEvent) => {
     </Kanvas>
 
     <EditableWorkflowAnnotation />
-
-    <SkeletonAnnotation
-      v-if="skeletonAnnotationData"
-      :bounds="skeletonAnnotationData.bounds"
-    />
 
     <NodeNameEditor />
 
