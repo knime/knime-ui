@@ -95,11 +95,10 @@ const PILL_RADIUS = 5;
 // 3 dot positions relative to pill center
 const DOT_X = [-10, 0, 10] as const;
 const DOT_RADIUS = 3.5;
-const ACTIVE_COLORS = [
-  $colors.trafficLight.red,
-  $colors.trafficLight.yellow,
-  $colors.trafficLight.green,
-] as const;
+const ACTIVE_FILL = ["#C81D31", "#FFDD5A", "#71BD5B"] as const;
+const ACTIVE_STROKE = ["#670317", "#9F4B24", "#276023"] as const;
+const INACTIVE_FILL = "#BBBBBB";
+const INACTIVE_STROKE = "#888888";
 
 // Expose for tests
 defineExpose({ trafficLight });
@@ -125,10 +124,11 @@ const renderTrafficLight = (graphics: GraphicsInst) => {
   for (let i = 0; i < 3; i++) {
     graphics.circle(DOT_X[i], 0, DOT_RADIUS);
     if (trafficLight.value[i]) {
-      graphics.fill(ACTIVE_COLORS[i]);
+      graphics.fill(ACTIVE_FILL[i]);
+      graphics.stroke({ width: 1, color: ACTIVE_STROKE[i] });
     } else {
-      graphics.fill($colors.trafficLight.inactive);
-      graphics.stroke({ width: 0.5, color: $colors.trafficLight.inactiveBorder });
+      graphics.fill(INACTIVE_FILL);
+      graphics.stroke({ width: 0.5, color: INACTIVE_STROKE });
     }
   }
 };
