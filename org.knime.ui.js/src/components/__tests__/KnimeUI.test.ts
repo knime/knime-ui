@@ -253,10 +253,7 @@ describe("KnimeUI.vue", () => {
         mockEnvironment("DESKTOP", { isBrowser, isDesktop });
         const { wrapper } = await doShallowMount();
 
-        expect(wrapper.find(".main-content").classes()).toEqual([
-          "main-content",
-          "inset-top",
-        ]);
+        expect(wrapper.classes()).toEqual(["inset-top"]);
       });
 
       it("sets inset-both variant", async () => {
@@ -270,10 +267,7 @@ describe("KnimeUI.vue", () => {
 
         const { wrapper } = await doShallowMount();
 
-        expect(wrapper.find(".main-content").classes()).toEqual([
-          "main-content",
-          "inset-both",
-        ]);
+        expect(wrapper.classes()).toEqual(["inset-both"]);
       });
     });
 
@@ -286,10 +280,7 @@ describe("KnimeUI.vue", () => {
         mockEnvironment("BROWSER", { isBrowser, isDesktop });
         const { wrapper } = await doShallowMount();
 
-        expect(wrapper.find(".main-content").classes()).toEqual([
-          "main-content",
-          "full",
-        ]);
+        expect(wrapper.classes()).toEqual(["full"]);
       });
 
       it("sets inset-both variant", async () => {
@@ -303,10 +294,7 @@ describe("KnimeUI.vue", () => {
         mockedStores.uiControlsStore.shouldDisplayDownloadAPButton = true;
         await nextTick();
 
-        expect(wrapper.find(".main-content").classes()).toEqual([
-          "main-content",
-          "inset-bottom",
-        ]);
+        expect(wrapper.classes()).toEqual(["inset-bottom"]);
       });
     });
   });

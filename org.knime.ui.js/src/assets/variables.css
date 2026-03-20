@@ -2,6 +2,11 @@
 
 * {
   --app-header-height: 43px;
+  /*
+    By default: full height.
+    But there are some variants based on the type of layout. See: KnimeUI.vue
+  */
+  --app-main-content-height: 100vh;
   --app-footer-height: 66px;
   --app-toolbar-height: 50px;
   --app-side-bar-buttons-width: 48px;

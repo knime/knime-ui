@@ -271,7 +271,7 @@ const onCloseError = () => {
 </script>
 
 <template>
-  <div id="knime-ui">
+  <div id="knime-ui" :class="contentLayoutHeightVariants">
     <!-- if subsequent errors occur, stick with the first one -->
     <ErrorOverlay
       v-if="error"
@@ -289,7 +289,7 @@ const onCloseError = () => {
     <AppSkeletonLoader />
 
     <template v-if="loaded">
-      <div :class="['main-content', contentLayoutHeightVariants]">
+      <div class="main-content">
         <RouterView />
       </div>
     </template>
@@ -370,6 +370,22 @@ const onCloseError = () => {
   }
 
   /** end of backport */
+
+  --app-main-content-height: 100vh;
+
+  &.inset-top {
+    --app-main-content-height: calc(100vh - var(--app-header-height));
+  }
+
+  &.inset-bottom {
+    --app-main-content-height: calc(100vh - var(--app-footer-height));
+  }
+
+  &.inset-both {
+    --app-main-content-height: calc(
+      100vh - var(--app-header-height) - var(--app-footer-height)
+    );
+  }
 }
 
 #header {
@@ -377,25 +393,9 @@ const onCloseError = () => {
 }
 
 .main-content {
-  --base-height: 100vh;
-
   grid-area: workflow;
   width: 100vw;
-  height: var(--base-height);
-
-  &.inset-top {
-    height: calc(var(--base-height) - var(--app-header-height));
-  }
-
-  &.inset-bottom {
-    height: calc(var(--base-height) - var(--app-footer-height));
-  }
-
-  &.inset-both {
-    height: calc(
-      var(--base-height) - var(--app-header-height) - var(--app-footer-height)
-    );
-  }
+  height: var(--app-main-content-height);
 }
 
 footer {
