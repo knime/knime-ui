@@ -71,7 +71,7 @@ test("inactive ports: render correctly", async ({ page }) => {
   });
 });
 
-test("add/select/remove port", () => {
+test.describe("add/select/remove port", () => {
   const clickAwayOffset = 150;
 
   test("select and delete optional port concat node", async ({ page }) => {
