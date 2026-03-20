@@ -1,5 +1,5 @@
 import { describe } from "vitest";
-import { Page, test } from "@playwright/test";
+import { type Page, test } from "@playwright/test";
 
 import {
   assertSnapshot,
