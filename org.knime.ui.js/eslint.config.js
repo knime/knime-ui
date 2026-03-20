@@ -23,7 +23,7 @@ export default [
       },
     },
     rules: {
-      "vue/block-lang": "off", // remove when all components are in TS
+      "vue/block-lang": ["warn"], // remove when all components are in TS
       "@typescript-eslint/no-use-before-define": [
         "error",
         { functions: false },
