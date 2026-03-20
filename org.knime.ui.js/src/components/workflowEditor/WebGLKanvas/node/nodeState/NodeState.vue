@@ -29,22 +29,27 @@ const props = withDefaults(defineProps<Props>(), {
   textResolution: undefined,
 });
 
-const dotColor = computed(() => {
-  if (props.error) return $colors.trafficLight.red;
-  if (props.warning) return $colors.trafficLight.yellow;
+const isExecuting = computed(
+  () =>
+    props.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
+    props.executionState === NodeState.ExecutionStateEnum.QUEUED,
+);
+
+// [redActive, yellowActive, greenActive] or undefined while executing
+const trafficLight = computed<[boolean, boolean, boolean] | undefined>(() => {
+  if (isExecuting.value) return undefined;
+  if (props.error) return [true, false, false];
+  if (props.warning) return [false, true, false];
   switch (props.executionState) {
     case NodeState.ExecutionStateEnum.IDLE:
-      return $colors.trafficLight.red;
+      return [true, false, false];
     case NodeState.ExecutionStateEnum.CONFIGURED:
-      return $colors.trafficLight.yellow;
+      return [false, true, false];
     case NodeState.ExecutionStateEnum.EXECUTED:
     case NodeState.ExecutionStateEnum.HALTED:
-      return $colors.trafficLight.green;
-    case NodeState.ExecutionStateEnum.EXECUTING:
-    case NodeState.ExecutionStateEnum.QUEUED:
-      return $colors.nodeProgressBar;
+      return [false, false, true];
     default:
-      return $colors.trafficLight.inactive;
+      return [false, false, false];
   }
 });
 
@@ -80,24 +85,52 @@ const { showTooltip, hideTooltip } = useTooltip({
   element: tooltipRef,
 });
 
-// Small hit area around the dot (local coords centered at 0,0)
-const hitArea = new Rectangle(-10, -10, 20, 20);
+// Hit area centered at (0,0) — covers the traffic light pill
+const hitArea = new Rectangle(-20, -7, 40, 14);
 
-const isExecuting = computed(
-  () =>
-    props.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
-    props.executionState === NodeState.ExecutionStateEnum.QUEUED,
-);
+// Traffic light pill dimensions
+const PILL_W = 34;
+const PILL_H = 10;
+const PILL_RADIUS = 5;
+// 3 dot positions relative to pill center
+const DOT_X = [-10, 0, 10] as const;
+const DOT_RADIUS = 3.5;
+const ACTIVE_COLORS = [
+  $colors.trafficLight.red,
+  $colors.trafficLight.yellow,
+  $colors.trafficLight.green,
+] as const;
 
-const renderDot = (graphics: GraphicsInst) => {
-  // Conditional dep on animFrame — only subscribes while executing
+// Expose for tests
+defineExpose({ trafficLight });
+
+const renderTrafficLight = (graphics: GraphicsInst) => {
+  // Subscribe to animFrame only while executing
   const _frame = isExecuting.value ? animFrame.value : 0;
   graphics.clear();
-  const alpha = isExecuting.value
-    ? 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(performance.now() / 400))
-    : 1;
-  graphics.circle(0, 0, 5);
-  graphics.fill({ color: dotColor.value, alpha });
+
+  if (trafficLight.value === undefined) {
+    // Executing/queued: animated pulsing blue dot
+    const alpha = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(performance.now() / 400));
+    graphics.circle(0, 0, DOT_RADIUS + 1);
+    graphics.fill({ color: $colors.nodeProgressBar, alpha });
+    return;
+  }
+
+  // Background pill
+  graphics.roundRect(-PILL_W / 2, -PILL_H / 2, PILL_W, PILL_H, PILL_RADIUS);
+  graphics.fill($colors.trafficLight.background);
+
+  // 3 dots: red (left), yellow (center), green (right)
+  for (let i = 0; i < 3; i++) {
+    graphics.circle(DOT_X[i], 0, DOT_RADIUS);
+    if (trafficLight.value[i]) {
+      graphics.fill(ACTIVE_COLORS[i]);
+    } else {
+      graphics.fill($colors.trafficLight.inactive);
+      graphics.stroke({ width: 0.5, color: $colors.trafficLight.inactiveBorder });
+    }
+  }
 };
 </script>
 
@@ -113,9 +146,9 @@ const renderDot = (graphics: GraphicsInst) => {
     @pointerleave="hideTooltip"
   >
     <Graphics
-      label="NodeStateDot"
+      label="NodeStateTrafficLight"
       event-mode="none"
-      @render="renderDot"
+      @render="renderTrafficLight"
     />
   </Container>
 </template>
