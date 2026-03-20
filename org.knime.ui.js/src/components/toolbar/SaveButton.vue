@@ -215,7 +215,7 @@ const subMenuItems = computed((): MenuItem[] => {
       &:focus-visible {
         outline: var(--kds-border-action-focused);
         outline-offset: 1px;
-        background-color: var(--kds-color-background-neutral);
+        background-color: var(--kds-color-background-neutral-initial);
       }
 
       &:hover {

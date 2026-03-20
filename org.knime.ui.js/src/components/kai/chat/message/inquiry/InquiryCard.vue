@@ -174,7 +174,7 @@ onUnmounted(() => {
 
 .header {
   font: var(--kds-font-base-title-medium-strong);
-  line-height: var(--kds-core-line-height-multiline-narrow);
+  line-height: var(--kds-core-line-height-singleline);
 }
 
 .controls {

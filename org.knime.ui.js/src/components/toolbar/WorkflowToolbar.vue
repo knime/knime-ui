@@ -510,7 +510,7 @@ const handleNavigateToHubHome = (event: MouseEvent) => {
         }
 
         &:active {
-          stroke: var(--kds-color-background-neutral);
+          stroke: var(--kds-color-background-neutral-active);
         }
       }
     }

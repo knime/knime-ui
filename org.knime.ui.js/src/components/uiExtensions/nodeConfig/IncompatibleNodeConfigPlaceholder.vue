@@ -129,10 +129,10 @@ const openMetanode = () => {
 
 <style lang="postcss" scoped>
 .full-height {
-  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100%;
 }
 </style>

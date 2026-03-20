@@ -44,10 +44,6 @@ const overlayStyles = computed<CSSProperties>(() => {
   return {
     position: positionMap[props.displayMode],
     zIndex: zIndexMap[props.displayMode],
-
-    // add the initial dimensions as css properties for later usage in the styles
-    "--initial-width": "100%",
-    "--initial-height": "100%",
   };
 });
 
@@ -125,7 +121,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :style="overlayStyles">
+  <div class="global-loader" :style="overlayStyles">
     <div
       v-show="showLoader"
       ref="loader"
@@ -147,6 +143,11 @@ onMounted(() => {
   100% {
     transform: rotate(-360deg);
   }
+}
+
+.global-loader {
+  --initial-width: 100%;
+  --initial-height: 100%;
 }
 
 .loader {

@@ -158,23 +158,23 @@ const groupedShortcuts = computed(() =>
 @import url("@/assets/mixins.css");
 
 .search {
-  padding: var(--modal-padding-top) var(--modal-padding-right) var(--modal-gap)
-    var(--modal-padding-left);
+  padding: var(--modal-padding-top, 0) var(--modal-padding-right, 0)
+    var(--modal-gap, 0) var(--modal-padding-left, 0);
   margin-bottom: 10px;
 }
 
 .shortcut-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 450px));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 445px));
   grid-auto-rows: min-content;
   grid-auto-flow: row dense;
-  gap: 0 var(--modal-gap);
+  gap: 0 var(--modal-gap, 0);
   align-items: start;
   height: 100%;
-  padding: 0 var(--modal-padding-right) var(--modal-padding-bottom)
-    var(--modal-padding-left);
+  padding: 0 var(--modal-padding-right, 0) var(--modal-padding-bottom, 0)
+    var(--modal-padding-left, 0);
   overflow: hidden auto;
-  font: var(--kds-font-base-small);
+  font: var(--kds-font-base-body-small);
 
   & .group {
     align-self: start;

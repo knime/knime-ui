@@ -305,7 +305,7 @@ const activeVersionTitle = computed(() => {
       }
 
       &:active {
-        stroke: var(--kds-color-background-neutral);
+        stroke: var(--kds-color-background-neutral-active);
       }
     }
   }

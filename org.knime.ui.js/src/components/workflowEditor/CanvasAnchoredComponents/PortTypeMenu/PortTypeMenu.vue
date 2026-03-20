@@ -228,7 +228,7 @@ const setActiveDescendant = (
     :canvas-position="adjustedPosition"
     @menu-close="$emit('menuClose')"
   >
-    <div :class="['header', side]" :style="{ '--margin': headerMargin }">
+    <div :class="['header', side]">
       {{ headerText }}
     </div>
 
@@ -277,6 +277,8 @@ const setActiveDescendant = (
 @import url("@/assets/mixins.css");
 
 .header {
+  --margin: v-bind("headerMargin");
+
   margin-top: -7px;
   font-size: 13px;
   pointer-events: none;

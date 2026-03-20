@@ -92,8 +92,6 @@ export default defineComponent({
     data-test-id="tooltip"
     data-is-tooltip="true"
     :style="{
-      '--arrow-size': `${$shapes.tooltipArrowSize}px`,
-      '--gap-size': `${expandedGap}px`,
       top: `${y}px`,
       left: `${x}px`,
       maxWidth: `${$shapes.tooltipMaxWidth}px`,
@@ -127,6 +125,8 @@ export default defineComponent({
 <style lang="postcss" scoped>
 .tooltip {
   --border-width: 1px;
+  --arrow-size: v-bind(`${$shapes.tooltipArrowSize}px`);
+  --gap-size: v-bind(`${expandedGap}px`);
 
   position: relative;
   display: inline-block;

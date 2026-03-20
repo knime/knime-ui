@@ -171,21 +171,21 @@ const showValidationHint = computed(
 .destination-picker-wrapper {
   display: flex;
   flex-direction: column;
-  gap: var(--modal-gap);
+  gap: var(--modal-gap, 0);
   height: 100%;
-  padding: var(--modal-padding-top) 0 var(--modal-padding-bottom) 0;
+  padding: var(--modal-padding-top, 0) 0 var(--modal-padding-bottom, 0) 0;
 }
 
 .spaced-container {
   display: flex;
   flex-direction: column;
-  gap: var(--modal-gap);
-  padding: 0 var(--modal-padding-right) 0 var(--modal-padding-left);
+  gap: var(--modal-gap, 0);
+  padding: 0 var(--modal-padding-right, 0) 0 var(--modal-padding-left, 0);
 }
 
 .space-tree-container {
   height: 100%;
-  padding: 0 var(--modal-padding-right) 0 var(--modal-padding-left);
+  padding: 0 var(--modal-padding-right, 0) 0 var(--modal-padding-left, 0);
   overflow: auto;
 }
 

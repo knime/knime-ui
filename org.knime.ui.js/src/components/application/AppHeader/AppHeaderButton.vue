@@ -73,7 +73,7 @@ defineEmits<Emits>();
   display: flex;
   align-items: center;
   justify-content: center;
-  height: var(--header-button-height);
+  height: var(--header-button-height, 24px);
   padding: 10px;
   margin-left: 0;
   color: var(--knime-white);
