@@ -189,7 +189,7 @@ const discardSettings = () => {
 
       <div :class="['content', { 'large-mode': isLargeMode }]">
       <!-- Tab bar (replaces RightPanelHeader — close button intentionally removed) -->
-      <div v-if="!isLargeMode" class="tab-bar">
+      <div v-if="!isLargeMode" class="tab-bar header">
         <button
           class="tab-btn"
           :class="{ active: activeTab === 'config' }"
