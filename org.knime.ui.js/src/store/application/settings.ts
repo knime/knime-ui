@@ -61,7 +61,7 @@ type ApplicationSettingsState = {
    * - "scrolling" : clicking a jump mark smooth-scrolls to that section
    * - "tabs"      : clicking a jump mark shows only that section (fake tab behaviour)
    */
-  jumpMarksMode: "scrolling" | "tabs";
+  jumpMarksMode: "scrolling" | "tabs" | "disabled";
   /*
    * Whether to enable the locking of metanodes and components
    */
@@ -139,7 +139,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
       useSettingsStore().updateSetting({ key: "showDialogAdvancedOptions", value: show });
     },
 
-    setJumpMarksMode(mode: "scrolling" | "tabs") {
+    setJumpMarksMode(mode: "scrolling" | "tabs" | "disabled") {
       this.jumpMarksMode = mode;
       useSettingsStore().updateSetting({ key: "jumpMarksMode", value: mode });
     },

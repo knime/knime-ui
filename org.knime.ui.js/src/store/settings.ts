@@ -28,7 +28,7 @@ export interface SettingsState {
     nodeConfigOpenMode: "current" | "actionbar" | "modal";
     nodeOutputLayout: "bottom" | "side-by-side";
     showDialogAdvancedOptions: boolean;
-    jumpMarksMode: "scrolling" | "tabs";
+    jumpMarksMode: "scrolling" | "tabs" | "disabled";
   };
 }
 

@@ -259,7 +259,7 @@ const discardSettings = () => {
           <div class="body-row">
             <!-- Inline jump marks — only shown in fixed side-panel (not floating) mode -->
             <NodeConfigJumpMarks
-              v-if="!hasExternalJumpMarks"
+              v-if="!hasExternalJumpMarks && jumpMarksMode !== 'disabled'"
               :sections="jumpMarkSections"
               :active-section="jumpMarksActiveSection"
               @activate-section="handleActivateSection"

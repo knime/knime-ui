@@ -27,7 +27,7 @@ import type { JumpMark } from "./useDialogJumpMarks";
 const panelStore = usePanelStore();
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const currentCanvasStore = useCurrentCanvasStore();
-const { useEmbeddedDialogs, nodeOutputLayout } = storeToRefs(useApplicationSettingsStore());
+const { useEmbeddedDialogs, nodeOutputLayout, jumpMarksMode } = storeToRefs(useApplicationSettingsStore());
 const versionsStore = useWorkflowVersionsStore();
 const nodeConfigStore = useNodeConfigurationStore();
 const { showNodeDescriptionPanel } = storeToRefs(nodeConfigStore);
@@ -412,7 +412,7 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
     later in DOM) naturally stacks on top and covers the collapsed peek portion.
   -->
   <NodeConfigJumpMarks
-    v-if="jumpMarksContext.sections.value.length > 0"
+    v-if="jumpMarksContext.sections.value.length > 0 && jumpMarksMode !== 'disabled'"
     variant="floating"
     :sections="jumpMarksContext.sections.value"
     :active-section="jumpMarksContext.activeSection.value"

@@ -44,7 +44,7 @@ const nodeOutputLayout = computed({
 
 const jumpMarksMode = computed({
   get: () => appSettingsStore.jumpMarksMode,
-  set: (mode: "scrolling" | "tabs") => appSettingsStore.setJumpMarksMode(mode),
+  set: (mode: "scrolling" | "tabs" | "disabled") => appSettingsStore.setJumpMarksMode(mode),
 });
 
 const { currentMode } = useKdsDarkMode();
@@ -219,6 +219,7 @@ const dragStart = (pointerDown: PointerEvent) => {
       >
         <option value="scrolling">🔖 Scroll</option>
         <option value="tabs">🗂️ Tabs</option>
+        <option value="disabled">🚫 Disabled</option>
       </select>
 
       <FunctionButton
