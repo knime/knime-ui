@@ -22,7 +22,7 @@ jobs:
         # Sonar runs in Jenkins for the whole repo due to the mix of Java and JS
         # with:
         #   fetch-depth: 0 # full history for SonarCloud
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           package_json_file: org.knime.ui.js/package.json
       - name: Install Node.js
@@ -75,7 +75,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           package_json_file: org.knime.ui.js/package.json
 
@@ -118,7 +118,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           package_json_file: org.knime.ui.js/package.json
 
