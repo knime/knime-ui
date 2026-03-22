@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import { SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
-import { KdsValueSwitch } from "@knime/kds-components";
 import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
 import ShieldCloseIcon from "@knime/styles/img/icons/shield-close.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
@@ -11,13 +10,10 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
-import type { ChainType } from "@/store/ai/types";
 
 import KaiExtensionPanel from "./KaiExtensionPanel.vue";
 import Chat from "./chat/Chat.vue";
 import { useKaiPanels } from "./panels/useKaiPanels";
-
-const chainType = ref<ChainType>("qa");
 
 const { clearConversation } = useAIAssistantStore();
 const { revokePermissionsForAllActionsForActiveProject } = useAISettingsStore();
@@ -26,7 +22,7 @@ const deleteChatMenuItem = {
   text: "Clear chat",
   icon: TrashIcon,
   metadata: {
-    handler: () => clearConversation({ chainType: chainType.value }),
+    handler: () => clearConversation({ chainType: "qa" }),
   },
 };
 
@@ -52,14 +48,6 @@ const showChatControls = computed(() => !panelComponent.value);
     <template #header>
       <h2>KNIME AI Assistant</h2>
       <template v-if="showChatControls">
-        <KdsValueSwitch
-          v-model="chainType"
-          size="small"
-          :possible-values="[
-            { id: 'qa', text: 'Q&A' },
-            { id: 'build', text: 'Build' },
-          ]"
-        />
         <SubMenu
           orientation="left"
           class="submenu"
@@ -75,8 +63,7 @@ const showChatControls = computed(() => !panelComponent.value);
       <component :is="panelComponent" />
     </div>
     <template v-else>
-      <Chat v-if="chainType === 'qa'" chain-type="qa" />
-      <Chat v-if="chainType === 'build'" chain-type="build" />
+      <Chat chain-type="qa" />
       <KaiExtensionPanel />
     </template>
   </SidebarPanelLayout>
