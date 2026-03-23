@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { capitalize } from "es-toolkit/string";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
@@ -7,6 +7,7 @@ import {
   createComponentNode,
   createComponentPlaceholder,
   createMetanode,
+  createNativeNode,
   createWorkflow,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
@@ -14,7 +15,17 @@ import componentOrMetanodeShortcuts from "../componentOrMetanodeShortcuts";
 
 import { mockShortcutContext } from "./mock-context";
 
+const { track } = vi.hoisted(() => ({ track: vi.fn() }));
+
+vi.mock("@/services/analytics", () => ({
+  useAnalytics: () => ({ track }),
+}));
+
 describe("componentOrMetanodeShortcuts", () => {
+  beforeEach(() => {
+    track.mockReset();
+  });
+
   const createStore = () => {
     const {
       applicationStore,
@@ -57,26 +68,97 @@ describe("componentOrMetanodeShortcuts", () => {
   };
 
   describe("execute", () => {
-    it("create metanode", () => {
-      const { workflowStore } = createStore();
+    const getSelectedNodesFixture = () => [
+      createNativeNode({ id: "root:1" }),
+      createComponentNode({ id: "root:2" }),
+      createMetanode({ id: "root:3" }),
+    ];
 
-      componentOrMetanodeShortcuts.createMetanode.execute(
-        mockShortcutContext(),
+    it("create metanode", async () => {
+      const { workflowStore, selectionStore, nodeInteractionsStore } =
+        createStore();
+      (selectionStore as any).getSelectedNodes = getSelectedNodesFixture();
+      vi.mocked(nodeInteractionsStore.getNodeFactory).mockImplementation(
+        (nodeId) => ({ className: `factory-${nodeId}` }) as any,
       );
+      vi.mocked(workflowStore.collapseToContainer).mockResolvedValue({
+        created: true,
+      });
+
+      await componentOrMetanodeShortcuts.createMetanode.execute(
+        mockShortcutContext({ payload: { src: "contextmenu" } }),
+      );
+
       expect(workflowStore.collapseToContainer).toHaveBeenCalledWith({
         containerType: "metanode",
       });
+      expect(track).toHaveBeenCalledWith({
+        id: "containernode_created::canvas_ctxmenu_",
+        payload: {
+          node_type: "metanode",
+          children_nodes: [
+            { node_type: "node", node_factory_id: "factory-root:1" },
+            {
+              node_type: "component",
+              node_factory_id: "factory-root:2",
+            },
+            {
+              node_type: "metanode",
+              node_factory_id: "factory-root:3",
+            },
+          ],
+        },
+      });
     });
 
-    it("create component", () => {
-      const { workflowStore } = createStore();
-
-      componentOrMetanodeShortcuts.createComponent.execute(
-        mockShortcutContext(),
+    it("create component", async () => {
+      const { workflowStore, selectionStore, nodeInteractionsStore } =
+        createStore();
+      (selectionStore as any).getSelectedNodes = getSelectedNodesFixture();
+      vi.mocked(nodeInteractionsStore.getNodeFactory).mockImplementation(
+        (nodeId) => ({ className: `factory-${nodeId}` }) as any,
       );
+      vi.mocked(workflowStore.collapseToContainer).mockResolvedValue({
+        created: true,
+      });
+
+      await componentOrMetanodeShortcuts.createComponent.execute(
+        mockShortcutContext({ payload: { src: "global" } }),
+      );
+
       expect(workflowStore.collapseToContainer).toHaveBeenCalledWith({
         containerType: "component",
       });
+      expect(track).toHaveBeenCalledWith({
+        id: "containernode_created::keyboard_shortcut_",
+        payload: {
+          node_type: "component",
+          children_nodes: [
+            { node_type: "node", node_factory_id: "factory-root:1" },
+            {
+              node_type: "component",
+              node_factory_id: "factory-root:2",
+            },
+            {
+              node_type: "metanode",
+              node_factory_id: "factory-root:3",
+            },
+          ],
+        },
+      });
+    });
+
+    it("does not track container creation when collapse is not created", async () => {
+      const { workflowStore } = createStore();
+      vi.mocked(workflowStore.collapseToContainer).mockResolvedValue({
+        created: false,
+      });
+
+      await componentOrMetanodeShortcuts.createMetanode.execute(
+        mockShortcutContext({ payload: { src: "contextmenu" } }),
+      );
+
+      expect(track).not.toHaveBeenCalled();
     });
 
     it("open component or metanode", () => {

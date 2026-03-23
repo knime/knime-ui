@@ -21,7 +21,7 @@ import { useComponentInteractionsStore } from "@/store/workflow/componentInterac
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
-import type { UnionToShortcutRegistry } from "./types";
+import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "./types";
 
 type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "createMetanode"
@@ -116,6 +116,94 @@ const canInteractWithComponentPlaceholder = () => {
   return useWorkflowStore().isWritable && Boolean(selectedComponentPlaceholder);
 };
 
+type ContainerNodeType = "component" | "metanode";
+type ContainerChildNodeType = "node" | ContainerNodeType;
+type ContainerCreatedEventSource = ShortcutExecuteContext["payload"]["src"];
+type ContainerCreatedEventPayload = {
+  node_type: ContainerNodeType;
+  children_nodes: Array<{
+    node_type: ContainerChildNodeType;
+    node_factory_id: string;
+  }>;
+};
+
+const getTrackedNodeType = (node: KnimeNode): ContainerChildNodeType => {
+  if (isComponent(node)) {
+    return "component";
+  }
+
+  if (isMetanode(node)) {
+    return "metanode";
+  }
+
+  return "node";
+};
+
+const createChildrenNodesPayload = (
+  selectedNodes: KnimeNode[],
+): ContainerCreatedEventPayload["children_nodes"] => {
+  const nodeInteractionsStore = useNodeInteractionsStore();
+  const getNodeFactoryId = (nodeId: string) => {
+    try {
+      return nodeInteractionsStore.getNodeFactory(nodeId)?.className ?? "";
+    } catch {
+      return "";
+    }
+  };
+
+  return selectedNodes.map((node) => ({
+    node_type: getTrackedNodeType(node),
+    node_factory_id: getNodeFactoryId(node.id),
+  }));
+};
+
+const trackContainerCreation = ({
+  src,
+  payload,
+}: {
+  src: ContainerCreatedEventSource;
+  payload: ContainerCreatedEventPayload;
+}) => {
+  useAnalytics().track({
+    id:
+      src === "contextmenu"
+        ? "containernode_created::canvas_ctxmenu_"
+        : "containernode_created::keyboard_shortcut_",
+    payload,
+  });
+};
+
+const getContainerNodeType = (
+  containerType: CollapseCommand.ContainerTypeEnum,
+): ContainerNodeType =>
+  containerType === CollapseCommand.ContainerTypeEnum.Component
+    ? "component"
+    : "metanode";
+
+const createContainerExecute =
+  (
+    containerType: CollapseCommand.ContainerTypeEnum,
+    getSelectedNodes: () => KnimeNode[],
+  ) =>
+  async (ctx: ShortcutExecuteContext) => {
+    const childrenNodes = createChildrenNodesPayload(getSelectedNodes());
+    const { created } = await useWorkflowStore().collapseToContainer({
+      containerType,
+    });
+
+    if (!created) {
+      return;
+    }
+
+    trackContainerCreation({
+      src: ctx.payload.src,
+      payload: {
+        node_type: getContainerNodeType(containerType),
+        children_nodes: childrenNodes,
+      },
+    });
+  };
+
 const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   createMetanode: {
     text: "Create metanode",
@@ -123,10 +211,10 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "G"],
     group: "componentAndMetanode",
     icon: CreateMetanode,
-    execute: () =>
-      useWorkflowStore().collapseToContainer({
-        containerType: CollapseCommand.ContainerTypeEnum.Metanode,
-      }),
+    execute: createContainerExecute(
+      CollapseCommand.ContainerTypeEnum.Metanode,
+      () => useSelectionStore().getSelectedNodes,
+    ),
     condition: () => {
       const selectedNodes = useSelectionStore().getSelectedNodes.length;
       const canCollapseSelectedNodes =
@@ -144,10 +232,10 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "J"],
     group: "componentAndMetanode",
     icon: CreateComponent,
-    execute: () =>
-      useWorkflowStore().collapseToContainer({
-        containerType: CollapseCommand.ContainerTypeEnum.Component,
-      }),
+    execute: createContainerExecute(
+      CollapseCommand.ContainerTypeEnum.Component,
+      () => useSelectionStore().getSelectedNodes,
+    ),
     condition: () => {
       const selectedNodes = useSelectionStore().getSelectedNodes.length;
       const canCollapseSelectedNodes =
