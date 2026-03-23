@@ -108,6 +108,7 @@ watch(
     </SidebarPanelScrollContainer>
 
     <ChatControls
+      class="chat-controls"
       :is-processing="isProcessing"
       :last-user-message="lastUserMessage"
       :usage="usage"
@@ -131,6 +132,10 @@ watch(
     gap: 20px;
     padding-top: 20px;
     padding-bottom: 10px;
+  }
+
+  & .chat-controls {
+    padding-bottom: var(--kds-spacing-container-2x);
   }
 }
 </style>
