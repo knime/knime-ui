@@ -170,6 +170,9 @@ watch(isLoading, (value) => {
 
   & .workflow-skeleton {
     grid-area: workflow;
+
+    /* See KnimeUI.vue where `app-main-content-height` property is being initialized */
+    /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties */
     height: calc(var(--app-main-content-height) - var(--app-toolbar-height));
 
     & .top-panel-skeleton {
