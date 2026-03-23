@@ -22,6 +22,9 @@ const { isExtensionPanelOpen } = storeToRefs(panelStore);
   left: 400px;
   z-index: v-bind("$zIndices.layerDrawerPanel");
   width: 360px;
+
+  /* See KnimeUI.vue where `app-main-content-height` property is being initialized */
+  /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties */
   height: calc(var(--app-main-content-height) - var(--app-toolbar-height));
   background-color: var(--knime-gray-ultra-light);
   border: solid var(--knime-silver-sand);

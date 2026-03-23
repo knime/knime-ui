@@ -371,7 +371,9 @@ const onCloseError = () => {
 
   /** end of backport */
 
-  --app-main-content-height: 100vh;
+  &.full {
+    --app-main-content-height: 100vh;
+  }
 
   &.inset-top {
     --app-main-content-height: calc(100vh - var(--app-header-height));
