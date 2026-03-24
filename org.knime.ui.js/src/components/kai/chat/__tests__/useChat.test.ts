@@ -251,6 +251,27 @@ describe("useChat", () => {
     });
   });
 
+  describe("unsentMessage", () => {
+    it("is an empty string by default", () => {
+      const { getComposableResult } = doMount();
+      expect(getComposableResult().unsentMessage.value).toBe("");
+    });
+
+    it("reflects the store's unsentMessage state", () => {
+      const { getComposableResult, mockedStores } = doMount();
+      mockedStores.aiAssistantStore.qa.unsentMessage = "draft prompt";
+      expect(getComposableResult().unsentMessage.value).toBe("draft prompt");
+    });
+
+    it("saveUnsentMessage writes to the store", () => {
+      const { getComposableResult, mockedStores } = doMount();
+      getComposableResult().saveUnsentMessage("work in progress");
+      expect(mockedStores.aiAssistantStore.qa.unsentMessage).toBe(
+        "work in progress",
+      );
+    });
+  });
+
   describe("lastUserMessage", () => {
     it("returns an empty string when there are no messages", () => {
       const { getComposableResult } = doMount();
