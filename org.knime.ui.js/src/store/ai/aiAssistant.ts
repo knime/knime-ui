@@ -255,6 +255,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
 
       this.setIsProcessing({ chainType, isProcessing: true });
       this.setProjectAndWorkflowIds({ chainType, projectAndWorkflowIds });
+      this.setUnsentMessage({ chainType, message: "" });
       this.pushMessage({
         chainType,
         role: KaiMessage.RoleEnum.User,
