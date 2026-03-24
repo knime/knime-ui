@@ -103,6 +103,7 @@ const activeTabComponent = computed(
     class="modal"
     width="full"
     height="full"
+    overflow="hidden"
     @close="closeModal"
   >
     <template #body>
