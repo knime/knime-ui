@@ -31,6 +31,7 @@ describe("useChat", () => {
     projectAndWorkflowIds: null,
     pendingInquiry: null,
     pendingInquiryTraces: [],
+    unsentMessage: "",
   };
 
   const doMount = ({

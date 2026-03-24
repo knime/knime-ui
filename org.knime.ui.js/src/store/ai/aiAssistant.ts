@@ -46,6 +46,7 @@ const createEmptyConversationState = (): ConversationState => {
     projectAndWorkflowIds: null,
     pendingInquiry: null,
     pendingInquiryTraces: [],
+    unsentMessage: "",
   };
 };
 
@@ -147,6 +148,16 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
       this[chainType].projectAndWorkflowIds = null;
       this[chainType].pendingInquiry = null;
       this[chainType].pendingInquiryTraces = [];
+    },
+
+    setUnsentMessage({
+      chainType,
+      message,
+    }: {
+      chainType: ChainType;
+      message: string;
+    }) {
+      this[chainType].unsentMessage = message;
     },
 
     clearConversation({ chainType }: { chainType: ChainType }) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, watch } from "vue";
 import { useTextareaAutosize } from "@vueuse/core";
 
 import { FunctionButton, InlineMessage } from "@knime/components";
@@ -11,7 +11,7 @@ import type { KaiUsageState } from "@/store/ai/types";
 
 import { getDaysLeftInMonth } from "./utils";
 
-const emit = defineEmits(["sendMessage", "abort"]);
+const emit = defineEmits(["sendMessage", "abort", "unsentMessage"]);
 
 type Props = {
   isProcessing?: boolean;
@@ -52,6 +52,10 @@ watch(
 
 onMounted(() => {
   textarea.value?.focus();
+});
+
+onBeforeUnmount(() => {
+  emit("unsentMessage", input.value);
 });
 
 const sendMessage = () => {

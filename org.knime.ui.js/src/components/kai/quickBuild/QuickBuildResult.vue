@@ -10,12 +10,14 @@ type Props = {
   inquiryTraces?: InquiryTrace[];
   lastUserMessage?: string;
   usage: KaiUsageState;
+  unsentMessage?: string;
 };
 
 defineProps<Props>();
 defineEmits<{
   close: [];
   sendMessage: [value: { message: string }];
+  unsentMessage: [value: string];
 }>();
 </script>
 
@@ -31,9 +33,11 @@ defineEmits<{
     />
     <ChatControls
       :last-user-message="lastUserMessage"
+      :text="unsentMessage"
       :usage="usage"
       placeholder="Send a follow-up..."
       @send-message="$emit('sendMessage', $event)"
+      @unsent-message="$emit('unsentMessage', $event)"
     />
   </div>
 </template>
