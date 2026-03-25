@@ -572,7 +572,7 @@ export const useWorkflowVersionsStore = defineStore("workflowVersions", () => {
     }
 
     const { action } = await useUnsavedChangesDialog({
-      title: "Unsaved changes",
+      headline: "Unsaved changes",
       message:
         "This workflow has unsaved changes. Would you like to save them, discard them and proceed, or cancel this action?",
     });

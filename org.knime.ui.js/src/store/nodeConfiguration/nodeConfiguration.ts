@@ -38,7 +38,7 @@ const showUnsavedChangesDialog = async (askToConfirm: boolean) => {
   }
 
   const { action, doNotAskAgain } = await useUnsavedChangesDialog({
-    title: "Unsaved configuration changes",
+    headline: "Unsaved configuration changes",
     message:
       "You have unsaved changes in your node configuration. Do you want to save them?",
     doNotAskAgain: {
