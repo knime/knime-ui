@@ -331,14 +331,10 @@ export const useLifecycleStore = defineStore("lifecycle", {
             hints: getHintConfiguration((url) => url),
 
             getRemoteHintState: (storageKey: string) =>
-              API.desktop.getUserProfilePart({ key: `${storageKey}.user` }),
+              API.desktop.getUserProfilePart({ key: storageKey }),
             setRemoteHintState: (storageKey: string, currentState) =>
               API.desktop
-                .setUserProfilePart({
-                  // TODO NXT-3396: supply complete key
-                  key: `${storageKey}.user`,
-                  data: currentState,
-                })
+                .setUserProfilePart({ key: storageKey, data: currentState })
                 .then(() => true)
                 .catch(() => false),
           });

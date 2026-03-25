@@ -297,10 +297,12 @@ const uploadButton =
   useTemplateRef<InstanceType<typeof KdsButton>>("uploadButton");
 
 onMounted(() => {
-  useHint().createHint({
-    hintId: HINTS.UPLOAD_BUTTON,
-    referenceElement: uploadButton,
-  });
+  if (uploadButton.value) {
+    useHint().createHint({
+      hintId: HINTS.UPLOAD_BUTTON,
+      referenceElement: uploadButton,
+    });
+  }
 });
 
 const { isSVGRenderer } = useCanvasRendererUtils();

@@ -40,7 +40,7 @@
     "@fontsource/roboto": "5.x",
     "@fontsource/roboto-condensed": "5.x",
     "@fontsource/roboto-mono": "5.x",
-    "@knime/components": "1.45.9",
+    "@knime/components": "1.46.0",
     "@knime/hub-features": "^1.24.0",
     "@knime/kds-components": "0.18.0",
     "@knime/kds-styles": "0.18.0",

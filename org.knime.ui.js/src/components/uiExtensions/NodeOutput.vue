@@ -194,20 +194,17 @@ watch(currentValidationError, () => {
   currentNodeViewAlert.value = null;
 });
 
-const onPortViewLoadingState = async (
-  state: UIExtensionLoadingState | null,
-) => {
+const onPortViewLoadingState = (state: UIExtensionLoadingState | null) => {
   loadingState.value = state;
-  if (state) {
-    // wait some time as otherwise the click on the node closes the hint via on click outside
-    await new Promise((r) => setTimeout(r, 100));
-    createHint({
-      hintId: HINTS.NODE_MONITOR,
-      referenceSelector: `#${EMBEDDED_CONTENT_PANEL_ID__BOTTOM}`,
-      isVisibleCondition: hasExecutedNativeNode,
-    });
-  }
 };
+
+createHint({
+  hintId: HINTS.NODE_MONITOR,
+  referenceSelector: `#${EMBEDDED_CONTENT_PANEL_ID__BOTTOM}`,
+  isVisibleCondition: computed(
+    () => hasExecutedNativeNode.value && loadingState.value?.value === "ready",
+  ),
+});
 </script>
 
 <template>
