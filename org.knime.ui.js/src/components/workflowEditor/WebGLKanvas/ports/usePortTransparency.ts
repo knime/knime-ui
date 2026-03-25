@@ -1,4 +1,4 @@
-import { type ShallowRef, computed, ref } from "vue";
+import { type ComputedRef, type ShallowRef, computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import {
@@ -16,6 +16,7 @@ type UsePortTransparencyOptions = {
   portContainer: ShallowRef<ContainerInst | null>;
   nodeKind: Node.KindEnum;
   port: NodePortType;
+  forceVisible?: ComputedRef<boolean>;
 };
 
 export const usePortTransparency = (options: UsePortTransparencyOptions) => {
@@ -48,6 +49,10 @@ export const usePortTransparency = (options: UsePortTransparencyOptions) => {
         Math.max(0, options.port.index > 0 ? 1 : 0);
 
   const isVisible = computed(() => {
+    if (options.forceVisible?.value) {
+      return true;
+    }
+
     if (!isDefaultFlowVariablePort.value || isConnected.value) {
       return true;
     }

@@ -2,7 +2,9 @@
 export const nodeSize = 32;
 export const nodeCardWidth = 160;
 export const nodeCardHeight = 150;
+export const compactNodeCardHeight = 26;
 export const portSize = 9;
+export const webGlPortSize = 8;
 export const portActionButtonSize = 20;
 export const portActionsGapSize = 5;
 

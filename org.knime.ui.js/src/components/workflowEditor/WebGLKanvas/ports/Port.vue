@@ -6,6 +6,7 @@ import { Container } from "pixi.js";
 import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import * as $colors from "@/style/colors";
+import { webGlPortSize } from "@/style/shapes";
 import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
@@ -105,9 +106,11 @@ const selectionOffset = () => {
 const renderSelectionCircle = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics
-    .circle(selectionOffset(), 0, 9)
+    .circle(selectionOffset(), 0, webGlPortSize / 2 + 4)
     .stroke({ color: $colors.CornflowerDark, width: 1 });
-  graphics.circle(selectionOffset(), 0, 8.5).fill({ color: $colors.White });
+  graphics
+    .circle(selectionOffset(), 0, webGlPortSize / 2 + 3.5)
+    .fill({ color: $colors.White });
 };
 /* eslint-enable no-magic-numbers */
 </script>

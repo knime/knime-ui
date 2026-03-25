@@ -27,9 +27,12 @@ interface Props {
   inPorts: NodePortType[];
   outPorts: NodePortType[];
   portGroups?: NodePortGroups;
+  portsVisible?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  portsVisible: true,
+});
 
 const emit = defineEmits<{
   updatePortPositions: [value: PortPositions];
@@ -83,6 +86,18 @@ const ports = ref<ContainerInst>();
 
 const getPortPositionOffset = (type: "in" | "out", portIndex: number) => {
   return portPositions.value[type][portIndex] ?? [0, 0];
+};
+
+const getVisiblePortPosition = (type: "in" | "out", portIndex: number) => {
+  const [x, y] = getPortPositionOffset(type, portIndex);
+
+  return {
+    x:
+      type === "in"
+        ? x - $shapes.webGlPortSize
+        : x,
+    y: y - $shapes.webGlPortSize / 2,
+  };
 };
 
 const {
@@ -170,7 +185,7 @@ const removePort = async (
 </script>
 
 <template>
-  <Container ref="ports" label="NodePorts">
+  <Container ref="ports" label="NodePorts" :visible="portsVisible" :renderable="portsVisible">
     <NodePort
       v-for="port of inPorts"
       :key="`in-${port.index}`"
@@ -179,11 +194,9 @@ const removePort = async (
       :node-kind="nodeKind"
       :label="getPortContainerLabel(port.index, 'in')"
       :port="port"
+      :force-visible="portsVisible"
       :selected="currentlySelectedPort === `input-${port.index}`"
-      :position="{
-        x: getPortPositionOffset('in', port.index)[0] - $shapes.portSize / 2,
-        y: getPortPositionOffset('in', port.index)[1] - $shapes.portSize / 2,
-      }"
+      :position="getVisiblePortPosition('in', port.index)"
       @select-port="selectPort(port, 'input')"
       @remove="removePort(port, 'input')"
       @deselect="clearSelection"
@@ -197,11 +210,9 @@ const removePort = async (
       :node-kind="nodeKind"
       :label="getPortContainerLabel(port.index, 'out')"
       :port="port"
+      :force-visible="portsVisible"
       :selected="currentlySelectedPort === `output-${port.index}`"
-      :position="{
-        x: getPortPositionOffset('out', port.index)[0] - $shapes.portSize / 2,
-        y: getPortPositionOffset('out', port.index)[1] - $shapes.portSize / 2,
-      }"
+      :position="getVisiblePortPosition('out', port.index)"
       @select-port="selectPort(port, 'output')"
       @remove="removePort(port, 'output')"
       @deselect="clearSelection"

@@ -25,6 +25,7 @@ import type { JumpMark } from "./useDialogJumpMarks";
 // ─── State ───────────────────────────────────────────────────────────────────
 
 const panelStore = usePanelStore();
+const { isKaiCompactOpen, kaiPlacement } = storeToRefs(panelStore);
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const currentCanvasStore = useCurrentCanvasStore();
 const applicationSettingsStore = useApplicationSettingsStore();
@@ -179,7 +180,12 @@ watch(
 // panel persists regardless of selection — selection may briefly clear when
 // switching between nodes)
 watch(singleSelectedNode, (node) => {
-  if (!node && !versionsStore.isSidepanelOpen && nodeConfigOpenMode.value !== "dock") {
+  if (
+    !node &&
+    !versionsStore.isSidepanelOpen &&
+    nodeConfigOpenMode.value !== "dock" &&
+    !(kaiPlacement.value === "rightPanel" && isKaiCompactOpen.value)
+  ) {
     panelStore.isRightPanelExpanded = false;
   }
 });

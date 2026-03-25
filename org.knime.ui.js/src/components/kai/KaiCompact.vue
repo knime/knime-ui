@@ -5,6 +5,7 @@ import XCloseIcon from "@knime/styles/img/icons/close.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
+import { usePanelStore } from "@/store/panel";
 import { useAnalytics } from "@/services/analytics";
 
 import ChatControls from "./chat/ChatControls.vue";

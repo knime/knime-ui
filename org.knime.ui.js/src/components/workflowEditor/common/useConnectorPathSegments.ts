@@ -2,7 +2,9 @@ import { type Ref, computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
+import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useSelectionStore } from "@/store/selection";
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -46,6 +48,9 @@ export const useConnectorPathSegments = (
   const { isMetaNodePortBarSelected, isNodeSelected, isBendpointSelected } =
     selectionStore;
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
+  const { isDragging: isDraggingFloatingConnector } = storeToRefs(
+    useFloatingConnectorStore(),
+  );
 
   const virtualBendpoints = computed(
     () => useConnectionInteractionsStore().virtualBendpoints[options.id] ?? {},
@@ -78,15 +83,33 @@ export const useConnectorPathSegments = (
     ),
   );
 
-  const { start: startSegmentPosition, end: endSegmentPosition } =
-    useConnectorPosition(options);
-
   const isSourceNodeSelected = computed(() =>
     isNodeSelected(options.sourceNode.value ?? ""),
   );
   const isDestNodeSelected = computed(() =>
     isNodeSelected(options.destNode.value ?? ""),
   );
+
+  const useVisibleSourcePort = computed(
+    () =>
+      !canvasRendererUtils.isWebGLRenderer() ||
+      isSourceNodeSelected.value ||
+      isDraggingFloatingConnector.value,
+  );
+
+  const useVisibleDestPort = computed(
+    () =>
+      !canvasRendererUtils.isWebGLRenderer() ||
+      isDestNodeSelected.value ||
+      isDraggingFloatingConnector.value,
+  );
+
+  const { start: startSegmentPosition, end: endSegmentPosition } =
+    useConnectorPosition({
+      ...options,
+      sourceUsesVisiblePort: useVisibleSourcePort,
+      destUsesVisiblePort: useVisibleDestPort,
+    });
 
   const needToUpdateSourcePosition = computed(() => {
     return (

@@ -20,6 +20,7 @@ defineEmits<{ close: [] }>();
 
 const nodeConfigurationStore = useNodeConfigurationStore();
 const versionsStore = useWorkflowVersionsStore();
+const panelStore = usePanelStore();
 
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 
@@ -30,10 +31,18 @@ const isLargeMode = computed<boolean>({
   set: (value) => (nodeConfigurationStore.isLargeMode = value),
 });
 
+const renderLargeModeInRightPanel = computed(
+  () => panelStore.kaiPlacement === "rightPanel" && panelStore.isKaiCompactOpen,
+);
+
 watch(isLargeMode, () => {
   if (isLargeMode.value) {
     panel.value!.close();
-    panel.value!.showModal();
+    if (renderLargeModeInRightPanel.value) {
+      panel.value!.show();
+    } else {
+      panel.value!.showModal();
+    }
   } else {
     panel.value!.close();
     panel.value!.show();
@@ -44,7 +53,10 @@ const exitLargeMode = () => {
   if (isLargeMode.value) {
     nodeConfigurationStore.setIsLargeMode(false);
     // In modal mode, fully close the panel so onMounted re-fires on next open
-    if (useApplicationSettingsStore().nodeConfigOpenMode === "modal") {
+    if (
+      useApplicationSettingsStore().nodeConfigOpenMode === "modal" &&
+      !renderLargeModeInRightPanel.value
+    ) {
       usePanelStore().isRightPanelExpanded = false;
     }
   }
@@ -64,7 +76,11 @@ onMounted(() => {
     // isLargeMode was already true when this component mounted (e.g. set by
     // the double-click handler before the panel is rendered).
     panel.value!.close();
-    panel.value!.showModal();
+    if (renderLargeModeInRightPanel.value) {
+      panel.value!.show();
+    } else {
+      panel.value!.showModal();
+    }
   }
 });
 </script>
@@ -77,6 +93,7 @@ onMounted(() => {
     :class="{
       large: isLargeMode,
       small: !isLargeMode,
+      'embedded-large': isLargeMode && renderLargeModeInRightPanel,
     }"
     @cancel="exitLargeMode"
   >
@@ -132,6 +149,15 @@ dialog {
   &.large {
     width: 95vw;
     height: 95vh;
+  }
+
+  &.embedded-large {
+    display: block;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    max-width: none;
+    max-height: none;
   }
 }
 </style>

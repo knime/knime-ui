@@ -17,6 +17,7 @@ export const TABS = {
 
 type TabKeys = keyof typeof TABS;
 export type TabValues = (typeof TABS)[TabKeys];
+export type KaiPlacement = "centerStage" | "rightPanel";
 export interface PanelState {
   activeTab: Record<string, TabValues>;
   isLeftPanelExpanded: boolean;
@@ -24,6 +25,8 @@ export interface PanelState {
   isRightPanelExpanded: boolean;
   /** Whether the compact KAI chat panel at the bottom is open */
   isKaiCompactOpen: boolean;
+  /** Where the open K-AI conversation is rendered */
+  kaiPlacement: KaiPlacement;
   /** Incremented each time the search shortcut is triggered to (re-)focus the search input */
   searchFocusTrigger: number;
   /** Width (px) of the config panel when docked to the right edge; 0 when floating or docked left */
@@ -41,6 +44,7 @@ export const usePanelStore = defineStore("panel", {
     isExtensionPanelOpen: false,
     isRightPanelExpanded: false,
     isKaiCompactOpen: false,
+    kaiPlacement: "centerStage",
     searchFocusTrigger: 0,
     dockedRightPanelWidth: 0,
     isDeployPanelOpen: false,
@@ -81,6 +85,26 @@ export const usePanelStore = defineStore("panel", {
 
     openExtensionPanel() {
       this.isExtensionPanelOpen = true;
+    },
+
+    openKaiCompact() {
+      this.isKaiCompactOpen = true;
+
+      if (this.kaiPlacement === "rightPanel") {
+        this.isRightPanelExpanded = true;
+      }
+    },
+
+    closeKaiCompact() {
+      this.isKaiCompactOpen = false;
+    },
+
+    setKaiPlacement(placement: KaiPlacement) {
+      this.kaiPlacement = placement;
+
+      if (placement === "rightPanel" && this.isKaiCompactOpen) {
+        this.isRightPanelExpanded = true;
+      }
     },
 
     closeExtensionPanel() {

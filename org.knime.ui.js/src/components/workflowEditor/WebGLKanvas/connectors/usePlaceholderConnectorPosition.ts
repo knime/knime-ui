@@ -11,6 +11,7 @@ import {
   type XY,
 } from "@/api/gateway-api/generated-api";
 import { ports } from "@/lib/workflow-canvas";
+import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -36,6 +37,9 @@ export const usePlaceholderConnectorPosition = (
 ) => {
   const { activeWorkflow } = storeToRefs(useWorkflowStore());
   const { movePreviewDelta } = storeToRefs(useMovingStore());
+  const { isDragging: isDraggingFloatingConnector } = storeToRefs(
+    useFloatingConnectorStore(),
+  );
   const selectionStore = useSelectionStore();
 
   const nodeToConnectedNodeObject = (node: KnimeNode): ConnectedNodeObject => {
@@ -134,6 +138,11 @@ export const usePlaceholderConnectorPosition = (
         type,
         reference.value.payload,
         true,
+        !(
+          (type === "source"
+            ? isSourceNodeSelected.value
+            : isDestNodeSelected.value) || isDraggingFloatingConnector.value
+        ),
       );
     }
   };

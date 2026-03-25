@@ -9,6 +9,7 @@ type UseNodeHoverSizeOptions = {
   isHovering: Ref<boolean>;
   portPositions: Ref<PortPositions>;
   nodeTopOffset: Ref<number>;
+  hasView: Ref<boolean>;
   dialogType: Node.DialogTypeEnum;
   isUsingEmbeddedDialogs: Ref<boolean>;
   allowedActions: Node["allowedActions"];
@@ -21,6 +22,7 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
     isHovering,
     portPositions,
     nodeTopOffset,
+    hasView,
     dialogType,
     isUsingEmbeddedDialogs,
     allowedActions,
@@ -46,7 +48,9 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
       : $shapes.nodeCardWidth;
     const nodeH = isMetanode.value
       ? $shapes.nodeSize
-      : $shapes.nodeCardHeight;
+      : hasView.value
+        ? $shapes.nodeCardHeight
+        : $shapes.compactNodeCardHeight;
 
     const hoverBounds = {
       top: -($shapes.nodeHoverMargin[0] + $shapes.webGlNodeHoverAreaPadding),

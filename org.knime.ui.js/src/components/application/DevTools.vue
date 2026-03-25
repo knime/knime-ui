@@ -15,9 +15,12 @@ import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { isDesktop } from "@/environment";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { openInspector, reloadApp } from "@/lib/debug";
+import { usePanelStore } from "@/store/panel";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import FPSMeter from "../toolbar/FPSMeter.vue";
 import {
   type CanvasRendererType,
@@ -28,6 +31,9 @@ const isFrontendDevMode = import.meta.env.DEV;
 const { currentRenderer, isSVGRenderer } = useCanvasRendererUtils();
 const canvasRenderers: CanvasRendererType[] = ["SVG", "WebGL"];
 const webglCanvasStore = useWebGLCanvasStore();
+const panelStore = usePanelStore();
+const uiControlsStore = useUIControlsStore();
+const { isKaiEnabled } = useIsKaiEnabled();
 
 const appSettingsStore = useApplicationSettingsStore();
 const nodeConfigOpenMode = computed({
@@ -46,6 +52,21 @@ const jumpMarksMode = computed({
   get: () => appSettingsStore.jumpMarksMode,
   set: (mode: "scrolling" | "tabs" | "disabled") => appSettingsStore.setJumpMarksMode(mode),
 });
+
+const kaiPlacement = computed({
+  get: () => panelStore.kaiPlacement,
+  set: (placement: "centerStage" | "rightPanel") => {
+    panelStore.setKaiPlacement(placement);
+
+    if (panelStore.isKaiCompactOpen) {
+      panelStore.openKaiCompact();
+    }
+  },
+});
+
+const canShowKaiPlacement = computed(
+  () => isKaiEnabled.value && uiControlsStore.canAccessKAIPanel,
+);
 
 const { currentMode } = useKdsDarkMode();
 const { legacyMode } = useKdsLegacyMode();
@@ -210,6 +231,17 @@ const dragStart = (pointerDown: PointerEvent) => {
       >
         <option value="side-by-side">⬜ Side-by-side</option>
         <option value="bottom">⬇️ Bottom</option>
+      </select>
+
+      <select
+        v-if="canShowKaiPlacement"
+        v-model="kaiPlacement"
+        class="dev-select"
+        title="K-AI placement"
+        data-test-id="kai-placement-toggler"
+      >
+        <option value="centerStage">🧠 Center Stage</option>
+        <option value="rightPanel">📌 Panel</option>
       </select>
 
       <select

@@ -28,7 +28,7 @@ const showKai = computed(
 );
 
 const openKaiCompact = () => {
-  panelStore.isKaiCompactOpen = true;
+  panelStore.openKaiCompact();
 };
 
 const sendKaiPrompt = async (message: string) => {
@@ -54,7 +54,6 @@ const canAnnotate = computed(
 
 <template>
   <div v-if="workflowStore.isWritable" class="selection-kai-overlay">
-    <!-- K-AI icon button — opens the compact KAI chat -->
     <KdsButton
       v-if="showKai"
       leading-icon="ai-general"
@@ -153,7 +152,7 @@ const canAnnotate = computed(
   user-select: none;
 }
 
-/* KAI coral brand border from the Figma design */
+/* KAI coral brand border from the original center-stage design */
 .kai-icon-btn:deep(button) {
   border-color: rgb(252 187 187);
 }

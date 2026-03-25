@@ -4,24 +4,12 @@ import { storeToRefs } from "pinia";
 
 import type { ComponentNode, NativeNode } from "@/api/gateway-api/generated-api";
 import { workflowDomain } from "@/lib/workflow-domain";
-import { usePanelStore } from "@/store/panel";
-import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import ComponentViewInlineOverlay from "./ComponentViewInlineOverlay.vue";
 import NodeViewInlineOverlay from "./NodeViewInlineOverlay.vue";
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
-const { isRightPanelExpanded } = storeToRefs(usePanelStore());
-const { singleSelectedNode } = storeToRefs(useSelectionStore());
-
-/**
- * When the config panel is open for a node its view is shown there — skip the
- * inline overlay for that node to avoid it being hidden behind the panel.
- */
-const panelNodeId = computed(() =>
-  isRightPanelExpanded.value ? singleSelectedNode.value?.id : undefined,
-);
 
 /** Native nodes that are executed and have a view — rendered as inline overlays */
 const viewNodes = computed((): NativeNode[] => {
@@ -30,8 +18,7 @@ const viewNodes = computed((): NativeNode[] => {
     (node): node is NativeNode =>
       workflowDomain.node.isNative(node) &&
       node.hasView &&
-      node.state?.executionState === "EXECUTED" &&
-      node.id !== panelNodeId.value,
+      node.state?.executionState === "EXECUTED",
   );
 });
 
@@ -42,8 +29,7 @@ const viewComponents = computed((): ComponentNode[] => {
     (node): node is ComponentNode =>
       workflowDomain.node.isComponent(node) &&
       node.hasView &&
-      node.state?.executionState === "EXECUTED" &&
-      node.id !== panelNodeId.value,
+      node.state?.executionState === "EXECUTED",
   );
 });
 </script>

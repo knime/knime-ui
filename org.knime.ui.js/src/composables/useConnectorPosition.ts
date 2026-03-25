@@ -29,6 +29,8 @@ type UseConnectorPositionOptions = {
    * If either destNode or sourceNode is unspecified the connector will be drawn up to this point
    */
   absolutePoint: Ref<[number, number] | null>;
+  sourceUsesVisiblePort?: Ref<boolean>;
+  destUsesVisiblePort?: Ref<boolean>;
 };
 
 type SourceOrDest = "source" | "dest";
@@ -82,6 +84,11 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
       type,
       reference.value,
       canvasRendererUtils.isWebGLRenderer(),
+      !(
+        type === "source"
+          ? (options.sourceUsesVisiblePort?.value ?? true)
+          : (options.destUsesVisiblePort?.value ?? true)
+      ),
     );
   };
 

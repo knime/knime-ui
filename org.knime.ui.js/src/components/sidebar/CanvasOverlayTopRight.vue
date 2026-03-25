@@ -17,6 +17,7 @@ import SelectionModeIcon from "@/assets/selection-mode.svg";
 import HelpMenu from "@/components/application/HelpMenu.vue";
 import ZoomMenu from "@/components/toolbar/ZoomMenu.vue";
 import { useCanvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useUploadWorkflowToSpace } from "@/composables/useWorkflowUploadToHub";
 import { isBrowser } from "@/environment";
 import { HINTS } from "@/hints/hints.config";
@@ -45,9 +46,17 @@ const { activeWorkflow, isWorkflowEmpty, isActiveWorkflowFixedVersion } =
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const uiControls = useUIControlsStore();
 const panelStore = usePanelStore();
-const { isRightPanelExpanded } = storeToRefs(panelStore);
+const { isKaiCompactOpen, isRightPanelExpanded } = storeToRefs(panelStore);
+const { isKaiEnabled } = useIsKaiEnabled();
 const { activeProjectVersionsModeStatus } = storeToRefs(
   useWorkflowVersionsStore(),
+);
+
+const showKaiFab = computed(
+  () =>
+    isKaiEnabled.value &&
+    uiControls.canAccessKAIPanel &&
+    panelStore.kaiPlacement === "rightPanel",
 );
 
 const isVersionsPanelOpen = computed(
@@ -226,6 +235,15 @@ const onUploadButtonClick = async () => {
   }
 };
 
+const onKaiToggle = (newValue: boolean) => {
+  if (newValue) {
+    panelStore.openKaiCompact();
+    return;
+  }
+
+  panelStore.closeKaiCompact();
+};
+
 const uploadButton = useTemplateRef<InstanceType<typeof KdsButton>>("uploadButton");
 onMounted(() => {
   useHint().createHint({
@@ -240,6 +258,17 @@ onMounted(() => {
     <HelpMenu v-if="isBrowser()" class="help-menu" />
 
     <template v-if="activeWorkflow">
+      <KdsToggleButton
+        v-if="showKaiFab"
+        :model-value="isKaiCompactOpen"
+        leading-icon="ai-general"
+        :title="isKaiCompactOpen ? 'Close K-AI' : 'Open K-AI'"
+        :aria-label="isKaiCompactOpen ? 'Close K-AI' : 'Open K-AI'"
+        variant="transparent"
+        size="medium"
+        @update:model-value="onKaiToggle"
+      />
+
       <KdsToggleButton
         v-if="uiControls.canViewVersions"
         :model-value="isVersionsPanelOpen"
@@ -394,5 +423,6 @@ onMounted(() => {
       stroke: var(--kds-color-text-and-icon-neutral);
     }
   }
+
 }
 </style>

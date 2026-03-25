@@ -24,7 +24,11 @@ export const portShift = (
 ): [number, number] => {
   const nodeW = isMetanode ? nodeSize : (cardLayout ? nodeCardWidth : nodeSize);
   const nodeH = isMetanode ? nodeSize : (cardLayout ? nodeCardHeight : nodeSize);
-  const x = isOutPort ? nodeW + portSize / 2 : -portSize / 2;
+  // For card layout: center ports at the card edge so connectors meet the card without a gap.
+  // For classic layout: extend half a portSize outside the node.
+  const x = isOutPort
+    ? cardLayout ? nodeW : nodeW + portSize / 2
+    : cardLayout ? 0 : -portSize / 2;
 
   if (isMetanode) {
     // Metanodes don't have Mickey Mouse ears, so all ports are attached to the side, not to the top
@@ -113,6 +117,7 @@ export const getPortPositionInNode = (
   type: "source" | "dest",
   node: KnimeNode,
   cardLayout = false,
+  anchorToNodeEdge = false,
 ): XY => {
   const allPorts = type === "source" ? node.outPorts : node.inPorts;
   const [dx, dy] = portShift(
@@ -123,6 +128,24 @@ export const getPortPositionInNode = (
     cardLayout,
   );
   const { x, y } = node.position;
+
+  if (anchorToNodeEdge) {
+    const connectorInset = portSize / 2 - 0.5;
+    const isDefaultFlowVariablePort =
+      node.kind !== "metanode" && sourceNodeIndex === 0;
+
+    if (isDefaultFlowVariablePort) {
+      return {
+        x: x + dx,
+        y: y + dy + portSize / 2,
+      };
+    }
+
+    return {
+      x: x + dx + (type === "source" ? -connectorInset : connectorInset),
+      y: y + dy,
+    };
+  }
 
   return {
     x: x + dx,

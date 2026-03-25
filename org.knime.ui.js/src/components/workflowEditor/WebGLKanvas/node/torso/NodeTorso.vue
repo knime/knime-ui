@@ -11,8 +11,6 @@ import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
 
-import type { TablePreview } from "../useNodePortPreview";
-
 import NodeTorsoCard from "./NodeTorsoCard.vue";
 import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
@@ -27,9 +25,8 @@ type Props = {
   type: NativeNodeInvariants.TypeEnum | null;
   isReplacementCandidate: boolean;
   name?: string | null;
-  annotation?: string | null;
   isExecuting?: boolean;
-  tablePreview?: TablePreview;
+  hasView?: boolean;
   executionState?: MetaNodeState.ExecutionStateEnum;
   isHovered?: boolean;
 };
@@ -37,6 +34,10 @@ type Props = {
 const props = defineProps<Props>();
 
 const isMetanode = computed(() => props.kind === Node.KindEnum.Metanode);
+
+const cardH = computed(() =>
+  props.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight,
+);
 
 const shadowFilter = new BlurFilter({
   strength: 25,
@@ -47,7 +48,7 @@ const shadowFilter = new BlurFilter({
 
 const renderCardShadow = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.roundRect(0, 0, $shapes.nodeCardWidth, $shapes.nodeCardHeight, 6);
+  graphics.roundRect(0, 0, $shapes.nodeCardWidth, cardH.value, 6);
   graphics.stroke({ width: 2, color: $colors.GrayDarkSemi });
 };
 
@@ -84,15 +85,15 @@ const renderMetanodeShadow = (graphics: GraphicsInst) => {
         :execution-state="executionState"
       />
 
-      <!-- All non-metanode nodes use the new card design -->
+      <!-- All non-metanode nodes use the compact card design -->
       <NodeTorsoCard
         v-else
         :type="type"
         :kind="kind"
+        :icon="icon"
         :name="name"
-        :annotation="annotation"
+        :has-view="hasView"
         :is-executing="isExecuting"
-        :table-preview="tablePreview"
       />
     </template>
   </Container>

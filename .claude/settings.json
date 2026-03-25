@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.figma.com)",
+      "WebFetch(domain:api.figma.com)",
+      "Bash(grep -r \"displayedColumns\\\\|columnDataTypeIds\" /Users/peterschramm/Development/GitHub/knime-ui --include=*.ts --include=*.vue --include=*.js -l)",
+      "Bash(find /Users/peterschramm/Development/GitHub/knime-ui/node_modules/@knime -name *.ts -o -name *.js)",
+      "Bash(find /Users/peterschramm/Development/GitHub/knime-ui -name *.json -path */portViews/* -o -name *.json -path */portPreview/*)",
+      "Bash(find /Users/peterschramm/Development/GitHub/knime-ui -path */portViews/__tests__*)",
+      "Bash(find /Users/peterschramm/Development/GitHub/knime-ui/node_modules/@knime/styles -name *.css)",
+      "Bash(find /Users/peterschramm/Development/GitHub/knime-ui/node_modules/@knime/styles -name colors*)",
+      "Bash(find /Users/peterschramm/Development/GitHub/knime-ui/node_modules/@knime -name colors*)"
+    ]
+  }
+}

@@ -387,9 +387,8 @@ const resultKey = (result: SearchResult): string => {
   position: fixed;
   z-index: v-bind("$zIndices.layerFloatingWindows");
   top: calc(var(--kds-spacing-container-0-75x) + 40px + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 520px;
+  left: calc(var(--app-side-bar-buttons-width) + 8px);
+  width: min(360px, calc(100vw - var(--app-side-bar-buttons-width) - 16px));
   max-height: calc(100dvh - 160px);
   background-color: var(--kds-color-surface-default);
   border-radius: var(--kds-border-radius-container-0-50x);

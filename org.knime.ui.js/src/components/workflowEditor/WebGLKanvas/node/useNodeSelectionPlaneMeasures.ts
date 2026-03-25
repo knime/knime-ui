@@ -6,6 +6,7 @@ type UseNodeSelectionPlaneMeasuresOptions = {
   isMetanode: MaybeRefOrGetter<boolean>;
   extraHeight: MaybeRefOrGetter<number>;
   width: MaybeRefOrGetter<number>;
+  cardHeight?: MaybeRefOrGetter<number>;
 };
 
 export const useNodeSelectionPlaneMeasures = (
@@ -26,13 +27,14 @@ export const useNodeSelectionPlaneMeasures = (
 
     const extraHeight = toValue(options.extraHeight);
     const baseWidth = toValue(options.width);
+    const cardH = options.cardHeight ? toValue(options.cardHeight) : nodeCardHeight;
 
     const isMetanode = toValue(options.isMetanode);
 
     if (!isMetanode) {
       // Card nodes: wrap the card with small padding
       const pad = 4;
-      const height = nodeCardHeight + extraHeight + pad * 2;
+      const height = cardH + extraHeight + pad * 2;
       const minWidth = nodeCardWidth + pad * 2;
       const width = baseWidth > minWidth ? baseWidth : minWidth;
       return {

@@ -25,10 +25,12 @@ type Props = {
   position: XY;
   name: string;
   isMetanode?: boolean;
+  hasView?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   isMetanode: false,
+  hasView: false,
 });
 
 const canvasStore = useWebGLCanvasStore();
@@ -62,6 +64,8 @@ const { nodeSelectionMeasures: measures } = useNodeSelectionPlaneMeasures({
     isEditingName.value
       ? nameEditorDimensions.value.width
       : $shapes.nodeNameHorizontalMargin * 2,
+  cardHeight: () =>
+    props.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight,
 });
 
 const selectionPlaneRenderFn = (graphics: GraphicsInst) => {

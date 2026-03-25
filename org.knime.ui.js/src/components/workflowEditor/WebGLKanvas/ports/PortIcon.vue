@@ -4,7 +4,7 @@ import { computed } from "vue";
 
 import type { PortType } from "@/api/gateway-api/generated-api";
 import { portColors } from "@/style/colors";
-import { portSize } from "@/style/shapes";
+import { webGlPortSize } from "@/style/shapes";
 import { type GraphicsInst } from "@/vue3-pixi";
 
 const strokeWidth = 1.5;
@@ -20,13 +20,13 @@ const props = defineProps<Props>();
 const trianglePath = computed(() => {
   // draw triangle around middle point
   let [x1, y1, x2, y3] = [
-    -portSize / 2,
-    -portSize / 2,
-    portSize / 2,
-    portSize / 2,
+    -webGlPortSize / 2,
+    -webGlPortSize / 2,
+    webGlPortSize / 2,
+    webGlPortSize / 2,
   ];
 
-  // y and d are chosen so the triangle (including strokeWidth) fits precisely in the 9x9 port
+  // y and d are chosen so the triangle (including strokeWidth) fits precisely in the WebGL port
   const d = Math.sqrt(5) / 2;
   const y = d / 2 + 1 / 4;
 
@@ -58,10 +58,10 @@ const tablePortRenderFn = (graphics: GraphicsInst) => {
 const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
   if (props.filled) {
-    graphics.circle(0, 0, portSize / 2);
+    graphics.circle(0, 0, webGlPortSize / 2);
     graphics.fill({ color: portColor.value });
   } else {
-    graphics.circle(0, 0, (portSize - strokeWidth / 2) / 2 - 0.2);
+    graphics.circle(0, 0, (webGlPortSize - strokeWidth / 2) / 2 - 0.2);
     graphics.stroke({ color: portColor.value, width: strokeWidth });
   }
 };
@@ -69,14 +69,14 @@ const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
 const otherPortsRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
   if (props.filled) {
-    graphics.rect(0, 0, portSize, portSize);
+    graphics.rect(0, 0, webGlPortSize, webGlPortSize);
     graphics.fill({ color: portColor.value });
   } else {
     graphics.rect(
       0 + strokeWidth / 2,
       0 + strokeWidth / 2,
-      portSize - strokeWidth,
-      portSize - strokeWidth,
+      webGlPortSize - strokeWidth,
+      webGlPortSize - strokeWidth,
     );
     graphics.stroke({ color: portColor.value, width: strokeWidth });
   }
@@ -100,7 +100,7 @@ const otherPortsRenderFn = (graphics: GraphicsInst) => {
     <Graphics
       v-else
       label="PortIconOther"
-      :position="{ x: -portSize / 2, y: -portSize / 2 }"
+      :position="{ x: -webGlPortSize / 2, y: -webGlPortSize / 2 }"
       @render="otherPortsRenderFn"
     />
   </Container>

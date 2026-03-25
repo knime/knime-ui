@@ -13,7 +13,6 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
-import { portSize } from "@/style/shapes";
 import * as $shapes from "@/style/shapes";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 import type { TooltipDefinition } from "../../types";
@@ -29,6 +28,7 @@ type Props = {
   nodeKind: Node.KindEnum;
   port: NodePort;
   selected: boolean;
+  forceVisible?: boolean;
   position: XY;
   direction: "in" | "out";
   disableQuickNodeAdd?: boolean;
@@ -36,6 +36,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   disableQuickNodeAdd: false,
+  forceVisible: false,
 });
 
 const emit = defineEmits<{
@@ -49,12 +50,12 @@ const { isDebugModeEnabled: isCanvasDebugEnabled, canvasLayers } =
   storeToRefs(canvasStore);
 const { availablePortTypes } = storeToRefs(useApplicationStore());
 
-const hitAreaBufferSize = portSize / 6;
+const hitAreaBufferSize = $shapes.webGlPortSize / 6;
 const hitArea = new Rectangle(
-  (-portSize / 2) * hitAreaBufferSize,
-  (-portSize / 2) * hitAreaBufferSize,
-  portSize + hitAreaBufferSize * 3,
-  portSize + hitAreaBufferSize * 3,
+  (-$shapes.webGlPortSize / 2) * hitAreaBufferSize,
+  (-$shapes.webGlPortSize / 2) * hitAreaBufferSize,
+  $shapes.webGlPortSize + hitAreaBufferSize * 3,
+  $shapes.webGlPortSize + hitAreaBufferSize * 3,
 );
 
 const portTemplate = computed(() => {
@@ -196,6 +197,7 @@ const portTransparency = usePortTransparency({
   nodeId: props.nodeId,
   port: props.port,
   nodeKind: props.nodeKind,
+  forceVisible: computed(() => props.forceVisible),
 });
 
 const isHovered = ref(false);
@@ -204,7 +206,9 @@ const tooltip = computed<TooltipDefinition>(() => {
   return {
     position: {
       // + 1 is due to the animation that makes the port bigger
-      x: props.selected ? portSize : portSize / 2 + 1,
+      x: props.selected
+        ? $shapes.webGlPortSize
+        : $shapes.webGlPortSize / 2 + 1,
       y: 0,
     },
     gap: 4,
@@ -293,7 +297,7 @@ useAnimatePixiContainer({
       ref="tooltipRef"
       label="NodePortHitAreaWrapper"
       :hit-area="hitArea"
-      :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
+      :pivot="{ x: -$shapes.webGlPortSize / 2, y: -$shapes.webGlPortSize / 2 }"
       event-mode="static"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
@@ -324,7 +328,7 @@ useAnimatePixiContainer({
       <NodePortActions
         v-if="animating"
         :port="port"
-        :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
+        :pivot="{ x: -$shapes.webGlPortSize / 2, y: -$shapes.webGlPortSize / 2 }"
         :direction="direction"
         @action:remove="$emit('remove')"
         @close="onClose"

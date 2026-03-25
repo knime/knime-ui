@@ -149,10 +149,24 @@ const annotations = computed(
         :node-id="node.id"
         :name="nodeInteractionStore.getNodeName(node.id)"
         :is-metanode="workflowDomain.node.isMetaNode(node)"
+        :has-view="node.hasView"
       />
     </Container>
 
     <Container label="NodeSelectionsDragContainer" :is-render-group="true" />
+
+    <PlaceholderConnector
+      v-for="connector of componentPlaceholderConnections"
+      :key="connector.id"
+      v-bind="connector"
+      :placeholder="connector.placeholderType"
+    />
+
+    <Connector
+      v-for="connector of activeWorkflow.connections"
+      :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
+      v-bind="connector"
+    />
 
     <ComponentPlaceholder
       v-for="componentPlaceholder of componentPlaceholders"
@@ -172,18 +186,6 @@ const annotations = computed(
       />
     </Container>
 
-    <PlaceholderConnector
-      v-for="connector of componentPlaceholderConnections"
-      :key="connector.id"
-      v-bind="connector"
-      :placeholder="connector.placeholderType"
-    />
-
-    <Connector
-      v-for="connector of activeWorkflow.connections"
-      :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
-      v-bind="connector"
-    />
     <template
       v-for="(connector, id) of activeWorkflow.connections"
       :key="`connector-label-${id}`"

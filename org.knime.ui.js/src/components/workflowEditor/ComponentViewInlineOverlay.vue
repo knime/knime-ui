@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { CURRENT_STATE_VERSION } from "@knime/hub-features/versions";
 
 import type { ComponentNode } from "@/api/gateway-api/generated-api";
 import CompositeViewLoader from "@/components/uiExtensions/compositeView/CompositeViewLoader.vue";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useMovingStore } from "@/store/workflow/moving";
 import * as $shapes from "@/style/shapes";
 
-/** Height of the node card header in canvas pixels */
-const CARD_HEADER_H = 36;
+/** Height of the icon/name row that sits above the view area (canvas pixels) */
+const CARD_HEADER_H = $shapes.compactNodeCardHeight;
 
 /**
  * Natural (unscaled) width at which CompositeViewLoader renders.
@@ -25,17 +28,47 @@ const props = defineProps<{ node: ComponentNode }>();
 
 const canvasStore = useWebGLCanvasStore();
 const workflowStore = useWorkflowStore();
+const movingStore = useMovingStore();
+const selectionStore = useSelectionStore();
+
+const { isDragging, movePreviewDelta } = storeToRefs(movingStore);
 
 const projectId = computed(() => workflowStore.getProjectAndWorkflowIds.projectId);
 const workflowId = computed(() => workflowStore.getProjectAndWorkflowIds.workflowId);
 
-/** Top-left of the card body in screen (fixed) coordinates */
-const screenPos = computed(() =>
-  canvasStore.screenFromCanvasCoordinates({
-    x: props.node.position.x,
-    y: props.node.position.y + CARD_HEADER_H,
-  }),
+/** Whether this specific node is currently being dragged */
+const isBeingDragged = computed(
+  () => isDragging.value && selectionStore.isNodeSelected(props.node.id),
 );
+
+/**
+ * Node position captured at drag start (before store position is mutated).
+ * Using this + movePreviewDelta keeps the overlay in sync during drag without
+ * double-counting the delta after endDrag updates node.position.
+ */
+const preDragPos = ref<{ x: number; y: number } | null>(null);
+
+watch(isBeingDragged, (nowDragging) => {
+  if (nowDragging) {
+    preDragPos.value = { x: props.node.position.x, y: props.node.position.y };
+  } else {
+    preDragPos.value = null;
+  }
+});
+
+/** Top-left of the card body in screen (fixed) coordinates */
+const screenPos = computed(() => {
+  const base = preDragPos.value
+    ? {
+        x: preDragPos.value.x + movePreviewDelta.value.x,
+        y: preDragPos.value.y + movePreviewDelta.value.y,
+      }
+    : { x: props.node.position.x, y: props.node.position.y };
+  return canvasStore.screenFromCanvasCoordinates({
+    x: base.x,
+    y: base.y + CARD_HEADER_H,
+  });
+});
 
 const screenW = computed(() => $shapes.nodeCardWidth * canvasStore.zoomFactor);
 const screenH = computed(
@@ -83,7 +116,7 @@ const scale = computed(() => screenW.value / NATURAL_W);
   position: fixed;
   overflow: hidden;
   pointer-events: none;
-  z-index: 1;
+  z-index: 5;
 }
 
 .component-view-inner {

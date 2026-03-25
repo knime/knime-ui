@@ -2,7 +2,7 @@
 import { Graphics } from "pixi.js";
 
 import { portColors } from "@/style/colors";
-import { portSize } from "@/style/shapes";
+import { webGlPortSize } from "@/style/shapes";
 import { type GraphicsInst } from "@/vue3-pixi";
 
 const createOutlinePoints = (width: number) => {
@@ -10,18 +10,18 @@ const createOutlinePoints = (width: number) => {
 
   // diagonal 1
   const d1 = [
-    { x: -portSize / 2 - offset, y: -portSize / 2 + offset },
-    { x: -portSize / 2 + offset, y: -portSize / 2 - offset },
-    { x: portSize / 2 + offset, y: portSize / 2 - offset },
-    { x: portSize / 2 - offset, y: portSize / 2 + offset },
+    { x: -webGlPortSize / 2 - offset, y: -webGlPortSize / 2 + offset },
+    { x: -webGlPortSize / 2 + offset, y: -webGlPortSize / 2 - offset },
+    { x: webGlPortSize / 2 + offset, y: webGlPortSize / 2 - offset },
+    { x: webGlPortSize / 2 - offset, y: webGlPortSize / 2 + offset },
   ];
 
   // diagonal 2
   const d2 = [
-    { x: portSize / 2 - offset, y: -portSize / 2 - offset },
-    { x: portSize / 2 + offset, y: -portSize / 2 + offset },
-    { x: -portSize / 2 + offset, y: portSize / 2 + offset },
-    { x: -portSize / 2 - offset, y: portSize / 2 - offset },
+    { x: webGlPortSize / 2 - offset, y: -webGlPortSize / 2 - offset },
+    { x: webGlPortSize / 2 + offset, y: -webGlPortSize / 2 + offset },
+    { x: -webGlPortSize / 2 + offset, y: webGlPortSize / 2 + offset },
+    { x: -webGlPortSize / 2 - offset, y: webGlPortSize / 2 - offset },
   ];
 
   // cross mid points
@@ -56,10 +56,10 @@ const renderOutlineX = (graphics: GraphicsInst) => {
 
   // X
   graphics
-    .moveTo(-portSize / 2, -portSize / 2)
-    .lineTo(portSize / 2, portSize / 2)
-    .moveTo(-portSize / 2, portSize / 2)
-    .lineTo(portSize / 2, -portSize / 2)
+    .moveTo(-webGlPortSize / 2, -webGlPortSize / 2)
+    .lineTo(webGlPortSize / 2, webGlPortSize / 2)
+    .moveTo(-webGlPortSize / 2, webGlPortSize / 2)
+    .lineTo(webGlPortSize / 2, -webGlPortSize / 2)
     .stroke({
       width: 1.5,
       color: portColors.inactive,

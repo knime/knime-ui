@@ -6,6 +6,7 @@ import { storeToRefs } from "pinia";
 import { SplitPanel } from "@knime/components";
 
 import KaiCompact from "@/components/kai/KaiCompact.vue";
+import KaiRightPanel from "@/components/kai/KaiRightPanel.vue";
 import SelectionKaiOverlay from "@/components/workflowEditor/SelectionKaiOverlay.vue";
 
 import LayoutEditorDialog from "@/components/layoutEditor/LayoutEditorDialog.vue";
@@ -33,7 +34,7 @@ const workflowStore = useWorkflowStore();
 const { isSVGRenderer } = useCanvasRendererUtils();
 const { nodeOutputLayout } = storeToRefs(useApplicationSettingsStore());
 const panelStore = usePanelStore();
-const { dockedRightPanelWidth, isKaiCompactOpen, isDeployPanelOpen, isSearchPanelOpen } =
+const { dockedRightPanelWidth, isKaiCompactOpen, isDeployPanelOpen, isSearchPanelOpen, kaiPlacement } =
   storeToRefs(panelStore);
 
 const splitPanelExpanded = ref(true);
@@ -61,6 +62,14 @@ const kaiBottomOffset = computed(() => {
   }
   return `${liveSecondarySize.value}dvh`;
 });
+
+const showKaiBottomOverlay = computed(
+  () => kaiPlacement.value === "centerStage",
+);
+
+const showKaiRightOverlay = computed(
+  () => kaiPlacement.value === "rightPanel" && isKaiCompactOpen.value,
+);
 </script>
 
 <template>
@@ -106,11 +115,15 @@ const kaiBottomOffset = computed(() => {
     <WorkflowSearchPanel v-if="isSearchPanelOpen" />
     <SidebarFloatingPanel />
 
+    <div v-if="showKaiRightOverlay" class="kai-right-overlay">
+      <KaiRightPanel />
+    </div>
+
     <!-- Compact K-AI input — centered, above bottom panel -->
-    <div class="kai-bottom-center-overlay">
+    <div v-if="showKaiBottomOverlay" class="kai-bottom-center-overlay">
       <SelectionKaiOverlay v-if="!isKaiCompactOpen" />
       <div v-if="isKaiCompactOpen" class="kai-compact-pill">
-        <KaiCompact @close="panelStore.isKaiCompactOpen = false" />
+        <KaiCompact @close="panelStore.closeKaiCompact()" />
       </div>
     </div>
   </div>
@@ -179,5 +192,24 @@ main {
 
   /* visible so the X close button can sit outside the top-right corner */
   overflow: visible;
+}
+
+.kai-right-overlay {
+  position: fixed;
+  z-index: v-bind("$zIndices.layerToasts");
+  top: 0;
+  right: 0;
+  width: calc(var(--cfg-panel-right-width, 400px) - 40px);
+  height: 100dvh;
+  background-color: color-mix(
+    in srgb,
+    var(--kds-color-surface-default) 72%,
+    transparent
+  );
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border-left: 1px solid var(--kds-color-border-default, var(--knime-silver-sand));
+  box-shadow: var(--shadow-elevation-2);
+  overflow: hidden;
 }
 </style>

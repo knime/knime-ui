@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { Graphics } from "pixi.js";
 
 import * as $colors from "@/style/colors";
+import { webGlPortSize } from "@/style/shapes";
 import { type GraphicsInst } from "@/vue3-pixi";
 
 interface Props {
@@ -54,7 +55,7 @@ const renderTrafficLight = (graphics: GraphicsInst) => {
   <Graphics
     v-if="trafficLightColor"
     label="PortTrafficLightDecorator"
-    :position-x="-($shapes.portSize / 2 + 1)"
+    :position-x="-(webGlPortSize / 2 + 1)"
     position-y="0"
     @render="renderTrafficLight"
   />
