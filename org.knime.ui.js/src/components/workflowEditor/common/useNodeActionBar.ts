@@ -63,11 +63,12 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
         configureNode: {
           title: () => {
             const settings = useApplicationSettingsStore();
-            // Show the Shift+X hotkey when in actionbar/modal mode (embedded),
+            // Show the panel hotkey when using the embedded panel (actionbar/modal/dock),
             // fall back to F6 for legacy desktop dialogs.
             const hotkeyShortcut =
               (settings.nodeConfigOpenMode === "actionbar" ||
-                settings.nodeConfigOpenMode === "modal") &&
+                settings.nodeConfigOpenMode === "modal" ||
+                settings.nodeConfigOpenMode === "dock") &&
               settings.useEmbeddedDialogs
                 ? $shortcuts.get("openNodeConfigPanel").hotkeyText
                 : $shortcuts.get("configureNode").hotkeyText;
@@ -81,13 +82,14 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
             useSelectionStore().tryClearSelection({
               keepNodesInSelection: [options.nodeId],
             });
-            // In "actionbar" or "modal" mode with embedded dialogs, open the
-            // floating panel rather than dispatching the legacy desktop-dialog
+            // In "actionbar", "modal", or "dock" mode with embedded dialogs, open
+            // the floating panel rather than dispatching the legacy desktop-dialog
             // shortcut. In "modal" mode NodeConfig.vue will switch it to
             // large/modal on mount automatically.
             if (
               (settings.nodeConfigOpenMode === "actionbar" ||
-                settings.nodeConfigOpenMode === "modal") &&
+                settings.nodeConfigOpenMode === "modal" ||
+                settings.nodeConfigOpenMode === "dock") &&
               settings.useEmbeddedDialogs
             ) {
               usePanelStore().isRightPanelExpanded = true;

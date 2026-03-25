@@ -207,8 +207,7 @@ const onBrowseFiles = () => {
 }
 
 .popover-body {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   flex: 1;
   padding: 12px 0;
   display: flex;

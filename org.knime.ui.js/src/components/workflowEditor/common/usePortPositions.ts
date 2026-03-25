@@ -2,6 +2,7 @@ import { type ComputedRef, computed, watch } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { ports } from "@/lib/workflow-canvas";
+import { canvasRendererUtils } from "../util/canvasRenderer";
 
 import { useNodeInfo } from "./useNodeInfo";
 
@@ -26,15 +27,18 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
    * The position for each port is an array with two coordinates [x, y].
    */
   const portPositions = computed<PortPositions>(() => {
+    const cardLayout = canvasRendererUtils.isWebGLRenderer();
     const positions = {
       in: ports.positions({
         portCount: options.inPorts.length,
         isMetanode: isMetanode.value,
+        cardLayout,
       }),
       out: ports.positions({
         portCount: options.outPorts.length,
         isMetanode: isMetanode.value,
         isOutports: true,
+        cardLayout,
       }),
     };
 
@@ -44,6 +48,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
         ports.placeholderPosition({
           portCount: options.inPorts.length,
           isMetanode: isMetanode.value,
+          cardLayout,
         }),
       );
     }
@@ -54,6 +59,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
           portCount: options.outPorts.length,
           isMetanode: isMetanode.value,
           isOutport: true,
+          cardLayout,
         }),
       );
     }

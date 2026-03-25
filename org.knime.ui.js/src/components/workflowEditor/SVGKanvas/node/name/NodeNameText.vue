@@ -33,10 +33,6 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    kind: {
-      type: String,
-      default: "node",
-    },
     /**
      * Forwarded to the AutoSizeForeignObject component
      */
@@ -74,7 +70,7 @@ export default defineComponent({
     ]"
     :max-width="$shapes.maxNodeNameWidth"
     :y-offset="-$shapes.nodeNameMargin"
-    :parent-width="kind === 'metanode' ? $shapes.nodeSize : $shapes.nodeCardWidth"
+    :parent-width="$shapes.nodeSize"
     offset-by-height
     @width-change="$emit('widthChange', $event)"
     @height-change="$emit('heightChange', $event)"

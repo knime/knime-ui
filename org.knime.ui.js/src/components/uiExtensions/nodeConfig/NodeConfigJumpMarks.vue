@@ -96,6 +96,7 @@ const emit = defineEmits<{ activateSection: [index: number] }>();
   box-shadow: var(--shadow-elevation-2);
   padding: var(--space-8);
   z-index: v-bind("$zIndices.layerFloatingWindows");
+
   /* Smooth expand/collapse driven by translateX from the parent's :style */
   transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
 }

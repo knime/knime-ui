@@ -44,8 +44,10 @@ type ApplicationSettingsState = {
    * - "actionbar" : only the configure button in the node action bar opens
    *                 the panel; single click merely selects the node
    * - "modal"     : the config dialog is always opened as a modal (large mode)
+   * - "dock"      : panel docks to the right edge; single click on a node
+   *                 switches the docked config; cog icon hidden while docked
    */
-  nodeConfigOpenMode: "current" | "actionbar" | "modal";
+  nodeConfigOpenMode: "current" | "actionbar" | "modal" | "dock";
   /*
    * Controls how the node output/port view is displayed relative to the config panel:
    * - "side-by-side" : node output occupies the left 2/3 of the config panel
@@ -124,7 +126,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
       this.showDevToolsBar = !this.showDevToolsBar;
     },
 
-    setNodeConfigOpenMode(mode: "current" | "actionbar" | "modal") {
+    setNodeConfigOpenMode(mode: "current" | "actionbar" | "modal" | "dock") {
       this.nodeConfigOpenMode = mode;
       useSettingsStore().updateSetting({ key: "nodeConfigOpenMode", value: mode });
     },

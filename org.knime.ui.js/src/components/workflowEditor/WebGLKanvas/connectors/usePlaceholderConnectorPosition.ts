@@ -121,6 +121,7 @@ export const usePlaceholderConnectorPosition = (
         2,
         false,
         options.placeholderType.value === "placeholder-out",
+        true,
       );
 
       return {
@@ -132,6 +133,7 @@ export const usePlaceholderConnectorPosition = (
         referencePortIndex.value,
         type,
         reference.value.payload,
+        true,
       );
     }
   };

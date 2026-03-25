@@ -20,10 +20,10 @@ export const portShift = (
   portCount: number,
   isMetanode?: boolean,
   isOutPort?: boolean,
+  cardLayout?: boolean,
 ): [number, number] => {
-  // Metanodes keep the original 32px square; regular nodes use the new card dimensions
-  const nodeW = isMetanode ? nodeSize : nodeCardWidth;
-  const nodeH = isMetanode ? nodeSize : nodeCardHeight;
+  const nodeW = isMetanode ? nodeSize : (cardLayout ? nodeCardWidth : nodeSize);
+  const nodeH = isMetanode ? nodeSize : (cardLayout ? nodeCardHeight : nodeSize);
   const x = isOutPort ? nodeW + portSize / 2 : -portSize / 2;
 
   if (isMetanode) {
@@ -41,14 +41,14 @@ export const portShift = (
 
   const portMargin = 1.5;
 
-  if (!isMetanode) {
+  if (!isMetanode && cardLayout) {
     // Card nodes: distribute ports from the top of the card
     const topY = portSize;
     const dy = topY + (portIndex - 1) * (portSize + portMargin);
     return [x, dy];
   }
 
-  // Metanodes: center-based distribution
+  // Classic nodes & metanodes: center-based distribution
   const middleY = nodeH / 2;
   if (portCount === 2) {
     return [x, middleY];
@@ -70,22 +70,25 @@ export const placeholderPosition = ({
   portCount,
   isOutport = false,
   isMetanode = false,
+  cardLayout = false,
 }: {
   portCount: number;
   isOutport?: boolean;
   isMetanode?: boolean;
+  cardLayout?: boolean;
 }) => {
   const castedIsMetanode = Number(isMetanode); // cast to 1 or 0
 
   switch (portCount) {
     case 1 - castedIsMetanode:
-      return portShift(portCount, portCount + 1, isMetanode, isOutport);
+      return portShift(portCount, portCount + 1, isMetanode, isOutport, cardLayout);
     default:
       return portShift(
         Math.max(4 - castedIsMetanode, portCount),
         Math.max(4 - castedIsMetanode, portCount) + 1,
         isMetanode,
         isOutport,
+        cardLayout,
       );
   }
 };
@@ -94,19 +97,22 @@ export const positions = ({
   portCount,
   isMetanode = false,
   isOutports = false,
+  cardLayout = false,
 }: {
   portCount: number;
   isMetanode?: boolean;
   isOutports?: boolean;
+  cardLayout?: boolean;
 }) =>
   [...Array(portCount).keys()].map((index) =>
-    portShift(index, portCount, isMetanode, isOutports),
+    portShift(index, portCount, isMetanode, isOutports, cardLayout),
   );
 
 export const getPortPositionInNode = (
   sourceNodeIndex: number,
   type: "source" | "dest",
   node: KnimeNode,
+  cardLayout = false,
 ): XY => {
   const allPorts = type === "source" ? node.outPorts : node.inPorts;
   const [dx, dy] = portShift(
@@ -114,6 +120,7 @@ export const getPortPositionInNode = (
     allPorts.length,
     node.kind === "metanode",
     type === "source",
+    cardLayout,
   );
   const { x, y } = node.position;
 

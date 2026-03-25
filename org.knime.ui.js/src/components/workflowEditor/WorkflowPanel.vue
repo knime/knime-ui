@@ -19,7 +19,6 @@ import PortTypeMenu from "./CanvasAnchoredComponents/PortTypeMenu/PortTypeMenu.v
 import QuickActionMenu from "./CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import FloatingMenuPortalTarget from "./WebGLKanvas/FloatingMenu/FloatingMenuPortalTarget.vue";
 import NodeViewInlineOverlays from "./NodeViewInlineOverlays.vue";
-import SelectionKaiOverlay from "./SelectionKaiOverlay.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 import { useCanvasRendererUtils } from "./util/canvasRenderer";
 
@@ -113,11 +112,8 @@ const panelStore = usePanelStore();
     -->
     <WorkflowCanvas :key="`${activeProjectId}-${activeWorkflowId}`" />
 
-    <!-- K-AI overlay near selected nodes -->
-    <SelectionKaiOverlay />
-
-    <!-- Inline node view overlays — one per executed visualizer node -->
-    <NodeViewInlineOverlays />
+    <!-- Inline node view overlays — one per executed visualizer node (WebGL/card mode only) -->
+    <NodeViewInlineOverlays v-if="currentRenderer !== 'SVG'" />
 
     <!-- Floating node configuration / versions panel -->
     <NodeConfigFloatingPanel
@@ -135,6 +131,7 @@ const panelStore = usePanelStore();
   height: 100%;
   overflow: hidden;
 }
+
 
 .read-only {
   background-color: var(--knime-gray-ultra-light);

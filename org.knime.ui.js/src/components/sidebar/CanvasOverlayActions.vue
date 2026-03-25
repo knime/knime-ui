@@ -118,7 +118,6 @@ const addAnnotation = () => {
   flex-direction: row;
   align-items: center;
   gap: var(--kds-spacing-container-0-25x);
-
   background-color: var(--kds-color-surface-default);
   border-radius: var(--kds-border-radius-container-0-50x);
   box-shadow: var(--shadow-elevation-1);

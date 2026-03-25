@@ -27,7 +27,8 @@ import type { JumpMark } from "./useDialogJumpMarks";
 const panelStore = usePanelStore();
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const currentCanvasStore = useCurrentCanvasStore();
-const { useEmbeddedDialogs, nodeOutputLayout, jumpMarksMode } = storeToRefs(useApplicationSettingsStore());
+const applicationSettingsStore = useApplicationSettingsStore();
+const { useEmbeddedDialogs, nodeOutputLayout, jumpMarksMode, nodeConfigOpenMode } = storeToRefs(applicationSettingsStore);
 const versionsStore = useWorkflowVersionsStore();
 const nodeConfigStore = useNodeConfigurationStore();
 const { showNodeDescriptionPanel } = storeToRefs(nodeConfigStore);
@@ -68,9 +69,33 @@ const { state: rectState, setRect } = useDraggableResizableRectState();
 const { state: descRectState, setRect: setDescRect } = useDraggableResizableRectState();
 
 /** "left" | "right" = docked to that screen edge; null = floating */
-const dockedSide = ref<"left" | "right" | null>(null);
+const dockedSide = ref<"left" | "right" | null>(
+  nodeConfigOpenMode.value === "dock" ? "right" : null,
+);
+
+// Auto-dock right when switching to "dock" mode; undock when leaving it
+watch(nodeConfigOpenMode, (mode) => {
+  if (mode === "dock") {
+    dockedSide.value = "right";
+  } else if (dockedSide.value !== null) {
+    dockedSide.value = null;
+  }
+});
 /** Non-null only while the user is dragging near an edge — drives the preview overlay */
 const dockPreviewSide = ref<"left" | "right" | null>(null);
+
+// Sync docked-right width into panel store so WorkflowPanel can reserve space
+watch(
+  [dockedSide, () => rectState.value.width],
+  ([side, width]) => {
+    panelStore.dockedRightPanelWidth = side === "right" ? width : 0;
+  },
+  { immediate: true },
+);
+
+onUnmounted(() => {
+  panelStore.dockedRightPanelWidth = 0;
+});
 
 const getVersionsAnchoredPosition = (): Pick<BoundingBox, "left" | "top"> => {
   const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-right");
@@ -150,9 +175,11 @@ watch(
 );
 
 // Close the panel when the selection is cleared (e.g. clicking empty canvas),
-// but not when the versions panel is open
+// but not when the versions panel is open, and not in dock mode (where the
+// panel persists regardless of selection — selection may briefly clear when
+// switching between nodes)
 watch(singleSelectedNode, (node) => {
-  if (!node && !versionsStore.isSidepanelOpen) {
+  if (!node && !versionsStore.isSidepanelOpen && nodeConfigOpenMode.value !== "dock") {
     panelStore.isRightPanelExpanded = false;
   }
 });
@@ -444,7 +471,10 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
         <div class="panel-divider" />
       </template>
       <div class="config-section">
-        <NodeConfig v-if="useEmbeddedDialogs" />
+        <NodeConfig
+          v-if="useEmbeddedDialogs"
+          @close="() => { dockedSide = null; panelStore.isRightPanelExpanded = false; }"
+        />
         <ManageVersionsWrapper v-else />
       </div>
     </div>

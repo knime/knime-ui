@@ -270,7 +270,13 @@ export default {
         ...this.loopInfo.allowedActions,
       };
 
-      const canConfigure = !this.useEmbeddedDialogs && this.dialogType !== null;
+      const canConfigure =
+        (this.nodeConfigOpenMode === "actionbar" ||
+          this.nodeConfigOpenMode === "modal" ||
+          (this.nodeConfigOpenMode === "dock" &&
+            !usePanelStore().dockedRightPanelWidth) ||
+          !this.useEmbeddedDialogs) &&
+        this.dialogType !== null;
 
       return { ...baseConfig, canConfigure };
     },
@@ -301,11 +307,7 @@ export default {
     },
     actionBarPosition() {
       return {
-        x:
-          this.position.x +
-          (this.kind === "metanode"
-            ? this.$shapes.nodeSize / 2
-            : this.$shapes.nodeCardWidth / 2),
+        x: this.position.x + this.$shapes.nodeSize / 2,
         y:
           this.position.y -
           this.$shapes.nodeSelectionPadding[0] -
@@ -401,7 +403,8 @@ export default {
 
       if (
         (this.nodeConfigOpenMode === "actionbar" ||
-          this.nodeConfigOpenMode === "modal") &&
+          this.nodeConfigOpenMode === "modal" ||
+          this.nodeConfigOpenMode === "dock") &&
         this.useEmbeddedDialogs &&
         this.dialogType === "web"
       ) {
@@ -626,7 +629,6 @@ export default {
         >
           <NodeHoverSizeProvider
             :is-hovering="isHovering"
-            :kind="kind"
             :node-name-dimensions="nameDimensions"
             :is-connector-hovering="connectorHover"
             :allowed-actions="allowedActions"
@@ -665,15 +667,11 @@ export default {
                       grabbable: isWritable,
                       'is-dragging': isDragging,
                     }"
-                    :width="
-                      kind === 'metanode'
-                        ? $shapes.nodeSize
-                        : $shapes.nodeCardWidth
-                    "
+                    :width="$shapes.nodeSize"
                     :height="
                       kind === 'metanode'
                         ? $shapes.nodeSize
-                        : $shapes.nodeCardHeight
+                        : $shapes.nodeSize + 20
                     "
                     :x="0"
                     :y="0"
@@ -684,8 +682,6 @@ export default {
                     :type="type"
                     :kind="kind"
                     :icon="icon"
-                    :name="name"
-                    :annotation="annotation ? annotation.text.value : null"
                     :is-dragged-over="isDraggedOver"
                     :execution-state="state && state.executionState"
                     :class="['node-torso', { hover: isHovering }]"
@@ -706,7 +702,9 @@ export default {
                     v-bind="state"
                     :class="['node-state', { hover: isHovering }]"
                     :loop-status="loopInfo.status"
-                    :transform="`translate(${$shapes.nodeCardWidth - 10}, 10)`"
+                    :transform="`translate(0, ${
+                      $shapes.nodeSize + $shapes.nodeStatusMarginTop
+                    })`"
                   />
                 </g>
               </g>
@@ -729,7 +727,6 @@ export default {
               <!-- Node name / title -->
               <NodeName
                 :node-id="id"
-                :kind="kind"
                 :node-position="position"
                 :value="name"
                 :editable="isEditable && isContainerNode"

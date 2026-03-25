@@ -3,6 +3,7 @@ import { type Ref, computed } from "vue";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { ports } from "@/lib/workflow-canvas";
 import * as $shapes from "@/style/shapes";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
 import { usePortBarPositions } from "./usePortBarPositions";
@@ -80,6 +81,7 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
       referencePortIndex.value,
       type,
       reference.value,
+      canvasRendererUtils.isWebGLRenderer(),
     );
   };
 

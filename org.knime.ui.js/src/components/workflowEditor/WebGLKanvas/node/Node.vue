@@ -15,6 +15,7 @@ import { geometry } from "@/lib/geometry";
 import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { usePanelStore } from "@/store/panel";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { isFullFloatingConnector } from "@/store/floatingConnector/types";
@@ -171,6 +172,7 @@ const nodeNameDimensions = computed(() => {
 });
 
 const { useEmbeddedDialogs, nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
+const { dockedRightPanelWidth } = storeToRefs(usePanelStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
   isHovering,
   portPositions,
@@ -279,6 +281,7 @@ const allAllowedActions = computed(() => {
   const canConfigure =
     (nodeConfigOpenMode.value === "actionbar" ||
       nodeConfigOpenMode.value === "modal" ||
+      (nodeConfigOpenMode.value === "dock" && !dockedRightPanelWidth.value) ||
       !useEmbeddedDialogs.value) &&
     props.node.dialogType !== undefined;
 

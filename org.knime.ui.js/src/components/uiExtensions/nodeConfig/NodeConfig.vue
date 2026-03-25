@@ -16,6 +16,8 @@ import { EMBEDDED_CONTENT_PANEL_ID__RIGHT } from "../common/utils";
 import IncompatibleNodeConfigPlaceholder from "./IncompatibleNodeConfigPlaceholder.vue";
 import NodeConfigWrapper from "./NodeConfigWrapper.vue";
 
+defineEmits<{ close: [] }>();
+
 const nodeConfigurationStore = useNodeConfigurationStore();
 const versionsStore = useWorkflowVersionsStore();
 
@@ -84,7 +86,7 @@ onMounted(() => {
       v-if="versionsStore.isSidepanelOpen && !singleSelectedNode"
     />
 
-    <NodeConfigWrapper v-else @escape-pressed="exitLargeMode">
+    <NodeConfigWrapper v-else @escape-pressed="exitLargeMode" @close="$emit('close')">
       <template #inactive>
         <IncompatibleNodeConfigPlaceholder />
       </template>

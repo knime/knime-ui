@@ -159,7 +159,6 @@ const toolbarButtons = computed<Array<{ id: ShortcutName } & KdsButtonProps>>(
 .canvas-overlay-center {
   display: flex;
   align-items: center;
-
   background-color: var(--kds-color-surface-default);
   border-radius: var(--kds-border-radius-container-0-50x);
   box-shadow: var(--shadow-elevation-1);

@@ -25,7 +25,7 @@ export interface SettingsState {
     uiScale: number;
     askBeforeAutoApplyNodeConfigChanges: boolean;
     shouldShowExampleWorkflows: boolean;
-    nodeConfigOpenMode: "current" | "actionbar" | "modal";
+    nodeConfigOpenMode: "current" | "actionbar" | "modal" | "dock";
     nodeOutputLayout: "bottom" | "side-by-side";
     showDialogAdvancedOptions: boolean;
     jumpMarksMode: "scrolling" | "tabs" | "disabled";

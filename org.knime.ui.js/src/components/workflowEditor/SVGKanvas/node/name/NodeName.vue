@@ -18,10 +18,6 @@ export default {
       type: String,
       required: true,
     },
-    kind: {
-      type: String,
-      default: "node",
-    },
     nodePosition: {
       type: Object,
       required: true,
@@ -115,7 +111,6 @@ export default {
     <template v-else>
       <NodeNameText
         :editable="editable"
-        :kind="kind"
         :value="value"
         @width-change="$emit('widthChange', $event)"
         @height-change="$emit('heightChange', $event)"

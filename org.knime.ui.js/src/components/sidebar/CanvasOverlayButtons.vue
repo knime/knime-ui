@@ -2,13 +2,10 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useHint } from "@knime/components";
 import { KdsToggleButton } from "@knime/kds-components";
 import type { KdsIconName } from "@knime/kds-components";
 
 import WorkflowNameBreadcrumb from "@/components/toolbar/WorkflowNameBreadcrumb.vue";
-import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
-import { HINTS } from "@/hints/hints.config";
 import { TABS, type TabValues, usePanelStore } from "@/store/panel";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -21,25 +18,16 @@ type ButtonDef = {
 
 const panelStore = usePanelStore();
 const uiControls = useUIControlsStore();
-const { isKaiEnabled } = useIsKaiEnabled();
-const { createHint } = useHint();
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
-
-createHint({
-  hintId: HINTS.K_AI,
-  isVisibleCondition: computed(() => !panelStore.isTabActive(TABS.KAI)),
-});
+const { isSearchPanelOpen } = storeToRefs(panelStore);
 
 const buttons = computed<ButtonDef[]>(() => [
   ...(uiControls.canAccessSpaceExplorer
     ? [{ name: TABS.SPACE_EXPLORER as TabValues, title: "Explorer", icon: "space" as KdsIconName }]
     : []),
-  ...(isKaiEnabled.value && uiControls.canAccessKAIPanel
-    ? [{ name: TABS.KAI as TabValues, title: "K-AI", icon: "ai-general" as KdsIconName }]
-    : []),
   {
     name: TABS.WORKFLOW_MONITOR,
-    title: "Monitor & Search (⌘P)",
+    title: "Monitor",
     icon: "error-panel" as KdsIconName,
   },
 ]);
@@ -77,8 +65,17 @@ const handleToggle = (name: TabValues, newValue: boolean) => {
         variant="transparent"
         size="medium"
         class="toolbar-btn"
-        :class="{ 'k-ai-btn': btn.name === TABS.KAI }"
-        @update:model-value="(v) => handleToggle(btn.name, v)"
+        @update:model-value="(v: boolean) => handleToggle(btn.name, v)"
+      />
+      <KdsToggleButton
+        :model-value="isSearchPanelOpen"
+        leading-icon="search"
+        aria-label="Search workflow (⌘F)"
+        title="Search workflow (⌘F)"
+        variant="transparent"
+        size="medium"
+        class="toolbar-btn"
+        @update:model-value="(v: boolean) => (panelStore.isSearchPanelOpen = v)"
       />
     </div>
   </div>

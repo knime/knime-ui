@@ -77,10 +77,11 @@ export default defineComponent({
       return textRanges;
     },
     yOffset() {
-      const baseOffset = this.isMetanode
-        ? this.$shapes.metanodeLabelOffsetY
-        : this.$shapes.nodeCardHeight + this.$shapes.nodeAnnotationMarginTop;
-      return baseOffset + this.portOffset;
+      return (
+        (this.isMetanode
+          ? this.$shapes.metanodeLabelOffsetY
+          : this.$shapes.nodeLabelOffsetY) + this.portOffset
+      );
     },
   },
   methods: {
@@ -109,7 +110,7 @@ export default defineComponent({
     v-if="value || isSelected"
     class="node-label-text-container"
     :y-offset="yOffset"
-    :parent-width="isMetanode ? $shapes.nodeSize : $shapes.nodeCardWidth"
+    :parent-width="$shapes.nodeSize"
     :style="{ backgroundColor }"
   >
     <div

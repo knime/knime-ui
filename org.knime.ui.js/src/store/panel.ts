@@ -22,8 +22,16 @@ export interface PanelState {
   isLeftPanelExpanded: boolean;
   isExtensionPanelOpen: boolean;
   isRightPanelExpanded: boolean;
+  /** Whether the compact KAI chat panel at the bottom is open */
+  isKaiCompactOpen: boolean;
   /** Incremented each time the search shortcut is triggered to (re-)focus the search input */
   searchFocusTrigger: number;
+  /** Width (px) of the config panel when docked to the right edge; 0 when floating or docked left */
+  dockedRightPanelWidth: number;
+  /** Whether the deploy-type selection / config panel is open */
+  isDeployPanelOpen: boolean;
+  /** Whether the standalone workflow search panel is open */
+  isSearchPanelOpen: boolean;
 }
 
 export const usePanelStore = defineStore("panel", {
@@ -32,7 +40,11 @@ export const usePanelStore = defineStore("panel", {
     isLeftPanelExpanded: false,
     isExtensionPanelOpen: false,
     isRightPanelExpanded: false,
+    isKaiCompactOpen: false,
     searchFocusTrigger: 0,
+    dockedRightPanelWidth: 0,
+    isDeployPanelOpen: false,
+    isSearchPanelOpen: false,
   }),
   actions: {
     setActiveTab({
@@ -76,12 +88,12 @@ export const usePanelStore = defineStore("panel", {
     },
 
     openWorkflowSearch() {
-      this.setCurrentProjectActiveTab(TABS.WORKFLOW_MONITOR);
+      this.isSearchPanelOpen = true;
       this.searchFocusTrigger++;
     },
 
     closeWorkflowSearch() {
-      this.isLeftPanelExpanded = false;
+      this.isSearchPanelOpen = false;
     },
   },
   getters: {

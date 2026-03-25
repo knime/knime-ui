@@ -79,9 +79,15 @@ export const useHandlePointerInteraction = (options: Options) => {
 
   const openRightPanelForNodes = (isDoubleClick = false) => {
     const mode = useApplicationSettingsStore().nodeConfigOpenMode;
-    // In "actionbar" mode: only opened via the action bar configure button
-    // In "modal" mode: only opened via double-click or action bar button
-    if (mode === "actionbar" || (mode === "modal" && !isDoubleClick)) {
+    // "actionbar": only the configure button opens the panel
+    // "modal": only double-click or configure button opens the panel
+    // "dock": single click only selects the node; docked panels auto-reflect
+    //         the selection; closed panels reopen only via double-click or cog
+    if (
+      mode === "actionbar" ||
+      (mode === "modal" && !isDoubleClick) ||
+      mode === "dock"
+    ) {
       return;
     }
     if (!panelStore.isRightPanelExpanded) {

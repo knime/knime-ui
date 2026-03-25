@@ -58,7 +58,7 @@ export const sidePanelShortcuts: SidePanelShortcuts = {
   openWorkflowSearch: {
     text: "Search workflow",
     group: "panelNavigation",
-    hotkey: ["CtrlOrCmd", "P"],
+    hotkey: ["CtrlOrCmd", "F"],
     execute: () => usePanelStore().openWorkflowSearch(),
   },
 };

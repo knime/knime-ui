@@ -32,7 +32,7 @@ const webglCanvasStore = useWebGLCanvasStore();
 const appSettingsStore = useApplicationSettingsStore();
 const nodeConfigOpenMode = computed({
   get: () => appSettingsStore.nodeConfigOpenMode,
-  set: (mode: "current" | "actionbar" | "modal") =>
+  set: (mode: "current" | "actionbar" | "modal" | "dock") =>
     appSettingsStore.setNodeConfigOpenMode(mode),
 });
 
@@ -199,6 +199,7 @@ const dragStart = (pointerDown: PointerEvent) => {
         <option value="current">🖱️ Current</option>
         <option value="actionbar">🔘 Bar</option>
         <option value="modal">📋 Modal</option>
+        <option value="dock">📌 Dock</option>
       </select>
 
       <select

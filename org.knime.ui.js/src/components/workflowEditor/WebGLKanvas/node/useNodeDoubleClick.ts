@@ -77,7 +77,8 @@ export const useNodeDoubleClick = (options: UseNodeDoubleClickOptions) => {
 
     if (
       (nodeConfigOpenMode.value === "actionbar" ||
-        nodeConfigOpenMode.value === "modal") &&
+        nodeConfigOpenMode.value === "modal" ||
+        nodeConfigOpenMode.value === "dock") &&
       useEmbeddedDialogs.value &&
       node.dialogType === Node.DialogTypeEnum.Web
     ) {

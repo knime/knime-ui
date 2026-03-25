@@ -1,29 +1,25 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, inject, nextTick, ref, shallowRef, watch } from "vue";
+import { computed, inject, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button, FunctionButton } from "@knime/components";
 import CircleInfoIcon from "@knime/styles/img/icons/circle-info.svg";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 import MinimizeDialogIcon from "@knime/styles/img/icons/minimize-large-dialog.svg";
 import OpenDialogIcon from "@knime/styles/img/icons/open-large-dialog.svg";
 import SettingsIcon from "@knime/styles/img/icons/settings.svg";
 
 import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
-import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
-import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 import { useExecutionStore } from "@/store/workflow/execution";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { UIExtensionLoadingState } from "../common/types";
 
-const KaiSidebar = defineAsyncComponent(
-  () => import("@/components/kai/KaiSidebar.vue"),
-);
-
+import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
 import NodeConfigButtons from "./NodeConfigButtons.vue";
 import NodeConfigJumpMarks from "./NodeConfigJumpMarks.vue";
 import NodeConfigLoader from "./NodeConfigLoader.vue";
@@ -46,7 +42,6 @@ const {
   showNodeDescriptionPanel,
 } = storeToRefs(nodeConfigurationStore);
 const { settings } = storeToRefs(useSettingsStore());
-const panelStore = usePanelStore();
 
 const workflowId = computed(() => activeWorkflow.value!.info.containerId);
 const versionId = computed(() => activeWorkflow.value!.info.version);
@@ -56,6 +51,7 @@ const canBeEnlarged = computed(
 
 defineEmits<{
   escapePressed: [];
+  close: [];
 }>();
 
 const nodeName = computed<string>(() =>
@@ -88,9 +84,6 @@ const {
 
 const applicationSettingsStore = useApplicationSettingsStore();
 const { showDialogAdvancedOptions, jumpMarksMode } = storeToRefs(applicationSettingsStore);
-
-const { isKaiEnabled } = useIsKaiEnabled();
-const activeTab = ref<"config" | "kai">("config");
 
 // When in floating-panel mode the parent provides a context we fill so it can
 // render jump marks OUTSIDE the dialog panel. Absent that context (fixed side
@@ -188,26 +181,11 @@ const discardSettings = () => {
     </div>
 
       <div :class="['content', { 'large-mode': isLargeMode }]">
-      <!-- Tab bar (replaces RightPanelHeader — close button intentionally removed) -->
+      <!-- Tab bar -->
       <div v-if="!isLargeMode" class="tab-bar header">
-        <button
-          class="tab-btn"
-          :class="{ active: activeTab === 'config' }"
-          @click="activeTab = 'config'"
-        >
-          Node Configuration
-        </button>
-        <button
-          v-if="isKaiEnabled"
-          class="tab-btn"
-          :class="{ active: activeTab === 'kai' }"
-          @click="activeTab = 'kai'"
-        >
-          KNIME AI Assistant
-        </button>
-
-        <!-- Action buttons — only relevant for config tab -->
-        <div v-if="activeTab === 'config'" class="tab-actions">
+        <span class="tab-title">Configuration</span>
+        <!-- Action buttons -->
+        <div class="tab-actions">
           <FunctionButton
             v-if="hasAdvancedOptions"
             :title="showDialogAdvancedOptions ? 'Hide advanced settings' : 'Show advanced settings'"
@@ -243,13 +221,20 @@ const discardSettings = () => {
             <CircleInfoIcon />
           </FunctionButton>
         </div>
+
+        <!-- Close button — always at far right of tab bar -->
+        <FunctionButton
+          title="Close panel"
+          data-test-id="close-panel-btn"
+          class="close-panel-btn"
+          compact
+          @click="$emit('close')"
+        >
+          <CloseIcon />
+        </FunctionButton>
       </div>
 
-      <!-- KAI tab content -->
-      <KaiSidebar v-if="activeTab === 'kai'" class="kai-tab-content" />
-
-      <!-- Node configuration tab content -->
-      <template v-if="activeTab === 'config'">
+      <!-- Node configuration content -->
         <AppRightPanelSkeleton
           v-if="isUIExtensionLoading"
           :width="rightPanelWidth"
@@ -290,8 +275,11 @@ const discardSettings = () => {
           </div>
         </template>
 
+        <!-- Nothing selected → show workflow description -->
+        <WorkflowMetadata v-else-if="!activeContext" class="workflow-metadata-panel" />
+        <!-- Selected but incompatible (metanode, legacy dialog, etc.) -->
         <slot v-else name="inactive" />
-      </template>
+
     </div>
   </div>
 </template>
@@ -387,27 +375,12 @@ const discardSettings = () => {
   gap: 0;
   flex-shrink: 0;
 
-  & .tab-btn {
-    all: unset;
-    cursor: pointer;
+  & .tab-title {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 700;
     padding: 0 var(--space-12);
-    height: 100%;
-    border-bottom: 2px solid transparent;
-    color: var(--kds-color-text-and-icon-neutral);
+    color: var(--kds-color-text-and-icon-default);
     white-space: nowrap;
-    transition: color 100ms ease, border-color 100ms ease;
-
-    &:hover {
-      color: var(--kds-color-text-and-icon-default);
-    }
-
-    &.active {
-      color: var(--kds-color-text-and-icon-default);
-      border-bottom-color: var(--knime-cornflower);
-      font-weight: 700;
-    }
   }
 
   & .tab-actions {
@@ -416,13 +389,19 @@ const discardSettings = () => {
     margin-left: auto;
     gap: var(--space-4);
   }
+
+  & .close-panel-btn {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* When tab-actions is also present, it already consumed margin-left:auto,
+     so the close button just sits right after it without extra margin. */
+  & .tab-actions + .close-panel-btn {
+    margin-left: 0;
+  }
 }
 
-.kai-tab-content {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
 
 /* TODO: UIEXT-2775 use a different approach */
 [aria-disabled="true"] {

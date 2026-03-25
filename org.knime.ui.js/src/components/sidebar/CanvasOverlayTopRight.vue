@@ -44,7 +44,8 @@ const { activeWorkflow, isWorkflowEmpty, isActiveWorkflowFixedVersion } =
   storeToRefs(useWorkflowStore());
 const { getCommunityHubInfo } = storeToRefs(useSpaceProvidersStore());
 const uiControls = useUIControlsStore();
-const { isRightPanelExpanded } = storeToRefs(usePanelStore());
+const panelStore = usePanelStore();
+const { isRightPanelExpanded } = storeToRefs(panelStore);
 const { activeProjectVersionsModeStatus } = storeToRefs(
   useWorkflowVersionsStore(),
 );
@@ -171,6 +172,25 @@ const onDeploymentButtonClick = () => {
   });
 };
 
+const onRunButtonClick = () => {
+  if (!activeProjectOrigin.value) {
+    consola.warn("Invalid activeProjectOrigin.");
+    return;
+  }
+  const { providerId: spaceProviderId, spaceId, itemId } =
+    activeProjectOrigin.value;
+  API.desktop.openInBrowser({
+    spaceProviderId,
+    spaceId,
+    itemId,
+    queryString: "execute=true",
+  });
+};
+
+const onNewDeployButtonClick = () => {
+  panelStore.isDeployPanelOpen = !panelStore.isDeployPanelOpen;
+};
+
 const showUploadDirtyWorkflowPrompt = () => {
   const { askConfirmation } = useKdsDynamicModal();
   return askConfirmation({
@@ -223,7 +243,6 @@ onMounted(() => {
       <KdsToggleButton
         v-if="uiControls.canViewVersions"
         :model-value="isVersionsPanelOpen"
-        label="Versions"
         leading-icon="time"
         title="Version history"
         aria-label="Version history"
@@ -231,6 +250,27 @@ onMounted(() => {
         size="medium"
         @update:model-value="onVersionsToggle"
       />
+
+      <template v-if="!isActiveWorkflowFixedVersion">
+        <KdsToggleButton
+          :model-value="false"
+          leading-icon="rocket"
+          title="Execute workflow in browser"
+          aria-label="Run workflow"
+          variant="transparent"
+          size="medium"
+          @update:model-value="onRunButtonClick"
+        />
+        <KdsToggleButton
+          :model-value="panelStore.isDeployPanelOpen"
+          leading-icon="deploy"
+          title="Deploy workflow"
+          aria-label="Deploy workflow"
+          variant="transparent"
+          size="medium"
+          @update:model-value="(v) => (panelStore.isDeployPanelOpen = v)"
+        />
+      </template>
 
       <template v-if="isActiveWorkflowFixedVersion">
         <span class="version-info" :title="activeVersionTitle">
@@ -305,12 +345,11 @@ onMounted(() => {
   position: fixed;
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   top: calc(var(--kds-spacing-container-0-75x) + 40px);
-  right: var(--kds-spacing-container-0-75x);
-
+  right: calc(var(--kds-spacing-container-0-75x) + var(--cfg-panel-right-width, 0px));
+  transition: right 200ms ease;
   display: flex;
   align-items: center;
   gap: var(--kds-spacing-container-0-25x);
-
   background-color: var(--kds-color-surface-default);
   border-radius: var(--kds-border-radius-container-0-50x);
   box-shadow: var(--shadow-elevation-1);
