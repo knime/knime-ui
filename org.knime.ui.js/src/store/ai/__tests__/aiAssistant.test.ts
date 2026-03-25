@@ -29,9 +29,9 @@ describe("aiAssistant store", () => {
   };
 
   describe("makeAiRequest", () => {
-    it("clears the unsent message when sending", () => {
+    it("clears the draft message when sending", () => {
       const { aiAssistantStore } = setupStore();
-      aiAssistantStore.qa.unsentMessage = "draft prompt";
+      aiAssistantStore.qa.draftMessage = "draft prompt";
 
       mockedAPI.kai.makeAiRequest.mockResolvedValue(undefined as any);
 
@@ -40,7 +40,7 @@ describe("aiAssistant store", () => {
         message: "hello",
       });
 
-      expect(aiAssistantStore.qa.unsentMessage).toBe("");
+      expect(aiAssistantStore.qa.draftMessage).toBe("");
     });
   });
 

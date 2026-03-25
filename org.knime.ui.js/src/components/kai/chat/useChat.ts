@@ -22,7 +22,7 @@ class MessageSeparator {
 
 const useChat = (chainType: ChainType) => {
   const aiAssistant = storeToRefs(useAIAssistantStore());
-  const { makeAiRequest, abortAiRequest, fetchUsage, setUnsentMessage } =
+  const { makeAiRequest, abortAiRequest, fetchUsage, setDraftMessage } =
     useAIAssistantStore();
   const { uiStrings, disconnectAiProvider } = useAiProviderStore();
 
@@ -99,12 +99,12 @@ const useChat = (chainType: ChainType) => {
     return lastUserMessage?.content ?? "";
   });
 
-  const unsentMessage = computed(
-    () => aiAssistant[chainType].value.unsentMessage,
+  const draftMessage = computed(
+    () => aiAssistant[chainType].value.draftMessage,
   );
 
-  const saveUnsentMessage = (message: string) => {
-    setUnsentMessage({ chainType, message });
+  const saveDraftMessage = (message: string) => {
+    setDraftMessage({ chainType, message });
   };
 
   const lastAiMessage = computed(() => {
@@ -169,8 +169,8 @@ const useChat = (chainType: ChainType) => {
     pendingInquiryTraces,
     lastUserMessage,
     lastAiMessage,
-    unsentMessage,
-    saveUnsentMessage,
+    draftMessage,
+    saveDraftMessage,
     sendMessage,
     abortSendMessage,
   };

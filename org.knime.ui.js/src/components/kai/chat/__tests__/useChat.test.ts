@@ -31,7 +31,7 @@ describe("useChat", () => {
     projectAndWorkflowIds: null,
     pendingInquiry: null,
     pendingInquiryTraces: [],
-    unsentMessage: "",
+    draftMessage: "",
   };
 
   const doMount = ({
@@ -251,22 +251,22 @@ describe("useChat", () => {
     });
   });
 
-  describe("unsentMessage", () => {
+  describe("draftMessage", () => {
     it("is an empty string by default", () => {
       const { getComposableResult } = doMount();
-      expect(getComposableResult().unsentMessage.value).toBe("");
+      expect(getComposableResult().draftMessage.value).toBe("");
     });
 
-    it("reflects the store's unsentMessage state", () => {
+    it("reflects the store's draftMessage state", () => {
       const { getComposableResult, mockedStores } = doMount();
-      mockedStores.aiAssistantStore.qa.unsentMessage = "draft prompt";
-      expect(getComposableResult().unsentMessage.value).toBe("draft prompt");
+      mockedStores.aiAssistantStore.qa.draftMessage = "draft prompt";
+      expect(getComposableResult().draftMessage.value).toBe("draft prompt");
     });
 
-    it("saveUnsentMessage writes to the store", () => {
+    it("saveDraftMessage writes to the store", () => {
       const { getComposableResult, mockedStores } = doMount();
-      getComposableResult().saveUnsentMessage("work in progress");
-      expect(mockedStores.aiAssistantStore.qa.unsentMessage).toBe(
+      getComposableResult().saveDraftMessage("work in progress");
+      expect(mockedStores.aiAssistantStore.qa.draftMessage).toBe(
         "work in progress",
       );
     });

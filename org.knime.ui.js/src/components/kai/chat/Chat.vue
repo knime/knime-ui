@@ -29,8 +29,8 @@ const {
   lastUserMessage,
   sendMessage,
   abortSendMessage,
-  unsentMessage,
-  saveUnsentMessage,
+  draftMessage,
+  saveDraftMessage,
 } = useChat(props.chainType);
 
 const onChatSendMessage = (...args: Parameters<typeof sendMessage>) => {
@@ -112,11 +112,11 @@ watch(
     <ChatControls
       :is-processing="isProcessing"
       :last-user-message="lastUserMessage"
-      :text="unsentMessage"
+      :text="draftMessage"
       :usage="usage"
       @send-message="onChatSendMessage"
       @abort="abortSendMessage"
-      @unsent-message="saveUnsentMessage"
+      @draft-message="saveDraftMessage"
     />
   </div>
 </template>

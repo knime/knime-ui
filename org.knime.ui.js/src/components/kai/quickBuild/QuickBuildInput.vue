@@ -12,13 +12,13 @@ type Props = {
   lastUserMessage: string;
   errorMessage: string;
   usage: KaiUsageState;
-  unsentMessage?: string;
+  draftMessage?: string;
 };
 
 defineProps<Props>();
 defineEmits<{
   sendMessage: [value: { message: string }];
-  unsentMessage: [value: string];
+  draftMessage: [value: string];
 }>();
 </script>
 
@@ -33,12 +33,12 @@ defineEmits<{
     />
     <ChatControls
       :last-user-message="lastUserMessage"
-      :text="errorMessage ? lastUserMessage : unsentMessage ?? ''"
+      :text="errorMessage ? lastUserMessage : draftMessage ?? ''"
       :usage="usage"
       size="large"
       placeholder="What would you like to build?"
       @send-message="$emit('sendMessage', $event)"
-      @unsent-message="$emit('unsentMessage', $event)"
+      @draft-message="$emit('draftMessage', $event)"
     />
     <div v-if="errorMessage" class="error">
       <ErrorIcon class="error-icon" />

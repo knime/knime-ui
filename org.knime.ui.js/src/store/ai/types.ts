@@ -91,7 +91,7 @@ export type ConversationState = {
    */
   pendingInquiryTraces: InquiryTrace[];
   /** Draft message the user was composing but hasn't sent yet. */
-  unsentMessage: string;
+  draftMessage: string;
 };
 
 export type KaiUsageState = KaiUsage | null;

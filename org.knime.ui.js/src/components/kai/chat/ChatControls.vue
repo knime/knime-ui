@@ -11,7 +11,7 @@ import type { KaiUsageState } from "@/store/ai/types";
 
 import { getDaysLeftInMonth } from "./utils";
 
-const emit = defineEmits(["sendMessage", "abort", "unsentMessage"]);
+const emit = defineEmits(["sendMessage", "abort", "draftMessage"]);
 
 type Props = {
   isProcessing?: boolean;
@@ -55,7 +55,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  emit("unsentMessage", input.value);
+  emit("draftMessage", input.value);
 });
 
 const sendMessage = () => {
