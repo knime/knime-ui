@@ -19,7 +19,7 @@ export const showPageBuilderUnsavedChangesDialog = async (
   }
 
   const { action, doNotAskAgain } = await useUnsavedChangesDialog({
-    title: "Unsaved composite view changes",
+    headline: "Unsaved composite view changes",
     message:
       "You have unsaved changes in your composite view. Do you want to save them and re-execute the component?",
     doNotAskAgain: {

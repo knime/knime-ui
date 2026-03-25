@@ -12,7 +12,7 @@ interface UnsavedChangesDialogResult {
 }
 
 export const useUnsavedChangesDialog = async (config: {
-  title: string;
+  headline: string;
   message: string;
   doNotAskAgain?: {
     label: string;
