@@ -22,7 +22,8 @@ class MessageSeparator {
 
 const useChat = (chainType: ChainType) => {
   const aiAssistant = storeToRefs(useAIAssistantStore());
-  const { makeAiRequest, abortAiRequest, fetchUsage } = useAIAssistantStore();
+  const { makeAiRequest, abortAiRequest, fetchUsage, setDraftMessage } =
+    useAIAssistantStore();
   const { uiStrings, disconnectAiProvider } = useAiProviderStore();
 
   const { askConfirmation } = useKdsDynamicModal();
@@ -98,6 +99,14 @@ const useChat = (chainType: ChainType) => {
     return lastUserMessage?.content ?? "";
   });
 
+  const draftMessage = computed(
+    () => aiAssistant[chainType].value.draftMessage,
+  );
+
+  const saveDraftMessage = (message: string) => {
+    setDraftMessage({ chainType, message });
+  };
+
   const lastAiMessage = computed(() => {
     const messages = aiAssistant[chainType].value.messages;
 
@@ -160,6 +169,8 @@ const useChat = (chainType: ChainType) => {
     pendingInquiryTraces,
     lastUserMessage,
     lastAiMessage,
+    draftMessage,
+    saveDraftMessage,
     sendMessage,
     abortSendMessage,
   };

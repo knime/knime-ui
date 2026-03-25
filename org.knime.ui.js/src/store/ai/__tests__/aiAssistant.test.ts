@@ -28,6 +28,22 @@ describe("aiAssistant store", () => {
     return stores;
   };
 
+  describe("makeAiRequest", () => {
+    it("clears the draft message when sending", () => {
+      const { aiAssistantStore } = setupStore();
+      aiAssistantStore.qa.draftMessage = "draft prompt";
+
+      mockedAPI.kai.makeAiRequest.mockResolvedValue(undefined as any);
+
+      aiAssistantStore.makeAiRequest({
+        chainType: "qa",
+        message: "hello",
+      });
+
+      expect(aiAssistantStore.qa.draftMessage).toBe("");
+    });
+  });
+
   describe("respondToInquiry", () => {
     it("does nothing when there is no pending inquiry", async () => {
       const { aiAssistantStore } = setupStore();

@@ -46,6 +46,7 @@ const createEmptyConversationState = (): ConversationState => {
     projectAndWorkflowIds: null,
     pendingInquiry: null,
     pendingInquiryTraces: [],
+    draftMessage: "",
   };
 };
 
@@ -149,6 +150,16 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
       this[chainType].pendingInquiryTraces = [];
     },
 
+    setDraftMessage({
+      chainType,
+      message,
+    }: {
+      chainType: ChainType;
+      message: string;
+    }) {
+      this[chainType].draftMessage = message;
+    },
+
     clearConversation({ chainType }: { chainType: ChainType }) {
       this[chainType] = createEmptyConversationState();
     },
@@ -244,6 +255,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
 
       this.setIsProcessing({ chainType, isProcessing: true });
       this.setProjectAndWorkflowIds({ chainType, projectAndWorkflowIds });
+      this.setDraftMessage({ chainType, message: "" });
       this.pushMessage({
         chainType,
         role: KaiMessage.RoleEnum.User,

@@ -31,6 +31,7 @@ describe("useChat", () => {
     projectAndWorkflowIds: null,
     pendingInquiry: null,
     pendingInquiryTraces: [],
+    draftMessage: "",
   };
 
   const doMount = ({
@@ -247,6 +248,27 @@ describe("useChat", () => {
       expect(getComposableResult().lastAiMessage.value?.inquiryTraces).toEqual([
         trace,
       ]);
+    });
+  });
+
+  describe("draftMessage", () => {
+    it("is an empty string by default", () => {
+      const { getComposableResult } = doMount();
+      expect(getComposableResult().draftMessage.value).toBe("");
+    });
+
+    it("reflects the store's draftMessage state", () => {
+      const { getComposableResult, mockedStores } = doMount();
+      mockedStores.aiAssistantStore.qa.draftMessage = "draft prompt";
+      expect(getComposableResult().draftMessage.value).toBe("draft prompt");
+    });
+
+    it("saveDraftMessage writes to the store", () => {
+      const { getComposableResult, mockedStores } = doMount();
+      getComposableResult().saveDraftMessage("work in progress");
+      expect(mockedStores.aiAssistantStore.qa.draftMessage).toBe(
+        "work in progress",
+      );
     });
   });
 

@@ -42,6 +42,8 @@ export const useQuickBuild = ({
     statusUpdate,
     pendingInquiry,
     pendingInquiryTraces,
+    draftMessage,
+    saveDraftMessage,
   } = useChat("build");
 
   // Inquiry traces from the last assistant message (for the final result view)
@@ -128,5 +130,7 @@ export const useQuickBuild = ({
     pendingInquiry,
     pendingInquiryTraces,
     lastMessageInquiryTraces,
+    draftMessage,
+    saveDraftMessage,
   };
 };

@@ -45,6 +45,8 @@ const {
   pendingInquiry,
   pendingInquiryTraces,
   lastMessageInquiryTraces,
+  draftMessage,
+  saveDraftMessage,
 } = useQuickBuild({ nodeId, startPosition: canvasPosition });
 
 const onInputMessage = (...args: Parameters<typeof sendMessage>) => {
@@ -154,9 +156,11 @@ watch(menuState, (menuState) => {
         :interaction-id="result!.interactionId"
         :inquiry-traces="lastMessageInquiryTraces"
         :last-user-message="lastUserMessage"
+        :draft-message="draftMessage"
         :usage="usage"
         @close="quickActionContext.closeMenu"
         @send-message="onInputMessage"
+        @draft-message="saveDraftMessage"
       />
 
       <QuickBuildInput
@@ -165,8 +169,10 @@ watch(menuState, (menuState) => {
         :interaction-id="result?.interactionId"
         :last-user-message="lastUserMessage"
         :error-message="errorMessage"
+        :draft-message="draftMessage"
         :usage="usage"
         @send-message="onInputMessage"
+        @draft-message="saveDraftMessage"
       />
     </template>
   </div>
