@@ -57,8 +57,5 @@ export const useTooltip = (params: {
     }, hoverableTooltipLeaveDelayMS);
   };
 
-  return {
-    showTooltip,
-    hideTooltip,
-  };
+  return { showTooltip, hideTooltip };
 };
