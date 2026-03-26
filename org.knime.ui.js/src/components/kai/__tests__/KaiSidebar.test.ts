@@ -32,7 +32,7 @@ vi.mock("@knime/utils", async () => {
 
 // Prevent promise leak from module-level side effect in useKdsDynamicModal
 vi.mock("@knime/kds-components", () => ({
-  KdsValueSwitch: { default: { template: "<div />" } },
+  KdsValueSwitch: { template: "<div />" },
   useKdsDynamicModal: () => ({
     askConfirmation: vi.fn().mockResolvedValue({ confirmed: false }),
   }),
