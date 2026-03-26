@@ -21,10 +21,10 @@ const isHoverableTooltipHovered = ref(false);
  */
 export const useTooltipState = () => {
   const show = (
-    element: ShallowRef<ContainerInst | null> | undefined,
-    config: ComputedRef<TooltipDefinition | null> | undefined,
+    element: ShallowRef<ContainerInst | null>,
+    config: ComputedRef<TooltipDefinition | null>,
   ) => {
-    if (!config?.value || !element?.value) {
+    if (!config.value || !element.value) {
       consola.debug(
         "useTooltipState: show called with nullish params ignoring",
       );

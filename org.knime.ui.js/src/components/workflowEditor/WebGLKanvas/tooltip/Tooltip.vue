@@ -14,13 +14,13 @@ const canvasStore = useWebGLCanvasStore();
 const { zoomFactor, canvasOffset } = storeToRefs(canvasStore);
 
 const anchorPoint = computed(() => {
-  if (!element?.value) {
+  if (!element.value) {
     return { x: 0, y: 0 };
   }
 
   const elementBounds = element.value.getBounds();
   const elementHeightOffset =
-    config?.value?.orientation === "bottom" ? elementBounds.height : 0;
+    config.value?.orientation === "bottom" ? elementBounds.height : 0;
   const [canvasX, canvasY] = canvasStore.toCanvasCoordinates([
     elementBounds.x,
     elementBounds.y + elementHeightOffset,
@@ -30,7 +30,7 @@ const anchorPoint = computed(() => {
 
 const reference = computed(() => ({
   getBoundingClientRect() {
-    if (!config?.value) {
+    if (!config.value) {
       return new DOMRect();
     }
     const position = canvasStore.screenFromCanvasCoordinates({
@@ -49,10 +49,10 @@ const arrowSize = 8;
  */
 const gap = computed(
   () =>
-    Math.sqrt(canvasStore.zoomFactor) * (config?.value?.gap ?? 0) + arrowSize,
+    Math.sqrt(canvasStore.zoomFactor) * (config.value?.gap ?? 0) + arrowSize,
 );
 
-const desiredPlacement = computed(() => config?.value?.orientation);
+const desiredPlacement = computed(() => config.value?.orientation);
 
 const floating = useTemplateRef("floating");
 const floatingArrow = useTemplateRef("floatingArrow");
@@ -84,7 +84,7 @@ watch(
 );
 
 const onPointerEnter = () => {
-  isHoverableTooltipHovered.value = Boolean(config?.value?.hoverable);
+  isHoverableTooltipHovered.value = Boolean(config.value?.hoverable);
 };
 
 const onPointerLeave = () => {
