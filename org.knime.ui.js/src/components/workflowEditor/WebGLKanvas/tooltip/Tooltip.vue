@@ -4,6 +4,7 @@ import { arrow, autoUpdate, offset, useFloating } from "@floating-ui/vue";
 import { storeToRefs } from "pinia";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { markPointerEventAsHandled } from "../util/interaction";
 
 import { useTooltipState } from "./useTooltipState";
 
@@ -90,6 +91,13 @@ const onPointerEnter = () => {
 const onPointerLeave = () => {
   hide();
 };
+
+// avoid any interaction with the canvas if you are on the tooltip (e.g. open quick menu)
+const onPointerDown = (event: PointerEvent) => {
+  if (config.value?.hoverable) {
+    markPointerEventAsHandled(event, { initiator: "tooltip" });
+  }
+};
 </script>
 
 <template>
@@ -107,6 +115,7 @@ const onPointerLeave = () => {
       data-test-id="tooltip"
       @pointerenter="onPointerEnter"
       @pointerleave="onPointerLeave"
+      @pointerdown="onPointerDown"
       @wheel.ctrl.prevent
     >
       <div
