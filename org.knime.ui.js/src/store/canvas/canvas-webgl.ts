@@ -19,12 +19,12 @@ import type { RenderLayer } from "pixi.js";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { pixiGlobals } from "@/components/workflowEditor/WebGLKanvas/common/pixiGlobals";
+import { useTooltipState } from "@/components/workflowEditor/WebGLKanvas/tooltip/useTooltipState";
 import { geometry } from "@/lib/geometry";
 import { getKanvasDomElement } from "@/lib/workflow-canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasMinimapAspectRatio } from "@/style/shapes";
 import type { CanvasPosition } from "../application/canvasStateTracking";
-import { useCanvasTooltipStore } from "../canvasTooltip/canvasTooltip";
 
 const MAX_PIXEL_RATIO = 2.5;
 const MIN_PIXEL_RATIO = 1.33;
@@ -44,6 +44,8 @@ export type CanvasLayerNames =
   | "annotations"
   | "annotationControls"
   | "debugLayer";
+
+const { hide: hideTooltip } = useTooltipState();
 
 const clampZoomFactor = (newFactor: number) =>
   clamp(newFactor, minZoomFactor, maxZoomFactor);
@@ -129,7 +131,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const isDebugModeEnabled = ref(false);
 
   const setFactor = (newFactor: number) => {
-    useCanvasTooltipStore().hideTooltip();
+    hideTooltip();
 
     const clampedFactor = clampZoomFactor(newFactor);
     zoomFactor.value = clampedFactor;
@@ -312,7 +314,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   }));
 
   const setCanvasOffset = (value: XY) => {
-    useCanvasTooltipStore().hideTooltip();
+    hideTooltip();
 
     // make sure panning is not possible outside the max content bounds
     // to ensure consistent and predictable minimap coordinate mapping

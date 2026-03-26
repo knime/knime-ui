@@ -218,7 +218,7 @@ const tooltip = computed<TooltipDefinition>(() => {
 const tooltipRef = useTemplateRef<ContainerInst>("tooltipRef");
 const { showTooltip, hideTooltip } = useTooltip({
   element: tooltipRef,
-  tooltip,
+  config: tooltip,
 });
 
 const onPointerEnter = () => {
