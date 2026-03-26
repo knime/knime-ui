@@ -55,7 +55,7 @@ describe("WorkflowToolbar.vue", () => {
     mockEnvironment("DESKTOP", { isBrowser, isDesktop });
   });
 
-  afterEach(vi.restoreAllMocks);
+  afterEach(vi.resetAllMocks);
 
   const doMount = ({
     getCommunityHubInfo = {

@@ -19,6 +19,30 @@ import { mockStores } from "@/test/utils/mockStores";
 import SpaceExplorer from "../SpaceExplorer.vue";
 import SpacePageHeader from "../SpacePageHeader.vue";
 
+// Prevent promise leak from createUnwrappedPromise
+vi.mock("@knime/utils", async () => {
+  const actual = await vi.importActual("@knime/utils");
+  return {
+    ...actual,
+    promise: {
+      ...(actual as any).promise,
+      createUnwrappedPromise: () => ({
+        promise: Promise.resolve(null),
+        resolve: () => {},
+        reject: () => {},
+      }),
+    },
+  };
+});
+
+// Prevent promise leak from module-level side effect in useKdsDynamicModal
+vi.mock("@knime/kds-components", () => ({
+  KdsModal: { template: "<div />" },
+  useKdsDynamicModal: () => ({
+    askConfirmation: vi.fn().mockResolvedValue({ confirmed: false }),
+  }),
+}));
+
 const mockedAPI = deepMocked(API);
 mockedAPI.desktop.importWorkflows.mockResolvedValue([]);
 mockedAPI.desktop.importFiles.mockResolvedValue([]);
@@ -133,6 +157,8 @@ describe("SpaceBrowsingPage.vue", () => {
         mocks: { $shortcuts: { get: vi.fn(() => ({})) } },
       },
     });
+
+    await router.isReady();
 
     return { wrapper, mockedStores };
   };

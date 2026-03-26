@@ -1,5 +1,5 @@
 /* eslint-disable vitest/no-conditional-expect */
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { $bus } from "@/plugins/event-bus";
 import * as desktopAPI from "../desktop-api";
@@ -319,6 +319,10 @@ describe("desktop-api", () => {
     });
   });
 
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it.each(browserFunctions)(
     "calls %s",
     async ({
@@ -343,7 +347,7 @@ describe("desktop-api", () => {
       const result = desktopAPI[desktopApiName || name](paramsAsObj);
 
       expect(busOnSpy).toHaveBeenCalledWith(
-        "desktop-api-function-result-spy",
+        "desktop-api-function-result-Mock",
         expect.anything(),
       );
 
@@ -360,18 +364,18 @@ describe("desktop-api", () => {
       result.then(() => (resolved = true));
       expect(resolved).toBe(false);
 
-      $bus.emit("desktop-api-function-result-spy", {
-        name: "desktop-api-function-result-spy",
+      $bus.emit("desktop-api-function-result-Mock", {
+        name: "desktop-api-function-result-Mock",
         result: returnValue ? true : null,
       });
       await new Promise((r) => setTimeout(r, 0));
       expect(resolved).toBe(true);
 
       if (blocksUi) {
-        expect(busEmitSpy).toHaveBeenCalledTimes(3); // block-ui, desktop-api-function-result-spy, unblock-ui
+        expect(busEmitSpy).toHaveBeenCalledTimes(3); // block-ui, desktop-api-function-result-Mock, unblock-ui
         expect(busEmitSpy).toHaveBeenNthCalledWith(3, "unblock-ui");
       } else {
-        expect(busEmitSpy).toHaveBeenCalledTimes(1); // explicitly emitted above "desktop-api-function-result-spy"
+        expect(busEmitSpy).toHaveBeenCalledTimes(1); // explicitly emitted above "desktop-api-function-result-Mock"
       }
     },
   );

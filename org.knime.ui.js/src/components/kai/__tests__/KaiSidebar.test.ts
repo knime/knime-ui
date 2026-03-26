@@ -14,6 +14,30 @@ vi.mock("@/components/kai/panels/useKaiPanels", () => ({
   })),
 }));
 
+// Prevent promise leak from createUnwrappedPromise
+vi.mock("@knime/utils", async () => {
+  const actual = await vi.importActual("@knime/utils");
+  return {
+    ...actual,
+    promise: {
+      ...(actual as any).promise,
+      createUnwrappedPromise: () => ({
+        promise: Promise.resolve(null),
+        resolve: () => {},
+        reject: () => {},
+      }),
+    },
+  };
+});
+
+// Prevent promise leak from module-level side effect in useKdsDynamicModal
+vi.mock("@knime/kds-components", () => ({
+  KdsValueSwitch: { template: "<div />" },
+  useKdsDynamicModal: () => ({
+    askConfirmation: vi.fn().mockResolvedValue({ confirmed: false }),
+  }),
+}));
+
 describe("KaiSidebar.vue", () => {
   const doMount = () => {
     const stores = mockStores({ stubActions: true });

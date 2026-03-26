@@ -221,6 +221,9 @@ describe("nodeConfiguration", () => {
     it("should handle cancelling apply settings prompt", async () => {
       const { nodeConfiguration, selectionStore } = loadStore();
 
+      useUnsavedChangesDialogMock.mockResolvedValue({
+        action: UnsavedChangesAction.CANCEL,
+      });
       await useUnsavedChangesDialogMock();
 
       selectionStore.selectNodes([configuredEmbeddableNode.id]);
