@@ -13,7 +13,9 @@ describe("WorkflowCanvas.vue", () => {
     const mockedStores = mockStores();
 
     // @ts-expect-error
-    window.ResizeObserver = vi.fn(() => ({ observe: () => {} }));
+    window.ResizeObserver = vi.fn(function () {
+      return { observe: () => {} };
+    });
 
     mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
 

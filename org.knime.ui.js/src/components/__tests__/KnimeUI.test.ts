@@ -251,6 +251,8 @@ describe("KnimeUI.vue", () => {
           (matcher) => matcher.DESKTOP?.(),
         );
         mockEnvironment("DESKTOP", { isBrowser, isDesktop });
+        // @ts-expect-error
+        useRoute.mockReturnValue({ meta: { showUpdateBanner: false } });
         const { wrapper } = await doShallowMount();
 
         expect(wrapper.classes()).toEqual(["inset-top"]);

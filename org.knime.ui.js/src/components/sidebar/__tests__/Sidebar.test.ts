@@ -13,6 +13,46 @@ import SidebarExtensionPanel from "../SidebarExtensionPanel.vue";
 
 vi.mock("@/composables/useIsKaiEnabled");
 
+// Prevent promise leaks from defineAsyncComponent loaders
+vi.mock("@/components/nodeDescription/ContextAwareDescription.vue", () => ({
+  default: { template: "<div />" },
+}));
+vi.mock("@/components/nodeRepository/NodeRepository.vue", () => ({
+  default: { template: "<div />" },
+}));
+vi.mock("@/components/sidebar/SidebarSpaceExplorer.vue", () => ({
+  default: { template: "<div />" },
+}));
+vi.mock("@/components/kai/KaiSidebar.vue", () => ({
+  default: { template: "<div />" },
+}));
+vi.mock("@/components/workflowMonitor/WorkflowMonitor.vue", () => ({
+  default: { template: "<div />" },
+}));
+
+// Prevent promise leak from createUnwrappedPromise
+vi.mock("@knime/utils", async () => {
+  const actual = await vi.importActual("@knime/utils");
+  return {
+    ...actual,
+    promise: {
+      ...(actual as any).promise,
+      createUnwrappedPromise: () => ({
+        promise: Promise.resolve(null),
+        resolve: () => {},
+        reject: () => {},
+      }),
+    },
+  };
+});
+
+// Prevent promise leak from module-level side effect in useKdsDynamicModal
+vi.mock("@knime/kds-components", () => ({
+  useKdsDynamicModal: () => ({
+    askConfirmation: vi.fn().mockResolvedValue({ confirmed: false }),
+  }),
+}));
+
 describe("Sidebar", () => {
   const doMount = ({
     props = {},
@@ -55,7 +95,8 @@ describe("Sidebar", () => {
           ContextAwareDescription: true,
           NodeRepository: true,
           SidebarSpaceExplorer: true,
-          AiAssistant: true,
+          KaiSidebar: true,
+          WorkflowMonitor: true,
         },
       },
     });
