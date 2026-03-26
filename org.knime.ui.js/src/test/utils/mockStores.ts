@@ -16,7 +16,6 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
-import { useCanvasTooltipStore } from "@/store/canvasTooltip/canvasTooltip";
 import {
   useQuickActionComponentSearchStore,
   useSidebarComponentSearchStore,
@@ -112,7 +111,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const settingsStore = useSettingsStore(testingPinia);
   const floatingConnectorStore = useFloatingConnectorStore(testingPinia);
   const nodeOutputStore = useNodeOutputStore(testingPinia);
-  const canvasTooltipStore = useCanvasTooltipStore(testingPinia);
   const quickActionComponentSearchStore =
     useQuickActionComponentSearchStore(testingPinia);
   const sidebarComponentSearchStore =
@@ -181,7 +179,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
     floatingConnectorStore,
     compositeViewStore,
     nodeOutputStore,
-    canvasTooltipStore,
     quickActionComponentSearchStore,
     sidebarComponentSearchStore,
     hostContextStore,
