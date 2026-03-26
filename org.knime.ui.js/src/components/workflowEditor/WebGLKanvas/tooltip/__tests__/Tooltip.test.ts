@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 import { mount } from "@vue/test-utils";
 
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { mockStores } from "@/test/utils/mockStores";
 import Tooltip from "../Tooltip.vue";
+import { useTooltipState } from "../useTooltipState";
 
 // Mock floating-ui/vue
 const mockFloatingStyles = ref({});
@@ -77,16 +78,13 @@ describe("Tooltip", () => {
     const element = createMockElement();
 
     if (tooltipConfig) {
-      mockedStores.canvasTooltipStore.tooltip = {
-        element: element as any,
-        config: tooltipConfig,
-      };
-    } else {
-      mockedStores.canvasTooltipStore.tooltip = null;
+      useTooltipState().show(
+        shallowRef(element as any),
+        computed(() => tooltipConfig),
+      );
     }
 
     mockedStores.webglCanvasStore.zoomFactor = mockOptions.zoomFactor ?? 1;
-    mockedStores.canvasTooltipStore.hideTooltip = vi.fn();
     mockedStores.webglCanvasStore.canvasOffset = { x: 0, y: 0 };
     mockedStores.webglCanvasStore.containerSize = { width: 800, height: 600 };
 
@@ -190,27 +188,26 @@ describe("Tooltip", () => {
 
   it("sets isHoverableTooltipHovered flag to true on pointer enter when hoverable", () => {
     const config = createTooltipConfig({ hoverable: true });
-    const { wrapper, mockedStores } = doMount({ tooltipConfig: config });
+    const { wrapper } = doMount({ tooltipConfig: config });
 
     const container = wrapper.find(".tooltip-container");
     container.trigger("pointerenter");
 
-    expect(mockedStores.canvasTooltipStore.isHoverableTooltipHovered).toBe(
-      true,
-    );
+    expect(useTooltipState().isHoverableTooltipHovered.value).toBe(true);
   });
 
-  it("calls hideTooltip and sets isHoverableTooltipHovered flag on pointer leave when hoverable", () => {
+  it("calls hideTooltip and sets isHoverableTooltipHovered flag on pointer leave when hoverable", async () => {
+    const tooltipState = useTooltipState();
     const config = createTooltipConfig({ hoverable: true });
-    const { wrapper, mockedStores } = doMount({ tooltipConfig: config });
+    const { wrapper } = doMount({ tooltipConfig: config });
+
+    expect(useTooltipState().isShown.value).toBe(true);
 
     const container = wrapper.find(".tooltip-container");
-    container.trigger("pointerleave");
+    await container.trigger("pointerleave");
 
-    expect(mockedStores.canvasTooltipStore.hideTooltip).toHaveBeenCalled();
-    expect(mockedStores.canvasTooltipStore.isHoverableTooltipHovered).toBe(
-      false,
-    );
+    expect(tooltipState.isShown.value).toBe(false);
+    expect(tooltipState.isHoverableTooltipHovered.value).toBe(false);
   });
 
   it("sets correct data attributes", () => {
