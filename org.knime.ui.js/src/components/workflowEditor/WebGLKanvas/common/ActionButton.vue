@@ -76,7 +76,7 @@ const tooltip = computed<TooltipDefinition>(() => {
 });
 
 const { showTooltip, hideTooltip } = useTooltip({
-  tooltip,
+  config: tooltip,
   element: useTemplateRef<ContainerInst>("tooltipRef"),
 });
 
