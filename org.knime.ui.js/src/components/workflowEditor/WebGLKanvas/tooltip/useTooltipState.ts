@@ -16,6 +16,9 @@ const __element = shallowRef<ShallowRef<ContainerInst | null>>();
 const isShown = ref(false);
 const isHoverableTooltipHovered = ref(false);
 
+/**
+ * Internal shared state for Tooltip.vue and useTooltip
+ */
 export const useTooltipState = () => {
   const show = (
     element: ShallowRef<ContainerInst | null> | undefined,

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from "vue";
+import { computed, useTemplateRef, watch } from "vue";
 import { arrow, autoUpdate, offset, useFloating } from "@floating-ui/vue";
+import { storeToRefs } from "pinia";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 
@@ -10,6 +11,7 @@ const { element, config, isHoverableTooltipHovered, hide, isShown } =
   useTooltipState();
 
 const canvasStore = useWebGLCanvasStore();
+const { zoomFactor, canvasOffset } = storeToRefs(canvasStore);
 
 const anchorPoint = computed(() => {
   if (!element?.value) {
@@ -62,6 +64,23 @@ const { floatingStyles, middlewareData, placement } = useFloating(
     whileElementsMounted: autoUpdate,
     middleware: [offset(() => gap.value), arrow({ element: floatingArrow })],
   },
+);
+
+// hide tooltip if element was removed
+watch(element, (el) => {
+  if (!el) {
+    consola.debug("Tooltip: element got removed, remove tooltip");
+    hide();
+  }
+});
+
+// hide tooltip when user does pan or zoom
+watch(
+  [zoomFactor, canvasOffset],
+  () => {
+    hide();
+  },
+  { deep: true },
 );
 
 const onPointerEnter = () => {
