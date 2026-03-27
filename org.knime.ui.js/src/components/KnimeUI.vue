@@ -252,22 +252,31 @@ const preventBrowserZooming = (event: WheelEvent) => {
 };
 
 const toggleAppHeader = (e: KeyboardEvent) => {
-  if (e[getMetaOrCtrlKey()] && e.shiftKey && e.key.toLowerCase() === "p") {
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === "KeyP") {
     e.preventDefault();
+    e.stopPropagation();
     applicationSettingsStore.toggleAppHeader();
   }
 };
 
+// Keep the CSS variable in sync for fixed-positioned overlays
+watch(showAppHeader, (visible) => {
+  document.documentElement.style.setProperty(
+    "--canvas-overlay-top-offset",
+    visible ? "40px" : "0px",
+  );
+}, { immediate: true });
+
 onMounted(() => {
   document.addEventListener("wheel", preventBrowserZooming, { passive: false });
-  document.addEventListener("keydown", toggleAppHeader);
+  document.addEventListener("keydown", toggleAppHeader, { capture: true });
   checkClipboardSupport();
   useHostContextStore().setupIdleTracking();
 });
 
 onBeforeUnmount(async () => {
   document.removeEventListener("wheel", preventBrowserZooming);
-  document.removeEventListener("keydown", toggleAppHeader);
+  document.removeEventListener("keydown", toggleAppHeader, { capture: true });
   await lifecycleStore.destroyApplication();
 });
 
@@ -375,10 +384,6 @@ const onCloseError = () => {
     "header" min-content
     "workflow" auto
     "footer" min-content;
-
-  &.header-hidden {
-    --canvas-overlay-top-offset: 0px;
-  }
 
   /** backport https://github.com/knime/webapps-common/pull/45 */
   & :deep(.hint-popover .arrow) {

@@ -1,5 +1,4 @@
 <script>
-import { TabBar } from "@knime/components";
 import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 import Eye from "@knime/styles/img/icons/eye.svg";
 
@@ -20,13 +19,7 @@ const portToPortTab = (port) => ({
  * Can be used like a form element
  * */
 export default {
-  components: {
-    TabBar,
-  },
   props: {
-    /**
-     * Node as given in a workflow store
-     */
     node: {
       type: Object,
       default: () => ({}),
@@ -56,11 +49,8 @@ export default {
       const isMetanode = workflowDomain.node.isMetaNode(this.node);
       const ports = (
         isMetanode
-          ? // Metanodes don't have Mickey Mouse ears, so all ports are actual output ports.
-            outPorts
-          : // For normal nodes, the 0th port is the hidden flow variable port, so we remove it for now
-            // and later reposition it to the end
-            outPorts.slice(1)
+          ? outPorts
+          : outPorts.slice(1)
       ).map(portToPortTab);
 
       return (
@@ -75,9 +65,7 @@ export default {
                 }
               : null,
           )
-          // all ports go before the flow variables
           .concat(ports)
-          // add the flow variables but skip for metanodes which don't have any
           .concat(
             isMetanode
               ? null
@@ -99,13 +87,13 @@ export default {
   },
   methods: {
     applyShortcutAllowlist() {
-      if (!this.$refs.TabBar?.$el) {
+      if (!this.$refs.tabBar) {
         return;
       }
-      this.$refs.TabBar.$el
-        .querySelectorAll("input")
-        .forEach((inputElement) => {
-          inputElement.dataset.allowShortcuts =
+      this.$refs.tabBar
+        .querySelectorAll("button")
+        .forEach((btn) => {
+          btn.dataset.allowShortcuts =
             "activateOutputPort,detachOutputPort";
         });
     },
@@ -114,77 +102,103 @@ export default {
 </script>
 
 <template>
-  <TabBar
-    ref="TabBar"
-    name="output-port"
-    :model-value="modelValue"
-    :disabled="disabled"
-    :possible-values="possibleTabValues"
-    @update:model-value="$emit('update:modelValue', $event)"
-  />
+  <nav ref="tabBar" class="port-tabs" aria-label="Output ports">
+    <button
+      v-for="tab in possibleTabValues"
+      :key="tab.value"
+      type="button"
+      :class="['port-tab', { active: modelValue === tab.value }]"
+      :disabled="disabled"
+      :title="tab.label"
+      @click="$emit('update:modelValue', tab.value)"
+    >
+      <component :is="tab.icon" v-if="tab.icon" class="tab-icon" />
+      <span class="tab-label">{{ tab.label }}</span>
+    </button>
+  </nav>
 </template>
 
 <style lang="postcss" scoped>
-/* override carousel scroller */
-.shadow-wrapper {
-  margin: 0;
+.port-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--knime-silver-sand);
+  padding: 0 var(--space-8, 8px);
+  gap: 0;
+}
 
-  &::before,
-  &::after {
-    content: none;
+.port-tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--knime-stone-gray);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 100ms, border-color 100ms;
+
+  &:hover:not(:disabled) {
+    color: var(--knime-masala);
   }
 
-  & :deep(.carousel) {
-    padding: 0;
+  &.active {
+    color: var(--knime-masala);
+    border-bottom-color: var(--knime-cornflower);
+    font-weight: 600;
+  }
 
-    &::before,
-    &::after {
-      right: 0;
-      bottom: 6px;
-      left: 0;
-    }
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
   }
 }
 
-:deep(svg),
-:deep(svg *) {
+.tab-icon {
   width: 14px;
-  pointer-events: none !important;
+  height: 14px;
+  flex-shrink: 0;
+
+  & :deep(*) {
+    pointer-events: none;
+  }
 }
 
-/* Flow variable icon */
-:deep(circle[r="3"]) {
+.tab-label {
+  line-height: 1;
+}
+
+/* Flow variable icon coloring */
+.port-tab :deep(circle[r="3"]) {
   fill: var(--knime-coral);
   stroke: var(--knime-coral);
-  stroke-width: calc(32px / 14);
 }
 
-:deep(path) {
-  stroke-width: calc(32px / 14);
-}
-
-/* Flow variable icon disabled */
-:deep(input:disabled + span) {
-  & circle {
-    fill: var(--knime-coral-light);
-    stroke: var(--knime-coral-light);
-  }
-
-  & polygon,
-  & rect {
-    fill: var(--knime-silver-sand);
-    stroke: var(--knime-silver-sand);
-  }
-
-  & path {
-    stroke: var(--knime-silver-sand);
-  }
-}
-
-/* Flow variable icon active/hover */
-:deep(input:not(:disabled):checked + span circle[r="3"]),
-:deep(input:not(:disabled) + span:hover circle[r="3"]) {
+.port-tab.active :deep(circle[r="3"]),
+.port-tab:hover:not(:disabled) :deep(circle[r="3"]) {
   fill: var(--knime-coral-dark);
   stroke: var(--knime-coral-dark);
+}
+
+.port-tab:disabled :deep(circle[r="3"]) {
+  fill: var(--knime-coral-light);
+  stroke: var(--knime-coral-light);
+}
+
+.port-tab:disabled :deep(polygon),
+.port-tab:disabled :deep(rect) {
+  fill: var(--knime-silver-sand);
+  stroke: var(--knime-silver-sand);
+}
+
+.port-tab:disabled :deep(path) {
+  stroke: var(--knime-silver-sand);
 }
 </style>

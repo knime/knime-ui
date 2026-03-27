@@ -255,32 +255,6 @@ const onPortViewLoadingState = async (
     border-bottom: 1px solid var(--knime-silver-sand);
   }
 
-  & :deep(.tab-bar) {
-    padding-top: 0;
-    padding-bottom: 0;
-
-    & span {
-      font-size: 13px;
-      line-height: 61px;
-    }
-  }
-
-  /* TODO NXT-1569 Find a real solution */
-  & :deep(.table-view-wrapper) {
-    & .table-header th:first-child {
-      margin-left: 0;
-      padding-left: 10px;
-      font-style: italic;
-    }
-
-    & tr.row.no-sub-menu.compact-mode td:first-child {
-      background-color: var(--knime-porcelain);
-      font-style: italic;
-      padding-left: 10px;
-      margin-left: 0;
-    }
-  }
-
   & .tabs {
     flex: 0 0 auto;
   }
