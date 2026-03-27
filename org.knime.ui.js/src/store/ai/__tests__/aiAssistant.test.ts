@@ -50,7 +50,7 @@ describe("aiAssistant store", () => {
 
       await aiAssistantStore.respondToInquiry({
         chainType: "qa",
-        selectedOptionId: "allow",
+        selectedOptionIds: ["allow"],
       });
 
       expect(mockedAPI.kai.respondToInquiry).not.toHaveBeenCalled();
@@ -65,13 +65,18 @@ describe("aiAssistant store", () => {
 
       await aiAssistantStore.respondToInquiry({
         chainType: "qa",
-        selectedOptionId: "allow",
+        selectedOptionIds: ["allow"],
         suffix: "Saved",
       });
 
       expect(aiAssistantStore.qa.pendingInquiry).toBeNull();
       expect(aiAssistantStore.qa.pendingInquiryTraces).toEqual([
-        { inquiry, selectedOptionId: "allow", suffix: "Saved" },
+        {
+          inquiry,
+          selectedOptionIds: ["allow"],
+          freeformInput: null,
+          suffix: "Saved",
+        },
       ]);
     });
 
@@ -84,7 +89,7 @@ describe("aiAssistant store", () => {
 
       await aiAssistantStore.respondToInquiry({
         chainType: "qa",
-        selectedOptionId: "allow",
+        selectedOptionIds: ["allow"],
       });
 
       expect(aiAssistantStore.qa.statusUpdate).toEqual({
@@ -102,7 +107,7 @@ describe("aiAssistant store", () => {
 
       await aiAssistantStore.respondToInquiry({
         chainType: "qa",
-        selectedOptionId: "deny",
+        selectedOptionIds: ["deny"],
       });
 
       expect(mockedAPI.kai.respondToInquiry).toHaveBeenCalledWith({
@@ -110,7 +115,9 @@ describe("aiAssistant store", () => {
         kaiInquiryResponse: {
           projectId: "proj-42",
           inquiryId: "inq-99",
-          selectedOptionId: "deny",
+          selection: {
+            selectedOptionIds: ["deny"],
+          },
         },
       });
     });
@@ -127,7 +134,7 @@ describe("aiAssistant store", () => {
 
       await aiAssistantStore.respondToInquiry({
         chainType: "qa",
-        selectedOptionId: "allow",
+        selectedOptionIds: ["allow"],
       });
 
       expect(mockedAPI.kai.respondToInquiry).toHaveBeenCalledTimes(2);
@@ -153,7 +160,7 @@ describe("aiAssistant store", () => {
 
       await aiAssistantStore.respondToInquiry({
         chainType: "qa",
-        selectedOptionId: "allow",
+        selectedOptionIds: ["allow"],
       });
 
       expect(mockedAPI.kai.respondToInquiry).toHaveBeenCalledWith(
@@ -211,7 +218,8 @@ describe("aiAssistant store", () => {
 
       expect(aiAssistantStore.qa.pendingInquiry).toBeNull();
       expect(aiAssistantStore.qa.pendingInquiryTraces[0]).toMatchObject({
-        selectedOptionId: "allow",
+        selectedOptionIds: ["allow"],
+        freeformInput: null,
         suffix: "Remembered",
       });
     });
@@ -219,7 +227,7 @@ describe("aiAssistant store", () => {
     it("does not auto-respond for non-permission inquiry types", () => {
       const { aiAssistantStore } = setupStore();
       const inquiry = createKaiInquiry({
-        inquiryType: KaiInquiry.InquiryTypeEnum.Confirmation,
+        inquiryType: KaiInquiry.InquiryTypeEnum.SingleChoice,
         metadata: { actionId: "action-confirm" },
       });
 
@@ -242,7 +250,12 @@ describe("aiAssistant store", () => {
       const inquiry = createKaiInquiry();
 
       aiAssistantStore.qa.pendingInquiryTraces = [
-        { inquiry, selectedOptionId: "allow", suffix: "Saved" },
+        {
+          inquiry,
+          selectedOptionIds: ["allow"],
+          freeformInput: null,
+          suffix: "Saved",
+        },
       ];
 
       aiAssistantStore.handleAiAssistantEvent({
@@ -260,7 +273,12 @@ describe("aiAssistant store", () => {
       const lastMessage =
         aiAssistantStore.qa.messages[aiAssistantStore.qa.messages.length - 1];
       expect(lastMessage.inquiryTraces).toEqual([
-        { inquiry, selectedOptionId: "allow", suffix: "Saved" },
+        {
+          inquiry,
+          selectedOptionIds: ["allow"],
+          freeformInput: null,
+          suffix: "Saved",
+        },
       ]);
     });
 
@@ -269,7 +287,7 @@ describe("aiAssistant store", () => {
       const inquiry = createKaiInquiry();
 
       aiAssistantStore.qa.pendingInquiryTraces = [
-        { inquiry, selectedOptionId: "allow" },
+        { inquiry, selectedOptionIds: ["allow"], freeformInput: null },
       ];
 
       aiAssistantStore.handleAiAssistantEvent({

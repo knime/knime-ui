@@ -1,16 +1,15 @@
 <script setup lang="ts">
+import { type Component, computed } from "vue";
+
 import {
   KaiInquiry,
   type KaiInquiry as KaiInquiryType,
 } from "@/api/gateway-api/generated-api";
-import { useAIAssistantStore } from "@/store/ai/aiAssistant";
-import {
-  type ActionPermission,
-  useAISettingsStore,
-} from "@/store/ai/aiSettings";
 import type { ChainType } from "@/store/ai/types";
 
-import InquiryCard from "./InquiryCard.vue";
+import MultiChoiceInquiryCard from "./MultiChoiceInquiryCard.vue";
+import PermissionInquiryCard from "./PermissionInquiryCard.vue";
+import SingleChoiceInquiryCard from "./SingleChoiceInquiryCard.vue";
 
 type Props = {
   inquiry: KaiInquiryType;
@@ -19,52 +18,30 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const aiAssistantStore = useAIAssistantStore();
-const aiSettingsStore = useAISettingsStore();
-
-const isPermission =
-  props.inquiry.inquiryType === KaiInquiry.InquiryTypeEnum.Permission;
-const actionId = props.inquiry.metadata?.actionId as string | undefined;
-
-const handleRespond = ({
-  optionId,
-  isCheckboxChecked,
-}: {
-  optionId: string;
-  isCheckboxChecked: boolean;
-}) => {
-  // Persist the permission decision if the user checked "Remember choice"
-  if (isPermission && isCheckboxChecked && actionId) {
-    aiSettingsStore.setPermissionForActionForActiveProject(
-      actionId,
-      optionId as ActionPermission,
-    );
+const getInquiryComponent = (
+  inquiryType: KaiInquiry.InquiryTypeEnum,
+): Component => {
+  switch (inquiryType) {
+    case KaiInquiry.InquiryTypeEnum.SingleChoice:
+      return SingleChoiceInquiryCard;
+    case KaiInquiry.InquiryTypeEnum.MultipleChoice:
+      return MultiChoiceInquiryCard;
+    case KaiInquiry.InquiryTypeEnum.Permission:
+      return PermissionInquiryCard;
+    default:
+      throw new Error(`Unsupported inquiry type: ${inquiryType}`);
   }
-
-  aiAssistantStore.respondToInquiry({
-    chainType: props.chainType,
-    selectedOptionId: optionId,
-
-    suffix: isPermission && isCheckboxChecked ? "Saved" : undefined,
-  });
 };
+
+const inquiryComponent = computed(() =>
+  getInquiryComponent(props.inquiry.inquiryType),
+);
 </script>
 
 <template>
-  <InquiryCard
-    :title="props.inquiry.title"
-    :description="props.inquiry.description"
-    :options="props.inquiry.options"
-    :auto-select-after="props.inquiry.timeoutSeconds"
-    :default-option-id="props.inquiry.defaultOptionId"
-    :checkbox="
-      isPermission
-        ? {
-            label: 'Remember choice',
-            subText: 'This will be saved for current workflow',
-          }
-        : undefined
-    "
-    @respond="handleRespond"
+  <component
+    :is="inquiryComponent"
+    :inquiry="props.inquiry"
+    :chain-type="props.chainType"
   />
 </template>

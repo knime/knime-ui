@@ -9,7 +9,6 @@ import { type Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import HelpMenu from "@/components/application/HelpMenu.vue";
 import { isBrowser, isDesktop } from "@/environment";
-import { router } from "@/router/router";
 import { createShortcutsService } from "@/services/shortcuts";
 import {
   createProject,
@@ -35,15 +34,29 @@ vi.mock("@knime/components", async (importOriginal) => {
   };
 });
 
+// Prevent promise leak from createUnwrappedPromise
+vi.mock("@knime/utils", async () => {
+  const actual = await vi.importActual("@knime/utils");
+  return {
+    ...actual,
+    promise: {
+      ...(actual as any).promise,
+      createUnwrappedPromise: () => ({
+        promise: Promise.resolve(null),
+        resolve: () => {},
+        reject: () => {},
+      }),
+    },
+  };
+});
+
 const { askConfirmationMock } = vi.hoisted(() => ({
   askConfirmationMock: vi.fn(() => Promise.resolve({ confirmed: true })),
 }));
-vi.mock("@knime/kds-components", async (importOriginal) => {
-  const actual = await importOriginal();
-
+vi.mock("@knime/kds-components", () => {
   return {
-    // @ts-expect-error
-    ...actual,
+    KdsButton: { props: ["label"], template: "<div>{{ label }}</div>" },
+    KdsModal: { template: "<div />" },
     useKdsDynamicModal: () => ({ askConfirmation: askConfirmationMock }),
   };
 });
@@ -83,16 +96,21 @@ describe("WorkflowToolbar.vue", () => {
     };
 
     const $shortcuts = createShortcutsService({
-      $router: router,
       // @ts-expect-error
+      $router: {
+        push: vi.fn(),
+      },
       $toast: {},
     });
 
     const wrapper = mount(WorkflowToolbar, {
       global: {
-        plugins: [mockedStores.testingPinia, router],
+        plugins: [mockedStores.testingPinia],
         mocks: {
           $shortcuts,
+        },
+        stubs: {
+          HelpMenu: true,
         },
       },
     });

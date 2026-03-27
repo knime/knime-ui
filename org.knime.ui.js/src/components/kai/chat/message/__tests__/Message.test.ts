@@ -282,7 +282,12 @@ describe("Message.vue", () => {
   describe("inquiry rendering", () => {
     const pendingInquiry = createKaiInquiry();
     const traces: InquiryTrace[] = [
-      { inquiry: pendingInquiry, selectedOptionId: "allow", suffix: "Saved" },
+      {
+        inquiry: pendingInquiry,
+        selectedOptionIds: ["allow"],
+        freeformInput: null,
+        suffix: "Saved",
+      },
     ];
 
     it("renders InquiryResponseTrace rows for each trace", () => {

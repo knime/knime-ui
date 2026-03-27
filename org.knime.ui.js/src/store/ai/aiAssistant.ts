@@ -181,11 +181,13 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
      */
     async respondToInquiry({
       chainType,
-      selectedOptionId,
+      selectedOptionIds,
+      freeformInput,
       suffix,
     }: {
       chainType: ChainType;
-      selectedOptionId: string;
+      selectedOptionIds: string[];
+      freeformInput?: string | null;
       suffix?: string;
     }) {
       const pendingInquiry = this[chainType].pendingInquiry;
@@ -196,7 +198,8 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
       // Store the response trace before clearing the inquiry
       this[chainType].pendingInquiryTraces.push({
         inquiry: pendingInquiry,
-        selectedOptionId,
+        selectedOptionIds,
+        freeformInput: freeformInput ?? null,
         suffix,
       });
 
@@ -220,14 +223,27 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
               kaiInquiryResponse: {
                 projectId,
                 inquiryId: pendingInquiry.inquiryId,
-                selectedOptionId,
+                selection: {
+                  selectedOptionIds,
+                  ...(freeformInput ? { freeformInput } : {}),
+                },
               },
             }),
           retryCount: 1,
         });
       } catch (error) {
         consola.error("respondToInquiry", error);
-        this.setIsProcessing({ chainType, isProcessing: false });
+        // Abort the AI request so the Java side unblocks (its CompletableFuture
+        // would otherwise hang until the server-side safety-net timeout fires).
+        try {
+          await API.kai.abortAiRequest({ kaiChainId: chainType });
+        } catch (abortError) {
+          consola.error(
+            "Failed to abort after respondToInquiry failure",
+            abortError,
+          );
+        }
+        this.clearChain({ chainType });
         this.pushMessage({
           chainType,
           role: KaiMessage.RoleEnum.Assistant,
@@ -417,7 +433,7 @@ export const useAIAssistantStore = defineStore("aiAssistant", {
             this[chainType].pendingInquiry = payload;
             this.respondToInquiry({
               chainType,
-              selectedOptionId: savedDecision,
+              selectedOptionIds: [savedDecision],
               suffix: "Remembered",
             });
             break;

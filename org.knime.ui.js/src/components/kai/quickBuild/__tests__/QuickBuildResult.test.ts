@@ -68,7 +68,11 @@ describe("QuickBuildResult.vue", () => {
 
   it("passes inquiryTraces to Message when provided", () => {
     const traces: InquiryTrace[] = [
-      { inquiry: createKaiInquiry(), selectedOptionId: "allow" },
+      {
+        inquiry: createKaiInquiry(),
+        selectedOptionIds: ["allow"],
+        freeformInput: null,
+      },
     ];
 
     const { wrapper } = doMount({ props: { inquiryTraces: traces } });
