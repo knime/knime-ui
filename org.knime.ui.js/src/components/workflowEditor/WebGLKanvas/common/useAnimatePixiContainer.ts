@@ -92,6 +92,9 @@ export const useAnimatePixiContainer = <T extends {}>(options: Options<T>) => {
 
   const doAnimateOut = () => {
     if (!animateOut) {
+      // teardown animation before resetting to initial state
+      // otherwise the abrupt change in value can cause an external interaction (e.g pointerover)
+      // to fire off the animation, thus leaving it the value in an intermediate state
       teardown();
       triggerAnimationUpdate(initialValue, "out");
       return;
