@@ -247,7 +247,7 @@ export const useWorkflowStore = defineStore("workflow", {
       containerType,
     }: {
       containerType: CollapseCommand.ContainerTypeEnum;
-    }) {
+    }): Promise<{ created: boolean }> {
       const selectionStore = useSelectionStore();
       const { projectId, workflowId } = this.getProjectAndWorkflowIds;
       const selectedNodeIds: string[] = selectionStore.selectedNodeIds;
@@ -268,14 +268,14 @@ export const useWorkflowStore = defineStore("workflow", {
           message: `Creating this ${containerType} will reset executed nodes.`,
         });
         if (!confirmed) {
-          return;
+          return { created: false };
         }
       }
 
       // 1. deselect all objects
       const { wasAborted } = await selectionStore.tryClearSelection();
       if (wasAborted) {
-        return;
+        return { created: false };
       }
 
       // 2. send request
@@ -293,6 +293,8 @@ export const useWorkflowStore = defineStore("workflow", {
         await selectionStore.selectNodes([newNodeId]);
         useNodeInteractionsStore().openNameEditor(newNodeId);
       }
+
+      return { created: true };
     },
 
     async expandContainerNode() {
