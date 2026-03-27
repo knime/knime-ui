@@ -24,7 +24,7 @@ vi.mock("@knime/utils", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
-    ...actual,
+    ...(actual as object),
     sleep: vi.fn(),
   };
 });
