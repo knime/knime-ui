@@ -9,7 +9,6 @@ import { type Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import HelpMenu from "@/components/application/HelpMenu.vue";
 import { isBrowser, isDesktop } from "@/environment";
-import { router } from "@/router/router";
 import { createShortcutsService } from "@/services/shortcuts";
 import {
   createProject,
@@ -71,7 +70,7 @@ describe("WorkflowToolbar.vue", () => {
 
   afterEach(vi.resetAllMocks);
 
-  const doMount = async ({
+  const doMount = ({
     getCommunityHubInfo = {
       isOnlyCommunityHubMounted: true,
     },
@@ -97,14 +96,16 @@ describe("WorkflowToolbar.vue", () => {
     };
 
     const $shortcuts = createShortcutsService({
-      $router: router,
       // @ts-expect-error
+      $router: {
+        push: vi.fn(),
+      },
       $toast: {},
     });
 
     const wrapper = mount(WorkflowToolbar, {
       global: {
-        plugins: [mockedStores.testingPinia, router],
+        plugins: [mockedStores.testingPinia],
         mocks: {
           $shortcuts,
         },
@@ -114,14 +115,12 @@ describe("WorkflowToolbar.vue", () => {
       },
     });
 
-    await router.isReady();
-
     return { wrapper, $shortcuts, ...mockedStores };
   };
 
   describe("toolbar Shortcut", () => {
-    it("shortcut buttons match computed items", async () => {
-      const { wrapper } = await doMount();
+    it("shortcut buttons match computed items", () => {
+      const { wrapper } = doMount();
 
       // Get all KdsButtons, filter out SaveButton (which is wrapped in data-test-id="save")
       const saveButtonWrapper = wrapper.find('[data-test-id="save"]');
@@ -136,8 +135,8 @@ describe("WorkflowToolbar.vue", () => {
       );
     });
 
-    it("hides toolbar shortcut buttons if no workflow is open", async () => {
-      const { wrapper } = await doMount();
+    it("hides toolbar shortcut buttons if no workflow is open", () => {
+      const { wrapper } = doMount();
 
       // SaveButton is always rendered on desktop
       const saveButtonWrapper = wrapper.find('[data-test-id="save"]');
@@ -152,7 +151,7 @@ describe("WorkflowToolbar.vue", () => {
   describe("zoom", () => {
     it("renders zoomMenu", async () => {
       const workflow = createWorkflow();
-      const { wrapper, workflowStore } = await doMount();
+      const { wrapper, workflowStore } = doMount();
       workflowStore.setActiveWorkflow(workflow);
       await nextTick();
 
@@ -160,8 +159,8 @@ describe("WorkflowToolbar.vue", () => {
       expect(wrapper.findComponent(ZoomMenu).props("disabled")).toBe(false);
     });
 
-    it("hides ZoomMenu if no workflow is open", async () => {
-      const { wrapper } = await doMount();
+    it("hides ZoomMenu if no workflow is open", () => {
+      const { wrapper } = doMount();
 
       expect(wrapper.findComponent(ZoomMenu).exists()).toBe(false);
     });
@@ -170,7 +169,7 @@ describe("WorkflowToolbar.vue", () => {
       const workflow = createWorkflow();
       workflow.nodes = {};
       workflow.workflowAnnotations = [];
-      const { wrapper, workflowStore } = await doMount();
+      const { wrapper, workflowStore } = doMount();
       workflowStore.setActiveWorkflow(workflow);
       await nextTick();
 
@@ -179,15 +178,15 @@ describe("WorkflowToolbar.vue", () => {
   });
 
   describe("breadcrumb", () => {
-    it("hides breadcrumb if no workflow is open", async () => {
-      const { wrapper } = await doMount();
+    it("hides breadcrumb if no workflow is open", () => {
+      const { wrapper } = doMount();
 
       expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
     });
 
     it("shows breadcrumb by default", async () => {
       const workflow = createWorkflow();
-      const { wrapper, workflowStore } = await doMount();
+      const { wrapper, workflowStore } = doMount();
       workflowStore.setActiveWorkflow(workflow);
       await nextTick();
       expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
@@ -236,8 +235,8 @@ describe("WorkflowToolbar.vue", () => {
       await nextTick();
     };
 
-    it("shows nothing if no workflow is active", async () => {
-      const { wrapper } = await doMount();
+    it("shows nothing if no workflow is active", () => {
+      const { wrapper } = doMount();
       const saveButtonWrapper = wrapper.find('[data-test-id="save"]');
       const allButtons = wrapper.findAllComponents(KdsButton);
       const shortcutButtons = allButtons.filter(
@@ -247,7 +246,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows menu items if no node is selected and not inside a component", async () => {
-      const { wrapper, ...mockedStores } = await doMount();
+      const { wrapper, ...mockedStores } = doMount();
 
       await setupStore({ mockedStores, workflow: createWorkflow() });
 
@@ -267,7 +266,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows menu items if workflow is an unknown project", async () => {
-      const { wrapper, workflowStore, applicationStore } = await doMount();
+      const { wrapper, workflowStore, applicationStore } = doMount();
 
       const workflow = createWorkflow();
       workflowStore.setActiveWorkflow(workflow);
@@ -299,7 +298,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows layout editor button if inside a component", async () => {
-      const { wrapper, ...mockedStores } = await doMount();
+      const { wrapper, ...mockedStores } = doMount();
       const workflow = createWorkflow({
         info: { containerType: WorkflowInfo.ContainerTypeEnum.Component },
       });
@@ -312,7 +311,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows correct menu items if one node is selected", async () => {
-      const { wrapper, ...mockedStores } = await doMount();
+      const { wrapper, ...mockedStores } = doMount();
       const workflow = createWorkflow();
       await setupStore({ mockedStores, workflow });
 
@@ -335,7 +334,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows correct menu items if multiple nodes are selected", async () => {
-      const { wrapper, ...mockedStores } = await doMount();
+      const { wrapper, ...mockedStores } = doMount();
 
       const workflow = createWorkflow();
       await setupStore({ mockedStores, workflow });
@@ -359,8 +358,8 @@ describe("WorkflowToolbar.vue", () => {
   });
 
   describe("canvas modes", () => {
-    it("should show canvas modes", async () => {
-      const { wrapper, $shortcuts } = await doMount();
+    it("should show canvas modes", () => {
+      const { wrapper, $shortcuts } = doMount();
 
       expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
       expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
@@ -381,8 +380,8 @@ describe("WorkflowToolbar.vue", () => {
       );
     });
 
-    it("should change the canvas mode", async () => {
-      const { wrapper, canvasModesStore } = await doMount();
+    it("should change the canvas mode", () => {
+      const { wrapper, canvasModesStore } = doMount();
 
       wrapper
         .findComponent(SubMenu)
@@ -403,8 +402,8 @@ describe("WorkflowToolbar.vue", () => {
       origin: { itemId: "itemId" },
     });
 
-    it("isn't visible if not only Community Hub is mounted", async () => {
-      const { wrapper } = await doMount({
+    it("isn't visible if not only Community Hub is mounted", () => {
+      const { wrapper } = doMount({
         getCommunityHubInfo: {
           isOnlyCommunityHubMounted: false,
         },
@@ -414,7 +413,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("is visible if only Community Hub is mounted and workflow is local", async () => {
-      const { wrapper, workflowStore } = await doMount();
+      const { wrapper, workflowStore } = doMount();
 
       workflowStore.setActiveWorkflow(localWorkflow);
       await nextTick();
@@ -432,7 +431,7 @@ describe("WorkflowToolbar.vue", () => {
         workflowStore,
         dirtyProjectsTrackingStore,
         desktopInteractionsStore,
-      } = await doMount();
+      } = doMount();
 
       workflowStore.setActiveWorkflow(localWorkflow);
       applicationStore.setOpenProjects([mockProject]);
@@ -460,7 +459,7 @@ describe("WorkflowToolbar.vue", () => {
         workflowStore,
         dirtyProjectsTrackingStore,
         desktopInteractionsStore,
-      } = await doMount();
+      } = doMount();
 
       workflowStore.setActiveWorkflow(localWorkflow);
       applicationStore.setOpenProjects([mockProject]);
@@ -483,7 +482,7 @@ describe("WorkflowToolbar.vue", () => {
         applicationStore,
         workflowStore,
         dirtyProjectsTrackingStore,
-      } = await doMount();
+      } = doMount();
 
       workflowStore.setActiveWorkflow(localWorkflow);
       applicationStore.setOpenProjects([mockProject]);
@@ -519,8 +518,8 @@ describe("WorkflowToolbar.vue", () => {
       info: { providerType: WorkflowInfo.ProviderTypeEnum.HUB },
     });
 
-    it("doesn't show if not only Community Hub is mounted", async () => {
-      const { wrapper } = await doMount({
+    it("doesn't show if not only Community Hub is mounted", () => {
+      const { wrapper } = doMount({
         getCommunityHubInfo: { isOnlyCommunityHubMounted: false },
       });
 
@@ -528,7 +527,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("doesn't show if workflow isn't from hub", async () => {
-      const { wrapper, ...mockedStores } = await doMount();
+      const { wrapper, ...mockedStores } = doMount();
 
       // set active workflow to local
       mockedStores.applicationStore.setActiveProjectId(projectId);
@@ -540,7 +539,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("doesn't show if project is unknown", async () => {
-      const { wrapper, ...mockedStores } = await doMount();
+      const { wrapper, ...mockedStores } = doMount();
 
       // set active workflow to unknown
       mockedStores.applicationStore.setActiveProjectId(projectId);
@@ -554,7 +553,7 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows if only Community Hub is mounted and workflow is from hub", async () => {
-      const { wrapper, ...mockedStores } = await doMount();
+      const { wrapper, ...mockedStores } = doMount();
 
       // set active workflow to hub
       mockedStores.applicationStore.setActiveProjectId(projectId);
@@ -569,18 +568,18 @@ describe("WorkflowToolbar.vue", () => {
   });
 
   describe("help menu", () => {
-    it("shows on the browser", async () => {
+    it("shows on the browser", () => {
       mockEnvironment("BROWSER", { isBrowser, isDesktop });
 
-      const { wrapper } = await doMount();
+      const { wrapper } = doMount();
 
       expect(wrapper.findComponent(HelpMenu).exists()).toBe(true);
     });
 
-    it("does not show on the desktop", async () => {
+    it("does not show on the desktop", () => {
       mockEnvironment("DESKTOP", { isBrowser, isDesktop });
 
-      const { wrapper } = await doMount();
+      const { wrapper } = doMount();
 
       expect(wrapper.findComponent(HelpMenu).exists()).toBe(false);
     });

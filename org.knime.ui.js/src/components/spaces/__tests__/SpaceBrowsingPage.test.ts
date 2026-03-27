@@ -7,7 +7,6 @@ import { FileExplorer } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import { router } from "@/router/router";
 import { globalSpaceBrowserProjectId } from "@/store/spaces/common";
 import {
   createSpace,
@@ -153,12 +152,10 @@ describe("SpaceBrowsingPage.vue", () => {
 
     const wrapper = mount(SpaceBrowsingPage, {
       global: {
-        plugins: [mockedStores.testingPinia, router],
+        plugins: [mockedStores.testingPinia],
         mocks: { $shortcuts: { get: vi.fn(() => ({})) } },
       },
     });
-
-    await router.isReady();
 
     return { wrapper, mockedStores };
   };
