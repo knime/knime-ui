@@ -52,6 +52,8 @@ useAnimatePixiContainer<number>({
     animatedCircleRef.value!.x = value;
   },
 });
+
+const textMaskRef = useTemplateRef<Container>("textMask");
 </script>
 
 <template>
@@ -105,16 +107,11 @@ useAnimatePixiContainer<number>({
       "
     />
 
-    <Container
-      label="NodeStateProgressMaskContainer"
-      :mask="$refs.textMask as any"
-      :renderable="progressDisplayPercentage > 25"
-    >
+    <Container label="NodeStateProgressMaskContainer" :mask="textMaskRef">
       <Graphics
         ref="textMask"
         label="NodeStateProgressMask"
         event-mode="none"
-        :is-mask="true"
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
