@@ -1,4 +1,4 @@
-import { Application, Container } from "pixi.js";
+import type { Application, Container } from "pixi.js";
 
 let applicationInstance: Application | null;
 

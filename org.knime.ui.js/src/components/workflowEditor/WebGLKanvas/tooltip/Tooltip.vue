@@ -1,23 +1,27 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, useTemplateRef, watch } from "vue";
 import { arrow, autoUpdate, offset, useFloating } from "@floating-ui/vue";
 import { storeToRefs } from "pinia";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useCanvasTooltipStore } from "@/store/canvasTooltip/canvasTooltip";
+import { markPointerEventAsHandled } from "../util/interaction";
+
+import { useTooltipState } from "./useTooltipState";
+
+const { element, config, isHoverableTooltipHovered, hide, isShown } =
+  useTooltipState();
 
 const canvasStore = useWebGLCanvasStore();
-const canvasTooltipStore = useCanvasTooltipStore();
-const { tooltip } = storeToRefs(canvasTooltipStore);
+const { zoomFactor, canvasOffset } = storeToRefs(canvasStore);
 
 const anchorPoint = computed(() => {
-  if (!tooltip.value?.element) {
+  if (!element.value) {
     return { x: 0, y: 0 };
   }
 
-  const elementBounds = tooltip.value.element.getBounds();
+  const elementBounds = element.value.getBounds();
   const elementHeightOffset =
-    tooltip.value?.config.orientation === "bottom" ? elementBounds.height : 0;
+    config.value?.orientation === "bottom" ? elementBounds.height : 0;
   const [canvasX, canvasY] = canvasStore.toCanvasCoordinates([
     elementBounds.x,
     elementBounds.y + elementHeightOffset,
@@ -27,12 +31,12 @@ const anchorPoint = computed(() => {
 
 const reference = computed(() => ({
   getBoundingClientRect() {
-    if (!tooltip.value) {
+    if (!config.value) {
       return new DOMRect();
     }
     const position = canvasStore.screenFromCanvasCoordinates({
-      x: anchorPoint.value.x + tooltip.value?.config.position.x,
-      y: anchorPoint.value.y + tooltip.value?.config.position.y,
+      x: anchorPoint.value.x + config.value.position.x,
+      y: anchorPoint.value.y + config.value.position.y,
     });
     return new DOMRect(position.x, position.y, 0, 0);
   },
@@ -46,14 +50,13 @@ const arrowSize = 8;
  */
 const gap = computed(
   () =>
-    Math.sqrt(canvasStore.zoomFactor) * (tooltip.value?.config.gap ?? 0) +
-    arrowSize,
+    Math.sqrt(canvasStore.zoomFactor) * (config.value?.gap ?? 0) + arrowSize,
 );
 
-const desiredPlacement = computed(() => tooltip.value?.config.orientation);
+const desiredPlacement = computed(() => config.value?.orientation);
 
-const floating = ref(null);
-const floatingArrow = ref(null);
+const floating = useTemplateRef("floating");
+const floatingArrow = useTemplateRef("floatingArrow");
 const { floatingStyles, middlewareData, placement } = useFloating(
   reference,
   floating,
@@ -64,33 +67,55 @@ const { floatingStyles, middlewareData, placement } = useFloating(
   },
 );
 
+// hide tooltip if element was removed
+watch(element, (el) => {
+  if (!el) {
+    consola.debug("Tooltip: element got removed, remove tooltip");
+    hide();
+  }
+});
+
+// hide tooltip when user does pan or zoom
+watch(
+  [zoomFactor, canvasOffset],
+  () => {
+    hide();
+  },
+  { deep: true },
+);
+
 const onPointerEnter = () => {
-  canvasTooltipStore.isHoverableTooltipHovered = Boolean(
-    tooltip.value?.config.hoverable,
-  );
+  isHoverableTooltipHovered.value = Boolean(config.value?.hoverable);
 };
 
 const onPointerLeave = () => {
-  canvasTooltipStore.hideTooltip();
-  canvasTooltipStore.isHoverableTooltipHovered = false;
+  hide();
+};
+
+// avoid any interaction with the canvas if you are on the tooltip (e.g. open quick menu)
+const onPointerDown = (event: PointerEvent) => {
+  if (config.value?.hoverable) {
+    markPointerEventAsHandled(event, { initiator: "tooltip" });
+  }
 };
 </script>
 
 <template>
   <transition name="tooltip">
     <div
-      v-if="tooltip"
+      v-if="isShown && config"
       ref="floating"
       :class="[
         'tooltip-container',
-        tooltip.config.type,
-        { hoverable: tooltip.config.hoverable },
+        config.type,
+        { hoverable: config.hoverable },
       ]"
       :style="floatingStyles"
       data-is-tooltip="true"
       data-test-id="tooltip"
       @pointerenter="onPointerEnter"
       @pointerleave="onPointerLeave"
+      @pointerdown="onPointerDown"
       @wheel.ctrl.prevent
     >
       <div
@@ -100,19 +125,19 @@ const onPointerLeave = () => {
       >
         <div class="tooltip-arrow-inner" />
       </div>
-      <div v-if="tooltip.config.title" class="title">
-        {{ tooltip.config.title }}
+      <div v-if="config.title" class="title">
+        {{ config.title }}
       </div>
-      <p v-if="tooltip.config.text" class="text">
-        {{ tooltip.config.text }}
+      <p v-if="config.text" class="text">
+        {{ config.text }}
       </p>
-      <div v-if="tooltip.config.issue" class="issue">
-        {{ tooltip.config.issue }}
+      <div v-if="config.issue" class="issue">
+        {{ config.issue }}
       </div>
-      <div v-if="tooltip.config.resolutions?.length" class="resolutions">
+      <div v-if="config.resolutions?.length" class="resolutions">
         Potential resolutions:
         <ul>
-          <li v-for="res in tooltip.config.resolutions" :key="res">
+          <li v-for="res in config.resolutions" :key="res">
             {{ res }}
           </li>
         </ul>

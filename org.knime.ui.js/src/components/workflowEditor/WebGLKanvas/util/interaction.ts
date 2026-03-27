@@ -21,6 +21,7 @@ type Initiator =
   | "object-interaction"
   | "object-interaction::onEscape"
   | "text-editing"
+  | "tooltip"
   | "node-label-hover";
 
 export type CustomUIEventDataset = {

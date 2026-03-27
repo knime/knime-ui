@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import { mockStores } from "@/test/utils/mockStores";
@@ -31,6 +31,20 @@ const createMockTooltip = (
   ...overrides,
 });
 
+const showSpy = vi.fn();
+const hideSpy = vi.fn();
+
+vi.mock(
+  "@/components/workflowEditor/WebGLKanvas/tooltip/useTooltipState",
+  () => ({
+    useTooltipState: vi.fn().mockImplementation(() => ({
+      show: showSpy,
+      hide: hideSpy,
+      isHoverableTooltipHovered: ref(false),
+    })),
+  }),
+);
+
 describe("useTooltip", () => {
   afterEach(() => {
     vi.clearAllTimers();
@@ -38,51 +52,53 @@ describe("useTooltip", () => {
   });
 
   const mountTooltipComposable = (
-    mockTooltip: TooltipDefinition | null = createMockTooltip(),
+    mockConfig: TooltipDefinition | null = createMockTooltip(),
     mockElement: ContainerInst | null = createMockElement(),
   ) => {
+    // const tooltipState = useTooltipState();
+    // const hideSpy = vi.spyOn(tooltipState, "hide");
+    // const showSpy = vi.spyOn(tooltipState, "show");
+    // const hideSpy = useTooltipState().hide;
+    // const showSpy = useTooltipState().show;
+
     const mockedStores = mockStores();
-    const tooltipRef = computed(() => mockTooltip);
-    const elementRef = ref(mockElement);
+    const config = computed(() => mockConfig);
+    const element = shallowRef(mockElement as ContainerInst);
 
     const result = mountComposable({
       composable: useTooltip,
-      composableProps: {
-        tooltip: tooltipRef,
-        // @ts-expect-error tests
-        element: elementRef,
-      },
+      composableProps: { config, element },
       mockedStores,
     });
 
-    return { ...result, mockedStores, mockTooltip, mockElement };
+    return {
+      ...result,
+      mockTooltip: mockConfig,
+      mockElement,
+    };
   };
 
   describe("showTooltip", () => {
     it("should call canvasStore.showTooltip after entry delay", () => {
-      const { getComposableResult, mockedStores, mockElement, mockTooltip } =
+      const { getComposableResult, mockElement, mockTooltip } =
         mountTooltipComposable();
       const { showTooltip } = getComposableResult();
 
       showTooltip();
 
-      expect(
-        mockedStores.canvasTooltipStore.showTooltip,
-      ).not.toHaveBeenCalled();
+      expect(showSpy).not.toHaveBeenCalled();
 
       vi.advanceTimersByTime(750);
 
-      expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledTimes(
-        1,
-      );
-      expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledWith(
+      expect(showSpy).toHaveBeenCalledTimes(1);
+      expect(showSpy).toHaveBeenCalledWith(
         expect.objectContaining({ value: mockElement }),
         expect.objectContaining({ value: mockTooltip }),
       );
     });
 
     it("should show tooltip correctly when called multiple times quickly", () => {
-      const { getComposableResult, mockedStores } = mountTooltipComposable();
+      const { getComposableResult } = mountTooltipComposable();
       const { showTooltip } = getComposableResult();
 
       showTooltip();
@@ -92,40 +108,38 @@ describe("useTooltip", () => {
       vi.advanceTimersByTime(750);
 
       // Should only be called once due to timeout clearing
-      expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledTimes(
-        1,
-      );
+      expect(showSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should not show tooltip if element is null", () => {
-      const { getComposableResult, mockedStores, mockTooltip } =
-        mountTooltipComposable(createMockTooltip(), null);
+      const { getComposableResult, mockTooltip } = mountTooltipComposable(
+        createMockTooltip(),
+        null,
+      );
       const { showTooltip } = getComposableResult();
 
       showTooltip();
       vi.advanceTimersByTime(750);
 
-      expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledTimes(
-        1,
-      );
-      expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledWith(
+      expect(showSpy).toHaveBeenCalledTimes(1);
+      expect(showSpy).toHaveBeenCalledWith(
         expect.objectContaining({ value: null }),
         expect.objectContaining({ value: mockTooltip }),
       );
     });
 
     it("should not show tooltip if tooltip definition is null", () => {
-      const { getComposableResult, mockedStores, mockElement } =
-        mountTooltipComposable(null, createMockElement());
+      const { getComposableResult, mockElement } = mountTooltipComposable(
+        null,
+        createMockElement(),
+      );
       const { showTooltip } = getComposableResult();
 
       showTooltip();
       vi.advanceTimersByTime(750);
 
-      expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledTimes(
-        1,
-      );
-      expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledWith(
+      expect(showSpy).toHaveBeenCalledTimes(1);
+      expect(showSpy).toHaveBeenCalledWith(
         expect.objectContaining({ value: mockElement }),
         expect.objectContaining({ value: null }),
       );
@@ -134,7 +148,7 @@ describe("useTooltip", () => {
 
   describe("hideTooltip", () => {
     it("should clear show timeout when hiding tooltip", () => {
-      const { getComposableResult, mockedStores } = mountTooltipComposable();
+      const { getComposableResult } = mountTooltipComposable();
       const { showTooltip, hideTooltip } = getComposableResult();
 
       showTooltip();
@@ -142,63 +156,51 @@ describe("useTooltip", () => {
 
       vi.advanceTimersByTime(750);
 
-      expect(
-        mockedStores.canvasTooltipStore.showTooltip,
-      ).not.toHaveBeenCalled();
+      expect(showSpy).not.toHaveBeenCalled();
     });
 
     it("should immediately hide non-hoverable tooltips", () => {
       const nonHoverableTooltip = createMockTooltip({ hoverable: false });
-      const { getComposableResult, mockedStores } =
+      const { getComposableResult } =
         mountTooltipComposable(nonHoverableTooltip);
       const { hideTooltip } = getComposableResult();
 
       hideTooltip();
 
-      expect(mockedStores.canvasTooltipStore.hideTooltip).toHaveBeenCalledTimes(
-        1,
-      );
+      expect(hideSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should immediately hide tooltip when hoverable is undefined", () => {
       const tooltipWithoutHoverable = createMockTooltip();
       delete tooltipWithoutHoverable.hoverable;
 
-      const { getComposableResult, mockedStores } = mountTooltipComposable(
+      const { getComposableResult } = mountTooltipComposable(
         tooltipWithoutHoverable,
       );
       const { hideTooltip } = getComposableResult();
 
       hideTooltip();
 
-      expect(mockedStores.canvasTooltipStore.hideTooltip).toHaveBeenCalledTimes(
-        1,
-      );
+      expect(hideSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should delay hiding hoverable tooltips", () => {
       const hoverableTooltip = createMockTooltip({ hoverable: true });
-      const { getComposableResult, mockedStores } =
-        mountTooltipComposable(hoverableTooltip);
+      const { getComposableResult } = mountTooltipComposable(hoverableTooltip);
       const { hideTooltip } = getComposableResult();
 
       hideTooltip();
 
-      expect(
-        mockedStores.canvasTooltipStore.hideTooltip,
-      ).not.toHaveBeenCalled();
+      expect(hideSpy).not.toHaveBeenCalled();
 
       vi.advanceTimersByTime(550);
 
-      expect(mockedStores.canvasTooltipStore.hideTooltip).toHaveBeenCalledTimes(
-        1,
-      );
+      expect(hideSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should not hide hoverable tooltip if user hovers over tooltip element", () => {
       const hoverableTooltip = createMockTooltip({ hoverable: true });
-      const { getComposableResult, mockedStores } =
-        mountTooltipComposable(hoverableTooltip);
+      const { getComposableResult } = mountTooltipComposable(hoverableTooltip);
       const { hideTooltip } = getComposableResult();
 
       const tooltipElement = document.createElement("div");
@@ -212,15 +214,12 @@ describe("useTooltip", () => {
       hideTooltip();
       vi.advanceTimersByTime(550);
 
-      expect(
-        mockedStores.canvasTooltipStore.hideTooltip,
-      ).not.toHaveBeenCalled();
+      expect(hideSpy).not.toHaveBeenCalled();
     });
 
     it("should hide hoverable tooltip if no tooltip element is being hovered", () => {
       const hoverableTooltip = createMockTooltip({ hoverable: true });
-      const { getComposableResult, mockedStores } =
-        mountTooltipComposable(hoverableTooltip);
+      const { getComposableResult } = mountTooltipComposable(hoverableTooltip);
       const { hideTooltip } = getComposableResult();
 
       // Mock no elements being hovered or non-tooltip elements
@@ -231,15 +230,12 @@ describe("useTooltip", () => {
       hideTooltip();
       vi.advanceTimersByTime(550);
 
-      expect(mockedStores.canvasTooltipStore.hideTooltip).toHaveBeenCalledTimes(
-        1,
-      );
+      expect(hideSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should clear hoverable tooltip hide timeout on subsequent calls", () => {
       const hoverableTooltip = createMockTooltip({ hoverable: true });
-      const { getComposableResult, mockedStores } =
-        mountTooltipComposable(hoverableTooltip);
+      const { getComposableResult } = mountTooltipComposable(hoverableTooltip);
       const { hideTooltip } = getComposableResult();
 
       hideTooltip();
@@ -248,30 +244,24 @@ describe("useTooltip", () => {
       vi.advanceTimersByTime(550);
 
       // Should only be called once despite multiple hideTooltip calls
-      expect(mockedStores.canvasTooltipStore.hideTooltip).toHaveBeenCalledTimes(
-        1,
-      );
+      expect(hideSpy).toHaveBeenCalledTimes(1);
     });
   });
 
   it("should handle show then hide sequence correctly", () => {
-    const { getComposableResult, mockedStores } = mountTooltipComposable();
+    const { getComposableResult } = mountTooltipComposable();
     const { showTooltip, hideTooltip } = getComposableResult();
 
     showTooltip();
     vi.advanceTimersByTime(750);
-    expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledTimes(
-      1,
-    );
+    expect(showSpy).toHaveBeenCalledTimes(1);
 
     hideTooltip();
-    expect(mockedStores.canvasTooltipStore.hideTooltip).toHaveBeenCalledTimes(
-      1,
-    );
+    expect(hideSpy).toHaveBeenCalledTimes(1);
   });
 
   it("should handle rapid show/hide cycles", () => {
-    const { getComposableResult, mockedStores } = mountTooltipComposable();
+    const { getComposableResult } = mountTooltipComposable();
     const { showTooltip, hideTooltip } = getComposableResult();
 
     showTooltip();
@@ -283,11 +273,7 @@ describe("useTooltip", () => {
     vi.advanceTimersByTime(750);
 
     // Only the last showTooltip should have executed
-    expect(mockedStores.canvasTooltipStore.showTooltip).toHaveBeenCalledTimes(
-      1,
-    );
-    expect(mockedStores.canvasTooltipStore.hideTooltip).toHaveBeenCalledTimes(
-      3,
-    );
+    expect(showSpy).toHaveBeenCalledTimes(1);
+    expect(hideSpy).toHaveBeenCalledTimes(3);
   });
 });

@@ -2,24 +2,25 @@ import { type ComputedRef, type Ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
-import { useCanvasTooltipStore } from "@/store/canvasTooltip/canvasTooltip";
 import { useMovingStore } from "@/store/workflow/moving";
 import type { ContainerInst } from "@/vue3-pixi";
+
+import { useTooltipState } from "./useTooltipState";
 
 const entryDelayMS = 750;
 const hoverableTooltipLeaveDelayMS = 550;
 
 export const useTooltip = (params: {
-  tooltip: ComputedRef<TooltipDefinition | null>;
+  config: ComputedRef<TooltipDefinition | null>;
   element: Ref<ContainerInst | null>;
 }) => {
-  const canvasTooltipStore = useCanvasTooltipStore();
   const { isDragging } = storeToRefs(useMovingStore());
+  const { isHoverableTooltipHovered, show, hide } = useTooltipState();
 
   let showTimeout: number, hoverableTooltipHideTimeout: number;
 
   const showTooltip = () => {
-    if (canvasTooltipStore.isHoverableTooltipHovered || isDragging.value) {
+    if (isHoverableTooltipHovered.value || isDragging.value) {
       return;
     }
 
@@ -27,12 +28,12 @@ export const useTooltip = (params: {
 
     // wait for entryDelay to set tooltip
     showTimeout = window.setTimeout(() => {
-      canvasTooltipStore.showTooltip(params.element, params.tooltip);
+      show(params.element, params.config);
     }, entryDelayMS);
   };
 
   const hideTooltip = () => {
-    if (canvasTooltipStore.isHoverableTooltipHovered) {
+    if (isHoverableTooltipHovered.value) {
       return;
     }
 
@@ -40,8 +41,8 @@ export const useTooltip = (params: {
     clearTimeout(hoverableTooltipHideTimeout);
 
     // Immediately close non-hoverable tooltips
-    if (!params.tooltip.value?.hoverable) {
-      canvasTooltipStore.hideTooltip();
+    if (!params.config.value?.hoverable) {
+      hide();
     }
 
     // Give the user some time to move to the hoverable tooltip before hiding it
@@ -51,7 +52,7 @@ export const useTooltip = (params: {
           (el) => (el as HTMLElement).dataset?.isTooltip,
         )
       ) {
-        canvasTooltipStore.hideTooltip();
+        hide();
       }
     }, hoverableTooltipLeaveDelayMS);
   };
