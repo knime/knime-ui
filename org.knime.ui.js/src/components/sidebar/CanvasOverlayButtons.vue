@@ -86,7 +86,7 @@ const handleToggle = (name: TabValues, newValue: boolean) => {
   position: fixed;
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   left: var(--kds-spacing-container-0-75x);
-  top: calc(var(--kds-spacing-container-0-75x) + 40px);
+  top: calc(var(--kds-spacing-container-0-75x) + var(--canvas-overlay-top-offset));
   display: flex;
   flex-direction: row;
   align-items: center;

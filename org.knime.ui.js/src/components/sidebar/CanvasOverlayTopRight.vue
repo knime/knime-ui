@@ -373,7 +373,7 @@ onMounted(() => {
 .canvas-overlay-top-right {
   position: fixed;
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
-  top: calc(var(--kds-spacing-container-0-75x) + 40px);
+  top: calc(var(--kds-spacing-container-0-75x) + var(--canvas-overlay-top-offset));
   right: calc(var(--kds-spacing-container-0-75x) + var(--cfg-panel-right-width, 0px));
   transition: right 200ms ease;
   display: flex;

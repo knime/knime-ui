@@ -81,7 +81,7 @@ const applicationStore = useApplicationStore();
 const globalLoaderStore = useGlobalLoaderStore();
 const lifecycleStore = useLifecycleStore();
 const applicationSettingsStore = useApplicationSettingsStore();
-const { devMode, showDevToolsBar } = storeToRefs(applicationSettingsStore);
+const { devMode, showDevToolsBar, showAppHeader } = storeToRefs(applicationSettingsStore);
 const uiControls = useUIControlsStore();
 const spaceUploadsStore = useSpaceUploadsStore();
 const {
@@ -140,6 +140,9 @@ const contentLayoutHeightVariants = computed(() => {
    */
   return runInEnvironment({
     DESKTOP: () => {
+      if (!showAppHeader.value) {
+        return shouldShowUpdateBanner.value ? "inset-bottom" : "full";
+      }
       if (shouldShowUpdateBanner.value) {
         return "inset-both";
       }
@@ -248,14 +251,23 @@ const preventBrowserZooming = (event: WheelEvent) => {
   event.preventDefault();
 };
 
+const toggleAppHeader = (e: KeyboardEvent) => {
+  if (e[getMetaOrCtrlKey()] && e.shiftKey && e.key.toLowerCase() === "p") {
+    e.preventDefault();
+    applicationSettingsStore.toggleAppHeader();
+  }
+};
+
 onMounted(() => {
   document.addEventListener("wheel", preventBrowserZooming, { passive: false });
+  document.addEventListener("keydown", toggleAppHeader);
   checkClipboardSupport();
   useHostContextStore().setupIdleTracking();
 });
 
 onBeforeUnmount(async () => {
   document.removeEventListener("wheel", preventBrowserZooming);
+  document.removeEventListener("keydown", toggleAppHeader);
   await lifecycleStore.destroyApplication();
 });
 
@@ -271,7 +283,7 @@ const onCloseError = () => {
 </script>
 
 <template>
-  <div id="knime-ui" :class="contentLayoutHeightVariants">
+  <div id="knime-ui" :class="[contentLayoutHeightVariants, { 'header-hidden': !showAppHeader }]">
     <!-- if subsequent errors occur, stick with the first one -->
     <ErrorOverlay
       v-if="error"
@@ -281,7 +293,7 @@ const onCloseError = () => {
     />
 
     <DynamicEnvRenderer value="DESKTOP">
-      <AppHeader id="app-header" />
+      <AppHeader v-show="showAppHeader" id="app-header" />
     </DynamicEnvRenderer>
 
     <HotkeyHandler />
@@ -363,6 +375,10 @@ const onCloseError = () => {
     "header" min-content
     "workflow" auto
     "footer" min-content;
+
+  &.header-hidden {
+    --canvas-overlay-top-offset: 0px;
+  }
 
   /** backport https://github.com/knime/webapps-common/pull/45 */
   & :deep(.hint-popover .arrow) {

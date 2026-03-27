@@ -187,7 +187,7 @@ main {
 .canvas-top-center-bar {
   position: fixed;
   z-index: v-bind("$zIndices.layerStaticPanelDecorations");
-  top: calc(var(--kds-spacing-container-0-75x) + 40px);
+  top: calc(var(--kds-spacing-container-0-75x) + var(--canvas-overlay-top-offset));
   left: calc(50% - var(--cfg-panel-right-width, 0px) / 2);
   transform: translateX(-50%);
   transition: left 200ms ease;

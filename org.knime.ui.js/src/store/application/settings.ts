@@ -82,6 +82,11 @@ type ApplicationSettingsState = {
    * Inline view overlays are also hidden.
    */
   inlineViewsEnabled: boolean;
+  /*
+   * When false, the app header bar is hidden to maximise canvas space.
+   * Toggled via Cmd+Shift+P.
+   */
+  showAppHeader: boolean;
 };
 
 export const useApplicationSettingsStore = defineStore("applicationSettings", {
@@ -102,6 +107,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     useEmbeddedDialogs: true,
     isKaiEnabled: true,
     activeCanvasRenderer: "SVG",
+    showAppHeader: true,
   }),
   actions: {
     setHasClipboardSupport(hasClipboardSupport: boolean) {
@@ -167,6 +173,10 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     setActiveCanvasRenderer(renderer: CanvasRendererType) {
       this.activeCanvasRenderer = renderer;
       useCanvasRendererUtils().currentRenderer.value = renderer;
+    },
+
+    toggleAppHeader() {
+      this.showAppHeader = !this.showAppHeader;
     },
   },
 });
