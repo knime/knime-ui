@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { debounce } from "lodash-es";
+import { debounce } from "es-toolkit";
 import { storeToRefs } from "pinia";
 
 import { SplitPanel } from "@knime/components";
