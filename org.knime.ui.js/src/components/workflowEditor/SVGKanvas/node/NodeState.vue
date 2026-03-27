@@ -108,7 +108,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
   return null;
 });
 
-const DOT_CX = [6, 16, 26] as const;
+const DOT_CX = [11, 16, 21] as const;
 const DOT_FILL = (["red", "yellow", "green"] as const).map(
   (k) => $colors.trafficLight[k],
 );
@@ -122,10 +122,13 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
 <template>
   <g ref="tooltipRef">
     <rect
-      :width="$shapes.nodeSize"
+      width="16"
       :height="$shapes.nodeStatusHeight"
+      :x="($shapes.nodeSize - 16) / 2"
       fill="#e6e6e6"
-      rx="2"
+      stroke="var(--kds-color-border-muted)"
+      stroke-width="1"
+      rx="3"
     />
 
     <!-- node's static states: only the single active dot -->
@@ -134,8 +137,8 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
         <circle
           v-if="active"
           :cx="DOT_CX[index]"
-          cy="6"
-          r="4"
+          cy="3"
+          r="2"
           :fill="DOT_FILL[index]"
           :stroke="DOT_STROKE[index]"
           stroke-width="1"
@@ -148,7 +151,7 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
       :x="$shapes.nodeSize / 2"
       :fill="$colors.text.default"
       text-anchor="middle"
-      y="8.5"
+      y="4.5"
     >
       {{ loopStatus && loopStatus === "PAUSED" ? "paused" : "queued" }}
     </text>
@@ -158,7 +161,7 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
       <circle
         v-if="!progress"
         class="progress-circle"
-        r="4"
+        r="2"
         :cy="$shapes.nodeStatusHeight / 2"
         :fill="$colors.nodeProgressBar"
       />
@@ -170,7 +173,7 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
           :fill="$colors.text.default"
           :x="$shapes.nodeSize / 2"
           text-anchor="middle"
-          y="8.5"
+          y="4.5"
         >
           {{ progressDisplayPercentage }}%
         </text>
@@ -190,7 +193,7 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
           <text
             class="progress-text"
             :x="$shapes.nodeSize / 2"
-            y="8.5"
+            y="4.5"
             fill="white"
             text-anchor="middle"
           >

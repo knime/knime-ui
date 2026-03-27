@@ -1,204 +1,103 @@
-<script>
-import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
-import Eye from "@knime/styles/img/icons/eye.svg";
+<script lang="ts">
+export const portIconSize = 9;
+</script>
 
-import portIcon from "@/components/common/PortIconRenderer";
+<script setup lang="ts">
+import { computed, nextTick, useTemplateRef, watch } from "vue";
+
+import { KdsTabBar } from "@knime/kds-components";
+import type { KdsTabBarItem } from "@knime/kds-components";
+
 import { useCompositeViewActions } from "@/components/uiExtensions/compositeView/useCompositeViewActions";
 import { workflowDomain } from "@/lib/workflow-domain";
 
-export const portIconSize = 9;
+const props = withDefaults(
+  defineProps<{
+    node: Record<string, any>;
+    modelValue?: string | null;
+    disabled?: boolean;
+    hasViewTab?: boolean;
+  }>(),
+  {
+    node: () => ({}),
+    modelValue: null,
+    disabled: false,
+    hasViewTab: false,
+  },
+);
 
-const portToPortTab = (port) => ({
-  value: String(port.index),
-  icon: portIcon(port, portIconSize),
-  label: `${port.index}: ${port.name}`,
+const emit = defineEmits<{
+  "update:modelValue": [value: string];
+}>();
+
+const selectedTab = computed({
+  get: () => props.modelValue ?? "",
+  set: (val: string | number) => emit("update:modelValue", String(val)),
 });
 
-/**
- * Tab Bar that displays output ports of a given node.
- * Can be used like a form element
- * */
-export default {
-  props: {
-    node: {
-      type: Object,
-      default: () => ({}),
-    },
-    modelValue: {
-      type: String,
-      default: null,
-    },
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-    hasViewTab: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ["update:modelValue"],
-  computed: {
-    possibleTabValues() {
-      if (!this.node || !this.node.outPorts.length) {
-        return [];
-      }
+const tabs = computed<KdsTabBarItem[]>(() => {
+  if (!props.node || !props.node.outPorts?.length) {
+    return [];
+  }
 
-      const { outPorts } = this.node;
+  const { outPorts } = props.node;
+  const isMetanode = workflowDomain.node.isMetaNode(props.node);
 
-      const isMetanode = workflowDomain.node.isMetaNode(this.node);
-      const ports = (
-        isMetanode
-          ? outPorts
-          : outPorts.slice(1)
-      ).map(portToPortTab);
+  const portTabs: KdsTabBarItem[] = (
+    isMetanode ? outPorts : outPorts.slice(1)
+  ).map((port: any) => ({
+    id: `port-tab-${port.index}`,
+    value: String(port.index),
+    label: `${port.index}: ${port.name}`,
+    panelId: `port-panel-${port.index}`,
+  }));
 
-      return (
-        []
-          .concat(
-            this.hasViewTab
-              ? {
-                  value: "view",
-                  label: "View",
-                  icon: Eye,
-                  ...useCompositeViewActions(this.node),
-                }
-              : null,
-          )
-          .concat(ports)
-          .concat(
-            isMetanode
-              ? null
-              : { value: "0", label: "Flow Variables", icon: FlowVarTabIcon },
-          )
-          .filter(Boolean)
-      );
-    },
-  },
-  mounted() {
-    this.$nextTick(() => {
-      this.applyShortcutAllowlist();
+  const result: KdsTabBarItem[] = [];
+
+  if (props.hasViewTab) {
+    const compositeActions = useCompositeViewActions(props.node);
+    result.push({
+      id: "port-tab-view",
+      value: "view",
+      label: "View",
+      panelId: "port-panel-view",
+      ...compositeActions,
     });
-  },
-  updated() {
-    this.$nextTick(() => {
-      this.applyShortcutAllowlist();
+  }
+
+  result.push(...portTabs);
+
+  if (!isMetanode) {
+    result.push({
+      id: "port-tab-flow-vars",
+      value: "0",
+      label: "Flow Variables",
+      panelId: "port-panel-flow-vars",
     });
-  },
-  methods: {
-    applyShortcutAllowlist() {
-      if (!this.$refs.tabBar) {
-        return;
-      }
-      this.$refs.tabBar
-        .querySelectorAll("button")
-        .forEach((btn) => {
-          btn.dataset.allowShortcuts =
-            "activateOutputPort,detachOutputPort";
-        });
-    },
-  },
+  }
+
+  return result;
+});
+
+const tabBarRef = useTemplateRef<InstanceType<typeof KdsTabBar>>("tabBar");
+
+const applyShortcutAllowlist = () => {
+  const el = (tabBarRef.value as any)?.$el;
+  if (!el) return;
+  el.querySelectorAll("button").forEach((btn: HTMLElement) => {
+    btn.dataset.allowShortcuts = "activateOutputPort,detachOutputPort";
+  });
 };
+
+watch(tabs, () => nextTick(applyShortcutAllowlist), { immediate: true });
 </script>
 
 <template>
-  <nav ref="tabBar" class="port-tabs" aria-label="Output ports">
-    <button
-      v-for="tab in possibleTabValues"
-      :key="tab.value"
-      type="button"
-      :class="['port-tab', { active: modelValue === tab.value }]"
-      :disabled="disabled"
-      :title="tab.label"
-      @click="$emit('update:modelValue', tab.value)"
-    >
-      <component :is="tab.icon" v-if="tab.icon" class="tab-icon" />
-      <span class="tab-label">{{ tab.label }}</span>
-    </button>
-  </nav>
+  <KdsTabBar
+    ref="tabBar"
+    v-model="selectedTab"
+    :tabs="tabs"
+    :disabled="disabled"
+    size="small"
+  />
 </template>
-
-<style lang="postcss" scoped>
-.port-tabs {
-  display: flex;
-  flex-direction: row;
-  flex-shrink: 0;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--knime-silver-sand);
-  padding: 0 var(--space-8, 8px);
-  gap: 0;
-}
-
-.port-tab {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-family: inherit;
-  color: var(--knime-stone-gray);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 100ms, border-color 100ms;
-
-  &:hover:not(:disabled) {
-    color: var(--knime-masala);
-  }
-
-  &.active {
-    color: var(--knime-masala);
-    border-bottom-color: var(--knime-cornflower);
-    font-weight: 600;
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-}
-
-.tab-icon {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-
-  & :deep(*) {
-    pointer-events: none;
-  }
-}
-
-.tab-label {
-  line-height: 1;
-}
-
-/* Flow variable icon coloring */
-.port-tab :deep(circle[r="3"]) {
-  fill: var(--knime-coral);
-  stroke: var(--knime-coral);
-}
-
-.port-tab.active :deep(circle[r="3"]),
-.port-tab:hover:not(:disabled) :deep(circle[r="3"]) {
-  fill: var(--knime-coral-dark);
-  stroke: var(--knime-coral-dark);
-}
-
-.port-tab:disabled :deep(circle[r="3"]) {
-  fill: var(--knime-coral-light);
-  stroke: var(--knime-coral-light);
-}
-
-.port-tab:disabled :deep(polygon),
-.port-tab:disabled :deep(rect) {
-  fill: var(--knime-silver-sand);
-  stroke: var(--knime-silver-sand);
-}
-
-.port-tab:disabled :deep(path) {
-  stroke: var(--knime-silver-sand);
-}
-</style>

@@ -39,11 +39,11 @@ importers:
         specifier: ^1.24.0
         version: 1.24.0(@fontsource/roboto-mono@5.2.8)(@fontsource/roboto@5.2.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.30(typescript@5.8.3))
       '@knime/kds-components':
-        specifier: 0.18.0
-        version: 0.18.0(@vueuse/core@13.8.0(vue@3.5.30(typescript@5.8.3)))(vue@3.5.30(typescript@5.8.3))
+        specifier: 0.20.1
+        version: 0.20.1(@vueuse/core@13.8.0(vue@3.5.30(typescript@5.8.3)))(vue@3.5.30(typescript@5.8.3))
       '@knime/kds-styles':
-        specifier: 0.18.0
-        version: 0.18.0
+        specifier: 0.20.1
+        version: 0.20.1
       '@knime/knime-ui-table':
         specifier: 0.6.0
         version: 0.6.0(@fontsource/roboto-mono@5.2.8)(@fontsource/roboto@5.2.8)(@popperjs/core@2.11.8)(consola@3.4.2)(focus-trap@7.6.4)(vue@3.5.30(typescript@5.8.3))
@@ -1246,15 +1246,15 @@ packages:
       consola: 3.x
       vue: ~3.5.0
 
-  '@knime/kds-components@0.18.0':
-    resolution: {integrity: sha512-STCZhN4/qsdlUWyytfxDdxDpgqb3NAONXyqM+7KevFqdXW3iSc2zEk4a3B+RN0LzcBCjD3jXiEEWEw2zvwWgnA==}
+  '@knime/kds-components@0.20.1':
+    resolution: {integrity: sha512-5TLNBhxfNNDEQyGngCbxeuL4hP1QZ2q7w5013kN4Zj8FGCZ0wR6Ki2Z8z/1HnleGHg/rO8PE2SIfoC+mRLpOng==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
     peerDependencies:
       '@vueuse/core': ~13.8.0
       vue: ~3.5.0
 
-  '@knime/kds-styles@0.18.0':
-    resolution: {integrity: sha512-9al0i3ZJOA19J3pEA4W1I6H1SYHscyxm4NBR3FGnNVlw0TR0dE6Yrc53Gbfjdf3y75+6ZuhkUGWu1Zwjtn7N3g==}
+  '@knime/kds-styles@0.20.1':
+    resolution: {integrity: sha512-W3/nEj8soP84MHfi56cxIB1JZuIC7Zd9wP1CiwV9YjglvUp62m0LlEcm8k0gNKYXUw01bOBlCaXQhYRTLt90jw==}
     engines: {node: 24.10.0, npm: please-use-pnpm}
 
   '@knime/knime-ui-table@0.6.0':
@@ -7272,15 +7272,15 @@ snapshots:
       - react
       - react-dom
 
-  '@knime/kds-components@0.18.0(@vueuse/core@13.8.0(vue@3.5.30(typescript@5.8.3)))(vue@3.5.30(typescript@5.8.3))':
+  '@knime/kds-components@0.20.1(@vueuse/core@13.8.0(vue@3.5.30(typescript@5.8.3)))(vue@3.5.30(typescript@5.8.3))':
     dependencies:
-      '@knime/kds-styles': 0.18.0
+      '@knime/kds-styles': 0.20.1
       '@knime/utils': 1.10.1(consola@3.4.2)
       '@vueuse/core': 13.8.0(vue@3.5.30(typescript@5.8.3))
       consola: 3.4.2
       vue: 3.5.30(typescript@5.8.3)
 
-  '@knime/kds-styles@0.18.0':
+  '@knime/kds-styles@0.20.1':
     dependencies:
       '@fontsource/roboto': 5.2.10
       '@fontsource/roboto-condensed': 5.2.8
