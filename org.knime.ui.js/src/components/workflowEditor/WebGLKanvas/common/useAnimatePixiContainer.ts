@@ -92,8 +92,8 @@ export const useAnimatePixiContainer = <T extends {}>(options: Options<T>) => {
 
   const doAnimateOut = () => {
     if (!animateOut) {
-      triggerAnimationUpdate(initialValue, "out");
       teardown();
+      triggerAnimationUpdate(initialValue, "out");
       return;
     }
 
