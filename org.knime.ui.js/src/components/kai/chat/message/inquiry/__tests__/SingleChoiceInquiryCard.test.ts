@@ -281,4 +281,54 @@ describe("SingleChoiceInquiryCard", () => {
       mockedStores.aiAssistantStore.respondToInquiry,
     ).toHaveBeenCalledOnce();
   });
+
+  it("enter keypress confirms the selected option", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await wrapper
+      .findComponent(KdsRadioButtonGroup)
+      .vm.$emit("update:modelValue", "opt-b");
+    await wrapper.find(".card-container").trigger("keydown", { key: "Enter" });
+
+    expect(mockedStores.aiAssistantStore.respondToInquiry).toHaveBeenCalledWith(
+      expect.objectContaining({ selectedOptionIds: ["opt-b"] }),
+    );
+  });
+
+  it("enter keypress does not confirm when freeform is selected", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await wrapper
+      .findComponent(KdsRadioButtonGroup)
+      .vm.$emit("update:modelValue", FREEFORM_OPTION_ID);
+    await wrapper.find(".card-container").trigger("keydown", { key: "Enter" });
+
+    expect(
+      mockedStores.aiAssistantStore.respondToInquiry,
+    ).not.toHaveBeenCalled();
+  });
+
+  it("escape keypress skips", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await wrapper.find(".card-container").trigger("keydown", { key: "Escape" });
+
+    expect(mockedStores.aiAssistantStore.respondToInquiry).toHaveBeenCalledWith(
+      expect.objectContaining({ selectedOptionIds: [] }),
+    );
+  });
+
+  it("does not start a timer when timeoutSeconds is undefined", () => {
+    const { wrapper, mockedStores } = doMount(
+      createInquiry({ timeoutSeconds: undefined }),
+    );
+
+    vi.advanceTimersByTime(60000);
+
+    expect(
+      mockedStores.aiAssistantStore.respondToInquiry,
+    ).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+  });
 });

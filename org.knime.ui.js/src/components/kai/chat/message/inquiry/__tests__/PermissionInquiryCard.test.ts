@@ -240,4 +240,34 @@ describe("PermissionInquiryCard", () => {
       ).toHaveBeenCalledOnce();
     });
   });
+
+  describe("keyboard", () => {
+    it("enter triggers the primary option", async () => {
+      const { wrapper, mockedStores } = doMount();
+
+      await wrapper
+        .find(".card-container")
+        .trigger("keydown", { key: "Enter" });
+
+      expect(
+        mockedStores.aiAssistantStore.respondToInquiry,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({ selectedOptionIds: ["allow"] }),
+      );
+    });
+
+    it("escape triggers the secondary option", async () => {
+      const { wrapper, mockedStores } = doMount();
+
+      await wrapper
+        .find(".card-container")
+        .trigger("keydown", { key: "Escape" });
+
+      expect(
+        mockedStores.aiAssistantStore.respondToInquiry,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({ selectedOptionIds: ["deny"] }),
+      );
+    });
+  });
 });

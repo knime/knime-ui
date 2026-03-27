@@ -277,4 +277,40 @@ describe("MultiChoiceInquiryCard", () => {
       mockedStores.aiAssistantStore.respondToInquiry,
     ).toHaveBeenCalledOnce();
   });
+
+  it("enter keypress confirms checked options", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await wrapper
+      .findComponent(KdsCheckboxGroup)
+      .vm.$emit("update:modelValue", ["opt-a", "opt-c"]);
+    await wrapper.find(".card-container").trigger("keydown", { key: "Enter" });
+
+    expect(mockedStores.aiAssistantStore.respondToInquiry).toHaveBeenCalledWith(
+      expect.objectContaining({ selectedOptionIds: ["opt-a", "opt-c"] }),
+    );
+  });
+
+  it("enter keypress does not confirm when freeform is checked", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await wrapper
+      .findComponent(KdsCheckboxGroup)
+      .vm.$emit("update:modelValue", [FREEFORM_OPTION_ID]);
+    await wrapper.find(".card-container").trigger("keydown", { key: "Enter" });
+
+    expect(
+      mockedStores.aiAssistantStore.respondToInquiry,
+    ).not.toHaveBeenCalled();
+  });
+
+  it("escape keypress skips", async () => {
+    const { wrapper, mockedStores } = doMount();
+
+    await wrapper.find(".card-container").trigger("keydown", { key: "Escape" });
+
+    expect(mockedStores.aiAssistantStore.respondToInquiry).toHaveBeenCalledWith(
+      expect.objectContaining({ selectedOptionIds: [] }),
+    );
+  });
 });

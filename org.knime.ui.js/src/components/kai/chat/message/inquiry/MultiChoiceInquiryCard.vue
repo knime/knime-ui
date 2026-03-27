@@ -20,17 +20,11 @@ const props = defineProps<Props>();
 
 const checkedIds = ref<string[]>([]);
 
-const {
-  optionValues,
-  freeformText,
-  skip,
-  skipLabel,
-  submitSelection,
-  resolveOnce,
-} = useSelectionInquiry({
-  inquiry: props.inquiry,
-  chainType: props.chainType,
-});
+const { optionValues, freeformText, skip, skipLabel, submitSelection } =
+  useSelectionInquiry({
+    inquiry: props.inquiry,
+    chainType: props.chainType,
+  });
 
 const isFreeformSelected = computed(() =>
   checkedIds.value.includes(FREEFORM_OPTION_ID),
@@ -53,10 +47,6 @@ const handleConfirm = () => {
   });
 };
 
-const handleSkip = () => {
-  resolveOnce(() => skip());
-};
-
 const checkboxGroupRef =
   useTemplateRef<InstanceType<typeof KdsCheckboxGroup>>("checkboxGroup");
 
@@ -73,7 +63,7 @@ const handleCardKeydown = (event: KeyboardEvent) => {
     handleConfirm();
   } else if (event.key === "Escape") {
     event.preventDefault();
-    handleSkip();
+    skip();
   }
 };
 </script>
@@ -84,7 +74,7 @@ const handleCardKeydown = (event: KeyboardEvent) => {
     :skip-label="skipLabel"
     :can-confirm="canConfirm"
     @confirm="handleConfirm"
-    @skip="handleSkip"
+    @skip="skip"
     @keydown="handleCardKeydown"
   >
     <KdsCheckboxGroup

@@ -25,17 +25,11 @@ const defaultSelectedId =
 
 const selectedId = ref<string | undefined>(defaultSelectedId);
 
-const {
-  optionValues,
-  freeformText,
-  skip,
-  skipLabel,
-  submitSelection,
-  resolveOnce,
-} = useSelectionInquiry({
-  inquiry: props.inquiry,
-  chainType: props.chainType,
-});
+const { optionValues, freeformText, skip, skipLabel, submitSelection } =
+  useSelectionInquiry({
+    inquiry: props.inquiry,
+    chainType: props.chainType,
+  });
 
 const isFreeformSelected = computed(
   () => selectedId.value === FREEFORM_OPTION_ID,
@@ -58,10 +52,6 @@ const handleConfirm = () => {
   });
 };
 
-const handleSkip = () => {
-  resolveOnce(() => skip());
-};
-
 const radioGroupRef =
   useTemplateRef<InstanceType<typeof KdsRadioButtonGroup>>("radioGroup");
 
@@ -78,7 +68,7 @@ const handleCardKeydown = (event: KeyboardEvent) => {
     handleConfirm();
   } else if (event.key === "Escape") {
     event.preventDefault();
-    handleSkip();
+    skip();
   }
 };
 </script>
@@ -89,7 +79,7 @@ const handleCardKeydown = (event: KeyboardEvent) => {
     :skip-label="skipLabel"
     :can-confirm="canConfirm"
     @confirm="handleConfirm"
-    @skip="handleSkip"
+    @skip="skip"
     @keydown="handleCardKeydown"
   >
     <KdsRadioButtonGroup

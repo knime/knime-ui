@@ -27,7 +27,7 @@ export const useSelectionInquiry = ({
 
   const freeformText = ref("");
 
-  const skip = (suffix?: string) => {
+  const respondWithSkip = (suffix?: string) => {
     aiAssistantStore.respondToInquiry({
       chainType,
       selectedOptionIds: [],
@@ -39,9 +39,13 @@ export const useSelectionInquiry = ({
   const { remainingSeconds, isCountdownVisible, resolveOnce } =
     useInquiryLifecycle({
       timeoutSeconds: inquiry.timeoutSeconds,
-      onTimeout: () => skip("Timed out"),
-      onUnmountUnresolved: () => skip(),
+      onTimeout: () => respondWithSkip("Timed out"),
+      onUnmountUnresolved: () => respondWithSkip(),
     });
+
+  const skip = () => {
+    resolveOnce(() => respondWithSkip());
+  };
 
   const skipLabel = computed(() => {
     if (isCountdownVisible.value) {
@@ -74,6 +78,5 @@ export const useSelectionInquiry = ({
     skip,
     skipLabel,
     submitSelection,
-    resolveOnce,
   };
 };
