@@ -26,8 +26,8 @@ export const portActionsGapSize = 5;
 export const addNodeGhostSize = 20;
 
 export const nodeTorsoRadius = 2.8;
-export const nodeStatusHeight = 6;
-export const nodeStatusMarginTop = -3;
+export const nodeStatusHeight = 32;
+export const nodeStatusMarginTop = -32;
 
 // horizontal node padding to include the full name on the workflow
 export const horizontalNodePadding = 50;

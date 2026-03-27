@@ -263,6 +263,7 @@ const onPortViewLoadingState = async (
     position: relative;
     flex: 1;
     overflow: auto;
+    zoom: 0.8;
   }
 }
 </style>

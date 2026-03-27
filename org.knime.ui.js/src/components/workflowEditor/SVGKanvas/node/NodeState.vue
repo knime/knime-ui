@@ -82,11 +82,11 @@ const progressDisplayPercentage = computed(() => {
 });
 
 const tooltip = computed<TooltipDefinition | null>(() => {
-  const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = $shapes;
+  const { nodeSize } = $shapes;
   let tooltip = {
     position: {
       x: nodeSize / 2,
-      y: nodeSize + nodeStatusMarginTop + nodeStatusHeight,
+      y: nodeSize,
     },
     anchorPoint: anchorPoint ?? { x: 0, y: 0 },
     gap: 10,
@@ -108,7 +108,7 @@ const tooltip = computed<TooltipDefinition | null>(() => {
   return null;
 });
 
-const DOT_CX = [11, 16, 21] as const;
+const DOT_CX = [10, 16, 22] as const;
 const DOT_FILL = (["red", "yellow", "green"] as const).map(
   (k) => $colors.trafficLight[k],
 );
@@ -121,23 +121,23 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
 
 <template>
   <g ref="tooltipRef">
+    <!-- Background pill centered in the 32x32 node -->
     <rect
-      width="16"
-      :height="$shapes.nodeStatusHeight"
-      :x="($shapes.nodeSize - 16) / 2"
-      fill="#e6e6e6"
-      stroke="var(--kds-color-border-muted)"
-      stroke-width="1"
-      rx="3"
+      width="20"
+      height="8"
+      :x="($shapes.nodeSize - 20) / 2"
+      :y="($shapes.nodeSize - 8) / 2"
+      fill="rgba(255,255,255,0.6)"
+      rx="4"
     />
 
     <!-- node's static states: only the single active dot -->
-    <g v-if="trafficLight">
+    <g v-if="trafficLight" :transform="`translate(0, ${$shapes.nodeSize / 2})`">
       <template v-for="(active, index) of trafficLight" :key="index">
         <circle
           v-if="active"
           :cx="DOT_CX[index]"
-          cy="3"
+          cy="0"
           r="2"
           :fill="DOT_FILL[index]"
           :stroke="DOT_STROKE[index]"
@@ -151,7 +151,7 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
       :x="$shapes.nodeSize / 2"
       :fill="$colors.text.default"
       text-anchor="middle"
-      y="4.5"
+      :y="$shapes.nodeSize / 2 + 2"
     >
       {{ loopStatus && loopStatus === "PAUSED" ? "paused" : "queued" }}
     </text>
@@ -162,7 +162,7 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
         v-if="!progress"
         class="progress-circle"
         r="2"
-        :cy="$shapes.nodeStatusHeight / 2"
+        :cy="$shapes.nodeSize / 2"
         :fill="$colors.nodeProgressBar"
       />
 
@@ -173,27 +173,29 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
           :fill="$colors.text.default"
           :x="$shapes.nodeSize / 2"
           text-anchor="middle"
-          y="4.5"
+          :y="$shapes.nodeSize / 2 + 2"
         >
           {{ progressDisplayPercentage }}%
         </text>
         <rect
-          :height="$shapes.nodeStatusHeight"
+          height="8"
           :width="progressBarWidth"
+          :y="($shapes.nodeSize - 8) / 2"
           :fill="$colors.nodeProgressBar"
           rx="1"
         />
         <g :clip-path="percentageClipPath">
           <!-- spacer for clip-path  -->
           <rect
-            :height="$shapes.nodeStatusHeight"
+            height="8"
             :width="$shapes.nodeSize"
+            :y="($shapes.nodeSize - 8) / 2"
             fill="none"
           />
           <text
             class="progress-text"
             :x="$shapes.nodeSize / 2"
-            y="4.5"
+            :y="$shapes.nodeSize / 2 + 2"
             fill="white"
             text-anchor="middle"
           >
@@ -207,9 +209,7 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
     <g
       v-if="error"
       class="error"
-      :transform="`translate(${$shapes.nodeSize / 2}, ${
-        $shapes.nodeStatusHeight
-      })`"
+      :transform="`translate(${$shapes.nodeSize / 2}, ${$shapes.nodeSize})`"
     >
       <circle r="5" :fill="$colors.error" />
       <line x1="-2.25" y1="-2.25" x2="2.25" y2="2.25" stroke="white" />
@@ -218,7 +218,7 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
     <g
       v-else-if="warning"
       class="warning"
-      :transform="`translate(${$shapes.nodeSize / 2 - 6}, 5.5)`"
+      :transform="`translate(${$shapes.nodeSize / 2 - 6}, ${$shapes.nodeSize})`"
     >
       <path
         d="M6,1.25 L0.5,10.75 H11.5 Z"

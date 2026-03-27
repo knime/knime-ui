@@ -468,8 +468,8 @@ const discardSettings = () => {
 
   & .hjm-tab {
     flex-shrink: 0;
-    padding: 8px 14px;
-    font-size: 12px;
+    padding: 4px 10px;
+    font-size: 11px;
     font-family: inherit;
     color: var(--kds-color-text-and-icon-subtle, var(--knime-stone-gray));
     background: none;
