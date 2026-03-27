@@ -143,9 +143,9 @@ if (jumpMarksCtx) {
     activateSection(index, jumpMarksMode.value);
 }
 
-// When mode switches from tabs → scrolling, restore all hidden sections
+// Restore hidden sections when switching back to a non-tab mode
 watch(jumpMarksMode, (mode) => {
-  if (mode === "scrolling") showAllSections();
+  if (mode === "scrolling" || mode === "disabled") showAllSections();
 });
 
 // Auto-expand advanced options once per dialog load when the setting is on
@@ -307,7 +307,7 @@ const discardSettings = () => {
         />
 
         <template v-if="activeContext && activeContext.isEmbeddable">
-          <div class="body-row">
+          <div :class="['body-row', { 'horizontal-tabs-mode': jumpMarksMode === 'horizontal-tabs' }]">
             <!-- NodeOutput shown alongside dialog for non-enlargeable nodes in large mode -->
             <template v-if="isLargeMode && !canBeEnlarged">
               <div class="port-view-section">
@@ -315,9 +315,25 @@ const discardSettings = () => {
               </div>
               <div class="panel-divider" />
             </template>
-            <!-- Inline jump marks — only shown in fixed side-panel (not floating) mode -->
+            <!-- Horizontal tab bar — shown when mode is horizontal-tabs -->
+            <nav
+              v-if="!hasExternalJumpMarks && jumpMarksMode === 'horizontal-tabs' && jumpMarkSections.length > 0"
+              class="horizontal-jump-marks"
+              aria-label="Jump to section"
+            >
+              <button
+                v-for="(section, index) in jumpMarkSections"
+                :key="section.text"
+                :class="['hjm-tab', { active: index === jumpMarksActiveSection }]"
+                type="button"
+                @click="handleActivateSection(index)"
+              >
+                {{ section.text }}
+              </button>
+            </nav>
+            <!-- Inline jump marks — only shown in fixed side-panel (not floating) mode, vertical modes -->
             <NodeConfigJumpMarks
-              v-if="!hasExternalJumpMarks && jumpMarksMode !== 'disabled'"
+              v-if="!hasExternalJumpMarks && jumpMarksMode !== 'disabled' && jumpMarksMode !== 'horizontal-tabs'"
               :sections="jumpMarkSections"
               :active-section="jumpMarksActiveSection"
               @activate-section="handleActivateSection"
@@ -423,6 +439,44 @@ const discardSettings = () => {
     flex: 1;
     min-height: 0;
     overflow: hidden;
+
+    &.horizontal-tabs-mode {
+      flex-direction: column;
+    }
+  }
+
+  & .horizontal-jump-marks {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--kds-color-border-default, var(--knime-silver-sand));
+    padding: 0 var(--space-8);
+    gap: 0;
+  }
+
+  & .hjm-tab {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--kds-color-text-and-icon-subtle, var(--knime-stone-gray));
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 100ms, border-color 100ms;
+
+    &:hover {
+      color: var(--kds-color-text-and-icon-default);
+    }
+
+    &.active {
+      color: var(--kds-color-text-and-icon-default);
+      border-bottom-color: var(--knime-cornflower);
+      font-weight: 600;
+    }
   }
 
   & .loader-area {

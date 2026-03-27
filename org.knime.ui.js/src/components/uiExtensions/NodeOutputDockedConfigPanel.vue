@@ -38,6 +38,30 @@ const selectConfigNode = (idx: number) => {
   configNodeIdx.value = idx;
   nodeConfigStore.setConfigFocusNodeId(displayedNodes.value[idx].id);
 };
+
+// ── Resizable config panel ────────────────────────────────────────────────────
+const configWidth = ref(420);
+
+const startResize = (e: MouseEvent) => {
+  e.preventDefault();
+  const startX = e.clientX;
+  const startWidth = configWidth.value;
+
+  const onMove = (ev: MouseEvent) => {
+    // Dragging left increases config width; right decreases
+    const delta = startX - ev.clientX;
+    configWidth.value = Math.max(240, Math.min(900, startWidth + delta));
+  };
+
+  const onUp = () => {
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+  };
+
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+};
+
 </script>
 
 <template>
@@ -46,8 +70,8 @@ const selectConfigNode = (idx: number) => {
       <NodeOutput />
     </div>
     <template v-if="isRightPanelExpanded">
-      <div class="panel-divider" />
-      <div class="config-section">
+      <div class="resize-handle" @mousedown="startResize" />
+      <div class="config-section" :style="{ width: `${configWidth}px` }">
         <!-- Node switcher: shown when two nodes are selected (split view) -->
         <div v-if="isSplit" class="config-node-tabs">
           <button
@@ -86,14 +110,20 @@ const selectConfigNode = (idx: number) => {
   overflow: hidden;
 }
 
-.panel-divider {
-  width: 1px;
+.resize-handle {
+  width: 5px;
   flex-shrink: 0;
+  cursor: col-resize;
   background-color: var(--kds-color-border-default, var(--knime-silver-sand));
+  transition: background-color 120ms;
+
+  &:hover {
+    background-color: var(--knime-cornflower);
+  }
 }
 
 .config-section {
-  width: 500px;
+  /* width is set via :style binding; this is a fallback */
   flex-shrink: 0;
   overflow: hidden;
   display: flex;

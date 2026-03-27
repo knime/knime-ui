@@ -28,7 +28,7 @@ export interface SettingsState {
     nodeConfigOpenMode: "current" | "actionbar" | "modal" | "dock";
     nodeOutputLayout: "bottom" | "side-by-side" | "right";
     showDialogAdvancedOptions: boolean;
-    jumpMarksMode: "scrolling" | "tabs" | "disabled";
+    jumpMarksMode: "scrolling" | "tabs" | "horizontal-tabs" | "disabled";
     kaiPlacement: "centerStage" | "rightPanel";
   };
 }

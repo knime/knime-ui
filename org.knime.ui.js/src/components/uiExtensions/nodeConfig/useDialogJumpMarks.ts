@@ -182,12 +182,12 @@ export function useDialogJumpMarks() {
    * "tabs" mode:      hide all other sections, show only this one,
    *                   and snap-scroll the container to the top.
    */
-  const activateSection = (index: number, mode: "scrolling" | "tabs") => {
+  const activateSection = (index: number, mode: "scrolling" | "tabs" | "horizontal-tabs") => {
     const mark = sections.value[index];
     if (!mark) return;
     activeSection.value = index;
 
-    if (mode === "tabs") {
+    if (mode === "tabs" || mode === "horizontal-tabs") {
       sections.value.forEach((s, i) => {
         s.sectionBlocks.forEach((el) => {
           el.style.display = i === index ? "" : "none";
